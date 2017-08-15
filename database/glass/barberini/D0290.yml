@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/d0290e.pdf\">Barberini D0290 glass specifications, 2010-06</a>"
+COMMENTS: "20 °C<br>Normal Crown Glass (Uni/Bifocal); Colour: clear; Application: High index glass for corrective lenses"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.6181
+        0.47999 1.6111
+        0.48613 1.6103
+        0.54607 1.6040
+        0.58756 1.6008
+        0.58929 1.6007
+        0.64385 1.5974
+        0.65627 1.5967

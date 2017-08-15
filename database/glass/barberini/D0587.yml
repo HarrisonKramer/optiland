@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2011/barberini/d05870-v-512-e.pdf\">Barberini D0587 glass specifications, 2011-01</a>"
+COMMENTS: "20 °C<br>Photochromic Glass; Colour: clear; Application: Lower segment glass for photochromic ophthalmic crown glass"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.6031
+        0.47999 1.5965
+        0.48613 1.5958
+        0.54607 1.5898
+        0.58756 1.5867
+        0.58929 1.5866
+        0.64385 1.5835
+        0.65627 1.5829

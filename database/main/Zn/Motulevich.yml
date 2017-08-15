@@ -1,0 +1,20 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. P. Motulevich and A. A. Shubin. The optical constants of zinc, <a href=\"http://jetp.ac.ru/cgi-bin/e/index/e/29/1/p24?a=list\"><i>Sov. Phys. JETP</i> <b>29</b>, 24-26 (1969)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: tabulated nk
+    data: |
+        1.23 1.17 4.92
+        1.55 0.95 7.28
+        2.14 1.01 10.65
+        2.68 1.26 13.3
+        3.2 1.86 16.6
+        4.0 2.58 21.3
+        5.0 3.77 26.2
+        6.0 5.8 31.6
+        7.0 7.6 36.1
+        8.0 9.05 40.7
+        10.0 15.3 47.6

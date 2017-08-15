@@ -1,0 +1,22 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. H. Dalzell and A. F. Sarofim. Optical constants of soot and their application to heat-flux calculations, <a href=\"https://doi.org/10.1115/1.3580063\"><i>J. Heat Transfer </i> <b>91</b>, 100-104 (1969)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.4358 1.57 0.46
+        0.4500 1.56 0.50
+        0.5500 1.57 0.53
+        0.6500 1.56 0.52
+        0.8065 1.57 0.49
+        2.5 2.04 1.15
+        3.0 2.21 1.23
+        4.0 2.38 1.44
+        5.0 2.07 1.72
+        6.0 2.62 1.67
+        7.0 3.05 1.91
+        8.5 3.26 2.10
+        10.0 3.48 2.46

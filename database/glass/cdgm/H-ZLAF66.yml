@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://www.cdgmgd.com/en/asp/\">CDGM Optical Glass Products Database</a>"
+COMMENTS: "Refractive index is relative to air at standard conditions; Wavelength in dispersion formula is as measured in air and expressed in micrometers"
+DATA:
+  - type: formula 3
+    range: 0.365 0.7065
+    coefficients: 3.1328858 -9.1815181E-3 2 3.8534276E-2 -2 -1.5369762E-4 -4 1.472628E-4 -6 -1.1427587E-7 -8

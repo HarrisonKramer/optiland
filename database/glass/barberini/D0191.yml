@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/d01910-ch-5555-e.pdf\">Barberini D0191 glass specifications, 2010-06</a>"
+COMMENTS: "20 °C<br>Mold Glass; Colour: clear; Application: Special glass, in particular suitable for a rapid chemical toughening without problems. The ideal material for moulds for the manufacture of plastic lenses."
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.5338
+        0.47999 1.5296
+        0.48613 1.5291
+        0.54607 1.5251
+        0.58756 1.5230
+        0.58929 1.5229
+        0.64385 1.5208
+        0.65627 1.5204

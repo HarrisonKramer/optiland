@@ -1,0 +1,46 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) <a href=\"https://refractiveindex.info/download/data/2015/HIKARI_Catalog.pdf\">HIKARI optical glass catalog 2015-04-01</a><br>2) <a href=\"https://refractiveindex.info/download/data/2015/HIKARI.agf\">HIKARI Zemax catalog</a>"
+DATA:
+  - type: formula 3
+    range: 0.388865 2.05809
+    coefficients: 3.27710657 -0.0120480934 2 -0.000105066933 4 0.0470173769 -2 0.00095791266 -4 0.000282409939 -6 -2.89931135e-05 -8 2.51862401e-06 -10
+  - type: tabulated k
+    data: |
+        0.360 1.0046E-05
+        0.365 5.7107E-06
+        0.370 3.2643E-06
+        0.380 1.3495E-06
+        0.390 6.9253E-07
+        0.400 4.4328E-07
+        0.420 2.4255E-07
+        0.440 1.6489E-07
+        0.460 1.2662E-07
+        0.480 1.0455E-07
+        0.500 8.0384E-08
+        0.550 5.2839E-08
+        0.600 4.3166E-08
+        0.650 4.6764E-08
+        0.700 5.0361E-08
+        0.800 5.7555E-08
+        0.900 1.4338E-08
+        1.000 3.9889E-08
+        1.200 1.9118E-08
+        1.400 1.1146E-08
+        1.600 1.0227E-07
+        1.800 2.7477E-07
+        2.000 4.6837E-07
+        2.200 9.9038E-07
+        2.400 2.4414E-06
+INFO:
+    n_is_absolute: false
+    λ_is_vacuum: false
+    temperature: 23.0 °C
+    n_d: 1.850000
+    V_d: 27.027002
+    density: 3.9 g/cm<sup>3</sup>
+    coefficient_of_thermal_expansion_1: 7.6e-06 K<sup>-1</sup>
+    ΔP_gF: 0.0103
+    phosphate_resistance: 1.0

@@ -1,0 +1,45 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. L. Windt, W. C. Cash, M. Scott, P. Arendt, B. Newnam, R. F. Fisher, A. B. Swartzlander. Optical constants for thin films of Ti, Zr, Nb, Mo, Ru, Rh, Pd, Ag, Hf, Ta, W, Re, Ir, Os, Pt, and Au from 24 Å to 1216 Å, <a href=\"https://doi.org/10.1364/AO.27.000246\"><i>Appl. Opt.</i> <b>27</b>, 246-278 (1988)</a>"
+COMMENTS: "Optical constants are derived from reflectance vs angle of incidence measurements using a nonlinear least-squares curve-fitting technique based on the <i>χ</i><sup>2</sup> test"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.00236 0.99667 0.00774
+        0.00316 0.99770 0.00530
+        0.00447 0.99198 0.00237
+        0.00676 0.9813 0.00291
+        0.01140 0.9172 0.00818
+        0.01355 0.860 0.0423
+        0.01714 0.863 0.293
+        0.02430 0.928 0.310
+        0.02563 0.927 0.346
+        0.03038 0.895 0.302
+        0.03270 0.894 0.304
+        0.03568 0.872 0.351
+        0.03793 0.896 0.427
+        0.04059 0.953 0.451
+        0.04478 0.889 0.425
+        0.04607 0.848 0.446
+        0.04895 0.833 0.507
+        0.05391 1.04 0.746
+        0.05843 1.09 0.658
+        0.06163 1.06 0.564
+        0.06714 1.03 0.586
+        0.07185 0.982 0.596
+        0.07359 1.13 0.751
+        0.07437 1.17 0.721
+        0.08345 1.28 0.750
+        0.08780 1.37 0.688
+        0.09198 1.32 0.657
+        0.09321 1.27 0.625
+        0.09888 1.32 0.586
+        0.10258 1.23 0.571
+        0.10482 1.27 0.577
+        0.10667 1.30 0.565
+        0.10857 1.30 0.550
+        0.11350 1.33 0.518
+        0.12007 1.27 0.490
+        0.12157 1.21 0.515

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://www.sumita-opt.co.jp/en/catalog.htm\">Sumita Optical Glass Data Book</a>"
+COMMENTS: "Glass for Precision Molding. Refractive index is relative to air at standard conditions; Wavelength in dispersion formula is as measured in air and expressed in micrometers."
+DATA:
+  - type: formula 3
+    range: 0.365 1.548
+    coefficients: 2.2505164 -8.8684142E-3 2 1.2260534E-2 -2 4.2234633E-4 -4 -2.1095054E-5 -6 2.2440064E-6 -8

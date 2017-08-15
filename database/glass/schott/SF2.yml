@@ -1,0 +1,51 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) <a href=\"https://refractiveindex.info/download/data/2015/schott-optical-glass-collection-datasheets-july-2015-us.pdf\">SCHOTT optical glass data sheets 2015-07-22</a><br>2) <a href=\"https://refractiveindex.info/download/data/2015/schottzemax-20150722.agf\">SCHOTT Zemax catalog 2015-07-22</a>"
+COMMENTS: "lead containing glass type. step 0.5 available"
+DATA:
+  - type: formula 2
+    range: 0.35 2.5
+    coefficients: 0 1.40301821 0.0105795466 0.231767504 0.0493226978 0.939056586 112.405955
+  - type: tabulated k
+    data: |
+        0.350 1.1077E-06
+        0.365 3.8167E-07
+        0.370 2.7762E-07
+        0.380 1.6845E-07
+        0.390 1.0351E-07
+        0.400 5.9959E-08
+        0.405 4.9943E-08
+        0.420 3.3847E-08
+        0.436 2.5209E-08
+        0.460 1.7677E-08
+        0.500 1.1180E-08
+        0.546 8.7117E-09
+        0.580 9.2541E-09
+        0.620 9.8924E-09
+        0.660 1.2643E-08
+        0.700 8.9305E-09
+        1.060 1.3523E-08
+        1.530 7.3606E-08
+        1.970 8.0161E-07
+        2.325 2.5347E-06
+        2.500 3.8041E-06
+INFO:
+    n_is_absolute: false
+    λ_is_vacuum: false
+    temperature: 20.0 °C
+    coefficients_of_thermal_dispersion: 1.1e-06 1.75e-08 -1.29e-11 1.08e-06 1.03e-09 0.249
+    n_d: 1.64769
+    V_d: 33.85
+    glass_code: 648339.386
+    glass_status: standard
+    density: 3.86 g/cm<sup>3</sup>
+    coefficient_of_thermal_expansion_1: 8.4e-06 K<sup>-1</sup>
+    coefficient_of_thermal_expansion_2: 9.2e-06 K<sup>-1</sup>
+    ΔP_gF: 0.0017
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 2.0
+    alkali_resistance: 2.3
+    phosphate_resistance: 2.0

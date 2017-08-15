@@ -1,0 +1,40 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2015/schottzemax-20150722.agf\">SCHOTT Zemax catalog 2015-07-22</a>"
+COMMENTS: "Clear borosilicate glass of high chemical resistance"
+DATA:
+  - type: formula 2
+    range: 0.334 2.325
+    coefficients: 0 1.23795755 0.00863080926 0.0466468888 0.0469074501 2.46700556 264.146296
+  - type: tabulated k
+    data: |
+        0.334 1.0398E-05
+        0.350 1.4885E-06
+        0.365 3.2221E-07
+        0.370 2.1367E-07
+        0.380 1.4240E-07
+        0.390 8.1759E-08
+        0.400 6.1061E-08
+        0.420 5.0514E-08
+        0.460 4.7899E-08
+        0.500 3.1959E-08
+        0.580 9.2402E-09
+        0.660 1.0515E-08
+        0.700 1.1152E-08
+        0.850 4.0707E-08
+        1.060 -0.0000E+00
+        1.260 2.0074E-08
+        1.529 1.1000E-07
+        1.970 5.4228E-07
+        2.325 3.0942E-06
+INFO:
+    n_is_absolute: false
+    λ_is_vacuum: false
+    temperature: 20.0 °C
+    n_d: 1.523303
+    V_d: 54.517200
+    glass_status: standard
+    density: 2.51 g/cm<sup>3</sup>
+    coefficient_of_thermal_expansion_1: 7.2e-06 K<sup>-1</sup>

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://www.hoyaoptics.com/products/document_library.htm\">HOYA Optical Glass Master Datasheet</a>"
+COMMENTS: "Refractive index is relative to air at standard conditions; Wavelength in dispersion formula is as measured in air and expressed in micrometers"
+DATA:
+  - type: formula 3
+    range: 0.32 0.7
+    coefficients: 2.5823900 -7.8947925E-3 2 1.4967726E-2 -2 1.4902926E-4 -4 4.6409361E-6 -6 2.1550228E-7 -8

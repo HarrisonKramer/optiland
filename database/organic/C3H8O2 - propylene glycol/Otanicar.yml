@@ -1,0 +1,81 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) T. P. Otanicar, P. E. Phelan J. S. Golden. Optical properties of liquids for direct absorption solar thermal energy systems, <a href=\"https://doi.org/10.1016/j.solener.2008.12.009\"><i>Solar Energy</i> <b>83</b>, 969-977 (2009)</a> - extinction coefficient<br>2) C. Wohlfarth, B. Wohlfarth. Optical Constants. Springer-Verlag, New York (1996) (as cited in ref. 1) - refractive index"
+COMMENTS: "25 °C"
+DATA:
+  - type: tabulated n
+    data: |
+        0.434 1.44900
+        0.486 1.44507
+        0.589 1.43983
+        0.656 1.43775
+  - type: tabulated k
+    data: |
+        0.20 3.68E-05
+        0.22 1.29E-06
+        0.24 5.41E-07
+        0.26 2.46E-07
+        0.28 1.82E-07
+        0.30 1.18E-07
+        0.32 9.67E-08
+        0.34 8.67E-08
+        0.36 7.97E-08
+        0.38 7.33E-08
+        0.40 6.83E-08
+        0.42 6.59E-08
+        0.44 6.32E-08
+        0.46 6.27E-08
+        0.48 6.28E-08
+        0.50 6.40E-08
+        0.52 6.40E-08
+        0.54 6.42E-08
+        0.56 6.41E-08
+        0.58 6.40E-08
+        0.60 6.54E-08
+        0.62 6.98E-08
+        0.64 7.12E-08
+        0.66 6.88E-08
+        0.68 7.05E-08
+        0.70 7.20E-08
+        0.72 8.30E-08
+        0.74 1.47E-07
+        0.76 1.73E-07
+        0.78 1.79E-07
+        0.80 1.86E-07
+        0.82 1.88E-07
+        0.84 8.80E-08
+        0.86 1.08E-07
+        0.88 1.82E-07
+        0.90 5.51E-07
+        0.92 6.13E-07
+        0.94 5.56E-07
+        0.96 5.24E-07
+        0.98 1.20E-06
+        1.00 1.52E-06
+        1.02 1.56E-06
+        1.04 1.32E-06
+        1.06 1.24E-06
+        1.08 1.08E-06
+        1.10 9.00E-07
+        1.12 8.49E-07
+        1.14 1.92E-06
+        1.16 3.60E-06
+        1.18 8.72E-06
+        1.20 8.22E-06
+        1.22 8.77E-06
+        1.24 6.75E-06
+        1.26 5.67E-06
+        1.28 4.58E-06
+        1.30 3.70E-06
+        1.32 3.71E-06
+        1.34 5.26E-06
+        1.36 1.21E-05
+        1.38 1.61E-05
+        1.40 1.84E-05
+        1.42 4.05E-05
+        1.44 6.73E-05
+        1.46 7.86E-05
+        1.48 8.65E-05
+        1.50 8.83E-05

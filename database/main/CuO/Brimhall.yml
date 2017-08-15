@@ -1,0 +1,41 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. Brimhall, N. Herrick, D. D. Allred, R. S. Turley, M. Ware, J. Peatross. Measured optical constants of copper from 10 nm to 35 nm, <a href=\"https://doi.org/10.1364/OE.17.023873\"><i>Optics Express</i> <b>17</b>, 23873-23879 (2009)</a>"
+COMMENTS: "CuO film formed on the surface of Cu exposed to air."
+DATA:
+  - type: tabulated nk
+    data: |
+        0.0101 0.978 0.045
+        0.0104 0.978 0.050
+        0.0107 0.974 0.055
+        0.0110 0.974 0.060
+        0.0113 0.974 0.057
+        0.0116 0.972 0.064
+        0.0119 0.976 0.054
+        0.0123 0.971 0.061
+        0.0127 0.960 0.070
+        0.0131 0.957 0.073
+        0.0136 0.948 0.072
+        0.0136 0.953 0.077
+        0.0140 0.939 0.082
+        0.0140 0.942 0.079
+        0.0145 0.934 0.086
+        0.0145 0.941 0.081
+        0.0151 0.938 0.084
+        0.0157 0.934 0.088
+        0.0163 0.930 0.085
+        0.0170 0.928 0.091
+        0.0178 0.916 0.091
+        0.0186 0.915 0.097
+        0.0195 0.912 0.101
+        0.0205 0.908 0.104
+        0.0216 0.908 0.105
+        0.0229 0.907 0.112
+        0.0242 0.906 0.119
+        0.0258 0.903 0.128
+        0.0276 0.907 0.142
+        0.0296 0.888 0.153
+        0.0320 0.877 0.169
+        0.0348 0.864 0.204

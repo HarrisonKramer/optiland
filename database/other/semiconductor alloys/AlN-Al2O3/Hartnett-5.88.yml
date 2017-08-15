@@ -1,0 +1,21 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. M. Hartnett et al.. Optical properties of ALON (aluminum oxynitride), <a href=\"https://doi.org/10.1016/S1350-4495(98)00007-3\"><i>IR Phys. Technol</i>, <b>39</b>, 203-211 (1998)</a>"
+COMMENTS: "Nitrogen content: 5.88 at.%"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.24 1.914 5.961E-6
+        0.34 1.825 5.249E-7
+        0.40 1.807 4.806E-7
+        0.60 1.779 5.491E-7
+        1.0 1.749 6.446E-7
+        2.8 1.722 1.047E-6
+        3.4 1.706 9.470E-7
+        4.0 1.685 5.125E-6
+        4.6 1.660 2.676E-5
+        5.0 1.653 6.271E-5
+        5.4 1.607 3.044E-4
+        5.6 1.586 3.686E-4
