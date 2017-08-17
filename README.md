@@ -6,7 +6,7 @@ Optiland is a lens design and analysis program written in Python 3. It provides 
 I would like to reference the excellent work of https://github.com/Sterncat/opticspy and https://github.com/jordens/rayopt, as I drew inspiration from both projects.
 
 ## Functionalities
-- Lens entry, 2D visualization, paraxial analysis, real and paraxial ray tracing (including aspherics), real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, MTF, etc.), glass catalogue and index/abbe v-number determination (many thanks to refractiveindex.info), design optimization, tolerancing, coating analysis, and more. The code itself is in constant flux and new functionalities are always being added.
+- Lens entry, 2D visualization, paraxial analysis, real and paraxial ray tracing (including aspherics), real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, MTF, etc.), glass catalogue and index/abbe v-number determination (many thanks to refractiveindex.info), design optimization, tolerancing, wavefront and zernike analysis, coating analysis, and more. The code itself is in constant flux and new functionalities are always being added.
 
 ## Getting Started
 The best way to get started with this software is to check out the several Jupyter notebook located in this repository. A good start is *Basic_Functions_Tutorial.ipynb*.
