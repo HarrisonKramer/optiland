@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from pyoptic.distribution import create_distribution
 
 
@@ -9,12 +10,16 @@ class Wavefront:
         self.optic = optic
         self.fields = fields
         self.wavelengths = wavelengths
+        self.num_rays = num_rays
+
         if self.fields == 'all':
             self.fields = self.optic.fields.get_field_coords()
 
         self.reference_wavelength = self._get_reference_wavelength(self.wavelengths)
         if self.wavelengths == 'all':
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
+        elif self.wavelengths == 'primary':
+            self.wavelengths = [optic.primary_wavelength]
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
@@ -55,7 +60,7 @@ class Wavefront:
         self.optic.trace(*field, wavelength, None, self.distribution)
         opd = self._get_path_length(xc, yc, zc, R)
         opd = self._correct_tilt(field, opd)
-        return (opd_ref - opd) / (self.reference_wavelength * 1e-3)
+        return (opd_ref - opd) / (wavelength * 1e-3)
 
     def _get_reference_wavelength(self, wavelengths):
         """
@@ -147,7 +152,39 @@ class Wavefront:
         return t
 
 
-class OPDFan:
+class OPDFan(Wavefront):
 
-    def __init__(self, optic):
-        pass
+    def __init__(self, optic, fields='all', wavelengths='all', num_rays=100):
+        self.pupil_coord = np.linspace(-1, 1, num_rays)
+        super().__init__(optic, fields=fields, wavelengths=wavelengths,
+                         num_rays=num_rays, distribution='cross')
+        
+    def view(self):
+        _, axs = plt.subplots(nrows=len(self.fields), ncols=2, figsize=(10, 10), sharex=True, sharey=True)
+
+        for i, field in enumerate(self.fields):
+            for j, wavelength in enumerate(self.wavelengths):
+                wx = self.data[i][j][self.num_rays:]
+                wy = self.data[i][j][:self.num_rays]
+
+                axs[i, 0].plot(self.pupil_coord, wy, zorder=3, label=f'{wavelength:.4f} µm')
+                axs[i, 0].grid()
+                axs[i, 0].axhline(y=0, lw=1, color='gray')
+                axs[i, 0].axvline(x=0, lw=1, color='gray')
+                axs[i, 0].set_xlabel('$P_y$')
+                axs[i, 0].set_ylabel('Wavefront Error (waves)')
+                axs[i, 0].set_xlim((-1, 1))
+                axs[i, 0].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+
+                axs[i, 1].plot(self.pupil_coord, wx, zorder=3, label=f'{wavelength:.4f} µm')
+                axs[i, 1].grid()
+                axs[i, 1].axhline(y=0, lw=1, color='gray')
+                axs[i, 1].axvline(x=0, lw=1, color='gray')
+                axs[i, 1].set_xlabel('$P_x$')
+                axs[i, 1].set_ylabel('Wavefront Error (waves)')
+                axs[i, 0].set_xlim((-1, 1))
+                axs[i, 1].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+
+        plt.legend(loc='upper center', bbox_to_anchor=(-0.1, -0.2), ncol=3)
+        plt.subplots_adjust(top=1)
+        plt.show()
