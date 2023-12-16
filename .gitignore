@@ -1,0 +1,11 @@
+.idea/
+**/venv/
+**/.venv/
+**/__pycache__/
+**/jupyter/
+build/
+dist/
+**/.ipynb_checkpoints/
+.vscode/
+pyoptic.egg-info/
+**/Scripts/
