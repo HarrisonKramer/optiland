@@ -201,7 +201,7 @@ class RayFan:
         self.data = self._generate_data()
 
     def view(self):
-        _, axs = plt.subplots(nrows=3, ncols=2, figsize=(10, 10), sharex=True, sharey=True)
+        _, axs = plt.subplots(nrows=len(self.fields), ncols=2, figsize=(10, 10), sharex=True, sharey=True)
 
         Px = self.data['Px']
         Py = self.data['Py']
