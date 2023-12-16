@@ -85,6 +85,17 @@ class HexagonalDistribution(BaseDistribution):
         self.y = np.array(y)
 
 
+class CrossDistribution(BaseDistribution):
+
+    def generate_points(self, num_points: int):
+        x1 = np.zeros(num_points)
+        x2 = np.linspace(-1, 1, num_points)
+        y1 = np.linspace(-1, 1, num_points)
+        y2 = np.zeros(num_points)
+        self.x = np.concatenate((x1, x2))
+        self.y = np.concatenate((y1, y2))
+
+
 def create_distribution(distribution_type):
     if distribution_type == 'line_x':
         return LineXDistribution()
@@ -100,5 +111,7 @@ def create_distribution(distribution_type):
         return SquareDistribution()
     elif distribution_type == 'hexapolar':
         return HexagonalDistribution()
+    elif distribution_type == 'cross':
+        return CrossDistribution()
     else:
         raise ValueError('Invalid distribution type')
