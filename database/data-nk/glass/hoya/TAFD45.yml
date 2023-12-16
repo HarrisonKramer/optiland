@@ -1,0 +1,62 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Recommended glass type"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.672962 -0.0151805 2 0.0457187 -2 0.002186221 -4 -9.93742e-05 -6 1.490466e-05 -8
+  - type: tabulated k
+    data: |
+        0.360 5.2860E-06
+        0.370 2.3250E-06
+        0.380 1.2201E-06
+        0.390 7.3944E-07
+        0.400 4.9121E-07
+        0.420 2.7505E-07
+        0.440 1.7960E-07
+        0.460 1.3421E-07
+        0.480 8.8880E-08
+        0.500 5.6098E-08
+        0.550 1.3150E-08
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.750 5.9713E-09
+        0.780 6.2101E-09
+        0.800 6.3694E-09
+        0.830 6.6082E-09
+        0.850 6.7675E-09
+        0.900 7.1656E-09
+        0.950 7.5636E-09
+        1.000 7.9617E-09
+        1.050 8.3598E-09
+        1.060 8.4394E-09
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 1.1146E-08
+        1.500 2.3897E-08
+        1.550 2.4694E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 8.36e-07 9.08e-09 -4.59e-11 9.61e-07 1.39e-09 0.246
+    nd: 1.95375
+    Vd: 32.32
+    glass_code: 954323
+    glass_status: standard
+    density: 5.1 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.5e-06 K<sup>-1</sup>
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

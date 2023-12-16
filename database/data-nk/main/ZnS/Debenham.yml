@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) M. Debenham. Refractive indices of zinc sulfide in the 0.405-13-µm wavelength range, <a href=\"https://doi.org/10.1364/AO.23.002238\"><i>Appl. Opt.</i>, <b>23</b>, 2238-2239 (1984)</a><br>2) C. A. Klein. Room-temperature dispersion equations for cubic zinc sulfide, <a href=\"https://doi.org/10.1364/AO.25.001873\"><i>Appl. Opt.</i> <b>25</b>, 1873-1875 (1986)</a><br>*Ref. 2 provides a modified Sellmeier equation based on data from Ref. 1"
+COMMENTS: "Cubic ZnS, 20 °C"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.405 13
+    coefficients: 8.393 0.14383 0 0.2421 2 4430.99 0 36.71 2

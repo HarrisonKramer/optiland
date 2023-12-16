@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "suitable for precision molding        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.29 2.5
+    coefficients: 0 1.029607 0.00516800155 0.1880506 0.0166658798 0.736488165 138.964129
+  - type: tabulated k
+    data: |
+        0.290 4.2510E-06
+        0.300 3.0738E-06
+        0.310 2.0922E-06
+        0.320 1.2264E-06
+        0.334 4.9122E-07
+        0.350 1.4242E-07
+        0.365 3.5388E-08
+        0.370 2.3794E-08
+        0.380 1.3379E-08
+        0.390 9.9712E-09
+        0.400 1.0227E-08
+        0.405 1.0355E-08
+        0.420 1.3436E-08
+        0.436 1.3948E-08
+        0.460 1.1761E-08
+        0.500 6.3790E-09
+        0.546 5.2218E-09
+        0.580 5.5469E-09
+        0.620 9.8924E-09
+        0.660 1.4758E-08
+        0.700 1.5652E-08
+        1.060 2.0305E-08
+        1.530 2.9309E-08
+        1.970 6.3023E-08
+        2.325 1.6463E-07
+        2.500 2.6704E-07
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -1.97e-05 -5.5e-09 5.28e-12 3.6e-07 2.45e-10 0.172
+    nd: 1.497
+    Vd: 81.61
+    glass_code: 497816.370
+    glass_status: standard
+    density: 3.7 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 1.301e-05 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.5e-05 K<sup>-1</sup>
+    dPgF: 0.0311
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 52.3
+    alkali_resistance: 3.3
+    phosphate_resistance: 4.3

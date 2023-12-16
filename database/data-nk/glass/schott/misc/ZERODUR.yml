@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2007/schott_tie-43_optical_properties_of_zerodur_november_2007_us.pdf\">SCHOTT Technical Information: Optical Properties of ZERODUR, November 2007</a>"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.365 2.325
+    coefficients: 0 1.3182408 0.00879 0.0244 0.0609 1.08915181 110

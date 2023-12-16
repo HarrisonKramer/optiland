@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/hikari_2017-04-01.pdf\">HIKARI glass data sheets</a>"
+COMMENTS: ""
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.365015 2.05809
+    coefficients: 2.37404487 -0.0107631771 2 -0.000128642692 4 0.0135709369 -2 0.000255765647 -4 -2.23388334e-06 -6 4.91067955e-07 -8
+  - type: tabulated k
+    data: |
+        0.300 6.0297E-06
+        0.310 2.5898E-06
+        0.320 1.3436E-06
+        0.330 7.9072E-07
+        0.340 4.7174E-07
+        0.350 2.7494E-07
+        0.360 1.6813E-07
+        0.365 1.3374E-07
+        0.370 1.0490E-07
+        0.380 6.4179E-08
+        0.390 4.6905E-08
+        0.400 3.1991E-08
+        0.420 2.3478E-08
+        0.440 1.7551E-08
+        0.460 1.8349E-08
+        0.480 1.5310E-08
+        0.500 1.1955E-08
+        0.550 1.7542E-08
+        0.600 1.9137E-08
+        0.650 2.5928E-08
+        0.700 3.3523E-08
+        0.800 5.7555E-08
+        0.900 2.1518E-08
+        1.000 3.1895E-08
+        1.200 1.9118E-08
+        1.400 2.7064E-07
+        1.600 1.9243E-07
+        1.800 3.6265E-07
+        2.000 9.0035E-07
+        2.200 3.6891E-06
+        2.400 1.0077E-05
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 23.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 6.5502e-06 1.436354e-08 3.868356e-12 4.650953e-07 7.171067e-10 -0.1906826
+    nd: 1.552981
+    Vd: 55.071703
+    density: 2.62 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 4.8e-06 K<sup>-1</sup>
+    dPgF: -0.0073
+    phosphate_resistance: 3.0

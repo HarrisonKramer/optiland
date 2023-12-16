@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "V. Gupta, O. Aftenieva, P. T. Probst, S. Sarkar, A. M. Steiner, N. Vogel, A. Fery, T. A. F. König. Advanced colloidal sensors enabled by an out-of-plane lattice resonance, <a href=\"https://doi.org/10.1002/adpr.202200152\"><i>Adv. Photonics Res.</i> <b>2022</b>, 2200152</a> (see supporting information)"
+COMMENTS: "50 wt% glycerol in water. Room temperature."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.40 0.71
+    coefficients: 1.38412 3.87705346e-3 -2 -4.88915e-5 -4

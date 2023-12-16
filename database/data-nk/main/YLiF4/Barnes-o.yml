@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. P. Barnes and D. J. Gettemy. Temperature variation of the refractive indices of yttrium lithium fluoride, <a href=\"https://doi.org/10.1364/JOSA.70.001244\"><i>J. Opt. Soc. Am.</i> <b>70</b>, 1244-1247 (1980)</a>"
+COMMENTS: "Room temperature. Ordinary ray (o)."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.225 2.6
+    coefficients: 0.38757 0.70757 0.00931 0.18849 50.99741

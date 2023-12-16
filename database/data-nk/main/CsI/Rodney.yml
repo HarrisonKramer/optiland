@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. S. Rodney. Optical properties of cesium iodide, <a href=\"https://doi.org/10.1364/JOSA.45.000987\"><i>J. Opt. Soc. Am.</i> <b>45</b>, 987-991 (1955)</a>"
+COMMENTS: "24 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.2967 50
+    coefficients: 0 0.34617251 0.0229567 1.0080886 0.1466 0.28551800 0.1810 0.39743178 0.2120 3.3605359 161.0

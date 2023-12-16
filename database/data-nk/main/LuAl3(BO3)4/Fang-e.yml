@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Fang, H. Liu, L. Huang, and N. Ye. Growth and optical properties of nonlinear LuAl<sub>3</sub>(BO<sub>3</sub>)<sub>4</sub> crystals, <a href=\"https://doi.org/10.1364/OE.21.016415\"><i>Optics Express</i> <b>21</b>, 16415-16423 (2013)</a>"
+COMMENTS: "25 °C. Extraordinary ray (e)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.266 1.338
+    coefficients: 2.85939 0.01511 0 0.01429 1 0 0 0 1 -0.01116 2

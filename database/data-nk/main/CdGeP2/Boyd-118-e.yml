@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. D. Boyd, E. Buehler, F. G Storz, J. H. Wernick. Linear and nonlinear optical properties of ternary A<sup>II</sup>B<sup>IV</sup>C<sub>2</sub><sup>V</sup> chalcopyrite semiconductors, <a href=\"https://doi.org/10.1109/JQE.1972.1076982\"><i>IEEE J. Quant. Electron.</i>, <b>8</b>, 419-426 (1972)</a><br>2) G. C. Bhar and G. Ghosh. Temperature-dependent Sellmeier coefficients and coherence lengths for some chalcopyrite crystals, <a href=\"https://doi.org/10.1364/JOSA.69.000730\"><i>J. Opt. Soc. Am.</i> <b>69</b>, 730-733 (1979)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Extrardinary ray (e); 118 °C"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.8 12.5
+    coefficients: 5.9280 3.4442 0.2803 1.5515 671.33

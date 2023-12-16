@@ -1,0 +1,67 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/nikon_CaF.pdf\">NIKON calcium fluoride glass data sheet</a>"
+COMMENTS: "TCE value is available for 0 to 25 degrees Celsius."
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.18489 2.32542
+    coefficients: 0 0.581797965 0.002477442 0.373232342 0.01032026 0.083677196 0.010323473 2.36293749 738.225998
+  - type: tabulated k
+    data: |
+        0.157 1.8843E-06
+        0.184 7.6647E-07
+        0.193 7.7163E-07
+        0.229 3.6483E-08
+        0.248 3.9510E-08
+        0.260 4.1422E-08
+        0.270 4.3015E-08
+        0.280 4.4608E-08
+        0.290 4.6201E-08
+        0.297 4.7316E-08
+        0.313 4.9865E-08
+        0.320 5.0981E-08
+        0.334 5.3211E-08
+        0.365 5.8150E-08
+        0.370 5.8946E-08
+        0.370 5.8946E-08
+        0.380 6.0539E-08
+        0.390 6.2133E-08
+        0.400 6.3726E-08
+        0.405 6.4522E-08
+        0.420 6.6912E-08
+        0.436 6.9461E-08
+        0.460 7.3285E-08
+        0.480 7.6471E-08
+        0.500 7.9657E-08
+        0.546 8.6986E-08
+        0.589 9.3836E-08
+        0.632 1.0069E-07
+        0.644 1.0260E-07
+        0.656 1.0451E-07
+        0.706 1.1248E-07
+        1.060 1.6887E-07
+        1.530 2.4375E-07
+        1.970 3.1385E-07
+        2.325 3.7041E-07
+        2.500 3.9829E-07
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 22.5 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -3.16e-05 -2.05e-08 9.02e-13 4.32e-07 2.04e-10 0.115
+    nd: 1.433837
+    Vd: 95.260792
+    density: 3.18 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 1.84e-05 K<sup>-1</sup>
+    dPgF: 0.0553
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 4.5
+    alkali_resistance: 2.3
+    phosphate_resistance: 1.0

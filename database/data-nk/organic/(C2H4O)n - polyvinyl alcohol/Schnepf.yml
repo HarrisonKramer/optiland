@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. J. Schnepf, M. Mayer, C. Kuttner, M. Tebbe, D. Wolf, M. Dulle, T. Altantzis, P. Formanek, S. Förster, S. Bals, T. A. F. König, A. Fery. Nanorattles with tailored electric field enhancement, <a href=\"https://doi.org/10.1039/C7NR02952G\"><i>Nanoscale</i> <b>9</b>, 9376-9385 (2017)</a> - see <i>Supplementary materials</i>"
+COMMENTS: "Isotropic PVA (polyvinyl alcohol) thin film on silicon substrate.<br>k = 0.0050±0.0004"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.3 1.5
+    coefficients: 1.460 0.00665 -2
+SPECS:
+    substrate: Si

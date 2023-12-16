@@ -1,0 +1,78 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. Amotchkina, M. Trubetskov, D. Hahner, V. Pervak, Characterization of e-beam evaporated Ge, YbF<sub>3</sub>, ZnS, and LaF<sub>3</sub> thin films for laser-oriented coatings, <a href=\"https://doi.org/10.1364/AO.59.000A40\"><i>Appl. Opt.</i> <b>59</b>, A40-A47 (2020)</a> (Data kindly provided by Tatiana Amotchkina [<a href=\"https://refractiveindex.info/download/data/2020/Amotchkina/ZnS_nk.xlsx\">data</a>] [<a href=\"https://refractiveindex.info/download/data/2020/Amotchkina/Summary_for_RefractiveIndexINFO.pdf\">description</a>])"
+COMMENTS: "1.008 µm ZnS film deposited on 3 mm thick Ge substrate by e-beam evaporation at 120 °C substrate temperature."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4 14
+    coefficients: 0.010356 3.619092 0.02345364 0.508130 0.099946 2.219955 1148.729
+  - type: tabulated k
+    data: |
+        0.40 1.92E-03
+        0.41 1.80E-03
+        0.42 1.68E-03
+        0.43 1.57E-03
+        0.44 1.47E-03
+        0.45 1.37E-03
+        0.46 1.28E-03
+        0.47 1.20E-03
+        0.48 1.12E-03
+        0.49 1.05E-03
+        0.50 9.80E-04
+        0.51 9.16E-04
+        0.52 8.56E-04
+        0.53 8.00E-04
+        0.54 7.48E-04
+        0.55 6.99E-04
+        0.56 6.54E-04
+        0.57 6.11E-04
+        0.58 5.71E-04
+        0.59 5.34E-04
+        0.60 4.99E-04
+        0.61 4.66E-04
+        0.62 4.36E-04
+        0.63 4.08E-04
+        0.64 3.81E-04
+        0.65 3.56E-04
+        0.66 3.33E-04
+        0.67 3.11E-04
+        0.68 2.91E-04
+        0.69 2.72E-04
+        0.70 2.54E-04
+        0.71 2.38E-04
+        0.72 2.22E-04
+        0.73 2.08E-04
+        0.74 1.94E-04
+        0.75 1.81E-04
+        0.76 1.70E-04
+        0.77 1.59E-04
+        0.78 1.48E-04
+        0.79 1.39E-04
+        0.80 1.30E-04
+        0.81 1.21E-04
+        0.82 1.13E-04
+        0.83 1.06E-04
+        0.84 9.89E-05
+        0.85 9.24E-05
+        0.86 8.64E-05
+        0.87 8.08E-05
+        0.88 7.55E-05
+        0.89 7.06E-05
+        0.90 6.60E-05
+        0.91 6.17E-05
+        0.92 5.77E-05
+        0.93 5.39E-05
+        0.94 5.04E-05
+        0.95 4.71E-05
+        0.96 4.40E-05
+        0.97 4.12E-05
+        0.98 3.85E-05
+        0.99 3.60E-05
+        1.00 0.00E+00
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    substrate: Ge
+    film_thickness: 1.00e-6

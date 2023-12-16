@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "step 0.5 available        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.3 2.5
+    coefficients: 0 1.46231905 0.00724270156 0.344399589 0.0243353131 1.15508372 85.4686868
+  - type: tabulated k
+    data: |
+        0.320 3.9848E-06
+        0.334 1.7111E-06
+        0.350 6.6604E-07
+        0.365 2.8569E-07
+        0.370 2.1945E-07
+        0.380 1.4096E-07
+        0.390 9.0090E-08
+        0.400 6.5309E-08
+        0.405 5.6661E-08
+        0.420 4.0721E-08
+        0.436 3.2293E-08
+        0.460 2.3617E-08
+        0.500 1.2784E-08
+        0.546 1.0459E-08
+        0.580 1.1111E-08
+        0.620 9.8924E-09
+        0.660 1.0531E-08
+        0.700 8.9305E-09
+        1.060 1.6913E-08
+        1.530 1.6847E-07
+        1.970 9.4577E-07
+        2.325 6.4201E-06
+        2.500 1.5646E-05
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 2.11e-06 1.11e-08 1.82e-12 4.74e-07 -3.47e-10 0.146
+    nd: 1.691
+    Vd: 54.71
+    glass_code: 691547.351
+    glass_status: standard
+    density: 3.51 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.3e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.5e-06 K<sup>-1</sup>
+    dPgF: -0.0071
+    climatic_resistance: 3.0
+    stain_resistance: 3.0
+    acid_resistance: 52.0
+    alkali_resistance: 1.2
+    phosphate_resistance: 4.3

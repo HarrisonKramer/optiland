@@ -1,0 +1,75 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. P. Otanicar, P. E. Phelan J. S. Golden. Optical properties of liquids for direct absorption solar thermal energy systems, <a href=\"https://doi.org/10.1016/j.solener.2008.12.009\"><i>Solar Energy</i> <b>83</b>, 969-977 (2009)</a>"
+COMMENTS: "25 °C"
+DATA:
+  - type: tabulated k
+    data: |
+        0.20 1.69E-04
+        0.22 2.45E-04
+        0.24 2.63E-04
+        0.26 2.83E-04
+        0.28 3.05E-04
+        0.30 7.38E-05
+        0.32 6.05E-06
+        0.34 2.41E-06
+        0.36 3.60E-07
+        0.38 2.09E-07
+        0.40 1.39E-07
+        0.42 8.23E-08
+        0.44 3.86E-08
+        0.46 0
+        0.48 0
+        0.50 0
+        0.52 0
+        0.54 0
+        0.56 0
+        0.58 0
+        0.60 0
+        0.62 0
+        0.64 0
+        0.66 0
+        0.68 0
+        0.70 0
+        0.72 0
+        0.74 0
+        0.76 0
+        0.78 0
+        0.80 0
+        0.82 0
+        0.84 0
+        0.86 1.21E-07
+        0.88 1.53E-07
+        0.90 0
+        0.92 0
+        0.94 0
+        0.96 0
+        0.98 0
+        1.00 0
+        1.02 0
+        1.04 0
+        1.06 0
+        1.08 0
+        1.10 1.46E-07
+        1.12 2.08E-06
+        1.14 1.50E-05
+        1.16 2.02E-06
+        1.18 5.10E-07
+        1.20 2.03E-07
+        1.22 1.13E-07
+        1.24 0
+        1.26 0
+        1.28 0
+        1.30 0
+        1.32 6.32E-07
+        1.34 1.20E-06
+        1.36 1.34E-06
+        1.38 1.92E-06
+        1.40 2.52E-06
+        1.42 2.44E-06
+        1.44 2.58E-06
+        1.46 1.74E-06
+        1.48 1.49E-06
+        1.50 1.34E-06

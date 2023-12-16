@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) C Chen et al.. New nonlinear-optical crystal: LiB<sub>3</sub>O<sub>5</sub>, <a href=\"https://doi.org/10.1364/JOSAB.6.000616\"><i>J Opt. Soc. Am.</i> <b>6</b>, 616-621 (1989)</a><br>2) F. Hanson and D. Dick. Blue parametric generation from temperature-tuned LiB<sub>3</sub>O<sub>5</sub>, <a href=\"https://doi.org/10.1364/OL.16.000205\"><i>Opt. Lett.</i> <b>16</b>, 205-207 (1991)</a>.<br>* Ref. 2 provides a dispersion formulas based on  the experimental data from Ref. 1"
+COMMENTS: "n<sub>γ</sub>; Room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.2894 1.064
+    coefficients: 2.58488 0.012737 0 0.021414 1 0 0 0 1 -0.016293 2

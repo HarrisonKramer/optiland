@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "C. Cuthbertson and M. Cuthbertson. On the refraction and dispersion of the halogens, halogen acids, ozone, steam, oxides of nitrogen and ammonia, <a href=\"https://doi.org/10.1098/rsta.1914.0001\"><i>Phil. Trans. R. Soc. Lond. A</i> <b>213</b>, 1-26 (1914)</a>"
+COMMENTS: "0 °C, 760 mm Hg."
+DATA:
+  - type: formula 6
+    wavelength_range: 0.47999 0.670785
+    coefficients: 0 0.032953 90.392

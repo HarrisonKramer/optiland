@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended -The unique relative partial dispersion."
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 0.839067682 0.00795286639 0.214083503 -0.00232581717 1.47914677 340.0437
+  - type: tabulated k
+    data: |
+        0.280 8.7166E-06
+        0.290 5.8287E-06
+        0.300 3.6147E-06
+        0.310 2.0820E-06
+        0.320 1.0970E-06
+        0.330 5.5337E-07
+        0.340 2.6410E-07
+        0.350 1.2242E-07
+        0.360 6.0801E-08
+        0.370 3.2567E-08
+        0.380 1.5158E-08
+        0.390 1.2439E-08
+        0.400 1.2758E-08
+        0.420 1.6753E-08
+        0.440 1.7551E-08
+        0.460 1.4672E-08
+        0.480 1.1476E-08
+        0.500 7.9657E-09
+        0.550 4.3790E-09
+        0.600 9.5589E-09
+        0.650 1.5541E-08
+        0.700 1.6736E-08
+        0.800 1.9127E-08
+        0.900 2.8705E-08
+        1.000 3.9889E-08
+        1.200 3.8274E-08
+        1.400 3.3473E-08
+        1.600 3.8255E-08
+        1.800 4.3036E-08
+        2.000 4.7818E-08
+        2.200 7.0169E-08
+        2.400 5.7382E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.1e-05 -7.63e-09 1.24e-11 2.82e-07 1.8e-10 0.224
+    nd: 1.438750
+    Vd: 94.661059
+    density: 3.59 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 1.36e-05 K<sup>-1</sup>
+    dPgF: 0.0457
+    climatic_resistance: 2.0
+    acid_resistance: 52.1
+    phosphate_resistance: 4.1

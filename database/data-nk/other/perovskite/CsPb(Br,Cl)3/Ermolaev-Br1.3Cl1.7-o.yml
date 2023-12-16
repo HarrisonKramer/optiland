@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Ermolaev, A. P. Pushkarev, A. Zhizhchenko, A. A. Kuchmizhak, I. Iorsh, I. Kruglov, A. Mazitov, A. Ishteev, K. Konstantinova, D. Saranin, A. Slavich, D. Stosic, E. S. Zhukova, G. Tselikov, A. D. Carlo, A. Arsenin, K. S. Novoselov, S. V. Makarov, V. S. Volkov. Giant and tunable excitonic optical anisotropy in single-crystal halide perovskites, <a href=\"https://doi.org/10.1021/acs.nanolett.2c04792\"><i>Nano Lett.</i> <b>23</b>, 2570–2577 (2023)</a> (Numerical data kindly provided by Georgy Ermolaev)"
+COMMENTS: "CsPbBr<sub>1.3</sub>Cl<sub>1.7</sub> monocrystal. Ordinary ray (o)."
+DATA:
+  - type: tabulated nk
+    data: | 
+        0.455 2.06523 0.41812
+        0.456 2.12657 0.49649
+        0.457 2.23120 0.55354
+        0.458 2.36386 0.55790
+        0.459 2.48366 0.49849
+        0.460 2.55580 0.40108
+        0.461 2.57843 0.30236
+        0.462 2.56956 0.22188
+        0.463 2.54626 0.16233
+        0.464 2.51849 0.11979
+        0.465 2.49088 0.08954
+        0.466 2.46524 0.06784
+        0.467 2.44210 0.05206
+        0.468 2.42141 0.04040
+        0.469 2.40294 0.03164
+        0.470 2.38642 0.02498
+        0.471 2.37158 0.01985
+        0.472 2.35817 0.01585
+        0.473 2.34598 0.01269
+        0.474 2.33485 0.01019
+        0.475 2.32463 0.00818
+        0.476 2.31518 0.00657
+        0.477 2.30642 0.00527
+        0.478 2.29826 0.00421
+        0.479 2.29061 0.00335
+        0.480 2.28344 0.00264
+        0.481 2.27667 0.00207
+        0.482 2.27027 0.00160
+        0.483 2.26420 0.00123
+        0.484 2.25843 9.18E-4
+        0.485 2.25292 6.72E-4
+        0.486 2.24766 4.77E-4
+        0.487 2.24263 3.25E-4
+        0.488 2.23779 2.08E-4
+        0.489 2.23314 1.22E-4
+        0.490 2.22867 6.20E-5
+        0.491 2.22436 2.40E-5
+        0.492 2.22020 4.00E-6
+        0.493 2.21618 0
+        0.494 2.21230 0
+        0.495 2.20854 0
+        0.496 2.20489 0
+        0.497 2.20134 0
+        0.498 2.19789 0
+        0.499 2.19452 0
+        0.500 2.19123 0
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

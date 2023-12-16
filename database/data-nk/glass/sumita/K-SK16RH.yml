@@ -1,0 +1,56 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/sumita_2017-02-02.agf\">SUMITA Zemax catalog 2017-02-02</a> (obtained from <a href=\"http://www.sumita-opt.co.jp/en/download/\">http://www.sumita-opt.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2016/sumita_2016-02-01.pdf\">SUMITA optical glass data book</a>"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36 1.55
+    coefficients: 2.5853303 -0.011740187 2 0.014496524 -2 0.0003287161 -4 -1.5804639e-05 -6 1.1016183e-06 -8
+  - type: tabulated k
+    data: |
+        0.280 1.0261E-05
+        0.290 5.6618E-06
+        0.300 3.3000E-06
+        0.310 1.9863E-06
+        0.320 1.1969E-06
+        0.330 6.7955E-07
+        0.340 4.0807E-07
+        0.350 2.4741E-07
+        0.360 1.2591E-07
+        0.370 6.5499E-08
+        0.380 4.5703E-08
+        0.390 9.3246E-09
+        0.400 9.5636E-09
+        0.420 1.0042E-08
+        0.440 1.0520E-08
+        0.460 7.3285E-09
+        0.480 7.6471E-09
+        0.500 7.9657E-09
+        0.550 8.7623E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 1.1152E-08
+        0.800 1.2745E-08
+        1.060 6.7753E-08
+        1.500 2.6554E-07
+        2.000 7.6618E-07
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 3.39e-07 1.49e-08 -2.68e-10 3.99e-07 1.11e-09 0.174
+    nd: 1.62041
+    Vd: 60.3
+    glass_code: 620603
+    density: 3.5 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.2e-06 K<sup>-1</sup>
+    dPgF: -0.0029
+    climatic_resistance: 2.0
+    acid_resistance: 5.0

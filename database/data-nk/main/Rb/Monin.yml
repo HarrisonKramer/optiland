@@ -1,0 +1,23 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. Monin and G.-A. Boutry. Optical and photoelectric properties of alkali metals, <a href=\"https://doi.org/10.1103/PhysRevB.9.1309\"><i>Phys. Rev. B</i> <b>9</b>, 1309-1327 (1974)</a>"
+COMMENTS: "195 K (-78.15 °C)"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.2650 0.777 0.081
+        0.2804 0.726 0.084
+        0.3340 0.484 0.130
+        0.3660 0.268 0.242
+        0.4060 0.136 0.540
+        0.4358 0.117 0.730
+        0.4600 0.110 0.855
+        0.4916 0.107 1.005
+        0.5100 0.104 1.083
+        0.5460 0.095 1.239
+        0.5780 0.089 1.361
+        0.6200 0.080 1.525
+SPECS:
+    temperature: 195 K

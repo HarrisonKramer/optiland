@@ -1,0 +1,19 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. C. Sinnock and B. L. Smith. Refractive indices of the condensed inert gases, <a href=\"https://doi.org/10.1103/PhysRev.181.1297\"><i>Phys. Rev.</i> <b>181</b>, 1297-1307 (1969)</a>"
+COMMENTS: "Liquid krypton at 115.95 K (-157.20 °C, melting point)."
+DATA:
+  - type: tabulated n
+    data: |
+        0.3631 1.3120
+        0.4063 1.3090
+        0.4358 1.3074
+        0.4753 1.3056
+        0.5086 1.3042
+        0.5461 1.3032
+        0.5780 1.3024
+        0.6439 1.3011
+SPECS:
+    temperature: 115.95 K

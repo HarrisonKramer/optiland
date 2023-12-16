@@ -1,0 +1,20 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. C. Sinnock and B. L. Smith. Refractive indices of the condensed inert gases, <a href=\"https://doi.org/10.1103/PhysRev.181.1297\"><i>Phys. Rev.</i> <b>181</b>, 1297-1307 (1969)</a>"
+COMMENTS: "Solid argon at 50 K (-223.15 °C)."
+DATA:
+  - type: tabulated n
+    data: |
+        0.3612 1.2903
+        0.3650 1.2900
+        0.4063 1.2878
+        0.4358 1.2865
+        0.4753 1.2853
+        0.5086 1.2845
+        0.5461 1.2838
+        0.5780 1.2831
+        0.6439 1.2822
+SPECS:
+    temperature: 50 K

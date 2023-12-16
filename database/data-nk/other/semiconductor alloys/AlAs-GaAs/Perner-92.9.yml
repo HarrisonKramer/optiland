@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "L. W. Perner, G.-W. Truong, D. Follman, M. Prinz, G. Winkler, S. Puchegger, G. D. Cole, O. H. Heckl. Simultaneous measurement of mid-infrared refractive indices in thin-film heterostructures: Methodology and results for GaAs/AlGaAs, <a href=\"https://doi.org/10.1103/PhysRevResearch.5.033048\"><i>Phys. Rev. Res.</i> <b>5</b>, 033048 (2023)</a> (Data kindly provided by the authors)"
+COMMENTS: "Al<sub>0.929</sub>Ga<sub>0.071</sub>As (interpolation for other alloy ratios possible). Relative standard uncertainty ≤3.3×10<sup>-4</sup> over whole range. Measured in a high-purity GaAs/AlGaAs crystalline thin-film multilayer. Sample grown via molecular beam epitaxy on GaAs seed wafer. Optical measurements at 2.21 mbar and 22 °C."
+DATA:
+  - type: formula 1
+    wavelength_range: 2.0 7.1
+    coefficients: 0 7.214199525964231 0.26714974883257975
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 22 °C

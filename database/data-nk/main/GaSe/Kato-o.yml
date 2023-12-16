@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato et al.. Sellmeier and thermo-optic dispersion formulas for GaSe (Revisited). <a href=\"https://doi.org/10.1364/AO.52.002325\"><i>Appl. Opt.</i> <b>52</b>, 2325-2328 (2013)</a>"
+COMMENTS: "20 °C, Ordinary ray (o)"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.8 1620
+    coefficients: 10.6409 0.3788 0 0.1232 1 7090.7 0 2216.3 1

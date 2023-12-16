@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. J. Dodge. Refractive Index, in M. J. Weber (ed.), Handbook of Laser Science and Technology, Volume IV, Optical Material: Part 2, CRC Press, Boca Raton, 1986 (as cited in Handbook of Optics, 3rd edition, Vol. 4. McGraw-Hill 2009)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.43 3.8
+    coefficients: 0 3.042143 0.1475902 1.170065 0.2953086 30.83326 33.18606

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. Uchida. Optical properties of single-crystal paratellurite (TeO<sub>2</sub>), <a href=\"https://doi.org/10.1103/PhysRevB.4.3736\"><i>Phys. Rev.B</i> <b>4</b>, 3736-3745 (1971)</a>"
+COMMENTS: "Extraordinary ray (e)"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.4 1.0
+    coefficients: 0 2.823 0.1342 1.542 0.2631

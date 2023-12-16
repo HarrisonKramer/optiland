@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. S. Rodney, I. H. Malitson, and T. A. King. Refractive index of arsenic trisulfide, <a href=\"https://doi.org/10.1364/JOSA.48.000633\"><i>J. Opt. Soc. Am.</i> <b>48</b>, 633-635 (1958)</a>"
+COMMENTS: "25 °C"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.57 11.8
+    coefficients: 0 1.8983678 0.0225 1.9222979 0.0625 0.8765134 0.1225 0.1188704 0.2025 0.9569903 750

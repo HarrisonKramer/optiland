@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Moutzouris, I. Stavrakas, D. Triantis and M. Enculescub. Temperature-dependent refractive index of potassium acid phthalate (KAP) in the visible and near-infrared, <a href=\"https://doi.org/10.1016/j.optmat.2010.12.021\"><i>Optical Materials</i> <b>33</b>, 812-816 (2011)</a>"
+COMMENTS: "n<sub>γ</sub>; 24.5 °C (see the original publication for temperature-dependent dispersion formula)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.450 1.551
+    coefficients: 2.196073191 0.015025722 0 0.190981743 2 0 0 0 1 -0.006100780 2

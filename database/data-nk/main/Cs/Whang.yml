@@ -1,0 +1,40 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "U. S. Whang, E. T. Arakawa, T. A. Callcott. Optical properties of Cs for photons of energy 3.6–9.6 eV, <a href=\"https://doi.org/10.1364/JOSA.61.000740\"><i>J. Opt. Soc. Am.</i> <b>61</b>, 740-745 (1971)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.1294 1.110 0.020
+        0.1372 1.090 0.025
+        0.1418 1.080 0.028
+        0.1477 1.070 0.032
+        0.1536 1.050 0.036
+        0.1597 1.040 0.041
+        0.1625 1.030 0.046
+        0.1687 1.020 0.055
+        0.1750 1.000 0.064
+        0.1817 0.995 0.072
+        0.1862 0.990 0.079
+        0.1897 0.986 0.084
+        0.1963 0.979 0.093
+        0.2036 0.970 0.101
+        0.2115 0.962 0.115
+        0.2135 0.960 0.117
+        0.2166 0.957 0.122
+        0.2260 0.947 0.135
+        0.2282 0.945 0.138
+        0.2296 0.943 0.140
+        0.2377 0.935 0.147
+        0.2480 0.924 0.153
+        0.2583 0.913 0.157
+        0.2696 0.900 0.159
+        0.2820 0.888 0.162
+        0.2952 0.874 0.164
+        0.3100 0.850 0.169
+        0.3263 0.785 0.191
+        0.3444 0.715 0.224
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

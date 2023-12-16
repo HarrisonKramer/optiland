@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "I. Z. Kozma, P. Krok, and E. Riedle. Direct measurement of the group-velocity mismatch and derivation of the refractive-index dispersion for a variety of solvents in the ultraviolet, <a href=\"https://doi.org/10.1364/JOSAB.22.001479\"><i>J. Opt. Soc. Am. B</i> <b>22</b>, 1479-1485 (2005)</a>"
+COMMENTS: "22 °C"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.230 0.6407
+    coefficients: 1.42522 1.98454821e-3 -2 1.04174632e-4 -4

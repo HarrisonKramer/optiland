@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. Bucciarelli, V. Mulloni, D.Maniglio, R. K. Pal, V. K. Yadavalli, A. Motta, A. Quarant. A comparative study of the refractive index of silk protein thin films towards biomaterial based optical devices, <a href=\"https://doi.org/10.1016/j.optmat.2018.02.058\"><i>Opt. Mater.</i> <b>78</b>, 407-414 (2018)</a>"
+COMMENTS: "Pure fibroin (regenerated silk fibroin) film. Formed using formic acid."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.4 1.5
+    coefficients: 1.527 5.5e-3 -2 3e-4 -4

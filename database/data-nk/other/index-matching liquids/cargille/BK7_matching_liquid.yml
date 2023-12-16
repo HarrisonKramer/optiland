@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://www.cargille.com/specimmerliq.shtml\">CARGILLE BK7 matching liquid characteristics.</a> August 10, 2004"
+COMMENTS: "25 °C"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.31 1.55
+    coefficients: 1.502787 455872.4E-8 -2 9.844856E-5 -4
+SPECS:
+    temperature: 25 °C

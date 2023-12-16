@@ -1,0 +1,71 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Not in a position to accept new order because of discontinuation."
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 2.4095163 -0.0091904415 2 0.012939968 -2 0.0002346143 -4 -1.1130589e-05 -6 1.0131863e-06 -8
+  - type: tabulated k
+    data: |
+        0.280 9.0788E-06
+        0.290 5.3841E-06
+        0.300 3.0561E-06
+        0.310 1.6322E-06
+        0.320 8.9738E-07
+        0.330 4.7669E-07
+        0.340 2.7008E-07
+        0.350 1.6051E-07
+        0.360 4.6207E-08
+        0.370 4.4500E-08
+        0.380 2.1242E-08
+        0.390 1.5557E-08
+        0.400 9.5636E-09
+        0.420 1.0042E-08
+        0.440 1.4034E-08
+        0.460 1.4672E-08
+        0.480 1.1476E-08
+        0.500 3.9809E-09
+        0.550 4.3790E-09
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.750 5.9713E-09
+        0.780 6.2101E-09
+        0.800 6.3694E-09
+        0.830 1.3223E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 2.2714E-08
+        1.000 2.3909E-08
+        1.050 2.5105E-08
+        1.060 2.5344E-08
+        1.100 2.6300E-08
+        1.200 3.8274E-08
+        1.300 4.1463E-08
+        1.400 2.3645E-07
+        1.500 9.5877E-08
+        1.550 1.1151E-07
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 3.66577e-06 0.0 0.0 0.0 0.0 0.0
+    nd: 1.56384
+    Vd: 60.83
+    glass_code: 564608
+    glass_status: special
+    density: 3.07 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.8e-06 K<sup>-1</sup>
+    dPgF: 0.002
+    climatic_resistance: 1.0
+    stain_resistance: 2.0
+    acid_resistance: 2.0

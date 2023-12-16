@@ -1,0 +1,24 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Q. Lin, J. Zhang, G. Piredda, R. W. Boyd, P. M. Fauchet, G. P. Agrawal. Dispersion of silicon nonlinearities in the near infrared region, <a  href=\"https://doi.org/10.1063/1.2750523\"><i>Appl. Phys. Lett.</i> <b>91</b>, 021111 (2007)</a>"
+COMMENTS: "100 fs. Z-scan."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.2 1.23e-18
+        1.3 1.67e-18
+        1.4 1.65e-18
+        1.5 2.41e-18
+        1.6 2.61e-18
+        1.7 2.87e-18
+        1.8 2.38e-18
+        1.9 2.99e-18
+        2.0 1.99e-18
+        2.1 2.64e-18
+        2.2 1.18e-18
+        2.3 1.06e-18
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 100e-15

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) K. Kato and H. Shirahata. Nonlinear IR Generation in AgGaS<sub>2</sub>, <a href=\"https://doi.org/10.1143/JJAP.35.4645\"><i>Jpn. J. Appl. Phys.</i>, <b>35</b>, 4645-4648 (1996)</a><br>2) A. Harasaki and K. Kato. New data on the nonlinear optical constant, phase-matching, and optical damage of AgGaS<sub>2</sub>, <a href=\"https://doi.org/10.1143/JJAP.36.700\"><i>Jpn. J. Appl. Phys.</i>, <b>36</b>, 700-703 (1997)</a>"
+COMMENTS: "Ordinary ray (o); 20.0 °C"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.54 12.9
+    coefficients: 5.79419 0.23114 0 0.06882 1 0 0 0 1 -2.4534e-3 2 3.1814e-7 4 -9.7051e-9 6

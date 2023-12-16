@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. Laihoa and M. Lakkistoa. Investigation of the refractive indices of LaF<sub>3</sub>, CeF<sub>3</sub>, PrF<sub>3</sub> and NdF<sub>3</sub>, <a href=\"https://doi.org/10.1080/13642818308226470\"><i>Phil. Mag. B</i> <b>48</b>, 203-207 (1983)</a> (As cited in Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994)."
+COMMENTS: "Extraordinary ray (e)"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.35 0.70
+    coefficients: 0 1.5149 0.0878

@@ -1,0 +1,23 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. L. Bond. Measurement of the refractive indices of several crystals , <a href=\"https://doi.org/10.1063/1.1703106\"><i>J. Appl. Phys.</i> <b>36</b>, 1674-1677 (1965)</a>"
+COMMENTS: "Room temperature."
+DATA:
+  - type: tabulated n
+    data: |
+        0.45 2.4709
+        0.50 2.4208
+        0.60 2.3640
+        0.70 2.3333
+        0.80 2.3146
+        0.90 2.3026
+        1.00 2.2932
+        1.20 2.2822
+        1.40 2.2762
+        1.60 2.2716
+        1.80 2.2680
+        2.00 2.2653
+        2.20 2.2637
+        2.40 2.2604

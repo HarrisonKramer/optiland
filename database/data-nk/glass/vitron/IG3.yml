@@ -1,0 +1,27 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) <a href=\"https://refractiveindex.info/download/data/2014/VITRON%20IG-3%20Datenblatt%20Juni%202014.pdf\">VITRON datasheet IG-3 June 2014</a><br>2) Dr. Rolf Henkel (VITRON Spezialwerkstoffe GmbH) - private communications"
+COMMENTS: "Room temperature. Refractive index is relative to air at standard conditions; Wavelength in dispersion formula is as measured in air and expressed in micrometers."
+DATA:
+  - type: formula 1
+    wavelength_range: 1.0 12.0
+    coefficients: 3.885429 2.934475 0.508386 0.573772 32.406166
+  - type: tabulated k
+    data: |
+        1.0 1.0000E-03
+        1.5 1.2419E-06
+        2.0 1.0003E-06
+        3.0 1.2925E-06
+        4.0 1.1877E-06
+        5.0 2.1506E-06
+        6.0 1.0243E-06
+        7.0 1.1946E-06
+        8.0 3.0023E-06
+        9.0 4.5033E-07
+        10.0 5.3779E-07
+        11.0 5.8146E-06
+        12.0 4.8806E-05
+        13.0 1.7298E-04
+        14.0 5.3684E-05

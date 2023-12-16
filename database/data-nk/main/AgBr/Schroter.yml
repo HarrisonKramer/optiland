@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. Schröter. Über die Brechungsindizes einiger Schwermetallhalogenide im Sichtbaren und die Berechnung von Interpolationsformeln für den Dispersionsverlauf (On the refractive indices of some heavy-metal halides in the visible and calculation of interpolation formulas for dispersion), <a href=\"https://doi.org/10.1007/BF01391040\"><i>Z. Phys.</i> <b>67</b>, 24-36 (1931)</a> [in German]"
+DATA:
+  - type: formula 8
+    wavelength_range: 0.495 0.67
+    coefficients: 0.452505 0.09939 0.070537 -0.000150

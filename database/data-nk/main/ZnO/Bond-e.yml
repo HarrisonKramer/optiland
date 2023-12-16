@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) W. L. Bond. Measurement of the refractive indices of several crystals, <a href=\"https://doi.org/10.1063/1.1703106\"><i>J. Appl. Phys.</i> <b>36</b>, 1674-1677 (1965)</a><br>2) Handbook of Optics, 3rd edition, Vol. 4. McGraw-Hill 2009</br>* Ref. 2 provides a dispersion formula based on data from ref. 1"
+COMMENTS: "Extraordinary ray (e). Room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.45 4.0
+    coefficients: 2.80333 0.94470 2 0.3004 2 0 0 0 1 -0.00714 2

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. G. DeBell, E. L. Dereniak, J. Harvey, J. Nissley, J. Palmer, A. Selvarajan, and W. L. Wolfe. Cryogenic refractive indices and temperature coefficients of cadmium telluride from 6 µm to 22 µm, <a href=\"https://doi.org/10.1364/AO.18.003114\"><i>Appl. Opt.</i> <b>18</b>, 3114-3115 (1979)</a>"
+COMMENTS: "80 K (-193.1 °C)"
+DATA:
+  - type: formula 2
+    wavelength_range: 6 22
+    coefficients: 0 6.0756642 0.1053945 2.8743304 4773.944

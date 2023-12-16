@@ -1,0 +1,62 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.3 2.4
+    coefficients: 0 0.941357273 0.0140333996 0.546174895 0.000906635683 1.16168917 114.163758
+  - type: tabulated k
+    data: |
+        0.300 1.0994E-05
+        0.310 4.5208E-06
+        0.320 2.1492E-06
+        0.330 1.0517E-06
+        0.340 5.3694E-07
+        0.350 2.8110E-07
+        0.360 1.4996E-07
+        0.370 8.3618E-08
+        0.380 5.1849E-08
+        0.390 3.4328E-08
+        0.400 2.2360E-08
+        0.420 1.6753E-08
+        0.440 1.7551E-08
+        0.460 1.4672E-08
+        0.480 1.1476E-08
+        0.500 7.9657E-09
+        0.550 4.3790E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 5.5732E-09
+        0.800 6.3694E-09
+        0.900 1.4338E-08
+        1.000 1.5931E-08
+        1.200 1.9118E-08
+        1.400 1.7969E-07
+        1.600 7.6624E-08
+        1.800 1.8743E-07
+        2.000 4.5199E-07
+        2.200 2.0402E-06
+        2.400 4.2617E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 3.66e-06 1.79e-08 -4.21e-11 3.12e-07 3.55e-10 0.254
+    nd: 1.589130
+    Vd: 61.135024
+    glass_code: 589612
+    density: 3.31 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 5.7e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 6.7e-06 K<sup>-1</sup>
+    dPgF: -0.0018
+    climatic_resistance: 2.0
+    acid_resistance: 4.2
+    phosphate_resistance: 1.0

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Handbook of Optical Constants of Solids, Edward D. Palik, ed. Academic Press, Boston, 1985"
+COMMENTS: "25 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.57 39.4
+    coefficients: 0 3.7442390 0.2079603 0.9189162 0.3765643 12.5444602 165.6525518

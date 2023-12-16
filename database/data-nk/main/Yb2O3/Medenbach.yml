@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "O. Medenbach, D. Dettmar, R. D. Shannon, R. X. Fischer and W. M. Yen, Refractive index and optical dispersion of rare earth oxides using a small-prism technique, <a href=\"https://doi.org/10.1088/1464-4258/3/3/303\"><i>J. Opt. A: Pure Appl. Opt.</i> <b>3</b>, 174-177, 2001</a>"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.435 0.644
+    coefficients: 0 2.647 0.01800

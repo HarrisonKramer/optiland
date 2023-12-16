@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "P. Krauter, S. Nothelfer, N. Bodenschatz, E. Simon, S. Stocker, F. Foschum and A. Kienle. Optical phantoms with adjustable subdiffusive scattering parameters, <a href=\"https://doi.org/10.1117/1.JBO.20.10.105008\"><i>J. Biomed. Opt.</i> <b>20</b>, 105008 (2015)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.450 0.700
+    coefficients: 1.5269 7.43E-3 -2 1.16E-3 -4

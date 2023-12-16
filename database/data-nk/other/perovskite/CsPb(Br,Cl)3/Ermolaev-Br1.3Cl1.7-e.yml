@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Ermolaev, A. P. Pushkarev, A. Zhizhchenko, A. A. Kuchmizhak, I. Iorsh, I. Kruglov, A. Mazitov, A. Ishteev, K. Konstantinova, D. Saranin, A. Slavich, D. Stosic, E. S. Zhukova, G. Tselikov, A. D. Carlo, A. Arsenin, K. S. Novoselov, S. V. Makarov, V. S. Volkov. Giant and tunable excitonic optical anisotropy in single-crystal halide perovskites, <a href=\"https://doi.org/10.1021/acs.nanolett.2c04792\"><i>Nano Lett.</i> <b>23</b>, 2570–2577 (2023)</a> (Numerical data kindly provided by Georgy Ermolaev)"
+COMMENTS: "CsPbBr<sub>1.3</sub>Cl<sub>1.7</sub> monocrystal. Extraordinary ray (e)."
+DATA:
+  - type: tabulated nk
+    data: | 
+        0.455 2.25544 0
+        0.456 2.25310 0
+        0.457 2.25077 0
+        0.458 2.24845 0
+        0.459 2.24615 0
+        0.460 2.24387 0
+        0.461 2.24160 0
+        0.462 2.23934 0
+        0.463 2.23710 0
+        0.464 2.23487 0
+        0.465 2.23266 0
+        0.466 2.23046 0
+        0.467 2.22828 0
+        0.468 2.22611 0
+        0.469 2.22396 0
+        0.470 2.22181 0
+        0.471 2.21968 0
+        0.472 2.21757 0
+        0.473 2.21547 0
+        0.474 2.21338 0
+        0.475 2.21130 0
+        0.476 2.20924 0
+        0.477 2.20719 0
+        0.478 2.20516 0
+        0.479 2.20313 0
+        0.480 2.20112 0
+        0.481 2.19912 0
+        0.482 2.19714 0
+        0.483 2.19516 0
+        0.484 2.19320 0
+        0.485 2.19125 0
+        0.486 2.18932 0
+        0.487 2.18739 0
+        0.488 2.18548 0
+        0.489 2.18357 0
+        0.490 2.18168 0
+        0.491 2.17981 0
+        0.492 2.17794 0
+        0.493 2.17608 0
+        0.494 2.17424 0
+        0.495 2.17240 0
+        0.496 2.17058 0
+        0.497 2.16877 0
+        0.498 2.16697 0
+        0.499 2.16518 0
+        0.500 2.16340 0
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

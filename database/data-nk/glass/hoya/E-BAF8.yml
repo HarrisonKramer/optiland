@@ -1,0 +1,65 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Not in a position to accept new order because of discontinuation."
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 2.5801121 -0.0079717945 2 0.019728054 -2 0.00013876076 -4 3.7632071e-05 -6 -7.4634717e-07 -8
+  - type: tabulated k
+    data: |
+        0.340 6.8337E-06
+        0.350 3.1736E-06
+        0.360 1.4161E-06
+        0.370 6.9405E-07
+        0.380 3.7627E-07
+        0.390 2.1190E-07
+        0.400 1.2332E-07
+        0.420 5.3908E-08
+        0.440 3.5190E-08
+        0.460 2.5714E-08
+        0.480 1.9146E-08
+        0.500 1.5947E-08
+        0.550 8.7623E-09
+        0.600 9.5589E-09
+        0.650 1.5541E-08
+        0.700 1.1152E-08
+        0.750 5.9713E-09
+        0.780 6.2101E-09
+        0.800 6.3694E-09
+        0.830 6.6082E-09
+        0.850 6.7675E-09
+        0.900 7.1656E-09
+        0.950 7.5636E-09
+        1.000 7.9617E-09
+        1.050 1.6728E-08
+        1.060 1.6887E-08
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 2.0711E-08
+        1.400 1.0072E-07
+        1.500 8.3850E-08
+        1.550 6.1827E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.14929e-06 0.0 0.0 0.0 0.0 0.0
+    nd: 1.62374
+    Vd: 47.05
+    glass_code: 624471
+    glass_status: special
+    density: 3.32 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.5e-06 K<sup>-1</sup>
+    dPgF: -0.001
+    climatic_resistance: 1.0
+    stain_resistance: 2.0
+    acid_resistance: 3.0

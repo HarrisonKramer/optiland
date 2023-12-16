@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "E. S. Bliss, D. R. Speck, W. W. Simmons. Direct interferometric measurements of the nonlinear refractive index coefficient n<sub>2</sub> in laser materials, <a href=\"https://doi.org/10.1063/1.1655378\"><i>Appl. Phys. Lett.</i> <b>25</b>, 728 (1974)</a>"
+COMMENTS: "150 ps. Time-resolved interferometry."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.064 7.30e-20
+SPECS:
+    n2_method: TRI
+    pulse_duration: 150e-12

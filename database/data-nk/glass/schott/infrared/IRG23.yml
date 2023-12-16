@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2013/schott-infrared-chalcogenide-glasses-irg23-october-2013-us.pdf\">SCHOTT Infrared Chalcogenide Glasses - IRG 23 Product flyer (Version May 2013)</a>"
+COMMENTS: "20 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 1.0 12
+    coefficients: 3.74971 3.07065 0.498392 0.953206 40.7557

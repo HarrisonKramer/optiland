@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. T. Wu, C. Wu, W. Warenghem, M. Ismaili. Refractive index dispersions of liquid crystals, <a href=\"https://doi.org/10.1117/12.143988\"><i>Opt. Eng.</i> <b>32</b>, 1775-1780 (1993)</a>"
+COMMENTS: "32.6 °C. Ordinary ray (o)."
+DATA:
+  - type: formula 6
+    wavelength_range: 0.4 0.8
+    coefficients: 0.4257 1.4135 22.6757 0.5272 12.5748
+SPECS:
+    temperature: 32.6 °C

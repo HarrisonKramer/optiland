@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "F. Gan. Optical properties of fluoride glasses: a review. <a href=\"https://doi.org/10.1016/0022-3093(94)00592-3\"><i>J. Non-Cryst. Solids</i> <b>184</b>, 9–20 (1995)</a>"
+COMMENTS: "Room temperature."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.365 3.50
+    coefficients: 0 1.22514 0.08969 1.52898 21.3825

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. J. Rosker, K. Cheng, and C. L. Tang, Practical urea optical parametric oscillator for tunable generation throughout the visible and near-infrared, <a href=\"https://doi.org/10.1109/JQE.1985.1072557\"><i>IEEE J. Quant. Electron.</i> <b>21</b> 1600-1606 (1985)</a>"
+DATA:
+  - type: formula 9
+    wavelength_range: 0.3 1.06
+    coefficients: 2.51527 0.0240 0.0300 0.020 1.52 0.8771
+COMMENTS: "Room temperature. Extraordinary ray (e)."

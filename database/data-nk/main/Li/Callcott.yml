@@ -1,0 +1,31 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. A. Callcott and E. T. Arakawa. Ultraviolet optical properties of Li, <a href=\"https://doi.org/10.1364/JOSA.64.000839\"><i>J. Opt. Soc. Am.</i> <b>64</b>, 839-845 (1974)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.1153 0.755 0.096
+        0.1181 0.747 0.103
+        0.1210 0.735 0.110
+        0.1240 0.720 0.117
+        0.1272 0.701 0.124
+        0.1305 0.681 0.132
+        0.1340 0.660 0.141
+        0.1378 0.638 0.152
+        0.1417 0.615 0.164
+        0.1459 0.590 0.180
+        0.1503 0.567 0.198
+        0.1550 0.542 0.223
+        0.1600 0.520 0.250
+        0.1653 0.498 0.285
+        0.1710 0.478 0.324
+        0.1771 0.462 0.372
+        0.1837 0.445 0.425
+        0.1907 0.428 0.490
+        0.1984 0.414 0.588
+        0.2066 0.398 0.638
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

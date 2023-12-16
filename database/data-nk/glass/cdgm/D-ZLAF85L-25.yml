@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+COMMENTS: "anneal rate:25°C/h"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 1.71754157 0.0081252668 0.614249641 0.0323072933 1.49329677 115.416839
+  - type: tabulated k
+    data: |
+        0.340 7.1950E-06
+        0.350 2.8455E-06
+        0.360 1.3236E-06
+        0.370 6.9405E-07
+        0.380 4.2808E-07
+        0.390 2.9611E-07
+        0.400 2.2075E-07
+        0.420 1.5389E-07
+        0.440 1.2475E-07
+        0.460 1.0396E-07
+        0.480 8.4972E-08
+        0.500 6.8222E-08
+        0.550 4.8411E-08
+        0.600 4.7987E-08
+        0.650 4.6764E-08
+        0.700 3.9130E-08
+        0.800 3.8312E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 2.2304E-08
+        1.600 2.5490E-08
+        1.800 4.3036E-08
+        2.000 2.7289E-07
+        2.200 8.7958E-07
+        2.400 3.9069E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.58e-06 1.63e-08 -3.37e-11 8.32e-07 7.24e-10 0.214
+    nd: 1.852600
+    Vd: 40.534071
+    glass_code: 853405
+    density: 5.28 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.3e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.7e-06 K<sup>-1</sup>
+    dPgF: -0.0081
+    climatic_resistance: 1.0

@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/hikari_2017-04-01.pdf\">HIKARI glass data sheets</a>"
+COMMENTS: ""
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.365015 2.05809
+    coefficients: 2.53980653 -0.00890433248 2 -8.4074007e-05 4 0.0155288703 -2 0.000221892881 -4 3.98552039e-06 -6 1.13655993e-07 -8
+  - type: tabulated k
+    data: |
+        0.290 7.4283E-06
+        0.300 4.6937E-06
+        0.310 2.7350E-06
+        0.320 1.5691E-06
+        0.330 8.6267E-07
+        0.340 4.7174E-07
+        0.350 2.6268E-07
+        0.360 1.4393E-07
+        0.365 1.0951E-07
+        0.370 8.3618E-08
+        0.380 5.1849E-08
+        0.390 3.7468E-08
+        0.400 2.5567E-08
+        0.420 2.0114E-08
+        0.440 2.1072E-08
+        0.460 1.8349E-08
+        0.480 1.9146E-08
+        0.500 1.5947E-08
+        0.550 1.7542E-08
+        0.600 2.3933E-08
+        0.650 2.5928E-08
+        0.700 3.3523E-08
+        0.800 6.3982E-08
+        0.900 3.5900E-08
+        1.000 3.9889E-08
+        1.200 1.9118E-08
+        1.400 1.2323E-07
+        1.600 1.1511E-07
+        1.800 2.6018E-07
+        2.000 4.5199E-07
+        2.200 1.5169E-06
+        2.400 2.6597E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 23.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.2649e-06 1.5619e-08 -2.3374e-12 5.6858e-07 6.7888e-10 0.17909
+    nd: 1.607380
+    Vd: 56.739966
+    density: 3.53 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 5.7e-06 K<sup>-1</sup>
+    dPgF: -0.0016
+    phosphate_resistance: 2.0

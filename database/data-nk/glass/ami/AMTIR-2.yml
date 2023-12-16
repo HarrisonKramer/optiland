@@ -1,0 +1,28 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2013/AMTIR-2%20Information.pdf\">Amorphous Materials AMTIR-2 Information (2013)</a> - downloaded 2014-01-11"
+DATA:
+  - type: formula 1
+    wavelength_range: 1 13
+    coefficients: 0 4.9948719 0.24164 0.1207152 19 1.7123685 0.48328
+  - type: tabulated k
+    data: |
+        1.0 4.4563E-07
+        1.064 3.3868E-07
+        1.25 2.2879E-07
+        1.5 1.9099E-07
+        1.75 2.0889E-07
+        2.0 2.3873E-07
+        3.0 2.3873E-07
+        4.0 3.1831E-07
+        5.0 7.9577E-07
+        6.0 4.7746E-07
+        7.0 5.5704E-07
+        8.0 6.3662E-07
+        9.0 7.1620E-07
+        10.0 7.9577E-07
+        11.0 1.4006E-06
+        12.0 2.9603E-06
+        13.0 2.2759E-05

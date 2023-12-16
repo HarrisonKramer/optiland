@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "E. R. Peck and K. Reeder. Dispersion of air, <a href=\"https://doi.org/10.1364/JOSA.62.000958\"><i>J. Opt. Soc. Am.</i> <b>62</b>, 958-962 (1972)</a>"
+COMMENTS: "Standard air: dry air at 15 °C, 101.325 kPa and with 450 ppm CO<sub>2</sub> content."
+DATA:
+  - type: formula 6
+    wavelength_range: 0.185 1.7
+    coefficients: 8.06051E-5 2.480990E-2 132.274 1.74557E-4 39.32957
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 15 °C
+    pressure: 101325 Pa

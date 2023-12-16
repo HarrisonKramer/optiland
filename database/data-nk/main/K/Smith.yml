@@ -1,0 +1,33 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. V. Smith. Optical constants of sodium and potassium from 0.5 to 4.0 eV by split-beam ellipsometry, <a href=\"https://doi.org/10.1103/PhysRev.183.634\"><i>Phs. Rev.</i> <b>183</b>, 634-644 (1969)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.312539 0.286743 0.090673
+        0.334099 0.088593 0.287834
+        0.364981 0.051887 0.549265
+        0.404648 0.040668 0.799158
+        0.420001 0.041221 0.897607
+        0.439972 0.042618 1.020694
+        0.469993 0.042573 1.139216
+        0.505027 0.045694 1.280269
+        0.545945 0.049210 1.432628
+        0.599827 0.053102 1.619512
+        0.661955 0.050023 1.839158
+        0.750056 0.044219 2.193617
+        0.859807 0.040076 2.557656
+        1.009643 0.040010 3.036709
+        1.175206 0.044473 3.575189
+        1.344731 0.055884 4.187257
+        1.530669 0.065772 4.751245
+        1.689158 0.078548 5.302468
+        1.839528 0.091000 5.791224
+        1.980578 0.106251 6.319912
+        2.119388 0.118690 6.723398
+        2.237982 0.138661 7.096424
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

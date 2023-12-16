@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. Owyoung. Ellipse rotation studies in laser host materials, <a href=\"https://doi.org/10.1109/JQE.1973.1077417\"><i>IEEE J. Quantum Electron.</i> <b>9</b>, 1064 (1973)</a>"
+COMMENTS: "13 ns. Ellipse rotation."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.064 9.41e-20
+SPECS:
+    n2_method: ER
+    pulse_duration: 13e-9

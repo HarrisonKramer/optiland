@@ -1,0 +1,32 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. D. Birkhoff, L. R. Painter, J. M. Heller Jr. Optical and dielectric functions of liquid glycerol from gas photoionization measurements, <a href=\"https://doi.org/10.1063/1.437098\"><i>J. Chem. Phys.</i> <b>69</b>, 4185-4188 (1978)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.05123 0.937 0.433
+        0.05166 0.937 0.437
+        0.05391 0.939 0.469
+        0.05636 0.944 0.517
+        0.05904 0.968 0.576
+        0.06199 1.010 0.635
+        0.06525 1.070 0.690
+        0.06888 1.140 0.736
+        0.07293 1.220 0.774
+        0.07749 1.320 0.800
+        0.08266 1.440 0.809
+        0.08856 1.570 0.793
+        0.09537 1.700 0.737
+        0.10332 1.830 0.646
+        0.11271 1.940 0.515
+        0.12398 2.010 0.335
+        0.13776 1.980 0.121
+        0.15498 1.870 0
+        0.17712 1.760 0
+        0.20664 1.650 0
+        0.24797 1.560 0
+        0.30996 1.500 0
+        0.41328 1.480 0
+        0.61992 1.470 0

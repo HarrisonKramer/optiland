@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. N. Zemel, J. D. Jensen, and R. B. Schoolar. Electrical and optical properties of epitaxial films of PbS, PbSe, PbTe, and SnTe, <a href=\"https://doi.org/10.1103/PhysRev.140.A330\"><i>Phys. Rev.</i> <b>140</b>, A330-A342, 1965</a>"
+COMMENTS: "300 K (27 °C)"
+DATA:
+  - type: formula 1
+    wavelength_range: 5.0 10
+    coefficients: 0 21.1 1.37

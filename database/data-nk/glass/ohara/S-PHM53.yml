@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.31 2.4
+    coefficients: 0 1.09775423 0.01233694 0.434816432 -0.000372522903 1.13894976 124.276984
+  - type: tabulated k
+    data: |
+        0.310 8.6503E-06
+        0.320 5.8635E-06
+        0.330 3.6405E-06
+        0.340 2.1605E-06
+        0.350 1.2430E-06
+        0.360 7.1179E-07
+        0.370 3.7639E-07
+        0.380 2.0324E-07
+        0.390 1.1701E-07
+        0.400 7.4066E-08
+        0.420 4.7122E-08
+        0.440 4.5817E-08
+        0.460 4.0489E-08
+        0.480 3.0681E-08
+        0.500 2.3945E-08
+        0.550 8.7623E-09
+        0.600 1.4345E-08
+        0.650 2.0732E-08
+        0.700 2.2326E-08
+        0.800 1.9127E-08
+        0.900 2.1518E-08
+        1.000 3.1895E-08
+        1.200 2.8691E-08
+        1.400 7.8260E-08
+        1.600 1.6661E-07
+        1.800 4.8067E-07
+        2.000 9.6786E-07
+        2.200 2.4381E-06
+        2.400 3.5586E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -9.57e-06 1.38e-08 -6.4e-12 4.8e-07 8.06e-10 0.131
+    nd: 1.603001
+    Vd: 65.443648
+    glass_code: 603655
+    density: 3.51 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 9.3e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.09e-05 K<sup>-1</sup>
+    dPgF: 0.0045
+    climatic_resistance: 1.0
+    acid_resistance: 51.0
+    phosphate_resistance: 4.0

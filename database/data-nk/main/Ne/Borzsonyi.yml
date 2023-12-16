@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. Börzsönyi, Z. Heiner, M. P. Kalashnikov, A. P. Kovács, and K. Osvay, Dispersion measurement of inert gases and gas mixtures at 800 nm, <a href=\"https://doi.org/10.1364/AO.47.004856\"><i>Appl. Opt.</i> <b>47</b>, 4856-4863 (2008)</a>"
+COMMENTS: "273 K (0 °C), 1000 mbar.<br>Dispersion formula may be usable down to ~0.2 µm."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4 1.0
+    coefficients: 0 9154.48e-8 656.97e-6 4018.63e-8 5.728e-3
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 273 K
+    pressure: 100000 Pa

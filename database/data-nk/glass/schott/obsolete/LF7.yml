@@ -1,0 +1,25 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2006/SCHOTT datasheet LF7.pdf\">SCHOTT LF7 glass data sheet (2006)</a>"
+COMMENTS: "obsolete"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.334 0.700
+    coefficients: 0 1.26879731 0.00919553925 0.156697051 0.0447256764 0.887676301 106.8203610
+  - type: tabulated k
+    data: |
+        0.334 6.2652E-07
+        0.350 1.4286E-07
+        0.365 4.3899E-08
+        0.370 2.9592E-08
+        0.380 1.8198E-08
+        0.390 1.2439E-08
+        0.400 1.2758E-08
+        0.420 6.6912E-09
+        0.460 7.3285E-09
+        0.500 7.9657E-09
+        0.580 9.2402E-09
+        0.660 1.5780E-08
+        0.700 2.2326E-08

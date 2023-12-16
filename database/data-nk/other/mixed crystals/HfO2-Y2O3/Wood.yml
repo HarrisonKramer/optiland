@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. L. Wood, Kurt Nassau, T. Y. Kometani, and D. L. Nash. Optical properties of cubic hafnia stabilized with yttria. <a href=\"https://doi.org/10.1364/AO.29.000604\"><i>Appl. Opt.</i> <b>29</b>, 604-607 (1990)</a>"
+COMMENTS: "Cubic hafnia; 20 °C; Y<sub>2</sub>O<sub>3</sub> content: 9.8 mol. %"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.365 5.0
+    coefficients: 0 1.9558 0.15494 1.345 0.0634 10.41 27.12

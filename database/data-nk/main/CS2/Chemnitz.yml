@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. Chemnitz, M. Gebhardt, C. Gaida, F. Stutzki, J. Kobelke, J. Limpert, A. Tünnermann, M. A. Schmidt. Hybrid soliton dynamics in liquid-core fibres, <a href=\"https://doi.org/10.1038/s41467-017-00033-5\"><i>Nat. Commun.</i> <b>8</b>, 42 (2017)</a> (See Supplementary information)"
+COMMENTS: "20 °C."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.3 12
+    coefficients: 0 1.499426 0.178763 0.089531 6.591946
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 20 °C

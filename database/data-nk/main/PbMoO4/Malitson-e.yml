@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "I. H. Malitson, as cited in Handbook of Optics, 3rd edition, Vol. 4. McGraw-Hill 2009. Data fit by Handbook of Optics."
+COMMENTS: "Extraordinary ray (e)"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.44 1.08
+    coefficients: 0 3.52555 0.17950 0.20660 0.32537

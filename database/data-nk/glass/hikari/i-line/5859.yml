@@ -1,0 +1,66 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2014/nikon_i-line.pdf\">NIKON i-line glass data sheet</a>"
+COMMENTS: ""
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.32611 2.32542
+    coefficients: 0 1.06973916 0.00562417858 0.422042806 0.0188055076 0.897510953 71.2142596
+  - type: tabulated k
+    data: |
+        0.240 1.2489E-06
+        0.250 6.2610E-07
+        0.260 3.3625E-07
+        0.270 1.9792E-07
+        0.280 1.3077E-07
+        0.290 9.1804E-08
+        0.300 6.5344E-08
+        0.310 4.9838E-08
+        0.320 3.5903E-08
+        0.330 2.3742E-08
+        0.340 1.6283E-08
+        0.350 1.3961E-08
+        0.360 1.1482E-08
+        0.365 8.7268E-09
+        0.370 5.8946E-09
+        0.380 6.0539E-09
+        0.390 3.1051E-09
+        0.400 3.1847E-09
+        0.420 3.3439E-09
+        0.440 3.5032E-09
+        0.460 3.6624E-09
+        0.480 3.8216E-09
+        0.500 3.9809E-09
+        0.550 4.3790E-09
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.800 6.3694E-09
+        0.900 7.1656E-09
+        1.000 1.5931E-08
+        1.200 9.5541E-09
+        1.400 3.8538E-07
+        1.600 2.3127E-07
+        1.800 4.9549E-07
+        2.000 1.4138E-06
+        2.200 5.7511E-06
+        2.400 1.5680E-05
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 22.5 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 6.18e-06 1.19e-08 2.91e-13 5.05e-07 1.07e-09 0.118
+    nd: 1.590421
+    Vd: 59.473084
+    density: 2.87 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 4.3e-06 K<sup>-1</sup>
+    dPgF: -0.0084
+    climatic_resistance: 3.0
+    acid_resistance: 7.0
+    alkali_resistance: 4.0

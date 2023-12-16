@@ -1,0 +1,62 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Low Softening Temperature "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.31 2.4
+    coefficients: 0 1.07570798 0.00591654042 0.335020347 0.0203432769 0.810997558 106.182158
+  - type: tabulated k
+    data: |
+        0.310 6.9404E-06
+        0.320 2.5318E-06
+        0.330 9.3665E-07
+        0.340 3.4587E-07
+        0.350 1.3701E-07
+        0.360 5.4955E-08
+        0.370 2.9592E-08
+        0.380 1.8198E-08
+        0.390 1.2439E-08
+        0.400 1.2758E-08
+        0.420 1.3396E-08
+        0.440 1.4034E-08
+        0.460 1.0998E-08
+        0.480 1.1476E-08
+        0.500 7.9657E-09
+        0.550 4.3790E-09
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.800 6.3694E-09
+        0.900 7.1656E-09
+        1.000 7.9617E-09
+        1.200 9.5541E-09
+        1.400 2.2304E-08
+        1.600 1.7951E-07
+        1.800 6.5953E-07
+        2.000 1.2752E-06
+        2.200 2.6405E-06
+        2.400 3.5586E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -5.46e-06 7.3e-09 -4.11e-11 5.89e-07 6.92e-10 0.202
+    nd: 1.564550
+    Vd: 60.818065
+    glass_code: 565608
+    glass_status: preferred
+    density: 3.18 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 1.05e-05 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.4e-05 K<sup>-1</sup>
+    dPgF: 0.0026
+    climatic_resistance: 3.0
+    acid_resistance: 53.3
+    phosphate_resistance: 4.3

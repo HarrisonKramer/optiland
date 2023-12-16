@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) M. P. Lisitsa et al.. Dispersion of the refractive indices and birefringence of CdS<sub>x</sub>Se<sub>1-x</sub> single crystals, <a href=\"https://doi.org/10.1002/pssb.19690310146\"><i>Phys. Status Solidi</i>, <b>31</b>, 389-399 (1969)</a><br>2) G. C. Bhar, Refractive index interpolation in phase-matching, <a href=\"https://doi.org/10.1364/AO.15.0305_1\"><i>Appl. Opt.</i> <b>15</b>, 305-307 (1976)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Ordinart ray (o)"
+DATA:
+  - type: formula 2
+    wavelength_range: 1.01 22.0
+    coefficients: 3.2243 1.7680 0.2270 3.1200 3380

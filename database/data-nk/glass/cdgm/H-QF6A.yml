@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 0.0830014908 0.0493974056 1.22223237 0.00830688707 1.01475439 114.773547
+  - type: tabulated k
+    data: |
+        0.340 7.5233E-06
+        0.350 1.9642E-06
+        0.360 5.4763E-07
+        0.370 1.7905E-07
+        0.380 8.5878E-08
+        0.390 5.3213E-08
+        0.400 3.1991E-08
+        0.420 3.0216E-08
+        0.440 3.1655E-08
+        0.460 2.2030E-08
+        0.480 2.2987E-08
+        0.500 2.3945E-08
+        0.550 1.7542E-08
+        0.600 2.3933E-08
+        0.650 3.6335E-08
+        0.700 3.3523E-08
+        0.800 3.1911E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 1.5707E-07
+        1.600 1.4083E-07
+        1.800 2.7477E-07
+        2.000 4.3563E-07
+        2.200 1.9812E-06
+        2.400 2.2686E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -5.28e-06 2.18e-08 -9.29e-11 4.95e-07 4.67e-10 0.262
+    nd: 1.531720
+    Vd: 48.839833
+    glass_code: 532488
+    density: 2.52 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.5e-06 K<sup>-1</sup>
+    dPgF: 0.0037
+    climatic_resistance: 1.0

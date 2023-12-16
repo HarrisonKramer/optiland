@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "V. Tkachenko, G. Abbate, A. Marino, F. Vita, M. Giocondo,  A. Mazzulla, F. Ciuchi,  L. De Stefano. Nematic liquid crystal optical dispersion in the visible-near infrared range, <a href=\"https://doi.org/10.1080/15421400600655816\"><i>Mol. Cryst. Liq. Cryst.</i> <b>454</b>, 263/[665]-271/[673], 2006</a>"
+COMMENTS: "Ordinary ray (o)."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.532 1.7
+    coefficients: 1.49669 0.00785 -2 0.00026 -4

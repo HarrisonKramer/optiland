@@ -1,0 +1,16 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. Althoff and J. H. Hertz. Measurement of the optical constants of Na and K in the range of wavelength from 2.5 to 10 μ, <a href=\"https://doi.org/10.1016/0020-0891(67)90025-5\"><i>Infrared Phys.</i> <b>7</b>, 11-16 (1967)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        2.25 0.41 11.6
+        2.5 0.50 12.5
+        3.0 0.61 14.7
+        3.5 0.81 17.2
+        4.0 1.02 19.4
+        4.75 1.71 22.3
+        7.2 3.66 32.9
+        10.15 6.43 44.5

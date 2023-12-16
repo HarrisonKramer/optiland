@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. Adair, L. L. Chase, S. A. Payne. Nonlinear refractive index of optical crystals, <a href=\"https://doi.org/10.1103/PhysRevB.39.3337\"><i>Phys. Rev. B</i> <b>39</b>, 3337 (1989)</a>"
+COMMENTS: "Extraordinary ray (e). 3 ns. Three-wave mixing."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.064 1.23e-19
+SPECS:
+    n2_method: TWM
+    pulse_duration: 3e-9

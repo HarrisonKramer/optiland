@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. Sasaki, Y. Mori, and M. Yoshimura. Progress in the growth of a CsLiB<sub>6</sub>O<sub>10</sub> crystal and its application to ultraviolet light generation, <a href=\"https://doi.org/10.1016/S0925-3467(02)00316-6\"><i>Opt. Mat.</i> <b>23</b>, 343-351 (2003)</a>"
+COMMENTS: "Extraordinary ray (e). Room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.19 2.75
+    coefficients: 2.0588 0.00838 0 0.01363 1 0 0 0 1 -0.00607 2

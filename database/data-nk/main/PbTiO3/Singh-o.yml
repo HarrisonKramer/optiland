@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Singh, J. P. Remeika, and J. R. Potopowicz. Nonlinear optical properties of ferroelectric lead titanate, <a href=\"https://doi.org/10.1063/1.1654078\"><i>Appl. Phys. Lett.</i> <b>20</b>, 135, 1972</a>"
+COMMENTS: "Ordinary ray (o)"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.45 1.15
+    coefficients: 0 5.3635 0.050267

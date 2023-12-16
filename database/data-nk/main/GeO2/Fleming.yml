@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. W. Fleming. Dispersion in GeO<sub>2</sub>-SiO<sub>2</sub> glasses, <a href=\"https://doi.org/10.1364/AO.23.004486\"><i>Appl. Opt.</i> <b>23</b>, 4486-4493 (1984)</a>"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.36 4.3
+    coefficients: 0 0.80686642 0.068972606 0.71815848 0.15396605 0.85416831 11.841931

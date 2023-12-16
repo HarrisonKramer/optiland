@@ -1,0 +1,39 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://lzos.ru/en/index.php?option=com_content&task=view&id=54\">LZOS Clear optical glass catalogue</a>"
+DATA:
+  - type: tabulated n
+    data: |
+        0.3650 1.83360
+        0.40466 1.80608
+        0.43583 1.791346
+        0.47999 1.776436
+        0.48613 1.774755
+        0.4880 1.77426
+        0.5140 1.76802
+        0.5208 1.76657
+        0.5300 1.76470
+        0.54607 1.761712
+        0.5682 1.75806
+        0.58756 1.755234
+        0.58929 1.755000
+        0.6328 1.74971
+        0.64385 1.748557
+        0.6471 1.74822
+        0.65627 1.747325
+        0.6943 1.74397
+        0.70652 1.74301
+        0.7682 1.73886
+        0.8521 1.73457
+        0.8900 1.73299
+        1.0139 1.72888
+        1.0600 1.72765
+        1.1286 1.72601
+        1.3951 1.72107
+        1.5296 1.71903
+        1.8131 1.71508
+        1.9701 1.71294
+        2.2493 1.70903
+        2.3254 1.70792

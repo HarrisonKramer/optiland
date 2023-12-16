@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. D. Boyd, H. M. Kasper, J. H McFee, F. G Storz. Linear and nonlinear optical properties of some ternary selenides, <a href=\"https://doi.org/10.1109/JQE.1972.1076900\"><i>IEEE J. Quant. Electron.</i>, <b>8</b>, 900-908 (1972)</a><br>2) G. C. Bhar, Refractive index interpolation in phase-matching, <a href=\"https://doi.org/10.1364/AO.15.0305_1\"><i>Appl. Opt.</i> <b>15</b>, 305-307 (1976)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Ordinary ray (e)"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.725 13.5
+    coefficients: 3.6453 2.2057 0.1879 1.8377 1600

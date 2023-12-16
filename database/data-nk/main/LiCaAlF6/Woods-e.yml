@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "B. W. Woods et al.. Thermomechanical and thermo-optical properties of the LiCaAlF<sub>6</sub>:Cr<sup>3+</sup> laser material, <a href=\"https://doi.org/10.1364/JOSAB.8.000970\"><i>J. Opt. Soc. Am. B</i> <b>8</b>, 970-977 (1991)</a>."
+COMMENTS: "26 °C. Extraordinary ray (e)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.4 1.0
+    coefficients: 1.92155 0.00494 0 0.00617 1 0 0 0 1 -0.00373 2

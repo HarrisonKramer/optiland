@@ -1,0 +1,63 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "General glass Type"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.4943369 -0.013647624 2 0.03883317 -2 0.0011132555 -4 -7.402237e-06 -6 5.3027754e-06 -8
+  - type: tabulated k
+    data: |
+        0.350 6.9659E-06
+        0.360 2.8952E-06
+        0.370 1.5188E-06
+        0.380 8.9016E-07
+        0.390 5.6708E-07
+        0.400 3.9247E-07
+        0.420 2.2821E-07
+        0.440 1.6122E-07
+        0.460 1.2284E-07
+        0.480 8.8880E-08
+        0.500 6.4177E-08
+        0.550 3.5155E-08
+        0.600 2.8734E-08
+        0.650 3.1129E-08
+        0.700 2.7922E-08
+        0.750 2.9916E-08
+        0.780 2.4878E-08
+        0.800 1.9127E-08
+        0.830 1.3223E-08
+        0.850 2.0323E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.050 8.3598E-09
+        1.060 8.4394E-09
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 1.1146E-08
+        1.500 2.3897E-08
+        1.550 1.2341E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.06e-06 9.55e-09 -8.39e-12 7.47e-07 7.08e-10 0.249
+    nd: 1.90043
+    Vd: 37.37
+    glass_code: 900374
+    density: 5.19 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.4e-06 K<sup>-1</sup>
+    dPgF: -0.0038
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

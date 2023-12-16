@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/d61170-uv-415-brown-e.pdf\">Barberini D6117 glass specifications, 2010-06</a>"
+COMMENTS: "20 °C<br>Sun Protection Glass; Colour: brown; Application: dark tinted sunglare filter with high UV- absorption filter category 3 acc. to DIN EN 1836 (for τ<sub>v</sub> > 18% filter category 2)"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.5194
+        0.47999 1.5153
+        0.48613 1.5147
+        0.54607 1.5110
+        0.58756 1.5090
+        0.58929 1.5089
+        0.64385 1.5069
+        0.65627 1.5063

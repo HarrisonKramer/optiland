@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. E. Jellison Jr., L. A. Boatner, J. O. Ramey, J. A. Kolopus, L. A. Ramey and D. J. Singh. Refractive index of sodium iodide. <a href=\"https://doi.org/10.1063/1.3689746\"><i>J. Appl. Phys.</i> <b>111</b>, 043521 (2012)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.436 0.633
+    coefficients: 0 1.994 0.176

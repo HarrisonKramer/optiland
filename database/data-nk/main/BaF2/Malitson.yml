@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "I. H. Malitson. Refractive properties of barium fluoride, <a href=\"https://doi.org/10.1364/JOSA.54.000628\"><i>J. Opt. Soc. Am.</i> <b>54</b>, 628-630 (1964)</a>"
+COMMENTS: "25 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.2652 10.346
+    coefficients: 0 0.643356 0.057789 0.506762 0.10968 3.8261 46.3864

@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Y. Arosa and R. de la Fuente. Refractive index spectroscopy and material dispersion in fused silica glass, <a href=\"https://doi.org/10.1364/OL.395510\"><i>Opt. Lett.</i> <b>45</b>, 4268-4271 (2020)</a>"
+COMMENTS: "Fused silica. The accuracy of refractive index measurements is lower than those reported by Malitson. However, by combining phase velocity and group velocity dispersion data, the authors have derived a potentially more accurate Sellmeier formula."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.26 1.7
+    coefficients: 0 0.9310 0.079 0.1735 0.130 2.1121 14.918
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false

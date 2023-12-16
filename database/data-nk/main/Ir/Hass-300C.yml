@@ -1,0 +1,31 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Hass, G. F. Jacobus, W. R. Hunter. Optical properties of evaporated iridium in the vacuum ultraviolet from 500 Å to 2000 Å, <a href=\"https://doi.org/10.1364/JOSA.57.000758\"><i>J. Opt. Soc. Am.</i> <b>57</b>, 758-762 (1967)</a>"
+COMMENTS: "Thin film deposited at 300 °C"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.0500 0.65 0.88
+        0.0550 0.76 0.99
+        0.0600 0.88 1.08
+        0.0650 1.02 1.08
+        0.0700 1.13 0.97
+        0.0750 1.15 0.90
+        0.0800 1.14 0.90
+        0.0850 1.10 0.93
+        0.0900 1.09 0.98
+        0.0950 1.11 1.06
+        0.1000 1.14 1.13
+        0.1100 1.27 1.23
+        0.1200 1.36 1.21
+        0.1300 1.38 1.16
+        0.1400 1.35 1.14
+        0.1500 1.28 1.18
+        0.5461 2.49 5.05
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: false
+    substrate: glass
+    deposition_temperature: 300 °C

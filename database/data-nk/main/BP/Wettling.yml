@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. Wettling and J. Windscheif. Elastic constants and refractive index of boron phosphide, <a href=\"https://doi.org/10.1016/0038-1098(84)90053-X\"><i>Solid State Commun.</i> <b>50</b> 33-34 (1984)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: tabulated n
+    data: |
+        0.4545 3.34
+        0.4580 3.34
+        0.4880 3.32
+        0.4960 3.30
+        0.5145 3.26
+        0.6328 3.00

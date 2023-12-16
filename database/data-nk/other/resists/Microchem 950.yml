@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2001/MicroChem_PMMA_Data_Sheet.pdf\">Microchem PMMA Datasheet</a>, 2001"
+COMMENTS: "Microchem 950 PMMA resist"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.2 1.1
+    coefficients: 1.488 0.002898 -2 0.0001579 -4

@@ -1,0 +1,23 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2014/BOROFLOAT 33_Refractive Index.pdf\">Datasheet \"BOROFLOAT® 33 glass - Optical Properties\", SCHOTT North America Inc. (2014)</a><br>(Courtesy of SCHOTT North America)"
+COMMENTS: "Room temperature. ORIENTATION VALUES ONLY!"
+DATA:
+  - type: tabulated n
+    data: |
+        0.36501 1.48856
+        0.40466 1.48330
+        0.43583 1.48019
+        0.47999 1.47679
+        0.48613 1.47639
+        0.54607 1.47315
+        0.58756 1.47144
+        0.64385 1.46957
+        0.65627 1.46922
+        0.70652 1.46792
+        0.85211 1.46508
+        1.01398 1.46273
+        1.30000 1.45920
+        1.55000 1.45613

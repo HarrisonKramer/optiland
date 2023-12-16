@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. A. Kaminskii, M. Sh. Akchurin, P. Becker, K. Ueda, L. Bohatý, A. Shirakawa, M. Tokurakawa, K. Takaichi, H. Yagi, J. Dong. Mechanical and optical properties of Lu<sub>2</sub>O<sub>3</sub> host-ceramics for Ln<sup>3+</sup> lasants, <a href=\"https://doi.org/10.1002/lapl.200710128\"></i>Laser Phys. Lett.</i> <b>5</b>, 300-303, 2008</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.365 2.325
+    coefficients: 3.61968 0.04131 0 0.0238 1 0 0 0 0 -0.00856 2
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true

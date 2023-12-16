@@ -1,0 +1,64 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Preforms for Precision molding"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.2722586 -0.018817211 2 0.027264508 -2 0.0032789193 -4 -0.00032827672 -6 2.1743362e-05 -8
+  - type: tabulated k
+    data: |
+        0.350 6.1732E-06
+        0.360 2.9189E-06
+        0.370 1.4894E-06
+        0.380 8.9016E-07
+        0.390 5.8952E-07
+        0.400 4.2141E-07
+        0.420 2.4615E-07
+        0.440 1.6122E-07
+        0.460 1.1150E-07
+        0.480 7.3273E-08
+        0.500 4.4010E-08
+        0.550 1.3150E-08
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.750 1.7932E-08
+        0.780 1.2427E-08
+        0.800 1.9127E-08
+        0.830 1.3223E-08
+        0.850 1.3542E-08
+        0.900 2.1518E-08
+        0.950 2.2714E-08
+        1.000 2.3909E-08
+        1.050 1.6728E-08
+        1.060 1.6887E-08
+        1.100 1.7525E-08
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 2.2304E-08
+        1.500 2.3897E-08
+        1.550 2.4694E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 8.48492e-06 0.0 0.0 0.0 0.0 0.0
+    nd: 1.83461
+    Vd: 37.29
+    glass_code: 835373
+    glass_status: standard
+    density: 4.39 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.1e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.7e-06 K<sup>-1</sup>
+    dPgF: -0.0047
+    climatic_resistance: 1.0
+    stain_resistance: 3.0
+    acid_resistance: 3.0

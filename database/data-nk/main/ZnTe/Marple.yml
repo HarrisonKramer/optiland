@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. T. F. Marple. Refractive index of ZnSe, ZnTe, and CdTe, <a href=\"https://doi.org/10.1063/1.1713411\"><i>J. Appl. Phys.</i> <b>35</b>, 539-542 (1964)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.58 2.5
+    coefficients: 3.27 3.01 0.142

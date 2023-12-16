@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. Umemura, K. Yoshida, and K. Kato. Phase-matching properties of KNbO<sub>3</sub> in the mid-infrared, <a href=\"    https://doi.org/10.1364/AO.38.000991\"><i>Appl Opt.</i> <b>38</b>, 991-994 (1999)</a>"
+COMMENTS: "n<sub>α</sub>; 22 °C."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.40 5.3
+    coefficients: 4.4222 0.09972 0 0.05496 1 0 0 0 1 -0.01976 2

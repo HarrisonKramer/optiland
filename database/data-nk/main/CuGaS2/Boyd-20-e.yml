@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. D. Boyd, H. Kasper, J. H McFee. Linear and nonlinear optical properties of AgGaS<sub>2</sub>, CuGaS<sub>2</sub>, and CuInS<sub>2</sub>, and theory of the wedge technique for the measurement of nonlinear coefficients, <a href=\"https://doi.org/10.1109/JQE.1971.1076588\"><i>IEEE J. Quant. Electron.</i>, <b>7</b>, 563-573 (1971)</a><br>2) G. C. Bhar and G. Ghosh. Temperature-dependent Sellmeier coefficients and coherence lengths for some chalcopyrite crystals, <a href=\"https://doi.org/10.1364/JOSA.69.000730\"><i>J. Opt. Soc. Am.</i> <b>69</b>, 730-733 (1979)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Extrardinary ray (e); 20 °C"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.55 11.5
+    coefficients: 3.3165 1.8692 0.1364 1.7575 738.43

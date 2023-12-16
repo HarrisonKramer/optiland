@@ -1,0 +1,31 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2018/LPTHCORP-1512_BD6 Glass DataSheet.pdf\">BD6 Glass Datasheet (revision 2018-03-02)</a>"
+DATA:
+  - type: tabulated nk
+    data: |
+        2 2.8230 4.775E-08
+        4 2.7978 6.366E-08
+        6 2.7914 9.549E-08
+        8 2.7867 1.273E-07
+        10 2.7816 2.387E-07
+        12 2.7755 3.820E-07
+        14 2.7683 7.576E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    density: 4.63 g/cm<sup>3</sup>
+    Vickers_hardness: 142 kgf/mm<sup>2</sup>
+    Youngs_modulus: 19.8 GPa
+    thermal_expansion:
+      - temperature_range: 25 100 °C
+        coefficient: 22.5e-06 K<sup>-1</sup>
+    thermal_dispersion:
+      - type: "dn_rel/dT"
+        temperature_range: 0 40 °C
+        wavelength: 10 µm
+        value: 30.5e-6 K<sup>-1</sup>
+    transition_temperature: 140 °C
+    

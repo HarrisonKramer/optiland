@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Das et al.. Linear and nonlinear optical properties of ZnGeP<sub>2</sub> crystal for infrared laser device applications: Revisited, <a href=\"https://doi.org/10.1364/AO.42.004335\"><i>Appl. Opt.</i> <b>42</b>, 4335-4340 (2003)</a>"
+COMMENTS: "Extraordinary ray (e)"
+DATA:
+  - type: formula 2
+    wavelength_range: 1.32 11
+    coefficients: 2.65014 6.310153 0.125099 1.731381 900

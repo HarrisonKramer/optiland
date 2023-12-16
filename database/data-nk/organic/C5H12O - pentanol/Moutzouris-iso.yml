@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Moutzouris, M. Papamichael, S. C. Betsis, I. Stavrakas, G. Hloupis and D. Triantis. Refractive, dispersive and thermo-optic properties of twelve organic solvents in the visible and near-infrared, <a href=\"https://doi.org/10.1007/s00340-013-5744-3\"><i>Appl. Phys. B</i> <b>116</b>, 617-622 (2013)</a>"
+COMMENTS: "Isoamyl alcohol; 300 K (27 °C)."
+DATA:
+  - type: formula 3
+    wavelength_range: 0.450 1.551
+    coefficients: 1.942931564 -0.00128447 2 0.01305097 -2 -0.001683118 -4 0.000233976 -6

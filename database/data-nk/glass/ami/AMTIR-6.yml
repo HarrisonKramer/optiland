@@ -1,0 +1,19 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2012/AMTIR-6%20Information.pdf\">Amorphous Materials AMTIR-6 Information (2012)</a> - downloaded 2014-01-11"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.6439 2.5976 2.1521E-06
+        0.7065 2.5586 7.3088E-07
+        1.014 2.4757 8.0692E-08
+        1.530 2.4380 1.2175E-07
+        1.970 2.4268 1.5677E-07
+        3.0 2.4152 7.1620E-07
+        4.0 2.4116 9.5493E-07
+        5.0 2.4074 2.3873E-07
+        6.0 2.4034 2.3873E-07
+        7.0 2.3989 1.1141E-06
+        8.0 2.3937 2.2918E-06

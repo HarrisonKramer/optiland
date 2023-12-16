@@ -1,0 +1,56 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "lead containing glass type        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.35 2.5
+    coefficients: 0 1.55912923 0.0121481001 0.284246288 0.0534549042 0.968842926 112.174809
+  - type: tabulated k
+    data: |
+        0.350 3.9066E-06
+        0.365 8.0532E-07
+        0.370 5.2561E-07
+        0.380 2.8512E-07
+        0.390 1.7288E-07
+        0.400 1.0616E-07
+        0.405 9.3555E-08
+        0.420 5.3183E-08
+        0.436 3.3714E-08
+        0.460 2.3617E-08
+        0.500 1.1180E-08
+        0.546 6.9658E-09
+        0.580 7.3996E-09
+        0.620 9.8924E-09
+        0.660 1.0531E-08
+        0.700 8.9305E-09
+        1.060 1.3523E-08
+        1.530 7.3606E-08
+        1.970 6.6068E-07
+        2.325 2.3291E-06
+        2.500 3.4281E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.84e-06 1.7e-08 -4.52e-11 1.38e-06 1.26e-09 0.259
+    nd: 1.71736
+    Vd: 29.51
+    glass_code: 717295.446
+    glass_status: standard
+    density: 4.46 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.1e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.8e-06 K<sup>-1</sup>
+    dPgF: 0.0042
+    climatic_resistance: 2.0
+    stain_resistance: 1.0
+    acid_resistance: 3.2
+    alkali_resistance: 2.3
+    phosphate_resistance: 3.0

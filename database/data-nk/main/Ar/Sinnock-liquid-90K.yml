@@ -1,0 +1,20 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. C. Sinnock and B. L. Smith. Refractive indices of the condensed inert gases, <a href=\"https://doi.org/10.1103/PhysRev.181.1297\"><i>Phys. Rev.</i> <b>181</b>, 1297-1307 (1969)</a>"
+COMMENTS: "Liquid argon at 90 K (-183.15 °C)."
+DATA:
+  - type: tabulated n
+    data: |
+        0.3612 1.2326
+        0.3650 1.2331
+        0.4063 1.2308
+        0.4358 1.2297
+        0.4753 1.2285
+        0.5086 1.2277
+        0.5461 1.2269
+        0.5780 1.2264
+        0.6439 1.2256
+SPECS:
+    temperature: 90 K

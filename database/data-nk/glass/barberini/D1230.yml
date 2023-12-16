@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/12300-neophan-gold-1230-e.pdf\">Barberini D1230 glass specifications, 2010-09</a>"
+COMMENTS: "20 °C<br>Sun Protection Glass; Colour: grey; Application: medium tinted sunglare filter with UV-absorption filter category 2 acc. to DIN EN 1836"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.5504
+        0.47999 1.5381
+        0.48613 1.5376
+        0.54607 1.5331
+        0.58756 1.5307
+        0.58929 1.5306
+        0.64385 1.5282
+        0.65627 1.5278

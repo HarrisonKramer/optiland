@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. K. Coulter, G. Hass, and J. B. Ramsey, Jr.. Optical constants and reflectance and transmittance of evaporated rhodium films in the visible, <a href=\"https://doi.org/10.1364/JOSA.63.001149\"><i>J. Opt. Soc. Am.</i> <b>63</b>, 1149-1153 (1973)</a>"
+COMMENTS: "Evaporated Rh deposited at 300 °C"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.4047 1.37 4.22
+        0.4358 1.59 4.42
+        0.4916 1.78 4.71
+        0.5461 1.89 5.14
+        0.5780 1.98 5.34
+        0.6120 2.04 5.57

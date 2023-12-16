@@ -1,0 +1,36 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. Inagaki, E. T. Arakawa, R. D. Birkhoff, M. W. Williams. Optical properties of liquid Na between 0.6 and 3.8 eV, <a href=\"https://doi.org/10.1103/PhysRevB.13.5610\"><i>Phs. Rev. B</i> <b>13</b>, 5610-5612 (1976)</a>"
+COMMENTS: "Liquid Na at 120 °C"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.335 0.037 1.13
+        0.345 0.037 1.19
+        0.360 0.036 1.27
+        0.380 0.036 1.38
+        0.400 0.035 1.49
+        0.420 0.034 1.59
+        0.440 0.033 1.70
+        0.460 0.032 1.80
+        0.480 0.030 1.90
+        0.500 0.028 2.00
+        0.540 0.026 2.19
+        0.580 0.029 2.38
+        0.625 0.034 2.60
+        0.675 0.041 2.83
+        0.725 0.048 3.04
+        0.800 0.059 3.37
+        0.900 0.072 3.86
+        1.000 0.087 4.31
+        1.200 0.120 5.17
+        1.400 0.150 6.00
+        1.600 0.180 6.87
+        1.800 0.230 7.64
+        2.000 0.310 8.43
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 120 °C

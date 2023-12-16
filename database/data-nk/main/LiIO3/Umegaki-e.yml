@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) S. Umegaki, S.-I. Tanaka, T. Uchiyama, S. Yabumoto. Refractive indices of lithium iodate between 0.4 and 2.2 μ, <a href=\"https://doi.org/10.1016/0030-4018(71)90013-7\"><i>Opt. Commun.</i> <b>3</b>, 244-245 (1971)</a>.<br>2) V. I. Kabelka, A. S. Piskarskas, A. Y. Stabinis, R. L. Sher. Group matching of interacting light pulses in nonlinear crystals, <a href=\"https://doi.org/10.1070/QE1975v005n02ABEH010943\"><i>Sov. J. Quant. Electron.</i> <b>5</b>, 255-256 (1975)</a>.<br>3) K. Kato. High-power difference-frequency generation at 4.4-5.7 µm in LiIO<sub>3</sub>, <a href=\"https://doi.org/10.1109/JQE.1985.1072617\"><i>IEEE. J. Quant. Electron.</i> <b>21</b>, 119-120 (1985)</a>.<br>* Reference 2 presented a dispersion formula based on tabulated data from Reference 1. The accuracy of the formula was confirmed in Reference 3, which extended the range of validity."
+COMMENTS: "Room temperature. Extraordinary ray (e)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.4 5.7
+    coefficients: 2.918692 0.035145 0 0.028224 1 0 0 0 0 -0.003641 2
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false

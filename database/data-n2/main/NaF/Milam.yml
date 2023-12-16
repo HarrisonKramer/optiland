@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. Milam, M. J. Weber, A. J. Glass. Nonlinear refractive index of fluoride crystals, <a href=\"https://doi.org/10.1063/1.89561\"><i>Appl. Phys. Lett.</i> <b>31</b>, 822 (1977)</a>"
+COMMENTS: "125 ps. Time-resolved interferometry."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.064 1.37e-20
+SPECS:
+    n2_method: TRI
+    pulse_duration: 125e-12

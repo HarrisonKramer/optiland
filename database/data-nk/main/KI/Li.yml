@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. H. Li. Refractive index of alkali halides and its wavelength and temperature derivatives. <a href=\"https://doi.org/10.1063/1.555536\"><i>J. Phys. Chem. Ref. Data</i> <b>5</b>, 329-528 (1976)</a> and references therein.<br> <sup>*</sup> Sellmeier formula is derived by critical analysis of experimental data from several sources."
+COMMENTS: "297 K (24 °C)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.25 50
+    coefficients: 0.47285 0.16512 0.129 0.41222 0.175 0.44163 0.187 0.16076 0.219 0.33571 69.44 1.92474 98.04

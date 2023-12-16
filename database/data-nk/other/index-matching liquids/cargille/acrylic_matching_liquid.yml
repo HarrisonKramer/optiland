@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://www.cargille.com/specimmerliq.shtml\">CARGILLE Acrylic matching liquid characteristics.</a> August 10, 2004"
+COMMENTS: "25 °C"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.31 1.55
+    coefficients: 1.478419 463182.1E-8 -2 -8.637338E-6 -4
+SPECS:
+    temperature: 25 °C

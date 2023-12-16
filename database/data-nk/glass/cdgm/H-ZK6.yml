@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.313 2.325
+    coefficients: 0 1.3513924 0.00735017182 0.206957487 0.0254398321 0.961153882 99.5133128
+  - type: tabulated k
+    data: |
+        0.310 8.6503E-06
+        0.320 4.5123E-06
+        0.330 2.4062E-06
+        0.340 1.2934E-06
+        0.350 6.9202E-07
+        0.360 3.8909E-07
+        0.370 2.2001E-07
+        0.380 1.3607E-07
+        0.390 9.1333E-08
+        0.400 6.7557E-08
+        0.420 5.3908E-08
+        0.440 5.6476E-08
+        0.460 5.1610E-08
+        0.480 4.6114E-08
+        0.500 3.9989E-08
+        0.550 3.9569E-08
+        0.600 3.8351E-08
+        0.650 4.1547E-08
+        0.700 3.9130E-08
+        0.800 4.4720E-08
+        0.850 3.3905E-08
+        0.900 2.8705E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 2.2304E-08
+        1.600 5.1032E-08
+        1.800 1.8743E-07
+        2.000 4.8477E-07
+        2.200 1.7282E-06
+        2.400 3.8134E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.08e-07 1.53e-08 -3.29e-11 4.32e-07 6.25e-10 0.191
+    nd: 1.612720
+    Vd: 58.577083
+    glass_code: 613586
+    density: 3.54 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.3e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.9e-06 K<sup>-1</sup>
+    dPgF: -0.0008
+    climatic_resistance: 2.0

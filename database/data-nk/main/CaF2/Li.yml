@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. H. Li. Refractive index of alkaline earth halides and its wavelength and temperature derivatives. <a href=\"https://doi.org/10.1063/1.555616\"><i>J. Phys. Chem. Ref. Data</i> <b>9</b>, 161-289 (1980)</a> and references therein.<br> <sup>*</sup> Sellmeier formula is derived by critical analysis of experimental data from several sources."
+COMMENTS: "293 K (20 °C)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.15 12.0
+    coefficients: 0.33973 0.69913 0.09374 0.11994 21.18 4.35181 38.46

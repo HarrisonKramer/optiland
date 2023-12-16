@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. Heitmann and E. Ritter. Production and properties of vacuum evaporated films of thorium fluoride, <a href=\"https://doi.org/10.1364/AO.7.000307\"><i>Appl. Opt.</i> <b>7</b>, 307-309 (1968)</a><br> (Digitization of <a href=\"https://refractiveindex.info/download/data/1968/Heitmann.png\">graphical data</a> and fitting with the Sellmeier dispersion formula: refractiveindex.info)"
+COMMENTS: "ThF<sub>4</sub> film on quartz glass"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.26 0.76
+    coefficients: 0 1.2485 0.010466

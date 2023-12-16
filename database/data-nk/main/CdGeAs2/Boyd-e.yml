@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. D. Boyd, E. Buehler, F. G Storz, J. H. Wernick. Linear and nonlinear optical properties of ternary A<sup>II</sup>B<sup>IV</sup>C<sub>2</sub><sup>V</sup> chalcopyrite semiconductors, <a href=\"https://doi.org/10.1109/JQE.1972.1076982\"><i>IEEE J. Quant. Electron.</i>, <b>8</b>, 419-426 (1972)</a><br>2) G. C. Bhar. Refractive index interpolation in phase-matching, <a href=\"https://doi.org/10.1364/AO.15.0305_1\"><i>Appl. Opt.</i> <b>15</b>, 305-307 (1976)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Extraordinary ray (e)"
+DATA:
+  - type: formula 2
+    wavelength_range: 2.4 11.5
+    coefficients: 10.8018 1.2152 2.6971 1.6922 1370

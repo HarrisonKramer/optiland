@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "P. Loiko, P. Becker, L. Bohatý, C. Liebald, M. Peltz, S. Vernay, D. Rytz, J. M. Serres, X. Mateos, Y. Wang, X. Xu, J. Xu, A. Major, A. Baranov, U. Griebner, V. Petrov. Sellmeier equations, group velocity dispersion, and thermo-optic dispersion formulas for CaLnAlO<sub>4</sub> (Ln = Y, Gd) laser host crystals, <a href=\"https://doi.org/10.1364/OL.42.002275\"><i>Opt. Lett.</i>, <b>42</b>, 2275–2278 (2017)</a>"
+COMMENTS: "Extraordinary ray (e); room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.35 2.1
+    coefficients: 3.62156 0.03582 0 0.01920 1 0 0 0 0 -0.01298 2

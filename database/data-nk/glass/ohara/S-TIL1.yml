@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended - Lightweight "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.34 2.4
+    coefficients: 0 1.25088944 0.00883921279 0.0997973327 0.0482685052 1.20583504 137.414953
+  - type: tabulated k
+    data: |
+        0.340 1.2460E-05
+        0.350 3.4477E-06
+        0.360 1.0630E-06
+        0.370 4.1004E-07
+        0.380 1.7427E-07
+        0.390 8.8138E-08
+        0.400 5.1341E-08
+        0.420 2.6846E-08
+        0.440 2.1072E-08
+        0.460 1.8349E-08
+        0.480 1.5310E-08
+        0.500 1.1955E-08
+        0.550 8.7623E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 1.1152E-08
+        0.800 1.2745E-08
+        0.900 1.4338E-08
+        1.000 2.3909E-08
+        1.200 2.8691E-08
+        1.400 4.4653E-08
+        1.600 8.9440E-08
+        1.800 3.3330E-07
+        2.000 8.4990E-07
+        2.200 2.0402E-06
+        2.400 3.1039E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -1.21e-06 1.02e-08 -4.37e-11 5.67e-07 5.97e-10 0.265
+    nd: 1.548141
+    Vd: 45.784277
+    glass_code: 548458
+    density: 2.54 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.01e-05 K<sup>-1</sup>
+    dPgF: 0.0012
+    climatic_resistance: 1.0
+    acid_resistance: 1.0
+    phosphate_resistance: 1.0
