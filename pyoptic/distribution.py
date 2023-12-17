@@ -14,7 +14,7 @@ class BaseDistribution:
         t = np.linspace(0, 2 * np.pi, 256)
         x, y = np.cos(t), np.sin(t)
         plt.plot(x, y, 'r')
-        plt.xlabel('Normalized Pupil Coordiante X')
+        plt.xlabel('Normalized Pupil Coordinate X')
         plt.ylabel('Normalized Pupil Coordinate Y')
         plt.axis('equal')
         plt.show()
