@@ -9,6 +9,14 @@ class BaseDistribution:
     def generate_points(self, num_points: int):
         pass
 
+    @property
+    def dx(self):
+        return self.x[1] - self.x[0]
+
+    @property
+    def dy(self):
+        return self.y[1] - self.y[0]
+
     def view(self):
         plt.plot(self.x, self.y, 'k*')
         t = np.linspace(0, 2 * np.pi, 256)
