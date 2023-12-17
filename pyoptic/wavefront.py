@@ -15,7 +15,9 @@ class Wavefront:
         if self.fields == 'all':
             self.fields = self.optic.fields.get_field_coords()
 
-        self.reference_wavelength = self._get_reference_wavelength(self.wavelengths)
+        self.reference_wavelength = (
+            self._get_reference_wavelength(self.wavelengths)
+            )
         if self.wavelengths == 'all':
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
         elif self.wavelengths == 'primary':
@@ -41,21 +43,13 @@ class Wavefront:
 
             field_data = []
             for wavelength in wavelengths:
-                field_data.append(self._generate_field_data(field, wavelength, opd_ref, xc, yc, zc, R))
+                field_data.append(self._generate_field_data(field, wavelength,
+                                                            opd_ref,
+                                                            xc, yc, zc, R))
             data.append(field_data)
         return data
 
     def _generate_field_data(self, field, wavelength, opd_ref, xc, yc, zc, R):
-        """
-        Note:
-            1. Trace rays with given field and pupil distribution
-            2. Remove wavefront tilt due to ray starting positions
-            3. Trace chief ray & remove excess path length due to start position
-            4. Find reference sphere center using chief ray intersection with image plane
-            5. Find reference sphere radius using exit pupil location and sphere center
-            6. Find optical path length from image plane to reference sphere
-            7. Subtract chief ray OPL from all path lengths
-        """
         # trace distribution through pupil
         self.optic.trace(*field, wavelength, None, self.distribution)
         opd = self._get_path_length(xc, yc, zc, R)
@@ -67,7 +61,8 @@ class Wavefront:
         Note:
             - If all wavelengths chosen, use primary wavelength for reference
             - If single wavelength chosen, use for reference
-            - If several wavelengths chosen and none include primary wavelength, raise ValueError
+            - If several wavelengths chosen and none include primary
+              wavelength, raise ValueError
         """
         if wavelengths in ['primary', 'all']:
             ref_wavelength = self.optic.primary_wavelength
@@ -75,15 +70,18 @@ class Wavefront:
             if len(wavelengths) == 1:
                 ref_wavelength = wavelengths[0]
             else:
-                raise ValueError('Ambiguous wavelength definition. Primary wavelength cannot be determined.')
+                raise ValueError('Ambiguous wavelength definition. '
+                                 'Primary wavelength cannot be determined.')
         return ref_wavelength
 
     def _trace_chief_ray(self, field):
-        self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=self.reference_wavelength)
+        self.optic.trace_generic(*field, Px=0.0, Py=0.0,
+                                 wavelength=self.reference_wavelength)
 
     def _get_reference_sphere(self):
         if self.optic.surface_group.x[-1].size != 1:
-            raise ValueError('Chief ray cannot be determined. It must be traced alone.')
+            raise ValueError('Chief ray cannot be determined. '
+                             'It must be traced alone.')
 
         # chief ray intersection location
         xc = self.optic.surface_group.x[-1]
@@ -104,10 +102,10 @@ class Wavefront:
         except IndexError:
             opd = self.optic.surface_group.opd[-1]
         return opd - self._opd_image_to_xp(xc, yc, zc, r)
-    
+
     def _correct_tilt(self, field, opd, x=None, y=None):
         tilt_correction = 0
-        if self.optic.field_type =='angle':
+        if self.optic.field_type == 'angle':
             Hx, Hy = field
             x_tilt = self.optic.fields.max_x_field * Hx
             y_tilt = self.optic.fields.max_y_field * Hy
@@ -140,7 +138,8 @@ class Wavefront:
 
         a = L**2 + M**2 + N**2
         b = 2*L*(xr - xc) + 2*M*(yr - yc) + 2*N*(zr - zc)
-        c = xr**2 + yr**2 + zr**2 - 2*xr*xc + xc**2 - 2*yr*yc + yc**2 - 2*zr*zc + zc**2 - R**2
+        c = (xr**2 + yr**2 + zr**2 - 2*xr*xc + xc**2 - 2*yr*yc + yc**2 -
+             2*zr*zc + zc**2 - R**2)
 
         d = b ** 2 - 4 * a * c
         t = (-b - np.sqrt(d)) / (2 * a)
@@ -158,16 +157,18 @@ class OPDFan(Wavefront):
         self.pupil_coord = np.linspace(-1, 1, num_rays)
         super().__init__(optic, fields=fields, wavelengths=wavelengths,
                          num_rays=num_rays, distribution='cross')
-        
+
     def view(self):
-        _, axs = plt.subplots(nrows=len(self.fields), ncols=2, figsize=(10, 10), sharex=True, sharey=True)
+        _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
+                              figsize=(10, 7), sharex=True, sharey=True)
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
                 wx = self.data[i][j][self.num_rays:]
                 wy = self.data[i][j][:self.num_rays]
 
-                axs[i, 0].plot(self.pupil_coord, wy, zorder=3, label=f'{wavelength:.4f} µm')
+                axs[i, 0].plot(self.pupil_coord, wy, zorder=3,
+                               label=f'{wavelength:.4f} µm')
                 axs[i, 0].grid()
                 axs[i, 0].axhline(y=0, lw=1, color='gray')
                 axs[i, 0].axvline(x=0, lw=1, color='gray')
@@ -176,7 +177,8 @@ class OPDFan(Wavefront):
                 axs[i, 0].set_xlim((-1, 1))
                 axs[i, 0].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
-                axs[i, 1].plot(self.pupil_coord, wx, zorder=3, label=f'{wavelength:.4f} µm')
+                axs[i, 1].plot(self.pupil_coord, wx, zorder=3,
+                               label=f'{wavelength:.4f} µm')
                 axs[i, 1].grid()
                 axs[i, 1].axhline(y=0, lw=1, color='gray')
                 axs[i, 1].axvline(x=0, lw=1, color='gray')
@@ -186,5 +188,6 @@ class OPDFan(Wavefront):
                 axs[i, 1].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
         plt.legend(loc='upper center', bbox_to_anchor=(-0.1, -0.2), ncol=3)
+        plt.tight_layout()
         plt.subplots_adjust(top=1)
         plt.show()
