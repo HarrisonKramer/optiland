@@ -161,8 +161,83 @@ class OPDFan(Wavefront):
         plt.show()
 
 
+class OPD(Wavefront):
+
+    def __init__(self, optic, fields='all', wavelengths='all', num_rays=256):
+        self.pupil_coord = np.linspace(-1, 1, num_rays)
+        super().__init__(optic, fields=fields, wavelengths=wavelengths,
+                         num_rays=num_rays, distribution='uniform')
+
+    def view(self):
+        pass
+
+
 class FFTPSF(Wavefront):
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rays=128):
-        super().__init__(optic, fields, wavelengths,
-                         num_rays, distribution='uniform')
+    def __init__(self, optic, field, wavelengths='all',
+                 num_rays=128, grid_size=1024):
+        super().__init__(optic=optic, fields=[field], wavelengths=wavelengths,
+                         num_rays=num_rays, distribution='uniform')
+
+        self.grid_size = grid_size
+        self.psf = self._compute_psf()
+
+    def view(self, projection='2d'):
+        if projection == '2d':
+            self._plot_2d()
+        elif projection == '3d':
+            self._plot_3d()
+        else:
+            raise ValueError('OPD projection must be "2d" or "3d".')
+
+    def _plot_2d(self):
+        pass
+
+    def _plot_3d(self):
+        pass
+
+    def _compute_psf(self):
+        pupils = self._generate_pupils()
+        norm_factor = self._get_normalization(pupils)
+
+        psf = []
+        for pupil in pupils:
+            amp = np.fft.fftshift(np.fft.fft2(pupil))
+            psf.append(amp * np.conj(amp))
+
+        return np.real(np.sum(psf, axis=0)) / norm_factor * 100
+
+    def _generate_pupils(self):
+        x = np.linspace(-1, 1, self.num_rays)
+        x, y = np.meshgrid(x, x)
+        x = x.ravel()
+        y = y.ravel()
+        R = np.sqrt(x**2 + y**2)
+
+        pupils = []
+
+        for k in range(len(self.wavelengths)):
+            P = np.zeros_like(x, dtype=complex)
+            P[R <= 1] = np.exp(1j * 2 * np.pi * self.data[0][k])
+            P = np.reshape(P, (self.num_rays, self.num_rays))
+
+            pad = (self.grid_size - P.shape[0]) // 2
+            P = np.pad(P, ((pad, pad), (pad, pad)),
+                       mode='constant', constant_values=0)
+
+            pupils.append(P)
+
+        return pupils
+
+    def _get_normalization(self, pupils):
+        P_nom = pupils[0].copy()
+        P_nom[P_nom != 0] = 1
+
+        amp_norm = np.fft.fftshift(np.fft.fft2(P_nom))
+        psf_norm = amp_norm * np.conj(amp_norm)
+        return np.real(np.max(psf_norm) * len(pupils))
+
+    def _get_psf_units(self):
+        D = self.optic.paraxial.XPD()
+        wavelength = 0.6563e-3
+        Q = self.grid_size / self.num_rays
