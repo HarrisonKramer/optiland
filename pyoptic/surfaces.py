@@ -29,19 +29,19 @@ class Surface:
         self.semi_aperture = r_max
 
     def reset(self):
-        self.y = []
-        self.u = []
-        self.x = []
-        self.y = []
-        self.z = []
+        self.y = np.empty(0)
+        self.u = np.empty(0)
+        self.x = np.empty(0)
+        self.y = np.empty(0)
+        self.z = np.empty(0)
 
-        self.L = []
-        self.M = []
-        self.N = []
+        self.L = np.empty(0)
+        self.M = np.empty(0)
+        self.N = np.empty(0)
 
-        self.energy = []
-        self.aoi = []
-        self.opd = []
+        self.energy = np.empty(0)
+        self.aoi = np.empty(0)
+        self.opd = np.empty(0)
 
     def _compute_aoi(self, rays, nx, ny, nz):
         dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
@@ -50,20 +50,20 @@ class Surface:
 
     def _record(self, rays, aoi=None):
         if isinstance(rays, ParaxialRays):
-            self.y.append(np.copy(rays.y))
-            self.u.append(np.copy(rays.u))
+            self.y = np.copy(np.atleast_1d(rays.y))
+            self.u = np.copy(np.atleast_1d(rays.u))
         elif isinstance(rays, RealRays):
-            self.x.append(np.copy(rays.x))
-            self.y.append(np.copy(rays.y))
-            self.z.append(np.copy(rays.z))
+            self.x = np.copy(np.atleast_1d(rays.x))
+            self.y = np.copy(np.atleast_1d(rays.y))
+            self.z = np.copy(np.atleast_1d(rays.z))
 
-            self.L.append(np.copy(rays.L))
-            self.M.append(np.copy(rays.M))
-            self.N.append(np.copy(rays.N))
+            self.L = np.copy(np.atleast_1d(rays.L))
+            self.M = np.copy(np.atleast_1d(rays.M))
+            self.N = np.copy(np.atleast_1d(rays.N))
 
-            self.energy.append(np.copy(rays.e))
-            self.aoi.append(np.copy(aoi))
-            self.opd.append(np.copy(rays.opd))
+            self.energy = np.copy(np.atleast_1d(rays.e))
+            self.aoi = np.copy(np.atleast_1d(aoi))
+            self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays, nx, ny, nz):
         ix = rays.L
@@ -212,39 +212,39 @@ class SurfaceGroup:
 
     @property
     def x(self):
-        return np.array([surf.x for surf in self.surfaces if surf.x]).squeeze(axis=1)
+        return np.array([surf.x for surf in self.surfaces if surf.x.size > 0])
 
     @property
     def y(self):
-        return np.array([surf.y for surf in self.surfaces if surf.y]).squeeze(axis=1)
+        return np.array([surf.y for surf in self.surfaces if surf.y.size > 0])
 
     @property
     def z(self):
-        return np.array([surf.z for surf in self.surfaces if surf.z]).squeeze(axis=1)
+        return np.array([surf.z for surf in self.surfaces if surf.z.size > 0])
 
     @property
     def L(self):
-        return np.array([surf.L for surf in self.surfaces if surf.L]).squeeze(axis=1)
+        return np.array([surf.L for surf in self.surfaces if surf.L.size > 0])
 
     @property
     def M(self):
-        return np.array([surf.M for surf in self.surfaces if surf.M]).squeeze(axis=1)
+        return np.array([surf.M for surf in self.surfaces if surf.M.size > 0])
 
     @property
     def N(self):
-        return np.array([surf.N for surf in self.surfaces if surf.N]).squeeze(axis=1)
+        return np.array([surf.N for surf in self.surfaces if surf.N.size > 0])
 
     @property
     def opd(self):
-        return np.array([surf.opd for surf in self.surfaces if surf.opd]).squeeze(axis=1)
+        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
 
     @property
     def u(self):
-        return np.array([surf.u for surf in self.surfaces if surf.u]).squeeze(axis=1)
+        return np.array([surf.u for surf in self.surfaces if surf.u.size > 0])
 
     @property
     def energy(self):
-        return np.array([surf.energy for surf in self.surfaces if surf.energy]).squeeze(axis=1)
+        return np.array([surf.energy for surf in self.surfaces if surf.energy.size > 0])
 
     @property
     def positions(self):
