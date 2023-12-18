@@ -79,14 +79,14 @@ class Wavefront:
                                  wavelength=self.reference_wavelength)
 
     def _get_reference_sphere(self):
-        if self.optic.surface_group.x[-1].size != 1:
+        if self.optic.surface_group.x[-1, :].size != 1:
             raise ValueError('Chief ray cannot be determined. '
                              'It must be traced alone.')
 
         # chief ray intersection location
-        xc = self.optic.surface_group.x[-1]
-        yc = self.optic.surface_group.y[-1]
-        zc = self.optic.surface_group.z[-1]
+        xc = self.optic.surface_group.x[-1, :]
+        yc = self.optic.surface_group.y[-1, :]
+        zc = self.optic.surface_group.z[-1, :]
 
         # exit pupil location in z
         zp = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
@@ -97,10 +97,7 @@ class Wavefront:
         return xc, yc, zc, R
 
     def _get_path_length(self, xc, yc, zc, r):
-        try:
-            opd = self.optic.surface_group.opd[-1, :]
-        except IndexError:
-            opd = self.optic.surface_group.opd[-1]
+        opd = self.optic.surface_group.opd[-1, :]
         return opd - self._opd_image_to_xp(xc, yc, zc, r)
 
     def _correct_tilt(self, field, opd, x=None, y=None):
@@ -119,22 +116,13 @@ class Wavefront:
         return opd - tilt_correction
 
     def _opd_image_to_xp(self, xc, yc, zc, R):
-        try:
-            xr = self.optic.surface_group.x[-1, :]
-            yr = self.optic.surface_group.y[-1, :]
-            zr = self.optic.surface_group.z[-1, :]
+        xr = self.optic.surface_group.x[-1, :]
+        yr = self.optic.surface_group.y[-1, :]
+        zr = self.optic.surface_group.z[-1, :]
 
-            L = -self.optic.surface_group.L[-1, :]
-            M = -self.optic.surface_group.M[-1, :]
-            N = -self.optic.surface_group.N[-1, :]
-        except IndexError:  # TODO: make output always 2D to avoid this check
-            xr = self.optic.surface_group.x[-1]
-            yr = self.optic.surface_group.y[-1]
-            zr = self.optic.surface_group.z[-1]
-
-            L = -self.optic.surface_group.L[-1]
-            M = -self.optic.surface_group.M[-1]
-            N = -self.optic.surface_group.N[-1]
+        L = -self.optic.surface_group.L[-1, :]
+        M = -self.optic.surface_group.M[-1, :]
+        N = -self.optic.surface_group.N[-1, :]
 
         a = L**2 + M**2 + N**2
         b = 2*L*(xr - xc) + 2*M*(yr - yc) + 2*N*(zr - zc)
