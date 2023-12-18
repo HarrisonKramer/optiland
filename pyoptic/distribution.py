@@ -63,10 +63,10 @@ class RandomDistribution(BaseDistribution):
         self.y = np.sqrt(r) * np.sin(theta)
 
 
-class SquareDistribution(BaseDistribution):
+class UniformDistribution(BaseDistribution):
 
     def generate_points(self, num_points: int):
-        x = np.linspace(-1, 1, int(4 / np.pi * np.sqrt(num_points)))
+        x = np.linspace(-1, 1, num_points)
         x, y = np.meshgrid(x, x)
         x = x.ravel()
         y = y.ravel()
@@ -77,8 +77,7 @@ class SquareDistribution(BaseDistribution):
 
 class HexagonalDistribution(BaseDistribution):
 
-    def generate_points(self, num_points: int):
-        num_rings = int(np.ceil(1/6*(np.sqrt(12 * num_points - 3) - 3)))
+    def generate_points(self, num_rings: int = 6):
         x = [0]
         y = [0]
         r = np.linspace(0, 1, num_rings+1)
@@ -115,8 +114,8 @@ def create_distribution(distribution_type):
         return LineYDistribution(positive_only=True)
     elif distribution_type == 'random':
         return RandomDistribution()
-    elif distribution_type == 'square':
-        return SquareDistribution()
+    elif distribution_type == 'uniform':
+        return UniformDistribution()
     elif distribution_type == 'hexapolar':
         return HexagonalDistribution()
     elif distribution_type == 'cross':
