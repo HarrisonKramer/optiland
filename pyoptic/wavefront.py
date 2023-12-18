@@ -15,9 +15,6 @@ class Wavefront:
         if self.fields == 'all':
             self.fields = self.optic.fields.get_field_coords()
 
-        self.reference_wavelength = (
-            self._get_reference_wavelength(self.wavelengths)
-            )
         if self.wavelengths == 'all':
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
         elif self.wavelengths == 'primary':
@@ -31,18 +28,20 @@ class Wavefront:
         self.data = self._generate_data(self.fields, self.wavelengths)
 
     def _generate_data(self, fields, wavelengths):
+        pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
+
         data = []
         for field in fields:
-            # Trace chief ray for this field & find reference sphere properties
-            self._trace_chief_ray(field)
-
-            # Reference sphere center and radius
-            xc, yc, zc, R = self._get_reference_sphere()
-            opd_ref = self._get_path_length(xc, yc, zc, R)
-            opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
-
             field_data = []
             for wavelength in wavelengths:
+                # Trace chief ray for this field & find reference sphere properties
+                self._trace_chief_ray(field, wavelength)
+
+                # Reference sphere center and radius
+                xc, yc, zc, R = self._get_reference_sphere(pupil_z)
+                opd_ref = self._get_path_length(xc, yc, zc, R)
+                opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
+
                 field_data.append(self._generate_field_data(field, wavelength,
                                                             opd_ref,
                                                             xc, yc, zc, R))
@@ -56,29 +55,10 @@ class Wavefront:
         opd = self._correct_tilt(field, opd)
         return (opd_ref - opd) / (wavelength * 1e-3)
 
-    def _get_reference_wavelength(self, wavelengths):
-        """
-        Note:
-            - If all wavelengths chosen, use primary wavelength for reference
-            - If single wavelength chosen, use for reference
-            - If several wavelengths chosen and none include primary
-              wavelength, raise ValueError
-        """
-        if wavelengths in ['primary', 'all']:
-            ref_wavelength = self.optic.primary_wavelength
-        elif isinstance(wavelengths, list):
-            if len(wavelengths) == 1:
-                ref_wavelength = wavelengths[0]
-            else:
-                raise ValueError('Ambiguous wavelength definition. '
-                                 'Primary wavelength cannot be determined.')
-        return ref_wavelength
+    def _trace_chief_ray(self, field, wavelength):
+        self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=wavelength)
 
-    def _trace_chief_ray(self, field):
-        self.optic.trace_generic(*field, Px=0.0, Py=0.0,
-                                 wavelength=self.reference_wavelength)
-
-    def _get_reference_sphere(self):
+    def _get_reference_sphere(self, pupil_z):
         if self.optic.surface_group.x[-1, :].size != 1:
             raise ValueError('Chief ray cannot be determined. '
                              'It must be traced alone.')
@@ -88,11 +68,8 @@ class Wavefront:
         yc = self.optic.surface_group.y[-1, :]
         zc = self.optic.surface_group.z[-1, :]
 
-        # exit pupil location in z
-        zp = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
-
         # radius of sphere - exit pupil origin vs. center
-        R = np.sqrt(xc**2 + yc**2 + (zc - zp)**2)
+        R = np.sqrt(xc**2 + yc**2 + (zc - pupil_z)**2)
 
         return xc, yc, zc, R
 
@@ -146,9 +123,11 @@ class OPDFan(Wavefront):
         super().__init__(optic, fields=fields, wavelengths=wavelengths,
                          num_rays=num_rays, distribution='cross')
 
-    def view(self):
+    def view(self, figsize=(10, 7)):
+        num_rows = len(self.fields)
         _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
-                              figsize=(10, 7), sharex=True, sharey=True)
+                              figsize=(10, num_rows*3), sharex=True,
+                              sharey=True)
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
@@ -175,7 +154,7 @@ class OPDFan(Wavefront):
                 axs[i, 0].set_xlim((-1, 1))
                 axs[i, 1].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
-        plt.legend(loc='upper center', bbox_to_anchor=(-0.1, -0.2), ncol=3)
-        plt.tight_layout()
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3)
         plt.subplots_adjust(top=1)
+        plt.tight_layout()
         plt.show()
