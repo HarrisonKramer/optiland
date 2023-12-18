@@ -28,13 +28,14 @@ class Wavefront:
         self.data = self._generate_data(self.fields, self.wavelengths)
 
     def _generate_data(self, fields, wavelengths):
-        pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
+        pupil_z = (self.optic.paraxial.XPL() +
+                   self.optic.surface_group.positions[-1])
 
         data = []
         for field in fields:
             field_data = []
             for wavelength in wavelengths:
-                # Trace chief ray for this field & find reference sphere properties
+                # Trace chief ray for field & find reference sphere properties
                 self._trace_chief_ray(field, wavelength)
 
                 # Reference sphere center and radius
