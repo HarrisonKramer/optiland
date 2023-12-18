@@ -108,8 +108,17 @@ class Paraxial:
 
     def XPD(self):
         """Exit pupil diameter"""
-        # TODO: use Gaussian equations to compute. start with EPD
-        pass
+        # find marginal ray height at image surface
+        ya, ua = self.marginal_ray()
+        yi = ya[-1]
+        ui = ua[-1]
+
+        # find distance from image surface to exit pupil location
+        xpl = self.XPL()
+
+        # propagate marginal ray to this location
+        yxp = yi + ui * xpl
+        return 2 * yxp[0]
 
     def FNO(self):
         """Image-space F-number"""
