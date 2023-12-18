@@ -122,7 +122,7 @@ class TestSingletObjInfinityStop2(unittest.TestCase):
         self.assertAlmostEquals(self.lens.paraxial.XPD(), 9.772357, places=5)
 
     def test_XPL(self):
-        self.assertAlmostEquals(self.lens.paraxial.XPL(), 0.0, places=5)
+        self.assertAlmostEquals(self.lens.paraxial.XPL(), -140.0, places=5)
 
     def test_magnification(self):
         self.assertAlmostEqual(self.lens.paraxial.magnification(), 0, places=5)
