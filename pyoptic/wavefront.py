@@ -241,3 +241,10 @@ class FFTPSF(Wavefront):
         D = self.optic.paraxial.XPD()
         wavelength = 0.6563e-3
         Q = self.grid_size / self.num_rays
+
+
+class FFTMTF(FFTPSF):
+
+    def __init__(self, optic, field, wavelengths='all',
+                 num_rays=128, grid_size=1024):
+        super().__init__(optic, field, wavelengths, num_rays, grid_size)
