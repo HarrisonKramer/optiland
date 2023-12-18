@@ -159,3 +159,10 @@ class OPDFan(Wavefront):
         plt.subplots_adjust(top=1)
         plt.tight_layout()
         plt.show()
+
+
+class FFTPSF(Wavefront):
+
+    def __init__(self, optic, fields='all', wavelengths='all', num_rays=128):
+        super().__init__(optic, fields, wavelengths,
+                         num_rays, distribution='uniform')
