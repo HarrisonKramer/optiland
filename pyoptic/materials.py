@@ -76,7 +76,8 @@ class Material(BaseMaterial):
                 return np.sqrt(n)
 
             elif formula == 'formula 2':
-                n = np.sqrt(1 + C[0] + C[1]*L**2/(L**2 - C[2]) + C[3]*L**2/(L**2 - C[4]) + C[5]*L**2/(L**2 - C[6]))
+                n = np.sqrt(1 + C[0] + C[1]*L**2/(L**2 - C[2]) +
+                            C[3]*L**2/(L**2 - C[4]) + C[5]*L**2/(L**2 - C[6]))
                 return n
 
             elif formula == 'formula 3':
@@ -100,7 +101,8 @@ class Material(BaseMaterial):
         else:
             database_path = f'database/**/{self.name}.yml'
 
-        search_path = os.path.join(os.path.dirname(__file__), '..', database_path)
+        search_path = os.path.join(os.path.dirname(__file__),
+                                   '..', database_path)
 
         for filename in glob.iglob(search_path, recursive=True):
             self.files.append(filename)
@@ -109,8 +111,9 @@ class Material(BaseMaterial):
             raise ValueError(f'No glass data found for "{self.name}"')
 
         if len(self.files) > 1:
-            error_str = f'''More than one material manufacturer found for {self.name}: {self.files}.
-            Please additionally list manufacturer.'''
+            error_str = f'''More than one material manufacturer found for
+            {self.name}: {self.files}. Please additionally list manufacturer.
+            '''
             raise ValueError(error_str)
 
     def _read_yaml(self):
@@ -127,7 +130,8 @@ class Material(BaseMaterial):
                 self.types.append(each['type'])
 
     def _get_coeffs(self):
-        self.coeffs = [float(k) for k in self.data['DATA'][0]['coefficients'].split()]
+        self.coeffs = [float(k) for k in
+                       self.data['DATA'][0]['coefficients'].split()]
 
     def _get_extinction_coeffs(self):
         if self.data['DATA'][1]['type'] == 'tabulated k':
