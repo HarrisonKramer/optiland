@@ -263,6 +263,7 @@ class FFTPSF(OPD):
         ax.set_zlabel('Relative Intensity (%)')
         ax.set_title('FFT PSF')
 
+        # TODO: update format for scientific units on colorbar
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
                      pad=0.1, format=formatter)
         fig.tight_layout()
