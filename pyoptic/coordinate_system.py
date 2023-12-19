@@ -3,8 +3,9 @@ from pyoptic.rays import RealRays
 
 class CoordinateSystem:
 
-    def __init__(self, x: float = 0, y: float = 0, z: float = 0, rx: float = 0, ry: float = 0, rz: float = 0,
-                 reference_cs: 'CoordinateSystem' = None) -> None:
+    def __init__(self, x: float = 0, y: float = 0, z: float = 0,
+                 rx: float = 0, ry: float = 0, rz: float = 0,
+                 reference_cs: 'CoordinateSystem' = None):
         self.x = x
         self.y = y
         self.z = z
@@ -36,13 +37,11 @@ class CoordinateSystem:
             rays.rotate_x(self.rx)
         rays.translate(self.x, self.y, self.z)
 
-        # convert the rays further through the rest of referencing chain to the global coordinate system
         if self.reference_cs:
             self.reference_cs.globalize(rays)
 
     @property
     def position_in_gcs(self):
-        """The location of the origin of the coordinate system in global coordinates, defined by x, y, z"""
         vector = RealRays(0, 0, 0, 0, 0, 1, 1, 1)
         self.globalize(vector)
         return vector.x, vector.y, vector.z
