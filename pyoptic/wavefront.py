@@ -245,9 +245,11 @@ class FFTPSF(OPD):
         y = np.linspace(0, 1, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
+        formatter = None
         if log:
             image = np.log10(image)
-            ax.zaxis.set_major_formatter(mticker.FuncFormatter(self._log_tick_formatter))
+            formatter = mticker.FuncFormatter(self._log_tick_formatter)
+            ax.zaxis.set_major_formatter(formatter)
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
 
         surf = ax.plot_surface(X, Y, image, rstride=1, cstride=1,
@@ -258,12 +260,16 @@ class FFTPSF(OPD):
         ax.set_zlabel('Relative Intensity (%)')
         ax.set_title('FFT PSF')
 
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.1)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
+                     pad=0.1, format=formatter)
         fig.tight_layout()
         plt.show()
 
     def _log_tick_formatter(self, val, pos=None):
-        """https://stackoverflow.com/questions/3909794/plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale"""
+        """
+        https://stackoverflow.com/questions/3909794/
+        plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale
+        """
         return f"$10^{{{int(val)}}}$"
 
     def _compute_psf(self):
