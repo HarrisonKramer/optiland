@@ -276,8 +276,8 @@ class FFTPSF(OPD):
         return f"$10^{{{int(val)}}}$"
 
     def _compute_psf(self):
-        # TODO: check polychromatic PSF summing when scales are different due to wavelength
-        # Likely need to interpolate to the same grid
+        # TODO: check polychromatic PSF summing when scales are different due
+        # to wavelength. Likely need to interpolate to the same grid
         pupils = self._pad_pupils()
         norm_factor = self._get_normalization()
 
