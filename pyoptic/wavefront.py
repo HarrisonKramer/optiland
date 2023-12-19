@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import matplotlib.ticker as mticker
 from scipy.interpolate import griddata
 from pyoptic.distribution import create_distribution
 
@@ -197,6 +198,7 @@ class OPD(Wavefront):
 
 
 class FFTPSF(OPD):
+    # TODO: add transmission from object to exit pupil
 
     def __init__(self, optic, field, wavelengths='all',
                  num_rays=128, grid_size=1024):
@@ -219,7 +221,7 @@ class FFTPSF(OPD):
             raise ValueError('OPD projection must be "2d" or "3d".')
 
     def _plot_2d(self, image, log, figsize=(6, 5)):
-        fig, ax = plt.subplots(figsize=figsize)
+        _, ax = plt.subplots(figsize=figsize)
         if log:
             norm = LogNorm()
         else:
@@ -229,6 +231,7 @@ class FFTPSF(OPD):
 
         ax.set_xlabel('X (µm)')
         ax.set_ylabel('Y (µm)')
+        ax.set_title('FFT PSF')
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
@@ -236,7 +239,32 @@ class FFTPSF(OPD):
         plt.show()
 
     def _plot_3d(self, image, log, figsize=(6, 5)):
-        pass
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+        x = np.linspace(0, 1, image.shape[1])
+        y = np.linspace(0, 1, image.shape[0])
+        X, Y = np.meshgrid(x, y)
+
+        if log:
+            image = np.log10(image)
+            ax.zaxis.set_major_formatter(mticker.FuncFormatter(self._log_tick_formatter))
+            ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+
+        surf = ax.plot_surface(X, Y, image, rstride=1, cstride=1,
+                               cmap='viridis', linewidth=0, antialiased=False)
+
+        ax.set_xlabel('X (µm)')
+        ax.set_ylabel('X (µm)')
+        ax.set_zlabel('Relative Intensity (%)')
+        ax.set_title('FFT PSF')
+
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.1)
+        fig.tight_layout()
+        plt.show()
+
+    def _log_tick_formatter(self, val, pos=None):
+        """https://stackoverflow.com/questions/3909794/plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale"""
+        return f"$10^{{{int(val)}}}$"
 
     def _compute_psf(self):
         pupils = self._pad_pupils()
