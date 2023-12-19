@@ -179,7 +179,6 @@ class OPD(Wavefront):
         pass
 
     def _generate_pupils(self):
-        # TODO: make more modular for PSF, don't pad here
         x = np.linspace(-1, 1, self.num_rays)
         x, y = np.meshgrid(x, x)
         x = x.ravel()
@@ -227,6 +226,9 @@ class FFTPSF(OPD):
         else:
             norm = None
 
+        # x, y = self._get_psf_units(image)  # TODO: complete
+        # extent = [-x/2, x/2, -y/2, y/2]
+
         im = ax.imshow(image, norm=norm)
 
         ax.set_xlabel('X (µm)')
@@ -239,7 +241,8 @@ class FFTPSF(OPD):
         plt.show()
 
     def _plot_3d(self, image, log, figsize=(6, 5)):
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
+                               figsize=figsize)
 
         x = np.linspace(0, 1, image.shape[1])
         y = np.linspace(0, 1, image.shape[0])
@@ -273,6 +276,8 @@ class FFTPSF(OPD):
         return f"$10^{{{int(val)}}}$"
 
     def _compute_psf(self):
+        # TODO: check polychromatic PSF summing when scales are different due to wavelength
+        # Likely need to interpolate to the same grid
         pupils = self._pad_pupils()
         norm_factor = self._get_normalization()
 
@@ -334,10 +339,27 @@ class FFTPSF(OPD):
         psf_norm = amp_norm * np.conj(amp_norm)
         return np.real(np.max(psf_norm) * len(self.pupils))
 
-    def _get_psf_units(self):
+    def _get_psf_units(self, image):
+        """https://www.strollswithmydog.com/
+        wavefront-to-psf-to-mtf-physical-units/#iv"""
         D = self.optic.paraxial.XPD()
-        wavelength = 0.6563e-3
+
+        if self.optic.object_surface.is_infinite:
+            FNO = self.optic.paraxial.FNO()
+        else:
+            p = D / self.optic.paraxial.EPD()
+            m = self.optic.paraxial.magnification()
+            FNO *= (1 + np.abs(m) / p)
+
         Q = self.grid_size / self.num_rays
+
+        # TODO: rework to account for specific wavelength in question
+        dx = self.wavelengths[0] * FNO / Q
+
+        x = image.shape[1] * dx
+        y = image.shape[0] * dx
+
+        return x, y
 
 
 class FFTMTF(FFTPSF):
