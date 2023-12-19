@@ -4,12 +4,7 @@ import numpy as np
 class BaseRays:
 
     def translate(self, dx: float, dy: float, dz: float):
-        """Shift the rays in x, y, z
-
-        :param dx: shift in x
-        :param dy: shift in y
-        :param dz: shift in z
-        """
+        """Shift rays in x, y, z"""
         self.x += dx
         self.y += dy
         self.z += dz
@@ -29,10 +24,7 @@ class RealRays(BaseRays):
         self.opd = np.zeros_like(x, dtype=float)
 
     def rotate_x(self, rx: float):
-        """Rotate about x-axis
-
-        :param rx: rotation about x in radians
-        """
+        """Rotate about x-axis"""
         y = self.y * np.cos(rx) - self.z * np.sin(rx)
         z = self.y * np.sin(rx) + self.z * np.cos(rx)
         m = self.M * np.cos(rx) - self.N * np.sin(rx)
@@ -43,10 +35,7 @@ class RealRays(BaseRays):
         self.N = n
 
     def rotate_y(self, ry: float):
-        """Rotate about y-axis
-
-        :param ry: rotation about y in radians
-        """
+        """Rotate about y-axis"""
         x = self.x * np.cos(ry) + self.z * np.sin(ry)
         z = -self.x * np.sin(ry) + self.z * np.cos(ry)
         L = self.L * np.cos(ry) + self.N * np.sin(ry)
@@ -57,10 +46,7 @@ class RealRays(BaseRays):
         self.N = n
 
     def rotate_z(self, rz: float):
-        """Rotate about z-axis
-
-        :param rz: rotation about z in radians
-        """
+        """Rotate about z-axis"""
         x = self.x * np.cos(rz) - self.y * np.sin(rz)
         y = self.x * np.sin(rz) + self.y * np.cos(rz)
         L = self.L * np.cos(rz) - self.M * np.sin(rz)
@@ -71,10 +57,7 @@ class RealRays(BaseRays):
         self.M = m
 
     def propagate(self, t: float):
-        """Propagate rays a distance of t, which is a parametric variable
-
-        :param t: distance which the rays should be propagated
-        """
+        """Propagate rays a distance t"""
         self.x += t * self.L
         self.y += t * self.M
         self.z += t * self.N
