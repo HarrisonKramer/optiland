@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+from scipy.interpolate import griddata
 from pyoptic.distribution import create_distribution
 
 
@@ -189,11 +191,6 @@ class OPD(Wavefront):
             P = np.zeros_like(x, dtype=complex)
             P[R <= 1] = np.exp(1j * 2 * np.pi * self.data[0][k])
             P = np.reshape(P, (self.num_rays, self.num_rays))
-
-            pad = (self.grid_size - P.shape[0]) // 2
-            P = np.pad(P, ((pad, pad), (pad, pad)),
-                       mode='constant', constant_values=0)
-
             pupils.append(P)
 
         return pupils
@@ -209,29 +206,91 @@ class FFTPSF(OPD):
         self.grid_size = grid_size
         self.psf = self._compute_psf()
 
-    def view(self, projection='2d'):
+    def view(self, projection='2d', log=False, figsize=(6, 5), threshold=0.25):
+        min_x, min_y, max_x, max_y = self._find_bounds(threshold)
+        psf_zoomed = self.psf[min_x:max_x, min_y:max_y]
+        psf_smooth = self._interpolate_psf(psf_zoomed)
+
         if projection == '2d':
-            self._plot_2d()
+            self._plot_2d(psf_smooth, log, figsize=(6, 5))
         elif projection == '3d':
-            self._plot_3d()
+            self._plot_3d(psf_smooth, log, figsize=(6, 5))
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
-    def _plot_2d(self):
-        pass
+    def _plot_2d(self, image, log, figsize=(6, 5)):
+        fig, ax = plt.subplots(figsize=figsize)
+        if log:
+            norm = LogNorm()
+        else:
+            norm = None
 
-    def _plot_3d(self):
+        im = ax.imshow(image, norm=norm)
+
+        ax.set_xlabel('X (µm)')
+        ax.set_ylabel('Y (µm)')
+
+        cbar = plt.colorbar(im)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel('Relative Intensity (%)', rotation=270)
+        plt.show()
+
+    def _plot_3d(self, image, log, figsize=(6, 5)):
         pass
 
     def _compute_psf(self):
+        pupils = self._pad_pupils()
         norm_factor = self._get_normalization()
 
         psf = []
-        for pupil in self.pupils:
+        for pupil in pupils:
             amp = np.fft.fftshift(np.fft.fft2(pupil))
             psf.append(amp * np.conj(amp))
 
         return np.real(np.sum(psf, axis=0)) / norm_factor * 100
+
+    def _interpolate_psf(self, image, n=128):
+        x_orig, y_orig = np.meshgrid(np.linspace(0, 1, image.shape[0]),
+                                     np.linspace(0, 1, image.shape[1]))
+
+        x_interp, y_interp = np.meshgrid(np.linspace(0, 1, n),
+                                         np.linspace(0, 1, n))
+
+        points = np.column_stack((x_orig.flatten(), y_orig.flatten()))
+        values = image.flatten()
+
+        return griddata(points, values, (x_interp, y_interp), method='cubic')
+
+    def _find_bounds(self, threshold=0.25):
+        thresholded_psf = self.psf > threshold
+        non_zero_indices = np.argwhere(thresholded_psf)
+
+        min_x, min_y = np.min(non_zero_indices, axis=0)
+        max_x, max_y = np.max(non_zero_indices, axis=0)
+        size = max(max_x - min_x, max_y - min_y)
+
+        peak_x, peak_y = np.unravel_index(np.argmax(self.psf), self.psf.shape)
+
+        min_x = peak_x - size / 2
+        max_x = peak_x + size / 2
+        min_y = peak_y - size / 2
+        max_y = peak_y + size / 2
+
+        min_x = max(0, min_x)
+        min_y = max(0, min_y)
+        max_x = min(self.psf.shape[0], max_x)
+        max_y = min(self.psf.shape[1], max_y)
+
+        return int(min_x), int(min_y), int(max_x), int(max_y)
+
+    def _pad_pupils(self):
+        pupils_padded = []
+        for pupil in self.pupils:
+            pad = (self.grid_size - pupil.shape[0]) // 2
+            pupil = np.pad(pupil, ((pad, pad), (pad, pad)),
+                           mode='constant', constant_values=0)
+            pupils_padded.append(pupil)
+        return pupils_padded
 
     def _get_normalization(self):
         P_nom = self.pupils[0].copy()
@@ -252,3 +311,20 @@ class FFTMTF(FFTPSF):
     def __init__(self, optic, field, wavelengths='all',
                  num_rays=128, grid_size=1024):
         super().__init__(optic, field, wavelengths, num_rays, grid_size)
+
+    def view(self):
+        pass
+
+    def _compute_mtf(self):
+        pass
+
+    def _get_mtf_units(self):
+        pass
+
+    def _plot_2d(self):
+        """Override to disable function"""
+        pass
+
+    def _plot_3d(self):
+        """Override to disable function"""
+        pass
