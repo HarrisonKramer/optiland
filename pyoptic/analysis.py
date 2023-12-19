@@ -268,8 +268,9 @@ class RayFan:
 class GeometricMTF(SpotDiagram):
     """Smith, Modern Optical Engineering 3rd edition, Section 11.9"""
 
-    def __init__(self, optic, fields='all', wavelength='primary', num_rays=100_000,
-                 distribution='square', num_points=256, max_freq='cutoff', scale=True):
+    def __init__(self, optic, fields='all', wavelength='primary',
+                 num_rays=100_000, distribution='square', num_points=256,
+                 max_freq='cutoff', scale=True):
         self.num_points = num_points
         self.scale = scale
 
