@@ -38,10 +38,12 @@ class Optic:
     def image_surface(self):
         return self.surface_group.surfaces[-1]
 
-    def add_surface(self, new_surface=None, index=None, thickness=0, radius=np.inf,
-                    material='air', conic=0, is_stop=False, dx=0, dy=0, rx=0, ry=0):
+    def add_surface(self, new_surface=None, index=None, thickness=0,
+                    radius=np.inf, material='air', conic=0, is_stop=False,
+                    dx=0, dy=0, rx=0, ry=0):
         self.surface_group.add_surface(new_surface, index, thickness, radius,
-                                       material, conic, is_stop, dx, dy, rx, ry)
+                                       material, conic, is_stop,
+                                       dx, dy, rx, ry)
 
     def add_field(self, y, x=0):
         new_field = Field(self.field_type, x, y)
@@ -58,7 +60,9 @@ class Optic:
 
     def set_radius(self, value, surface_number):
         surface = self.surface_group.surfaces[surface_number]
-        if isinstance(surface.geometry, Plane):  # change geometry from plane to standard
+
+        # change geometry from plane to standard
+        if isinstance(surface.geometry, Plane):
             cs = surface.geometry.cs
             new_geometry = StandardGeometry(cs, radius=value, conic=0)
             surface.geometry = new_geometry
@@ -67,7 +71,8 @@ class Optic:
 
     def set_thickness(self, value, surface_number):
         positions = self.surface_group.positions
-        delta_t = value - positions[surface_number+1] + positions[surface_number]
+        delta_t = value - positions[surface_number+1] + \
+            positions[surface_number]
         positions[surface_number+1:] += delta_t
         positions -= positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.surface_group.surfaces):
@@ -108,7 +113,8 @@ class Optic:
         for k, surface in enumerate(self.surface_group.surfaces):
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
 
-    def trace(self, Hx, Hy, wavelength, num_rays=100, distribution='hexapolar'):
+    def trace(self, Hx, Hy, wavelength, num_rays=100,
+              distribution='hexapolar'):
         EPL = self.paraxial.EPL()
         EPD = self.paraxial.EPD()
 
@@ -157,11 +163,13 @@ class Optic:
         field_y = max_field * Hy
         if obj.is_infinite:
             if self.field_type == 'object_height':
-                raise ValueError('Field type cannot be "object_height" for an object at infinity.')
+                raise ValueError('''Field type cannot be "object_height" for an
+                                 object at infinity.''')
 
+            # start 10 lens units before first surface
             x = np.tan(np.radians(field_x)) * (10 + EPL)
             y = -np.tan(np.radians(field_y)) * (10 + EPL)
-            z = self.surface_group.positions[1] - 10  # start 10 lens units before first surface
+            z = self.surface_group.positions[1] - 10
 
             x0 = x1 + x
             y0 = y1 + y
