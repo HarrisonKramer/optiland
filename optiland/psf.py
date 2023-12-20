@@ -1,4 +1,8 @@
 import numpy as np
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+import matplotlib.ticker as mticker
 from optiland.wavefront import OPD
 
 
