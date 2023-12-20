@@ -3,33 +3,35 @@ from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import matplotlib.ticker as mticker
-from optiland.wavefront import OPD
+from optiland.wavefront import Wavefront
 
 
-class FFTPSF(OPD):
+class FFTPSF(Wavefront):
     # TODO: add transmission from object to exit pupil
 
     def __init__(self, optic, field, wavelengths='all',
                  num_rays=128, grid_size=1024):
         super().__init__(optic=optic, fields=[field], wavelengths=wavelengths,
-                         num_rays=num_rays)
+                         num_rays=num_rays, distribution='uniform')
 
         self.grid_size = grid_size
+        self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
 
-    def view(self, projection='2d', log=False, figsize=(6, 5), threshold=0.25):
+    def view(self, projection='2d', log=False, figsize=(7, 5.5),
+             threshold=0.25, num_points=128):
         min_x, min_y, max_x, max_y = self._find_bounds(threshold)
         psf_zoomed = self.psf[min_x:max_x, min_y:max_y]
-        psf_smooth = self._interpolate_psf(psf_zoomed)
+        psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
         if projection == '2d':
-            self._plot_2d(psf_smooth, log, figsize=(6, 5))
+            self._plot_2d(psf_smooth, log, figsize=figsize)
         elif projection == '3d':
-            self._plot_3d(psf_smooth, log, figsize=(6, 5))
+            self._plot_3d(psf_smooth, log, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
-    def _plot_2d(self, image, log, figsize=(6, 5)):
+    def _plot_2d(self, image, log, figsize=(7, 5.5)):
         _, ax = plt.subplots(figsize=figsize)
         if log:
             norm = LogNorm()
@@ -50,7 +52,7 @@ class FFTPSF(OPD):
         cbar.ax.set_ylabel('Relative Intensity (%)', rotation=270)
         plt.show()
 
-    def _plot_3d(self, image, log, figsize=(6, 5)):
+    def _plot_3d(self, image, log, figsize=(7, 5.5)):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
                                figsize=figsize)
 
@@ -58,12 +60,16 @@ class FFTPSF(OPD):
         y = np.linspace(0, 1, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
-        formatter = None
+        # replace values <= 0 with smallest non-zero value in image
+        image[image <= 0] = np.min(image[image > 0])
+
+        log_formatter = None
         if log:
             image = np.log10(image)
             formatter = mticker.FuncFormatter(self._log_tick_formatter)
             ax.zaxis.set_major_formatter(formatter)
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+            log_formatter = self._log_colorbar_formatter
 
         surf = ax.plot_surface(X, Y, image, rstride=1, cstride=1,
                                cmap='viridis', linewidth=0, antialiased=False)
@@ -75,16 +81,38 @@ class FFTPSF(OPD):
 
         # TODO: update format for scientific units on colorbar
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
-                     pad=0.1, format=formatter)
+                     pad=0.15, format=log_formatter)
         fig.tight_layout()
         plt.show()
 
-    def _log_tick_formatter(self, val, pos=None):
+    def _log_tick_formatter(self, value, pos=None):
         """
         https://stackoverflow.com/questions/3909794/
         plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale
         """
-        return f"$10^{{{int(val)}}}$"
+        return f"$10^{{{int(value)}}}$"
+
+    def _log_colorbar_formatter(self, value, pos=None):
+        linear_value = 10**value
+        return '{:.1e}'.format(linear_value)
+
+    def _generate_pupils(self):
+        x = np.linspace(-1, 1, self.num_rays)
+        x, y = np.meshgrid(x, x)
+        x = x.ravel()
+        y = y.ravel()
+        R = np.sqrt(x**2 + y**2)
+
+        pupils = []
+
+        for k in range(len(self.wavelengths)):
+            P = np.zeros_like(x, dtype=complex)
+            amplitude = self.data[0][k][1] / np.mean(self.data[0][k][1])
+            P[R <= 1] = amplitude * np.exp(1j * 2 * np.pi * self.data[0][k][0])
+            P = np.reshape(P, (self.num_rays, self.num_rays))
+            pupils.append(P)
+
+        return pupils
 
     def _compute_psf(self):
         # TODO: check polychromatic PSF summing when scales are different due
