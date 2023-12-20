@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
-from pyoptic.variable import Variable
-from pyoptic.operand import Operand
+from optiland.variable import Variable
+from optiland.operand import Operand
 
 
 class OptimizationProblem:

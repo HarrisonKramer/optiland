@@ -1,4 +1,4 @@
-from pyoptic.rays import ParaxialRays
+from optiland.rays import ParaxialRays
 import numpy as np
 
 

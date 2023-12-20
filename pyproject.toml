@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyoptic"
+name = "optiland"
 version = "0.0.1"
 authors = [
   { name="Kramer Harrison", email="kdanielharrison@gmail.com" },
@@ -26,4 +26,4 @@ dependencies = [
 "Homepage" = "www.google.com"
 
 [tool.setuptools]
-packages = ["pyoptic"]
+packages = ["optiland"]

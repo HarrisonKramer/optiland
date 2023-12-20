@@ -1,9 +1,9 @@
 from copy import deepcopy
 import numpy as np
-from pyoptic.rays import BaseRays, RealRays, ParaxialRays
-from pyoptic.coordinate_system import CoordinateSystem
-from pyoptic.geometries import Plane, StandardGeometry
-from pyoptic import materials
+from optiland.rays import BaseRays, RealRays, ParaxialRays
+from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries import Plane, StandardGeometry
+from optiland import materials
 
 
 class Surface:

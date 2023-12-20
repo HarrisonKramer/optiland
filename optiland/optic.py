@@ -1,14 +1,14 @@
 import numpy as np
-from pyoptic.fields import Field, FieldGroup
-from pyoptic.surfaces import SurfaceGroup, ObjectSurface
-from pyoptic.wavelength import WavelengthGroup
-from pyoptic.paraxial import Paraxial
-from pyoptic.aberrations import Aberrations
-from pyoptic.aperture import Aperture
-from pyoptic.rays import RealRays
-from pyoptic.distribution import create_distribution
-from pyoptic.geometries import Plane, StandardGeometry
-from pyoptic.materials import IdealMaterial
+from optiland.fields import Field, FieldGroup
+from optiland.surfaces import SurfaceGroup, ObjectSurface
+from optiland.wavelength import WavelengthGroup
+from optiland.paraxial import Paraxial
+from optiland.aberrations import Aberrations
+from optiland.aperture import Aperture
+from optiland.rays import RealRays
+from optiland.distribution import create_distribution
+from optiland.geometries import Plane, StandardGeometry
+from optiland.materials import IdealMaterial
 
 
 class Optic:

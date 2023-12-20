@@ -1,4 +1,4 @@
-from pyoptic.rays import RealRays
+from optiland.rays import RealRays
 
 
 class CoordinateSystem:

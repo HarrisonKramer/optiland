@@ -7,6 +7,6 @@ build/
 dist/
 **/.ipynb_checkpoints/
 .vscode/
-pyoptic.egg-info/
+optiland.egg-info/
 **/Scripts/
 references/

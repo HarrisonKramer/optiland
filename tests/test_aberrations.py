@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pyoptic import optic
+from optiland import optic
 
 
 # TODO: add same test for singlet

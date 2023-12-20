@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pyoptic import materials, optic
+from optiland import materials, optic
 
 
 class TestSingletObjInfinityStop1(unittest.TestCase):
