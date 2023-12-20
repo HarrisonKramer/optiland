@@ -8,7 +8,7 @@ class GeometricMTF(SpotDiagram):
     """Smith, Modern Optical Engineering 3rd edition, Section 11.9"""
 
     def __init__(self, optic, fields='all', wavelength='primary',
-                 num_rays=100_000, distribution='square', num_points=256,
+                 num_rays=100, distribution='uniform', num_points=256,
                  max_freq='cutoff', scale=True):
         self.num_points = num_points
         self.scale = scale
@@ -54,7 +54,7 @@ class GeometricMTF(SpotDiagram):
                                                     scale_factor)])
         return mtf
 
-    def _compute_geometric_mtf(self, xi, v, scale_factor):
+    def _compute_field_data(self, xi, v, scale_factor):
         A, edges = np.histogram(xi, bins=self.num_points+1)
         x = (edges[1:] + edges[:-1]) / 2
         dx = x[1] - x[0]
@@ -77,19 +77,70 @@ class GeometricMTF(SpotDiagram):
                 color=color, linestyle='--')
 
 
-class FFTMTF(FFTPSF):
+class FFTMTF:
+    # TODO: verify and complete
 
-    def __init__(self, optic, field, wavelengths='all',
-                 num_rays=128, grid_size=1024):
-        super().__init__(optic, field, wavelengths, num_rays, grid_size)
+    def __init__(self, optic, fields='all', wavelength='primary',
+                 num_rays=128, grid_size=1024, max_freq='cutoff'):
+        self.optic = optic
+        self.max_freq = max_freq
+        self.fields = fields
+        self.wavelength = wavelength
+        self.num_rays = num_rays
+        self.grid_size = grid_size
 
-    def view(self):
-        pass
+        if self.fields == 'all':
+            self.fields = self.optic.fields.get_field_coords()
 
-    def _compute_mtf(self):
-        pass
+        if self.wavelength == 'primary':
+            self.wavelength = optic.primary_wavelength
+
+        if max_freq == 'cutoff':
+            # wavelength must be converted to mm for frequency units cycles/mm
+            self.max_freq = 1 / (self.wavelength * 1e-3 * optic.paraxial.FNO())
+
+        self.psf = [FFTPSF(self.optic, field, self.wavelength,
+                           self.num_rays, self.grid_size).psf
+                    for field in self.fields]
+
+        self.mtf = self._generate_mtf_data()
+
+    def view(self, figsize=(12, 4)):
+        _, ax = plt.subplots(figsize=figsize)
+
+        for k, data in enumerate(self.mtf):
+            self._plot_field(ax, data, self.fields[k], color=f'C{k}')
+
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        ax.set_xlim([0, self.max_freq])
+        ax.set_ylim([0, 1])
+        ax.set_xlabel('Frequency (cycles/mm)', labelpad=10)
+        ax.set_ylabel('Modulation Transfer Function', labelpad=10)
+        plt.tight_layout()
+        plt.show()
+
+    def _plot_field(self, ax, mtf_data, field, color):
+        freq = np.linspace(0, self.max_freq, mtf_data[0].size)
+        ax.plot(freq, mtf_data[0],
+                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
+                color=color, linestyle='-')
+        ax.plot(freq, mtf_data[1],
+                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal',
+                color=color, linestyle='--')
+
+    def _generate_mtf_data(self):
+        mtf_data = [np.abs(np.fft.fftshift(np.fft.fft2(psf)))
+                    for psf in self.psf]
+        mtf = []
+        for data in mtf_data:
+            tangential = data[self.grid_size//2:, self.grid_size//2]
+            sagittal = data[self.grid_size//2:, self.grid_size//2]
+            mtf.append([tangential/np.max(tangential),
+                        sagittal/np.max(sagittal)])
+        return mtf
 
     def _get_mtf_units(self):
+        # TODO: complete
         pass
 
     def _plot_2d(self):
