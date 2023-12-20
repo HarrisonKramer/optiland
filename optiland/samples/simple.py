@@ -18,14 +18,14 @@ def Edmund_49_847():
 
     # add field
     singlet.set_field_type(field_type='angle')
-    singlet.add_field(number=0, x=0, y=0)
-    singlet.add_field(number=1, x=0, y=10)
-    singlet.add_field(number=2, x=0, y=14)
+    singlet.add_field(y=0)
+    singlet.add_field(y=10)
+    singlet.add_field(y=14)
 
     # add wavelength
-    singlet.add_wavelength(number=0, value=0.4861)
-    singlet.add_wavelength(number=1, value=0.5876, is_primary=True)
-    singlet.add_wavelength(number=2, value=0.6563)
+    singlet.add_wavelength(value=0.4861)
+    singlet.add_wavelength(value=0.5876, is_primary=True)
+    singlet.add_wavelength(value=0.6563)
 
     singlet.update_paraxial()
 
