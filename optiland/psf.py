@@ -119,7 +119,7 @@ class FFTPSF(OPD):
         max_x, max_y = np.max(non_zero_indices, axis=0)
         size = max(max_x - min_x, max_y - min_y)
 
-        peak_x, peak_y = np.unravel_index(np.argmax(self.psf), self.psf.shape)
+        peak_x, peak_y = self.psf.shape[0] // 2, self.psf.shape[1] // 2
 
         min_x = peak_x - size / 2
         max_x = peak_x + size / 2
