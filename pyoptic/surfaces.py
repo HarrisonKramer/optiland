@@ -344,7 +344,7 @@ class SurfaceGroup:
             material_post = materials.Material(name=material[0], manufacturer=material[1])
         elif isinstance(material, str):
             if material == 'mirror':
-                material_post = materials.Mirror()  # TODO: update for mirrors not in air
+                material_post = materials.Mirror()
             elif material == 'air':
                 material_post = materials.IdealMaterial(n=1.0, k=0.0)
             else:

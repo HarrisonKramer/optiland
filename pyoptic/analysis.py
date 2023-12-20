@@ -306,7 +306,7 @@ class GeometricMTF(SpotDiagram):
         else:
             scale_factor = 1
 
-        mtf = []  # TODO: add option more polychromatic MTF
+        mtf = []  # TODO: add option for polychromatic MTF
         for field_data in self.data:
             xi, yi = field_data[0][0], field_data[0][1]
             mtf.append([self._compute_geometric_mtf(yi, self.freq, scale_factor),
@@ -354,7 +354,6 @@ class YYbar:
         plt.show()
 
 
-# TODO: OPD fans
 # TODO: distortion plot
 # TODO: grid distortion
 # TODO: field curvature
