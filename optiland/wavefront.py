@@ -52,9 +52,10 @@ class Wavefront:
     def _generate_field_data(self, field, wavelength, opd_ref, xc, yc, zc, R):
         # trace distribution through pupil
         self.optic.trace(*field, wavelength, None, self.distribution)
+        energy = self.optic.surface_group.energy[-1, :]
         opd = self._get_path_length(xc, yc, zc, R)
         opd = self._correct_tilt(field, opd)
-        return (opd_ref - opd) / (wavelength * 1e-3)
+        return (opd_ref - opd) / (wavelength * 1e-3), energy
 
     def _trace_chief_ray(self, field, wavelength):
         self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=wavelength)
@@ -132,8 +133,8 @@ class OPDFan(Wavefront):
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
-                wx = self.data[i][j][self.num_rays:]
-                wy = self.data[i][j][:self.num_rays]
+                wx = self.data[i][j][0][self.num_rays:]
+                wy = self.data[i][j][0][:self.num_rays]
 
                 axs[i, 0].plot(self.pupil_coord, wy, zorder=3,
                                label=f'{wavelength:.4f} µm')
@@ -170,24 +171,5 @@ class OPD(Wavefront):
         super().__init__(optic, fields=fields, wavelengths=wavelengths,
                          num_rays=num_rays, distribution='uniform')
 
-        self.pupils = self._generate_pupils()
-
     def view(self):
         pass
-
-    def _generate_pupils(self):
-        x = np.linspace(-1, 1, self.num_rays)
-        x, y = np.meshgrid(x, x)
-        x = x.ravel()
-        y = y.ravel()
-        R = np.sqrt(x**2 + y**2)
-
-        pupils = []
-
-        for k in range(len(self.wavelengths)):
-            P = np.zeros_like(x, dtype=complex)
-            P[R <= 1] = np.exp(1j * 2 * np.pi * self.data[0][k])
-            P = np.reshape(P, (self.num_rays, self.num_rays))
-            pupils.append(P)
-
-        return pupils
