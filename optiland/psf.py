@@ -7,11 +7,9 @@ from optiland.wavefront import Wavefront
 
 
 class FFTPSF(Wavefront):
-    # TODO: add transmission from object to exit pupil
-
-    def __init__(self, optic, field, wavelengths='all',
+    def __init__(self, optic, field, wavelength,
                  num_rays=128, grid_size=1024):
-        super().__init__(optic=optic, fields=[field], wavelengths=wavelengths,
+        super().__init__(optic=optic, fields=[field], wavelengths=[wavelength],
                          num_rays=num_rays, distribution='uniform')
 
         self.grid_size = grid_size
@@ -38,10 +36,10 @@ class FFTPSF(Wavefront):
         else:
             norm = None
 
-        # x, y = self._get_psf_units(image)  # TODO: complete
-        # extent = [-x/2, x/2, -y/2, y/2]
+        x, y = self._get_psf_units(image)
+        extent = [-x/2, x/2, -y/2, y/2]
 
-        im = ax.imshow(image, norm=norm)
+        im = ax.imshow(image, norm=norm, extent=extent)
 
         ax.set_xlabel('X (µm)')
         ax.set_ylabel('Y (µm)')
@@ -56,8 +54,10 @@ class FFTPSF(Wavefront):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
                                figsize=figsize)
 
-        x = np.linspace(0, 1, image.shape[1])
-        y = np.linspace(0, 1, image.shape[0])
+        x, y = self._get_psf_units(image)
+
+        x = np.linspace(-x/2, x/2, image.shape[1])
+        y = np.linspace(-y/2, y/2, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
@@ -115,8 +115,8 @@ class FFTPSF(Wavefront):
         return pupils
 
     def _compute_psf(self):
-        # TODO: check polychromatic PSF summing when scales are different due
-        # to wavelength. Likely need to interpolate to the same grid
+        # TODO: add ability to compute polychromatic PSF.
+        # Interpolate for each wavelength, then incoherently sum.
         pupils = self._pad_pupils()
         norm_factor = self._get_normalization()
 
@@ -191,8 +191,6 @@ class FFTPSF(Wavefront):
             FNO *= (1 + np.abs(m) / p)
 
         Q = self.grid_size / self.num_rays
-
-        # TODO: rework to account for specific wavelength in question
         dx = self.wavelengths[0] * FNO / Q
 
         x = image.shape[1] * dx
