@@ -1,3 +1,8 @@
+"""Optiland PSF Module
+
+HarrisonKramer, December 20th, 2023
+"""
+
 import numpy as np
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
@@ -79,7 +84,6 @@ class FFTPSF(Wavefront):
         ax.set_zlabel('Relative Intensity (%)')
         ax.set_title('FFT PSF')
 
-        # TODO: update format for scientific units on colorbar
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
                      pad=0.15, format=log_formatter)
         fig.tight_layout()
