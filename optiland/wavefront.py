@@ -125,11 +125,16 @@ class OPDFan(Wavefront):
         super().__init__(optic, fields=fields, wavelengths=wavelengths,
                          num_rays=num_rays, distribution='cross')
 
-    def view(self, figsize=(10, 7)):
+    def view(self, figsize=(10, 3)):
         num_rows = len(self.fields)
-        _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
-                              figsize=(10, num_rows*3), sharex=True,
-                              sharey=True)
+
+        _, axs = plt.subplots(
+            nrows=len(self.fields),
+            ncols=2,
+            figsize=(figsize[0], num_rows * figsize[1]),
+            sharex=True,
+            sharey=True
+            )
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
