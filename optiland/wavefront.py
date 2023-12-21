@@ -189,7 +189,7 @@ class OPD(Wavefront):
 
     def _plot_2d(self, data, figsize=(7, 5.5)):
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(data['z'], extent=[-1, 1, -1, 1])
+        im = ax.imshow(np.flipud(data['z']), extent=[-1, 1, -1, 1])
 
         ax.set_xlabel('Pupil X')
         ax.set_ylabel('Pupil Y')

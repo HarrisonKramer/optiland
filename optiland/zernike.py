@@ -107,16 +107,8 @@ class ZernikeFit:
     def coeffs(self):
         return self.zernike.coeffs
 
-    def view(self, projection='2d', num_points=128, figsize=(7, 5.5)):
-        if projection == '2d':
-            self._plot_2d(figsize=figsize, num_points=num_points)
-        elif projection == '3d':
-            self._plot_3d(figsize=figsize, num_points=num_points)
-        else:
-            raise ValueError('OPD projection must be "2d" or "3d".')
-
-    def _plot_2d(self, num_points=128, figsize=(7, 5.5),
-                 z_label='OPD (waves)'):
+    def view(self, projection='2d', num_points=128, figsize=(7, 5.5),
+             z_label='OPD (waves)'):
         x, y = np.meshgrid(np.linspace(-1, 1, num_points),
                            np.linspace(-1, 1, num_points))
         radius = np.sqrt(x**2 + y**2)
@@ -125,8 +117,16 @@ class ZernikeFit:
 
         z[radius > 1] = np.nan
 
+        if projection == '2d':
+            self._plot_2d(z, figsize=figsize, z_label=z_label)
+        elif projection == '3d':
+            self._plot_3d(x, y, z, figsize=figsize, z_label=z_label)
+        else:
+            raise ValueError('OPD projection must be "2d" or "3d".')
+
+    def _plot_2d(self, z, figsize=(7, 5.5), z_label='OPD (waves)'):
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(z, extent=[-1, 1, -1, 1])
+        im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
 
         ax.set_xlabel('Pupil X')
         ax.set_ylabel('Pupil Y')
@@ -137,9 +137,24 @@ class ZernikeFit:
         cbar.ax.set_ylabel(z_label, rotation=270)
         plt.show()
 
-    def _plot_3d(self, num_points=128, figsize=(7, 5.5),
-                 z_label='OPD (waves)'):
-        pass
+    def _plot_3d(self, x, y, z, figsize=(7, 5.5), z_label='OPD (waves)'):
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
+                               figsize=figsize)
+
+        surf = ax.plot_surface(x, y, z,
+                               rstride=1, cstride=1,
+                               cmap='viridis', linewidth=0,
+                               antialiased=False)
+
+        ax.set_xlabel('Pupil X')
+        ax.set_ylabel('Pupil Y')
+        ax.set_zlabel(z_label)
+        ax.set_title(f'Zernike {self.type.capitalize()} Fit')
+
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
+                     pad=0.15)
+        fig.tight_layout()
+        plt.show()
 
     def view_residual(self, figsize=(7, 5.5), z_label='Residual (waves)'):
         z = self.zernike.poly(self.radius, self.phi)
