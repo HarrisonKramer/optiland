@@ -103,7 +103,20 @@ class ZernikeFit:
 
         self._fit()
 
-    def view(self, num_points=128, figsize=(7, 5.5), z_label='OPD (waves)'):
+    @property
+    def coeffs(self):
+        return self.zernike.coeffs
+
+    def view(self, projection='2d', num_points=128, figsize=(7, 5.5)):
+        if projection == '2d':
+            self._plot_2d(figsize=figsize, num_points=num_points)
+        elif projection == '3d':
+            self._plot_3d(figsize=figsize, num_points=num_points)
+        else:
+            raise ValueError('OPD projection must be "2d" or "3d".')
+
+    def _plot_2d(self, num_points=128, figsize=(7, 5.5),
+                 z_label='OPD (waves)'):
         x, y = np.meshgrid(np.linspace(-1, 1, num_points),
                            np.linspace(-1, 1, num_points))
         radius = np.sqrt(x**2 + y**2)
@@ -123,6 +136,10 @@ class ZernikeFit:
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel(z_label, rotation=270)
         plt.show()
+
+    def _plot_3d(self, num_points=128, figsize=(7, 5.5),
+                 z_label='OPD (waves)'):
+        pass
 
     def view_residual(self, figsize=(7, 5.5), z_label='Residual (waves)'):
         z = self.zernike.poly(self.radius, self.phi)
