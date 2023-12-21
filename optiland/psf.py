@@ -80,7 +80,7 @@ class FFTPSF(Wavefront):
                                cmap='viridis', linewidth=0, antialiased=False)
 
         ax.set_xlabel('X (µm)')
-        ax.set_ylabel('X (µm)')
+        ax.set_ylabel('Y (µm)')
         ax.set_zlabel('Relative Intensity (%)')
         ax.set_title('FFT PSF')
 
