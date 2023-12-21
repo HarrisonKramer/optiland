@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
 from optiland.distribution import create_distribution
 
 
@@ -169,12 +170,54 @@ class OPDFan(Wavefront):
 
 class OPD(Wavefront):
 
-    def __init__(self, optic, fields='all', wavelengths='all',
-                 num_rays=256, grid_size=1024):
-        self.pupil_coord = np.linspace(-1, 1, num_rays)
+    def __init__(self, optic, field, wavelength,
+                 num_rings=15, grid_size=512):
         self.grid_size = grid_size
-        super().__init__(optic, fields=fields, wavelengths=wavelengths,
-                         num_rays=num_rays, distribution='uniform')
+        super().__init__(optic, fields=[field], wavelengths=[wavelength],
+                         num_rays=num_rings, distribution='hexapolar')
 
-    def view(self):
+        self.opd_map = self._generate_opd_map()
+
+    def view(self, projection='2d', figsize=(7, 5.5)):
+        if projection == '2d':
+            self._plot_2d(figsize=figsize)
+        elif projection == '3d':
+            self._plot_3d(figsize=figsize)
+        else:
+            raise ValueError('OPD projection must be "2d" or "3d".')
+
+    def rms(self):
+        return np.sqrt(np.mean(self.data[0][0][0]**2))
+
+    def _plot_2d(self, figsize=(7, 5.5)):
+        _, ax = plt.subplots(figsize=figsize)
+        im = ax.imshow(self.opd_map['z'], extent=[-1, 1, -1, 1])
+
+        ax.set_xlabel('Pupil X')
+        ax.set_ylabel('Pupil Y')
+        ax.set_title(f'OPD Map: RMS={self.rms():.3f} waves')
+
+        cbar = plt.colorbar(im)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel('OPD (waves)', rotation=270)
+        plt.show()
+
+    def _plot_3d(self, figsize=(7, 5.5)):
         pass
+
+    def _generate_opd_map(self):
+        x = self.distribution.x
+        y = self.distribution.y
+        z = self.data[0][0][0]
+
+        x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, self.grid_size),
+                                         np.linspace(-1, 1, self.grid_size))
+
+        points = np.column_stack((x.flatten(), y.flatten()))
+        values = z.flatten()
+
+        z_interp = griddata(points, values, (x_interp, y_interp),
+                            method='cubic')
+
+        data = dict(x=x_interp, y=y_interp, z=z_interp)
+        return data
