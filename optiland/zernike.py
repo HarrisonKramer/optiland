@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import least_squares
 
 
 class ZernikeStandard:
@@ -13,7 +15,9 @@ class ZernikeStandard:
         self.coeffs = coeffs
 
     def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
-        return coeff * self._radial_term(n, m, r) * self._azimuthal_term(m, phi)
+        return (coeff *
+                self._radial_term(n, m, r) *
+                self._azimuthal_term(m, phi))
 
     def terms(self, r=0, phi=0):
         val = []
@@ -70,7 +74,8 @@ class ZernikeFringe(ZernikeStandard):
                     indices.append((n, m))
 
         # sort indices according to fringe coefficient number
-        indices_sorted = [element for _, element in sorted(zip(number, indices))]
+        indices_sorted = [element for _, element in
+                          sorted(zip(number, indices))]
 
         # take only 120 indices
         return indices_sorted[:120]
@@ -78,5 +83,69 @@ class ZernikeFringe(ZernikeStandard):
 
 class ZernikeFit:
 
-    def __init__(self):
-        pass
+    def __init__(self, x, y, z, zernike_type='fringe', num_terms=36):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.type = zernike_type
+        self.num_terms = num_terms
+
+        self.radius = np.sqrt(self.x**2 + self.y**2)
+        self.phi = np.arctan2(self.y, self.x)
+        self.num_pts = np.size(self.z)
+
+        if self.type == 'fringe':
+            self.zernike = ZernikeFringe()
+        elif self.type == 'standard':
+            self.zernike = ZernikeStandard()
+        else:
+            raise ValueError('Zernike type must be "fringe" or "standard".')
+
+        self._fit()
+
+    def view(self, num_points=128, figsize=(7, 5.5), z_label='OPD (waves)'):
+        x, y = np.meshgrid(np.linspace(-1, 1, num_points),
+                           np.linspace(-1, 1, num_points))
+        radius = np.sqrt(x**2 + y**2)
+        phi = np.arctan2(y, x)
+        z = self.zernike.poly(radius, phi)
+
+        z[radius > 1] = np.nan
+
+        _, ax = plt.subplots(figsize=figsize)
+        im = ax.imshow(z, extent=[-1, 1, -1, 1])
+
+        ax.set_xlabel('Pupil X')
+        ax.set_ylabel('Pupil Y')
+        ax.set_title(f'Zernike {self.type.capitalize()} Fit')
+
+        cbar = plt.colorbar(im)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel(z_label, rotation=270)
+        plt.show()
+
+    def view_residual(self, figsize=(7, 5.5), z_label='Residual (waves)'):
+        z = self.zernike.poly(self.radius, self.phi)
+        rms = np.sqrt(np.mean((z-self.z)**2))
+
+        _, ax = plt.subplots(figsize=figsize)
+        s = ax.scatter(self.x, self.y, c=z-self.z)
+
+        ax.set_xlabel('Pupil X')
+        ax.set_ylabel('Pupil Y')
+        ax.set_title(f'Residual: RMS={rms:.3}')
+
+        cbar = plt.colorbar(s)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel(z_label, rotation=270)
+        plt.show()
+
+    def _objective(self, coeffs):
+        self.zernike.coeffs = coeffs
+        z_computed = self.zernike.poly(self.radius, self.phi)
+        return z_computed - self.z
+
+    def _fit(self):
+        initial_guess = [0 for _ in range(self.num_terms)]
+        result = least_squares(self._objective, initial_guess)
+        self.zernike.coeffs = result.x
