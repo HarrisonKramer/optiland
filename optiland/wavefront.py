@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from optiland.distribution import create_distribution
+from optiland.zernike import ZernikeFit
 
 
 class Wavefront:
@@ -170,28 +171,25 @@ class OPDFan(Wavefront):
 
 class OPD(Wavefront):
 
-    def __init__(self, optic, field, wavelength,
-                 num_rings=15, grid_size=256):
-        self.grid_size = grid_size
+    def __init__(self, optic, field, wavelength, num_rings=15):
         super().__init__(optic, fields=[field], wavelengths=[wavelength],
                          num_rays=num_rings, distribution='hexapolar')
 
-        self.opd_map = self._generate_opd_map()
-
-    def view(self, projection='2d', figsize=(7, 5.5)):
+    def view(self, projection='2d', num_points=256, figsize=(7, 5.5)):
+        opd_map = self._generate_opd_map(num_points)
         if projection == '2d':
-            self._plot_2d(figsize=figsize)
+            self._plot_2d(data=opd_map, figsize=figsize)
         elif projection == '3d':
-            self._plot_3d(figsize=figsize)
+            self._plot_3d(data=opd_map, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
     def rms(self):
         return np.sqrt(np.mean(self.data[0][0][0]**2))
 
-    def _plot_2d(self, figsize=(7, 5.5)):
+    def _plot_2d(self, data, figsize=(7, 5.5)):
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(self.opd_map['z'], extent=[-1, 1, -1, 1])
+        im = ax.imshow(data['z'], extent=[-1, 1, -1, 1])
 
         ax.set_xlabel('Pupil X')
         ax.set_ylabel('Pupil Y')
@@ -202,13 +200,13 @@ class OPD(Wavefront):
         cbar.ax.set_ylabel('OPD (waves)', rotation=270)
         plt.show()
 
-    def _plot_3d(self, figsize=(7, 5.5)):
+    def _plot_3d(self, data, figsize=(7, 5.5)):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
                                figsize=figsize)
 
-        surf = ax.plot_surface(self.opd_map['x'],
-                               self.opd_map['y'],
-                               self.opd_map['z'],
+        surf = ax.plot_surface(data['x'],
+                               data['y'],
+                               data['z'],
                                rstride=1, cstride=1,
                                cmap='viridis', linewidth=0,
                                antialiased=False)
@@ -223,13 +221,13 @@ class OPD(Wavefront):
         fig.tight_layout()
         plt.show()
 
-    def _generate_opd_map(self):
+    def _generate_opd_map(self, num_points=256):
         x = self.distribution.x
         y = self.distribution.y
         z = self.data[0][0][0]
 
-        x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, self.grid_size),
-                                         np.linspace(-1, 1, self.grid_size))
+        x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, num_points),
+                                         np.linspace(-1, 1, num_points))
 
         points = np.column_stack((x.flatten(), y.flatten()))
         values = z.flatten()
@@ -239,3 +237,16 @@ class OPD(Wavefront):
 
         data = dict(x=x_interp, y=y_interp, z=z_interp)
         return data
+
+
+class ZernikeOPD(ZernikeFit, OPD):
+
+    def __init__(self, optic, field, wavelength, num_rings=15,
+                 zernike_type='fringe', num_terms=36):
+        OPD.__init__(self, optic, field, wavelength, num_rings)
+
+        x = self.distribution.x
+        y = self.distribution.y
+        z = self.data[0][0][0]
+
+        ZernikeFit.__init__(self, x, y, z, zernike_type, num_terms)
