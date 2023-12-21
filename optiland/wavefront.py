@@ -171,7 +171,7 @@ class OPDFan(Wavefront):
 class OPD(Wavefront):
 
     def __init__(self, optic, field, wavelength,
-                 num_rings=15, grid_size=512):
+                 num_rings=15, grid_size=256):
         self.grid_size = grid_size
         super().__init__(optic, fields=[field], wavelengths=[wavelength],
                          num_rays=num_rings, distribution='hexapolar')
@@ -203,7 +203,25 @@ class OPD(Wavefront):
         plt.show()
 
     def _plot_3d(self, figsize=(7, 5.5)):
-        pass
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
+                               figsize=figsize)
+
+        surf = ax.plot_surface(self.opd_map['x'],
+                               self.opd_map['y'],
+                               self.opd_map['z'],
+                               rstride=1, cstride=1,
+                               cmap='viridis', linewidth=0,
+                               antialiased=False)
+
+        ax.set_xlabel('Pupil X')
+        ax.set_ylabel('Pupil Y')
+        ax.set_zlabel('OPD (waves)')
+        ax.set_title(f'OPD Map: RMS={self.rms():.3f} waves')
+
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
+                     pad=0.15)
+        fig.tight_layout()
+        plt.show()
 
     def _generate_opd_map(self):
         x = self.distribution.x
