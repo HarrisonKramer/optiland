@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 
 
 class SpotDiagram:
+    # TODO: analysis fails when a single wavelength passed in a list
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rays=100,
+    def __init__(self, optic, fields='all', wavelengths='all', num_rings=6,
                  distribution='hexapolar'):
         self.optic = optic
         self.fields = fields
@@ -16,7 +17,7 @@ class SpotDiagram:
         if self.wavelengths == 'all':
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
 
-        self.data = self._generate_data(self.fields, self.wavelengths, num_rays, distribution)
+        self.data = self._generate_data(self.fields, self.wavelengths, num_rings, distribution)
 
     def view(self, figsize=(12, 4)):
 
