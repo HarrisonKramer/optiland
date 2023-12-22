@@ -8,17 +8,26 @@ class TestDoubleGauss(unittest.TestCase):
     def setUp(self):
         self.lens = optic.Optic()
 
+        self.lens.surface_group.surfaces = []
+
         self.lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
-        self.lens.add_surface(index=1, radius=56.20238, thickness=8.75, material='N-SSK2')
+        self.lens.add_surface(index=1, radius=56.20238, thickness=8.75,
+                              material='N-SSK2')
         self.lens.add_surface(index=2, radius=152.28580, thickness=0.5)
-        self.lens.add_surface(index=3, radius=37.68262, thickness=12.5, material='N-SK2')
-        self.lens.add_surface(index=4, radius=np.inf, thickness=3.8, material=('F5', 'schott'))
+        self.lens.add_surface(index=3, radius=37.68262, thickness=12.5,
+                              material='N-SK2')
+        self.lens.add_surface(index=4, radius=np.inf, thickness=3.8,
+                              material=('F5', 'schott'))
         self.lens.add_surface(index=5, radius=24.23130, thickness=16.369445)
-        self.lens.add_surface(index=6, radius=np.inf, thickness=13.747957, is_stop=True)
-        self.lens.add_surface(index=7, radius=-28.37731, thickness=3.8, material=('F5', 'schott'))
-        self.lens.add_surface(index=8, radius=np.inf, thickness=11, material='N-SK16')
+        self.lens.add_surface(index=6, radius=np.inf, thickness=13.747957,
+                              is_stop=True)
+        self.lens.add_surface(index=7, radius=-28.37731, thickness=3.8,
+                              material=('F5', 'schott'))
+        self.lens.add_surface(index=8, radius=np.inf, thickness=11,
+                              material='N-SK16')
         self.lens.add_surface(index=9, radius=-37.92546, thickness=0.5)
-        self.lens.add_surface(index=10, radius=177.41176, thickness=7, material='N-SK16')
+        self.lens.add_surface(index=10, radius=177.41176, thickness=7,
+                              material='N-SK16')
         self.lens.add_surface(index=11, radius=-79.41143, thickness=61.487536)
         self.lens.add_surface(index=12)
 
@@ -49,7 +58,8 @@ class TestDoubleGauss(unittest.TestCase):
 
     def test_third_order(self):
         # TODO: understand deltas against nominal values for TAC, AC, color abs
-        TSC, SC, CC, TCC, TAC, AC, TPC, PC, DC, TAchC, LchC, TchC, S = self.lens.aberrations.third_order()
+        data = self.lens.aberrations.third_order()
+        TSC, SC, CC, TCC, TAC, AC, TPC, PC, DC, TAchC, LchC, TchC, S = data
         self.assertAlmostEqual(np.sum(TSC), -0.01964728937767421, places=9)
         self.assertAlmostEqual(np.sum(SC), -0.19647289377674193, places=9)
         self.assertAlmostEqual(np.sum(CC), 0.0019772988166093623, places=9)
