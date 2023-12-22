@@ -22,28 +22,30 @@ class FFTPSF(Wavefront):
         self.psf = self._compute_psf()
 
     def view(self, projection='2d', log=False, figsize=(7, 5.5),
-             threshold=0.25, num_points=128):
+             threshold=0.05, num_points=128):
         min_x, min_y, max_x, max_y = self._find_bounds(threshold)
         psf_zoomed = self.psf[min_x:max_x, min_y:max_y]
+        x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
         if projection == '2d':
-            self._plot_2d(psf_smooth, log, figsize=figsize)
+            self._plot_2d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         elif projection == '3d':
-            self._plot_3d(psf_smooth, log, figsize=figsize)
+            self._plot_3d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
-    def _plot_2d(self, image, log, figsize=(7, 5.5)):
+    def strehl_ratio(self):
+        return self.psf[self.grid_size//2, self.grid_size//2] / 100
+
+    def _plot_2d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
         _, ax = plt.subplots(figsize=figsize)
         if log:
             norm = LogNorm()
         else:
             norm = None
 
-        x, y = self._get_psf_units(image)
-        extent = [-x/2, x/2, -y/2, y/2]
-
+        extent = [-x_extent/2, x_extent/2, -y_extent/2, y_extent/2]
         im = ax.imshow(image, norm=norm, extent=extent)
 
         ax.set_xlabel('X (µm)')
@@ -55,14 +57,12 @@ class FFTPSF(Wavefront):
         cbar.ax.set_ylabel('Relative Intensity (%)', rotation=270)
         plt.show()
 
-    def _plot_3d(self, image, log, figsize=(7, 5.5)):
+    def _plot_3d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
                                figsize=figsize)
 
-        x, y = self._get_psf_units(image)
-
-        x = np.linspace(-x/2, x/2, image.shape[1])
-        y = np.linspace(-y/2, y/2, image.shape[0])
+        x = np.linspace(-x_extent/2, x_extent/2, image.shape[1])
+        y = np.linspace(-y_extent/2, y_extent/2, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
