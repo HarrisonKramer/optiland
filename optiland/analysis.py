@@ -24,7 +24,7 @@ class SpotDiagram:
         N = self.optic.fields.num_fields
         num_rows = (N + 2) // 3
 
-        fig, axs = plt.subplots(num_rows, 3, figsize=(figsize[0], num_rows * figsize[1]))
+        fig, axs = plt.subplots(num_rows, 3, figsize=(figsize[0], num_rows * figsize[1]), sharex=True, sharey=True)
         axs = axs.flatten()
 
         # subtract centroid and find limits
