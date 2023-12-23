@@ -307,14 +307,29 @@ class YYbar:
         plt.show()
 
 
+class Distortion:
+
+    def __init__(self, optic, wavelengths='all', num_points=10,
+                 distortion_type='f-tan'):
+        self.optic = optic
+        if wavelengths == 'all':
+            wavelength = optic.primary_wavelength
+        self.wavelength = wavelength
+        self.num_points = num_points
+        self.distortion_type = distortion_type
+        self.data = self._generate_data()
+
+
 class GridDistortion:
 
-    def __init__(self, optic, wavelength='primary', num_points=10):
+    def __init__(self, optic, wavelength='primary', num_points=10,
+                 distortion_type='f-tan'):
         self.optic = optic
         if wavelength == 'primary':
             wavelength = optic.primary_wavelength
         self.wavelength = wavelength
         self.num_points = num_points
+        self.distortion_type = distortion_type
         self.data = self._generate_data()
 
     def view(self, figsize=(7, 5.5)):
@@ -355,8 +370,15 @@ class GridDistortion:
                                                        self.num_points)
         fy = self.optic.fields.max_field * np.linspace(-max_field, max_field,
                                                        self.num_points)
-        xp = f * np.tan(np.radians(fx))
-        yp = f * np.tan(np.radians(fy))
+
+        if self.distortion_type == 'f-tan':
+            xp = f * np.tan(np.radians(fx))
+            yp = f * np.tan(np.radians(fy))
+        elif self.distortion_type == 'f-theta':
+            xp = f * np.radians(fx)
+            yp = f * np.radians(fy)
+        else:
+            raise ValueError('Distortion type must be "f-tan" or "f-theta"')
         xp, yp = np.meshgrid(xp, yp)
 
         data['xp'] = xp
@@ -371,6 +393,4 @@ class GridDistortion:
 
         return data
 
-# TODO: distortion plot
-# TODO: grid distortion
 # TODO: field curvature
