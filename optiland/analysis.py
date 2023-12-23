@@ -135,8 +135,8 @@ class EncircledEnergy(SpotDiagram):
 
         # self.ee, self.radius = 0
 
-    def view(self):
-        fig, ax = plt.subplots(figsize=(7, 4.5))
+    def view(self, figsize=(7, 4.5)):
+        fig, ax = plt.subplots(figsize=figsize)
 
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
@@ -306,6 +306,70 @@ class YYbar:
         # plt.axis('image')
         plt.show()
 
+
+class GridDistortion:
+
+    def __init__(self, optic, wavelength='primary', num_points=10):
+        self.optic = optic
+        if wavelength == 'primary':
+            wavelength = optic.primary_wavelength
+        self.wavelength = wavelength
+        self.num_points = num_points
+        self.data = self._generate_data()
+
+    def view(self, figsize=(7, 5.5)):
+        fig, ax = plt.subplots(figsize=figsize)
+
+        ax.plot(self.data['xp'], self.data['yp'], 'C1', linewidth=1)
+        ax.plot(self.data['xp'].T, self.data['yp'].T, 'C1', linewidth=1)
+
+        ax.plot(self.data['xr'], self.data['yr'], 'C0P')
+        ax.plot(self.data['xr'].T, self.data['yr'].T, 'C0P')
+
+        ax.set_xlabel('Image X (mm)')
+        ax.set_ylabel('Image Y (mm)')
+        ax.set_aspect('equal', adjustable='box')
+
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+
+        max_distortion = self.data['max_distortion']
+        ax.set_title(f'Max Distortion: {max_distortion:.2f}%')
+        fig.tight_layout()
+        plt.show()
+
+    def _generate_data(self):
+        max_field = np.sqrt(2) / 2
+        extent = np.linspace(-max_field, max_field, self.num_points)
+        Hx, Hy = np.meshgrid(extent, extent)
+
+        self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0,
+                                 wavelength=self.wavelength)
+
+        data = {}
+        data['xr'] = self.optic.surface_group.x[-1, :, :]
+        data['yr'] = self.optic.surface_group.y[-1, :, :]
+
+        f = self.optic.paraxial.f2()
+        fx = self.optic.fields.max_field * np.linspace(max_field, -max_field,
+                                                       self.num_points)
+        fy = self.optic.fields.max_field * np.linspace(-max_field, max_field,
+                                                       self.num_points)
+        xp = f * np.tan(np.radians(fx))
+        yp = f * np.tan(np.radians(fy))
+        xp, yp = np.meshgrid(xp, yp)
+
+        data['xp'] = xp
+        data['yp'] = yp
+
+        # Find max distortion
+        delta = np.sqrt((data['xp'] - data['xr'])**2 +
+                        (data['yp'] - data['yr'])**2)
+        rp = np.sqrt(data['xp']**2 + data['yp']**2)
+
+        data['max_distortion'] = np.max(100 * delta / rp)
+
+        return data
 
 # TODO: distortion plot
 # TODO: grid distortion
