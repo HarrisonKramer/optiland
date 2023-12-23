@@ -9,16 +9,6 @@ class BaseGeometry:
         self.cs = coordinate_system
         self.radius = radius
 
-    def localize(self, rays):
-        """Convert rays from global coordinate system to local coordinate
-        system"""
-        self.cs.localize(rays)
-
-    def globalize(self, rays):
-        """Convert rays from local coordinate system to global coordinate
-        system"""
-        self.cs.globalize(rays)
-
     @abc.abstractmethod
     def sag(self, x=0, y=0):
         """Surface sag of geometry"""
@@ -33,6 +23,16 @@ class BaseGeometry:
     def surface_normal(self, points):
         """Find surface normal of geometry at points"""
         return
+
+    def localize(self, rays):
+        """Convert rays from global coordinate system to local coordinate
+        system"""
+        self.cs.localize(rays)
+
+    def globalize(self, rays):
+        """Convert rays from local coordinate system to global coordinate
+        system"""
+        self.cs.globalize(rays)
 
 
 class Plane(BaseGeometry):
