@@ -17,14 +17,17 @@ class SpotDiagram:
         if self.wavelengths == 'all':
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
 
-        self.data = self._generate_data(self.fields, self.wavelengths, num_rings, distribution)
+        self.data = self._generate_data(self.fields, self.wavelengths,
+                                        num_rings, distribution)
 
     def view(self, figsize=(12, 4)):
 
         N = self.optic.fields.num_fields
         num_rows = (N + 2) // 3
 
-        fig, axs = plt.subplots(num_rows, 3, figsize=(figsize[0], num_rows * figsize[1]), sharex=True, sharey=True)
+        fig, axs = plt.subplots(num_rows, 3,
+                                figsize=(figsize[0], num_rows*figsize[1]),
+                                sharex=True, sharey=True)
         axs = axs.flatten()
 
         # subtract centroid and find limits
@@ -34,7 +37,8 @@ class SpotDiagram:
 
         # plot wavelengths for each field
         for k, field_data in enumerate(data):
-            self._plot_field(axs[k], field_data, self.fields[k], axis_lim, self.wavelengths)
+            self._plot_field(axs[k], field_data, self.fields[k],
+                             axis_lim, self.wavelengths)
 
         # remove empty axes
         for k in range(N, num_rows * 3):
@@ -85,25 +89,32 @@ class SpotDiagram:
                 wave_data[1] -= centroids[i][1]
         return data
 
-    def _generate_data(self, fields, wavelengths, num_rays=100, distribution='hexapolar'):
+    def _generate_data(self, fields, wavelengths, num_rays=100,
+                       distribution='hexapolar'):
         data = []
         for field in fields:
             field_data = []
             for wavelength in wavelengths:
-                field_data.append(self._generate_field_data(field, wavelength, num_rays, distribution))
+                field_data.append(self._generate_field_data(field,
+                                                            wavelength,
+                                                            num_rays,
+                                                            distribution))
             data.append(field_data)
         return data
 
-    def _generate_field_data(self, field, wavelength, num_rays=100, distribution='hexapolar'):
+    def _generate_field_data(self, field, wavelength, num_rays=100,
+                             distribution='hexapolar'):
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
         return [x, y]
 
-    def _plot_field(self, ax, field_data, field, axis_lim, wavelengths, buffer=1.05):
+    def _plot_field(self, ax, field_data, field, axis_lim,
+                    wavelengths, buffer=1.05):
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
-            ax.scatter(*points, s=10, label=f'{wavelengths[k]:.4f} µm', marker=markers[k % 3])
+            ax.scatter(*points, s=10, label=f'{wavelengths[k]:.4f} µm',
+                       marker=markers[k % 3])
             ax.axis('square')
             ax.set_xlabel('X (µm)')
             ax.set_ylabel('Y (µm)')
@@ -114,8 +125,8 @@ class SpotDiagram:
 
 class EncircledEnergy(SpotDiagram):
 
-    def __init__(self, optic, fields='all', wavelength='primary', num_rays=100_000,
-                 distribution='random', num_points=256):
+    def __init__(self, optic, fields='all', wavelength='primary',
+                 num_rays=100_000, distribution='random', num_points=256):
         self.num_points = num_points
         if wavelength == 'primary':
             wavelength = optic.primary_wavelength
@@ -131,7 +142,8 @@ class EncircledEnergy(SpotDiagram):
         geometric_size = self.geometric_spot_radius()
         axis_lim = np.max(geometric_size)
         for k, field_data in enumerate(data):
-            self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
+            self._plot_field(ax, field_data, self.fields[k],
+                             axis_lim, self.num_points)
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
         ax.set_xlabel('Radius (mm)')
@@ -153,7 +165,8 @@ class EncircledEnergy(SpotDiagram):
     def _encircled_energy(self, radii, energy, radius_max):
         return np.nansum(energy[radii <= radius_max])
 
-    def _plot_field(self, ax, field_data, field, axis_lim, num_points, buffer=1.2):
+    def _plot_field(self, ax, field_data, field, axis_lim,
+                    num_points, buffer=1.2):
         r_max = axis_lim * buffer
         r_step = np.linspace(0, r_max, num_points)
         for points in field_data:
@@ -161,9 +174,11 @@ class EncircledEnergy(SpotDiagram):
             radii = np.sqrt(x**2 + y**2)
             def vectorized_ee(r): return np.nansum(energy[radii <= r])
             ee = np.vectorize(vectorized_ee)(r_step)
-            ax.plot(r_step, ee, label=f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+            ax.plot(r_step, ee,
+                    label=f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
-    def _generate_encircled_energy_data(self, field_data, axis_lim, num_points, buffer=1.2):
+    def _generate_encircled_energy_data(self, field_data, axis_lim,
+                                        num_points, buffer=1.2):
         # TODO - complete
         r_max = axis_lim * buffer
         r_step = np.linspace(0, r_max, num_points)
@@ -175,7 +190,8 @@ class EncircledEnergy(SpotDiagram):
             ee.append(np.vectorize(vectorized_ee)(r_step))
         return r_step, ee
 
-    def _generate_field_data(self, field, wavelength, num_rays=100, distribution='hexapolar'):
+    def _generate_field_data(self, field, wavelength, num_rays=100,
+                             distribution='hexapolar'):
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
@@ -202,7 +218,8 @@ class RayFan:
         self.data = self._generate_data()
 
     def view(self):
-        _, axs = plt.subplots(nrows=len(self.fields), ncols=2, figsize=(10, 10), sharex=True, sharey=True)
+        _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
+                              figsize=(10, 10), sharex=True, sharey=True)
 
         Px = self.data['Px']
         Py = self.data['Py']
@@ -246,13 +263,19 @@ class RayFan:
             for wavelength in self.wavelengths:
                 data[f'{field}'][f'{wavelength}'] = {}
 
-                self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength,
-                                 num_rays=self.num_points, distribution='line_x')
-                data[f'{field}'][f'{wavelength}']['x'] = self.optic.surface_group.x[-1, :]
+                self.optic.trace(Hx=Hx, Hy=Hy,
+                                 wavelength=wavelength,
+                                 num_rays=self.num_points,
+                                 distribution='line_x')
+                data[f'{field}'][f'{wavelength}']['x'] = \
+                    self.optic.surface_group.x[-1, :]
 
-                self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength,
-                                 num_rays=self.num_points, distribution='line_y')
-                data[f'{field}'][f'{wavelength}']['y'] = self.optic.surface_group.y[-1, :]
+                self.optic.trace(Hx=Hx, Hy=Hy,
+                                 wavelength=wavelength,
+                                 num_rays=self.num_points,
+                                 distribution='line_y')
+                data[f'{field}'][f'{wavelength}']['y'] = \
+                    self.optic.surface_group.y[-1, :]
 
         # remove distortion
         wave_ref = self.optic.primary_wavelength
