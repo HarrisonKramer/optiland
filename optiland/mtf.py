@@ -76,7 +76,7 @@ class GeometricMTF(SpotDiagram):
 
 
 class FFTMTF:
-    # TODO: verify and complete
+    # TODO: verify performance against baseline
 
     def __init__(self, optic, fields='all', wavelength='primary',
                  num_rays=128, grid_size=1024, max_freq='cutoff'):
@@ -104,10 +104,13 @@ class FFTMTF:
         self.mtf = self._generate_mtf_data()
 
     def view(self, figsize=(12, 4)):
+        dx = self._get_mtf_units()
+        freq = np.arange(self.grid_size//2) * dx
+
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
-            self._plot_field(ax, data, self.fields[k], color=f'C{k}')
+            self._plot_field(ax, freq, data, self.fields[k], color=f'C{k}')
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
         ax.set_xlim([0, self.max_freq])
@@ -117,8 +120,7 @@ class FFTMTF:
         plt.tight_layout()
         plt.show()
 
-    def _plot_field(self, ax, mtf_data, field, color):
-        freq = np.linspace(0, self.max_freq, mtf_data[0].size)
+    def _plot_field(self, ax, freq, mtf_data, field, color):
         ax.plot(freq, mtf_data[0],
                 label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
                 color=color, linestyle='-')
@@ -132,19 +134,21 @@ class FFTMTF:
         mtf = []
         for data in mtf_data:
             tangential = data[self.grid_size//2:, self.grid_size//2]
-            sagittal = data[self.grid_size//2:, self.grid_size//2]
+            sagittal = data[self.grid_size//2, self.grid_size//2:]
             mtf.append([tangential/np.max(tangential),
                         sagittal/np.max(sagittal)])
         return mtf
 
     def _get_mtf_units(self):
-        # TODO: complete
-        pass
+        FNO = self.optic.paraxial.FNO()
 
-    def _plot_2d(self):
-        """Override to disable function"""
-        pass
+        if not self.optic.object_surface.is_infinite:
+            D = self.optic.paraxial.XPD()
+            p = D / self.optic.paraxial.EPD()
+            m = self.optic.paraxial.magnification()
+            FNO *= (1 + np.abs(m) / p)
 
-    def _plot_3d(self):
-        """Override to disable function"""
-        pass
+        Q = self.grid_size / self.num_rays
+        dx = Q / (self.wavelength * FNO)
+
+        return dx
