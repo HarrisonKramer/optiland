@@ -185,11 +185,10 @@ class FFTPSF(Wavefront):
     def _get_psf_units(self, image):
         """https://www.strollswithmydog.com/
         wavefront-to-psf-to-mtf-physical-units/#iv"""
-        D = self.optic.paraxial.XPD()
+        FNO = self.optic.paraxial.FNO()
 
-        if self.optic.object_surface.is_infinite:
-            FNO = self.optic.paraxial.FNO()
-        else:
+        if not self.optic.object_surface.is_infinite:
+            D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
             FNO *= (1 + np.abs(m) / p)
