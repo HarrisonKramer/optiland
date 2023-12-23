@@ -399,9 +399,26 @@ class GridDistortion:
         plt.show()
 
     def _generate_data(self):
+        # trace single reference ray
+        self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0,
+                                 wavelength=self.wavelength)
+
+        const = (self.optic.surface_group.y[-1, 0] /
+                 (np.tan(1e-10 * np.radians(self.optic.fields.max_field))))
+
         max_field = np.sqrt(2) / 2
         extent = np.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = np.meshgrid(extent, extent)
+
+        if self.distortion_type == 'f-tan':
+            xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
+            yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
+        elif self.distortion_type == 'f-theta':
+            xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
+            yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
+        else:
+            raise ValueError('''Distortion type must be "f-tan" or
+                                "f-theta"''')
 
         self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0,
                                  wavelength=self.wavelength)
@@ -410,23 +427,8 @@ class GridDistortion:
         data['xr'] = self.optic.surface_group.x[-1, :, :]
         data['yr'] = self.optic.surface_group.y[-1, :, :]
 
-        f = self.optic.paraxial.f2()
-        fx = self.optic.fields.max_field * np.linspace(max_field, -max_field,
-                                                       self.num_points)
-        fy = self.optic.fields.max_field * np.linspace(-max_field, max_field,
-                                                       self.num_points)
-
-        if self.distortion_type == 'f-tan':
-            xp = f * np.tan(np.radians(fx))
-            yp = f * np.tan(np.radians(fy))
-        elif self.distortion_type == 'f-theta':
-            xp = f * np.radians(fx)
-            yp = f * np.radians(fy)
-        else:
-            raise ValueError('Distortion type must be "f-tan" or "f-theta"')
-        xp, yp = np.meshgrid(xp, yp)
-
-        data['xp'] = xp
+        # optical system flips x, so must correct this
+        data['xp'] = np.flip(xp)
         data['yp'] = yp
 
         # Find max distortion
