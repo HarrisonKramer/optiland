@@ -183,8 +183,13 @@ class ObjectSurface(Surface):
 class ImageSurface(Surface):
 
     def __init__(self, geometry, material_pre, aperture=None):
-        super().__init__(geometry=geometry, material_pre=material_pre,
-                         material_post=material_pre, is_stop=False, aperture=aperture)
+        super().__init__(
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_pre,
+            is_stop=False,
+            aperture=aperture
+        )
 
     def _trace_paraxial(self, rays: ParaxialRays):
         # reset recorded information
