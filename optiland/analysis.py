@@ -114,7 +114,7 @@ class SpotDiagram:
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
             ax.scatter(*points, s=10, label=f'{wavelengths[k]:.4f} µm',
-                       marker=markers[k % 3])
+                       marker=markers[k % 3], alpha=0.7)
             ax.axis('square')
             ax.set_xlabel('X (µm)')
             ax.set_ylabel('Y (µm)')
