@@ -6,6 +6,7 @@ from scipy.optimize import least_squares
 
 class ZernikeStandard:
     """OSA/ANSI Standard Zernike"""
+    # TODO: add normalization constants
 
     def __init__(self, coeffs=[0 for _ in range(36)]):
         if len(coeffs) > 120:  # partial sum of first 15 natural numbers
