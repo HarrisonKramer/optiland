@@ -297,18 +297,32 @@ class YYbar:
             wavelength = optic.primary_wavelength
         self.wavelength = wavelength
 
-    def view(self):
+    def view(self, figsize=(7, 5.5)):
+        _, ax = plt.subplots(figsize=figsize)
+
         ya, _ = self.optic.paraxial.marginal_ray()
         yb, _ = self.optic.paraxial.chief_ray()
 
-        plt.plot(yb, ya)
-        plt.axis([-25, 25, -25, 25])
-        # plt.axis('image')
+        ya = ya.flatten()
+        yb = yb.flatten()
+
+        for k in range(2, len(ya)):
+            label = ''
+            if k == 2:
+                label = 'Surface 1'
+            elif k == len(ya)-1:
+                label = 'Image'
+            ax.plot([yb[k-1], yb[k]], [ya[k-1], ya[k]], label=label)
+
+        ax.axhline(y=0, linewidth=0.5, color='k')
+        ax.axvline(x=0, linewidth=0.5, color='k')
+        ax.set_xlabel('Chief Ray Height (mm)')
+        ax.set_ylabel('Marginal Ray Height (mm)')
+        ax.legend()
         plt.show()
 
 
 class Distortion:
-    # TODO: update for field type = object height
 
     def __init__(self, optic, wavelengths='all', num_points=128,
                  distortion_type='f-tan'):
