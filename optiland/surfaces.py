@@ -151,8 +151,13 @@ class Surface:
 class ObjectSurface(Surface):
 
     def __init__(self, geometry, material_post):
-        super().__init__(geometry=geometry, material_pre=material_post,
-                         material_post=material_post, is_stop=False, aperture=None)
+        super().__init__(
+            geometry=geometry,
+            material_pre=material_post,
+            material_post=material_post,
+            is_stop=False,
+            aperture=None
+        )
 
     @property
     def is_infinite(self):
