@@ -9,13 +9,14 @@ from optiland import materials
 class Surface:
 
     def __init__(self, geometry, material_pre, material_post,
-                 is_stop=False, aperture=None):
+                 is_stop=False, aperture=None, coating=None):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
         self.is_stop = is_stop
         self.aperture = aperture
         self.semi_aperture = None
+        self.coating = coating
 
         self.reset()
 
@@ -139,6 +140,10 @@ class Surface:
         # Interact with surface (refract or reflect)
         rays = self._interact(rays, nx, ny, nz)
 
+        # if there is a coating, modify ray properties
+        if self.coating:
+            rays = self.coating.interact(rays, aoi)
+
         # inverse transform coordinate system
         self.geometry.globalize(rays)
 
@@ -198,6 +203,7 @@ class ReflectiveSurface(Surface):
         )
 
     def _interact(self, rays, nx, ny, nz):
+        """Reflect on surface"""
         dot = rays.L * nx + rays.M * ny + rays.N * nz
         rays.L -= 2 * dot * nx
         rays.M -= 2 * dot * ny
