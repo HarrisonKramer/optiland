@@ -185,6 +185,26 @@ class ObjectSurface(Surface):
         return rays
 
 
+class ReflectiveSurface(Surface):
+
+    def __init__(self, geometry, material_pre, material_post,
+                 is_stop=False, aperture=None):
+        super().__init__(
+            geometry,
+            material_pre,
+            material_post,
+            is_stop,
+            aperture
+        )
+
+    def _interact(self, rays, nx, ny, nz):
+        dot = rays.L * nx + rays.M * ny + rays.N * nz
+        rays.L -= 2 * dot * nx
+        rays.M -= 2 * dot * ny
+        rays.N -= 2 * dot * nz
+        return rays
+
+
 class ImageSurface(Surface):
 
     def __init__(self, geometry, material_pre, aperture=None):
