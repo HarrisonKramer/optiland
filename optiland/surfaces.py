@@ -185,7 +185,7 @@ class ReflectiveSurface(Surface):
         rays.propagate(t)
 
         # reflect (derived from paraxial equations when n'=-n)
-        rays.u += 2 * rays.y / self.geometry.radius
+        rays.u = -rays.u - 2 * rays.y / self.geometry.radius
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
