@@ -192,12 +192,11 @@ class ObjectSurface(Surface):
 
 class ReflectiveSurface(Surface):
 
-    def __init__(self, geometry, material_pre, material_post,
-                 is_stop=False, aperture=None):
+    def __init__(self, geometry, material_pre, is_stop=False, aperture=None):
         super().__init__(
             geometry,
             material_pre,
-            material_post,
+            material_pre,
             is_stop,
             aperture
         )
