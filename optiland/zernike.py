@@ -75,6 +75,9 @@ class ZernikeFringe(ZernikeStandard):
     def __init__(self, terms=[0 for _ in range(36)]):
         super().__init__(terms)
 
+    def _norm_constant(self, n=0, m=0):
+        return 1
+
     def _generate_indices(self):
         number = []
         indices = []
