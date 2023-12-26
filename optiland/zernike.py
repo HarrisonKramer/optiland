@@ -8,11 +8,13 @@ class ZernikeStandard:
     """OSA/ANSI Standard Zernike
 
     References:
-        1. https://en.wikipedia.org/wiki/Zernike_polynomials#OSA/ANSI_standard_indices
-        2. Thibos LN, Applegate RA, Schwiegerling JT, Webb R; VSIA Standards Taskforce Members.
-           Vision science and its applications. Standards for reporting the optical aberrations
-           of eyes. J Refract Surg. 2002 Sep-Oct;18(5):S652-60. doi: 10.3928/1081-597X-20020901-30.
-           PMID: 12361175.
+        1. https://en.wikipedia.org/wiki/Zernike_polynomials#OSA/
+           ANSI_standard_indices
+        2. Thibos LN, Applegate RA, Schwiegerling JT, Webb R; VSIA Standards
+           Taskforce Members. Vision science and its applications. Standards
+           for reporting the optical aberrations of eyes. J Refract Surg. 2002
+           Sep-Oct;18(5):S652-60. doi: 10.3928/1081-597X-20020901-30. PMID:
+           12361175.
     """
 
     def __init__(self, coeffs=[0 for _ in range(36)]):
@@ -73,7 +75,8 @@ class ZernikeFringe(ZernikeStandard):
     """Zernike Fringe Coefficients
 
     References:
-        1. https://en.wikipedia.org/wiki/Zernike_polynomials#Fringe/University_of_Arizona_indices
+        1. https://en.wikipedia.org/wiki/Zernike_polynomials#Fringe/
+           University_of_Arizona_indices
     """
 
     def __init__(self, terms=[0 for _ in range(36)]):
@@ -104,8 +107,10 @@ class ZernikeNoll(ZernikeStandard):
     """Zernike Coefficients - Noll Standard
 
     References:
-        1. https://en.wikipedia.org/wiki/Zernike_polynomials#Noll's_sequential_indices
-        2. Noll, R. J. (1976). "Zernike polynomials and atmospheric turbulence". J. Opt. Soc. Am. 66 (3): 207
+        1. https://en.wikipedia.org/wiki/
+           Zernike_polynomials#Noll's_sequential_indices
+        2. Noll, R. J. (1976). "Zernike polynomials and atmospheric
+           turbulence". J. Opt. Soc. Am. 66 (3): 207
     """
     def __init__(self, terms=[0 for _ in range(36)]):
         super().__init__(terms)
