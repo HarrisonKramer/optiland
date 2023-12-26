@@ -70,7 +70,11 @@ class ZernikeStandard:
 
 
 class ZernikeFringe(ZernikeStandard):
-    """Zernike Fringe Coefficients"""
+    """Zernike Fringe Coefficients
+
+    References:
+        1. https://en.wikipedia.org/wiki/Zernike_polynomials#Fringe/University_of_Arizona_indices
+    """
 
     def __init__(self, terms=[0 for _ in range(36)]):
         super().__init__(terms)
