@@ -106,6 +106,9 @@ class ZernikeFringe(ZernikeStandard):
 class ZernikeNoll(ZernikeStandard):
     """Zernike Coefficients - Noll Standard
 
+    Note that the Noll notation is used for the "Zernike Standard Coefficients"
+    in Zemax OpticStudio
+
     References:
         1. https://en.wikipedia.org/wiki/
            Zernike_polynomials#Noll's_sequential_indices
@@ -166,7 +169,8 @@ class ZernikeFit:
         elif self.type == 'noll':
             self.zernike = ZernikeNoll()
         else:
-            raise ValueError('Zernike type must be "fringe" or "standard".')
+            raise ValueError('Zernike type must be "fringe", "standard", or '
+                             '"noll".')
 
         self._fit()
 
