@@ -100,6 +100,47 @@ class ZernikeFringe(ZernikeStandard):
         return indices_sorted[:120]
 
 
+class ZernikeNoll(ZernikeStandard):
+    """Zernike Coefficients - Noll Standard
+
+    References:
+        1. https://en.wikipedia.org/wiki/Zernike_polynomials#Noll's_sequential_indices
+        2. Noll, R. J. (1976). "Zernike polynomials and atmospheric turbulence". J. Opt. Soc. Am. 66 (3): 207
+    """
+    def __init__(self, terms=[0 for _ in range(36)]):
+        super().__init__(terms)
+
+    def _norm_constant(self, n=0, m=0):
+        if m == 0:
+            return 1
+        else:
+            return np.sqrt(2 * n + 2)
+
+    def _generate_indices(self):
+        number = []
+        indices = []
+        for n in range(15):
+            for m in range(-n, n+1):
+                if (n - m) % 2 == 0:
+                    mod = n % 4
+                    if m > 0 and mod <= 1:
+                        c = 0
+                    elif m < 0 and mod >= 2:
+                        c = 0
+                    elif m >= 0 and mod >= 2:
+                        c = 1
+                    elif m <= 0 and mod <= 1:
+                        c = 1
+                    number.append(n * (n + 1) / 2 + np.abs(m) + c)
+                    indices.append((n, m))
+
+        # sort indices according to fringe coefficient number
+        indices_sorted = [element for _, element in
+                          sorted(zip(number, indices))]
+
+        return indices_sorted
+
+
 class ZernikeFit:
 
     def __init__(self, x, y, z, zernike_type='fringe', num_terms=36):
@@ -117,6 +158,8 @@ class ZernikeFit:
             self.zernike = ZernikeFringe()
         elif self.type == 'standard':
             self.zernike = ZernikeStandard()
+        elif self.type == 'noll':
+            self.zernike = ZernikeNoll()
         else:
             raise ValueError('Zernike type must be "fringe" or "standard".')
 
