@@ -1,0 +1,63 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Not in a position to accept new order because of discontinuation."
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 2.6165865 -0.011427854 2 0.022534361 -2 0.001551289 -4 -0.00011769852 -6 1.2401891e-05 -8
+  - type: tabulated k
+    data: |
+        0.360 7.1649E-06
+        0.370 2.5333E-06
+        0.380 9.6828E-07
+        0.390 4.2508E-07
+        0.400 2.2075E-07
+        0.420 9.1481E-08
+        0.440 6.3599E-08
+        0.460 4.7899E-08
+        0.480 3.8389E-08
+        0.500 3.1959E-08
+        0.550 8.7623E-09
+        0.600 1.4345E-08
+        0.650 3.1129E-08
+        0.700 1.6736E-08
+        0.750 1.1949E-08
+        0.780 1.2427E-08
+        0.800 1.2745E-08
+        0.830 1.3223E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.050 1.6728E-08
+        1.060 1.6887E-08
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 5.5844E-08
+        1.500 5.9833E-08
+        1.550 7.4230E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 3.8611e-07 0.0 0.0 0.0 0.0 0.0
+    nd: 1.63980
+    Vd: 34.57
+    glass_code: 640346
+    glass_status: special
+    density: 2.75 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.7e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.07e-05 K<sup>-1</sup>
+    dPgF: 0.0055
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

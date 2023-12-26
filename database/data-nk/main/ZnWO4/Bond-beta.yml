@@ -1,0 +1,27 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. L. Bond. Measurement of the refractive indices of several crystals , <a href=\"https://doi.org/10.1063/1.1703106\"><i>J. Appl. Phys.</i> <b>36</b>, 1674-1677 (1965)</a>"
+COMMENTS: "Monoclinic ZnWO<sub>4</sub>; n<sub>β</sub>; room temperature."
+DATA:
+  - type: tabulated n
+    data: |
+        0.42 2.2788
+        0.45 2.2555
+        0.55 2.2051
+        0.60 2.1905
+        0.70 2.1701
+        0.80 2.1590
+        0.90 2.1508
+        1.10 2.1400
+        1.20 2.1363
+        1.40 2.1305
+        1.60 2.1260
+        1.80 2.1220
+        2.00 2.1182
+        2.40 2.1108
+        2.80 2.1027
+        3.20 2.0939
+        3.40 2.0892
+        3.60 2.0841

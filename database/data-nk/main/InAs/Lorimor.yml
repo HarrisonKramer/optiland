@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "O. G. Lorimor and W. G. Spitzer. Infrared refractive index and absorption of InAs and CdTe, <a href=\"https://doi.org/10.1063/1.1714362\"><i>J. Appl. Phys.</i> <b>36</b>, 1841-1844 (1965)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 1
+    wavelength_range: 3.7 31.3
+    coefficients: 10.1 0.71 2.551 2.75 45.66

@@ -1,0 +1,44 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Supansomboon, A. I. Maaroof, M. B. Cortie. \"Purple glory\": The optical properties and technology of AuAl<sub>2</sub> coatings, <a href=\"https://doi.org/10.1007/BF03214887\"><i>Gold Bulletin</i> <b>41</b>, 296-304 (2008)</a>"
+COMMENTS: "68 nm thick AuAl<sub>2</sub> film produced by 8 min of sputtering. Room temperature."
+DATA:
+  - type: tabulated nk
+    data: |
+        0.300 2.058 1.499
+        0.330 2.084 1.722
+        0.360 2.042 1.863
+        0.390 1.842 1.872
+        0.420 1.644 1.785
+        0.450 1.430 1.639
+        0.480 1.350 1.503
+        0.510 1.289 1.406
+        0.540 1.275 1.407
+        0.570 1.235 1.470
+        0.600 1.187 1.566
+        0.630 1.117 1.717
+        0.660 1.057 1.874
+        0.690 1.007 2.042
+        0.720 0.970 2.210
+        0.750 0.944 2.372
+        0.780 0.930 2.532
+        0.810 0.921 2.686
+        0.840 0.914 2.836
+        0.870 0.907 2.985
+        0.900 0.900 3.130
+        0.930 0.899 3.273
+        0.960 0.901 3.412
+        0.990 0.905 3.548
+        1.020 0.919 3.682
+        1.050 0.936 3.814
+        1.080 0.953 3.946
+        1.110 0.971 4.075
+        1.140 0.993 4.201
+        1.170 1.020 4.325
+        1.200 1.049 4.446
+        1.230 1.077 4.562
+        1.260 1.107 4.676
+        1.290 1.141 4.789
+        1.320 1.178 4.898

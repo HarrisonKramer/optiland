@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.34 2.4
+    coefficients: 0 1.43822841 0.0085977975 0.128100017 0.0408617854 1.3435553 143.70989
+  - type: tabulated k
+    data: |
+        0.340 1.0585E-05
+        0.350 3.9748E-06
+        0.360 1.7652E-06
+        0.370 8.8656E-07
+        0.380 4.9145E-07
+        0.390 2.6553E-07
+        0.400 1.6327E-07
+        0.420 8.4619E-08
+        0.440 6.3599E-08
+        0.460 4.7899E-08
+        0.480 3.8389E-08
+        0.500 2.7950E-08
+        0.550 1.3150E-08
+        0.600 1.9137E-08
+        0.650 2.0732E-08
+        0.700 1.6736E-08
+        0.800 1.9127E-08
+        0.900 2.1518E-08
+        1.000 3.1895E-08
+        1.200 3.8274E-08
+        1.400 6.7046E-08
+        1.600 6.3822E-08
+        1.800 1.7293E-07
+        2.000 3.5405E-07
+        2.200 1.0089E-06
+        2.400 2.4414E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.01e-06 1.24e-08 -3.72e-11 4.79e-07 4.64e-10 0.264
+    nd: 1.617722
+    Vd: 49.815052
+    glass_code: 618498
+    density: 3.23 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.4e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.6e-06 K<sup>-1</sup>
+    dPgF: -0.0006
+    climatic_resistance: 3.0
+    acid_resistance: 51.2
+    phosphate_resistance: 3.0

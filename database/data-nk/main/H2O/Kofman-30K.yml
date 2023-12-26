@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "V. Kofman, J. He, I. L. ten Kate, H. Linnartz. The refractive index of amorphous and crystalline water ice in the UV–vis, <a href=\"https://doi.org/10.3847/1538-4357/ab0d89\"><i>Astrophys. J.</i> <b>875</b>, 131 (2019)</a>"
+COMMENTS: "Amorphous water ice at 30 K."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.210 0.757
+    coefficients: 0 0.374 0.071 0.099 0.134
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 30 K

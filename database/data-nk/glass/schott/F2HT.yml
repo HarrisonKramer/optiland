@@ -1,0 +1,57 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "lead containing glass type        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.32 2.5
+    coefficients: 0 1.34533359 0.00997743871 0.209073176 0.0470450767 0.937357162 111.886764
+  - type: tabulated k
+    data: |
+        0.334 1.5172E-06
+        0.350 2.1027E-07
+        0.365 5.1065E-08
+        0.370 3.4660E-08
+        0.380 2.1971E-08
+        0.390 1.4987E-08
+        0.400 1.1511E-08
+        0.405 1.0355E-08
+        0.420 8.0456E-09
+        0.436 8.3521E-09
+        0.460 7.3395E-09
+        0.500 4.7818E-09
+        0.546 3.4794E-09
+        0.580 3.6961E-09
+        0.620 3.9510E-09
+        0.660 6.3120E-09
+        0.700 4.4608E-09
+        1.060 6.7549E-09
+        1.530 2.9309E-08
+        1.970 5.1605E-07
+        2.325 1.6978E-06
+        2.500 2.6807E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.51e-06 1.56e-08 -2.78e-11 9.34e-07 1.04e-09 0.25
+    nd: 1.62004
+    Vd: 36.37
+    glass_code: 620364.360
+    glass_status: standard
+    density: 3.599 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.2e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.2e-06 K<sup>-1</sup>
+    dPgF: 0.0002
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 1.0
+    alkali_resistance: 2.3
+    phosphate_resistance: 1.3

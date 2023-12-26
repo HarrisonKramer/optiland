@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. Nyakuchena, C. Juntunen, P. Shea, Y. Sung. Refractive index dispersion measurement in the short-wave infrared range using synthetic phase microscopy, <a href=\"https://doi.org/10.1039/D3CP03158F\"><i>Phys. Chem. Chem. Phys.</i> <b>25</b>, 23141-23149 (2023)</a>"
+COMMENTS: "Glass microspheres. 23 °C"
+DATA:
+  - type: formula 5
+    wavelength_range: 1.10 1.65
+    coefficients: 1.5062 -0.0018 2 0.0057 -2
+SPECS:
+    temperature: 23 °C

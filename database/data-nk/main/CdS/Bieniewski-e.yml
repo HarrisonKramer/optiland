@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) T. M. Bieniewski and S. J. Czyzak. Refractive indexes of single hexagonal ZnS and CdS crystals, <a href=\"https://doi.org/10.1364/JOSA.53.000496\"><i>J. Opt. Soc. Am.</i> <b>53</b>, 496-497 (1963)</a><br>2) M. Sanchez Gomez, J. M. Guerra, and F. Vilches. Weighted nonlinear regression analysis of a Sellmeier expansion: comparison of several nonlinear fits of CdS dispersion, <a href=\"https://doi.org/10.1364/AO.24.001147\"><i>Appl. Opt.</i> <b>24</b>, 1147-1150 (1985)</a></br>* Ref. 2 provides a dispersion formula based on data from ref. 1"
+COMMENTS: "Extraordinary ray (e). 25 °C."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.51 1.4
+    coefficients: 5.2599 0.20865 0 0.10799 1 0.027527 0 0.23305 1

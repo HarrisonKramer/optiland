@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.365 1.014
+    coefficients: 2.75929053 -0.00920455833 2 0.0293164338 -2 0.00148740799 -4 -7.05223488e-05 -6 9.9538848e-06 -8
+  - type: tabulated k
+    data: |
+        0.340 7.6121E-06
+        0.350 2.7692E-06
+        0.360 1.2341E-06
+        0.370 6.2044E-07
+        0.380 3.7627E-07
+        0.390 2.4867E-07
+        0.400 1.6998E-07
+        0.420 1.0180E-07
+        0.440 7.7891E-08
+        0.460 6.2765E-08
+        0.480 4.9982E-08
+        0.500 4.4010E-08
+        0.550 3.0745E-08
+        0.600 3.3540E-08
+        0.650 3.6335E-08
+        0.700 3.3523E-08
+        0.800 3.1911E-08
+        0.850 2.7111E-08
+        0.900 2.1518E-08
+        0.950 2.2714E-08
+        1.000 2.3909E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 3.3473E-08
+        1.600 7.6624E-08
+        1.800 2.8938E-07
+        2.000 5.5054E-07
+        2.200 1.3082E-06
+        2.400 1.7802E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.02e-06 3.02e-08 -2.4e-10 1.33e-06 -1.33e-10 0.247
+    nd: 1.688934
+    Vd: 31.184753
+    glass_code: 689312
+    glass_status: preferred
+    density: 4.21 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7.6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.2e-06 K<sup>-1</sup>
+    dPgF: -0.0002

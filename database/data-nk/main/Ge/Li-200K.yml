@@ -1,0 +1,52 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. H. Li. Refractive index of silicon and germanium and its wavelength and temperature derivatives, <a href=\"https://doi.org/10.1063/1.555624\"><i>J. Phys. Chem. Ref. Data</i> <b>9</b>, 561-658 (1993)</a>"
+COMMENTS: "200 K (-73 °C)"
+DATA:
+  - type: tabulated n
+    data: |
+        1.90 4.0680
+        1.92 4.0659
+        1.94 4.0638
+        1.96 4.0618
+        1.98 4.0598
+        2.00 4.0579
+        2.05 4.0534
+        2.10 4.0493
+        2.15 4.0454
+        2.20 4.0417
+        2.25 4.0383
+        2.30 4.0352
+        2.40 4.0294
+        2.50 4.0243
+        2.60 4.0197
+        2.70 4.0157
+        2.80 4.0121
+        2.90 4.0088
+        3.00 4.0059
+        3.20 4.0008
+        3.40 3.9966
+        3.60 3.9930
+        3.80 3.9900
+        4.00 3.9875
+        4.25 3.9848
+        4.50 3.9825
+        4.75 3.9806
+        5.00 3.9789
+        5.50 3.9763
+        6.00 3.9743
+        6.50 3.9727
+        7.00 3.9715
+        8.00 3.9697
+        9.00 3.9684
+        10.0 3.9675
+        11.0 3.9669
+        12.0 3.9664
+        13.0 3.9660
+        14.0 3.9657
+        15.0 3.9654
+        16.0 3.9652
+        17.0 3.9650
+        18.0 3.9649

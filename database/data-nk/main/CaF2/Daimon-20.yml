@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. Daimon and A. Masumura. High-accuracy measurements of the refractive index and its temperature coefficient of calcium fluoride in a wide wavelength range from 138 to 2326 nm, <a href=\"https://doi.org/10.1364/AO.41.005275\"><i>Appl. Opt.</i> <b>41</b>, 5275-5281 (2002)</a>"
+COMMENTS: "20 °C, Nitrogen atmosphere"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.138 2.326
+    coefficients: 0 0.443749998 0.00178027854 0.444930066 0.00788536061 0.150133991 0.0124119491 8.85319946 2752.28175

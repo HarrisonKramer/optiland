@@ -1,0 +1,60 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.365 1.014
+    coefficients: 2.5544667 -0.00847847799 2 0.0232832892 -2 0.000583809482 -4 2.1963001e-05 -6 1.96537708e-06 -8
+  - type: tabulated k
+    data: |
+        0.320 8.9294E-06
+        0.330 2.6829E-06
+        0.340 9.2665E-07
+        0.350 3.9750E-07
+        0.360 2.0482E-07
+        0.370 1.2326E-07
+        0.380 9.2107E-08
+        0.390 6.2700E-08
+        0.400 4.8108E-08
+        0.420 4.0350E-08
+        0.440 3.8729E-08
+        0.460 3.3094E-08
+        0.480 3.0681E-08
+        0.500 2.7950E-08
+        0.550 2.6340E-08
+        0.600 2.8734E-08
+        0.650 3.1129E-08
+        0.700 3.3523E-08
+        0.800 3.8312E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 7.5636E-09
+        1.000 7.9617E-09
+        1.060 8.4394E-09
+        1.200 1.9118E-08
+        1.400 5.5844E-08
+        1.600 1.0227E-07
+        1.800 5.6982E-07
+        2.000 1.3790E-06
+        2.200 3.0108E-06
+        2.400 4.5020E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.9e-06 2.24e-08 -2.95e-11 9.73e-07 8.74e-10 0.246
+    nd: 1.620047
+    Vd: 36.356730
+    glass_code: 620364
+    glass_status: preferred
+    density: 3.57 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 9.1e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.14e-05 K<sup>-1</sup>
+    climatic_resistance: 1.0

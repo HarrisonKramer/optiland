@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. S. Rodney and I. H. Malitson. Refraction and dispersion of thallium bromide iodide, <a href=\"https://doi.org/10.1364/JOSA.46.000956\"><i>J. Opt. Soc. Am.</i> <b>46</b>, 956-960 (1956)</a>"
+COMMENTS: "Mixed crystal: 45.7 M% of TlBr and 54.3 M% of TlI. 25 °C."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.577 39.38
+    coefficients: 0 1.8293958 0.0225 1.6675593 0.0625 1.1210424 0.1225 0.04513366 0.2025 12.380234 27089.737

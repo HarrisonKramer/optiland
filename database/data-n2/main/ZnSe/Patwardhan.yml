@@ -1,0 +1,16 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. N. Patwardhan, J. S. Ginsberg, C. Y. Chen, M. M. Jadidi, A. L. Gaeta. Nonlinear refractive index of solids in mid-infrared, <a href=\"https://doi.org/10.1364/OL.421469\"><i>Opt. Lett.</i> <b>46</b>, 1824 (2021)</a>"
+COMMENTS: "100 fs. Spectrally resolved two-beam coupling."
+DATA:
+  - type: tabulated n2
+    data: |
+        2.3 1.13e-18
+        3.5 1.00e-18
+        4.5 1.19e-18
+        8.3 8.70e-19
+SPECS:
+    n2_method: SRTBC
+    pulse_duration: 100e-15

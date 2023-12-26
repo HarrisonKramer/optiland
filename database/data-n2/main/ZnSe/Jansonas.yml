@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Jansonas, R. Budriūnas, M. Vengris, A. Varanavičius. Interferometric measurements of nonlinear refractive index in the infrared spectral range, <a href=\"https://doi.org/10.1364/OE.458850\"><i>Opt. Express</i> <b>30</b>, 30507–30524 (2022)</a>"
+COMMENTS: "Polycrystalline ZnSe. 230 fs, 170 fs and 190 fs at 1.03 μm, 2.2 μm and 3.2 μm, respectively. Fourier Interferometry."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.03 23.1e-19
+        2.2 15.9e-19
+        3.2 12.2e-19
+SPECS:
+    n2_method: FI
+    pulse_duration: 230e-15 170e-15 190e-15

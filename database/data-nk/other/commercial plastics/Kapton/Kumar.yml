@@ -1,0 +1,66 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "V. Kumar, P. Goyal, R. Gupta, S. Kumar. Tailoring of optical band gap and refractive index of heat treated Kapton-H Polyimide. <a href=\"https://www.imedpub.com/abstract/tailoring-of-optical-band-gap-and-refractive-index-of-heat-treated-kaptonh-polyimide-12997.html\"><i>Adv. Appl. Sci. Res.</i> <b>2</b> 79-85 <2011)</a>"
+COMMENTS: "Kapton-H polyimide "
+DATA: 
+  - type: tabulated n
+    data: |
+        0.41 1.82786
+        0.42 1.81675
+        0.43 1.81085
+        0.44 1.80084
+        0.45 1.79454
+        0.46 1.78773
+        0.47 1.78375
+        0.48 1.7765
+        0.49 1.77418
+        0.5 1.77209
+        0.51 1.76599
+        0.52 1.76249
+        0.53 1.75992
+        0.54 1.75749
+        0.55 1.75743
+        0.56 1.75558
+        0.57 1.75273
+        0.58 1.7526
+        0.59 1.75022
+        0.6 1.74768
+        0.61 1.74647
+        0.62 1.74512
+        0.63 1.74522
+        0.64 1.74266
+        0.65 1.74032
+  - type: tabulated k
+    data: |
+        0.49 0.00292399
+        0.5 0.00265162
+        0.51 0.0021805
+        0.52 0.00174471
+        0.53 0.00140779
+        0.54 0.00112433
+        0.55 0.000934269
+        0.56 0.000797926
+        0.57 0.000693806
+        0.58 0.000611706
+        0.59 0.000551922
+        0.6 0.000494128
+        0.61 0.000446497
+        0.62 0.000407049
+        0.63 0.000366553
+        0.64 0.000337733
+        0.65 0.000304449
+        0.66 0.000282411
+        0.67 0.000259283
+        0.68 0.000239451
+        0.69 0.000222899
+        0.7 0.000210044
+        0.71 0.000207664
+        0.72 0.000191693
+        0.73 0.000194263
+        0.74 0.000173754
+        0.75 0.000176249
+        0.76 0.000165506
+        0.77 0.000159363
+        0.78 0.000161198

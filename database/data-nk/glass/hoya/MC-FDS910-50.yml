@@ -1,0 +1,62 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Preforms for Precision molding"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.1667902 -0.013141416 2 0.047178656 -2 0.0022684284 -4 -5.3672387e-05 -6 2.5328422e-05 -8
+  - type: tabulated k
+    data: |
+        0.370 1.2365E-05
+        0.380 4.8070E-06
+        0.390 1.9645E-06
+        0.400 9.7138E-07
+        0.420 4.0832E-07
+        0.440 2.5410E-07
+        0.460 1.8006E-07
+        0.480 1.3609E-07
+        0.500 1.0074E-07
+        0.550 4.3988E-08
+        0.600 3.3540E-08
+        0.650 4.1547E-08
+        0.700 3.3523E-08
+        0.750 2.3921E-08
+        0.780 1.2427E-08
+        0.800 1.9127E-08
+        0.830 6.6082E-09
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.050 1.6728E-08
+        1.060 8.4394E-09
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 5.5844E-08
+        1.500 9.5877E-08
+        1.550 8.6645E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.8056e-06 0.0 0.0 0.0 0.0 0.0
+    nd: 1.82165
+    Vd: 24.04
+    glass_code: 822240
+    glass_status: standard
+    density: 3.69 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 9.5e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.21e-05 K<sup>-1</sup>
+    dPgF: 0.0187
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Norland Optical Adhesive 61 <a href=\"https://www.norlandprod.com/adhesives/NOA%2061.html\">Data 1</a>, <a href=\"https://www.norlandprod.com/adhesives/noa61pg2.html\">Data 2</a> (accessed 2016-04-20)"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.45 1.55
+    coefficients: 1.5375 0.00829045 -2 -0.000211046 -4

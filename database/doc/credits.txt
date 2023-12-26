@@ -1,0 +1,20 @@
+***************************************************
+* Database History, Credits, and Acknowledgements *
+***************************************************
+
+The refractiveindex.info database was initiated by me in 2008, and I've been its caretaker, maintaining and expanding it ever since. Despite being a full-time employee at Brookhaven National Laboratory (BNL), I work on this database as a personal project separate from my professional duties, dedicating my personal time to it.
+
+An exception to this is the "n2" section. This part was integrated into the refractiveindex.info database in 2023 as a segment of a research and development effort at BNL. This effort was funded by a U.S. Department of Energy grant, aimed at studying optical materials for high-power, long-wave infrared lasers (B&R code KW0101020). Just like the rest of the database, the development of this section will continue as a personal project.
+
+I want to extend my deepest gratitude to the many researchers who have contributed to the database over the years. They've provided data, reported bugs, and suggested enhancements.
+
+It's also worth noting that I have occasionally utilized access to subscription-based scientific journals provided by BNL.
+
+In January 2015, I chose to release the database to the public under the free-as-freedom CC0 dedication.
+
+In addition to the database, I developed the RefractiveIndex.INFO website independently in my personal time. This website serves as a user-friendly interface for the refractiveindex.info database, and it also allows for some basic calculations.
+
+------------------------
+Mikhail Polyanskiy
+Port Jefferson, NY, USA
+2023-05-27

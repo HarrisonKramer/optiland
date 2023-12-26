@@ -1,0 +1,24 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. D. Bristow, N. Rotenberg, H. M. van Driel. Two-photon absorption and Kerr coefficients of silicon for 850–2200nm, <a  href=\"https://doi.org/10.1063/1.2737359\"><i>Appl. Phys. Lett.</i> <b>90</b>, 37940 (2007)</a>"
+COMMENTS: "200 fs. Z-scan."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.03 2.71e-18
+        1.16 5.21e-18
+        1.22 4.70e-18
+        1.40 5.57e-18
+        1.48 5.48e-18
+        1.55 4.84e-18
+        1.62 8.24e-18
+        1.69 6.57e-18
+        1.76 1.15e-17
+        1.85 1.25e-17
+        1.95 1.12e-17
+        2.15 1.01e-17
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 200e-15

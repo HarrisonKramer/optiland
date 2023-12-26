@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. Hrabovský, M. Kučera, L. Paloušová, L. Bi, M. Veis. Optical characterization of Y<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> and Lu<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> single crystals, <a href=\"https://doi.org/10.1364/OME.417670\"><i>Opt. Mater. Express</i> <b>11</b>, 1218-1223 (2021)</a>"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.193 1.69
+    coefficients: 1.882 1.404 2 0.1338 2 0 0 0 0 -0.0137 2

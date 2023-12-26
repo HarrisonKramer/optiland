@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) D. Vukovic, G. A. Woolsey, G. B. Scelsi. Refractivities of SF<sub>6</sub> and SFO<sub>2</sub> at wavelengths of 632.99 and 1300 nm, <a href=\"https://doi.org/10.1088/0022-3727/29/3/023\"><i>J. Phys. D: Appl. Phys.</i>, <b>29</b>, 634–637 (1996)</a><br>2) M. Sneep and W. Ubachs. Direct measurement of the Rayleigh scattering cross section in various gases, <a href=\"https://doi.org/10.1016/j.jqsrt.2004.07.025\"><i>J. Quant. Spectrosc. Radiat. Transfer</i> <b>92</b>, 293-310 (2005)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Dispersion formula is based on refraction measurement at only two wavelengths: 0.633 µm and 1.3 µm "
+DATA:
+  - type: formula 5
+    wavelength_range: 0.6 1.3
+    coefficients: 1.00071517 4.996e-6 -2
+SPECS:
+    n_is_absolute: true
+    wavelength_is_vacuum: true
+    temperature: 15 °C
+    pressure: 101325 Pa

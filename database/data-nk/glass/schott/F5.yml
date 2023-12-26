@@ -1,0 +1,57 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "lead containing glass type        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.32 2.5
+    coefficients: 0 1.3104463 0.00958633048 0.19603426 0.0457627627 0.96612977 115.011883
+  - type: tabulated k
+    data: |
+        0.334 1.2800E-06
+        0.350 3.0575E-07
+        0.365 1.0957E-07
+        0.370 8.5470E-08
+        0.380 4.9377E-08
+        0.390 3.3979E-08
+        0.400 2.3127E-08
+        0.405 1.9484E-08
+        0.420 1.6140E-08
+        0.436 1.3948E-08
+        0.460 1.3238E-08
+        0.500 9.5781E-09
+        0.546 8.7117E-09
+        0.580 9.2541E-09
+        0.620 9.8924E-09
+        0.660 8.4202E-09
+        0.700 6.6946E-09
+        1.060 6.7549E-09
+        1.530 6.3727E-08
+        1.970 9.4577E-07
+        2.325 3.1881E-06
+        2.500 4.7574E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 2.13e-06 1.65e-08 -6.98e-11 1.02e-06 6.56e-10 0.208
+    nd: 1.60342
+    Vd: 38.03
+    glass_code: 603380.347
+    glass_status: standard
+    density: 3.47 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.9e-06 K<sup>-1</sup>
+    dPgF: -0.0003
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 1.0
+    alkali_resistance: 2.3
+    phosphate_resistance: 2.0

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato, K. Miyata, V. Petrov. Refined Sellmeier equations for AgGaSe<sub>2</sub> up to 18 µm, <a href=\"https://doi.org/10.1364/AO.401828\"><i>Appl. Opt.</i>, <b>60</b>, 805–808 (2021)</a>"
+COMMENTS: "Extraordinary ray (e). 20–22 °C."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.81 18
+    coefficients: 11.33168 0.45951 0 0.21284 1 17816.81 0 3828.78 1

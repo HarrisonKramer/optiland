@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. P. Arndt, R. M. A. Azzam, J. M. Bennett, J. P. Borgogno, C. K. Carniglia, W. E. Case, J. A. Dobrowolski, U. J. Gibson, T. Tuttle Hart, F. C. Ho, V. A. Hodgkin, W. P. Klapp, H. A. Macleod, E. Pelletier, M. K. Purvis, D. M. Quinn, D. H. Strome, R. Swenson, P. A. Temple, and T. F. Thonn. Multiple determination of the optical constants of thin-film coating materials, <a href=\"https://doi.org/10.1364/AO.23.003571\"><i>Appl. Opt.</i> <b>23</b>, 3571-3596 (1984)</a>"
+COMMENTS: "Thin film. Mean values of measurements by different methods."
+DATA:
+  - type: tabulated nk
+    data: |
+        0.40 2.18 2.91
+        0.45 2.38 3.08
+        0.50 2.55 3.21
+        0.55 2.68 3.36
+        0.60 2.81 3.50
+        0.65 2.94 3.65
+        0.70 3.03 3.77
+        0.75 2.99 3.86

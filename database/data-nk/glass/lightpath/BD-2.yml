@@ -1,0 +1,33 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2013/BD-2.pdf\">BD-2 Glass Datasheet (revision 2013-05)</a>"
+COMMENTS: "All values represent glass characteristics after molding"
+DATA:
+  - type: tabulated nk
+    data: |
+        3 2.6266 2.387E-7
+        4 2.6210 3.183E-7
+        5 2.6173 3.979E-7
+        6 2.6142 4.775E-7
+        7 2.6117 5.570E-7
+        8 2.6088 6.366E-7
+        9 2.6055 7.162E-7
+        10 2.6023 7.958E-7
+        11 2.5983 2.626E-6
+        12 2.5942 1.241E-5
+        13 2.5892 2.069E-5
+        14 2.5843 2.228E-5
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    density: 4.67 g/cm<sup>3</sup>
+    Knoop_hardness: 150 kgf/mm<sup>2</sup>
+    Youngs_modulus: 22.1 GPa
+    thermal_expansion:
+        coefficient: 14e-06 K<sup>-1</sup>
+    thermal_dispersion:
+      - type: "dn_rel/dT"
+        value: 91e-6 K<sup>-1</sup>
+    transition_temperature: 278 °C

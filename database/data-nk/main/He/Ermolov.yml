@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. Ermolov, K. F. Mak, M. H. Frosz, J. C. Travers, P. St. J. Russell, Supercontinuum generation in the vacuum ultraviolet through dispersive-wave and soliton-plasma interaction in a noble-gas-filled hollow-core photonic crystal fiber, <a href=\"https://doi.org/10.1103/PhysRevA.92.033821\"><i>Phys. Rev. A</i> <b>92</b>, 033821 (2015)</a>"
+COMMENTS: "Standard conditions. 0 °C, 760 torr (101.325 kPa)."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.09 1.0
+    coefficients: 0 2.16463842e-05 -6.80769781e-04 2.10561127e-07 5.13251289e-03 4.75092720e-05 3.18621354e-03
+SPECS:
+    n_is_absolute: true
+    temperature: 0 °C
+    pressure: 101325 Pa

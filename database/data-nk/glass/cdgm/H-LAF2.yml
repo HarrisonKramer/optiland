@@ -1,0 +1,58 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 1.62865121 0.00864219294 1.11837078 109.900598 0.253252293 0.0342503107
+  - type: tabulated k
+    data: |
+        0.340 5.1876E-06
+        0.350 2.0793E-06
+        0.360 9.2127E-07
+        0.370 4.3724E-07
+        0.380 2.2596E-07
+        0.390 1.3316E-07
+        0.400 7.7326E-08
+        0.420 4.7122E-08
+        0.440 3.1655E-08
+        0.460 2.2030E-08
+        0.480 1.9146E-08
+        0.500 1.1955E-08
+        0.550 8.7623E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 1.1152E-08
+        0.800 1.2745E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 5.5844E-08
+        1.600 8.9440E-08
+        1.800 2.7477E-07
+        2.000 6.1658E-07
+        2.200 1.6704E-06
+        2.400 4.3815E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -4.12e-06 2.75e-08 -1.05e-10 8.05e-07 -8.24e-10 0.107
+    nd: 1.717000
+    Vd: 47.888609
+    glass_code: 717479
+    density: 4.25 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7.4e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.1e-06 K<sup>-1</sup>
+    dPgF: -0.0035
+    climatic_resistance: 1.0

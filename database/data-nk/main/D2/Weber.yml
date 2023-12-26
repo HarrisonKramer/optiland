@@ -1,0 +1,30 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Handbook of Optical Materials, Marvin J. Weber. CRC Press 2003 [<a href=\"https://books.google.com/books?id=6VpQDoef05wC&hl=en\">link</a>]<br>*Original source of data is unknown: \"Handbook...\" cites a paper that doesn't include any information on optical constants of Deuterium."
+COMMENTS: "0 °C"
+DATA:
+  - type: tabulated n
+    data: |
+        0.230209 1.00015680
+        0.234555 1.00015584
+        0.237999 1.00015510
+        0.244691 1.00015378
+        0.246407 1.00015347
+        0.257630 1.00015158
+        0.267499 1.00015014
+        0.275278 1.00014915
+        0.275971 1.00014906
+        0.289357 1.00014756
+        0.292541 1.00014725
+        0.334148 1.00014395
+        0.380166 1.00014160
+        0.410807 1.00014048
+        0.491604 1.00013850
+        0.546074 1.00013766
+        0.576959 1.00013731
+        0.579065 1.00013727
+SPECS:
+    n_is_absolute: true
+    temperature: 0 °C

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. J. Carvajal, P. Segonds, A. Peña, J. Zaccaro, B. Boulanger, F. Díaz and M. Aguiló. Structural and optical properties of RbTiOPO<sub>4</sub>:Nb crystals , <a href=\"https://doi.org/10.1088/0953-8984/19/11/116214\"><i>J. Phys.: Condens. Matter</i> <b>19</b>, 116214, 2007</a>"
+COMMENTS: "n<sub>β</sub>; 293 K (20 °C)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.4 1.5
+    coefficients: 2.0360 1.0883 2 0.0437 1 0 0 0 1 -0.0090 2

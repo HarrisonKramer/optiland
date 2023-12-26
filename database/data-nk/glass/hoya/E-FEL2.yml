@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "General glass Type"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 2.3317983 -0.0097042192 2 0.014032761 -2 0.00064822896 -4 -4.0813761e-05 -6 3.9064873e-06 -8
+  - type: tabulated k
+    data: |
+        0.340 9.7725E-06
+        0.350 3.2441E-06
+        0.360 9.0944E-07
+        0.370 2.8416E-07
+        0.380 1.2344E-07
+        0.390 6.5868E-08
+        0.400 3.5208E-08
+        0.420 2.6846E-08
+        0.440 3.1655E-08
+        0.460 2.9402E-08
+        0.480 1.9146E-08
+        0.500 1.5947E-08
+        0.550 4.3790E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 5.5732E-09
+        0.750 5.9713E-09
+        0.780 6.2101E-09
+        0.800 6.3694E-09
+        0.830 1.3223E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 2.3909E-08
+        1.050 2.5105E-08
+        1.060 2.5344E-08
+        1.100 1.7525E-08
+        1.200 1.9118E-08
+        1.300 2.0711E-08
+        1.400 5.5844E-08
+        1.500 4.7842E-08
+        1.550 8.6645E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    nd: 1.54072
+    Vd: 47.20
+    glass_code: 541472
+    density: 2.53 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.2e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1e-05 K<sup>-1</sup>
+    dPgF: 0.0044
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Jansonas, R. Budriūnas, M. Vengris, A. Varanavičius. Interferometric measurements of nonlinear refractive index in the infrared spectral range, <a href=\"https://doi.org/10.1364/OE.458850\"><i>Opt. Express</i> <b>30</b>, 30507–30524 (2022)</a>"
+COMMENTS: "Single crystal GaSe (o). Polar angle (θ): 0°. Electric field was parallel to the X dielectric axis. 170 fs and 190 fs at 2.2 μm and 3.2 μm, respectively. Estimated Kerr values were 35.2e-19 m<sup>2</sup>/W and 34.7e-19 m<sup>2</sup>/W at 2.2 μm and 3.2 μm, respectively.  Fourier Interferometry."
+DATA:
+  - type: tabulated n2
+    data: |
+        2.2 21.4e-19
+        3.2 7.1e-19
+SPECS:
+    n2_method: FI
+    pulse_duration: 170e-15 190e-15

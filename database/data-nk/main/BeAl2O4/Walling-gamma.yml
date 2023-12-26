@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) J. Walling, O. Peterson, H. Jenssen, R. Morris, E. O'Dell. Tunable alexandrite lasers, <a href=\"https://doi.org/10.1109/JQE.1980.1070430\"><i>IEEE J. Quantum Electron.</i>, <b>16</b>, 1302–1315 (1980)</a><br>2) P. Loiko, A. Major. Dispersive properties of alexandrite and beryllium hexaaluminate crystals, <a href=\"https://doi.org/10.1364/OME.6.002177\"><i>Opt. Mater. Express</i>, <b>6</b>, 2177–2183 (2016)</a><br>* Ref. 2 provides a dispersion formula based on  the experimental data from Ref. 1"
+COMMENTS: "n<sub>γ</sub>; Room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.25 2.6
+    coefficients: 1.70690 1.28477 2 0.01169 1 0 0 0 0 -0.01760 2

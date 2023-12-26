@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "W. C. Hurlbut, Y.-S. Lee, K. L. Vodopyanov, P. S. Kuo, M. M. Fejer, Multiphoton absorption and nonlinear refraction of GaAs in the mid-infrared, <a  href=\"https://doi.org/10.1364/OL.32.000668\"><i>Opt. Lett.</i> <b>32</b>, 668 (2007)</a>"
+COMMENTS: "100 ps. Z-scan. See reference for n2(λ) in 1.3–3.5 µm range"
+DATA:
+  - type: tabulated n2
+    data: |
+        2.5 9.00e-18
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 100e-12

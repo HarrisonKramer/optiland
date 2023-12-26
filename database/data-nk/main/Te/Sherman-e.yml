@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. H. Sherman et al. Proceedings of the Symposium on Sub-millimeter Waves (Polytechnic Press, Brooklyn, 1970)<br>2) G. C. Bhar, Refractive index interpolation in phase-matching, <a href=\"https://doi.org/10.1364/AO.15.0305_1\"><i>Appl. Opt.</i> <b>15</b>, 305-307 (1976)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Extraordinary ray"
+DATA:
+  - type: formula 2
+    wavelength_range: 8.5 30.3
+    coefficients: 0.9041 36.8133 1.0803 6.2456 10000

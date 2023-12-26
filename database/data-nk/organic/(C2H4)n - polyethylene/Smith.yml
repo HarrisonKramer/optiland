@@ -1,0 +1,30 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. R. Smith and E. V. Loewenstein. Optical constants of far infrared materials. 3: plastics, <a href=\"https://doi.org/10.1364/AO.14.001335\"><i>Appl. Opt.</i> <b>14</b>, 1335-1341 (1975)</a>"
+COMMENTS: "HDPE. Measured using approximately 1 mm thick film."
+DATA:
+  - type: tabulated nk
+    data: |
+        40.0000 1.519 0.0020
+        41.6667 1.519 0.0024
+        43.4783 1.519 0.0027
+        45.4545 1.520 0.0029
+        47.6190 1.521 0.0027
+        50.0000 1.521 0.0024
+        52.6316 1.521 0.0023
+        55.5556 1.521 0.0021
+        58.8235 1.521 0.0020
+        62.5000 1.521 0.0019
+        66.6667 1.521 0.0019
+        71.4286 1.521 0.0018
+        76.9231 1.520 0.0018
+        83.3333 1.520 0.0017
+        90.9091 1.520 0.0017
+        100.0000 1.521 0.0016
+        111.1111 1.521 0.0016
+        125.0000 1.521 0.0017
+        142.8571 1.521 0.0018
+        166.6667 1.519 0.0019
+        200.0000 1.518 0.0022

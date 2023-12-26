@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. N. Polyanskiy, I. V. Pogorelsky, M. Babzien, R. Kupfer, K. L. Vodopyanov, M. A. Palmer. Post-compression of long-wave infrared 2 picosecond sub-terawatt pulses in bulk materials, <a href=\"https://doi.org/10.1364/OE.434238\"><i>Opt. Express</i> <b>29</b>, 31714 (2021)</a>"
+COMMENTS: "2 ps. Single-shot self focusing."
+DATA:
+  - type: tabulated n2
+    data: |
+        9.2 1.7e-20
+SPECS:
+    n2_method: SSSF
+    pulse_duration: 2e-12

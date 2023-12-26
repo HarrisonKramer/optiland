@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato, V. Petrov, N. Umemura. Phase-matching properties of yellow color HgGa<sub>2</sub>S<sub>4</sub> for SHG and SFG in the 0.944-10.5910 μm range, <a href=\"https://doi.org/10.1364/AO.55.003145\"><i>Appl. Opt.</i> <b>55</b>, 3145-3148 (2016)</a>"
+COMMENTS: "Room temperature. Extraordinary ray (e)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.6328 10.5910
+    coefficients: 7.27453 0.20413 0 0.10074 1 1098.54 0 719.62 1

@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) J. Pflüger, J. Fink. Determination of optical constants by high-energy, electron-energy-loss spectroscopy (EELS), in <i>Handbook of optical constants of solids II</i>, Edward D. Palik, ed. Academic Press, 1991. pp. 293-310<br>2) J. Pflüger, J. Fink, W. Weber, K. P. Bohnen,  G. Crecelius. Dielectric properties of TiC<sub>x</sub>, TiN<sub>x</sub>, VC<sub>x</sub>, and VN<sub>x</sub> from 1.5 to 40 eV determined by electron-energy-loss spectroscopy, <a href=\"https://doi.org/10.1103/PhysRevB.30.1155\"><i>Phys. Rev. B</i> <b>30</b>, 1155-1163 (1984)</a><br>"
+COMMENTS: "VC<sub>0.88</sub>. Room temperature."
+DATA:
+  - type: tabulated nk
+    data: |
+        0.03107 8.37E-1 6.42E-2
+        0.03179 8.30E-1 5.89E-2
+        0.03263 8.14E-1 5.76E-2
+        0.03351 7.95E-1 6.33E-2
+        0.03444 7.76E-1 7.27E-2
+        0.03542 7.60E-1 8.57E-2
+        0.03646 7.42E-1 9.82E-2
+        0.03757 7.25E-1 1.13E-1
+        0.03874 7.06E-1 1.29E-1
+        0.03999 6.87E-1 1.52E-1
+        0.04133 6.68E-1 1.72E-1
+        0.04275 6.45E-1 1.99E-1
+        0.04428 6.23E-1 2.31E-1
+        0.04592 6.01E-1 2.68E-1
+        0.04768 5.82E-1 3.16E-1
+        0.04959 5.64E-1 3.71E-1
+        0.05166 5.60E-1 4.33E-1
+        0.05390 5.61E-1 4.99E-1
+        0.05635 5.78E-1 5.68E-1
+        0.05904 6.06E-1 6.33E-1
+        0.06199 6.37E-1 6.86E-1
+        0.06525 6.65E-1 7.30E-1
+        0.06888 6.89E-1 7.99E-1
+        0.07293 7.28E-1 8.72E-1
+        0.07749 8.03E-1 9.33E-1
+        0.08265 8.57E-1 9.58E-1
+        0.08856 9.04E-1 9.96E-1
+        0.09537 9.56E-1 1.00E0
+        0.1033 9.17E-1 9.90E-1
+        0.1078 8.58E-1 1.04E0
+        0.1127 8.20E-1 1.14E0
+        0.1181 8.27E-1 1.28E0
+        0.1240 8.65E-1 1.41E0
+        0.1305 9.58E-1 1.51E0
+        0.1378 1.07E0 1.59E0
+        0.1459 1.13E0 1.64E0
+        0.1550 1.22E0 1.73E0
+        0.1653 1.32E0 1.83E0
+        0.1771 1.42E0 1.92E0
+        0.1907 1.62E0 1.97E0
+        0.2066 1.74E0 2.00E0
+        0.2254 1.86E0 2.04E0
+        0.2480 2.04E0 2.13E0
+        0.2755 2.27E0 2.18E0
+        0.3100 2.47E0 2.15E0
+        0.3542 2.59E0 2.12E0
+        0.4133 2.77E0 2.16E0
+        0.4959 2.84E0 2.21E0
+        0.6199 3.01E0 2.51E0
+        0.8266 3.37E0 2.88E0
+        1.2399 3.66E0 3.42E0
+        2.4797 4.86E0 5.34E0

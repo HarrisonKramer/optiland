@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M.D. Ewbank et al.. The temperature dependence of optical and mechanical properties of Tl<sub>3</sub>AsSe<sub>3</sub>, <a href=\"https://doi.org/10.1063/1.328128\"><i>J. Appl. Phys.</i> <b>51</b>, 3848-3852  (1980)</a>"
+COMMENTS: "Ordinary ray (o)"
+DATA:
+  - type: formula 1
+    wavelength_range: 2 12
+    coefficients: 0 10.210 0.444 0.522 25.0

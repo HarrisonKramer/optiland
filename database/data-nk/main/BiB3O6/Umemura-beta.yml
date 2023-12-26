@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "N. Umemura, K. Miyata, and K. Kato. New data on the optical properties of BiB<sub>3</sub>O<sub>6</sub>, <a href=\"    https://doi.org/10.1016/j.optmat.2006.12.014\"><i>Opt. Mat.</i> <b>30</b>, 532-534 (2007)</a>"
+COMMENTS: "n<sub>β</sub>; 20 °C."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.48 3.1
+    coefficients: 3.16940 0.03717 0 0.03483 1 0 0 0 1 -0.01827 2

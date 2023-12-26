@@ -1,0 +1,63 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.302 2.325
+    coefficients: 0 0.659414732 0.025605996 1.55675638 0.00727769577 1.25417967 93.1176682
+  - type: tabulated k
+    data: |
+        0.290 5.8578E-06
+        0.300 3.9397E-06
+        0.310 3.2854E-06
+        0.320 1.7549E-06
+        0.330 1.1967E-06
+        0.340 8.0373E-07
+        0.350 5.2569E-07
+        0.360 3.4029E-07
+        0.370 2.1051E-07
+        0.380 1.3607E-07
+        0.390 9.4531E-08
+        0.400 7.4066E-08
+        0.420 4.7122E-08
+        0.440 3.5190E-08
+        0.460 2.5714E-08
+        0.480 1.9146E-08
+        0.500 1.5947E-08
+        0.550 1.3150E-08
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 1.1152E-08
+        0.800 1.2745E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 2.2304E-08
+        1.600 2.5490E-08
+        1.800 1.0062E-07
+        2.000 3.8663E-07
+        2.200 1.1579E-06
+        2.400 5.1411E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.12e-06 1.52e-08 -3.71e-11 6.39e-07 4.9e-10 0.192
+    nd: 1.816000
+    Vd: 46.549300
+    glass_code: 816466
+    density: 5.01 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.4e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.8e-06 K<sup>-1</sup>
+    dPgF: -0.0095
+    climatic_resistance: 1.0

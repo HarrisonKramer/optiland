@@ -1,0 +1,24 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. C. Sutherland and E. T. Arakawa. Optical properties of potassium for photons of energy 3.96 to 9.69 eV, <a href=\"https://doi.org/10.1364/JOSA.58.001080\"><i>J. Opt. Soc. Am.</i> <b>58</b>, 1080-1083 (1968)</a>"
+DATA:
+  - type: tabulated n
+    data: |
+        0.1280 0.964
+        0.1406 0.972
+        0.1438 0.978
+        0.1496 0.976
+        0.1579 0.965
+        0.1610 0.959
+        0.1744 0.929
+        0.1799 0.924
+        0.1848 0.911
+        0.1899 0.890
+        0.2000 0.876
+        0.2101 0.845
+        0.2198 0.823
+        0.2300 0.793
+        0.2535 0.717
+        0.3131 0.392

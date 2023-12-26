@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2011/Microchem SU-8 3000 Data Sheet.pdf\">Microchem SU-8 3000 Data Sheet</a>, 2011"
+COMMENTS: "Microchem SU-8 3000 permanent epoxy negative photoresist"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.32 1.7
+    coefficients: 1.5525 0.00629 -2 0.0004 -4

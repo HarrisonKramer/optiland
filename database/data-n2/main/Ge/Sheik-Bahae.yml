@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "M. Sheik-Bahae, D. C. Hutchings, D. J. Hagan, E. W. Van Stryland. Dispersion of bound electron nonlinear refraction in solids, <a href=\"https://doi.org/10.1109/3.89946\"><i>IEEE J. Quantum Electron.</i> <b>27</b>, 1296 (1991)</a>"
+COMMENTS: "300 ns. Z-scan."
+DATA:
+  - type: tabulated n2
+    data: |
+        10.6 2.83e-17
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 300e-9

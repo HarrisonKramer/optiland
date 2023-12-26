@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. G. Selivanov, I. A. Denisov, N. V. Kuleshov, K. V. Yumashev. Nonlinear refractive properties of Yb3+-doped KY(WO<sub>4</sub>)<sub>2</sub> and YVO<sub>4</sub> laser crystals, <a href=\"https://doi.org/10.1007/s00340-005-2098-5\"><i>Appl. Phys. B</i> <b>83</b>, 61 (2006)</a>"
+COMMENTS: "n<sub>2γ</sub> (E∥N<sub>g</sub>). 100 fs. Z-scan."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.08 1.2e-19
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 100e-15

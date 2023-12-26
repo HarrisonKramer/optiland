@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "Cited as \"R. L. Herbst (private communication)\" in M. M. Choy and R. L. Byer. Accurate second-order susceptibility measurements of visible and infrared nonlinear crystals, <a href=\"https://doi.org/10.1103/PhysRevB.14.1693\"><i>Phys. Rev. B</i> <b>14</b>, 1693-1706 (1976)</a>."
+COMMENTS: "Room temperature. Ordinary ray (o)."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.5461 5
+    coefficients: 1.03132 1.37623 0.0350832 1.06745 169.00

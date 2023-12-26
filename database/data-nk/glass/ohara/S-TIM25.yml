@@ -1,0 +1,56 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended - Lightweight "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.36 2.4
+    coefficients: 0 1.50659233 0.0109501562 0.204786135 0.0574980285 1.92036668 178.128535
+  - type: tabulated k
+    data: |
+        0.360 1.3193E-05
+        0.370 4.2020E-06
+        0.380 1.5447E-06
+        0.390 6.9253E-07
+        0.400 3.7094E-07
+        0.420 1.4690E-07
+        0.440 9.2241E-08
+        0.460 7.0220E-08
+        0.480 5.3854E-08
+        0.500 4.4010E-08
+        0.550 2.1939E-08
+        0.600 1.9137E-08
+        0.650 2.5928E-08
+        0.700 2.2326E-08
+        0.800 6.3694E-09
+        0.900 1.4338E-08
+        1.000 1.5931E-08
+        1.200 1.9118E-08
+        1.400 5.5844E-08
+        1.600 6.3822E-08
+        1.800 1.8743E-07
+        2.000 3.7033E-07
+        2.200 1.0089E-06
+        2.400 1.3860E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -3.93e-07 1.2e-08 -3.29e-11 8.13e-07 1.17e-09 0.284
+    nd: 1.672700
+    Vd: 32.099206
+    glass_code: 673321
+    density: 2.91 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7.9e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.5e-06 K<sup>-1</sup>
+    dPgF: 0.0093
+    climatic_resistance: 2.0
+    acid_resistance: 1.0
+    phosphate_resistance: 1.2

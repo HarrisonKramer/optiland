@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato, N. Umemura, V. Petrov. Sellmeier and thermo-optic dispersion formulas for CdGa<sub>2</sub>S<sub>4</sub> and their application to the nonlinear optics of Hg<sub>1−x</sub>Cd<sub>x</sub>Ga<sub>2</sub>S<sub>4</sub>, <a href=\"https://doi.org/10.1016/j.optcom.2016.10.054\"><i>Opt. Commun.</i> <b>386</b>, 49-52 (2017)</a>"
+COMMENTS: "Room temperature. Extraordinary ray (e)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.49 7.519
+    coefficients: 6.50983 0.17311 0 0.02912 1 330.88 0 332.38 1

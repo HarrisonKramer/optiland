@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "P. T. B. Shaffer. Refractive index, dispersion, and birefringence of silicon carbide polytypes, <a href=\"https://doi.org/10.1364/AO.10.001034\"><i>Appl. Opt.</i> <b>10</b>, 1034-1036 (1971)</a>"
+COMMENTS: "β-SiC (zincblende crystal structure)"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.467 0.691
+    coefficients: 2.5538 0.0342 -2

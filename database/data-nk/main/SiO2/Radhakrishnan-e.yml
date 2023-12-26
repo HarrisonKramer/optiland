@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) T. Radhakrishnan. Further Studies on the Temperature Variation of the Refractive Index of Crystals, <a href=\"https://doi.org/10.1007/BF03172255\"><i>Proc. Indian Acad. Sci.</i> <b>31</b>, 22-34 (1951)</a><br>2) T. Radhakrishnan. The dispersion, briefringence and optical activity of quartz, <a href=\"https://doi.org/10.1007/BF03171408\"><i>Proc. Indian Acad. Sci.</i> <b>25</b>, 260-265 (1947)</a>"
+COMMENTS: "18 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.18 3
+    coefficients: 0 0.665721 0.060 0.503511 0.106 0.214792 0.119 0.539173 8.792 1.807613 19.70

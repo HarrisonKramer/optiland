@@ -1,0 +1,16 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. DeSalvo, A. A. Said, D. J. Hagan, E. W. Van Stryland, M. Sheik-Bahae. Infrared to ultraviolet measurements of two-photon absorption and n<sub>2</sub> in wide bandgap solids, <a href=\"https://doi.org/10.1109/3.511545\"><i>IEEE J. Quantum Electron.</i> <b>32</b>, 1324 (1996)</a>"
+COMMENTS: "Extraordinary ray (e). 15 ps @ 266 nm, 17 ps @ 355 nm, 22 ps @ 532 nm, 30 ps @ 1064 nm. Z-scan."
+DATA:
+  - type: tabulated n2
+    data: |
+        0.266 1.26e-19
+        0.355 3.90e-20
+        0.532 3.10e-20
+        1.064 1.67e-20
+SPECS:
+    n2_method: Z-scan
+    pulse_duration: 15e-12 17e-12 22e-12 30e-12

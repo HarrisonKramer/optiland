@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. E. Zelmon, D. L. Small, and D. Jundt. Infrared corrected Sellmeier coefficients for congruently grown lithium niobate and 5 mol.% magnesium oxide-doped lithium niobate, <a href=\"https://doi.org/10.1364/JOSAB.14.003319\"><i>J. Opt. Soc. Am. B</i> <b>14</b>, 3319-3322 (1997)</a>"
+COMMENTS: "21 °C. Extraordinary ray (e). Congruently grown lithium niobate."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4 5.0
+    coefficients: 0 2.9804 0.02047 0.5981 0.0666 8.9543 416.08

@@ -1,0 +1,18 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "T. Skauli, P. S. Kuo, K. L. Vodopyanov, T. J. Pinguet, O. Levi, L. A. Eyres, J. S. Harris, M. M. Fejer, B. Gerard, L. Becouarn, and E. Lallier. Improved dispersion relations for GaAs and applications to nonlinear optics, <a href=\"https://doi.org/10.1063/1.1621740\"><i>J. Appl. Phys.</i>, <b>94</b>, 6447-6455 (2003)</a>"
+COMMENTS: "22 °C. See the original publication for temperature dependence of refractive index."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.97 17
+    coefficients: 4.372514 5.466742 0.4431307 0.02429960 0.8746453 1.957522 36.9166
+    # Conversion from the original data:
+    # C1 = g0-1 = 5.372514-1 = 4.372514
+    # C2 = g1*λ1^2 = 27.83972*0.4431307^2 = 5.466742
+    # C3 = λ1 = 0.4431307
+    # C4 = g2*λ2^2 = 0.031764*0.8746453^2 = 0.02429960
+    # C5 = λ2 = 0.8746453
+    # C6 = g3*λ1^3 = 0.00143636*36.9166^2 = 1.957522
+    # C7 = λ3 = 36.9166

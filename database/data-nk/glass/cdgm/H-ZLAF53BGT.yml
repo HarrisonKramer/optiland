@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 0.302813825 0.04559202 1.25522353 99.9412194 1.95575794 0.010816711
+  - type: tabulated k
+    data: |
+        0.340 1.0585E-05
+        0.350 4.4003E-06
+        0.360 1.7652E-06
+        0.370 8.5490E-07
+        0.380 4.6665E-07
+        0.390 2.8929E-07
+        0.400 1.9696E-07
+        0.420 1.0525E-07
+        0.440 8.1473E-08
+        0.460 5.5324E-08
+        0.480 4.2250E-08
+        0.500 3.1959E-08
+        0.550 2.6340E-08
+        0.600 2.8734E-08
+        0.650 3.6335E-08
+        0.700 3.9130E-08
+        0.800 3.1911E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 2.2304E-08
+        1.600 2.5490E-08
+        1.800 1.0062E-07
+        2.000 3.7033E-07
+        2.200 9.9038E-07
+        2.400 4.0717E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 9.87e-06 1.65e-08 -3.22e-11 8.9e-07 1.12e-09 0.243
+    nd: 1.834000
+    Vd: 37.210555
+    glass_code: 834372
+    glass_status: standard
+    density: 4.54 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 5.9e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.2e-06 K<sup>-1</sup>
+    dPgF: -0.004
+    climatic_resistance: 1.0

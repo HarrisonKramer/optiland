@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "F. Weiting and Y. Yixun. Temperature effects on the refractive index of lead telluride and zinc selenide, <a href=\"https://doi.org/10.1016/0020-0891(90)90055-Z\"><i>Infrared Phys.</i> <b>30</b>, 371-373, 1990</a><br>(fitting experimental data with dispersion formula: refractiveindex.info)"
+COMMENTS: "130 K (-143 °C)"
+DATA:
+  - type: formula 4
+    wavelength_range: 5.189 12.51
+    coefficients: 1 33.851 2 3.6068 1 0 0 0 1 -0.009763 2

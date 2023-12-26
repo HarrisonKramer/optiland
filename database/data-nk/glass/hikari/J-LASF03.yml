@@ -1,0 +1,55 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/hikari_2017-04-01.pdf\">HIKARI glass data sheets</a>"
+COMMENTS: ""
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.365015 2.05809
+    coefficients: 3.17262102 -0.0144956612 2 -0.000148050666 4 0.0302384298 -2 0.000795161351 -4 -3.21543048e-06 -6 3.05533181e-06 -8
+  - type: tabulated k
+    data: |
+        0.330 9.2084E-06
+        0.340 3.9764E-06
+        0.350 2.0443E-06
+        0.360 1.1904E-06
+        0.365 9.1410E-07
+        0.370 6.9405E-07
+        0.380 4.5608E-07
+        0.390 2.8929E-07
+        0.400 2.0713E-07
+        0.420 1.2254E-07
+        0.440 8.8648E-08
+        0.460 6.2765E-08
+        0.480 4.6114E-08
+        0.500 3.1959E-08
+        0.550 2.6340E-08
+        0.600 2.3933E-08
+        0.650 2.5928E-08
+        0.700 2.7922E-08
+        0.800 6.3982E-08
+        0.900 2.8705E-08
+        1.000 3.9889E-08
+        1.200 2.8691E-08
+        1.400 8.9485E-08
+        1.600 1.4083E-07
+        1.800 3.6265E-07
+        2.000 7.6618E-07
+        2.200 2.2380E-06
+        2.400 7.6486E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 23.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 5.2889e-06 1.4467e-08 -2.278e-12 7.4017e-07 9.0018e-10 0.2219
+    nd: 1.806100
+    Vd: 40.975266
+    density: 4.31 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 5.2e-06 K<sup>-1</sup>
+    dPgF: -0.0068
+    phosphate_resistance: 1.0

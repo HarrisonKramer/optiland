@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. Eimerl, L. Davis, S. Velsko, E. K. Graham and A. Zalkin. Optical, mechanical, and thermal properties of barium borate , <a href=\"https://doi.org/10.1063/1.339536\"><i>J. Appl. Phys.</i>, <b>62</b>, 1968-1983 (1987)</a>"
+COMMENTS: "Beta barium borate (ß-BaB<sub>2</sub>O<sub>4</sub>, BBO). Ordinary ray (o)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.22 1.06
+    coefficients: 2.7405 0.0184 0 0.0179 1 0 0 0 1 -0.0155 2

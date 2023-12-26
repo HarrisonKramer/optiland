@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/d64200-ch-braun-6420-e.pdf\">Barberini D6420 glass specifications, 2010-08</a>"
+COMMENTS: "20 °C<br>Sun Protection Glass; Colour: brown; Application: medium tinted sunglare filter with high UV- and IR- absorption filter category 2 acc. to DIN EN 1836 (for τ<sub>v</sub> > 18% filter category 3)"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.5356
+        0.47999 1.5305
+        0.48613 1.5298
+        0.54607 1.5251
+        0.58756 1.5226
+        0.58929 1.5225
+        0.64385 1.5200
+        0.65627 1.5195

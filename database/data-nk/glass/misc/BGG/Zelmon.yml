@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. E. Zelmon, S. S. Bayya, J. S. Sanghera, I. D. Aggarwal. Dispersion of barium gallogermanate glass, <a href=\"https://doi.org/10.1364/AO.41.001366\"><i>Appl. Opt.</i> <b>41</b>, 1366 (2002)</a>"
+COMMENTS: "BaO : Ga<sub>2</sub>O<sub>3</sub> : GeO<sub>2</sub> = 42.9 : 17.0 : 40.1."
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4 5.0
+    coefficients: 0 0.82725 0.02978 1.14635 0.005117 1.53923 272.657

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. H. Kachare, W. G. Spitzer, and J. E. Fredrickson. Refractive index of ion-implanted GaAs, <a href=\"https://doi.org/10.1063/1.323292\"><i>J. Appl. Phys.</i>, <b>47</b>, 4209-4212 (1976)</a>"
+COMMENTS: "Room temperature"
+DATA:
+  - type: formula 1
+    wavelength_range: 1.4 11
+    coefficients: 2.5 7.4969 0.4082 1.9347 37.17

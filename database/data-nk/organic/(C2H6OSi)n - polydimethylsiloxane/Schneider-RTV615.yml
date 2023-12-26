@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "F. Schneider, J. Draheim, R. Kamberger, U. Wallrabe. Process and material properties of polydimethylsiloxane (PDMS) for Optical MEMS, <a href=\"https://doi.org/10.1016/j.sna.2009.01.026\"><i>Sens. Actuators A Phys.</i> <b>151</b>, 95-99 (2009)</a>"
+COMMENTS: "RTV 615 (Bayer Silicones, now Momentive)"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.35 0.70
+    coefficients: 0 1.0057 0.013217

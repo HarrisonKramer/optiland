@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.313 2.325
+    coefficients: 0 0.600949826 5.19864453e-11 0.958288632 0.0167563008 1.1405978 133.109431
+  - type: tabulated k
+    data: |
+        0.320 5.8635E-06
+        0.330 2.3414E-06
+        0.340 1.0040E-06
+        0.350 4.6908E-07
+        0.360 2.4199E-07
+        0.370 1.2634E-07
+        0.380 7.9663E-08
+        0.390 5.3213E-08
+        0.400 3.8428E-08
+        0.420 3.0216E-08
+        0.440 3.1655E-08
+        0.460 2.5714E-08
+        0.480 2.2987E-08
+        0.500 2.3945E-08
+        0.550 1.7542E-08
+        0.600 1.9137E-08
+        0.650 2.0732E-08
+        0.700 1.6736E-08
+        0.800 1.9127E-08
+        0.850 1.3542E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 2.2304E-08
+        1.600 2.5490E-08
+        1.800 2.8938E-07
+        2.000 7.1616E-07
+        2.200 1.9617E-06
+        2.400 3.6509E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -3.5e-06 2.04e-08 -3.25e-11 5.04e-07 -5.67e-10 0.213
+    nd: 1.614050
+    Vd: 55.116283
+    glass_code: 614551
+    density: 3.58 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 9.8e-06 K<sup>-1</sup>
+    climatic_resistance: 4.0

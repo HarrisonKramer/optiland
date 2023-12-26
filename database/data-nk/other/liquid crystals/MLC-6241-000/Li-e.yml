@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. Li, C. H. Wen, S. Gauza, R. Lu and S. T. Wu. Refractive indices of liquid crystals for display applications, <a href=\"https://doi.org/10.1109/JDT.2005.853357\"><i>J. Disp. Technol.</i> <b>1</b>, 51-61, 2005</a>"
+COMMENTS: "25 °C. Extraordinary ray (e)"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.450 0.656
+    coefficients: 1.5397 0.0075 -2 1.03E-5 -4
+SPECS:
+    temperature: 25 °C

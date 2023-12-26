@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "E. V. Pestryakov, V. V. Petrov, I. I. Zubrinov, V. I. Semenov, V. I. Trunov, A. V. Kirpichnikov, A. I. Alimpiev. Physical properties of BeAl<sub>6</sub>O<sub>10</sub> single crystals, <a href=\"https://doi.org/10.1063/1.365728\"><i>J. Appl. Phys.</i>, <b>82</b>, 3661–3666 (1997)</a>"
+COMMENTS: "n<sub>γ</sub>; Room temperature."
+DATA:
+  - type: formula 3
+    wavelength_range: 0.43 1.1
+    coefficients: 2.980797 0.01800311 -2 -0.01508514 2

@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. Adair, L. L. Chase, S. A. Payne. Nonlinear refractive-index measurements of glasses using three-wave frequency mixing, <a href=\"https://doi.org/10.1364/JOSAB.4.000875\"><i>J. Opt. Soc. Am. B</i> <b>4</b>, 875 (1987)</a>"
+COMMENTS: "3 ns. Three-wave mixing."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.064 3.62e-20
+SPECS:
+    n2_method: TWM
+    pulse_duration: 3e-9

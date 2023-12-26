@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) C. D. Salzberg and J. J. Villa. Infrared Refractive Indexes of Silicon, Germanium and Modified Selenium Glass, <a href=\"https://doi.org/10.1364/JOSA.47.000244\"><i>J. Opt. Soc. Am.</i>, <b>47</b>, 244-246 (1957)</a><br>2) B. Tatian. Fitting refractive-index data with the Sellmeier dispersion formula, <a href=\"https://doi.org/10.1364/AO.23.004477\"><i>Appl. Opt.</i> <b>23</b>, 4477-4485 (1984)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "26 °C, Unknown purity"
+DATA:
+  - type: formula 1
+    wavelength_range: 1.357 11.04
+    coefficients: 0 10.6684293 0.301516485 0.0030434748 1.13475115 1.54133408 1104

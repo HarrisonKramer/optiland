@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato, K. Miyata, L. Isaenko, S. Lobanov, V. Vedenyapin, V. Petrov. Phase-matching properties of LiGaS<sub>2</sub> in the 1.025–10.5910 μm spectral range, <a href=\"https://doi.org/10.1364/OL.42.004363\"><i>Opt. Lett.</i>, <b>42</b>, 4363–4366 (2017)</a>"
+COMMENTS: "n<sub>γ</sub>; room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 1.025 10.591
+    coefficients: 5.77851 0.12325 0 0.03465 1 580.13 0 451.62 1

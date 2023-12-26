@@ -1,0 +1,63 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "suitable for precision molding. step 0.5 available        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.26 2.5
+    coefficients: 0 0.844309338 0.00475111955 0.344147824 0.0149814849 0.910790213 97.8600293
+  - type: tabulated k
+    data: |
+        0.270 3.3621E-06
+        0.280 1.5283E-06
+        0.290 6.3984E-07
+        0.300 2.6207E-07
+        0.310 1.1499E-07
+        0.320 5.2247E-08
+        0.334 2.4738E-08
+        0.350 1.3450E-08
+        0.365 9.3320E-09
+        0.370 9.4599E-09
+        0.380 1.0935E-08
+        0.390 7.4709E-09
+        0.400 7.6624E-09
+        0.405 7.7582E-09
+        0.420 9.3912E-09
+        0.436 1.1147E-08
+        0.460 1.4716E-08
+        0.500 1.7604E-08
+        0.546 1.5713E-08
+        0.580 1.6691E-08
+        0.620 1.9835E-08
+        0.660 1.8993E-08
+        0.700 1.1169E-08
+        1.060 6.7549E-09
+        1.530 1.7351E-07
+        1.970 4.5507E-07
+        2.325 3.4194E-06
+        2.500 7.6998E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -7.24e-06 1.58e-08 -9.51e-12 3.51e-07 4.61e-10 0.156
+    nd: 1.48749
+    Vd: 70.41
+    glass_code: 487704.245
+    glass_status: standard
+    density: 2.45 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 9.2e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1e-05 K<sup>-1</sup>
+    dPgF: 0.0036
+    climatic_resistance: 2.0
+    stain_resistance: 1.0
+    acid_resistance: 4.0
+    alkali_resistance: 2.0
+    phosphate_resistance: 2.3

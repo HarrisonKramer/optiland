@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Jansonas, R. Budriūnas, M. Vengris, A. Varanavičius. Interferometric measurements of nonlinear refractive index in the infrared spectral range, <a href=\"https://doi.org/10.1364/OE.458850\"><i>Opt. Express</i> <b>30</b>, 30507–30524 (2022)</a>"
+COMMENTS: "Single crystal BaGa<sub>4</sub>Se<sub>7</sub> (BGSe). Polar angle (θ): 0°, azimuthal angle (φ): unknown.  170 fs and 190 fs at 2.2 μm and 3.2 μm, respectively. Fourier Interferometry."
+DATA:
+  - type: tabulated n2
+    data: |
+        2.2 19.6e-19
+        3.2 9.5e-19
+SPECS:
+    n2_method: FI
+    pulse_duration: 170e-15 190e-15

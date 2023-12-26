@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "E. Grace, A. Butcher, J. Monroe, J. A. Nikkel. Index of refraction, Rayleigh scattering length, and Sellmeier coefficients in solid and liquid argon and xenon, <a href=\"https://doi.org/10.1016/j.nima.2017.06.031\"><i>Nucl. Instr. Meth. Phys. Res. A</i> <b>867</b>, 204-208 (2017)</a>"
+COMMENTS: "Solid xenon at 80 K (-193.15 °C)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.157 0.660
+    coefficients: 0.6 0.6 0.1469 0.001 0.8270
+SPECS:
+    temperature: 80 K

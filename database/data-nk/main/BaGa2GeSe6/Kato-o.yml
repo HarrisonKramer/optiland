@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato, K. Miyata, V. V. Badikov, V. Petrov. Phase-matching properties of BaGa<sub>2</sub>GeSe<sub>6</sub> for three-wave interactions in the 0.778–10.5910 μm spectral range, <a href=\"https://doi.org/10.1364/AO.57.007440\"><i>Appl. Opt.</i>, <b>57</b>, 7440–7443 (2018)</a>"
+COMMENTS: "Ordinary ray (o); room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.778 10.6
+    coefficients: 7.39367 0.27086 0 0.06961 1 1513.10 0 1237.35 1

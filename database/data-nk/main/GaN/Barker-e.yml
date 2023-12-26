@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. S. Barker Jr. and M. Ilegems. Infrared lattice vibrations and free-electron dispersion in GaN. <a href=\"https://doi.org/10.1103/PhysRevB.7.743\"><i>Phys. Rev. B</i> <b>7</b>, 743-750 (1973)</a>"
+COMMENTS: "α-GaN (wurtzite); Extrardinary ray (e); 300 K (27 °C)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.35 10
+    coefficients: 4.35 5.08 18.76

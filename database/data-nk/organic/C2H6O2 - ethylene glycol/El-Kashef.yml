@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. El-Kashef. The necessary requirements imposed on polar dielectric laser dye solvents, <a href=\"https://doi.org/10.1016/S0921-4526(99)00856-X\"><i>Physica B: Condensed Matter</i> <b>279</b>, 295-301 (2000)</a>"
+COMMENTS: "20 °C"
+DATA:
+  - type: formula 5
+    wavelength_range: 0.4 0.8
+    coefficients: 1.386820 17856.021E-6 -2

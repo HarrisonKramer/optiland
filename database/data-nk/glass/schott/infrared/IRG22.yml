@@ -1,0 +1,61 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2017/schott-infrared-chalcogenide-glasses-irg-22-english-us-11052017.pdf\">SCHOTT Infrared Chalcogenide Glasses - IRG 22 Product flyer (Version Aptil 2017)</a>"
+DATA:
+  - type: formula 2
+    wavelength_range: 1.0 12
+    coefficients: 2.4834 2.8203 0.1352 0.9773 1420.7
+  - type: tabulated k
+    data: |
+        0.8 4.1386E-06
+        1.0 7.1560E-07
+        1.5 4.0055E-07
+        2.0 4.0295E-07
+        2.5 5.0368E-07
+        3.0 4.0933E-07
+        3.5 4.2095E-07
+        4.0 4.1652E-07
+        4.5 1.3501E-06
+        5.0 1.2119E-06
+        5.5 2.1939E-07
+        6.0 1.4345E-07
+        6.5 1.5541E-07
+        7.0 1.6736E-07
+        7.5 4.7938E-07
+        8.0 3.1315E-06
+        8.5 1.0223E-06
+        9.0 8.6463E-07
+        9.5 9.8923E-07
+        10.0 9.6071E-07
+        10.5 1.8588E-06
+        11.0 5.6961E-06
+        11.5 2.2738E-05
+        12.0 8.7023E-05
+        12.5 1.8354E-04
+        13.0 1.8392E-04
+        13.5 9.0667E-05
+        14.0 4.7651E-05
+        14.5 4.0662E-05
+        15.0 5.2713E-05
+        15.5 8.5743E-05
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 6.41e-05 0 0 1.68e-07 0 9.96e-01
+    density: 4.41 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: 20 100 °C
+        coefficient: 12.5e-06 K<sup>-1</sup>
+    specific_heat: 0.33 J/(g·K)
+    thermal_conductivity:
+      - value: 0.24 W/(m·K)
+    transition_temperature: 368 °C
+    Knoop_hardness: 1.41 GPa
+    fracture_toughness: 0.55 MPa·m<sup>1/2</sup>
+    shear_modulus: 8.9 GPa
+    Youngs_modulus: 21.5 GPa

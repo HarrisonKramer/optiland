@@ -1,0 +1,32 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. Valentine, S. Zhang, T. Zentgraf, E. Ulin-Avila, D. A. Genov, G. Bartal and X. Zhang. Three-dimensional optical metamaterial with a negative refractive index, <a href=\"https://doi.org/10.1038/nature07247\"><i>Nature</i> <b>455</b>, 376-379 (2008)</a> (Data points extracted from a figure)"
+DATA:
+  - type: tabulated n
+    data: |
+        1.200 0.63
+        1.225 0.66
+        1.250 0.66
+        1.275 0.60
+        1.300 0.56
+        1.325 0.56
+        1.350 0.50
+        1.375 0.45
+        1.400 0.41
+        1.425 0.32
+        1.450 0.25
+        1.475 0.22
+        1.500 0.13
+        1.525 0.06
+        1.550 -0.04
+        1.575 -0.17
+        1.600 -0.21
+        1.625 -0.34
+        1.650 -0.47
+        1.675 -0.57
+        1.700 -0.63
+        1.725 -0.80
+        1.750 -1.03
+        1.775 -1.24

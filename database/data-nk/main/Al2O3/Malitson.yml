@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "I. H. Malitson. Refraction and dispersion of synthetic sapphire, <a href=\"https://doi.org/10.1364/JOSA.52.001377\"><i>J. Opt. Soc. Am.</i> <b>52</b>, 1377-1379 (1962)</a>"
+COMMENTS: "Synthetic sapphire, Ordinary ray (o), 24 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.2652 5.577
+    coefficients: 0 1.023798 0.06144821 1.058264 0.1106997 5.280792 17.92656

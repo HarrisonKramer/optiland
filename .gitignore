@@ -1,0 +1,12 @@
+.idea/
+**/venv/
+**/.venv/
+**/__pycache__/
+**/jupyter/
+build/
+dist/
+**/.ipynb_checkpoints/
+.vscode/
+optiland.egg-info/
+**/Scripts/
+references/

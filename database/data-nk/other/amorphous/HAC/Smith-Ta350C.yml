@@ -1,0 +1,27 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "F. W. Smith. Optical constants of a hydrogenated amorphous carbon film, <a href=\"https://doi.org/10.1063/1.333135\"><i>J. Appl. Phys.</i> <b>55</b>, 764 (1984)</a>"
+COMMENTS: "Annealed (Ta = 350 °C)"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.261 1.62 0.360
+        0.276 1.66 0.320
+        0.292 1.72 0.273
+        0.310 1.76 0.234
+        0.331 1.77 0.203
+        0.354 1.77 0.168
+        0.381 1.78 0.129
+        0.413 1.77 0.096
+        0.451 1.77 0.068
+        0.496 1.77 0.047
+        0.551 1.77 0.027
+        0.620 1.76 0.0155
+        0.708 1.76 0.0090
+        0.827 1.76 0.0050
+SPECS:
+    wavelength_is_vacuum: true
+    substrate: fused_quartz
+    

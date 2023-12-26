@@ -1,0 +1,54 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. V. Martonchik and G. S. Orton. Optical constants of liquid and solid methane, <a href=\"https://doi.org/10.1364/AO.33.008306\"><i>Appl. Opt.</i> <b>33</b>, 8306-8317 (1994)</a>"
+COMMENTS: "Phase I solid methane at 111 K (-162.15 °C, melting point)<br>CAUTION: don't rely on interpolated values: Most data points represent values at local maxima or minima"
+DATA:
+  - type: tabulated nk
+    data: |
+        0.0020 1.000 0
+        0.0545 0.864 2.004E-1
+        0.0900 1.196 6.096E-1
+        0.1000 1.420 4.551E-1
+        0.1012 1.417 4.472E-1
+        0.1087 1.476 3.527E-1
+        0.1162 1.442 3.024E-1
+        0.1200 1.455 3.128E-1
+        0.1337 1.659 1.702E-1
+        0.4000 1.280 0
+        0.5831 1.273 1.160E-9
+        0.5983 1.273 1.095E-9
+        0.6215 1.272 1.830E-7
+        0.6696 1.272 4.476E-9
+        0.6856 1.271 2.510E-9
+        0.7057 1.271 7.862E-9
+        0.7174 1.271 1.085E-7
+        0.7299 1.271 9.294E-8
+        0.7849 1.270 3.748E-8
+        0.7994 1.270 5.725E-8
+        0.8418 1.270 4.689E-8
+        0.8673 1.270 3.106E-7
+        0.8885 1.270 1.782E-6
+        0.9742 1.269 4.651E-7
+        0.9872 1.269 5.892E-7
+        1.000 1.269 7.799E-7
+        1.014 1.269 9.438E-7
+        1.235 1.268 1.573E-7
+        1.241 1.268 7.903E-8
+        1.932 1.267 1.476E-6
+        1.953 1.267 8.393E-7
+        3.29 1.227 3.000E-2
+        3.33 1.260 7.000E-2
+        3.37 1.291 3.500E-2
+        3.43 1.281 2.000E-2
+        3.57 1.284 1.000E-2
+        7.59 1.182 7.249E-2
+        7.69 1.258 1.600E-1
+        7.80 1.342 7.499E-2
+        8.13 1.305 2.002E-2
+        8.26 1.310 1.001E-2
+        41.67 1.272 6.234E-4
+        71.43 1.273 1.353E-3
+SPECS:
+    temperature: 111 K

@@ -1,0 +1,38 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/nikon_2017-11.agf\">NIKON Zemax catalog 2017-11</a> (obtained from <a href=\"http://www.nikon.com/products/glass/lineup/materials/optical/\">http://www.nikon.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/hikari_2017-04-01.pdf\">HIKARI glass data sheets</a>"
+COMMENTS: ""
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.4 0.7
+    coefficients: 2.842085 0.01641576 2 0.05206046 -2 -0.002610463 -4 0.000446977 -6 -9.429829e-06 -8
+  - type: tabulated k
+    data: |
+        0.370 1.3559E-05
+        0.380 5.0220E-06
+        0.390 2.0897E-06
+        0.400 8.7356E-07
+        0.420 2.3537E-07
+        0.440 9.2241E-08
+        0.460 4.0489E-08
+        0.480 1.5310E-08
+        0.500 3.9809E-09
+        0.550 4.3790E-09
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    nd: 1.728250
+    Vd: 28.346990
+    glass_code: 728283
+    glass_status: preferred
+    density: 4.27 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.5e-06 K<sup>-1</sup>
+    dPgF: 0.0083

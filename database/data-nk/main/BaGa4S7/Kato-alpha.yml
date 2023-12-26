@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kato,V. V. Badikov, K. Miyata, V. Petrov. Refined Sellmeier equations for BaGa<sub>4</sub>S<sub>7</sub>, <a href=\"https://doi.org/10.1364/AO.430424\"><i>Appl. Opt.</i>, <b>60</b>, 6600–6603 (2021)</a>"
+COMMENTS: "n<sub>α</sub>; room temperature."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.633 8.82
+    coefficients: 6.39731 0.15895 0 0.02841 1 811.45 0 606.97 1

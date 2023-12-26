@@ -1,0 +1,17 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2010/barberini/d1426e.pdf\">Barberini D1426/D1526 glass specifications, 2010-03</a>"
+COMMENTS: "20 °C<br>Photochromic Glass; Colour: grey; Application: Glass sensitive to light for corrective lenses and sun glare filter; luminous transmittance range 91% (τ<sub>0</sub>) / 25% (τ<sub>1</sub>) or filter categories 0 / 2 respectively and UV-absorption"
+DATA:
+  - type: tabulated n
+    data: |
+        0.43583 1.5342
+        0.47999 1.5298
+        0.48613 1.5293
+        0.54607 1.5251
+        0.58756 1.5229
+        0.58929 1.5228
+        0.64385 1.5205
+        0.65627 1.5201

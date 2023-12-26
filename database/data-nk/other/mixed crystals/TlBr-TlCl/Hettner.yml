@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "G. Hettner and G. Leisegang. Dispersion of the mixed crystals TlBr-TlI (KRS-5) and TlCl-TlBr (KRS-6) in the infrared, <i>Optik</i>, <b>3</b>, 305-314 (1948) [in German], as cited in Handbook of Optics, 3rd edition, Vol. 4. McGraw-Hill 2009 (data fit by Handbook of Optics, corrected by refractiveindex.info)"
+DATA:
+  - type: formula 4
+    wavelength_range: 0.6 24
+    coefficients: 1 3.821 2 0.02234 2 0 0 0 1 -0.000877 2

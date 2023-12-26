@@ -1,0 +1,60 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "i-line glass        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.3 2.5
+    coefficients: 0 1.03961212 0.00600069867 0.231792344 0.0200179144 1.01046945 103.560653
+  - type: tabulated k
+    data: |
+        0.300 3.6022E-06
+        0.310 1.4000E-06
+        0.320 5.2032E-07
+        0.334 1.4196E-07
+        0.350 4.0847E-08
+        0.365 1.7559E-08
+        0.370 1.3027E-08
+        0.380 9.7155E-09
+        0.390 7.4709E-09
+        0.400 5.1032E-09
+        0.405 5.1670E-09
+        0.420 5.3583E-09
+        0.436 5.5625E-09
+        0.460 5.8686E-09
+        0.500 4.7818E-09
+        0.546 3.4794E-09
+        0.580 3.6961E-09
+        0.620 5.9295E-09
+        0.660 6.3120E-09
+        0.700 4.4608E-09
+        1.060 3.3758E-09
+        1.530 6.3727E-08
+        1.970 7.4486E-07
+        2.325 3.1088E-06
+        2.500 5.6767E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.86e-06 1.31e-08 -1.37e-11 4.34e-07 6.27e-10 0.17
+    nd: 1.5168
+    Vd: 64.17
+    glass_code: 517642.251
+    glass_status: standard
+    density: 2.51 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7.1e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.3e-06 K<sup>-1</sup>
+    dPgF: -0.0009
+    climatic_resistance: 1.0
+    stain_resistance: 0.0
+    acid_resistance: 1.0
+    alkali_resistance: 2.3
+    phosphate_resistance: 2.3

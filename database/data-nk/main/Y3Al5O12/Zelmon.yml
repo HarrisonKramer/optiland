@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. E. Zelmon, D. L. Small and R. Page. Refractive-index measurements of undoped yttrium aluminum garnet from 0.4 to 5.0 μm, <a href=\"https://doi.org/10.1364/AO.37.004933\"><i>Appl. Opt.</i> <b>37</b>, 4933-4935 (1998)</a>"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4 5.0
+    coefficients: 0 2.28200 0.01185 3.27644 282.734

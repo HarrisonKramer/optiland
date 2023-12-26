@@ -1,0 +1,9 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "R. E. Fern and A. Onton. Refractive index of AlAs, <a href=\"https://doi.org/10.1063/1.1660760\"><i>J. Appl. Phys.</i> <b>42</b>, 3499-3500 (1971)</a>"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.56 2.2
+    coefficients: 1.0792 6.0840 0.2822 1.900 27.62

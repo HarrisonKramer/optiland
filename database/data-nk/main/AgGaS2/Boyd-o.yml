@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) G. D. Boyd, H. Kasper, J. H McFee. Linear and nonlinear optical properties of AgGaS<sub>2</sub>, CuGaS<sub>2</sub>, and CuInS<sub>2</sub>, and theory of the wedge technique for the measurement of nonlinear coefficients, <a href=\"https://doi.org/10.1109/JQE.1971.1076588\"><i>IEEE J. Quant. Electron.</i>, <b>7</b>, 563-573  (1971)</a><br>2) G. C. Bhar. Refractive index interpolation in phase-matching, <a href=\"https://doi.org/10.1364/AO.15.0305_1\"><i>Appl. Opt.</i> <b>15</b>, 305-307 (1976)</a><br>*Ref. 2 provides a dispersion formula based on data from Ref. 1"
+COMMENTS: "Ordinary ray (e)"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.49 12
+    coefficients: 2.6280 2.1686 0.1003 2.1753 950

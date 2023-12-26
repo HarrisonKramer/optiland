@@ -1,0 +1,24 @@
+﻿============================== 2023-10-04 ==============================
+
+  new data (thanks to Gaudenis Jansonas, Vilnius University, Lithuania, for submitting data in YAML format!)
+    main/ZnS/Jansonas.yml
+    main/ZnSe/Jansonas.yml
+    main/AgGaS2/Jansonas-o.yml
+    main/AgGaS2/Jansonas-e.yml
+    main/BaGa4Se7/Jansonas.yml
+    main/GaAs/Jansonas.yml
+    main/GaSe/Jansonas.yml
+    main/KTiOAsO4/Jansonas-XZ.yml
+    main/KTiOAsO4/Jansonas-Y.yml
+    main/LiGaS2/Jansonas-XZ.yml
+    main/LiGaS2/Jansonas-Y.yml
+    main/Si/Jansonas.yml
+    main/ZnGeP2/Jansonas-o.yml
+    main/ZnGeP2/Jansonas-e.yml
+    main/ZnTe/Jansonas.yml
+    main/SiO2/Jansonas.yml
+    other/mixed crystals/TlBr-TlCl/Jansonas.yml
+    other/mixed crystals/TlBr-TlI/Jansonas.yml
+    other/mixed crystals/SrNb2O6-BaNb2O6/Jansonas.yml
+  miscellaneous
+    April 2023: start working on n2 database; adding first datasets 

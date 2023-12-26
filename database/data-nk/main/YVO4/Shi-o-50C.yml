@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. S. Shi, G. Zhang and H. Y. Shen. Measurement of principal refractive indices and the thermal refractive index coefficients of yttrium vanadate, <a href=\"http://caod.oriprobe.com/articles/3152847/Measurement_of_Principal_Refractive_Indices_and_the_Thermal_Refractive.htm\"><i>J. Synthetic Cryst.</i> <b>30</b>, 85-88 (2001)</a>"
+COMMENTS: "Ordinary ray (o), 50 °C."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.48 1.34
+    coefficients: 3.780527 0.070594 0 0.046270 1 0 0 0 1 -0.009625 2
+SPECS:
+    temperature: 50 °C

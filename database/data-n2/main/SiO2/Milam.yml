@@ -1,0 +1,12 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. Milam. Review and assessment of measured values of the nonlinear refractive-index coefficient of fused silica, <a href=\"https://doi.org/10.1364/AO.37.000546\"><i>Appl. Opt.</i> <b>37</b>, 546 (1998)</a><br>Compilation of data from several sources."
+COMMENTS: "Fused silica."
+DATA:
+  - type: tabulated n2
+    data: |
+        0.351 3.60e-20
+        0.527 3.00e-20
+        1.053 2.74e-20

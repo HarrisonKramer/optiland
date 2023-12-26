@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "K. Kerl, H. Varchmin. Refractive index dispersion (RID) of some liquids in the UV/VIS between 20°C and 60°C, <a href=\"https://doi.org/10.1016/0022-2860(95)08758-N\"><i>J. Mol. Struct.</i> <b>349</b>, 257-260 (1995)</a>"
+COMMENTS: "n-Hexane; 313 K (40 °C). See the original publication for the expression for n(λ,T)."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.326 0.644
+    coefficients: 1.35931272 -3.88677e-3 -1 4.30133e-3 -2

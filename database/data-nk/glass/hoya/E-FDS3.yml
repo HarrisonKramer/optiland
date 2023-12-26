@@ -1,0 +1,57 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "General glass Type"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 4.1120387 -0.01822767 2 0.089852105 -2 0.00787144 -4 -0.00052228008 -6 0.00011773061 -8
+  - type: tabulated k
+    data: |
+        0.420 8.4001E-06
+        0.440 1.9682E-06
+        0.460 7.5333E-07
+        0.480 4.4084E-07
+        0.500 3.1020E-07
+        0.550 1.5593E-07
+        0.600 8.6727E-08
+        0.650 6.2446E-08
+        0.700 4.4743E-08
+        0.750 4.1925E-08
+        0.780 3.7354E-08
+        0.800 3.8312E-08
+        0.830 3.3107E-08
+        0.850 3.3905E-08
+        0.900 2.8705E-08
+        0.950 3.0300E-08
+        1.000 3.1895E-08
+        1.050 2.5105E-08
+        1.060 2.5344E-08
+        1.100 1.7525E-08
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 1.1146E-08
+        1.500 5.9833E-08
+        1.550 4.9437E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.98e-06 1.44e-08 -3.95e-11 2.17e-06 2.05e-09 0.302
+    nd: 2.10420
+    Vd: 17.02
+    glass_code: 104170
+    density: 5.63 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6.8e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.2e-06 K<sup>-1</sup>
+    dPgF: 0.0455
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

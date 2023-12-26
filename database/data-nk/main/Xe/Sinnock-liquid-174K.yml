@@ -1,0 +1,21 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. C. Sinnock and B. L. Smith. Refractive indices of the condensed inert gases, <a href=\"https://doi.org/10.1103/PhysRev.181.1297\"><i>Phys. Rev.</i> <b>181</b>, 1297-1307 (1969)</a>"
+COMMENTS: "Liquid xenon at 174 K (-99.15 °C)."
+DATA:
+  - type: tabulated n
+    data: |
+        0.3612 1.3984
+        0.3650 1.3976
+        0.4063 1.3914
+        0.4358 1.3874
+        0.4700 1.3840
+        0.4806 1.3830
+        0.5086 1.3809
+        0.5461 1.3790
+        0.5780 1.3772
+        0.6439 1.3748
+SPECS:
+    temperature: 174 K

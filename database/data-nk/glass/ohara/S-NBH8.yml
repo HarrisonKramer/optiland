@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.33 2.4
+    coefficients: 0 1.61344136 0.0106386752 0.257295888 0.0487071624 1.98364455 159.784404
+  - type: tabulated k
+    data: |
+        0.330 9.2084E-06
+        0.340 3.8613E-06
+        0.350 1.9868E-06
+        0.360 1.1473E-06
+        0.370 6.9405E-07
+        0.380 4.5608E-07
+        0.390 2.9952E-07
+        0.400 2.1053E-07
+        0.420 1.2948E-07
+        0.440 9.9438E-08
+        0.460 7.7690E-08
+        0.480 6.1610E-08
+        0.500 4.4010E-08
+        0.550 1.7542E-08
+        0.600 1.4345E-08
+        0.650 1.5541E-08
+        0.700 1.1152E-08
+        0.800 6.3694E-09
+        0.900 7.1656E-09
+        1.000 7.9617E-09
+        1.200 9.5541E-09
+        1.400 3.3473E-08
+        1.600 3.8255E-08
+        1.800 1.1505E-07
+        2.000 2.5671E-07
+        2.200 8.0609E-07
+        2.400 2.4414E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 4.76e-07 9.72e-09 -3.07e-11 8.22e-07 9.16e-10 0.251
+    nd: 1.720467
+    Vd: 34.707984
+    glass_code: 720347
+    density: 3.19 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 8.1e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1e-05 K<sup>-1</sup>
+    dPgF: -0.0019
+    climatic_resistance: 2.0
+    acid_resistance: 1.0
+    phosphate_resistance: 1.0

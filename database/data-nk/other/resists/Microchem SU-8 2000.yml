@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2011/Microchem SU-82000DataSheet2000_5thru2015Ver4.pdf\">Microchem SU-8 2000 Data Sheet</a>, 2011"
+COMMENTS: "Microchem SU-8 2000 permanent epoxy negative photoresist. Uncured."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.32 0.80
+    coefficients: 1.566 0.00796 -2 0.00014 -4

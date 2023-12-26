@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "D. L Wood and K. Nassau. Refractive index of cubic zirconia stabilized with yttria, <a href=\"https://doi.org/10.1364/AO.21.002978\"><i>Appl. Opt.</i> <b>21</b>, 2978-2981 (1982)</a>"
+COMMENTS: "Cubic zirconiza; 25 °C; Y<sub>2</sub>O<sub>3</sub> content: 12.0 mol %"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.361 5.135
+    coefficients: 0 1.347091 0.062543 2.117788 0.166739 9.452943 24.320570

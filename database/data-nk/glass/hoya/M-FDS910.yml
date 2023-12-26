@@ -1,0 +1,62 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Glass for molded optics lens"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.165987 -0.01349196 2 0.04649918 -2 0.002471413 -4 -8.659596e-05 -6 2.725927e-05 -8
+  - type: tabulated k
+    data: |
+        0.370 1.1669E-05
+        0.380 5.7368E-06
+        0.390 2.9064E-06
+        0.400 1.6473E-06
+        0.420 7.6676E-07
+        0.440 4.5955E-07
+        0.460 3.1319E-07
+        0.480 2.2013E-07
+        0.500 1.5414E-07
+        0.550 5.2839E-08
+        0.600 2.3933E-08
+        0.650 2.5928E-08
+        0.700 1.6736E-08
+        0.750 1.1949E-08
+        0.780 1.2427E-08
+        0.800 6.3694E-09
+        0.830 6.6082E-09
+        0.850 6.7675E-09
+        0.900 7.1656E-09
+        0.950 7.5636E-09
+        1.000 7.9617E-09
+        1.050 8.3598E-09
+        1.060 8.4394E-09
+        1.100 8.7579E-09
+        1.200 9.5541E-09
+        1.300 1.0350E-08
+        1.400 1.1146E-08
+        1.500 1.1943E-08
+        1.550 1.2341E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.80707e-06 0.0 0.0 0.0 0.0 0.0
+    nd: 1.82115
+    Vd: 24.06
+    glass_code: 821241
+    glass_status: standard
+    density: 3.69 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 9.5e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 1.21e-05 K<sup>-1</sup>
+    dPgF: 0.0187
+    climatic_resistance: 1.0
+    stain_resistance: 1.0
+    acid_resistance: 1.0

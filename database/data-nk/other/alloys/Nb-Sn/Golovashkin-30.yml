@@ -1,0 +1,28 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. I. Golovashkin, E. D. Donner, I. S. Levchenko, G. P. Motulevich. Optical properties and electronic characteristics of alloys of niobium with tin, <a href=\"http://jetp.ac.ru/cgi-bin/e/index/e/32/6/p1064?a=list\"><i>Sov. Phys. JETP</i> <b>32</b>, 1064-1067 (1971)</a>"
+COMMENTS: "30 wt% Sn; room temperature."
+DATA:
+  - type: tabulated nk
+    data: |
+        1.0 2.65 4.75
+        1.25 2.9 5.6
+        1.5 3.2 6.5
+        1.8 3.5 7.3
+        2.0 3.8 8.1
+        2.5 4.45 9.6
+        3.0 5.2 11.0
+        3.5 5.9 12.3
+        4.0 6.65 13.4
+        4.5 7.45 14.7
+        5.0 8.2 15.9
+        5.5 9.0 17.0
+        6.0 9.85 18.2
+        6.5 10.8 19.4
+        7.0 11.6 20.5
+        7.5 12.5 21.7
+        8.0 13.5 22.8
+        8.5 14.4 23.8
+        9.0 15.4 24.9

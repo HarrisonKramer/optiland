@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. J. Pigeon, D. A. Matteo, S. Ya. Tochitsky, I. Ben-Zvi, C. Joshi. Measurements of the nonlinear refractive index of AgGaSe<sub>2</sub>, GaSe, and ZnSe at 10 µm, <a href=\"https://doi.org/10.1364/JOSAB.395844\"><i>J. Opt. Soc. Am. B</i> <b>37</b>, 2076 (2020)</a>"
+COMMENTS: "300 ns. Four-wave mixing. Relative measurement (to GaAs); probably wrong reference value."
+DATA:
+  - type: tabulated n2
+    data: |
+        10.6 2.0e-19
+SPECS:
+    n2_method: FWM
+    pulse_duration: 300e-9

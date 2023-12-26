@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. Pastrňák and L. Roskovcová. Refraction index measurements on AlN single crystals, <a href=\"https://doi.org/10.1002/pssb.19660140127\"><i>Phys. Stat. Sol.</i> <b>14</b>, K5-K8 (1966)</a>"
+COMMENTS: "Ordinary ray (o)."
+DATA:
+  - type: formula 1
+    wavelength_range: 0.22 5.0
+    coefficients: 2.1399 1.3786 0.1715 3.861 15.03

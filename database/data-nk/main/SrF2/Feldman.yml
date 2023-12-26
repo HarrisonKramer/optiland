@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "A. Feldman, D. Horowitz, R. Waxier and M. Dodge. <a href=\"https://refractiveindex.info/download/data/1978/Feldman 1978 - Optical materials characterization final technical report.pdf\">Optical materials characterization final technical report, February 1, 1978.</a>"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.21 11.5
+    coefficients: 0 0.67805894 0.05628989 0.37140533 0.10801027 3.3485284 39.906666
+COMMENTS: "20 °C"

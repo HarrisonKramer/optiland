@@ -1,0 +1,64 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.agf\">OHARA Zemax catalog 2017-11-30</a> (obtained from <a href=\"http://www.ohara-inc.co.jp/en/product/optical/list/\">http://www.ohara-inc.co.jp</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/ohara_2017-11-30.pdf\">OHARA glass data sheets</a>"
+COMMENTS: "Recommended "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.28 2.4
+    coefficients: 0 0.992053895 0.0167095063 0.771377731 0.00236750156 1.18296264 105.90108
+  - type: tabulated k
+    data: |
+        0.280 6.2688E-06
+        0.290 4.3781E-06
+        0.300 2.9552E-06
+        0.310 1.9698E-06
+        0.320 1.2587E-06
+        0.330 8.2645E-07
+        0.340 5.0414E-07
+        0.350 3.2457E-07
+        0.360 1.8336E-07
+        0.370 1.1407E-07
+        0.380 7.3460E-08
+        0.390 5.0058E-08
+        0.400 3.8428E-08
+        0.420 2.6846E-08
+        0.440 2.1072E-08
+        0.460 1.8349E-08
+        0.480 1.1476E-08
+        0.500 7.9657E-09
+        0.550 4.3790E-09
+        0.600 9.5589E-09
+        0.650 1.0355E-08
+        0.700 1.1152E-08
+        0.800 6.3694E-09
+        0.900 2.1518E-08
+        1.000 3.1895E-08
+        1.200 3.8274E-08
+        1.400 1.0072E-07
+        1.600 1.1511E-07
+        1.800 2.7477E-07
+        2.000 6.0004E-07
+        2.200 1.8251E-06
+        2.400 6.0105E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 25.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: -2.18e-06 1.12e-08 -3.73e-11 3.25e-07 4.77e-10 0.27
+    nd: 1.677900
+    Vd: 55.341195
+    glass_code: 678553
+    density: 4.01 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 7.2e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 8.6e-06 K<sup>-1</sup>
+    dPgF: -0.0047
+    climatic_resistance: 2.0
+    acid_resistance: 53.0
+    phosphate_resistance: 4.2

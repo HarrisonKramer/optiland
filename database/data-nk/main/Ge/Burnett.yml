@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "J. H. Burnett, S. G. Kaplan, E. Stover, A. Phenis. Refractive index measurements of Ge, <a href=\"https://doi.org/10.1117/12.2237978\"><i>Proc. SPIE</i> <b>9974</b>, 99740X (2016)</a>"
+COMMENTS: "Standard uncertainties ranging from 2×10<sup>-5</sup> near 2 µm to 8×10<sup>-5</sup> near 14 µm"
+DATA:
+  - type: formula 2
+    wavelength_range: 2 14.0
+    coefficients: 0 0.4886331 1.393959 14.5142535 0.1626427 0.0091224 752.190
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 22 °C

@@ -1,0 +1,15 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "1) I. H. Malitson. Interspecimen comparison of the refractive index of fused silica, <a href=\"https://doi.org/10.1364/JOSA.55.001205\"><i>J. Opt. Soc. Am.</i> <b>55</b>, 1205-1208 (1965)</a><br>2) C. Z. Tan. Determination of refractive index of silica glass for infrared wavelengths by IR spectroscopy, <a href=\"https://doi.org/10.1016/S0022-3093(97)00438-9\"><i>J. Non-Cryst. Solids</i> <b>223</b>, 158-163 (1998)</a><br>
+<sup>*</sup> Sellmeier formula is reported in Ref. 1 for the 0.21-3.71 μm wavelength range. Ref. 2 verifies the validity of the formula up to 6.7 μm."
+COMMENTS: "Fused silica, 20 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.21 6.7
+    coefficients: 0 0.6961663 0.0684043 0.4079426 0.1162414 0.8974794 9.896161
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20 °C

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "H. H. Li. Refractive index of ZnS, ZnSe, and ZnTe and its wavelength and temperature derivatives, <a href=\"https://doi.org/10.1063/1.555705\"><i>J. Phys. Chem. Ref. Data</i> <b>13</b>, 103-150 (1984)</a><br>  <sup>*</sup> Sellmeier formula is derived by critical analysis of experimental data from several sources."
+COMMENTS: "293 K (20 °C)."
+DATA:
+  - type: formula 4
+    wavelength_range: 0.55 30
+    coefficients: 9.92 0.42530 0 0.37766 2 8414.13 0 56.5 2

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Wang, M. Zhan, G. Wang, H. Xuan, W. Zhang, C. Liu, C. Xu, Y. Liu, Z. Wei, X. Chen. 4H-SiC: A new nonlinear material for midinfrared lasers, <a href=\"https://doi.org/10.1002/lpor.201300068\"><i>Laser Photonics Rev.</i> <b>7</b>, 831–838 (2013)</a>"
+COMMENTS: "4H-SiC (hexagonal crystal structure); Ordinary ray (o)"
+DATA:
+  - type: formula 2
+    wavelength_range: 0.4047 5
+    coefficients: 0 0.20075 -12.07224 5.54861 0.02641 35.65066 1268.24708

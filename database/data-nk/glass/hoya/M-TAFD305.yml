@@ -1,0 +1,65 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/hoya_2017-04-01.agf\">HOYA Zemax catalog 2017-04-01</a> (obtained from <a href=\"http://www.hoya-opticalworld.com/english/datadownload/\">http://www.hoya-opticalworld.com</a>)"
+COMMENTS: "Glass for molded optics lens"
+DATA:
+  - type: formula 3 
+    wavelength_range: 0.36501 1.01398
+    coefficients: 3.327184 -0.01343242 2 0.033398 -2 0.001006047 -4 -2.136908e-05 -6 3.972561e-06 -8
+  - type: tabulated k
+    data: |
+        0.340 8.7776E-06
+        0.350 4.3734E-06
+        0.360 2.0967E-06
+        0.370 1.0586E-06
+        0.380 6.0010E-07
+        0.390 3.6865E-07
+        0.400 2.4128E-07
+        0.420 1.3296E-07
+        0.440 8.5059E-08
+        0.460 5.9043E-08
+        0.480 3.8389E-08
+        0.500 1.9944E-08
+        0.550 4.3790E-09
+        0.600 4.7770E-09
+        0.650 5.1751E-09
+        0.700 5.5732E-09
+        0.750 2.9916E-08
+        0.780 3.1113E-08
+        0.800 3.8312E-08
+        0.830 2.6473E-08
+        0.850 4.0707E-08
+        0.900 5.0310E-08
+        0.950 4.5496E-08
+        1.000 5.5900E-08
+        1.050 5.0285E-08
+        1.060 5.0764E-08
+        1.100 5.2679E-08
+        1.200 4.7866E-08
+        1.300 4.1463E-08
+        1.400 4.4653E-08
+        1.500 4.7842E-08
+        1.550 6.1827E-08
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 5.25e-06 1.17e-08 -4.51e-11 1.25e-06 1.27e-09 0.0455
+    nd: 1.85135
+    Vd: 40.10
+    glass_code: 851401
+    glass_status: standard
+    density: 5.25 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.8e-06 K<sup>-1</sup>
+    dPgF: -0.0067
+    climatic_resistance: 1.0
+    stain_resistance: 2.0
+    acid_resistance: 3.0

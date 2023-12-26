@@ -1,0 +1,13 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "P. Kabaciński, T. M. Kardaś, Y. Stepanenko, C. Radzewicz. Nonlinear refractive index measurement by SPM-induced phase regression, <a href=\"https://doi.org/10.1364/OE.27.011018\"><i>Opt. Express</i> <b>27</b>, 11018 (2019)</a>"
+COMMENTS: "210 fs. SPM-induced phase regression."
+DATA:
+  - type: tabulated n2
+    data: |
+        1.030 2.19e-20
+SPECS:
+    n2_method: SPMIPR
+    pulse_duration: 210e-15

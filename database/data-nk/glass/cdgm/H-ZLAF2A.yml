@@ -1,0 +1,60 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"https://refractiveindex.info/download/data/2022/CDGM-ZEMAX202206new.AGF\">CDGM Zemax catalog 2022-06</a> (obtained from <a href=\"http://www.cdgmgd.com/go.htm?k=Download&url=downList\">http://www.cdgmgd.com</a>)<br>See also <a href=\"https://refractiveindex.info/download/data/2022/CDGM202206.pdf\">CDGM optical glass data sheets</a>"
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.365 2.325
+    coefficients: 0 1.76389273 0.00842148915 0.407585264 0.0304194282 1.27020239 89.5802552
+  - type: tabulated k
+    data: |
+        0.310 9.2008E-06
+        0.320 6.3688E-06
+        0.330 3.4677E-06
+        0.340 2.0486E-06
+        0.350 1.2343E-06
+        0.360 7.5994E-07
+        0.370 4.6814E-07
+        0.380 2.9518E-07
+        0.390 2.0195E-07
+        0.400 1.4323E-07
+        0.420 8.8048E-08
+        0.440 6.7167E-08
+        0.460 4.0489E-08
+        0.480 2.6832E-08
+        0.500 1.5947E-08
+        0.550 1.7542E-08
+        0.600 1.4345E-08
+        0.650 1.5541E-08
+        0.700 1.6736E-08
+        0.800 1.9127E-08
+        0.850 2.0323E-08
+        0.900 1.4338E-08
+        0.950 1.5135E-08
+        1.000 1.5931E-08
+        1.060 1.6887E-08
+        1.200 1.9118E-08
+        1.400 3.3473E-08
+        1.600 5.1032E-08
+        1.800 1.5844E-07
+        2.000 5.1762E-07
+        2.200 1.6127E-06
+        2.400 6.6220E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 1.27e-06 1.49e-08 -3.26e-11 6.27e-07 5.37e-10 0.2
+    nd: 1.802790
+    Vd: 46.761307
+    glass_code: 803468
+    density: 4.65 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 5.8e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.8e-06 K<sup>-1</sup>
+    dPgF: -0.0089

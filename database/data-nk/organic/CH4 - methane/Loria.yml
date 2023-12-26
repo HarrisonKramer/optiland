@@ -1,0 +1,14 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "S. Loria Über die Dispersion des Lichtes in gasförmigen Kohlenwasserstoffen. <a href=\"https://doi.org/10.1002/andp.19093340809\"><i>Annalen der Physik</i> <b>334</b>, 605-622 (1909)</a> (in German)."
+COMMENTS: "Standard conditions. 0 °C, 760 torr (101.325 kPa)."
+DATA:
+  - type: formula 5
+    wavelength_range: 0.5290 0.6585
+    coefficients: 1.00042607 6.1396687e-6 -2
+SPECS:
+    n_is_absolute: true
+    temperature: 0 °C
+    pressure: 101325 Pa

@@ -1,0 +1,10 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "F. Peter. Über Brechungsindizes und Absorptionskonstanten des Diamanten zwischen 644 und 226 mμ, <a href=\"https://doi.org/10.1007/BF01330487\"><i>Zeitschrift für Physik</i> <b>15</b>, 358-368 (1923)</a>"
+COMMENTS: "Cubic carbon (diamond). Room temperature; no temperature effect on refractive index was observed in the temperature interval 10 - 30 °C"
+DATA:
+  - type: formula 1
+    wavelength_range: 0.226 0.760
+    coefficients: 0 0.3306 0.1750 4.3356 0.1060

@@ -1,0 +1,59 @@
+# this file is part of refractiveindex.info database
+# refractiveindex.info database is in the public domain
+# copyright and related rights waived via CC0 1.0
+
+REFERENCES: "<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>"
+COMMENTS: "step 0.5 available        "
+DATA:
+  - type: formula 2 
+    wavelength_range: 0.31 2.5
+    coefficients: 0 1.28189012 0.0072719164 0.257738258 0.0242823527 0.96818604 110.377773
+  - type: tabulated k
+    data: |
+        0.310 3.1763E-06
+        0.320 1.7467E-06
+        0.334 7.5840E-07
+        0.350 2.7681E-07
+        0.365 9.6875E-08
+        0.370 7.2874E-08
+        0.380 3.6843E-08
+        0.390 2.6347E-08
+        0.400 2.0537E-08
+        0.405 1.9484E-08
+        0.420 2.1563E-08
+        0.436 2.5209E-08
+        0.460 2.5106E-08
+        0.500 1.5996E-08
+        0.546 8.7117E-09
+        0.580 9.2541E-09
+        0.620 1.1877E-08
+        0.660 1.2643E-08
+        0.700 1.1169E-08
+        1.060 1.6913E-08
+        1.530 5.8795E-08
+        1.970 4.5507E-07
+        2.325 2.0310E-06
+        2.500 4.0650E-06
+SPECS:
+    n_is_absolute: false
+    wavelength_is_vacuum: false
+    temperature: 20.0 °C
+    thermal_dispersion:
+      - type: "Schott formula"
+        coefficients: 3.8e-06 1.41e-08 2.28e-11 6.44e-07 8.03e-11 0.108
+    nd: 1.60738
+    Vd: 56.65
+    glass_code: 607567.355
+    glass_status: standard
+    density: 3.55 g/cm<sup>3</sup>
+    thermal_expansion:
+      - temperature_range: -30 70 °C
+        coefficient: 6e-06 K<sup>-1</sup>
+      - temperature_range: 20 300 °C
+        coefficient: 7.1e-06 K<sup>-1</sup>
+    dPgF: -0.0008
+    climatic_resistance: 2.0
+    stain_resistance: 0.0
+    acid_resistance: 2.2
+    alkali_resistance: 1.0
+    phosphate_resistance: 2.3
