@@ -1,9 +1,0 @@
-# this file is part of refractiveindex.info database
-# refractiveindex.info database is in the public domain
-# copyright and related rights waived via CC0 1.0
-
-REFERENCES: "I. H. Malitson and M. J. Dodge. Refraction and dispersion of lead fluoride, <j>J. Opt. Soc. Am.</i> <b>59</b>, 500A (1969) (as cited ib Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994("
-DATA:
-  - type: formula 1
-    range: 0.3 11.9
-    coefficients: 0 0.66959342 0.00034911 1.3086319 0.17144455 0.01670641 0.28125513 2007.8865 796.67469
