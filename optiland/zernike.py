@@ -5,8 +5,15 @@ from scipy.optimize import least_squares
 
 
 class ZernikeStandard:
-    """OSA/ANSI Standard Zernike"""
-    # TODO: add normalization constants
+    """OSA/ANSI Standard Zernike
+
+    References:
+        1. https://en.wikipedia.org/wiki/Zernike_polynomials#OSA/ANSI_standard_indices
+        2. Thibos LN, Applegate RA, Schwiegerling JT, Webb R; VSIA Standards Taskforce Members.
+           Vision science and its applications. Standards for reporting the optical aberrations
+           of eyes. J Refract Surg. 2002 Sep-Oct;18(5):S652-60. doi: 10.3928/1081-597X-20020901-30.
+           PMID: 12361175.
+    """
 
     def __init__(self, coeffs=[0 for _ in range(36)]):
         if len(coeffs) > 120:  # partial sum of first 15 natural numbers
@@ -17,6 +24,7 @@ class ZernikeStandard:
 
     def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
         return (coeff *
+                self._norm_constant(n, m) *
                 self._radial_term(n, m, r) *
                 self._azimuthal_term(m, phi))
 
@@ -48,6 +56,9 @@ class ZernikeStandard:
             return np.cos(m * phi)
         else:
             return np.sin(m * phi)
+
+    def _norm_constant(self, n=0, m=0):
+        return np.sqrt((2 * n + 2) / (1 + (m == 0)))
 
     def _generate_indices(self):
         indices = []
