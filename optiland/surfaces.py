@@ -67,6 +67,7 @@ class Surface:
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays, nx, ny, nz):
+        """Refract"""
         ix = rays.L
         iy = rays.M
         iz = rays.N
@@ -153,6 +154,45 @@ class Surface:
         return rays
 
 
+class ReflectiveSurface(Surface):
+
+    def __init__(self, geometry, material_pre, is_stop=False, aperture=None):
+        super().__init__(
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_pre,
+            is_stop=is_stop,
+            aperture=aperture
+        )
+
+    def _interact(self, rays, nx, ny, nz):
+        """Reflect on surface"""
+        dot = rays.L * nx + rays.M * ny + rays.N * nz
+        rays.L -= 2 * dot * nx
+        rays.M -= 2 * dot * ny
+        rays.N -= 2 * dot * nz
+        return rays
+
+    def _trace_paraxial(self, rays: ParaxialRays):
+        # reset recorded information
+        self.reset()
+
+        # transform coordinate system
+        self.geometry.localize(rays)
+
+        # propagate to this surface
+        t = -rays.z
+        rays.propagate(t)
+
+        # reflect (derived from paraxial equations when n'=-n)
+        rays.u += 2 * rays.y / self.geometry.radius
+
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
+        self._record(rays)
+
+
 class ObjectSurface(Surface):
 
     def __init__(self, geometry, material_post):
@@ -187,26 +227,6 @@ class ObjectSurface(Surface):
         pass
 
     def _interact(self, rays, nx, ny, nz):
-        return rays
-
-
-class ReflectiveSurface(Surface):
-
-    def __init__(self, geometry, material_pre, is_stop=False, aperture=None):
-        super().__init__(
-            geometry,
-            material_pre,
-            material_pre,
-            is_stop,
-            aperture
-        )
-
-    def _interact(self, rays, nx, ny, nz):
-        """Reflect on surface"""
-        dot = rays.L * nx + rays.M * ny + rays.N * nz
-        rays.L -= 2 * dot * nx
-        rays.M -= 2 * dot * ny
-        rays.N -= 2 * dot * nz
         return rays
 
 
@@ -271,7 +291,8 @@ class SurfaceGroup:
 
     @property
     def opd(self):
-        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
+        return np.array([surf.opd for surf in self.surfaces
+                         if surf.opd.size > 0])
 
     @property
     def u(self):
@@ -279,11 +300,13 @@ class SurfaceGroup:
 
     @property
     def energy(self):
-        return np.array([surf.energy for surf in self.surfaces if surf.energy.size > 0])
+        return np.array([surf.energy for surf in self.surfaces
+                         if surf.energy.size > 0])
 
     @property
     def positions(self):
-        return np.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
+        return np.array([surf.geometry.cs.position_in_gcs[2]
+                         for surf in self.surfaces])
 
     @property
     def radii(self):
@@ -308,14 +331,16 @@ class SurfaceGroup:
         for surface in self.surfaces[skip:]:
             surface.trace(rays)
 
-    def add_surface(self, new_surface=None, index=None, thickness=0, radius=np.inf,
-                    material='air', conic=0, is_stop=False, dx=0, dy=0, rx=0, ry=0):
+    def add_surface(self, new_surface=None, index=None, thickness=0,
+                    radius=np.inf, material='air', conic=0, is_stop=False,
+                    dx=0, dy=0, rx=0, ry=0):
         if new_surface is None:
             if index is None:
                 raise ValueError('Must define index when defining surface.')
 
-            new_surface = self._configure_surface(index, thickness, radius, material, conic,
-                                                  is_stop, dx, dy, rx, ry)
+            new_surface = self._configure_surface(index, thickness, radius,
+                                                  material, conic, is_stop,
+                                                  dx, dy, rx, ry)
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -376,7 +401,8 @@ class SurfaceGroup:
         if isinstance(material, materials.BaseMaterial):
             material_post = material
         elif isinstance(material, tuple):
-            material_post = materials.Material(name=material[0], manufacturer=material[1])
+            material_post = materials.Material(name=material[0],
+                                               manufacturer=material[1])
         elif isinstance(material, str):
             if material == 'mirror':
                 material_post = materials.Mirror()
@@ -392,10 +418,12 @@ class SurfaceGroup:
 
         return material_pre, material_post
 
-    def _configure_surface(self, index, thickness=0, radius=np.inf, material='air', conic=0,
-                           is_stop=False, dx=0, dy=0, rx=0, ry=0):
+    def _configure_surface(self, index, thickness=0, radius=np.inf,
+                           material='air', conic=0, is_stop=False,
+                           dx=0, dy=0, rx=0, ry=0):
         if index > self.num_surfaces:
-            raise ValueError('Surface index cannot be greater than number of surfaces.')
+            raise ValueError('Surface index cannot be greater than number of '
+                             'surfaces.')
 
         cs = self._configure_cs(index, thickness, dx, dy, rx, ry)
         geometry = self._configure_geometry(cs, radius, conic)
