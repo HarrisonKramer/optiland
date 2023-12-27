@@ -95,16 +95,10 @@ class StandardGeometry(BaseGeometry):
         t1 = (-b + np.sqrt(d)) / (2 * a)
         t2 = (-b - np.sqrt(d)) / (2 * a)
 
-        try:
-            t1[t1 < 0] = np.inf
-            t2[t2 < 0] = np.inf
-        except TypeError:  # input is not an array
-            if t1 < 0:
-                t1 = np.inf
-            if t2 < 0:
-                t2 = np.inf
+        t1[t1 < 0] = np.inf
+        t2[t2 < 0] = np.inf
 
-        t = np.minimum(t1, t2)
+        t = np.nanmin([t1, t2], axis=0)
 
         return t
 
