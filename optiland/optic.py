@@ -146,6 +146,16 @@ class Optic:
 
         x1 = Px * EPD / 2
         y1 = Py * EPD / 2
+
+        # assure all variables are arrays of the same size
+        max_size = max([np.size(arr) for arr in [x1, y1, Hx, Hy]])
+        x1, y1, Hx, Hy = [
+            np.full(max_size, value) if isinstance(value, (float, int))
+            else value if isinstance(value, np.ndarray)
+            else None
+            for value in [x1, y1, Hx, Hy]
+        ]
+
         z1 = np.ones_like(x1) * EPL
 
         rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
