@@ -434,12 +434,16 @@ class GridDistortion:
             raise ValueError('''Distortion type must be "f-tan" or
                                 "f-theta"''')
 
-        self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0,
+        self.optic.trace_generic(Hx=Hx.flatten(), Hy=Hy.flatten(), Px=0, Py=0,
                                  wavelength=self.wavelength)
 
         data = {}
-        data['xr'] = self.optic.surface_group.x[-1, :, :]
-        data['yr'] = self.optic.surface_group.y[-1, :, :]
+
+        # make real grid square for ease of plotting
+        data['xr'] = np.reshape(self.optic.surface_group.x[-1, :],
+                                (self.num_points, self.num_points))
+        data['yr'] = np.reshape(self.optic.surface_group.y[-1, :],
+                                (self.num_points, self.num_points))
 
         # optical system flips x, so must correct this
         data['xp'] = np.flip(xp)
