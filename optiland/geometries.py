@@ -91,13 +91,20 @@ class StandardGeometry(BaseGeometry):
         # Discriminant
         d = b ** 2 - 4 * a * c
 
-        # Use quadratic formula to solve for t
-        t = (-b - np.sqrt(d)) / (2 * a)
+        # TODO: handle case when a = 0
+        t1 = (-b + np.sqrt(d)) / (2 * a)
+        t2 = (-b - np.sqrt(d)) / (2 * a)
+
         try:
-            t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
+            t1[t1 < 0] = np.inf
+            t2[t2 < 0] = np.inf
         except TypeError:  # input is not an array
-            if t < 0:
-                t = (-b + np.sqrt(d)) / (2 * a)
+            if t1 < 0:
+                t1 = np.inf
+            if t2 < 0:
+                t2 = np.inf
+
+        t = np.minimum(t1, t2)
 
         return t
 
