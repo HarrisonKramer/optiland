@@ -9,19 +9,28 @@ class BaseRays:
         self.y += dy
         self.z += dz
 
+    def _process_input(self, data):
+        if isinstance(data, (int, float)):
+            return np.array([data], dtype=float)
+        elif isinstance(data, np.ndarray):
+            return np.ravel(data).astype(float)
+        else:
+            raise ValueError('Unsupported input type. Must be a scalar '
+                             'or a NumPy array.')
+
 
 class RealRays(BaseRays):
 
     def __init__(self, x, y, z, L, M, N, energy, wavelength):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.L = L
-        self.M = M
-        self.N = N
-        self.e = energy
-        self.w = wavelength
-        self.opd = np.zeros_like(x, dtype=float)
+        self.x = self._process_input(x)
+        self.y = self._process_input(y)
+        self.z = self._process_input(z)
+        self.L = self._process_input(L)
+        self.M = self._process_input(M)
+        self.N = self._process_input(N)
+        self.e = self._process_input(energy)
+        self.w = self._process_input(wavelength)
+        self.opd = np.zeros_like(x)
 
     def rotate_x(self, rx: float):
         """Rotate about x-axis"""
@@ -76,12 +85,12 @@ class RealRays(BaseRays):
 class ParaxialRays(BaseRays):
 
     def __init__(self, y, u, z, wavelength):
+        self.y = self._process_input(y)
+        self.z = self._process_input(z)
+        self.u = self._process_input(u)
         self.x = np.zeros_like(y)
-        self.y = y
-        self.z = z
-        self.u = u
         self.e = np.ones_like(y)
-        self.w = wavelength
+        self.w = self._process_input(wavelength)
 
     def propagate(self, t: float):
         self.z += t
