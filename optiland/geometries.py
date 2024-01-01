@@ -89,7 +89,7 @@ class StandardGeometry(BaseGeometry):
         c = (self.k * rays.z**2 - 2 * self.radius * rays.z
              + rays.x**2 + rays.y**2 + rays.z**2)
 
-        # Discriminant
+        # discriminant
         d = b ** 2 - 4 * a * c
 
         # two solutions for distance to conic
@@ -98,20 +98,16 @@ class StandardGeometry(BaseGeometry):
             t1 = (-b + np.sqrt(d)) / (2 * a)
             t2 = (-b - np.sqrt(d)) / (2 * a)
 
-        # ignore complex solutions or a = 0, or intersections "behind" ray
-        t1[np.isnan(t1) | (t1 < 0)] = np.nan
-        t2[np.isnan(t2) | (t2 < 0)] = np.nan
+        # intersections "behind" ray, set to inf to ignore
+        t1[t1 < 0] = np.inf
+        t2[t2 < 0] = np.inf
 
-        # choose either min or max solution, depending on ray direction,
-        # sign of radius, and conic constant
-        same_sign = np.sign(rays.N) == self.radius
-        condition = ((self.k > -1) & same_sign) | ((self.k <= -1) & ~same_sign)
+        # find intersection points in z
+        z1 = rays.z + t1 * rays.N
+        z2 = rays.z + t2 * rays.N
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            t = np.where(condition,
-                         np.nanmax([t1, t2], axis=0),
-                         np.nanmin([t1, t2], axis=0))
+        # take intersection closest to z = 0
+        t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
 
         # handle case when a = 0
         t[a == 0] = -c[a == 0] / b[a == 0]
