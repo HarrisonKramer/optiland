@@ -312,7 +312,8 @@ class YYbar:
                 label = 'Surface 1'
             elif k == len(ya)-1:
                 label = 'Image'
-            ax.plot([yb[k-1], yb[k]], [ya[k-1], ya[k]], label=label)
+            ax.plot([yb[k-1], yb[k]], [ya[k-1], ya[k]], '.-',
+                    label=label, markersize=8)
 
         ax.axhline(y=0, linewidth=0.5, color='k')
         ax.axvline(x=0, linewidth=0.5, color='k')
