@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
+from optiland.surfaces import ReflectiveSurface
 
 
 class LensViewer:
@@ -27,6 +28,13 @@ class LensViewer:
         n = self.optic.n()
 
         for k in range(1, self.optic.surface_group.num_surfaces-1):
+            surf = self.optic.surface_group.surfaces[k]
+            if isinstance(surf, ReflectiveSurface):
+                y = np.linspace(-self._real_ray_extent[k],
+                                self._real_ray_extent[k], 128)
+                z = surf.geometry.sag(y=y) + surf.geometry.cs.z
+                ax.plot(z, y, 'gray')
+
             if n[k] > 1:
                 surf1 = self.optic.surface_group.surfaces[k]
                 surf2 = self.optic.surface_group.surfaces[k+1]
