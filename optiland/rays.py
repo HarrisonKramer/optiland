@@ -72,14 +72,7 @@ class RealRays(BaseRays):
         self.z += t * self.N
 
     def clip(self, condition):
-        self.x[condition] = np.nan
-        self.y[condition] = np.nan
-        self.z[condition] = np.nan
-        self.L[condition] = np.nan
-        self.M[condition] = np.nan
-        self.N[condition] = np.nan
-        self.e[condition] = np.nan
-        self.w[condition] = np.nan
+        self.e[condition] = 0.0
 
 
 class ParaxialRays(BaseRays):
@@ -95,7 +88,3 @@ class ParaxialRays(BaseRays):
     def propagate(self, t: float):
         self.z += t
         self.y += t * self.u
-
-    def clip(self, condition):
-        self.y[condition] = np.nan
-        self.u[condition] = np.nan
