@@ -178,7 +178,7 @@ class Optic:
         y0 = np.ones_like(x1) * y0
         z0 = np.ones_like(x1) * z0
 
-        energy = np.ones_like(x1) / z1.size
+        energy = np.ones_like(x1)
         wavelength = np.ones_like(x1) * wavelength
 
         return RealRays(x0, y0, z0, L, M, N, energy, wavelength)
