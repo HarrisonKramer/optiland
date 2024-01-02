@@ -46,10 +46,10 @@ class Optic:
 
     def add_surface(self, new_surface=None, index=None, thickness=0,
                     radius=np.inf, material='air', conic=0, is_stop=False,
-                    dx=0, dy=0, rx=0, ry=0):
+                    dx=0, dy=0, rx=0, ry=0, aperture=None):
         self.surface_group.add_surface(new_surface, index, thickness, radius,
                                        material, conic, is_stop,
-                                       dx, dy, rx, ry)
+                                       dx, dy, rx, ry, aperture)
 
     def add_field(self, y, x=0):
         new_field = Field(self.field_type, x, y)

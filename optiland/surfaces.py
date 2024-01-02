@@ -333,14 +333,14 @@ class SurfaceGroup:
 
     def add_surface(self, new_surface=None, index=None, thickness=0,
                     radius=np.inf, material='air', conic=0, is_stop=False,
-                    dx=0, dy=0, rx=0, ry=0):
+                    dx=0, dy=0, rx=0, ry=0, aperture=None):
         if new_surface is None:
             if index is None:
                 raise ValueError('Must define index when defining surface.')
 
             new_surface = self._configure_surface(index, thickness, radius,
                                                   material, conic, is_stop,
-                                                  dx, dy, rx, ry)
+                                                  dx, dy, rx, ry, aperture)
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -418,7 +418,7 @@ class SurfaceGroup:
 
     def _configure_surface(self, index, thickness=0, radius=np.inf,
                            material='air', conic=0, is_stop=False,
-                           dx=0, dy=0, rx=0, ry=0):
+                           dx=0, dy=0, rx=0, ry=0, aperture=None):
         if index > self.num_surfaces:
             raise ValueError('Surface index cannot be greater than number of '
                              'surfaces.')
@@ -430,9 +430,11 @@ class SurfaceGroup:
         if index == 0:
             return ObjectSurface(geometry, material_post)
         elif index == self.num_surfaces-1:
-            return ImageSurface(geometry, material_pre)
+            return ImageSurface(geometry, material_pre, aperture)
         else:
             if material == 'mirror':
-                return ReflectiveSurface(geometry, material_pre, is_stop)
+                return ReflectiveSurface(geometry, material_pre, is_stop,
+                                         aperture)
             else:
-                return Surface(geometry, material_pre, material_post, is_stop)
+                return Surface(geometry, material_pre, material_post, is_stop,
+                               aperture)
