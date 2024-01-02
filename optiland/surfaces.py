@@ -126,7 +126,7 @@ class Surface:
         rays.propagate(t)
 
         # update OPD
-        rays.opd += t * self.material_pre.n(rays.w)
+        rays.opd += np.abs(t * self.material_pre.n(rays.w))
 
         # if there is a limiting aperture, clip rays outside of it
         if self.aperture:
@@ -404,9 +404,7 @@ class SurfaceGroup:
             material_post = materials.Material(name=material[0],
                                                manufacturer=material[1])
         elif isinstance(material, str):
-            if material == 'mirror':
-                material_post = materials.Mirror()
-            elif material == 'air':
+            if material in ['mirror', 'air']:
                 material_post = materials.IdealMaterial(n=1.0, k=0.0)
             else:
                 material_post = materials.Material(material)
@@ -434,4 +432,7 @@ class SurfaceGroup:
         elif index == self.num_surfaces-1:
             return ImageSurface(geometry, material_pre)
         else:
-            return Surface(geometry, material_pre, material_post, is_stop)
+            if material == 'mirror':
+                return ReflectiveSurface(geometry, material_pre, is_stop)
+            else:
+                return Surface(geometry, material_pre, material_post, is_stop)
