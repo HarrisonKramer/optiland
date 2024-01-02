@@ -119,8 +119,8 @@ class SpotDiagram:
                        label=f'{wavelengths[k]:.4f} µm',
                        marker=markers[k % 3], alpha=0.7)
             ax.axis('square')
-            ax.set_xlabel('X (µm)')
-            ax.set_ylabel('Y (µm)')
+            ax.set_xlabel('X (mm)')
+            ax.set_ylabel('Y (mm)')
             ax.set_xlim((-axis_lim*buffer, axis_lim*buffer))
             ax.set_ylim((-axis_lim*buffer, axis_lim*buffer))
         ax.set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
