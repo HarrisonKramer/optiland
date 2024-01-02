@@ -32,7 +32,7 @@ class SpotDiagram:
         # subtract centroid and find limits
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
-        axis_lim = np.nanmax(geometric_size)
+        axis_lim = np.max(geometric_size)
 
         # plot wavelengths for each field
         for k, field_data in enumerate(data):
@@ -52,8 +52,8 @@ class SpotDiagram:
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
         for field_data in self.data:
-            centroid_x = np.nanmean(field_data[norm_index][0])
-            centroid_y = np.nanmean(field_data[norm_index][1])
+            centroid_x = np.mean(field_data[norm_index][0])
+            centroid_y = np.mean(field_data[norm_index][1])
             centroid.append((centroid_x, centroid_y))
         return centroid
 
@@ -64,7 +64,7 @@ class SpotDiagram:
             geometric_size_field = []
             for wave_data in field_data:
                 r = np.sqrt(wave_data[0]**2 + wave_data[1]**2)
-                geometric_size_field.append(np.nanmax(r))
+                geometric_size_field.append(np.max(r))
             geometric_size.append(geometric_size_field)
         return geometric_size
 
@@ -75,7 +75,7 @@ class SpotDiagram:
             rms_field = []
             for wave_data in field_data:
                 r2 = wave_data[0]**2 + wave_data[1]**2
-                rms_field.append(np.sqrt(np.nanmean(r2)))
+                rms_field.append(np.sqrt(np.mean(r2)))
             rms.append(rms_field)
         return rms
 
