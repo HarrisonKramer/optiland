@@ -39,12 +39,10 @@ class LensViewer:
                 surf1 = self.optic.surface_group.surfaces[k]
                 surf2 = self.optic.surface_group.surfaces[k+1]
 
-                y1 = np.linspace(-self._real_ray_extent[k],
-                                 self._real_ray_extent[k], 128)
+                y1 = self._get_surface_extent(k)
                 z1 = surf1.geometry.sag(y=y1) + surf1.geometry.cs.z
 
-                y2 = np.linspace(-self._real_ray_extent[k+1],
-                                 self._real_ray_extent[k+1], 128)
+                y2 = self._get_surface_extent(k+1)
                 z2 = surf2.geometry.sag(y=y2) + surf2.geometry.cs.z
 
                 if n[k+1] == 1 and n[k-1] == 1:  # single lens
@@ -107,8 +105,9 @@ class LensViewer:
                 self.optic.trace(*field, wavelength, num_rays, distribution)
                 z = self.optic.surface_group.z
                 y = self.optic.surface_group.y
+                energy = self.optic.surface_group.energy
 
-                # find maximum extent of real and paraxial rays
+                # find maximum extent of rays
                 for k in range(y.shape[0]):
                     if np.nanmax(np.abs(y[k, :])) > self._real_ray_extent[k]:
                         surf = self.optic.surface_group.surfaces[k]
@@ -117,15 +116,23 @@ class LensViewer:
                                                         surf.semi_aperture])
 
                 for k in range(z.shape[1]):
-                    ax.plot(z[:, k], y[:, k], f'C{i}', linewidth=1)
+                    zk = z[:, k]
+                    yk = y[:, k]
+                    ek = energy[:, k]
+
+                    zk[ek == 0] = np.nan
+                    yk[ek == 0] = np.nan
+
+                    ax.plot(zk, yk, f'C{i}', linewidth=1)
 
     def _get_surface_extent(self, surf_index):
         x = np.zeros(256)
         y = np.linspace(-self._real_ray_extent[surf_index],
                         self._real_ray_extent[surf_index], 256)
+        energy = np.ones_like(x)
         surf = self.optic.surface_group.surfaces[surf_index]
         if surf.aperture:
-            rays = RealRays(x, y, x, x, x, x, x, x)
+            rays = RealRays(x, y, x, x, x, x, energy, x)
             surf.aperture.clip(rays)
-            y = rays.y
+            y[rays.e == 0] = np.nan
         return y
