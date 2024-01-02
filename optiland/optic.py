@@ -39,6 +39,11 @@ class Optic:
     def image_surface(self):
         return self.surface_group.surfaces[-1]
 
+    @property
+    def total_track(self):
+        z = self.surface_group.positions
+        return np.max(z) - np.min(z)
+
     def add_surface(self, new_surface=None, index=None, thickness=0,
                     radius=np.inf, material='air', conic=0, is_stop=False,
                     dx=0, dy=0, rx=0, ry=0):
@@ -187,6 +192,8 @@ class Optic:
             if self.field_type == 'object_height':
                 raise ValueError('''Field type cannot be "object_height" for an
                                  object at infinity.''')
+
+            # offset = self.total_track / 10
 
             # start 10 lens units before first surface
             x = np.tan(np.radians(field_x)) * (10 + EPL)
