@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from optiland.surfaces import ReflectiveSurface
+from optiland.rays import RealRays
 
 
 class LensViewer:
@@ -30,8 +31,7 @@ class LensViewer:
         for k in range(1, self.optic.surface_group.num_surfaces-1):
             surf = self.optic.surface_group.surfaces[k]
             if isinstance(surf, ReflectiveSurface):
-                y = np.linspace(-self._real_ray_extent[k],
-                                self._real_ray_extent[k], 128)
+                y = self._get_surface_extent(k)
                 z = surf.geometry.sag(y=y) + surf.geometry.cs.z
                 ax.plot(z, y, 'gray', linewidth=2)
 
@@ -108,13 +108,24 @@ class LensViewer:
                 z = self.optic.surface_group.z
                 y = self.optic.surface_group.y
 
-                # find maximum extent of real of paraxial rays
+                # find maximum extent of real and paraxial rays
                 for k in range(y.shape[0]):
-                    if np.max(np.abs(y[k, :])) > self._real_ray_extent[k]:
+                    if np.nanmax(np.abs(y[k, :])) > self._real_ray_extent[k]:
                         surf = self.optic.surface_group.surfaces[k]
-                        max_ray_height = np.max(np.abs(y[k, :]))
+                        max_ray_height = np.nanmax(np.abs(y[k, :]))
                         self._real_ray_extent[k] = max([max_ray_height,
                                                         surf.semi_aperture])
 
                 for k in range(z.shape[1]):
                     ax.plot(z[:, k], y[:, k], f'C{i}', linewidth=1)
+
+    def _get_surface_extent(self, surf_index):
+        x = np.zeros(256)
+        y = np.linspace(-self._real_ray_extent[surf_index],
+                        self._real_ray_extent[surf_index], 256)
+        surf = self.optic.surface_group.surfaces[surf_index]
+        if surf.aperture:
+            rays = RealRays(x, y, x, x, x, x, x, x)
+            surf.aperture.clip(rays)
+            y = rays.y
+        return y
