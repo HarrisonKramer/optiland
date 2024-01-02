@@ -33,7 +33,7 @@ class LensViewer:
                 y = np.linspace(-self._real_ray_extent[k],
                                 self._real_ray_extent[k], 128)
                 z = surf.geometry.sag(y=y) + surf.geometry.cs.z
-                ax.plot(z, y, 'gray')
+                ax.plot(z, y, 'gray', linewidth=2)
 
             if n[k] > 1:
                 surf1 = self.optic.surface_group.surfaces[k]
