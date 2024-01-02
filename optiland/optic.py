@@ -193,9 +193,9 @@ class Optic:
                 raise ValueError('''Field type cannot be "object_height" for an
                                  object at infinity.''')
 
-            # start rays just before left-most surface
+            # start rays just before left-most surface (1/7th of total track)
             z = self.surface_group.positions[1:-1]
-            offset = self.total_track / 5 - np.min(z)
+            offset = self.total_track / 7 - np.min(z)
 
             # x, y, z positions of ray starting points
             x = np.tan(np.radians(field_x)) * (offset + EPL)
