@@ -195,7 +195,7 @@ class Optic:
 
             # start rays just before left-most surface
             z = self.surface_group.positions[1:-1]
-            offset = self.total_track / 10 - np.min(z)
+            offset = self.total_track / 5 - np.min(z)
 
             # x, y, z positions of ray starting points
             x = np.tan(np.radians(field_x)) * (offset + EPL)
