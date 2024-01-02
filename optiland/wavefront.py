@@ -143,6 +143,12 @@ class OPDFan(Wavefront):
                 wx = self.data[i][j][0][self.num_rays:]
                 wy = self.data[i][j][0][:self.num_rays]
 
+                energy_x = self.data[i][j][1][self.num_rays:]
+                energy_y = self.data[i][j][1][:self.num_rays]
+
+                wx[energy_x == 0] = np.nan
+                wy[energy_y == 0] = np.nan
+
                 axs[i, 0].plot(self.pupil_coord, wy, zorder=3,
                                label=f'{wavelength:.4f} µm')
                 axs[i, 0].grid()
@@ -225,12 +231,13 @@ class OPD(Wavefront):
         x = self.distribution.x
         y = self.distribution.y
         z = self.data[0][0][0]
+        energy = self.data[0][0][1]
 
         x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, num_points),
                                          np.linspace(-1, 1, num_points))
 
         points = np.column_stack((x.flatten(), y.flatten()))
-        values = z.flatten()
+        values = z.flatten() * energy.flatten()
 
         z_interp = griddata(points, values, (x_interp, y_interp),
                             method='cubic')
@@ -242,7 +249,7 @@ class OPD(Wavefront):
 class ZernikeOPD(ZernikeFit, OPD):
 
     def __init__(self, optic, field, wavelength, num_rings=15,
-                 zernike_type='fringe', num_terms=36):
+                 zernike_type='fringe', num_terms=37):
         OPD.__init__(self, optic, field, wavelength, num_rings)
 
         x = self.distribution.x
