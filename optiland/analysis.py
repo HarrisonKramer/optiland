@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 
 
 class SpotDiagram:
-    # TODO: analysis fails when a single wavelength passed in a list
 
     def __init__(self, optic, fields='all', wavelengths='all', num_rings=6,
                  distribution='hexapolar'):
