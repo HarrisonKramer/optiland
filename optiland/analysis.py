@@ -106,13 +106,17 @@ class SpotDiagram:
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
-        return [x, y]
+        energy = self.optic.surface_group.energy[-1, :]
+        return [x, y, energy]
 
     def _plot_field(self, ax, field_data, field, axis_lim,
                     wavelengths, buffer=1.05):
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
-            ax.scatter(*points, s=10, label=f'{wavelengths[k]:.4f} µm',
+            x, y, energy = points
+            mask = energy != 0
+            ax.scatter(x[mask], y[mask], s=10,
+                       label=f'{wavelengths[k]:.4f} µm',
                        marker=markers[k % 3], alpha=0.7)
             ax.axis('square')
             ax.set_xlabel('X (µm)')
@@ -226,7 +230,12 @@ class RayFan:
         for k, field in enumerate(self.fields):
             for wavelength in self.wavelengths:
                 ex = self.data[f'{field}'][f'{wavelength}']['x']
+                energy_x = self.data[f'{field}'][f'{wavelength}']['energy_x']
+                ex[energy_x == 0] = np.nan
+
                 ey = self.data[f'{field}'][f'{wavelength}']['y']
+                energy_y = self.data[f'{field}'][f'{wavelength}']['energy_y']
+                ey[energy_y == 0] = np.nan
 
                 axs[k, 0].plot(Py, ey, zorder=3, label=f'{wavelength:.4f} µm')
                 axs[k, 0].grid()
@@ -268,6 +277,8 @@ class RayFan:
                                  distribution='line_x')
                 data[f'{field}'][f'{wavelength}']['x'] = \
                     self.optic.surface_group.x[-1, :]
+                data[f'{field}'][f'{wavelength}']['energy_x'] = \
+                    self.optic.surface_group.energy[-1, :]
 
                 self.optic.trace(Hx=Hx, Hy=Hy,
                                  wavelength=wavelength,
@@ -275,6 +286,8 @@ class RayFan:
                                  distribution='line_y')
                 data[f'{field}'][f'{wavelength}']['y'] = \
                     self.optic.surface_group.y[-1, :]
+                data[f'{field}'][f'{wavelength}']['energy_y'] = \
+                    self.optic.surface_group.energy[-1, :]
 
         # remove distortion
         wave_ref = self.optic.primary_wavelength
