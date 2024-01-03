@@ -77,21 +77,22 @@ class UniformDistribution(BaseDistribution):
         self.y = y[r2 <= 1]
 
 
-class HexagonalDistribution(BaseDistribution):
+class HexagonalDistribution:
 
     def generate_points(self, num_rings: int = 6):
-        x = [0]
-        y = [0]
-        r = np.linspace(0, 1, num_rings+1)
+
+        x = np.zeros(1)
+        y = np.zeros(1)
+        r = np.linspace(0, 1, num_rings + 1)
+
         for i in range(num_rings):
             num_theta = 6 * (i + 1)
-            theta = np.linspace(0, 2*np.pi, num_theta+1)
-            for j in range(num_theta):
-                x.append(r[i+1] * np.cos(theta[j]))
-                y.append(r[i+1] * np.sin(theta[j]))
+            theta = np.linspace(0, 2 * np.pi, num_theta + 1)[:-1]
+            x = np.concatenate([x, r[i + 1] * np.cos(theta)])
+            y = np.concatenate([y, r[i + 1] * np.sin(theta)])
 
-        self.x = np.array(x)
-        self.y = np.array(y)
+        self.x = x
+        self.y = y
 
 
 class CrossDistribution(BaseDistribution):
