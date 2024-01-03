@@ -75,6 +75,10 @@ class Optic:
         else:
             surface.geometry.radius = value
 
+    def set_conic(self, value, surface_number):
+        surface = self.surface_group.surfaces[surface_number]
+        surface.geometry.k = value
+
     def set_thickness(self, value, surface_number):
         positions = self.surface_group.positions
         delta_t = value - positions[surface_number+1] + \

@@ -313,6 +313,16 @@ class SurfaceGroup:
         return np.array([surf.geometry.radius for surf in self.surfaces])
 
     @property
+    def conic(self):
+        values = []
+        for surf in self.surfaces:
+            try:
+                values.append(surf.geometry.k)
+            except AttributeError:
+                values.append(0)
+        return np.array(values)
+
+    @property
     def stop_index(self):
         for index, surface in enumerate(self.surfaces):
             if surface.is_stop:
@@ -324,7 +334,7 @@ class SurfaceGroup:
 
     def get_thickness(self, surface_number):
         t = self.positions
-        return t[surface_number+1] - t[surface_number+1]
+        return t[surface_number+1] - t[surface_number]
 
     def trace(self, rays, skip=0):
         self.reset()

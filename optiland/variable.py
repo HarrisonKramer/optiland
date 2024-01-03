@@ -18,8 +18,10 @@ class Variable:
     def value(self):
         if self.variable_type == 'radius':
             return self._surfaces.radii[self.surface_number]
+        elif self.variable_type == 'conic':
+            return self._surfaces.conic[self.surface_number]
         elif self.variable_type == 'thickness':
-            return self._surfaces.get_thickness(self.surface_number)
+            return self._surfaces.get_thickness(self.surface_number)[0]
         elif self.variable_type == 'index':
             n = self.optic.n(self.wavelength)
             return n[self.surface_number]
@@ -39,6 +41,8 @@ class Variable:
         '''update variable to a new value'''
         if self.variable_type == 'radius':
             self.optic.set_radius(new_value, self.surface_number)
+        elif self.variable_type == 'conic':
+            self.optic.set_conic(new_value, self.surface_number)
         elif self.variable_type == 'thickness':
             self.optic.set_thickness(new_value, self.surface_number)
         elif self.variable_type == 'index':
