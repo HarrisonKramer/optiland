@@ -22,13 +22,17 @@ class GeometricMTF(SpotDiagram):
         super().__init__(optic, fields, [wavelength], num_rays, distribution)
 
         self.freq = np.linspace(0, self.max_freq, num_points)
-        self.mtf = self._generate_mtf_data()
+        self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4)):
+    def view(self, figsize=(12, 4), add_reference=True):
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, data, self.fields[k], color=f'C{k}')
+
+        if add_reference:
+            ax.plot(self.freq, self.diff_limited_mtf, 'k--',
+                    label='Diffraction Limit')
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
         ax.set_xlim([0, self.max_freq])
@@ -50,7 +54,7 @@ class GeometricMTF(SpotDiagram):
             xi, yi = field_data[0][0], field_data[0][1]
             mtf.append([self._compute_field_data(yi, self.freq, scale_factor),
                         self._compute_field_data(xi, self.freq, scale_factor)])
-        return mtf
+        return mtf, scale_factor
 
     def _compute_field_data(self, xi, v, scale_factor):
         A, edges = np.histogram(xi, bins=self.num_points+1)
@@ -106,9 +110,7 @@ class FFTMTF:
 
     def view(self, figsize=(12, 4), add_reference=True):
         dx = self._get_mtf_units()
-
-        # add offset to avoid division by zero
-        freq = np.arange(self.grid_size//2) * dx + 1e-9
+        freq = np.arange(self.grid_size//2) * dx
 
         _, ax = plt.subplots(figsize=figsize)
 
@@ -116,7 +118,9 @@ class FFTMTF:
             self._plot_field(ax, freq, data, self.fields[k], color=f'C{k}')
 
         if add_reference:
-            phi = np.arccos(freq / self.max_freq)
+            ratio = freq / self.max_freq
+            ratio = np.clip(ratio, -1, 1)  # avoid invalid value in arccos
+            phi = np.arccos(ratio)
             diff_limited_mtf = 2 / np.pi * (phi - np.cos(phi) * np.sin(phi))
             ax.plot(freq, diff_limited_mtf, 'k--', label='Diffraction Limit')
 
