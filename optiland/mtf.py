@@ -76,7 +76,6 @@ class GeometricMTF(SpotDiagram):
 
 
 class FFTMTF:
-    # TODO: verify performance against baseline
 
     def __init__(self, optic, fields='all', wavelength='primary',
                  num_rays=128, grid_size=1024, max_freq='cutoff'):
@@ -87,6 +86,8 @@ class FFTMTF:
         self.num_rays = num_rays
         self.grid_size = grid_size
 
+        self.FNO = self._get_fno()
+
         if self.fields == 'all':
             self.fields = self.optic.fields.get_field_coords()
 
@@ -95,7 +96,7 @@ class FFTMTF:
 
         if max_freq == 'cutoff':
             # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (self.wavelength * 1e-3 * optic.paraxial.FNO())
+            self.max_freq = 1 / (self.wavelength * 1e-3 * self.FNO)
 
         self.psf = [FFTPSF(self.optic, field, self.wavelength,
                            self.num_rays, self.grid_size).psf
@@ -103,14 +104,21 @@ class FFTMTF:
 
         self.mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4)):
+    def view(self, figsize=(12, 4), add_reference=True):
         dx = self._get_mtf_units()
-        freq = np.arange(self.grid_size//2) * dx
+
+        # add offset to avoid division by zero
+        freq = np.arange(self.grid_size//2) * dx + 1e-9
 
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, freq, data, self.fields[k], color=f'C{k}')
+
+        if add_reference:
+            phi = np.arccos(freq / self.max_freq)
+            diff_limited_mtf = 2 / np.pi * (phi - np.cos(phi) * np.sin(phi))
+            ax.plot(freq, diff_limited_mtf, 'k--', label='Diffraction Limit')
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
         ax.set_xlim([0, self.max_freq])
@@ -139,7 +147,7 @@ class FFTMTF:
                         sagittal/np.max(sagittal)])
         return mtf
 
-    def _get_mtf_units(self):
+    def _get_fno(self):
         FNO = self.optic.paraxial.FNO()
 
         if not self.optic.object_surface.is_infinite:
@@ -148,7 +156,10 @@ class FFTMTF:
             m = self.optic.paraxial.magnification()
             FNO *= (1 + np.abs(m) / p)
 
+        return FNO
+
+    def _get_mtf_units(self):
         Q = self.grid_size / self.num_rays
-        dx = Q / (self.wavelength * FNO)
+        dx = Q / (self.wavelength * self.FNO)
 
         return dx
