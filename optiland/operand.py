@@ -192,8 +192,9 @@ class RayOperand:
         return optic.surface_group.N[surface_number]
 
     @staticmethod
-    def rms_spot_size(optic, surface_number, Hx, Hy, num_rays, wavelength):
-        optic.trace(Hx, Hy, wavelength, num_rays)
+    def rms_spot_size(optic, surface_number, Hx, Hy, num_rays, wavelength,
+                      distribution='hexapolar'):
+        optic.trace(Hx, Hy, wavelength, num_rays, distribution)
         x = optic.surface_group.x[surface_number, :]
         y = optic.surface_group.x[surface_number, :]
         r2 = x**2 + y**2
