@@ -123,4 +123,4 @@ def create_distribution(distribution_type):
     elif distribution_type == 'cross':
         return CrossDistribution()
     else:
-        raise ValueError('Invalid distribution type')
+        raise ValueError('Invalid distribution type.')
