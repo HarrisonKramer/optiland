@@ -45,6 +45,9 @@ class FFTPSF(Wavefront):
         else:
             norm = None
 
+        # replace values <= 0 with smallest non-zero value in image
+        image[image <= 0] = np.min(image[image > 0])
+
         extent = [-x_extent/2, x_extent/2, -y_extent/2, y_extent/2]
         im = ax.imshow(image, norm=norm, extent=extent)
 
