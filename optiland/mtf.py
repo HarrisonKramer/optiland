@@ -24,7 +24,7 @@ class GeometricMTF(SpotDiagram):
         self.freq = np.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=True):
+    def view(self, figsize=(12, 4), add_reference=False):
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
@@ -108,7 +108,7 @@ class FFTMTF:
 
         self.mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=True):
+    def view(self, figsize=(12, 4), add_reference=False):
         dx = self._get_mtf_units()
         freq = np.arange(self.grid_size//2) * dx
 
