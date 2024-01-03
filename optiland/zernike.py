@@ -120,9 +120,8 @@ class ZernikeNoll(ZernikeStandard):
 
     def _norm_constant(self, n=0, m=0):
         if m == 0:
-            return 1
-        else:
-            return np.sqrt(2 * n + 2)
+            return np.sqrt(n + 1)
+        return np.sqrt(2 * n + 2)
 
     def _generate_indices(self):
         number = []
