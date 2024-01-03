@@ -72,11 +72,9 @@ class UniformDistribution(BaseDistribution):
     def generate_points(self, num_points: int):
         x = np.linspace(-1, 1, num_points)
         x, y = np.meshgrid(x, x)
-        x = x.ravel()
-        y = y.ravel()
-        R = np.sqrt(x**2 + y**2)
-        self.x = x[R <= 1]
-        self.y = y[R <= 1]
+        r2 = x**2 + y**2
+        self.x = x[r2 <= 1]
+        self.y = y[r2 <= 1]
 
 
 class HexagonalDistribution(BaseDistribution):
