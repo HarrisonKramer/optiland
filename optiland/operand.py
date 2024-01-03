@@ -192,6 +192,14 @@ class RayOperand:
         return optic.surface_group.N[surface_number]
 
     @staticmethod
+    def rms_spot_size(optic, surface_number, Hx, Hy, num_rays, wavelength):
+        optic.trace(Hx, Hy, wavelength, num_rays)
+        x = optic.surface_group.x[surface_number, :]
+        y = optic.surface_group.x[surface_number, :]
+        r2 = x**2 + y**2
+        return np.sqrt(np.mean(r2))
+
+    @staticmethod
     def OPD_difference(optic, Hx, Hy, wavelength, num_rays, distribution):
         optic.trace(Hx, Hy, wavelength, num_rays, distribution)
         opd = optic.surface_group.opd
@@ -243,13 +251,15 @@ METRIC_DICT = {
     'real_L': RayOperand.L,
     'real_M': RayOperand.M,
     'real_N': RayOperand.N,
+    'rms_spot_size': RayOperand.rms_spot_size,
     'OPD_difference': RayOperand.OPD_difference
 }
 
 
 class Operand(object):
 
-    def __init__(self, operand_type, target, weight, input_data={}, metric_dict=METRIC_DICT):
+    def __init__(self, operand_type, target, weight, input_data={},
+                 metric_dict=METRIC_DICT):
         self.operand_type = operand_type
         self.target = target
         self.weight = weight
