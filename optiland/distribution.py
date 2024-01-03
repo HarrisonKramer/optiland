@@ -56,9 +56,13 @@ class LineYDistribution(BaseDistribution):
 
 class RandomDistribution(BaseDistribution):
 
+    def __init__(self, seed=None):
+        self.rng = np.random.default_rng(seed)
+
     def generate_points(self, num_points: int):
-        r = np.random.rand(num_points)
-        theta = np.random.rand(num_points) * 2 * np.pi
+        r = self.rng.uniform(size=num_points)
+        theta = self.rng.uniform(0, 2*np.pi, size=num_points)
+
         self.x = np.sqrt(r) * np.cos(theta)
         self.y = np.sqrt(r) * np.sin(theta)
 
