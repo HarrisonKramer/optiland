@@ -40,7 +40,8 @@ class FieldGroup:
 
     def get_field_coords(self):
         max_field = self.max_field
-        return [(x/max_field, y/max_field) for x, y in zip(self.x_fields, self.y_fields)]
+        return [(x/max_field, y/max_field)
+                for x, y in zip(self.x_fields, self.y_fields)]
 
     def add_field(self, field):
         self.fields.append(field)
