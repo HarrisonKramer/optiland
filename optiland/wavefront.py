@@ -7,7 +7,7 @@ from optiland.zernike import ZernikeFit
 
 class Wavefront:
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rays=100,
+    def __init__(self, optic, fields='all', wavelengths='all', num_rays=12,
                  distribution='hexapolar'):
         self.optic = optic
         self.fields = fields
