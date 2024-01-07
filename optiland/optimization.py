@@ -31,11 +31,11 @@ class OptimizationProblem:
         print('Merit Function Information')
         print(f'  Value: {self.rss()}')
         print('  Operands: ')
-        for op in self.operands:
-            op.info()
+        for k, op in enumerate(self.operands):
+            op.info(k)
         print('  Variables: ')
-        for var in self.variables:
-            var.info()
+        for k, var in enumerate(self.variables):
+            var.info(k)
 
 
 class OptimizerGeneric:

@@ -1,4 +1,5 @@
 import numpy as np
+from optiland import wavefront
 
 
 class ParaxialOperand:
@@ -201,10 +202,12 @@ class RayOperand:
         return np.sqrt(np.mean(r2))
 
     @staticmethod
-    def OPD_difference(optic, Hx, Hy, wavelength, num_rays, distribution):
-        optic.trace(Hx, Hy, wavelength, num_rays, distribution)
-        opd = optic.surface_group.opd
-        # TODO: rework to trace all rays at once
+    def OPD_difference(optic, Hx, Hy, num_rays, wavelength,
+                       distribution='hexapolar'):
+        wf = wavefront.Wavefront(optic, [(Hx, Hy)], [wavelength], num_rays,
+                                 distribution)
+        delta = wf.data[0][0][0] - np.mean(wf.data[0][0][0])
+        return np.mean(np.abs(delta))
 
 
 METRIC_DICT = {
@@ -284,8 +287,10 @@ class Operand(object):
         '''return objective function value'''
         return self.weight * self.delta()
 
-    def info(self):
-        print(f'\n\t   Type: {self.operand_type}')
+    def info(self, number=None):
+        if number is not None:
+            print(f'\tOperand {number}')
+        print(f'\t   Type: {self.operand_type}')
         print(f'\t   Weight: {self.weight}')
         print(f'\t   Target: {self.target}')
         print(f'\t   Value: {self.value}')

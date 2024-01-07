@@ -33,8 +33,10 @@ class Variable:
         '''return the bounds of the variable'''
         return (self.min_val, self.max_val)
 
-    def info(self):
-        print(f'\n\t   Type: {self.variable_type}')
+    def info(self, number=None):
+        if number is not None:
+            print(f'\tVariable {number}')
+        print(f'\t   Type: {self.variable_type}')
         print(f'\t   Value: {self.value}')
 
     def update(self, new_value):
