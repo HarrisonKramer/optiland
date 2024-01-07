@@ -412,7 +412,7 @@ class SurfaceGroup:
             material_post = material
         elif isinstance(material, tuple):
             material_post = materials.Material(name=material[0],
-                                               manufacturer=material[1])
+                                               reference=material[1])
         elif isinstance(material, str):
             if material in ['mirror', 'air']:
                 material_post = materials.IdealMaterial(n=1.0, k=0.0)

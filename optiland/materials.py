@@ -48,9 +48,9 @@ class Mirror(IdealMaterial):
 
 class Material(BaseMaterial):
 
-    def __init__(self, name, manufacturer=None):
+    def __init__(self, name, reference=None):
         super().__init__(name)
-        self.manufacturer = manufacturer
+        self.reference = reference
 
         self.files = []
         self.types = []
@@ -96,16 +96,18 @@ class Material(BaseMaterial):
             raise ValueError('No extinction coefficient data found.')
 
     def _retrieve_file(self):
-        if self.manufacturer:
-            database_path = f'database/**/{self.manufacturer}/{self.name}.yml'
-        else:
-            database_path = f'database/**/{self.name}.yml'
+        search_paths = [os.path.join(os.path.dirname(__file__), '..',
+                                     f'database/**/{self.name}/**/*.yml'),
+                        os.path.join(os.path.dirname(__file__), '..',
+                                     f'database/**/{self.name}.yml')]
 
-        search_path = os.path.join(os.path.dirname(__file__),
-                                   '..', database_path)
+        for path in search_paths:
+            for filename in glob.iglob(path, recursive=True):
+                self.files.append(filename)
 
-        for filename in glob.iglob(search_path, recursive=True):
-            self.files.append(filename)
+        if self.reference:
+            self.files = [file for file in self.files
+                          if self.reference in file]
 
         if not self.files:
             raise ValueError(f'No glass data found for "{self.name}"')
@@ -134,8 +136,9 @@ class Material(BaseMaterial):
                        self.data['DATA'][0]['coefficients'].split()]
 
     def _get_extinction_coeffs(self):
-        if self.data['DATA'][1]['type'] == 'tabulated k':
-            data_file = StringIO(self.data['DATA'][1]['data'])
-            k_data = np.loadtxt(data_file)
-            self._k_wavelength = k_data[:, 0]
-            self._k = k_data[:, 1]
+        for data in self.data['DATA']:
+            if data['type'] == 'tabulated k':
+                data_file = StringIO(self.data['DATA'][1]['data'])
+                k_data = np.loadtxt(data_file)
+                self._k_wavelength = k_data[:, 0]
+                self._k = k_data[:, 1]
