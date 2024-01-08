@@ -9,7 +9,7 @@ from optiland.rays import RealRays
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import LensViewer
+from optiland.visualization import LensViewer, LensViewer3D
 
 
 class Optic:
@@ -96,16 +96,17 @@ class Optic:
         surface_post = self.surface_group.surfaces[surface_number+1]
         surface_post.material_pre = new_material
 
-    def draw(self, projection='2d', fields='all', wavelengths='primary',
-             num_rays=3, figsize=(10, 4)):
-        if projection == '2d':
-            viewer = LensViewer(self)
-            viewer.view(fields, wavelengths, num_rays, distribution='line_y',
-                        figsize=figsize)
-        elif projection == '3d':
-            pass
-        else:
-            raise ValueError('Projection must be "2d" or "3d".')
+    def draw(self, fields='all', wavelengths='primary', num_rays=3,
+             figsize=(10, 4)):
+        viewer = LensViewer(self)
+        viewer.view(fields, wavelengths, num_rays, distribution='line_y',
+                    figsize=figsize)
+
+    def draw3D(self, fields='all', wavelengths='primary', num_rays=2,
+               figsize=(1200, 800)):
+        viewer = LensViewer3D(self)
+        viewer.view(fields, wavelengths, num_rays,
+                    distribution='hexapolar', figsize=figsize)
 
     def reset(self):
         self.aperture = None
