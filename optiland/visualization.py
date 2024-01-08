@@ -51,7 +51,7 @@ class LensViewer:
             if isinstance(surf, ReflectiveSurface):
                 y = self._get_surface_extent(k)
                 z = surf.geometry.sag(y=y) + surf.geometry.cs.z
-                self.ax.plot(z, y, 'gray', linewidth=2)
+                self._plot_surface(y, z)
 
             if n[k] > 1:
                 surf1 = self.optic.surface_group.surfaces[k]
