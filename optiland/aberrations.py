@@ -27,6 +27,9 @@ class Aberrations:
 
         Args:
             optic (optic.Optic): instance of the optic object to be assessed
+
+        Returns:
+            None
         """
         self.optic = optic
 
