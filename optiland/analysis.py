@@ -1,12 +1,64 @@
+"""Optiland Analsysis Module
+
+This module provides several common optical analyses, including:
+    - Spot diagrams
+    - Encircled energy diagrams
+    - Transverse ray aberration fans
+    - Y-Ybar plots
+    - Distortion plots
+    - Grid distortion diagrams
+    - Field curvature diagrams
+
+Kramer Harrison, 2023
+"""
+
 from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 class SpotDiagram:
+    """Spot diagram class
+
+    This class generates data and plots real ray intersection locations
+    on the final optical surface in an optical system. These plots
+    are purely geometric and give an indication of the blur produced
+    by aberrations in the system.
+
+    Attributes:
+        optic (optic.Optic): instance of the optic object to be assessed
+        fields (tuple[Field]): fields at which data is generated
+        wavelengths (tuple[float]): wavelengths at which data is generated
+        num_rings (int): number of rings in pupil distribution for ray tracing
+        data (List): contains spot data in a nested list. Data is ordered as
+            field (dim 0), wavelength (dim 1), then x, y and energy data
+            (dim 2).
+    """
 
     def __init__(self, optic, fields='all', wavelengths='all', num_rings=6,
                  distribution='hexapolar'):
+        """Create an instance of SpotDiagram
+
+        Note:
+            The constructor also generates all data that may later be used for
+            plotting
+
+        Args:
+            optic (optic.Optic): instance of the optic object to be assessed
+            fields (tuple[Field] or str): fields at which data is generated.
+                If 'all' is passed, then all field points are considered.
+                Default is 'all'.
+            wavelengths (str or tuple[float]): wavelengths at which data is
+                generated. If 'all' is passed, then all wavelengths are
+                considered. Default is 'all'.
+            num_rings (int): number of rings in pupil distribution for ray
+                tracing. Default is 6.
+            distribution (str): pupil distribution type for ray tracing.
+                Default is 'hexapolar'.
+
+        Returns:
+            None
+        """
         self.optic = optic
         self.fields = fields
         self.wavelengths = wavelengths
@@ -20,7 +72,15 @@ class SpotDiagram:
                                         num_rings, distribution)
 
     def view(self, figsize=(12, 4)):
+        """View the spot diagram
 
+        Args:
+            figsize (tuple): the figure size of the output window.
+                Default is (12, 4).
+
+        Returns:
+            None
+        """
         N = self.optic.fields.num_fields
         num_rows = (N + 2) // 3
 
@@ -49,6 +109,13 @@ class SpotDiagram:
         plt.show()
 
     def centroid(self):
+        """Centroid of each spot
+
+        Returns:
+            centroid (List): centroid for each ray spot. This follows the same
+                format as the data structure, i.e. field, wavelength,
+                then x/y/energy.
+        """
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
         for field_data in self.data:
@@ -58,6 +125,13 @@ class SpotDiagram:
         return centroid
 
     def geometric_spot_radius(self):
+        """Geometric spot radius of each spot
+
+        Returns:
+            geometric_size (List): Geometric spot radius for each ray spot.
+                This follows the same format as the data structure, i.e.
+                field, wavelength, then x/y/energy.
+        """
         data = self._center_spots(deepcopy(self.data))
         geometric_size = []
         for field_data in data:
@@ -69,6 +143,13 @@ class SpotDiagram:
         return geometric_size
 
     def rms_spot_radius(self):
+        """Root mean square (RMS) spot radius of each spot
+
+        Returns:
+            rms (List): RMS spot radius for each ray spot.
+                This follows the same format as the data structure, i.e.
+                field, wavelength, then x/y/energy.
+        """
         data = self._center_spots(deepcopy(self.data))
         rms = []
         for field_data in data:
