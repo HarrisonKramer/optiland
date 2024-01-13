@@ -71,14 +71,15 @@ def CookeTriplet():
     return lens
 
 
-def doublelens():
+def doubleGauss():
     lens = optic.Optic()
 
     lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
     lens.add_surface(index=1, radius=56.20238, thickness=8.75,
                      material='N-SSK2')
     lens.add_surface(index=2, radius=152.28580, thickness=0.5)
-    lens.add_surface(index=3, radius=37.68262, thickness=12.5, material='N-SK2')
+    lens.add_surface(index=3, radius=37.68262, thickness=12.5,
+                     material='N-SK2')
     lens.add_surface(index=4, radius=np.inf, thickness=3.8,
                      material=('F5', 'schott'))
     lens.add_surface(index=5, radius=24.23130, thickness=16.369445)
