@@ -97,11 +97,13 @@ class Paraxial:
         num_surfaces = len(self.surfaces.surfaces)
         if stop_index == num_surfaces-2:
             positions = self.optic.surface_group.positions
-            return positions[-2] - positions[-1]
+            loc_relative = positions[-2] - positions[-1]
+            return loc_relative[0]
 
         z_start = self.surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength, skip=stop_index+1)
+        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength,
+                                   skip=stop_index+1)
 
         loc_relative = -y[-1] / u[-1]
         return loc_relative[0]
@@ -132,7 +134,8 @@ class Paraxial:
         '''Magnification'''
         ya, ua = self.marginal_ray()
         n = self.optic.n()
-        return n[0]*ua[0]/(n[-1]*ua[-1])
+        mag = n[0]*ua[0]/(n[-1]*ua[-1])
+        return mag[0]
 
     def invariant(self):
         ya, ua = self.marginal_ray()
