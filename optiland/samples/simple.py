@@ -32,7 +32,7 @@ def Edmund_49_847():
     return lens
 
 
-def SingletStopSurf2():
+def singlet_stop_surf2():
     """A simple singlet with the stop on surface 2"""
     lens = optic.Optic()
 
