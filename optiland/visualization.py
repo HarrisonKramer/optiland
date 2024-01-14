@@ -126,10 +126,8 @@ class LensViewer:
                 # find maximum extent of rays
                 for k in range(y.shape[0]):
                     if np.nanmax(np.abs(y[k, :])) > self._real_ray_extent[k]:
-                        surf = self.optic.surface_group.surfaces[k]
                         max_ray_height = np.nanmax(np.abs(y[k, :]))
-                        self._real_ray_extent[k] = max([max_ray_height,
-                                                        surf.semi_aperture])
+                        self._real_ray_extent[k] = max_ray_height
 
                 for k in range(z.shape[1]):
                     xk = x[:, k]
