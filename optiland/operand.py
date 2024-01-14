@@ -165,32 +165,32 @@ class RayOperand:
     @staticmethod
     def x_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.x[surface_number]
+        return optic.surface_group.x[surface_number, 0]
 
     @staticmethod
     def y_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.y[surface_number]
+        return optic.surface_group.y[surface_number, 0]
 
     @staticmethod
     def z_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.z[surface_number]
+        return optic.surface_group.z[surface_number, 0]
 
     @staticmethod
     def L(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.L[surface_number]
+        return optic.surface_group.L[surface_number, 0]
 
     @staticmethod
     def M(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.M[surface_number]
+        return optic.surface_group.M[surface_number, 0]
 
     @staticmethod
     def N(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.N[surface_number]
+        return optic.surface_group.N[surface_number, 0]
 
     @staticmethod
     def rms_spot_size(optic, surface_number, Hx, Hy, num_rays, wavelength,
