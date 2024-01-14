@@ -5,7 +5,7 @@ class Aperture:
             raise ValueError('Aperture type must be "EPD", "imageFNO", '
                              '"objectNA"')
 
-        if value in ['EPD', 'imageFNO'] and object_space_telecentric:
+        if aperture_type in ['EPD', 'imageFNO'] and object_space_telecentric:
             raise ValueError('Cannot set aperture type to "EPD" or "imageFNO" '
                              'if lens is telecentric in object space.')
 
