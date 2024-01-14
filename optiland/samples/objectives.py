@@ -2,7 +2,7 @@ import numpy as np
 from optiland import optic
 
 
-def TripletTelescopeObjective():
+def triplet_telescope_objective():
     lens = optic.Optic()
 
     lens.surface_group.surfaces = []
@@ -35,7 +35,7 @@ def TripletTelescopeObjective():
     return lens
 
 
-def CookeTriplet():
+def Cooke_triplet():
     lens = optic.Optic()
 
     lens.surface_group.surfaces = []
@@ -71,7 +71,7 @@ def CookeTriplet():
     return lens
 
 
-def doubleGauss():
+def double_Gauss():
     lens = optic.Optic()
 
     lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
@@ -102,6 +102,52 @@ def doubleGauss():
     lens.add_field(y=0)
     lens.add_field(y=10)
     lens.add_field(y=14)
+
+    # add wavelength
+    lens.add_wavelength(value=0.4861)
+    lens.add_wavelength(value=0.5876, is_primary=True)
+    lens.add_wavelength(value=0.6563)
+
+    lens.update_paraxial()
+
+    return lens
+
+
+def reverse_telephoto():
+    """An optimized design with starting point USP 2959100"""
+    lens = optic.Optic()
+
+    lens.surface_group.surfaces = []
+
+    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=1, radius=1.69111096, thickness=0.08259680,
+                     material='N-SK10')
+    lens.add_surface(index=2, radius=0.94414496, thickness=0.8)
+    lens.add_surface(index=3, radius=4.32100401, thickness=0.080256,
+                     material='SK15')
+    lens.add_surface(index=4, radius=1.78117621, thickness=0.5)
+    lens.add_surface(index=5, radius=2.64050282, thickness=0.27638160,
+                     material='BASF2')
+    lens.add_surface(index=6, radius=-3.86177348, thickness=0.1)
+    lens.add_surface(index=7, radius=1.05627661, thickness=0.2, material='FK3')
+    lens.add_surface(index=8, radius=-4.06933311, thickness=0.2001384)
+    lens.add_surface(index=9, radius=np.inf, thickness=0.06688, is_stop=True)
+    lens.add_surface(index=10, radius=-2.61246583, thickness=0.064372,
+                     material=('SF15', 'hikari'))
+    lens.add_surface(index=11, radius=0.99117409, thickness=0.3)
+    lens.add_surface(index=12, radius=9.03045960, thickness=0.18743120,
+                     material='N-LAK12')
+    lens.add_surface(index=13, radius=-1.35680743, thickness=2.35130547)
+    lens.add_surface(index=14)
+
+    # add aperture
+    lens.set_aperture(aperture_type='EPD', value=0.3)
+
+    # add field
+    lens.set_field_type(field_type='angle')
+    lens.add_field(y=0)
+    lens.add_field(y=21)
+    lens.add_field(y=30)
 
     # add wavelength
     lens.add_wavelength(value=0.4861)
