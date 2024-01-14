@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import minimize
+from scipy import optimize
 from optiland.variable import Variable
 from optiland.operand import Operand
 
@@ -50,15 +50,12 @@ class OptimizerGeneric:
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
 
-        def fun(x):
-            for idvar, var in enumerate(self.problem.variables):
-                var.update(x[idvar])
-            funs = np.array([op.fun() for op in self.problem.operands])
-            return np.sum(funs**2)
-
         options = {'maxiter': maxiter, 'disp': disp}
 
-        result = minimize(fun, x0, bounds=bounds, options=options)
+        result = optimize.minimize(self._fun,
+                                   x0,
+                                   bounds=bounds,
+                                   options=options)
         return result
 
     def undo(self):
@@ -67,3 +64,30 @@ class OptimizerGeneric:
             for idvar, var in enumerate(self.problem.variables):
                 var.update(x0[idvar])
             self._x.pop(-1)
+
+    def _fun(self, x):
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(x[idvar])
+        funs = np.array([op.fun() for op in self.problem.operands])
+        return np.sum(funs**2)
+
+
+class DualAnnealing(OptimizerGeneric):
+
+    def __init__(self, problem: OptimizationProblem):
+        super().__init__(problem)
+
+    def optimize(self, maxiter=1000, disp=True):
+
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        bounds = tuple([var.bounds for var in self.problem.variables])
+        if any(None in bound for bound in bounds):
+            raise ValueError('Dual annealing requires all variables'
+                             ' have bounds.')
+
+        result = optimize.dual_annealing(self._fun,
+                                         bounds=bounds,
+                                         maxiter=maxiter,
+                                         x0=x0)
+        return result
