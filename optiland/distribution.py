@@ -106,6 +106,35 @@ class CrossDistribution(BaseDistribution):
         self.y = np.concatenate((y1, y2))
 
 
+class GaussianQuadrature(BaseDistribution):
+
+    def __init__(self, is_symmetric=False):
+        self.is_symmetric = is_symmetric
+
+    def generate_points(self, num_rings: int):
+        if num_rings == 1:
+            radius = np.array([0.70711])
+        elif num_rings == 2:
+            radius = np.array([0.45970, 0.88807])
+        elif num_rings == 3:
+            radius = np.array([0.33571, 0.70711, 0.94196])
+        elif num_rings == 4:
+            radius = np.array([0.26350, 0.57446, 0.81853, 0.96466])
+        elif num_rings == 5:
+            radius = np.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626])
+        elif num_rings == 6:
+            radius = np.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138,
+                               0.98300])
+
+        if self.is_symmetric:
+            theta = np.array([0.0])
+        else:
+            theta = np.array([-1.04719755, 0.0, 1.04719755])
+
+        self.x = np.outer(radius, np.cos(theta)).flatten()
+        self.y = np.outer(radius, np.sin(theta)).flatten()
+
+
 def create_distribution(distribution_type):
     if distribution_type == 'line_x':
         return LineXDistribution()
