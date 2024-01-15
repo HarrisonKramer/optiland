@@ -107,6 +107,8 @@ class CrossDistribution(BaseDistribution):
 
 
 class GaussianQuadrature(BaseDistribution):
+    """G. W. Forbes, "Optical system assessment for design: numerical ray
+    tracing in the Gaussian pupil," J. Opt. Soc. Am. A 5, 1943-1956 (1988)"""
 
     def __init__(self, is_symmetric=False):
         self.is_symmetric = is_symmetric
