@@ -127,6 +127,9 @@ class GaussianQuadrature(BaseDistribution):
         elif num_rings == 6:
             radius = np.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138,
                                0.98300])
+        else:
+            raise ValueError('Gaussian quadrature must have between 1 and '
+                             '6 rings.')
 
         if self.is_symmetric:
             theta = np.array([0.0])
@@ -135,6 +138,25 @@ class GaussianQuadrature(BaseDistribution):
 
         self.x = np.outer(radius, np.cos(theta)).flatten()
         self.y = np.outer(radius, np.sin(theta)).flatten()
+
+    def get_weights(self, num_rings):
+        if num_rings == 1:
+            weights = np.array([0.5])
+        elif num_rings == 2:
+            weights = np.array([0.25, 0.25])
+        elif num_rings == 3:
+            weights = np.array([0.13889, 0.22222, 0.13889])
+        elif num_rings == 4:
+            weights = np.array([0.08696, 0.16304, 0.16304, 0.08696])
+        elif num_rings == 5:
+            weights = np.array([0.059231, 0.11966, 0.14222, 0.11966, 0.059231])
+        elif num_rings == 6:
+            weights = np.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019,
+                                0.04283])
+        else:
+            raise ValueError('Gaussian quadrature must have between 1 and '
+                             '6 rings.')
+        return weights
 
 
 def create_distribution(distribution_type):
