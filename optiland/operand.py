@@ -1,5 +1,6 @@
 import numpy as np
 from optiland import wavefront
+from optiland.distribution import GaussianQuadrature
 
 
 class ParaxialOperand:
@@ -203,10 +204,22 @@ class RayOperand:
 
     @staticmethod
     def OPD_difference(optic, Hx, Hy, num_rays, wavelength,
-                       distribution='hexapolar'):
+                       distribution='gaussian_quad'):
+        weights = 1.0
+
+        if distribution == 'gaussian_quad':
+            if Hx == Hy == 0:
+                distribution = GaussianQuadrature(is_symmetric=True)
+                weights = distribution.get_weights(num_rays)
+            else:
+                distribution = GaussianQuadrature(is_symmetric=False)
+                weights = np.repeat(distribution.get_weights(num_rays), 3)
+
+            distribution.generate_points(num_rings=num_rays)
+
         wf = wavefront.Wavefront(optic, [(Hx, Hy)], [wavelength], num_rays,
                                  distribution)
-        delta = wf.data[0][0][0] - np.mean(wf.data[0][0][0])
+        delta = (wf.data[0][0][0] - np.mean(wf.data[0][0][0])) * weights
         return np.mean(np.abs(delta))
 
 
