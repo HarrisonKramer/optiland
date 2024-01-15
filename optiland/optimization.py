@@ -44,7 +44,7 @@ class OptimizerGeneric:
         self.problem = problem
         self._x = []
 
-    def optimize(self, maxiter=1000, disp=True):
+    def optimize(self, maxiter=1000, disp=True, tol=1e-3):
 
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -55,7 +55,8 @@ class OptimizerGeneric:
         result = optimize.minimize(self._fun,
                                    x0,
                                    bounds=bounds,
-                                   options=options)
+                                   options=options,
+                                   tol=tol)
         return result
 
     def undo(self):
