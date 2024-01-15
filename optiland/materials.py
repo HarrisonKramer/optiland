@@ -8,9 +8,6 @@ import numpy as np
 
 class BaseMaterial:
 
-    def __init__(self, name=''):
-        self.name = name
-
     @abc.abstractmethod
     def n(self, wavelength):
         return
@@ -28,8 +25,7 @@ class BaseMaterial:
 
 class IdealMaterial(BaseMaterial):
 
-    def __init__(self, n, k, name=''):
-        super().__init__(name)
+    def __init__(self, n, k):
         self.index = n
         self.absorp = k
 
@@ -42,24 +38,21 @@ class IdealMaterial(BaseMaterial):
 
 class Mirror(IdealMaterial):
 
-    def __init__(self, name=''):
-        super().__init__(n=-1.0, k=0.0, name=name)
+    def __init__(self):
+        super().__init__(n=-1.0, k=0.0)
 
 
-class Material(BaseMaterial):
+class MaterialFile(BaseMaterial):
 
-    def __init__(self, name, reference=None):
-        super().__init__(name)
-        self.reference = reference
+    def __init__(self, filename):
+        self.file = filename
 
-        self.files = []
         self.types = []
         self.coeffs = []
 
         self._k_wavelength = None
         self._k = None
 
-        self._retrieve_file()
         self._read_yaml()
         self._decipher_type()
         self._get_coeffs()
@@ -95,31 +88,8 @@ class Material(BaseMaterial):
         except ValueError:
             raise ValueError('No extinction coefficient data found.')
 
-    def _retrieve_file(self):
-        search_paths = [os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}/**/*.yml'),
-                        os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}.yml')]
-
-        for path in search_paths:
-            for filename in glob.iglob(path, recursive=True):
-                self.files.append(filename)
-
-        if self.reference:
-            self.files = [file for file in self.files
-                          if self.reference in file]
-
-        if not self.files:
-            raise ValueError(f'No glass data found for "{self.name}"')
-
-        if len(self.files) > 1:
-            error_str = f'''More than one material manufacturer found for
-            {self.name}: {self.files}. Please additionally list manufacturer.
-            '''
-            raise ValueError(error_str)
-
     def _read_yaml(self):
-        with open(self.files[0], 'r') as stream:
+        with open(self.file, 'r') as stream:
             self.data = yaml.safe_load(stream)
 
         for each in self.data['DATA']:
@@ -142,3 +112,37 @@ class Material(BaseMaterial):
                 k_data = np.loadtxt(data_file)
                 self._k_wavelength = k_data[:, 0]
                 self._k = k_data[:, 1]
+
+
+class Material(MaterialFile):
+
+    def __init__(self, name, reference=None):
+        self.name = name
+        self.reference = reference
+        file = self._retrieve_file()
+        super().__init__(file)
+
+    def _retrieve_file(self):
+        search_paths = [os.path.join(os.path.dirname(__file__), '..',
+                                     f'database/**/{self.name}/**/*.yml'),
+                        os.path.join(os.path.dirname(__file__), '..',
+                                     f'database/**/{self.name}.yml')]
+
+        files = []
+        for path in search_paths:
+            for filename in glob.iglob(path, recursive=True):
+                files.append(filename)
+
+        if self.reference:
+            files = [file for file in files if self.reference in file]
+
+        if not files:
+            raise ValueError(f'No glass data found for "{self.name}"')
+
+        if len(files) > 1:
+            error_str = f'''More than one material manufacturer found for
+            {self.name}: {files}. Please additionally list manufacturer.
+            '''
+            raise ValueError(error_str)
+
+        return files[0]
