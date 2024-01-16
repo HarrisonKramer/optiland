@@ -156,6 +156,12 @@ class GaussianQuadrature(BaseDistribution):
         else:
             raise ValueError('Gaussian quadrature must have between 1 and '
                              '6 rings.')
+
+        if self.is_symmetric:
+            weights *= 6.0
+        else:
+            weights *= 2.0
+
         return weights
 
 
