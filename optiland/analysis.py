@@ -301,9 +301,14 @@ class RayFan:
 
         self.data = self._generate_data()
 
-    def view(self):
+    def view(self, figsize=(10, 3.33)):
         _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
-                              figsize=(10, 10), sharex=True, sharey=True)
+                              figsize=(figsize[0],
+                                       figsize[1]*len(self.fields)),
+                              sharex=True, sharey=True)
+
+        # Ensure axs is a 2D array
+        axs = np.atleast_2d(axs)
 
         Px = self.data['Px']
         Py = self.data['Py']
