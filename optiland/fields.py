@@ -40,6 +40,8 @@ class FieldGroup:
 
     def get_field_coords(self):
         max_field = self.max_field
+        if max_field == 0:
+            return [(0, 0)]
         return [(x/max_field, y/max_field)
                 for x, y in zip(self.x_fields, self.y_fields)]
 
