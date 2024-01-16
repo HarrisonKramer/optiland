@@ -113,7 +113,7 @@ class LensViewer:
             fields = self.optic.fields.get_field_coords()
 
         if wavelengths == 'primary':
-            wavelengths = [self.optic.wavelengths.primary_index]
+            wavelengths = [self.optic.wavelengths.primary_wavelength.value]
 
         for i, field in enumerate(fields):
             for wavelength in wavelengths:
