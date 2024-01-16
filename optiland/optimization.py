@@ -73,6 +73,36 @@ class OptimizerGeneric:
         return np.sum(funs**2)
 
 
+class LeastSquares(OptimizerGeneric):
+
+    def __init__(self, problem: OptimizationProblem):
+        super().__init__(problem)
+
+    def optimize(self, maxiter=None, disp=False, tol=1e-3):
+
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        lower_bounds = tuple(var.bounds[0] for var in self.problem.variables)
+        upper_bounds = tuple(var.bounds[1] for var in self.problem.variables)
+        bounds = (lower_bounds, upper_bounds)
+
+        if all(bounds[0] is None and bounds[1] is None for bound in bounds):
+            bounds = (-np.inf, np.inf)
+
+        if disp:
+            verbose = 2
+        else:
+            verbose = 1
+
+        result = optimize.least_squares(self._fun,
+                                        x0,
+                                        bounds=bounds,
+                                        max_nfev=maxiter,
+                                        verbose=verbose,
+                                        ftol=tol)
+        return result
+
+
 class DualAnnealing(OptimizerGeneric):
 
     def __init__(self, problem: OptimizationProblem):
