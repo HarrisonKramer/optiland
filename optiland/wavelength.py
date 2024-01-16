@@ -67,4 +67,4 @@ class WavelengthGroup:
         return self.wavelengths[wavelength_number].value
 
     def get_wavelengths(self):
-        return tuple([wave.value for wave in self.wavelengths])
+        return [wave.value for wave in self.wavelengths]
