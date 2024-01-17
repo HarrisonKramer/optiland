@@ -92,7 +92,7 @@ class LeastSquares(OptimizerGeneric):
         if disp:
             verbose = 2
         else:
-            verbose = 1
+            verbose = 0
 
         result = optimize.least_squares(self._fun,
                                         x0,
