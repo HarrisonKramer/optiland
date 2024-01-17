@@ -20,7 +20,8 @@ dependencies = [
     "scipy",
     "pyyaml",
     "matplotlib",
-    "vtk"
+    "vtk",
+    "tabulate"
 ]
 
 [project.urls]
