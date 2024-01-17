@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import pandas as pd
 from scipy import optimize
@@ -79,8 +80,10 @@ class OptimizerGeneric:
 
     def __init__(self, problem: OptimizationProblem):
         self.problem = problem
-        self.problem.initial_value = self.problem.sum_squared()
         self._x = []
+
+        if self.problem.initial_value == 0.0:
+            self.problem.initial_value = self.problem.sum_squared()
 
     def optimize(self, maxiter=1000, disp=True, tol=1e-3):
 
@@ -90,11 +93,13 @@ class OptimizerGeneric:
 
         options = {'maxiter': maxiter, 'disp': disp}
 
-        result = optimize.minimize(self._fun,
-                                   x0,
-                                   bounds=bounds,
-                                   options=options,
-                                   tol=tol)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            result = optimize.minimize(self._fun,
+                                       x0,
+                                       bounds=bounds,
+                                       options=options,
+                                       tol=tol)
         return result
 
     def undo(self):
@@ -132,12 +137,14 @@ class LeastSquares(OptimizerGeneric):
         else:
             verbose = 0
 
-        result = optimize.least_squares(self._fun,
-                                        x0,
-                                        bounds=bounds,
-                                        max_nfev=maxiter,
-                                        verbose=verbose,
-                                        ftol=tol)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            result = optimize.least_squares(self._fun,
+                                            x0,
+                                            bounds=bounds,
+                                            max_nfev=maxiter,
+                                            verbose=verbose,
+                                            ftol=tol)
         return result
 
 
@@ -154,9 +161,10 @@ class DualAnnealing(OptimizerGeneric):
         if any(None in bound for bound in bounds):
             raise ValueError('Dual annealing requires all variables'
                              ' have bounds.')
-
-        result = optimize.dual_annealing(self._fun,
-                                         bounds=bounds,
-                                         maxiter=maxiter,
-                                         x0=x0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            result = optimize.dual_annealing(self._fun,
+                                             bounds=bounds,
+                                             maxiter=maxiter,
+                                             x0=x0)
         return result
