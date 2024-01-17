@@ -22,11 +22,11 @@ class OptimizationProblem:
         self.variables.append(Variable(optic, variable_type, **kwargs))
 
     def fun_array(self):
-        '''array of operand target deltas'''
-        return np.array([op.fun() for op in self.operands])
+        '''Array of operand weighted deltas squared'''
+        return np.array([op.fun() for op in self.operands])**2
 
     def sum_squared(self):
-        return np.sum(np.array(self.fun_array())**2)
+        return np.sum(self.fun_array())
 
     def rss(self):
         '''RSS of current merit function'''
