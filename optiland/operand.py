@@ -277,7 +277,7 @@ class Operand(object):
 
     def __init__(self, operand_type, target, weight, input_data={},
                  metric_dict=METRIC_DICT):
-        self.operand_type = operand_type
+        self.type = operand_type
         self.target = target
         self.weight = weight
         self.input_data = input_data
@@ -286,11 +286,11 @@ class Operand(object):
     @property
     def value(self):
         '''Get current value of the operand'''
-        metric_function = self.metric_dict.get(self.operand_type)
+        metric_function = self.metric_dict.get(self.type)
         if metric_function:
             return metric_function(**self.input_data)
         else:
-            raise ValueError(f'Unknown operand type: {self.operand_type}')
+            raise ValueError(f'Unknown operand type: {self.type}')
 
     def delta(self):
         '''delta between target and current value'''
@@ -299,12 +299,3 @@ class Operand(object):
     def fun(self):
         '''return objective function value'''
         return self.weight * self.delta()
-
-    def info(self, number=None):
-        if number is not None:
-            print(f'\tOperand {number}')
-        print(f'\t   Type: {self.operand_type}')
-        print(f'\t   Weight: {self.weight}')
-        print(f'\t   Target: {self.target}')
-        print(f'\t   Value: {self.value}')
-        print(f'\t   Delta: {self.delta()}')
