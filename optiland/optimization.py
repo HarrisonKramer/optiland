@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy import optimize
 from optiland.variable import Variable
 from optiland.operand import Operand
@@ -9,6 +10,8 @@ class OptimizationProblem:
     def __init__(self):
         self.operands = []
         self.variables = []
+
+        self.initial_value = 0.0
 
     def add_operand(self, operand_type, target, weight=1, input_data={}):
         '''add an operand to the merit function'''
@@ -22,26 +25,61 @@ class OptimizationProblem:
         '''array of operand target deltas'''
         return np.array([op.fun() for op in self.operands])
 
+    def sum_squared(self):
+        return np.sum(np.array(self.fun_array())**2)
+
     def rss(self):
         '''RSS of current merit function'''
-        return np.sqrt(np.sum(np.array(self.fun_array())**2))
+        return np.sqrt(self.sum_squared())
+
+    def operand_info(self):
+        data = {'Operand Type': [op.type.replace('_', ' ')
+                                 for op in self.operands],
+                'Target': [op.target for op in self.operands],
+                'Weight': [op.weight for op in self.operands],
+                'Value': [op.value for op in self.operands],
+                'Delta': [op.delta() for op in self.operands]}
+
+        df = pd.DataFrame(data)
+        funs = self.fun_array()
+        df['Contribution (%)'] = funs / np.sum(funs) * 100
+
+        print(df.to_markdown(headers='keys', tablefmt='psql'))
+
+    def variable_info(self):
+        data = {'Variable Type': [var.type for var in self.variables],
+                'Surface': [var.surface_number for var in self.variables],
+                'Value': [var.value for var in self.variables],
+                'Min. Bound': [var.min_val for var in self.variables],
+                'Max. Bound': [var.max_val for var in self.variables]}
+
+        df = pd.DataFrame(data)
+        print(df.to_markdown(headers='keys', tablefmt='psql'))
 
     def info(self):
         '''Print info about merit function'''
-        print('Merit Function Information')
-        print(f'  Value: {self.rss()}')
-        print('  Operands: ')
-        for k, op in enumerate(self.operands):
-            op.info(k)
-        print('  Variables: ')
-        for k, var in enumerate(self.variables):
-            var.info(k)
+        current_value = self.sum_squared()
+
+        if self.initial_value == 0.0:
+            improve_percent = 0.0
+        else:
+            improve_percent = ((self.initial_value - current_value) /
+                               self.initial_value * 100)
+
+        data = {'Merit Function Value': [self.sum_squared()],
+                'Improvement (%)': improve_percent}
+        df = pd.DataFrame(data)
+        print(df.to_markdown(headers='keys', tablefmt='psql'))
+
+        self.operand_info()
+        self.variable_info()
 
 
 class OptimizerGeneric:
 
     def __init__(self, problem: OptimizationProblem):
         self.problem = problem
+        self.problem.initial_value = self.problem.sum_squared()
         self._x = []
 
     def optimize(self, maxiter=1000, disp=True, tol=1e-3):
