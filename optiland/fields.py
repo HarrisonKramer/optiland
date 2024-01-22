@@ -3,10 +3,13 @@ import numpy as np
 
 class Field:
 
-    def __init__(self, field_type, x=0, y=0):
+    def __init__(self, field_type, x=0, y=0,
+                 vignette_factor_x=0.0, vignette_factor_y=0.0):
         self.field_type = field_type
         self.x = x
         self.y = y
+        self.vx = vignette_factor_x
+        self.vy = vignette_factor_y
 
 
 class FieldGroup:
@@ -37,6 +40,30 @@ class FieldGroup:
     @property
     def num_fields(self):
         return len(self.fields)
+    
+    @property
+    def vx(self):
+        return np.array([field.vx for field in self.fields])
+
+    @property
+    def vy(self):
+        return np.array([field.vy for field in self.fields])
+
+    def get_vig_factor(self, Hx, Hy):
+        if np.all(self.x_fields == 0):  # assume rotationally symmetric
+            idx_sorted = np.argsort(self.y_fields)
+            h_sorted = self.y_fields[idx_sorted] / self.max_y_field
+            vx_sorted = self.vx[idx_sorted]
+            vy_sorted = self.vy[idx_sorted]
+
+            h = np.sqrt(Hx**2 + Hy**2)
+
+            vx_new = np.interp(h, h_sorted, vx_sorted)
+            vy_new = np.interp(h, h_sorted, vy_sorted)
+            return vx_new, vy_new
+        else:
+            raise NotImplementedError('Currently only rotationally-symmetric '
+                                      'systems may set vignetting factors')
 
     def get_field_coords(self):
         max_field = self.max_field
