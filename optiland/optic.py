@@ -51,8 +51,8 @@ class Optic:
                                        material, conic, is_stop,
                                        dx, dy, rx, ry, aperture)
 
-    def add_field(self, y, x=0):
-        new_field = Field(self.field_type, x, y)
+    def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
+        new_field = Field(self.field_type, x, y, vx, vy)
         self.fields.add_field(new_field)
 
     def add_wavelength(self, value, is_primary=False, unit='um'):
@@ -140,9 +140,11 @@ class Optic:
         EPL = self.paraxial.EPL()
         EPD = self.paraxial.EPD()
 
+        vx, vy = self.fields.get_vig_factor(Hx, Hy)
+
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
-            distribution.generate_points(num_rays)
+            distribution.generate_points(num_rays, vx, vy)
         x1 = distribution.x * EPD / 2
         y1 = distribution.y * EPD / 2
         z1 = np.ones_like(x1) * EPL
@@ -154,8 +156,10 @@ class Optic:
         EPL = self.paraxial.EPL()
         EPD = self.paraxial.EPD()
 
-        x1 = Px * EPD / 2
-        y1 = Py * EPD / 2
+        vx, vy = self.fields.get_vig_factor(Hx, Hy)
+
+        x1 = Px * EPD / 2 * (1 - vx)
+        y1 = Py * EPD / 2 * (1 - vy)
 
         # assure all variables are arrays of the same size
         max_size = max([np.size(arr) for arr in [x1, y1, Hx, Hy]])
