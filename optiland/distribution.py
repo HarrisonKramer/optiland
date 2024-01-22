@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 class BaseDistribution:
 
     @abc.abstractmethod
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         pass
 
     @property
@@ -33,11 +33,11 @@ class LineXDistribution(BaseDistribution):
     def __init__(self, positive_only: bool = False):
         self.positive_only = positive_only
 
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         if self.positive_only:
-            self.x = np.linspace(0, 1, num_points)
+            self.x = np.linspace(0, 1, num_points) * (1 - vx)
         else:
-            self.x = np.linspace(-1, 1, num_points)
+            self.x = np.linspace(-1, 1, num_points) * (1 - vx)
         self.y = np.zeros(num_points)
 
 
@@ -46,12 +46,12 @@ class LineYDistribution(BaseDistribution):
     def __init__(self, positive_only: bool = False):
         self.positive_only = positive_only
 
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         self.x = np.zeros(num_points)
         if self.positive_only:
-            self.y = np.linspace(0, 1, num_points)
+            self.y = np.linspace(0, 1, num_points) * (1 - vy)
         else:
-            self.y = np.linspace(-1, 1, num_points)
+            self.y = np.linspace(-1, 1, num_points) * (1 - vy)
 
 
 class RandomDistribution(BaseDistribution):
@@ -59,27 +59,27 @@ class RandomDistribution(BaseDistribution):
     def __init__(self, seed=None):
         self.rng = np.random.default_rng(seed)
 
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         r = self.rng.uniform(size=num_points)
         theta = self.rng.uniform(0, 2*np.pi, size=num_points)
 
-        self.x = np.sqrt(r) * np.cos(theta)
-        self.y = np.sqrt(r) * np.sin(theta)
+        self.x = np.sqrt(r) * np.cos(theta) * (1 - vx)
+        self.y = np.sqrt(r) * np.sin(theta) * (1 - vy)
 
 
 class UniformDistribution(BaseDistribution):
 
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         x = np.linspace(-1, 1, num_points)
         x, y = np.meshgrid(x, x)
         r2 = x**2 + y**2
-        self.x = x[r2 <= 1]
-        self.y = y[r2 <= 1]
+        self.x = x[r2 <= 1] * (1 - vx)
+        self.y = y[r2 <= 1] * (1 - vy)
 
 
 class HexagonalDistribution:
 
-    def generate_points(self, num_rings: int = 6):
+    def generate_points(self, num_rings: int = 6, vx=0.0, vy=0.0):
 
         x = np.zeros(1)
         y = np.zeros(1)
@@ -91,19 +91,19 @@ class HexagonalDistribution:
             x = np.concatenate([x, r[i + 1] * np.cos(theta)])
             y = np.concatenate([y, r[i + 1] * np.sin(theta)])
 
-        self.x = x
-        self.y = y
+        self.x = x * (1 - vx)
+        self.y = y * (1 - vy)
 
 
 class CrossDistribution(BaseDistribution):
 
-    def generate_points(self, num_points: int):
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         x1 = np.zeros(num_points)
         x2 = np.linspace(-1, 1, num_points)
         y1 = np.linspace(-1, 1, num_points)
         y2 = np.zeros(num_points)
-        self.x = np.concatenate((x1, x2))
-        self.y = np.concatenate((y1, y2))
+        self.x = np.concatenate((x1, x2)) * (1 - vx)
+        self.y = np.concatenate((y1, y2)) * (1 - vy)
 
 
 class GaussianQuadrature(BaseDistribution):
@@ -113,7 +113,7 @@ class GaussianQuadrature(BaseDistribution):
     def __init__(self, is_symmetric=False):
         self.is_symmetric = is_symmetric
 
-    def generate_points(self, num_rings: int):
+    def generate_points(self, num_rings: int, vx=0.0, vy=0.0):
         if num_rings == 1:
             radius = np.array([0.70711])
         elif num_rings == 2:
@@ -136,8 +136,8 @@ class GaussianQuadrature(BaseDistribution):
         else:
             theta = np.array([-1.04719755, 0.0, 1.04719755])
 
-        self.x = np.outer(radius, np.cos(theta)).flatten()
-        self.y = np.outer(radius, np.sin(theta)).flatten()
+        self.x = np.outer(radius, np.cos(theta)).flatten() * (1 - vx)
+        self.y = np.outer(radius, np.sin(theta)).flatten() * (1 - vy)
 
     def get_weights(self, num_rings):
         if num_rings == 1:
