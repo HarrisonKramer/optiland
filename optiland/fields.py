@@ -40,7 +40,7 @@ class FieldGroup:
     @property
     def num_fields(self):
         return len(self.fields)
-    
+
     @property
     def vx(self):
         return np.array([field.vx for field in self.fields])
