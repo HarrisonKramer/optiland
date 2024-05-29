@@ -260,8 +260,11 @@ class ImageSurface(Surface):
 
 class SurfaceGroup:
 
-    def __init__(self, surfaces=[]):
-        self.surfaces = surfaces
+    def __init__(self, surfaces=None):
+        if surfaces is None:
+            self.surfaces = []
+        else:
+            self.surfaces = surfaces
 
         self._last_thickness = 0
 
