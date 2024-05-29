@@ -7,8 +7,6 @@ Optiland is a lens design and analysis program written in Python 3. It provides 
 
 <img src="images/telephoto.png" alt="telephoto" width="800"/>
 
-I would like to reference the excellent work of https://github.com/Sterncat/opticspy and https://github.com/jordens/rayopt, as I drew inspiration from both projects.
-
 ## Functionalities
 - Lens entry
 - 2D/3D visualization
@@ -25,3 +23,6 @@ The code itself is in constant flux and new functionalities are always being add
 ## Getting started
 The best way to get started with this software is to check out the several Jupyter notebooks located in this repository. Cooke_Triplet.ipynb demonstrates many of the functionalities.
 
+## Acknowledgements & References
+- https://github.com/Sterncat/opticspy
+- https://github.com/jordens/rayopt
