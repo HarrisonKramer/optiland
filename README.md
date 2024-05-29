@@ -1,8 +1,8 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<span style="font-size:50px">Optiland</span>
+# **Optiland**
 
-# Introduction
+## Introduction
 Optiland is a lens design and analysis program written in Python 3. It provides an intuitive and efficient interface for defining and visualizing lens systems, performing optimization of lens systems based on user-defined merit functions and variables, as well as analyzing optical systems using geometric and diffraction-based methods.
 
 Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1a_Optiland_for_Beginners.ipynb) or see the extensive [Learning Guide](#learning-guide).
@@ -10,7 +10,7 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
 <img src="images/telephoto.png" alt="telephoto" width="800"/>
 
 
-# Installation
+## Installation
 
 The following steps can be used to install Optiland:
 
@@ -45,7 +45,7 @@ The following steps can be used to install Optiland:
     ```
 
 
-# Functionalities
+## Functionalities
 - Lens entry
 - 2D/3D visualization
 - Paraxial analysis
@@ -58,7 +58,7 @@ The following steps can be used to install Optiland:
 
 The code itself is in constant flux and new functionalities are always being added.
 
-# Learning Guide
+## Learning Guide
 This guide gives a step-by-step approach to learning how to use Optiland.
 
 1. **Introduction to Optiland**
@@ -106,6 +106,6 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Adding new coating types
 
 
-# Acknowledgements & References
+## Acknowledgements & References
 - https://github.com/Sterncat/opticspy
 - https://github.com/jordens/rayopt
