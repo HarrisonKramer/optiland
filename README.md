@@ -10,7 +10,7 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
 
 <figure style="text-align: center;">
   <img src="images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
-  <figcaption>3D visualization of a lens in Optiland. This is an optimized design with starting point based on U.S. patent 2959100.</figcaption>
+  <figcaption style="font-size: 12px;">3D visualization of a lens in Optiland. This is an optimized design with starting point based on U.S. patent 2959100.</figcaption>
 </figure>
 
 
