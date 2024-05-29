@@ -40,8 +40,6 @@ The following steps can be used to install Optiland:
 
 2. **Install the package using pip:**
 
-    If you haven't published your package on PyPI, you can install it directly from GitHub:
-
     ```sh
     pip install git+https://github.com/HarrisonKramer/optiland.git
     ```
