@@ -52,7 +52,10 @@ class FieldGroup:
     def get_vig_factor(self, Hx, Hy):
         if np.all(self.x_fields == 0):  # assume rotationally symmetric
             idx_sorted = np.argsort(self.y_fields)
-            h_sorted = self.y_fields[idx_sorted] / self.max_y_field
+            if self.max_y_field == 0:
+                h_sorted = np.zeros(self.num_fields)
+            else:
+                h_sorted = self.y_fields[idx_sorted] / self.max_y_field
             vx_sorted = self.vx[idx_sorted]
             vy_sorted = self.vy[idx_sorted]
 
