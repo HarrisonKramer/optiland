@@ -112,5 +112,6 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 
 ## Acknowledgements & References
+- https://www.lens-designs.com/
 - https://github.com/Sterncat/opticspy
 - https://github.com/jordens/rayopt
