@@ -73,7 +73,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
          - Material selection
          - Aperture, field and wavelength selection
          - Drawing a lens in 2D and 3D
-    - [Tutorial 1b - Determining Lens Properties](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1b_Lens_Properties)
+    - [Tutorial 1b - Determining Lens Properties](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1b_Lens_Properties.ipynb)
         - Focal length
         - Magnification
         - F-Number, Entrance/Exit pupil diameters
