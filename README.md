@@ -73,6 +73,11 @@ This guide gives a step-by-step approach to learning how to use Optiland.
          - Material selection
          - Aperture, field and wavelength selection
          - Drawing a lens in 2D and 3D
+    - [Tutorial 1b - Determining Lens Properties](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1b_Lens_Properties)
+        - Focal length
+        - Magnification
+        - F-Number, Entrance/Exit pupil diameters
+        - Focal, Principal, and Nodal points
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Analyzing Ray Paths](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Analyzing_Ray_Paths.ipynb)
         - Analyzing ray intersections & paths
