@@ -1,6 +1,23 @@
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Forks](https://img.shields.io/github/forks/HarrisonKramer/optiland.svg)
+![Watchers](https://img.shields.io/github/watchers/HarrisonKramer/optiland.svg)
+![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)
+![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 
 # **Optiland**
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#functionalities">Functionalities</a></li>
+    <li><a href="#learning-guide">Learning Guide</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgements-&-references">Acknowledgements & References</a></li>
+  </ol>
+</details>
 
 ## Introduction
 Optiland is a lens design and analysis program written in Python 3. It provides an intuitive and efficient interface for defining and visualizing lens systems, performing optimization of lens systems based on user-defined merit functions and variables, as well as analyzing optical systems using geometric and diffraction-based methods.
@@ -98,6 +115,9 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 4a - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_PSF_&_MTF_Calculation.ipynb)
         - Geometric PSF/MTF
         - FFT-based PSF/MTF
+    - [Tutorial 4a - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4b_Zernike_Decomposition.ipynb)
+        - Decomposing wavefront using Zernike polynomials
+        - Coefficient types: Zernike standard, Zernike fringe, Zernike Noll
 5. **Optimization**
     - [Tutorial 5a - Simple Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5a_Simple_Optimization.ipynb)
         - Operand and variable definition
@@ -115,6 +135,13 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 8b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8b_Custom_Coating_Types.ipynb)
         - Adding new coating types
 
+
+## License
+Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
+
+
+## Contact
+Kramer Harrison - kdanielharrison@gmail.com
 
 ## Acknowledgements & References
 - https://www.lens-designs.com/
