@@ -77,7 +77,7 @@ class UniformDistribution(BaseDistribution):
         self.y = y[r2 <= 1] * (1 - vy)
 
 
-class HexagonalDistribution:
+class HexagonalDistribution(BaseDistribution):
 
     def generate_points(self, num_rings: int = 6, vx=0.0, vy=0.0):
 
