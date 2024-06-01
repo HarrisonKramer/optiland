@@ -96,7 +96,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - F-Number, Entrance/Exit pupil diameters
         - Focal, Principal, and Nodal points, etc.
 2. **Real Raytracing & Analysis**
-    - [Tutorial 2a - Analyzing Ray Paths](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Analyzing_Ray_Paths.ipynb)
+    - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - Analyzing ray intersections & paths
         - Retrieving saved ray information after raytracing
     - [Tutorial 2b - Tilting & De-centering Components](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2b_Tilting_&_Decentering_Components.ipynb)
