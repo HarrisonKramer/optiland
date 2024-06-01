@@ -94,6 +94,17 @@ class Aberrations:
                       -sum(TPC) * self._n[-1] * self._ua[-1]*2,
                       -sum(DC) * self._n[-1] * self._ua[-1]*2])
 
+        TSC = np.array(TSC).flatten()
+        CC = np.array(CC).flatten()
+        TAC = np.array(TAC).flatten()
+        TPC = np.array(TPC).flatten()
+        DC = np.array(DC).flatten()
+        TAchC = np.array(TAchC).flatten()
+        TchC = np.array(TchC).flatten()
+        AC = np.array(AC).flatten()
+        PC = np.array(PC).flatten()
+        LchC = np.array(LchC).flatten()
+
         return TSC, SC, CC, CC*3, TAC, AC, TPC, PC, DC, TAchC, LchC, TchC, S
 
     def seidels(self):
@@ -139,7 +150,7 @@ class Aberrations:
         TSC = []
         for k in range(1, self._N-1):
             TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
-        return TSC
+        return np.array(TSC).flatten()
 
     def SC(self):
         """Compute third-order longitudinal spherical aberration
@@ -154,7 +165,7 @@ class Aberrations:
         for k in range(1, self._N-1):
             TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
             SC.append(-TSC[-1] / self._ua[-1])
-        return SC
+        return np.array(SC).flatten()
 
     def CC(self):
         """Compute third-order sagittal coma
@@ -167,7 +178,7 @@ class Aberrations:
         CC = []
         for k in range(1, self._N-1):
             CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
-        return CC
+        return np.array(CC).flatten()
 
     def TCC(self):
         """Compute third-order tangential coma
@@ -189,7 +200,7 @@ class Aberrations:
         for k in range(1, self._N-1):
             TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
 
-        return TAC
+        return np.array(TAC).flatten()
 
     def AC(self):
         """Compute third-order longitudinal astigmatism
@@ -204,7 +215,7 @@ class Aberrations:
         for k in range(1, self._N-1):
             TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
             AC.append(-TAC[-1] / self._ua[-1])
-        return AC
+        return np.array(AC).flatten()
 
     def TPC(self):
         """Compute third-order transverse Petzval sum
@@ -218,7 +229,7 @@ class Aberrations:
         for k in range(1, self._N-1):
             TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
                        self._inv / (2*self._n[k] * self._n[k-1]))
-        return TPC
+        return np.array(TPC).flatten()
 
     def PC(self):
         """Compute third-order longitudinal Petzval sum
@@ -234,7 +245,7 @@ class Aberrations:
             TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
                        self._inv / (2*self._n[k] * self._n[k-1]))
             PC.append(-TPC[-1] / self._ua[-1])
-        return PC
+        return np.array(PC).flatten()
 
     def DC(self):
         """Compute third-order distortion
@@ -249,7 +260,7 @@ class Aberrations:
             DC.append(self._hp *
                       (self._Bp[k-1] * self._i[k-1] * self._ip[k-1] +
                        0.5*(self._ub[k]**2 - self._ub[k-1]**2)))
-        return DC
+        return np.array(DC).flatten()
 
     def TAchC(self):
         """Compute frst-order transverse axial color
@@ -265,7 +276,7 @@ class Aberrations:
                          (self._n[-1] * self._ua[-1]) *
                          (self._dn[k-1] - self._n[k-1] /
                           self._n[k] * self._dn[k]))
-        return TAchC
+        return np.array(TAchC).flatten()
 
     def LchC(self):
         """Compute first-order longitudinal axial color
@@ -283,7 +294,7 @@ class Aberrations:
                          (self._dn[k-1] - self._n[k-1] /
                           self._n[k] * self._dn[k]))
             LchC.append(-TAchC[-1] / self._ua[-1])
-        return LchC
+        return np.array(LchC).flatten()
 
     def TchC(self):
         """Compute first-order lateral color
@@ -299,7 +310,7 @@ class Aberrations:
                         (self._n[-1] * self._ua[-1]) *
                         (self._dn[k-1] - self._n[k-1] /
                          self._n[k] * self._dn[k]))
-        return TchC
+        return np.array(TchC).flatten()
 
     def _precalculations(self):
         """Perform precalculations needed for most aberration calculations"""
