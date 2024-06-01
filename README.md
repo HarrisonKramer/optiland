@@ -34,33 +34,10 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
 
 ## Installation
 
-The following steps can be used to install Optiland:
+You can install the package using pip. To do so, follow these steps:
 
-1. **Create and activate a virtual environment (optional, but recommended):**
-
-    - Open a terminal or command prompt.
-    - Navigate to your project directory.
-    - Create a virtual environment by running:
-
-        ```sh
-        python -m venv venv
-        ```
-
-    - Activate the virtual environment:
-
-        - On Windows:
-
-            ```sh
-            venv\Scripts\activate
-            ```
-
-        - On macOS and Linux:
-
-            ```sh
-            source venv/bin/activate
-            ```
-
-2. **Install the package using pip:**
+1. Open a terminal or command prompt.
+2. Run the following command to install the package:
 
     ```sh
     pip install git+https://github.com/HarrisonKramer/optiland.git
@@ -73,7 +50,7 @@ The following steps can be used to install Optiland:
 - Paraxial analysis
 - Real and paraxial ray tracing
 - Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, MTF, etc.)
-- Glass catalogue and index/abbe v-number determination (many thanks to refractiveindex.info)
+- Glass catalogue and index/abbe v-number determination (based on refractiveindex.info)
 - Design optimization
 - Wavefront and Zernike analysis
 - Coating analysis
