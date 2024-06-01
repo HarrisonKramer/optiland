@@ -88,11 +88,13 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Field curvature plots
     - [Tutorial 3b - 1st & 3rd Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
         - Calculation of seidel & 1st/3rd order aberrations
-4. **PSF & MTF**
-    - [Tutorial 4a - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_PSF_&_MTF_Calculation.ipynb)
+4. **OPD, PSF & MTF**
+    - [Tutorial 4a - Optical Path Difference](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_Optical_Path_Difference_Calculation.ipynb)
+        - OPD fans and plots
+    - [Tutorial 4b - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4b_PSF_&_MTF_Calculation.ipynb)
         - Geometric PSF/MTF
         - FFT-based PSF/MTF
-    - [Tutorial 4a - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4b_Zernike_Decomposition.ipynb)
+    - [Tutorial 4c - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4c_Zernike_Decomposition.ipynb)
         - Decomposing wavefront using Zernike polynomials
         - Coefficient types: Zernike standard, Zernike fringe, Zernike Noll
 5. **Optimization**
