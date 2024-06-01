@@ -62,7 +62,6 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 1. **Introduction to Optiland**
     - [Tutorial 1a - Optiland for Beginners](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1a_Optiland_for_Beginners.ipynb)
-         - Building your first lens system
          - Lens entry
          - Material selection
          - Aperture, field and wavelength selection
@@ -70,15 +69,14 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 1b - Determining Lens Properties](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_1b_Lens_Properties.ipynb)
         - Focal length
         - Magnification
-        - F-Number, Entrance/Exit pupil diameters
+        - F-Number, Entrance/Exit pupil sizes & positions
         - Focal, Principal, and Nodal points, etc.
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
-        - Analyzing ray intersections & paths
-        - Retrieving saved ray information after raytracing
+        - How to trace rays through a system
+        - Analyzing ray paths & properties
     - [Tutorial 2b - Tilting & De-centering Components](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2b_Tilting_&_Decentering_Components.ipynb)
         - Tracing rays through misaligned components
-        - Adding a fold mirror to an optical system
 3. **Aberrations**
     - [Tutorial 3a - Common aberration analyses/plots](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3a_Common_Aberration_Analyses.ipynb)
         - Spot diagrams
@@ -92,7 +90,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 4a - Optical Path Difference](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_Optical_Path_Difference_Calculation.ipynb)
         - OPD fans and plots
     - [Tutorial 4b - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4b_PSF_&_MTF_Calculation.ipynb)
-        - Geometric PSF/MTF
+        - Geometric MTF
         - FFT-based PSF/MTF
     - [Tutorial 4c - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4c_Zernike_Decomposition.ipynb)
         - Decomposing wavefront using Zernike polynomials
@@ -101,7 +99,6 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 5a - Simple Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5a_Simple_Optimization.ipynb)
         - Operand and variable definition
         - Local optimization
-        - How to improve a lens design
     - [Tutorial 5b - Advanced Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5b_Advanced_Optimization.ipynb)
         - Global optimization
 6. **Coatings & Polarization**
