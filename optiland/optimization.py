@@ -113,7 +113,11 @@ class OptimizerGeneric:
         for idvar, var in enumerate(self.problem.variables):
             var.update(x[idvar])
         funs = np.array([op.fun() for op in self.problem.operands])
-        return np.sum(funs**2)
+        rss = np.sum(funs**2)
+        if np.isnan(rss):
+            return 1e10
+        else:
+            return rss
 
 
 class LeastSquares(OptimizerGeneric):
