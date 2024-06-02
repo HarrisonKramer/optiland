@@ -49,7 +49,7 @@ class Surface:
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
         return np.arccos(dot) / 2
 
-    def _record(self, rays, aoi=None):
+    def _record(self, rays):
         if isinstance(rays, ParaxialRays):
             self.y = np.copy(np.atleast_1d(rays.y))
             self.u = np.copy(np.atleast_1d(rays.u))
@@ -63,7 +63,6 @@ class Surface:
             self.N = np.copy(np.atleast_1d(rays.N))
 
             self.energy = np.copy(np.atleast_1d(rays.e))
-            self.aoi = np.copy(np.atleast_1d(aoi))
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays, nx, ny, nz):
@@ -135,21 +134,23 @@ class Surface:
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
 
-        # find AOIs
-        aoi = self._compute_aoi(rays, nx, ny, nz)
+        # record initial direction cosines
+        L0 = np.copy(np.atleast_1d(rays.L))
+        M0 = np.copy(np.atleast_1d(rays.M))
+        N0 = np.copy(np.atleast_1d(rays.N))
 
         # Interact with surface (refract or reflect)
         rays = self._interact(rays, nx, ny, nz)
 
         # if there is a coating, modify ray properties
         if self.coating:
-            rays = self.coating.interact(rays, aoi)
+            rays = self.coating.interact(rays, L0, M0, N0)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
 
         # record ray information
-        self._record(rays, aoi)
+        self._record(rays)
 
         return rays
 
