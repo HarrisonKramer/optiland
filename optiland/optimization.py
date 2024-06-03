@@ -172,3 +172,26 @@ class DualAnnealing(OptimizerGeneric):
                                              maxiter=maxiter,
                                              x0=x0)
         return result
+
+
+class DifferentialEvolution(OptimizerGeneric):
+
+    def __init__(self, problem: OptimizationProblem):
+        super().__init__(problem)
+
+    def optimize(self, maxiter=1000, disp=True):
+
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        bounds = tuple([var.bounds for var in self.problem.variables])
+        if any(None in bound for bound in bounds):
+            raise ValueError('Differential evolution requires all variables'
+                             ' have bounds.')
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            result = optimize.DifferentialEvolution(self._fun,
+                                                    bounds=bounds,
+                                                    maxiter=maxiter,
+                                                    x0=x0,
+                                                    disp=disp)
+        return result
