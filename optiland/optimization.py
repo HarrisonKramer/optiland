@@ -189,9 +189,9 @@ class DifferentialEvolution(OptimizerGeneric):
                              ' have bounds.')
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            result = optimize.DifferentialEvolution(self._fun,
-                                                    bounds=bounds,
-                                                    maxiter=maxiter,
-                                                    x0=x0,
-                                                    disp=disp)
+            result = optimize.differential_evolution(self._fun,
+                                                     bounds=bounds,
+                                                     maxiter=maxiter,
+                                                     x0=x0,
+                                                     disp=disp)
         return result
