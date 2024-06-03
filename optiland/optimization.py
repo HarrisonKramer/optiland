@@ -179,7 +179,7 @@ class DifferentialEvolution(OptimizerGeneric):
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
 
-    def optimize(self, maxiter=1000, disp=True):
+    def optimize(self, maxiter=1000, disp=True, workers=-1):
 
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -189,9 +189,17 @@ class DifferentialEvolution(OptimizerGeneric):
                              ' have bounds.')
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
+
+            if workers == -1:
+                updating = 'deferred'
+            else:
+                updating = 'immediate'
+
             result = optimize.differential_evolution(self._fun,
                                                      bounds=bounds,
                                                      maxiter=maxiter,
                                                      x0=x0,
-                                                     disp=disp)
+                                                     disp=disp,
+                                                     updating=updating,
+                                                     workers=workers)
         return result
