@@ -1,3 +1,10 @@
+"""Optiland MTF Module
+
+This module provides various classes for the computation of the modulation
+transfer function (MTF)
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from optiland.analysis import SpotDiagram
@@ -5,7 +12,44 @@ from optiland.psf import FFTPSF
 
 
 class GeometricMTF(SpotDiagram):
-    """Smith, Modern Optical Engineering 3rd edition, Section 11.9"""
+    """Smith, Modern Optical Engineering 3rd edition, Section 11.9
+
+    This class represents the Geometric MTF (Modulation Transfer Function) of
+    an optical system. It inherits from the SpotDiagram class.
+
+    Args:
+        optic (Optic): The optical system for which to calculate the MTF.
+        fields (str or list, optional): The field points at which to calculate
+            the MTF. Defaults to 'all'.
+        wavelength (str or float, optional): The wavelength at which to
+            calculate the MTF. Defaults to 'primary'.
+        num_rays (int, optional): The number of rays to trace for each field
+            point. Defaults to 100.
+        distribution (str, optional): The distribution of rays within each
+            field point. Defaults to 'uniform'.
+        num_points (int, optional): The number of points to sample in the MTF
+            curve. Defaults to 256.
+        max_freq (str or float, optional): The maximum frequency to consider
+            in the MTF curve. Defaults to 'cutoff'.
+        scale (bool, optional): Whether to scale the MTF curve using the
+            diffraction-limited curve. Defaults to True.
+
+    Attributes:
+        num_points (int): The number of points to sample in the MTF curve.
+        scale (bool): Whether to scale the MTF curve.
+        max_freq (float): The maximum frequency to consider in the MTF curve.
+        freq (ndarray): The frequency values for the MTF curve.
+        mtf (list): The MTF data for each field point.
+        diff_limited_mtf (ndarray): The diffraction-limited MTF curve.
+
+    Methods:
+        view(figsize=(12, 4), add_reference=False): Plots the MTF curve.
+        _generate_mtf_data(): Generates the MTF data for each field point.
+        _compute_field_data(xi, v, scale_factor): Computes the MTF data for a
+            given field point.
+        _plot_field(ax, mtf_data, field, color): Plots the MTF data for a
+            given field point.
+    """
 
     def __init__(self, optic, fields='all', wavelength='primary',
                  num_rays=100, distribution='uniform', num_points=256,
@@ -25,6 +69,14 @@ class GeometricMTF(SpotDiagram):
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
     def view(self, figsize=(12, 4), add_reference=False):
+        """Plots the MTF curve.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (12, 4).
+            add_reference (bool, optional): Whether to add the diffraction
+                limit reference curve. Defaults to False.
+        """
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
@@ -43,6 +95,12 @@ class GeometricMTF(SpotDiagram):
         plt.show()
 
     def _generate_mtf_data(self):
+        """Generates the MTF data for each field point.
+
+        Returns:
+            tuple: A tuple containing the MTF data for each field point and
+                the scale factor.
+        """
         if self.scale:
             phi = np.arccos(self.freq / self.max_freq)
             scale_factor = 2 / np.pi * (phi - np.cos(phi) * np.sin(phi))
@@ -57,6 +115,16 @@ class GeometricMTF(SpotDiagram):
         return mtf, scale_factor
 
     def _compute_field_data(self, xi, v, scale_factor):
+        """Computes the MTF data for a given field point.
+
+        Args:
+            xi (ndarray): The coordinate values (x or y) of the field point.
+            v (ndarray): The frequency values for the MTF curve.
+            scale_factor (float): The scale factor for the MTF curve.
+
+        Returns:
+            ndarray: The MTF data for the field point.
+        """
         A, edges = np.histogram(xi, bins=self.num_points+1)
         x = (edges[1:] + edges[:-1]) / 2
         dx = x[1] - x[0]
@@ -71,6 +139,14 @@ class GeometricMTF(SpotDiagram):
         return mtf * scale_factor
 
     def _plot_field(self, ax, mtf_data, field, color):
+        """Plots the MTF data for a given field point.
+
+        Args:
+            ax (Axes): The matplotlib axes object.
+            mtf_data (ndarray): The MTF data for the field point.
+            field (tuple): The field point coordinates.
+            color (str): The color of the plotted lines.
+        """
         ax.plot(self.freq, mtf_data[0],
                 label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
                 color=color, linestyle='-')
@@ -80,6 +156,38 @@ class GeometricMTF(SpotDiagram):
 
 
 class FFTMTF:
+    """
+    Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
+
+    This class calculates and visualizes the Modulation Transfer Function (MTF)
+    of an optic using the Fast Fourier Transform (FFT) method.
+
+    Args:
+        optic (Optic): The optic for which to calculate the MTF.
+        fields (str or list, optional): The field coordinates for which to
+            calculate the MTF. Defaults to 'all'.
+        wavelength (str or float, optional): The wavelength of light to use
+            for the MTF calculation. Defaults to 'primary'.
+        num_rays (int, optional): The number of rays to use for the MTF
+            calculation. Defaults to 128.
+        grid_size (int, optional): The size of the grid used for the MTF
+            calculation. Defaults to 1024.
+        max_freq (str or float, optional): The maximum frequency for the MTF
+            calculation. Defaults to 'cutoff'.
+
+    Attributes:
+        optic (Optic): The optic for which the MTF is calculated.
+        fields (list): The field coordinates for which the MTF is calculated.
+        wavelength (float): The wavelength of light used for the MTF
+            calculation.
+        num_rays (int): The number of rays used for the MTF calculation.
+        grid_size (int): The size of the grid used for the MTF calculation.
+        max_freq (float): The maximum frequency for the MTF calculation.
+        FNO (float): The F-number of the optic.
+
+    Methods:
+        view(figsize=(12, 4), add_reference=False): Visualizes the MTF.
+    """
 
     def __init__(self, optic, fields='all', wavelength='primary',
                  num_rays=128, grid_size=1024, max_freq='cutoff'):
@@ -109,6 +217,15 @@ class FFTMTF:
         self.mtf = self._generate_mtf_data()
 
     def view(self, figsize=(12, 4), add_reference=False):
+        """
+        Visualizes the Modulation Transfer Function (MTF).
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (12, 4).
+            add_reference (bool, optional): Whether to add the diffraction
+                limit reference line. Defaults to False.
+        """
         dx = self._get_mtf_units()
         freq = np.arange(self.grid_size//2) * dx
 
@@ -133,6 +250,16 @@ class FFTMTF:
         plt.show()
 
     def _plot_field(self, ax, freq, mtf_data, field, color):
+        """
+        Plot the MTF data for a specific field.
+
+        Args:
+            ax (matplotlib.axes.Axes): The axes object to plot on.
+            freq (array-like): The frequency values.
+            mtf_data (array-like): The MTF data for the field.
+            field (tuple): The field values (Hx, Hy).
+            color (str): The color of the plot.
+        """
         ax.plot(freq, mtf_data[0],
                 label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
                 color=color, linestyle='-')
@@ -141,6 +268,15 @@ class FFTMTF:
                 color=color, linestyle='--')
 
     def _generate_mtf_data(self):
+        """
+        Generates the MTF (Modulation Transfer Function) data for each field.
+        The calculation is based on the PSF, which is calculated during
+        construction of the class.
+
+        Returns:
+            list: A list of MTF data for each field. Each MTF data is a list
+                containing the tangential and sagittal MTF values.
+        """
         mtf_data = [np.abs(np.fft.fftshift(np.fft.fft2(psf)))
                     for psf in self.psf]
         mtf = []
@@ -152,6 +288,13 @@ class FFTMTF:
         return mtf
 
     def _get_fno(self):
+        """
+        Calculate the effective F-number (FNO) of the optical system.
+        Applies a correction if the object is finite.
+
+        Returns:
+            float: The effective F-number of the optical system.
+        """
         FNO = self.optic.paraxial.FNO()
 
         if not self.optic.object_surface.is_infinite:
@@ -163,6 +306,13 @@ class FFTMTF:
         return FNO
 
     def _get_mtf_units(self):
+        """
+        Calculate the MTF (Modulation Transfer Function) units.
+
+        Returns:
+            float: The MTF units calculated based on the grid size, number
+                of rays, wavelength, and F-number.
+        """
         Q = self.grid_size / self.num_rays
         dx = Q / (self.wavelength * self.FNO)
 
