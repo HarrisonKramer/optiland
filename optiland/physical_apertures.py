@@ -1,3 +1,9 @@
+class BaseAperture:
+
+    def clip(self, rays):
+        return rays
+
+
 class RadialAperture:
 
     def __init__(self, r_max, r_min=0):
