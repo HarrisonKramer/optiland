@@ -77,6 +77,7 @@ class OptimizationProblem:
 
 
 class OptimizerGeneric:
+    # TODO: add norm and un-norm of parameters to make more robust
 
     def __init__(self, problem: OptimizationProblem):
         self.problem = problem
