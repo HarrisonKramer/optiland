@@ -4,6 +4,30 @@ from optiland.distribution import GaussianQuadrature
 
 
 class ParaxialOperand:
+    """
+    A class representing paraxial operands.
+
+    This class provides static methods to calculate various paraxial
+        properties of an optic.
+
+    Attributes:
+        None
+
+    Methods:
+        f1(optic): Returns the first focal length of the optic.
+        f2(optic): Returns the second focal length of the optic.
+        F1(optic): Returns the first principal plane distance of the optic.
+        F2(optic): Returns the second principal plane distance of the optic.
+        P1(optic): Returns the first principal point distance of the optic.
+        P2(optic): Returns the second principal point distance of the optic.
+        N1(optic): Returns the first nodal point distance of the optic.
+        N2(optic): Returns the second nodal point distance of the optic.
+        EPL(optic): Returns the entrance pupil distance of the optic.
+        EPD(optic): Returns the entrance pupil diameter of the optic.
+        XPL(optic): Returns the exit pupil distance of the optic.
+        XPD(optic): Returns the exit pupil diameter of the optic.
+        magnification(optic): Returns the magnification of the optic.
+    """
 
     @staticmethod
     def f1(optic):
@@ -59,7 +83,62 @@ class ParaxialOperand:
 
 
 class AberrationOperand:
+    """
+    A class that provides methods to calculate various aberration values for
+        an optic.
 
+    Methods:
+        seidels(optic, seidel_number): Returns the seidel aberration value for
+            the given seidel number.
+        TSC(optic, surface_number): Returns the third-order spherical
+            aberration value for the given surface number.
+        SC(optic, surface_number): Returns the spherical aberration value for
+            the given surface number.
+        CC(optic, surface_number): Returns the sagittal coma aberration value
+            for the given surface number.
+        TCC(optic, surface_number): Returns the tangential coma aberration
+            value for the given surface number.
+        TAC(optic, surface_number): Returns the tetrafoil aberration value for
+            the given surface number.
+        AC(optic, surface_number): Returns the astigmatism aberration value
+            for the given surface number.
+        TPC(optic, surface_number): Returns the third-order petzval aberration
+            value for the given surface number.
+        PC(optic, surface_number): Returns the petzval aberration value for
+            the given surface number.
+        DC(optic, surface_number): Returns the distortion aberration value for
+            the given surface number.
+        TAchC(optic, surface_number): Returns the third-order axial chromatic
+            aberration value for the given surface number.
+        LchC(optic, surface_number): Returns the longitudinal chromatic
+            aberration value for the given surface number.
+        TchC(optic, surface_number): Returns the transverse chromatic
+            aberration value for the given surface number.
+        TSC_sum(optic): Returns the sum of third-order
+            spherical aberration values for the optic.
+        SC_sum(optic): Returns the sum of spherical aberration
+            values for the optic.
+        CC_sum(optic): Returns the sum of sagittal coma
+            aberration values for the optic.
+        TCC_sum(optic): Returns the sum of tangential coma
+            aberration values for the optic.
+        TAC_sum(optic): Returns the sum of tetrafoil
+            aberration values for the optic.
+        AC_sum(optic): Returns the sum of astigmatism
+            aberration values for the optic.
+        TPC_sum(optic): Returns the sum of third-order petzval
+            aberration values for the optic.
+        PC_sum(optic): Returns the sum of petzval aberration
+            values for the optic.
+        DC_sum(optic): Returns the sum of distortion
+            aberration values for the optic.
+        TAchC_sum(optic): Returns the sum of third-order axial
+            chromatic aberration values for the optic.
+        LchC_sum(optic): Returns the sum of longitudinal
+            chromatic aberration values for the optic.
+        TchC_sum(optic): Returns the sum of transverse
+            chromatic aberration values for the optic.
+    """
     @staticmethod
     def seidels(optic, seidel_number):
         return optic.aberrations.seidels()[seidel_number-1]
@@ -113,89 +192,216 @@ class AberrationOperand:
         return optic.aberrations.TchC()[surface_number]
 
     @staticmethod
-    def TSC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TSC()[surface_number])
+    def TSC_sum(optic):
+        return np.sum(optic.aberrations.TSC())
 
     @staticmethod
-    def SC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.SC()[surface_number])
+    def SC_sum(optic):
+        return np.sum(optic.aberrations.SC())
 
     @staticmethod
-    def CC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.CC()[surface_number])
+    def CC_sum(optic):
+        return np.sum(optic.aberrations.CC())
 
     @staticmethod
-    def TCC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TCC()[surface_number])
+    def TCC_sum(optic):
+        return np.sum(optic.aberrations.TCC())
 
     @staticmethod
-    def TAC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TAC()[surface_number])
+    def TAC_sum(optic):
+        return np.sum(optic.aberrations.TAC())
 
     @staticmethod
-    def AC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.AC()[surface_number])
+    def AC_sum(optic):
+        return np.sum(optic.aberrations.AC())
 
     @staticmethod
-    def TPC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TPC()[surface_number])
+    def TPC_sum(optic):
+        return np.sum(optic.aberrations.TPC())
 
     @staticmethod
-    def PC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.PC()[surface_number])
+    def PC_sum(optic):
+        return np.sum(optic.aberrations.PC())
 
     @staticmethod
-    def DC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.DC()[surface_number])
+    def DC_sum(optic):
+        return np.sum(optic.aberrations.DC())
 
     @staticmethod
-    def TAchC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TAchC()[surface_number])
+    def TAchC_sum(optic):
+        return np.sum(optic.aberrations.TAchC())
 
     @staticmethod
-    def LchC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.LchC()[surface_number])
+    def LchC_sum(optic):
+        return np.sum(optic.aberrations.LchC())
 
     @staticmethod
-    def TchC_sum(optic, surface_number):
-        return np.sum(optic.aberrations.TchC()[surface_number])
+    def TchC_sum(optic):
+        return np.sum(optic.aberrations.TchC())
 
 
 class RayOperand:
+    """
+    A class that provides static methods for performing ray tracing
+        calculations on an optic.
+
+    Methods:
+        x_intercept: Calculates the x-coordinate of the intercept point on a
+            specific surface.
+        y_intercept: Calculates the y-coordinate of the intercept point on a
+            specific surface.
+        z_intercept: Calculates the z-coordinate of the intercept point on a
+            specific surface.
+        L: Calculates the direction cosine L of the ray on a specific surface.
+        M: Calculates the direction cosine M of the ray on a specific surface.
+        N: Calculates the direction cosine N of the ray on a specific surface.
+        rms_spot_size: Calculates the root mean square (RMS) spot size on a
+            specific surface.
+        OPD_difference: Calculates the optical path difference (OPD)
+            difference for a given ray distribution.
+    """
 
     @staticmethod
     def x_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the x-coordinate of the intercept point on a specific
+            surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The x-coordinate of the intercept point.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.x[surface_number, 0]
 
     @staticmethod
     def y_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the y-coordinate of the intercept point on a specific
+            surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The y-coordinate of the intercept point.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.y[surface_number, 0]
 
     @staticmethod
     def z_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the z-coordinate of the intercept point on a specific
+            surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The z-coordinate of the intercept point.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.z[surface_number, 0]
 
     @staticmethod
     def L(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the direction cosine L of the ray on a specific surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The direction cosine L of the ray.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.L[surface_number, 0]
 
     @staticmethod
     def M(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the direction cosine M of the ray on a specific surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The direction cosine M of the ray.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.M[surface_number, 0]
 
     @staticmethod
     def N(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the direction cosine N of the ray on a specific surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            Px: The x-coordinate of the point on the surface.
+            Py: The y-coordinate of the point on the surface.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The direction cosine N of the ray.
+        """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.N[surface_number, 0]
 
     @staticmethod
     def rms_spot_size(optic, surface_number, Hx, Hy, num_rays, wavelength,
                       distribution='hexapolar'):
+        """
+        Calculates the root mean square (RMS) spot size on a specific surface.
+
+        Parameters:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            num_rays: The number of rays to trace.
+            wavelength: The wavelength of the rays.
+            distribution: The distribution of the rays. Default is 'hexapolar'.
+
+        Returns:
+            The RMS spot size on the specified surface.
+        """
         optic.trace(Hx, Hy, wavelength, num_rays, distribution)
         x = optic.surface_group.x[surface_number, :].flatten()
         y = optic.surface_group.x[surface_number, :].flatten()
@@ -205,6 +411,22 @@ class RayOperand:
     @staticmethod
     def OPD_difference(optic, Hx, Hy, num_rays, wavelength,
                        distribution='gaussian_quad'):
+        """
+        Calculates the mean optical path difference (OPD) difference for a
+            given ray distribution.
+
+        Parameters:
+            optic: The optic object.
+            Hx: The x-coordinate of the incoming ray direction.
+            Hy: The y-coordinate of the incoming ray direction.
+            num_rays: The number of rays to trace.
+            wavelength: The wavelength of the rays.
+            distribution: The distribution of the rays.
+                Default is 'gaussian_quad'.
+
+        Returns:
+            The OPD difference for the given ray distribution.
+        """
         weights = 1.0
 
         if distribution == 'gaussian_quad':
@@ -274,6 +496,23 @@ METRIC_DICT = {
 
 
 class Operand(object):
+    """
+    Represents an operand used in optimization calculations.
+
+    Attributes:
+        type (str): The type of the operand.
+        target (float): The target value for the operand.
+        weight (float): The weight of the operand.
+        input_data (dict): Additional input data for the operand's metric
+            function.
+        metric_dict (dict): A dictionary mapping operand types to metric
+            functions.
+
+    Methods:
+        value(): Get the current value of the operand.
+        delta(): Calculate the difference between the target and current value.
+        fun(): Calculate the objective function value.
+    """
 
     def __init__(self, operand_type, target, weight, input_data={},
                  metric_dict=METRIC_DICT):
@@ -285,7 +524,7 @@ class Operand(object):
 
     @property
     def value(self):
-        '''Get current value of the operand'''
+        """Get current value of the operand"""
         metric_function = self.metric_dict.get(self.type)
         if metric_function:
             return metric_function(**self.input_data)
@@ -293,9 +532,9 @@ class Operand(object):
             raise ValueError(f'Unknown operand type: {self.type}')
 
     def delta(self):
-        '''delta between target and current value'''
+        """Calculate the difference between the target and current value"""
         return (self.value - self.target)
 
     def fun(self):
-        '''return objective function value'''
+        """Calculate the objective function value"""
         return self.weight * self.delta()
