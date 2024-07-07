@@ -2,62 +2,62 @@ import numpy as np
 from optiland import optic
 
 
-def Edmund_49_847():
+class Edmund_49_847(optic.Optic):
     """Edmund optics 49-847"""
-    lens = optic.Optic()
 
-    # add surfaces
-    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    lens.add_surface(index=1, thickness=7, radius=19.93, is_stop=True,
-                     material='N-SF11')
-    lens.add_surface(index=2, thickness=21.48)
-    lens.add_surface(index=3)
+    def __init__(self):
+        super().__init__()
 
-    # add aperture
-    lens.set_aperture(aperture_type='EPD', value=25.4)
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, thickness=7, radius=19.93, is_stop=True,
+                         material='N-SF11')
+        self.add_surface(index=2, thickness=21.48)
+        self.add_surface(index=3)
 
-    # add field
-    lens.set_field_type(field_type='angle')
-    lens.add_field(y=0)
-    lens.add_field(y=10)
-    lens.add_field(y=14)
+        # add aperture
+        self.set_aperture(aperture_type='EPD', value=25.4)
 
-    # add wavelength
-    lens.add_wavelength(value=0.48613270)
-    lens.add_wavelength(value=0.58756180, is_primary=True)
-    lens.add_wavelength(value=0.65627250)
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=10)
+        self.add_field(y=14)
 
-    lens.update_paraxial()
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
 
-    return lens
+        self.update_paraxial()
 
 
-def singlet_stop_surf2():
+class SingletStopSurf2(optic.Optic):
     """A simple singlet with the stop on surface 2"""
-    lens = optic.Optic()
 
-    # add surfaces
-    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    lens.add_surface(index=1, thickness=10.0, radius=63.73364157,
-                     material='LAC9')
-    lens.add_surface(index=2, thickness=92.73834630, radius=653.29392320,
-                     is_stop=True)
-    lens.add_surface(index=3)
+    def __init__(self):
+        super().__init__()
 
-    # add aperture
-    lens.set_aperture(aperture_type='EPD', value=25.0)
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, thickness=10.0, radius=63.73364157,
+                         material='LAC9')
+        self.add_surface(index=2, thickness=92.73834630, radius=653.29392320,
+                         is_stop=True)
+        self.add_surface(index=3)
 
-    # add field
-    lens.set_field_type(field_type='angle')
-    lens.add_field(y=0)
-    lens.add_field(y=3.5)
-    lens.add_field(y=5)
+        # add aperture
+        self.set_aperture(aperture_type='EPD', value=25.0)
 
-    # add wavelength
-    lens.add_wavelength(value=0.48613270)
-    lens.add_wavelength(value=0.58756180, is_primary=True)
-    lens.add_wavelength(value=0.65627250)
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=3.5)
+        self.add_field(y=5)
 
-    lens.update_paraxial()
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
 
-    return lens
+        self.update_paraxial()
