@@ -18,6 +18,7 @@ classifiers = [
 dependencies = [
     "numpy",
     "scipy",
+    "pandas",
     "pyyaml",
     "matplotlib",
     "vtk",
