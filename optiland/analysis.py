@@ -161,6 +161,16 @@ class SpotDiagram:
         return rms
 
     def _center_spots(self, data):
+        """
+        Centers the spots in the given data around their respective centroids.
+
+        Args:
+            data (List): A nested list representing the data containing spots.
+
+        Returns:
+            data (List): A nested list with the spots centered around their
+                centroids.
+        """
         centroids = self.centroid()
         data = deepcopy(self.data)
         for i, field_data in enumerate(data):
@@ -171,6 +181,21 @@ class SpotDiagram:
 
     def _generate_data(self, fields, wavelengths, num_rays=100,
                        distribution='hexapolar'):
+        """
+        Generate spot data for the given fields and wavelengths.
+
+        Args:
+            fields (List): A list of fields.
+            wavelengths (List): A list of wavelengths.
+            num_rays (int, optional): The number of rays to generate.
+                Defaults to 100.
+            distribution (str, optional): The distribution type.
+                Defaults to 'hexapolar'.
+
+        Returns:
+            data (List): A nested list of spot intersection data for each
+                field and wavelength.
+        """
         data = []
         for field in fields:
             field_data = []
@@ -184,6 +209,21 @@ class SpotDiagram:
 
     def _generate_field_data(self, field, wavelength, num_rays=100,
                              distribution='hexapolar'):
+        """
+        Generates spot data for a given field and wavelength.
+
+        Args:
+            field (tuple): Tuple containing the field coordinates in (x, y).
+            wavelength (float): The wavelength of the field.
+            num_rays (int, optional): The number of rays to generate.
+                Defaults to 100.
+            distribution (str, optional): The distribution pattern of the
+                rays. Defaults to 'hexapolar'.
+
+        Returns:
+            list: A list containing the x, y, and energy values of the
+                generated spot data.
+        """
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
@@ -192,6 +232,23 @@ class SpotDiagram:
 
     def _plot_field(self, ax, field_data, field, axis_lim,
                     wavelengths, buffer=1.05):
+        """
+        Plot the field data on the given axis.
+
+        Parameters:
+            ax (matplotlib.axes.Axes): The axis to plot the field data on.
+            field_data (list): List of tuples containing x, y, and energy
+                data points.
+            field (tuple): Tuple containing the Hx and Hy field values.
+            axis_lim (float): Limit of the x and y axis.
+            wavelengths (list): List of wavelengths corresponding to the
+                field data.
+            buffer (float, optional): Buffer factor to extend the axis limits.
+                Default is 1.05.
+
+        Returns:
+            None
+        """
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
             x, y, energy = points
