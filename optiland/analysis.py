@@ -419,6 +419,28 @@ class EncircledEnergy(SpotDiagram):
 
 
 class RayFan:
+    """
+    Represents a ray fan aberration analysis for an optic.
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        fields (str or list, optional): The fields to analyze.
+            Defaults to 'all'.
+        wavelengths (str or list, optional): The wavelengths to analyze.
+            Defaults to 'all'.
+        num_points (int, optional): The number of points in the ray fan.
+            Defaults to 256.
+
+    Attributes:
+        optic (Optic): The optic object being analyzed.
+        fields (list): The fields being analyzed.
+        wavelengths (list): The wavelengths being analyzed.
+        num_points (int): The number of points in the ray fan.
+        data (dict): The generated ray fan data.
+
+    Methods:
+        view(figsize=(10, 3.33)): Displays the ray fan plot.
+    """
 
     def __init__(self, optic, fields='all', wavelengths='all', num_points=256):
         self.optic = optic
@@ -437,6 +459,13 @@ class RayFan:
         self.data = self._generate_data()
 
     def view(self, figsize=(10, 3.33)):
+        """
+        Displays the ray fan plot.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (10, 3.33).
+        """
         _, axs = plt.subplots(nrows=len(self.fields), ncols=2,
                               figsize=(figsize[0],
                                        figsize[1]*len(self.fields)),
@@ -481,6 +510,12 @@ class RayFan:
         plt.show()
 
     def _generate_data(self):
+        """
+        Generates the ray fan data.
+
+        Returns:
+            dict: The generated ray fan data.
+        """
         data = {}
         data['Px'] = np.linspace(-1, 1, self.num_points)
         data['Py'] = np.linspace(-1, 1, self.num_points)
@@ -523,6 +558,17 @@ class RayFan:
 
 
 class YYbar:
+    """
+    Class representing the YYbar analysis of an optic.
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        wavelength (str, optional): The wavelength to use for analysis.
+            Defaults to 'primary'.
+
+    Methods:
+        view(figsize=(7, 5.5)): Visualizes the YYbar analysis.
+    """
 
     def __init__(self, optic, wavelength='primary'):
         self.optic = optic
@@ -531,6 +577,13 @@ class YYbar:
         self.wavelength = wavelength
 
     def view(self, figsize=(7, 5.5)):
+        """
+        Visualizes the ray heights of the marginal and chief rays.
+
+        Parameters:
+            figsize (tuple): The size of the figure (width, height).
+                Default is (7, 5.5).
+        """
         _, ax = plt.subplots(figsize=figsize)
 
         ya, _ = self.optic.paraxial.marginal_ray()
@@ -557,6 +610,28 @@ class YYbar:
 
 
 class Distortion:
+    """
+    Represents a distortion analysis for an optic.
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        wavelengths (str or list, optional): The wavelengths to analyze.
+            Defaults to 'all'.
+        num_points (int, optional): The number of points to generate for the
+            analysis. Defaults to 128.
+        distortion_type (str, optional): The type of distortion analysis.
+            Defaults to 'f-tan'.
+
+    Attributes:
+        optic (Optic): The optic object being analyzed.
+        wavelengths (list): The wavelengths being analyzed.
+        num_points (int): The number of points generated for the analysis.
+        distortion_type (str): The type of distortion analysis.
+        data (list): The generated distortion data.
+
+    Methods:
+        view(figsize=(7, 5.5)): Visualizes the distortion analysis.
+    """
 
     def __init__(self, optic, wavelengths='all', num_points=128,
                  distortion_type='f-tan'):
@@ -569,6 +644,12 @@ class Distortion:
         self.data = self._generate_data()
 
     def view(self, figsize=(7, 5.5)):
+        """
+        Visualize the distortion analysis.
+
+        Args:
+            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+        """
         _, ax = plt.subplots(figsize=figsize)
         ax.axvline(x=0, color='k', linewidth=1, linestyle='--')
 
@@ -586,6 +667,14 @@ class Distortion:
         plt.show()
 
     def _generate_data(self):
+        """
+        Generate data for analysis.
+
+        This method generates the distortion data to be used for plotting.
+
+        Returns:
+            list: A list of distortion data points.
+        """
         Hx = np.zeros(self.num_points)
         Hy = np.linspace(1e-10, 1, self.num_points)
 
@@ -614,6 +703,28 @@ class Distortion:
 
 
 class GridDistortion:
+    """
+    Represents a grid distortion analysis for an optical system.
+
+    Args:
+        optic (Optic): The optical system to analyze.
+        wavelength (str, optional): The wavelength of light to use for
+            analysis. Defaults to 'primary'.
+        num_points (int, optional): The number of points along each axis of the
+            grid. Defaults to 10.
+        distortion_type (str, optional): The type of distortion to analyze.
+            Must be 'f-tan' or 'f-theta'. Defaults to 'f-tan'.
+
+    Attributes:
+        optic (Optic): The optical system being analyzed.
+        wavelength (str): The wavelength of light used for analysis.
+        num_points (int): The number of points in the grid.
+        distortion_type (str): The type of distortion being analyzed.
+        data (dict): The generated data for the analysis.
+
+    Methods:
+        view(figsize=(7, 5.5)): Visualizes the grid distortion analysis.
+    """
 
     def __init__(self, optic, wavelength='primary', num_points=10,
                  distortion_type='f-tan'):
@@ -626,6 +737,13 @@ class GridDistortion:
         self.data = self._generate_data()
 
     def view(self, figsize=(7, 5.5)):
+        """
+        Visualizes the grid distortion analysis.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (7, 5.5).
+        """
         fig, ax = plt.subplots(figsize=figsize)
 
         ax.plot(self.data['xp'], self.data['yp'], 'C1', linewidth=1)
@@ -647,6 +765,15 @@ class GridDistortion:
         plt.show()
 
     def _generate_data(self):
+        """
+        Generates the data for the grid distortion analysis.
+
+        Returns:
+            dict: The generated data.
+
+        Raises:
+            ValueError: If the distortion type is not 'f-tan' or 'f-theta'.
+        """
         # trace single reference ray
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0,
                                  wavelength=self.wavelength)
@@ -694,6 +821,26 @@ class GridDistortion:
 
 
 class FieldCurvature:
+    """
+    Represents a class for analyzing field curvature of an optic.
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        wavelengths (str or list, optional): The wavelengths to analyze.
+            Defaults to 'all'.
+        num_points (int, optional): The number of points to generate for the
+            analysis. Defaults to 128.
+
+    Attributes:
+        optic (Optic): The optic object being analyzed.
+        wavelengths (list): The wavelengths being analyzed.
+        num_points (int): The number of points generated for the analysis.
+        data (list): The generated data for the analysis.
+
+    Methods:
+        view(figsize=(8, 5.5)): Displays a plot of the field curvature
+            analysis.
+    """
 
     def __init__(self, optic, wavelengths='all', num_points=128):
         self.optic = optic
@@ -704,6 +851,13 @@ class FieldCurvature:
         self.data = self._generate_data()
 
     def view(self, figsize=(8, 5.5)):
+        """
+        Displays a plot of the field curvature analysis.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (8, 5.5).
+        """
         fig, ax = plt.subplots(figsize=figsize)
 
         field = np.linspace(0, self.optic.fields.max_field, self.num_points)
@@ -727,6 +881,14 @@ class FieldCurvature:
         plt.show()
 
     def _generate_data(self):
+        """
+        Generates field curvature data for each wavelength by calculating the
+            tangential and sagittal intersections.
+
+        Returns:
+            list: A list of np.ndarry containing the tangential and sagittal
+                intersection points for each wavelength.
+        """
         data = []
         for wavelength in self.wavelengths:
             tangential = self._intersection_parabasal_tangential(wavelength)
@@ -737,6 +899,17 @@ class FieldCurvature:
         return data
 
     def _intersection_parabasal_tangential(self, wavelength, delta=1e-5):
+        """
+        Calculate the intersection of parabasal rays in tangential plane.
+
+        Args:
+            wavelength (float): The wavelength of the light.
+            delta (float, optional): The delta value in normalized pupil y
+                coordinates for pairs of parabasal rays. Defaults to 1e-5.
+
+        Returns:
+            numpy.ndarray: The calculated intersection values.
+        """
         Hx = np.zeros(2 * self.num_points)
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
 
@@ -762,6 +935,17 @@ class FieldCurvature:
         return t1 * N1
 
     def _intersection_parabasal_sagittal(self, wavelength, delta=1e-5):
+        """
+        Calculate the intersection of parabasal rays in sagittal plane.
+
+        Args:
+            wavelength (float): The wavelength of the light.
+            delta (float, optional): The delta value in normalized pupil y
+                coordinates for pairs of parabasal rays. Defaults to 1e-5.
+
+        Returns:
+            numpy.ndarray: The calculated intersection values.
+        """
         Hx = np.zeros(2 * self.num_points)
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
 
