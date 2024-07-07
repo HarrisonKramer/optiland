@@ -90,22 +90,22 @@ class AberrationOperand:
     Methods:
         seidels(optic, seidel_number): Returns the seidel aberration value for
             the given seidel number.
-        TSC(optic, surface_number): Returns the third-order spherical
+        TSC(optic, surface_number): Returns the third-order transverse
+            spherical aberration value for the given surface number.
+        SC(optic, surface_number): Returns the longitudinal spherical
             aberration value for the given surface number.
-        SC(optic, surface_number): Returns the spherical aberration value for
-            the given surface number.
         CC(optic, surface_number): Returns the sagittal coma aberration value
             for the given surface number.
         TCC(optic, surface_number): Returns the tangential coma aberration
             value for the given surface number.
-        TAC(optic, surface_number): Returns the tetrafoil aberration value for
-            the given surface number.
-        AC(optic, surface_number): Returns the astigmatism aberration value
+        TAC(optic, surface_number): Returns the transverse astigmatism value
             for the given surface number.
-        TPC(optic, surface_number): Returns the third-order petzval aberration
+        AC(optic, surface_number): Returns the longitudinal astigmatism value
+            for the given surface number.
+        TPC(optic, surface_number): Returns the transverse Petzval sum
             value for the given surface number.
-        PC(optic, surface_number): Returns the petzval aberration value for
-            the given surface number.
+        PC(optic, surface_number): Returns the longitudinal Petzval sum value
+            for the given surface number.
         DC(optic, surface_number): Returns the distortion aberration value for
             the given surface number.
         TAchC(optic, surface_number): Returns the third-order axial chromatic
@@ -114,21 +114,21 @@ class AberrationOperand:
             aberration value for the given surface number.
         TchC(optic, surface_number): Returns the transverse chromatic
             aberration value for the given surface number.
-        TSC_sum(optic): Returns the sum of third-order
+        TSC_sum(optic): Returns the sum of third-order transverse
             spherical aberration values for the optic.
-        SC_sum(optic): Returns the sum of spherical aberration
+        SC_sum(optic): Returns the sum of longitudinal spherical aberration
             values for the optic.
         CC_sum(optic): Returns the sum of sagittal coma
             aberration values for the optic.
         TCC_sum(optic): Returns the sum of tangential coma
             aberration values for the optic.
-        TAC_sum(optic): Returns the sum of tetrafoil
+        TAC_sum(optic): Returns the sum of transverse astigmatism
             aberration values for the optic.
-        AC_sum(optic): Returns the sum of astigmatism
+        AC_sum(optic): Returns the sum of longitudinal astigmatism
             aberration values for the optic.
-        TPC_sum(optic): Returns the sum of third-order petzval
+        TPC_sum(optic): Returns the sum of transverse Petzval sum
             aberration values for the optic.
-        PC_sum(optic): Returns the sum of petzval aberration
+        PC_sum(optic): Returns the sum of longitudinal Petzval sum
             values for the optic.
         DC_sum(optic): Returns the sum of distortion
             aberration values for the optic.
