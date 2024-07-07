@@ -1,3 +1,20 @@
+"""Optiland Operand Module
+
+This module gives various operands to be used during lens optimization. These
+include paraxial, real ray, aberrations, wavefront, spot size, and many other
+operand types.
+
+In general, to use one of these operands in optimization, you
+can simply do the following:
+    1. Identify the key in the METRIC_DICT variable, or add your new operand.
+    2. Identify the input data dictionary that is required for the calculation
+       of this operand.
+    3. Add the operand to your optimization.OptimizationProblem instance using
+       the add_operand method. Include the operand type, target, weight, and
+       the input data (in dict format). See examples.
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 from optiland import wavefront
 from optiland.distribution import GaussianQuadrature
