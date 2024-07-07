@@ -1,3 +1,14 @@
+"""Optiland Surfaces Module
+
+This module defines the `Surface` class, which represents a surface in an
+optical system. Surfaces are characterized by their geometry, materials before
+and after the surface, and optional properties such as being an aperture stop,
+having a physical aperture, and a coating. The module facilitates the tracing
+of rays through these surfaces, accounting for refraction, reflection, and
+absorption based on the surface properties and materials involved.
+
+Kramer Harrison, 2023
+"""
 from typing import List
 from copy import deepcopy
 import numpy as np
@@ -306,8 +317,8 @@ class ReflectiveSurface(Surface):
             6. Records the traced rays.
 
         Note:
-        - The paraxial rays are modified in-place.
-        - The surface geometry must be set before calling this method.
+            The paraxial rays are modified in-place.
+            The surface geometry must be set before calling this method.
         """
         # reset recorded information
         self.reset()
