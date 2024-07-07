@@ -99,7 +99,7 @@ class Surface:
         """
         dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
-        return np.arccos(dot) / 2
+        return np.arccos(dot)
 
     def _record(self, rays):
         """
@@ -218,17 +218,19 @@ class Surface:
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
 
-        # record initial direction cosines
-        L0 = np.copy(np.atleast_1d(rays.L))
-        M0 = np.copy(np.atleast_1d(rays.M))
-        N0 = np.copy(np.atleast_1d(rays.N))
+        # record initial direction cosines. Only needed if coating is applied
+        if self.coating:
+            L0 = np.copy(np.atleast_1d(rays.L))
+            M0 = np.copy(np.atleast_1d(rays.M))
+            N0 = np.copy(np.atleast_1d(rays.N))
+            aoi = self._compute_aoi(rays, nx, ny, nz)
 
         # Interact with surface (refract or reflect)
         rays = self._interact(rays, nx, ny, nz)
 
         # if there is a coating, modify ray properties
         if self.coating:
-            rays = self.coating.interact(rays, L0, M0, N0)
+            rays = self.coating.interact(rays, aoi, L0, M0, N0)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)

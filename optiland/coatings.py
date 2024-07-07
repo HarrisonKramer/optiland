@@ -5,8 +5,8 @@ from optiland.rays import RealRays
 class BaseCoating:
 
     # TODO - finalize and verify correctness
-    def interact(self, rays: RealRays, L0: np.ndarray, M0: np.ndarray,
-                 N0: np.ndarray):
+    def interact(self, rays: RealRays, aoi: np.ndarray,
+                 L0: np.ndarray, M0: np.ndarray, N0: np.ndarray):
         # merge k-vector components into matrix for speed
         k0 = np.array([L0, M0, N0]).T
         k1 = np.array([rays.L, rays.M, rays.N]).T
