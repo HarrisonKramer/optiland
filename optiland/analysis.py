@@ -1,4 +1,4 @@
-"""Optiland Analsysis Module
+"""Optiland Analysis Module
 
 This module provides several common optical analyses, including:
     - Spot diagrams
