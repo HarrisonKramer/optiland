@@ -6,7 +6,7 @@ from optiland.samples.objectives import (
     double_Gauss,
     reverse_telephoto
 )
-from optiland.samples.eyepieces import eyepiece_Erfle
+from optiland.samples.eyepieces import EyepieceErfle
 
 
 @pytest.mark.parametrize('optic, target',
@@ -15,7 +15,7 @@ from optiland.samples.eyepieces import eyepiece_Erfle
                           (Cooke_triplet, ),
                           (double_Gauss, ),
                           (reverse_telephoto, ),
-                          (eyepiece_Erfle, )])
+                          (EyepieceErfle, )])
 def test_f1(optic, target):
     assert np.allclose(optic.paraxial.f1(), target)
 
