@@ -1,4 +1,47 @@
+"""Optiland Distribution Module
+
+This module defines the `Variable` class, which represents a variable
+parameter within an optical system. These variables can include properties
+such as radius, conic constant, thickness, and refractive index of surfaces
+within the system. The `Variable` class provides methods to get and set the
+values of these parameters, as well as to update them within the context of
+the optical system's overall configuration.
+
+Kramer Harrison, 2024
+"""
+
+
 class Variable:
+    """
+    Represents a variable in an optical system.
+
+    Args:
+        optic (OpticalSystem): The optical system to which the variable
+            belongs.
+        type (str): The type of the variable. Valid types are 'radius',
+            'conic', 'thickness', and 'index'.
+        **kwargs: Additional keyword arguments to be stored as attributes of
+            the variable.
+
+    Attributes:
+        optic (OpticalSystem): The optical system to which the variable
+            belongs.
+        type (str): The type of the variable.
+        min_val (float or None): The minimum value allowed for the variable.
+            Defaults to None.
+        max_val (float or None): The maximum value allowed for the variable.
+            Defaults to None.
+
+    Properties:
+        value: The current value of the variable.
+        bounds: The bounds of the variable.
+
+    Methods:
+        update(new_value): Updates the variable to a new value.
+
+    Raises:
+        ValueError: If an invalid variable type is provided.
+    """
 
     def __init__(self, optic, type, **kwargs):
         self.__dict__.update(kwargs)
@@ -15,6 +58,14 @@ class Variable:
 
     @property
     def value(self):
+        """Return the value of the variable.
+
+        Returns:
+            float: The value of the variable.
+
+        Raises:
+            ValueError: If the variable type is invalid.
+        """
         if self.type == 'radius':
             return self._surfaces.radii[self.surface_number]
         elif self.type == 'conic':
@@ -29,11 +80,22 @@ class Variable:
 
     @property
     def bounds(self):
-        '''return the bounds of the variable'''
+        """Returns the bounds of the variable as a tuple.
+
+        Returns:
+            tuple: the bounds of the variable
+        """
         return (self.min_val, self.max_val)
 
     def update(self, new_value):
-        '''update variable to a new value'''
+        """Update variable to a new value.
+
+        Args:
+            new_value (float): The new value with which to update the variable.
+
+        Raises:
+            ValueError: If the variable type is invalid.
+        """
         if self.type == 'radius':
             self.optic.set_radius(new_value, self.surface_number)
         elif self.type == 'conic':
