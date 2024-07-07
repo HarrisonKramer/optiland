@@ -72,7 +72,7 @@ class FieldGroup:
         max_field = self.max_field
         if max_field == 0:
             return [(0, 0)]
-        return [(x/max_field, y/max_field)
+        return [(float(x/max_field), float(y/max_field))
                 for x, y in zip(self.x_fields, self.y_fields)]
 
     def add_field(self, field):
