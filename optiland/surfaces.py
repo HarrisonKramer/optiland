@@ -2,14 +2,35 @@ from copy import deepcopy
 import numpy as np
 from optiland.rays import BaseRays, RealRays, ParaxialRays
 from optiland.coordinate_system import CoordinateSystem
-from optiland.geometries import Plane, StandardGeometry
-from optiland import materials
+from optiland.geometries import Plane, StandardGeometry, BaseGeometry
+from optiland.materials import BaseMaterial, IdealMaterial, Material
+from optiland.physical_apertures import BaseAperture
+from optiland.coatings import BaseCoating
 
 
 class Surface:
+    """
+    Represents a surface in an optical system.
 
-    def __init__(self, geometry, material_pre, material_post,
-                 is_stop=False, aperture=None, coating=None):
+    Args:
+        geometry (BaseGeometry): The geometry of the surface.
+        material_pre (BaseMaterial): The material before the surface.
+        material_post (BaseMaterial): The material after the surface.
+        is_stop (bool, optional): Indicates if the surface is the aperture
+            stop. Defaults to False.
+        aperture (BaseAperture, optional): The physical aperture of the
+            surface. Defaults to None.
+        coating (BaseCoating, optional): The coating applied to the surface.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 geometry: BaseGeometry,
+                 material_pre: BaseMaterial,
+                 material_post: BaseMaterial,
+                 is_stop: bool = False,
+                 aperture: BaseAperture = None,
+                 coating: BaseCoating = None):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
@@ -21,15 +42,33 @@ class Surface:
         self.reset()
 
     def trace(self, rays: BaseRays):
+        """
+        Traces the given rays through the surface.
+
+        Args:
+            rays (BaseRays): The rays to be traced.
+
+        Returns:
+            BaseRays: The traced rays.
+        """
         if isinstance(rays, ParaxialRays):
             return self._trace_paraxial(rays)
         elif isinstance(rays, RealRays):
             return self._trace_real(rays)
 
     def set_semi_aperture(self, r_max: float):
+        """
+        Sets the physical semi-aperture of the surface.
+
+        Args:
+            r_max (float): The maximum radius of the semi-aperture.
+        """
         self.semi_aperture = r_max
 
     def reset(self):
+        """
+        Resets the recorded information of the surface.
+        """
         self.y = np.empty(0)
         self.u = np.empty(0)
         self.x = np.empty(0)
@@ -45,11 +84,29 @@ class Surface:
         self.opd = np.empty(0)
 
     def _compute_aoi(self, rays, nx, ny, nz):
+        """
+        Computes the angle of incidence for the given rays and surface normals.
+
+        Args:
+            rays: The rays.
+            nx: The x-component of the surface normals.
+            ny: The y-component of the surface normals.
+            nz: The z-component of the surface normals.
+
+        Returns:
+            np.ndarray: The angle of incidence for each ray.
+        """
         dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
         return np.arccos(dot) / 2
 
     def _record(self, rays):
+        """
+        Records the ray information.
+
+        Args:
+            rays: The rays.
+        """
         if isinstance(rays, ParaxialRays):
             self.y = np.copy(np.atleast_1d(rays.y))
             self.u = np.copy(np.atleast_1d(rays.u))
@@ -66,7 +123,18 @@ class Surface:
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays, nx, ny, nz):
-        """Refract"""
+        """
+        Interacts the rays with the surface by refracting them.
+
+        Args:
+            rays: The rays.
+            nx: The x-component of the surface normals.
+            ny: The y-component of the surface normals.
+            nz: The z-component of the surface normals.
+
+        Returns:
+            BaseRays: The refracted rays.
+        """
         ix = rays.L
         iy = rays.M
         iz = rays.N
@@ -88,6 +156,12 @@ class Surface:
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays):
+        """
+        Traces paraxial rays through the surface.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays to be traced.
+        """
         # reset recorded information
         self.reset()
 
@@ -112,6 +186,15 @@ class Surface:
         self._record(rays)
 
     def _trace_real(self, rays: RealRays):
+        """
+        Traces real rays through the surface.
+
+        Args:
+            rays (RealRays): The real rays to be traced.
+
+        Returns:
+            RealRays: The traced real rays.
+        """
         # reset recorded information
         self.reset()
 
@@ -156,8 +239,23 @@ class Surface:
 
 
 class ReflectiveSurface(Surface):
+    """
+    A class representing a reflective surface.
 
-    def __init__(self, geometry, material_pre, is_stop=False, aperture=None):
+    Inherits from the Surface class and provides methods for reflecting rays
+    on the surface.
+
+    Args:
+        geometry (BaseGeometry): The geometry of the surface.
+        material_pre (BaseMaterial): The material before the surface.
+        is_stop (bool, optional): Indicates if the surface is the aperture
+            stop. Defaults to False.
+        aperture (float, optional): The physical aperture of the surface.
+            Defaults to None.
+    """
+
+    def __init__(self, geometry: BaseGeometry, material_pre: BaseMaterial,
+                 is_stop: bool = False, aperture: BaseAperture = None):
         super().__init__(
             geometry=geometry,
             material_pre=material_pre,
@@ -167,7 +265,18 @@ class ReflectiveSurface(Surface):
         )
 
     def _interact(self, rays, nx, ny, nz):
-        """Reflect on surface"""
+        """
+        Reflects the rays on the surface.
+
+        Args:
+            rays: The rays to be reflected.
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            RealRays: The reflected rays.
+        """
         dot = rays.L * nx + rays.M * ny + rays.N * nz
         rays.L -= 2 * dot * nx
         rays.M -= 2 * dot * ny
@@ -175,6 +284,28 @@ class ReflectiveSurface(Surface):
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays):
+        """
+        Trace paraxial rays through the surface.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays to be traced.
+
+        Returns:
+            None
+
+        This method traces the given paraxial rays through the surface.
+        It performs the following steps:
+            1. Resets the recorded information.
+            2. Localizes the coordinate system based on the surface geometry.
+            3. Propagates the rays to the surface.
+            4. Reflects the rays using the paraxial equations.
+            5. Globalizes the coordinate system based on the surface geometry.
+            6. Records the traced rays.
+
+        Note:
+        - The paraxial rays are modified in-place.
+        - The surface geometry must be set before calling this method.
+        """
         # reset recorded information
         self.reset()
 
@@ -195,6 +326,18 @@ class ReflectiveSurface(Surface):
 
 
 class ObjectSurface(Surface):
+    """
+    Represents an object surface in an optical system.
+
+    Args:
+        geometry (Geometry): The geometry of the surface.
+        material_post (Material): The material of the surface after
+            interaction.
+
+    Attributes:
+        is_infinite (bool): Indicates whether the surface is infinitely
+            far away.
+    """
 
     def __init__(self, geometry, material_post):
         super().__init__(
@@ -207,12 +350,27 @@ class ObjectSurface(Surface):
 
     @property
     def is_infinite(self):
+        """
+        Returns True if the surface is infinitely far away, False otherwise.
+        """
         return np.isinf(self.geometry.cs.z)
 
     def set_aperture(self):
+        """
+        Sets the aperture of the surface.
+        """
         pass
 
     def trace(self, rays):
+        """
+        Traces the given rays through the surface.
+
+        Args:
+            rays (Rays): The rays to be traced.
+
+        Returns:
+            Rays: The traced rays.
+        """
         # reset recorded information
         self.reset()
 
@@ -222,18 +380,52 @@ class ObjectSurface(Surface):
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays):
+        """
+        Traces the given paraxial rays through the surface.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays to be traced.
+        """
         pass
 
-    def _trace_real(self, rays: ParaxialRays):
+    def _trace_real(self, rays: RealRays):
+        """
+        Traces the given real rays through the surface.
+
+        Args:
+            rays (RealRays): The real rays to be traced.
+        """
         pass
 
     def _interact(self, rays, nx, ny, nz):
+        """
+        Interacts the given rays with the surface.
+
+        Args:
+            rays (Rays): The rays to be interacted.
+            nx (float): The x-component of the surface normal.
+            ny (float): The y-component of the surface normal.
+            nz (float): The z-component of the surface normal.
+
+        Returns:
+            Rays: The interacted rays.
+        """
         return rays
 
 
 class ImageSurface(Surface):
+    """
+    Represents an image surface in an optical system.
 
-    def __init__(self, geometry, material_pre, aperture=None):
+    Args:
+        geometry (BaseGeometry): The geometry of the surface.
+        material_pre (BaseMaterial): The material before the surface.
+        aperture (BaseAperture, optional): The aperture of the surface.
+            Defaults to None.
+    """
+
+    def __init__(self, geometry: BaseGeometry, material_pre: BaseMaterial,
+                 aperture: BaseAperture = None):
         super().__init__(
             geometry=geometry,
             material_pre=material_pre,
@@ -243,6 +435,15 @@ class ImageSurface(Surface):
         )
 
     def _trace_paraxial(self, rays: ParaxialRays):
+        """
+        Traces paraxial rays through the surface.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays to be traced.
+
+        Returns:
+            None
+        """
         # reset recorded information
         self.reset()
 
@@ -256,6 +457,18 @@ class ImageSurface(Surface):
         self._record(rays)
 
     def _interact(self, rays, nx, ny, nz):
+        """
+        Interacts rays with the surface.
+
+        Args:
+            rays: The rays to be interacted with the surface.
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            The modified rays after interaction with the surface.
+        """
         return rays
 
 
@@ -412,16 +625,16 @@ class SurfaceGroup:
         return geometry
 
     def _configure_material(self, index, material):
-        if isinstance(material, materials.BaseMaterial):
+        if isinstance(material, BaseMaterial):
             material_post = material
         elif isinstance(material, tuple):
-            material_post = materials.Material(name=material[0],
-                                               reference=material[1])
+            material_post = Material(name=material[0],
+                                     reference=material[1])
         elif isinstance(material, str):
             if material in ['mirror', 'air']:
-                material_post = materials.IdealMaterial(n=1.0, k=0.0)
+                material_post = IdealMaterial(n=1.0, k=0.0)
             else:
-                material_post = materials.Material(material)
+                material_post = Material(material)
 
         if index == 0:
             material_pre = None
