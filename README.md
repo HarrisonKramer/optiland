@@ -71,6 +71,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Magnification
         - F-Number, Entrance/Exit pupil sizes & positions
         - Focal, Principal, and Nodal points, etc.
+    - Tutorial 1c - Monte Carlo Raytracing Methods - Update in progress
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system
@@ -84,9 +85,11 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Y-Ybar plots
         - Distortion / Grid distortion plots
         - Field curvature plots
-    - [Tutorial 3b - 1st & 3rd Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
-        - Calculation of seidel & 1st/3rd order aberrations
-4. **OPD, PSF & MTF**
+    - [Tutorial 3b - 1st & 3rd-Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
+        - Calculation of seidel, 1st & 3rd-order aberrations
+    - Tutorial 3c - Chromatic Aberrations - Update in progress
+        - Designing a doublet to minimize chromatic aberrations
+4. **Optical Path Difference (OPD), Point Spread Functions (PSF) & Modulation Transfer Function (MTF)**
     - [Tutorial 4a - Optical Path Difference](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_Optical_Path_Difference_Calculation.ipynb)
         - OPD fans and plots
     - [Tutorial 4b - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4b_PSF_&_MTF_Calculation.ipynb)
@@ -101,15 +104,34 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Local optimization
     - [Tutorial 5b - Advanced Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5b_Advanced_Optimization.ipynb)
         - Global optimization
+    - Tutorial 5c - Optimization Case Study - Update in progress
+        - Designing a smartphone camera
 6. **Coatings & Polarization**
-    - To be completed...
+    - Tutorial 6a - Introduction to Coatings - Update in progress
+        - Coating types
+        - Impact of coatings on system performance
+    - Tutorial 6b - Polarization Effects - Update in progress
+        - Basics of polarization in Optiland
+        - Analyzing polarization performance
+    - Tutorial 6c - Advanced Polarization - Update in progress
+        - Waveplates, polarizers, and the Jones matrix
+        - Jones pupils
 7. **Advanced Optical Design**
-    - To be completed...
-8. **Extending Optiland**
-    - [Tutorial 8a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8a_Custom_Surface_Types.ipynb)
+    - Tutorial 7a - Designing a Complex System - Update in progress
+    - Tutorial 7b - Surface Roughness & Scattering - Update in progress
+8. **Tolerancing**
+    - Tutorial 8a - Introduction to Tolerancing - Update in progress
+        - Sensitivity studies
+    - Tutorial 8b - Advanced Tolerancing - Update in progress
+        - Monte Carlo-based Tolerancing
+9. **Extending Optiland**
+    - [Tutorial 9a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Custom_Surface_Types.ipynb) - Update in progress
         - Adding new surface types
-    - [Tutorial 8b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8b_Custom_Coating_Types.ipynb)
+    - [Tutorial 9b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Custom_Coating_Types.ipynb) - Update in progress
         - Adding new coating types
+    - Tutorial 9c - Custom Optimization Algorithms - Update in progress
+        - Adding new optimization approaches
+10. **Machine Learning in Optical Design** - Update in progress
 
 
 ## License
