@@ -92,7 +92,7 @@ class RealRays(BaseRays):
         self.e = self._process_input(energy)
         self.w = self._process_input(wavelength)
         self.opd = np.zeros_like(x)
-        self.p = np.tile(np.eye(2), (self.x.size, 3, 3))  # polarization matrix
+        self.p = np.tile(np.eye(3), (self.x.size, 1, 1))  # polarization matrix
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
