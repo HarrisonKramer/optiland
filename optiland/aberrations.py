@@ -15,7 +15,7 @@ class Aberrations:
     aberrations of general optical systems, as defined in a optic.Optic
     instance.
 
-    Most calculations in this class are based on the alogirthms outlined in
+    Most calculations in this class are based on the algorithms outlined in
     Modern Optical Engineering, Warren Smith, Chapter 6.3.
 
     Attributes:
