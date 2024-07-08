@@ -156,8 +156,8 @@ class ParaxialRays(BaseRays):
         self.y = self._process_input(y)
         self.z = self._process_input(z)
         self.u = self._process_input(u)
-        self.x = np.zeros_like(y)
-        self.e = np.ones_like(y)
+        self.x = np.zeros_like(self.y)
+        self.e = np.ones_like(self.y)
         self.w = self._process_input(wavelength)
 
     def propagate(self, t: float):
