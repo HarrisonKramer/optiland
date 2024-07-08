@@ -71,13 +71,13 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Magnification
         - F-Number, Entrance/Exit pupil sizes & positions
         - Focal, Principal, and Nodal points, etc.
-    - Tutorial 1c - Monte Carlo Raytracing Methods - Update in progress
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system
         - Analyzing ray paths & properties
     - [Tutorial 2b - Tilting & De-centering Components](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2b_Tilting_&_Decentering_Components.ipynb)
         - Tracing rays through misaligned components
+    - Tutorial 2c - Monte Carlo Raytracing Methods - Update in progress
 3. **Aberrations**
     - [Tutorial 3a - Common aberration analyses/plots](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3a_Common_Aberration_Analyses.ipynb)
         - Spot diagrams
