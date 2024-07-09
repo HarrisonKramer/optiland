@@ -334,3 +334,162 @@ class Sphere(BaseGeometry):
         nz = dfdz / mag
 
         return nx, ny, nz
+
+
+class EvenAsphere(StandardGeometry):
+    """
+    Represents an even asphere geometry.
+
+    Args:
+        coordinate_system (str): The coordinate system used for the geometry.
+        radius (float): The radius of the asphere.
+        conic (float, optional): The conic constant of the asphere.
+            Defaults to 0.0.
+        coefficients (list, optional): The coefficients of the asphere.
+            Defaults to an empty list, indicating no aspheric coefficients are
+            used.
+        tol (float, optional): The tolerance value used in calculations.
+            Defaults to 1e-10.
+    """
+
+    def __init__(self, coordinate_system, radius, conic=0.0, coefficients=[],
+                 tol=1e-10):
+        super().__init__(coordinate_system, radius, conic)
+        self.c = coefficients
+        self.tol = tol
+
+    def distance(self, rays):
+        """
+        Calculates the distance between the asphere and the given ray
+        positions.
+
+        Note:
+            This function uses the Newton-Raphson method for tracing an
+            asphere.
+
+        Args:
+            rays (Rays): The rays to calculate the distance for.
+
+        Returns:
+            numpy.ndarray: The distances between the asphere and the rays.
+        """
+        xs, ys, zs = self._intersection_sphere(rays)
+
+        x0 = xs - rays.L / rays.N * zs
+        y0 = ys - rays.M / rays.N * zs
+
+        zas0 = self.sag(xs, ys)
+
+        x1 = xs
+        y1 = ys
+        z1 = zas0
+
+        nx, ny, nz = self.surface_normal(x1, y1)
+
+        z2 = np.ones_like(x0) * 1e10
+        zas1 = np.zeros_like(x0)
+
+        while np.max(np.abs(z2 - zas1)) > self.tol:
+            dot = nx * rays.L + ny * rays.M + nz * rays.N
+            a = (nx * (x1 - x0) + ny * (y1 - y0) + nz * z1) / dot
+
+            z2 = a * rays.N
+            x2 = x0 + rays.L / rays.N * z2
+            y2 = y0 + rays.M / rays.N * z2
+
+            zas1 = self.sag(x2, y2)
+
+            x1 = x2
+            y1 = y2
+            z1 = zas1
+
+            nx, ny, nz = self.surface_normal(x2, y2)
+
+        return np.sqrt((rays.x - x2)**2 + (rays.y - y2)**2 + (rays.z - z2)**2)
+
+    def surface_normal(self, rays):
+        """
+        Calculates the surface normal of the asphere at the given rays.
+
+        Args:
+            rays (Rays): The rays to calculate the surface normal for.
+
+        Returns:
+            tuple: The surface normal components (nx, ny, nz).
+        """
+        r2 = rays.x**2 + rays.y**2
+
+        denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        dfdx = rays.x / denom + sum([2 * i * rays.x * Ci * r2**i
+                                     for i, Ci in enumerate(self.c)])
+        dfdy = rays.y / denom + sum([2 * i * rays.y * Ci * r2**i
+                                     for i, Ci in enumerate(self.c)])
+        dfdz = 1
+
+        mag = np.sqrt(dfdx**2 + dfdy**2 + dfdz**2)
+
+        nx = dfdx / mag
+        ny = dfdy / mag
+        nz = dfdz / mag
+
+        return nx, ny, nz
+
+    def sag(self, x=0, y=0):
+        """
+        Calculates the sag of the asphere at the given coordinates.
+
+        Args:
+            x (float, optional): The x-coordinate. Defaults to 0.
+            y (float, optional): The y-coordinate. Defaults to 0.
+
+        Returns:
+            float: The sag value at the given coordinates.
+        """
+        r2 = x**2 + y**2
+        return (r2 / (self.radius *
+                      (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2))) +
+                sum([Ci*r2*i for i, Ci in enumerate(self.c)]))
+
+    def _intersection_sphere(self, rays):
+        """
+        Calculates the intersection points of the rays with the asphere.
+
+        Args:
+            rays (Rays): The rays to calculate the intersection points for.
+
+        Returns:
+            tuple: The intersection points (x, y, z).
+        """
+        a = rays.L**2 + rays.M**2 + rays.N**2
+        b = (2 * rays.L * rays.x + 2 * rays.M * rays.y -
+             2 * rays.N * self.radius + 2 * rays.N * rays.z)
+        c = (rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z)
+
+        # discriminant
+        d = b ** 2 - 4 * a * c
+
+        # two solutions for distance to sphere
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            t1 = (-b + np.sqrt(d)) / (2 * a)
+            t2 = (-b - np.sqrt(d)) / (2 * a)
+
+        # intersections "behind" ray, set to inf to ignore
+        t1[t1 < 0] = np.inf
+        t2[t2 < 0] = np.inf
+
+        # find intersection points in z
+        z1 = rays.z + t1 * rays.N
+        z2 = rays.z + t2 * rays.N
+
+        # take intersection closest to z = 0
+        t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
+
+        # handle case when a = 0
+        t[a == 0] = -c[a == 0] / b[a == 0]
+
+        x = rays.x + rays.L * t
+        y = rays.y + rays.M * t
+        z = rays.z + rays.N * t
+
+        return x, y, z
