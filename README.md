@@ -77,7 +77,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Analyzing ray paths & properties
     - [Tutorial 2b - Tilting & De-centering Components](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2b_Tilting_&_Decentering_Components.ipynb)
         - Tracing rays through misaligned components
-    - Tutorial 2c - Monte Carlo Raytracing Methods - Update in progress
+    - Tutorial 2c - Monte Carlo Raytracing Methods - Update in progress (target completion: Sept. 2024)
 3. **Aberrations**
     - [Tutorial 3a - Common aberration analyses/plots](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3a_Common_Aberration_Analyses.ipynb)
         - Spot diagrams
@@ -87,7 +87,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Field curvature plots
     - [Tutorial 3b - 1st & 3rd-Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
         - Calculation of seidel, 1st & 3rd-order aberrations
-    - Tutorial 3c - Chromatic Aberrations - Update in progress
+    - Tutorial 3c - Chromatic Aberrations - Update in progress (target completion: Sept. 2024)
         - Designing a doublet to minimize chromatic aberrations
 4. **Optical Path Difference (OPD), Point Spread Functions (PSF) & Modulation Transfer Function (MTF)**
     - [Tutorial 4a - Optical Path Difference](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_Optical_Path_Difference_Calculation.ipynb)
@@ -104,34 +104,34 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Local optimization
     - [Tutorial 5b - Advanced Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5b_Advanced_Optimization.ipynb)
         - Global optimization
-    - Tutorial 5c - Optimization Case Study - Update in progress
+    - Tutorial 5c - Optimization Case Study - Update in progress (target completion: Sept. 2024)
         - Designing a smartphone camera
 6. **Coatings & Polarization**
-    - Tutorial 6a - Introduction to Coatings - Update in progress
+    - Tutorial 6a - Introduction to Coatings - Update in progress (target completion: Sept. 2024)
         - Coating types
         - Impact of coatings on system performance
-    - Tutorial 6b - Polarization Effects - Update in progress
+    - Tutorial 6b - Polarization Effects - Update in progress (target completion: Sept. 2024)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
-    - Tutorial 6c - Advanced Polarization - Update in progress
+    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Sept. 2024)
         - Waveplates, polarizers, and the Jones matrix
         - Jones pupils
 7. **Advanced Optical Design**
-    - Tutorial 7a - Designing a Complex System - Update in progress
-    - Tutorial 7b - Surface Roughness & Scattering - Update in progress
+    - Tutorial 7a - Designing a Complex System - Update in progress (target completion: Sept. 2024)
+    - Tutorial 7b - Surface Roughness & Scattering - Update in progress (target completion: Sept. 2024)
 8. **Tolerancing**
-    - Tutorial 8a - Introduction to Tolerancing - Update in progress
+    - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Sept. 2024)
         - Sensitivity studies
-    - Tutorial 8b - Advanced Tolerancing - Update in progress
+    - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Sept. 2024)
         - Monte Carlo-based Tolerancing
 9. **Extending Optiland**
-    - [Tutorial 9a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Custom_Surface_Types.ipynb) - Update in progress
+    - [Tutorial 9a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Custom_Surface_Types.ipynb) - Update in progress (target completion: Sept. 2024)
         - Adding new surface types
-    - [Tutorial 9b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Custom_Coating_Types.ipynb) - Update in progress
+    - [Tutorial 9b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Custom_Coating_Types.ipynb) - Update in progress (target completion: Sept. 2024)
         - Adding new coating types
-    - Tutorial 9c - Custom Optimization Algorithms - Update in progress
+    - Tutorial 9c - Custom Optimization Algorithms - Update in progress (target completion: Sept. 2024)
         - Adding new optimization approaches
-10. **Machine Learning in Optical Design** - Update in progress
+10. **Machine Learning in Optical Design** - Update in progress (target completion: Sept. 2024)
 
 
 ## License
