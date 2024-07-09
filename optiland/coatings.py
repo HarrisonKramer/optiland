@@ -30,15 +30,16 @@ class BaseCoating:
         # compute polarization matrix for surface
         p = np.einsum('nij,njk,nkl->nil', o_out, j, o_in)
 
-        # update polarization matrices of rays
-        rays.p = np.matmul(p, rays.p)
-
-        # eigenvalues of p represent energy loss factor at surface
-        eig_values, _ = np.linalg.eig(rays.p)
-        eig_values = np.max(np.abs(eig_values), axis=1)
+        # singular values of p represent rs and rp transmission on this surface
+        singular_values = np.linalg.svd(p, compute_uv=False)
 
         # scale ray energies
-        rays.e *= eig_values
+        energy_scale = 0.5 * (np.abs(singular_values[1])**2 +
+                              np.abs(singular_values[2])**2)
+        rays.e *= energy_scale
+
+        # update polarization matrices of rays
+        rays.p = np.matmul(p, rays.p)
 
     def _jones_matrix(self, rays: RealRays):
         return np.tile(np.eye(2), (rays.x.size, 1, 1))
