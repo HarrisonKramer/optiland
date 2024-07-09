@@ -89,6 +89,7 @@ class Plane(BaseGeometry):
 
     def __init__(self, coordinate_system):
         super().__init__(coordinate_system)
+        self.radius = np.inf
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
@@ -161,7 +162,8 @@ class StandardGeometry(BaseGeometry):
     """
 
     def __init__(self, coordinate_system, radius, conic=0.0):
-        super().__init__(coordinate_system, radius)
+        super().__init__(coordinate_system)
+        self.radius = radius
         self.k = conic
 
     def sag(self, x=0, y=0):
@@ -337,6 +339,7 @@ class Sphere(BaseGeometry):
 
 
 class EvenAsphere(StandardGeometry):
+    # TODO: clean up format & improve docs on mathematics used
     """
     Represents an even asphere geometry.
 
@@ -357,6 +360,25 @@ class EvenAsphere(StandardGeometry):
         super().__init__(coordinate_system, radius, conic)
         self.c = coefficients
         self.tol = tol
+
+    def sag(self, x=0, y=0):
+        """
+        Calculates the sag of the asphere at the given coordinates.
+
+        Args:
+            x (float, optional): The x-coordinate. Defaults to 0.
+            y (float, optional): The y-coordinate. Defaults to 0.
+
+        Returns:
+            float: The sag value at the given coordinates.
+        """
+        r2 = x**2 + y**2
+        z = r2 / (self.radius *
+                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        for i, Ci in enumerate(self.c):
+            z += Ci * r2 ** (i + 1)
+
+        return z
 
     def distance(self, rays):
         """
@@ -384,7 +406,7 @@ class EvenAsphere(StandardGeometry):
         y1 = ys
         z1 = zas0
 
-        nx, ny, nz = self.surface_normal(x1, y1)
+        nx, ny, nz = self._surface_normal(x1, y1)
 
         z2 = np.ones_like(x0) * 1e10
         zas1 = np.zeros_like(x0)
@@ -403,7 +425,7 @@ class EvenAsphere(StandardGeometry):
             y1 = y2
             z1 = zas1
 
-            nx, ny, nz = self.surface_normal(x2, y2)
+            nx, ny, nz = self._surface_normal(x2, y2)
 
         return np.sqrt((rays.x - x2)**2 + (rays.y - y2)**2 + (rays.z - z2)**2)
 
@@ -417,38 +439,37 @@ class EvenAsphere(StandardGeometry):
         Returns:
             tuple: The surface normal components (nx, ny, nz).
         """
-        r2 = rays.x**2 + rays.y**2
+        return self._surface_normal(rays.x, rays.y)
 
-        denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
-        dfdx = rays.x / denom + sum([2 * i * rays.x * Ci * r2**i
-                                     for i, Ci in enumerate(self.c)])
-        dfdy = rays.y / denom + sum([2 * i * rays.y * Ci * r2**i
-                                     for i, Ci in enumerate(self.c)])
-        dfdz = 1
-
-        mag = np.sqrt(dfdx**2 + dfdy**2 + dfdz**2)
-
-        nx = dfdx / mag
-        ny = dfdy / mag
-        nz = dfdz / mag
-
-        return nx, ny, nz
-
-    def sag(self, x=0, y=0):
+    def _surface_normal(self, x, y):
         """
-        Calculates the sag of the asphere at the given coordinates.
+        Calculates the surface normal of the asphere at the given x and y
+        position.
 
         Args:
-            x (float, optional): The x-coordinate. Defaults to 0.
-            y (float, optional): The y-coordinate. Defaults to 0.
+            x (np.ndarray): The x values to use for calculation.
+            y (np.ndarray): The y values to use for calculation.
 
         Returns:
-            float: The sag value at the given coordinates.
+            tuple: The surface normal components (nx, ny, nz).
         """
         r2 = x**2 + y**2
-        return (r2 / (self.radius *
-                      (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2))) +
-                sum([Ci*r2*i for i, Ci in enumerate(self.c)]))
+
+        denom = np.sqrt(self.radius**2 - (1 + self.k) * r2)
+        dfdx = x / denom
+        dfdy = y / denom
+
+        for i, Ci in enumerate(self.c):
+            dfdx += 2 * (i+1) * x * Ci * r2**i
+            dfdy += 2 * (i+1) * y * Ci * r2**i
+
+        mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
+
+        nx = -dfdx / mag
+        ny = -dfdy / mag
+        nz = 1 / mag
+
+        return nx, ny, nz
 
     def _intersection_sphere(self, rays):
         """
