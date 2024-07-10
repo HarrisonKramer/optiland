@@ -207,6 +207,19 @@ class Optic:
         surface_post = self.surface_group.surfaces[surface_number+1]
         surface_post.material_pre = new_material
 
+    def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
+        """
+        Set the asphere coefficient on a surface
+
+        Args:
+            value (float): The value of aspheric coefficient
+            surface_number (int): The index of the surface.
+            aspher_coeff_idx (int): index of the aspheric coefficient on the
+                surface
+        """
+        surface = self.surface_group.surfaces[surface_number]
+        surface.geometry.c[aspher_coeff_idx] = value
+
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              figsize=(10, 4)):
         """
