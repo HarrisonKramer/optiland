@@ -1,11 +1,10 @@
 """Optiland Distribution Module
 
-This module defines the `Variable` class, which represents a variable
-parameter within an optical system. These variables can include properties
-such as radius, conic constant, thickness, and refractive index of surfaces
-within the system. The `Variable` class provides methods to get and set the
-values of these parameters, as well as to update them within the context of
-the optical system's overall configuration.
+This module provides a set of classes that represent different types of
+variables within an optical system, such as radius, conic, and thickness of
+optical surfaces. Each variable type is defined as a class that inherits from
+the VariableBehavior base class, which provides a common interface for getting
+and updating the value of the variable.
 
 Kramer Harrison, 2024
 """
