@@ -30,6 +30,13 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
   <img src="images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
 </figure>
 
+Python code to generate this 3D visualization:
+```ruby
+from optiland.samples.objectives import ReverseTelephoto
+lens = ReverseTelephoto()
+lens.draw3D()
+```
+
 
 
 ## Installation
