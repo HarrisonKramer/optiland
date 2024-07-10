@@ -174,7 +174,7 @@ class LensViewer:
             wavelengths = [self.optic.wavelengths.primary_wavelength.value]
 
         for i, field in enumerate(fields):
-            for wavelength in wavelengths:
+            for j, wavelength in enumerate(wavelengths):
                 self.optic.trace(*field, wavelength, num_rays, distribution)
                 x = self.optic.surface_group.x
                 y = self.optic.surface_group.y
@@ -187,6 +187,12 @@ class LensViewer:
                         max_ray_height = np.nanmax(np.abs(y[k, :]))
                         self._real_ray_extent[k] = max_ray_height
 
+                # if only one field, use different colors for each wavelength
+                if len(fields) > 1:
+                    color_idx = i
+                else:
+                    color_idx = j
+
                 for k in range(z.shape[1]):
                     xk = x[:, k]
                     yk = y[:, k]
@@ -197,7 +203,7 @@ class LensViewer:
                     zk[ek == 0] = np.nan
                     yk[ek == 0] = np.nan
 
-                    self._plot_line(xk, yk, zk, f'C{i}')
+                    self._plot_line(xk, yk, zk, f'C{color_idx}')
 
     def _plot_lens(self, y, z):
         """
