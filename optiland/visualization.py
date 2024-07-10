@@ -59,9 +59,6 @@ class LensViewer:
         _get_surface_extent: Returns the extent of a surface.
     """
 
-    # TODO: does not plot simple singlet correctly. Rays do not converge..
-    # TODO: does not plot lenses with a single field correctly..
-
     def __init__(self, optic):
         self.optic = optic
 
