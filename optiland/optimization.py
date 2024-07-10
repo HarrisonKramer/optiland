@@ -218,6 +218,9 @@ class LeastSquares(OptimizerGeneric):
         """
         Optimize the problem using the least squares method.
 
+        Note:
+            The least squares method uses the Trust Region Reflective method.
+
         Args:
             maxiter (int, optional): Maximum number of iterations.
                 Defaults to None.
