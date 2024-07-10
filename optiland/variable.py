@@ -115,9 +115,9 @@ class Variable:
         ValueError: If an invalid variable type is provided.
     """
 
-    def __init__(self, optic, type, min_val=None, max_val=None, **kwargs):
+    def __init__(self, optic, type_name, min_val=None, max_val=None, **kwargs):
         self.optic = optic
-        self.type = type
+        self.type = type_name
         self.min_val = min_val
         self.max_val = max_val
         self.kwargs = kwargs
@@ -134,7 +134,6 @@ class Variable:
     @staticmethod
     def allowed_attributes():
         """
-        Define allowed additional attributes here.
         This method returns a set of strings that are the names of allowed
         attributes.
         """
