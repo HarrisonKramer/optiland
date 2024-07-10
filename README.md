@@ -31,7 +31,7 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
 </figure>
 
 Python code to generate this 3D visualization:
-```ruby
+```python
 from optiland.samples.objectives import ReverseTelephoto
 lens = ReverseTelephoto()
 lens.draw3D()
