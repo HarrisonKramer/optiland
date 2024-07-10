@@ -77,7 +77,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Analyzing ray paths & properties
     - [Tutorial 2b - Tilting & De-centering Components](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2b_Tilting_&_Decentering_Components.ipynb)
         - Tracing rays through misaligned components
-    - Tutorial 2c - Monte Carlo Raytracing Methods - Update in progress (target completion: Sept. 2024)
+    - [Tutorial 2c - Monte Carlo Raytracing Methods](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2c_Monte_Carlo_Raytracing.ipynb)
+        - How variations in lens properties impact lens performance
 3. **Aberrations**
     - [Tutorial 3a - Common aberration analyses/plots](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3a_Common_Aberration_Analyses.ipynb)
         - Spot diagrams
