@@ -95,8 +95,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Field curvature plots
     - [Tutorial 3b - 1st & 3rd-Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
         - Calculation of seidel, 1st & 3rd-order aberrations
-    - Tutorial 3c - Chromatic Aberrations - Update in progress (target completion: Sept. 2024)
-        - Designing a doublet to minimize chromatic aberrations
+    - [Tutorial 3c - Chromatic Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3c_Chromatic_Aberrations.ipynb)
+        - Achromatic doublet to reduce chromatic aberrations
 4. **Optical Path Difference (OPD), Point Spread Functions (PSF) & Modulation Transfer Function (MTF)**
     - [Tutorial 4a - Optical Path Difference](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_4a_Optical_Path_Difference_Calculation.ipynb)
         - OPD fans and plots
