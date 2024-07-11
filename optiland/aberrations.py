@@ -331,13 +331,19 @@ class Aberrations:
         for k in range(1, self._N-1):
             self._i[k-1] = (self._C[k] * self._ya[k] + self._ua[k-1])[0]
             self._ip[k-1] = (self._C[k] * self._yb[k] + self._ub[k-1])[0]
-            self._B[k-1] = (self._n[k-1] *
-                            (self._n[k] - self._n[k-1]) *
-                            self._ya[k] *
-                            (self._ua[k] + self._i[k-1]) /
-                            (2*self._n[k] * self._inv))[0]
-            self._Bp[k-1] = (self._n[k-1] *
-                             (self._n[k] - self._n[k-1]) *
-                             self._yb[k] *
-                             (self._ub[k] + self._ip[k-1]) /
-                             (2*self._n[k] * self._inv))[0]
+
+            denom = 2*self._n[k] * self._inv
+            if denom == 0:
+                self._B[k-1] = 0
+                self._Bp[k-1] = 0
+            else:
+                self._B[k-1] = (self._n[k-1] *
+                                (self._n[k] - self._n[k-1]) *
+                                self._ya[k] *
+                                (self._ua[k] + self._i[k-1]) /
+                                denom)[0]
+                self._Bp[k-1] = (self._n[k-1] *
+                                 (self._n[k] - self._n[k-1]) *
+                                 self._yb[k] *
+                                 (self._ub[k] + self._ip[k-1]) /
+                                 denom)[0]
