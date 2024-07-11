@@ -1,12 +1,154 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional
 import numpy as np
 from optiland.rays import RealRays
 
 
-class BaseCoating:
+@dataclass
+class InteractionParams:
+    """
+    Represents the parameters for an interaction between rays and a coating.
+
+    Attributes:
+        rays (RealRays): The rays involved in the interaction.
+        aoi (np.ndarray): The angle of incidence of the rays (optional).
+        L0 (np.ndarray): The L0 vector of the rays (optional).
+        M0 (np.ndarray): The M0 vector of the rays (optional).
+        N0 (np.ndarray): The N0 vector of the rays (optional).
+    """
+    rays: RealRays
+    aoi: Optional[np.ndarray] = None
+    L0: Optional[np.ndarray] = None
+    M0: Optional[np.ndarray] = None
+    N0: Optional[np.ndarray] = None
+
+
+class BaseCoating(ABC):
+    """
+    Base class for coatings.
+
+    This class defines the basic structure and behavior of a coating.
+
+    Methods:
+        interact: Performs an interaction based on the given parameters.
+        reflect: Abstract method to handle reflection interaction.
+        transmit: Abstract method to handle transmission interaction.
+    """
+
+    def interact(self, params: InteractionParams, reflect: bool = False):
+        """
+        Performs an interaction based on the given parameters.
+
+        Args:
+            params (InteractionParams): The parameters for the interaction.
+            reflect (bool, optional): Flag indicating whether to perform
+                reflection. Defaults to False.
+
+        Returns:
+            rays (RealRays): The rays after the interaction.
+        """
+        if reflect:
+            return self.reflect(params)
+        else:
+            return self.transmit(params)
+
+    @abstractmethod
+    def reflect(self, params: InteractionParams):
+        """
+        Abstract method to handle reflection interaction.
+
+        Args:
+            params (InteractionParams): The parameters for the interaction.
+
+        Returns:
+            rays (RealRays): The rays after the interaction.
+        """
+        return params.rays
+
+    @abstractmethod
+    def transmit(self, params: InteractionParams):
+        """
+        Abstract method to handle transmission interaction.
+
+        Args:
+            params (InteractionParams): The parameters for the interaction.
+
+        Returns:
+            rays (RealRays): The rays after the interaction.
+        """
+        return params.rays
+
+
+class SimpleCoating(BaseCoating):
+    """
+    A simple coating class that represents a coating with given transmittance
+    and reflectance.
+
+    Args:
+        transmittance (float): The transmittance of the coating.
+        reflectance (float, optional): The reflectance of the coating.
+            Defaults to 0.
+
+    Attributes:
+        transmittance (float): The transmittance of the coating.
+        reflectance (float): The reflectance of the coating.
+        absorptance (float): The absorptance of the coating, calculated
+            as 1 - reflectance - transmittance.
+
+    Methods:
+        reflect(params: InteractionParams) -> Rays:
+            Reflects the rays based on the reflectance of the coating.
+        transmit(params: InteractionParams) -> Rays:
+            Transmits the rays based on the transmittance of the coating.
+    """
+
+    def __init__(self, transmittance, reflectance=0):
+        self.transmittance = transmittance
+        self.reflectance = reflectance
+        self.absorptance = 1 - reflectance - transmittance
+
+    def reflect(self, params: InteractionParams):
+        """
+        Reflects the rays based on the reflectance of the coating.
+
+        Args:
+            params (InteractionParams): The parameters for the interaction.
+
+        Returns:
+            rays (RealRays): The rays after reflection.
+        """
+        rays = params.rays
+        rays.e *= self.reflectance
+        return rays
+
+    def transmit(self, params: InteractionParams):
+        """
+        Transmits the rays through the coating by multiplying their energy
+        with the transmittance.
+
+        Args:
+            params (InteractionParams): The parameters for the interaction.
+
+        Returns:
+            rays (RealRays): The rays after transmission.
+        """
+        rays = params.rays
+        rays.e *= self.transmittance
+        return rays
+
+
+class PolarizedCoating(BaseCoating):
 
     # TODO - finalize and verify correctness
-    def interact(self, rays: RealRays, aoi: np.ndarray,
-                 L0: np.ndarray, M0: np.ndarray, N0: np.ndarray):
+    def interact(self, params: InteractionParams):
+        # define local variables
+        rays = params.rays
+        aoi = params.aoi
+        L0 = params.L0
+        M0 = params.M0
+        N0 = params.N0
+
         # merge k-vector components into matrix for speed
         k0 = np.array([L0, M0, N0]).T
         k1 = np.array([rays.L, rays.M, rays.N]).T
@@ -45,7 +187,7 @@ class BaseCoating:
         return np.tile(np.eye(2), (rays.x.size, 1, 1))
 
 
-class Fresnel(BaseCoating):
+class Fresnel(PolarizedCoating):
 
     def __init__(self, material_pre, material_post):
         self.material_pre = material_pre
