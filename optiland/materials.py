@@ -71,7 +71,7 @@ class IdealMaterial(BaseMaterial):
         absorp (float): The absorption coefficient of the material.
     """
 
-    def __init__(self, n, k):
+    def __init__(self, n, k=0):
         self.index = n
         self.absorp = k
 
