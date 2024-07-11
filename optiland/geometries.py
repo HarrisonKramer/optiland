@@ -215,7 +215,7 @@ class StandardGeometry(BaseGeometry):
         z1 = rays.z + t1 * rays.N
         z2 = rays.z + t2 * rays.N
 
-        # take intersection closest to z = 0
+        # take intersection closest to z = 0 (i.e., vertex of geometry)
         t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
 
         # handle case when a = 0
@@ -414,7 +414,7 @@ class EvenAsphere(StandardGeometry):
         z1 = rays.z + t1 * rays.N
         z2 = rays.z + t2 * rays.N
 
-        # take intersection closest to z = 0
+        # take intersection closest to z = 0 (i.e., vertex of geometry)
         t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
 
         # handle case when a = 0
