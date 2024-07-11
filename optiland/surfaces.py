@@ -240,6 +240,8 @@ class Surface:
         rays = self._interact(rays, nx, ny, nz)
 
         # if there is a coating, modify ray properties
+        # TODO - conditionally compute coating properties based on
+        # polarization dependence
         if self.coating:
             rays = self.coating.interact(rays, aoi, L0, M0, N0)
 
