@@ -140,11 +140,20 @@ class SimpleCoating(BaseCoating):
 
 class PolarizedCoating(BaseCoating):
 
-    # TODO - finalize and verify correctness
-    def interact(self, params: InteractionParams):
+    def reflect(self, params: InteractionParams):
+        jones_matrix = self._jones_matrix(params, reflect=True)
+        self._update_polarization_matrices(params, jones_matrix)
+        return params.rays
+
+    def transmit(self, params: InteractionParams):
+        jones_matrix = self._jones_matrix(params, reflect=False)
+        self._update_polarization_matrices(params, jones_matrix)
+        return params.rays
+
+    def _update_polarization_matrices(self, params: InteractionParams,
+                                      jones_matrix: np.ndarray):
         # define local variables
         rays = params.rays
-        aoi = params.aoi
         L0 = params.L0
         M0 = params.M0
         N0 = params.N0
@@ -166,32 +175,56 @@ class PolarizedCoating(BaseCoating):
         o_in = np.stack((s, p0, k0), axis=1)
         o_out = np.stack((s, p1, k1), axis=2)
 
-        # get jones matrix for each ray
-        j = self._jones_matrix(rays)
-
         # compute polarization matrix for surface
-        p = np.einsum('nij,njk,nkl->nil', o_out, j, o_in)
+        p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
 
         # singular values of p represent rs and rp transmission on this surface
         singular_values = np.linalg.svd(p, compute_uv=False)
 
         # scale ray energies
-        energy_scale = 0.5 * (np.abs(singular_values[1])**2 +
-                              np.abs(singular_values[2])**2)
+        # TODO - scaling approach here is not general for multi-surface systems. Will revisit.
+        energy_scale = 0.5 * (np.abs(singular_values[:, 1])**2 +
+                              np.abs(singular_values[:, 2])**2)
         rays.e *= energy_scale
 
         # update polarization matrices of rays
         rays.p = np.matmul(p, rays.p)
 
-    def _jones_matrix(self, rays: RealRays):
-        return np.tile(np.eye(2), (rays.x.size, 1, 1))
+    def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
+        return np.tile(np.eye(3), (params.rays.x.size, 1, 1))
 
 
-class Fresnel(PolarizedCoating):
+class FresnelCoating(PolarizedCoating):
 
     def __init__(self, material_pre, material_post):
         self.material_pre = material_pre
         self.material_post = material_post
 
-    def _jones_matrix(self, rays: RealRays):
-        pass
+    def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
+        # define local variables
+        rays = params.rays
+        aoi = params.aoi
+        n1 = self.material_pre.n(rays.w)
+        n2 = self.material_post.n(rays.w)
+
+        # precompute cosines for speed
+        cos_theta_i = np.cos(aoi)
+        cos_theta_t = np.sqrt(1 - (n1 / n2 * np.sin(aoi))**2)
+
+        # compute fresnel coefficients
+        if reflect:
+            s = (n1 * cos_theta_i - n2 * cos_theta_t) / \
+                (n1 * cos_theta_i + n2 * cos_theta_t)
+            p = (n2 * cos_theta_i - n1 * cos_theta_t) / \
+                (n2 * cos_theta_i + n1 * cos_theta_t)
+        else:
+            s = 2 * n1 * cos_theta_i / (n1 * cos_theta_i + n2 * cos_theta_t)
+            p = 2 * n1 * cos_theta_i / (n2 * cos_theta_i + n1 * cos_theta_t)
+
+        # create jones matrix
+        jones_matrix = np.zeros((rays.x.size, 3, 3))
+        jones_matrix[:, 0, 0] = s
+        jones_matrix[:, 1, 1] = p
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
