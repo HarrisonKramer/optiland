@@ -22,7 +22,7 @@ from optiland.coatings import BaseCoating
 
 class Surface:
     """
-    Represents a surface in an optical system.
+    Represents a standard refractice surface in an optical system.
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
@@ -50,6 +50,8 @@ class Surface:
         self.aperture = aperture
         self.semi_aperture = None
         self.coating = coating
+
+        self._is_reflective = False
 
         self.reset()
 
@@ -134,9 +136,39 @@ class Surface:
             self.energy = np.copy(np.atleast_1d(rays.e))
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
-    def _interact(self, rays, nx, ny, nz):
+    def _interact(self, rays):
         """
         Interacts the rays with the surface by refracting them.
+
+        Args:
+            rays: The rays.
+
+        Returns:
+            RealRays: The refracted rays.
+        """
+        # find surface normals
+        nx, ny, nz = self.geometry.surface_normal(rays)
+
+        # Get initial ray parameters for coating
+        if self.coating:
+            params = self.coating.create_interaction_params(rays)
+
+        # Interact with surface (refract or reflect)
+        if self._is_reflective:
+            rays = self._reflect(rays, nx, ny, nz)
+        else:
+            rays = self._refract(rays, nx, ny, nz)
+
+        # if there is a coating, modify ray properties
+        if self.coating:
+            params.rays = rays  # assign rays after refraction
+            rays = self.coating.interact(params, reflect=False)
+
+        return rays
+
+    def _refract(self, rays, nx, ny, nz):
+        """
+        Refract rays on the surface.
 
         Args:
             rays: The rays.
@@ -145,7 +177,7 @@ class Surface:
             nz: The z-component of the surface normals.
 
         Returns:
-            BaseRays: The refracted rays.
+            RealRays: The refracted rays.
         """
         ix = rays.L
         iy = rays.M
@@ -167,12 +199,31 @@ class Surface:
 
         return rays
 
+    def _reflect(self, rays, nx, ny, nz):
+        """
+        Reflects the rays on the surface.
+
+        Args:
+            rays: The rays to be reflected.
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            RealRays: The reflected rays.
+        """
+        dot = rays.L * nx + rays.M * ny + rays.N * nz
+        rays.L -= 2 * dot * nx
+        rays.M -= 2 * dot * ny
+        rays.N -= 2 * dot * nz
+        return rays
+
     def _trace_paraxial(self, rays: ParaxialRays):
         """
         Traces paraxial rays through the surface.
 
         Args:
-            rays (ParaxialRays): The paraxial rays to be traced.
+            ParaxialRays: The paraxial rays to be traced.
         """
         # reset recorded information
         self.reset()
@@ -226,24 +277,8 @@ class Surface:
         if self.aperture:
             self.aperture.clip(rays)
 
-        # find surface normals
-        nx, ny, nz = self.geometry.surface_normal(rays)
-
-        # record initial direction cosines. Only needed if coating is applied
-        if self.coating:
-            L0 = np.copy(np.atleast_1d(rays.L))
-            M0 = np.copy(np.atleast_1d(rays.M))
-            N0 = np.copy(np.atleast_1d(rays.N))
-            aoi = self._compute_aoi(rays, nx, ny, nz)
-
-        # Interact with surface (refract or reflect)
-        rays = self._interact(rays, nx, ny, nz)
-
-        # if there is a coating, modify ray properties
-        # TODO - conditionally compute coating properties based on
-        # polarization dependence
-        if self.coating:
-            rays = self.coating.interact(rays, aoi, L0, M0, N0)
+        # interact with surface
+        rays = self._interact(rays)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
@@ -280,24 +315,7 @@ class ReflectiveSurface(Surface):
             aperture=aperture
         )
 
-    def _interact(self, rays, nx, ny, nz):
-        """
-        Reflects the rays on the surface.
-
-        Args:
-            rays: The rays to be reflected.
-            nx: The x-component of the surface normal.
-            ny: The y-component of the surface normal.
-            nz: The z-component of the surface normal.
-
-        Returns:
-            RealRays: The reflected rays.
-        """
-        dot = rays.L * nx + rays.M * ny + rays.N * nz
-        rays.L -= 2 * dot * nx
-        rays.M -= 2 * dot * ny
-        rays.N -= 2 * dot * nz
-        return rays
+        self._is_reflective = True
 
     def _trace_paraxial(self, rays: ParaxialRays):
         """
@@ -385,7 +403,7 @@ class ObjectSurface(Surface):
             rays (Rays): The rays to be traced.
 
         Returns:
-            Rays: The traced rays.
+            RealRays: The traced rays.
         """
         # reset recorded information
         self.reset()
@@ -424,7 +442,7 @@ class ObjectSurface(Surface):
             nz (float): The z-component of the surface normal.
 
         Returns:
-            Rays: The interacted rays.
+            RealRays: The interacted rays.
         """
         return rays
 
@@ -456,9 +474,6 @@ class ImageSurface(Surface):
 
         Args:
             rays (ParaxialRays): The paraxial rays to be traced.
-
-        Returns:
-            None
         """
         # reset recorded information
         self.reset()
@@ -483,7 +498,7 @@ class ImageSurface(Surface):
             nz: The z-component of the surface normal.
 
         Returns:
-            The modified rays after interaction with the surface.
+            RealRays: The modified rays after interaction with the surface.
         """
         return rays
 
