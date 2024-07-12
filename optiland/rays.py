@@ -95,9 +95,9 @@ class RealRays(BaseRays):
 
         # compute nominal polarization matrix, scaled to match intial energy
         self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
-        pi = np.sqrt(self.e / 2)
-        self.p[:, 0, 0] = pi
-        self.p[:, 1, 1] = pi
+        p_init = np.sqrt(self.e / 2)
+        self.p[:, 0, 0] = p_init
+        self.p[:, 1, 1] = p_init
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
