@@ -165,6 +165,12 @@ class PolarizedCoating(BaseCoating):
         # find s-component
         s = np.cross(k0, k1)
         mag = np.linalg.norm(s, axis=1)
+
+        # handle case when mag = 0 (i.e., k0 parallel to k1)
+        if np.any(mag == 0):
+            s[mag == 0] = np.cross(k0[mag == 0], np.array([1, 1e-10, 0]))
+            mag = np.linalg.norm(s, axis=1)
+
         s /= mag[:, np.newaxis]
 
         # find p-component pre and post surface
@@ -178,17 +184,15 @@ class PolarizedCoating(BaseCoating):
         # compute polarization matrix for surface
         p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
 
-        # singular values of p represent rs and rp transmission on this surface
-        singular_values = np.linalg.svd(p, compute_uv=False)
-
-        # scale ray energies
-        # TODO - scaling approach here is not general for multi-surface systems. Will revisit.
-        energy_scale = 0.5 * (np.abs(singular_values[:, 1])**2 +
-                              np.abs(singular_values[:, 2])**2)
-        rays.e *= energy_scale
-
         # update polarization matrices of rays
         rays.p = np.matmul(p, rays.p)
+
+        # singular values of p represent rs and rp transmission on this surface
+        singular_values = np.linalg.svd(rays.p, compute_uv=False)
+
+        # update ray energies
+        rays.e = (np.abs(singular_values[:, 1])**2 +
+                  np.abs(singular_values[:, 2])**2)
 
     def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
         return np.tile(np.eye(3), (params.rays.x.size, 1, 1))
