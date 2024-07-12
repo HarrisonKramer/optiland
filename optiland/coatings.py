@@ -17,7 +17,7 @@ class InteractionParams:
         M0 (np.ndarray): The M0 vector of the rays (optional).
         N0 (np.ndarray): The N0 vector of the rays (optional).
     """
-    rays: RealRays
+    rays: RealRays = None
     aoi: Optional[np.ndarray] = None
     L0: Optional[np.ndarray] = None
     M0: Optional[np.ndarray] = None
@@ -52,6 +52,16 @@ class BaseCoating(ABC):
             return self.reflect(params)
         else:
             return self.transmit(params)
+
+    def create_interaction_params(self, rays):
+        """
+        Create interaction parameters for the given rays.
+
+        Args:
+            rays (RealRays): A list of rays for which interaction parameters
+                need to be created.
+        """
+        return InteractionParams()
 
     @abstractmethod
     def reflect(self, params: InteractionParams):
@@ -139,6 +149,19 @@ class SimpleCoating(BaseCoating):
 
 
 class PolarizedCoating(BaseCoating):
+
+    def create_interaction_params(self, rays):
+        """
+        Create interaction parameters for the given rays.
+
+        Args:
+            rays (RealRays): A list of rays for which interaction parameters
+                need to be created.
+        """
+        L0 = np.copy(np.atleast_1d(rays.L))
+        M0 = np.copy(np.atleast_1d(rays.M))
+        N0 = np.copy(np.atleast_1d(rays.N))
+        return InteractionParams(L0=L0, M0=M0, N0=N0)
 
     def reflect(self, params: InteractionParams):
         jones_matrix = self._jones_matrix(params, reflect=True)
