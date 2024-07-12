@@ -127,7 +127,10 @@ def test_real_rays_init():
     assert isinstance(rays.p, np.ndarray)
     assert rays.p.shape == (1, 3, 3)
     assert rays.p.dtype == float
-    assert np.array_equal(rays.p, np.tile(np.eye(3), (1, 1, 1)))
+    p_init = np.eye(3)
+    p_init[0, 0] = np.sqrt(7 / 2)
+    p_init[1, 1] = np.sqrt(7 / 2)
+    assert np.array_equal(rays.p, np.tile(p_init, (1, 1, 1)))
 
 
 def test_rotate_x():
