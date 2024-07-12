@@ -53,15 +53,38 @@ class BaseCoating(ABC):
         else:
             return self.transmit(params)
 
-    def create_interaction_params(self, rays):
+    def create_interaction_params(self, rays, nx=None, ny=None, nz=None):
         """
         Create interaction parameters for the given rays.
 
         Args:
             rays (RealRays): A list of rays for which interaction parameters
                 need to be created.
+            nx (np.ndarray, optional): The x-component of the surface normals.
+                Defaults to None.
+            ny (np.ndarray, optional): The y-component of the surface normals.
+                Defaults to None.
+            nz (np.ndarray, optional): The z-component of the surface normals.
+                Defaults to None.
         """
         return InteractionParams()
+
+    def _compute_aoi(self, rays, nx, ny, nz):
+        """
+        Computes the angle of incidence for the given rays and surface normals.
+
+        Args:
+            rays: The rays.
+            nx: The x-component of the surface normals.
+            ny: The y-component of the surface normals.
+            nz: The z-component of the surface normals.
+
+        Returns:
+            np.ndarray: The angle of incidence for each ray.
+        """
+        dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
+        dot = np.clip(dot, -1, 1)  # required due to numerical precision
+        return np.arccos(dot)    
 
     @abstractmethod
     def reflect(self, params: InteractionParams):
@@ -150,7 +173,7 @@ class SimpleCoating(BaseCoating):
 
 class PolarizedCoating(BaseCoating):
 
-    def create_interaction_params(self, rays):
+    def create_interaction_params(self, rays, nx, ny, nz):
         """
         Create interaction parameters for the given rays.
 
@@ -161,7 +184,8 @@ class PolarizedCoating(BaseCoating):
         L0 = np.copy(np.atleast_1d(rays.L))
         M0 = np.copy(np.atleast_1d(rays.M))
         N0 = np.copy(np.atleast_1d(rays.N))
-        return InteractionParams(L0=L0, M0=M0, N0=N0)
+        aoi = self._compute_aoi(rays, nx, ny, nz)
+        return InteractionParams(L0=L0, M0=M0, N0=N0, aoi=aoi)
 
     def reflect(self, params: InteractionParams):
         jones_matrix = self._jones_matrix(params, reflect=True)
