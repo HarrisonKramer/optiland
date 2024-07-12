@@ -97,23 +97,6 @@ class Surface:
         self.aoi = np.empty(0)
         self.opd = np.empty(0)
 
-    def _compute_aoi(self, rays, nx, ny, nz):
-        """
-        Computes the angle of incidence for the given rays and surface normals.
-
-        Args:
-            rays: The rays.
-            nx: The x-component of the surface normals.
-            ny: The y-component of the surface normals.
-            nz: The z-component of the surface normals.
-
-        Returns:
-            np.ndarray: The angle of incidence for each ray.
-        """
-        dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
-        dot = np.clip(dot, -1, 1)  # required due to numerical precision
-        return np.arccos(dot)
-
     def _record(self, rays):
         """
         Records the ray information.
@@ -151,7 +134,7 @@ class Surface:
 
         # Get initial ray parameters for coating
         if self.coating:
-            params = self.coating.create_interaction_params(rays)
+            params = self.coating.create_interaction_params(rays, nx, ny, nz)
 
         # Interact with surface (refract or reflect)
         if self._is_reflective:
@@ -161,8 +144,8 @@ class Surface:
 
         # if there is a coating, modify ray properties
         if self.coating:
-            params.rays = rays  # assign rays after refraction
-            rays = self.coating.interact(params, reflect=False)
+            params.rays = rays  # assign rays after interaction
+            rays = self.coating.interact(params, reflect=self._is_reflective)
 
         return rays
 
@@ -487,7 +470,7 @@ class ImageSurface(Surface):
 
         self._record(rays)
 
-    def _interact(self, rays, nx, ny, nz):
+    def _interact(self, rays):
         """
         Interacts rays with the surface.
 
