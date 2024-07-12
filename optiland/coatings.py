@@ -84,7 +84,7 @@ class BaseCoating(ABC):
         """
         dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
-        return np.arccos(dot)    
+        return np.arccos(dot)
 
     @abstractmethod
     def reflect(self, params: InteractionParams):
