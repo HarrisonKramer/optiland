@@ -302,6 +302,12 @@ class Optic:
         for k, surface in enumerate(self.surface_group.surfaces):
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
 
+    def image_solve(self):
+        """Update the image position such that the marginal ray crosses the
+        optical axis at the image location."""
+        ya, ua = self.paraxial.marginal_ray()
+        self.surface_group.surfaces[-1].geometry.cs.z -= ya[-1] / ua[-1]
+
     def trace(self, Hx, Hy, wavelength, num_rays=100,
               distribution='hexapolar'):
         """
