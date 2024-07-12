@@ -121,7 +121,7 @@ class Surface:
 
     def _interact(self, rays):
         """
-        Interacts the rays with the surface by refracting them.
+        Interacts the rays with the surface by either reflecting or refracting
 
         Args:
             rays: The rays.
