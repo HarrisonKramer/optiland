@@ -49,6 +49,33 @@ class TestDoubleGaussAberrations:
         assert S[3] == pytest.approx(-0.016264753735226404, abs=1e-9)
         assert S[4] == pytest.approx(-0.046484107476755930, abs=1e-9)
 
+    def test_third_order_all_functions(self, double_gauss):
+        TSC = double_gauss.aberrations.TSC()
+        SC = double_gauss.aberrations.SC()
+        CC = double_gauss.aberrations.CC()
+        TCC = double_gauss.aberrations.TCC()
+        TAC = double_gauss.aberrations.TAC()
+        AC = double_gauss.aberrations.AC()
+        TPC = double_gauss.aberrations.TPC()
+        PC = double_gauss.aberrations.PC()
+        DC = double_gauss.aberrations.DC()
+        TAchC = double_gauss.aberrations.TAchC()
+        LchC = double_gauss.aberrations.LchC()
+        TchC = double_gauss.aberrations.TchC()
+
+        assert np.sum(TSC) == pytest.approx(-0.01964728937767421, abs=1e-9)
+        assert np.sum(SC) == pytest.approx(-0.19647289377674193, abs=1e-9)
+        assert np.sum(CC) == pytest.approx(0.0019772988166093623, abs=1e-9)
+        assert np.sum(TCC) == pytest.approx(0.005931896449828042, abs=1e-9)
+        assert np.sum(TAC) == pytest.approx(0.017119527515864978, abs=1e-9)
+        assert np.sum(AC) == pytest.approx(0.17119527515864985, abs=1e-9)
+        assert np.sum(TPC) == pytest.approx(-0.08132376867613199, abs=1e-9)
+        assert np.sum(PC) == pytest.approx(-0.8132376867613212, abs=1e-9)
+        assert np.sum(DC) == pytest.approx(-0.2324205373837797, abs=1e-9)
+        assert np.sum(TAchC) == pytest.approx(0.0295705512988189, abs=1e-9)
+        assert np.sum(LchC) == pytest.approx(0.2957055129881888, abs=1e-9)
+        assert np.sum(TchC) == pytest.approx(-0.01804376318260833, abs=1e-9)
+
 
 class TestEdmundSinglet:
     def test_seidels(self, edmund_singlet):
@@ -80,6 +107,33 @@ class TestEdmundSinglet:
         assert S[3] == pytest.approx(-0.22120089147910937, abs=1e-9)
         assert S[4] == pytest.approx(-0.020854909613614383, abs=1e-9)
 
+    def test_third_order_all_functions(self, edmund_singlet):
+        TSC = edmund_singlet.aberrations.TSC()
+        SC = edmund_singlet.aberrations.SC()
+        CC = edmund_singlet.aberrations.CC()
+        TCC = edmund_singlet.aberrations.TCC()
+        TAC = edmund_singlet.aberrations.TAC()
+        AC = edmund_singlet.aberrations.AC()
+        TPC = edmund_singlet.aberrations.TPC()
+        PC = edmund_singlet.aberrations.PC()
+        DC = edmund_singlet.aberrations.DC()
+        TAchC = edmund_singlet.aberrations.TAchC()
+        LchC = edmund_singlet.aberrations.LchC()
+        TchC = edmund_singlet.aberrations.TchC()
+
+        assert np.sum(TSC) == pytest.approx(-1.7306053598822728, abs=1e-9)
+        assert np.sum(SC) == pytest.approx(-3.460883119362552, abs=1e-9)
+        assert np.sum(CC) == pytest.approx(0.14252371347566878, abs=1e-9)
+        assert np.sum(TCC) == pytest.approx(0.42757114042700617, abs=1e-9)
+        assert np.sum(TAC) == pytest.approx(-0.35292203963678487, abs=1e-9)
+        assert np.sum(AC) == pytest.approx(-0.7057772717825394, abs=1e-9)
+        assert np.sum(TPC) == pytest.approx(-0.2211799550187673, abs=1e-9)
+        assert np.sum(PC) == pytest.approx(-0.4423180410800838, abs=1e-9)
+        assert np.sum(DC) == pytest.approx(-0.020852935715656093, abs=1e-9)
+        assert np.sum(TAchC) == pytest.approx(-0.4947549112756089, abs=1e-9)
+        assert np.sum(LchC) == pytest.approx(-0.9894161663592405, abs=1e-9)
+        assert np.sum(TchC) == pytest.approx(0.0, abs=1e-9)
+
 
 class TestSingletStopTwo:
     def test_seidels(self, singlet_stop_surf_two):
@@ -110,3 +164,30 @@ class TestSingletStopTwo:
         assert S[2] == pytest.approx(-0.01142479550599207, abs=1e-9)
         assert S[3] == pytest.approx(-0.00692002070366785, abs=1e-9)
         assert S[4] == pytest.approx(0.0016544791002946339, abs=1e-9)
+
+    def test_third_order_all_functions(self, singlet_stop_surf_two):
+        TSC = singlet_stop_surf_two.aberrations.TSC()
+        SC = singlet_stop_surf_two.aberrations.SC()
+        CC = singlet_stop_surf_two.aberrations.CC()
+        TCC = singlet_stop_surf_two.aberrations.TCC()
+        TAC = singlet_stop_surf_two.aberrations.TAC()
+        AC = singlet_stop_surf_two.aberrations.AC()
+        TPC = singlet_stop_surf_two.aberrations.TPC()
+        PC = singlet_stop_surf_two.aberrations.PC()
+        DC = singlet_stop_surf_two.aberrations.DC()
+        TAchC = singlet_stop_surf_two.aberrations.TAchC()
+        LchC = singlet_stop_surf_two.aberrations.LchC()
+        TchC = singlet_stop_surf_two.aberrations.TchC()
+
+        assert np.sum(TSC) == pytest.approx(-0.1323786953158293, abs=1e-9)
+        assert np.sum(SC) == pytest.approx(-1.074934343302707, abs=1e-9)
+        assert np.sum(CC) == pytest.approx(-0.0017810664901602852, abs=1e-9)
+        assert np.sum(TCC) == pytest.approx(-0.0053431994704808555, abs=1e-9)
+        assert np.sum(TAC) == pytest.approx(-0.0463855041980188, abs=1e-9)
+        assert np.sum(AC) == pytest.approx(-0.3766570698925757, abs=1e-9)
+        assert np.sum(TPC) == pytest.approx(-0.028095789481046744, abs=1e-9)
+        assert np.sum(PC) == pytest.approx(-0.22814191470407064, abs=1e-9)
+        assert np.sum(DC) == pytest.approx(0.006717305986964978, abs=1e-9)
+        assert np.sum(TAchC) == pytest.approx(-0.2286190741226864, abs=1e-9)
+        assert np.sum(LchC) == pytest.approx(-1.8564202776151473, abs=1e-9)
+        assert np.sum(TchC) == pytest.approx(0.011126795737552403, abs=1e-9)
