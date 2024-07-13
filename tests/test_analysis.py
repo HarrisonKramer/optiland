@@ -222,3 +222,18 @@ class TestTelescopeTripletDistortion:
         dist = analysis.Distortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
+
+
+class TestTelescopeTripletGridDistortion:
+    @patch('matplotlib.pyplot.show')
+    def test_view_grid_distortion(self, mock_show, telescope_objective):
+        dist = analysis.GridDistortion(telescope_objective)
+        dist.view()
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_grid_distortion_larger_fig(self, mock_show,
+                                             telescope_objective):
+        dist = analysis.GridDistortion(telescope_objective)
+        dist.view(figsize=(12.4, 10))
+        mock_show.assert_called_once()
