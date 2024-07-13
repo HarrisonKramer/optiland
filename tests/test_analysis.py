@@ -211,6 +211,21 @@ class TestTelescopeTripletYYbar:
 
 
 class TestTelescopeTripletDistortion:
+    def test_distortion_values(self, telescope_objective):
+        dist = analysis.Distortion(telescope_objective)
+
+        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
+        assert dist.data[0][-1] == \
+            pytest.approx(0.005950509480884957, abs=1e-9)
+
+        assert dist.data[1][0] == pytest.approx(0.0, abs=1e-9)
+        assert dist.data[1][-1] == \
+            pytest.approx(0.005786305783771451, abs=1e-9)
+
+        dist = analysis.GridDistortion(telescope_objective)
+        assert dist.data[2][-1] == \
+            pytest.approx(0.005720392850412076, abs=1e-9)
+
     @patch('matplotlib.pyplot.show')
     def test_view_distortion(self, mock_show, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
@@ -225,6 +240,37 @@ class TestTelescopeTripletDistortion:
 
 
 class TestTelescopeTripletGridDistortion:
+    def test_grid_distortion_values(self, telescope_objective):
+        dist = analysis.GridDistortion(telescope_objective)
+
+        assert dist.data['max_distortion'] == \
+            pytest.approx(0.005785718069180374, abs=1e-9)
+
+        assert dist.data['xr'].shape == (10, 10)
+        assert dist.data['yr'].shape == (10, 10)
+        assert dist.data['xp'].shape == (10, 10)
+        assert dist.data['yp'].shape == (10, 10)
+
+        assert dist.data['xr'][0, 0] == pytest.approx(1.2342622299776145,
+                                                      abs=1e-9)
+        assert dist.data['xr'][4, 6] == pytest.approx(-0.41137984374933073,
+                                                      abs=1e-9)
+
+        assert dist.data['yr'][1, 0] == pytest.approx(-0.959951505834632,
+                                                      abs=1e-9)
+        assert dist.data['yr'][2, 6] == pytest.approx(-0.6856458243955965,
+                                                      abs=1e-9)
+
+        assert dist.data['xp'][0, 2] == pytest.approx(0.6856375010477692,
+                                                      abs=1e-9)
+        assert dist.data['xp'][4, 4] == pytest.approx(0.13712543741510327,
+                                                      abs=1e-9)
+
+        assert dist.data['yp'][-1, 0] == pytest.approx(1.2341908231761498,
+                                                       abs=1e-9)
+        assert dist.data['yp'][1, 5] == pytest.approx(-0.9599069415493584,
+                                                      abs=1e-9)
+
     @patch('matplotlib.pyplot.show')
     def test_view_grid_distortion(self, mock_show, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
