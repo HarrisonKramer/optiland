@@ -222,7 +222,7 @@ class TestTelescopeTripletDistortion:
         assert dist.data[1][-1] == \
             pytest.approx(0.005786305783771451, abs=1e-9)
 
-        dist = analysis.GridDistortion(telescope_objective)
+        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
         assert dist.data[2][-1] == \
             pytest.approx(0.005720392850412076, abs=1e-9)
 
