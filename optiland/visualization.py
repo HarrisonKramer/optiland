@@ -31,7 +31,6 @@ from vtkmodules.vtkRenderingCore import (
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
-from optiland.surfaces import ReflectiveSurface
 from optiland.rays import RealRays
 
 
@@ -95,7 +94,7 @@ class LensViewer:
 
         for k in range(1, self.optic.surface_group.num_surfaces-1):
             surf = self.optic.surface_group.surfaces[k]
-            if isinstance(surf, ReflectiveSurface):
+            if surf.is_reflective:
                 y = self._get_surface_extent(k)
                 z = surf.geometry.sag(y=y) + surf.geometry.cs.z
                 self._plot_surface(y, z)
