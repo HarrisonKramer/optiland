@@ -10,3 +10,4 @@ dist/
 optiland.egg-info/
 **/Scripts/
 references/
+htmlcov/
