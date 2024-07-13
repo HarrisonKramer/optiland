@@ -72,33 +72,35 @@ class Optic:
         z = self.surface_group.positions[1:-1]
         return np.max(z) - np.min(z)
 
-    def add_surface(self, new_surface=None, index=None, thickness=0,
-                    radius=np.inf, material='air', conic=0, is_stop=False,
-                    dx=0, dy=0, rx=0, ry=0, aperture=None):
+    def add_surface(self, new_surface=None, surface_type='standard',
+                    index=None, is_stop=False, material='air', thickness=0,
+                    **kwargs):
         """
-        Add a surface to the optical system.
+        Adds a new surface to the optic.
 
         Args:
-            new_surface (Surface, optional): The surface to be added.
-            index (int, optional): The index at which the surface should be
-                added. If not specified, the surface will be added at the end.
-            thickness (float, optional): The thickness of the surface.
-            radius (float, optional): The radius of curvature of the surface.
+            new_surface (Surface, optional): The new surface to add. If not
+                provided, a new surface will be created based on the other
+                arguments.
+            surface_type (str, optional): The type of surface to create.
+            index (int, optional): The index at which to insert the new
+                surface. If not provided, the surface will be appended to the
+                end of the list.
+            is_stop (bool, optional): Indicates if the surface is the aperture.
             material (str, optional): The material of the surface.
-            conic (float, optional): The conic constant of the surface.
-            is_stop (bool, optional): Whether the surface is the aperture stop.
-            dx (float, optional): The x-coordinate of the decenter of the
-                surface.
-            dy (float, optional): The y-coordinate of the decenter of the
-                surface.
-            rx (float, optional): The x-tilt angle of the surface.
-            ry (float, optional): The y-tilt angle of the surface.
-            aperture (Aperture, optional): The physical aperture of the
-                surface.
+                Default is 'air'.
+            thickness (float, optional): The thickness of the surface.
+                Default is 0.
+            **kwargs: Additional keyword arguments for surface-specific
+                parameters such as radius, conic, dx, dy, rx, ry, aperture.
+
+        Raises:
+            ValueError: If index is not provided when defining a new surface.
         """
-        self.surface_group.add_surface(new_surface, index, thickness, radius,
-                                       material, conic, is_stop,
-                                       dx, dy, rx, ry, aperture)
+        self.surface_group.add_surface(
+            new_surface=new_surface, surface_type=surface_type, index=index,
+            is_stop=is_stop, material=material, thickness=thickness, **kwargs
+            )
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
         """
@@ -336,6 +338,8 @@ class Optic:
 
         rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
         self.surface_group.trace(rays)
+
+        return rays
 
     def trace_generic(self, Hx, Hy, Px, Py, wavelength):
         """
