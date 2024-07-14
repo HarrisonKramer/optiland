@@ -4,9 +4,10 @@ This module provides classes to define physical apertures on optical surfaces.
 
 Kramer Harrison, 2024
 """
+from abc import ABC, abstractmethod
 
 
-class BaseAperture:
+class BaseAperture(ABC):
     """
     Base class for physical apertures.
 
@@ -25,6 +26,16 @@ class BaseAperture:
             list: List of clipped rays.
         """
         return rays
+
+    @abstractmethod
+    def scale(self, scale_factor):
+        """
+        Scales the aperture by the given factor.
+
+        Parameters:
+            scale_factor (float): The factor by which to scale the aperture.
+        """
+        pass
 
 
 class RadialAperture(BaseAperture):
@@ -52,3 +63,13 @@ class RadialAperture(BaseAperture):
         radius2 = rays.x**2 + rays.y**2
         condition = (radius2 > self.r_max**2) | (radius2 < self.r_min**2)
         rays.clip(condition)
+
+    def scale(self, scale_factor):
+        """
+        Scales the aperture by the given factor.
+
+        Args:
+            scale_factor (float): The factor by which to scale the aperture.
+        """
+        self.r_max *= scale_factor
+        self.r_min *= scale_factor
