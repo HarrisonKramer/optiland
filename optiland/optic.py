@@ -222,6 +222,39 @@ class Optic:
         surface = self.surface_group.surfaces[surface_number]
         surface.geometry.c[aspher_coeff_idx] = value
 
+    def scale_system(self, scale_factor):
+        """
+        Scales the optical system by a given scale factor.
+
+        Args:
+            scale_factor (float): The factor by which to scale the system.
+        """
+        num_surfaces = self.surface_group.num_surfaces
+        radii = self.surface_group.radii
+        thicknesses = [
+            self.surface_group.get_thickness(surf_idx)[0]
+            for surf_idx in range(num_surfaces-1)
+        ]
+
+        # Scale radii & thicknesses
+        for surf_idx in range(num_surfaces):
+            if not np.isinf(radii[surf_idx]):
+                self.set_radius(radii[surf_idx] * scale_factor, surf_idx)
+
+            if (surf_idx != num_surfaces-1
+               and not np.isinf(thicknesses[surf_idx])):
+                self.set_thickness(thicknesses[surf_idx] * scale_factor,
+                                   surf_idx)
+
+        # Scale aperture, if aperture type is EPD
+        if self.aperture.ap_type == 'EPD':
+            self.aperture.value *= scale_factor
+
+        # Scale physical apertures
+        for surface in self.surface_group.surfaces:
+            if surface.aperture is not None:
+                surface.aperture.scale(scale_factor)
+
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              figsize=(10, 4)):
         """
