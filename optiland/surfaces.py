@@ -1,3 +1,14 @@
+"""Optiland Surfaces Module
+
+This module defines the `Surface` class, which represents a surface in an
+optical system. Surfaces are characterized by their geometry, materials before
+and after the surface, and optional properties such as being an aperture stop,
+having a physical aperture, and a coating. The module facilitates the tracing
+of rays through these surfaces, accounting for refraction, reflection, and
+absorption based on the surface properties and materials involved.
+
+Kramer Harrison, 2023
+"""
 from typing import List
 from copy import deepcopy
 import numpy as np
@@ -11,7 +22,7 @@ from optiland.coatings import BaseCoating
 
 class Surface:
     """
-    Represents a surface in an optical system.
+    Represents a standard refractice surface in an optical system.
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
@@ -31,7 +42,8 @@ class Surface:
                  material_post: BaseMaterial,
                  is_stop: bool = False,
                  aperture: BaseAperture = None,
-                 coating: BaseCoating = None):
+                 coating: BaseCoating = None,
+                 is_reflective: bool = False):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
@@ -39,6 +51,7 @@ class Surface:
         self.aperture = aperture
         self.semi_aperture = None
         self.coating = coating
+        self.is_reflective = is_reflective
 
         self.reset()
 
@@ -84,23 +97,6 @@ class Surface:
         self.aoi = np.empty(0)
         self.opd = np.empty(0)
 
-    def _compute_aoi(self, rays, nx, ny, nz):
-        """
-        Computes the angle of incidence for the given rays and surface normals.
-
-        Args:
-            rays: The rays.
-            nx: The x-component of the surface normals.
-            ny: The y-component of the surface normals.
-            nz: The z-component of the surface normals.
-
-        Returns:
-            np.ndarray: The angle of incidence for each ray.
-        """
-        dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
-        dot = np.clip(dot, -1, 1)  # required due to numerical precision
-        return np.arccos(dot)
-
     def _record(self, rays):
         """
         Records the ray information.
@@ -123,9 +119,39 @@ class Surface:
             self.energy = np.copy(np.atleast_1d(rays.e))
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
-    def _interact(self, rays, nx, ny, nz):
+    def _interact(self, rays):
         """
-        Interacts the rays with the surface by refracting them.
+        Interacts the rays with the surface by either reflecting or refracting
+
+        Args:
+            rays: The rays.
+
+        Returns:
+            RealRays: The refracted rays.
+        """
+        # find surface normals
+        nx, ny, nz = self.geometry.surface_normal(rays)
+
+        # Get initial ray parameters for coating
+        if self.coating:
+            params = self.coating.create_interaction_params(rays, nx, ny, nz)
+
+        # Interact with surface (refract or reflect)
+        if self.is_reflective:
+            rays = self._reflect(rays, nx, ny, nz)
+        else:
+            rays = self._refract(rays, nx, ny, nz)
+
+        # if there is a coating, modify ray properties
+        if self.coating:
+            params.rays = rays  # assign rays after interaction
+            rays = self.coating.interact(params, reflect=self._is_reflective)
+
+        return rays
+
+    def _refract(self, rays, nx, ny, nz):
+        """
+        Refract rays on the surface.
 
         Args:
             rays: The rays.
@@ -134,7 +160,7 @@ class Surface:
             nz: The z-component of the surface normals.
 
         Returns:
-            BaseRays: The refracted rays.
+            RealRays: The refracted rays.
         """
         ix = rays.L
         iy = rays.M
@@ -156,12 +182,31 @@ class Surface:
 
         return rays
 
+    def _reflect(self, rays, nx, ny, nz):
+        """
+        Reflects the rays on the surface.
+
+        Args:
+            rays: The rays to be reflected.
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            RealRays: The reflected rays.
+        """
+        dot = rays.L * nx + rays.M * ny + rays.N * nz
+        rays.L -= 2 * dot * nx
+        rays.M -= 2 * dot * ny
+        rays.N -= 2 * dot * nz
+        return rays
+
     def _trace_paraxial(self, rays: ParaxialRays):
         """
         Traces paraxial rays through the surface.
 
         Args:
-            rays (ParaxialRays): The paraxial rays to be traced.
+            ParaxialRays: The paraxial rays to be traced.
         """
         # reset recorded information
         self.reset()
@@ -173,13 +218,18 @@ class Surface:
         t = -rays.z
         rays.propagate(t)
 
-        # surface power
-        n1 = self.material_pre.n(rays.w)
-        n2 = self.material_post.n(rays.w)
-        power = (n2 - n1) / self.geometry.radius
+        if self.is_reflective:
+            # reflect (derived from paraxial equations when n'=-n)
+            rays.u = -rays.u - 2 * rays.y / self.geometry.radius
 
-        # refract
-        rays.u = 1 / n2 * (n1 * rays.u - rays.y * power)
+        else:
+            # surface power
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            power = (n2 - n1) / self.geometry.radius
+
+            # refract
+            rays.u = 1 / n2 * (n1 * rays.u - rays.y * power)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
@@ -215,22 +265,8 @@ class Surface:
         if self.aperture:
             self.aperture.clip(rays)
 
-        # find surface normals
-        nx, ny, nz = self.geometry.surface_normal(rays)
-
-        # record initial direction cosines. Only needed if coating is applied
-        if self.coating:
-            L0 = np.copy(np.atleast_1d(rays.L))
-            M0 = np.copy(np.atleast_1d(rays.M))
-            N0 = np.copy(np.atleast_1d(rays.N))
-            aoi = self._compute_aoi(rays, nx, ny, nz)
-
-        # Interact with surface (refract or reflect)
-        rays = self._interact(rays, nx, ny, nz)
-
-        # if there is a coating, modify ray properties
-        if self.coating:
-            rays = self.coating.interact(rays, aoi, L0, M0, N0)
+        # interact with surface
+        rays = self._interact(rays)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
@@ -239,93 +275,6 @@ class Surface:
         self._record(rays)
 
         return rays
-
-
-class ReflectiveSurface(Surface):
-    """
-    A class representing a reflective surface.
-
-    Inherits from the Surface class and provides methods for reflecting rays
-    on the surface.
-
-    Args:
-        geometry (BaseGeometry): The geometry of the surface.
-        material_pre (BaseMaterial): The material before the surface.
-        is_stop (bool, optional): Indicates if the surface is the aperture
-            stop. Defaults to False.
-        aperture (float, optional): The physical aperture of the surface.
-            Defaults to None.
-    """
-
-    def __init__(self, geometry: BaseGeometry, material_pre: BaseMaterial,
-                 is_stop: bool = False, aperture: BaseAperture = None):
-        super().__init__(
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_pre,
-            is_stop=is_stop,
-            aperture=aperture
-        )
-
-    def _interact(self, rays, nx, ny, nz):
-        """
-        Reflects the rays on the surface.
-
-        Args:
-            rays: The rays to be reflected.
-            nx: The x-component of the surface normal.
-            ny: The y-component of the surface normal.
-            nz: The z-component of the surface normal.
-
-        Returns:
-            RealRays: The reflected rays.
-        """
-        dot = rays.L * nx + rays.M * ny + rays.N * nz
-        rays.L -= 2 * dot * nx
-        rays.M -= 2 * dot * ny
-        rays.N -= 2 * dot * nz
-        return rays
-
-    def _trace_paraxial(self, rays: ParaxialRays):
-        """
-        Trace paraxial rays through the surface.
-
-        Args:
-            rays (ParaxialRays): The paraxial rays to be traced.
-
-        Returns:
-            None
-
-        This method traces the given paraxial rays through the surface.
-        It performs the following steps:
-            1. Resets the recorded information.
-            2. Localizes the coordinate system based on the surface geometry.
-            3. Propagates the rays to the surface.
-            4. Reflects the rays using the paraxial equations.
-            5. Globalizes the coordinate system based on the surface geometry.
-            6. Records the traced rays.
-
-        Note:
-        - The paraxial rays are modified in-place.
-        - The surface geometry must be set before calling this method.
-        """
-        # reset recorded information
-        self.reset()
-
-        # transform coordinate system
-        self.geometry.localize(rays)
-
-        # propagate to this surface
-        t = -rays.z
-        rays.propagate(t)
-
-        # reflect (derived from paraxial equations when n'=-n)
-        rays.u = -rays.u - 2 * rays.y / self.geometry.radius
-
-        # inverse transform coordinate system
-        self.geometry.globalize(rays)
-
-        self._record(rays)
 
 
 class ObjectSurface(Surface):
@@ -372,7 +321,7 @@ class ObjectSurface(Surface):
             rays (Rays): The rays to be traced.
 
         Returns:
-            Rays: The traced rays.
+            RealRays: The traced rays.
         """
         # reset recorded information
         self.reset()
@@ -411,7 +360,7 @@ class ObjectSurface(Surface):
             nz (float): The z-component of the surface normal.
 
         Returns:
-            Rays: The interacted rays.
+            RealRays: The interacted rays.
         """
         return rays
 
@@ -443,9 +392,6 @@ class ImageSurface(Surface):
 
         Args:
             rays (ParaxialRays): The paraxial rays to be traced.
-
-        Returns:
-            None
         """
         # reset recorded information
         self.reset()
@@ -459,7 +405,7 @@ class ImageSurface(Surface):
 
         self._record(rays)
 
-    def _interact(self, rays, nx, ny, nz):
+    def _interact(self, rays):
         """
         Interacts rays with the surface.
 
@@ -470,9 +416,158 @@ class ImageSurface(Surface):
             nz: The z-component of the surface normal.
 
         Returns:
-            The modified rays after interaction with the surface.
+            RealRays: The modified rays after interaction with the surface.
         """
         return rays
+
+
+class SurfaceFactory:
+    """
+    A factory class for creating surface objects.
+
+    Args:
+        surface_group (SurfaceGroup): The surface group to which the surfaces
+            belong.
+
+    Attributes:
+        _surface_group (SurfaceGroup): The surface group to which the surfaces
+            belong.
+        _last_thickness (float): The thickness of the last created surface.
+    """
+
+    def __init__(self, surface_group):
+        self._surface_group = surface_group
+        self._last_thickness = 0
+
+    def create_surface(self, surface_type, index, is_stop, material, thickness,
+                       **kwargs):
+        """
+        Create a surface object based on the given parameters.
+
+        Args:
+            surface_type (str): The type of surface to create.
+            index (int): The index of the surface.
+            is_stop (bool): Indicates whether the surface is a stop surface.
+            material (str): The material of the surface.
+            thickness (float): The thickness of the surface.
+            **kwargs: Additional keyword arguments for configuring the surface.
+
+        Returns:
+            Surface: The created surface object.
+
+        Raises:
+            ValueError: If the index is greater than the number of surfaces.
+        """
+        if index > self._surface_group.num_surfaces:
+            raise ValueError('Surface index cannot be greater than number of '
+                             'surfaces.')
+
+        cs = self._configure_cs(index, thickness, **kwargs)
+        geometry = self._configure_geometry(cs, **kwargs)
+        material_pre, material_post = self._configure_material(index, material)
+
+        if index == 0:
+            return ObjectSurface(geometry, material_post)
+
+        if material == 'mirror':
+            is_reflective = True
+        else:
+            is_reflective = False
+
+        if surface_type == 'standard':
+            # filter out unexpected parameters
+            expected_params = ['aperture', 'semi_aperture', 'coating']
+            filtered_kwargs = {key: value for key, value in kwargs.items()
+                               if key in expected_params}
+
+            return Surface(geometry, material_pre, material_post, is_stop,
+                           is_reflective=is_reflective, **filtered_kwargs)
+
+    def _configure_cs(self, index, thickness, **kwargs):
+        """
+        Configures the coordinate system for a given surface.
+
+        Args:
+            index (int): The index of the surface.
+            thickness (float): The thickness of the surface.
+            **kwargs: Additional keyword arguments for the coordinate system.
+                Options include dx, dy, rx, ry.
+
+        Returns:
+            CoordinateSystem: The configured coordinate system.
+        """
+        dx = kwargs.get('dx', 0)
+        dy = kwargs.get('dy', 0)
+        rx = kwargs.get('rx', 0)
+        ry = kwargs.get('ry', 0)
+
+        if index == 0:  # object surface
+            z = -thickness
+        elif index == 1:
+            z = 0  # first surface, always at zero
+        else:
+            z = self._surface_group.positions[index-1] + self._last_thickness
+
+        self._last_thickness = thickness
+
+        return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
+
+    @staticmethod
+    def _configure_geometry(cs, **kwargs):
+        """
+        Configures the geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius and conic.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+
+        if np.isinf(radius):
+            geometry = Plane(cs)
+        else:
+            geometry = StandardGeometry(cs, radius, conic)
+
+        return geometry
+
+    def _configure_material(self, index, material):
+        """
+        Configures the material for a surface based on the given index and
+            material input.
+
+        Args:
+            index (int): The index of the surface.
+            material (BaseMaterial, tuple, str): The material input for the
+                surface. It can be an instance of BaseMaterial, a tuple
+                containing the name and reference of the material, or a string
+                representing the material. See examples.
+
+        Returns:
+            tuple: A tuple containing the material before and after the
+                surface.
+        """
+        if isinstance(material, BaseMaterial):
+            material_post = material
+        elif isinstance(material, tuple):
+            material_post = Material(name=material[0], reference=material[1])
+        elif isinstance(material, str):
+            if material in ['mirror', 'air']:
+                material_post = IdealMaterial(n=1.0, k=0.0)
+            else:
+                material_post = Material(material)
+
+        if index == 0:
+            material_pre = None
+        else:
+            previous_surface = self._surface_group.surfaces[index-1]
+            material_pre = previous_surface.material_post
+
+        return material_pre, material_post
 
 
 class SurfaceGroup:
@@ -497,7 +592,7 @@ class SurfaceGroup:
         else:
             self.surfaces = surfaces
 
-        self._last_thickness = 0
+        self.surface_factory = SurfaceFactory(self)
 
     @property
     def x(self):
@@ -606,9 +701,9 @@ class SurfaceGroup:
         for surface in self.surfaces[skip:]:
             surface.trace(rays)
 
-    def add_surface(self, new_surface=None, index=None, thickness=0,
-                    radius=np.inf, material='air', conic=0, is_stop=False,
-                    dx=0, dy=0, rx=0, ry=0, aperture=None):
+    def add_surface(self, new_surface=None, surface_type='standard',
+                    index=None, is_stop=False, material='air', thickness=0,
+                    **kwargs):
         """
         Adds a new surface to the list of surfaces.
 
@@ -616,41 +711,28 @@ class SurfaceGroup:
             new_surface (Surface, optional): The new surface to add. If not
                 provided, a new surface will be created based on the other
                 arguments.
+            surface_type (str, optional): The type of surface to create.
             index (int, optional): The index at which to insert the new
                 surface. If not provided, the surface will be appended to the
                 end of the list.
-            thickness (float, optional): The thickness of the surface.
-                Default is 0.
-            radius (float, optional): The radius of curvature of the surface.
-                Default is infinity.
+            is_stop (bool, optional): Indicates if the surface is the aperture.
             material (str, optional): The material of the surface.
                 Default is 'air'.
-            conic (float, optional): The conic constant of the surface.
+            thickness (float, optional): The thickness of the surface.
                 Default is 0.
-            is_stop (bool, optional): Whether the surface is the aperture stop
-                surface. Default is False.
-            dx (float, optional): The x-coordinate displacement of the
-                surface. Default is 0.
-            dy (float, optional): The y-coordinate displacement of the
-                surface. Default is 0.
-            rx (float, optional): The x-axis rotation angle of the surface.
-                Default is 0.
-            ry (float, optional): The y-axis rotation angle of the surface.
-                Default is 0.
-            aperture (BaseAperture, optional): The physical aperture of the
-                surface. Default is None.
+            **kwargs: Additional keyword arguments for surface-specific
+                parameters such as radius, conic, dx, dy, rx, ry, aperture.
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
-
         """
         if new_surface is None:
             if index is None:
                 raise ValueError('Must define index when defining surface.')
 
-            new_surface = self._configure_surface(index, thickness, radius,
-                                                  material, conic, is_stop,
-                                                  dx, dy, rx, ry, aperture)
+            new_surface = self.surface_factory.create_surface(
+                surface_type, index, is_stop, material, thickness, **kwargs
+                )
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -716,139 +798,3 @@ class SurfaceGroup:
             surf.material_post = temp
 
         return SurfaceGroup(surfs_inverted)
-
-    def _configure_cs(self, index, thickness, dx, dy, rx, ry):
-        """
-        Configures the coordinate system for a given surface.
-
-        Args:
-            index (int): The index of the surface.
-            thickness (float): The thickness of the surface.
-            dx (float): The x-coordinate offset of the surface.
-            dy (float): The y-coordinate offset of the surface.
-            rx (float): The rotation around the x-axis of the surface.
-            ry (float): The rotation around the y-axis of the surface.
-
-        Returns:
-            CoordinateSystem: The configured coordinate system.
-        """
-        if index == 0:  # object surface
-            z = -thickness
-        elif index == 1:
-            z = 0  # first surface, always at zero
-        else:
-            z = self.positions[index-1] + self._last_thickness
-
-        self._last_thickness = thickness
-
-        return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
-
-    def _configure_geometry(self, cs, radius, conic):
-        """
-        Configures the geometry based on the given parameters.
-
-        Parameters:
-            cs: The coordinate system for the geometry.
-            radius: The radius of the geometry. If it is infinity, a plane
-                geometry is used.
-            conic: The conic constant for the geometry.
-
-        Returns:
-            geometry: The configured geometry object.
-
-        """
-        if np.isinf(radius):
-            geometry = Plane(cs)
-        else:
-            geometry = StandardGeometry(cs, radius, conic)
-
-        return geometry
-
-    def _configure_material(self, index, material):
-        """
-        Configures the material for a surface based on the given index and
-            material input.
-
-        Args:
-            index (int): The index of the surface.
-            material (BaseMaterial, tuple, str): The material input for the
-                surface. It can be an instance of BaseMaterial, a tuple
-                containing the name and reference of the material, or a string
-                representing the material. See examples.
-
-        Returns:
-            tuple: A tuple containing the material before and after the
-                surface.
-        """
-        if isinstance(material, BaseMaterial):
-            material_post = material
-        elif isinstance(material, tuple):
-            material_post = Material(name=material[0], reference=material[1])
-        elif isinstance(material, str):
-            if material in ['mirror', 'air']:
-                material_post = IdealMaterial(n=1.0, k=0.0)
-            else:
-                material_post = Material(material)
-
-        if index == 0:
-            material_pre = None
-        else:
-            material_pre = self.surfaces[index-1].material_post
-
-        return material_pre, material_post
-
-    def _configure_surface(self, index, thickness=0, radius=np.inf,
-                           material='air', conic=0, is_stop=False,
-                           dx=0, dy=0, rx=0, ry=0, aperture=None):
-        """
-        Configures a surface based on the provided parameters.
-
-        Args:
-            index (int): The index of the surface.
-            thickness (float, optional): The thickness of the surface.
-                Defaults to 0.
-            radius (float, optional): The radius of curvature of the surface.
-                Defaults to np.inf.
-            material (str, optional): The material of the surface.
-                Defaults to 'air'.
-            conic (float, optional): The conic constant of the surface.
-                Defaults to 0.
-            is_stop (bool, optional): Indicates if the surface is the aperture
-                stop. Defaults to False.
-            dx (float, optional): The x-coordinate displacement of the
-                surface. Defaults to 0.
-            dy (float, optional): The y-coordinate displacement of the
-                surface. Defaults to 0.
-            rx (float, optional): The x-axis rotation angle of the surface.
-                Defaults to 0.
-            ry (float, optional): The y-axis rotation angle of the surface.
-                Defaults to 0.
-            aperture (float, optional): The physical aperture of the surface.
-                Defaults to None.
-
-        Returns:
-            Surface: The configured surface object.
-
-        Raises:
-            ValueError: If the surface index is greater than the number of
-                surfaces.
-        """
-        if index > self.num_surfaces:
-            raise ValueError('Surface index cannot be greater than number of '
-                             'surfaces.')
-
-        cs = self._configure_cs(index, thickness, dx, dy, rx, ry)
-        geometry = self._configure_geometry(cs, radius, conic)
-        material_pre, material_post = self._configure_material(index, material)
-
-        if index == 0:
-            return ObjectSurface(geometry, material_post)
-        elif index == self.num_surfaces-1:
-            return ImageSurface(geometry, material_pre, aperture)
-        else:
-            if material == 'mirror':
-                return ReflectiveSurface(geometry, material_pre, is_stop,
-                                         aperture)
-            else:
-                return Surface(geometry, material_pre, material_post, is_stop,
-                               aperture)

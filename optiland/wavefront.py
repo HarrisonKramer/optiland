@@ -1,3 +1,15 @@
+"""Optiland Wavefront Module
+
+This module provides the `Wavefront` class, which is designed to analyze the
+wavefront of an optical system. It supports the evaluation of wavefront
+aberrations using Zernike polynomials, the generation of wavefront maps for
+different field positions and wavelengths, and the calculation of optical path
+differences (OPD) relative to a reference sphere. The module integrates with
+the rest of the Optiland suite, utilizing its distribution, Zernike, and
+optical system modeling capabilities.
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
@@ -6,6 +18,28 @@ from optiland.zernike import ZernikeFit
 
 
 class Wavefront:
+    """
+    Represents a wavefront analysis for an optic.
+
+    Args:
+        optic (Optic): The optic on which to perform the wavefront analysis.
+        fields (str or list, optional): The fields to analyze.
+            Defaults to 'all'.
+        wavelengths (str or list, optional): The wavelengths to analyze.
+            Defaults to 'all'.
+        num_rays (int, optional): The number of rays to use for the analysis.
+            Defaults to 12.
+        distribution (str or Distribution, optional): The distribution of rays.
+            Defaults to 'hexapolar'.
+
+    Attributes:
+        optic (Optic): The optic object being analyzed.
+        fields (list): The fields to analyze, as a list of (x, y) tuples.
+        wavelengths (list): The wavelengths to analyze.
+        num_rays (int): The number of rays used for the analysis.
+        distribution (Distribution): The distribution of rays.
+        data (list): The generated wavefront data.
+    """
 
     def __init__(self, optic, fields='all', wavelengths='all', num_rays=12,
                  distribution='hexapolar'):
@@ -30,6 +64,16 @@ class Wavefront:
         self.data = self._generate_data(self.fields, self.wavelengths)
 
     def _generate_data(self, fields, wavelengths):
+        """
+        Generates the wavefront data for the specified fields and wavelengths.
+
+        Args:
+            fields (list): The fields to analyze.
+            wavelengths (list): The wavelengths to analyze.
+
+        Returns:
+            list: The generated wavefront data.
+        """
         pupil_z = (self.optic.paraxial.XPL() +
                    self.optic.surface_group.positions[-1])
 
@@ -52,6 +96,23 @@ class Wavefront:
         return data
 
     def _generate_field_data(self, field, wavelength, opd_ref, xc, yc, zc, R):
+        """
+        Generates the wavefront data for a specific field and wavelength.
+
+        Args:
+            field (tuple): The field coordinates.
+            wavelength (float): The wavelength.
+            opd_ref (float): The reference optical path length.
+            xc (float): The x-coordinate of the reference sphere center.
+            yc (float): The y-coordinate of the reference sphere center.
+            zc (float): The z-coordinate of the reference sphere center.
+            R (float): The radius of the reference sphere.
+
+        Returns:
+            tuple: The generated wavefront data, including the optical path
+                difference and energy.
+
+        """
         # trace distribution through pupil
         self.optic.trace(*field, wavelength, None, self.distribution)
         energy = self.optic.surface_group.energy[-1, :]
@@ -60,9 +121,30 @@ class Wavefront:
         return (opd_ref - opd) / (wavelength * 1e-3), energy
 
     def _trace_chief_ray(self, field, wavelength):
+        """
+        Traces the chief ray for a specific field and wavelength.
+
+        Args:
+            field (tuple): The field coordinates.
+            wavelength (float): The wavelength.
+
+        """
         self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=wavelength)
 
     def _get_reference_sphere(self, pupil_z):
+        """
+        Calculates the properties of the reference sphere.
+
+        Args:
+            pupil_z (float): The z-coordinate of the pupil.
+
+        Returns:
+            tuple: The x-coordinate, y-coordinate, z-coordinate, and radius of
+                the reference sphere.
+
+        Raises:
+            ValueError: If the chief ray cannot be determined.
+        """
         if self.optic.surface_group.x[-1, :].size != 1:
             raise ValueError('Chief ray cannot be determined. '
                              'It must be traced alone.')
@@ -78,10 +160,34 @@ class Wavefront:
         return xc, yc, zc, R
 
     def _get_path_length(self, xc, yc, zc, r):
+        """
+        Calculates the optical path difference.
+
+        Args:
+            xc (float): The x-coordinate of the reference sphere center.
+            yc (float): The y-coordinate of the reference sphere center.
+            zc (float): The z-coordinate of the reference sphere center.
+            r (float): The radius of the reference sphere.
+
+        Returns:
+            float: The optical path difference.
+        """
         opd = self.optic.surface_group.opd[-1, :]
         return opd - self._opd_image_to_xp(xc, yc, zc, r)
 
     def _correct_tilt(self, field, opd, x=None, y=None):
+        """
+        Corrects for tilt in the optical path difference.
+
+        Args:
+            field (tuple): The field coordinates.
+            opd (float): The optical path difference.
+            x (float, optional): The x-coordinate. Defaults to None.
+            y (float, optional): The y-coordinate. Defaults to None.
+
+        Returns:
+            float: The corrected optical path difference.
+        """
         tilt_correction = 0
         if self.optic.field_type == 'angle':
             Hx, Hy = field
@@ -97,6 +203,18 @@ class Wavefront:
         return opd - tilt_correction
 
     def _opd_image_to_xp(self, xc, yc, zc, R):
+        """
+        Finds propagation distance from image plane to reference sphere.
+
+        Args:
+            xc (float): The x-coordinate of the reference sphere center.
+            yc (float): The y-coordinate of the reference sphere center.
+            zc (float): The z-coordinate of the reference sphere center.
+            R (float): The radius of the reference sphere.
+
+        Returns:
+            float: Propagation distance from image plane to reference sphere.
+        """
         xr = self.optic.surface_group.x[-1, :]
         yr = self.optic.surface_group.y[-1, :]
         zr = self.optic.surface_group.z[-1, :]
@@ -121,6 +239,25 @@ class Wavefront:
 
 
 class OPDFan(Wavefront):
+    """
+    Represents a fan plot of the wavefront error for a given optic.
+
+    Args:
+        optic (Optic): The optic for which the wavefront error is calculated.
+        fields (str or list, optional): The fields for which the wavefront
+            error is calculated. Defaults to 'all'.
+        wavelengths (str or list, optional): The wavelengths for which the
+            wavefront error is calculated. Defaults to 'all'.
+        num_rays (int, optional): The number of rays used to calculate the
+            wavefront error. Defaults to 100.
+
+    Attributes:
+        pupil_coord (numpy.ndarray): The coordinates of the pupil.
+        data (numpy.ndarray): The wavefront error data.
+
+    Methods:
+        view: Plots the wavefront error.
+    """
 
     def __init__(self, optic, fields='all', wavelengths='all', num_rays=100):
         self.pupil_coord = np.linspace(-1, 1, num_rays)
@@ -128,6 +265,13 @@ class OPDFan(Wavefront):
                          num_rays=num_rays, distribution='cross')
 
     def view(self, figsize=(10, 3)):
+        """
+        Visualizes the wavefront error for different fields and wavelengths.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (10, 3).
+        """
         num_rows = len(self.fields)
 
         _, axs = plt.subplots(
@@ -136,7 +280,7 @@ class OPDFan(Wavefront):
             figsize=(figsize[0], num_rows * figsize[1]),
             sharex=True,
             sharey=True
-            )
+        )
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
@@ -176,12 +320,47 @@ class OPDFan(Wavefront):
 
 
 class OPD(Wavefront):
+    """
+    Represents an Optical Path Difference (OPD) wavefront.
+
+    Args:
+        optic (Optic): The optic object.
+        field (tuple): The field at which to calculate the OPD.
+        wavelength (float): The wavelength of the wavefront.
+        num_rings (int, optional): The number of rings for ray tracing.
+            Defaults to 15.
+
+    Attributes:
+        optic (Optic): The optic object.
+        field (Field): The field object.
+        wavelength (float): The wavelength of the wavefront.
+        num_rings (int): The number of rings for ray tracing.
+        distribution (str): The distribution type for ray tracing.
+        data (ndarray): The wavefront data.
+
+    Methods:
+        view(projection='2d', num_points=256, figsize=(7, 5.5)): Visualizes
+            the OPD wavefront.
+        rms(): Calculates the root mean square (RMS) of the OPD wavefront.
+    """
 
     def __init__(self, optic, field, wavelength, num_rings=15):
         super().__init__(optic, fields=[field], wavelengths=[wavelength],
                          num_rays=num_rings, distribution='hexapolar')
 
     def view(self, projection='2d', num_points=256, figsize=(7, 5.5)):
+        """
+        Visualizes the OPD wavefront.
+
+        Args:
+            projection (str, optional): The projection type. Defaults to '2d'.
+            num_points (int, optional): The number of points for interpolation.
+                Defaults to 256.
+            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+
+        Raises:
+            ValueError: If the projection is not '2d' or '3d'.
+        """
         opd_map = self._generate_opd_map(num_points)
         if projection == '2d':
             self._plot_2d(data=opd_map, figsize=figsize)
@@ -191,9 +370,22 @@ class OPD(Wavefront):
             raise ValueError('OPD projection must be "2d" or "3d".')
 
     def rms(self):
+        """
+        Calculates the root mean square (RMS) of the OPD wavefront.
+
+        Returns:
+            float: The RMS value.
+        """
         return np.sqrt(np.mean(self.data[0][0][0]**2))
 
     def _plot_2d(self, data, figsize=(7, 5.5)):
+        """
+        Plots the 2D visualization of the OPD wavefront.
+
+        Args:
+            data (dict): The OPD map data.
+            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+        """
         _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(np.flipud(data['z']), extent=[-1, 1, -1, 1])
 
@@ -207,6 +399,13 @@ class OPD(Wavefront):
         plt.show()
 
     def _plot_3d(self, data, figsize=(7, 5.5)):
+        """
+        Plots the 3D visualization of the OPD wavefront.
+
+        Args:
+            data (dict): The OPD map data.
+            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+        """
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
                                figsize=figsize)
 
@@ -228,6 +427,16 @@ class OPD(Wavefront):
         plt.show()
 
     def _generate_opd_map(self, num_points=256):
+        """
+        Generates the OPD map data.
+
+        Args:
+            num_points (int, optional): The number of points for interpolation.
+                Defaults to 256.
+
+        Returns:
+            dict: The OPD map data.
+        """
         x = self.distribution.x
         y = self.distribution.y
         z = self.data[0][0][0]
@@ -247,6 +456,23 @@ class OPD(Wavefront):
 
 
 class ZernikeOPD(ZernikeFit, OPD):
+    """
+    Represents a Zernike Optical Path Difference (OPD) calculation.
+
+    This class inherits from both the ZernikeFit and OPD classes. It first
+    generates the OPD map(s), then fits Zernike polynomials to the map(s).
+
+    Args:
+        optic (object): The optic object representing the optical system.
+        field (tuple): The field used for the calculation.
+        wavelength (float): The wavelength of light used in the calculation.
+        num_rings (int, optional): The number of rings used in the Zernike
+            calculation. Default is 15.
+        zernike_type (str, optional): The type of Zernike polynomials used.
+            Default is 'fringe'. See zernike module for more information.
+        num_terms (int, optional): The number of Zernike terms used in the
+            calculation. Default is 37.
+    """
 
     def __init__(self, optic, field, wavelength, num_rings=15,
                  zernike_type='fringe', num_terms=37):

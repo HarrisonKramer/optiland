@@ -206,3 +206,274 @@ class ObjectiveUS008879901(optic.Optic):
         self.add_wavelength(value=0.6562725)
 
         self.update_paraxial()
+
+
+class TelescopeObjective48Inch(optic.Optic):
+    """48-in. Telescope Objective
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 48
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=-12.7172, thickness=0.8,
+                         material='N-PSK3')
+        self.add_surface(index=2, radius=-18.5430, thickness=0.0148)
+        self.add_surface(index=3, thickness=0.0150, is_stop=True)
+        self.add_surface(index=4, radius=15.758, thickness=1.6701,
+                         material=('CAF2', 'Daimon-20'))
+        self.add_surface(index=5, radius=-13.0390, thickness=0.0487)
+        self.add_surface(index=6, radius=-12.8310, thickness=0.8,
+                         material='S-LAL18')
+        self.add_surface(index=7, radius=-18.5430, thickness=1.1799)
+        self.add_surface(index=8, radius=9.8197, thickness=0.8,
+                         material='N-SK16')
+        self.add_surface(index=9, radius=8.0010, thickness=44.3502)
+        self.add_surface(index=10)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=6)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=7)
+        self.add_field(y=10)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+
+class HeliarLens(optic.Optic):
+    """Heliar Lens f/5
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63
+    """
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=4.2103, thickness=0.9004,
+                         material='N-SK16')
+        self.add_surface(index=2, radius=-3.6208, thickness=0.2999,
+                         material='E-LLF6')
+        self.add_surface(index=3, radius=29.1869, thickness=0.7587)
+        self.add_surface(index=4, radius=-3.1715, thickness=0.2,
+                         material='E-LLF6')
+        self.add_surface(index=5, radius=3.2083, thickness=0.1264)
+        self.add_surface(index=6, radius=np.inf, thickness=0.2629,
+                         is_stop=True)
+        self.add_surface(index=7, radius=43.0710, thickness=0.25,
+                         material='E-LLF6')
+        self.add_surface(index=8, radius=2.4494, thickness=0.8308,
+                         material='N-SK16')
+        self.add_surface(index=9, radius=-3.2576, thickness=8.5066)
+        self.add_surface(index=10)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=5)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=7)
+        self.add_field(y=10)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+
+class TessarLens(optic.Optic):
+    """Tessar Lens f/4.5
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63
+    """
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=1.3329, thickness=0.2791,
+                         material='N-SK15')
+        self.add_surface(index=2, radius=-9.9754, thickness=0.2054)
+        self.add_surface(index=3, radius=-2.0917, thickness=0.09,
+                         material=('F2', 'schott'))
+        self.add_surface(index=4, radius=1.2123, thickness=0.0709)
+        self.add_surface(index=5, radius=np.inf, thickness=0.1534,
+                         is_stop=True)
+        self.add_surface(index=6, radius=-7.5205, thickness=0.09,
+                         material='K10')
+        self.add_surface(index=7, radius=1.3010, thickness=0.3389,
+                         material='N-SK15')
+        self.add_surface(index=8, radius=-1.5218, thickness=3.4025)
+        self.add_surface(index=9)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=4.5)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=10)
+        self.add_field(y=20.5)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+
+class LensWithFieldCorrector(optic.Optic):
+    """5-in. Focal Length, f/3.5 Lens with Field Corrector
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 66
+    """
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=1.9863, thickness=0.5,
+                         material='N-SK16')
+        self.add_surface(index=2, radius=6.2901, thickness=0.4878)
+        self.add_surface(index=3, radius=np.inf, thickness=0.1016,
+                         is_stop=True)
+        self.add_surface(index=4, radius=-2.5971, thickness=0.1843,
+                         material=('F5', 'schott'))
+        self.add_surface(index=5, radius=2.4073, thickness=0.0719)
+        self.add_surface(index=6, radius=5.8147, thickness=0.3153,
+                         material='N-SK16')
+        self.add_surface(index=7, radius=-2.1926, thickness=2.6845)
+        self.add_surface(index=8, radius=1.9071, thickness=0.502,
+                         material='N-SK16')
+        self.add_surface(index=9, radius=2.3148, thickness=0.015)
+        self.add_surface(index=10, radius=1.1907, thickness=0.2,
+                         material='N-SK4')
+        self.add_surface(index=11, radius=0.9911, thickness=1.159)
+        self.add_surface(index=12)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=3.5)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=5)
+        self.add_field(y=9.65)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+        # scale from inches to mm
+        self.scale_system(25.4)
+
+
+class PetzvalLens(optic.Optic):
+    """Petzval lens f/1.4
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 75
+    """
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=1.3265, thickness=0.4,
+                         material='N-LAK12')
+        self.add_surface(index=2, radius=-2.6919, thickness=0.06)
+        self.add_surface(index=3, radius=-2.0028, thickness=0.16,
+                         material=('SF4', 'schott'))
+        self.add_surface(index=4, radius=5.4499, thickness=0.1)
+        self.add_surface(index=5, radius=np.inf, thickness=0.8999,
+                         is_stop=True)
+        self.add_surface(index=6, radius=1.1724, thickness=0.3,
+                         material='N-LAK12')
+        self.add_surface(index=7, radius=-2.4602, thickness=0.2221)
+        self.add_surface(index=8, radius=-0.8615, thickness=0.08,
+                         material=('LF5', 'schott'))
+        self.add_surface(index=9, radius=3.0039, thickness=0.3921)
+        self.add_surface(index=10)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=1.4)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=3.5)
+        self.add_field(y=7)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+        # scale from inches to mm
+        self.scale_system(25.4)
+
+
+class Telephoto(optic.Optic):
+    """Telephot lens f/5.6
+
+    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 91
+    """
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, radius=0.8589, thickness=0.2391,
+                         material='N-BK7')
+        self.add_surface(index=2, radius=-2.6902, thickness=0.09,
+                         material='N-BASF2')
+        self.add_surface(index=3, radius=3.0318, thickness=0.0481)
+        self.add_surface(index=4, radius=np.inf, thickness=1.0347,
+                         is_stop=True)
+        self.add_surface(index=5, radius=-0.5715, thickness=0.09,
+                         material='N-ZK7')
+        self.add_surface(index=6, radius=-0.7423, thickness=0.1005,
+                         material='N-LAF33')
+        self.add_surface(index=7, radius=-1.1433, thickness=0.0156)
+        self.add_surface(index=8, radius=-17.0388, thickness=0.0793,
+                         material=('SF1', 'schott'))
+        self.add_surface(index=9, radius=-2.7695, thickness=2.4796)
+        self.add_surface(index=10)
+
+        # add aperture
+        self.set_aperture(aperture_type='imageFNO', value=5.6)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+        self.add_field(y=7)
+        self.add_field(y=10)
+
+        # add wavelength
+        self.add_wavelength(value=0.48613270)
+        self.add_wavelength(value=0.58756180, is_primary=True)
+        self.add_wavelength(value=0.65627250)
+
+        self.update_paraxial()
+
+        # scale from inches to mm
+        self.scale_system(25.4)

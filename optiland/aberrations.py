@@ -15,7 +15,7 @@ class Aberrations:
     aberrations of general optical systems, as defined in a optic.Optic
     instance.
 
-    Most calculations in this class are based on the alogirthms outlined in
+    Most calculations in this class are based on the algorithms outlined in
     Modern Optical Engineering, Warren Smith, Chapter 6.3.
 
     Attributes:
@@ -329,15 +329,21 @@ class Aberrations:
         self._Bp = np.zeros(self._N-2)
 
         for k in range(1, self._N-1):
-            self._i[k-1] = self._C[k] * self._ya[k] + self._ua[k-1]
-            self._ip[k-1] = self._C[k] * self._yb[k] + self._ub[k-1]
-            self._B[k-1] = (self._n[k-1] *
-                            (self._n[k] - self._n[k-1]) *
-                            self._ya[k] *
-                            (self._ua[k] + self._i[k-1]) /
-                            (2*self._n[k] * self._inv))
-            self._Bp[k-1] = (self._n[k-1] *
-                             (self._n[k] - self._n[k-1]) *
-                             self._yb[k] *
-                             (self._ub[k] + self._ip[k-1]) /
-                             (2*self._n[k] * self._inv))
+            self._i[k-1] = (self._C[k] * self._ya[k] + self._ua[k-1])[0]
+            self._ip[k-1] = (self._C[k] * self._yb[k] + self._ub[k-1])[0]
+
+            denom = 2*self._n[k] * self._inv
+            if denom == 0:
+                self._B[k-1] = 0
+                self._Bp[k-1] = 0
+            else:
+                self._B[k-1] = (self._n[k-1] *
+                                (self._n[k] - self._n[k-1]) *
+                                self._ya[k] *
+                                (self._ua[k] + self._i[k-1]) /
+                                denom)[0]
+                self._Bp[k-1] = (self._n[k-1] *
+                                 (self._n[k] - self._n[k-1]) *
+                                 self._yb[k] *
+                                 (self._ub[k] + self._ip[k-1]) /
+                                 denom)[0]
