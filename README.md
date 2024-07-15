@@ -30,7 +30,7 @@ Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonK
   <img src="images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
 </figure>
 
-
+![Alt text](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHhjcHl1NjI0eGdreHVwMnZuOXhrYTYzYmFrcDlyZWczcjlrcDE5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eshdc46GawoiLZqC3E/giphy.gif "Reverse Telephoto")
 
 ## Installation
 
