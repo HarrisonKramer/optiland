@@ -356,6 +356,9 @@ class Optic:
                 to 100.
             distribution (str or Distribution, optional): The distribution of
                 the rays. Defaults to 'hexapolar'.
+
+        Returns:
+            RealRays: The RealRays object containing the traced rays.
         """
         EPL = self.paraxial.EPL()
         EPD = self.paraxial.EPD()
