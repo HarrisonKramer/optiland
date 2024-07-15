@@ -145,7 +145,7 @@ class Surface:
         # if there is a coating, modify ray properties
         if self.coating:
             params.rays = rays  # assign rays after interaction
-            rays = self.coating.interact(params, reflect=self._is_reflective)
+            rays = self.coating.interact(params, reflect=self.is_reflective)
 
         return rays
 
