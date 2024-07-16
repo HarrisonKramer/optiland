@@ -133,9 +133,9 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Sept. 2024)
         - Monte Carlo-based Tolerancing
 9. **Extending Optiland**
-    - [Tutorial 9a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Custom_Surface_Types.ipynb) - Update in progress (target completion: Sept. 2024)
+    - Tutorial 9a - Custom Surface Types - Update in progress (target completion: Sept. 2024)
         - Adding new surface types
-    - [Tutorial 9b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Custom_Coating_Types.ipynb) - Update in progress (target completion: Sept. 2024)
+    - Tutorial 9b - Custom Coating Types - Update in progress (target completion: Sept. 2024)
         - Adding new coating types
     - Tutorial 9c - Custom Optimization Algorithms - Update in progress (target completion: Sept. 2024)
         - Adding new optimization approaches
