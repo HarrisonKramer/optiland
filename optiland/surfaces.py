@@ -465,6 +465,8 @@ class SurfaceFactory:
         cs = self._configure_cs(index, thickness, **kwargs)
         geometry = self._configure_geometry(cs, **kwargs)
         material_pre, material_post = self._configure_material(index, material)
+        coating = self.configure_coating(kwargs.get('coating', None),
+                                         material_pre, material_post)
 
         if index == 0:
             return ObjectSurface(geometry, material_post)
@@ -476,12 +478,13 @@ class SurfaceFactory:
 
         if surface_type == 'standard':
             # filter out unexpected parameters
-            expected_params = ['aperture', 'semi_aperture', 'coating']
+            expected_params = ['aperture', 'semi_aperture']
             filtered_kwargs = {key: value for key, value in kwargs.items()
                                if key in expected_params}
 
             return Surface(geometry, material_pre, material_post, is_stop,
-                           is_reflective=is_reflective, **filtered_kwargs)
+                           is_reflective=is_reflective, coating=coating,
+                           **filtered_kwargs)
 
     def _configure_cs(self, index, thickness, **kwargs):
         """
@@ -568,6 +571,27 @@ class SurfaceFactory:
             material_pre = previous_surface.material_post
 
         return material_pre, material_post
+
+    def configure_coating(self, coating, material_pre, material_post):
+        """
+        Configures the coating for a surface based on the given index and
+            coating input.
+
+        Args:
+            coating (BaseCoating, str): The coating input for the
+                surface. It can be an instance of BaseCoating or a string
+                representing the coating. See examples.
+            material_pre (BaseMaterial): The material before the surface.
+            material_post (BaseMaterial): The material after the surface.
+
+        Returns:
+            BaseCoating: The coating for the surface.
+        """
+        # TODO - complete method, accounting for light polarization
+        if isinstance(coating, BaseCoating):
+            return coating
+        else:
+            return None
 
 
 class SurfaceGroup:
