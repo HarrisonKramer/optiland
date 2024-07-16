@@ -115,8 +115,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - Tutorial 5c - Optimization Case Study - Update in progress (target completion: Sept. 2024)
         - Designing a smartphone camera
 6. **Coatings & Polarization**
-    - Tutorial 6a - Introduction to Coatings - Update in progress (target completion: Sept. 2024)
-        - Coating types
+    - [Tutorial 6a - Introduction to Coatings](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_6a_Introduction_to_Coatings.ipynb)
+        - Simple coatings in Optiland
         - Impact of coatings on system performance
     - Tutorial 6b - Polarization Effects - Update in progress (target completion: Sept. 2024)
         - Basics of polarization in Optiland
