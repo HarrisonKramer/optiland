@@ -26,7 +26,7 @@ from optiland.samples.objectives import (
 
 
 def get_optic_data():
-    return {
+    return [
         (EyepieceErfle(), {
             "f1": -79.68780891169393,
             "f2": 79.68780891169399,
@@ -293,7 +293,7 @@ def get_optic_data():
             "FNO": 5.6,
             "invariant": -1.999683373079509
         })
-    }
+    ]
 
 
 def test_paraxial_init():
@@ -306,9 +306,9 @@ def test_paraxial_init():
 
 @pytest.mark.parametrize('optic_instance,values', get_optic_data())
 def test_calculate_first_order_properties(optic_instance, values):
-    assert optic_instance.paraxial == values['f1']
-    assert optic_instance.paraxial == values['f2']
-    assert optic_instance.paraxial == values['F1']
-    assert optic_instance.paraxial == values['F2']
-    assert optic_instance.paraxial == values['P1']
-    assert optic_instance.paraxial == values['N1']
+    assert optic_instance.paraxial.f1() == values['f1']
+    assert optic_instance.paraxial.f2() == values['f2']
+    assert optic_instance.paraxial.F1() == values['F1']
+    assert optic_instance.paraxial.F2() == values['F2']
+    assert optic_instance.paraxial.P1() == values['P1']
+    assert optic_instance.paraxial.N1() == values['N1']
