@@ -7,6 +7,8 @@ such as position, direction, energy, and wavelength.
 
 Kramer Harrison, 2024
 """
+from dataclasses import dataclass
+from typing import Optional
 import numpy as np
 
 
@@ -72,7 +74,6 @@ class RealRays(BaseRays):
         e (ndarray): The energy of the rays.
         w (ndarray): The wavelength of the rays.
         opd (ndarray): The optical path length of the rays.
-        p (ndarray): The polarization matrix of the rays.
 
     Methods:
         rotate_x(rx: float): Rotate the rays about the x-axis.
@@ -92,12 +93,6 @@ class RealRays(BaseRays):
         self.e = self._process_input(energy)
         self.w = self._process_input(wavelength)
         self.opd = np.zeros_like(self.x)
-
-        # compute nominal polarization matrix, scaled to match intial energy
-        self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
-        p_init = np.sqrt(self.e / 2)
-        self.p[:, 0, 0] = p_init
-        self.p[:, 1, 1] = p_init
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
@@ -174,3 +169,69 @@ class ParaxialRays(BaseRays):
         """
         self.z += t
         self.y += t * self.u
+
+
+@dataclass
+class PolarizationState:
+    is_polarized: bool = False
+    Ex: Optional[float] = None
+    Ey: Optional[float] = None
+    phase_x: Optional[float] = None
+    phase_y: Optional[float] = None
+
+    def __post_init__(self):
+        if not self.is_polarized:
+            if (self.Ex is not None
+                    or self.Ey is not None
+                    or self.phase_x is not None
+                    or self.phase_y is not None):
+                raise ValueError('Invalid polarization state. When state is '
+                                 'not polarized, Ex, Ey, phase_x, and phase_y '
+                                 'must be None.')
+
+
+class PolarizedRays(RealRays):
+
+    def __init__(self, x, y, z, L, M, N, energy, wavelength):
+        super().__init__(x, y, z, L, M, N, energy, wavelength)
+
+        # compute nominal polarization matrix, scaled to match intial energy
+        # TODO - find correct scaling
+        self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
+        p_init = np.sqrt(self.e / 2)
+        self.p[:, 0, 0] = p_init
+        self.p[:, 1, 1] = p_init
+
+    def _get_3d_electric_field(self, state: PolarizationState):
+        k = np.array([self.L, self.M, self.N]).T
+
+        s = np.cross(k, np.array([1.0, 0.0, 0.0]))
+        s /= np.linalg.norm(s, axis=1)[:, np.newaxis]
+
+        p = np.cross(k, s)
+        # TODO - separate s and p generation for speed
+
+        E = (state.Ex * np.exp(1j * state.phase_x) * s +
+             state.Ey * np.exp(1j * state.phase_y) * p)
+        # TODO - check for mag=0 vectors
+        return E
+
+    def get_output_field(self, E: np.ndarray):
+        """Compute output electric field given input electric field."""
+        return self.p @ E
+
+    def update_intensity(self, state: PolarizationState):
+        if state.is_polarized:
+            E0 = self._get_3d_electric_field(state)
+            E1 = self.get_output_field(E0)
+            self.e = np.abs(E1)**2
+        else:
+            state_x = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
+                                        phase_x=0.0, phase_y=0.0)
+            state_y = PolarizationState(is_polarized=True, Ex=0.0, Ey=1.0,
+                                        phase_x=0.0, phase_y=0.0)
+            E0_x = self._get_3d_electric_field(state_x)
+            E0_y = self._get_3d_electric_field(state_y)
+            E1_x = self.get_output_field(E0_x)
+            E1_y = self.get_output_field(E0_y)
+            self.e = np.abs(E1_x)**2 + np.abs(E1_y)**2
