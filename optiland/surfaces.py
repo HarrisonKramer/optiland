@@ -17,7 +17,7 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane, StandardGeometry, BaseGeometry
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 from optiland.physical_apertures import BaseAperture
-from optiland.coatings import BaseCoating
+from optiland.coatings import BaseCoating, FresnelCoating
 
 
 class Surface:
@@ -533,6 +533,9 @@ class SurfaceFactory:
         # TODO - complete method, accounting for light polarization
         if isinstance(coating, BaseCoating):
             return coating
+        elif isinstance(coating, str):
+            if coating == 'fresnel':
+                return FresnelCoating(material_pre, material_post)
         else:
             return None
 
