@@ -66,6 +66,9 @@ class BaseCoating(ABC):
                 Defaults to None.
             nz (np.ndarray, optional): The z-component of the surface normals.
                 Defaults to None.
+
+        Returns:
+            InteractionParams: The interaction parameters for the given rays.
         """
         return InteractionParams()
 
@@ -180,6 +183,9 @@ class PolarizedCoating(BaseCoating):
         Args:
             rays (RealRays): A list of rays for which interaction parameters
                 need to be created.
+
+        Returns:
+            InteractionParams: The interaction parameters for the given rays.
         """
         L0 = np.copy(np.atleast_1d(rays.L))
         M0 = np.copy(np.atleast_1d(rays.M))
@@ -189,57 +195,15 @@ class PolarizedCoating(BaseCoating):
 
     def reflect(self, params: InteractionParams):
         jones_matrix = self._jones_matrix(params, reflect=True)
-        self._update_polarization_matrices(params, jones_matrix)
+        params.rays.update_polarization_matrices(params.L0, params.M0,
+                                                 params.N0, jones_matrix)
         return params.rays
 
     def transmit(self, params: InteractionParams):
         jones_matrix = self._jones_matrix(params, reflect=False)
-        self._update_polarization_matrices(params, jones_matrix)
+        params.rays.update_polarization_matrices(params.L0, params.M0,
+                                                 params.N0, jones_matrix)
         return params.rays
-
-    def _update_polarization_matrices(self, params: InteractionParams,
-                                      jones_matrix: np.ndarray):
-        # define local variables
-        rays = params.rays
-        L0 = params.L0
-        M0 = params.M0
-        N0 = params.N0
-
-        # merge k-vector components into matrix for speed
-        k0 = np.array([L0, M0, N0]).T
-        k1 = np.array([rays.L, rays.M, rays.N]).T
-
-        # find s-component
-        s = np.cross(k0, k1)
-        mag = np.linalg.norm(s, axis=1)
-
-        # handle case when mag = 0 (i.e., k0 parallel to k1)
-        if np.any(mag == 0):
-            s[mag == 0] = np.cross(k0[mag == 0], np.array([1, 1e-10, 0]))
-            mag = np.linalg.norm(s, axis=1)
-
-        s /= mag[:, np.newaxis]
-
-        # find p-component pre and post surface
-        p0 = np.cross(k0, s)
-        p1 = np.cross(k1, s)
-
-        # othogonal transformation matrices
-        o_in = np.stack((s, p0, k0), axis=1)
-        o_out = np.stack((s, p1, k1), axis=2)
-
-        # compute polarization matrix for surface
-        p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
-
-        # update polarization matrices of rays
-        rays.p = np.matmul(p, rays.p)
-
-        # singular values of p represent rs and rp transmission on this surface
-        singular_values = np.linalg.svd(rays.p, compute_uv=False)
-
-        # update ray energies
-        rays.e = (np.abs(singular_values[:, 1])**2 +
-                  np.abs(singular_values[:, 2])**2)
 
     def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
         return np.tile(np.eye(3), (params.rays.x.size, 1, 1))
