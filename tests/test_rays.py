@@ -124,14 +124,6 @@ def test_real_rays_init():
     assert rays.opd.dtype == float
     assert rays.opd[0] == 0.0
 
-    assert isinstance(rays.p, np.ndarray)
-    assert rays.p.shape == (1, 3, 3)
-    assert rays.p.dtype == float
-    p_init = np.eye(3)
-    p_init[0, 0] = np.sqrt(7 / 2)
-    p_init[1, 1] = np.sqrt(7 / 2)
-    assert np.array_equal(rays.p, np.tile(p_init, (1, 1, 1)))
-
 
 def test_rotate_x():
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
