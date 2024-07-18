@@ -142,7 +142,7 @@ class RealRays(BaseRays):
         """Clip the rays based on a condition."""
         self.e[condition] = 0.0
 
-    def refract(self, nx, ny, nz, n1, n2, jones_matrix=None):
+    def refract(self, nx, ny, nz, n1, n2):
         """
         Refract rays on the surface.
 
@@ -170,9 +170,7 @@ class RealRays(BaseRays):
         self.M = ty
         self.N = tz
 
-        self.update(jones_matrix)
-
-    def reflect(self, nx, ny, nz, jones_matrix=None):
+    def reflect(self, nx, ny, nz):
         """
         Reflects the rays on the surface.
 
@@ -192,8 +190,6 @@ class RealRays(BaseRays):
         self.L -= 2 * dot * nx
         self.M -= 2 * dot * ny
         self.N -= 2 * dot * nz
-
-        self.update(jones_matrix)
 
     def update(self, jones_matrix: np.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
@@ -285,8 +281,11 @@ class PolarizedRays(RealRays):
             E1_y = self.get_output_field(E0_y)
             self.e = np.abs(E1_x)**2 + np.abs(E1_y)**2
 
-    def update(self, jones_matrix: np.ndarray):
+    def update(self, jones_matrix: np.ndarray = None):
         """Update polarization matrices after interaction with surface."""
+        if jones_matrix is None:
+            jones_matrix = np.tile(np.eye(3), (self.x.size, 1, 1))
+
         # merge k-vector components into matrix for speed
         k0 = np.array([self.L0, self.M0, self.N0]).T
         k1 = np.array([self.L, self.M, self.N]).T
