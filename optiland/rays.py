@@ -94,6 +94,11 @@ class RealRays(BaseRays):
         self.w = self._process_input(wavelength)
         self.opd = np.zeros_like(self.x)
 
+        # variables to hold pre-surface direction cosines
+        self.L0 = None
+        self.M0 = None
+        self.N0 = None
+
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
         y = self.y * np.cos(rx) - self.z * np.sin(rx)
@@ -136,6 +141,59 @@ class RealRays(BaseRays):
     def clip(self, condition):
         """Clip the rays based on a condition."""
         self.e[condition] = 0.0
+
+    def refract(self, nx, ny, nz, n1, n2):
+        """
+        Refract rays on the surface.
+
+        Args:
+            rays: The rays.
+            nx: The x-component of the surface normals.
+            ny: The y-component of the surface normals.
+            nz: The z-component of the surface normals.
+
+        Returns:
+            RealRays: The refracted rays.
+        """
+        self.L0 = self.L.copy()
+        self.M0 = self.M.copy()
+        self.N0 = self.N.copy()
+
+        u = n1 / n2
+        ni = nx*self.L0 + ny*self.M0 + nz*self.N0
+        root = np.sqrt(1 - u**2 * (1 - ni**2))
+        tx = u * self.L0 + nx * root - u * nx * ni
+        ty = u * self.M0 + ny * root - u * ny * ni
+        tz = u * self.N0 + nz * root - u * nz * ni
+
+        self.L = tx
+        self.M = ty
+        self.N = tz
+
+    def reflect(self, nx, ny, nz):
+        """
+        Reflects the rays on the surface.
+
+        Args:
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            RealRays: The reflected rays.
+        """
+        self.L0 = self.L.copy()
+        self.M0 = self.M.copy()
+        self.N0 = self.N.copy()
+
+        dot = self.L * nx + self.M * ny + self.N * nz
+        self.L -= 2 * dot * nx
+        self.M -= 2 * dot * ny
+        self.N -= 2 * dot * nz
+
+    def update(self, jones_matrix: np.ndarray = None):
+        """Update ray properties (primarily used for polarization)."""
+        pass
 
 
 class ParaxialRays(BaseRays):
@@ -223,8 +281,8 @@ class PolarizedRays(RealRays):
             E1_y = self.get_output_field(E0_y)
             self.e = np.abs(E1_x)**2 + np.abs(E1_y)**2
 
-    def update_polarization_matrices(self, L0: np.ndarray, M0: np.ndarray,
-                                     N0: np.ndarray, jones_matrix: np.ndarray):
+    def update(self, L0: np.ndarray, M0: np.ndarray, N0: np.ndarray,
+               jones_matrix: np.ndarray):
         """Update polarization matrices after interaction with surface."""
         # merge k-vector components into matrix for speed
         k0 = np.array([L0, M0, N0]).T
