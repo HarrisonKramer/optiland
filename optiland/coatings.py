@@ -174,22 +174,22 @@ class FresnelCoating(PolarizedCoating):
         n1 = self.material_pre.n(rays.w)
         n2 = self.material_post.n(rays.w)
 
-        # precompute cosines for speed
+        # precomputations for speed
         cos_theta_i = np.cos(aoi)
-        cos_theta_t = np.sqrt(1 - (n1 / n2 * np.sin(aoi))**2)
+        n = n2 / n1
+        radicand = (n**2 - np.sin(aoi)**2).astype(complex)
+        root = np.sqrt(radicand)
 
         # compute fresnel coefficients
         if reflect:
-            s = (n1 * cos_theta_i - n2 * cos_theta_t) / \
-                (n1 * cos_theta_i + n2 * cos_theta_t)
-            p = (n2 * cos_theta_i - n1 * cos_theta_t) / \
-                (n2 * cos_theta_i + n1 * cos_theta_t)
+            s = (cos_theta_i - root) / (cos_theta_i + root)
+            p = (n**2*cos_theta_i - root) / (n**2*cos_theta_i + root)
         else:
-            s = 2 * n1 * cos_theta_i / (n1 * cos_theta_i + n2 * cos_theta_t)
-            p = 2 * n1 * cos_theta_i / (n2 * cos_theta_i + n1 * cos_theta_t)
+            s = 2 * cos_theta_i / (cos_theta_i + root)
+            p = 2 * n * cos_theta_i / (n**2 * cos_theta_i + root)
 
         # create jones matrix
-        jones_matrix = np.zeros((rays.x.size, 3, 3))
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = s
         jones_matrix[:, 1, 1] = p
         jones_matrix[:, 2, 2] = 1
