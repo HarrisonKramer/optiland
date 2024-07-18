@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from optiland.rays import RealRays
+from optiland.jones import JonesFresnel
 
 
 class BaseCoating(ABC):
@@ -138,60 +139,85 @@ class SimpleCoating(BaseCoating):
         return rays
 
 
-class PolarizedCoating(BaseCoating):
+class BaseCoatingPolarized(BaseCoating, ABC):
+    """
+    A base class for polarized coatings.
+
+    This class inherits from the `BaseCoating` class and the `ABC`
+    (Abstract Base Class) module.
+
+    Attributes:
+        jones: An instance of the `BaseJones` class, which calculates the
+            Jones matrices for given ray properties
+
+    Methods:
+        reflect(rays, nx, ny, nz): Reflects the rays off the coating.
+        transmit(rays, nx, ny, nz): Transmits the rays through the coating.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.jones = None
 
     def reflect(self, rays: RealRays, nx: np.ndarray = None,
                 ny: np.ndarray = None, nz: np.ndarray = None):
-        jones_matrix = self._jones_matrix(rays, reflect=True,
-                                          nx=nx, ny=ny, nz=nz)
-        rays.update(jones_matrix)
+        """
+        Reflects the rays off the coating.
+
+        Args:
+            rays (RealRays): The rays to be reflected.
+            nx (np.ndarray): The x-component of the surface normal vector.
+            ny (np.ndarray): The y-component of the surface normal vector.
+            nz (np.ndarray): The z-component of the surface normal vector.
+
+        Returns:
+            RealRays: The updated rays after reflection.
+        """
+        aoi = self._compute_aoi(rays, nx, ny, nz)
+        jones = self.jones.calculate_matrix(rays, reflect=True, nx=nx,
+                                            ny=ny, nz=nz, aoi=aoi)
+        rays.update(jones)
         return rays
 
     def transmit(self, rays: RealRays, nx: np.ndarray = None,
                  ny: np.ndarray = None, nz: np.ndarray = None):
-        jones_matrix = self._jones_matrix(rays, reflect=False,
-                                          nx=nx, ny=ny, nz=nz)
-        rays.update(jones_matrix)
+        """
+        Transmits the rays through the coating.
+
+        Args:
+            rays (RealRays): The rays to be transmitted.
+            nx (np.ndarray): The x-component of the surface normal vector.
+            ny (np.ndarray): The y-component of the surface normal vector.
+            nz (np.ndarray): The z-component of the surface normal vector.
+
+        Returns:
+            RealRays: The updated rays after transmission through a surface.
+        """
+        aoi = self._compute_aoi(rays, nx, ny, nz)
+        jones = self.jones.calculate_matrix(rays, reflect=False, nx=nx,
+                                            ny=ny, nz=nz, aoi=aoi)
+        rays.update(jones)
         return rays
 
-    def _jones_matrix(self, rays: RealRays, reflect: bool = False,
-                      nx: np.ndarray = None, ny: np.ndarray = None,
-                      nz: np.ndarray = None):
-        return np.tile(np.eye(3), (rays.x.size, 1, 1))
 
+class FresnelCoating(BaseCoatingPolarized):
+    """
+    Represents a Fresnel coating for polarized light.
 
-class FresnelCoating(PolarizedCoating):
+    This class inherits from the BaseCoatingPolarized class and provides
+    interaction functionality for polarized light with uncoated surfaces.
+    In general, this updates ray energies based on the Fresnel equations
+    on a surface.
+
+    Attributes:
+        material_pre (str): The material before the coating.
+        material_post (str): The material after the coating.
+        jones (JonesFresnel): The JonesFresnel object, which calculates the
+            Jones matrices for given ray properties.
+    """
 
     def __init__(self, material_pre, material_post):
         self.material_pre = material_pre
         self.material_post = material_post
 
-    def _jones_matrix(self, rays: RealRays, reflect: bool = False,
-                      nx: np.ndarray = None, ny: np.ndarray = None,
-                      nz: np.ndarray = None):
-        # define local variables
-        aoi = self._compute_aoi(rays, nx, ny, nz)
-        n1 = self.material_pre.n(rays.w)
-        n2 = self.material_post.n(rays.w)
-
-        # precomputations for speed
-        cos_theta_i = np.cos(aoi)
-        n = n2 / n1
-        radicand = (n**2 - np.sin(aoi)**2).astype(complex)
-        root = np.sqrt(radicand)
-
-        # compute fresnel coefficients
-        if reflect:
-            s = (cos_theta_i - root) / (cos_theta_i + root)
-            p = (n**2*cos_theta_i - root) / (n**2*cos_theta_i + root)
-        else:
-            s = 2 * cos_theta_i / (cos_theta_i + root)
-            p = 2 * n * cos_theta_i / (n**2 * cos_theta_i + root)
-
-        # create jones matrix
-        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
-        jones_matrix[:, 0, 0] = s
-        jones_matrix[:, 1, 1] = p
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+        self.jones = JonesFresnel(material_pre, material_post)
