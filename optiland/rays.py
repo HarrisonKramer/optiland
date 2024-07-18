@@ -268,6 +268,24 @@ class PolarizationState:
 
 
 def create_polarization(pol_type: str):
+    """
+    Create a polarization state based on the given polarization type.
+
+    Args:
+        pol_type (str): The type of polarization. Must be one of the following:
+            - 'H' for horizontal polarization
+            - 'V' for vertical polarization
+            - 'L+45' for linear polarization at +45 degrees
+            - 'L-45' for linear polarization at -45 degrees
+            - 'RCP' for right circular polarization
+            - 'LCP' for left circular polarization
+
+    Returns:
+        PolarizationState: The created polarization state.
+
+    Raises:
+        ValueError: If an invalid polarization type is provided.
+    """
     if pol_type == 'H':
         Ex = 0
         Ey = 1
