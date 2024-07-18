@@ -75,6 +75,14 @@ class Optic:
         z = self.surface_group.positions[1:-1]
         return np.max(z) - np.min(z)
 
+    @property
+    def polarization_state(self):
+        """PolarizationState: the polarization state of the optic"""
+        if self.polarization == 'ignore':
+            return None
+        elif isinstance(self.polarization, PolarizationState):
+            return self.polarization
+
     def add_surface(self, new_surface=None, surface_type='standard',
                     index=None, is_stop=False, material='air', thickness=0,
                     **kwargs):
@@ -391,6 +399,9 @@ class Optic:
 
         rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
         self.surface_group.trace(rays)
+
+        if isinstance(rays, PolarizedRays):
+            rays.update_energy(self.polarization_state)
 
         return rays
 
