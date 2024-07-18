@@ -196,31 +196,18 @@ class PolarizedRays(RealRays):
         super().__init__(x, y, z, L, M, N, energy, wavelength)
 
         # compute nominal polarization matrix, scaled to match intial energy
-        # TODO - find correct scaling
+        # TODO - update scaling method for intiial energy, incl. apodization
         self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
         p_init = np.sqrt(self.e / 2)
         self.p[:, 0, 0] = p_init
         self.p[:, 1, 1] = p_init
 
-    def _get_3d_electric_field(self, state: PolarizationState):
-        k = np.array([self.L, self.M, self.N]).T
-
-        s = np.cross(k, np.array([1.0, 0.0, 0.0]))
-        s /= np.linalg.norm(s, axis=1)[:, np.newaxis]
-
-        p = np.cross(k, s)
-        # TODO - separate s and p generation for speed
-
-        E = (state.Ex * np.exp(1j * state.phase_x) * s +
-             state.Ey * np.exp(1j * state.phase_y) * p)
-        # TODO - check for mag=0 vectors
-        return E
-
     def get_output_field(self, E: np.ndarray):
         """Compute output electric field given input electric field."""
         return self.p @ E
 
-    def update_intensity(self, state: PolarizationState):
+    def update_energy(self, state: PolarizationState):
+        """Update ray energy based on polarization state."""
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
@@ -235,3 +222,54 @@ class PolarizedRays(RealRays):
             E1_x = self.get_output_field(E0_x)
             E1_y = self.get_output_field(E0_y)
             self.e = np.abs(E1_x)**2 + np.abs(E1_y)**2
+
+    def update_polarization_matrices(self, L0: np.ndarray, M0: np.ndarray,
+                                     N0: np.ndarray, jones_matrix: np.ndarray):
+        """Update polarization matrices after interaction with surface."""
+        # merge k-vector components into matrix for speed
+        k0 = np.array([L0, M0, N0]).T
+        k1 = np.array([self.L, self.M, self.N]).T
+
+        # find s-component
+        s = np.cross(k0, k1)
+        mag = np.linalg.norm(s, axis=1)
+
+        # handle case when mag = 0 (i.e., k0 parallel to k1)
+        if np.any(mag == 0):
+            s[mag == 0] = np.cross(k0[mag == 0], np.array([1, 1e-10, 0]))
+            mag = np.linalg.norm(s, axis=1)
+
+        s /= mag[:, np.newaxis]
+
+        # find p-component pre and post surface
+        p0 = np.cross(k0, s)
+        p1 = np.cross(k1, s)
+
+        # othogonal transformation matrices
+        o_in = np.stack((s, p0, k0), axis=1)
+        o_out = np.stack((s, p1, k1), axis=2)
+
+        # compute polarization matrix for surface
+        p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
+
+        # update polarization matrices of rays
+        self.p = np.matmul(p, self.p)
+
+    def _get_3d_electric_field(self, state: PolarizationState):
+        """Get 3D electric fields given polarization state and current rays."""
+        k = np.array([self.L, self.M, self.N]).T
+
+        # TODO - efficiently handle case when k parallel to x-axis
+        x = np.array([1.0, 0.0, 0.0])
+        if np.any(np.dot(k, x)):
+            raise ValueError('Ray direction vector parallel to x-axis. '
+                             'Determination of s and p vectors is ambiguous.')
+
+        p = np.cross(k, x)
+        p /= np.linalg.norm(p, axis=1)[:, np.newaxis]
+        s = np.cross(p, k)
+
+        E = (state.Ex * np.exp(1j * state.phase_x) * s +
+             state.Ey * np.exp(1j * state.phase_y) * p)
+
+        return E
