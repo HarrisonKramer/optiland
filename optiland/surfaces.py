@@ -138,67 +138,17 @@ class Surface:
 
         # Interact with surface (refract or reflect)
         if self.is_reflective:
-            rays = self._reflect(rays, nx, ny, nz)
+            rays.reflect(nx, ny, nz)
         else:
-            rays = self._refract(rays, nx, ny, nz)
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            rays.refract(nx, ny, nz, n1, n2)
 
         # if there is a coating, modify ray properties
         if self.coating:
             params.rays = rays  # assign rays after interaction
             rays = self.coating.interact(params, reflect=self.is_reflective)
 
-        return rays
-
-    def _refract(self, rays, nx, ny, nz):
-        """
-        Refract rays on the surface.
-
-        Args:
-            rays: The rays.
-            nx: The x-component of the surface normals.
-            ny: The y-component of the surface normals.
-            nz: The z-component of the surface normals.
-
-        Returns:
-            RealRays: The refracted rays.
-        """
-        ix = rays.L
-        iy = rays.M
-        iz = rays.N
-
-        n1 = self.material_pre.n(rays.w)
-        n2 = self.material_post.n(rays.w)
-
-        u = n1 / n2
-        ni = nx*ix + ny*iy + nz*iz
-        root = np.sqrt(1 - u**2 * (1 - ni**2))
-        tx = u * ix + nx * root - u * nx * ni
-        ty = u * iy + ny * root - u * ny * ni
-        tz = u * iz + nz * root - u * nz * ni
-
-        rays.L = tx
-        rays.M = ty
-        rays.N = tz
-
-        return rays
-
-    def _reflect(self, rays, nx, ny, nz):
-        """
-        Reflects the rays on the surface.
-
-        Args:
-            rays: The rays to be reflected.
-            nx: The x-component of the surface normal.
-            ny: The y-component of the surface normal.
-            nz: The z-component of the surface normal.
-
-        Returns:
-            RealRays: The reflected rays.
-        """
-        dot = rays.L * nx + rays.M * ny + rays.N * nz
-        rays.L -= 2 * dot * nx
-        rays.M -= 2 * dot * ny
-        rays.N -= 2 * dot * nz
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays):
