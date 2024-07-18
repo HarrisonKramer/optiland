@@ -1,27 +1,6 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Optional
 import numpy as np
 from optiland.rays import RealRays
-
-
-@dataclass
-class InteractionParams:
-    """
-    Represents the parameters for an interaction between rays and a coating.
-
-    Attributes:
-        rays (RealRays): The rays involved in the interaction.
-        aoi (np.ndarray): The angle of incidence of the rays (optional).
-        L0 (np.ndarray): The L0 vector of the rays (optional).
-        M0 (np.ndarray): The M0 vector of the rays (optional).
-        N0 (np.ndarray): The N0 vector of the rays (optional).
-    """
-    rays: RealRays = None
-    aoi: Optional[np.ndarray] = None
-    L0: Optional[np.ndarray] = None
-    M0: Optional[np.ndarray] = None
-    N0: Optional[np.ndarray] = None
 
 
 class BaseCoating(ABC):
@@ -36,7 +15,9 @@ class BaseCoating(ABC):
         transmit: Abstract method to handle transmission interaction.
     """
 
-    def interact(self, params: InteractionParams, reflect: bool = False):
+    def interact(self, rays: RealRays, reflect: bool = False,
+                 nx: np.ndarray = None, ny: np.ndarray = None,
+                 nz: np.ndarray = None):
         """
         Performs an interaction based on the given parameters.
 
@@ -49,28 +30,9 @@ class BaseCoating(ABC):
             rays (RealRays): The rays after the interaction.
         """
         if reflect:
-            return self.reflect(params)
+            return self.reflect(rays, nx, ny, nz)
         else:
-            return self.transmit(params)
-
-    def create_interaction_params(self, rays, nx=None, ny=None, nz=None):
-        """
-        Create interaction parameters for the given rays.
-
-        Args:
-            rays (RealRays): A list of rays for which interaction parameters
-                need to be created.
-            nx (np.ndarray, optional): The x-component of the surface normals.
-                Defaults to None.
-            ny (np.ndarray, optional): The y-component of the surface normals.
-                Defaults to None.
-            nz (np.ndarray, optional): The z-component of the surface normals.
-                Defaults to None.
-
-        Returns:
-            InteractionParams: The interaction parameters for the given rays.
-        """
-        return InteractionParams()
+            return self.transmit(rays, nx, ny, nz)
 
     def _compute_aoi(self, rays, nx, ny, nz):
         """
@@ -90,7 +52,8 @@ class BaseCoating(ABC):
         return np.arccos(dot)
 
     @abstractmethod
-    def reflect(self, params: InteractionParams):
+    def reflect(self, rays: RealRays, nx: np.ndarray = None,
+                ny: np.ndarray = None, nz: np.ndarray = None):
         """
         Abstract method to handle reflection interaction.
 
@@ -100,10 +63,11 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        return params.rays
+        return rays
 
     @abstractmethod
-    def transmit(self, params: InteractionParams):
+    def transmit(self, rays: RealRays, nx: np.ndarray = None,
+                 ny: np.ndarray = None, nz: np.ndarray = None):
         """
         Abstract method to handle transmission interaction.
 
@@ -113,7 +77,7 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        return params.rays
+        return rays
 
 
 class SimpleCoating(BaseCoating):
@@ -144,7 +108,8 @@ class SimpleCoating(BaseCoating):
         self.reflectance = reflectance
         self.absorptance = 1 - reflectance - transmittance
 
-    def reflect(self, params: InteractionParams):
+    def reflect(self, rays: RealRays, nx: np.ndarray = None,
+                ny: np.ndarray = None, nz: np.ndarray = None):
         """
         Reflects the rays based on the reflectance of the coating.
 
@@ -154,11 +119,11 @@ class SimpleCoating(BaseCoating):
         Returns:
             rays (RealRays): The rays after reflection.
         """
-        rays = params.rays
         rays.e *= self.reflectance
         return rays
 
-    def transmit(self, params: InteractionParams):
+    def transmit(self, rays: RealRays, nx: np.ndarray = None,
+                 ny: np.ndarray = None, nz: np.ndarray = None):
         """
         Transmits the rays through the coating by multiplying their energy
         with the transmittance.
@@ -169,44 +134,30 @@ class SimpleCoating(BaseCoating):
         Returns:
             rays (RealRays): The rays after transmission.
         """
-        rays = params.rays
         rays.e *= self.transmittance
         return rays
 
 
 class PolarizedCoating(BaseCoating):
 
-    def create_interaction_params(self, rays, nx, ny, nz):
-        """
-        Create interaction parameters for the given rays.
+    def reflect(self, rays: RealRays, nx: np.ndarray = None,
+                ny: np.ndarray = None, nz: np.ndarray = None):
+        jones_matrix = self._jones_matrix(rays, reflect=True,
+                                          nx=nx, ny=ny, nz=nz)
+        rays.update(jones_matrix)
+        return rays
 
-        Args:
-            rays (RealRays): A list of rays for which interaction parameters
-                need to be created.
+    def transmit(self, rays: RealRays, nx: np.ndarray = None,
+                 ny: np.ndarray = None, nz: np.ndarray = None):
+        jones_matrix = self._jones_matrix(rays, reflect=False,
+                                          nx=nx, ny=ny, nz=nz)
+        rays.update(jones_matrix)
+        return rays
 
-        Returns:
-            InteractionParams: The interaction parameters for the given rays.
-        """
-        L0 = np.copy(np.atleast_1d(rays.L))
-        M0 = np.copy(np.atleast_1d(rays.M))
-        N0 = np.copy(np.atleast_1d(rays.N))
-        aoi = self._compute_aoi(rays, nx, ny, nz)
-        return InteractionParams(L0=L0, M0=M0, N0=N0, aoi=aoi)
-
-    def reflect(self, params: InteractionParams):
-        jones_matrix = self._jones_matrix(params, reflect=True)
-        params.rays.update_polarization_matrices(params.L0, params.M0,
-                                                 params.N0, jones_matrix)
-        return params.rays
-
-    def transmit(self, params: InteractionParams):
-        jones_matrix = self._jones_matrix(params, reflect=False)
-        params.rays.update_polarization_matrices(params.L0, params.M0,
-                                                 params.N0, jones_matrix)
-        return params.rays
-
-    def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
-        return np.tile(np.eye(3), (params.rays.x.size, 1, 1))
+    def _jones_matrix(self, rays: RealRays, reflect: bool = False,
+                      nx: np.ndarray = None, ny: np.ndarray = None,
+                      nz: np.ndarray = None):
+        return np.tile(np.eye(3), (rays.x.size, 1, 1))
 
 
 class FresnelCoating(PolarizedCoating):
@@ -215,10 +166,11 @@ class FresnelCoating(PolarizedCoating):
         self.material_pre = material_pre
         self.material_post = material_post
 
-    def _jones_matrix(self, params: InteractionParams, reflect: bool = False):
+    def _jones_matrix(self, rays: RealRays, reflect: bool = False,
+                      nx: np.ndarray = None, ny: np.ndarray = None,
+                      nz: np.ndarray = None):
         # define local variables
-        rays = params.rays
-        aoi = params.aoi
+        aoi = self._compute_aoi(rays, nx, ny, nz)
         n1 = self.material_pre.n(rays.w)
         n2 = self.material_post.n(rays.w)
 
