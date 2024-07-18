@@ -5,6 +5,7 @@ optical systems.
 
 Kramer Harrison, 2024
 """
+from typing import Union
 import numpy as np
 from optiland.fields import Field, FieldGroup
 from optiland.surfaces import SurfaceGroup, ObjectSurface
@@ -12,7 +13,7 @@ from optiland.wavelength import WavelengthGroup
 from optiland.paraxial import Paraxial
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
-from optiland.rays import RealRays
+from optiland.rays import RealRays, PolarizedRays, PolarizationState
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
@@ -47,6 +48,8 @@ class Optic:
 
         self.paraxial = Paraxial(self)
         self.aberrations = Aberrations(self)
+
+        self.polarization = 'ignore'
 
     @property
     def primary_wavelength(self):
@@ -221,6 +224,20 @@ class Optic:
         """
         surface = self.surface_group.surfaces[surface_number]
         surface.geometry.c[aspher_coeff_idx] = value
+
+    def set_polarization(self, polarization: Union[PolarizationState, str]):
+        """
+        Set the polarization state of the optic.
+
+        Parameters:
+            polarization (Union[PolarizationState, str]): The polarization
+                state to set. It can be either a `PolarizationState` object or
+                'ignore'.
+        """
+        if isinstance(polarization, str) and polarization != 'ignore':
+            raise ValueError('Invalid polarization state. Must be either '
+                             'PolarizationState or "ignore".')
+        self.polarization = polarization
 
     def scale_system(self, scale_factor):
         """
@@ -440,7 +457,10 @@ class Optic:
         energy = np.ones_like(x1)
         wavelength = np.ones_like(x1) * wavelength
 
-        return RealRays(x0, y0, z0, L, M, N, energy, wavelength)
+        if self.polarization == 'ignore':
+            return RealRays(x0, y0, z0, L, M, N, energy, wavelength)
+        else:
+            return PolarizedRays(x0, y0, z0, L, M, N, energy, wavelength)
 
     def _get_object_position(self, Hx, Hy, x1, y1, EPL):
         """
