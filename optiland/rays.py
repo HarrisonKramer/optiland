@@ -236,7 +236,7 @@ class PolarizedRays(RealRays):
 
         # handle case when mag = 0 (i.e., k0 parallel to k1)
         if np.any(mag == 0):
-            s[mag == 0] = np.cross(k0[mag == 0], np.array([1, 1e-10, 0]))
+            s[mag == 0] = np.cross(k0[mag == 0], np.array([1.0, 0.0, 0.0]))
             mag = np.linalg.norm(s, axis=1)
 
         s /= mag[:, np.newaxis]
