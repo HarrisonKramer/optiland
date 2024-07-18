@@ -267,6 +267,44 @@ class PolarizationState:
             self.Ey /= mag
 
 
+def create_polarization(pol_type: str):
+    if pol_type == 'H':
+        Ex = 0
+        Ey = 1
+        phase_x = 0
+        phase_y = 0
+    elif pol_type == 'V':
+        Ex = 1
+        Ey = 0
+        phase_x = 0
+        phase_y = 0
+    elif pol_type == 'L+45':
+        Ex = 1
+        Ey = 1
+        phase_x = 0
+        phase_y = 0
+    elif pol_type == 'L-45':
+        Ex = 1
+        Ey = -1
+        phase_x = 0
+        phase_y = 0
+    elif pol_type == 'RCP':
+        Ex = np.sqrt(2) / 2
+        Ey = np.sqrt(2) / 2
+        phase_x = 0
+        phase_y = -np.pi / 2
+    elif pol_type == 'LCP':
+        Ex = np.sqrt(2) / 2
+        Ey = np.sqrt(2) / 2
+        phase_x = 0
+        phase_y = np.pi / 2
+    else:
+        raise ValueError('Invalid polarization type. Must be H, V, L+45, L-45,'
+                         ' RCP or LCP.')
+    return PolarizationState(is_polarized=True, Ex=Ex, Ey=Ey,
+                             phase_x=phase_x, phase_y=phase_y)
+
+
 class PolarizedRays(RealRays):
     """
     Represents a class for polarized rays in three-dimensional space.
