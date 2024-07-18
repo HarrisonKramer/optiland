@@ -256,13 +256,11 @@ class PolarizedRays(RealRays):
         # compute nominal polarization matrix, scaled to match intial energy
         # TODO - update scaling method for intiial energy, incl. apodization
         self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
-        p_init = np.sqrt(self.e / 2)
-        self.p[:, 0, 0] = p_init
-        self.p[:, 1, 1] = p_init
+        self._e0 = energy.copy()
 
     def get_output_field(self, E: np.ndarray):
         """Compute output electric field given input electric field."""
-        return self.p @ E
+        return np.squeeze(np.matmul(self.p, E[:, :, np.newaxis]), axis=2)
 
     def update_energy(self, state: PolarizationState):
         """Update ray energy based on polarization state."""
@@ -279,13 +277,12 @@ class PolarizedRays(RealRays):
             E0_y = self._get_3d_electric_field(state_y)
             E1_x = self.get_output_field(E0_x)
             E1_y = self.get_output_field(E0_y)
-            self.e = np.abs(E1_x)**2 + np.abs(E1_y)**2
+
+            self.e = (np.sum(np.abs(E1_x)**2, axis=1) +
+                      np.sum(np.abs(E1_y)**2, axis=1)) * self._e0 / 2
 
     def update(self, jones_matrix: np.ndarray = None):
         """Update polarization matrices after interaction with surface."""
-        if jones_matrix is None:
-            jones_matrix = np.tile(np.eye(3), (self.x.size, 1, 1))
-
         # merge k-vector components into matrix for speed
         k0 = np.array([self.L0, self.M0, self.N0]).T
         k1 = np.array([self.L, self.M, self.N]).T
@@ -310,7 +307,10 @@ class PolarizedRays(RealRays):
         o_out = np.stack((s, p1, k1), axis=2)
 
         # compute polarization matrix for surface
-        p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
+        if jones_matrix is None:
+            p = np.matmul(o_out, o_in)
+        else:
+            p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
 
         # update polarization matrices of rays
         self.p = np.matmul(p, self.p)
@@ -321,12 +321,9 @@ class PolarizedRays(RealRays):
 
         # TODO - efficiently handle case when k parallel to x-axis
         x = np.array([1.0, 0.0, 0.0])
-        if np.any(np.dot(k, x)):
-            raise ValueError('Ray direction vector parallel to x-axis. '
-                             'Determination of s and p vectors is ambiguous.')
-
         p = np.cross(k, x)
         p /= np.linalg.norm(p, axis=1)[:, np.newaxis]
+
         s = np.cross(p, k)
 
         E = (state.Ex * np.exp(1j * state.phase_x) * s +
