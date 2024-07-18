@@ -7,7 +7,6 @@ such as position, direction, energy, and wavelength.
 
 Kramer Harrison, 2024
 """
-from dataclasses import dataclass
 from typing import Optional
 import numpy as np
 
@@ -229,60 +228,133 @@ class ParaxialRays(BaseRays):
         self.y += t * self.u
 
 
-@dataclass
 class PolarizationState:
-    is_polarized: bool = False
-    Ex: Optional[float] = None
-    Ey: Optional[float] = None
-    phase_x: Optional[float] = None
-    phase_y: Optional[float] = None
+    """
+    Represents the polarization state of a light ray.
 
-    def __post_init__(self):
-        if not self.is_polarized:
-            if (self.Ex is not None
-                    or self.Ey is not None
-                    or self.phase_x is not None
-                    or self.phase_y is not None):
-                raise ValueError('Invalid polarization state. When state is '
-                                 'not polarized, Ex, Ey, phase_x, and phase_y '
-                                 'must be None.')
+    Attributes:
+        is_polarized (bool): Indicates whether the state is polarized.
+        Ex (Optional[float]): Electric field component in the x-direction.
+        Ey (Optional[float]): Electric field component in the y-direction.
+        phase_x (Optional[float]): Phase of the x-component of the electric
+            field.
+        phase_y (Optional[float]): Phase of the y-component of the electric
+            field.
+    """
+    def __init__(self, is_polarized: bool = False,
+                 Ex: Optional[float] = None,
+                 Ey: Optional[float] = None,
+                 phase_x: Optional[float] = None,
+                 phase_y: Optional[float] = None):
+        if is_polarized:
+            if None in [Ex, Ey, phase_x, phase_y]:
+                raise ValueError('All parameters must be provided for a '
+                                 'polarized state.')
+        else:
+            if not all(var is None for var in [Ex, Ey, phase_x, phase_y]):
+                raise ValueError('Ex, Ey, phase_x, and phase_y must be None '
+                                 'for a non-polarized state.')
+
+        self.is_polarized = is_polarized
+        self.Ex = float(Ex) if Ex is not None else None
+        self.Ey = float(Ey) if Ey is not None else None
+        self.phase_x = float(phase_x) if phase_x is not None else None
+        self.phase_y = float(phase_y) if phase_y is not None else None
+
+        if self.Ex is not None and self.Ey is not None:
+            mag = np.sqrt(self.Ex**2 + self.Ey**2)
+            self.Ex /= mag
+            self.Ey /= mag
 
 
 class PolarizedRays(RealRays):
+    """
+    Represents a class for polarized rays in three-dimensional space.
+
+    Inherits from the `RealRays` class.
+
+    Attributes:
+        x (ndarray): The x-coordinates of the rays.
+        y (ndarray): The y-coordinates of the rays.
+        z (ndarray): The z-coordinates of the rays.
+        L (ndarray): The x-components of the direction vectors of the rays.
+        M (ndarray): The y-components of the direction vectors of the rays.
+        N (ndarray): The z-components of the direction vectors of the rays.
+        e (ndarray): The energy of the rays.
+        w (ndarray): The wavelength of the rays.
+        opd (ndarray): The optical path length of the rays.
+        p (np.ndarray): Array of polarization matrices of the rays.
+
+    Methods:
+        get_output_field(E: np.ndarray) -> np.ndarray:
+            Compute the output electric field given the input electric field.
+        update_energy(state: PolarizationState):
+            Update the ray energy based on the polarization state.
+        update(jones_matrix: np.ndarray = None):
+            Update the polarization matrices after interaction with a surface.
+        _get_3d_electric_field(state: PolarizationState) -> np.ndarray:
+            Get the 3D electric fields given the polarization state and
+            initial rays.
+    """
 
     def __init__(self, x, y, z, L, M, N, energy, wavelength):
         super().__init__(x, y, z, L, M, N, energy, wavelength)
 
-        # compute nominal polarization matrix, scaled to match intial energy
-        # TODO - update scaling method for intiial energy, incl. apodization
         self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
         self._e0 = energy.copy()
+        self._L0 = L.copy()
+        self._M0 = M.copy()
+        self._N0 = N.copy()
 
-    def get_output_field(self, E: np.ndarray):
-        """Compute output electric field given input electric field."""
+    def get_output_field(self, E: np.ndarray) -> np.ndarray:
+        """
+        Compute the output electric field given the input electric field.
+
+        Args:
+            E (np.ndarray): The input electric field as a numpy array.
+
+        Returns:
+            np.ndarray: The computed output electric field as a numpy array.
+        """
         return np.squeeze(np.matmul(self.p, E[:, :, np.newaxis]), axis=2)
 
     def update_energy(self, state: PolarizationState):
-        """Update ray energy based on polarization state."""
+        """Update ray energy based on polarization state.
+
+        Args:
+            state (PolarizationState): The polarization state of the ray.
+        """
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
-            self.e = np.abs(E1)**2
+            self.e = np.sum(np.abs(E1)**2, axis=1)
         else:
+            # Local x-axis field
             state_x = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
                                         phase_x=0.0, phase_y=0.0)
+            E0_x = self._get_3d_electric_field(state_x)
+            E1_x = self.get_output_field(E0_x)
+
+            # Local y-axis field
             state_y = PolarizationState(is_polarized=True, Ex=0.0, Ey=1.0,
                                         phase_x=0.0, phase_y=0.0)
-            E0_x = self._get_3d_electric_field(state_x)
             E0_y = self._get_3d_electric_field(state_y)
-            E1_x = self.get_output_field(E0_x)
             E1_y = self.get_output_field(E0_y)
 
+            # average two orthogonal polarizations to get mean energy,
+            # scale by initial ray energy
             self.e = (np.sum(np.abs(E1_x)**2, axis=1) +
                       np.sum(np.abs(E1_y)**2, axis=1)) * self._e0 / 2
 
     def update(self, jones_matrix: np.ndarray = None):
-        """Update polarization matrices after interaction with surface."""
+        """
+        Update polarization matrices after interaction with surface.
+
+        Args:
+            jones_matrix (np.ndarray, optional): Jones matrix representing the
+                interaction with the surface. If not provided, the
+                polarization matrix is computed assuming an identity matrix.
+        """
         # merge k-vector components into matrix for speed
         k0 = np.array([self.L0, self.M0, self.N0]).T
         k1 = np.array([self.L, self.M, self.N]).T
@@ -315,9 +387,16 @@ class PolarizedRays(RealRays):
         # update polarization matrices of rays
         self.p = np.matmul(p, self.p)
 
-    def _get_3d_electric_field(self, state: PolarizationState):
-        """Get 3D electric fields given polarization state and current rays."""
-        k = np.array([self.L, self.M, self.N]).T
+    def _get_3d_electric_field(self, state: PolarizationState) -> np.ndarray:
+        """Get 3D electric fields given polarization state and initial rays.
+
+        Args:
+            state (PolarizationState): The polarization state of the rays.
+
+        Returns:
+            np.ndarray: The 3D electric fields.
+        """
+        k = np.array([self._L0, self._M0, self._N0]).T
 
         # TODO - efficiently handle case when k parallel to x-axis
         x = np.array([1.0, 0.0, 0.0])
