@@ -132,10 +132,6 @@ class Surface:
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
 
-        # Get initial ray parameters for coating
-        if self.coating:
-            params = self.coating.create_interaction_params(rays, nx, ny, nz)
-
         # Interact with surface (refract or reflect)
         if self.is_reflective:
             rays.reflect(nx, ny, nz)
@@ -146,8 +142,11 @@ class Surface:
 
         # if there is a coating, modify ray properties
         if self.coating:
-            params.rays = rays  # assign rays after interaction
-            rays = self.coating.interact(params, reflect=self.is_reflective)
+            rays = self.coating.interact(rays, reflect=self.is_reflective,
+                                         nx=nx, ny=ny, nz=nz)
+        else:
+            # update polarization matrices, if PolarizedRays
+            rays.update()
 
         return rays
 
@@ -299,15 +298,12 @@ class ObjectSurface(Surface):
         """
         pass
 
-    def _interact(self, rays, nx, ny, nz):
+    def _interact(self, rays):
         """
         Interacts the given rays with the surface.
 
         Args:
             rays (Rays): The rays to be interacted.
-            nx (float): The x-component of the surface normal.
-            ny (float): The y-component of the surface normal.
-            nz (float): The z-component of the surface normal.
 
         Returns:
             RealRays: The interacted rays.
@@ -361,9 +357,6 @@ class ImageSurface(Surface):
 
         Args:
             rays: The rays to be interacted with the surface.
-            nx: The x-component of the surface normal.
-            ny: The y-component of the surface normal.
-            nz: The z-component of the surface normal.
 
         Returns:
             RealRays: The modified rays after interaction with the surface.
