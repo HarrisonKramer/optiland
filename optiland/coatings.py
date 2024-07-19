@@ -48,7 +48,7 @@ class BaseCoating(ABC):
         Returns:
             np.ndarray: The angle of incidence for each ray.
         """
-        dot = np.abs(nx * rays.L + ny * rays.M + nz * rays.N)
+        dot = np.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
         return np.arccos(dot)
 
@@ -174,8 +174,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             RealRays: The updated rays after reflection.
         """
         aoi = self._compute_aoi(rays, nx, ny, nz)
-        jones = self.jones.calculate_matrix(rays, reflect=True, nx=nx,
-                                            ny=ny, nz=nz, aoi=aoi)
+        jones = self.jones.calculate_matrix(rays, reflect=True, aoi=aoi)
         rays.update(jones)
         return rays
 
@@ -194,8 +193,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             RealRays: The updated rays after transmission through a surface.
         """
         aoi = self._compute_aoi(rays, nx, ny, nz)
-        jones = self.jones.calculate_matrix(rays, reflect=False, nx=nx,
-                                            ny=ny, nz=nz, aoi=aoi)
+        jones = self.jones.calculate_matrix(rays, reflect=False, aoi=aoi)
         rays.update(jones)
         return rays
 
