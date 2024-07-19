@@ -457,7 +457,11 @@ class PolarizedRays(RealRays):
         # TODO - efficiently handle case when k parallel to x-axis
         x = np.array([1.0, 0.0, 0.0])
         p = np.cross(k, x)
-        p /= np.linalg.norm(p, axis=1)[:, np.newaxis]
+        try:
+            p /= np.linalg.norm(p, axis=1)[:, np.newaxis]
+        except ZeroDivisionError:
+            raise ValueError('k-vector parallel to x-axis is not currently '
+                             'supported.')
 
         s = np.cross(p, k)
 
