@@ -266,6 +266,28 @@ class PolarizationState:
             self.Ex /= mag
             self.Ey /= mag
 
+    def __str__(self):
+        """
+        Returns a string representation of the polarization state.
+
+        Returns:
+            str: The string representation of the polarization state.
+        """
+        if self.is_polarized:
+            return f"Polarized Light: Ex: {self.Ex}, Ey: {self.Ey}, " \
+                   f"Phase x: {self.phase_x}, Phase y: {self.phase_y}"
+        else:
+            return "Unpolarized Light"
+
+    def __repr__(self):
+        """
+        Returns a string representation of the polarization state.
+
+        Returns:
+            str: The string representation of the polarization state.
+        """
+        return self.__str__()
+
 
 def create_polarization(pol_type: str):
     """
@@ -273,6 +295,7 @@ def create_polarization(pol_type: str):
 
     Args:
         pol_type (str): The type of polarization. Must be one of the following:
+            - 'unpolarized' for unpolarized light
             - 'H' for horizontal polarization
             - 'V' for vertical polarization
             - 'L+45' for linear polarization at +45 degrees
@@ -286,7 +309,9 @@ def create_polarization(pol_type: str):
     Raises:
         ValueError: If an invalid polarization type is provided.
     """
-    if pol_type == 'H':
+    if pol_type == 'unpolarized':
+        return PolarizationState(is_polarized=False)
+    elif pol_type == 'H':
         Ex = 0
         Ey = 1
         phase_x = 0
