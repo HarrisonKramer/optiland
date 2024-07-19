@@ -118,7 +118,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 6a - Introduction to Coatings](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_6a_Introduction_to_Coatings.ipynb)
         - Simple coatings in Optiland
         - Impact of coatings on system performance
-    - Tutorial 6b - Polarization Effects - Update in progress (target completion: Sept. 2024)
+    - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
     - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Sept. 2024)
