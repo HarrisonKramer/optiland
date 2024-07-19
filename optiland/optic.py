@@ -469,6 +469,9 @@ class Optic:
         wavelength = np.ones_like(x1) * wavelength
 
         if self.polarization == 'ignore':
+            if self.surface_group.uses_polarization:
+                raise ValueError('Polarization must be set when surfaces have '
+                                 'polarization-dependent coatings.')
             return RealRays(x0, y0, z0, L, M, N, energy, wavelength)
         else:
             return PolarizedRays(x0, y0, z0, L, M, N, energy, wavelength)
