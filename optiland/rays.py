@@ -312,13 +312,13 @@ def create_polarization(pol_type: str):
     if pol_type == 'unpolarized':
         return PolarizationState(is_polarized=False)
     elif pol_type == 'H':
-        Ex = 0
-        Ey = 1
+        Ex = 1
+        Ey = 0
         phase_x = 0
         phase_y = 0
     elif pol_type == 'V':
-        Ex = 1
-        Ey = 0
+        Ex = 0
+        Ey = 1
         phase_x = 0
         phase_y = 0
     elif pol_type == 'L+45':
