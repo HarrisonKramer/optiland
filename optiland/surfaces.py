@@ -530,7 +530,6 @@ class SurfaceFactory:
         Returns:
             BaseCoating: The coating for the surface.
         """
-        # TODO - complete method, accounting for light polarization
         if isinstance(coating, BaseCoating):
             return coating
         elif isinstance(coating, str):
