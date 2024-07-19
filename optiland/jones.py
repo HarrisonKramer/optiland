@@ -53,8 +53,7 @@ class JonesFresnel(BaseJones):
         self.material_post = material_post
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -62,12 +61,6 @@ class JonesFresnel(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -84,18 +77,21 @@ class JonesFresnel(BaseJones):
         radicand = (n**2 - np.sin(aoi)**2).astype(complex)
         root = np.sqrt(radicand)
 
-        # compute fresnel coefficients
+        # compute fresnel coefficients & compute jones matrices
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         if reflect:
             s = (cos_theta_i - root) / (cos_theta_i + root)
             p = (n**2*cos_theta_i - root) / (n**2*cos_theta_i + root)
+
+            jones_matrix[:, 0, 0] = s
+            jones_matrix[:, 1, 1] = -p
+            jones_matrix[:, 2, 2] = -1
         else:
             s = 2 * cos_theta_i / (cos_theta_i + root)
             p = 2 * n * cos_theta_i / (n**2 * cos_theta_i + root)
 
-        # create jones matrix
-        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
-        jones_matrix[:, 0, 0] = s
-        jones_matrix[:, 1, 1] = p
-        jones_matrix[:, 2, 2] = 1
+            jones_matrix[:, 0, 0] = s
+            jones_matrix[:, 1, 1] = p
+            jones_matrix[:, 2, 2] = 1
 
         return jones_matrix
