@@ -787,4 +787,5 @@ class SurfaceGroup:
         Set Fresnel coatings on all surfaces in the group.
         """
         for surface in self.surfaces[1:-1]:
-            surface.set_fresnel_coating()
+            if surface.material_pre != surface.material_post:
+                surface.set_fresnel_coating()
