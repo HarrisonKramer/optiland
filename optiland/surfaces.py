@@ -17,7 +17,7 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane, StandardGeometry, BaseGeometry
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 from optiland.physical_apertures import BaseAperture
-from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.coatings import BaseCoating, BaseCoatingPolarized, FresnelCoating
 
 
 class Surface:
@@ -96,6 +96,12 @@ class Surface:
         self.energy = np.empty(0)
         self.aoi = np.empty(0)
         self.opd = np.empty(0)
+
+    def set_fresnel_coating(self):
+        """
+        Sets the coating of the surface to a Fresnel coating.
+        """
+        self.coating = FresnelCoating(self.material_pre, self.material_post)
 
     def _record(self, rays):
         """
@@ -644,6 +650,14 @@ class SurfaceGroup:
         """int: the number of surfaces"""
         return len(self.surfaces)
 
+    @property
+    def uses_polarization(self):
+        """bool: True if any surface uses polarization, False otherwise"""
+        for surf in self.surfaces:
+            if isinstance(surf.coating, BaseCoatingPolarized):
+                return True
+        return False
+
     def get_thickness(self, surface_number):
         """
         Calculate the thickness between two surfaces.
@@ -767,3 +781,10 @@ class SurfaceGroup:
             surf.material_post = temp
 
         return SurfaceGroup(surfs_inverted)
+
+    def set_fresnel_coatings(self):
+        """
+        Set Fresnel coatings on all surfaces in the group.
+        """
+        for surface in self.surfaces[1:-1]:
+            surface.set_fresnel_coating()
