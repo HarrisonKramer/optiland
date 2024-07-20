@@ -612,7 +612,7 @@ class SurfaceGroup:
 
     @property
     def intensity(self):
-        """np.array: ray energies on all surfaces"""
+        """np.array: ray intensities on all surfaces"""
         return np.array([surf.intensity for surf in self.surfaces
                          if surf.intensity.size > 0])
 
