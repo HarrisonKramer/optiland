@@ -110,15 +110,15 @@ class Wavefront:
 
         Returns:
             tuple: The generated wavefront data, including the optical path
-                difference and energy.
+                difference and intensity.
 
         """
         # trace distribution through pupil
         self.optic.trace(*field, wavelength, None, self.distribution)
-        energy = self.optic.surface_group.energy[-1, :]
+        intensity = self.optic.surface_group.intensity[-1, :]
         opd = self._get_path_length(xc, yc, zc, R)
         opd = self._correct_tilt(field, opd)
-        return (opd_ref - opd) / (wavelength * 1e-3), energy
+        return (opd_ref - opd) / (wavelength * 1e-3), intensity
 
     def _trace_chief_ray(self, field, wavelength):
         """
@@ -287,11 +287,11 @@ class OPDFan(Wavefront):
                 wx = self.data[i][j][0][self.num_rays:]
                 wy = self.data[i][j][0][:self.num_rays]
 
-                energy_x = self.data[i][j][1][self.num_rays:]
-                energy_y = self.data[i][j][1][:self.num_rays]
+                intensity_x = self.data[i][j][1][self.num_rays:]
+                intensity_y = self.data[i][j][1][:self.num_rays]
 
-                wx[energy_x == 0] = np.nan
-                wy[energy_y == 0] = np.nan
+                wx[intensity_x == 0] = np.nan
+                wy[intensity_y == 0] = np.nan
 
                 axs[i, 0].plot(self.pupil_coord, wy, zorder=3,
                                label=f'{wavelength:.4f} µm')
@@ -440,13 +440,13 @@ class OPD(Wavefront):
         x = self.distribution.x
         y = self.distribution.y
         z = self.data[0][0][0]
-        energy = self.data[0][0][1]
+        intensity = self.data[0][0][1]
 
         x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, num_points),
                                          np.linspace(-1, 1, num_points))
 
         points = np.column_stack((x.flatten(), y.flatten()))
-        values = z.flatten() * energy.flatten()
+        values = z.flatten() * intensity.flatten()
 
         z_interp = griddata(points, values, (x_interp, y_interp),
                             method='cubic')
