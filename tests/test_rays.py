@@ -74,10 +74,10 @@ def test_real_rays_init():
     L = 4
     M = 5
     N = 6
-    energy = 7
+    intensity = 7
     wavelength = 8
 
-    rays = RealRays(x, y, z, L, M, N, energy, wavelength)
+    rays = RealRays(x, y, z, L, M, N, intensity, wavelength)
 
     assert isinstance(rays.x, np.ndarray)
     assert rays.x.shape == (1,)
@@ -109,10 +109,10 @@ def test_real_rays_init():
     assert rays.N.dtype == float
     assert rays.N[0] == 6.0
 
-    assert isinstance(rays.e, np.ndarray)
-    assert rays.e.shape == (1,)
-    assert rays.e.dtype == float
-    assert rays.e[0] == 7.0
+    assert isinstance(rays.i, np.ndarray)
+    assert rays.i.shape == (1,)
+    assert rays.i.dtype == float
+    assert rays.i[0] == 7.0
 
     assert isinstance(rays.w, np.ndarray)
     assert rays.w.shape == (1,)
@@ -290,13 +290,13 @@ def test_clip():
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     condition = True
     rays.clip(condition)
-    assert rays.e[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.i[0] == pytest.approx(0.0, abs=1e-10)
 
     # Test clipping with condition False
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     condition = False
     rays.clip(condition)
-    assert rays.e[0] == pytest.approx(1.0, abs=1e-10)
+    assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
 
 
 def test_paraxial_rays_init():
@@ -327,10 +327,10 @@ def test_paraxial_rays_init():
     assert rays.u.dtype == float
     assert rays.u[0] == pytest.approx(0.1, abs=1e-10)
 
-    assert isinstance(rays.e, np.ndarray)
-    assert rays.e.shape == (1,)
-    assert rays.e.dtype == float
-    assert rays.e[0] == pytest.approx(1.0, abs=1e-10)
+    assert isinstance(rays.i, np.ndarray)
+    assert rays.i.shape == (1,)
+    assert rays.i.dtype == float
+    assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
 
     assert isinstance(rays.w, np.ndarray)
     assert rays.w.shape == (1,)
