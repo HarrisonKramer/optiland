@@ -436,7 +436,10 @@ class Optic:
         z1 = np.ones_like(x1) * EPL
 
         rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
-        self.surface_group.trace(rays)
+        rays = self.surface_group.trace(rays)
+
+        # update energy
+        self.optic.surface_group.energy[-1, :] = rays.e
 
     def _generate_rays(self, Hx, Hy, x1, y1, z1, wavelength, EPL):
         """
