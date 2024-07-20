@@ -403,6 +403,9 @@ class Optic:
         if isinstance(rays, PolarizedRays):
             rays.update_energy(self.polarization_state)
 
+        # update energy
+        self.optic.surface_group.energy[-1, :] = rays.e
+
         return rays
 
     def trace_generic(self, Hx, Hy, Px, Py, wavelength):
