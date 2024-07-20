@@ -93,7 +93,7 @@ class Surface:
         self.M = np.empty(0)
         self.N = np.empty(0)
 
-        self.energy = np.empty(0)
+        self.intensity = np.empty(0)
         self.aoi = np.empty(0)
         self.opd = np.empty(0)
 
@@ -122,7 +122,7 @@ class Surface:
             self.M = np.copy(np.atleast_1d(rays.M))
             self.N = np.copy(np.atleast_1d(rays.N))
 
-            self.energy = np.copy(np.atleast_1d(rays.e))
+            self.intensity = np.copy(np.atleast_1d(rays.i))
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays):
@@ -611,10 +611,10 @@ class SurfaceGroup:
         return np.array([surf.u for surf in self.surfaces if surf.u.size > 0])
 
     @property
-    def energy(self):
+    def intensity(self):
         """np.array: ray energies on all surfaces"""
-        return np.array([surf.energy for surf in self.surfaces
-                         if surf.energy.size > 0])
+        return np.array([surf.intensity for surf in self.surfaces
+                         if surf.intensity.size > 0])
 
     @property
     def positions(self):
@@ -683,6 +683,7 @@ class SurfaceGroup:
         self.reset()
         for surface in self.surfaces[skip:]:
             surface.trace(rays)
+        return rays
 
     def add_surface(self, new_surface=None, surface_type='standard',
                     index=None, is_stop=False, material='air', thickness=0,
