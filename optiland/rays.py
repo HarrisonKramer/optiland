@@ -3,7 +3,7 @@
 This module defines classes for representing and manipulating rays in optical
 simulations. It includes functionality for translating and rotating rays in
 three-dimensional space, as well as initializing rays with specific properties
-such as position, direction, energy, and wavelength.
+such as position, direction, intensity, and wavelength.
 
 Kramer Harrison, 2024
 """
@@ -70,7 +70,7 @@ class RealRays(BaseRays):
         L (ndarray): The x-components of the direction vectors of the rays.
         M (ndarray): The y-components of the direction vectors of the rays.
         N (ndarray): The z-components of the direction vectors of the rays.
-        e (ndarray): The energy of the rays.
+        i (ndarray): The intensity of the rays.
         w (ndarray): The wavelength of the rays.
         opd (ndarray): The optical path length of the rays.
 
@@ -82,14 +82,14 @@ class RealRays(BaseRays):
         clip(condition): Clip the rays based on a condition.
     """
 
-    def __init__(self, x, y, z, L, M, N, energy, wavelength):
+    def __init__(self, x, y, z, L, M, N, intensity, wavelength):
         self.x = self._process_input(x)
         self.y = self._process_input(y)
         self.z = self._process_input(z)
         self.L = self._process_input(L)
         self.M = self._process_input(M)
         self.N = self._process_input(N)
-        self.e = self._process_input(energy)
+        self.i = self._process_input(intensity)
         self.w = self._process_input(wavelength)
         self.opd = np.zeros_like(self.x)
 
@@ -139,7 +139,7 @@ class RealRays(BaseRays):
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
-        self.e[condition] = 0.0
+        self.i[condition] = 0.0
 
     def refract(self, nx, ny, nz, n1, n2):
         """
@@ -214,7 +214,7 @@ class ParaxialRays(BaseRays):
         self.z = self._process_input(z)
         self.u = self._process_input(u)
         self.x = np.zeros_like(self.y)
-        self.e = np.ones_like(self.y)
+        self.i = np.ones_like(self.y)
         self.w = self._process_input(wavelength)
 
     def propagate(self, t: float):
@@ -361,7 +361,7 @@ class PolarizedRays(RealRays):
         L (ndarray): The x-components of the direction vectors of the rays.
         M (ndarray): The y-components of the direction vectors of the rays.
         N (ndarray): The z-components of the direction vectors of the rays.
-        e (ndarray): The energy of the rays.
+        i (ndarray): The intensity of the rays.
         w (ndarray): The wavelength of the rays.
         opd (ndarray): The optical path length of the rays.
         p (np.ndarray): Array of polarization matrices of the rays.
@@ -369,8 +369,8 @@ class PolarizedRays(RealRays):
     Methods:
         get_output_field(E: np.ndarray) -> np.ndarray:
             Compute the output electric field given the input electric field.
-        update_energy(state: PolarizationState):
-            Update the ray energy based on the polarization state.
+        update_intensity(state: PolarizationState):
+            Update the ray intensity based on the polarization state.
         update(jones_matrix: np.ndarray = None):
             Update the polarization matrices after interaction with a surface.
         _get_3d_electric_field(state: PolarizationState) -> np.ndarray:
@@ -378,11 +378,11 @@ class PolarizedRays(RealRays):
             initial rays.
     """
 
-    def __init__(self, x, y, z, L, M, N, energy, wavelength):
-        super().__init__(x, y, z, L, M, N, energy, wavelength)
+    def __init__(self, x, y, z, L, M, N, intensity, wavelength):
+        super().__init__(x, y, z, L, M, N, intensity, wavelength)
 
         self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
-        self._e0 = energy.copy()
+        self._i0 = intensity.copy()
         self._L0 = L.copy()
         self._M0 = M.copy()
         self._N0 = N.copy()
@@ -399,8 +399,8 @@ class PolarizedRays(RealRays):
         """
         return np.squeeze(np.matmul(self.p, E[:, :, np.newaxis]), axis=2)
 
-    def update_energy(self, state: PolarizationState):
-        """Update ray energy based on polarization state.
+    def update_intensity(self, state: PolarizationState):
+        """Update ray intensity based on polarization state.
 
         Args:
             state (PolarizationState): The polarization state of the ray.
@@ -408,7 +408,7 @@ class PolarizedRays(RealRays):
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
-            self.e = np.sum(np.abs(E1)**2, axis=1)
+            self.i = np.sum(np.abs(E1)**2, axis=1)
         else:
             # Local x-axis field
             state_x = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
@@ -422,10 +422,10 @@ class PolarizedRays(RealRays):
             E0_y = self._get_3d_electric_field(state_y)
             E1_y = self.get_output_field(E0_y)
 
-            # average two orthogonal polarizations to get mean energy,
-            # scale by initial ray energy
-            self.e = (np.sum(np.abs(E1_x)**2, axis=1) +
-                      np.sum(np.abs(E1_y)**2, axis=1)) * self._e0 / 2
+            # average two orthogonal polarizations to get mean intensity,
+            # scale by initial ray intensity
+            self.i = (np.sum(np.abs(E1_x)**2, axis=1) +
+                      np.sum(np.abs(E1_y)**2, axis=1)) * self._i0 / 2
 
     def update(self, jones_matrix: np.ndarray = None):
         """
