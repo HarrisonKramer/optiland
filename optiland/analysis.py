@@ -2,7 +2,7 @@
 
 This module provides several common optical analyses, including:
     - Spot diagrams
-    - Encircled energy diagrams
+    - Encircled intensity diagrams
     - Transverse ray aberration fans
     - Y-Ybar plots
     - Distortion plots
@@ -31,7 +31,7 @@ class SpotDiagram:
         wavelengths (tuple[float]): wavelengths at which data is generated
         num_rings (int): number of rings in pupil distribution for ray tracing
         data (List): contains spot data in a nested list. Data is ordered as
-            field (dim 0), wavelength (dim 1), then x, y and energy data
+            field (dim 0), wavelength (dim 1), then x, y and intensity data
             (dim 2).
     """
 
@@ -112,9 +112,7 @@ class SpotDiagram:
         """Centroid of each spot
 
         Returns:
-            centroid (List): centroid for each ray spot. This follows the same
-                format as the data structure, i.e. field, wavelength,
-                then x/y/energy.
+            centroid (List): centroid for each field in the data.
         """
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
@@ -128,9 +126,8 @@ class SpotDiagram:
         """Geometric spot radius of each spot
 
         Returns:
-            geometric_size (List): Geometric spot radius for each ray spot.
-                This follows the same format as the data structure, i.e.
-                field, wavelength, then x/y/energy.
+            geometric_size (List): Geometric spot radius for field and
+                wavelength
         """
         data = self._center_spots(deepcopy(self.data))
         geometric_size = []
@@ -146,9 +143,7 @@ class SpotDiagram:
         """Root mean square (RMS) spot radius of each spot
 
         Returns:
-            rms (List): RMS spot radius for each ray spot.
-                This follows the same format as the data structure, i.e.
-                field, wavelength, then x/y/energy.
+            rms (List): RMS spot radius for each field and wavelength.
         """
         data = self._center_spots(deepcopy(self.data))
         rms = []
@@ -221,14 +216,14 @@ class SpotDiagram:
                 rays. Defaults to 'hexapolar'.
 
         Returns:
-            list: A list containing the x, y, and energy values of the
+            list: A list containing the x, y, and intensity values of the
                 generated spot data.
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
-        energy = self.optic.surface_group.energy[-1, :]
-        return [x, y, energy]
+        intensity = self.optic.surface_group.intensity[-1, :]
+        return [x, y, intensity]
 
     def _plot_field(self, ax, field_data, field, axis_lim,
                     wavelengths, buffer=1.05):
@@ -237,7 +232,7 @@ class SpotDiagram:
 
         Parameters:
             ax (matplotlib.axes.Axes): The axis to plot the field data on.
-            field_data (list): List of tuples containing x, y, and energy
+            field_data (list): List of tuples containing x, y, and intensity
                 data points.
             field (tuple): Tuple containing the Hx and Hy field values.
             axis_lim (float): Limit of the x and y axis.
@@ -251,8 +246,8 @@ class SpotDiagram:
         """
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
-            x, y, energy = points
-            mask = energy != 0
+            x, y, intensity = points
+            mask = intensity != 0
             ax.scatter(x[mask], y[mask], s=10,
                        label=f'{wavelengths[k]:.4f} µm',
                        marker=markers[k % 3], alpha=0.7)
@@ -414,8 +409,8 @@ class EncircledEnergy(SpotDiagram):
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
-        energy = self.optic.surface_group.energy[-1, :]
-        return [x, y, energy]
+        intensity = self.optic.surface_group.intensity[-1, :]
+        return [x, y, intensity]
 
 
 class RayFan:
@@ -480,12 +475,12 @@ class RayFan:
         for k, field in enumerate(self.fields):
             for wavelength in self.wavelengths:
                 ex = self.data[f'{field}'][f'{wavelength}']['x']
-                energy_x = self.data[f'{field}'][f'{wavelength}']['energy_x']
-                ex[energy_x == 0] = np.nan
+                i_x = self.data[f'{field}'][f'{wavelength}']['intensity_x']
+                ex[i_x == 0] = np.nan
 
                 ey = self.data[f'{field}'][f'{wavelength}']['y']
-                energy_y = self.data[f'{field}'][f'{wavelength}']['energy_y']
-                ey[energy_y == 0] = np.nan
+                i_y = self.data[f'{field}'][f'{wavelength}']['intensity_y']
+                ey[i_y == 0] = np.nan
 
                 axs[k, 0].plot(Py, ey, zorder=3, label=f'{wavelength:.4f} µm')
                 axs[k, 0].grid()
@@ -533,8 +528,8 @@ class RayFan:
                                  distribution='line_x')
                 data[f'{field}'][f'{wavelength}']['x'] = \
                     self.optic.surface_group.x[-1, :]
-                data[f'{field}'][f'{wavelength}']['energy_x'] = \
-                    self.optic.surface_group.energy[-1, :]
+                data[f'{field}'][f'{wavelength}']['intensity_x'] = \
+                    self.optic.surface_group.intensity[-1, :]
 
                 self.optic.trace(Hx=Hx, Hy=Hy,
                                  wavelength=wavelength,
@@ -542,8 +537,8 @@ class RayFan:
                                  distribution='line_y')
                 data[f'{field}'][f'{wavelength}']['y'] = \
                     self.optic.surface_group.y[-1, :]
-                data[f'{field}'][f'{wavelength}']['energy_y'] = \
-                    self.optic.surface_group.energy[-1, :]
+                data[f'{field}'][f'{wavelength}']['intensity_y'] = \
+                    self.optic.surface_group.intensity[-1, :]
 
         # remove distortion
         wave_ref = self.optic.primary_wavelength
