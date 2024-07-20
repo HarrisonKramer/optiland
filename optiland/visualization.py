@@ -178,7 +178,7 @@ class LensViewer:
                 x = self.optic.surface_group.x
                 y = self.optic.surface_group.y
                 z = self.optic.surface_group.z
-                energy = self.optic.surface_group.energy
+                intensity = self.optic.surface_group.intensity
 
                 # find maximum extent of rays
                 for k in range(y.shape[0]):
@@ -196,11 +196,11 @@ class LensViewer:
                     xk = x[:, k]
                     yk = y[:, k]
                     zk = z[:, k]
-                    ek = energy[:, k]
+                    ik = intensity[:, k]
 
-                    xk[ek == 0] = np.nan
-                    zk[ek == 0] = np.nan
-                    yk[ek == 0] = np.nan
+                    xk[ik == 0] = np.nan
+                    zk[ik == 0] = np.nan
+                    yk[ik == 0] = np.nan
 
                     self._plot_line(xk, yk, zk, f'C{color_idx}')
 
@@ -252,12 +252,12 @@ class LensViewer:
         x = np.zeros(256)
         y = np.linspace(-self._real_ray_extent[surf_index],
                         self._real_ray_extent[surf_index], 256)
-        energy = np.ones_like(x)
+        intensity = np.ones_like(x)
         surf = self.optic.surface_group.surfaces[surf_index]
         if surf.aperture:
-            rays = RealRays(x, y, x, x, x, x, energy, x)
+            rays = RealRays(x, y, x, x, x, x, intensity, x)
             surf.aperture.clip(rays)
-            y[rays.e == 0] = np.nan
+            y[rays.i == 0] = np.nan
         return y
 
 
