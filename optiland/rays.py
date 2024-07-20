@@ -141,7 +141,7 @@ class RealRays(BaseRays):
         if material is not None:
             k = material.k(self.w)
             alpha = 4 * np.pi * k / self.w
-            self.i *= np.exp(-alpha * t)
+            self.i *= np.exp(-alpha * t * 1e3)  # mm to microns
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
