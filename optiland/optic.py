@@ -401,10 +401,10 @@ class Optic:
         self.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
-            rays.update_energy(self.polarization_state)
+            rays.update_intensity(self.polarization_state)
 
-        # update energy
-        self.optic.surface_group.energy[-1, :] = rays.e
+        # update ray intensity
+        self.surface_group.intensity[-1, :] = rays.i
 
         return rays
 
@@ -441,8 +441,8 @@ class Optic:
         rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
         rays = self.surface_group.trace(rays)
 
-        # update energy
-        self.optic.surface_group.energy[-1, :] = rays.e
+        # update intensity
+        self.surface_group.intensity[-1, :] = rays.i
 
     def _generate_rays(self, Hx, Hy, x1, y1, z1, wavelength, EPL):
         """
@@ -471,16 +471,16 @@ class Optic:
         y0 = np.ones_like(x1) * y0
         z0 = np.ones_like(x1) * z0
 
-        energy = np.ones_like(x1)
+        intensity = np.ones_like(x1)
         wavelength = np.ones_like(x1) * wavelength
 
         if self.polarization == 'ignore':
             if self.surface_group.uses_polarization:
                 raise ValueError('Polarization must be set when surfaces have '
                                  'polarization-dependent coatings.')
-            return RealRays(x0, y0, z0, L, M, N, energy, wavelength)
+            return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
         else:
-            return PolarizedRays(x0, y0, z0, L, M, N, energy, wavelength)
+            return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
 
     def _get_object_position(self, Hx, Hy, x1, y1, EPL):
         """
