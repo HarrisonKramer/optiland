@@ -210,8 +210,8 @@ class Surface:
         # find distance from rays to the surface
         t = self.geometry.distance(rays)
 
-        # propagate the rays a distance t
-        rays.propagate(t)
+        # propagate the rays a distance t through material
+        rays.propagate(t, self.material_pre)
 
         # update OPD
         rays.opd += np.abs(t * self.material_pre.n(rays.w))
