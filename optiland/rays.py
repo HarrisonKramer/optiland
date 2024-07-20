@@ -9,6 +9,7 @@ Kramer Harrison, 2024
 """
 from typing import Optional
 import numpy as np
+from optiland.materials import BaseMaterial
 
 
 class BaseRays:
@@ -131,11 +132,16 @@ class RealRays(BaseRays):
         self.L = L
         self.M = m
 
-    def propagate(self, t: float):
+    def propagate(self, t: float, material: BaseMaterial = None):
         """Propagate the rays a distance t."""
         self.x += t * self.L
         self.y += t * self.M
         self.z += t * self.N
+
+        if material is not None:
+            k = material.k(self.w)
+            alpha = 4 * np.pi * k / self.w
+            self.i *= np.exp(-alpha * t)
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
