@@ -120,13 +120,13 @@ class SimpleCoating(BaseCoating):
         Returns:
             rays (RealRays): The rays after reflection.
         """
-        rays.e *= self.reflectance
+        rays.i *= self.reflectance
         return rays
 
     def transmit(self, rays: RealRays, nx: np.ndarray = None,
                  ny: np.ndarray = None, nz: np.ndarray = None):
         """
-        Transmits the rays through the coating by multiplying their energy
+        Transmits the rays through the coating by multiplying their intensity
         with the transmittance.
 
         Args:
@@ -135,7 +135,7 @@ class SimpleCoating(BaseCoating):
         Returns:
             rays (RealRays): The rays after transmission.
         """
-        rays.e *= self.transmittance
+        rays.i *= self.transmittance
         return rays
 
 
