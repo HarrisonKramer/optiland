@@ -204,7 +204,7 @@ class FresnelCoating(BaseCoatingPolarized):
 
     This class inherits from the BaseCoatingPolarized class and provides
     interaction functionality for polarized light with uncoated surfaces.
-    In general, this updates ray energies based on the Fresnel equations
+    In general, this updates ray intensities based on the Fresnel equations
     on a surface.
 
     Attributes:
