@@ -86,6 +86,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Tracing rays through misaligned components
     - [Tutorial 2c - Monte Carlo Raytracing Methods](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2c_Monte_Carlo_Raytracing.ipynb)
         - How variations in lens properties impact lens performance
+    - [Tutorial 2d - Raytracing through Aspheric Lenses](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_2d_Raytracing_Aspheres.ipynb)
+        - Modeling even aspheres
 3. **Aberrations**
     - [Tutorial 3a - Common aberration analyses/plots](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_3a_Common_Aberration_Analyses.ipynb)
         - Spot diagrams
@@ -127,6 +129,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 7. **Advanced Optical Design**
     - Tutorial 7a - Designing a Complex System - Update in progress (target completion: Sept. 2024)
     - Tutorial 7b - Surface Roughness & Scattering - Update in progress (target completion: Sept. 2024)
+    - Tutorial 7c - Freeform Surfaces - Update in progress (target completion: Sept. 2024)
 8. **Tolerancing**
     - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Sept. 2024)
         - Sensitivity studies
