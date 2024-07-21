@@ -14,10 +14,14 @@ from copy import deepcopy
 import numpy as np
 from optiland.rays import BaseRays, RealRays, ParaxialRays
 from optiland.coordinate_system import CoordinateSystem
-from optiland.geometries import Plane, StandardGeometry, BaseGeometry
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 from optiland.physical_apertures import BaseAperture
 from optiland.coatings import BaseCoating, BaseCoatingPolarized, FresnelCoating
+from optiland.geometries import (
+    Plane,
+    StandardGeometry,
+    BaseGeometry,
+    EvenAsphere)
 
 
 class Surface:
@@ -412,28 +416,44 @@ class SurfaceFactory:
                              'surfaces.')
 
         cs = self._configure_cs(index, thickness, **kwargs)
-        geometry = self._configure_geometry(cs, **kwargs)
         material_pre, material_post = self._configure_material(index, material)
         coating = self.configure_coating(kwargs.get('coating', None),
                                          material_pre, material_post)
 
+        is_reflective = material == 'mirror'
+
+        # Configuration for each surface type
+        surface_config = {
+            'standard': {
+                'geometry': self._configure_standard_geometry,
+                'expected_params': ['radius', 'conic']
+            },
+            'even_asphere': {
+                'geometry': self._configure_even_asphere_geometry,
+                'expected_params': ['radius', 'conic', 'coefficients']
+            }
+        }
+
+        if surface_type not in surface_config:
+            raise ValueError(f'Surface type {surface_type} not recognized.')
+
+        # Generate geometry for the surface type
+        config = surface_config[surface_type]
+        filtered_params = {key: value for key, value in kwargs.items()
+                           if key in config['expected_params']}
+        geometry = config['geometry'](cs, **filtered_params)
+
         if index == 0:
             return ObjectSurface(geometry, material_post)
 
-        if material == 'mirror':
-            is_reflective = True
-        else:
-            is_reflective = False
+        # Filter out unexpected surface parameters
+        common_params = ['aperture']
+        filtered_kwargs = {key: value for key, value in kwargs.items()
+                           if key in common_params}
 
-        if surface_type == 'standard':
-            # filter out unexpected parameters
-            expected_params = ['aperture', 'semi_aperture']
-            filtered_kwargs = {key: value for key, value in kwargs.items()
-                               if key in expected_params}
-
-            return Surface(geometry, material_pre, material_post, is_stop,
-                           is_reflective=is_reflective, coating=coating,
-                           **filtered_kwargs)
+        return Surface(geometry, material_pre, material_post, is_stop,
+                       is_reflective=is_reflective, coating=coating,
+                       **filtered_kwargs)
 
     def _configure_cs(self, index, thickness, **kwargs):
         """
@@ -465,9 +485,9 @@ class SurfaceFactory:
         return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
 
     @staticmethod
-    def _configure_geometry(cs, **kwargs):
+    def _configure_standard_geometry(cs, **kwargs):
         """
-        Configures the geometry based on the given parameters.
+        Configures a standard geometry based on the given parameters.
 
         Parameters:
             cs: The coordinate system for the geometry.
@@ -484,6 +504,27 @@ class SurfaceFactory:
             geometry = Plane(cs)
         else:
             geometry = StandardGeometry(cs, radius, conic)
+
+        return geometry
+
+    @staticmethod
+    def _configure_even_asphere_geometry(cs, **kwargs):
+        """
+        Configures an even asphere geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius, conic, and coefficients.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+        coefficients = kwargs.get('coefficients', [])
+
+        geometry = EvenAsphere(cs, radius, conic, coefficients)
 
         return geometry
 
