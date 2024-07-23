@@ -84,7 +84,8 @@ class OptimizationProblem:
         """Print information about the variables in the merit function."""
         data = {'Variable Type': [var.type for var in self.variables],
                 'Surface': [var.surface_number for var in self.variables],
-                'Value': [var.value for var in self.variables],
+                'Value': [var.variable.inverse_scale(var.value)
+                          for var in self.variables],
                 'Min. Bound': [var.min_val for var in self.variables],
                 'Max. Bound': [var.max_val for var in self.variables]}
 
