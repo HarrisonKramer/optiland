@@ -51,6 +51,24 @@ class VariableBehavior(ABC):
         """
         pass
 
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        pass
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        pass
+
 
 class RadiusVariable(VariableBehavior):
     """
@@ -80,7 +98,8 @@ class RadiusVariable(VariableBehavior):
         Returns:
             float: The current value of the radius.
         """
-        return self._surfaces.radii[self.surface_number]
+        value = self._surfaces.radii[self.surface_number]
+        return self.scale(value)
 
     def update_value(self, new_value):
         """
@@ -89,7 +108,26 @@ class RadiusVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the radius.
         """
+        new_value = self.inverse_scale(new_value)
         self.optic.set_radius(new_value, self.surface_number)
+
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value / 100.0 - 1.0
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return (scaled_value + 1.0) * 100.0
 
 
 class ConicVariable(VariableBehavior):
@@ -132,6 +170,24 @@ class ConicVariable(VariableBehavior):
         """
         self.optic.set_conic(new_value, self.surface_number)
 
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return scaled_value
+
 
 class ThicknessVariable(VariableBehavior):
     """
@@ -161,7 +217,8 @@ class ThicknessVariable(VariableBehavior):
         Returns:
             float: The current thickness value.
         """
-        return self._surfaces.get_thickness(self.surface_number)[0]
+        value = self._surfaces.get_thickness(self.surface_number)[0]
+        return self.scale(value)
 
     def update_value(self, new_value):
         """
@@ -170,7 +227,26 @@ class ThicknessVariable(VariableBehavior):
         Args:
             new_value (float): The new thickness value.
         """
+        new_value = self.inverse_scale(new_value)
         self.optic.set_thickness(new_value, self.surface_number)
+
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value / 10.0 - 1.0
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return (scaled_value + 1.0) * 10.0
 
 
 class IndexVariable(VariableBehavior):
@@ -211,7 +287,8 @@ class IndexVariable(VariableBehavior):
             float: The value of the index of refraction.
         """
         n = self.optic.n(self.wavelength)
-        return n[self.surface_number]
+        value = n[self.surface_number]
+        return self.scale(value)
 
     def update_value(self, new_value):
         """
@@ -220,7 +297,26 @@ class IndexVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the index of refraction.
         """
+        new_value = self.inverse_scale(new_value)
         self.optic.set_index(new_value, self.surface_number)
+
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value - 1.5
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return scaled_value + 1.5
 
 
 class AsphereCoeffVariable(VariableBehavior):
@@ -249,7 +345,8 @@ class AsphereCoeffVariable(VariableBehavior):
             float: The current value of the aspheric coefficient.
         """
         surf = self._surfaces.surfaces[self.surface_number]
-        return surf.geometry.c[self.coeff_number]
+        value = surf.geometry.c[self.coeff_number]
+        return self.scale(value)
 
     def update_value(self, new_value):
         """
@@ -258,8 +355,27 @@ class AsphereCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the aspheric coefficient.
         """
+        new_value = self.inverse_scale(new_value)
         self.optic.set_asphere_coeff(new_value, self.surface_number,
                                      self.coeff_number)
+
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value * 10 ** (4 + 2 * self.coeff_number)
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return scaled_value / 10 ** (4 + 2 * self.coeff_number)
 
 
 class Variable:
@@ -305,10 +421,9 @@ class Variable:
             if key in self.allowed_attributes():
                 setattr(self, key, value)
             else:
-                # Handle unexpected attributes or raise a warning/error
                 print(f"Warning: {key} is not a recognized attribute")
 
-        self.variable_behavior = self._get_variable_behavior()
+        self.variable = self._get_variable()
 
     @staticmethod
     def allowed_attributes():
@@ -318,9 +433,9 @@ class Variable:
         """
         return {'surface_number', 'coeff_number', 'wavelength'}
 
-    def _get_variable_behavior(self):
+    def _get_variable(self):
         """
-        Get the behavior of the variable.
+        Get the variable.
 
         Returns:
             The behavior of the variable, or None if an error occurs.
@@ -345,7 +460,7 @@ class Variable:
         if variable_class:
             return variable_class(**behavior_kwargs)
         else:
-            return None
+            raise ValueError(f'Invalid variable type "{self.type}"')
 
     @property
     def value(self):
@@ -357,10 +472,7 @@ class Variable:
         Raises:
             ValueError: If the variable type is invalid.
         """
-        if self.variable_behavior:
-            return self.variable_behavior.get_value()
-        else:
-            raise ValueError(f'Invalid variable type "{self.type}"')
+        return self.variable.get_value()
 
     @property
     def bounds(self):
@@ -369,7 +481,11 @@ class Variable:
         Returns:
             tuple: the bounds of the variable
         """
-        return (self.min_val, self.max_val)
+        min_val = (self.variable.scale(self.min_val)
+                   if self.min_val is not None else None)
+        max_val = (self.variable.scale(self.max_val)
+                   if self.max_val is not None else None)
+        return min_val, max_val
 
     def update(self, new_value):
         """Update variable to a new value.
@@ -380,7 +496,4 @@ class Variable:
         Raises:
             ValueError: If the variable type is invalid.
         """
-        if self.variable_behavior:
-            self.variable_behavior.update_value(new_value)
-        else:
-            raise ValueError(f'Invalid variable type "{self.type}"')
+        self.variable.update_value(new_value)
