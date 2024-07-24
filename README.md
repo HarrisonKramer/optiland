@@ -142,7 +142,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Adding new coating types
     - Tutorial 9c - Custom Optimization Algorithms - Update in progress (target completion: Sept. 2024)
         - Adding new optimization approaches
-10. **Machine Learning in Optical Design** - Update in progress (target completion: Sept. 2024)
+10. **Machine Learning in Optical Design**
+    - Tutorial 10a - Reinforcement Learning for Lens Design - Update in progress (target completion: Sept. 2024)
 
 
 ## License
