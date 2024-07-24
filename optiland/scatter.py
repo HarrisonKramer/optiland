@@ -16,53 +16,56 @@ class BaseBSDF(ABC):
             Tuple[np.ndarray, np.ndarray, np.ndarray]: The rotated direction
                 cosines of the rays.
         """
-        L, M = self._generate_points()
-        N = np.sqrt(1 - L**2 - M**2)
+        x, y = self._generate_points()
 
         # merge L, M, N into a single arrays
-        s = np.column_stack((rays.L, rays.M, rays.N))  # scatter directions
-        v = np.column_stack((L, M, N))  # ray directions
+        v = np.column_stack((rays.L, rays.M, rays.N))  # ray directions
 
-        # z axis is reference for rotation
-        z = np.array([0.0, 0.0, 1.0])
+        # arbitrary vector to use as a reference for the cross product
+        arbitrary_vector = np.array([1, 0, 0])
+        aligned = np.isclose(v[:, 0], 1.0)
+        arbitrary_vector = np.where(aligned[:, np.newaxis], [0, 1, 0],
+                                    arbitrary_vector)
 
-        # find the axis of rotation
-        k = np.cross(z, v)
-        k_norm = np.linalg.norm(k, axis=1, keepdims=True)
-        k = np.divide(k, k_norm, where=k_norm != 0)
+        # first basis vector for the new coordinate system
+        a = np.cross(v, arbitrary_vector)
+        a = a / np.linalg.norm(a, axis=1)[:, np.newaxis]
 
-        # precompute sin and cos of the angle of rotation
-        cos_theta = np.dot(z, v)
-        sin_theta = np.sqrt(1 - cos_theta**2)
+        # second basis vector for the new coordinate system
+        b = np.cross(v, a)
+        b = b / np.linalg.norm(b, axis=1)[:, np.newaxis]
 
-        # Rodrigues' rotation formula
-        dot_ks = np.einsum('ij,ij->i', k, s)
-        cross_ks = np.cross(k, s)
+        # generate scattered vectors
+        v_scatter = v + x[:, np.newaxis] * a + y[:, np.newaxis] * b
 
-        L_new = (s[:, 0] * cos_theta + cross_ks[:, 0] * sin_theta +
-                 k[:, 0] * dot_ks * (1 - cos_theta))
-        M_new = (s[:, 1] * cos_theta + cross_ks[:, 1] * sin_theta +
-                 k[:, 1] * dot_ks * (1 - cos_theta))
-        N_new = (s[:, 2] * cos_theta + cross_ks[:, 2] * sin_theta +
-                 k[:, 2] * dot_ks * (1 - cos_theta))
-
-        # handle case when vector already aligned with z axis
-        cond = (k_norm == 0).squeeze()
-        L_new[cond] = v[cond, 0]
-        M_new[cond] = v[cond, 1]
-        N_new[cond] = v[cond, 2]
-
-        return L_new, M_new, N_new
+        rays.L = v_scatter[:, 0]
+        rays.M = v_scatter[:, 1]
+        rays.N = v_scatter[:, 2]
 
     @abstractmethod
-    def _generate_points(self):
-        """Generate points on the unit disk."""
+    def _generate_points(self, rays: RealRays):
+        """Generate points on the unit disk.
+
+        Args:
+            rays (RealRays): The rays to be scattered.
+        """
         pass
 
 
 def LambertianBSDF(BaseBSDF):
+    """
+    Lambertian Bidirectional Scattering Distribution Function (BSDF) class.
+
+    This class represents a Lambertian BSDF, which is generally used to model
+    diffuse scattering.
+    """
 
     def _generate_points(self, rays: RealRays):
+        """Generate points on the unit disk.
+
+        Args:
+            rays (RealRays): The rays to be scattered.
+        """
         r = np.random.rand(rays.x.size)
         theta = np.random.uniform(0, 2 * np.pi, rays.x.size)
         L = np.sqrt(r) * np.cos(theta)
