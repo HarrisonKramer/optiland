@@ -95,3 +95,221 @@ class JonesFresnel(BaseJones):
             jones_matrix[:, 2, 2] = 1
 
         return jones_matrix
+
+
+class JonesPolarizerH(BaseJones):
+    """
+    Class representing the Jones matrix for a horizontal polarizer.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 1
+        jones_matrix[:, 1, 1] = 0
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerV(BaseJones):
+    """
+    Class representing the Jones matrix for a vertical polarizer.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 0
+        jones_matrix[:, 1, 1] = 1
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerL45(BaseJones):
+    """
+    Class representing the Jones matrix for a linear polarizer at 45 degrees.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 0.5
+        jones_matrix[:, 0, 1] = 0.5
+        jones_matrix[:, 1, 0] = 0.5
+        jones_matrix[:, 1, 1] = 0.5
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerL135(BaseJones):
+    """
+    Class representing the Jones matrix for a linear polarizer at 135 degrees.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 0.5
+        jones_matrix[:, 0, 1] = -0.5
+        jones_matrix[:, 1, 0] = -0.5
+        jones_matrix[:, 1, 1] = 0.5
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerRCP(BaseJones):
+    """
+    Class representing the Jones matrix for a right circular polarizer.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 0.5
+        jones_matrix[:, 0, 1] = 1j * 0.5
+        jones_matrix[:, 1, 0] = -1j * 0.5
+        jones_matrix[:, 1, 1] = 0.5
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerLCP(BaseJones):
+    """
+    Class representing the Jones matrix for a left circular polarizer.
+    """
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = 0.5
+        jones_matrix[:, 0, 1] = -1j * 0.5
+        jones_matrix[:, 1, 0] = 1j * 0.5
+        jones_matrix[:, 1, 1] = 0.5
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
