@@ -432,3 +432,35 @@ class JonesLinearRetarder(BaseJones):
         jones_matrix[:, 2, 2] = 1
 
         return jones_matrix
+
+
+class JonesQuarterWaveRetarder(JonesLinearRetarder):
+    """
+    Represents a quarter-wave retarder in Jones calculus.
+
+    Attributes:
+        theta (float): Angle of the retarder, i.e., the fast axis orientation.
+            Defaults to 0.
+
+    Methods:
+        calculate_matrix: Calculate the Jones matrix for the given rays.
+    """
+
+    def __init__(self, theta=0):
+        super().__init__(np.pi / 2, theta)
+
+
+class JonesHalfWaveRetarder(JonesLinearRetarder):
+    """
+    Represents a half-wave retarder in Jones calculus.
+
+    Attributes:
+        theta (float): Angle of the retarder, i.e., the fast axis orientation.
+            Defaults to 0.
+
+    Methods:
+        calculate_matrix: Calculate the Jones matrix for the given rays.
+    """
+
+    def __init__(self, theta=0):
+        super().__init__(np.pi, theta)
