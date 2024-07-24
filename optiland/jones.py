@@ -13,8 +13,7 @@ class BaseJones(ABC):
 
     @abstractmethod
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -22,12 +21,6 @@ class BaseJones(ABC):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -103,8 +96,7 @@ class JonesPolarizerH(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -112,12 +104,6 @@ class JonesPolarizerH(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -138,8 +124,7 @@ class JonesPolarizerV(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -147,12 +132,6 @@ class JonesPolarizerV(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -173,8 +152,7 @@ class JonesPolarizerL45(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -182,12 +160,6 @@ class JonesPolarizerL45(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -210,8 +182,7 @@ class JonesPolarizerL135(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -219,12 +190,6 @@ class JonesPolarizerL135(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -247,8 +212,7 @@ class JonesPolarizerRCP(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -256,12 +220,6 @@ class JonesPolarizerRCP(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -284,8 +242,7 @@ class JonesPolarizerLCP(BaseJones):
     """
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -293,12 +250,6 @@ class JonesPolarizerLCP(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -338,8 +289,7 @@ class JonesLinearDiattenuator(BaseJones):
         self.theta = theta
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -347,12 +297,6 @@ class JonesLinearDiattenuator(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
@@ -395,8 +339,7 @@ class JonesLinearRetarder(BaseJones):
         self.theta = theta
 
     def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         nx: np.ndarray = None, ny: np.ndarray = None,
-                         nz: np.ndarray = None, aoi: np.ndarray = None):
+                         aoi: np.ndarray = None):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -404,12 +347,6 @@ class JonesLinearRetarder(BaseJones):
             rays (RealRays): Object representing the rays.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
-            nx (np.ndarray, optional): Array representing the x-component of
-                the surface normal vector. Defaults to None.
-            ny (np.ndarray, optional): Array representing the y-component of
-                the surface normal vector. Defaults to None.
-            nz (np.ndarray, optional): Array representing the z-component of
-                the surface normal vector. Defaults to None.
             aoi (np.ndarray, optional): Array representing the angle of
                 incidence. Defaults to None.
 
