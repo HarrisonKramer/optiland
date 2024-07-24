@@ -374,3 +374,61 @@ class JonesLinearDiattenuator(BaseJones):
         jones_matrix[:, 2, 2] = 1
 
         return jones_matrix
+
+
+class JonesLinearRetarder(BaseJones):
+    """
+    Represents a linear retarder in Jones calculus.
+
+    Attributes:
+        retardance (float): Retardance of the retarder, or the absolute value
+            of the phase difference between the two components of the electric
+            field.
+        theta (float): Angle of the retarder, i.e., the fast axis orientation.
+
+    Methods:
+        calculate_matrix: Calculate the Jones matrix for the given rays.
+    """
+
+    def __init__(self, retardance, theta):
+        self.retardance = retardance
+        self.theta = theta
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        d = self.retardance
+        t = self.theta
+        j00 = (np.exp(-1j * d / 2) * np.cos(t)**2 +
+               np.exp(1j * d / 2) * np.sin(t)**2)
+        j0x = -1j * np.sin(d / 2) * np.sin(2 * t)
+        j11 = (np.exp(1j * d / 2) * np.cos(t)**2 +
+               np.exp(-1j * d / 2) * np.sin(t)**2)
+
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = j00
+        jones_matrix[:, 0, 1] = j0x
+        jones_matrix[:, 1, 0] = j0x
+        jones_matrix[:, 1, 1] = j11
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
