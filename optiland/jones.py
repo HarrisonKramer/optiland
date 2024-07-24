@@ -313,3 +313,64 @@ class JonesPolarizerLCP(BaseJones):
         jones_matrix[:, 2, 2] = 1
 
         return jones_matrix
+
+
+class JonesLinearDiattenuator(BaseJones):
+    """
+    Represents a linear diattenuator in Jones calculus.
+
+    Attributes:
+        t_min (float): Minimum amplitude transmission coefficient.
+        t_max (float): Maximum amplitude transmission coefficient.
+        theta (float): Angle of the diattenuator.
+
+    Note:
+        The intensity transmission is given by the square of the amplitude
+        coefficients.
+
+    Methods:
+        calculate_matrix: Calculate the Jones matrix for the given rays.
+    """
+
+    def __init__(self, t_min, t_max, theta):
+        self.t_min = t_min
+        self.t_max = t_max
+        self.theta = theta
+
+    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
+                         nx: np.ndarray = None, ny: np.ndarray = None,
+                         nz: np.ndarray = None, aoi: np.ndarray = None):
+        """
+        Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            nx (np.ndarray, optional): Array representing the x-component of
+                the surface normal vector. Defaults to None.
+            ny (np.ndarray, optional): Array representing the y-component of
+                the surface normal vector. Defaults to None.
+            nz (np.ndarray, optional): Array representing the z-component of
+                the surface normal vector. Defaults to None.
+            aoi (np.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            np.ndarray: The calculated Jones matrix.
+        """
+        j00 = (self.t_max * np.cos(self.theta)**2 +
+               self.t_min * np.sin(self.theta)**2)
+        j0x = (self.t_max -
+               self.t_min * np.cos(self.theta) * np.sin(self.theta))
+        j11 = (self.t_max * np.sin(self.theta)**2 +
+               self.t_min * np.cos(self.theta)**2)
+
+        jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix[:, 0, 0] = j00
+        jones_matrix[:, 0, 1] = j0x
+        jones_matrix[:, 1, 0] = j0x
+        jones_matrix[:, 1, 1] = j11
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
