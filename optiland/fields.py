@@ -166,7 +166,7 @@ class FieldGroup:
 
     def set_telecentric(self, is_telecentric):
         """
-        Set the telecentricity of the system.
+        Speocify whether the system is telecentric in object space.
 
         Args:
             is_telecentric (bool): Whether the system is telecentric in object
