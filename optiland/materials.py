@@ -55,9 +55,9 @@ class BaseMaterial:
         Returns:
             The Abbe number of the material.
         """
-        nD = self.n(0.5893)
-        nF = self.n(0.4861)
-        nC = self.n(0.6563)
+        nD = self.n(0.5875618)
+        nF = self.n(0.4861327)
+        nC = self.n(0.6562725)
         return (nD - 1) / (nF - nC)
 
 
