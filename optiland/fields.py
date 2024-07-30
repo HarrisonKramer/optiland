@@ -34,6 +34,7 @@ class FieldGroup:
 
     Attributes:
         fields (list): A list of fields in the group.
+        telecentric (bool): Whether the system is telecentric in object space.
 
     Methods:
         get_vig_factor(Hx, Hy): Returns the vignetting factors for given Hx
@@ -45,6 +46,7 @@ class FieldGroup:
 
     def __init__(self):
         self.fields = []
+        self.telecentric = False
 
     @property
     def x_fields(self):
@@ -161,3 +163,13 @@ class FieldGroup:
             IndexError: If the field_number is out of range.
         """
         return self.fields[field_number]
+
+    def set_telecentric(self, is_telecentric):
+        """
+        Set the telecentricity of the system.
+
+        Args:
+            is_telecentric (bool): Whether the system is telecentric in object
+                space.
+        """
+        self.telecentric = is_telecentric
