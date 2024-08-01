@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from optiland.aberrations import Aberrations
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
 
@@ -20,6 +21,10 @@ def singlet_stop_surf_two():
 
 
 class TestDoubleGaussAberrations:
+    def test_init(self, double_gauss):
+        aberrations = Aberrations(double_gauss)
+        assert aberrations.optic == double_gauss
+
     def test_seidels(self, double_gauss):
         S = double_gauss.aberrations.seidels()
         assert S[0] == pytest.approx(-0.003929457875534847, abs=1e-9)
@@ -78,6 +83,10 @@ class TestDoubleGaussAberrations:
 
 
 class TestEdmundSinglet:
+    def test_init(self, edmund_singlet):
+        aberrations = Aberrations(edmund_singlet)
+        assert aberrations.optic == edmund_singlet
+
     def test_seidels(self, edmund_singlet):
         S = edmund_singlet.aberrations.seidels()
         assert S[0] == pytest.approx(-1.730769175588275, abs=1e-9)
@@ -136,6 +145,10 @@ class TestEdmundSinglet:
 
 
 class TestSingletStopTwo:
+    def test_init(self, singlet_stop_surf_two):
+        aberrations = Aberrations(singlet_stop_surf_two)
+        assert aberrations.optic == singlet_stop_surf_two
+
     def test_seidels(self, singlet_stop_surf_two):
         S = singlet_stop_surf_two.aberrations.seidels()
         assert S[0] == pytest.approx(-0.0326050034268675, abs=1e-9)
