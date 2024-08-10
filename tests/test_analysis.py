@@ -1,5 +1,7 @@
 import pytest
+import numpy as np
 from unittest.mock import patch
+from optiland.optics import Optic
 from optiland import analysis
 from optiland.samples.objectives import TripletTelescopeObjective, CookeTriplet
 
@@ -12,6 +14,41 @@ def cooke_triplet():
 @pytest.fixture
 def telescope_objective():
     return TripletTelescopeObjective()
+
+
+@pytest.fixture
+def triplet_four_fields():
+    lens = Optic()
+
+    lens.surface_group.surfaces = []
+
+    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=1, radius=22.01359, thickness=3.25896,
+                     material='SK16')
+    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
+    lens.add_surface(index=3, radius=-22.21328, thickness=0.99997,
+                     material=('F2', 'schott'))
+    lens.add_surface(index=4, radius=20.29192, thickness=4.75041,
+                     is_stop=True)
+    lens.add_surface(index=5, radius=79.68360, thickness=2.95208,
+                     material='SK16')
+    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
+    lens.add_surface(index=7)
+
+    lens.set_aperture(aperture_type='EPD', value=10)
+
+    lens.set_field_type(field_type='angle')
+    lens.add_field(y=0)
+    lens.add_field(y=10)
+    lens.add_field(y=15)
+    lens.add_field(y=20)
+
+    lens.add_wavelength(value=0.48)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_wavelength(value=0.65)
+
+    lens.update_paraxial()
+    return lens
 
 
 class TestCookeTripetSpotDiagram:
@@ -56,6 +93,21 @@ class TestCookeTripetSpotDiagram:
     @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram_larger_fig(self, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
+        spot.view(figsize=(20, 10))
+        mock_show.assert_called_once()
+
+
+class TestTripetSpotDiagram:
+    @patch('matplotlib.pyplot.show')
+    def test_view_spot_diagram(self, mock_show, triplet_four_fields):
+        spot = analysis.SpotDiagram(triplet_four_fields)
+        spot.view()
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_spot_diagram_larger_fig(self, mock_show,
+                                          triplet_four_fields):
+        spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
 
