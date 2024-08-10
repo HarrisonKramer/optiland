@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from optiland.optic import Optic
 from optiland.aberrations import Aberrations
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
@@ -18,6 +19,33 @@ def edmund_singlet():
 @pytest.fixture
 def singlet_stop_surf_two():
     return SingletStopSurf2()
+
+
+@pytest.fixture
+def simple_singlet():
+    """singlet with single field and wavelength"""
+    lens = Optic()
+
+    # add surfaces
+    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=1, thickness=7, radius=19.93, is_stop=True,
+                     material='N-SF11')
+    lens.add_surface(index=2, thickness=21.48)
+    lens.add_surface(index=3)
+
+    # add aperture
+    lens.set_aperture(aperture_type='EPD', value=20.0)
+
+    # add field
+    lens.set_field_type(field_type='angle')
+    lens.add_field(y=0)
+
+    # add wavelength
+    lens.add_wavelength(value=0.55, is_primary=True)
+
+    lens.update_paraxial()
+    lens.image_solve()
+    return lens
 
 
 class TestDoubleGaussAberrations:
@@ -204,3 +232,13 @@ class TestSingletStopTwo:
         assert np.sum(TAchC) == pytest.approx(-0.2286190741226864, abs=1e-9)
         assert np.sum(LchC) == pytest.approx(-1.8564202776151473, abs=1e-9)
         assert np.sum(TchC) == pytest.approx(0.011126795737552403, abs=1e-9)
+
+
+class TestSimpleSinglet:
+    def test_seidels(self, simple_singlet):
+        S = simple_singlet.aberrations.seidels()
+        assert S[0] == 0.0
+        assert S[1] == 0.0
+        assert S[2] == 0.0
+        assert S[3] == 0.0
+        assert S[4] == 0.0
