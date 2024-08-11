@@ -65,6 +65,14 @@ class OptimizationProblem:
         """RSS of current merit function"""
         return np.sqrt(self.sum_squared())
 
+    def update_optics(self):
+        """Update all optics considered in the optimization problem"""
+        unique_optics = set()
+        for var in self.variables:
+            unique_optics.add(var.optic)
+        for optic in unique_optics:
+            optic.update()
+
     def operand_info(self):
         """Print information about the operands in the merit function"""
         data = {'Operand Type': [op.type.replace('_', ' ')
@@ -188,6 +196,7 @@ class OptimizerGeneric:
         """
         for idvar, var in enumerate(self.problem.variables):
             var.update(x[idvar])
+        self.problem.update_optics()  # update all optics (e.g., pickups)
         funs = np.array([op.fun() for op in self.problem.operands])
         rss = np.sum(funs**2)
         if np.isnan(rss):
