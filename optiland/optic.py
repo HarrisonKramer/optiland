@@ -272,7 +272,7 @@ class Optic:
             ValueError: If an invalid source attribute is specified.
         """
         pickup = Pickup(self, source_surface_idx, attr_type,
-                        target_surface_idx, target_attr, scale, offset)
+                        target_surface_idx, scale, offset)
         self.surface_group.pickup(pickup)
 
     def scale_system(self, scale_factor):
