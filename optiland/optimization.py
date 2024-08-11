@@ -55,10 +55,12 @@ class OptimizationProblem:
 
     def clear_operands(self):
         """Clear all operands from the merit function"""
+        self.initial_value = 0.0
         self.operands = []
 
     def clear_variables(self):
         """Clear all variables from the merit function"""
+        self.initial_value = 0.0
         self.variables = []
 
     def fun_array(self):
