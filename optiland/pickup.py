@@ -24,7 +24,7 @@ class Pickup:
     """
 
     def __init__(self, optic, source_surface_idx, attr_type,
-                 target_surface_idx, target_attr, scale=1, offset=0):
+                 target_surface_idx, scale=1, offset=0):
         self.optic = optic
         self.source_surface_idx = source_surface_idx
         self.attr_type = attr_type
