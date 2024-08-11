@@ -100,7 +100,7 @@ class OptimizationProblem:
         df = pd.DataFrame(data)
         print(df.to_markdown(headers='keys', tablefmt='psql'))
 
-    def info(self):
+    def merit_info(self):
         """Print information about the merit function."""
         current_value = self.sum_squared()
 
@@ -115,6 +115,9 @@ class OptimizationProblem:
         df = pd.DataFrame(data)
         print(df.to_markdown(headers='keys', tablefmt='psql'))
 
+    def info(self):
+        """Print information about the optimization problem."""
+        self.merit_info()
         self.operand_info()
         self.variable_info()
 
