@@ -53,6 +53,14 @@ class OptimizationProblem:
         """Add a variable to the merit function"""
         self.variables.append(Variable(optic, variable_type, **kwargs))
 
+    def clear_operands(self):
+        """Clear all operands from the merit function"""
+        self.operands = []
+
+    def clear_variables(self):
+        """Clear all variables from the merit function"""
+        self.variables = []
+
     def fun_array(self):
         """Array of operand weighted deltas squared"""
         return np.array([op.fun() for op in self.operands])**2
