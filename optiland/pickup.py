@@ -54,7 +54,7 @@ class Pickup:
         Raises:
             ValueError: If the source attribute is invalid.
         """
-        surface = self.surface_group.surfaces[self.source_surface_idx]
+        surface = self.optic.surface_group.surfaces[self.source_surface_idx]
         if self.attr_type == 'radius':
             return surface.geometry.radius
         elif self.attr_type == 'conic':
