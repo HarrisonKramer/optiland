@@ -251,7 +251,7 @@ class Optic:
         self.polarization = polarization
 
     def set_pickup(self, source_surface_idx, attr_type, target_surface_idx,
-                   target_attr, scale=1, offset=0):
+                   scale=1, offset=0):
         """
         Set a pickup operation on the optical system.
 
