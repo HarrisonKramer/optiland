@@ -19,6 +19,7 @@ from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.visualization import LensViewer, LensViewer3D
 from optiland.pickup import Pickup
+from optiland.solves import SolveFactory
 
 
 class Optic:
@@ -280,6 +281,25 @@ class Optic:
     def clear_pickups(self):
         """Clear all pickups from the optical system."""
         self.pickups = []
+
+    def set_solve(self, solve_type, surface_idx, *args, **kwargs):
+        """
+        Set a solve operation on the optical system.
+
+        Args:
+            solve_type (str): The type of solve operation to be performed.
+            surface_idx (int): The index of the surface in the optic's surface
+                group.
+            *args: Additional arguments for the solve operation.
+            **kwargs: Additional keyword arguments for the solve operation.
+        """
+        solve = SolveFactory.create_solve(self, solve_type, surface_idx,
+                                          *args, **kwargs)
+        self.solves.append(solve)
+
+    def clear_solves(self):
+        """Clear all solves from the optical system."""
+        self.solves = []
 
     def scale_system(self, scale_factor):
         """
