@@ -273,6 +273,7 @@ class Optic:
         """
         pickup = Pickup(self, source_surface_idx, attr_type,
                         target_surface_idx, scale, offset)
+        pickup.apply()
         self.pickups.append(pickup)
 
     def scale_system(self, scale_factor):
