@@ -422,6 +422,8 @@ class Optic:
         """
         for pickup in self.pickups:
             pickup.apply()
+        for solve in self.solves:
+            solve.apply()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
