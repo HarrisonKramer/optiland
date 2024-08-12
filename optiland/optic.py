@@ -17,7 +17,7 @@ from optiland.rays import RealRays, PolarizedRays, PolarizationState
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import LensViewer, LensViewer3D
+from optiland.visualization import LensViewer, LensViewer3D, LensInfoViewer
 from optiland.pickup import Pickup
 from optiland.solves import SolveFactory
 
@@ -371,6 +371,11 @@ class Optic:
         viewer = LensViewer3D(self)
         viewer.view(fields, wavelengths, num_rays,
                     distribution='hexapolar', figsize=figsize)
+
+    def info(self):
+        """Display the optical system information."""
+        viewer = LensInfoViewer(self)
+        viewer.view()
 
     def reset(self):
         """
