@@ -114,8 +114,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Local optimization
     - [Tutorial 5b - Advanced Optimization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5b_Advanced_Optimization.ipynb)
         - Global optimization
-    - Tutorial 5c - Optimization Case Study - Update in progress (target completion: Sept. 2024)
-        - Designing a smartphone camera
+    - [Tutorial 5c - Optimization Case Study](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_5c_Optimization_Case_Study.ipynb)
+        - Complete process of designing a Cooke triplet
 6. **Coatings & Polarization**
     - [Tutorial 6a - Introduction to Coatings](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_6a_Introduction_to_Coatings.ipynb)
         - Simple coatings in Optiland
