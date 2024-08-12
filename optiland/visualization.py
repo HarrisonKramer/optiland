@@ -10,6 +10,7 @@ system.
 
 Kramer Harrison, 2023
 """
+import os
 import vtkmodules.vtkRenderingOpenGL2  # noqa
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -29,9 +30,11 @@ from vtkmodules.vtkRenderingCore import (
     vtkViewport
 )
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from optiland.rays import RealRays
+from optiland import geometries, materials
 
 
 class LensViewer:
@@ -426,3 +429,71 @@ class LensViewer3D(LensViewer):
             lineActor.GetProperty().SetColor(color)
 
             self.renderer.AddActor(lineActor)
+
+
+class LensInfoViewer:
+    """
+    A class for viewing information about a lens.
+
+    Args:
+        optic (Optic): The optic object containing the lens information.
+
+    Attributes:
+        optic (Optic): The optic object containing the lens information.
+
+    Methods:
+        view(): Prints the lens information in a tabular format.
+    """
+    def __init__(self, optic):
+        self.optic = optic
+
+    def view(self):
+        """
+        Prints the lens information in a tabular format.
+
+        The lens information includes the surface type, radius, thickness,
+        material, conic, and semi-aperture of each surface.
+        """
+        surf_type = []
+        for surf in self.optic.surface_group.surfaces:
+            if isinstance(surf.geometry, geometries.StandardGeometry):
+                surf_type.append('Standard')
+            elif isinstance(surf.geometry, geometries.EvenAsphere):
+                surf_type.append('Even Asphere')
+            elif isinstance(surf.geometry, geometries.Plane):
+                surf_type.append('Planar')
+            else:
+                raise ValueError('Unknown surface type')
+        radii = self.optic.surface_group.radii
+        thicknesses = np.diff(self.optic.surface_group.positions.ravel(),
+                              append=np.nan)
+        conic = self.optic.surface_group.conic
+        semi_aperture = [surf.semi_aperture
+                         for surf in self.optic.surface_group.surfaces]
+
+        mat = []
+        for surf in self.optic.surface_group.surfaces:
+            if surf.is_reflective:
+                mat.append('Mirror')
+            elif isinstance(surf.material_post, materials.Material):
+                mat.append(surf.material_post.name)
+            elif isinstance(surf.material_post, materials.MaterialFile):
+                mat.append(os.path.basename(surf.material_post.file))
+            elif surf.material_post.index == 1:
+                mat.append('Air')
+            elif isinstance(surf.material_post, materials.IdealMaterial):
+                mat.append(surf.material_post.n)
+            else:
+                raise ValueError('Unknown material type')
+
+        self.optic.update_paraxial()
+
+        df = pd.DataFrame({
+            'Type': surf_type,
+            'Radius': radii,
+            'Thickness': thicknesses,
+            'Material': mat,
+            'Conic': conic,
+            'Semi-aperture': semi_aperture
+        })
+        print(df.to_markdown(headers='keys', tablefmt='psql'))
