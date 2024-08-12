@@ -158,11 +158,15 @@ class OptimizerGeneric:
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
 
-    def optimize(self, maxiter=1000, disp=True, tol=1e-3):
+    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3):
         """
         Optimize the problem using the specified parameters.
 
         Args:
+            method (str, optional): The optimization method to use. Default is
+                chosen to be one of BFGS, L-BFGS-B, SLSQP, depending on
+                whether contraints or bounds given. Follows
+                scipy.optimize.minimize method.
             maxiter (int, optional): Maximum number of iterations.
                 Default is 1000.
             disp (bool, optional): Whether to display optimization information.
@@ -182,6 +186,7 @@ class OptimizerGeneric:
             warnings.simplefilter("ignore", category=RuntimeWarning)
             result = optimize.minimize(self._fun,
                                        x0,
+                                       method=method,
                                        bounds=bounds,
                                        options=options,
                                        tol=tol)
