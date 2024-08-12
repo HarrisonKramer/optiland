@@ -53,6 +53,7 @@ class Optic:
         self.polarization = 'ignore'
 
         self.pickups = []
+        self.solves = []
 
     @property
     def primary_wavelength(self):
