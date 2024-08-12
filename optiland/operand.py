@@ -419,11 +419,25 @@ class RayOperand:
         Returns:
             The RMS spot size on the specified surface.
         """
-        optic.trace(Hx, Hy, wavelength, num_rays, distribution)
-        x = optic.surface_group.x[surface_number, :].flatten()
-        y = optic.surface_group.y[surface_number, :].flatten()
-        r2 = (x - np.mean(x))**2 + (y - np.mean(y))**2
-        return np.sqrt(np.mean(r2))
+        if wavelength == 'all':
+            x = []
+            y = []
+            for wave in optic.wavelengths.get_wavelengths():
+                optic.trace(Hx, Hy, wave, num_rays, distribution)
+                x.append(optic.surface_group.x[surface_number, :].flatten())
+                y.append(optic.surface_group.y[surface_number, :].flatten())
+            wave_idx = optic.wavelengths.primary_index
+            mean_x = np.mean(x[wave_idx])
+            mean_y = np.mean(y[wave_idx])
+            r2 = [(x[i] - mean_x)**2 + (y[i] - mean_y)**2
+                  for i in range(len(x))]
+            return np.sqrt(np.mean(np.concatenate(r2)))
+        else:
+            optic.trace(Hx, Hy, wavelength, num_rays, distribution)
+            x = optic.surface_group.x[surface_number, :].flatten()
+            y = optic.surface_group.y[surface_number, :].flatten()
+            r2 = (x - np.mean(x))**2 + (y - np.mean(y))**2
+            return np.sqrt(np.mean(r2))
 
     @staticmethod
     def OPD_difference(optic, Hx, Hy, num_rays, wavelength,
