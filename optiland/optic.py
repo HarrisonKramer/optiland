@@ -276,6 +276,10 @@ class Optic:
         pickup.apply()
         self.pickups.append(pickup)
 
+    def clear_pickups(self):
+        """Clear all pickups from the optical system."""
+        self.pickups = []
+
     def scale_system(self, scale_factor):
         """
         Scales the optical system by a given scale factor.
