@@ -544,21 +544,23 @@ class SurfaceFactory:
             tuple: A tuple containing the material before and after the
                 surface.
         """
-        if isinstance(material, BaseMaterial):
-            material_post = material
-        elif isinstance(material, tuple):
-            material_post = Material(name=material[0], reference=material[1])
-        elif isinstance(material, str):
-            if material in ['mirror', 'air']:
-                material_post = IdealMaterial(n=1.0, k=0.0)
-            else:
-                material_post = Material(material)
-
         if index == 0:
             material_pre = None
         else:
             previous_surface = self._surface_group.surfaces[index-1]
             material_pre = previous_surface.material_post
+
+        if isinstance(material, BaseMaterial):
+            material_post = material
+        elif isinstance(material, tuple):
+            material_post = Material(name=material[0], reference=material[1])
+        elif isinstance(material, str):
+            if material == 'air':
+                material_post = IdealMaterial(n=1.0, k=0.0)
+            elif material == 'mirror':
+                material_post = material_pre
+            else:
+                material_post = Material(material)
 
         return material_pre, material_post
 
