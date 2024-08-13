@@ -13,7 +13,7 @@ from optiland.wavelength import WavelengthGroup
 from optiland.paraxial import Paraxial
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
-from optiland.rays import RealRays, PolarizedRays, PolarizationState
+from optiland.rays import PolarizedRays, PolarizationState, RayGenerator
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
@@ -50,6 +50,7 @@ class Optic:
 
         self.paraxial = Paraxial(self)
         self.aberrations = Aberrations(self)
+        self.ray_generator = RayGenerator(self)
 
         self.polarization = 'ignore'
 
@@ -391,6 +392,13 @@ class Optic:
 
         self.paraxial = Paraxial(self)
         self.aberrations = Aberrations(self)
+        self.ray_generator = RayGenerator(self)
+
+        self.polarization = 'ignore'
+
+        self.pickups = []
+        self.solves = []
+        self.obj_space_telecentric = False
 
     def n(self, wavelength='primary'):
         """
@@ -466,7 +474,8 @@ class Optic:
         y1 = distribution.y * EPD / 2
         z1 = np.ones_like(x1) * EPL
 
-        rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
+        rays = self.ray_generator.generate_rays(Hx, Hy, x1, y1, z1,
+                                                wavelength, EPL)
         self.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
@@ -507,108 +516,9 @@ class Optic:
 
         z1 = np.ones_like(x1) * EPL
 
-        rays = self._generate_rays(Hx, Hy, x1, y1, z1, wavelength, EPL)
+        rays = self.ray_generator.generate_rays(Hx, Hy, x1, y1, z1,
+                                                wavelength, EPL)
         rays = self.surface_group.trace(rays)
 
         # update intensity
         self.surface_group.intensity[-1, :] = rays.i
-
-    def _generate_rays(self, Hx, Hy, x1, y1, z1, wavelength, EPL):
-        """
-        Generates rays for tracing based on the given parameters.
-
-        Args:
-            Hx (float): Normalized x field coordinate.
-            Hy (float): Normalized y field coordinate.
-            x1 (float or np.ndarray): x-coordinate of the target point.
-            y1 (float or np.ndarray): y-coordinate of the target point.
-            z1 (float or np.ndarray): z-coordinate of the target point.
-            wavelength (float): Wavelength of the rays.
-            EPL (float): Entrance pupil position with respect to first surface.
-
-        Returns:
-            RealRays: RealRays object containing the generated rays.
-        """
-        x0, y0, z0 = self._get_object_position(Hx, Hy, x1, y1, EPL)
-
-        mag = np.sqrt((x1 - x0)**2 + (y1 - y0)**2 + (z1 - z0)**2)
-        L = (x1 - x0) / mag
-        M = (y1 - y0) / mag
-        N = (z1 - z0) / mag
-
-        x0 = np.ones_like(x1) * x0
-        y0 = np.ones_like(x1) * y0
-        z0 = np.ones_like(x1) * z0
-
-        intensity = np.ones_like(x1)
-        wavelength = np.ones_like(x1) * wavelength
-
-        if self.polarization == 'ignore':
-            if self.surface_group.uses_polarization:
-                raise ValueError('Polarization must be set when surfaces have '
-                                 'polarization-dependent coatings.')
-            return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
-        else:
-            return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
-
-    def _get_object_position(self, Hx, Hy, x1, y1, EPL):
-        """
-        Calculate the position of the object based on the given parameters.
-
-        Args:
-            Hx (float): Normalized x field coordinate.
-            Hy (float): Normalized y field coordinate.
-            x1 (float or np.ndarray): x-coordinate of the target point.
-            y1 (float or np.ndarray): y-coordinate of the target point.
-            EPL (float): Entrance pupil position with respect to first surface.
-
-        Returns:
-            tuple: A tuple containing the x, y, and z coordinates of the
-                object position.
-
-        Raises:
-            ValueError: If the field type is "object_height" for an object at
-                infinity.
-
-        """
-        obj = self.object_surface
-        max_field = self.fields.max_field
-        field_x = max_field * Hx
-        field_y = max_field * Hy
-        if obj.is_infinite:
-            if self.field_type == 'object_height':
-                raise ValueError('''Field type cannot be "object_height" for an
-                                 object at infinity.''')
-
-            # start rays just before left-most surface (1/7th of total track)
-            z = self.surface_group.positions[1:-1]
-            offset = self.total_track / 7 - np.min(z)
-
-            # x, y, z positions of ray starting points
-            x = np.tan(np.radians(field_x)) * (offset + EPL)
-            y = -np.tan(np.radians(field_y)) * (offset + EPL)
-            z = self.surface_group.positions[1] - offset
-
-            x0 = x1 + x
-            y0 = y1 + y
-            z0 = np.ones_like(x1) * z
-        else:
-            if self.field_type == 'object_height':
-                x = field_x
-                y = -field_y
-                z = obj.geometry.sag(x, y) + obj.geometry.cs.z
-
-                x0 = np.ones_like(x1) * x
-                y0 = np.ones_like(x1) * y
-                z0 = np.ones_like(x1) * z
-
-            elif self.field_type == 'angle':
-                x = np.tan(np.radians(field_x))
-                y = -np.tan(np.radians(field_y))
-                z = self.surface_group.positions[0]
-
-                x0 = x1 + x
-                y0 = y1 + y
-                z0 = np.ones_like(x1) * z
-
-        return x0, y0, z0
