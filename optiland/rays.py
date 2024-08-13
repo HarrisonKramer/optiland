@@ -500,3 +500,109 @@ class PolarizedRays(RealRays):
              state.Ey * np.exp(1j * state.phase_y) * p)
 
         return E
+
+
+class RayGenerator:
+    """
+    Generator class for creating rays.
+    """
+    def __init__(self, optic):
+        self.optic = optic
+
+    def generate_rays(self, Hx, Hy, x1, y1, z1, wavelength, EPL=None):
+        """
+        Generates rays for tracing based on the given parameters.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            x1 (float or np.ndarray): x-coordinate of the pupil point.
+            y1 (float or np.ndarray): y-coordinate of the pupil point.
+            z1 (float or np.ndarray): z-coordinate of the pupil point.
+            wavelength (float): Wavelength of the rays.
+            EPL (float): Entrance pupil position with respect to first surface.
+                Default is None.
+
+        Returns:
+            RealRays: RealRays object containing the generated rays.
+        """
+        x0, y0, z0 = self._get_object_position(Hx, Hy, x1, y1, EPL)
+
+        mag = np.sqrt((x1 - x0)**2 + (y1 - y0)**2 + (z1 - z0)**2)
+        L = (x1 - x0) / mag
+        M = (y1 - y0) / mag
+        N = (z1 - z0) / mag
+
+        x0 = np.ones_like(x1) * x0
+        y0 = np.ones_like(x1) * y0
+        z0 = np.ones_like(x1) * z0
+
+        intensity = np.ones_like(x1)
+        wavelength = np.ones_like(x1) * wavelength
+
+        if self.optic.polarization == 'ignore':
+            if self.optic.surface_group.uses_polarization:
+                raise ValueError('Polarization must be set when surfaces have '
+                                 'polarization-dependent coatings.')
+            return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
+        else:
+            return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
+
+    def _get_object_position(self, Hx, Hy, x1, y1, EPL=None):
+        """
+        Calculate the position of the object ray points.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            x1 (float or np.ndarray): x-coordinate of the pupil point.
+            y1 (float or np.ndarray): y-coordinate of the pupil point.
+            EPL (float): Entrance pupil position with respect to first surface.
+                Default is None.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        Raises:
+            ValueError: If the field type is "object_height" for an object at
+                infinity.
+
+        """
+        obj = self.optic.object_surface
+        max_field = self.optic.fields.max_field
+        field_x = max_field * Hx
+        field_y = max_field * Hy
+        if obj.is_infinite:
+            if self.field_type == 'object_height':
+                raise ValueError('''Field type cannot be "object_height" for an
+                                 object at infinity.''')
+
+            # start rays just before left-most surface (1/7th of total track)
+            z = self.optic.surface_group.positions[1:-1]
+            offset = self.optic.total_track / 7 - np.min(z)
+
+            # x, y, z positions of ray starting points
+            x = np.tan(np.radians(field_x)) * (offset + EPL)
+            y = -np.tan(np.radians(field_y)) * (offset + EPL)
+            z = self.optic.surface_group.positions[1] - offset
+
+            x0 = x1 + x
+            y0 = y1 + y
+            z0 = np.full_like(x1, z)
+        else:
+            if self.optic.field_type == 'object_height':
+                x = field_x
+                y = -field_y
+                z = obj.geometry.sag(x, y) + obj.geometry.cs.z
+
+            elif self.optic.field_type == 'angle':
+                x = np.tan(np.radians(field_x))
+                y = -np.tan(np.radians(field_y))
+                z = self.optic.surface_group.positions[0]
+
+            x0 = np.full_like(x1, x)
+            y0 = np.full_like(x1, y)
+            z0 = np.full_like(x1, z)
+
+        return x0, y0, z0
