@@ -526,7 +526,24 @@ class RayGenerator:
         Returns:
             RealRays: RealRays object containing the generated rays.
         """
-        x0, y0, z0 = self._get_object_position(Hx, Hy, x1, y1, EPL)
+        x0, y0, z0 = self._get_ray_origins(Hx, Hy, x1, y1, EPL)
+
+        if self.optic.obj_space_telecentric:
+            if self.optic.field_type == 'angle':
+                raise ValueError('Field type cannot be "angle" for telecentric'
+                                 ' object space.')
+            if self.optic.aperture.ap_type == 'EPD':
+                raise ValueError('Aperture type cannot be "EPD" for '
+                                 'telecentric object space.')
+            elif self.optic.aperture.ap_type == 'imageFNO':
+                raise ValueError('Aperture type cannot be "imageFNO" for '
+                                 'telecentric object space.')
+
+            sin = self.optic.aperture.value
+            z = np.sqrt(1 - sin**2) / sin
+            z1 = np.full_like(x1, z)
+            x1 += x0
+            y1 += y0
 
         mag = np.sqrt((x1 - x0)**2 + (y1 - y0)**2 + (z1 - z0)**2)
         L = (x1 - x0) / mag
@@ -548,9 +565,9 @@ class RayGenerator:
         else:
             return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
 
-    def _get_object_position(self, Hx, Hy, x1, y1, EPL=None):
+    def _get_ray_origins(self, Hx, Hy, x1, y1, EPL=None):
         """
-        Calculate the position of the object ray points.
+        Calculate the initial positions for rays originating at the object.
 
         Args:
             Hx (float): Normalized x field coordinate.
@@ -574,9 +591,12 @@ class RayGenerator:
         field_x = max_field * Hx
         field_y = max_field * Hy
         if obj.is_infinite:
-            if self.field_type == 'object_height':
-                raise ValueError('''Field type cannot be "object_height" for an
-                                 object at infinity.''')
+            if self.optic.field_type == 'object_height':
+                raise ValueError('Field type cannot be "object_height" for an '
+                                 'object at infinity.')
+            if self.optic.obj_space_telecentric:
+                raise ValueError('Object space cannot be telecentric for an '
+                                 'object at infinity.')
 
             # start rays just before left-most surface (1/7th of total track)
             z = self.optic.surface_group.positions[1:-1]
@@ -593,12 +613,12 @@ class RayGenerator:
         else:
             if self.optic.field_type == 'object_height':
                 x = field_x
-                y = -field_y
+                y = field_y
                 z = obj.geometry.sag(x, y) + obj.geometry.cs.z
 
             elif self.optic.field_type == 'angle':
                 x = np.tan(np.radians(field_x))
-                y = -np.tan(np.radians(field_y))
+                y = np.tan(np.radians(field_y))
                 z = self.optic.surface_group.positions[0]
 
             x0 = np.full_like(x1, x)
