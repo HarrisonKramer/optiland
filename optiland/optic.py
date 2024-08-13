@@ -55,6 +55,7 @@ class Optic:
 
         self.pickups = []
         self.solves = []
+        self.obj_space_telecentric = False
 
     @property
     def primary_wavelength(self):
