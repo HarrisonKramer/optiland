@@ -482,7 +482,7 @@ class LensInfoViewer:
             elif surf.material_post.index == 1:
                 mat.append('Air')
             elif isinstance(surf.material_post, materials.IdealMaterial):
-                mat.append(surf.material_post.n)
+                mat.append(surf.material_post.index)
             else:
                 raise ValueError('Unknown material type')
 
