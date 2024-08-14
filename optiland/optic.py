@@ -462,20 +462,15 @@ class Optic:
         Returns:
             RealRays: The RealRays object containing the traced rays.
         """
-        EPL = self.paraxial.EPL()
-        EPD = self.paraxial.EPD()
-
         vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
             distribution.generate_points(num_rays, vx, vy)
-        x1 = distribution.x * EPD / 2
-        y1 = distribution.y * EPD / 2
-        z1 = np.ones_like(x1) * EPL
+        Px = distribution.x * (1 - vx)
+        Py = distribution.y * (1 - vy)
 
-        rays = self.ray_generator.generate_rays(Hx, Hy, x1, y1, z1,
-                                                wavelength, EPL)
+        rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
         self.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
@@ -522,3 +517,5 @@ class Optic:
 
         # update intensity
         self.surface_group.intensity[-1, :] = rays.i
+
+        return rays
