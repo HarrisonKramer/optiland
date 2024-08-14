@@ -509,7 +509,7 @@ class RayGenerator:
     def __init__(self, optic):
         self.optic = optic
 
-    def generate_rays(self, Hx, Hy, x1, y1, z1, wavelength, EPL=None):
+    def generate_rays(self, Hx, Hy, Px, Py, wavelength):
         """
         Generates rays for tracing based on the given parameters.
 
@@ -526,7 +526,7 @@ class RayGenerator:
         Returns:
             RealRays: RealRays object containing the generated rays.
         """
-        x0, y0, z0 = self._get_ray_origins(Hx, Hy, x1, y1, EPL)
+        x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py)
 
         if self.optic.obj_space_telecentric:
             if self.optic.field_type == 'angle':
@@ -540,10 +540,17 @@ class RayGenerator:
                                  'telecentric object space.')
 
             sin = self.optic.aperture.value
-            z = np.sqrt(1 - sin**2) / sin
-            z1 = np.full_like(x1, z)
-            x1 += x0
-            y1 += y0
+            z = np.sqrt(1 - sin**2) / sin + z0
+            z1 = np.full_like(Px, z)
+            x1 = Px + x0
+            y1 = Py + y0
+        else:
+            EPL = self.paraxial.EPL()
+            EPD = self.paraxial.EPD()
+
+            x1 = Px * EPD / 2
+            y1 = Py * EPD / 2
+            z1 = np.full_like(Px, EPL)
 
         mag = np.sqrt((x1 - x0)**2 + (y1 - y0)**2 + (z1 - z0)**2)
         L = (x1 - x0) / mag
@@ -565,7 +572,7 @@ class RayGenerator:
         else:
             return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
 
-    def _get_ray_origins(self, Hx, Hy, x1, y1, EPL=None):
+    def _get_ray_origins(self, Hx, Hy, Px, Py):
         """
         Calculate the initial positions for rays originating at the object.
 
@@ -597,6 +604,8 @@ class RayGenerator:
             if self.optic.obj_space_telecentric:
                 raise ValueError('Object space cannot be telecentric for an '
                                  'object at infinity.')
+            EPL = self.optic.paraxial.EPL()
+            EPD = self.optic.paraxial.EPD()
 
             # start rays just before left-most surface (1/7th of total track)
             z = self.optic.surface_group.positions[1:-1]
@@ -607,9 +616,9 @@ class RayGenerator:
             y = -np.tan(np.radians(field_y)) * (offset + EPL)
             z = self.optic.surface_group.positions[1] - offset
 
-            x0 = x1 + x
-            y0 = y1 + y
-            z0 = np.full_like(x1, z)
+            x0 = Px * EPD / 2 + x
+            y0 = Py * EPD / 2 + y
+            z0 = np.full_like(Px, z)
         else:
             if self.optic.field_type == 'object_height':
                 x = field_x
@@ -621,8 +630,8 @@ class RayGenerator:
                 y = np.tan(np.radians(field_y))
                 z = self.optic.surface_group.positions[0]
 
-            x0 = np.full_like(x1, x)
-            y0 = np.full_like(x1, y)
-            z0 = np.full_like(x1, z)
+            x0 = np.full_like(Px, x)
+            y0 = np.full_like(Px, y)
+            z0 = np.full_like(Px, z)
 
         return x0, y0, z0
