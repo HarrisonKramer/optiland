@@ -128,7 +128,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Jones pupils
 7. **Advanced Optical Design**
     - [Tutorial 7a - Lithographic Projection System](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_7a_Lithographic_Projection_System.ipynb)
-        - Designing and Analyzing a Complex Lithography System
+        - Optimizing and Analyzing a Complex Lithography System
     - Tutorial 7b - Surface Roughness & Scattering - Update in progress (target completion: Sept. 2024)
     - Tutorial 7c - Freeform Surfaces - Update in progress (target completion: Sept. 2024)
 8. **Tolerancing**
