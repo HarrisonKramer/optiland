@@ -454,6 +454,8 @@ class LensInfoViewer:
         The lens information includes the surface type, radius, thickness,
         material, conic, and semi-aperture of each surface.
         """
+        self.optic.update_paraxial()
+
         surf_type = []
         for surf in self.optic.surface_group.surfaces:
             if isinstance(surf.geometry, geometries.StandardGeometry):
