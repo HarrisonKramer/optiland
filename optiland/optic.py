@@ -492,27 +492,21 @@ class Optic:
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
         """
-        EPL = self.paraxial.EPL()
-        EPD = self.paraxial.EPD()
-
         vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
-        x1 = Px * EPD / 2 * (1 - vx)
-        y1 = Py * EPD / 2 * (1 - vy)
+        Px *= (1 - vx)
+        Py *= (1 - vy)
 
         # assure all variables are arrays of the same size
-        max_size = max([np.size(arr) for arr in [x1, y1, Hx, Hy]])
-        x1, y1, Hx, Hy = [
+        max_size = max([np.size(arr) for arr in [Hx, Hy, Px, Py]])
+        Hx, Hy, Px, Py = [
             np.full(max_size, value) if isinstance(value, (float, int))
             else value if isinstance(value, np.ndarray)
             else None
-            for value in [x1, y1, Hx, Hy]
+            for value in [Hx, Hy, Px, Py]
         ]
 
-        z1 = np.ones_like(x1) * EPL
-
-        rays = self.ray_generator.generate_rays(Hx, Hy, x1, y1, z1,
-                                                wavelength, EPL)
+        rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
         rays = self.surface_group.trace(rays)
 
         # update intensity
