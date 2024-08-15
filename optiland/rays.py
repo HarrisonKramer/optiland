@@ -557,9 +557,9 @@ class RayGenerator:
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
 
-        x0 = np.ones_like(x1) * x0
-        y0 = np.ones_like(x1) * y0
-        z0 = np.ones_like(x1) * z0
+        x0 = np.full_like(x1, x0)
+        y0 = np.full_like(x1, y0)
+        z0 = np.full_like(x1, z0)
 
         intensity = np.ones_like(x1)
         wavelength = np.ones_like(x1) * wavelength
