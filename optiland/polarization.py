@@ -56,10 +56,10 @@ class JonesPupil:
                 Defaults to (10, 8).
         """
         jones = self._interpolate_jones(num_points)
-        self._view_real(jones, figsize)
-        self._view_imag(jones, figsize)
+        self.view_real(jones, figsize)
+        self.view_imag(jones, figsize)
 
-    def _view_real(self, jones, figsize=(10, 8)):
+    def view_real(self, jones, figsize=(10, 8)):
         """
         Plot the real components of the Jones pupil.
 
@@ -88,7 +88,7 @@ class JonesPupil:
         plt.tight_layout()
         plt.show()
 
-    def _view_imag(self, jones, figsize=(10, 8)):
+    def view_imag(self, jones, figsize=(10, 8)):
         """
         Plot the imaginary components of the Jones pupil.
         Args:
