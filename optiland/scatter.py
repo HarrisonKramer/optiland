@@ -1,12 +1,117 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 import numpy as np
+from numba import njit, prange
 from optiland.rays import RealRays
 
 
-class BaseBSDF(ABC):
+@njit(fastmath=True, cache=True)
+def get_point_lambertian():
+    """
+    Generates a random point on the 2D unit disk.
 
-    def scatter(self, rays: RealRays, nx: np.ndarray = None,
-                ny: np.ndarray = None, nz: np.ndarray = None):
+    Returns:
+        tuple: A tuple containing the x, y coordinates of the generated point.
+    """
+    r = np.random.rand()
+    theta = np.random.uniform(0, 2 * np.pi)
+    x = np.sqrt(r) * np.cos(theta)
+    y = np.sqrt(r) * np.sin(theta)
+    return x, y
+
+
+@njit(fastmath=True, cache=True)
+def scatter(L, M, N, nx, ny, nz, get_point):
+    """
+    Generate a scattered vector in the global coordinate system.
+
+    Args:
+        L (float): x-component of ray direction cosines.
+        M (float): y-component of ray direction cosines.
+        N (float): z-component of ray direction cosines.
+        nx (float): x-component of the normal vectors.
+        ny (float): y-component of the normal vectors.
+        nz (float): z-component of the normal vectors.
+        get_point (function): Function that generates a point on the unit disk.
+
+    Returns:
+        s (numpy.ndarray): Scattered vector in the global coordinate system.
+    """
+    while True:
+        # Generate point on unit disk
+        x, y = get_point()
+        n = np.array((nx, ny, nz))
+        r = np.array((L, M, N))
+
+        # Arbitrary vector to use as a reference for the cross product
+        if L > 0.999:
+            arbitrary_vector = np.array((0, 1, 0))
+        else:
+            arbitrary_vector = np.array((1, 0, 0))
+
+        # First basis vector for the local coordinate system
+        a = np.cross(n, arbitrary_vector)
+        a /= np.linalg.norm(a)
+
+        # Second basis vector for the local coordinate system
+        b = np.cross(n, a)
+
+        # Generate scattered vectors in local coordinate system
+        s_loc_x = np.dot(r, a) + x
+        s_loc_y = np.dot(r, b) + y
+        radicand = 1 - s_loc_x**2 - s_loc_y**2
+
+        # Check if the scattered vector is in the correct hemisphere
+        if radicand < 0:
+            continue
+        s_loc_z = np.sqrt(radicand)
+
+        # Transform scattered vectors to global coordinate system
+        s = s_loc_x * a + s_loc_y * b + s_loc_z * n
+
+        return s
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def scatter_parallel(L, M, N, nx, ny, nz, get_point):
+    """
+    Perform scatter operation in parallel.
+
+    Args:
+        L (numpy.ndarray): Array of L values.
+        M (numpy.ndarray): Array of M values.
+        N (numpy.ndarray): Array of N values.
+        nx (numpy.ndarray): Array of nx values.
+        ny (numpy.ndarray): Array of ny values.
+        nz (numpy.ndarray): Array of nz values.
+        get_point (function): Function to get point.
+
+    Returns:
+        numpy.ndarray: Array of scattered vectors.
+    """
+    size = len(L)
+    v = np.empty((size, 3), dtype=np.float64)
+    for i in prange(size):
+        v[i] = scatter(L[i], M[i], N[i], nx[i], ny[i], nz[i], get_point)
+    return v
+
+
+class BaseBSDF(ABC):
+    """
+    Abstract base class for Bidirectional Scattering Distribution Function
+    (BSDF).
+
+    Attributes:
+        scattering_function: The scattering function associated with the BSDF.
+
+    Methods:
+        scatter(rays, nx=None, ny=None, nz=None): scatter rays according to
+            the BSDF.
+    """
+    def __init__(self):
+        self.scattering_function = None
+
+    def scatter(self, rays: RealRays, nx: np.ndarray,
+                ny: np.ndarray, nz: np.ndarray):
         """
         Scatter rays according to the BSDF.
 
@@ -19,73 +124,20 @@ class BaseBSDF(ABC):
         Returns:
             RealRays: The updated rays after scattering is applied.
         """
-        # generate scattered vectors
-        x, y = self._generate_points()
-        p = np.column_stack((x, y, np.zeros_like(x)))
-
-        # merge surface normal vectors
-        n = np.column_stack((nx, ny, nz))
-
-        # merge ray vectors
-        r = np.column_stack((rays.L, rays.M, rays.N))
-
-        # arbitrary vector to use as a reference for the cross product
-        arbitrary_vector = np.array([1, 0, 0])
-        aligned = np.isclose(n[:, 0], 1.0)
-        arbitrary_vector = np.where(aligned[:, np.newaxis], [0, 1, 0],
-                                    arbitrary_vector)
-
-        # first basis vector for the local coordinate system
-        a = np.cross(n, arbitrary_vector)
-        a = a / np.linalg.norm(a, axis=1)[:, np.newaxis]
-
-        # second basis vector for the local coordinate system
-        b = np.cross(n, a)
-
-        # ray vector in local coordinate system
-        r_loc = np.column_stack((np.dot(r, a), np.dot(r, b), np.dot(r, n)))
-
-        # generate scattered vectors in local coordinate system
-        v_scatter_loc = r_loc + p
-        v_scatter_loc = (v_scatter_loc /
-                         np.linalg.norm(v_scatter_loc, axis=1)[:, np.newaxis])
-
-        # scatted vectors in global coordinate system
-        v_scatter = np.dot(v_scatter_loc, np.column_stack((a, b, n)))
-
-        # assign to rays
-        rays.L = v_scatter[:, 0]
-        rays.M = v_scatter[:, 1]
-        rays.N = v_scatter[:, 2]
-
+        scattered_vec = scatter_parallel(rays.L, rays.M, rays.N, nx, ny, nz,
+                                         self.scattering_function)
+        rays.L = scattered_vec[:, 0]
+        rays.M = scattered_vec[:, 1]
+        rays.N = scattered_vec[:, 2]
         return rays
 
-    @abstractmethod
-    def _generate_points(self, rays: RealRays):
-        """Generate points on the unit disk.
 
-        Args:
-            rays (RealRays): The rays to be scattered.
-        """
-        pass
-
-
-def LambertianBSDF(BaseBSDF):
+class LambertianBSDF(BaseBSDF):
     """
     Lambertian Bidirectional Scattering Distribution Function (BSDF) class.
 
     This class represents a Lambertian BSDF, which is generally used to model
     diffuse scattering.
     """
-
-    def _generate_points(self, rays: RealRays):
-        """Generate points on the unit disk.
-
-        Args:
-            rays (RealRays): The rays to be scattered.
-        """
-        r = np.random.rand(rays.x.size)
-        theta = np.random.uniform(0, 2 * np.pi, rays.x.size)
-        L = np.sqrt(r) * np.cos(theta)
-        M = np.sqrt(r) * np.sin(theta)
-        return L, M
+    def __init__(self):
+        self.scattering_function = get_point_lambertian
