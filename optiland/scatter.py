@@ -156,3 +156,14 @@ class LambertianBSDF(BaseBSDF):
     """
     def __init__(self):
         self.scattering_function = get_point_lambertian
+
+
+class GaussianBSDF(BaseBSDF):
+    """
+    Gaussian Bidirectional Scattering Distribution Function (BSDF) class.
+
+    This class represents a Lambertian BSDF, which is generally used to model
+    diffuse scattering.
+    """
+    def __init__(self, sigma):
+        self.scattering_function = lambda: get_point_gaussian(sigma)
