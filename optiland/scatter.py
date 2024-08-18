@@ -5,42 +5,60 @@ from optiland.rays import RealRays
 
 class BaseBSDF(ABC):
 
-    def scatter(self, rays: RealRays):
+    def scatter(self, rays: RealRays, nx: np.ndarray = None,
+                ny: np.ndarray = None, nz: np.ndarray = None):
         """
         Scatter rays according to the BSDF.
 
         Args:
-            rays (RealRays): The rays with direction cosines to be rotated.
+            rays (RealRays): The rays to be scattered.
+            nx (np.ndarray): The x-component of the surface normal vector.
+            ny (np.ndarray): The y-component of the surface normal vector.
+            nz (np.ndarray): The z-component of the surface normal vector.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray, np.ndarray]: The rotated direction
-                cosines of the rays.
+            RealRays: The updated rays after scattering is applied.
         """
+        # generate scattered vectors
         x, y = self._generate_points()
+        p = np.column_stack((x, y, np.zeros_like(x)))
 
-        # merge L, M, N into a single arrays
-        v = np.column_stack((rays.L, rays.M, rays.N))  # ray directions
+        # merge surface normal vectors
+        n = np.column_stack((nx, ny, nz))
+
+        # merge ray vectors
+        r = np.column_stack((rays.L, rays.M, rays.N))
 
         # arbitrary vector to use as a reference for the cross product
         arbitrary_vector = np.array([1, 0, 0])
-        aligned = np.isclose(v[:, 0], 1.0)
+        aligned = np.isclose(n[:, 0], 1.0)
         arbitrary_vector = np.where(aligned[:, np.newaxis], [0, 1, 0],
                                     arbitrary_vector)
 
-        # first basis vector for the new coordinate system
-        a = np.cross(v, arbitrary_vector)
+        # first basis vector for the local coordinate system
+        a = np.cross(n, arbitrary_vector)
         a = a / np.linalg.norm(a, axis=1)[:, np.newaxis]
 
-        # second basis vector for the new coordinate system
-        b = np.cross(v, a)
-        b = b / np.linalg.norm(b, axis=1)[:, np.newaxis]
+        # second basis vector for the local coordinate system
+        b = np.cross(n, a)
 
-        # generate scattered vectors
-        v_scatter = v + x[:, np.newaxis] * a + y[:, np.newaxis] * b
+        # ray vector in local coordinate system
+        r_loc = np.column_stack((np.dot(r, a), np.dot(r, b), np.dot(r, n)))
 
+        # generate scattered vectors in local coordinate system
+        v_scatter_loc = r_loc + p
+        v_scatter_loc = (v_scatter_loc /
+                         np.linalg.norm(v_scatter_loc, axis=1)[:, np.newaxis])
+
+        # scatted vectors in global coordinate system
+        v_scatter = np.dot(v_scatter_loc, np.column_stack((a, b, n)))
+
+        # assign to rays
         rays.L = v_scatter[:, 0]
         rays.M = v_scatter[:, 1]
         rays.N = v_scatter[:, 2]
+
+        return rays
 
     @abstractmethod
     def _generate_points(self, rays: RealRays):
