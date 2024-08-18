@@ -20,6 +20,21 @@ def get_point_lambertian():
 
 
 @njit(fastmath=True, cache=True)
+def get_point_gaussian(sigma):
+    """
+    Generates a random point on the 2D unit disk.
+
+    Returns:
+        tuple: A tuple containing the x, y coordinates of the generated point.
+    """
+    r = np.random.normal(0, sigma)
+    theta = np.random.uniform(0, 2 * np.pi)
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    return x, y
+
+
+@njit(fastmath=True, cache=True)
 def scatter(L, M, N, nx, ny, nz, get_point):
     """
     Generate a scattered vector in the global coordinate system.
