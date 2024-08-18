@@ -22,7 +22,7 @@ def get_point_lambertian():
 @njit(fastmath=True, cache=True)
 def get_point_gaussian(sigma):
     """
-    Generates a random point on the 2D unit disk.
+    Generates a random point from a 2D Gaussian distribution.
 
     Returns:
         tuple: A tuple containing the x, y coordinates of the generated point.
