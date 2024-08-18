@@ -22,7 +22,8 @@ dependencies = [
     "pyyaml",
     "matplotlib",
     "vtk",
-    "tabulate"
+    "tabulate",
+    "numba"
 ]
 
 [project.urls]
