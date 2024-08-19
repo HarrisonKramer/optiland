@@ -150,6 +150,13 @@ class BaseBSDF(ABC):
         Returns:
             RealRays: The updated rays after scattering is applied.
         """
+        if np.isscalar(nx):
+            nx = np.full_like(rays.L, nx)
+        if np.isscalar(ny):
+            ny = np.full_like(rays.L, ny)
+        if np.isscalar(nz):
+            nz = np.full_like(rays.L, nz)
+
         scattered_vec = scatter_parallel(rays.L, rays.M, rays.N, nx, ny, nz,
                                          self.scattering_function)
         rays.L = scattered_vec[:, 0]
