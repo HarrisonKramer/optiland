@@ -65,10 +65,10 @@ def scatter(L, M, N, nx, ny, nz, get_point):
         r = np.array((L, M, N))
 
         # Arbitrary vector to use as a reference for the cross product
-        if L > 0.999:
-            arbitrary_vector = np.array((0, 1, 0))
-        else:
+        if L < 0.999:
             arbitrary_vector = np.array((1, 0, 0))
+        else:
+            arbitrary_vector = np.array((0, 1, 0))
 
         # First basis vector for the local coordinate system
         a = np.cross(n, arbitrary_vector)
