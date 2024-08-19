@@ -22,20 +22,24 @@ def get_point_lambertian():
 @njit(fastmath=True, cache=True)
 def get_point_gaussian(sigma):
     """
-    Generates a random point from a 2D Gaussian distribution.
+    Generates a random point from a 2D Gaussian distribution using the
+    Box-Muller transform.
 
     Returns:
         tuple: A tuple containing the x, y coordinates of the generated point.
     """
-    r = np.random.normal(0, sigma)
-    theta = np.random.uniform(0, 2 * np.pi)
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
+    u1, u2 = np.random.uniform(0, 1, 2)
+    r = np.sqrt(-2 * np.log(u1))
+    theta = 2 * np.pi * u2
+    z0 = r * np.cos(theta)
+    z1 = r * np.sin(theta)
+    x = sigma * z0
+    y = sigma * z1
     return x, y
 
 
 def func_wrapper(x, func):
-    @njit
+    @njit(fastmath=True, cache=True)
     def wrapper():
         return func(x)
     return wrapper
@@ -174,5 +178,4 @@ class GaussianBSDF(BaseBSDF):
     """
     def __init__(self, sigma):
         self.sigma = sigma
-        # TODO: update method to improve performance
         self.scattering_function = func_wrapper(sigma, get_point_gaussian)
