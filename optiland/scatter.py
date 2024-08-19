@@ -34,6 +34,13 @@ def get_point_gaussian(sigma):
     return x, y
 
 
+def func_wrapper(x, func):
+    @njit
+    def wrapper():
+        return func(x)
+    return wrapper
+
+
 @njit(fastmath=True, cache=True)
 def scatter(L, M, N, nx, ny, nz, get_point):
     """
@@ -166,4 +173,6 @@ class GaussianBSDF(BaseBSDF):
     2D Gaussian distribution.
     """
     def __init__(self, sigma):
-        self.scattering_function = lambda: get_point_gaussian(sigma)
+        self.sigma = sigma
+        # TODO: update method to improve performance
+        self.scattering_function = func_wrapper(sigma, get_point_gaussian)
