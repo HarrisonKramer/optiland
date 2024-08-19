@@ -38,10 +38,10 @@ def get_point_gaussian(sigma):
     return x, y
 
 
-def func_wrapper(x, func):
+def func_wrapper(func, *args):
     @njit(fastmath=True, cache=True)
     def wrapper():
-        return func(x)
+        return func(*args)
     return wrapper
 
 
@@ -185,4 +185,4 @@ class GaussianBSDF(BaseBSDF):
     """
     def __init__(self, sigma):
         self.sigma = sigma
-        self.scattering_function = func_wrapper(sigma, get_point_gaussian)
+        self.scattering_function = func_wrapper(get_point_gaussian, sigma)
