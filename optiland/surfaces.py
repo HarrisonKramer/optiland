@@ -426,6 +426,7 @@ class SurfaceFactory:
         material_pre, material_post = self._configure_material(index, material)
         coating = self.configure_coating(kwargs.get('coating', None),
                                          material_pre, material_post)
+        bsdf = kwargs.get('bsdf', None)
 
         is_reflective = material == 'mirror'
 
@@ -460,7 +461,7 @@ class SurfaceFactory:
 
         return Surface(geometry, material_pre, material_post, is_stop,
                        is_reflective=is_reflective, coating=coating,
-                       **filtered_kwargs)
+                       bsdf=bsdf, **filtered_kwargs)
 
     def _configure_cs(self, index, thickness, **kwargs):
         """
@@ -755,7 +756,8 @@ class SurfaceGroup:
             thickness (float, optional): The thickness of the surface.
                 Default is 0.
             **kwargs: Additional keyword arguments for surface-specific
-                parameters such as radius, conic, dx, dy, rx, ry, aperture.
+                parameters such as radius, conic, dx, dy, rx, ry, aperture,
+                bsdf.
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
