@@ -17,6 +17,7 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 from optiland.physical_apertures import BaseAperture
 from optiland.coatings import BaseCoating, BaseCoatingPolarized, FresnelCoating
+from optiland.scatter import BaseBSDF
 from optiland.geometries import (
     Plane,
     StandardGeometry,
@@ -47,6 +48,7 @@ class Surface:
                  is_stop: bool = False,
                  aperture: BaseAperture = None,
                  coating: BaseCoating = None,
+                 bsdf: BaseBSDF = None,
                  is_reflective: bool = False):
         self.geometry = geometry
         self.material_pre = material_pre
@@ -55,6 +57,7 @@ class Surface:
         self.aperture = aperture
         self.semi_aperture = None
         self.coating = coating
+        self.bsdf = bsdf
         self.is_reflective = is_reflective
 
         self.reset()
@@ -149,6 +152,10 @@ class Surface:
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
             rays.refract(nx, ny, nz, n1, n2)
+
+        # if there is a surface scatter model, modify ray properties
+        if self.bsdf:
+            rays = self.bsdf.scatter(rays, nx, ny, nz)
 
         # if there is a coating, modify ray properties
         if self.coating:
