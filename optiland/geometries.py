@@ -512,7 +512,6 @@ class PolynomialGeometry(BaseGeometry):
             dz = intersections[:, 2] - z_surface
             distance = dz / ray_directions[:, 2]
             intersections -= distance[:, None] * ray_directions
-            print(np.max(np.abs(dz)))
             if np.max(np.abs(dz)) < self.tol:
                 break
         position = np.column_stack((rays.x, rays.y, rays.z))
