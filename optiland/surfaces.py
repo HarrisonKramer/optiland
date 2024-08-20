@@ -22,7 +22,8 @@ from optiland.geometries import (
     Plane,
     StandardGeometry,
     BaseGeometry,
-    EvenAsphere)
+    EvenAsphere,
+    PolynomialGeometry)
 
 
 class Surface:
@@ -439,6 +440,11 @@ class SurfaceFactory:
             'even_asphere': {
                 'geometry': self._configure_even_asphere_geometry,
                 'expected_params': ['radius', 'conic', 'coefficients']
+            },
+            'polynomial': {
+                'geometry': self._configure_polynomial_geometry,
+                'expected_params': ['radius', 'conic', 'coefficients',
+                                    'tol', 'max_iter']
             }
         }
 
@@ -533,6 +539,30 @@ class SurfaceFactory:
         coefficients = kwargs.get('coefficients', [])
 
         geometry = EvenAsphere(cs, radius, conic, coefficients)
+
+        return geometry
+
+    @staticmethod
+    def _configure_polynomial_geometry(cs, **kwargs):
+        """
+        Configures a polynomial geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius, conic, coefficients, tol, and max_iter.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+        coefficients = kwargs.get('coefficients', [])
+        tol = kwargs.get('tol', 1e-6)
+        max_iter = kwargs.get('max_iter', 100)
+
+        geometry = PolynomialGeometry(cs, radius, conic, coefficients,
+                                      tol, max_iter)
 
         return geometry
 
