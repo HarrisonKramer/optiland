@@ -326,3 +326,12 @@ class ZemaxFileReader:
         """
         key = f'param_{int(data[1])-1}'
         self._current_surf_data[key] = float(data[2])
+
+
+class ZemaxToOpticConverter:
+
+    def __init__(self, zemax_data):
+        self.zemax_data = zemax_data
+
+    def convert(self):
+        pass
