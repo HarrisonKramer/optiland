@@ -177,6 +177,16 @@ class ZemaxFileReader:
         else:
             self.data['fields']['type'] = 'unsupported'
 
+        if int(data[2]) == 1:
+            self.data['fields']['object_space_telecentric'] = True
+        else:
+            self.data['fields']['object_space_telecentric'] = False
+
+        if int(data[7]) == 1:
+            self.data['fields']['afocal_image_space'] = True
+        else:
+            self.data['fields']['afocal_image_space'] = False
+
     def _read_x_fields(self, data):
         """
         Extracts the x-field data.
