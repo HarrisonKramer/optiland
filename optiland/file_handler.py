@@ -64,6 +64,7 @@ class ZemaxFileReader:
             'XFLN': self._read_x_fields,
             'YFLN': self._read_y_fields,
             'WAVM': self._read_wavelength,
+            'PWAV': self._read_primary_wave,
             'SURF': self._read_surface,
             'CURV': self._read_radius,
             'DISZ': self._read_thickness,
@@ -250,7 +251,7 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self.data['wavelengths']['primary_index'] = int(data[1])
+        self.data['wavelengths']['primary_index'] = int(data[1]) - 1
 
     def _read_mode(self, data):
         """
