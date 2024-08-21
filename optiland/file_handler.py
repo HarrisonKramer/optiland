@@ -70,6 +70,7 @@ class ZemaxFileReader:
             'GLAS': self._read_glass,
             'STOP': self._read_stop,
             'MODE': self._read_mode,
+            'GCAT': self._read_glass_catalog,
         }
         self._current_surf = -1
         self._read_file()
@@ -258,3 +259,12 @@ class ZemaxFileReader:
         """
         if data[1] != 'SEQ':
             raise ValueError('Only sequential mode is supported.')
+
+    def _read_glass_catalog(self, data):
+        """
+        Extracts the glass catalog data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        self.data['glass_catalogs'] = data[1:]
