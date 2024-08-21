@@ -230,7 +230,7 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self._current_surf_data['name'] = data[1]
+        self._current_surf_data['material'] = data[1]
         self._current_surf_data['index'] = float(data[4])
         self._current_surf_data['abbe'] = float(data[5])
 
