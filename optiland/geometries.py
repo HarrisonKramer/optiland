@@ -7,12 +7,12 @@ sag, ray distance calculation, and surface normals.
 
 Kramer Harrison, 2024
 """
-import abc
+from abc import ABC, abstractmethod
 import warnings
 import numpy as np
 
 
-class BaseGeometry:
+class BaseGeometry(ABC):
     """Base geometry for all geometries.
 
     Args:
@@ -22,7 +22,7 @@ class BaseGeometry:
     def __init__(self, coordinate_system):
         self.cs = coordinate_system
 
-    @abc.abstractmethod
+    @abstractmethod
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry.
 
@@ -35,7 +35,7 @@ class BaseGeometry:
         """
         return
 
-    @abc.abstractmethod
+    @abstractmethod
     def distance(self, rays):
         """Find the propagation distance to the geometry.
 
@@ -47,7 +47,7 @@ class BaseGeometry:
         """
         return
 
-    @abc.abstractmethod
+    @abstractmethod
     def surface_normal(self, rays):
         """Find the surface normal of the geometry at the given ray positions.
 
@@ -251,102 +251,57 @@ class StandardGeometry(BaseGeometry):
         return nx, ny, nz
 
 
-class EvenAsphere(StandardGeometry):
-    # TODO: clean up format & improve docs on mathematics used
+class NewtonRaphsonGeometry(StandardGeometry, ABC):
     """
-    Represents an even asphere geometry.
+    Represents a geometry that uses the Newton-Raphson method for ray tracing.
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of the asphere.
-        conic (float, optional): The conic constant of the asphere.
+        radius (float): The radius of curvature of the geometry.
+        conic (float, optional): The conic constant of the geometry.
             Defaults to 0.0.
-        coefficients (list, optional): The coefficients of the asphere.
-            Defaults to an empty list, indicating no aspheric coefficients are
-            used.
         tol (float, optional): The tolerance value used in calculations.
             Defaults to 1e-10.
+        max_iter (int, optional): The maximum number of iterations used in
+            calculations. Defaults to 100.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0, coefficients=[],
-                 tol=1e-10):
+    def __init__(self, coordinate_system, radius, conic=0.0, tol=1e-10,
+                 max_iter=100):
         super().__init__(coordinate_system, radius, conic)
-        self.c = coefficients
         self.tol = tol
+        self.max_iter = max_iter
 
+    @abstractmethod
     def sag(self, x=0, y=0):
-        """
-        Calculates the sag of the asphere at the given coordinates.
+        """Calculate the surface sag of the geometry.
 
         Args:
-            x (float, np.ndarray, optional): The x-coordinate(s).
-                Defaults to 0.
-            y (float, np.ndarray, optional): The y-coordinate(s).
-                Defaults to 0.
+            x (float or np.ndarray, optional): The x-coordinate. Defaults to 0.
+            y (float or np.ndarray, optional): The y-coordinate. Defaults to 0.
 
         Returns:
-            float: The sag value at the given coordinates.
+            Union[float, np.ndarray]: The surface sag of the geometry.
         """
-        r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i, Ci in enumerate(self.c):
-            z += Ci * r2 ** (i + 1)
+        return
 
-        return z
-
-    def distance(self, rays):
-        """
-        Calculates the distance between the asphere and the given ray
-        positions.
-
-        Note:
-            This function uses the Newton-Raphson method for tracing an
-            asphere.
+    @abstractmethod
+    def _surface_normal(self, x, y):
+        """Calculate the surface normal of the geometry at the given x and y
+        position.
 
         Args:
-            rays (Rays): The rays used for calculating distance.
+            x (float, np.ndarray): The x values to use for calculation.
+            y (float, np.ndarray): The y values to use for calculation.
 
         Returns:
-            numpy.ndarray: The distances between the asphere and the rays.
+            tuple: The surface normal components (nx, ny, nz).
         """
-        xs, ys, zs = self._intersection_sphere(rays)
-
-        x0 = xs - rays.L / rays.N * zs
-        y0 = ys - rays.M / rays.N * zs
-
-        zas0 = self.sag(xs, ys)
-
-        x1 = xs
-        y1 = ys
-        z1 = zas0
-
-        nx, ny, nz = self._surface_normal(x1, y1)
-
-        z2 = np.ones_like(x0) * 1e10
-        zas1 = np.zeros_like(x0)
-
-        while np.max(np.abs(z2 - zas1)) > self.tol:
-            dot = nx * rays.L + ny * rays.M + nz * rays.N
-            a = (nx * (x1 - x0) + ny * (y1 - y0) + nz * z1) / dot
-
-            z2 = a * rays.N
-            x2 = x0 + rays.L / rays.N * z2
-            y2 = y0 + rays.M / rays.N * z2
-
-            zas1 = self.sag(x2, y2)
-
-            x1 = x2
-            y1 = y2
-            z1 = zas1
-
-            nx, ny, nz = self._surface_normal(x2, y2)
-
-        return np.sqrt((rays.x - x2)**2 + (rays.y - y2)**2 + (rays.z - z2)**2)
+        return
 
     def surface_normal(self, rays):
         """
-        Calculates the surface normal of the asphere at the given rays.
+        Calculates the surface normal of the geometry at the given rays.
 
         Args:
             rays (Rays): The rays used for calculating the surface normal.
@@ -356,39 +311,36 @@ class EvenAsphere(StandardGeometry):
         """
         return self._surface_normal(rays.x, rays.y)
 
-    def _surface_normal(self, x, y):
+    def distance(self, rays):
         """
-        Calculates the surface normal of the asphere at the given x and y
-        position.
+        Calculates the distance between the geometry and the given ray
+        positions.
+
+        Note:
+            This function uses the Newton-Raphson method for ray tracing.
 
         Args:
-            x (np.ndarray): The x values to use for calculation.
-            y (np.ndarray): The y values to use for calculation.
+            rays (Rays): The rays used for calculating distance.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            numpy.ndarray: The distances between the geometry and the rays.
         """
-        r2 = x**2 + y**2
-
-        denom = np.sqrt(self.radius**2 - (1 + self.k) * r2)
-        dfdx = x / denom
-        dfdy = y / denom
-
-        for i, Ci in enumerate(self.c):
-            dfdx += 2 * (i+1) * x * Ci * r2**i
-            dfdy += 2 * (i+1) * y * Ci * r2**i
-
-        mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
-
-        nx = -dfdx / mag
-        ny = -dfdy / mag
-        nz = 1 / mag
-
-        return nx, ny, nz
+        x, y, z = self._intersection_sphere(rays)
+        intersections = np.column_stack((x, y, z))
+        ray_directions = np.column_stack((rays.L, rays.M, rays.N))
+        for i in range(self.max_iter):
+            z_surface = self.sag(intersections[:, 0], intersections[:, 1])
+            dz = intersections[:, 2] - z_surface
+            distance = dz / ray_directions[:, 2]
+            intersections -= distance[:, None] * ray_directions
+            if np.max(np.abs(dz)) < self.tol:
+                break
+        position = np.column_stack((rays.x, rays.y, rays.z))
+        return np.linalg.norm(intersections - position, axis=1)
 
     def _intersection_sphere(self, rays):
         """
-        Calculates the intersection points of the rays with the asphere.
+        Calculates the intersection points of the rays with the geometry.
 
         Args:
             rays (Rays): The rays to calculate the intersection points for.
@@ -431,8 +383,90 @@ class EvenAsphere(StandardGeometry):
         return x, y, z
 
 
-class PolynomialGeometry(BaseGeometry):
-    # TODO: make subclass of EvenAsphere
+class EvenAsphere(NewtonRaphsonGeometry):
+    """
+    Represents an even asphere geometry defined as:
+
+    z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Ci * r^(2i))
+
+    where
+    - r^2 = x^2 + y^2
+    - R is the radius of curvature
+    - k is the conic constant
+    - Ci are the aspheric coefficients
+
+    Args:
+        coordinate_system (str): The coordinate system used for the geometry.
+        radius (float): The radius of curvature of the geometry.
+        conic (float, optional): The conic constant of the geometry.
+            Defaults to 0.0.
+        tol (float, optional): The tolerance value used in calculations.
+            Defaults to 1e-10.
+        max_iter (int, optional): The maximum number of iterations used in
+            calculations. Defaults to 100.
+        coefficients (list, optional): The coefficients of the asphere.
+            Defaults to an empty list, indicating no aspheric coefficients are
+            used.
+    """
+
+    def __init__(self, coordinate_system, radius, conic=0.0,
+                 tol=1e-10, max_iter=100, coefficients=[]):
+        super().__init__(coordinate_system, radius, conic, tol, max_iter)
+        self.c = coefficients
+
+    def sag(self, x=0, y=0):
+        """
+        Calculates the sag of the asphere at the given coordinates.
+
+        Args:
+            x (float, np.ndarray, optional): The x-coordinate(s).
+                Defaults to 0.
+            y (float, np.ndarray, optional): The y-coordinate(s).
+                Defaults to 0.
+
+        Returns:
+            float: The sag value at the given coordinates.
+        """
+        r2 = x**2 + y**2
+        z = r2 / (self.radius *
+                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        for i, Ci in enumerate(self.c):
+            z += Ci * r2 ** (i + 1)
+
+        return z
+
+    def _surface_normal(self, x, y):
+        """
+        Calculates the surface normal of the asphere at the given x and y
+        position.
+
+        Args:
+            x (np.ndarray): The x values to use for calculation.
+            y (np.ndarray): The y values to use for calculation.
+
+        Returns:
+            tuple: The surface normal components (nx, ny, nz).
+        """
+        r2 = x**2 + y**2
+
+        denom = np.sqrt(self.radius**2 - (1 + self.k) * r2)
+        dfdx = x / denom
+        dfdy = y / denom
+
+        for i, Ci in enumerate(self.c):
+            dfdx += 2 * (i+1) * x * Ci * r2**i
+            dfdy += 2 * (i+1) * y * Ci * r2**i
+
+        mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
+
+        nx = -dfdx / mag
+        ny = -dfdy / mag
+        nz = 1 / mag
+
+        return nx, ny, nz
+
+
+class PolynomialGeometry(NewtonRaphsonGeometry):
     """
     Represents a polynomial geometry defined as:
 
@@ -449,26 +483,22 @@ class PolynomialGeometry(BaseGeometry):
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of the asphere.
-        conic (float, optional): The conic constant of the asphere.
+        radius (float): The radius of curvature of the geometry.
+        conic (float, optional): The conic constant of the geometry.
             Defaults to 0.0.
-        coefficients (list, optional): The coefficients of the asphere.
-            Defaults to an empty list, indicating no aspheric coefficients are
-            used.
         tol (float, optional): The tolerance value used in calculations.
             Defaults to 1e-10.
         max_iter (int, optional): The maximum number of iterations used in
             calculations. Defaults to 100.
+        coefficients (list or np.ndarray, optional): The coefficients of the
+            polynomial surface. Defaults to an empty list, indicating no
+            polynomial coefficients are used.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0, coefficients=[],
-                 tol=1e-10, max_iter=100):
-        super().__init__(coordinate_system)
-        self.radius = radius
-        self.k = conic
+    def __init__(self, coordinate_system, radius, conic=0.0,
+                 tol=1e-10, max_iter=100, coefficients=[]):
+        super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
-        self.tol = tol
-        self.max_iter = max_iter
 
         if len(self.c) == 0:
             self.c = np.zeros((1, 1))
@@ -493,47 +523,6 @@ class PolynomialGeometry(BaseGeometry):
             for j in range(len(self.c[i])):
                 z += self.c[i][j] * (x ** i) * (y ** j)
         return z
-
-    def distance(self, rays):
-        """
-        Calculates the distance between the polynomial geometry and the given
-        ray positions.
-
-        Note:
-            This function uses the Newton-Raphson method.
-
-        Args:
-            rays (Rays): The rays used for calculating distance.
-
-        Returns:
-            numpy.ndarray: The distances between the asphere and the rays.
-        """
-        x, y, z = self._intersection_sphere(rays)
-        intersections = np.column_stack((x, y, z))
-        ray_directions = np.column_stack((rays.L, rays.M, rays.N))
-        for i in range(self.max_iter):
-            z_surface = self.sag(intersections[:, 0], intersections[:, 1])
-            dz = intersections[:, 2] - z_surface
-            distance = dz / ray_directions[:, 2]
-            intersections -= distance[:, None] * ray_directions
-            if np.max(np.abs(dz)) < self.tol:
-                break
-        position = np.column_stack((rays.x, rays.y, rays.z))
-        return np.linalg.norm(intersections - position, axis=1)
-
-    def surface_normal(self, rays):
-        """
-        Calculates the surface normal of the polynomial surface for the given
-        rays.
-
-        Args:
-            rays (Rays): The rays used for calculating the surface normal.
-
-        Returns:
-            tuple: The surface normal components (nx, ny, nz).
-        """
-        n = self._surface_normal(rays.x, rays.y)
-        return n
 
     def _surface_normal(self, x, y):
         """
@@ -566,47 +555,3 @@ class PolynomialGeometry(BaseGeometry):
         nz = 1 / norm
 
         return nx, ny, nz
-
-    def _intersection_sphere(self, rays):
-        """
-        Calculates the intersection points of the rays with a sphere.
-
-        Args:
-            rays (Rays): The rays used for calculating the intersection points.
-
-        Returns:
-            tuple: The intersection points (x, y, z).
-        """
-        a = rays.L**2 + rays.M**2 + rays.N**2
-        b = (2 * rays.L * rays.x + 2 * rays.M * rays.y -
-             2 * rays.N * self.radius + 2 * rays.N * rays.z)
-        c = (rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z)
-
-        # discriminant
-        d = b ** 2 - 4 * a * c
-
-        # two solutions for distance to sphere
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            t1 = (-b + np.sqrt(d)) / (2 * a)
-            t2 = (-b - np.sqrt(d)) / (2 * a)
-
-        # intersections "behind" ray, set to inf to ignore
-        t1[t1 < 0] = np.inf
-        t2[t2 < 0] = np.inf
-
-        # find intersection points in z
-        z1 = rays.z + t1 * rays.N
-        z2 = rays.z + t2 * rays.N
-
-        # take intersection closest to z = 0 (i.e., vertex of geometry)
-        t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
-
-        # handle case when a = 0
-        t[a == 0] = -c[a == 0] / b[a == 0]
-
-        x = rays.x + rays.L * t
-        y = rays.y + rays.M * t
-        z = rays.z + rays.N * t
-
-        return x, y, z
