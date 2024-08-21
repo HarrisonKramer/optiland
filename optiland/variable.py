@@ -378,6 +378,68 @@ class AsphereCoeffVariable(VariableBehavior):
         return scaled_value / 10 ** (4 + 2 * self.coeff_number)
 
 
+class PolynomialCoeffVariable(VariableBehavior):
+    """
+    Represents a variable for a polynomial coefficient of a PolynomialGeometry.
+
+    Args:
+        optic (Optic): The optic object associated with the variable.
+        surface_number (int): The index of the surface in the optical system.
+        coeff_index (tuple(int, int)): The (x, y) indices of the polynomial
+            coefficient.
+        **kwargs: Additional keyword arguments.
+
+    Attributes:
+        coeff_number (int): The index of the polynomial coefficient.
+    """
+
+    def __init__(self, optic, surface_number, coeff_index, **kwargs):
+        super().__init__(optic, surface_number, **kwargs)
+        self.coeff_index = coeff_index
+
+    def get_value(self):
+        """
+        Get the current value of the polynomial coefficient.
+
+        Returns:
+            float: The current value of the polynomial coefficient.
+        """
+        surf = self._surfaces.surfaces[self.surface_number]
+        i, j = self.coeff_index
+        value = surf.geometry.c[i][j]
+        return self.scale(value)
+
+    def update_value(self, new_value):
+        """
+        Update the value of the polynomial coefficient.
+
+        Args:
+            new_value (float): The new value of the polynomial coefficient.
+        """
+        new_value = self.inverse_scale(new_value)
+        surface = self.optic.surface_group.surfaces[self.surface_number]
+        i, j = self.coeff_index
+        surface.geometry.c[i][j] = new_value
+
+    def scale(self, value):
+        """
+        Scale the value of the variable for improved optimization performance.
+
+        Args:
+            value: The value to scale
+        """
+        return value
+
+    def inverse_scale(self, scaled_value):
+        """
+        Inverse scale the value of the variable.
+
+        Args:
+            scaled_value: The scaled value to inverse scale
+        """
+        return scaled_value
+
+
 class Variable:
     """
     Represents a variable in an optical system.
@@ -431,7 +493,7 @@ class Variable:
         This method returns a set of strings that are the names of allowed
         attributes.
         """
-        return {'surface_number', 'coeff_number', 'wavelength'}
+        return {'surface_number', 'coeff_number', 'wavelength', 'coeff_index'}
 
     def _get_variable(self):
         """
@@ -451,7 +513,8 @@ class Variable:
             'conic': ConicVariable,
             'thickness': ThicknessVariable,
             'index': IndexVariable,
-            'asphere_coeff': AsphereCoeffVariable
+            'asphere_coeff': AsphereCoeffVariable,
+            'polynomial_coeff': PolynomialCoeffVariable
         }
 
         variable_class = variable_types.get(self.type)
