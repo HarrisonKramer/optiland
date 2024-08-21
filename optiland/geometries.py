@@ -464,11 +464,14 @@ class PolynomialGeometry(BaseGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0, coefficients=[],
                  tol=1e-10, max_iter=100):
         super().__init__(coordinate_system)
-        self.c = coefficients
         self.radius = radius
         self.k = conic
+        self.c = coefficients
         self.tol = tol
         self.max_iter = max_iter
+
+        if len(self.c) == 0:
+            self.c = np.zeros((1, 1))
 
     def sag(self, x=0, y=0):
         """
