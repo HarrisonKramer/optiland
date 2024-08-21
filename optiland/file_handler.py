@@ -58,7 +58,9 @@ class ZemaxFileReader:
 
         self._operand_table = {
             'FNUM': self._read_fno,
-            'ENVD': self._read_epd,
+            'ENPD': self._read_epd,
+            'OBNA': self._read_object_na,
+            'FLOA': self._read_floating_stop,
             'XFLN': self._read_x_fields,
             'YFLN': self._read_y_fields,
             'WAVM': self._read_wavelength,
@@ -67,6 +69,7 @@ class ZemaxFileReader:
             'DISZ': self._read_thickness,
             'GLAS': self._read_glass,
             'STOP': self._read_stop,
+            'MODE': self._read_mode,
         }
         self._current_surf = -1
         self._read_file()
@@ -114,7 +117,10 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self.data['aperture']['FNO'] = float(data[1])
+        if int(data[2]) == 0:
+            self.data['aperture']['imageFNO'] = float(data[1])
+        elif int(data[2]) == 1:
+            self.data['aperture']['paraxialImageFNO'] = float(data[1])
 
     def _read_epd(self, data):
         """
@@ -124,6 +130,27 @@ class ZemaxFileReader:
             data (list): List of data values extracted from the Zemax file.
         """
         self.data['aperture']['EPD'] = float(data[1])
+
+    def _read_object_na(self, data):
+        """
+        Extracts the object-space numerical aperture.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        if int(data[2]) == 0:
+            self.data['aperture']['objectNA'] = float(data[1])
+        elif int(data[2]) == 1:
+            self.data['aperture']['object_cone_angle'] = float(data[1])
+
+    def _read_floating_stop(self, data):
+        """
+        Extracts the floating stop data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        self.data['aperture']['floating_stop'] = True
 
     def _read_x_fields(self, data):
         """
@@ -221,3 +248,13 @@ class ZemaxFileReader:
             data (list): List of data values extracted from the Zemax file.
         """
         self.data['wavelengths']['primary_index'] = int(data[1])
+
+    def _read_mode(self, data):
+        """
+        Extracts the mode data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        if data[1] != 'SEQ':
+            raise ValueError('Only sequential mode is supported.')
