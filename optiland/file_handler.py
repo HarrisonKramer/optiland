@@ -61,19 +61,20 @@ class ZemaxFileReader:
             'ENPD': self._read_epd,
             'OBNA': self._read_object_na,
             'FLOA': self._read_floating_stop,
+            'FTYP': self._read_field_type,
             'XFLN': self._read_x_fields,
             'YFLN': self._read_y_fields,
             'WAVM': self._read_wavelength,
             'PWAV': self._read_primary_wave,
             'SURF': self._read_surface,
+            'TYPE': self._read_surf_type,
+            'PARM': self._read_surface_parameter,
             'CURV': self._read_radius,
             'DISZ': self._read_thickness,
             'GLAS': self._read_glass,
             'STOP': self._read_stop,
             'MODE': self._read_mode,
             'GCAT': self._read_glass_catalog,
-            'TYPE': self._read_surf_type,
-            'PARM': self._read_surface_parameter,
         }
         self._current_surf = -1
         self._read_file()
@@ -155,6 +156,24 @@ class ZemaxFileReader:
             data (list): List of data values extracted from the Zemax file.
         """
         self.data['aperture']['floating_stop'] = True
+
+    def _read_field_type(self, data):
+        """
+        Extracts the field type data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        if int(data[1]) == 0:
+            self.data['fields']['type'] = 'angle'
+        elif int(data[1]) == 1:
+            self.data['fields']['type'] = 'object_height'
+        elif int(data[1]) == 2:
+            self.data['fields']['type'] = 'paraxial_image_height'
+        elif int(data[1]) == 3:
+            self.data['fields']['type'] = 'real_image_height'
+        elif int(data[1]) == 4:
+            self.data['fields']['type'] = 'theodolite_angle'
 
     def _read_x_fields(self, data):
         """
