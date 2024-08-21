@@ -9,6 +9,7 @@ and updating the value of the variable.
 Kramer Harrison, 2024
 """
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class VariableBehavior(ABC):
@@ -406,7 +407,17 @@ class PolynomialCoeffVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         i, j = self.coeff_index
-        value = surf.geometry.c[i][j]
+        try:
+            value = surf.geometry.c[i][j]
+        except IndexError:
+            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
+            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
+            c_new = np.pad(surf.geometry.c,
+                           pad_width=((0, pad_width_i), (0, pad_width_j)),
+                           mode='constant',
+                           constant_values=0)
+            surf.geometry.c = c_new
+            value = 0
         return self.scale(value)
 
     def update_value(self, new_value):
@@ -417,9 +428,19 @@ class PolynomialCoeffVariable(VariableBehavior):
             new_value (float): The new value of the polynomial coefficient.
         """
         new_value = self.inverse_scale(new_value)
-        surface = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surface_group.surfaces[self.surface_number]
         i, j = self.coeff_index
-        surface.geometry.c[i][j] = new_value
+        try:
+            surf.geometry.c[i][j] = new_value
+        except IndexError:
+            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
+            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
+            c_new = np.pad(surf.geometry.c,
+                           pad_width=((0, pad_width_i), (0, pad_width_j)),
+                           mode='constant',
+                           constant_values=0)
+            c_new[i][j] = new_value
+            surf.geometry.c = c_new
 
     def scale(self, value):
         """
