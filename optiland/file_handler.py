@@ -174,6 +174,8 @@ class ZemaxFileReader:
             self.data['fields']['type'] = 'real_image_height'
         elif int(data[1]) == 4:
             self.data['fields']['type'] = 'theodolite_angle'
+        else:
+            self.data['fields']['type'] = 'unsupported'
 
     def _read_x_fields(self, data):
         """
