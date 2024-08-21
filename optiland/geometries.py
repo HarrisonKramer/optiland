@@ -432,6 +432,7 @@ class EvenAsphere(StandardGeometry):
 
 
 class PolynomialGeometry(BaseGeometry):
+    # TODO: make subclass of EvenAsphere
     """
     Represents a polynomial geometry defined as:
 
@@ -463,7 +464,7 @@ class PolynomialGeometry(BaseGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0, coefficients=[],
                  tol=1e-10, max_iter=100):
         super().__init__(coordinate_system)
-        self.coefficients = coefficients
+        self.c = coefficients
         self.radius = radius
         self.k = conic
         self.tol = tol
@@ -485,9 +486,9 @@ class PolynomialGeometry(BaseGeometry):
         r2 = x**2 + y**2
         z = r2 / (self.radius *
                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i in range(len(self.coefficients)):
-            for j in range(len(self.coefficients[i])):
-                z += self.coefficients[i][j] * (x ** i) * (y ** j)
+        for i in range(len(self.c)):
+            for j in range(len(self.c[i])):
+                z += self.c[i][j] * (x ** i) * (y ** j)
         return z
 
     def distance(self, rays):
@@ -548,13 +549,13 @@ class PolynomialGeometry(BaseGeometry):
         dzdx = x / denom
         dzdy = y / denom
 
-        for i in range(1, len(self.coefficients)):
-            for j in range(len(self.coefficients[i])):
-                dzdx -= i * self.coefficients[i][j] * (x ** (i - 1)) * (y ** j)
+        for i in range(1, len(self.c)):
+            for j in range(len(self.c[i])):
+                dzdx -= i * self.c[i][j] * (x ** (i - 1)) * (y ** j)
 
-        for i in range(len(self.coefficients)):
-            for j in range(1, len(self.coefficients[i])):
-                dzdy -= j * self.coefficients[i][j] * (x ** i) * (y ** (j - 1))
+        for i in range(len(self.c)):
+            for j in range(1, len(self.c[i])):
+                dzdy -= j * self.c[i][j] * (x ** i) * (y ** (j - 1))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
