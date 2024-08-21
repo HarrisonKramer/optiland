@@ -536,9 +536,11 @@ class SurfaceFactory:
         """
         radius = kwargs.get('radius', np.inf)
         conic = kwargs.get('conic', 0)
+        tol = kwargs.get('tol', 1e-6)
+        max_iter = kwargs.get('max_iter', 100)
         coefficients = kwargs.get('coefficients', [])
 
-        geometry = EvenAsphere(cs, radius, conic, coefficients)
+        geometry = EvenAsphere(cs, radius, conic, tol, max_iter, coefficients)
 
         return geometry
 
@@ -557,12 +559,12 @@ class SurfaceFactory:
         """
         radius = kwargs.get('radius', np.inf)
         conic = kwargs.get('conic', 0)
-        coefficients = kwargs.get('coefficients', [])
         tol = kwargs.get('tol', 1e-6)
         max_iter = kwargs.get('max_iter', 100)
+        coefficients = kwargs.get('coefficients', [])
 
-        geometry = PolynomialGeometry(cs, radius, conic, coefficients,
-                                      tol, max_iter)
+        geometry = PolynomialGeometry(cs, radius, conic, tol, max_iter,
+                                      coefficients)
 
         return geometry
 
