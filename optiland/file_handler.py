@@ -71,6 +71,8 @@ class ZemaxFileReader:
             'STOP': self._read_stop,
             'MODE': self._read_mode,
             'GCAT': self._read_glass_catalog,
+            'TYPE': self._read_surf_type,
+            'PARM': self._read_surface_parameter,
         }
         self._current_surf = -1
         self._read_file()
@@ -268,3 +270,27 @@ class ZemaxFileReader:
             data (list): List of data values extracted from the Zemax file.
         """
         self.data['glass_catalogs'] = data[1:]
+
+    def _read_surf_type(self, data):
+        """
+        Extracts the surface type data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        type_map = {'STANDARD': 'standard',
+                    'EVENASPH': 'even_asphere'}
+        try:
+            self._current_surf_data['type'] = type_map[data[1]]
+        except KeyError:
+            self._current_surf_data['type'] = 'unsupported'
+
+    def _read_surface_parameter(self, data):
+        """
+        Extracts the surface parameter data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        key = f'param_{int(data[1])-1}'
+        self._current_surf_data[key] = float(data[2])
