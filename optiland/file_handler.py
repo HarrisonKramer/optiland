@@ -271,6 +271,7 @@ class ZemaxFileReader:
             self.data['surfaces'][self._current_surf] = self._current_surf_data
 
         self._current_surf_data = {}
+        self._current_surf_data['type'] = 'standard'
         self._current_surf_data['is_stop'] = False
         self._current_surf_data['conic'] = 0.0
         self._current_surf_data['material'] = 'air'
