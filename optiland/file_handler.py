@@ -152,6 +152,10 @@ class ZemaxFileReader:
         self.data['fields']['x'], \
             self.data['fields']['y'] = zip(*sorted_fields)
 
+        # remove temporary file if it was created
+        if self._is_url(self.source):
+            os.remove(self.filename)
+
     def _read_fno(self, data):
         """
         Extracts the FNO (F-number) data.
