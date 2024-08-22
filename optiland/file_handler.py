@@ -369,6 +369,7 @@ class ZemaxToOpticConverter:
         self.optic.add_surface(index=index,
                                surface_type=data['type'],
                                radius=data['radius'],
+                               conic=data['conic'],
                                thickness=data['thickness'],
                                is_stop=data['is_stop'],
                                material=data['material'],
@@ -382,6 +383,8 @@ class ZemaxToOpticConverter:
             coefficients = []
             for k in range(8):
                 coefficients.append(data[f'param_{k}'])
+        else:
+            raise ValueError('Unsupported surface type.')
 
     def _configure_aperture(self):
         """
