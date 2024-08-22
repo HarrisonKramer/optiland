@@ -92,14 +92,28 @@ class ZemaxFileReader:
         """
         Reads the Zemax file and extracts the optical data.
         """
-        with open(self.filename, 'r', encoding='utf-16') as file:
-            for line in file:
-                data = line.split()
-                try:
-                    operand = data[0]
-                    self._operand_table[operand](data)
-                except (IndexError, KeyError):
-                    continue
+        encodings = ['utf-16', 'utf-8']
+        success = False
+        for encoding in encodings:
+            try:
+                with open(self.filename, 'r', encoding=encoding) as file:
+                    for line in file:
+                        data = line.split()
+                        try:
+                            operand = data[0]
+                            self._operand_table[operand](data)
+                        except (IndexError, KeyError):
+                            continue
+            except (UnicodeError, UnicodeDecodeError):
+                continue
+
+            if self.data['aperture']:
+                success = True
+            else:
+                continue
+
+        if not success:
+            raise ValueError('Failed to read Zemax file.')
 
         # sort and filter fields
         unique_fields = set()
