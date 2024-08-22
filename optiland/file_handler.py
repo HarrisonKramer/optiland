@@ -4,6 +4,10 @@ This module provides classes for parsing files, such as Zemax lens data files.
 
 Kramer Harrison, 2024
 """
+import os
+import re
+import requests
+import tempfile
 import numpy as np
 from optiland.optic import Optic
 from optiland.materials import Material
@@ -14,7 +18,7 @@ class ZemaxFileReader:
     A class for reading Zemax files and extracting optical data.
 
     Args:
-        filename (str): The path to the Zemax file to be read.
+        source (str): The source of the .zmx file, either a filename or a URL.
 
     Attributes:
         filename (str): The path to the Zemax file.
@@ -34,8 +38,8 @@ class ZemaxFileReader:
             instance.
     """
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, source):
+        self.source = source
 
         self.data = {}
         self.data['aperture'] = {}
@@ -67,7 +71,9 @@ class ZemaxFileReader:
             'MODE': self._read_mode,
             'GCAT': self._read_glass_catalog,
         }
+
         self._current_surf = -1
+        self._configure_source_input()
         self._read_file()
 
     def generate_lens(self):
@@ -76,6 +82,34 @@ class ZemaxFileReader:
         """
         converter = ZemaxToOpticConverter(self.data)
         return converter.convert()
+
+    def _is_url(self, source):
+        """
+        Check if the source is a URL.
+
+        Args:
+            source (str): The source to check.
+
+        Returns:
+            bool: True if the source is a URL, False otherwise.
+        """
+        return re.match(r'^https?://', source) is not None
+
+    def _configure_source_input(self):
+        """
+        Checks if the source is a URL and writes to a temporary file if so.
+        Otherwise, sets the source to the filename.
+        """
+        if self._is_url(self.source):
+            response = requests.get(self.source)
+            if response.status_code == 200:
+                with tempfile.NamedTemporaryFile(delete=False) as file:
+                    file.write(response.content)
+                    self.filename = file.name
+            else:
+                raise ValueError('Failed to download Zemax file.')
+        else:
+            self.filename = self.source
 
     def _read_file(self):
         """
@@ -114,7 +148,7 @@ class ZemaxFileReader:
         # Sort the unique field pairs based on the second element
         sorted_fields = sorted(unique_fields, key=lambda x: x[1])
 
-        # Unzip the sorted pairs back into two lists
+        # Unzip the sorted pairs back into two lists for x, y fields
         self.data['fields']['x'], \
             self.data['fields']['y'] = zip(*sorted_fields)
 
