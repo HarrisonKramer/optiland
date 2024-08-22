@@ -85,8 +85,8 @@ class ZemaxFileReader:
         """
         Converts the extracted optical data into an Optiland optic instance.
         """
-        # TODO: convert to optiland optic instance
-        pass
+        converter = ZemaxToOpticConverter(self.data)
+        return converter.convert()
 
     def _read_file(self):
         """
