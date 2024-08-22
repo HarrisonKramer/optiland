@@ -72,6 +72,7 @@ class ZemaxFileReader:
             'PARM': self._read_surface_parameter,
             'CURV': self._read_radius,
             'DISZ': self._read_thickness,
+            'CONI': self._read_conic,
             'GLAS': self._read_glass,
             'STOP': self._read_stop,
             'MODE': self._read_mode,
@@ -230,6 +231,7 @@ class ZemaxFileReader:
 
         self._current_surf_data = {}
         self._current_surf_data['is_stop'] = False
+        self._current_surf_data['conic'] = 0.0
         self._current_surf += 1
 
     def _read_radius(self, data):
@@ -255,6 +257,15 @@ class ZemaxFileReader:
             self._current_surf_data['thickness'] = np.inf
         else:
             self._current_surf_data['thickness'] = float(data[1])
+
+    def _read_conic(self, data):
+        """
+        Extracts the conic constant data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        self._current_surf_data['conic'] = float(data[1])
 
     def _read_glass(self, data):
         """
