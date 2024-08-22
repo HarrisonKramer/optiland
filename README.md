@@ -140,7 +140,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 9. **Lens Catalogue Integration**
     - Tutorial 9a - Edmund Optics Catalogue - Update in progress (target completion: Sept. 2024)
         - Reading Zemax files
-        - Reading and analyzing an infrared aspheric lens
+        - Reading and analyzing an aspheric lens
     - Tutorial 9b - Thorlabs Catalogue - Update in progress (target completion: Sept. 2024)
         - Reading and analyzing an achromatic doublet pair lens
 10. **Extending Optiland**
