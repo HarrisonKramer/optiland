@@ -350,13 +350,27 @@ class ZemaxToOpticConverter:
         return self.optic
 
     def _configure_surfaces(self):
-        pass
+        for idx, surf_data in self.data['surfaces'].items():
+            self._configure_surface(idx, surf_data)
 
-    def _configure_surface(self):
-        pass
+    def _configure_surface(self, index, data):
+        coefficients = self._configure_surface_coefficients(data)
+        self.optic.add_surface(index=index,
+                               surface_type=data['type'],
+                               radius=data['radius'],
+                               thickness=data['thickness'],
+                               is_stop=data['is_stop'],
+                               material=data['material'],
+                               coefficients=coefficients)
 
-    def _configure_surface_type(self):
-        pass
+    def _configure_surface_coefficients(self, data):
+        surf_type = data['type']
+        if surf_type == 'standard':
+            return None
+        elif surf_type == 'even_asphere':
+            coefficients = []
+            for k in range(8):
+                coefficients.append(data[f'param_{k}'])
 
     def _configure_aperture(self):
         """
