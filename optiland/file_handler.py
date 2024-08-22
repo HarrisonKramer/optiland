@@ -6,6 +6,7 @@ Kramer Harrison, 2024
 """
 import numpy as np
 from optiland.optic import Optic
+from optiland.materials import Material
 
 
 class ZemaxFileReader:
@@ -287,7 +288,25 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self._current_surf_data['material'] = data[1]
+        material = data[1]
+        self._current_surf_data['material'] = material
+
+        # Generate a Material object from the material name & manufacturer
+        try:
+            # Try to create a Material object from the material name
+            self._current_surf_data['material'] = Material(material)
+        except ValueError:
+
+            # If the material name is not recognized, try to create a Material
+            # object from the material name and manufacturer
+            for manufacturer in self.data['glass_catalogs']:
+                try:
+                    self._current_surf_data['material'] = \
+                        Material(material, manufacturer.lower())
+                    break
+                except ValueError:
+                    continue
+
         self._current_surf_data['index'] = float(data[4])
         self._current_surf_data['abbe'] = float(data[5])
 
