@@ -122,14 +122,12 @@ class ZemaxFileReader:
             pair = (self.data['fields']['x'][i], self.data['fields']['y'][i])
             unique_fields.add(pair)
 
-        # Sort the unique pairs based on the second element
+        # Sort the unique field pairs based on the second element
         sorted_fields = sorted(unique_fields, key=lambda x: x[1])
 
         # Unzip the sorted pairs back into two lists
         self.data['fields']['x'], \
             self.data['fields']['y'] = zip(*sorted_fields)
-
-        # set primary wavelength
 
     def _read_fno(self, data):
         """
