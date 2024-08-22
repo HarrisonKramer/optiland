@@ -63,7 +63,7 @@ class ZemaxFileReader:
             'ENPD': self._read_epd,
             'OBNA': self._read_object_na,
             'FLOA': self._read_floating_stop,
-            'FTYP': self._read_field_type,
+            'FTYP': self._read_config_data,
             'XFLN': self._read_x_fields,
             'YFLN': self._read_y_fields,
             'WAVM': self._read_wavelength,
@@ -172,9 +172,9 @@ class ZemaxFileReader:
         """
         self.data['aperture']['floating_stop'] = True
 
-    def _read_field_type(self, data):
+    def _read_config_data(self, data):
         """
-        Extracts the field type data.
+        Extracts field, wavelength, and other configuration data.
 
         Args:
             data (list): List of data values extracted from the Zemax file.
@@ -191,6 +191,8 @@ class ZemaxFileReader:
             self.data['fields']['type'] = 'theodolite_angle'
         else:
             self.data['fields']['type'] = 'unsupported'
+
+        self.data['wavelengths']['num_wavelengths'] = int(data[4])
 
         if int(data[2]) == 1:
             self.data['fields']['object_space_telecentric'] = True
@@ -227,9 +229,9 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        # TODO: this is a workaround for now
         value = float(data[2])
-        if value != 0.55:
+        num_wavelengths = self.data['wavelengths']['num_wavelengths']
+        if len(self.data['wavelengths']['data']) < num_wavelengths:
             self.data['wavelengths']['data'].append(value)
 
     def _read_surface(self, data):
