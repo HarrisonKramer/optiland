@@ -363,6 +363,20 @@ class ZemaxFileReader:
 
 
 class ZemaxToOpticConverter:
+    """Converts Zemax data into an Optic object.
+
+    Args:
+        zemax_data (dict): The Zemax data to be converted. This is the data
+            extracted by the ZemaxFileReader.
+
+    Attributes:
+        data (dict): The Zemax data to be converted.
+        optic (Optic): The Optic object based on the Zemax data.
+
+    Methods:
+        convert(): Converts the configuration of the file handler into an
+            Optic object.
+    """
 
     def __init__(self, zemax_data):
         self.data = zemax_data
@@ -383,11 +397,17 @@ class ZemaxToOpticConverter:
         return self.optic
 
     def _configure_surfaces(self):
+        """
+        Configures the surfaces for the optic.
+        """
         for idx, surf_data in self.data['surfaces'].items():
             self._configure_surface(idx, surf_data)
         self.optic.add_surface(index=len(self.data['surfaces']))
 
     def _configure_surface(self, index, data):
+        """
+        Configures a surface for the optic.
+        """
         coefficients = self._configure_surface_coefficients(data)
         self.optic.add_surface(index=index,
                                surface_type=data['type'],
@@ -399,6 +419,10 @@ class ZemaxToOpticConverter:
                                coefficients=coefficients)
 
     def _configure_surface_coefficients(self, data):
+        """
+        Configures the coefficients for the surface. This is None for standard
+        surfaces.
+        """
         surf_type = data['type']
         if surf_type == 'standard':
             return None
@@ -427,6 +451,9 @@ class ZemaxToOpticConverter:
             self.optic.add_field(x=fx, y=fy)
 
     def _configure_wavelengths(self):
+        """
+        Configure the wavelengths for the optic.
+        """
         primary_idx = self.data['wavelengths']['primary_index']
         for idx, value in enumerate(self.data['wavelengths']['data']):
             self.optic.add_wavelength(value=value,
