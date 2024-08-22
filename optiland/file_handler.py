@@ -232,6 +232,7 @@ class ZemaxFileReader:
         self._current_surf_data = {}
         self._current_surf_data['is_stop'] = False
         self._current_surf_data['conic'] = 0.0
+        self._current_surf_data['material'] = 'air'
         self._current_surf += 1
 
     def _read_radius(self, data):
@@ -363,6 +364,7 @@ class ZemaxToOpticConverter:
     def _configure_surfaces(self):
         for idx, surf_data in self.data['surfaces'].items():
             self._configure_surface(idx, surf_data)
+        self.optic.add_surface(index=len(self.data['surfaces']))
 
     def _configure_surface(self, index, data):
         coefficients = self._configure_surface_coefficients(data)
@@ -383,6 +385,7 @@ class ZemaxToOpticConverter:
             coefficients = []
             for k in range(8):
                 coefficients.append(data[f'param_{k}'])
+            return coefficients
         else:
             raise ValueError('Unsupported surface type.')
 
