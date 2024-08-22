@@ -32,18 +32,6 @@ class ZemaxFileReader:
     Methods:
         generate_lens(): Converts the extracted data into an Optiland optic
             instance.
-        _read_file(): Reads the Zemax file and extracts the optical data.
-        _read_fno(data): Extracts the FNO (F-number) data.
-        _read_epd(data): Extracts the EPD (entrance pupil diameter) data.
-        _read_x_fields(data): Extracts the x-field data.
-        _read_y_fields(data): Extracts the y-field data.
-        _read_wavelength(data): Extracts the wavelength data.
-        _read_surface(data): Extracts the surface data.
-        _read_radius(data): Extracts the radius data.
-        _read_thickness(data): Extracts the thickness data.
-        _read_glass(data): Extracts the glass data.
-        _read_stop(data): Extracts the stop data.
-        _read_primary_wave(data): Extracts the primary wavelength data.
     """
 
     def __init__(self, filename):
