@@ -138,7 +138,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Sept. 2024)
         - Monte Carlo-based Tolerancing
 9. **Lens Catalogue Integration**
-    - Tutorial 9a - Edmund Optics Catalogue - Update in progress (target completion: Sept. 2024)
+    - [Tutorial 9a - Edmund Optics Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Edmund_Optics_Catalogue.ipynb)
         - Reading Zemax files
         - Reading and analyzing an aspheric lens
     - Tutorial 9b - Thorlabs Catalogue - Update in progress (target completion: Sept. 2024)
