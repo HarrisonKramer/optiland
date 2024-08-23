@@ -205,6 +205,8 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
+        self.data['fields']['num_fields'] = int(data[3])
+
         if int(data[1]) == 0:
             self.data['fields']['type'] = 'angle'
         elif int(data[1]) == 1:
@@ -237,7 +239,9 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self.data['fields']['x'] = [float(value) for value in data[1:]]
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['x'] = \
+            [float(value) for value in data[1:num_fields+1]]
 
     def _read_y_fields(self, data):
         """
@@ -246,7 +250,9 @@ class ZemaxFileReader:
         Args:
             data (list): List of data values extracted from the Zemax file.
         """
-        self.data['fields']['y'] = [float(value) for value in data[1:]]
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['y'] = \
+            [float(value) for value in data[1:num_fields+1]]
 
     def _read_wavelength(self, data):
         """
