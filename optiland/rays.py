@@ -626,12 +626,15 @@ class RayGenerator:
                 z = obj.geometry.sag(x, y) + obj.geometry.cs.z
 
             elif self.optic.field_type == 'angle':
-                x = np.tan(np.radians(field_x))
-                y = np.tan(np.radians(field_y))
+                EPL = self.optic.paraxial.EPL()
                 z = self.optic.surface_group.positions[0]
+                x = np.tan(np.radians(field_x)) * (EPL - z)
+                y = -np.tan(np.radians(field_y)) * (EPL - z)
 
             x0 = np.full_like(Px, x)
             y0 = np.full_like(Px, y)
             z0 = np.full_like(Px, z)
+
+        print(x0, y0, z0)
 
         return x0, y0, z0
