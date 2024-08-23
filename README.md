@@ -141,7 +141,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 9a - Edmund Optics Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Edmund_Optics_Catalogue.ipynb)
         - Reading Zemax files
         - Reading and analyzing an aspheric lens
-    - Tutorial 9b - Thorlabs Catalogue - Update in progress (target completion: Sept. 2024)
+    - [Tutorial 9b - Thorlabs Catalogue]((https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Thorlabs_Catalogue.ipynb))
         - Reading and analyzing an achromatic doublet pair lens
 10. **Extending Optiland**
     - Tutorial 10a - Custom Surface Types - Update in progress (target completion: Sept. 2024)
