@@ -635,6 +635,4 @@ class RayGenerator:
             y0 = np.full_like(Px, y)
             z0 = np.full_like(Px, z)
 
-        print(x0, y0, z0)
-
         return x0, y0, z0
