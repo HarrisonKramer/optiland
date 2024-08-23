@@ -458,12 +458,12 @@ class LensInfoViewer:
 
         surf_type = []
         for surf in self.optic.surface_group.surfaces:
-            if isinstance(surf.geometry, geometries.StandardGeometry):
-                surf_type.append('Standard')
-            elif isinstance(surf.geometry, geometries.EvenAsphere):
+            if isinstance(surf.geometry, geometries.EvenAsphere):
                 surf_type.append('Even Asphere')
             elif isinstance(surf.geometry, geometries.Plane):
                 surf_type.append('Planar')
+            elif isinstance(surf.geometry, geometries.StandardGeometry):
+                surf_type.append('Standard')
             else:
                 raise ValueError('Unknown surface type')
         radii = self.optic.surface_group.radii
