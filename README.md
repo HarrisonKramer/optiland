@@ -54,13 +54,14 @@ You can install the package using pip. To do so, follow these steps:
 ## Functionalities
 - Lens entry
 - 2D/3D visualization
-- Paraxial analysis
-- Real and paraxial ray tracing
-- Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, MTF, etc.)
-- Glass catalogue and index/abbe v-number determination (based on refractiveindex.info)
-- Design optimization
+- Paraxial and aberration analyses
+- Real and paraxial ray tracing, including aspherics and freeforms
+- Polarization ray tracing
+- Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, PSF, MTF, etc.)
+- Glass catalogue (based on refractiveindex.info)
+- Design optimization (local and global)
 - Wavefront and Zernike analysis
-- Coating analysis
+- Coating and surface scatter (BSDF) analysis
 
 The code itself is in constant flux and new functionalities are always being added.
 
