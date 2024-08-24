@@ -23,7 +23,8 @@ dependencies = [
     "matplotlib",
     "vtk",
     "tabulate",
-    "numba"
+    "numba",
+    "requests"
 ]
 
 [project.urls]
