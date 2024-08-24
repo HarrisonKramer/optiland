@@ -466,6 +466,10 @@ class LensInfoViewer:
                 surf_type.append('Standard')
             else:
                 raise ValueError('Unknown surface type')
+
+            if surf.is_stop:
+                surf_type[-1] = 'Stop - ' + surf_type[-1]
+
         radii = self.optic.surface_group.radii
         thicknesses = np.diff(self.optic.surface_group.positions.ravel(),
                               append=np.nan)
