@@ -459,8 +459,8 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
 
-        nx = -dfdx / mag
-        ny = -dfdy / mag
+        nx = -dfdx / mag * np.sign(self.radius)
+        ny = -dfdy / mag * np.sign(self.radius)
         nz = 1 / mag
 
         return nx, ny, nz
