@@ -392,3 +392,110 @@ class TestTelescopeTripletGridDistortion:
         dist = analysis.GridDistortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
+
+
+class TestTelescopeTripletFieldCurvature:
+    def test_field_curvature_init(self, telescope_objective):
+        field_curvature = analysis.FieldCurvature(telescope_objective)
+        assert field_curvature.optic == telescope_objective
+        assert field_curvature.wavelengths == \
+            telescope_objective.wavelengths.get_wavelengths()
+        assert field_curvature.num_points == 128
+
+    def test_field_curvature_init_with_wavelength(self, telescope_objective):
+        field_curvature = analysis.FieldCurvature(telescope_objective,
+                                                  wavelengths=[0.5, 0.6])
+        assert field_curvature.optic == telescope_objective
+        assert field_curvature.wavelengths == [0.5, 0.6]
+        assert field_curvature.num_points == 128
+
+    def test_field_curvature_init_with_num_points(self, telescope_objective):
+        num_points = 256
+        field_curvature = analysis.FieldCurvature(telescope_objective,
+                                                  num_points=num_points)
+        assert field_curvature.optic == telescope_objective
+        assert field_curvature.wavelengths == \
+            telescope_objective.wavelengths.get_wavelengths()
+        assert field_curvature.num_points == num_points
+
+    def test_field_curvature_init_with_all_parameters(self,
+                                                      telescope_objective):
+        num_points = 256
+        field_curvature = analysis.FieldCurvature(telescope_objective,
+                                                  wavelengths=[0.55],
+                                                  num_points=num_points)
+        assert field_curvature.optic == telescope_objective
+        assert field_curvature.wavelengths == [0.55]
+        assert field_curvature.num_points == num_points
+
+    def test_field_curvature_view(self, telescope_objective):
+        field_curvature = analysis.FieldCurvature(telescope_objective)
+        with patch('matplotlib.pyplot.show') as mock_show:
+            field_curvature.view()
+            mock_show.assert_called_once()
+
+    def test_field_curvature_generate_data(self, telescope_objective):
+        f = analysis.FieldCurvature(telescope_objective)
+
+        assert f.data[0][0][89] == pytest.approx(-0.0013062169220806206,
+                                                 abs=1e-9)
+        assert f.data[0][1][40] == pytest.approx(0.03435268469825703,
+                                                 abs=1e-9)
+        assert f.data[0][1][112] == pytest.approx(0.012502083379998098,
+                                                  abs=1e-9)
+        assert f.data[0][0][81] == pytest.approx(0.005363808856891348,
+                                                 abs=1e-9)
+        assert f.data[0][0][127] == pytest.approx(-0.041553105637156224,
+                                                  abs=1e-9)
+        assert f.data[0][0][40] == pytest.approx(0.02969815644838593,
+                                                 abs=1e-9)
+        assert f.data[0][0][57] == pytest.approx(0.021608994058848974,
+                                                 abs=1e-9)
+        assert f.data[0][1][45] == pytest.approx(0.03350406866891282,
+                                                 abs=1e-9)
+        assert f.data[0][1][74] == pytest.approx(0.026613511090172324,
+                                                 abs=1e-9)
+        assert f.data[0][1][94] == pytest.approx(0.01990500178194723,
+                                                 abs=1e-9)
+
+        assert f.data[1][1][55] == pytest.approx(-0.004469963728211546,
+                                                 abs=1e-9)
+        assert f.data[1][1][19] == pytest.approx(0.0008003571732224457,
+                                                 abs=1e-9)
+        assert f.data[1][1][93] == pytest.approx(-0.015595499139883678,
+                                                 abs=1e-9)
+        assert f.data[1][0][15] == pytest.approx(0.0004226818372030349,
+                                                 abs=1e-9)
+        assert f.data[1][1][50] == pytest.approx(-0.0034313474749693047,
+                                                 abs=1e-9)
+        assert f.data[1][1][50] == pytest.approx(-0.0034313474749693047,
+                                                 abs=1e-9)
+        assert f.data[1][0][110] == pytest.approx(-0.05718858127937811,
+                                                  abs=1e-9)
+        assert f.data[1][0][89] == pytest.approx(-0.036917737894907106,
+                                                 abs=1e-9)
+        assert f.data[1][1][75] == pytest.approx(-0.00961346547634129,
+                                                 abs=1e-9)
+        assert f.data[1][0][69] == pytest.approx(-0.021587199726177217,
+                                                 abs=1e-9)
+
+        assert f.data[2][1][62] == pytest.approx(0.059485399479466794,
+                                                 abs=1e-9)
+        assert f.data[2][0][103] == pytest.approx(0.015768399161337723,
+                                                  abs=1e-9)
+        assert f.data[2][0][0] == pytest.approx(0.06707048647659668,
+                                                abs=1e-9)
+        assert f.data[2][1][68] == pytest.approx(0.05794633552031286,
+                                                 abs=1e-9)
+        assert f.data[2][0][6] == pytest.approx(0.06689636005684219,
+                                                abs=1e-9)
+        assert f.data[2][1][40] == pytest.approx(0.06391326892594748,
+                                                 abs=1e-9)
+        assert f.data[2][0][88] == pytest.approx(0.029620344519446916,
+                                                 abs=1e-9)
+        assert f.data[2][0][5] == pytest.approx(0.06694956529269887,
+                                                abs=1e-9)
+        assert f.data[2][1][98] == pytest.approx(0.048120430272662294,
+                                                 abs=1e-9)
+        assert f.data[2][0][5] == pytest.approx(0.06694956529269887,
+                                                abs=1e-9)
