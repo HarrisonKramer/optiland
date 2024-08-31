@@ -344,7 +344,8 @@ class TestTelescopeTripletGridDistortion:
                                                       abs=1e-9)
 
     def test_f_theta_distortion(self, telescope_objective):
-        dist = analysis.GridDistortion(telescope_objective)
+        dist = analysis.GridDistortion(telescope_objective,
+                                       distortion_type='f-theta')
 
         assert dist.data['max_distortion'] == \
             pytest.approx(0.010863278146924825, abs=1e-9)
@@ -364,14 +365,14 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['yr'][2, 6] == pytest.approx(-0.6856458243955965,
                                                       abs=1e-9)
 
-        assert dist.data['xp'][0, 2] == pytest.approx(0.6856375010477692,
+        assert dist.data['xp'][0, 2] == pytest.approx(0.6856267573347536,
                                                       abs=1e-9)
-        assert dist.data['xp'][4, 4] == pytest.approx(0.13712543741510327,
+        assert dist.data['xp'][4, 4] == pytest.approx(0.13712535146695065,
                                                       abs=1e-9)
 
-        assert dist.data['yp'][-1, 0] == pytest.approx(1.2341908231761498,
+        assert dist.data['yp'][-1, 0] == pytest.approx(1.2341281632025562,
                                                        abs=1e-9)
-        assert dist.data['yp'][1, 5] == pytest.approx(-0.9599069415493584,
+        assert dist.data['yp'][1, 5] == pytest.approx(-0.9598774602686547,
                                                       abs=1e-9)
 
     def test_invalid_distortion_type(self, telescope_objective):
