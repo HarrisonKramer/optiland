@@ -10,9 +10,15 @@ def test_aperture_generate(ap_type, value):
     assert ap.value == value
 
 
-@pytest.mark.parametrize('ap_type, value', [('EPd', 5.0), ('FNO', 6.2),
+@pytest.mark.parametrize('ap_type, value', [('EPD', 5.0), ('FNO', 6.2),
                                             ('imageNA', 0.01)])
 def test_confirm_nonvalid_input(ap_type, value):
     """Confirm nonvalid inputs raise error"""
     with pytest.raises(ValueError):
         aperture.Aperture(ap_type, value)
+
+
+def test_confirm_invalid_ap_type():
+    """Confirm invalid ap_type raises error"""
+    with pytest.raises(ValueError):
+        aperture.Aperture('invalid_type', 5.0)
