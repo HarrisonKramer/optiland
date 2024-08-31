@@ -743,8 +743,8 @@ class GridDistortion:
             xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
             yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
         elif self.distortion_type == 'f-theta':
-            xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
-            yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
+            xp = const * Hx * np.radians(self.optic.fields.max_field)
+            yp = const * Hy * np.radians(self.optic.fields.max_field)
         else:
             raise ValueError('''Distortion type must be "f-tan" or
                                 "f-theta"''')
