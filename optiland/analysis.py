@@ -732,17 +732,18 @@ class GridDistortion:
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0,
                                  wavelength=self.wavelength)
 
-        const = (self.optic.surface_group.y[-1, 0] /
-                 (np.tan(1e-10 * np.radians(self.optic.fields.max_field))))
-
         max_field = np.sqrt(2) / 2
         extent = np.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = np.meshgrid(extent, extent)
 
         if self.distortion_type == 'f-tan':
+            const = (self.optic.surface_group.y[-1, 0] /
+                     (np.tan(1e-10 * np.radians(self.optic.fields.max_field))))
             xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
             yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
         elif self.distortion_type == 'f-theta':
+            const = (self.optic.surface_group.y[-1, 0] /
+                     (1e-10 * np.radians(self.optic.fields.max_field)))
             xp = const * Hx * np.radians(self.optic.fields.max_field)
             yp = const * Hy * np.radians(self.optic.fields.max_field)
         else:
