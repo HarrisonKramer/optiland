@@ -869,7 +869,7 @@ class FieldCurvature:
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
 
         Px = np.zeros(2 * self.num_points)
-        Py = np.tile(np.array([-delta, delta]), 128)
+        Py = np.tile(np.array([-delta, delta]), self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
@@ -904,7 +904,7 @@ class FieldCurvature:
         Hx = np.zeros(2 * self.num_points)
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
 
-        Px = np.tile(np.array([-delta, delta]), 128)
+        Px = np.tile(np.array([-delta, delta]), self.num_points)
         Py = np.zeros(2 * self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
