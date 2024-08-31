@@ -278,6 +278,26 @@ class TestTelescopeTripletDistortion:
         assert dist.data[2][-1] == \
             pytest.approx(0.005720392850412076, abs=1e-9)
 
+    def test_f_theta_distortion(self, telescope_objective):
+        dist = analysis.Distortion(telescope_objective,
+                                   distortion_type='f-theta')
+
+        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
+        assert dist.data[0][-1] == \
+            pytest.approx(0.016106265133212852, abs=1e-9)
+
+        assert dist.data[1][0] == pytest.approx(0.0, abs=1e-9)
+        assert dist.data[1][-1] == \
+            pytest.approx(0.015942044760968603, abs=1e-9)
+
+        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
+        assert dist.data[2][-1] == \
+            pytest.approx(0.015876125134060767, abs=1e-9)
+
+    def test_invalid_distortion_type(self, telescope_objective):
+        with pytest.raises(ValueError):
+            analysis.Distortion(telescope_objective, distortion_type='invalid')
+
     @patch('matplotlib.pyplot.show')
     def test_view_distortion(self, mock_show, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
