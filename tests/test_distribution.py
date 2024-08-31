@@ -102,6 +102,11 @@ def test_view_distribution(mock_show):
     mock_show.assert_called_once()
 
 
+def test_invalid_distribution_error():
+    with pytest.raises(ValueError):
+        distribution.create_distribution(distribution_type='invalid')
+
+
 @pytest.mark.parametrize('num_points', [10, 25, 50, 100])
 def test_uniform_distribution(num_points):
     d = distribution.create_distribution('uniform')
