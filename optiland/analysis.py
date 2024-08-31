@@ -327,20 +327,6 @@ class EncircledEnergy(SpotDiagram):
             centroid.append((centroid_x, centroid_y))
         return centroid
 
-    def _encircled_energy(self, radii, energy, radius_max):
-        """
-        Calculate the Encircled Energy within a given radius.
-
-        Args:
-            radii (numpy.ndarray): Array of radii.
-            energy (numpy.ndarray): Array of energy values.
-            radius_max (float): Maximum radius.
-
-        Returns:
-            float: The Encircled Energy within the given radius.
-        """
-        return np.nansum(energy[radii <= radius_max])
-
     def _plot_field(self, ax, field_data, field, axis_lim,
                     num_points, buffer=1.2):
         """
