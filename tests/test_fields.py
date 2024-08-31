@@ -44,6 +44,12 @@ def test_field_group_getters():
     assert f.get_field(3).x == 4
     assert f.get_field(3).y == 3
 
+    # test case when max field is zero
+    f = fields.FieldGroup()
+    new_field = fields.Field('angle', 0, 0)
+    f.add_field(new_field)
+    assert f.get_field_coords() == [(0, 0)]
+
 
 def test_field_group_get_vig_factor():
     input_data = [(0, 0)]
@@ -81,3 +87,11 @@ def test_field_group_get_vig_factor_raise_error():
 
     with pytest.raises(NotImplementedError):
         f.get_vig_factor(1, 1)
+
+
+def test_field_group_telecentric():
+    f = fields.FieldGroup()
+    assert f.telecentric is False
+
+    f.set_telecentric(True)
+    assert f.telecentric is True
