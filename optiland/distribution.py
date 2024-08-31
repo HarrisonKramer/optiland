@@ -4,12 +4,12 @@ This module provides various classes representing 2D pupil distributions
 
 Kramer Harrison, 2024
 """
-import abc
+from abc import ABC, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-class BaseDistribution:
+class BaseDistribution(ABC):
     """
     Base class for distributions.
 
@@ -23,7 +23,7 @@ class BaseDistribution:
             two adjacent y points.
     """
 
-    @abc.abstractmethod
+    @abstractmethod
     def generate_points(self, num_points: int, vx=0.0, vy=0.0):
         """
         Generate points based on the distribution.
