@@ -43,3 +43,14 @@ def test_field_group_getters():
     assert f.get_field(0).y == 0
     assert f.get_field(3).x == 4
     assert f.get_field(3).y == 3
+
+
+def test_field_group_get_vig_factor():
+    input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
+    f = fields.FieldGroup()
+    for field_data in input_data:
+        new_field = fields.Field('angle', *field_data)
+        f.add_field(new_field)
+
+    with pytest.raises(NotImplementedError):
+        f.get_vig_factor(1, 1)
