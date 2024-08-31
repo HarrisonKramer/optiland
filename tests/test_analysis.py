@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from unittest.mock import patch
-from optiland.optics import Optic
+from optiland.optic import Optic
 from optiland import analysis
 from optiland.samples.objectives import TripletTelescopeObjective, CookeTriplet
 
