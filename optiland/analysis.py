@@ -646,8 +646,7 @@ class Distortion:
                 yp = const * np.tan(Hy *
                                     np.radians(self.optic.fields.max_field))
             elif self.distortion_type == 'f-theta':
-                yp = const * np.tan(Hy *
-                                    np.radians(self.optic.fields.max_field))
+                yp = const * Hy * np.radians(self.optic.fields.max_field)
             else:
                 raise ValueError('''Distortion type must be "f-tan" or
                                  "f-theta"''')
