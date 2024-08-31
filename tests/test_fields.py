@@ -46,6 +46,33 @@ def test_field_group_getters():
 
 
 def test_field_group_get_vig_factor():
+    input_data = [(0, 0)]
+    f = fields.FieldGroup()
+    for field_data in input_data:
+        new_field = fields.Field('angle', *field_data)
+        f.add_field(new_field)
+
+    vx, ny = f.get_vig_factor(1, 1)
+    assert vx == 0.0
+    assert vx == 0.0
+
+    input_data = [(0, 0), (0, 7), (0, 10)]
+    f = fields.FieldGroup()
+    for field_data in input_data:
+        new_field = fields.Field('angle', *field_data,
+                                 vignette_factor_x=0.2, vignette_factor_y=0.2)
+        f.add_field(new_field)
+
+    vx, ny = f.get_vig_factor(0.5, 0.7)
+    assert vx == 0.2
+    assert vx == 0.2
+
+    vx, ny = f.get_vig_factor(1, 1)
+    assert vx == 0.2
+    assert vx == 0.2
+
+
+def test_field_group_get_vig_factor_raise_error():
     input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
     f = fields.FieldGroup()
     for field_data in input_data:
