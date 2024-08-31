@@ -22,3 +22,9 @@ def test_confirm_invalid_ap_type():
     """Confirm invalid ap_type raises error"""
     with pytest.raises(ValueError):
         aperture.Aperture('invalid_type', 5.0)
+
+
+def test_obj_space_telecentric():
+    """Confirm error raised when EPD specified with telecentric lens"""
+    with pytest.raises(ValueError):
+        aperture.Aperture('EPD', 5.0, object_space_telecentric=True)
