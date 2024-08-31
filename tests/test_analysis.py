@@ -343,6 +343,42 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['yp'][1, 5] == pytest.approx(-0.9599069415493584,
                                                       abs=1e-9)
 
+    def test_f_theta_distortion(self, telescope_objective):
+        dist = analysis.GridDistortion(telescope_objective)
+
+        assert dist.data['max_distortion'] == \
+            pytest.approx(0.010863278146924825, abs=1e-9)
+
+        assert dist.data['xr'].shape == (10, 10)
+        assert dist.data['yr'].shape == (10, 10)
+        assert dist.data['xp'].shape == (10, 10)
+        assert dist.data['yp'].shape == (10, 10)
+
+        assert dist.data['xr'][0, 0] == pytest.approx(1.2342622299776145,
+                                                      abs=1e-9)
+        assert dist.data['xr'][4, 6] == pytest.approx(-0.41137984374933073,
+                                                      abs=1e-9)
+
+        assert dist.data['yr'][1, 0] == pytest.approx(-0.959951505834632,
+                                                      abs=1e-9)
+        assert dist.data['yr'][2, 6] == pytest.approx(-0.6856458243955965,
+                                                      abs=1e-9)
+
+        assert dist.data['xp'][0, 2] == pytest.approx(0.6856375010477692,
+                                                      abs=1e-9)
+        assert dist.data['xp'][4, 4] == pytest.approx(0.13712543741510327,
+                                                      abs=1e-9)
+
+        assert dist.data['yp'][-1, 0] == pytest.approx(1.2341908231761498,
+                                                       abs=1e-9)
+        assert dist.data['yp'][1, 5] == pytest.approx(-0.9599069415493584,
+                                                      abs=1e-9)
+
+    def test_invalid_distortion_type(self, telescope_objective):
+        with pytest.raises(ValueError):
+            analysis.GridDistortion(telescope_objective,
+                                    distortion_type='invalid')
+
     @patch('matplotlib.pyplot.show')
     def test_view_grid_distortion(self, mock_show, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
