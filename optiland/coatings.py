@@ -64,7 +64,7 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        return rays
+        pass
 
     @abstractmethod
     def transmit(self, rays: RealRays, nx: np.ndarray = None,
@@ -78,7 +78,7 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        return rays
+        pass
 
 
 class SimpleCoating(BaseCoating):
@@ -146,19 +146,10 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     This class inherits from the `BaseCoating` class and the `ABC`
     (Abstract Base Class) module.
 
-    Attributes:
-        jones: An instance of the `BaseJones` class, which calculates the
-            Jones matrices for given ray properties
-
     Methods:
         reflect(rays, nx, ny, nz): Reflects the rays off the coating.
         transmit(rays, nx, ny, nz): Transmits the rays through the coating.
     """
-
-    def __init__(self):
-        super().__init__()
-        self.jones = None
-
     def reflect(self, rays: RealRays, nx: np.ndarray = None,
                 ny: np.ndarray = None, nz: np.ndarray = None):
         """
