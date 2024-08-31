@@ -401,7 +401,7 @@ class RayFan:
         self.optic = optic
         self.fields = fields
         self.wavelengths = wavelengths
-        if num_points % 2 == 1:
+        if num_points % 2 == 0:
             num_points += 1  # force to be odd so a point lies at P=0
         self.num_points = num_points
 
