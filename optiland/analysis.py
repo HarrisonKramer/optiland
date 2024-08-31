@@ -351,32 +351,6 @@ class EncircledEnergy(SpotDiagram):
             ax.plot(r_step, ee,
                     label=f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
-    def _generate_encircled_energy_data(self, field_data, axis_lim,
-                                        num_points, buffer=1.2):
-        """
-        Generate the Encircled Energy data.
-
-        Args:
-            field_data (tuple): Tuple of field data.
-            axis_lim (float): Maximum axis limit.
-            num_points (int): Number of points for plotting the curve.
-            buffer (float, optional): Buffer factor for the axis limit.
-                Defaults to 1.2.
-
-        Returns:
-            tuple: Tuple containing the radius step and the Encircled
-                Energy data.
-        """
-        r_max = axis_lim * buffer
-        r_step = np.linspace(0, r_max, num_points)
-        ee = []
-        for points in field_data:
-            x, y, energy = points
-            radii = np.sqrt(x**2 + y**2)
-            def vectorized_ee(r): return np.nansum(energy[radii <= r])
-            ee.append(np.vectorize(vectorized_ee)(r_step))
-        return r_step, ee
-
     def _generate_field_data(self, field, wavelength, num_rays=100,
                              distribution='hexapolar'):
         """
