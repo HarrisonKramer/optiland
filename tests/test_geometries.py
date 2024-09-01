@@ -23,7 +23,7 @@ class TestPlane:
         x = np.array([0, 3, 8e3])
         y = np.array([0, -7.0, 2.1654])
         sag = np.array([0.0, 0.0, 0.0])
-        assert plane.sag(x, y) == sag
+        assert np.allclose(plane.sag(x, y), sag)
 
     def test_plane_distance(self):
         cs = CoordinateSystem()
