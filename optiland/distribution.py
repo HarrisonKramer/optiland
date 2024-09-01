@@ -33,7 +33,7 @@ class BaseDistribution(ABC):
             vx (float, optional): The vignetting factor in x. Defaults to 0.0.
             vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
-        pass
+        pass  # pragma: no cover
 
     @property
     def dx(self):
