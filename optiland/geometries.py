@@ -33,7 +33,7 @@ class BaseGeometry(ABC):
         Returns:
             Union[float, np.ndarray]: The surface sag of the geometry.
         """
-        return
+        pass  # pragma: no cover
 
     @abstractmethod
     def distance(self, rays):
@@ -45,7 +45,7 @@ class BaseGeometry(ABC):
         Returns:
             np.ndarray: The propagation distance to the geometry.
         """
-        return
+        pass  # pragma: no cover
 
     @abstractmethod
     def surface_normal(self, rays):
@@ -59,7 +59,7 @@ class BaseGeometry(ABC):
             np.ndarray: The surface normals of the geometry at the given
                 ray positions.
         """
-        return
+        pass  # pragma: no cover
 
     def localize(self, rays):
         """Convert rays from the global coordinate system to the local
@@ -283,7 +283,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         Returns:
             Union[float, np.ndarray]: The surface sag of the geometry.
         """
-        return
+        pass  # pragma: no cover
 
     @abstractmethod
     def _surface_normal(self, x, y):
@@ -297,7 +297,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         Returns:
             tuple: The surface normal components (nx, ny, nz).
         """
-        return
+        pass  # pragma: no cover
 
     def surface_normal(self, rays):
         """
