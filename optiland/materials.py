@@ -186,8 +186,13 @@ class MaterialFile(BaseMaterial):
                 return np.sqrt(n)
 
             elif formula == 'formula 2':
-                n = np.sqrt(1 + C[0] + C[1]*L**2/(L**2 - C[2]) +
-                            C[3]*L**2/(L**2 - C[4]) + C[5]*L**2/(L**2 - C[6]))
+                try:
+                    n = np.sqrt(1 + C[0] + C[1]*L**2/(L**2 - C[2]) +
+                                C[3]*L**2/(L**2 - C[4]) +
+                                C[5]*L**2/(L**2 - C[6]))
+                except IndexError:
+                    raise ValueError('Invalid coefficients for dispersion '
+                                     'formula 2.')
                 return n
 
             elif formula == 'formula 3':
