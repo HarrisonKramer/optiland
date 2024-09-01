@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from optiland.rays import RealRays
 from optiland import jones, materials
@@ -233,4 +234,30 @@ def test_jones_quarter_wave_retarder():
     assert np.imag(jones_matrix[0, 0, 0]) == -0.38205142437008976
     assert np.real(jones_matrix[0, 1, 1]) == 0.7071067811865476
     assert np.imag(jones_matrix[0, 1, 1]) == +0.38205142437008976
+    assert jones_matrix[0, 2, 2] == 1.0
+
+
+def test_jones_half_wave_retarder():
+    rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+
+    # Test with theta = 0.0
+    jones_retarder = jones.JonesHalfWaveRetarder(theta=0.0)
+    jones_matrix = jones_retarder.calculate_matrix(rays)
+    assert jones_matrix.shape == (1, 3, 3)
+    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
+    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(-1.0, abs=1e-10)
+    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
+    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(1.0, abs=1e-10)
+    assert jones_matrix[0, 2, 2] == 1.0
+
+    # Test with theta = 0.5
+    jones_retarder = jones.JonesHalfWaveRetarder(theta=0.5)
+    jones_matrix = jones_retarder.calculate_matrix(rays)
+    assert jones_matrix.shape == (1, 3, 3)
+    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
+    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(-0.5403023058681398,
+                                                           abs=1e-10)
+    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
+    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(0.5403023058681398,
+                                                           abs=1e-10)
     assert jones_matrix[0, 2, 2] == 1.0
