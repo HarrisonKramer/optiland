@@ -121,11 +121,7 @@ class Plane(BaseGeometry):
         t = -rays.z / rays.N
 
         # if rays do not hit plane, set to NaN
-        try:
-            t[t < 0] = np.nan
-        except TypeError:  # input is not an array
-            if t < 0:
-                t = np.nan
+        t[t < 0] = np.nan
 
         return t
 
