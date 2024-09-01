@@ -27,7 +27,7 @@ class BaseJones(ABC):
         Returns:
             np.ndarray: The calculated Jones matrix.
         """
-        return np.tile(np.eye(3), (rays.x.size, 1, 1))
+        return np.tile(np.eye(3), (rays.x.size, 1, 1))  # pragma: no cover
 
 
 class JonesFresnel(BaseJones):
