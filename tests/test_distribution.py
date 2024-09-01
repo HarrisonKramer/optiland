@@ -273,6 +273,18 @@ def test_gaussian_quad_distribution_errors():
         d = distribution.GaussianQuadrature(is_symmetric=False)
         d.generate_points(num_rings=-1)
 
+    with pytest.raises(ValueError):
+        d = distribution.GaussianQuadrature(is_symmetric=False)
+        d.get_weights(num_rings=10)
+
+    with pytest.raises(ValueError):
+        d = distribution.GaussianQuadrature(is_symmetric=False)
+        d.get_weights(num_rings=-1)
+
+    with pytest.raises(ValueError):
+        d = distribution.GaussianQuadrature(is_symmetric=False)
+        d.get_weights(num_rings=0)
+
 
 def test_gaussian_quad_weights():
     scale = [6.0, 2.0]
