@@ -176,9 +176,13 @@ class MaterialFile(BaseMaterial):
         C = self.coeffs
         for formula in self.types:
             if formula == 'formula 1':
-                n = 1 + C[0]
-                for k in range(8):
-                    n += C[2*k] * L**2 / (L**2 - C[2*k+1]**2)
+                try:
+                    n = 1 + C[0]
+                    for k in range(1, len(C), 2):
+                        n += C[k] * L**2 / (L**2 - C[k+1]**2)
+                except IndexError:
+                    raise ValueError('Invalid coefficients for dispersion '
+                                     'formula 1.')
                 return np.sqrt(n)
 
             elif formula == 'formula 2':
