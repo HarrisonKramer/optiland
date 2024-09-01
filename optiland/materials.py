@@ -172,6 +172,9 @@ class MaterialFile(BaseMaterial):
         Returns:
             float: The refractive index of the material.
         """
+        # TODO - add all formulas
+        # TODO - separate formulas into separate methods & use dict for
+        # function lookup
         L = wavelength
         C = self.coeffs
         for formula in self.types:
