@@ -56,3 +56,35 @@ class TestJonesFresnel:
         assert jones_matrix[0, 0, 0] == 0.7945889178235841
         assert jones_matrix[0, 1, 1] == 0.7963844602228702
         assert jones_matrix[0, 2, 2] == 1.0
+
+
+def test_jones_polarizer_h():
+    rays = RealRays([1.0, 2.0], [3.0, 0.0], [0.0, 1.0], [0.0, 0.0],
+                    [0.0, 0.0], [1.0, 1.0], [1.0, 1.0], [1.0, 1.0])
+
+    jones_polarizer = jones.JonesPolarizerH()
+    jones_matrix = jones_polarizer.calculate_matrix(rays)
+
+    assert jones_matrix.shape == (2, 3, 3)
+    assert jones_matrix[0, 0, 0] == 1.0
+    assert jones_matrix[0, 1, 1] == 0.0
+    assert jones_matrix[0, 2, 2] == 1.0
+    assert jones_matrix[1, 0, 0] == 1.0
+    assert jones_matrix[1, 1, 1] == 0.0
+    assert jones_matrix[1, 2, 2] == 1.0
+
+
+def test_jones_polarizer_v():
+    rays = RealRays([1.0, 2.0], [3.0, 0.0], [0.0, 1.0], [0.0, 0.0],
+                    [0.0, 0.0], [1.0, 1.0], [1.0, 1.0], [1.0, 1.0])
+
+    jones_polarizer = jones.JonesPolarizerV()
+    jones_matrix = jones_polarizer.calculate_matrix(rays)
+
+    assert jones_matrix.shape == (2, 3, 3)
+    assert jones_matrix[0, 0, 0] == 0.0
+    assert jones_matrix[0, 1, 1] == 1.0
+    assert jones_matrix[0, 2, 2] == 1.0
+    assert jones_matrix[1, 0, 0] == 0.0
+    assert jones_matrix[1, 1, 1] == 1.0
+    assert jones_matrix[1, 2, 2] == 1.0
