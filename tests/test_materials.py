@@ -54,3 +54,15 @@ class TestMaterialFile:
                                                  abs=1e-10)
         assert material.k(0.88) == pytest.approx(1.18038e-08, abs=1e-10)
         assert material.abbe() == pytest.approx(48.44594399734635, abs=1e-10)
+
+    def test_formula_3(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/glass/hikari/BASF6.yml')
+        material = materials.MaterialFile(filename)
+        assert material.n(0.4) == pytest.approx(1.6970537915318815, abs=1e-10)
+        assert material.n(0.5) == pytest.approx(1.6767571448173404, abs=1e-10)
+        assert material.n(0.6) == pytest.approx(1.666577226760647, abs=1e-10)
+        assert material.k(0.4) == pytest.approx(3.3537e-07, abs=1e-10)
+        assert material.k(0.5) == pytest.approx(2.3945e-08, abs=1e-10)
+        assert material.k(0.6) == pytest.approx(1.4345e-08, abs=1e-10)
+        assert material.abbe() == pytest.approx(42.00944974180074, abs=1e-10)
