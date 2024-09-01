@@ -19,6 +19,12 @@ class TestPlane:
         # Test sag at (-2, 3)
         assert plane.sag(-2, 3) == 0.0
 
+        # Test array input
+        x = np.array([0, 3, 8e3])
+        y = np.array([0, -7.0, 2.1654])
+        sag = np.array([0.0, 0.0, 0.0])
+        assert plane.sag(x, y) == sag
+
     def test_plane_distance(self):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
