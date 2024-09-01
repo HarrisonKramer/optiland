@@ -40,6 +40,11 @@ class TestPlane:
         distance = plane.distance(rays)
         assert distance == pytest.approx([3.0, 4.0], abs=1e-10)
 
+        # Test ray doesn't intersect the plane
+        rays = RealRays(1.0, 2.0, -1.5, 0.0, 0.0, -1.0, 1.0, 0.0)
+        distance = plane.distance(rays)
+        assert np.isnan(distance)
+
         # Test distance for ray not parallel to z axis
         L = 0.356
         M = -0.129
