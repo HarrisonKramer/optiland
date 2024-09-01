@@ -116,3 +116,17 @@ def test_jones_polarizer_L135():
     assert jones_matrix[:, 1, 0] == -0.5
     assert jones_matrix[:, 1, 1] == 0.5
     assert jones_matrix[:, 2, 2] == 1.0
+
+
+def test_jones_polarizer_rcp():
+    rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+
+    jones_polarizer = jones.JonesPolarizerRCP()
+    jones_matrix = jones_polarizer.calculate_matrix(rays)
+
+    assert jones_matrix.shape == (1, 3, 3)
+    assert jones_matrix[0, 0, 0] == 0.5
+    assert jones_matrix[0, 0, 1] == 1j * 0.5
+    assert jones_matrix[0, 1, 0] == -1j * 0.5
+    assert jones_matrix[0, 1, 1] == 0.5
+    assert jones_matrix[0, 2, 2] == 1
