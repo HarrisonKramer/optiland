@@ -196,10 +196,14 @@ class MaterialFile(BaseMaterial):
                 return n
 
             elif formula == 'formula 3':
-                n = C[0]
-                for k in range(1, len(C), 2):
-                    n += C[k]*L**C[k+1]
-                return np.sqrt(n)
+                try:
+                    n = C[0]
+                    for k in range(1, len(C), 2):
+                        n += C[k]*L**C[k+1]
+                    return np.sqrt(n)
+                except IndexError:
+                    raise ValueError('Invalid coefficients for dispersion '
+                                     'formula 3.')
 
             else:
                 return None
