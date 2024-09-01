@@ -53,11 +53,12 @@ class BaseRays:
         """
         if isinstance(data, (int, float)):
             return np.array([data], dtype=float)
+        elif isinstance(data, list):
+            return np.array(data, dtype=float)
         elif isinstance(data, np.ndarray):
             return np.ravel(data).astype(float)
         else:
-            raise ValueError('Unsupported input type. Must be a scalar or a '
-                             'NumPy array.')
+            raise ValueError('Unsupported input type. Must be a scalar, a list, or a NumPy array.')
 
 
 class RealRays(BaseRays):
