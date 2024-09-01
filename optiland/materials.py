@@ -36,11 +36,11 @@ class BaseMaterial:
     """
     @abc.abstractmethod
     def n(self, wavelength):
-        return
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def k(self, wavelength):
-        return
+        pass  # pragma: no cover
 
     def abbe(self):
         """
