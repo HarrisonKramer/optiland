@@ -160,3 +160,63 @@ class TestStandardGeometry:
         assert nx == pytest.approx(-0.10127393670836665, abs=1e-10)
         assert ny == pytest.approx(-0.2025478734167333, abs=1e-10)
         assert nz == pytest.approx(0.9740215340114144, abs=1e-10)
+
+
+class TestEvenAsphere:
+    def test_sag(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=27.0, conic=0.0,
+                                          coefficients=[1e-3, -1e-5])
+
+        # Test sag at (0, 0)
+        assert geometry.sag() == pytest.approx(0.0, abs=1e-10)
+
+        # Test sag at (1, 1)
+        assert geometry.sag(1, 1) == pytest.approx(0.039022474574473776,
+                                                   abs=1e-10)
+
+        # Test sag at (-2, 3)
+        assert geometry.sag(-2, 3) == pytest.approx(0.25313367948069593,
+                                                    abs=1e-10)
+
+        # Test array input
+        x = np.array([0, 3, 8])
+        y = np.array([0, -7, 2.1])
+        sag = np.array([0.0, 1.1206923060227627, 1.3196652673420655])
+        assert np.allclose(geometry.sag(x, y), sag)
+
+    def test_distance(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=-41.1, conic=0.0,
+                                          coefficients=[1e-3, -1e-5, 1e-7])
+
+        # Test distance for a single ray
+        rays = RealRays(1.0, 2.0, -3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        distance = geometry.distance(rays)
+        assert distance == pytest.approx(2.9438901710409624, abs=1e-10)
+
+        # Test distance for multiple rays
+        rays = RealRays([1.0, 2.0], [2.0, 3.0], [-3.0, -4.0], [0.0, 0.0],
+                        [0.0, 0.0], [1.0, 1.0], [1.0, 1.0], [1.0, 1.0])
+        distance = geometry.distance(rays)
+        nom_distance = [2.9438901710409624, 3.8530733934173256]
+        assert distance == pytest.approx(nom_distance, abs=1e-10)
+
+        # Test distance for ray not parallel to z axis
+        L = 0.222
+        M = -0.229
+        N = np.sqrt(1 - L**2 - M**2)
+        rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
+        distance = geometry.distance(rays)
+        assert distance == pytest.approx(10.625463223037386, abs=1e-10)
+
+    def test_surface_normal(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=10.0, conic=0.5,
+                                          coefficients=[1e-2])
+
+        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        nx, ny, nz = geometry.surface_normal(rays)
+        assert nx == pytest.approx(-0.11946945186789681, abs=1e-10)
+        assert ny == pytest.approx(-0.23893890373579363, abs=1e-10)
+        assert nz == pytest.approx(0.9636572265862595, abs=1e-10)
