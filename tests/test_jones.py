@@ -178,3 +178,35 @@ def test_jones_linear_diattenuator():
     assert jones_matrix[0, 0, 1] == 0.9158529015192103
     assert jones_matrix[0, 1, 0] == 0.9158529015192103
     assert jones_matrix[0, 2, 2] == 1.0
+
+
+def test_jones_linear_retarder():
+    rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+
+    # Test with retardance = 0.0, theta = 0.0
+    jones_retarder = jones.JonesLinearRetarder(retardance=0.0, theta=0.0)
+    jones_matrix = jones_retarder.calculate_matrix(rays)
+    assert jones_matrix.shape == (1, 3, 3)
+    assert jones_matrix[0, 0, 0] == 1.0
+    assert jones_matrix[0, 1, 1] == 1.0
+    assert jones_matrix[0, 2, 2] == 1.0
+
+    # Test with retardance = 0.5, theta = 0.0
+    jones_retarder = jones.JonesLinearRetarder(retardance=0.5, theta=0.0)
+    jones_matrix = jones_retarder.calculate_matrix(rays)
+    assert jones_matrix.shape == (1, 3, 3)
+    assert np.real(jones_matrix[0, 0, 0]) == 0.9689124217106447
+    assert np.imag(jones_matrix[0, 0, 0]) == -0.24740395925452294
+    assert np.real(jones_matrix[0, 1, 1]) == 0.9689124217106447
+    assert np.imag(jones_matrix[0, 1, 1]) == 0.24740395925452294
+    assert jones_matrix[0, 2, 2] == 1.0
+
+    # Test with retardance = 0.5, theta = 0.5
+    jones_retarder = jones.JonesLinearRetarder(retardance=0.5, theta=0.5)
+    jones_matrix = jones_retarder.calculate_matrix(rays)
+    assert jones_matrix.shape == (1, 3, 3)
+    assert np.real(jones_matrix[0, 0, 0]) == 0.9689124217106448
+    assert np.imag(jones_matrix[0, 0, 0]) == -0.13367292966612604
+    assert np.real(jones_matrix[0, 1, 1]) == 0.9689124217106448
+    assert np.imag(jones_matrix[0, 1, 1]) == 0.13367292966612604
+    assert jones_matrix[0, 2, 2] == 1.0
