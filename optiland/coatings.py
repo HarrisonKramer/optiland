@@ -64,7 +64,7 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def transmit(self, rays: RealRays, nx: np.ndarray = None,
@@ -78,7 +78,7 @@ class BaseCoating(ABC):
         Returns:
             rays (RealRays): The rays after the interaction.
         """
-        pass
+        pass  # pragma: no cover
 
 
 class SimpleCoating(BaseCoating):
