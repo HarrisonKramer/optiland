@@ -394,7 +394,12 @@ class Material(MaterialFile):
         )
 
         # Sort by similarity score in ascending order
-        dfi = dfi.sort_values(by='similarity_score')
+        dfi = dfi.sort_values(by='similarity_score').reset_index(drop=True)
+
+        # Warning if no exact matches found
+        if dfi['similarity_score'].iloc[0] > 0:
+            print(f'Warning: No exact matches found for material {self.name}. '
+                  'Material is likely invalid.')
 
         return dfi
 
@@ -420,7 +425,7 @@ class Material(MaterialFile):
                 raise ValueError(f'No matches found for material {self.name}')
 
         if self.robust:
-            filename = filtered_df.loc[filtered_df.index[0], 'filename']
+            filename = filtered_df.loc[0, 'filename']
         else:
             if self.reference:
                 raise ValueError(f'Multiple matches found for material '
