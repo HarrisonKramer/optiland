@@ -399,7 +399,7 @@ class Material(MaterialFile):
         # Warning if no exact matches found
         if dfi['similarity_score'].iloc[0] > 0:
             print(f'Warning: No exact matches found for material {self.name}. '
-                  'Material is likely invalid.')
+                  'Material may be invalid.')
 
         return dfi
 
