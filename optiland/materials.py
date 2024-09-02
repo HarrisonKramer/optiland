@@ -313,7 +313,7 @@ class Material(MaterialFile):
         return cls._df
 
     @staticmethod
-    def _levenstein_distance(s1, s2):
+    def _levenshtein_distance(s1, s2):
         """
         Calculates the Levenshtein distance between two strings.
 
@@ -386,11 +386,11 @@ class Material(MaterialFile):
         if dfi.empty:
             return pd.DataFrame()
 
-        # Calculate similarity scores using Levenstein distance
+        # Calculate similarity scores using Levenshtein distance
         dfi['similarity_score'] = dfi.apply(
             lambda row: min(
-                self._levenstein_distance(name, row['category_name'].lower()),
-                self._levenstein_distance(name, row['name'].lower())
+                self._levenshtein_distance(name, row['category_name'].lower()),
+                self._levenshtein_distance(name, row['name'].lower())
             ), axis=1
         )
 
