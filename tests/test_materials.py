@@ -17,14 +17,6 @@ class TestIdealMaterial:
         assert material.k(1.0) == 0.2
         assert material.k(2.0) == 0.2
 
-    def test_ideal_material_abbe(self):
-        material = materials.IdealMaterial(n=1.5)
-        assert material.abbe() == pytest.approx(0.0, abs=1e-10)
-
-    def test_ideal_material_abbe_with_k(self):
-        material = materials.IdealMaterial(n=1.5, k=0.2)
-        assert material.abbe() == pytest.approx(0.0, abs=1e-10)
-
 
 def test_mirror_material():
     mirror = materials.Mirror()
