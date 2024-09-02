@@ -324,8 +324,6 @@ class Material(MaterialFile):
         Returns:
             int: The Levenshtein distance between the two strings.
         """
-
-        # Rest of the code...
         # Initialize matrix of zeros
         rows = len(s1) + 1
         cols = len(s2) + 1
@@ -362,7 +360,7 @@ class Material(MaterialFile):
             pandas.DataFrame: A DataFrame containing the filtered materials
                 that match the given name and reference.
         """
-        # make input name lowercase
+        # Make input name lowercase
         name = self.name.lower()
 
         # Filter rows where input string is substring of category_name or name
