@@ -296,7 +296,8 @@ class Material(MaterialFile):
     """
 
     _df = None
-    _filename = '../database/catalog_nk.csv'
+    _filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             '../database/catalog_nk.csv')
 
     def __init__(self, name, reference=None, robust_search=True):
         self.name = name
@@ -429,4 +430,6 @@ class Material(MaterialFile):
                 raise ValueError(f'Multiple matches found for material '
                                  f'{self.name}')
 
-        return os.path.join('../../database/data-nk', filename)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        database_dir = os.path.join(current_dir, '../database/data-nk')
+        return os.path.join(database_dir, filename)
