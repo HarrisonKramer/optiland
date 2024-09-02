@@ -161,7 +161,7 @@ def test_jones_linear_diattenuator():
     assert jones_matrix[0, 2, 2] == 1.0
 
     # Test with t_min = 0.0, t_max = 0.5, theta = 0.0
-    jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.0, t_max=1.0,
+    jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.0, t_max=0.5,
                                                        theta=0.0)
     jones_matrix = jones_diattenuator.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
