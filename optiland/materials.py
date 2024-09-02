@@ -6,11 +6,11 @@ of refraction and absorption coefficients.
 Kramer Harrison, 2024
 """
 import abc
-import glob
 import os
 from io import StringIO
 import yaml
 import numpy as np
+import pandas as pd
 
 
 class BaseMaterial:
@@ -273,57 +273,162 @@ class Material(MaterialFile):
     """
     Represents a generic material used in the Optiland system.
     This class identifies the correct material given the material name and
-    (optionally) the reference, or manufacturer.
+    (optionally) the reference, which is generally the manufacturer name or
+    the author name.
+
+    Note:
+        The material database is stored in the file `catalog_nk.csv` in the
+        `database` directory. This contains the names, references, and
+        filenames of the materials.
 
     Args:
         name (str): The name of the material.
         reference (str, optional): The reference for the material. This is
             generally the manufacturer name, or the author name. The reference
             must be in the filename.
+        robust_search (bool, optional): If True, the search will be robust and
+            return the first match found. If False, the search will raise an
+            error if multiple matches are found.
 
     Attributes:
         name (str): The name of the material.
         reference (str): The reference for the material.
     """
 
-    def __init__(self, name, reference=None):
+    _df = None
+    _filename = '../database/catalog_nk.csv'
+
+    def __init__(self, name, reference=None, robust_search=True):
         self.name = name
         self.reference = reference
+        self.robust = robust_search
         file = self._retrieve_file()
         super().__init__(file)
 
+    @classmethod
+    def _load_dataframe(cls):
+        """Load the DataFrame if not yet loaded."""
+        if cls._df is None:
+            cls._df = pd.read_csv(cls._filename)
+        return cls._df
+
+    @staticmethod
+    def _levenstein_distance(s1, s2):
+        """
+        Calculates the Levenshtein distance between two strings.
+
+        Args:
+            s1 (str): The first string.
+            s2 (str): The second string.
+
+        Returns:
+            int: The Levenshtein distance between the two strings.
+        """
+
+        # Rest of the code...
+        # Initialize matrix of zeros
+        rows = len(s1) + 1
+        cols = len(s2) + 1
+        distance_matrix = [[0 for _ in range(cols)] for _ in range(rows)]
+
+        # Populate matrix with initial values
+        for i in range(1, rows):
+            distance_matrix[i][0] = i
+        for j in range(1, cols):
+            distance_matrix[0][j] = j
+
+        # Calculate the distance
+        for i in range(1, rows):
+            for j in range(1, cols):
+                if s1[i-1] == s2[j-1]:
+                    cost = 0
+                else:
+                    cost = 1
+                distance_matrix[i][j] = min(distance_matrix[i-1][j] + 1,
+                                            distance_matrix[i][j-1] + 1,
+                                            distance_matrix[i-1][j-1] + cost)
+
+        return distance_matrix[-1][-1]
+
+    def _find_material_matches(self, df):
+        """
+        Finds material matches in a DataFrame based on the given name and
+        reference.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing the materials.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the filtered materials
+                that match the given name and reference.
+        """
+        # make input name lowercase
+        name = self.name.lower()
+
+        # Filter rows where input string is substring of category_name or name
+        dfi = df[
+            df['category_name'].str.lower().str.contains(name) |
+            df['name'].str.lower().str.contains(name)
+        ].copy()
+
+        # If reference given, filter rows non-matching rows
+        if self.reference:
+            reference = self.reference.lower()
+            dfi = dfi[
+                dfi['category_name'].str.lower().str.contains(reference) |
+                dfi['category_name_full'].str.lower().str.contains(reference) |
+                dfi['reference'].str.lower().str.contains(reference) |
+                dfi['name'].str.lower().str.contains(reference) |
+                dfi['filename'].str.lower().str.contains(reference)
+            ]
+
+        # If no rows match, return an empty DataFrame
+        if dfi.empty:
+            return pd.DataFrame()
+
+        # Calculate similarity scores using Levenstein distance
+        dfi['similarity_score'] = dfi.apply(
+            lambda row: min(
+                self._levenstein_distance(name, row['category_name'].lower()),
+                self._levenstein_distance(name, row['name'].lower())
+            ), axis=1
+        )
+
+        # Sort by similarity score in ascending order
+        dfi = dfi.sort_values(by='similarity_score')
+
+        return dfi
+
     def _retrieve_file(self):
         """
-        Retrieves the file path for the material.
+        Retrieves the file path for the material based on the given criteria.
 
         Returns:
             str: The file path for the material.
 
         Raises:
-            ValueError: If no glass data is found for the material.
-            ValueError: If more than one material manufacturer is found for
-                the material.
+            ValueError: If no matches are found for the material.
+            ValueError: If multiple matches are found for the material.
         """
-        search_paths = [os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}/**/*.yml'),
-                        os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}.yml')]
+        df = self._load_dataframe()
+        filtered_df = self._find_material_matches(df)
 
-        files = []
-        for path in search_paths:
-            for filename in glob.iglob(path, recursive=True):
-                files.append(filename)
+        if filtered_df.empty:
+            if self.reference:
+                raise ValueError(f'No matches found for material {self.name} '
+                                 f'with reference {self.reference}')
+            else:
+                raise ValueError(f'No matches found for material {self.name}')
 
-        if self.reference:
-            files = [file for file in files if self.reference in file]
+        if self.robust:
+            filename = filtered_df.loc[filtered_df.index[0], 'filename']
+        else:
+            if self.reference:
+                raise ValueError(f'Multiple matches found for material '
+                                 f'{self.name} with reference '
+                                 f'{self.reference}')
+            else:
+                raise ValueError(f'Multiple matches found for material '
+                                 f'{self.name}')
 
-        if not files:
-            raise ValueError(f'No glass data found for "{self.name}"')
-
-        if len(files) > 1:
-            error_str = f'''More than one material manufacturer found for
-            {self.name}: {files}. Please additionally list manufacturer.
-            '''
-            raise ValueError(error_str)
-
-        return files[0]
+        return os.path.join('../../database/data-nk', filename)
