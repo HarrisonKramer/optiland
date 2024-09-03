@@ -6,11 +6,11 @@ of refraction and absorption coefficients.
 Kramer Harrison, 2024
 """
 import abc
-import glob
 import os
 from io import StringIO
 import yaml
 import numpy as np
+import pandas as pd
 
 
 class BaseMaterial:
@@ -117,99 +117,67 @@ class Mirror(IdealMaterial):
 
 class MaterialFile(BaseMaterial):
     """
-    Represents a material file containing optical properties.
+    Represents a material based on a material YAML file from the
+    refractiveindex.info database.
+
+    Material refractive indices are based on various dispersion formulas or
+    tabulated data. The material file contains the coefficients for the
+    dispersion formulas and/or tabulated data.
+
+    See https://refractiveindex.info/database/doc/Dispersion%20formulas.pdf
 
     Args:
         filename (str): The path to the material file.
 
     Attributes:
-        file (str): The filename of the material file.
-        types (list): A list of index formula types.
-        coeffs (list): A list of coefficients for calculating the refractive
-            index.
-        _k_wavelength (numpy.ndarray): The wavelengths for which extinction
-            coefficients are available.
-        _k (numpy.ndarray): The extinction coefficients corresponding to the
-            wavelengths.
+        filename (str): The filename of the material file.
+        coefficients (list): A list of coefficients for calculating the
+            refractive index.
 
     Methods:
         n(wavelength): Calculates the refractive index of the material at a
             given wavelength.
         k(wavelength): Retrieves the extinction coefficient of the material at
             a given wavelength.
-
-    Protected Methods:
-        _read_yaml(): Reads the material file in YAML format.
-        _decipher_type(): Extracts the optical property types from the
-            material file.
-        _get_coeffs(): Extracts the coefficients for calculating the
-            refractive index from the material file.
-        _get_extinction_coeffs(): Extracts the extinction coefficients from
-            the material file.
     """
-
     def __init__(self, filename):
-        self.file = filename
+        self.filename = filename
 
-        self.types = []
-        self.coeffs = []
-
+        self.coefficients = []
         self._k_wavelength = None
         self._k = None
+        self._n_formula = None
+        self._n_wavelength = None
+        self._n = None
+        self.reference_data = None
 
-        self._read_yaml()
-        self._decipher_type()
-        self._get_coeffs()
-        self._get_extinction_coeffs()
+        self.formula_map = {'formula 1': self._formula_1,
+                            'formula 2': self._formula_2,
+                            'formula 3': self._formula_3,
+                            'formula 4': self._formula_4,
+                            'formula 5': self._formula_5,
+                            'formula 6': self._formula_6,
+                            'formula 7': self._formula_7,
+                            'formula 8': self._formula_8,
+                            'formula 9': self._formula_9,
+                            'tabulated n': self._tabulated_n,
+                            'tabulated nk': self._tabulated_n}
+
+        data = self._read_file()
+        self._parse_file(data)
 
     def n(self, wavelength):
         """
-        Calculates the refractive index of the material at a given wavelength.
+        Calculates the refractive index of the material at given wavelengths.
 
         Args:
-            wavelength (float): The wavelength in microns.
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
 
         Returns:
-            float: The refractive index of the material.
+            float or numpy.ndarray: The refractive index(s) of the material.
         """
-        # TODO - add all formulas
-        # TODO - separate formulas into separate methods & use dict for
-        # function lookup
-        L = wavelength
-        C = self.coeffs
-        for formula in self.types:
-            if formula == 'formula 1':
-                try:
-                    n = 1 + C[0]
-                    for k in range(1, len(C), 2):
-                        n += C[k] * L**2 / (L**2 - C[k+1]**2)
-                except IndexError:
-                    raise ValueError('Invalid coefficients for dispersion '
-                                     'formula 1.')
-                return np.sqrt(n)
-
-            elif formula == 'formula 2':
-                try:
-                    n = np.sqrt(1 + C[0] + C[1]*L**2/(L**2 - C[2]) +
-                                C[3]*L**2/(L**2 - C[4]) +
-                                C[5]*L**2/(L**2 - C[6]))
-                except IndexError:
-                    raise ValueError('Invalid coefficients for dispersion '
-                                     'formula 2.')
-                return n
-
-            elif formula == 'formula 3':
-                try:
-                    n = C[0]
-                    for k in range(1, len(C), 2):
-                        n += C[k]*L**C[k+1]
-                    return np.sqrt(n)
-                except IndexError:
-                    raise ValueError('Invalid coefficients for dispersion '
-                                     'formula 3.')
-
-            else:
-                return None
+        func = self.formula_map[self._n_formula]
+        return func(wavelength)
 
     def k(self, wavelength):
         """
@@ -217,10 +185,10 @@ class MaterialFile(BaseMaterial):
         given wavelength.
 
         Args:
-            wavelength (float): The wavelength in microns.
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
 
         Returns:
-            float: The extinction coefficient of the material.
+            float or numpy.ndarray: The extinction coefficient of the material.
 
         Raises:
             ValueError: If no extinction coefficient data is found.
@@ -230,100 +198,412 @@ class MaterialFile(BaseMaterial):
         except ValueError:
             raise ValueError('No extinction coefficient data found.')
 
-    def _read_yaml(self):
+    def _formula_1(self, w):
         """
-        Reads the material file in YAML format.
-        """
-        with open(self.file, 'r') as stream:
-            self.data = yaml.safe_load(stream)
+        Calculate the refractive index using dispersion formula 1 from
+        refractiveindex.info (Sellmeier formula).
 
-        for each in self.data['DATA']:
-            if each['type'] is not None:
-                self.types.append(each['type'])
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
 
-    def _decipher_type(self):
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
         """
-        Extracts the optical property types from the material file.
-        """
-        for each in self.data['DATA']:
-            if each['type'] is not None:
-                self.types.append(each['type'])
+        c = self.coefficients
+        try:
+            n = 1 + c[0]
+            for k in range(1, len(c), 2):
+                n += c[k] * w**2 / (w**2 - c[k+1]**2)
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 1.')
+        return np.sqrt(n)
 
-    def _get_coeffs(self):
+    def _formula_2(self, w):
         """
-        Extracts the coefficients for calculating the refractive index from
-        the material file.
-        """
-        self.coeffs = [float(k) for k in
-                       self.data['DATA'][0]['coefficients'].split()]
+        Calculate the refractive index using dispersion formula 2 from
+        refractiveindex.info (Sellmeier-2 formula).
 
-    def _get_extinction_coeffs(self):
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
         """
-        Extracts the extinction coefficients from the material file.
+        c = self.coefficients
+        try:
+            n = 1 + c[0]
+            for k in range(1, len(c), 2):
+                n += c[k] * w**2 / (w**2 - c[k+1])
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 2.')
+        return np.sqrt(n)
+
+    def _formula_3(self, w):
         """
-        for data in self.data['DATA']:
-            if data['type'] == 'tabulated k':
-                data_file = StringIO(self.data['DATA'][1]['data'])
-                k_data = np.loadtxt(data_file)
-                self._k_wavelength = k_data[:, 0]
-                self._k = k_data[:, 1]
+        Calculate the refractive index using dispersion formula 3 from
+        refractiveindex.info (Polynomial formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        try:
+            n = c[0]
+            for k in range(1, len(c), 2):
+                n += c[k]*w**c[k+1]
+            return np.sqrt(n)
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 3.')
+
+    def _formula_4(self, w):
+        """
+        Calculate the refractive index using dispersion formula 4 from
+        refractiveindex.info (RefractiveIndex.INFO formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        try:
+            n = c[0] + c[1]*w**c[2] / (w**2 - c[3]**c[4]) + \
+                c[5]*w**c[6] / (w**2 - c[7]**c[8])
+            for k in range(9, len(c), 2):
+                n += c[k]*w**c[k+1]
+            return np.sqrt(n)
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 4.')
+
+    def _formula_5(self, w):
+        """
+        Calculate the refractive index using dispersion formula 5 from
+        refractiveindex.info (Cauchy formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        try:
+            n = c[0]
+            for k in range(1, len(c), 2):
+                n += c[k]*w**c[k+1]
+            return n
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 5.')
+
+    def _formula_6(self, w):
+        """
+        Calculate the refractive index using dispersion formula 6 from
+        refractiveindex.info (Gases formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        try:
+            n = 1 + c[0]
+            for k in range(1, len(c), 2):
+                n += c[k] / (c[k+1] - w**-2)
+            return n
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 6.')
+
+    def _formula_7(self, w):
+        """
+        Calculate the refractive index using dispersion formula 7 from
+        refractiveindex.info (Herzberger formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        try:
+            n = c[0] + c[1] / (w**2 - 0.028) + c[2] * (1 / (w**2 - 0.028))**2
+            for k in range(3, len(c)):
+                n += c[k] * w**(2*(k-2))
+            return n
+        except IndexError:
+            raise ValueError('Invalid coefficients for dispersion formula 7.')
+
+    def _formula_8(self, w):
+        """
+        Calculate the refractive index using dispersion formula 8 from
+        refractiveindex.info (Retro formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        if len(c) != 4:
+            raise ValueError('Invalid coefficients for dispersion formula 8.')
+
+        b = c[0] + c[1] * w**2 / (w**2 - c[2]) + c[3] * w**2
+        return np.sqrt((1 + 2*b) / (1 - b))
+
+    def _formula_9(self, w):
+        """
+        Calculate the refractive index using dispersion formula 9 from
+        refractiveindex.info (Exotic formula).
+
+        Args:
+            wavelength (float or numpy.ndarray): The wavelength(s) in microns.
+
+        Returns:
+            float or numpy.ndarray: The refractive index(s) of the material.
+        """
+        c = self.coefficients
+        if len(c) != 6:
+            raise ValueError('Invalid coefficients for dispersion formula 9.')
+
+        n = (c[0] + c[1] / (w**2 - c[2]) +
+             c[3]*(w - c[4]) / ((w - c[4])**2 + c[5]))
+        return np.sqrt(n)
+
+    def _tabulated_n(self, w):
+        """Calculate the refractive index using tabulated data."""
+        try:
+            return np.interp(w, self._n_wavelength, self._n)
+        except ValueError:
+            raise ValueError('No tabular refractive index data found.')
+
+    def _read_file(self):
+        """Read the material file."""
+        with open(self.filename, 'r') as stream:
+            return yaml.safe_load(stream)
+
+    def _set_formula_type(self, formula_type):
+        """Set the refractive index formula type."""
+        if self._n_formula is None:
+            self._n_formula = formula_type
+        else:
+            raise ValueError('Multiple refractive index formulas found.')
+
+    def _parse_file(self, data):
+        """Parse the material file data."""
+        for sub_data in data['DATA']:
+            sub_data_type = sub_data['type']
+
+            # Parse the data based on the type
+            if sub_data_type.startswith('formula '):
+                self.coefficients = \
+                    [float(k) for k in sub_data['coefficients'].split()]
+                self._set_formula_type(sub_data_type)
+
+            # Parse tabulated data
+            elif sub_data_type.startswith('tabulated'):
+                data_file = StringIO(sub_data['data'])
+                arr = np.atleast_2d(np.loadtxt(data_file))
+
+                if sub_data_type == 'tabulated n':
+                    self._n_wavelength = arr[:, 0]
+                    self._n = arr[:, 1]
+                    self._set_formula_type(sub_data_type)
+
+                elif sub_data_type == 'tabulated k':
+                    self._k_wavelength = arr[:, 0]
+                    self._k = arr[:, 1]
+
+                elif sub_data_type == 'tabulated nk':
+                    self._n_wavelength = arr[:, 0]
+                    self._k_wavelength = arr[:, 0]
+                    self._n = arr[:, 1]
+                    self._k = arr[:, 2]
+                    self._set_formula_type(sub_data_type)
+
+        # Parse reference info, if available
+        try:
+            self.reference_data = data['REFERENCE']
+        except KeyError:
+            pass
 
 
 class Material(MaterialFile):
     """
     Represents a generic material used in the Optiland system.
     This class identifies the correct material given the material name and
-    (optionally) the reference, or manufacturer.
+    (optionally) the reference, which is generally the manufacturer name or
+    the author name.
+
+    Note:
+        The material database is stored in the file `catalog_nk.csv` in the
+        `database` directory. This contains the names, references, and
+        filenames of the materials.
 
     Args:
         name (str): The name of the material.
         reference (str, optional): The reference for the material. This is
             generally the manufacturer name, or the author name. The reference
             must be in the filename.
+        robust_search (bool, optional): If True, the search will be robust and
+            return the first match found. If False, the search will raise an
+            error if multiple matches are found.
 
     Attributes:
         name (str): The name of the material.
         reference (str): The reference for the material.
     """
 
-    def __init__(self, name, reference=None):
+    _df = None
+    _filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             '../database/catalog_nk.csv')
+
+    def __init__(self, name, reference=None, robust_search=True):
         self.name = name
         self.reference = reference
-        file = self._retrieve_file()
+        self.robust = robust_search
+        file, self.material_data = self._retrieve_file()
         super().__init__(file)
+
+    @classmethod
+    def _load_dataframe(cls):
+        """Load the DataFrame if not yet loaded."""
+        if cls._df is None:
+            cls._df = pd.read_csv(cls._filename)
+        return cls._df
+
+    @staticmethod
+    def _levenshtein_distance(s1, s2):
+        """
+        Calculates the Levenshtein distance between two strings.
+
+        Args:
+            s1 (str): The first string.
+            s2 (str): The second string.
+
+        Returns:
+            int: The Levenshtein distance between the two strings.
+        """
+        # Initialize matrix of zeros
+        rows = len(s1) + 1
+        cols = len(s2) + 1
+        distance_matrix = [[0 for _ in range(cols)] for _ in range(rows)]
+
+        # Populate matrix with initial values
+        for i in range(1, rows):
+            distance_matrix[i][0] = i
+        for j in range(1, cols):
+            distance_matrix[0][j] = j
+
+        # Calculate the distance
+        for i in range(1, rows):
+            for j in range(1, cols):
+                if s1[i-1] == s2[j-1]:
+                    cost = 0
+                else:
+                    cost = 1
+                distance_matrix[i][j] = min(distance_matrix[i-1][j] + 1,
+                                            distance_matrix[i][j-1] + 1,
+                                            distance_matrix[i-1][j-1] + cost)
+
+        return distance_matrix[-1][-1]
+
+    def _find_material_matches(self, df):
+        """
+        Finds material matches in a DataFrame based on the given name and
+        reference.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing the materials.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the filtered materials
+                that match the given name and reference.
+        """
+        # Make input name lowercase
+        name = self.name.lower()
+
+        # Filter rows where input string is substring of category_name or name
+        dfi = df[
+            df['category_name'].str.lower().str.contains(name) |
+            df['name'].str.lower().str.contains(name)
+        ].copy()
+
+        # If reference given, filter rows non-matching rows
+        if self.reference:
+            reference = self.reference.lower()
+            dfi = dfi[
+                dfi['category_name'].str.lower().str.contains(reference) |
+                dfi['category_name_full'].str.lower().str.contains(reference) |
+                dfi['reference'].str.lower().str.contains(reference) |
+                dfi['name'].str.lower().str.contains(reference) |
+                dfi['filename'].str.lower().str.contains(reference)
+            ]
+
+        print(self.reference)
+
+        # If no rows match, return an empty DataFrame
+        if dfi.empty:
+            return pd.DataFrame()
+
+        # Calculate similarity scores using Levenshtein distance
+        dfi['similarity_score'] = dfi.apply(
+            lambda row: min(
+                self._levenshtein_distance(name, row['category_name'].lower()),
+                self._levenshtein_distance(name, row['name'].lower())
+            ), axis=1
+        )
+
+        # Sort by similarity score in ascending order
+        dfi = dfi.sort_values(by='similarity_score').reset_index(drop=True)
+
+        # Warning if no exact matches found
+        if dfi['similarity_score'].iloc[0] > 0:
+            print(f'Warning: No exact matches found for material {self.name}. '
+                  'Material may be invalid.')
+
+        return dfi
 
     def _retrieve_file(self):
         """
-        Retrieves the file path for the material.
+        Retrieves the file path for the material based on the given criteria.
 
         Returns:
             str: The file path for the material.
 
         Raises:
-            ValueError: If no glass data is found for the material.
-            ValueError: If more than one material manufacturer is found for
-                the material.
+            ValueError: If no matches are found for the material.
+            ValueError: If multiple matches are found for the material.
         """
-        search_paths = [os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}/**/*.yml'),
-                        os.path.join(os.path.dirname(__file__), '..',
-                                     f'database/**/{self.name}.yml')]
+        df = self._load_dataframe()
+        filtered_df = self._find_material_matches(df)
 
-        files = []
-        for path in search_paths:
-            for filename in glob.iglob(path, recursive=True):
-                files.append(filename)
+        if filtered_df.empty:
+            if self.reference:
+                raise ValueError(f'No matches found for material {self.name} '
+                                 f'with reference {self.reference}')
+            else:
+                raise ValueError(f'No matches found for material {self.name}')
 
-        if self.reference:
-            files = [file for file in files if self.reference in file]
+        if len(filtered_df) > 1 and not self.robust:
+            if self.reference:
+                raise ValueError(f'Multiple matches found for material '
+                                 f'{self.name} with reference '
+                                 f'{self.reference}')
+            else:
+                raise ValueError(f'Multiple matches found for material '
+                                 f'{self.name}')
 
-        if not files:
-            raise ValueError(f'No glass data found for "{self.name}"')
+        material_data = filtered_df.loc[0].to_dict()
+        filename = filtered_df.loc[0, 'filename']
 
-        if len(files) > 1:
-            error_str = f'''More than one material manufacturer found for
-            {self.name}: {files}. Please additionally list manufacturer.
-            '''
-            raise ValueError(error_str)
-
-        return files[0]
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        database_dir = os.path.join(current_dir, '../database/data-nk')
+        full_filename = os.path.join(database_dir, filename)
+        return full_filename, material_data
