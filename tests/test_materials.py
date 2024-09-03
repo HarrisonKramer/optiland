@@ -35,6 +35,11 @@ class TestMaterialFile:
         assert material.n(6) == pytest.approx(2.6144067565243265, abs=1e-10)
         assert material.n(8) == pytest.approx(2.6087270552683854, abs=1e-10)
 
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
+
     def test_formula_2(self):
         filename = os.path.join(os.path.dirname(__file__),
                                 '../database/data-nk/glass/schott/BAFN6.yml')
@@ -47,6 +52,11 @@ class TestMaterialFile:
         assert material.k(0.88) == pytest.approx(1.18038e-08, abs=1e-10)
         assert material.abbe() == pytest.approx(48.44594399734635, abs=1e-10)
 
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
+
     def test_formula_3(self):
         filename = os.path.join(os.path.dirname(__file__),
                                 '../database/data-nk/glass/hikari/BASF6.yml')
@@ -58,6 +68,11 @@ class TestMaterialFile:
         assert material.k(0.5) == pytest.approx(2.3945e-08, abs=1e-10)
         assert material.k(0.6) == pytest.approx(1.4345e-08, abs=1e-10)
         assert material.abbe() == pytest.approx(42.00944974180074, abs=1e-10)
+
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
 
     def test_formula_4(self):
         rel_file = '../database/data-nk/main/CaGdAlO4/Loiko-o.yml'
@@ -72,6 +87,11 @@ class TestMaterialFile:
         with pytest.raises(ValueError):
             material.k(1.0)
 
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
+
     def test_formula_5(self):
         filename = os.path.join(os.path.dirname(__file__),
                                 '../database/data-nk/main/YbF3/Amotchkina.yml')
@@ -83,6 +103,11 @@ class TestMaterialFile:
         assert material.k(11) == pytest.approx(0.016358499999999998, abs=1e-10)
         assert material.k(12) == pytest.approx(0.032864500000000005, abs=1e-10)
         assert material.abbe() == pytest.approx(15.36569851094505, abs=1e-10)
+
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
 
     def test_formula_6(self):
         filename = os.path.join(os.path.dirname(__file__),
@@ -96,6 +121,11 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
 
     def test_formula_7(self):
         filename = os.path.join(os.path.dirname(__file__),
@@ -111,6 +141,11 @@ class TestMaterialFile:
         assert material.n(1.5) == pytest.approx(13.532362213339358, abs=1e-10)
         assert material.abbe() == pytest.approx(1.0836925045533496, abs=1e-10)
 
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58]
+        with pytest.raises(ValueError):
+            material.n(1.0)
+
     def test_formula_8(self):
         filename = os.path.join(os.path.dirname(__file__),
                                 '../database/data-nk/main/AgBr/Schroter.yml')
@@ -123,6 +158,11 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12]
+        with pytest.raises(ValueError):
+            material.n(1.0)
 
     def test_formula_9(self):
         rel_file = '../database/data-nk/organic/CH4N2O - urea/Rosker-e.yml'
@@ -137,6 +177,11 @@ class TestMaterialFile:
         with pytest.raises(ValueError):
             material.k(1.0)
 
+        # force invalid coefficients to test the exception
+        material.coefficients = [1.0, 0.58, 0.12, 0.87]
+        with pytest.raises(ValueError):
+            material.n(1.0)
+
     def test_tabulated_n(self):
         rel_file = '../database/data-nk/main/Y3Al5O12/Bond.yml'
         filename = os.path.join(os.path.dirname(__file__), rel_file)
@@ -149,6 +194,11 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+        # Test case when no tabulated data available
+        material._n = None
+        with pytest.raises(ValueError):
+            material.n(1.0)
 
     def test_tabulated_nk(self):
         rel_file = '../database/data-nk/main/B/Fernandez-Perea.yml'
@@ -163,3 +213,10 @@ class TestMaterialFile:
         assert material.k(0.02) == pytest.approx(0.008158161793528261,
                                                  abs=1e-10)
         assert material.k(0.15) == pytest.approx(1.7791319513647896, abs=1e-10)
+
+    def test_set_formula_type_twice(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/glass/ami/AMTIR-3.yml')
+        material = materials.MaterialFile(filename)
+        with pytest.raises(ValueError):
+            material._set_formula_type('formula 2')
