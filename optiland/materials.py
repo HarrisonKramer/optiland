@@ -546,8 +546,6 @@ class Material(MaterialFile):
                 dfi['filename'].str.lower().str.contains(reference)
             ]
 
-        print(self.reference)
-
         # If no rows match, return an empty DataFrame
         if dfi.empty:
             return pd.DataFrame()
