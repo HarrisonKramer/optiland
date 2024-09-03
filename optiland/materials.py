@@ -373,14 +373,11 @@ class MaterialFile(BaseMaterial):
         """
         c = self.coefficients
         if len(c) != 6:
-            raise ValueError('Invalid number of coefficients for dispersion '
-                             'formula 9.')
-        try:
-            n = (c[0] + c[1] / (w**2 - c[2]) +
-                 c[3]*(w - c[4]) / ((w - c[4])**2 + c[5]))
-            return np.sqrt(n)
-        except IndexError:
             raise ValueError('Invalid coefficients for dispersion formula 9.')
+
+        n = (c[0] + c[1] / (w**2 - c[2]) +
+             c[3]*(w - c[4]) / ((w - c[4])**2 + c[5]))
+        return np.sqrt(n)
 
     def _tabulated_n(self, w):
         """Calculate the refractive index using tabulated data."""
