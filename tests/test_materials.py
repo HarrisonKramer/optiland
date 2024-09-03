@@ -83,3 +83,16 @@ class TestMaterialFile:
         assert material.k(11) == pytest.approx(0.016358499999999998, abs=1e-10)
         assert material.k(12) == pytest.approx(0.032864500000000005, abs=1e-10)
         assert material.abbe() == pytest.approx(15.36569851094505, abs=1e-10)
+
+    def test_formula_6(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/main/CO2/Bideau-Mehu.yml')
+        material = materials.MaterialFile(filename)
+        assert material.n(0.4) == pytest.approx(1.0004592281255849, abs=1e-10)
+        assert material.n(1.0) == pytest.approx(1.0004424189669583, abs=1e-10)
+        assert material.n(1.5) == pytest.approx(1.0004386003514163, abs=1e-10)
+        assert material.abbe() == pytest.approx(76.08072467952312, abs=1e-10)
+
+        # This material has no k values, check that it raises an error
+        with pytest.raises(ValueError):
+            material.k(1.0)
