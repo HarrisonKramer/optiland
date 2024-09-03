@@ -220,3 +220,29 @@ class TestMaterialFile:
         material = materials.MaterialFile(filename)
         with pytest.raises(ValueError):
             material._set_formula_type('formula 2')
+
+
+class TestMaterial:
+    def test_standard_material(self):
+        material = materials.Material('N-BK7')
+        assert material.n(0.5) == 1.5214144757734767
+        assert material.k(0.5) == 9.5781e-09
+        assert material.abbe() == 64.1673362374998
+
+    def test_nonexistent_material(self):
+        with pytest.raises(ValueError):
+            materials.Material('nonexistent material')
+
+        with pytest.raises(ValueError):
+            materials.Material('nonexistent material',
+                               reference='it really does not exist')
+
+    def test_non_robust_failure(self):
+        # There are many materials matches for BK7. Without robust search,
+        # this should fail.
+        with pytest.raises(ValueError):
+            materials.Material('BK7', robust_search=False)
+
+        # There are also many materials matches for BK7 with schott reference.
+        with pytest.raises(ValueError):
+            materials.Material('BK7', reference='schott', robust_search=False)
