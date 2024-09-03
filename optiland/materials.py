@@ -149,7 +149,7 @@ class MaterialFile(BaseMaterial):
         self._n_formula = None
         self._n_wavelength = None
         self._n = None
-        self.reference = None
+        self.reference_data = None
 
         self.formula_map = {'formula 1': self._formula_1,
                             'formula 2': self._formula_2,
@@ -432,7 +432,7 @@ class MaterialFile(BaseMaterial):
 
         # Parse reference info, if available
         try:
-            self.reference = data['REFERENCE']
+            self.reference_data = data['REFERENCE']
         except KeyError:
             pass
 
@@ -548,6 +548,8 @@ class Material(MaterialFile):
                 dfi['name'].str.lower().str.contains(reference) |
                 dfi['filename'].str.lower().str.contains(reference)
             ]
+
+        print(self.reference)
 
         # If no rows match, return an empty DataFrame
         if dfi.empty:
