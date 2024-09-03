@@ -35,7 +35,7 @@ class BaseAperture(ABC):
         Parameters:
             scale_factor (float): The factor by which to scale the aperture.
         """
-        pass
+        pass  # pragma: no cover
 
 
 class RadialAperture(BaseAperture):
