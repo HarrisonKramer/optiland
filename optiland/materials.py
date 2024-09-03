@@ -352,13 +352,10 @@ class MaterialFile(BaseMaterial):
         """
         c = self.coefficients
         if len(c) != 4:
-            raise ValueError('Invalid number of coefficients for dispersion '
-                             'formula 8.')
-        try:
-            b = c[0] + c[1] * w**2 / (w**2 - c[2]) + c[3] * w**2
-            return np.sqrt((1 + 2*b) / (1 - b))
-        except IndexError:
             raise ValueError('Invalid coefficients for dispersion formula 8.')
+
+        b = c[0] + c[1] * w**2 / (w**2 - c[2]) + c[3] * w**2
+        return np.sqrt((1 + 2*b) / (1 - b))
 
     def _formula_9(self, w):
         """
