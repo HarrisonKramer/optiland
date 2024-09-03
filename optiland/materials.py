@@ -474,7 +474,7 @@ class Material(MaterialFile):
         self.name = name
         self.reference = reference
         self.robust = robust_search
-        file = self._retrieve_file()
+        file, self.material_data = self._retrieve_file()
         super().__init__(file)
 
     @classmethod
@@ -595,9 +595,7 @@ class Material(MaterialFile):
             else:
                 raise ValueError(f'No matches found for material {self.name}')
 
-        if self.robust:
-            filename = filtered_df.loc[0, 'filename']
-        else:
+        if len(filtered_df) > 1 and not self.robust:
             if self.reference:
                 raise ValueError(f'Multiple matches found for material '
                                  f'{self.name} with reference '
@@ -606,6 +604,10 @@ class Material(MaterialFile):
                 raise ValueError(f'Multiple matches found for material '
                                  f'{self.name}')
 
+        material_data = filtered_df.loc[0].to_dict()
+        filename = filtered_df.loc[0, 'filename']
+
         current_dir = os.path.dirname(os.path.abspath(__file__))
         database_dir = os.path.join(current_dir, '../database/data-nk')
-        return os.path.join(database_dir, filename)
+        full_filename = os.path.join(database_dir, filename)
+        return full_filename, material_data
