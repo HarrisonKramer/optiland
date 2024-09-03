@@ -25,7 +25,7 @@ class BaseAperture(ABC):
         Returns:
             list: List of clipped rays.
         """
-        return rays
+        return rays  # pragma: no cover
 
     @abstractmethod
     def scale(self, scale_factor):
