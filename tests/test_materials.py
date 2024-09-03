@@ -110,3 +110,16 @@ class TestMaterialFile:
         assert material.n(1.0) == pytest.approx(3.6137209774932684, abs=1e-10)
         assert material.n(1.5) == pytest.approx(13.532362213339358, abs=1e-10)
         assert material.abbe() == pytest.approx(1.0836925045533496, abs=1e-10)
+
+    def test_formula_8(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/main/AgBr/Schroter.yml')
+        material = materials.MaterialFile(filename)
+        assert material.n(0.5) == pytest.approx(2.3094520454859557, abs=1e-10)
+        assert material.n(0.55) == pytest.approx(2.275584479878346, abs=1e-10)
+        assert material.n(0.65) == pytest.approx(2.237243954654548, abs=1e-10)
+        assert material.abbe() == pytest.approx(14.551572168536392, abs=1e-10)
+
+        # This material has no k values, check that it raises an error
+        with pytest.raises(ValueError):
+            material.k(1.0)
