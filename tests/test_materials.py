@@ -136,3 +136,30 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+    def test_tabulated_n(self):
+        rel_file = '../database/data-nk/main/Y3Al5O12/Bond.yml'
+        filename = os.path.join(os.path.dirname(__file__), rel_file)
+        material = materials.MaterialFile(filename)
+        assert material.n(1.0) == pytest.approx(1.8197, abs=1e-10)
+        assert material.n(2.0) == pytest.approx(1.8035, abs=1e-10)
+        assert material.n(3.0) == pytest.approx(1.7855, abs=1e-10)
+        assert material.abbe() == pytest.approx(52.043469741225195, abs=1e-10)
+
+        # This material has no k values, check that it raises an error
+        with pytest.raises(ValueError):
+            material.k(1.0)
+
+    def test_tabulated_nk(self):
+        rel_file = '../database/data-nk/main/B/Fernandez-Perea.yml'
+        filename = os.path.join(os.path.dirname(__file__), rel_file)
+        material = materials.MaterialFile(filename)
+        assert material.n(0.005) == pytest.approx(0.9947266437313135,
+                                                  abs=1e-10)
+        assert material.n(0.02) == pytest.approx(0.9358854820031199, abs=1e-10)
+        assert material.n(0.15) == pytest.approx(1.990336423662574, abs=1e-10)
+        assert material.k(0.005) == pytest.approx(0.0038685437228138607,
+                                                  abs=1e-10)
+        assert material.k(0.02) == pytest.approx(0.008158161793528261,
+                                                 abs=1e-10)
+        assert material.k(0.15) == pytest.approx(1.7791319513647896, abs=1e-10)
