@@ -58,3 +58,28 @@ class TestMaterialFile:
         assert material.k(0.5) == pytest.approx(2.3945e-08, abs=1e-10)
         assert material.k(0.6) == pytest.approx(1.4345e-08, abs=1e-10)
         assert material.abbe() == pytest.approx(42.00944974180074, abs=1e-10)
+
+    def test_formula_4(self):
+        rel_file = '../database/data-nk/main/CaGdAlO4/Loiko-o.yml'
+        filename = os.path.join(os.path.dirname(__file__), rel_file)
+        material = materials.MaterialFile(filename)
+        assert material.n(0.4) == pytest.approx(1.9829612788706874, abs=1e-10)
+        assert material.n(0.6) == pytest.approx(1.9392994674994937, abs=1e-10)
+        assert material.n(1.5) == pytest.approx(1.9081487808757178, abs=1e-10)
+        assert material.abbe() == pytest.approx(40.87771013627357, abs=1e-10)
+
+        # This material has no k values, check that it raises an error
+        with pytest.raises(ValueError):
+            material.k(1.0)
+
+    def test_formula_5(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/main/YbF3/Amotchkina.yml')
+        material = materials.MaterialFile(filename)
+        assert material.n(0.4) == pytest.approx(1.5874342875, abs=1e-10)
+        assert material.n(1.0) == pytest.approx(1.487170596, abs=1e-10)
+        assert material.n(5.0) == pytest.approx(1.4844954023999999, abs=1e-10)
+        assert material.k(10) == pytest.approx(0.004800390585878816, abs=1e-10)
+        assert material.k(11) == pytest.approx(0.016358499999999998, abs=1e-10)
+        assert material.k(12) == pytest.approx(0.032864500000000005, abs=1e-10)
+        assert material.abbe() == pytest.approx(15.36569851094505, abs=1e-10)
