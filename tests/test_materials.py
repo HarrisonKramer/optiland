@@ -96,3 +96,17 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+    def test_formula_7(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/main/Y2O3/Nigara.yml')
+        # No material in the database currently uses formula 7, so we fake it
+        material = materials.MaterialFile(filename)
+        material._n_formula = 'formula 7'
+        material.coefficients = [1.0, 0.58, 0.12, 0.87, 0.21, 0.81]
+
+        # We test only the equations. These values are meaningless.
+        assert material.n(0.4) == pytest.approx(12.428885495537186, abs=1e-10)
+        assert material.n(1.0) == pytest.approx(3.6137209774932684, abs=1e-10)
+        assert material.n(1.5) == pytest.approx(13.532362213339358, abs=1e-10)
+        assert material.abbe() == pytest.approx(1.0836925045533496, abs=1e-10)
