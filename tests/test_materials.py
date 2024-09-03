@@ -123,3 +123,16 @@ class TestMaterialFile:
         # This material has no k values, check that it raises an error
         with pytest.raises(ValueError):
             material.k(1.0)
+
+    def test_formula_9(self):
+        rel_file = '../database/data-nk/organic/CH4N2O - urea/Rosker-e.yml'
+        filename = os.path.join(os.path.dirname(__file__), rel_file)
+        material = materials.MaterialFile(filename)
+        assert material.n(0.3) == pytest.approx(1.7043928702073146, abs=1e-10)
+        assert material.n(0.6) == pytest.approx(1.605403788031452, abs=1e-10)
+        assert material.n(1.0) == pytest.approx(1.5908956870937045, abs=1e-10)
+        assert material.abbe() == pytest.approx(34.60221948120884, abs=1e-10)
+
+        # This material has no k values, check that it raises an error
+        with pytest.raises(ValueError):
+            material.k(1.0)
