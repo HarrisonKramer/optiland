@@ -155,85 +155,85 @@ class TestCookeTripletRayFan:
         assert fan.data['Py'][-1] == 1
 
         assert fan.data['(0.0, 0.0)']['0.48']['x'][0] == \
-            pytest.approx(0.00230694465588267, abs=1e-9)
+            pytest.approx(0.00238814980958324, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.48']['x'][-1] == \
-            pytest.approx(-0.0024693549632838, abs=1e-9)
+            pytest.approx(-0.00238814980958324, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.48']['y'][0] == \
-            pytest.approx(0.00230694465588267, abs=1e-9)
+            pytest.approx(0.00238814980958324, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.48']['y'][-1] == \
-            pytest.approx(-0.0024693549632838, abs=1e-9)
+            pytest.approx(-0.00238814980958324, abs=1e-9)
 
         assert fan.data['(0.0, 0.0)']['0.55']['x'][0] == \
-            pytest.approx(0.00411447192762305, abs=1e-9)
+            pytest.approx(0.004195677081323623, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.55']['x'][-1] == \
-            pytest.approx(-0.0042768822350241, abs=1e-9)
+            pytest.approx(-0.004195677081323623, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.55']['y'][0] == \
-            pytest.approx(0.00411447192762305, abs=1e-9)
+            pytest.approx(0.004195677081323623, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.55']['y'][-1] == \
-            pytest.approx(-0.0042768822350241, abs=1e-9)
+            pytest.approx(-0.004195677081323623, abs=1e-9)
 
         assert fan.data['(0.0, 0.0)']['0.65']['x'][0] == \
-            pytest.approx(-8.948985061928e-05, abs=1e-9)
+            pytest.approx(-8.284696919602652e-06, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.65']['x'][-1] == \
-            pytest.approx(-7.292045678185e-05, abs=1e-9)
+            pytest.approx(8.284696919602652e-06, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.65']['y'][0] == \
-            pytest.approx(-8.948985061928e-05, abs=1e-9)
+            pytest.approx(-8.284696919602652e-06, abs=1e-9)
         assert fan.data['(0.0, 0.0)']['0.65']['y'][-1] == \
-            pytest.approx(-7.292045678185e-05, abs=1e-9)
+            pytest.approx(8.284696919602652e-06, abs=1e-9)
 
         assert fan.data['(0.0, 0.7)']['0.48']['x'][0] == \
-            pytest.approx(0.01976688587767077, abs=1e-9)
+            pytest.approx(0.01973142095198721, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.48']['x'][-1] == \
-            pytest.approx(-0.0196959560263178, abs=1e-9)
+            pytest.approx(-0.01973142095198721, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.48']['y'][0] == \
-            pytest.approx(-0.0232699816183430, abs=1e-9)
+            pytest.approx(-0.023207115035676296, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.48']['y'][-1] == \
-            pytest.approx(0.03922178177355029, abs=1e-9)
+            pytest.approx(0.03928464835618861, abs=1e-9)
 
         assert fan.data['(0.0, 0.7)']['0.55']['x'][0] == \
-            pytest.approx(0.02145565610521620, abs=1e-9)
+            pytest.approx(0.021420191179537973, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.55']['x'][-1] == \
-            pytest.approx(-0.0213847262538632, abs=1e-9)
+            pytest.approx(-0.021420191179537973, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.55']['y'][0] == \
-            pytest.approx(-0.0248752380425489, abs=1e-9)
+            pytest.approx(-0.024812371459915994, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.55']['y'][-1] == \
-            pytest.approx(0.04069008497376458, abs=1e-9)
+            pytest.approx(0.04075295155640113, abs=1e-9)
 
         assert fan.data['(0.0, 0.7)']['0.65']['x'][0] == \
-            pytest.approx(0.01706095214297792, abs=1e-9)
+            pytest.approx(0.017025487217305013, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.65']['x'][-1] == \
-            pytest.approx(-0.0169900222916250, abs=1e-9)
+            pytest.approx(-0.017025487217305013, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.65']['y'][0] == \
-            pytest.approx(-0.0323595284535702, abs=1e-9)
+            pytest.approx(-0.03229666187094615, abs=1e-9)
         assert fan.data['(0.0, 0.7)']['0.65']['y'][-1] == \
-            pytest.approx(0.04765907542344116, abs=1e-9)
+            pytest.approx(0.047721942006075935, abs=1e-9)
 
         assert fan.data['(0.0, 1.0)']['0.48']['x'][0] == \
-            pytest.approx(0.01571814948112706, abs=1e-9)
+            pytest.approx(0.01563881685548374, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.48']['x'][-1] == \
-            pytest.approx(-0.0155594842298404, abs=1e-9)
+            pytest.approx(-0.01563881685548374, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.48']['y'][0] == \
-            pytest.approx(-0.0043495236774511, abs=1e-9)
+            pytest.approx(-0.0044989771745065354, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.48']['y'][-1] == \
-            pytest.approx(0.01314983854687312, abs=1e-9)
+            pytest.approx(0.013000385049824814, abs=1e-9)
 
         assert fan.data['(0.0, 1.0)']['0.55']['x'][0] == \
-            pytest.approx(0.01701576639943294, abs=1e-9)
+            pytest.approx(0.016936433773790505, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.55']['x'][-1] == \
-            pytest.approx(-0.0168571011481462, abs=1e-9)
+            pytest.approx(-0.016936433773790505, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.55']['y'][0] == \
-            pytest.approx(-0.0169019565813819, abs=1e-9)
+            pytest.approx(-0.01705141007843025, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.55']['y'][-1] == \
-            pytest.approx(0.02265130085670819, abs=1e-9)
+            pytest.approx(0.022501847359645666, abs=1e-9)
 
         assert fan.data['(0.0, 1.0)']['0.65']['x'][0] == \
-            pytest.approx(0.01222467864771505, abs=1e-9)
+            pytest.approx(0.01214534602206907, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.65']['x'][-1] == \
-            pytest.approx(-0.0120660133964284, abs=1e-9)
+            pytest.approx(-0.01214534602206907, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.65']['y'][0] == \
-            pytest.approx(-0.0338080841047059, abs=1e-9)
+            pytest.approx(-0.033957537601747134, abs=1e-9)
         assert fan.data['(0.0, 1.0)']['0.65']['y'][-1] == \
-            pytest.approx(0.03669504582764205, abs=1e-9)
+            pytest.approx(0.036545592330593735, abs=1e-9)
 
     @patch('matplotlib.pyplot.show', autospec=True)
     def test_view_ray_fan(self, mock_show, cooke_triplet):
