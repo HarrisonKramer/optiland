@@ -4,6 +4,8 @@ from unittest.mock import patch
 from optiland.optic import Optic
 from optiland import analysis
 from optiland.samples.objectives import TripletTelescopeObjective, CookeTriplet
+import matplotlib
+matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
 @pytest.fixture
