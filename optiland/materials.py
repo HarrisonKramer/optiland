@@ -464,10 +464,13 @@ class Material(MaterialFile):
     _filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../database/catalog_nk.csv')
 
-    def __init__(self, name, reference=None, robust_search=True):
+    def __init__(self, name, reference=None, robust_search=True,
+                 min_wavelength=None, max_wavelength=None):
         self.name = name
         self.reference = reference
         self.robust = robust_search
+        self.min_wavelength = min_wavelength
+        self.max_wavelength = max_wavelength
         file, self.material_data = self._retrieve_file()
         super().__init__(file)
 
@@ -545,6 +548,12 @@ class Material(MaterialFile):
                 dfi['name'].str.lower().str.contains(reference) |
                 dfi['filename'].str.lower().str.contains(reference)
             ]
+
+        # Filter rows based on wavelength range
+        if self.min_wavelength:
+            dfi = dfi[dfi['min_wavelength'] <= self.min_wavelength]
+        if self.max_wavelength:
+            dfi = dfi[dfi['max_wavelength'] >= self.max_wavelength]
 
         # If no rows match, return an empty DataFrame
         if dfi.empty:
