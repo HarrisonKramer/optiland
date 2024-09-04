@@ -13,7 +13,7 @@ class BaseSolve(ABC):
     """
     @abstractmethod
     def apply(self):
-        pass
+        pass  # pragma: no cover
 
 
 class MarginalRayHeightSolve(BaseSolve):
