@@ -577,6 +577,37 @@ class Material(MaterialFile):
 
         return dfi
 
+    def _raise_material_error(self, no_matches=False, multiple_matches=False):
+        """
+        Raises an error if no matches or multiple matches are found for the
+        material.
+
+        Args:
+            no_matches (bool): Indicates if no matches were found.
+            multiple_matches (bool): Indicates if multiple matches were found.
+
+        Raises:
+            ValueError: If no matches or multiple matches are found for the
+                material.
+        """
+        if no_matches:
+            message = f'No matches found for material {self.name}'
+        elif multiple_matches:
+            message = f'Multiple matches found for material {self.name}'
+        else:
+            message = f'Error finding material {self.name}'
+
+        if self.reference:
+            message += f' with reference {self.reference}'
+
+        if self.min_wavelength or self.max_wavelength:
+            wavelength_range = (
+                f'({self.min_wavelength}, {self.max_wavelength}) µm'
+            )
+            message += f' within wavelength range {wavelength_range}'
+
+        raise ValueError(message)
+
     def _retrieve_file(self):
         """
         Retrieves the file path for the material based on the given criteria.
@@ -592,20 +623,10 @@ class Material(MaterialFile):
         filtered_df = self._find_material_matches(df)
 
         if filtered_df.empty:
-            if self.reference:
-                raise ValueError(f'No matches found for material {self.name} '
-                                 f'with reference {self.reference}')
-            else:
-                raise ValueError(f'No matches found for material {self.name}')
+            self._raise_material_error(no_matches=True)
 
         if len(filtered_df) > 1 and not self.robust:
-            if self.reference:
-                raise ValueError(f'Multiple matches found for material '
-                                 f'{self.name} with reference '
-                                 f'{self.reference}')
-            else:
-                raise ValueError(f'Multiple matches found for material '
-                                 f'{self.name}')
+            self._raise_material_error(multiple_matches=True)
 
         material_data = filtered_df.loc[0].to_dict()
         filename = filtered_df.loc[0, 'filename']
