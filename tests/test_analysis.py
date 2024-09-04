@@ -84,13 +84,13 @@ class TestCookeTripetSpotDiagram:
         assert rms_radius[2][1] == pytest.approx(0.012081348897953, abs=1e-9)
         assert rms_radius[2][2] == pytest.approx(0.013596802321537, abs=1e-9)
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram(self, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram_larger_fig(self, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view(figsize=(20, 10))
@@ -98,13 +98,13 @@ class TestCookeTripetSpotDiagram:
 
 
 class TestTripetSpotDiagram:
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram(self, mock_show, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram_larger_fig(self, mock_show,
                                           triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
@@ -131,13 +131,13 @@ class TestCookeTripletEncircledEnergy:
                                                abs=1e-3)
         assert centroid[2][1] == pytest.approx(18.13502264954927, abs=1e-3)
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_encircled_energy(self, mock_show, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_encircled_energy_larger_fig(self, mock_show, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view(figsize=(20, 10))
@@ -235,13 +235,13 @@ class TestCookeTripletRayFan:
         assert fan.data['(0.0, 1.0)']['0.65']['y'][-1] == \
             pytest.approx(0.036545592330593735, abs=1e-9)
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_ray_fan(self, mock_show, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_ray_fan_larger_fig(self, mock_show, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view(figsize=(20, 10))
@@ -249,13 +249,13 @@ class TestCookeTripletRayFan:
 
 
 class TestTelescopeTripletYYbar:
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_yybar(self, mock_show, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
         yybar.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_yybar_larger_fig(self, mock_show, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
         yybar.view(figsize=(12.4, 10))
@@ -298,13 +298,13 @@ class TestTelescopeTripletDistortion:
         with pytest.raises(ValueError):
             analysis.Distortion(telescope_objective, distortion_type='invalid')
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_distortion(self, mock_show, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_distortion_larger_fig(self, mock_show, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
@@ -380,13 +380,13 @@ class TestTelescopeTripletGridDistortion:
             analysis.GridDistortion(telescope_objective,
                                     distortion_type='invalid')
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_grid_distortion(self, mock_show, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show', autospec=True)
+    @patch('matplotlib.pyplot.show')
     def test_view_grid_distortion_larger_fig(self, mock_show,
                                              telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
@@ -428,11 +428,11 @@ class TestTelescopeTripletFieldCurvature:
         assert field_curvature.wavelengths == [0.55]
         assert field_curvature.num_points == num_points
 
-    def test_field_curvature_view(self, telescope_objective):
+    @patch('matplotlib.pyplot.show')
+    def test_field_curvature_view(self, mock_show, telescope_objective):
         field_curvature = analysis.FieldCurvature(telescope_objective)
-        with patch('matplotlib.pyplot.show') as mock_show:
-            field_curvature.view()
-            mock_show.assert_called_once()
+        field_curvature.view()
+        mock_show.assert_called_once()
 
     def test_field_curvature_generate_data(self, telescope_objective):
         f = analysis.FieldCurvature(telescope_objective)
