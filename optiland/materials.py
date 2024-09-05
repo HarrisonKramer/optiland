@@ -551,9 +551,11 @@ class Material(MaterialFile):
 
         # Filter rows based on wavelength range
         if self.min_wavelength:
-            dfi = dfi[dfi['min_wavelength'] <= self.min_wavelength]
+            dfi = dfi[(dfi['min_wavelength'] <= self.min_wavelength) &
+                      (dfi['max_wavelength'] >= self.min_wavelength)]
         if self.max_wavelength:
-            dfi = dfi[dfi['max_wavelength'] >= self.max_wavelength]
+            dfi = dfi[(dfi['min_wavelength'] <= self.max_wavelength) &
+                      (dfi['max_wavelength'] >= self.max_wavelength)]
 
         # If no rows match, return an empty DataFrame
         if dfi.empty:
