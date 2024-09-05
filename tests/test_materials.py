@@ -265,3 +265,9 @@ class TestMaterial:
         # Check that all materials have wavelength ranges including 2.0 µm
         assert np.all(df_filtered['max_wavelength'] >= 2.0)
         assert np.all(df_filtered['min_wavelength'] <= 2.0)
+
+    def test_raise_material_error_method(self):
+        material = materials.Material('SF11')
+        with pytest.raises(ValueError):
+            material._raise_material_error(no_matches=False,
+                                           multiple_matches=False)
