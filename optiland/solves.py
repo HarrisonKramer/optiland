@@ -33,11 +33,11 @@ class MarginalRayHeightSolve(BaseSolve):
     def apply(self):
         """Applies the MarginalRayHeightSolve to the optic."""
         ya, ua = self.optic.paraxial.marginal_ray()
-        offset = ya[self.surface_idx] / ua[self.surface_idx]
+        offset = (self.height - ya[self.surface_idx]) / ua[self.surface_idx]
 
         # shift current surface and all subsequent surfaces
         for surface in self.optic.surface_group.surfaces[self.surface_idx:]:
-            surface.geometry.cs.z -= offset
+            surface.geometry.cs.z += offset
 
 
 class SolveFactory:
