@@ -1,5 +1,6 @@
 import os
 import pytest
+import numpy as np
 from optiland import materials
 
 
@@ -246,3 +247,21 @@ class TestMaterial:
         # There are also many materials matches for BK7 with schott reference.
         with pytest.raises(ValueError):
             materials.Material('BK7', reference='schott', robust_search=False)
+
+    def test_min_wavelength_filtering(self):
+        material = materials.Material('SF11', min_wavelength=2.0)
+        df = material._load_dataframe()
+        df_filtered = material._find_material_matches(df)
+
+        # Check that all materials have wavelength ranges including 2.0 µm
+        assert np.all(df_filtered['max_wavelength'] >= 2.0)
+        assert np.all(df_filtered['min_wavelength'] <= 2.0)
+
+    def test_max_wavelength_filtering(self):
+        material = materials.Material('SF11', max_wavelength=2.0)
+        df = material._load_dataframe()
+        df_filtered = material._find_material_matches(df)
+
+        # Check that all materials have wavelength ranges including 2.0 µm
+        assert np.all(df_filtered['max_wavelength'] >= 2.0)
+        assert np.all(df_filtered['min_wavelength'] <= 2.0)
