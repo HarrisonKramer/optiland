@@ -271,3 +271,10 @@ class TestMaterial:
         with pytest.raises(ValueError):
             material._raise_material_error(no_matches=False,
                                            multiple_matches=False)
+
+        # Confirm error raise when wavelength ranges are passed
+        material = materials.Material('SF11', min_wavelength=0.5,
+                                      max_wavelength=0.7)
+        with pytest.raises(ValueError):
+            material._raise_material_error(no_matches=False,
+                                           multiple_matches=False)
