@@ -47,7 +47,7 @@ You can install the package using pip. To do so, follow these steps:
 2. Run the following command to install the package:
 
     ```sh
-    pip install git+https://github.com/HarrisonKramer/optiland.git
+    pip install optiland
     ```
 
 
