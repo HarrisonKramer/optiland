@@ -31,4 +31,4 @@ dependencies = [
 "Homepage" = "https://github.com/HarrisonKramer/optiland"
 
 [tool.setuptools]
-packages = ["optiland", "optiland.database", "optiland.optiland.samples"]
+packages = ["optiland", "database", "optiland.samples"]
