@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optiland"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
   { name="Kramer Harrison", email="kdanielharrison@gmail.com" },
 ]
@@ -31,8 +31,8 @@ dependencies = [
 "Homepage" = "https://github.com/HarrisonKramer/optiland"
 
 [tool.setuptools]
-packages = ["optiland", "database", "optiland.samples"]
+packages = ["optiland", "database", "images", "optiland.samples"]
 
 [tool.setuptools.package-data]
 "database" = ["*.csv", "*.yml", "**/*.yml"]
-"optiland" = ["*.png", "*.gif", "**/*.png", "**/*.gif"]
+"images" = ["*.png", "*.gif", "**/*.png", "**/*.gif"]
