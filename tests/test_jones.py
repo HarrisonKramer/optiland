@@ -220,10 +220,14 @@ def test_jones_quarter_wave_retarder():
     jones_retarder = jones.JonesQuarterWaveRetarder(theta=0.0)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == 0.7071067811865476
-    assert np.imag(jones_matrix[0, 0, 0]) == -0.7071067811865476
-    assert np.real(jones_matrix[0, 1, 1]) == 0.7071067811865476
-    assert np.imag(jones_matrix[0, 1, 1]) == 0.7071067811865476
+    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(0.7071067811865476,
+                                                           abs=1e-10)
+    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(-0.7071067811865476,
+                                                           abs=1e-10)
+    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(0.7071067811865476,
+                                                           abs=1e-10)
+    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(0.7071067811865476,
+                                                           abs=1e-10)
     assert jones_matrix[0, 2, 2] == 1.0
 
     # Test with theta = 0.5
