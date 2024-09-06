@@ -29,6 +29,6 @@ jobs:
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: "__token__"
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
           python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
