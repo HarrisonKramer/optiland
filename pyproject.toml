@@ -32,3 +32,6 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["optiland", "database", "optiland.samples"]
+
+[tool.setuptools.package-data]
+"database" = ["*.csv", "*"]
