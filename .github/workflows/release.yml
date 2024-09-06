@@ -29,16 +29,15 @@ jobs:
 
   publish-to-testpypi:
     name: Publish Python distribution to TestPyPI
-    needs:
-    - build
+    needs: build
     runs-on: ubuntu-latest
 
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/optiland
+      url: https://test.pypi.org/project/optiland/
 
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write  # Mandatory for trusted publishing
 
     steps:
     - name: Download all the dists
@@ -46,7 +45,11 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
+
     - name: Publish distribution to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+      env:
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+        TWINE_USERNAME: "__token__"
