@@ -35,3 +35,4 @@ packages = ["optiland", "database", "optiland.samples"]
 
 [tool.setuptools.package-data]
 "database" = ["*.csv", "*.yml", "**/*.yml"]
+"optiland" = ["*.png", "*.gif", "**/*.png", "**/*.gif"]
