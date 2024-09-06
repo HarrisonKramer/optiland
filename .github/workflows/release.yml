@@ -3,7 +3,7 @@ name: Publish to TestPyPI
 on:
   push:
     branches:
-      - main  # Or your default branch
+      - main
 
 jobs:
   publish:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Choose your Python version
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
