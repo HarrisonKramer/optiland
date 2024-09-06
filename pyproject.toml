@@ -34,4 +34,4 @@ dependencies = [
 packages = ["optiland", "database", "optiland.samples"]
 
 [tool.setuptools.package-data]
-"database" = ["*.csv", "*"]
+"database" = ["*.csv", "*.yml", "**/*.yml"]
