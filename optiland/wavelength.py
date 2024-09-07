@@ -50,6 +50,7 @@ class Wavelength:
             new_unit (str): The new unit to set for the wavelength.
         """
         self._unit = new_unit.lower()
+        self._value_in_um = self._convert_to_um()
 
     def _convert_to_um(self):
         """
