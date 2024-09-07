@@ -5,6 +5,7 @@ from optiland.optic import Optic
 from optiland import analysis
 from optiland.samples.objectives import TripletTelescopeObjective, CookeTriplet
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
@@ -91,12 +92,14 @@ class TestCookeTripetSpotDiagram:
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram_larger_fig(self, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestTripetSpotDiagram:
@@ -105,6 +108,7 @@ class TestTripetSpotDiagram:
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram_larger_fig(self, mock_show,
@@ -112,6 +116,7 @@ class TestTripetSpotDiagram:
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestCookeTripletEncircledEnergy:
@@ -138,12 +143,14 @@ class TestCookeTripletEncircledEnergy:
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_encircled_energy_larger_fig(self, mock_show, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view(figsize=(20, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestCookeTripletRayFan:
@@ -242,12 +249,14 @@ class TestCookeTripletRayFan:
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_ray_fan_larger_fig(self, mock_show, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view(figsize=(20, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestTelescopeTripletYYbar:
@@ -256,12 +265,14 @@ class TestTelescopeTripletYYbar:
         yybar = analysis.YYbar(telescope_objective)
         yybar.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_yybar_larger_fig(self, mock_show, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
         yybar.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestTelescopeTripletDistortion:
@@ -305,12 +316,14 @@ class TestTelescopeTripletDistortion:
         dist = analysis.Distortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_distortion_larger_fig(self, mock_show, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestTelescopeTripletGridDistortion:
@@ -387,6 +400,7 @@ class TestTelescopeTripletGridDistortion:
         dist = analysis.GridDistortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_grid_distortion_larger_fig(self, mock_show,
@@ -394,6 +408,7 @@ class TestTelescopeTripletGridDistortion:
         dist = analysis.GridDistortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
+        plt.close()
 
 
 class TestTelescopeTripletFieldCurvature:
@@ -435,6 +450,7 @@ class TestTelescopeTripletFieldCurvature:
         field_curvature = analysis.FieldCurvature(telescope_objective)
         field_curvature.view()
         mock_show.assert_called_once()
+        plt.close()
 
     def test_field_curvature_generate_data(self, telescope_objective):
         f = analysis.FieldCurvature(telescope_objective)
