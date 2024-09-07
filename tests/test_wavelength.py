@@ -26,6 +26,14 @@ class TestWavelength(unittest.TestCase):
         with self.assertRaises(ValueError):
             Wavelength(500, unit='invalid_unit')
 
+    def test_unit_setter(self):
+        wl = Wavelength(500, unit='nm')
+        self.assertEqual(wl.value, 0.5)
+        wl.unit = 'mm'
+        self.assertEqual(wl.unit, 'um')
+        self.assertEqual(wl._unit, 'mm')
+        self.assertEqual(wl.value, 500000)
+
 
 class TestWavelengthGroup(unittest.TestCase):
 
