@@ -1,6 +1,9 @@
+from unittest.mock import patch
 import pytest
 import numpy as np
 from optiland import zernike
+import matplotlib
+matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
 class TestZernikeStandard:
@@ -272,3 +275,165 @@ class TestZernikeNoll:
                            (14, 0), (14, -2), (14, 2), (14, -4), (14, 4),
                            (14, -6), (14, 6), (14, -8), (14, 8), (14, -10),
                            (14, 10), (14, -12), (14, 12), (14, -14), (14, 14)]
+
+
+class TestZernikeFit:
+    def setup_method(self):
+        np.random.seed(42)
+        self.x = np.random.rand(100)
+        self.y = np.random.rand(100)
+        self.z = np.random.randn(100)
+
+    def test_init(self):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        assert np.allclose(zernike_fit.x, self.x)
+        assert np.allclose(zernike_fit.y, self.y)
+        assert np.allclose(zernike_fit.z, self.z)
+        assert zernike_fit.type == 'fringe'
+        assert zernike_fit.num_terms == 36
+
+    def test_init_standard(self):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        assert np.allclose(zernike_fit_standard.x, self.x)
+        assert np.allclose(zernike_fit_standard.y, self.y)
+        assert np.allclose(zernike_fit_standard.z, self.z)
+        assert zernike_fit_standard.type == 'standard'
+        assert zernike_fit_standard.num_terms == 36
+
+    def test_init_noll(self):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        assert np.allclose(zernike_fit_noll.x, self.x)
+        assert np.allclose(zernike_fit_noll.y, self.y)
+        assert np.allclose(zernike_fit_noll.z, self.z)
+        assert zernike_fit_noll.type == 'noll'
+        assert zernike_fit_noll.num_terms == 36
+
+    def test_invalid_zernike_type(self):
+        with pytest.raises(ValueError):
+            zernike.ZernikeFit(self.x, self.y, self.z,
+                               zernike_type='invalid')
+
+    def test_coeffs(self):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        assert len(zernike_fit.coeffs) == 36
+
+        arr = np.array([192360.74086056, -388896.03479954, 424573.71659269,
+                        340478.95136536, -40374.93778815])
+        assert np.allclose(zernike_fit.coeffs[:5], arr)
+
+    def test_coeffs_standard(self):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        assert len(zernike_fit_standard.coeffs) == 36
+
+        arr = np.array([1720.0434551, 1478.84434177, -2190.57825807,
+                        -1916.60708061, 1420.4098283])
+        assert np.allclose(zernike_fit_standard.coeffs[:5], arr)
+
+    def test_coeffs_noll(self):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        assert len(zernike_fit_noll.coeffs) == 36
+
+        arr = np.array([1719.78305972, -2189.97524597, 1479.0629907,
+                        1420.17322198, -1916.65256309])
+        assert np.allclose(zernike_fit_noll.coeffs[:5], arr)
+
+    def test_invalid_view_projection(self):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        with pytest.raises(ValueError):
+            zernike_fit.view(projection='invalid')
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_standard(self, mock_show):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        zernike_fit_standard.view(projection='2d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_standard_3d(self, mock_show):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        zernike_fit_standard.view(projection='3d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_noll(self, mock_show):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        zernike_fit_noll.view(projection='2d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_noll_3d(self, mock_show):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        zernike_fit_noll.view(projection='3d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_residual_standard(self, mock_show):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        zernike_fit_standard.view_residual()
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_residual_noll(self, mock_show):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        zernike_fit_noll.view_residual()
+        mock_show.assert_called_once()
+
+    def test_objective(self):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        coeffs = [0.1 for _ in range(zernike_fit.num_terms)]
+        objective = zernike_fit._objective(coeffs)
+        assert len(objective) == len(self.z)
+
+        arr = np.array([0.74647594, 5.42022825, -0.19508726,
+                        0.84490225, -1.76365688])
+        assert np.allclose(objective[:5], arr)
+
+    def test_objective_standard(self):
+        zernike_fit_standard = zernike.ZernikeFit(self.x, self.y, self.z,
+                                                  zernike_type='standard')
+        coeffs = [0.1 for _ in range(zernike_fit_standard.num_terms)]
+        objective = zernike_fit_standard._objective(coeffs)
+        assert len(objective) == len(self.z)
+
+        arr = np.array([0.86382374, -10.98002521, -0.3600555,
+                        1.17005111, -2.13489508])
+        assert np.allclose(objective[:5], arr)
+
+    def test_objective_noll(self):
+        zernike_fit_noll = zernike.ZernikeFit(self.x, self.y, self.z,
+                                              zernike_type='noll')
+        coeffs = [0.1 for _ in range(zernike_fit_noll.num_terms)]
+        objective = zernike_fit_noll._objective(coeffs)
+        assert len(objective) == len(self.z)
+
+        arr = np.array([0.86382374, -10.98002521, -0.3600555,
+                        1.17005111, -2.13489508])
+        assert np.allclose(objective[:5], arr)
+
+    @patch('matplotlib.pyplot.show')
+    def test_view(self, mock_show):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        zernike_fit.view(projection='2d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_3d(self, mock_show):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        zernike_fit.view(projection='3d')
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_residual(self, mock_show):
+        zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
+        zernike_fit.view_residual()
+        mock_show.assert_called_once()
