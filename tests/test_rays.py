@@ -366,3 +366,30 @@ def test_paraxial_propagate():
     assert rays.y[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.z[0] == pytest.approx(-10.0, abs=1e-10)
     assert rays.u[0] == pytest.approx(0.1, abs=1e-10)
+
+
+def test_reflect():
+    rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+
+    # Reflect rays on a surface with normal (0, 0, 1)
+    rays.reflect(0.0, 0.0, 1.0)
+
+    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.N[0] == pytest.approx(-1.0, abs=1e-10)
+
+    # Reflect rays on a surface with normal (1, 0, 0)
+    rays = RealRays(1.0, 2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 1.0)
+    rays.reflect(1.0, 0.0, 0.0)
+
+    assert rays.L[0] == pytest.approx(-1.0, abs=1e-10)
+    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.N[0] == pytest.approx(0.0, abs=1e-10)
+
+    # Reflect rays on a surface with normal (0, 1, 0)
+    rays = RealRays(1.0, 2.0, 3.0, 0.0, 1.0, 0.0, 1.0, 1.0)
+    rays.reflect(0.0, 1.0, 0.0)
+
+    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.M[0] == pytest.approx(-1.0, abs=1e-10)
+    assert rays.N[0] == pytest.approx(0.0, abs=1e-10)
