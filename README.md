@@ -1,7 +1,8 @@
+![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
+![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 ![Forks](https://img.shields.io/github/forks/HarrisonKramer/optiland.svg)
 ![Watchers](https://img.shields.io/github/watchers/HarrisonKramer/optiland.svg)
 ![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)
-![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 
 # **Optiland**
 
