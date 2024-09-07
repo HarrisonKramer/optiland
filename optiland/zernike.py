@@ -173,8 +173,8 @@ class ZernikeFringe(ZernikeStandard):
            University_of_Arizona_indices
     """
 
-    def __init__(self, terms=[0 for _ in range(36)]):
-        super().__init__(terms)
+    def __init__(self, coeffs=[0 for _ in range(36)]):
+        super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):
         """
@@ -231,8 +231,8 @@ class ZernikeNoll(ZernikeStandard):
         2. Noll, R. J. (1976). "Zernike polynomials and atmospheric
            turbulence". J. Opt. Soc. Am. 66 (3): 207
     """
-    def __init__(self, terms=[0 for _ in range(36)]):
-        super().__init__(terms)
+    def __init__(self, coeffs=[0 for _ in range(36)]):
+        super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):
         """
