@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 from optiland import zernike
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
@@ -363,6 +364,7 @@ class TestZernikeFit:
                                                   zernike_type='standard')
         zernike_fit_standard.view(projection='2d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_standard_3d(self, mock_show):
@@ -370,6 +372,7 @@ class TestZernikeFit:
                                                   zernike_type='standard')
         zernike_fit_standard.view(projection='3d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_noll(self, mock_show):
@@ -377,6 +380,7 @@ class TestZernikeFit:
                                               zernike_type='noll')
         zernike_fit_noll.view(projection='2d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_noll_3d(self, mock_show):
@@ -384,6 +388,7 @@ class TestZernikeFit:
                                               zernike_type='noll')
         zernike_fit_noll.view(projection='3d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_residual_standard(self, mock_show):
@@ -391,6 +396,7 @@ class TestZernikeFit:
                                                   zernike_type='standard')
         zernike_fit_standard.view_residual()
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_residual_noll(self, mock_show):
@@ -398,6 +404,7 @@ class TestZernikeFit:
                                               zernike_type='noll')
         zernike_fit_noll.view_residual()
         mock_show.assert_called_once()
+        plt.close()
 
     def test_objective(self):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
@@ -436,15 +443,18 @@ class TestZernikeFit:
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view(projection='2d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_3d(self, mock_show):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view(projection='3d')
         mock_show.assert_called_once()
+        plt.close()
 
     @patch('matplotlib.pyplot.show')
     def test_view_residual(self, mock_show):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view_residual()
         mock_show.assert_called_once()
+        plt.close()
