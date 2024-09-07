@@ -25,7 +25,7 @@ class Wavelength:
         _convert_to_um(): Converts the wavelength value to microns.
     """
 
-    def __init__(self, value, is_primary=True, unit='microns'):
+    def __init__(self, value, is_primary=True, unit='um'):
         self._value = value
         self.is_primary = is_primary
         self._unit = unit.lower()
