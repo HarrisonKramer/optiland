@@ -279,10 +279,24 @@ class TestZernikeNoll:
 
 class TestZernikeFit:
     def setup_method(self):
-        np.random.seed(42)
-        self.x = np.random.rand(100)
-        self.y = np.random.rand(100)
-        self.z = np.random.randn(100)
+        coeffs = [0.1, 0.2, 0.8, -0.2, 0.4, 0.6, 0.0, 0.0, 0.5, 0.1, -0.3]
+
+        z = zernike.ZernikeStandard(coeffs=coeffs)
+
+        x = np.linspace(-1, 1, 10)
+        x, y = np.meshgrid(x, x)
+        x = np.ravel(x)
+        y = np.ravel(y)
+        r = np.sqrt(x**2 + y**2)
+        cond = r <= 1
+        x = x[cond]
+        y = y[cond]
+        r = r[cond]
+        theta = np.arctan2(y, x)
+
+        self.x = x
+        self.y = y
+        self.z = z.poly(r, theta)
 
     def test_init(self):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
@@ -319,8 +333,7 @@ class TestZernikeFit:
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         assert len(zernike_fit.coeffs) == 36
 
-        arr = np.array([192360.74086056, -388896.03479954, 424573.71659269,
-                        340478.95136536, -40374.93778815])
+        arr = np.array([0.1, 1.6, 0.4, 0.69282032, 1.46969385])
         assert np.allclose(zernike_fit.coeffs[:5], arr)
 
     def test_coeffs_standard(self):
@@ -328,8 +341,7 @@ class TestZernikeFit:
                                                   zernike_type='standard')
         assert len(zernike_fit_standard.coeffs) == 36
 
-        arr = np.array([1720.0434551, 1478.84434177, -2190.57825807,
-                        -1916.60708061, 1420.4098283])
+        arr = np.array([0.1, 0.2, 0.8, -0.2, 0.4])
         assert np.allclose(zernike_fit_standard.coeffs[:5], arr)
 
     def test_coeffs_noll(self):
@@ -337,8 +349,7 @@ class TestZernikeFit:
                                               zernike_type='noll')
         assert len(zernike_fit_noll.coeffs) == 36
 
-        arr = np.array([1719.78305972, -2189.97524597, 1479.0629907,
-                        1420.17322198, -1916.65256309])
+        arr = np.array([0.1, 0.8, 0.2, 0.4, -0.2])
         assert np.allclose(zernike_fit_noll.coeffs[:5], arr)
 
     def test_invalid_view_projection(self):
@@ -394,8 +405,8 @@ class TestZernikeFit:
         objective = zernike_fit._objective(coeffs)
         assert len(objective) == len(self.z)
 
-        arr = np.array([0.74647594, 5.42022825, -0.19508726,
-                        0.84490225, -1.76365688])
+        arr = np.array([0.86480919, 0.74363743, 0.63838986, 0.30552224,
+                        -0.53142429])
         assert np.allclose(objective[:5], arr)
 
     def test_objective_standard(self):
@@ -405,8 +416,8 @@ class TestZernikeFit:
         objective = zernike_fit_standard._objective(coeffs)
         assert len(objective) == len(self.z)
 
-        arr = np.array([0.86382374, -10.98002521, -0.3600555,
-                        1.17005111, -2.13489508])
+        arr = np.array([0.9556845, 0.86175482, 0.38293721, -0.06057611,
+                        -0.4028514])
         assert np.allclose(objective[:5], arr)
 
     def test_objective_noll(self):
@@ -416,8 +427,8 @@ class TestZernikeFit:
         objective = zernike_fit_noll._objective(coeffs)
         assert len(objective) == len(self.z)
 
-        arr = np.array([0.86382374, -10.98002521, -0.3600555,
-                        1.17005111, -2.13489508])
+        arr = np.array([0.9556845, 0.86175482, 0.38293721, -0.06057611,
+                        -0.4028514])
         assert np.allclose(objective[:5], arr)
 
     @patch('matplotlib.pyplot.show')
