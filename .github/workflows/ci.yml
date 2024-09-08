@@ -37,7 +37,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tests and collect coverage
       run: |
-        pytest --cov=./ --cov-report=xml
+        pytest --cov=optiland --cov-report=xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
