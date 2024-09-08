@@ -1,8 +1,12 @@
+from unittest.mock import patch
 import pytest
 import numpy as np
 from optiland import wavefront, distribution
 from optiland.samples.objectives import CookeTriplet, DoubleGauss
 from optiland.samples.eyepieces import EyepieceErfle
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
 class TestWavefront:
@@ -84,3 +88,32 @@ class TestWavefront:
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
         t = w._opd_image_to_xp(xc, yc, zc, R)
         assert np.allclose(t, np.array([39.454938]))
+
+
+class TestOPDFan:
+    def test_opd_fan_initialization(self):
+        optic = DoubleGauss()
+        opd_fan = wavefront.OPDFan(optic)
+        assert opd_fan.num_rays == 100
+        assert opd_fan.fields == optic.fields.get_field_coords()
+        assert opd_fan.wavelengths == optic.wavelengths.get_wavelengths()
+        assert isinstance(opd_fan.distribution,
+                          distribution.CrossDistribution)
+        arr = np.linspace(-1, 1, opd_fan.num_rays)
+        assert np.all(opd_fan.pupil_coord == arr)
+
+    @patch('matplotlib.pyplot.show')
+    def test_opd_fan_view(self, moch_show):
+        optic = DoubleGauss()
+        opd_fan = wavefront.OPDFan(optic)
+        opd_fan.view()
+        moch_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_opd_fan_view_large(self, moch_show):
+        optic = DoubleGauss()
+        opd_fan = wavefront.OPDFan(optic)
+        opd_fan.view(figsize=(20, 20))
+        moch_show.assert_called_once()
+        plt.close()
