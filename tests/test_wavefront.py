@@ -163,3 +163,59 @@ class TestOPD:
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         rms = opd.rms()
         assert np.isclose(rms, 0.9709788038168692)
+
+
+class TestZernikeOPD:
+    def test_zernike_opd_initialization(self):
+        optic = DoubleGauss()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        assert zernike_opd.num_rays == 15
+        assert zernike_opd.fields == [(0, 1)]
+        assert zernike_opd.wavelengths == [0.55]
+        assert isinstance(zernike_opd.distribution,
+                          distribution.HexagonalDistribution)
+        assert np.allclose(zernike_opd.x, zernike_opd.distribution.x)
+        assert np.allclose(zernike_opd.y, zernike_opd.distribution.y)
+        assert np.allclose(zernike_opd.z, zernike_opd.data[0][0][0])
+        assert zernike_opd.type == 'fringe'
+        assert zernike_opd.num_terms == 37
+
+    @patch('matplotlib.pyplot.show')
+    def test_zernike_opd_view(self, moch_show):
+        optic = DoubleGauss()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        zernike_opd.view()
+        moch_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_zernike_opd_view_large(self, moch_show):
+        optic = DoubleGauss()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        zernike_opd.view(figsize=(20, 20))
+        moch_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_zernike_opd_view_3d(self, moch_show):
+        optic = DoubleGauss()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        zernike_opd.view(projection='3d')
+        moch_show.assert_called_once()
+        plt.close()
+
+    def test_zernike_opd_rms(self):
+        optic = CookeTriplet()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        rms = zernike_opd.rms()
+        assert np.isclose(rms, 0.9709788038168692)
+
+    def test_zernike_opd_fit(self):
+        optic = CookeTriplet()
+        zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        c = zernike_opd.zernike.coeffs
+        assert np.isclose(c[0], 0.8430890395012354)
+        assert np.isclose(c[1], 6.863699034904449e-13)
+        assert np.isclose(c[2], -0.14504379704525455)
+        assert np.isclose(c[6], -1.160298338689596e-13)
+        assert np.isclose(c[24], -0.0007283668376039182)
