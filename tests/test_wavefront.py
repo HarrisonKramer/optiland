@@ -117,3 +117,49 @@ class TestOPDFan:
         opd_fan.view(figsize=(20, 20))
         moch_show.assert_called_once()
         plt.close()
+
+
+class TestOPD:
+    def test_opd_initialization(self):
+        optic = EyepieceErfle()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        assert opd.num_rays == 15
+        assert opd.fields == [(0, 1)]
+        assert opd.wavelengths == [0.55]
+        assert isinstance(opd.distribution, distribution.HexagonalDistribution)
+
+    @patch('matplotlib.pyplot.show')
+    def test_opd_view(self, moch_show):
+        optic = DoubleGauss()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        opd.view()
+        moch_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_opd_view_large(self, moch_show):
+        optic = DoubleGauss()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        opd.view(figsize=(20, 20))
+        moch_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_opd_view_3d(self, moch_show):
+        optic = DoubleGauss()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        opd.view(projection='3d')
+        moch_show.assert_called_once()
+        plt.close()
+
+    def test_old_invalid_projection(self):
+        optic = EyepieceErfle()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        with pytest.raises(ValueError):
+            opd.view(projection='invalid')
+
+    def test_opd_rms(self):
+        optic = CookeTriplet()
+        opd = wavefront.OPD(optic, (0, 1), 0.55)
+        rms = opd.rms()
+        assert np.isclose(rms, 0.9709788038168692)
