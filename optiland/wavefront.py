@@ -230,11 +230,7 @@ class Wavefront:
 
         d = b ** 2 - 4 * a * c
         t = (-b - np.sqrt(d)) / (2 * a)
-        try:
-            t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
-        except TypeError:  # input is not an array
-            if t < 0:
-                t = (-b + np.sqrt(d)) / (2 * a)
+        t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
         return t
 
 
