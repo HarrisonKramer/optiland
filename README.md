@@ -125,7 +125,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
-    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Sept. 2024)
+    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Nov. 2024)
         - Waveplates, polarizers, and the Jones matrix
         - Jones pupils
 7. **Advanced Optical Design**
@@ -133,11 +133,11 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Optimizing and Analyzing a Complex Lithography System
     - [Tutorial 7b - Surface Roughness & Scattering](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_7b_Surface_Roughness_&_Scattering.ipynb)
         - Lambertian and Gaussian scatter models
-    - Tutorial 7c - Freeform Surfaces - Update in progress (target completion: Sept. 2024)
+    - Tutorial 7c - Freeform Surfaces - Update in progress (target completion: Nov. 2024)
 8. **Tolerancing**
-    - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Sept. 2024)
+    - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Nov. 2024)
         - Sensitivity studies
-    - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Sept. 2024)
+    - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Nov. 2024)
         - Monte Carlo-based Tolerancing
 9. **Lens Catalogue Integration**
     - [Tutorial 9a - Edmund Optics Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Edmund_Optics_Catalogue.ipynb)
@@ -146,14 +146,14 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 9b - Thorlabs Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Thorlabs_Catalogue.ipynb)
         - Reading and analyzing an achromatic doublet pair lens
 10. **Extending Optiland**
-    - Tutorial 10a - Custom Surface Types - Update in progress (target completion: Sept. 2024)
+    - Tutorial 10a - Custom Surface Types - Update in progress (target completion: Nov. 2024)
         - Adding new surface types
-    - Tutorial 10b - Custom Coating Types - Update in progress (target completion: Sept. 2024)
+    - Tutorial 10b - Custom Coating Types - Update in progress (target completion: Nov. 2024)
         - Adding new coating types
-    - Tutorial 10c - Custom Optimization Algorithms - Update in progress (target completion: Sept. 2024)
+    - Tutorial 10c - Custom Optimization Algorithms - Update in progress (target completion: Nov. 2024)
         - Adding new optimization approaches
 11. **Machine Learning in Optical Design**
-    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Sept. 2024)
+    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Nov. 2024)
 
 
 ## License
