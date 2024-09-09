@@ -716,6 +716,21 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
+    def test_invalid_polarization(self):
+        lens = TessarLens()
+        lens.surface_group.set_fresnel_coatings()
+        generator = RayGenerator(lens)
+
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+        wavelength = 0.55
+
+        # polarization type is 'ignore' but lens has coatings
+        with pytest.raises(ValueError):
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
     def test_get_ray_origins_infinite_object(self):
         lens = TessarLens()
         generator = RayGenerator(lens)
