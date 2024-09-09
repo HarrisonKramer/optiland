@@ -731,6 +731,45 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
+    def test_generate_polarized_rays(self):
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+        wavelength = 0.55
+
+        lens = TessarLens()
+        state = PolarizationState(is_polarized=False)
+        lens.set_polarization(state)
+        generator = RayGenerator(lens)
+        rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
+        assert isinstance(rays, PolarizedRays)
+        assert rays.x.shape == (2,)
+        assert rays.y.shape == (2,)
+        assert rays.z.shape == (2,)
+        assert rays.L.shape == (2,)
+        assert rays.M.shape == (2,)
+        assert rays.N.shape == (2,)
+        assert rays.i.shape == (2,)
+        assert rays.w.shape == (2,)
+        assert rays.p.shape == (2, 3, 3)
+
+        assert np.allclose(rays.x, np.array([0.19525707, 0.23967682]),
+                           atol=1e-8)
+        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),
+                           atol=1e-8)
+        assert np.allclose(rays.z, np.array([-0.17538571, -0.17538571]),
+                           atol=1e-8)
+        assert np.allclose(rays.L, np.array([-0.17519154, -0.17519154]),
+                           atol=1e-8)
+        assert np.allclose(rays.M, np.array([0.17519154, 0.17519154]),
+                           atol=1e-8)
+        assert np.allclose(rays.N, np.array([0.96882189, 0.96882189]),
+                           atol=1e-8)
+        assert np.allclose(rays.i, np.array([1.0, 1.0]), atol=1e-8)
+        assert np.allclose(rays.w, np.array([0.55, 0.55]), atol=1e-8)
+
     def test_get_ray_origins_infinite_object(self):
         lens = TessarLens()
         generator = RayGenerator(lens)
