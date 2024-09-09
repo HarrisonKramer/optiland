@@ -661,7 +661,7 @@ class TestRayGenerator:
 
         assert np.allclose(rays.x, np.array([0.19525707, 0.23967682]),
                            atol=1e-8)
-        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),    
+        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),
                            atol=1e-8)
         assert np.allclose(rays.z, np.array([-0.17538571, -0.17538571]),
                            atol=1e-8)
