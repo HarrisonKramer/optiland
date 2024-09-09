@@ -1,3 +1,4 @@
+import pytest
 import warnings
 import numpy as np
 from optiland import optimization
@@ -192,6 +193,27 @@ class TestLeastSquares:
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
 
+    def test_no_bounds(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'conic', surface_number=1)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.LeastSquares(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+
+    def test_verbose(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1, min_val=-1000,
+                             max_val=None)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.LeastSquares(problem)
+        result = optimizer.optimize(maxiter=100, disp=True, tol=1e-3)
+        assert result.success
+
 
 class TestDualAnnealing:
     def test_optimize(self):
@@ -205,6 +227,16 @@ class TestDualAnnealing:
         result = optimizer.optimize(maxiter=10, disp=False)
         assert result.success
 
+    def test_raise_error_no_bounds(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'thickness', surface_number=1)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 95, 1.0, input_data)
+        optimizer = optimization.DualAnnealing(problem)
+        with pytest.raises(ValueError):
+            optimizer.optimize(maxiter=10, disp=False)
+
 
 class TestDifferentialEvolution:
     def test_optimize(self):
@@ -216,4 +248,25 @@ class TestDifferentialEvolution:
         problem.add_operand('f2', 90, 1.0, input_data)
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=1)
+        assert result.success
+
+    def test_raise_error_no_bounds(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'index', surface_number=1, wavelength=0.5)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 95, 1.0, input_data)
+        optimizer = optimization.DifferentialEvolution(problem)
+        with pytest.raises(ValueError):
+            optimizer.optimize(maxiter=10, disp=False)
+
+    def test_workers(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'index', surface_number=1, min_val=1.2,
+                             max_val=1.8, wavelength=0.5)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.DifferentialEvolution(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, workers=-1)
         assert result.success
