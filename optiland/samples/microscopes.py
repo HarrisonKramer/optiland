@@ -48,7 +48,7 @@ class Objective60x(optic.Optic):
 
         # add wavelength
         self.add_wavelength(value=0.4861)
-        self.add_wavelength(value=0.5876, primary=True)
+        self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
 
         self.update_paraxial()
