@@ -196,7 +196,9 @@ class MaterialFile(BaseMaterial):
         try:
             return np.interp(wavelength, self._k_wavelength, self._k)
         except ValueError:
-            raise ValueError('No extinction coefficient data found.')
+            file = os.path.basename(self.filename)
+            raise ValueError(f'No extinction coefficient data found for '
+                             f'{file}.')
 
     def _formula_1(self, w):
         """
