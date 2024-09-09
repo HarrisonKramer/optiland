@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 from optiland import optimization
 from optiland.samples.microscopes import (
@@ -137,3 +138,82 @@ class TestOptimizationProblem:
         assert 'Merit Function Value' in captured.out
         assert 'Operand Type' in captured.out
         assert 'Variable Type' in captured.out
+
+
+class TestOptimizerGeneric:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1, min_val=10,
+                             max_val=100)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.OptimizerGeneric(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+
+    def test_undo(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1, min_val=10,
+                             max_val=100)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.OptimizerGeneric(problem)
+        optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        optimizer.undo()
+        assert len(optimizer._x) == 0
+
+    def test_fun_nan_rss(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            lens = UVReflectingMicroscope()
+            # this will "break" the lens, resulting in NaN (for testing)
+            lens.set_radius(0.2, 3)
+            problem = optimization.OptimizationProblem()
+            input_data = {'optic': lens, 'Hx': 0.0, 'Hy': 0.1,
+                          'wavelength': 0.5, 'num_rays': 100,
+                          'surface_number': -1}
+            problem.add_operand('rms_spot_size', 0.0, 1.0, input_data)
+            optimizer = optimization.OptimizerGeneric(problem)
+            assert optimizer._fun(np.array([0.2])) == 1e10
+
+
+class TestLeastSquares:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'conic', surface_number=1, min_val=-1,
+                             max_val=1)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.LeastSquares(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+
+
+class TestDualAnnealing:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'thickness', surface_number=1, min_val=10,
+                             max_val=100)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 95, 1.0, input_data)
+        optimizer = optimization.DualAnnealing(problem)
+        result = optimizer.optimize(maxiter=10, disp=False)
+        assert result.success
+
+
+class TestDifferentialEvolution:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'index', surface_number=1, min_val=1.2,
+                             max_val=1.8, wavelength=0.5)
+        input_data = {'optic': lens}
+        problem.add_operand('f2', 90, 1.0, input_data)
+        optimizer = optimization.DifferentialEvolution(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, workers=1)
+        assert result.success
