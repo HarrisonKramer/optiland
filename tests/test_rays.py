@@ -1,6 +1,11 @@
 import pytest
 import numpy as np
-from optiland.rays import BaseRays, RealRays, ParaxialRays
+from optiland.rays import (
+    BaseRays,
+    RealRays,
+    ParaxialRays,
+    PolarizationState,
+    PolarizedRays)
 
 
 def test_translate():
@@ -393,3 +398,34 @@ def test_reflect():
     assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.M[0] == pytest.approx(-1.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(0.0, abs=1e-10)
+
+
+class TestPolarizationState:
+    def test_constructor(self):
+        state = PolarizationState(is_polarized=True, Ex=1, Ey=2,
+                                  phase_x=0, phase_y=1)
+        assert state.is_polarized is True
+        assert state.Ex == 1
+        assert state.Ey == 2
+        assert state.phase_x == 0
+        assert state.phase_y == 1
+
+    def test_constructor_invalid(self):
+        with pytest.raises(ValueError):
+            PolarizationState(is_polarized=True, Ex=1, Ey=2,
+                              phase_x=0, phase_y=None)
+        with pytest.raises(ValueError):
+            PolarizationState(is_polarized=False, Ex=1, Ey=2,
+                              phase_x=None, phase_y=1)
+
+    def test_str(self):
+        state = PolarizationState(is_polarized=True, Ex=1, Ey=0,
+                                  phase_x=0, phase_y=1)
+        val = 'Polarized Light: Ex: 1.0, Ey: 0.0, Phase x: 0.0, Phase y: 1.0'
+        assert str(state) == val
+
+    def test_repr(self):
+        state = PolarizationState(is_polarized=True, Ex=0, Ey=1,
+                                  phase_x=0, phase_y=1)
+        val = 'Polarized Light: Ex: 0.0, Ey: 1.0, Phase x: 0.0, Phase y: 1.0'
+        assert repr(state) == val
