@@ -425,6 +425,10 @@ class TestPolarizationState:
         val = 'Polarized Light: Ex: 1.0, Ey: 0.0, Phase x: 0.0, Phase y: 1.0'
         assert str(state) == val
 
+    def test_str_unpolarized(self):
+        state = PolarizationState(is_polarized=False)
+        assert str(state) == 'Unpolarized Light'
+
     def test_repr(self):
         state = PolarizationState(is_polarized=True, Ex=0, Ey=1,
                                   phase_x=0, phase_y=1)
