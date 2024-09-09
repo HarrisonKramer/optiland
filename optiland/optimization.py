@@ -261,15 +261,12 @@ class LeastSquares(OptimizerGeneric):
         """
 
         x0 = [var.value for var in self.problem.variables]
-        print(x0)
         self._x.append(x0)
         bounds = tuple((var.bounds[0], var.bounds[1])
                        for var in self.problem.variables)
 
         if all(bound[0] is None and bound[1] is None for bound in bounds):
             bounds = (-np.inf, np.inf)
-
-        print(bounds)
 
         if disp:
             verbose = 2
