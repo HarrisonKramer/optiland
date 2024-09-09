@@ -797,3 +797,16 @@ class TestRayGenerator:
 
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py)
+
+    def test_invalid_ray_origin_telecentric(self):
+        lens = TessarLens()
+        lens.obj_space_telecentric = True
+        generator = RayGenerator(lens)
+
+        Hx = 0.0
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+
+        with pytest.raises(ValueError):
+            generator._get_ray_origins(Hx, Hy, Px, Py)
