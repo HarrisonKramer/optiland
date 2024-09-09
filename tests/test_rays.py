@@ -5,6 +5,7 @@ from optiland.rays import (
     RealRays,
     ParaxialRays,
     PolarizationState,
+    create_polarization,
     PolarizedRays)
 
 
@@ -429,3 +430,65 @@ class TestPolarizationState:
                                   phase_x=0, phase_y=1)
         val = 'Polarized Light: Ex: 0.0, Ey: 1.0, Phase x: 0.0, Phase y: 1.0'
         assert repr(state) == val
+
+
+class TestCreatePolarization:
+    def test_create_polarization_unpolarized(self):
+        state = create_polarization('unpolarized')
+        assert state.is_polarized is False
+        assert state.Ex is None
+        assert state.Ey is None
+        assert state.phase_x is None
+        assert state.phase_y is None
+
+    def test_create_polarization_horizontal(self):
+        state = create_polarization('H')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(1.0, abs=1e-10)
+        assert state.Ey == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+
+    def test_create_polarization_vertical(self):
+        state = create_polarization('V')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(0.0, abs=1e-10)
+        assert state.Ey == pytest.approx(1.0, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+
+    def test_create_polarization_linear_45(self):
+        state = create_polarization('L+45')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+
+    def test_create_polarization_linear_minus_45(self):
+        state = create_polarization('L-45')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(-np.sqrt(2) / 2, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+
+    def test_create_polarization_right_circular(self):
+        state = create_polarization('RCP')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(-np.pi / 2, abs=1e-10)
+
+    def test_create_polarization_left_circular(self):
+        state = create_polarization('LCP')
+        assert state.is_polarized is True
+        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
+        assert state.phase_y == pytest.approx(np.pi / 2, abs=1e-10)
+
+    def test_create_polarization_invalid(self):
+        with pytest.raises(ValueError):
+            create_polarization('invalid')
