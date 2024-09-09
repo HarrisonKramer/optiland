@@ -24,10 +24,10 @@ class Objective60x(optic.Optic):
         self.add_surface(index=9, thickness=15.4, radius=2062.370,
                          material='N-KZFS4')
         self.add_surface(index=10, thickness=48.4, radius=203.781,
-                         material='CAF2')
+                         material='LITHOTEC-CAF2')
         self.add_surface(index=11, thickness=4.4, radius=-224.003)
         self.add_surface(index=12, thickness=35.2, radius=219.864,
-                         material='CAF2')
+                         material='LITHOTEC-CAF2')
         self.add_surface(index=13, thickness=4.4, radius=793.3)
         self.add_surface(index=14, thickness=26.4, radius=349.260,
                          material='N-FK51')
