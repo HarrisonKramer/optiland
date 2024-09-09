@@ -492,3 +492,139 @@ class TestCreatePolarization:
     def test_create_polarization_invalid(self):
         with pytest.raises(ValueError):
             create_polarization('invalid')
+
+
+class TestPolarizedRays:
+    def test_init(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([0.0])
+        M = np.array([0.0])
+        N = np.array([1.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+
+        assert isinstance(rays.p, np.ndarray)
+        assert rays.p.shape == (1, 3, 3)
+        assert np.array_equal(rays.p[0], np.eye(3))
+
+    def test_get_output_field(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([0.0])
+        M = np.array([0.0])
+        N = np.array([1.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+        E = np.array([[1.0, 0.0, 0.0]])
+
+        output_field = rays.get_output_field(E)
+        assert output_field.shape == (1, 3)
+        assert np.array_equal(output_field, E)
+
+    def test_update_intensity(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([0.0])
+        M = np.array([0.0])
+        N = np.array([1.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+        state = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
+                                  phase_x=0.0, phase_y=0.0)
+
+        rays.update_intensity(state)
+        assert rays.i.shape == (1,)
+        assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+
+        # test case for unpolarized light
+        state = PolarizationState(is_polarized=False)
+        rays.update_intensity(state)
+        assert rays.i.shape == (1,)
+        assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+
+    def test_update(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([0.0])
+        M = np.array([0.0])
+        N = np.array([1.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+        rays.L0 = np.array([0.0])
+        rays.M0 = np.array([0.0])
+        rays.N0 = np.array([1.0])
+        jones_matrix = np.array([[[1, 0, 0], [0, 1, 0], [0, 0, 1]]])
+
+        rays.update(jones_matrix)
+        assert rays.p.shape == (1, 3, 3)
+        assert np.array_equal(rays.p, jones_matrix)
+
+        # test case when k not orthogonal to N0
+        rays.L0 = np.array([0.0])
+        rays.M0 = np.array([0.1])
+        rays.N0 = np.sqrt([1 - 0.1**2])
+        rays.update(jones_matrix)
+        assert rays.p.shape == (1, 3, 3)
+        jones_matrix = np.array([[[1.0, 0.0, 0.0],
+                                  [0.0, 0.99498744, -0.1],
+                                  [0.0, 0.1, 0.99498744]]])
+        assert np.allclose(rays.p, jones_matrix, atol=1e-10)
+
+        # test case when jones = None
+        rays.L0 = np.array([0.0])
+        rays.M0 = np.array([0.0])
+        rays.N0 = np.array([1.0])
+        rays.update(None)
+        assert rays.p.shape == (1, 3, 3)
+        assert np.allclose(rays.p, jones_matrix, atol=1e-10)
+
+    def test_get_3d_electric_field(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([0.0])
+        M = np.array([0.0])
+        N = np.array([1.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+        state = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
+                                  phase_x=0.0, phase_y=0.0)
+
+        E = rays._get_3d_electric_field(state)
+        assert E.shape == (1, 3)
+        assert np.allclose(E, np.array([[1.0, 0.0, 0.0]]), atol=1e-10)
+
+    def test_get_3d_electric_field_error(self):
+        x = np.array([1.0])
+        y = np.array([2.0])
+        z = np.array([3.0])
+        L = np.array([1.0])  # k-vector propagates in x-direction
+        M = np.array([0.0])
+        N = np.array([0.0])
+        intensity = np.array([1.0])
+        wavelength = np.array([1.0])
+
+        rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
+        rays._L0 = np.array([1.0])
+        rays._M0 = np.array([0.0])
+        rays._N0 = np.array([0.0])
+        state = PolarizationState(is_polarized=True, Ex=1, Ey=0,
+                                  phase_x=0, phase_y=0)
+
+        with pytest.raises(ValueError):
+            rays._get_3d_electric_field(state)
