@@ -9,6 +9,7 @@ from optiland.rays import (
     PolarizedRays,
     RayGenerator)
 from optiland.samples.objectives import TessarLens
+from optiland.samples.lithography import UVProjectionLens
 
 
 def test_translate():
@@ -673,9 +674,28 @@ class TestRayGenerator:
         assert np.allclose(rays.i, np.array([1.0, 1.0]), atol=1e-8)
         assert np.allclose(rays.w, np.array([0.55, 0.55]), atol=1e-8)
 
+    def test_generate_rays_telecentric(self):
+        lens = UVProjectionLens()
+        generator = RayGenerator(lens)
+
+        Hx = 0.0
+        Hy = 1.0
+        Px = 0.8
+        Py = 0.0
+        wavelength = 0.248
+
+        rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+        assert np.isclose(rays.x[0], 0.0, atol=1e-8)
+        assert np.isclose(rays.y[0], 48.0, atol=1e-8)
+        assert np.isclose(rays.z[0], -110.85883544, atol=1e-8)
+        assert np.isclose(rays.L[0], 0.10674041, atol=1e-8)
+        assert np.isclose(rays.M[0], 0.0, atol=1e-8)
+        assert np.isclose(rays.N[0], 0.99428692, atol=1e-8)
+        assert np.isclose(rays.i[0], 1.0, atol=1e-8)
+        assert np.isclose(rays.w[0], 0.248, atol=1e-8)
+
     def test_generate_rays_invalid_field_type(self):
-        lens = TessarLens()
-        lens.obj_space_telecentric = True
+        lens = UVProjectionLens()
         generator = RayGenerator(lens)
 
         Hx = 0.5
@@ -684,7 +704,7 @@ class TestRayGenerator:
         Py = np.array([0.1, 0.2])
         wavelength = 0.55
 
-        lens.set_aperture('EPD', 10.0)
+        lens.set_aperture('EPD', 1.0)
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
