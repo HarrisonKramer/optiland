@@ -406,8 +406,8 @@ class TestPolarizationState:
         state = PolarizationState(is_polarized=True, Ex=1, Ey=2,
                                   phase_x=0, phase_y=1)
         assert state.is_polarized is True
-        assert state.Ex == 1
-        assert state.Ey == 2
+        assert state.Ex == 1 / np.sqrt(5)
+        assert state.Ey == 2 / np.sqrt(5)
         assert state.phase_x == 0
         assert state.phase_y == 1
 
