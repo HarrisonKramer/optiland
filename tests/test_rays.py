@@ -6,7 +6,9 @@ from optiland.rays import (
     ParaxialRays,
     PolarizationState,
     create_polarization,
-    PolarizedRays)
+    PolarizedRays,
+    RayGenerator)
+from optiland.samples.objectives import TessarLens
 
 
 def test_translate():
@@ -632,3 +634,92 @@ class TestPolarizedRays:
 
         with pytest.raises(ValueError):
             rays._get_3d_electric_field(state)
+
+
+class TestRayGenerator:
+    def test_generate_rays(self):
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+        wavelength = 0.55
+
+        lens = TessarLens()
+        generator = RayGenerator(lens)
+        rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
+        assert isinstance(rays, RealRays)
+        assert rays.x.shape == (2,)
+        assert rays.y.shape == (2,)
+        assert rays.z.shape == (2,)
+        assert rays.L.shape == (2,)
+        assert rays.M.shape == (2,)
+        assert rays.N.shape == (2,)
+        assert rays.i.shape == (2,)
+        assert rays.w.shape == (2,)
+
+        assert np.allclose(rays.x, np.array([0.19525707, 0.23967682]),
+                           atol=1e-8)
+        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),    
+                           atol=1e-8)
+        assert np.allclose(rays.z, np.array([-0.17538571, -0.17538571]),
+                           atol=1e-8)
+        assert np.allclose(rays.L, np.array([-0.17519154, -0.17519154]),
+                           atol=1e-8)
+        assert np.allclose(rays.M, np.array([0.17519154, 0.17519154]),
+                           atol=1e-8)
+        assert np.allclose(rays.N, np.array([0.96882189, 0.96882189]),
+                           atol=1e-8)
+        assert np.allclose(rays.i, np.array([1.0, 1.0]), atol=1e-8)
+        assert np.allclose(rays.w, np.array([0.55, 0.55]), atol=1e-8)
+
+    def test_generate_rays_invalid_field_type(self):
+        lens = TessarLens()
+        lens.obj_space_telecentric = True
+        generator = RayGenerator(lens)
+
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+        wavelength = 0.55
+
+        lens.set_aperture('EPD', 10.0)
+        with pytest.raises(ValueError):
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
+        lens.set_aperture('imageFNO', 10.0)
+        with pytest.raises(ValueError):
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
+        lens.set_field_type('angle')
+        with pytest.raises(ValueError):
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+
+    def test_get_ray_origins_infinite_object(self):
+        lens = TessarLens()
+        generator = RayGenerator(lens)
+
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+
+        x0, y0, z0 = generator._get_ray_origins(Hx, Hy, Px, Py)
+
+        assert x0.shape == (2,)
+        assert y0.shape == (2,)
+        assert z0.shape == (2,)
+
+    def test_get_ray_origins_invalid_field_type(self):
+        lens = TessarLens()
+        lens.set_field_type('object_height')
+        generator = RayGenerator(lens)
+
+        Hx = 0.5
+        Hy = 0.5
+        Px = np.array([0.1, 0.2])
+        Py = np.array([0.1, 0.2])
+
+        with pytest.raises(ValueError):
+            generator._get_ray_origins(Hx, Hy, Px, Py)
