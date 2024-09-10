@@ -283,6 +283,8 @@ class LensViewer3D(LensViewer):
 
     def __init__(self, optic):
         super().__init__(optic)
+        self.renWin = vtkRenderWindow()
+        self.iren = vtkRenderWindowInteractor()
 
         # matplotlib default colors converted to RGB
         self._rgb_colors = [(0.122, 0.467, 0.706),
@@ -314,14 +316,12 @@ class LensViewer3D(LensViewer):
                 Defaults to (1200, 800).
         """
         self.renderer = vtkRenderer()
-        renWin = vtkRenderWindow()
-        renWin.AddRenderer(self.renderer)
+        self.renWin.AddRenderer(self.renderer)
 
-        iren = vtkRenderWindowInteractor()
-        iren.SetRenderWindow(renWin)
+        self.iren.SetRenderWindow(self.renWin)
 
         style = vtkInteractorStyleTrackballCamera()
-        iren.SetInteractorStyle(style)
+        self.iren.SetInteractorStyle(style)
 
         self._plot_rays(fields, wavelengths, num_rays, distribution)
         self._plot_all_surfaces()
@@ -334,9 +334,9 @@ class LensViewer3D(LensViewer):
         self.renderer.SetBackground(0.8, 0.9, 1.0)
         self.renderer.SetBackground2(0.4, 0.5, 0.6)
 
-        renWin.SetSize(*figsize)
-        renWin.SetWindowName('Optical System - 3D Viewer')
-        renWin.Render()
+        self.renWin.SetSize(*figsize)
+        self.renWin.SetWindowName('Optical System - 3D Viewer')
+        self.renWin.Render()
 
         self.renderer.GetActiveCamera().SetPosition(1, 0, 0)
         self.renderer.GetActiveCamera().SetFocalPoint(0, 0, 0)
@@ -345,8 +345,8 @@ class LensViewer3D(LensViewer):
         self.renderer.GetActiveCamera().Elevation(0)
         self.renderer.GetActiveCamera().Azimuth(150)
 
-        renWin.Render()
-        iren.Start()
+        self.renWin.Render()
+        self.iren.Start()
 
     def _plot_lens(self, y, z, make_transparent=True):
         """
