@@ -11,7 +11,7 @@ matplotlib.use('Agg')  # use non-interactive backend for testing
 def test_initialization():
     optic = CookeTriplet()
     field = (0, 0)
-    wavelength = 550e-9  # 550 nm
+    wavelength = 0.57
     num_rays = 128
     grid_size = 1024
 
@@ -25,7 +25,7 @@ def test_initialization():
 def test_strehl_ratio():
     optic = CookeTriplet()
     field = (0, 0)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.52
     num_rays = 128
     grid_size = 256
 
@@ -40,7 +40,7 @@ def test_strehl_ratio():
 def test_view_2d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.57
     num_rays = 128
     grid_size = 128
 
@@ -54,7 +54,7 @@ def test_view_2d(mock_show):
 def test_view_3d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.58
     num_rays = 128
     grid_size = 128
 
@@ -67,7 +67,7 @@ def test_view_3d(mock_show):
 def test_find_bounds():
     optic = CookeTriplet()
     field = (0, 0)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.46
     num_rays = 128
     grid_size = 128
 
@@ -84,7 +84,7 @@ def test_find_bounds():
 def test_view_log_2d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.66
     num_rays = 128
     grid_size = 128
 
@@ -98,7 +98,7 @@ def test_view_log_2d(mock_show):
 def test_view_log_3d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.65
     num_rays = 128
     grid_size = 128
 
@@ -111,7 +111,7 @@ def test_view_log_3d(mock_show):
 def test_view_invalid_projection():
     optic = CookeTriplet()
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.55
     num_rays = 128
     grid_size = 128
 
@@ -125,7 +125,7 @@ def test_get_units_finite_obj():
     # make object distance large, but not infinite
     optic.surface_group.surfaces[0].geometry.cs.z = 1e6
     field = (0, 1)
-    wavelength = 0.55  # 550 nm
+    wavelength = 0.50
     num_rays = 128
     grid_size = 128
 
@@ -134,3 +134,18 @@ def test_get_units_finite_obj():
     x, y = fftpsf._get_psf_units(image)
     assert np.isclose(x, 352.01567006276366)
     assert np.isclose(y, 352.01567006276366)
+
+
+def test_psf_log_tick_formatter():
+    optic = CookeTriplet()
+    field = (0, 1)
+    wavelength = 0.55
+    num_rays = 128
+    grid_size = 128
+
+    fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
+    assert fftpsf._log_tick_formatter(10) == '$10^{10}$'
+    assert fftpsf._log_tick_formatter(1) == '$10^{1}$'
+    assert fftpsf._log_tick_formatter(0) == '$10^{0}$'
+    assert fftpsf._log_tick_formatter(-1) == '$10^{-1}$'
+    assert fftpsf._log_tick_formatter(-10) == '$10^{-10}$'
