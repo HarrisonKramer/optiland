@@ -96,39 +96,48 @@ class TestLensViewer3D:
         assert viewer.optic == lens
         assert np.array_equal(viewer._real_ray_extent, np.zeros(10))
 
-    @patch('optiland.visualization.LensViewer3D.view')
-    def test_view(self, mock_view):
+    def test_view(self):
         lens = ReverseTelephoto()
         viewer = LensViewer3D(lens)
-        viewer.view()
-        mock_view.assert_called_once()
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.renWin, 'Render') as mock_render:
 
-    @patch('optiland.visualization.LensViewer3D.view')
-    def test_view_bonded_lens(self, mock_view):
+            viewer.view()
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_view_bonded_lens(self):
         lens = TessarLens()
         viewer = LensViewer3D(lens)
-        viewer.view()
-        mock_view.assert_called_once()
-        plt.close()
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.renWin, 'Render') as mock_render:
 
-    @patch('optiland.visualization.LensViewer3D.view')
-    def test_view_reflective_lens(self, mock_view):
+            viewer.view()
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_view_reflective_lens(self):
         lens = HubbleTelescope()
         viewer = LensViewer3D(lens)
-        viewer.view()
-        mock_view.assert_called_once()
-        plt.close()
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.renWin, 'Render') as mock_render:
 
-    @patch('optiland.visualization.LensViewer3D.view')
-    def test_view_single_field(self, mock_view):
+            viewer.view()
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_view_single_field(self):
         lens = ReverseTelephoto()
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type='angle')
         lens.add_field(y=0)
         viewer = LensViewer3D(lens)
-        viewer.view()
-        mock_view.assert_called_once()
-        plt.close()
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.renWin, 'Render') as mock_render:
+
+            viewer.view()
+            mock_start.assert_called_once()
+            mock_render.assert_called()
 
 
 class TestLensInfoViewer:
