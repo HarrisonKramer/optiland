@@ -125,7 +125,7 @@ def test_get_units_finite_obj():
     # make object distance large, but not infinite
     optic.surface_group.surfaces[0].geometry.cs.z = 1e6
     field = (0, 1)
-    wavelength = 0.50
+    wavelength = 0.55
     num_rays = 128
     grid_size = 128
 
