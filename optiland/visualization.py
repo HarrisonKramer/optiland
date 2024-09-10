@@ -484,7 +484,7 @@ class LensInfoViewer:
             elif isinstance(surf.material_post, materials.Material):
                 mat.append(surf.material_post.name)
             elif isinstance(surf.material_post, materials.MaterialFile):
-                mat.append(os.path.basename(surf.material_post.file))
+                mat.append(os.path.basename(surf.material_post.filename))
             elif surf.material_post.index == 1:
                 mat.append('Air')
             elif isinstance(surf.material_post, materials.IdealMaterial):
