@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 import pytest
 import numpy as np
@@ -11,6 +12,7 @@ from optiland.samples.telescopes import HubbleTelescope
 from optiland import fields
 from optiland.geometries import BaseGeometry, EvenAsphere
 from optiland.coordinate_system import CoordinateSystem
+from optiland.materials import BaseMaterial, MaterialFile, IdealMaterial
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')  # use non-interactive backend for testing
@@ -29,6 +31,19 @@ class InvalidGeometry(BaseGeometry):
 
     def surface_normal(self, rays):
         return 0
+
+
+class InvalidMaterial(BaseMaterial):
+
+    def __init__(self):
+        super().__init__()
+        self.index = -42
+
+    def n(self, wavelength):
+        return -42
+
+    def k(self, wavelength):
+        return -42
 
 
 class TestLensViewer:
@@ -175,3 +190,40 @@ class TestLensInfoViewer:
         assert 'Conic' in captured.out
         assert 'Semi-aperture' in captured.out
         assert 'Even Asphere' in captured.out
+
+    def test_view_material_file(self, capsys):
+        lens = ReverseTelephoto()
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/glass/hoya/', 'LAC9.yml')
+        mat = MaterialFile(filename)
+        lens.surface_group.surfaces[2].material_post = mat
+        viewer = LensInfoViewer(lens)
+        viewer.view()
+        captured = capsys.readouterr()
+        assert 'Type' in captured.out
+        assert 'Radius' in captured.out
+        assert 'Thickness' in captured.out
+        assert 'Material' in captured.out
+        assert 'Conic' in captured.out
+        assert 'Semi-aperture' in captured.out
+
+    def test_view_ideal_material(self, capsys):
+        lens = ReverseTelephoto()
+        mat = IdealMaterial(1.5)
+        lens.surface_group.surfaces[2].material_post = mat
+        viewer = LensInfoViewer(lens)
+        viewer.view()
+        captured = capsys.readouterr()
+        assert 'Type' in captured.out
+        assert 'Radius' in captured.out
+        assert 'Thickness' in captured.out
+        assert 'Material' in captured.out
+        assert 'Conic' in captured.out
+        assert 'Semi-aperture' in captured.out
+
+    def test_view_invalid_material(self):
+        lens = ReverseTelephoto()
+        lens.surface_group.surfaces[2].material_post = InvalidMaterial()
+        viewer = LensInfoViewer(lens)
+        with pytest.raises(ValueError):
+            viewer.view()
