@@ -126,3 +126,32 @@ class CementedAchromat(optic.Optic):
 
         self.update_paraxial()
         self.image_solve()
+
+
+class AsphericSinglet(optic.Optic):
+    """Aspheric singlet"""
+
+    def __init__(self):
+        super().__init__()
+
+        # add surfaces
+        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=1, thickness=7, radius=20.0, is_stop=True,
+                         material='N-SF11', surface_type='even_asphere',
+                         conic=0.0,
+                         coefficients=[-2.248851e-4, -4.690412e-6,
+                                       -6.404376e-8])
+        self.add_surface(index=2, thickness=21.56201105)
+        self.add_surface(index=3)
+
+        # add aperture
+        self.set_aperture(aperture_type='EPD', value=20.0)
+
+        # add field
+        self.set_field_type(field_type='angle')
+        self.add_field(y=0)
+
+        # add wavelength
+        self.add_wavelength(value=0.587, is_primary=True)
+
+        self.update_paraxial()
