@@ -40,7 +40,7 @@ class VariableBehavior(ABC):
         Returns:
             The value of the variable.
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def update_value(self, new_value):
@@ -50,7 +50,7 @@ class VariableBehavior(ABC):
         Args:
             new_value: The new value of the variable.
         """
-        pass
+        pass  # pragma: no cover
 
     def scale(self, value):
         """
@@ -59,7 +59,7 @@ class VariableBehavior(ABC):
         Args:
             value: The value to scale
         """
-        pass
+        return value  # pragma: no cover
 
     def inverse_scale(self, scaled_value):
         """
@@ -68,7 +68,7 @@ class VariableBehavior(ABC):
         Args:
             scaled_value: The scaled value to inverse scale
         """
-        pass
+        return scaled_value  # pragma: no cover
 
 
 class RadiusVariable(VariableBehavior):
