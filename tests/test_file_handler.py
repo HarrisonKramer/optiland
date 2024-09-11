@@ -37,11 +37,6 @@ def replace_line_in_zmx(zmx_file, line_prefix, new_line):
 
 
 class TestZemaxFileReader:
-    def test_generate_lens(self, zemax_file_reader):
-        lens = zemax_file_reader.generate_lens()
-        assert lens is not None
-        assert isinstance(lens, Optic)
-
     def test_is_url(self, zemax_file_reader):
         assert zemax_file_reader._is_url('http://www.google.com') is True
 
@@ -245,3 +240,23 @@ class TestZemaxFileReader:
         zemax_file_reader._read_surface_parameter(data)
         val = zemax_file_reader._current_surf_data['param_0']
         assert val == 2
+
+
+class TestZemaxToOpticConverter:
+    def test_generate_lens(self, zemax_file_reader):
+        lens = zemax_file_reader.generate_lens()
+        assert lens is not None
+        assert isinstance(lens, Optic)
+
+    def test_generate_asphere(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(current_dir, 'zemax_files/lens2.zmx')
+        zemax_file_reader = ZemaxFileReader(filename)
+        lens = zemax_file_reader.generate_lens()
+        assert lens is not None
+        assert isinstance(lens, Optic)
+
+    def test_generate_lens_with_invalid_mode(self, zemax_file_reader):
+        zemax_file_reader.data['surfaces'][0]['type'] = 'invalid'
+        with pytest.raises(ValueError, match='Unsupported surface type.'):
+            zemax_file_reader.generate_lens()
