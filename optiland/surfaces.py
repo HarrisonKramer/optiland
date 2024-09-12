@@ -24,7 +24,7 @@ from optiland.geometries import (
     BaseGeometry,
     EvenAsphere,
     PolynomialGeometry,
-    ChebyshevGeometry)
+    ChebyshevPolynomialGeometry)
 
 
 class Surface:
@@ -595,8 +595,9 @@ class SurfaceFactory:
         norm_x = kwargs.get('norm_x', 1)
         norm_y = kwargs.get('norm_y', 1)
 
-        geometry = ChebyshevGeometry(cs, radius, conic, tol, max_iter,
-                                     coefficients, norm_x, norm_y)
+        geometry = ChebyshevPolynomialGeometry(cs, radius, conic, tol,
+                                               max_iter, coefficients,
+                                               norm_x, norm_y)
 
         return geometry
 
