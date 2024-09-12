@@ -23,7 +23,8 @@ from optiland.geometries import (
     StandardGeometry,
     BaseGeometry,
     EvenAsphere,
-    PolynomialGeometry)
+    PolynomialGeometry,
+    ChebyshevGeometry)
 
 
 class Surface:
@@ -445,6 +446,11 @@ class SurfaceFactory:
                 'geometry': self._configure_polynomial_geometry,
                 'expected_params': ['radius', 'conic', 'coefficients',
                                     'tol', 'max_iter']
+            },
+            'chebyshev': {
+                'geometry': self._configure_chebyshev_geometry,
+                'expected_params': ['radius', 'conic', 'coefficients',
+                                    'tol', 'max_iter', 'norm_x', 'norm_y']
             }
         }
 
@@ -565,6 +571,32 @@ class SurfaceFactory:
 
         geometry = PolynomialGeometry(cs, radius, conic, tol, max_iter,
                                       coefficients)
+
+        return geometry
+
+    @staticmethod
+    def _configure_chebyshev_geometry(cs, **kwargs):
+        """
+        Configures a Chebyshev geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius, conic, coefficients, tol, and max_iter.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+        tol = kwargs.get('tol', 1e-6)
+        max_iter = kwargs.get('max_iter', 100)
+        coefficients = kwargs.get('coefficients', [])
+        norm_x = kwargs.get('norm_x', 1)
+        norm_y = kwargs.get('norm_y', 1)
+
+        geometry = ChebyshevGeometry(cs, radius, conic, tol, max_iter,
+                                     coefficients, norm_x, norm_y)
 
         return geometry
 
