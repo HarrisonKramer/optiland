@@ -34,6 +34,14 @@ class TestConicVariable:
         self.conic_var.update_value(-0.5)
         assert np.isclose(self.conic_var.get_value(), -0.5)
 
+    def test_scale_value(self):
+        self.conic_var.scale(2.0)
+        assert np.isclose(self.conic_var.get_value(), 0.0)
+
+    def test_inverse_scale_value(self):
+        self.conic_var.inverse_scale(2.0)
+        assert np.isclose(self.conic_var.get_value(), 0.0)
+
 
 class TestThicknessVariable:
     @pytest.fixture(autouse=True)
@@ -92,3 +100,36 @@ class TestPolynomialCoeffVariable:
     def test_update_value(self):
         self.poly_var.update_value(1.0)
         assert np.isclose(self.poly_var.get_value(), 1.0)
+
+    def test_get_value_index_error(self):
+        self.optic = AsphericSinglet()
+        poly_geo = PolynomialGeometry(CoordinateSystem(), 100)
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
+        assert self.poly_var.get_value() == 0.0
+
+    def test_update_value_index_error(self):
+        self.optic = AsphericSinglet()
+        poly_geo = PolynomialGeometry(CoordinateSystem(), 100)
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
+        self.poly_var.update_value(1.0)
+        assert np.isclose(self.poly_var.get_value(), 1.0)
+
+
+class TestVariable:
+    def test_get_value(self):
+        optic = Objective60x()
+        radius_var = variable.Variable(optic, 'radius', surface_number=1)
+        assert np.isclose(radius_var.value, 4.5325999999999995)
+
+    def test_unrecognized_attribute(self):
+        optic = Objective60x()
+        radius_var = variable.Variable(optic, 'radius', surface_number=1,
+                                       unrecognized_attribute=1)
+        assert np.isclose(radius_var.value, 4.5325999999999995)
+
+    def test_invalid_type(self):
+        optic = Objective60x()
+        with pytest.raises(ValueError):
+            variable.Variable(optic, 'invalid', surface_number=1)
