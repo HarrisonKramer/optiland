@@ -591,7 +591,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0,
                  tol=1e-10, max_iter=100, coefficients=[], norm_x=1, norm_y=1):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = coefficients
+        self.c = np.array(coefficients)
         self.norm_x = norm_x
         self.norm_y = norm_y
 
@@ -609,20 +609,26 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             float: The sag value at the given coordinates.
         """
-        x /= self.norm_x
-        y /= self.norm_y
+        x_norm = x / self.norm_x
+        y_norm = y / self.norm_y
 
-        if np.any(np.abs(x) > 1) or np.any(np.abs(y) > 1):
-            raise ValueError('Input coordinates must be normalized to [-1, 1]'
-                             '. Consider updating the normalization factors.')
+        if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
+            raise ValueError('Chebyshev input coordinates must be normalized '
+                             'to (-1, 1). Consider updating the normalization '
+                             'factors.')
+
+        z = 0
+        for i in range(self.c.shape[0]):
+            for j in range(self.c.shape[1]):
+                z += (self.c[i, j] *
+                      self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm))
+
+        z *= self.norm_x * self.norm_y
 
         r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i in range(len(self.c)):
-            for j in range(len(self.c[i])):
-                z += (self.c[i][j] *
-                      self._chebyshev(i, x) * self._chebyshev(j, y))
+        z += r2 / (self.radius *
+                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+
         return z
 
     def _surface_normal(self, x, y):
@@ -637,32 +643,37 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             tuple: The surface normal components (nx, ny, nz).
         """
-        x /= self.norm_x
-        y /= self.norm_y
+        x_norm = x / self.norm_x
+        y_norm = y / self.norm_y
 
-        if np.any(np.abs(x) > 1) or np.any(np.abs(y) > 1):
-            raise ValueError('Input coordinates must be normalized to [-1, 1]'
-                             '. Consider updating the normalization factors.')
+        if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
+            raise ValueError('Chebyshev input coordinates must be normalized '
+                             'to (-1, 1). Consider updating the normalization '
+                             'factors.')
+
+        dzdx = 0
+        dzdy = 0
+        for i in range(self.c.shape[0]):
+            for j in range(self.c.shape[1]):
+                dzdx += (self._chebyshev_derivative(i, x_norm) *
+                         self.c[i, j] * self._chebyshev(j, y_norm))
+                dzdy += (self._chebyshev_derivative(j, y_norm) *
+                         self.c[i, j] * self._chebyshev(i, x_norm))
+
+        dzdx *= self.norm_x * self.norm_y
+        dzdy *= self.norm_x * self.norm_y
 
         r2 = x**2 + y**2
         denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
-        dzdx = x / denom
-        dzdy = y / denom
-
-        for i in range(1, len(self.c)):
-            for j in range(len(self.c[i])):
-                dzdx -= (self._chebyshev_derivative(i, x) *
-                         self.c[i][j] * self._chebyshev(j, y))
-
-        for i in range(len(self.c)):
-            for j in range(1, len(self.c[i])):
-                dzdy -= (self._chebyshev_derivative(j, y) *
-                         self.c[i][j] * self._chebyshev(i, x))
+        dzdx += x / denom
+        dzdy += y / denom
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
         ny = dzdy / norm
         nz = 1 / norm
+
+        print(nx, ny, nz)
 
         return nx, ny, nz
 
@@ -694,4 +705,4 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             np.ndarray: The derivative of the Chebyshev polynomial of the first
                 kind of degree n at the given x value.
         """
-        return n * np.sin(n * np.arccos(x))
+        return n * np.sin(n * np.arccos(x)) / np.sqrt(1 - x**2)
