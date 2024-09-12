@@ -1,4 +1,5 @@
 ![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
+[![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 ![Forks](https://img.shields.io/github/forks/HarrisonKramer/optiland.svg)
 ![Watchers](https://img.shields.io/github/watchers/HarrisonKramer/optiland.svg)
