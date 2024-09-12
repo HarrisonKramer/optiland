@@ -582,6 +582,10 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         coefficients (list or np.ndarray, optional): The coefficients of the
             Chebyshev polynomial surface. Defaults to an empty list, indicating
             no Chebyshev polynomial coefficients are used.
+        norm_x (int, optional): The normalization factor for the x-coordinate.
+            Defaults to 1.
+        norm_y (int, optional): The normalization factor for the y-coordinate.
+            Defaults to 1.
     """
 
     def __init__(self, coordinate_system, radius, conic=0.0,
@@ -590,9 +594,6 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self.c = coefficients
         self.norm_x = norm_x
         self.norm_y = norm_y
-
-        raise NotImplementedError("""ChebyshevPolynomialGeometry is not yet
-                                  implemented.""")
 
     def sag(self, x=0, y=0):
         """
@@ -608,6 +609,13 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             float: The sag value at the given coordinates.
         """
+        x /= self.norm_x
+        y /= self.norm_y
+
+        if np.any(np.abs(x) > 1) or np.any(np.abs(y) > 1):
+            raise ValueError('Input coordinates must be normalized to [-1, 1]'
+                             '. Consider updating the normalization factors.')
+
         r2 = x**2 + y**2
         z = r2 / (self.radius *
                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
@@ -629,6 +637,13 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             tuple: The surface normal components (nx, ny, nz).
         """
+        x /= self.norm_x
+        y /= self.norm_y
+
+        if np.any(np.abs(x) > 1) or np.any(np.abs(y) > 1):
+            raise ValueError('Input coordinates must be normalized to [-1, 1]'
+                             '. Consider updating the normalization factors.')
+
         r2 = x**2 + y**2
         denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
         dzdx = x / denom
@@ -679,4 +694,4 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             np.ndarray: The derivative of the Chebyshev polynomial of the first
                 kind of degree n at the given x value.
         """
-        return -n * np.sin(n * np.arccos(x))
+        return n * np.sin(n * np.arccos(x))
