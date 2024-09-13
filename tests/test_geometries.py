@@ -292,3 +292,81 @@ class TestPolynomialGeometry:
         assert nx == pytest.approx(-0.4373017765693584, abs=1e-10)
         assert ny == pytest.approx(0.04888445345459283, abs=1e-10)
         assert nz == pytest.approx(0.8979852261700794, abs=1e-10)
+
+
+class TestChebyshevGeometry:
+    def test_sag(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=22.0, conic=0.0,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        # Test sag at (0, 0)
+        assert geometry.sag() == pytest.approx(-0.198, abs=1e-10)
+
+        # Test sag at (1, 1)
+        assert geometry.sag(1, 1) == pytest.approx(-0.13832040010014895,
+                                                   abs=1e-10)
+
+        # Test sag at (-2, -7)
+        assert geometry.sag(-2, -7) == pytest.approx(1.036336507973306,
+                                                     abs=1e-10)
+
+        # Test array input
+        x = np.array([0, 3, 8])
+        y = np.array([0, -7, 2.1])
+        sag = np.array([-0.198, 1.22291856, 1.75689642])
+        assert np.allclose(geometry.sag(x, y), sag)
+
+    def test_distance(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        # Test distance for a single ray
+        rays = RealRays(1.0, 2.0, -3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        distance = geometry.distance(rays)
+        assert distance == pytest.approx(2.71982177, abs=1e-8)
+
+        # Test distance for multiple rays
+        rays = RealRays([1.0, 2.0], [2.0, 3.0], [-3.0, -4.0], [0.0, 0.0],
+                        [0.0, 0.0], [1.0, 1.0], [1.0, 1.0], [1.0, 1.0])
+        distance = geometry.distance(rays)
+        nom_distance = [2.719821774952821, 3.5873077130373345]
+        assert distance == pytest.approx(nom_distance, abs=1e-8)
+
+        # Test distance for ray not parallel to z axis
+        L = 0.164
+        M = -0.210
+        N = np.sqrt(1 - L**2 - M**2)
+        rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
+        distance = geometry.distance(rays)
+        assert distance == pytest.approx(10.29015593, abs=1e-8)
+
+    def test_surface_normal(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        nx, ny, nz = geometry.surface_normal(rays)
+        assert nx == pytest.approx(-0.14317439, abs=1e-8)
+        assert ny == pytest.approx(0.07668599, abs=1e-8)
+        assert nz == pytest.approx(0.98672202, abs=1e-8)
