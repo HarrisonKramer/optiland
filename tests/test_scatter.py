@@ -47,6 +47,17 @@ class TestScatter:
         unique_points = list(set(tuple(point) for point in points))
         assert len(unique_points) == 1000
 
+    def test_large_L(self):
+        nx = 0.1
+        ny = 0.3
+        nz = np.sqrt(1 - nx**2 - ny**2)
+        L = 0.99999
+        M = 0.0
+        N = np.sqrt(1 - L**2)
+        s = scatter.scatter(L, M, N, nx, ny, nz,
+                            scatter.get_point_lambertian)
+        assert np.isclose(np.linalg.norm(s), 1)
+
     def test_output_unit_vector(self):
         for _ in range(1000):
             L, M, N, nx, ny, nz = np.random.rand(6)
