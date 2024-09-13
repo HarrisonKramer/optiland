@@ -533,21 +533,21 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             tuple: The surface normal components (nx, ny, nz).
         """
         r2 = x**2 + y**2
-        denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
         dzdx = x / denom
         dzdy = y / denom
 
         for i in range(1, len(self.c)):
             for j in range(len(self.c[i])):
-                dzdx -= i * self.c[i][j] * (x ** (i - 1)) * (y ** j)
+                dzdx += i * self.c[i][j] * (x ** (i - 1)) * (y ** j)
 
         for i in range(len(self.c)):
             for j in range(1, len(self.c[i])):
-                dzdy -= j * self.c[i][j] * (x ** i) * (y ** (j - 1))
+                dzdy += j * self.c[i][j] * (x ** i) * (y ** (j - 1))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
-        nx = dzdx / norm
-        ny = dzdy / norm
+        nx = -dzdx / norm
+        ny = -dzdy / norm
         nz = 1 / norm
 
         return nx, ny, nz
@@ -558,7 +558,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     Represents a Chebyshev polynomial geometry defined as:
 
     z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
-        sum(Cij * T_i(x) * T_j(y))
+        sum(Cij * T_i(x / norm_x) * T_j(y / norm_y))
 
     where
     - r^2 = x^2 + y^2
@@ -566,6 +566,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     - k is the conic constant
     - Cij are the Chebyshev polynomial coefficients
     - T_i(x) is the Chebyshev polynomial of the first kind of degree i
+    - norm_x and norm_y are normalization factors for the x and y coordinates
 
     The coefficients are defined in a 2D array where coefficients[i][j] is the
     coefficient for T_i(x) * T_j(y).
@@ -614,20 +615,17 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
             raise ValueError('Chebyshev input coordinates must be normalized '
-                             'to (-1, 1). Consider updating the normalization '
+                             'to [-1, 1]. Consider updating the normalization '
                              'factors.')
 
-        z = 0
+        r2 = x**2 + y**2
+        z = r2 / (self.radius *
+                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+
         for i in range(self.c.shape[0]):
             for j in range(self.c.shape[1]):
                 z += (self.c[i, j] *
                       self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm))
-
-        z *= self.norm_x * self.norm_y
-
-        r2 = x**2 + y**2
-        z += r2 / (self.radius *
-                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
         return z
 
@@ -648,32 +646,25 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
             raise ValueError('Chebyshev input coordinates must be normalized '
-                             'to (-1, 1). Consider updating the normalization '
+                             'to [-1, 1]. Consider updating the normalization '
                              'factors.')
 
-        dzdx = 0
-        dzdy = 0
-        for i in range(self.c.shape[0]):
-            for j in range(self.c.shape[1]):
-                dzdx += (self._chebyshev_derivative(i, x_norm) *
-                         self.c[i, j] * self._chebyshev(j, y_norm))
-                dzdy += (self._chebyshev_derivative(j, y_norm) *
-                         self.c[i, j] * self._chebyshev(i, x_norm))
-
-        dzdx *= self.norm_x * self.norm_y
-        dzdy *= self.norm_x * self.norm_y
-
         r2 = x**2 + y**2
-        denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
-        dzdx += x / denom
-        dzdy += y / denom
+        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        dzdx = x / denom
+        dzdy = y / denom
+
+        non_zero_indices = np.argwhere(self.c != 0)
+        for i, j in non_zero_indices:
+            dzdx += (self._chebyshev_derivative(i, x_norm) *
+                     self.c[i, j] * self._chebyshev(j, y_norm))
+            dzdy += (self._chebyshev_derivative(j, y_norm) *
+                     self.c[i, j] * self._chebyshev(i, x_norm))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
-        nx = dzdx / norm
-        ny = dzdy / norm
+        nx = -dzdx / norm
+        ny = -dzdy / norm
         nz = 1 / norm
-
-        print(nx, ny, nz)
 
         return nx, ny, nz
 
