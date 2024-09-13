@@ -622,10 +622,10 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         z = r2 / (self.radius *
                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
-        for i in range(self.c.shape[0]):
-            for j in range(self.c.shape[1]):
-                z += (self.c[i, j] *
-                      self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm))
+        non_zero_indices = np.argwhere(self.c != 0)
+        for i, j in non_zero_indices:
+            z += (self.c[i, j] *
+                  self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm))
 
         return z
 
