@@ -376,7 +376,7 @@ class LensViewer3D(LensViewer):
         self.renWin.Render()
         self.iren.Start()
 
-    def _plot_lens(self, y, z, make_transparent=True):
+    def _plot_lens(self, x, y, z, make_transparent=True):
         """
         Plot a lens in the 3D visualization.
 
@@ -420,7 +420,7 @@ class LensViewer3D(LensViewer):
 
         self.renderer.AddActor(surfaceActor)
 
-    def _plot_surface(self, y, z):
+    def _plot_surface(self, x, y, z):
         """
         Plot a surface in the 3D visualization.
 
@@ -428,7 +428,7 @@ class LensViewer3D(LensViewer):
             y (list): The y-coordinates of the surface points.
             z (list): The z-coordinates of the surface points.
         """
-        self._plot_lens(y, z, make_transparent=False)
+        self._plot_lens(x, y, z, make_transparent=False)
 
     def _plot_line(self, x, y, z, color):
         """
