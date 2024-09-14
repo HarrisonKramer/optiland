@@ -11,6 +11,7 @@ system.
 Kramer Harrison, 2023
 """
 import os
+import warnings
 import vtkmodules.vtkRenderingOpenGL2  # noqa
 from vtkmodules.vtkFiltersSources import vtkLineSource
 from vtkmodules.vtkCommonCore import vtkPoints
@@ -66,6 +67,7 @@ class LensViewer:
 
         n = self.optic.surface_group.num_surfaces
         self._real_ray_extent = np.zeros(n)
+        self._is_symmetric = self._is_rotationally_symmetric()
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4)):
@@ -81,6 +83,10 @@ class LensViewer:
             distribution: The distribution of the rays. Default is 'line_y'.
             figsize: The size of the figure. Default is (10, 4).
         """
+        if not self._is_symmetric:
+            warnings.warn('The optical system is not rotationally symmetric. '
+                          'The visualization may not be accurate.')
+
         _, self.ax = plt.subplots(figsize=figsize)
         self._plot_rays(fields=fields, wavelengths=wavelengths,
                         num_rays=num_rays, distribution=distribution)
@@ -290,6 +296,13 @@ class LensViewer:
         points = RealRays(x, y, z, t, t, t, t, t)
         surf.geometry.globalize(points)
         return points.x, points.y, points.z
+
+    def _is_rotationally_symmetric(self):
+        """Check if the optical system is rotationally symmetric."""
+        for surf in self.optic.surface_group.surfaces:
+            if not surf.is_rotationally_symmetric():
+                return False
+        return True
 
 
 class LensViewer3D(LensViewer):
