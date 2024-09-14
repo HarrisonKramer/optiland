@@ -92,7 +92,7 @@ class SpotDiagram:
         # subtract centroid and find limits
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
-        axis_lim = np.max(geometric_size)
+        axis_lim = np.nanmax(geometric_size)
 
         # plot wavelengths for each field
         for k, field_data in enumerate(data):
