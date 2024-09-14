@@ -99,18 +99,20 @@ class LensViewer:
             surf = self.optic.surface_group.surfaces[k]
             if surf.is_reflective:
                 y = self._get_surface_extent(k)
-                z = surf.geometry.sag(y=y) + surf.geometry.cs.z
-                self._plot_surface(y, z)
+                z = surf.geometry.sag(y=y)
+                x = np.zeros_like(y)
+                x, y, z = self._globalize(surf, x, y, z)
+                self._plot_surface(x, y, z)
 
             if n[k] > 1:
                 surf1 = self.optic.surface_group.surfaces[k]
                 surf2 = self.optic.surface_group.surfaces[k+1]
 
                 y1 = self._get_surface_extent(k)
-                z1 = surf1.geometry.sag(y=y1) + surf1.geometry.cs.z
+                z1 = surf1.geometry.sag(y=y1)
 
                 y2 = self._get_surface_extent(k+1)
-                z2 = surf2.geometry.sag(y=y2) + surf2.geometry.cs.z
+                z2 = surf2.geometry.sag(y=y2)
 
                 if n[k+1] == 1 and n[k-1] == 1:  # single lens
                     min_radius = min(np.min(y1), np.min(y2))
@@ -129,7 +131,7 @@ class LensViewer:
                     max_radius = max(np.max(y0), np.max(y1), np.max(y2))
 
                 if y1[0] > min_radius:
-                    y1 = np.insert(y1 + surf1.geometry.cs.y, 0, min_radius)
+                    y1 = np.insert(y1, 0, min_radius)
                     z1 = np.insert(z1, 0, z1[0])
 
                 if y1[-1] < max_radius:
@@ -144,17 +146,26 @@ class LensViewer:
                     y2 = np.append(y2 + surf2.geometry.cs.y, max_radius)
                     z2 = np.append(z2, z2[-1])
 
+                x1 = np.zeros_like(y1)
+                x1, y1, z1 = self._globalize(surf1, x1, y1, z1)
+
+                x2 = np.zeros_like(y2)
+                x2, y2, z2 = self._globalize(surf2, x2, y2, z2)
+
+                x = np.concatenate((x1, x2))
                 y = np.concatenate((y1, np.flip(y2)))
                 z = np.concatenate((z1, np.flip(z2)))
 
-                self._plot_lens(y, z)
+                self._plot_lens(x, y, z)
 
         # plot image surface
         yi = np.linspace(-self._real_ray_extent[-1],
                          self._real_ray_extent[-1], 128)
         image_surf = self.optic.image_surface
-        zi = image_surf.geometry.sag(y=yi) + image_surf.geometry.cs.z
-        self._plot_surface(yi, zi)
+        zi = image_surf.geometry.sag(y=yi)
+        xi = np.zeros_like(yi)
+        xi, yi, zi = self._globalize(image_surf, xi, yi, zi)
+        self._plot_surface(xi, yi, zi)
 
     def _plot_rays(self, fields='all', wavelengths='primary', num_rays=3,
                    distribution='line_y'):
@@ -185,8 +196,11 @@ class LensViewer:
 
                 # find maximum extent of rays
                 for k in range(y.shape[0]):
-                    if np.nanmax(np.abs(y[k, :])) > self._real_ray_extent[k]:
-                        max_ray_height = np.nanmax(np.abs(y[k, :]))
+                    surf = self.optic.surface_group.surfaces[k]
+                    x_loc, y_loc, z_loc = self._localize(surf, x[k, :],
+                                                         y[k, :], z[k, :])
+                    max_ray_height = np.max(np.hypot(x_loc, y_loc))
+                    if max_ray_height > self._real_ray_extent[k]:
                         self._real_ray_extent[k] = max_ray_height
 
                 # if only one field, use different colors for each wavelength
@@ -207,7 +221,7 @@ class LensViewer:
 
                     self._plot_line(xk, yk, zk, f'C{color_idx}')
 
-    def _plot_lens(self, y, z):
+    def _plot_lens(self, x, y, z):
         """
         Plots a lens.
 
@@ -220,7 +234,7 @@ class LensViewer:
                           edgecolor='gray')
         self.ax.add_patch(polygon)
 
-    def _plot_surface(self, y, z):
+    def _plot_surface(self, x, y, z):
         """
         Plots a surface.
 
@@ -262,6 +276,20 @@ class LensViewer:
             surf.aperture.clip(rays)
             y[rays.i == 0] = np.nan
         return y
+
+    def _localize(self, surf, x, y, z):
+        """Convert x, y, z coordinates to local coordinates of surface."""
+        t = np.zeros_like(x)
+        points = RealRays(x, y, z, t, t, t, t, t)
+        surf.geometry.localize(points)
+        return points.x, points.y, points.z
+
+    def _globalize(self, surf, x, y, z):
+        """Convert x, y, z coordinates to global coordinates."""
+        t = np.zeros_like(x)
+        points = RealRays(x, y, z, t, t, t, t, t)
+        surf.geometry.globalize(points)
+        return points.x, points.y, points.z
 
 
 class LensViewer3D(LensViewer):
