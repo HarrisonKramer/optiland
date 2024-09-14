@@ -596,7 +596,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0,
                  tol=1e-10, max_iter=100, coefficients=[], norm_x=1, norm_y=1):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = np.array(coefficients)
+        self.c = np.atleast_2d(coefficients)
         self.norm_x = norm_x
         self.norm_y = norm_y
         self.is_symmetric = False

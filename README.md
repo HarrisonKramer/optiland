@@ -134,7 +134,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Optimizing and Analyzing a Complex Lithography System
     - [Tutorial 7b - Surface Roughness & Scattering](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_7b_Surface_Roughness_&_Scattering.ipynb)
         - Lambertian and Gaussian scatter models
-    - Tutorial 7c - Freeform Surfaces - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 7c - Freeform Surfaces](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_7c_Freeform_Surfaces.ipynb)
+        - Designing non-standard optical systems with freeform surfaces
 8. **Tolerancing**
     - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Nov. 2024)
         - Sensitivity studies
