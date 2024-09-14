@@ -461,6 +461,25 @@ class PolynomialCoeffVariable(VariableBehavior):
         return scaled_value
 
 
+class ChebyshevCoeffVariable(PolynomialCoeffVariable):
+    """
+    Represents a variable for a Chebyshev coefficient of a ChebyshevGeometry.
+
+    Args:
+        optic (Optic): The optic object associated with the variable.
+        surface_number (int): The index of the surface in the optical system.
+        coeff_index (tuple(int, int)): The (x, y) indices of the Chebyshev
+            coefficient.
+        **kwargs: Additional keyword arguments.
+
+    Attributes:
+        coeff_number (int): The index of the Chebyshev coefficient.
+    """
+
+    def __init__(self, optic, surface_number, coeff_index, **kwargs):
+        super().__init__(optic, surface_number, coeff_index, **kwargs)
+
+
 class Variable:
     """
     Represents a variable in an optical system.
@@ -535,7 +554,8 @@ class Variable:
             'thickness': ThicknessVariable,
             'index': IndexVariable,
             'asphere_coeff': AsphereCoeffVariable,
-            'polynomial_coeff': PolynomialCoeffVariable
+            'polynomial_coeff': PolynomialCoeffVariable,
+            'chebyshev_coeff': ChebyshevCoeffVariable
         }
 
         variable_class = variable_types.get(self.type)
