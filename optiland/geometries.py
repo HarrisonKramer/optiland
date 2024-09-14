@@ -90,6 +90,7 @@ class Plane(BaseGeometry):
     def __init__(self, coordinate_system):
         super().__init__(coordinate_system)
         self.radius = np.inf
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
@@ -161,6 +162,7 @@ class StandardGeometry(BaseGeometry):
         super().__init__(coordinate_system)
         self.radius = radius
         self.k = conic
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.
@@ -409,6 +411,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """
@@ -495,6 +498,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
+        self.is_symmetric = False
 
         if len(self.c) == 0:
             self.c = np.zeros((1, 1))
@@ -595,6 +599,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self.c = np.array(coefficients)
         self.norm_x = norm_x
         self.norm_y = norm_y
+        self.is_symmetric = False
 
     def sag(self, x=0, y=0):
         """
