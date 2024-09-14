@@ -235,6 +235,18 @@ class ParaxialRays(BaseRays):
         self.z += t
         self.y += t * self.u
 
+    def rotate_x(self, rx: float):
+        """Rotate the rays about the x-axis."""
+        pass  # pragma: no cover
+
+    def rotate_y(self, ry: float):
+        """Rotate the rays about the y-axis."""
+        pass  # pragma: no cover
+
+    def rotate_z(self, rz: float):
+        """Rotate the rays about the z-axis."""
+        pass  # pragma: no cover
+
 
 class PolarizationState:
     """
