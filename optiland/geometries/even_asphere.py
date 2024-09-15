@@ -32,6 +32,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """
