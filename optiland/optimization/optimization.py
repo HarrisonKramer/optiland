@@ -12,8 +12,8 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy import optimize
-from optiland.variable import Variable
-from optiland.operand import Operand
+from optiland.optimization.variable import Variable
+from optiland.optimization.operand import Operand
 
 
 class OptimizationProblem:
