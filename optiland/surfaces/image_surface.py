@@ -1,4 +1,4 @@
-from optiland.surfaces.surface import Surface
+from optiland.surfaces.standard_surface import Surface
 from optiland.rays import ParaxialRays
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
