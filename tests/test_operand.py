@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from optiland import operand
+from optiland.optimization import operand
 from optiland.samples.telescopes import HubbleTelescope
 
 
