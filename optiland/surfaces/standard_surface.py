@@ -234,3 +234,16 @@ class Surface:
         self._record(rays)
 
         return rays
+
+    def is_rotationally_symmetric(self):
+        """
+        Returns True if the surface is rotationally symmetric, False otherwise.
+        """
+        if not self.geometry.is_symmetric:
+            return False
+
+        cs = self.geometry.cs
+        if cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0:
+            return False
+
+        return True
