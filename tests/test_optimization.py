@@ -1,7 +1,7 @@
 import pytest
 import warnings
 import numpy as np
-from optiland import optimization
+from optiland.optimization import optimization
 from optiland.samples.microscopes import (
     Objective60x,
     Microscope20x,

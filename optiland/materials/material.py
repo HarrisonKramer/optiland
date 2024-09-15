@@ -1,0 +1,208 @@
+import os
+import pandas as pd
+from optiland.materials.material_file import MaterialFile
+
+
+class Material(MaterialFile):
+    """
+    Represents a generic material used in the Optiland system.
+    This class identifies the correct material given the material name and
+    (optionally) the reference, which is generally the manufacturer name or
+    the author name.
+
+    Note:
+        The material database is stored in the file `catalog_nk.csv` in the
+        `database` directory. This contains the names, references, and
+        filenames of the materials.
+
+    Args:
+        name (str): The name of the material.
+        reference (str, optional): The reference for the material. This is
+            generally the manufacturer name, or the author name. The reference
+            must be in the filename.
+        robust_search (bool, optional): If True, the search will be robust and
+            return the first match found. If False, the search will raise an
+            error if multiple matches are found.
+
+    Attributes:
+        name (str): The name of the material.
+        reference (str): The reference for the material.
+    """
+
+    _df = None
+    _filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             '../../database/catalog_nk.csv')
+
+    def __init__(self, name, reference=None, robust_search=True,
+                 min_wavelength=None, max_wavelength=None):
+        self.name = name
+        self.reference = reference
+        self.robust = robust_search
+        self.min_wavelength = min_wavelength
+        self.max_wavelength = max_wavelength
+        file, self.material_data = self._retrieve_file()
+        super().__init__(file)
+
+    @classmethod
+    def _load_dataframe(cls):
+        """Load the DataFrame if not yet loaded."""
+        if cls._df is None:
+            cls._df = pd.read_csv(cls._filename)
+        return cls._df
+
+    @staticmethod
+    def _levenshtein_distance(s1, s2):
+        """
+        Calculates the Levenshtein distance between two strings.
+
+        Args:
+            s1 (str): The first string.
+            s2 (str): The second string.
+
+        Returns:
+            int: The Levenshtein distance between the two strings.
+        """
+        # Initialize matrix of zeros
+        rows = len(s1) + 1
+        cols = len(s2) + 1
+        distance_matrix = [[0 for _ in range(cols)] for _ in range(rows)]
+
+        # Populate matrix with initial values
+        for i in range(1, rows):
+            distance_matrix[i][0] = i
+        for j in range(1, cols):
+            distance_matrix[0][j] = j
+
+        # Calculate the distance
+        for i in range(1, rows):
+            for j in range(1, cols):
+                if s1[i-1] == s2[j-1]:
+                    cost = 0
+                else:
+                    cost = 1
+                distance_matrix[i][j] = min(distance_matrix[i-1][j] + 1,
+                                            distance_matrix[i][j-1] + 1,
+                                            distance_matrix[i-1][j-1] + cost)
+
+        return distance_matrix[-1][-1]
+
+    def _find_material_matches(self, df):
+        """
+        Finds material matches in a DataFrame based on the given name and
+        reference.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing the materials.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the filtered materials
+                that match the given name and reference.
+        """
+        # Make input name lowercase
+        name = self.name.lower()
+
+        # Filter rows where input string is substring of category_name or name
+        dfi = df[
+            df['category_name'].str.lower().str.contains(name) |
+            df['name'].str.lower().str.contains(name)
+        ].copy()
+
+        # If reference given, filter rows non-matching rows
+        if self.reference:
+            reference = self.reference.lower()
+            dfi = dfi[
+                dfi['category_name'].str.lower().str.contains(reference) |
+                dfi['category_name_full'].str.lower().str.contains(reference) |
+                dfi['reference'].str.lower().str.contains(reference) |
+                dfi['name'].str.lower().str.contains(reference) |
+                dfi['filename'].str.lower().str.contains(reference)
+            ]
+
+        # Filter rows based on wavelength range
+        if self.min_wavelength:
+            dfi = dfi[(dfi['min_wavelength'] <= self.min_wavelength) &
+                      (dfi['max_wavelength'] >= self.min_wavelength)]
+        if self.max_wavelength:
+            dfi = dfi[(dfi['min_wavelength'] <= self.max_wavelength) &
+                      (dfi['max_wavelength'] >= self.max_wavelength)]
+
+        # If no rows match, return an empty DataFrame
+        if dfi.empty:
+            return pd.DataFrame()
+
+        # Calculate similarity scores using Levenshtein distance
+        dfi['similarity_score'] = dfi.apply(
+            lambda row: min(
+                self._levenshtein_distance(name, row['category_name'].lower()),
+                self._levenshtein_distance(name, row['name'].lower())
+            ), axis=1
+        )
+
+        # Sort by similarity score in ascending order
+        dfi = dfi.sort_values(by='similarity_score').reset_index(drop=True)
+
+        # Warning if no exact matches found
+        if dfi['similarity_score'].iloc[0] > 0:
+            print(f'Warning: No exact matches found for material {self.name}. '
+                  'Material may be invalid.')
+
+        return dfi
+
+    def _raise_material_error(self, no_matches=False, multiple_matches=False):
+        """
+        Raises an error if no matches or multiple matches are found for the
+        material.
+
+        Args:
+            no_matches (bool): Indicates if no matches were found.
+            multiple_matches (bool): Indicates if multiple matches were found.
+
+        Raises:
+            ValueError: If no matches or multiple matches are found for the
+                material.
+        """
+        if no_matches:
+            message = f'No matches found for material {self.name}'
+        elif multiple_matches:
+            message = f'Multiple matches found for material {self.name}'
+        else:
+            message = f'Error finding material {self.name}'
+
+        if self.reference:
+            message += f' with reference {self.reference}'
+
+        if self.min_wavelength or self.max_wavelength:
+            wavelength_range = (
+                f'({self.min_wavelength}, {self.max_wavelength}) µm'
+            )
+            message += f' within wavelength range {wavelength_range}'
+
+        raise ValueError(message)
+
+    def _retrieve_file(self):
+        """
+        Retrieves the file path for the material based on the given criteria.
+
+        Returns:
+            str: The file path for the material.
+
+        Raises:
+            ValueError: If no matches are found for the material.
+            ValueError: If multiple matches are found for the material.
+        """
+        df = self._load_dataframe()
+        filtered_df = self._find_material_matches(df)
+
+        if filtered_df.empty:
+            self._raise_material_error(no_matches=True)
+
+        if len(filtered_df) > 1 and not self.robust:
+            self._raise_material_error(multiple_matches=True)
+
+        material_data = filtered_df.loc[0].to_dict()
+        filename = filtered_df.loc[0, 'filename']
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        database_dir = os.path.join(current_dir, '../../database/data-nk')
+        full_filename = os.path.join(database_dir, filename)
+        return full_filename, material_data

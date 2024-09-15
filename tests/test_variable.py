@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from optiland import variable
+from optiland.optimization import variable
 from optiland.geometries import PolynomialGeometry, ChebyshevPolynomialGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
