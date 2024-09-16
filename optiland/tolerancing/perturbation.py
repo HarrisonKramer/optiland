@@ -60,8 +60,9 @@ class OpticPerturbation:
         self.perturbation = perturbation
         self.variable = Variable(optic, variable_type, apply_scaling=False,
                                  **kwargs)
+        self.value = None
 
     def apply(self):
         """Apply the perturbation to the optic."""
-        value = self.perturbation.sample()
-        self.variable.update_value(value)
+        self.value = self.perturbation.sample()
+        self.variable.update(self.value)
