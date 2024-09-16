@@ -19,6 +19,8 @@ class VariableBehavior(ABC):
     Args:
         optic (Optic): The optic system to which the variable belongs.
         surface_number (int): The surface number of the variable.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -79,6 +81,8 @@ class RadiusVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object that contains the surface.
         surface_number (int): The index of the surface in the optic.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -142,6 +146,8 @@ class ConicVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The index of the surface in the optic.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -201,6 +207,8 @@ class ThicknessVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -267,6 +275,8 @@ class IndexVariable(VariableBehavior):
         surface_number (int): The surface number where the variable is applied.
         wavelength (float): The wavelength at which the index of refraction is
             calculated.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -339,6 +349,8 @@ class AsphereCoeffVariable(VariableBehavior):
         optic (Optic): The optic object associated with the variable.
         surface_number (int): The index of the surface in the optical system.
         coeff_number (int): The index of the aspheric coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -403,6 +415,8 @@ class PolynomialCoeffVariable(VariableBehavior):
         surface_number (int): The index of the surface in the optical system.
         coeff_index (tuple(int, int)): The (x, y) indices of the polynomial
             coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -489,6 +503,8 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
         surface_number (int): The index of the surface in the optical system.
         coeff_index (tuple(int, int)): The (x, y) indices of the Chebyshev
             coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -510,17 +526,14 @@ class Variable:
             belongs.
         type (str): The type of the variable. Valid types are 'radius',
             'conic', 'thickness', 'index' and 'asphere_coeff'.
-        **kwargs: Additional keyword arguments to be stored as attributes of
-            the variable.
-
-    Attributes:
-        optic (OpticalSystem): The optical system to which the variable
-            belongs.
-        type_name (str): The type of the variable.
         min_val (float or None): The minimum value allowed for the variable.
             Defaults to None.
         max_val (float or None): The maximum value allowed for the variable.
             Defaults to None.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
+        **kwargs: Additional keyword arguments to be stored as attributes of
+            the variable.
 
     Properties:
         value: The current value of the variable.
