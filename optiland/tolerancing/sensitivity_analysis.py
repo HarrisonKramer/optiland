@@ -48,4 +48,11 @@ class SensitivityAnalysis:
         self._results = pd.DataFrame(results)
 
     def view(self):
-        pass
+        df = self._results
+        unique_ids = df['perturbation_id'].unique()
+        for idx in unique_ids:
+            for name in self.operand_names:
+                x = df.loc[df.perturbation_id == idx, 'perturbation_value']
+                y = df.loc[df.perturbation_id == idx, name]
+                plt.plot(x, y)
+                plt.show()
