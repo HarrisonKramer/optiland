@@ -35,13 +35,16 @@ class RangePerturbation(BasePerturbation):
 
 
 class DistributionPerturbation(BasePerturbation):
-    def __init__(self, distribution, *params):
+    def __init__(self, distribution, *params, seed=None):
         """Initialize a distribution perturbation."""
+        if seed is not None:
+            np.random.seed(seed)
         self.distribution = distribution
         self.params = params
 
     def sample(self):
         """Return a random value from the given distribution."""
+        # TODO: consider vectorizing this method with 'size' parameter
         if self.distribution == 'normal':
             return np.random.normal(*self.params)
         elif self.distribution == 'uniform':
