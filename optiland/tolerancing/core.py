@@ -1,5 +1,5 @@
 from copy import deepcopy
-from optiland.tolerancing.perturbation import OpticPerturbation
+from optiland.tolerancing.perturbation import Perturbation
 from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.optimization.operand import Operand
 
@@ -18,8 +18,8 @@ class Tolerancing:
         self.operands.append(Operand(operand_type, 0.0, 1.0, input_data))
 
     def add_perturbation(self, variable_type, perturbation, **kwargs):
-        perturbation = OpticPerturbation(self.optic, variable_type,
-                                         perturbation, **kwargs)
+        perturbation = Perturbation(self.optic, variable_type,
+                                    perturbation, **kwargs)
         self.perturbations.append(perturbation)
 
     def add_compensator(self, variable_type, **kwargs):
