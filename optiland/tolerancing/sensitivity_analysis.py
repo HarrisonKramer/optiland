@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from optiland.tolerancing.core import Tolerancing
-from optiland.tolerancing.perturbation import RangePerturbation
+from optiland.tolerancing.perturbation import RangeSampler
 
 
 class SensitivityAnalysis:
@@ -18,10 +18,10 @@ class SensitivityAnalysis:
         results = []
 
         for idx, perturbation in enumerate(self.tolerancing.perturbations):
-            if not isinstance(perturbation.perturbation, RangePerturbation):
-                raise ValueError('Only range perturbations are supported.')
+            if not isinstance(perturbation.sampler, RangeSampler):
+                raise ValueError('Only range samplers are supported.')
 
-            num_iterations = perturbation.perturbation.size
+            num_iterations = perturbation.sampler.size
             for _ in range(num_iterations):
                 # reset system
                 self.tolerancing.reset()
