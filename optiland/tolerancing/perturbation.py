@@ -3,13 +3,13 @@ import numpy as np
 from optiland.optimization.variable import Variable
 
 
-class BasePerturbation(ABC):
+class BaseSampler(ABC):
     @abstractmethod
     def sample(self):
         pass  # pragma: no cover
 
 
-class ScalarPerturbation(BasePerturbation):
+class ScalarSampler(BaseSampler):
     def __init__(self, value):
         self.value = value
         self.size = 1
@@ -19,7 +19,7 @@ class ScalarPerturbation(BasePerturbation):
         return self.value
 
 
-class RangePerturbation(BasePerturbation):
+class RangeSampler(BaseSampler):
     def __init__(self, start, end, steps):
         self.values = np.linspace(start, end, steps)
         self.index = 0
@@ -34,7 +34,7 @@ class RangePerturbation(BasePerturbation):
         return value
 
 
-class DistributionPerturbation(BasePerturbation):
+class DistributionSampler(BaseSampler):
     def __init__(self, distribution, *params, seed=None):
         """Initialize a distribution perturbation."""
         if seed is not None:
@@ -53,16 +53,16 @@ class DistributionPerturbation(BasePerturbation):
             raise ValueError(f'Unknown distribution: {self.distribution}')
 
 
-class OpticPerturbation:
-    def __init__(self, optic, variable_type, perturbation, **kwargs):
+class Perturbation:
+    def __init__(self, optic, variable_type, sampler, **kwargs):
         self.optic = optic
         self.type = variable_type
-        self.perturbation = perturbation
+        self.sampler = sampler
         self.variable = Variable(optic, variable_type, apply_scaling=False,
                                  **kwargs)
         self.value = None
 
     def apply(self):
         """Apply the perturbation to the optic."""
-        self.value = self.perturbation.sample()
+        self.value = self.sampler.sample()
         self.variable.update(self.value)
