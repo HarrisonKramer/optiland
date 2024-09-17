@@ -33,6 +33,11 @@ class CompensatorOptimizer(OptimizationProblem):
             'least_squares': LeastSquares
         }
 
+    def get_optimizer(self):
+        if self.method not in self._optimizer_map:
+            raise ValueError(f"Invalid optimizer method '{self.method}'.")
+        return self._optimizer_map[self.method]
+
     @property
     def has_variables(self):
         """
@@ -51,5 +56,5 @@ class CompensatorOptimizer(OptimizationProblem):
         Returns:
             scipy.optimize.OptimizeResult: The result of the optimizer run.
         """
-        optimizer = self._optimizer_map[self.method](self)
+        optimizer = self.get_optimizer()(self)
         return optimizer.optimize(tol=self.tol)
