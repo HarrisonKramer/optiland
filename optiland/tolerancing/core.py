@@ -24,7 +24,7 @@ class Tolerancing:
             nominal state.
         operands: A list of operands in the tolerancing problem.
         perturbations: A list of perturbations applied to the optic.
-        _compensator: An optimizer for compensating the perturbations.
+        compensator: An optimizer for compensating the perturbations.
 
     Methods:
         __init__(self, optic): Initializes a Tolerancing object with the given
@@ -47,9 +47,10 @@ class Tolerancing:
         self._optic_nominal = deepcopy(optic)
         self.operands = []
         self.perturbations = []
-        self._compensator = CompensatorOptimizer(method=method, tol=tol)
+        self.compensator = CompensatorOptimizer(method=method, tol=tol)
 
-    def add_operand(self, operand_type: str, input_data: dict = {}):
+    def add_operand(self, operand_type: str, input_data: dict = {},
+                    target: float = None, weight: float = 1.0):
         """
         Add an operand to the tolerancing problem.
 
@@ -57,8 +58,16 @@ class Tolerancing:
             operand_type: The type of the operand.
             input_data: A dictionary of input data for the operand. Defaults to
                 an empty dictionary.
+            target: The target value for the operand. Defaults to None, in
+                which case the target is set based on the current value of
+                the operand.
+            weight: The weight of the operand for optimization during
+                compensation. Defaults to 1.0.
         """
-        self.operands.append(Operand(operand_type, 0.0, 1.0, input_data))
+        new_operand = Operand(operand_type, target, weight, input_data)
+        if target is None:
+            new_operand.target = new_operand.value
+        self.operands.append(new_operand)
 
     def add_perturbation(self, variable_type: str, perturbation: Perturbation,
                          **kwargs):
@@ -86,21 +95,21 @@ class Tolerancing:
                 module for more information.
             **kwargs: Additional keyword arguments for the variable.
         """
-        self._compensator.add_variable(self.optic, variable_type, **kwargs)
+        self.compensator.add_variable(self.optic, variable_type, **kwargs)
 
     def apply_compensators(self):
         """Apply compensators to the optic."""
         result = {}
-        if self._compensator.has_variables:
+        if self.compensator.has_variables:
             # add operands to the optimization problem (for compensation)
-            self._compensator.operands = self.operands
+            self.compensator.operands = self.operands
 
             # run optimizer for compensating the perturbations
-            self._compensator.run()
+            self.compensator.run()
 
             # record the optimized values
             result = {f'C{i}: {var}': var.value
-                      for i, var in enumerate(self._compensator.variables)}
+                      for i, var in enumerate(self.compensator.variables)}
         return result
 
     def evaluate(self):
