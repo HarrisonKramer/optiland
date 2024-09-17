@@ -1,5 +1,5 @@
 from copy import deepcopy
-from optiland.tolerancing.perturbation import Perturbation
+from optiland.tolerancing.perturbation import BaseSampler, Perturbation
 from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.optimization.operand import Operand
 
@@ -69,7 +69,7 @@ class Tolerancing:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)
 
-    def add_perturbation(self, variable_type: str, perturbation: Perturbation,
+    def add_perturbation(self, variable_type: str, sampler: BaseSampler,
                          **kwargs):
         """
         Add a perturbation to the optic.
@@ -78,11 +78,11 @@ class Tolerancing:
             variable_type: The type of the variable to be perturbed, such as
                 "radius", "thickness", etc. See the variable module for more
                 information.
-            perturbation: The perturbation to be applied to the variable.
+            sampler: The sampler object used to generate perturbation values.
             **kwargs: Additional keyword arguments for the variable.
         """
         perturbation = Perturbation(self.optic, variable_type,
-                                    perturbation, **kwargs)
+                                    sampler, **kwargs)
         self.perturbations.append(perturbation)
 
     def add_compensator(self, variable_type: str, **kwargs):
