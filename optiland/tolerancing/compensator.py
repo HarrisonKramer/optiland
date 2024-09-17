@@ -13,22 +13,25 @@ class CompensatorOptimizer(OptimizationProblem):
     system.
 
     Args:
-        optimizer (str): The type of optimizer to use. Default is 'generic'.
+        method (str): The type of optimizer to use. Default is 'generic'.
             Other options include 'least_squares', 'dual_annealing', and
             'differential_evolution'.
+        tol (float): The tolerance for the optimizer. Default is 1e-5.
         **kwargs: Additional keyword arguments to be passed to the optimizer.
 
     Attributes:
-        optimizer (str): The type of optimizer being used.
-        kwargs (dict): Additional keyword arguments passed to the optimizer.
+        method (str): The type of optimizer to use. Default is 'generic'.
+            Other options include 'least_squares', 'dual_annealing', and
+            'differential_evolution'.
+        tol (float): The tolerance for the optimizer. Default is 1e-5.
         _optimizer_map (dict): A mapping of optimizer types to their
             respective classes.
     """
 
-    def __init__(self, optimizer='generic', **kwargs):
+    def __init__(self, method='generic', tol=1e-5):
         super().__init__()
-        self.optimizer = optimizer
-        self.kwargs = kwargs
+        self.method = method
+        self.tol = tol
 
         self._optimizer_map = {
             'generic': OptimizerGeneric,
@@ -55,5 +58,5 @@ class CompensatorOptimizer(OptimizationProblem):
         Returns:
             scipy.optimize.OptimizeResult: The result of the optimizer run.
         """
-        optimizer = self._optimizer_map[self.optimizer](**self.kwargs)
-        return optimizer.run(self)
+        optimizer = self._optimizer_map[self.method](self)
+        return optimizer.optimize(tol=self.tol)
