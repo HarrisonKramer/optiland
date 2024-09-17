@@ -12,15 +12,12 @@ class CompensatorOptimizer(OptimizationProblem):
 
     Args:
         method (str): The type of optimizer to use. Default is 'generic'.
-            Other options include 'least_squares', 'dual_annealing', and
-            'differential_evolution'.
+            Other options: 'least_squares'
         tol (float): The tolerance for the optimizer. Default is 1e-5.
-        **kwargs: Additional keyword arguments to be passed to the optimizer.
 
     Attributes:
         method (str): The type of optimizer to use. Default is 'generic'.
-            Other options include 'least_squares', 'dual_annealing', and
-            'differential_evolution'.
+            Other options include 'least_squares'.
         tol (float): The tolerance for the optimizer. Default is 1e-5.
         _optimizer_map (dict): A mapping of optimizer types to their
             respective classes.
