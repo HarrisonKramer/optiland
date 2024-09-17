@@ -30,8 +30,9 @@ class SensitivityAnalysis:
     def __init__(self, tolerancing: Tolerancing):
         self.tolerancing = tolerancing
         self.operand_names = [
-            f'{i}: {operand}' for i, operand in enumerate(tolerancing.operands)
-            ]
+            f'{i}: {operand}'
+            for i, operand in enumerate(tolerancing.operands)
+        ]
         columns = ['perturbation_type', 'perturbation_value'] + \
             self.operand_names
         self._results = pd.DataFrame(columns=columns)
@@ -66,21 +67,27 @@ class SensitivityAnalysis:
                 # apply perturbation
                 perturbation.apply()
 
-                # apply compensators
-                self.tolerancing.apply_compensators()
+                # apply compensators & save results
+                compensator_result = self.tolerancing.apply_compensators()
 
                 # evaluate operands
-                values = self.tolerancing.evaluate()
+                operand_values = self.tolerancing.evaluate()
 
-                # save results
+                # save results - perturbation type & value
                 result = {
                     'perturbation_type': perturbation.variable,
                     'perturbation_value': perturbation.value,
                 }
+
+                # save results - operand values
                 result.update({
                     f'{name}': value
-                    for name, value in zip(self.operand_names, values)
+                    for name, value in zip(self.operand_names, operand_values)
                 })
+
+                # save results - compensator values
+                result.update(compensator_result)
+
                 results.append(result)
 
         self._results = pd.DataFrame(results)
