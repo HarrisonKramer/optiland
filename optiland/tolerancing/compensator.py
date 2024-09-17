@@ -1,9 +1,7 @@
 from optiland.optimization import (
     OptimizationProblem,
     OptimizerGeneric,
-    LeastSquares,
-    DualAnnealing,
-    DifferentialEvolution)
+    LeastSquares)
 
 
 class CompensatorOptimizer(OptimizationProblem):
@@ -35,9 +33,7 @@ class CompensatorOptimizer(OptimizationProblem):
 
         self._optimizer_map = {
             'generic': OptimizerGeneric,
-            'least_squares': LeastSquares,
-            'dual_annealing': DualAnnealing,
-            'differential_evolution': DifferentialEvolution
+            'least_squares': LeastSquares
         }
 
     @property
