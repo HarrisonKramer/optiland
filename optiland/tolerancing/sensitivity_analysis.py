@@ -91,6 +91,7 @@ class SensitivityAnalysis:
                 results.append(result)
 
         self._results = pd.DataFrame(results)
+        self.tolerancing.reset()
 
     def get_results(self):
         """
