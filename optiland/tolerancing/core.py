@@ -13,9 +13,13 @@ class Tolerancing:
 
     Args:
         optic: The optic object to be toleranced.
+        method: The method to use for optimization. Defaults to 'generic'.
+        tol: The tolerance for the compensator optimizer. Defaults to 1e-5.
 
     Attributes:
         optic: The optic object to be toleranced.
+        method: The method to use for optimization. Defaults to 'generic'.
+        tol: The tolerance for the compensator optimizer. Defaults to 1e-5.
         _optic_nominal: A deep copy of the optic object representing its
             nominal state.
         operands: A list of operands in the tolerancing problem.
@@ -36,12 +40,14 @@ class Tolerancing:
         reset(self): Resets the optic to its nominal state.
     """
 
-    def __init__(self, optic):
+    def __init__(self, optic, method='generic', tol=1e-5):
         self.optic = optic
+        self.method = method
+        self.tol = tol
         self._optic_nominal = deepcopy(optic)
         self.operands = []
         self.perturbations = []
-        self._compensator = CompensatorOptimizer()
+        self._compensator = CompensatorOptimizer(method=method, tol=tol)
 
     def add_operand(self, operand_type: str, input_data: dict = {}):
         """
