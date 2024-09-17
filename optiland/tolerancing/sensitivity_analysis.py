@@ -126,8 +126,8 @@ class SensitivityAnalysis:
         fig, axes = plt.subplots(m, n, figsize=(size_y, size_x), sharex=sharex,
                                  sharey=sharey)
 
-        # handle single axis case
-        axes = np.atleast_2d(axes)
+        # handle single row and/or column
+        axes = np.array(axes).reshape(m, n)
 
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):
