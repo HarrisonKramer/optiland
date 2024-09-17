@@ -35,7 +35,7 @@ class Tolerancing:
 
     def evaluate(self):
         """Evaluate the operands."""
-        return [operand.evaluate(self.optic) for operand in self.operands]
+        return [operand.value for operand in self.operands]
 
     def reset(self):
         """Reset the optic to its nominal state."""
