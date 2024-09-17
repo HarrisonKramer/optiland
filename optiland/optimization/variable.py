@@ -138,6 +138,15 @@ class RadiusVariable(VariableBehavior):
         """
         return (scaled_value + 1.0) * 100.0
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Radius of Curvature, Surface {self.surface_number}"
+
 
 class ConicVariable(VariableBehavior):
     """
@@ -198,6 +207,15 @@ class ConicVariable(VariableBehavior):
             scaled_value: The scaled value to inverse scale
         """
         return scaled_value
+
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Conic Constant, Surface {self.surface_number}"
 
 
 class ThicknessVariable(VariableBehavior):
@@ -263,6 +281,15 @@ class ThicknessVariable(VariableBehavior):
             scaled_value: The scaled value to inverse scale
         """
         return (scaled_value + 1.0) * 10.0
+
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Thickness, Surface {self.surface_number}"
 
 
 class IndexVariable(VariableBehavior):
@@ -340,6 +367,15 @@ class IndexVariable(VariableBehavior):
         """
         return scaled_value + 1.5
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Refractive Index, Surface {self.surface_number}"
+
 
 class AsphereCoeffVariable(VariableBehavior):
     """
@@ -404,6 +440,16 @@ class AsphereCoeffVariable(VariableBehavior):
             scaled_value: The scaled value to inverse scale
         """
         return scaled_value / 10 ** (4 + 2 * self.coeff_number)
+
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Asphere Coeff. {self.coeff_number}, " \
+            f"Surface {self.surface_number}"
 
 
 class PolynomialCoeffVariable(VariableBehavior):
@@ -493,6 +539,16 @@ class PolynomialCoeffVariable(VariableBehavior):
         """
         return scaled_value
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Poly. Coeff. {self.coeff_index}, " \
+            f"Surface {self.surface_number}"
+
 
 class ChebyshevCoeffVariable(PolynomialCoeffVariable):
     """
@@ -515,6 +571,16 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
                  **kwargs):
         super().__init__(optic, surface_number, coeff_index, apply_scaling,
                          **kwargs)
+
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Chebyshev Coeff. {self.coeff_index}, " \
+            f"Surface {self.surface_number}"
 
 
 class Variable:
@@ -638,3 +704,11 @@ class Variable:
             ValueError: If the variable type is invalid.
         """
         self.variable.update_value(new_value)
+
+    def __str__(self):
+        """Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return str(self.variable)
