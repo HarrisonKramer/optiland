@@ -33,8 +33,7 @@ class SensitivityAnalysis:
                 self.tolerancing.apply_compensators()
 
                 # evaluate operands
-                operand_values = [operand.value
-                                  for operand in self.tolerancing.operands]
+                operand_values = self.tolerancing.evaluate()
 
                 # save results
                 result = {
