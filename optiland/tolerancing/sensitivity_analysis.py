@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
@@ -93,7 +94,7 @@ class SensitivityAnalysis:
         """
         return self._results
 
-    def view(self, figsize=(2.2, 3), sharex='col', sharey='row'):
+    def view(self, figsize=(2.5, 3.3), sharex='col', sharey='row'):
         """
         Visualizes the sensitivity analysis results.
 
@@ -117,11 +118,15 @@ class SensitivityAnalysis:
         fig, axes = plt.subplots(m, n, figsize=(size_y, size_x), sharex=sharex,
                                  sharey=sharey)
 
+        # handle single axis case
+        axes = np.atleast_2d(axes)
+
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):
                 x = df.loc[df.perturbation_type == pert_type,
                            'perturbation_value']
                 y = df.loc[df.perturbation_type == pert_type, name]
+
                 axes[i, j].plot(x, y, color=f'C{i}', linewidth=2)
                 axes[i, j].grid()
 
