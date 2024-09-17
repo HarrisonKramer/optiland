@@ -90,12 +90,18 @@ class Tolerancing:
 
     def apply_compensators(self):
         """Apply compensators to the optic."""
+        result = {}
         if self._compensator.has_variables:
             # add operands to the optimization problem (for compensation)
             self._compensator.operands = self.operands
 
-            # Run optimizer for compensating the perturbations
+            # run optimizer for compensating the perturbations
             self._compensator.run()
+
+            # record the optimized values
+            result = {f'C{i}: {var}': var.value
+                      for i, var in enumerate(self._compensator.variables)}
+        return result
 
     def evaluate(self):
         """Evaluate the operands."""
