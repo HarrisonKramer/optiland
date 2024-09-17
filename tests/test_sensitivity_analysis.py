@@ -1,9 +1,13 @@
+from unittest.mock import patch
 import pytest
 from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
 from optiland.samples.objectives import ReverseTelephoto
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
 @pytest.fixture
@@ -73,3 +77,12 @@ def test_sensitivity_analysis_validation_too_many_perturbations(tolerancing):
     msg = 'Sensitivity analysis is limited to 6 perturbations.'
     with pytest.raises(ValueError, match=msg):
         SensitivityAnalysis(tolerancing)
+
+
+@patch('matplotlib.pyplot.show')
+def test_sensitivity_analysis_view(mock_show, tolerancing):
+    sa = SensitivityAnalysis(tolerancing)
+    sa.run()
+    sa.view()
+    mock_show.assert_called_once()
+    plt.close()
