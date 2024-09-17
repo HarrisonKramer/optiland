@@ -35,7 +35,7 @@ class CompensatorOptimizer(OptimizationProblem):
 
     def get_optimizer(self):
         if self.method not in self._optimizer_map:
-            raise ValueError(f"Invalid optimizer method '{self.method}'.")
+            raise ValueError(f'Invalid optimizer method "{self.method}".')
         return self._optimizer_map[self.method]
 
     @property
