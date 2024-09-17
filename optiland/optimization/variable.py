@@ -19,6 +19,8 @@ class VariableBehavior(ABC):
     Args:
         optic (Optic): The optic system to which the variable belongs.
         surface_number (int): The surface number of the variable.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -27,10 +29,11 @@ class VariableBehavior(ABC):
         surface_number (int): The surface number of the variable.
     """
 
-    def __init__(self, optic, surface_number, **kwargs):
+    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
         self.optic = optic
         self._surfaces = self.optic.surface_group
         self.surface_number = surface_number
+        self.apply_scaling = apply_scaling
 
     @abstractmethod
     def get_value(self):
@@ -78,6 +81,8 @@ class RadiusVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object that contains the surface.
         surface_number (int): The index of the surface in the optic.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -89,8 +94,8 @@ class RadiusVariable(VariableBehavior):
         update_value(new_value): Updates the value of the radius.
     """
 
-    def __init__(self, optic, surface_number, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
 
     def get_value(self):
         """
@@ -100,7 +105,9 @@ class RadiusVariable(VariableBehavior):
             float: The current value of the radius.
         """
         value = self._surfaces.radii[self.surface_number]
-        return self.scale(value)
+        if self.apply_scaling:
+            return self.scale(value)
+        return value
 
     def update_value(self, new_value):
         """
@@ -109,7 +116,8 @@ class RadiusVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the radius.
         """
-        new_value = self.inverse_scale(new_value)
+        if self.apply_scaling:
+            new_value = self.inverse_scale(new_value)
         self.optic.set_radius(new_value, self.surface_number)
 
     def scale(self, value):
@@ -130,6 +138,15 @@ class RadiusVariable(VariableBehavior):
         """
         return (scaled_value + 1.0) * 100.0
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Radius of Curvature, Surface {self.surface_number}"
+
 
 class ConicVariable(VariableBehavior):
     """
@@ -138,6 +155,8 @@ class ConicVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The index of the surface in the optic.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -149,8 +168,8 @@ class ConicVariable(VariableBehavior):
         update_value: Updates the conic value of the surface.
     """
 
-    def __init__(self, optic, surface_number, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
 
     def get_value(self):
         """
@@ -189,6 +208,15 @@ class ConicVariable(VariableBehavior):
         """
         return scaled_value
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Conic Constant, Surface {self.surface_number}"
+
 
 class ThicknessVariable(VariableBehavior):
     """
@@ -197,6 +225,8 @@ class ThicknessVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -208,8 +238,8 @@ class ThicknessVariable(VariableBehavior):
         update_value(new_value): Updates the thickness value of the surface.
     """
 
-    def __init__(self, optic, surface_number, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
 
     def get_value(self):
         """
@@ -219,7 +249,9 @@ class ThicknessVariable(VariableBehavior):
             float: The current thickness value.
         """
         value = self._surfaces.get_thickness(self.surface_number)[0]
-        return self.scale(value)
+        if self.apply_scaling:
+            return self.scale(value)
+        return value
 
     def update_value(self, new_value):
         """
@@ -228,7 +260,8 @@ class ThicknessVariable(VariableBehavior):
         Args:
             new_value (float): The new thickness value.
         """
-        new_value = self.inverse_scale(new_value)
+        if self.apply_scaling:
+            new_value = self.inverse_scale(new_value)
         self.optic.set_thickness(new_value, self.surface_number)
 
     def scale(self, value):
@@ -249,6 +282,15 @@ class ThicknessVariable(VariableBehavior):
         """
         return (scaled_value + 1.0) * 10.0
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Thickness, Surface {self.surface_number}"
+
 
 class IndexVariable(VariableBehavior):
     """
@@ -260,6 +302,8 @@ class IndexVariable(VariableBehavior):
         surface_number (int): The surface number where the variable is applied.
         wavelength (float): The wavelength at which the index of refraction is
             calculated.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -275,8 +319,9 @@ class IndexVariable(VariableBehavior):
             at the specified surface.
     """
 
-    def __init__(self, optic, surface_number, wavelength, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, wavelength, apply_scaling=True,
+                 **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.wavelength = wavelength
 
     def get_value(self):
@@ -289,7 +334,9 @@ class IndexVariable(VariableBehavior):
         """
         n = self.optic.n(self.wavelength)
         value = n[self.surface_number]
-        return self.scale(value)
+        if self.apply_scaling:
+            return self.scale(value)
+        return value
 
     def update_value(self, new_value):
         """
@@ -298,7 +345,8 @@ class IndexVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the index of refraction.
         """
-        new_value = self.inverse_scale(new_value)
+        if self.apply_scaling:
+            new_value = self.inverse_scale(new_value)
         self.optic.set_index(new_value, self.surface_number)
 
     def scale(self, value):
@@ -319,6 +367,15 @@ class IndexVariable(VariableBehavior):
         """
         return scaled_value + 1.5
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Refractive Index, Surface {self.surface_number}"
+
 
 class AsphereCoeffVariable(VariableBehavior):
     """
@@ -328,14 +385,17 @@ class AsphereCoeffVariable(VariableBehavior):
         optic (Optic): The optic object associated with the variable.
         surface_number (int): The index of the surface in the optical system.
         coeff_number (int): The index of the aspheric coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
         coeff_number (int): The index of the aspheric coefficient.
     """
 
-    def __init__(self, optic, surface_number, coeff_number, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, coeff_number, apply_scaling=True,
+                 **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.coeff_number = coeff_number
 
     def get_value(self):
@@ -347,7 +407,9 @@ class AsphereCoeffVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         value = surf.geometry.c[self.coeff_number]
-        return self.scale(value)
+        if self.apply_scaling:
+            return self.scale(value)
+        return value
 
     def update_value(self, new_value):
         """
@@ -356,7 +418,8 @@ class AsphereCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the aspheric coefficient.
         """
-        new_value = self.inverse_scale(new_value)
+        if self.apply_scaling:
+            new_value = self.inverse_scale(new_value)
         self.optic.set_asphere_coeff(new_value, self.surface_number,
                                      self.coeff_number)
 
@@ -378,6 +441,16 @@ class AsphereCoeffVariable(VariableBehavior):
         """
         return scaled_value / 10 ** (4 + 2 * self.coeff_number)
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Asphere Coeff. {self.coeff_number}, " \
+            f"Surface {self.surface_number}"
+
 
 class PolynomialCoeffVariable(VariableBehavior):
     """
@@ -388,14 +461,17 @@ class PolynomialCoeffVariable(VariableBehavior):
         surface_number (int): The index of the surface in the optical system.
         coeff_index (tuple(int, int)): The (x, y) indices of the polynomial
             coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
         coeff_number (int): The index of the polynomial coefficient.
     """
 
-    def __init__(self, optic, surface_number, coeff_index, **kwargs):
-        super().__init__(optic, surface_number, **kwargs)
+    def __init__(self, optic, surface_number, coeff_index, apply_scaling=True,
+                 **kwargs):
+        super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.coeff_index = coeff_index
 
     def get_value(self):
@@ -418,7 +494,9 @@ class PolynomialCoeffVariable(VariableBehavior):
                            constant_values=0)
             surf.geometry.c = c_new
             value = 0
-        return self.scale(value)
+        if self.apply_scaling:
+            return self.scale(value)
+        return value
 
     def update_value(self, new_value):
         """
@@ -427,7 +505,8 @@ class PolynomialCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value of the polynomial coefficient.
         """
-        new_value = self.inverse_scale(new_value)
+        if self.apply_scaling:
+            new_value = self.inverse_scale(new_value)
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i, j = self.coeff_index
         try:
@@ -460,6 +539,16 @@ class PolynomialCoeffVariable(VariableBehavior):
         """
         return scaled_value
 
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Poly. Coeff. {self.coeff_index}, " \
+            f"Surface {self.surface_number}"
+
 
 class ChebyshevCoeffVariable(PolynomialCoeffVariable):
     """
@@ -470,14 +559,28 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
         surface_number (int): The index of the surface in the optical system.
         coeff_index (tuple(int, int)): The (x, y) indices of the Chebyshev
             coefficient.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
         **kwargs: Additional keyword arguments.
 
     Attributes:
         coeff_number (int): The index of the Chebyshev coefficient.
     """
 
-    def __init__(self, optic, surface_number, coeff_index, **kwargs):
-        super().__init__(optic, surface_number, coeff_index, **kwargs)
+    def __init__(self, optic, surface_number, coeff_index, apply_scaling=True,
+                 **kwargs):
+        super().__init__(optic, surface_number, coeff_index, apply_scaling,
+                         **kwargs)
+
+    def __str__(self):
+        """
+        Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return f"Chebyshev Coeff. {self.coeff_index}, " \
+            f"Surface {self.surface_number}"
 
 
 class Variable:
@@ -489,17 +592,14 @@ class Variable:
             belongs.
         type (str): The type of the variable. Valid types are 'radius',
             'conic', 'thickness', 'index' and 'asphere_coeff'.
-        **kwargs: Additional keyword arguments to be stored as attributes of
-            the variable.
-
-    Attributes:
-        optic (OpticalSystem): The optical system to which the variable
-            belongs.
-        type_name (str): The type of the variable.
         min_val (float or None): The minimum value allowed for the variable.
             Defaults to None.
         max_val (float or None): The maximum value allowed for the variable.
             Defaults to None.
+        apply_scaling (bool): Whether to apply scaling to the variable.
+            Defaults to True.
+        **kwargs: Additional keyword arguments to be stored as attributes of
+            the variable.
 
     Properties:
         value: The current value of the variable.
@@ -512,11 +612,13 @@ class Variable:
         ValueError: If an invalid variable type is provided.
     """
 
-    def __init__(self, optic, type_name, min_val=None, max_val=None, **kwargs):
+    def __init__(self, optic, type_name, min_val=None, max_val=None,
+                 apply_scaling=True, **kwargs):
         self.optic = optic
         self.type = type_name
         self.min_val = min_val
         self.max_val = max_val
+        self.apply_scaling = apply_scaling
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
@@ -545,6 +647,7 @@ class Variable:
         behavior_kwargs = {
             'type_name': self.type,
             'optic': self.optic,
+            'apply_scaling': self.apply_scaling,
             **self.kwargs
         }
 
@@ -601,3 +704,11 @@ class Variable:
             ValueError: If the variable type is invalid.
         """
         self.variable.update_value(new_value)
+
+    def __str__(self):
+        """Return a string representation of the variable.
+
+        Returns:
+            str: A string representation of the variable.
+        """
+        return str(self.variable)

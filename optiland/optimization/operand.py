@@ -569,3 +569,7 @@ class Operand(object):
     def fun(self):
         """Calculate the objective function value"""
         return self.weight * self.delta()
+
+    def __str__(self):
+        """Return a string representation of the operand"""
+        return self.type.replace('_', ' ')
