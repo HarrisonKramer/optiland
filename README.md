@@ -60,10 +60,12 @@ You can install the package using pip. To do so, follow these steps:
 - Real and paraxial ray tracing, including aspherics and freeforms
 - Polarization ray tracing
 - Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, PSF, MTF, etc.)
-- Glass catalogue (based on refractiveindex.info)
+- Glass and material catalogue (based on refractiveindex.info)
 - Design optimization (local and global)
 - Wavefront and Zernike analysis
+- Tolerancing, including sensitivity analysis and Monte Carlo methods
 - Coating and surface scatter (BSDF) analysis
+- Zemax file import
 
 The code itself is in constant flux and new functionalities are always being added.
 
