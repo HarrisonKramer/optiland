@@ -443,7 +443,7 @@ class DecenterVariable(VariableBehavior):
         if self.axis == 'x':
             surf.geometry.cs.x = new_value
         elif self.axis == 'y':
-            surf.geometry.cs.x = new_value
+            surf.geometry.cs.y = new_value
 
     def scale(self, value):
         """
