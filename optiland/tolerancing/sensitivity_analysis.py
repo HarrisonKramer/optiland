@@ -33,10 +33,7 @@ class SensitivityAnalysis:
             f'{i}: {operand}'
             for i, operand in enumerate(tolerancing.operands)
         ]
-        columns = ['perturbation_type', 'perturbation_value'] + \
-            self.operand_names
-        self._results = pd.DataFrame(columns=columns)
-
+        self._results = pd.DataFrame()
         self._validate()
 
     def run(self):
