@@ -836,6 +836,8 @@ class Variable:
             'radius': RadiusVariable,
             'conic': ConicVariable,
             'thickness': ThicknessVariable,
+            'tilt': TiltVariable,
+            'decenter': DecenterVariable,
             'index': IndexVariable,
             'asphere_coeff': AsphereCoeffVariable,
             'polynomial_coeff': PolynomialCoeffVariable,
