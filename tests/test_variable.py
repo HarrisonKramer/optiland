@@ -165,3 +165,63 @@ class TestVariable:
         optic = Objective60x()
         with pytest.raises(ValueError):
             variable.Variable(optic, 'invalid', surface_number=1)
+
+
+class TestTiltVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = Objective60x()
+        self.tilt_var_x = variable.TiltVariable(self.optic, 1, 'x')
+        self.tilt_var_y = variable.TiltVariable(self.optic, 1, 'y')
+
+    def test_get_value_x(self):
+        assert np.isclose(self.tilt_var_x.get_value(), 0.0)
+
+    def test_get_value_y(self):
+        assert np.isclose(self.tilt_var_y.get_value(), 0.0)
+
+    def test_update_value_x(self):
+        self.tilt_var_x.update_value(5.0)
+        assert np.isclose(self.tilt_var_x.get_value(), 5.0)
+
+    def test_update_value_y(self):
+        self.tilt_var_y.update_value(5.0)
+        assert np.isclose(self.tilt_var_y.get_value(), 5.0)
+
+    def test_invalid_axis(self):
+        with pytest.raises(ValueError):
+            variable.TiltVariable(self.optic, 1, 'z')
+
+    def test_str(self):
+        assert str(self.tilt_var_x) == 'Tilt X, Surface 1'
+        assert str(self.tilt_var_y) == 'Tilt Y, Surface 1'
+
+
+class TestDecenterVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = Objective60x()
+        self.decenter_var_x = variable.DecenterVariable(self.optic, 1, 'x')
+        self.decenter_var_y = variable.DecenterVariable(self.optic, 1, 'y')
+
+    def test_get_value_x(self):
+        assert np.isclose(self.decenter_var_x.get_value(), 0.0)
+
+    def test_get_value_y(self):
+        assert np.isclose(self.decenter_var_y.get_value(), 0.0)
+
+    def test_update_value_x(self):
+        self.decenter_var_x.update_value(5.0)
+        assert np.isclose(self.decenter_var_x.get_value(), 5.0)
+
+    def test_update_value_y(self):
+        self.decenter_var_y.update_value(5.0)
+        assert np.isclose(self.decenter_var_y.get_value(), 5.0)
+
+    def test_invalid_axis(self):
+        with pytest.raises(ValueError):
+            variable.DecenterVariable(self.optic, 1, 'z')
+
+    def test_str(self):
+        assert str(self.decenter_var_x) == 'Decenter X, Surface 1'
+        assert str(self.decenter_var_y) == 'Decenter Y, Surface 1'
