@@ -1,4 +1,3 @@
-from copy import deepcopy
 from optiland.tolerancing.perturbation import BaseSampler, Perturbation
 from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.optimization.operand import Operand
@@ -44,10 +43,16 @@ class Tolerancing:
         self.optic = optic
         self.method = method
         self.tol = tol
-        self._optic_nominal = deepcopy(optic)
         self.operands = []
         self.perturbations = []
         self.compensator = CompensatorOptimizer(method=method, tol=tol)
+
+        # TODO: make initial values more robust to changes in perturbations
+        # and compensator variables
+        self.initial_values = {
+            'perturbations': [],
+            'compensators': []
+        }
 
     def add_operand(self, operand_type: str, input_data: dict = {},
                     target: float = None, weight: float = 1.0):
@@ -85,6 +90,11 @@ class Tolerancing:
                                     sampler, **kwargs)
         self.perturbations.append(perturbation)
 
+        # record the initial value of the perturbation
+        self.initial_values['perturbations'].append(
+            perturbation.variable.value
+            )
+
     def add_compensator(self, variable_type: str, **kwargs):
         """
         Add a compensator variable to the optimizer.
@@ -96,6 +106,11 @@ class Tolerancing:
             **kwargs: Additional keyword arguments for the variable.
         """
         self.compensator.add_variable(self.optic, variable_type, **kwargs)
+
+        # record the initial value of the compensator
+        self.initial_values['compensators'].append(
+            self.compensator.variables[-1].value
+            )
 
     def apply_compensators(self):
         """Apply compensators to the optic."""
@@ -117,5 +132,11 @@ class Tolerancing:
         return [operand.value for operand in self.operands]
 
     def reset(self):
-        """Reset the optic to its nominal state."""
-        self.optic = deepcopy(self._optic_nominal)
+        """Reset the optic to its initial state."""
+        for perturbation, value in zip(self.perturbations,
+                                       self.initial_values['perturbations']):
+            perturbation.variable.update(value)
+
+        for compensator, value in zip(self.compensator.variables,
+                                      self.initial_values['compensators']):
+            compensator.update(value)

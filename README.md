@@ -137,7 +137,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 7c - Freeform Surfaces](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_7c_Freeform_Surfaces.ipynb)
         - Designing non-standard optical systems with freeform surfaces
 8. **Tolerancing**
-    - Tutorial 8a - Introduction to Tolerancing - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
     - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Nov. 2024)
         - Monte Carlo-based Tolerancing
