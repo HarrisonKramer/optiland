@@ -94,7 +94,7 @@ class DistributionSampler(BaseSampler):
     Raises:
         ValueError: If the distribution type is unknown.
     """
-    def __init__(self, distribution, *params, seed=None):
+    def __init__(self, distribution, seed=None, **params):
         if seed is not None:
             np.random.seed(seed)
         self.distribution = distribution
@@ -109,9 +109,9 @@ class DistributionSampler(BaseSampler):
         """
         # TODO: consider vectorizing this method with 'size' parameter
         if self.distribution == 'normal':
-            return np.random.normal(*self.params)
+            return np.random.normal(**self.params)
         elif self.distribution == 'uniform':
-            return np.random.uniform(*self.params)
+            return np.random.uniform(**self.params)
         else:
             raise ValueError(f'Unknown distribution: {self.distribution}')
 
