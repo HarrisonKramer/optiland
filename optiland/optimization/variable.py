@@ -816,7 +816,8 @@ class Variable:
         This method returns a set of strings that are the names of allowed
         attributes.
         """
-        return {'surface_number', 'coeff_number', 'wavelength', 'coeff_index'}
+        return {'surface_number', 'coeff_number', 'wavelength', 'coeff_index',
+                'axis'}
 
     def _get_variable(self):
         """
