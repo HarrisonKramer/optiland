@@ -46,12 +46,18 @@ class MonteCarlo(SensitivityAnalysis):
 
         self._results = pd.DataFrame(results)
 
-    def view(self):
+    def view_histogram(self):
+        pass
+
+    def view_cdf(self):
+        pass
+
+    def view_heatmap(self):
         pass
 
     def _validate(self):
         """
-        Validates the tolerancing system before performing sensitivity
+        Validates the tolerancing system before performing Monte Carlo
         analysis.
 
         Raises:
