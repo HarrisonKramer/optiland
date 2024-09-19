@@ -72,7 +72,7 @@ class SensitivityAnalysis:
 
                 # save results - perturbation type & value
                 result = {
-                    'perturbation_type': perturbation.variable,
+                    'perturbation_type': str(perturbation.variable),
                     'perturbation_value': perturbation.value,
                 }
 
