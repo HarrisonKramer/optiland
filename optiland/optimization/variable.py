@@ -809,6 +809,7 @@ class Variable:
                 print(f"Warning: {key} is not a recognized attribute")
 
         self.variable = self._get_variable()
+        self.initial_value = self.value
 
     @staticmethod
     def allowed_attributes():
@@ -888,6 +889,10 @@ class Variable:
             ValueError: If the variable type is invalid.
         """
         self.variable.update_value(new_value)
+
+    def reset(self):
+        """Reset the variable to its initial value."""
+        self.update(self.initial_value)
 
     def __str__(self):
         """Return a string representation of the variable.
