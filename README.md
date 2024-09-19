@@ -1,8 +1,6 @@
 ![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
 [![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
-![Forks](https://img.shields.io/github/forks/HarrisonKramer/optiland.svg)
-![Watchers](https://img.shields.io/github/watchers/HarrisonKramer/optiland.svg)
 ![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)
 
 # **Optiland**
@@ -141,7 +139,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 8. **Tolerancing**
     - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
-    - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 8b - Advanced Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8b_Monte_Carlo_Analysis.ipynb)
         - Monte Carlo-based Tolerancing
 9. **Lens Catalogue Integration**
     - [Tutorial 9a - Edmund Optics Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Edmund_Optics_Catalogue.ipynb)
