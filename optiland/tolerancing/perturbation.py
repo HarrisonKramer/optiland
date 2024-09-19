@@ -148,3 +148,8 @@ class Perturbation:
         """Apply the perturbation to the optic."""
         self.value = self.sampler.sample()
         self.variable.update(self.value)
+
+    def reset(self):
+        """Reset the perturbation to its original value."""
+        self.variable.reset()
+        self.value = None
