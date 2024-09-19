@@ -106,7 +106,7 @@ class Tolerancing:
             self.compensator.run()
 
             # record the optimized values
-            result = {f'C{i}: {var}': var.value
+            result = {f'C{i}: {str(var)}': var.value
                       for i, var in enumerate(self.compensator.variables)}
         return result
 
