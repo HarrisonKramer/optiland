@@ -47,3 +47,20 @@ class MonteCarlo(SensitivityAnalysis):
 
     def view(self):
         pass
+
+    def _validate(self):
+        """
+        Validates the tolerancing system before performing sensitivity
+        analysis.
+
+        Raises:
+            ValueError: If no operands are found in the tolerancing system.
+            ValueError: If no perturbations are found in the tolerancing
+                system.
+        """
+        if not self.tolerancing.operands:
+            raise ValueError('No operands found in the tolerancing system.')
+
+        if not self.tolerancing.perturbations:
+            raise ValueError('No perturbations found in the tolerancing '
+                             'system.')
