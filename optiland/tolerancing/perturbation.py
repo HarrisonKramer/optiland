@@ -152,4 +152,4 @@ class Perturbation:
     def reset(self):
         """Reset the perturbation to its original value."""
         self.variable.reset()
-        self.value = None
+        self.value = self.variable.value
