@@ -178,6 +178,7 @@ class MonteCarlo(SensitivityAnalysis):
                 axes[i].grid()
                 axes[i].set_xlim([None, data_sorted[-1]])
                 axes[i].set_ylim([0, None])
+                axes[i].set_xlabel(key)
                 axes[i].set_title(key)
 
             else:
