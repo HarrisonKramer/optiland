@@ -113,7 +113,7 @@ class MonteCarlo(SensitivityAnalysis):
         """
         self._plot(plot_type='cdf')
 
-    def view_heatmap(self, figsize=(8, 6)):
+    def view_heatmap(self, figsize=(8, 6), vmin=None, vmax=None):
         """
         Generates and displays a heatmap of the correlation matrix of the
         results.
@@ -128,7 +128,8 @@ class MonteCarlo(SensitivityAnalysis):
         f, ax = plt.subplots(figsize=figsize)
         cmap = sns.diverging_palette(230, 20, as_cmap=True)
         sns.heatmap(corr, mask=mask, cmap=cmap, center=0, square=True,
-                    linewidths=.5)
+                    linewidths=.5, vmin=vmin, vmax=vmax,
+                    cbar_kws={"shrink": .5})
         plt.tight_layout()
         plt.show()
 
