@@ -24,7 +24,8 @@ dependencies = [
     "vtk",
     "tabulate",
     "numba",
-    "requests"
+    "requests",
+    "seaborn"
 ]
 
 [project.urls]
