@@ -1,7 +1,7 @@
 ![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
 [![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
-![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # **Optiland**
 
