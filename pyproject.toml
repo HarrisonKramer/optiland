@@ -27,6 +27,7 @@ dependencies = [
     "requests",
     "seaborn"
 ]
+license = { text = "MIT License" }
 
 [project.urls]
 "Homepage" = "https://github.com/HarrisonKramer/optiland"
