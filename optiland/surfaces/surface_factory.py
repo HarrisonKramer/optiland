@@ -23,12 +23,12 @@ class SurfaceFactory:
     Attributes:
         _surface_group (SurfaceGroup): The surface group to which the surfaces
             belong.
-        _last_thickness (float): The thickness of the last created surface.
+        last_thickness (float): The thickness of the last created surface.
     """
 
     def __init__(self, surface_group):
         self._surface_group = surface_group
-        self._last_thickness = 0
+        self.last_thickness = 0
 
     def create_surface(self, surface_type, index, is_stop, material, thickness,
                        **kwargs):
@@ -127,9 +127,7 @@ class SurfaceFactory:
         elif index == 1:
             z = 0  # first surface, always at zero
         else:
-            z = self._surface_group.positions[index-1] + self._last_thickness
-
-        self._last_thickness = thickness
+            z = self._surface_group.positions[index-1] + self.last_thickness
 
         return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
 
