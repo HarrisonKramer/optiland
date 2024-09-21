@@ -27,9 +27,6 @@ def test_sensitivity_analysis_initialization(tolerancing):
     assert sa.tolerancing == tolerancing
     assert sa.operand_names == ['0: f1', '1: f2']
     assert isinstance(sa._results, pd.DataFrame)
-    assert list(sa._results.columns) == ['perturbation_type',
-                                         'perturbation_value', '0: f1',
-                                         '1: f2']
 
 
 def test_sensitivity_analysis_run(tolerancing):

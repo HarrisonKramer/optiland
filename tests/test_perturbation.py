@@ -33,7 +33,7 @@ def test_range_cycle_twice():
 
 
 def test_distribution_sampler_normal():
-    sampler = DistributionSampler('normal', 0, 1, seed=42)
+    sampler = DistributionSampler('normal', seed=42, loc=0, scale=1)
     value = sampler.sample()
     np.random.seed(42)
     expected_value = np.random.normal(0, 1)
@@ -41,7 +41,7 @@ def test_distribution_sampler_normal():
 
 
 def test_distribution_sampler_uniform():
-    sampler = DistributionSampler('uniform', 0, 1, seed=42)
+    sampler = DistributionSampler('uniform', seed=42, low=0, high=1)
     value = sampler.sample()
     np.random.seed(42)
     expected_value = np.random.uniform(0, 1)
@@ -50,7 +50,7 @@ def test_distribution_sampler_uniform():
 
 def test_distribution_sampler_unknown():
     with pytest.raises(ValueError):
-        DistributionSampler('unknown', 0, 1).sample()
+        DistributionSampler('unknown').sample()
 
 
 def test_perturbation_apply():
@@ -73,8 +73,8 @@ def test_range_sampler_reset():
 
 
 def test_distribution_sampler_seed():
-    sampler1 = DistributionSampler('normal', 0, 1, seed=42)
+    sampler1 = DistributionSampler('normal', seed=42, loc=0, scale=1)
     value1 = sampler1.sample()
-    sampler2 = DistributionSampler('normal', 0, 1, seed=42)
+    sampler2 = DistributionSampler('normal', seed=42, loc=0, scale=1)
     value2 = sampler2.sample()
     assert np.isclose(value1, value2)

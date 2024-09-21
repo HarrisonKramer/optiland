@@ -105,4 +105,4 @@ def test_reset(setup_tolerancing):
     tolerancing.perturbations[0].apply()
     assert tolerancing.perturbations[0].value == 100.0
     tolerancing.reset()
-    assert tolerancing.perturbations[0].value == 100.0
+    assert tolerancing.perturbations[0].value == 19.93  # original value

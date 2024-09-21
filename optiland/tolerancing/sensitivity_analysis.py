@@ -33,10 +33,7 @@ class SensitivityAnalysis:
             f'{i}: {operand}'
             for i, operand in enumerate(tolerancing.operands)
         ]
-        columns = ['perturbation_type', 'perturbation_value'] + \
-            self.operand_names
-        self._results = pd.DataFrame(columns=columns)
-
+        self._results = pd.DataFrame()
         self._validate()
 
     def run(self):
@@ -75,7 +72,7 @@ class SensitivityAnalysis:
 
                 # save results - perturbation type & value
                 result = {
-                    'perturbation_type': perturbation.variable,
+                    'perturbation_type': str(perturbation.variable),
                     'perturbation_value': perturbation.value,
                 }
 

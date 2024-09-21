@@ -1,9 +1,7 @@
 ![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
 [![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
-![Forks](https://img.shields.io/github/forks/HarrisonKramer/optiland.svg)
-![Watchers](https://img.shields.io/github/watchers/HarrisonKramer/optiland.svg)
-![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # **Optiland**
 
@@ -60,10 +58,12 @@ You can install the package using pip. To do so, follow these steps:
 - Real and paraxial ray tracing, including aspherics and freeforms
 - Polarization ray tracing
 - Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, PSF, MTF, etc.)
-- Glass catalogue (based on refractiveindex.info)
+- Glass and material catalogue (based on refractiveindex.info)
 - Design optimization (local and global)
 - Wavefront and Zernike analysis
+- Tolerancing, including sensitivity analysis and Monte Carlo methods
 - Coating and surface scatter (BSDF) analysis
+- Zemax file import
 
 The code itself is in constant flux and new functionalities are always being added.
 
@@ -139,7 +139,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 8. **Tolerancing**
     - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
-    - Tutorial 8b - Advanced Tolerancing - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 8b - Advanced Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_8b_Monte_Carlo_Analysis.ipynb)
         - Monte Carlo-based Tolerancing
 9. **Lens Catalogue Integration**
     - [Tutorial 9a - Edmund Optics Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9a_Edmund_Optics_Catalogue.ipynb)
