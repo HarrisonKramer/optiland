@@ -348,23 +348,18 @@ def create_distribution(distribution_type):
     Raises:
         ValueError: If an invalid distribution type is provided.
     """
-    if distribution_type == 'line_x':
-        dist = LineXDistribution()
-    elif distribution_type == 'line_y':
-        dist = LineYDistribution()
-    elif distribution_type == 'positive_line_x':
-        dist = LineXDistribution(positive_only=True)
-    elif distribution_type == 'positive_line_y':
-        dist = LineYDistribution(positive_only=True)
-    elif distribution_type == 'random':
-        dist = RandomDistribution()
-    elif distribution_type == 'uniform':
-        dist = UniformDistribution()
-    elif distribution_type == 'hexapolar':
-        dist = HexagonalDistribution()
-    elif distribution_type == 'cross':
-        dist = CrossDistribution()
-    else:
+    distribution_classes = {
+        'line_x': LineXDistribution,
+        'line_y': LineYDistribution,
+        'positive_line_x': lambda: LineXDistribution(positive_only=True),
+        'positive_line_y': lambda: LineYDistribution(positive_only=True),
+        'random': RandomDistribution,
+        'uniform': UniformDistribution,
+        'hexapolar': HexagonalDistribution,
+        'cross': CrossDistribution
+    }
+
+    if distribution_type not in distribution_classes:
         raise ValueError('Invalid distribution type.')
 
-    return dist
+    return distribution_classes[distribution_type]()
