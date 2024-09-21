@@ -62,10 +62,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         x_norm = x / self.norm_x
         y_norm = y / self.norm_y
 
-        if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
-            raise ValueError('Chebyshev input coordinates must be normalized '
-                             'to [-1, 1]. Consider updating the normalization '
-                             'factors.')
+        self._validate_inputs(x_norm, y_norm)
 
         r2 = x**2 + y**2
         z = r2 / (self.radius *
@@ -93,10 +90,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         x_norm = x / self.norm_x
         y_norm = y / self.norm_y
 
-        if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
-            raise ValueError('Chebyshev input coordinates must be normalized '
-                             'to [-1, 1]. Consider updating the normalization '
-                             'factors.')
+        self._validate_inputs(x_norm, y_norm)
 
         r2 = x**2 + y**2
         denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
@@ -146,3 +140,16 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
                 kind of degree n at the given x value.
         """
         return n * np.sin(n * np.arccos(x)) / np.sqrt(1 - x**2)
+
+    def _validate_inputs(self, x_norm, y_norm):
+        """
+        Validates the input coordinates for the Chebyshev polynomial surface.
+
+        Args:
+            x_norm (np.ndarray): The normalized x values.
+            y_norm (np.ndarray): The normalized y values.
+        """
+        if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
+            raise ValueError('Chebyshev input coordinates must be normalized '
+                             'to [-1, 1]. Consider updating the normalization '
+                             'factors.')
