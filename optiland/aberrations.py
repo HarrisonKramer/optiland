@@ -53,46 +53,25 @@ class Aberrations:
         """
         self._precalculations()
 
-        TSC = []
         SC = []
-        CC = []
-        TAC = []
         AC = []
-        TPC = []
         PC = []
-        DC = []
         TAchC = []
         LchC = []
         TchC = []
 
+        TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
+
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
-            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
-                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
-                                                       self._ub[k-1]**2)))
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] / self._n[k] *
-                          self._dn[k]))
-            TchC.append(-self._ya[k-1] * self._ip[k-1] /
-                        (self._n[-1] * self._ua[-1]) *
-                        (self._dn[k-1] - self._n[k-1] /
-                         self._n[k] * self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
+            TchC.append(self._TchC_term(k))
 
-            SC.append(-TSC[-1] / self._ua[-1])
-            AC.append(-TAC[-1] / self._ua[-1])
-            PC.append(-TPC[-1] / self._ua[-1])
-            LchC.append(-TAchC[-1] / self._ua[-1])
+            SC.append(-TSC[k-1] / self._ua[-1])
+            AC.append(-TAC[k-1] / self._ua[-1])
+            PC.append(-TPC[k-1] / self._ua[-1])
+            LchC.append(-TAchC[k-1] / self._ua[-1])
 
-        S = np.array([-sum(TSC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(CC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(TAC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(TPC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(DC) * self._n[-1] * self._ua[-1]*2])
+        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
 
         TSC = np.array(TSC).flatten()
         CC = np.array(CC).flatten()
@@ -114,29 +93,8 @@ class Aberrations:
             S (List[float]): Seidel aberration coefficients
         """
         self._precalculations()
-
-        TSC = []
-        CC = []
-        TAC = []
-        TPC = []
-        DC = []
-
-        for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
-            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
-                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
-                                                       self._ub[k-1]**2)))
-
-        S = np.array([-sum(TSC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(CC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(TAC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(TPC) * self._n[-1] * self._ua[-1]*2,
-                      -sum(DC) * self._n[-1] * self._ua[-1]*2])
-
+        TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
+        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
         return S.squeeze()
 
     def TSC(self):
@@ -149,7 +107,7 @@ class Aberrations:
 
         TSC = []
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            TSC.append(self._TSC_term(k))
         return np.array(TSC).flatten()
 
     def SC(self):
@@ -163,7 +121,7 @@ class Aberrations:
         TSC = []
         SC = []
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            TSC.append(self._TSC_term(k))
             SC.append(-TSC[-1] / self._ua[-1])
         return np.array(SC).flatten()
 
@@ -177,7 +135,7 @@ class Aberrations:
 
         CC = []
         for k in range(1, self._N-1):
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
+            CC.append(self._CC_term(k))
         return np.array(CC).flatten()
 
     def TCC(self):
@@ -198,7 +156,7 @@ class Aberrations:
 
         TAC = []
         for k in range(1, self._N-1):
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TAC.append(self._TAC_term(k))
 
         return np.array(TAC).flatten()
 
@@ -213,7 +171,7 @@ class Aberrations:
         TAC = []
         AC = []
         for k in range(1, self._N-1):
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TAC.append(self._TAC_term(k))
             AC.append(-TAC[-1] / self._ua[-1])
         return np.array(AC).flatten()
 
@@ -227,8 +185,7 @@ class Aberrations:
 
         TPC = []
         for k in range(1, self._N-1):
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
+            TPC.append(self._TPC_term(k))
         return np.array(TPC).flatten()
 
     def PC(self):
@@ -242,8 +199,7 @@ class Aberrations:
         TPC = []
         PC = []
         for k in range(1, self._N-1):
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
+            TPC.append(self._TPC_term(k))
             PC.append(-TPC[-1] / self._ua[-1])
         return np.array(PC).flatten()
 
@@ -257,13 +213,11 @@ class Aberrations:
 
         DC = []
         for k in range(1, self._N-1):
-            DC.append(self._hp *
-                      (self._Bp[k-1] * self._i[k-1] * self._ip[k-1] +
-                       0.5*(self._ub[k]**2 - self._ub[k-1]**2)))
+            DC.append(self._DC_term(k))
         return np.array(DC).flatten()
 
     def TAchC(self):
-        """Compute frst-order transverse axial color
+        """Compute first-order transverse axial color
 
         Returns:
             TAchC (List[float]): First-order transverse axial color
@@ -272,10 +226,7 @@ class Aberrations:
 
         TAchC = []
         for k in range(1, self._N-1):
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] /
-                          self._n[k] * self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
         return np.array(TAchC).flatten()
 
     def LchC(self):
@@ -289,10 +240,7 @@ class Aberrations:
         TAchC = []
         LchC = []
         for k in range(1, self._N-1):
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] /
-                          self._n[k] * self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
             LchC.append(-TAchC[-1] / self._ua[-1])
         return np.array(LchC).flatten()
 
@@ -306,11 +254,45 @@ class Aberrations:
 
         TchC = []
         for k in range(1, self._N-1):
-            TchC.append(-self._ya[k-1] * self._ip[k-1] /
-                        (self._n[-1] * self._ua[-1]) *
-                        (self._dn[k-1] - self._n[k-1] /
-                         self._n[k] * self._dn[k]))
+            TchC.append(self._TchC_term(k))
         return np.array(TchC).flatten()
+
+    def _TAchC_term(self, k):
+        """Compute first-order transverse axial color term"""
+        return (-self._ya[k-1] * self._i[k-1] /
+                (self._n[-1] * self._ua[-1]) *
+                (self._dn[k-1] - self._n[k-1] / self._n[k] *
+                self._dn[k]))
+
+    def _TchC_term(self, k):
+        """Compute first-order lateral color term"""
+        return (-self._ya[k-1] * self._ip[k-1] /
+                (self._n[-1] * self._ua[-1]) *
+                (self._dn[k-1] - self._n[k-1] /
+                self._n[k] * self._dn[k]))
+
+    def _TSC_term(self, k):
+        """Compute third-order transverse spherical aberration term"""
+        return self._B[k-1] * self._i[k-1]**2 * self._hp
+
+    def _CC_term(self, k):
+        """Compute third-order sagittal coma term"""
+        return self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp
+
+    def _TAC_term(self, k):
+        """Compute third-order transverse astigmatism term"""
+        return self._B[k-1] * self._ip[k-1]**2 * self._hp
+
+    def _TPC_term(self, k):
+        """Compute third-order transverse Petzval sum term"""
+        return ((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
+                self._inv / (2*self._n[k] * self._n[k-1]))
+
+    def _DC_term(self, k):
+        """Compute third-order distortion term"""
+        return (self._hp *
+                (self._Bp[k-1] * self._i[k-1] * self._ip[k-1] +
+                 0.5*(self._ub[k]**2 - self._ub[k-1]**2)))
 
     def _precalculations(self):
         """Perform precalculations needed for most aberration calculations"""
@@ -347,3 +329,29 @@ class Aberrations:
                                  self._yb[k] *
                                  (self._ub[k] + self._ip[k-1]) /
                                  denom)[0]
+
+    def _compute_seidel_terms(self):
+        """Compute the Seidel aberration terms"""
+        TSC = []
+        CC = []
+        TAC = []
+        TPC = []
+        DC = []
+
+        for k in range(1, self._N-1):
+            TSC.append(self._TSC_term(k))
+            CC.append(self._CC_term(k))
+            TAC.append(self._TAC_term(k))
+            TPC.append(self._TPC_term(k))
+            DC.append(self._DC_term(k))
+
+        return TSC, CC, TAC, TPC, DC
+
+    def _sum_seidels(self, TSC, CC, TAC, TPC, DC):
+        """Sum the Seidel aberration coefficients"""
+        S = np.array([-sum(TSC) * self._n[-1] * self._ua[-1]*2,
+                      -sum(CC) * self._n[-1] * self._ua[-1]*2,
+                      -sum(TAC) * self._n[-1] * self._ua[-1]*2,
+                      -sum(TPC) * self._n[-1] * self._ua[-1]*2,
+                      -sum(DC) * self._n[-1] * self._ua[-1]*2])
+        return S
