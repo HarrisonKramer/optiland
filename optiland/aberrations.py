@@ -63,10 +63,7 @@ class Aberrations:
         TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
 
         for k in range(1, self._N-1):
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] / self._n[k] *
-                          self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
             TchC.append(self._TchC_term(k))
 
             SC.append(-TSC[k-1] / self._ua[-1])
@@ -224,7 +221,7 @@ class Aberrations:
         return np.array(DC).flatten()
 
     def TAchC(self):
-        """Compute frst-order transverse axial color
+        """Compute first-order transverse axial color
 
         Returns:
             TAchC (List[float]): First-order transverse axial color
@@ -233,10 +230,7 @@ class Aberrations:
 
         TAchC = []
         for k in range(1, self._N-1):
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] /
-                          self._n[k] * self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
         return np.array(TAchC).flatten()
 
     def LchC(self):
@@ -250,10 +244,7 @@ class Aberrations:
         TAchC = []
         LchC = []
         for k in range(1, self._N-1):
-            TAchC.append(-self._ya[k-1] * self._i[k-1] /
-                         (self._n[-1] * self._ua[-1]) *
-                         (self._dn[k-1] - self._n[k-1] /
-                          self._n[k] * self._dn[k]))
+            TAchC.append(self._TAchC_term(k))
             LchC.append(-TAchC[-1] / self._ua[-1])
         return np.array(LchC).flatten()
 
@@ -271,7 +262,11 @@ class Aberrations:
         return np.array(TchC).flatten()
 
     def _TAchC_term(self, k):
-        pass
+        """Compute first-order transverse axial color term"""
+        return (-self._ya[k-1] * self._i[k-1] /
+                (self._n[-1] * self._ua[-1]) *
+                (self._dn[k-1] - self._n[k-1] / self._n[k] *
+                self._dn[k]))
 
     def _LchC_term(self, k):
         pass
