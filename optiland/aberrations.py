@@ -213,9 +213,7 @@ class Aberrations:
 
         DC = []
         for k in range(1, self._N-1):
-            DC.append(self._hp *
-                      (self._Bp[k-1] * self._i[k-1] * self._ip[k-1] +
-                       0.5*(self._ub[k]**2 - self._ub[k-1]**2)))
+            DC.append(self._DC_term(k))
         return np.array(DC).flatten()
 
     def TAchC(self):
@@ -303,7 +301,10 @@ class Aberrations:
         pass
 
     def _DC_term(self, k):
-        pass
+        """Compute third-order distortion term"""
+        return (self._hp *
+                (self._Bp[k-1] * self._i[k-1] * self._ip[k-1] +
+                 0.5*(self._ub[k]**2 - self._ub[k-1]**2)))
 
     def _precalculations(self):
         """Perform precalculations needed for most aberration calculations"""
@@ -354,9 +355,7 @@ class Aberrations:
             CC.append(self._CC_term(k))
             TAC.append(self._TAC_term(k))
             TPC.append(self._TPC_term(k))
-            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
-                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
-                                                       self._ub[k-1]**2)))
+            DC.append(self._DC_term(k))
 
         return TSC, CC, TAC, TPC, DC
 
