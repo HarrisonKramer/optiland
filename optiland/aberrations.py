@@ -135,7 +135,7 @@ class Aberrations:
 
         CC = []
         for k in range(1, self._N-1):
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
+            CC.append(self._CC_term(k))
         return np.array(CC).flatten()
 
     def TCC(self):
@@ -286,7 +286,8 @@ class Aberrations:
         pass
 
     def _CC_term(self, k):
-        pass
+        """Compute third-order sagittal coma term"""
+        return self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp
 
     def _TAC_term(self, k):
         pass
@@ -349,7 +350,7 @@ class Aberrations:
 
         for k in range(1, self._N-1):
             TSC.append(self._TSC_term(k))
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
+            CC.append(self._CC_term(k))
             TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
             TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
                        self._inv / (2*self._n[k] * self._n[k-1]))
