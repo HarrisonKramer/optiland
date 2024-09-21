@@ -264,9 +264,6 @@ class Aberrations:
                 (self._dn[k-1] - self._n[k-1] / self._n[k] *
                 self._dn[k]))
 
-    def _LchC_term(self, k):
-        pass
-
     def _TchC_term(self, k):
         """Compute first-order lateral color term"""
         return (-self._ya[k-1] * self._ip[k-1] /
@@ -278,9 +275,6 @@ class Aberrations:
         """Compute third-order transverse spherical aberration term"""
         return self._B[k-1] * self._i[k-1]**2 * self._hp
 
-    def _SC_term(self, k):
-        pass
-
     def _CC_term(self, k):
         """Compute third-order sagittal coma term"""
         return self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp
@@ -289,16 +283,10 @@ class Aberrations:
         """Compute third-order transverse astigmatism term"""
         return self._B[k-1] * self._ip[k-1]**2 * self._hp
 
-    def _AC_term(self, k):
-        pass
-
     def _TPC_term(self, k):
         """Compute third-order transverse Petzval sum term"""
         return ((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
                 self._inv / (2*self._n[k] * self._n[k-1]))
-
-    def _PC_term(self, k):
-        pass
 
     def _DC_term(self, k):
         """Compute third-order distortion term"""
