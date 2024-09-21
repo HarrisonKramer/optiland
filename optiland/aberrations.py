@@ -107,7 +107,7 @@ class Aberrations:
 
         TSC = []
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            TSC.append(self._TSC_term(k))
         return np.array(TSC).flatten()
 
     def SC(self):
@@ -121,7 +121,7 @@ class Aberrations:
         TSC = []
         SC = []
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            TSC.append(self._TSC_term(k))
             SC.append(-TSC[-1] / self._ua[-1])
         return np.array(SC).flatten()
 
@@ -279,7 +279,8 @@ class Aberrations:
                 self._n[k] * self._dn[k]))
 
     def _TSC_term(self, k):
-        pass
+        """Compute third-order transverse spherical aberration term"""
+        return self._B[k-1] * self._i[k-1]**2 * self._hp
 
     def _SC_term(self, k):
         pass
@@ -347,7 +348,7 @@ class Aberrations:
         DC = []
 
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            TSC.append(self._TSC_term(k))
             CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
             TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
             TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
