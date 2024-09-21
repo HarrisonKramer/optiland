@@ -67,10 +67,7 @@ class Aberrations:
                          (self._n[-1] * self._ua[-1]) *
                          (self._dn[k-1] - self._n[k-1] / self._n[k] *
                           self._dn[k]))
-            TchC.append(-self._ya[k-1] * self._ip[k-1] /
-                        (self._n[-1] * self._ua[-1]) *
-                        (self._dn[k-1] - self._n[k-1] /
-                         self._n[k] * self._dn[k]))
+            TchC.append(self._TchC_term(k))
 
             SC.append(-TSC[k-1] / self._ua[-1])
             AC.append(-TAC[k-1] / self._ua[-1])
@@ -270,11 +267,45 @@ class Aberrations:
 
         TchC = []
         for k in range(1, self._N-1):
-            TchC.append(-self._ya[k-1] * self._ip[k-1] /
-                        (self._n[-1] * self._ua[-1]) *
-                        (self._dn[k-1] - self._n[k-1] /
-                         self._n[k] * self._dn[k]))
+            TchC.append(self._TchC_term(k))
         return np.array(TchC).flatten()
+
+    def _TAchC_term(self, k):
+        pass
+
+    def _LchC_term(self, k):
+        pass
+
+    def _TchC_term(self, k):
+        """Compute first-order lateral color term"""
+        return (-self._ya[k-1] * self._ip[k-1] /
+                (self._n[-1] * self._ua[-1]) *
+                (self._dn[k-1] - self._n[k-1] /
+                self._n[k] * self._dn[k]))
+
+    def _TSC_term(self, k):
+        pass
+
+    def _SC_term(self, k):
+        pass
+
+    def _CC_term(self, k):
+        pass
+
+    def _TAC_term(self, k):
+        pass
+
+    def _AC_term(self, k):
+        pass
+
+    def _TPC_term(self, k):
+        pass
+
+    def _PC_term(self, k):
+        pass
+
+    def _DC_term(self, k):
+        pass
 
     def _precalculations(self):
         """Perform precalculations needed for most aberration calculations"""
@@ -313,6 +344,7 @@ class Aberrations:
                                  denom)[0]
 
     def _compute_seidel_terms(self):
+        """Compute the Seidel aberration terms"""
         TSC = []
         CC = []
         TAC = []
