@@ -185,8 +185,7 @@ class Aberrations:
 
         TPC = []
         for k in range(1, self._N-1):
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
+            TPC.append(self._TPC_term(k))
         return np.array(TPC).flatten()
 
     def PC(self):
@@ -200,8 +199,7 @@ class Aberrations:
         TPC = []
         PC = []
         for k in range(1, self._N-1):
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
+            TPC.append(self._TPC_term(k))
             PC.append(-TPC[-1] / self._ua[-1])
         return np.array(PC).flatten()
 
@@ -297,7 +295,9 @@ class Aberrations:
         pass
 
     def _TPC_term(self, k):
-        pass
+        """Compute third-order transverse Petzval sum term"""
+        return ((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
+                self._inv / (2*self._n[k] * self._n[k-1]))
 
     def _PC_term(self, k):
         pass
@@ -353,8 +353,7 @@ class Aberrations:
             TSC.append(self._TSC_term(k))
             CC.append(self._CC_term(k))
             TAC.append(self._TAC_term(k))
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
+            TPC.append(self._TPC_term(k))
             DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
                                   self._ip[k-1] + 0.5*(self._ub[k]**2 -
                                                        self._ub[k-1]**2)))
