@@ -53,27 +53,16 @@ class Aberrations:
         """
         self._precalculations()
 
-        TSC = []
         SC = []
-        CC = []
-        TAC = []
         AC = []
-        TPC = []
         PC = []
-        DC = []
         TAchC = []
         LchC = []
         TchC = []
 
+        TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
+
         for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
-            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
-                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
-                                                       self._ub[k-1]**2)))
             TAchC.append(-self._ya[k-1] * self._i[k-1] /
                          (self._n[-1] * self._ua[-1]) *
                          (self._dn[k-1] - self._n[k-1] / self._n[k] *
@@ -83,12 +72,12 @@ class Aberrations:
                         (self._dn[k-1] - self._n[k-1] /
                          self._n[k] * self._dn[k]))
 
-            SC.append(-TSC[-1] / self._ua[-1])
-            AC.append(-TAC[-1] / self._ua[-1])
-            PC.append(-TPC[-1] / self._ua[-1])
-            LchC.append(-TAchC[-1] / self._ua[-1])
+            SC.append(-TSC[k-1] / self._ua[-1])
+            AC.append(-TAC[k-1] / self._ua[-1])
+            PC.append(-TPC[k-1] / self._ua[-1])
+            LchC.append(-TAchC[k-1] / self._ua[-1])
 
-        S = self._sum_seidels(self, TSC, CC, TAC, TPC, DC)
+        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
 
         TSC = np.array(TSC).flatten()
         CC = np.array(CC).flatten()
@@ -110,25 +99,8 @@ class Aberrations:
             S (List[float]): Seidel aberration coefficients
         """
         self._precalculations()
-
-        TSC = []
-        CC = []
-        TAC = []
-        TPC = []
-        DC = []
-
-        for k in range(1, self._N-1):
-            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
-            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
-            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
-                       self._inv / (2*self._n[k] * self._n[k-1]))
-            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
-                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
-                                                       self._ub[k-1]**2)))
-
-        S = self._sum_seidels(self, TSC, CC, TAC, TPC, DC)
-
+        TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
+        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
         return S.squeeze()
 
     def TSC(self):
@@ -339,6 +311,25 @@ class Aberrations:
                                  self._yb[k] *
                                  (self._ub[k] + self._ip[k-1]) /
                                  denom)[0]
+
+    def _compute_seidel_terms(self):
+        TSC = []
+        CC = []
+        TAC = []
+        TPC = []
+        DC = []
+
+        for k in range(1, self._N-1):
+            TSC.append(self._B[k-1] * self._i[k-1]**2 * self._hp)
+            CC.append(self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp)
+            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
+                       self._inv / (2*self._n[k] * self._n[k-1]))
+            DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
+                                  self._ip[k-1] + 0.5*(self._ub[k]**2 -
+                                                       self._ub[k-1]**2)))
+
+        return TSC, CC, TAC, TPC, DC
 
     def _sum_seidels(self, TSC, CC, TAC, TPC, DC):
         """Sum the Seidel aberration coefficients"""
