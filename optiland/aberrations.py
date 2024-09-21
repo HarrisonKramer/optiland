@@ -156,7 +156,7 @@ class Aberrations:
 
         TAC = []
         for k in range(1, self._N-1):
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TAC.append(self._TAC_term(k))
 
         return np.array(TAC).flatten()
 
@@ -171,7 +171,7 @@ class Aberrations:
         TAC = []
         AC = []
         for k in range(1, self._N-1):
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TAC.append(self._TAC_term(k))
             AC.append(-TAC[-1] / self._ua[-1])
         return np.array(AC).flatten()
 
@@ -290,7 +290,8 @@ class Aberrations:
         return self._B[k-1] * self._i[k-1] * self._ip[k-1] * self._hp
 
     def _TAC_term(self, k):
-        pass
+        """Compute third-order transverse astigmatism term"""
+        return self._B[k-1] * self._ip[k-1]**2 * self._hp
 
     def _AC_term(self, k):
         pass
@@ -351,7 +352,7 @@ class Aberrations:
         for k in range(1, self._N-1):
             TSC.append(self._TSC_term(k))
             CC.append(self._CC_term(k))
-            TAC.append(self._B[k-1] * self._ip[k-1]**2 * self._hp)
+            TAC.append(self._TAC_term(k))
             TPC.append((self._n[k] - self._n[k-1]) * self._C[k] * self._hp *
                        self._inv / (2*self._n[k] * self._n[k-1]))
             DC.append(self._hp * (self._Bp[k-1] * self._i[k-1] *
