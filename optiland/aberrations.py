@@ -71,7 +71,7 @@ class Aberrations:
             PC.append(-TPC[k-1] / self._ua[-1])
             LchC.append(-TAchC[k-1] / self._ua[-1])
 
-        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
+        S = self._sum_seidels([TSC, CC, TAC, TPC, DC])
 
         TSC = np.array(TSC).flatten()
         CC = np.array(CC).flatten()
@@ -94,7 +94,7 @@ class Aberrations:
         """
         self._precalculations()
         TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
-        S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
+        S = self._sum_seidels([TSC, CC, TAC, TPC, DC])
         return S.squeeze()
 
     def TSC(self):
@@ -347,8 +347,9 @@ class Aberrations:
 
         return TSC, CC, TAC, TPC, DC
 
-    def _sum_seidels(self, TSC, CC, TAC, TPC, DC):
+    def _sum_seidels(self, seidels):
         """Sum the Seidel aberration coefficients"""
+        TSC, CC, TAC, TPC, DC = seidels
         S = np.array([-sum(TSC) * self._n[-1] * self._ua[-1]*2,
                       -sum(CC) * self._n[-1] * self._ua[-1]*2,
                       -sum(TAC) * self._n[-1] * self._ua[-1]*2,
