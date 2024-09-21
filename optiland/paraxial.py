@@ -378,20 +378,9 @@ class Paraxial:
             tuple: A tuple containing the final height(s) and slope(s) of the
                 rays after tracing.
         """
-        if np.isscalar(y):
-            y = np.array([y], dtype=float)
-        else:
-            y = np.array(y, dtype=float)
-
-        if np.isscalar(u):
-            u = np.array([u], dtype=float)
-        else:
-            u = np.array(u, dtype=float)
-
-        if np.isscalar(z):
-            z = np.array([z], dtype=float)
-        else:
-            z = np.array(z, dtype=float)
+        self._process_input(y)
+        self._process_input(u)
+        self._process_input(z)
 
         if reverse:
             surfaces = self.surfaces.inverted()
@@ -402,3 +391,18 @@ class Paraxial:
         surfaces.trace(rays, skip)
 
         return surfaces.y, surfaces.u
+
+    def _process_input(self, x):
+        """
+        Process input to ensure it is a numpy array.
+
+        Args:
+            x (float or array-like): The input to process.
+
+        Returns:
+            np.ndarray: The processed input.
+        """
+        if np.isscalar(x):
+            return np.array([x], dtype=float)
+        else:
+            return np.array(x, dtype=float)
