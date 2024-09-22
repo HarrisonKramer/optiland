@@ -46,7 +46,7 @@ class RayGenerator:
             x1 = Px + x0
             y1 = Py + y0
         else:
-            EPL = self.optic.paraxial.EPL()
+            EPL = self.optic.paraxial.EPL()  # TODO - avoid calling this twice
             EPD = self.optic.paraxial.EPD()
 
             x1 = Px * EPD / 2
