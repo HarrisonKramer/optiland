@@ -160,7 +160,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 
 ## License
-Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
 
 
 ## Contact
