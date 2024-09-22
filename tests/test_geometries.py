@@ -157,9 +157,9 @@ class TestStandardGeometry:
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         nx, ny, nz = geometry.surface_normal(rays)
-        assert nx == pytest.approx(-0.10127393670836665, abs=1e-10)
-        assert ny == pytest.approx(-0.2025478734167333, abs=1e-10)
-        assert nz == pytest.approx(0.9740215340114144, abs=1e-10)
+        assert nx == pytest.approx(0.10127393670836665, abs=1e-10)
+        assert ny == pytest.approx(0.2025478734167333, abs=1e-10)
+        assert nz == pytest.approx(-0.9740215340114144, abs=1e-10)
 
 
 class TestEvenAsphere:
@@ -217,9 +217,9 @@ class TestEvenAsphere:
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         nx, ny, nz = geometry.surface_normal(rays)
-        assert nx == pytest.approx(-0.11946945186789681, abs=1e-10)
-        assert ny == pytest.approx(-0.23893890373579363, abs=1e-10)
-        assert nz == pytest.approx(0.9636572265862595, abs=1e-10)
+        assert nx == pytest.approx(0.11946945186789681, abs=1e-10)
+        assert ny == pytest.approx(0.23893890373579363, abs=1e-10)
+        assert nz == pytest.approx(-0.9636572265862595, abs=1e-10)
 
 
 class TestPolynomialGeometry:
@@ -289,9 +289,9 @@ class TestPolynomialGeometry:
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         nx, ny, nz = geometry.surface_normal(rays)
-        assert nx == pytest.approx(-0.4373017765693584, abs=1e-10)
-        assert ny == pytest.approx(0.04888445345459283, abs=1e-10)
-        assert nz == pytest.approx(0.8979852261700794, abs=1e-10)
+        assert nx == pytest.approx(0.4373017765693584, abs=1e-10)
+        assert ny == pytest.approx(-0.04888445345459283, abs=1e-10)
+        assert nz == pytest.approx(-0.8979852261700794, abs=1e-10)
 
 
 class TestChebyshevGeometry:
@@ -367,6 +367,6 @@ class TestChebyshevGeometry:
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         nx, ny, nz = geometry.surface_normal(rays)
-        assert nx == pytest.approx(-0.14317439, abs=1e-8)
-        assert ny == pytest.approx(0.07668599, abs=1e-8)
-        assert nz == pytest.approx(0.98672202, abs=1e-8)
+        assert nx == pytest.approx(0.14317439, abs=1e-8)
+        assert ny == pytest.approx(-0.07668599, abs=1e-8)
+        assert nz == pytest.approx(-0.98672202, abs=1e-8)

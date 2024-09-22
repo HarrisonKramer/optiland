@@ -98,10 +98,10 @@ class StandardGeometry(BaseGeometry):
         """
         r2 = rays.x**2 + rays.y**2
 
-        denom = -self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
         dfdx = rays.x / denom
         dfdy = rays.y / denom
-        dfdz = 1
+        dfdz = -1
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + dfdz**2)
 

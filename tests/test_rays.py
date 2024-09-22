@@ -659,11 +659,11 @@ class TestRayGenerator:
         assert rays.i.shape == (2,)
         assert rays.w.shape == (2,)
 
-        assert np.allclose(rays.x, np.array([0.19525707, 0.23967682]),
+        assert np.allclose(rays.x, np.array([0.32419016, 0.36860991]),
                            atol=1e-8)
-        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),
+        assert np.allclose(rays.y, np.array([-0.23535066, -0.1909309]),
                            atol=1e-8)
-        assert np.allclose(rays.z, np.array([-0.17538571, -0.17538571]),
+        assert np.allclose(rays.z, np.array([-0.88839505, -0.88839505]),
                            atol=1e-8)
         assert np.allclose(rays.L, np.array([-0.17519154, -0.17519154]),
                            atol=1e-8)
@@ -755,11 +755,11 @@ class TestRayGenerator:
         assert rays.w.shape == (2,)
         assert rays.p.shape == (2, 3, 3)
 
-        assert np.allclose(rays.x, np.array([0.19525707, 0.23967682]),
+        assert np.allclose(rays.x, np.array([0.32419016, 0.36860991]),
                            atol=1e-8)
-        assert np.allclose(rays.y, np.array([-0.10641756, -0.06199781]),
+        assert np.allclose(rays.y, np.array([-0.23535066, -0.1909309]),
                            atol=1e-8)
-        assert np.allclose(rays.z, np.array([-0.17538571, -0.17538571]),
+        assert np.allclose(rays.z, np.array([-0.88839505, -0.88839505]),
                            atol=1e-8)
         assert np.allclose(rays.L, np.array([-0.17519154, -0.17519154]),
                            atol=1e-8)
