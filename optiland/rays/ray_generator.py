@@ -108,9 +108,7 @@ class RayGenerator:
             EPL = self.optic.paraxial.EPL()
             EPD = self.optic.paraxial.EPD()
 
-            # start rays just before left-most surface (1/7th of total track)
-            z = self.optic.surface_group.positions[1:-1]
-            offset = self.optic.total_track / 7 - np.min(z)
+            offset = self._get_starting_z_offset()
 
             # x, y, z positions of ray starting points
             x = np.tan(np.radians(field_x)) * (offset + EPL)
@@ -137,3 +135,21 @@ class RayGenerator:
             z0 = np.full_like(Px, z)
 
         return x0, y0, z0
+
+    def _get_starting_z_offset(self):
+        """
+        Calculate the starting ray z-coordinate offset for systems with an
+        object at infinity. This is relative to the first surface of the optic.
+
+        This method chooses a starting point 1/7th of the total track distance
+        from the left-most surface. If the total track is less than 105 mm, the
+        starting point is 15 mm from the left-most surface. This is to ensure
+        that rays are not started too close to the first surface.
+
+        Returns:
+            float: The z-coordinate offset relative to the first surface.
+        """
+        z = self.optic.surface_group.positions[1:-1]
+        offset = self.optic.total_track / 7
+        offset = max(offset, 15)
+        return offset - np.min(z)
