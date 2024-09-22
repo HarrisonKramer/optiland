@@ -109,11 +109,12 @@ class RealRays(BaseRays):
         self.N0 = self.N.copy()
 
         u = n1 / n2
-        ni = nx*self.L0 + ny*self.M0 + nz*self.N0
-        root = np.sqrt(1 - u**2 * (1 - ni**2))
-        tx = u * self.L0 + nx * root - u * nx * ni
-        ty = u * self.M0 + ny * root - u * ny * ni
-        tz = u * self.N0 + nz * root - u * nz * ni
+        nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
+
+        root = np.sqrt(1 - u**2 * (1 - dot**2))
+        tx = u * self.L0 + nx * root - u * nx * dot
+        ty = u * self.M0 + ny * root - u * ny * dot
+        tz = u * self.N0 + nz * root - u * nz * dot
 
         self.L = tx
         self.M = ty
@@ -135,7 +136,8 @@ class RealRays(BaseRays):
         self.M0 = self.M.copy()
         self.N0 = self.N.copy()
 
-        dot = self.L * nx + self.M * ny + self.N * nz
+        nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
+
         self.L -= 2 * dot * nx
         self.M -= 2 * dot * ny
         self.N -= 2 * dot * nz
@@ -143,3 +145,33 @@ class RealRays(BaseRays):
     def update(self, jones_matrix: np.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
         pass
+
+    def _align_surface_normal(self, nx, ny, nz):
+        """Align the surface normal with the incident ray vectors.
+
+        Note:
+            This is done as a convention to ensure the surface normal is
+            pointing in the correct direction. This is required for consistency
+            with the vector reflection and refraction equations used.
+
+        Args:
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+
+        Returns:
+            nx: The corrected x-component of the surface normal.
+            ny: The corrected y-component of the surface normal.
+            nz: The corrected z-component of the surface normal.
+            dot: The dot product of the surface normal and the incident ray
+                vectors.
+        """
+        dot = self.L0 * nx + self.M0 * ny + self.N0 * nz
+
+        sgn = np.sign(dot)
+        nx *= sgn
+        ny *= sgn
+        nz *= sgn
+
+        dot = np.abs(dot)
+        return nx, ny, nz, dot

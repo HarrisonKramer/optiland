@@ -105,9 +105,9 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
                      self.c[i, j] * self._chebyshev(i, x_norm))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
-        nx = -dzdx / norm
-        ny = -dzdy / norm
-        nz = 1 / norm
+        nx = dzdx / norm
+        ny = dzdy / norm
+        nz = -1 / norm
 
         return nx, ny, nz
 
