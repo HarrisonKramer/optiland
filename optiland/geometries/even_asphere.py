@@ -69,7 +69,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """
         r2 = x**2 + y**2
 
-        denom = np.sqrt(self.radius**2 - (1 + self.k) * r2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
@@ -79,8 +79,8 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
 
-        nx = -dfdx / mag * np.sign(self.radius)
-        ny = -dfdy / mag * np.sign(self.radius)
-        nz = 1 / mag
+        nx = dfdx / mag
+        ny = dfdy / mag
+        nz = -1 / mag
 
         return nx, ny, nz

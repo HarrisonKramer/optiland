@@ -87,8 +87,8 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
                 dzdy += j * self.c[i][j] * (x ** i) * (y ** (j - 1))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
-        nx = -dzdx / norm
-        ny = -dzdy / norm
-        nz = 1 / norm
+        nx = dzdx / norm
+        ny = dzdy / norm
+        nz = -1 / norm
 
         return nx, ny, nz
