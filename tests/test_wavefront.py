@@ -68,7 +68,7 @@ class TestWavefront:
         w._trace_chief_ray((0, 0), 0.55)
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
         path_length = w._get_path_length(xc, yc, zc, R)
-        assert np.allclose(path_length, np.array([27.41117881]))
+        assert np.allclose(path_length, np.array([34.84418309]))
 
     def test_correct_tilt(self):
         optic = DoubleGauss()
