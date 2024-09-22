@@ -127,7 +127,8 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
 
         # handle case when a = 0
-        t[a == 0] = -c[a == 0] / b[a == 0]
+        cond = a == 0
+        t[cond] = -c[cond] / b[cond]
 
         x = rays.x + rays.L * t
         y = rays.y + rays.M * t
