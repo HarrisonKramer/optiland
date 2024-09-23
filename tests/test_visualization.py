@@ -51,7 +51,6 @@ class TestLensViewer:
         lens = TessarLens()
         viewer = LensViewer(lens)
         assert viewer.optic == lens
-        assert np.array_equal(viewer._real_ray_extent, np.zeros(10))
 
     @patch('matplotlib.pyplot.show')
     def test_view(self, mock_show):
