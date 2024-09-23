@@ -186,6 +186,9 @@ class SurfaceGroup:
 
         self.surfaces.insert(index, new_surface)
 
+        # record the thickness to the next surface
+        self.surface_factory.last_thickness = thickness
+
     def remove_surface(self, index):
         """
         Remove a surface from the list of surfaces.

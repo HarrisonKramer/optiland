@@ -149,7 +149,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 9b - Thorlabs Catalogue](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_9b_Thorlabs_Catalogue.ipynb)
         - Reading and analyzing an achromatic doublet pair lens
 10. **Extending Optiland**
-    - Tutorial 10a - Custom Surface Types - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 10a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/examples/Tutorial_10a_Custom_Surface_Types.ipynb)
         - Adding new surface types
     - Tutorial 10b - Custom Coating Types - Update in progress (target completion: Nov. 2024)
         - Adding new coating types
@@ -160,7 +160,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 
 ## License
-Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
 
 
 ## Contact
