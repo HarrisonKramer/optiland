@@ -49,25 +49,23 @@ class LensViewer:
     Attributes:
         optic: An instance of the `Optic` class representing the optical
             system.
-        _real_ray_extent: An array storing the maximum extent of rays for each
-            surface.
+        ax: The matplotlib axis object.
 
     Methods:
         view: Visualizes the lenses and ray tracing.
-        _plot_all_surfaces: Plots all the surfaces of the optical system.
-        _plot_rays: Plots the rays for the given fields and wavelengths.
-        _plot_lens: Plots a lens.
-        _plot_surface: Plots a surface.
-        _plot_line: Plots a line.
-        _get_surface_extent: Returns the extent of a surface.
     """
 
     def __init__(self, optic):
         self.optic = optic
-
-        n = self.optic.surface_group.num_surfaces
-        self._real_ray_extent = np.zeros(n)
         self._is_symmetric = self._is_rotationally_symmetric()
+
+        self._num_surfaces = self.optic.surface_group.num_surfaces
+        self._lens_group_id = np.zeros(self._num_surfaces, dtype=int)
+        self.ax = None
+
+        self._points_gcs = []
+        self._points_lcs = []
+        self._sags_gcs = None
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4)):
@@ -88,95 +86,29 @@ class LensViewer:
                           'The visualization may not be accurate.')
 
         _, self.ax = plt.subplots(figsize=figsize)
-        self._plot_rays(fields=fields, wavelengths=wavelengths,
-                        num_rays=num_rays, distribution=distribution)
-        self._plot_all_surfaces()
 
-        plt.axis('image')
+        self._draw_rays(fields=fields, wavelengths=wavelengths,
+                        num_rays=num_rays, distribution=distribution)
+
+        self._generate_surfaces()
+        self._draw_object_surface()
+        self._draw_image_surface()
+        self._draw_reflective_surfaces()
+        self._draw_lenses()
+
         plt.show()
 
-    def _plot_all_surfaces(self):
-        """
-        Plots all the surfaces of the optical system.
-        """
-        n = self.optic.n()
+    def _is_rotationally_symmetric(self):
+        """Check if the optical system is rotationally symmetric."""
+        for surf in self.optic.surface_group.surfaces:
+            if not surf.is_rotationally_symmetric():
+                return False
+        return True
 
-        for k in range(1, self.optic.surface_group.num_surfaces-1):
-            surf = self.optic.surface_group.surfaces[k]
-            if surf.is_reflective:
-                y = self._get_surface_extent(k)
-                z = surf.geometry.sag(y=y)
-                x = np.zeros_like(y)
-                x, y, z = self._globalize(surf, x, y, z)
-                self._plot_surface(x, y, z)
-
-            if n[k] > 1:
-                surf1 = self.optic.surface_group.surfaces[k]
-                surf2 = self.optic.surface_group.surfaces[k+1]
-
-                y1 = self._get_surface_extent(k)
-                z1 = surf1.geometry.sag(y=y1)
-
-                y2 = self._get_surface_extent(k+1)
-                z2 = surf2.geometry.sag(y=y2)
-
-                if n[k+1] == 1 and n[k-1] == 1:  # single lens
-                    min_radius = min(np.min(y1), np.min(y2))
-                    max_radius = max(np.max(y1), np.max(y2))
-
-                elif n[k+1] != n[k] and n[k+1] != 1:  # bonded, 1st lens
-                    y3 = np.linspace(-self._real_ray_extent[k+2],
-                                     self._real_ray_extent[k+2], 128)
-                    min_radius = min(np.min(y1), np.min(y2), np.min(y3))
-                    max_radius = max(np.max(y1), np.max(y2), np.max(y3))
-
-                elif n[k+1] != n[k] and n[k-1] != n[k]:  # bonded, 2nd lens
-                    y0 = np.linspace(-self._real_ray_extent[k-1],
-                                     self._real_ray_extent[k-1], 128)
-                    min_radius = min(np.min(y0), np.min(y1), np.min(y2))
-                    max_radius = max(np.max(y0), np.max(y1), np.max(y2))
-
-                if y1[0] > min_radius:
-                    y1 = np.insert(y1, 0, min_radius)
-                    z1 = np.insert(z1, 0, z1[0])
-
-                if y1[-1] < max_radius:
-                    y1 = np.append(y1 + surf1.geometry.cs.y, max_radius)
-                    z1 = np.append(z1, z1[-1])
-
-                if y2[0] > min_radius:
-                    y2 = np.insert(y2 + surf2.geometry.cs.y, 0, min_radius)
-                    z2 = np.insert(z2, 0, z2[0])
-
-                if y2[-1] < max_radius:
-                    y2 = np.append(y2 + surf2.geometry.cs.y, max_radius)
-                    z2 = np.append(z2, z2[-1])
-
-                x1 = np.zeros_like(y1)
-                x1, y1, z1 = self._globalize(surf1, x1, y1, z1)
-
-                x2 = np.zeros_like(y2)
-                x2, y2, z2 = self._globalize(surf2, x2, y2, z2)
-
-                x = np.concatenate((x1, x2))
-                y = np.concatenate((y1, np.flip(y2)))
-                z = np.concatenate((z1, np.flip(z2)))
-
-                self._plot_lens(x, y, z)
-
-        # plot image surface
-        yi = np.linspace(-self._real_ray_extent[-1],
-                         self._real_ray_extent[-1], 128)
-        image_surf = self.optic.image_surface
-        zi = image_surf.geometry.sag(y=yi)
-        xi = np.zeros_like(yi)
-        xi, yi, zi = self._globalize(image_surf, xi, yi, zi)
-        self._plot_surface(xi, yi, zi)
-
-    def _plot_rays(self, fields='all', wavelengths='primary', num_rays=3,
+    def _draw_rays(self, fields='all', wavelengths='primary', num_rays=3,
                    distribution='line_y'):
         """
-        Plots the rays for the given fields and wavelengths.
+        Draw the rays for the given fields and wavelengths.
 
         Args:
             fields: The fields at which to trace the rays. Default is 'all'.
@@ -194,20 +126,17 @@ class LensViewer:
 
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
-                self.optic.trace(*field, wavelength, num_rays, distribution)
-                x = self.optic.surface_group.x
-                y = self.optic.surface_group.y
-                z = self.optic.surface_group.z
-                intensity = self.optic.surface_group.intensity
 
-                # find maximum extent of rays
-                for k in range(y.shape[0]):
-                    surf = self.optic.surface_group.surfaces[k]
-                    x_loc, y_loc, z_loc = self._localize(surf, x[k, :],
-                                                         y[k, :], z[k, :])
-                    max_ray_height = np.max(np.hypot(x_loc, y_loc))
-                    if max_ray_height > self._real_ray_extent[k]:
-                        self._real_ray_extent[k] = max_ray_height
+                # trace rays
+                points_gcs, intensity = self._trace_rays(
+                    field, wavelength, num_rays, distribution
+                    )
+
+                # convert to surface-local coordinates
+                points_lcs = self._transform(points_gcs, is_global=True)
+
+                # record rays
+                self._record_rays(points_gcs, points_lcs)
 
                 # if only one field, use different colors for each wavelength
                 if len(fields) > 1:
@@ -215,30 +144,231 @@ class LensViewer:
                 else:
                     color_idx = j
 
-                for k in range(z.shape[1]):
-                    xk = x[:, k]
-                    yk = y[:, k]
-                    zk = z[:, k]
-                    ik = intensity[:, k]
+                # plot lines
+                self._draw_lines(points_gcs, intensity, color_idx)
 
-                    xk[ik == 0] = np.nan
-                    zk[ik == 0] = np.nan
-                    yk[ik == 0] = np.nan
-
-                    self._plot_line(xk, yk, zk, f'C{color_idx}')
-
-    def _plot_lens(self, x, y, z):
+    def _trace_rays(self, field, wavelength, num_rays, distribution):
         """
-        Plots a lens.
+        Traces rays through the optical system and returns their coordinates
+        and intensities.
 
         Args:
-            y: The y-coordinates of the lens profile.
-            z: The z-coordinates of the lens profile.
+            field (tuple): A tuple representing the field coordinates.
+            wavelength (float): The wavelength of the rays.
+            num_rays (int): The number of rays to trace.
+            distribution (str): The distribution type of the rays.
+
+        Returns:
+            tuple: A tuple containing:
+                - points (numpy.ndarray): A 2D array with the coordinates of
+                    the rays.
+                - intensity (numpy.ndarray): An array with the intensities of
+                    the rays.
         """
-        vertices = np.column_stack((z, y))
-        polygon = Polygon(vertices, closed=True, facecolor='lightgray',
-                          edgecolor='gray')
-        self.ax.add_patch(polygon)
+        self.optic.trace(*field, wavelength, num_rays, distribution)
+        x = self.optic.surface_group.x
+        y = self.optic.surface_group.y
+        z = self.optic.surface_group.z
+        intensity = self.optic.surface_group.intensity
+
+        points = np.stack([x, y, z], axis=0)
+
+        return points, intensity
+
+    def _transform(self, points, is_global=True):
+        """
+        Transforms the given points based on the surfaces in the optic's
+        surface group.
+
+        Args:
+            points (tuple): A tuple containing three numpy arrays (x, y, z)
+                representing the coordinates of the points.
+            is_global (bool, optional): If True, transforms points to the
+                local coordinate system of each surface. If False, transforms
+                points to the global coordinate system. Defaults to True.
+        Returns:
+            numpy.ndarray: A 3D numpy array with the transformed coordinates.
+        """
+        x, y, z = points
+        x_new = x.copy()
+        y_new = y.copy()
+        z_new = z.copy()
+
+        t = np.zeros(x.shape[0])
+
+        for i, surf in enumerate(self.optic.surface_group.surfaces):
+            ray_origins = RealRays(x[i, :], y[i, :], z[i, :], t, t, t, t, t)
+            if is_global:
+                surf.geometry.localize(ray_origins)
+            else:
+                surf.geometry.globalize(ray_origins)
+            x_new[i, :] = ray_origins.x
+            y_new[i, :] = ray_origins.y
+            z_new[i, :] = ray_origins.z
+
+        return np.stack([x_new, y_new, z_new], axis=0)
+
+    def _record_rays(self, points_gcs, points_lcs):
+        """
+        Records the given ray points in global coordinate system (GCS) and
+        local coordinate system (LCS).
+
+        Args:
+            points_gcs (list or array-like): Points in the global coordinate
+                system.
+            points_lcs (list or array-like): Points in the local coordinate
+                system.
+        """
+        self._points_gcs.append(points_gcs)
+        self._points_lcs.append(points_lcs)
+
+    def _draw_lines(self, points, intensity, color_idx):
+        """
+        Draws lines based on the given points and intensity.
+
+        Args:
+            points (tuple): A tuple containing three numpy arrays (x, y, z)
+                representing the coordinates of the points.
+            intensity (numpy.ndarray): A 2D numpy array representing the
+                intensity of each point.
+            color_idx (int): An index representing the matploltib color to be
+                used for drawing the lines, e.g., 0 for 'C0', 1 for 'C1', etc.
+        """
+        x, y, z = points
+
+        # loop through rays
+        for k in range(z.shape[1]):
+            xk = x[:, k]
+            yk = y[:, k]
+            zk = z[:, k]
+            ik = intensity[:, k]
+
+            # remove rays outside aperture
+            xk[ik == 0] = np.nan
+            zk[ik == 0] = np.nan
+            yk[ik == 0] = np.nan
+
+            self._draw_single_line(xk, yk, zk, f'C{color_idx}')
+
+    def _draw_single_line(self, x, y, z, color):
+        """
+        Draws a single line on the plot.
+
+        Args:
+            x (array-like): The x-coordinates of the points.
+            y (array-like): The y-coordinates of the points.
+            z (array-like): The z-coordinates of the points.
+            color (str): The color of the line.
+        """
+        self.ax.plot(z, y, color, linewidth=1)
+
+    def _generate_surfaces(self):
+        """
+        Generates the surfaces for the optical system.
+
+        This method performs the following steps:
+        1. Determines the extent of each surface by calling
+            `_get_surface_extents`.
+        2. Generates the sags (surface heights) of all surfaces using
+            `_generate_sags`.
+        3. Converts the sags to global coordinates using `_transform`.
+        """
+        # determine extent of each surface
+        ray_extents, surf_extents = self._get_surface_extents()
+
+        # generate sags of all surfaces
+        sags = self._generate_sags(ray_extents, surf_extents)
+
+        # convert sags to global coordinates
+        self._sags_gcs = self._transform(sags, is_global=False)
+
+    def _get_surface_extents(self):
+        """
+        Calculate the extents of rays and lens surfaces.
+
+        This method computes the maximum radial extents of rays on each surface
+        and determines the extents of lens surfaces.
+
+        Returns:
+            tuple: A tuple containing:
+            - ray_extents (np.ndarray): The maximum radial extents of rays on
+                each surface.
+            - surf_extents (np.ndarray): The extents of the physical lens
+                surface.
+        """
+        # find ray extents on each surface
+        r_max_list = []
+        for points in self._points_lcs:
+            x, y, _ = points
+            r = np.hypot(x, y)
+            r_max = np.max(r, axis=1)
+            r_max_list.append(r_max)
+
+        r_max_list = np.array(r_max_list)
+        ray_extents = np.max(r_max_list, axis=0)
+
+        # find lens extents
+        n = self.optic.n()
+        surf_extents = ray_extents.copy()
+        for k in range(self._num_surfaces):
+            if n[k] > 1:
+                if n[k+1] == 1 and n[k-1] == 1:  # single lens
+                    surf_extents[k:k+2] = np.max(surf_extents[k:k+2])
+
+                elif n[k+1] != n[k] and n[k+1] != 1:  # bonded, 1st lens
+                    surf_extents[k:k+3] = np.max(surf_extents[k:k+3])
+
+                elif n[k+1] != n[k] and n[k-1] != n[k]:  # bonded, 2nd lens
+                    surf_extents[k-1:k+2] = np.max(surf_extents[k-1:k+2])
+
+        return ray_extents, surf_extents
+
+    def _generate_sags(self, ray_extents, surf_extents):
+        """
+        Generate the sag values for each surface in the optical system.
+
+        This method computes the sag values for each surface in the optical
+        system based on the provided ray extents and surface extents. It
+        handles the extension of surfaces if necessary and accounts for
+        physical apertures.
+
+        Args:
+            ray_extents (list of float): The extents of the rays for each
+                surface.
+            surf_extents (list of float): The physical extents of the surfaces.
+
+        Returns:
+            numpy.ndarray: A 3D array of shape (3, num_surfaces, 128)
+                containing the x, y, and z coordinates of the points on each
+                surface.
+        """
+        # 128 points per surface
+        points = np.zeros((3, self._num_surfaces, 128))
+        x = np.zeros(128)
+        for i, surf in enumerate(self.optic.surface_group.surfaces):
+
+            # extend surface if necessary
+            if ray_extents[i] < surf_extents[i]:
+                y = np.linspace(-ray_extents[i], ray_extents[i], 126)
+                r_max = np.array([surf_extents[i]])
+                y = np.concatenate([-r_max, y, r_max])
+            else:
+                y = np.linspace(-ray_extents[i], ray_extents[i], 128)
+
+            z = surf.geometry.sag(x, y)
+
+            # handle physical apertures
+            if surf.aperture:
+                intensity = np.ones_like(x)
+                rays = RealRays(x, y, x, x, x, x, intensity, x)
+                surf.aperture.clip(rays)
+                y[rays.i == 0] = np.nan
+
+            points[0, i, :] = x
+            points[1, i, :] = y
+            points[2, i, :] = z
+
+        return points
 
     def _plot_surface(self, x, y, z):
         """
@@ -250,59 +380,95 @@ class LensViewer:
         """
         self.ax.plot(z, y, 'gray')
 
-    def _plot_line(self, x, y, z, color):
+    def _draw_object_surface(self):
         """
-        Plots a line.
+        Draws the surface of the first object in the surface group.
+
+        This method retrieves the first surface from the `surface_group` of
+        the `optic` object. If the surface is infinite, it extracts the x, y,
+        and z coordinates from `_sags_gcs` and plots the surface using the
+        `_plot_surface` method.
+        """
+        obj_surf = self.optic.surface_group.surfaces[0]
+        if obj_surf.is_infinite:
+            x = self._sags_gcs[0, 0, :]
+            y = self._sags_gcs[1, 0, :]
+            z = self._sags_gcs[2, 0, :]
+            self._plot_surface(x, y, z)
+
+    def _draw_image_surface(self):
+        """
+        Draws the image surface of the optic system.
+
+        This method retrieves the last surface from the optic's surface group
+        and plots it if the surface's geometry is not at infinity. It uses the
+        sags in the global coordinate system (GCS) to get the x, y, and z
+        coordinates for plotting.
+        """
+        img_surf = self.optic.surface_group.surfaces[-1]
+        if not np.isinf(img_surf.geometry.cs.z):
+            x = self._sags_gcs[0, -1, :]
+            y = self._sags_gcs[1, -1, :]
+            z = self._sags_gcs[2, -1, :]
+            self._plot_surface(x, y, z)
+
+    def _draw_reflective_surfaces(self):
+        """
+        Draws reflective surfaces in the optical system.
+
+        This method iterates through the surfaces in the optical system's
+        surface group. For each reflective surface, it extracts the x, y, and
+        z coordinates from the global coordinate system (GCS) sags and plots
+        the surface.
+        """
+        for i, surf in enumerate(self.optic.surface_group.surfaces):
+            if surf.is_reflective:
+                x = self._sags_gcs[0, i, :]
+                y = self._sags_gcs[1, i, :]
+                z = self._sags_gcs[2, i, :]
+                self._plot_surface(x, y, z)
+
+    def _draw_lenses(self):
+        """
+        Draws the lenses of the optical system.
+
+        This method iterates through the surfaces of the optical system and
+        draws each lens by concatenating the coordinates of the lens surfaces
+        and passing them to the `_draw_single_lens` method.
+        """
+        n = self.optic.n()
+        for i, surf in enumerate(self.optic.surface_group.surfaces):
+            if n[i] > 1:
+                x1 = self._sags_gcs[0, i, :]
+                y1 = self._sags_gcs[1, i, :]
+                z1 = self._sags_gcs[2, i, :]
+
+                x2 = self._sags_gcs[0, i+1, :]
+                y2 = self._sags_gcs[1, i+1, :]
+                z2 = self._sags_gcs[2, i+1, :]
+
+                x = np.concatenate([x1, x2[::-1]])
+                y = np.concatenate([y1, y2[::-1]])
+                z = np.concatenate([z1, z2[::-1]])
+
+                self._draw_single_lens(x, y, z)
+
+    def _draw_single_lens(self, x, y, z):
+        """
+        Draws a single lens on the plot.
+
+        This method creates a polygon representing a lens using the provided
+        coordinates and adds it to the plot.
 
         Args:
-            x: The x-coordinates of the line.
-            y: The y-coordinates of the line.
-            z: The z-coordinates of the line.
-            color: The color of the line.
+            x (float): The x-coordinate of the lens.
+            y (array-like): The y-coordinates of the lens vertices.
+            z (array-like): The z-coordinates of the lens vertices.
         """
-        self.ax.plot(z, y, color, linewidth=1)
-
-    def _get_surface_extent(self, surf_index):
-        """
-        Returns the extent of a surface.
-
-        Args:
-            surf_index: The index of the surface.
-
-        Returns:
-            The y-coordinates representing the extent of the surface.
-        """
-        x = np.zeros(256)
-        y = np.linspace(-self._real_ray_extent[surf_index],
-                        self._real_ray_extent[surf_index], 256)
-        intensity = np.ones_like(x)
-        surf = self.optic.surface_group.surfaces[surf_index]
-        if surf.aperture:
-            rays = RealRays(x, y, x, x, x, x, intensity, x)
-            surf.aperture.clip(rays)
-            y[rays.i == 0] = np.nan
-        return y
-
-    def _localize(self, surf, x, y, z):
-        """Convert x, y, z coordinates to local coordinates of surface."""
-        t = np.zeros_like(x)
-        points = RealRays(x, y, z, t, t, t, t, t)
-        surf.geometry.localize(points)
-        return points.x, points.y, points.z
-
-    def _globalize(self, surf, x, y, z):
-        """Convert x, y, z coordinates to global coordinates."""
-        t = np.zeros_like(x)
-        points = RealRays(x, y, z, t, t, t, t, t)
-        surf.geometry.globalize(points)
-        return points.x, points.y, points.z
-
-    def _is_rotationally_symmetric(self):
-        """Check if the optical system is rotationally symmetric."""
-        for surf in self.optic.surface_group.surfaces:
-            if not surf.is_rotationally_symmetric():
-                return False
-        return True
+        vertices = np.column_stack((z, y))
+        polygon = Polygon(vertices, closed=True, facecolor='lightgray',
+                          edgecolor='gray')
+        self.ax.add_patch(polygon)
 
 
 class LensViewer3D(LensViewer):
