@@ -12,3 +12,5 @@ optiland.egg-info/
 references/
 htmlcov/
 .coverage
+**/_build/
+**/_static/
