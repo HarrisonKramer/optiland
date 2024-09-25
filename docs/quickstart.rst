@@ -1,5 +1,5 @@
-First Steps
-===================================
+Quickstart
+==========
 
 .. _first_script:
 
@@ -8,5 +8,6 @@ Once you have installed Optiland, you can start designing and analyzing optical 
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
+   :titlesonly:
 
-   examples/Tutorial_1a_Optiland_for_Beginners
+   Optiland for Beginners <examples/Tutorial_1a_Optiland_for_Beginners>
