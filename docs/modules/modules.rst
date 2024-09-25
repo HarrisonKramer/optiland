@@ -1,5 +1,5 @@
-optiland
-========
+Optiland API
+============
 
 .. toctree::
    :maxdepth: 4
