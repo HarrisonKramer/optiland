@@ -13,7 +13,7 @@ optimization, and freeform optics, among other features. Built on the speed of N
 SciPy, Optiland ensures high-performance handling of intricate optical computations, delivering
 professional-grade results in an open, flexible environment.
 
-.. image:: ../images/telephoto.png
+.. image:: images/telephoto.png
    :align: center
 
 |br|
@@ -31,38 +31,68 @@ Python code to generate this 3D visualization:
 Getting Started
 ===============
 
-Installation
-------------
-
-.. _install:
+.. _getting_started:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    installation
-   first_steps
+   quickstart
 
 
 Core Functionalities
 ====================
 
-.. _functionalities:
-
 .. toctree::
    :maxdepth: 2
 
-* Lens entry
-* 2D/3D visualization
-* Paraxial and aberration analyses
-* Real and paraxial ray tracing, including aspherics and freeforms
-* Polarization ray tracing
-* Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, PSF, MTF, etc.)
-* Glass and material catalogue (based on refractiveindex.info)
-* Design optimization (local and global)
-* Wavefront and Zernike analysis
-* Tolerancing, including sensitivity analysis and Monte Carlo methods
-* Coating and surface scatter (BSDF) analysis
-* Zemax file import
+   functionalities
+
+
+Example Gallery
+===============
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   example_gallery
+
+
+Learning Guide
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+   learning_guide
+
+
+Contributing
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   contributing
+
+
+Authors
+=======
+
+.. toctree::
+   :maxdepth: 1
+
+   authors
+
+
+License
+=======
+
+.. toctree::
+   :maxdepth: 1
+
+   license
 
 
 .. |br| raw:: html
