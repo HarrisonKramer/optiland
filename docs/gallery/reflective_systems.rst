@@ -5,6 +5,6 @@ Reflective Systems
 
 .. nbgallery::
     reflective/parabola
-    reflective/compact_telescope
     reflective/Hubble
+    reflective/compact_telescope
     reflective/Schmidt_Cassegrain
