@@ -10,6 +10,8 @@ Optiland can be installed via pip or directly from source.
 Installing via pip
 ------------------
 
+To install Optiland via pip, run the following command in your terminal:
+
 .. code-block:: console
 
    > pip install optiland
