@@ -55,7 +55,7 @@ class Paraxial:
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
         f2 = -y[0] / u[-1]
-        return f2[0]
+        return np.abs(f2[0])
 
     def F1(self):
         """Calculate the front focal point location
