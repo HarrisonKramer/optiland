@@ -3,6 +3,10 @@ Basic Lenses
 
 These lenses demonstrate how simple lens systems can be built using Optiland.
 
+.. note::
+
+      These examples illustrate only how to build the lens systems and exclude other analyses or optimization, which are covered in other sections.
+
 .. _basic_lenses:
 
 .. nbgallery::
