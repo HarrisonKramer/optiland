@@ -7,4 +7,5 @@ Reflective Systems
     reflective/parabola
     reflective/Hubble
     reflective/compact_telescope
-    reflective/Schmidt_Cassegrain
+    reflective/Cassegrain
+    reflective/starlight
