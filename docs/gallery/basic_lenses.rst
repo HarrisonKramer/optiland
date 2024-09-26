@@ -1,6 +1,8 @@
 Basic Lenses
 ============
 
+These lenses demonstrate how simple lens systems can be built using Optiland.
+
 .. _basic_lenses:
 
 .. nbgallery::
