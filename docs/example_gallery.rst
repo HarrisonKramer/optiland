@@ -9,7 +9,7 @@ This gallery contains a collection of examples demonstrating the capabilities of
    :maxdepth: 1
 
    gallery/basic_lenses
-   gallery/advanced_lenses
+   gallery/specialized_lenses
    gallery/reflective_systems
    gallery/analysis
    gallery/coatings_and_polarization
