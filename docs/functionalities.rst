@@ -1,5 +1,5 @@
-Core Functionalities
-====================
+Optiland Functionalities
+========================
 
 .. _functionalities:
 
