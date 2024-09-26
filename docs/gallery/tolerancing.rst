@@ -1,5 +1,5 @@
-Optiland Gallery
-===============
+Tolerancing
+===========
 
 .. _example_gallery:
 

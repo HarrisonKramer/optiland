@@ -1,68 +1,19 @@
-Example Gallery
-===============
+Optiland Gallery
+================
+
+This gallery contains a collection of examples demonstrating the capabilities of Optiland. Each example is a self-contained Python script that shows how to achieve a specific task using Optiland. The examples cover a wide range of topics, from basic lens design to advanced freeform optics.
 
 .. _example_gallery:
 
-Basic Lens Designs
-------------------
+.. toctree::
+   :maxdepth: 1
 
-
-.. nbgallery::
-   gallery/Cooke_Triplet
-
-
-Advanced Lens Designs
----------------------
-
-.. nbgallery::
-   gallery/Double_Gauss
-
-
-Reflective Systems
-------------------
-
-.. nbgallery::
-   gallery/Cassegrain_Telescope
-
-
-Analysis Examples
------------------
-
-.. nbgallery::
-   gallery/Aberration_Curves
-
-
-OPD, PSF, and MTF Examples
---------------------------
-
-.. nbgallery::
-   gallery/MTF_Curves
-
-
-Coatings & Polarization Examples
----------------------------------
-
-.. nbgallery::
-   gallery/Coating_Polarization
-
-
-Optimization Examples
----------------------
-
-.. nbgallery::
-   gallery/Double_Gauss_Optimization
-
-
-Tolerancing Examples
----------------------
-
-.. nbgallery::
-   gallery/Double_Gauss_Tolerancing
-
-
-Freeform Examples
------------------
-
-.. nbgallery::
-   gallery/Freeform_Lens
-
+   gallery/basic_lenses
+   gallery/advanced_lenses
+   gallery/reflective_systems
+   gallery/analysis
+   gallery/coatings_and_polarization
+   gallery/opd_psf_mtf
+   gallery/optimization
+   gallery/tolerancing
+   gallery/freeforms

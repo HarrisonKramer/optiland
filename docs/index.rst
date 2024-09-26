@@ -28,9 +28,6 @@ Python code to generate this 3D visualization:
    lens.draw3D()
 
 
-Getting Started
-===============
-
 .. _getting_started:
 
 .. toctree::
@@ -41,18 +38,12 @@ Getting Started
    quickstart
 
 
-Core Functionalities
-====================
-
 .. toctree::
    :maxdepth: 2
    :caption: Core Functionalities
 
    functionalities
 
-
-Example Gallery
-===============
 
 .. toctree::
    :maxdepth: 1
@@ -62,18 +53,12 @@ Example Gallery
    example_gallery
 
 
-Learning Guide
-==============
-
 .. toctree::
    :maxdepth: 1
    :caption: Learning Guide
 
    learning_guide
 
-
-Developer Guide
-===============
 
 .. toctree::
    :maxdepth: 1
@@ -82,18 +67,12 @@ Developer Guide
    developer_guide
 
 
-Contributing
-============
 
 .. toctree::
    :maxdepth: 1
    :caption: Contributing
 
    contributing
-
-
-API Reference
-=============
 
 .. toctree::
    :maxdepth: 1
@@ -102,18 +81,12 @@ API Reference
    modules/modules
 
 
-Authors
-=======
-
 .. toctree::
    :maxdepth: 1
    :caption: Authors
 
    authors
 
-
-License
-=======
 
 .. toctree::
    :maxdepth: 1
