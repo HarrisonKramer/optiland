@@ -1,5 +1,5 @@
-Learning Guide
-==============
+Optiland Learning Guide
+=======================
 
 .. _learning_guide:
 
