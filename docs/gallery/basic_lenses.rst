@@ -8,5 +8,5 @@ Basic Lenses
    basic_lenses/doublet
    basic_lenses/Cooke_triplet
    basic_lenses/aspheric_singlet
+   basic_lenses/eyepiece
    basic_lenses/telephoto
-   basic_lenses/double_Gauss
