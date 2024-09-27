@@ -86,13 +86,13 @@ class LensViewer:
                         num_rays=num_rays, distribution=distribution)
         self._plot_all_surfaces()
 
+        plt.axis('image')
         if xlim is not None:
             plt.xlim(xlim)
 
         if ylim is not None:
             plt.ylim(ylim)
 
-        plt.axis('image')
         plt.show()
 
     def _plot_all_surfaces(self):
