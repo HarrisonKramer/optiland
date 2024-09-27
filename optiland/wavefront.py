@@ -278,6 +278,9 @@ class OPDFan(Wavefront):
             sharey=True
         )
 
+        # assure axes is a 2D array
+        axs = np.atleast_2d(axs)
+
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
                 wx = self.data[i][j][0][self.num_rays:]
