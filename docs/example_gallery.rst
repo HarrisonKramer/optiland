@@ -12,7 +12,6 @@ This gallery contains a collection of examples demonstrating the capabilities of
    gallery/specialized_lenses
    gallery/reflective_systems
    gallery/analysis
-   gallery/coatings_and_polarization
    gallery/opd_psf_mtf
    gallery/optimization
    gallery/tolerancing
