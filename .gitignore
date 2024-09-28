@@ -13,5 +13,4 @@ references/
 htmlcov/
 .coverage
 **/_build/
-**/_static/
 **/auto_examples/
