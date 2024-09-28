@@ -9,6 +9,7 @@ These examples demonstrate the optimization capabilities of optical systems usin
     optimization/rms_spot_size
     optimization/wavefront_error
     optimization/chromatic_aberration
+    optimization/undo
     optimization/pickups
     optimization/constrained
     optimization/global
