@@ -68,7 +68,7 @@ class LensViewer:
         self._real_ray_extent = np.zeros(n)
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y', figsize=(10, 4)):
+             distribution='line_y', figsize=(10, 4), xlim=None, ylim=None):
         """
         Visualizes the lenses and traced rays.
 
@@ -87,6 +87,12 @@ class LensViewer:
         self._plot_all_surfaces()
 
         plt.axis('image')
+        if xlim is not None:
+            plt.xlim(xlim)
+
+        if ylim is not None:
+            plt.ylim(ylim)
+
         plt.show()
 
     def _plot_all_surfaces(self):

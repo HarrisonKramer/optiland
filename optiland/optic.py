@@ -337,7 +337,7 @@ class Optic:
                 surface.aperture.scale(scale_factor)
 
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
-             figsize=(10, 4)):
+             figsize=(10, 4), xlim=None, ylim=None):
         """
         Draw a 2D representation of the optical system.
 
@@ -350,10 +350,14 @@ class Optic:
                 field and wavelength. Defaults to 3.
             figsize (tuple, optional): The size of the figure. Defaults to
                 (10, 4).
+            xlim (tuple, optional): The x-axis limits of the plot. Defaults to
+                None.
+            ylim (tuple, optional): The y-axis limits of the plot. Defaults to
+                None.
         """
         viewer = LensViewer(self)
         viewer.view(fields, wavelengths, num_rays, distribution='line_y',
-                    figsize=figsize)
+                    figsize=figsize, xlim=xlim, ylim=ylim)
 
     def draw3D(self, fields='all', wavelengths='primary', num_rays=2,
                figsize=(1200, 800)):

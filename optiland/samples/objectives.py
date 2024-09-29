@@ -38,8 +38,6 @@ class CookeTriplet(optic.Optic):
     def __init__(self):
         super().__init__()
 
-        self.surface_group.surfaces = []
-
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(index=1, radius=22.01359, thickness=3.25896,
                          material='SK16')
