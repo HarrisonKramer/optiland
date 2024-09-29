@@ -7,7 +7,7 @@ These examples demonstrate the construction of reflective optical systems using 
 
 .. nbgallery::
     reflective/parabola
-    reflective/Hubble
+    reflective/hubble
     reflective/compact_telescope
     reflective/Cassegrain
     reflective/starlight
