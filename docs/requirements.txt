@@ -1,4 +1,5 @@
 sphinx==7.4.7
 sphinx-rtd-theme==2.0.0
-nbsphinx
+nbsphinx=0.9.5
+sphinx-gallery==0.17.1
 pandoc
