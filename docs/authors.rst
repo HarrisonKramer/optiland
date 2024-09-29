@@ -7,4 +7,4 @@ Authors
 
 - Kramer Harrison: `https://github.com/HarrisonKramer <https://github.com/HarrisonKramer>`_
 
-If you would like to contribute to **Optiland**, please see the :ref:`contributing` section.
+If you would like to contribute to **Optiland**, please see the :ref:`Contributing <contributing>` section.
