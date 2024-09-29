@@ -29,7 +29,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 3. Aberrations
-------------------------------
+--------------
 
 .. toctree::
     :maxdepth: 2
@@ -40,7 +40,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 4. OPD, PSF, & MTF
-------------------------------
+------------------
 
 .. toctree::
     :maxdepth: 2
@@ -51,6 +51,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 5. Optimization
+---------------
 
 .. toctree::
     :maxdepth: 2
@@ -61,6 +62,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 6. Coatings & Polarization
+--------------------------
 
 .. toctree::
     :maxdepth: 2
@@ -70,6 +72,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 7. advanced Optical Design
+--------------------------
 
 .. toctree::
     :maxdepth: 2
@@ -80,6 +83,7 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 8. Tolerancing
+--------------
 
 .. toctree::
     :maxdepth: 2
@@ -89,9 +93,19 @@ This learning guide breaks down the Optiland library into a series of tutorials 
 
 
 9. Lens Catalogue Integration
+-----------------------------
 
 .. toctree::
     :maxdepth: 2
 
-    examples/Tutorial_9a_Lens_Catalogue_Integration
-    examples/Tutorial_9b_Lens_Catalogue_Optimization
+    examples/Tutorial_9a_Edmund_Optics_Catalogue
+    examples/Tutorial_9b_Thorlabs_Catalogue
+
+10. Extenting Optiland
+----------------------
+
+.. toctree::
+    :maxdepth: 2
+
+    examples/Tutorial_10a_Custom_Surface_Types
+    examples/Tutorial_10b_Custom_Coating_Types
