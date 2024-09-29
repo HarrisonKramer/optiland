@@ -71,7 +71,7 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
     examples/Tutorial_6b_Introduction_to_Polarization
 
 
-7. advanced Optical Design
+7. Advanced Optical Design
 --------------------------
 
 .. toctree::
