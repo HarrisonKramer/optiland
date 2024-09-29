@@ -5,7 +5,7 @@ Welcome to Optiland's documentation!
 
    This project is under active development.
 
-**Optiland** is a powerful, Python-based, open-source lens design and analysis framework.
+**Optiland** is a Python-based, open-source lens design and analysis framework.
 With a simple and intuitive Python interface, Optiland enables the design, optimization, and analysis of complex
 optical systems, from paraxial and real raytracing to advanced polarization, coatings, and
 wavefront analyses. It supports 2D/3D visualization, comprehensive tolerancing, global
