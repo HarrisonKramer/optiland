@@ -1,8 +1,0 @@
-/* Hide headers within Jupyter notebooks */
-div.nbinput h2,
-div.nbinput h3,
-div.nbinput h4,
-div.nbinput h5,
-div.nbinput h6 {
-    display: none;
-}
