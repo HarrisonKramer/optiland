@@ -6,3 +6,4 @@ Freeform Optics
 .. nbgallery::
 
     freeform/chebyshev
+    freeform/polynomial
