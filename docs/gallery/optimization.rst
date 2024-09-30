@@ -1,7 +1,7 @@
 Optimization
 ============
 
-These examples demonstrate the optimization capabilities of optical systems using Optiland.
+These examples demonstrate the optimization capabilities of optical systems using **Optiland**.
 
 .. _gallery_optimization:
 
