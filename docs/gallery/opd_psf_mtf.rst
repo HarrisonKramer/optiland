@@ -8,8 +8,8 @@ This section contains examples of the analysis of the optical path difference (O
 .. nbgallery::
     wavefront/opd_fan
     wavefront/opd_map
-    wavefront/psf_2d
-    wavefront/psf_3d
+    wavefront/psd_2d
+    wavefront/psd_3d
     wavefront/mtf_geometric
     wavefront/mtf_fft
     wavefront/zernike_decomposition
