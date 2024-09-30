@@ -73,7 +73,7 @@ class SpotDiagram:
         Returns:
             None
         """
-        N = self.optic.fields.num_fields
+        N = len(self.fields)
         num_rows = (N + 2) // 3
 
         fig, axs = plt.subplots(num_rows, 3,

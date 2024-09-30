@@ -68,7 +68,7 @@ class LensViewer:
         self._sags_gcs = None
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y', figsize=(10, 4)):
+             distribution='line_y', figsize=(10, 4), xlim=None, ylim=None):
         """
         Visualizes the lenses and traced rays.
 
