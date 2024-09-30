@@ -26,6 +26,7 @@ Optiland is a lens design and analysis program written in Python 3. It provides 
 
 Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb) or see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide).
 
+The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
 <figure style="text-align: center;">
   <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
