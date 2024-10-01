@@ -24,9 +24,8 @@
 Optiland is a lens design and analysis program written in Python 3. It provides an intuitive and efficient interface for defining and visualizing lens systems, performing optimization of lens systems based on user-defined merit functions and variables, as well as analyzing optical systems using geometric and diffraction-based methods. Leveraging computational libraries such as [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/), Optiland delivers exceptional performance and efficiency in handling complex optical computations.
 
 
-Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb) or see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide).
+Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb), see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide), or read the full documentation at [Read the Docs](https://optiland.readthedocs.io/).
 
-The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
 <figure style="text-align: center;">
   <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
@@ -39,6 +38,8 @@ lens = ReverseTelephoto()
 lens.draw3D()
 ```
 
+## Documentation
+The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
 
 ## Installation
