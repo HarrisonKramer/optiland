@@ -1,14 +1,13 @@
 Optimization
 ============
 
-These examples demonstrate the optimization capabilities of optical systems using Optiland.
+These examples demonstrate the optimization capabilities of optical systems using **Optiland**.
 
 .. _gallery_optimization:
 
 .. nbgallery::
     optimization/rms_spot_size
     optimization/wavefront_error
-    optimization/chromatic_aberration
     optimization/undo
     optimization/pickups
     optimization/constrained

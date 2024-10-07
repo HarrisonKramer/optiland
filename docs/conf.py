@@ -25,3 +25,5 @@ sphinx_gallery_conf = {
      'examples_dirs': 'examples',   # path to example scripts
      'gallery_dirs': 'auto_examples',  # gallery output directory
 }
+
+pygments_style = 'sphinx'

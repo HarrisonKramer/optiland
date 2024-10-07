@@ -10,7 +10,7 @@ import requests
 import tempfile
 import numpy as np
 from optiland.optic import Optic
-from optiland.materials import Material
+from optiland.materials import BaseMaterial, Material, AbbeMaterial
 
 
 class ZemaxFileReader:
@@ -325,6 +325,8 @@ class ZemaxFileReader:
         """
         material = data[1]
         self._current_surf_data['material'] = material
+        self._current_surf_data['index'] = float(data[4])
+        self._current_surf_data['abbe'] = float(data[5])
 
         # Generate a Material object from the material name & manufacturer
         try:
@@ -334,16 +336,20 @@ class ZemaxFileReader:
 
             # If the material name is not recognized, try to create a Material
             # object from the material name and manufacturer
-            for manufacturer in self.data['glass_catalogs']:
-                try:
-                    self._current_surf_data['material'] = \
-                        Material(material, manufacturer.lower())
-                    break
-                except ValueError:
-                    continue
+            if 'glass_catalogs' in self.data:
+                for manufacturer in self.data['glass_catalogs']:
+                    try:
+                        self._current_surf_data['material'] = \
+                            Material(material, manufacturer.lower())
+                        break
+                    except ValueError:
+                        continue
 
-        self._current_surf_data['index'] = float(data[4])
-        self._current_surf_data['abbe'] = float(data[5])
+        # If the material is still not recognized, use model glass
+        if not isinstance(self._current_surf_data['material'], BaseMaterial):
+            n = self._current_surf_data['index']
+            v = self._current_surf_data['abbe']
+            self._current_surf_data['material'] = AbbeMaterial(n, v)
 
     def _read_stop(self, data):
         """
