@@ -33,7 +33,18 @@ license = { text = "MIT License" }
 "Homepage" = "https://github.com/HarrisonKramer/optiland"
 
 [tool.setuptools]
-packages = ["optiland", "database", "optiland.samples"]
+packages = [
+  "optiland",
+  "database",
+  "optiland.analysis",
+  "optiland.geometries",
+  "optiland.materials",
+  "optiland.optimization",
+  "optiland.rays",
+  "optiland.samples",
+  "optiland.surfaces",
+  "optiland.tolerancing"
+]
 
 [tool.setuptools.package-data]
 "database" = ["*.csv", "*.yml", "**/*.yml"]
