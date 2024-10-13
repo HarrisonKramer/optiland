@@ -34,16 +34,17 @@ license = { text = "MIT License" }
 
 [tool.setuptools]
 packages = [
-  "optiland",
-  "database",
-  "optiland.analysis",
-  "optiland.geometries",
-  "optiland.materials",
-  "optiland.optimization",
-  "optiland.rays",
-  "optiland.samples",
-  "optiland.surfaces",
-  "optiland.tolerancing"
+    "optiland",
+    "database",
+    "optiland.analysis",
+    "optiland.geometries",
+    "optiland.materials",
+    "optiland.optimization",
+    "optiland.rays",
+    "optiland.samples",
+    "optiland.surfaces",
+    "optiland.tolerancing",
+    "optiland.visualization"
 ]
 
 [tool.setuptools.package-data]
