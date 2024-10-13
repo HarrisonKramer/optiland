@@ -4,6 +4,8 @@ This module provides standard coordinate system transformation calculations
 
 Kramer Harrison, 2024
 """
+import numpy as np
+from scipy.spatial.transform import Rotation as R
 from optiland.rays import RealRays
 
 
@@ -95,3 +97,46 @@ class CoordinateSystem:
         vector = RealRays(0, 0, 0, 0, 0, 1, 1, 1)
         self.globalize(vector)
         return vector.x, vector.y, vector.z
+
+    def get_rotation_matrix(self):
+        """Get the rotation matrix of the coordinate system
+
+        Returns:
+            np.ndarray: The rotation matrix of the coordinate system.
+        """
+        rotation = np.array([self.rx, self.ry, self.rz])
+        return R.from_euler('xyz', rotation).as_matrix()
+
+    def get_effective_transform(self):
+        """Get the effective translation and rotation matrix of the CS
+
+        Returns:
+            tuple: The effective translation and rotation matrix
+        """
+        translation = np.array([self.x, self.y, self.z])
+        if self.reference_cs is None:
+            # No reference coordinate system, return the local transform
+            return translation, self.get_rotation_matrix()
+
+        else:
+            # Get the effective transform of the reference coordinate system
+            ref_translation, ref_rot_mat = \
+                self.reference_cs.get_effective_transform()
+
+            # Combine translations
+            eff_translation = ref_translation + ref_rot_mat @ translation
+
+            # Combine rotations by multiplying the rotation matrices
+            eff_rot_mat = ref_rot_mat @ self.get_rotation_matrix()
+
+            return eff_translation, eff_rot_mat
+
+    def get_effective_rotation_euler(self):
+        """Get the effective rotation in Euler angles
+
+        Returns:
+            np.ndarray: The effective rotation in Euler angles
+        """
+        _, eff_rot_mat = self.get_effective_transform()
+        # Convert the effective rotation matrix back to Euler angles
+        return R.from_matrix(eff_rot_mat).as_euler('xyz')
