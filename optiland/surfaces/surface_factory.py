@@ -127,7 +127,8 @@ class SurfaceFactory:
         elif index == 1:
             z = 0  # first surface, always at zero
         else:
-            z = self._surface_group.positions[index-1] + self.last_thickness
+            z = float(self._surface_group.positions[index-1]) + \
+                self.last_thickness
 
         return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
 
