@@ -12,6 +12,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#documentation">Documentation</a></li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#functionalities">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
@@ -40,6 +41,8 @@ lens.draw3D()
 
 ## Documentation
 The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
+
+Explore the [Example Gallery](https://optiland.readthedocs.io/en/latest/example_gallery.html) for a wide range of lens designs and analyses created with Optiland.
 
 
 ## Installation
