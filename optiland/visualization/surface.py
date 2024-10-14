@@ -67,7 +67,7 @@ class Surface2D:
         return x, y, z
 
 
-class Surface3D:
+class Surface3D(Surface2D):
     """
     A class used to represent a 3D surface for visualization.
 
