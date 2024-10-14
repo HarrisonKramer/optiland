@@ -136,22 +136,21 @@ class Lens2D:
 
 
 class Lens3D(Lens2D):
-    class Lens3D:
-        """
-        A class used to represent a 3D Lens, inheriting from Lens2D.
+    """
+    A class used to represent a 3D Lens, inheriting from Lens2D.
 
-        Args:
-            surfaces (list): A list of surfaces that make up the lens.
+    Args:
+        surfaces (list): A list of surfaces that make up the lens.
 
-        Attributes:
-            surfaces (list): A list of surfaces that make up the lens.
+    Attributes:
+        surfaces (list): A list of surfaces that make up the lens.
 
-        Methods:
-            is_symmetric:
-                Checks if the lens is rotationally symmetric.
-            plot(renderer):
-                Plots the lens using the given VTK renderer.
-        """
+    Methods:
+        is_symmetric:
+            Checks if the lens is rotationally symmetric.
+        plot(renderer):
+            Plots the lens using the given VTK renderer.
+    """
 
     def __init__(self, surfaces):
         super().__init__(surfaces)
