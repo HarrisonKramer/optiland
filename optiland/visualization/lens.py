@@ -37,7 +37,7 @@ class Lens2D:
         sags = self._compute_sag()
         self._plot_lenses(ax, sags)
 
-    def _compute_sag(self):
+    def _compute_sag(self, apply_transform=True):
         """
         Computes the sag of the lens in local coordinates and handles
         clipping due to physical apertures.
@@ -57,7 +57,8 @@ class Lens2D:
                 x, y, z = self._extend_surface(x, y, z, max_extents)
 
             # convert to global coordinates
-            x, y, z = transform(x, y, z, surf.surf, is_global=False)
+            if apply_transform:
+                x, y, z = transform(x, y, z, surf.surf, is_global=False)
 
             sags.append((x, y, z))
 
@@ -87,10 +88,9 @@ class Lens2D:
         Returns:
             tuple: A tuple containing the extended x, y, and z coordinates.
         """
-        x_max = np.array([extent[0]])
         y_max = np.array([extent[1]])
 
-        x = np.concatenate([-x_max, x, x_max])
+        x = np.concatenate([np.array([0]), x, np.array([0])])
         y = np.concatenate([-y_max, y, y_max])
         z = np.concatenate([np.array([z[0]]), z, np.array([z[-1]])])
 
