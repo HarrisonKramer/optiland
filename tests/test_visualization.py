@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 import pytest
 import numpy as np
-from optiland.visualization import LensViewer, LensViewer3D, LensInfoViewer
+from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
 from optiland.samples.objectives import (
     TessarLens,
     ReverseTelephoto
@@ -46,16 +46,16 @@ class InvalidMaterial(BaseMaterial):
         return -42
 
 
-class TestLensViewer:
+class TestOpticViewer:
     def test_init(self):
         lens = TessarLens()
-        viewer = LensViewer(lens)
+        viewer = OpticViewer(lens)
         assert viewer.optic == lens
 
     @patch('matplotlib.pyplot.show')
     def test_view(self, mock_show):
         lens = ReverseTelephoto()
-        viewer = LensViewer(lens)
+        viewer = OpticViewer(lens)
         viewer.view()
         mock_show.assert_called_once()
         plt.close()
@@ -63,7 +63,7 @@ class TestLensViewer:
     @patch('matplotlib.pyplot.show')
     def test_view_bonded_lens(self, mock_show):
         lens = TessarLens()
-        viewer = LensViewer(lens)
+        viewer = OpticViewer(lens)
         viewer.view()
         mock_show.assert_called_once()
         plt.close()
@@ -71,7 +71,7 @@ class TestLensViewer:
     @patch('matplotlib.pyplot.show')
     def test_view_reflective_lens(self, mock_show):
         lens = HubbleTelescope()
-        viewer = LensViewer(lens)
+        viewer = OpticViewer(lens)
         viewer.view()
         mock_show.assert_called_once()
         plt.close()
@@ -82,22 +82,22 @@ class TestLensViewer:
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type='angle')
         lens.add_field(y=0)
-        viewer = LensViewer(lens)
+        viewer = OpticViewer(lens)
         viewer.view()
         mock_show.assert_called_once()
         plt.close()
 
 
-class TestLensViewer3D:
+class TestOpticViewer3D:
     def test_init(self):
         lens = TessarLens()
-        viewer = LensViewer3D(lens)
+        viewer = OpticViewer3D(lens)
         assert viewer.optic == lens
         assert np.array_equal(viewer._real_ray_extent, np.zeros(10))
 
     def test_view(self):
         lens = ReverseTelephoto()
-        viewer = LensViewer3D(lens)
+        viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
              patch.object(viewer.renWin, 'Render') as mock_render:
 
@@ -107,7 +107,7 @@ class TestLensViewer3D:
 
     def test_view_bonded_lens(self):
         lens = TessarLens()
-        viewer = LensViewer3D(lens)
+        viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
              patch.object(viewer.renWin, 'Render') as mock_render:
 
@@ -117,7 +117,7 @@ class TestLensViewer3D:
 
     def test_view_reflective_lens(self):
         lens = HubbleTelescope()
-        viewer = LensViewer3D(lens)
+        viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
              patch.object(viewer.renWin, 'Render') as mock_render:
 
@@ -130,7 +130,7 @@ class TestLensViewer3D:
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type='angle')
         lens.add_field(y=0)
-        viewer = LensViewer3D(lens)
+        viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
              patch.object(viewer.renWin, 'Render') as mock_render:
 
