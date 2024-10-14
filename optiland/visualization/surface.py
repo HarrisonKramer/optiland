@@ -1,7 +1,11 @@
 import numpy as np
 import vtk
-from optiland.visualization.utils import transform
 from optiland.rays import RealRays
+from optiland.visualization.utils import (
+    transform,
+    transform_3d,
+    revolve_contour
+)
 
 
 class Surface2D:
@@ -81,27 +85,74 @@ class Surface3D:
     """
 
     def __init__(self, surface, extent):
-        self.surf = surface
-        self.extent = extent
+        super().__init__(surface, extent)
 
     def plot(self, renderer):
         """
-        Plots the 3D surface using the provided VTK renderer.
+        Plots the surface on the given renderer.
 
         Args:
-            renderer (vtkRenderer): The VTK renderer to which the surface will
-                be added.
+            renderer (vtkRenderer): The renderer to which the surface actor
+                will be added.
+        """
+        actor = self.get_surface()
+        self._configure_material(actor)
+        renderer.AddActor(actor)
+
+    def get_surface(self):
+        """
+        Retrieves the surface actor based on the symmetry of the surface
+        geometry.
+
+        If the surface geometry is symmetric, it retrieves a symmetric surface
+        actor. Otherwise, it retrieves an asymmetric surface actor.
+
+        Returns:
+            actor: The surface actor, either symmetric or asymmetric, based on
+                the surface geometry.
+        """
+        if self.surf.geometry.is_symmetric:
+            actor = self._get_symmetric_surface()
+        else:
+            actor = self._get_asymmetric_surface()
+        return actor
+
+    def _get_symmetric_surface(self):
+        """
+        Generates a symmetric surface actor by computing the sag, revolving
+        the contour, transforming it in 3D, and configuring its material
+        properties.
+
+        Returns:
+            vtkActor: The configured 3D actor representing the symmetric
+                surface.
         """
         x, y, z = self._compute_sag()
+        actor = revolve_contour(x, y, z)
+        actor = transform_3d(actor, self.surf)
+        actor = self._configure_material(actor)
+        return actor
 
-        # convert to global coordinates and return
-        x, y, z = transform(x, y, z, self.surf, is_global=False)
+    def _get_asymmetric_surface(self):
+        """
+        Generates an asymmetric surface using Delaunay triangulation and
+        returns a VTK actor for rendering.
+
+        This method computes the 3D sag values, creates a VTK poly data object
+        to store the points, applies Delaunay triangulation to generate a
+        surface mesh, maps the surface to a VTK actor, configures the actor's
+        material properties, and converts the actor to global coordinates.
+
+        Returns:
+            vtk.vtkActor: A VTK actor representing the asymmetric surface.
+        """
+        x, y, z = self._compute_sag_3d()
 
         points = vtk.vtkPoints()
         for i in range(len(x)):
             points.InsertNextPoint(x[i], y[i], z[i])
 
-        # Create a polydata object to store the points
+        # Create a poly_data object to store the points
         poly_data = vtk.vtkPolyData()
         poly_data.SetPoints(points)
 
@@ -116,19 +167,26 @@ class Surface3D:
 
         # Configure the actor
         actor = vtk.vtkActor()
-        self._configure_material(actor)
         actor.SetMapper(mapper)
+        actor = self._configure_material(actor)
 
-        # Render the surface
-        renderer.AddActor(actor)
+        # Convert to global coordinates
+        actor = transform_3d(actor, self.surf)
+
+        return actor
 
     def _configure_material(self, actor):
         """
-        Configures the material properties of the VTK actor.
+        Configures the material properties of a given actor.
+
+        This method sets the color, ambient, diffuse, specular, and specular
+        power properties of the actor's material.
 
         Args:
-            actor (vtkActor): The VTK actor whose material properties will be
-                configured.
+            actor: The actor whose material properties are to be configured.
+
+        Returns:
+            The actor with updated material properties.
         """
         actor.GetProperty().SetColor(1, 1, 1)
         actor.GetProperty().SetAmbient(0.5)
@@ -136,13 +194,21 @@ class Surface3D:
         actor.GetProperty().SetSpecular(1.0)
         actor.GetProperty().SetSpecularPower(100)
 
-    def _compute_sag(self):
+        return actor
+
+    def _compute_sag_3d(self):
         """
-        Computes the sag (z-coordinates) of the surface based on its geometry.
+        Computes the 3D sag (surface height) of the optical surface within the
+        given extent.
+
+        This method calculates the sag of the optical surface over a 2D grid
+        of points within the maximum radial extent defined by the object's
+        extent attribute. The sag is computed using the surface's geometry.
 
         Returns:
-            tuple: Three numpy arrays representing the x, y, and z coordinates
-                of the surface points.
+            tuple: A tuple containing three numpy arrays (x, y, z)
+                representing the coordinates of the points on the surface
+                within the maximum radial extent.
         """
         r_max = np.hypot(self.extent[0], self.extent[1])
 
