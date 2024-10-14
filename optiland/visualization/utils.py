@@ -18,6 +18,13 @@ def transform(x, y, z, surface, is_global=True):
     Returns:
         tuple: Transformed x, y, and z coordinates as numpy arrays.
     """
+    if np.isscalar(x):
+        x = np.array([x])
+    if np.isscalar(y):
+        y = np.array([y])
+    if np.isscalar(z):
+        z = np.array([z])
+
     t = np.zeros(x.shape[0])
     points = RealRays(x, y, z, t, t, t, t, t)
     if is_global:
