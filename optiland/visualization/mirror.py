@@ -31,3 +31,5 @@ class Mirror3D(Surface3D):
         actor.GetProperty().SetDiffuse(0.1)
         actor.GetProperty().SetSpecular(1.0)
         actor.GetProperty().SetSpecularPower(100)
+
+        return actor
