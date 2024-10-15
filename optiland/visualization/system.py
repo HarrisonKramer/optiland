@@ -67,7 +67,7 @@ class OpticalSystem:
 
         for k, surf in enumerate(self.optic.surface_group.surfaces):
             # Get the surface extent
-            extent = (self.rays.x_extent[k], self.rays.y_extent[k])
+            extent = self.rays.r_extent[k]
 
             # Object surface
             if k == 0:
