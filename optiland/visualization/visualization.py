@@ -74,7 +74,7 @@ class OpticViewer:
         if ylim:
             ax.set_ylim(ylim)
 
-        plt.gca().set_facecolor('#f8f9fa')
+        plt.gca().set_facecolor('#f8f9fa')  # off-white background
         plt.axis('image')
         plt.show()
 
