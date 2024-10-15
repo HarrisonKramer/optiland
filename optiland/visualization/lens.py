@@ -24,6 +24,7 @@ class Lens2D:
     """
 
     def __init__(self, surfaces):
+        # TODO: raise warning when lens surfaces overlap
         self.surfaces = surfaces
 
     def plot(self, ax):
