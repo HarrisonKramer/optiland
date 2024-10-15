@@ -17,7 +17,7 @@ from optiland.rays import PolarizedRays, PolarizationState, RayGenerator
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import LensViewer, LensViewer3D, LensInfoViewer
+from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
 from optiland.pickup import Pickup
 from optiland.solves import SolveFactory
 
@@ -355,7 +355,7 @@ class Optic:
             ylim (tuple, optional): The y-axis limits of the plot. Defaults to
                 None.
         """
-        viewer = LensViewer(self)
+        viewer = OpticViewer(self)
         viewer.view(fields, wavelengths, num_rays, distribution='line_y',
                     figsize=figsize, xlim=xlim, ylim=ylim)
 
@@ -374,7 +374,7 @@ class Optic:
             figsize (tuple, optional): The size of the figure. Defaults to
                 (1200, 800).
         """
-        viewer = LensViewer3D(self)
+        viewer = OpticViewer3D(self)
         viewer.view(fields, wavelengths, num_rays,
                     distribution='hexapolar', figsize=figsize)
 

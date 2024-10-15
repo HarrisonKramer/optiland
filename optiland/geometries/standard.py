@@ -26,6 +26,7 @@ class StandardGeometry(BaseGeometry):
         super().__init__(coordinate_system)
         self.radius = radius
         self.k = conic
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.

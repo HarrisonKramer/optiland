@@ -12,6 +12,7 @@ class Plane(BaseGeometry):
     def __init__(self, coordinate_system):
         super().__init__(coordinate_system)
         self.radius = np.inf
+        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.

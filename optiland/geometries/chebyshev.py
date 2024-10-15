@@ -44,6 +44,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self.c = np.atleast_2d(coefficients)
         self.norm_x = norm_x
         self.norm_y = norm_y
+        self.is_symmetric = False
 
     def sag(self, x=0, y=0):
         """
