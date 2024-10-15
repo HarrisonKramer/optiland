@@ -54,7 +54,7 @@ class Surface2D:
         """
         # local coordinates
         x = np.zeros(128)
-        y = np.linspace(-self.extent[1], self.extent[1], 128)
+        y = np.linspace(-self.extent, self.extent, 128)
         z = self.surf.geometry.sag(x, y)
 
         # handle physical apertures
@@ -210,15 +210,14 @@ class Surface3D(Surface2D):
                 representing the coordinates of the points on the surface
                 within the maximum radial extent.
         """
-        r_max = np.hypot(self.extent[0], self.extent[1])
-
-        x = np.linspace(-r_max, r_max, 128)
+        x = np.linspace(-self.extent, self.extent, 128)
         x, y = np.meshgrid(x, x)
         z = self.surf.geometry.sag(x, y)
         r = np.hypot(x, y)
 
-        x = x[r <= r_max]
-        y = y[r <= r_max]
-        z = z[r <= r_max]
+        in_aperture = r <= self.r_extent
+        x = x[in_aperture]
+        y = y[in_aperture]
+        z = z[in_aperture]
 
         return x, y, z
