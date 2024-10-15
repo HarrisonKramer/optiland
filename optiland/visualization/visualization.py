@@ -87,17 +87,18 @@ class OpticViewer3D:
         self.rays = Rays3D(optic)
         self.system = OpticalSystem(optic, self.rays, projection='3d')
 
+        self.ren_win = vtk.vtkRenderWindow()
+        self.iren = vtk.vtkRenderWindowInteractor()
+
     def view(self, fields='all', wavelengths='primary', num_rays=2,
              distribution='hexapolar', figsize=(1200, 800)):
-        ren_win = vtk.vtkRenderWindow()
-        iren = vtk.vtkRenderWindowInteractor()
         renderer = vtk.vtkRenderer()
-        ren_win.AddRenderer(renderer)
+        self.ren_win.AddRenderer(renderer)
 
-        iren.SetRenderWindow(ren_win)
+        self.iren.SetRenderWindow(self.ren_win)
 
         style = vtk.vtkInteractorStyleTrackballCamera()
-        iren.SetInteractorStyle(style)
+        self.iren.SetInteractorStyle(style)
 
         self.rays.plot(renderer, fields=fields, wavelengths=wavelengths,
                        num_rays=num_rays, distribution=distribution)
@@ -111,9 +112,9 @@ class OpticViewer3D:
         renderer.SetBackground(0.8, 0.9, 1.0)
         renderer.SetBackground2(0.4, 0.5, 0.6)
 
-        ren_win.SetSize(*figsize)
-        ren_win.SetWindowName('Optical System - 3D Viewer')
-        ren_win.Render()
+        self.ren_win.SetSize(*figsize)
+        self.ren_win.SetWindowName('Optical System - 3D Viewer')
+        self.ren_win.Render()
 
         renderer.GetActiveCamera().SetPosition(1, 0, 0)
         renderer.GetActiveCamera().SetFocalPoint(0, 0, 0)
@@ -122,8 +123,8 @@ class OpticViewer3D:
         renderer.GetActiveCamera().Elevation(0)
         renderer.GetActiveCamera().Azimuth(150)
 
-        ren_win.Render()
-        iren.Start()
+        self.ren_win.Render()
+        self.iren.Start()
 
 
 class LensInfoViewer:
