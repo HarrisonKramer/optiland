@@ -93,13 +93,12 @@ class TestOpticViewer3D:
         lens = TessarLens()
         viewer = OpticViewer3D(lens)
         assert viewer.optic == lens
-        assert np.array_equal(viewer._real_ray_extent, np.zeros(10))
 
     def test_view(self):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
-             patch.object(viewer.renWin, 'Render') as mock_render:
+             patch.object(viewer.ren_win, 'Render') as mock_render:
 
             viewer.view()
             mock_start.assert_called_once()
@@ -109,7 +108,7 @@ class TestOpticViewer3D:
         lens = TessarLens()
         viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
-             patch.object(viewer.renWin, 'Render') as mock_render:
+             patch.object(viewer.ren_win, 'Render') as mock_render:
 
             viewer.view()
             mock_start.assert_called_once()
@@ -119,7 +118,7 @@ class TestOpticViewer3D:
         lens = HubbleTelescope()
         viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
-             patch.object(viewer.renWin, 'Render') as mock_render:
+             patch.object(viewer.ren_win, 'Render') as mock_render:
 
             viewer.view()
             mock_start.assert_called_once()
@@ -132,7 +131,7 @@ class TestOpticViewer3D:
         lens.add_field(y=0)
         viewer = OpticViewer3D(lens)
         with patch.object(viewer.iren, 'Start') as mock_start, \
-             patch.object(viewer.renWin, 'Render') as mock_render:
+             patch.object(viewer.ren_win, 'Render') as mock_render:
 
             viewer.view()
             mock_start.assert_called_once()
