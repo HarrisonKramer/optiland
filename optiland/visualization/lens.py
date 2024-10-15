@@ -46,15 +46,14 @@ class Lens2D:
             list: A list of tuples containing arrays of x, y, and z
                 coordinates.
         """
-        max_extents = self._get_max_extent()
+        max_extent = self._get_max_extent()
         sags = []
         for surf in self.surfaces:
             x, y, z = surf._compute_sag()
 
             # extend surface to max extent
-            if surf.extent[0] < max_extents[0] or \
-               surf.extent[1] < max_extents[1]:
-                x, y, z = self._extend_surface(x, y, z, max_extents)
+            if surf.extent < max_extent:
+                x, y, z = self._extend_surface(x, y, z, surf.surf, max_extent)
 
             # convert to global coordinates
             if apply_transform:
@@ -66,16 +65,16 @@ class Lens2D:
 
     def _get_max_extent(self):
         """
-        Gets the maximum extent of all surfaces in the lens.
+        Gets the maximum radial extent of all surfaces in the lens in global
+        coordinates.
 
         Returns:
-            numpy.ndarray: An array containing the maximum extent in the x
-                and y directions.
+            float: The maximum radial extent of all surfaces in the lens.
         """
         extents = np.array([surf.extent for surf in self.surfaces])
         return np.nanmax(extents, axis=0)
 
-    def _extend_surface(self, x, y, z, extent):
+    def _extend_surface(self, x, y, z, surface, extent):
         """
         Extends the surface to the maximum extent.
 
@@ -83,16 +82,18 @@ class Lens2D:
             x (numpy.ndarray): The x coordinates of the surface.
             y (numpy.ndarray): The y coordinates of the surface.
             z (numpy.ndarray): The z coordinates of the surface.
+            surface (Surface): The surface object.
             extent (numpy.ndarray): The maximum extent of the surface.
 
         Returns:
             tuple: A tuple containing the extended x, y, and z coordinates.
         """
-        y_max = np.array([extent[1]])
-
+        y_new = np.array([extent])
         x = np.concatenate([np.array([0]), x, np.array([0])])
-        y = np.concatenate([-y_max, y, y_max])
+        y = np.concatenate([-y_new, y, y_new])
         z = np.concatenate([np.array([z[0]]), z, np.array([z[-1]])])
+
+        surface.extent = extent
 
         return x, y, z
 
@@ -303,26 +304,18 @@ class Lens3D(Lens2D):
         """
         Plots the edges of surfaces in a 3D renderer.
 
-        This method calculates the maximum extent of the surfaces and generates
-        circular edges for each surface. It then transforms these edges into
-        the appropriate coordinate system and adds them to the renderer.
+        This method generates circular edges for each surface. It then
+        transforms these edges into the appropriate coordinate system and adds
+        them to the renderer.
 
         Args:
             renderer: The 3D renderer object where the surface edges will be
                 added.
         """
-        max_extents = self._get_max_extent()
-        r_max = np.max(max_extents)
-        theta = np.linspace(0, 2*np.pi, 256)
-        x = r_max * np.cos(theta)
-        y = r_max * np.sin(theta)
-
         circles = []
         for surface in self.surfaces:
-            z = surface.surf.geometry.sag(x, y)
-
-            x, y, z = transform(x.copy(), y.copy(), z.copy(),
-                                surface.surf, is_global=False)
+            x, y, z = self._get_edge_points(surface)
+            x, y, z = transform(x, y, z, surface.surf, is_global=False)
             circles.append(np.stack((x, y, z), axis=-1))
 
         for k in range(len(circles)-1):
@@ -330,3 +323,23 @@ class Lens3D(Lens2D):
             circle2 = circles[k+1]
             actor = self._get_edge_surface(circle1, circle2)
             renderer.AddActor(actor)
+
+    def _get_edge_points(self, surface):
+        """
+        Computes the (x, y, z) local coordinates of the edges of the lens.
+
+        Args:
+            surface (Surface): The surface object.
+
+        Returns:
+            list: A list of tuples containing arrays of x, y, and z
+                coordinates.
+        """
+        max_extent = self._get_max_extent()
+        theta = np.linspace(0, 2*np.pi, 256)
+
+        x = max_extent * np.cos(theta)
+        y = max_extent * np.sin(theta)
+        z = surface.surf.geometry.sag(x, y)
+
+        return x, y, z
