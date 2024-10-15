@@ -33,8 +33,6 @@ class Rays2D:
         self.i = None
 
         n = optic.surface_group.num_surfaces
-        self.x_extent = np.zeros(n)
-        self.y_extent = np.zeros(n)
         self.r_extent = np.zeros(n)
 
     def plot(self, ax, fields='all', wavelengths='primary', num_rays=3,
@@ -96,20 +94,14 @@ class Rays2D:
 
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
-        x_extent_new = np.zeros_like(self.x_extent)
-        y_extent_new = np.zeros_like(self.y_extent)
+        r_extent_new = np.zeros_like(self.r_extent)
         for i, surf in enumerate(self.optic.surface_group.surfaces):
             # convert to local coordinate system
-            x, y, z = transform(self.x[i], self.y[i], self.z[i],
+            x, y, _ = transform(self.x[i], self.y[i], self.z[i],
                                 surf, is_global=True)
 
-            # get max extents for surface
-            x_extent_new[i] = np.nanmax(np.abs(x))
-            y_extent_new[i] = np.nanmax(np.abs(y))
-
-        # update extents
-        self.x_extent = np.fmax(self.x_extent, x_extent_new)
-        self.y_extent = np.fmax(self.y_extent, y_extent_new)
+            r_extent_new[i] = np.nanmax(np.hypot(x, y))
+        self.r_extent = np.fmax(self.r_extent, r_extent_new)
 
     def _plot_lines(self, ax, color_idx):
         """
