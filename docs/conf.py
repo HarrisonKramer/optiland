@@ -30,6 +30,7 @@ sphinx_gallery_conf = {
      'gallery_dirs': 'auto_examples',  # gallery output directory
 }
 
-autodoc_mock_imports = ["numpy"]  # Mock numpy import
+autodoc_mock_imports = ['numpy', 'yaml', 'scipy', 'matplotlib', 'numba',
+                        'pandas']
 
 pygments_style = 'sphinx'
