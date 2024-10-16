@@ -101,7 +101,7 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
     examples/Tutorial_9a_Edmund_Optics_Catalogue
     examples/Tutorial_9b_Thorlabs_Catalogue
 
-10. Extenting Optiland
+10. Extending Optiland
 ----------------------
 
 .. toctree::
