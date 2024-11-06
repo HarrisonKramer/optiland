@@ -281,8 +281,13 @@ class FFTPSF(Wavefront):
         thresholded_psf = self.psf > threshold
         non_zero_indices = np.argwhere(thresholded_psf)
 
-        min_x, min_y = np.min(non_zero_indices, axis=0)
-        max_x, max_y = np.max(non_zero_indices, axis=0)
+        try:
+            min_x, min_y = np.min(non_zero_indices, axis=0)
+            max_x, max_y = np.max(non_zero_indices, axis=0)
+        except ValueError:
+            min_x, min_y = 0, 0
+            max_x, max_y = self.psf.shape
+
         size = max(max_x - min_x, max_y - min_y)
 
         peak_x, peak_y = self.psf.shape[0] // 2, self.psf.shape[1] // 2
