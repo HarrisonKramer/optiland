@@ -10,7 +10,7 @@ Kramer Harrison, 2023
 """
 
 import numpy as np
-from scipy.interpolate import griddata
+from scipy.ndimage import zoom
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import matplotlib.ticker as mticker
@@ -254,16 +254,12 @@ class FFTPSF(Wavefront):
         Returns:
             numpy.ndarray: The interpolated PSF grid.
         """
-        x_orig, y_orig = np.meshgrid(np.linspace(0, 1, image.shape[0]),
-                                     np.linspace(0, 1, image.shape[1]))
+        zoom_factor = n / image.shape[0]
 
-        x_interp, y_interp = np.meshgrid(np.linspace(0, 1, n),
-                                         np.linspace(0, 1, n))
-
-        points = np.column_stack((x_orig.flatten(), y_orig.flatten()))
-        values = image.flatten()
-
-        return griddata(points, values, (x_interp, y_interp), method='cubic')
+        if zoom_factor == 1:
+            return image
+        else:
+            return zoom(image, zoom_factor, order=3)
 
     def _find_bounds(self, threshold=0.25):
         """
@@ -281,8 +277,13 @@ class FFTPSF(Wavefront):
         thresholded_psf = self.psf > threshold
         non_zero_indices = np.argwhere(thresholded_psf)
 
-        min_x, min_y = np.min(non_zero_indices, axis=0)
-        max_x, max_y = np.max(non_zero_indices, axis=0)
+        try:
+            min_x, min_y = np.min(non_zero_indices, axis=0)
+            max_x, max_y = np.max(non_zero_indices, axis=0)
+        except ValueError:
+            min_x, min_y = 0, 0
+            max_x, max_y = self.psf.shape
+
         size = max(max_x - min_x, max_y - min_y)
 
         peak_x, peak_y = self.psf.shape[0] // 2, self.psf.shape[1] // 2
