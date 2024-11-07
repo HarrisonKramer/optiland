@@ -20,6 +20,7 @@ from optiland.optimization.operand.aberration import AberrationOperand
 from optiland.optimization.operand.ray import RayOperand
 
 
+# Dictionary of operands and their associated functions
 METRIC_DICT = {
     'f1': ParaxialOperand.f1,
     'f2': ParaxialOperand.f2,
@@ -70,6 +71,77 @@ METRIC_DICT = {
 }
 
 
+class OperandRegistry:
+    """
+    A registry to manage operand functions.
+    This class allows you to register functions with specific operand names,
+    retrieve them, and check if an operand name is registered.
+
+    Attributes:
+        _registry (dict): A dictionary to store operand names and their
+            associated functions.
+
+    Methods:
+        register(name, func):
+            Register a function with a specified operand name.
+        get(name):
+            Retrieve the function associated with an operand name.
+        __contains__(name):
+            Check if an operand name is registered.
+        __repr__():
+            Return a string representation of the OperandRegistry.
+    """
+    def __init__(self):
+        self._registry = {}
+
+    def register(self, name, func):
+        """Register a function with a specified operand name.
+
+        Args:
+            name (str): The name of the operand.
+            func (function): The function to be registered.
+        """
+        if name in self._registry:
+            raise ValueError(f'Operand "{name}" is already registered.')
+        self._registry[name] = func
+
+    def get(self, name):
+        """Retrieve the function associated with an operand name.
+
+        Args:
+            name (str): The name of the operand.
+        """
+        return self._registry.get(name)
+
+    def __contains__(self, name):
+        """Check if an operand name is registered.
+
+        Args:
+            name (str): The name of the operand.
+        """
+        return name in self._registry
+
+    def __repr__(self):
+        return f'OperandRegistry({list(self._registry.keys())})'
+
+
+# Create the global operand registry
+operand_registry = OperandRegistry()
+
+
+def register_operand(name):
+    """Decorator to register a function as an operand with the given name."""
+    def decorator(func):
+        operand_registry.register(name, func)
+        return func
+    return decorator
+
+
+# Add all operands to the registry
+for name, func in METRIC_DICT.items():
+    operand_registry.register(name, func)
+
+
 class Operand(object):
     """
     Represents an operand used in optimization calculations.
@@ -80,8 +152,6 @@ class Operand(object):
         weight (float): The weight of the operand.
         input_data (dict): Additional input data for the operand's metric
             function.
-        metric_dict (dict): A dictionary mapping operand types to metric
-            functions.
 
     Methods:
         value(): Get the current value of the operand.
@@ -89,18 +159,16 @@ class Operand(object):
         fun(): Calculate the objective function value.
     """
 
-    def __init__(self, operand_type, target, weight, input_data={},
-                 metric_dict=METRIC_DICT):
+    def __init__(self, operand_type, target, weight, input_data={}):
         self.type = operand_type
         self.target = target
         self.weight = weight
         self.input_data = input_data
-        self.metric_dict = metric_dict
 
     @property
     def value(self):
         """Get current value of the operand"""
-        metric_function = self.metric_dict.get(self.type)
+        metric_function = operand_registry.get(self.type)
         if metric_function:
             return metric_function(**self.input_data)
         else:
