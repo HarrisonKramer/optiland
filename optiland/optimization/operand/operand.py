@@ -125,7 +125,7 @@ class OperandRegistry:
         return f'OperandRegistry({list(self._registry.keys())})'
 
 
-# Create an instance of the operand registry
+# Create the global operand registry
 operand_registry = OperandRegistry()
 
 
