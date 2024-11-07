@@ -126,20 +126,20 @@ class OperandRegistry:
 
 
 # Create an instance of the operand registry
-registry = OperandRegistry()
+operand_registry = OperandRegistry()
 
 
 def register_operand(name):
     """Decorator to register a function as an operand with the given name."""
     def decorator(func):
-        registry.register(name, func)
+        operand_registry.register(name, func)
         return func
     return decorator
 
 
 # Add all operands to the registry
 for name, func in METRIC_DICT.items():
-    registry.register(name, func)
+    operand_registry.register(name, func)
 
 
 class Operand(object):
@@ -168,7 +168,7 @@ class Operand(object):
     @property
     def value(self):
         """Get current value of the operand"""
-        metric_function = registry.get(self.type)
+        metric_function = operand_registry.get(self.type)
         if metric_function:
             return metric_function(**self.input_data)
         else:
