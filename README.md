@@ -156,7 +156,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 10. **Extending Optiland**
     - [Tutorial 10a - Custom Surface Types](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10a_Custom_Surface_Types.ipynb)
         - Adding new surface types
-    - Tutorial 10b - Custom Coating Types - Update in progress (target completion: Nov. 2024)
+    - [Tutorial 10b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10b_Custom_Coating_Types.ipynb)
         - Adding new coating types
     - Tutorial 10c - Custom Optimization Algorithms - Update in progress (target completion: Nov. 2024)
         - Adding new optimization approaches
