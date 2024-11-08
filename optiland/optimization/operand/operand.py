@@ -94,14 +94,15 @@ class OperandRegistry:
     def __init__(self):
         self._registry = {}
 
-    def register(self, name, func):
+    def register(self, name, func, overwrite=False):
         """Register a function with a specified operand name.
 
         Args:
             name (str): The name of the operand.
             func (function): The function to be registered.
+            overwrite (bool): Whether to overwrite an existing registration.
         """
-        if name in self._registry:
+        if name in self._registry and not overwrite:
             raise ValueError(f'Operand "{name}" is already registered.')
         self._registry[name] = func
 
