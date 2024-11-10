@@ -137,6 +137,18 @@ class TestPolynomialCoeffVariable:
         self.poly_var.update_value(1.0)
         assert np.isclose(self.poly_var.get_value(), 1.0)
 
+    def test_string_representation(self):
+        assert str(self.poly_var) == 'Poly. Coeff. (1, 1), Surface 0'
+
+    def test_get_value_no_scaling(self):
+        self.optic = AsphericSinglet()
+        poly_geo = PolynomialGeometry(CoordinateSystem(), 100,
+                                      coefficients=np.zeros((3, 3)))
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1),
+                                                         apply_scaling=False)
+        assert self.poly_var.get_value() == 0.0
+
 
 class TestChebyshevCoeffVariable:
     @pytest.fixture(autouse=True)
