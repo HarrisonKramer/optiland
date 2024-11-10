@@ -240,3 +240,9 @@ class TestDecenterVariable:
     def test_str(self):
         assert str(self.decenter_var_x) == 'Decenter X, Surface 1'
         assert str(self.decenter_var_y) == 'Decenter Y, Surface 1'
+
+    def test_get_value_no_scaling(self):
+        self.optic = Objective60x()
+        self.decenter_var_x = variable.DecenterVariable(self.optic, 1, 'x',
+                                                        apply_scaling=False)
+        assert np.isclose(self.decenter_var_x.get_value(), 0.0)
