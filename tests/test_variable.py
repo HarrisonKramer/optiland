@@ -77,7 +77,10 @@ class TestIndexVariable:
         self.optic = Objective60x()
         self.index_var = variable.IndexVariable(self.optic, 1, 0.55,
                                                 apply_scaling=False)
-        assert np.isclose(self.index_var.get_value(), 0.55)
+        assert np.isclose(self.index_var.get_value(), 1.4877935552990422)
+
+    def test_string_representation(self):
+        assert str(self.index_var) == 'Refractive Index, Surface 1'
 
 
 class TestAsphereCoeffVariable:
