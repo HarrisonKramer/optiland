@@ -73,6 +73,12 @@ class TestIndexVariable:
         self.index_var.update_value(0.1)
         assert np.isclose(self.index_var.get_value(), 0.1)
 
+    def test_get_value_no_scaling(self):
+        self.optic = Objective60x()
+        self.index_var = variable.IndexVariable(self.optic, 1, 0.55,
+                                                apply_scaling=False)
+        assert np.isclose(self.index_var.get_value(), 0.55)
+
 
 class TestAsphereCoeffVariable:
     @pytest.fixture(autouse=True)
