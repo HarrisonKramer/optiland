@@ -157,6 +157,9 @@ class TestChebyshevCoeffVariable:
         self.poly_var.update_value(1.0)
         assert np.isclose(self.poly_var.get_value(), 1.0)
 
+    def test_string_representation(self):
+        assert str(self.poly_var) == 'Chebyshev Coeff. (1, 1), Surface 0'
+
 
 class TestVariable:
     def test_get_value(self):
