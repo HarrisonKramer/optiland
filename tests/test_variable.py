@@ -84,6 +84,15 @@ class TestAsphereCoeffVariable:
         self.asphere_var.update_value(-2.0)
         assert np.isclose(self.asphere_var.get_value(), -2.0)
 
+    def test_get_value_no_scaling(self):
+        self.optic = AsphericSinglet()
+        self.asphere_var = variable.AsphereCoeffVariable(self.optic, 1, 0,
+                                                         apply_scaling=False)
+        assert np.isclose(self.asphere_var.get_value(), -0.0002248851)
+
+    def test_string_representation(self):
+        assert str(self.asphere_var) == 'Asphere Coeff. 0, Surface 1'
+
 
 class TestPolynomialCoeffVariable:
     @pytest.fixture(autouse=True)
