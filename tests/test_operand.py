@@ -231,3 +231,10 @@ class TestOperand:
         operand.operand_registry.register('f3', lambda x: x)
         with pytest.raises(ValueError):
             operand.operand_registry.register('f3', lambda x: x)
+
+    def test_contains(self):
+        assert 'f1' in operand.operand_registry
+        assert 'f3' not in operand.operand_registry
+
+    def test_repr(self):
+        assert isinstance(repr(operand.operand_registry), str)
