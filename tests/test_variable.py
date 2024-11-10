@@ -238,6 +238,12 @@ class TestTiltVariable:
         assert str(self.tilt_var_x) == 'Tilt X, Surface 1'
         assert str(self.tilt_var_y) == 'Tilt Y, Surface 1'
 
+    def test_get_value_no_scaling(self):
+        self.optic = Objective60x()
+        self.tilt_var_x = variable.TiltVariable(self.optic, 1, 'x',
+                                                apply_scaling=False)
+        assert np.isclose(self.tilt_var_x.get_value(), 0.0)
+
 
 class TestDecenterVariable:
     @pytest.fixture(autouse=True)
