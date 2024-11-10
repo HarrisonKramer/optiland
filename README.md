@@ -160,8 +160,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Adding new surface types
     - [Tutorial 10b - Custom Coating Types](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10b_Custom_Coating_Types.ipynb)
         - Adding new coating types
-    - Tutorial 10c - Custom Optimization Algorithms - Update in progress (target completion: Nov. 2024)
-        - Adding new optimization approaches
+    - [Tutorial 10c - Custom Optimization Algorithms]((https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10c_Custom_Optimization_Algorithm.ipynb))
+        - Creating a "random walk optimizer" to optimize an aspheric singlet
 11. **Machine Learning in Optical Design**
     - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Nov. 2024)
 
