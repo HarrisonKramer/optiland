@@ -59,6 +59,12 @@ class TestThicknessVariable:
         self.thickness_var.update_value(-0.6)
         assert np.isclose(self.thickness_var.get_value(), -0.6)
 
+    def test_get_value_no_scaling(self):
+        self.optic = Objective60x()
+        self.thickness_var = variable.ThicknessVariable(self.optic, 2,
+                                                        apply_scaling=False)
+        assert np.isclose(self.thickness_var.get_value(), 4.4)
+
 
 class TestIndexVariable:
     @pytest.fixture(autouse=True)
