@@ -110,3 +110,4 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
 
     examples/Tutorial_10a_Custom_Surface_Types
     examples/Tutorial_10b_Custom_Coating_Types
+    examples/Tutorial_10c_Custom_Optimization_Algorithm
