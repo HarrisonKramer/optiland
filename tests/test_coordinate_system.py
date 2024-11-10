@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
 
@@ -75,3 +76,15 @@ def test_coordinate_system_globalize():
     assert rays.L == pytest.approx(0.1, abs=1e-8)
     assert rays.M == pytest.approx(0.2, abs=1e-8)
     assert rays.N == pytest.approx(0.3, abs=1e-8)
+
+
+def test_coordinate_system_transform():
+    cs1 = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
+    cs2 = CoordinateSystem(10, 20, 30, 0.5, 0.6, 0.7, cs1)
+
+    eff_translation, eff_rot_mat = cs2.get_effective_transform()
+    assert np.allclose(eff_translation, np.array([11, 19, 32]))
+    rot_mat = np.array([[0.6312515, -0.35830835, 0.68784931],
+                        [0.5316958, 0.84560449, -0.04746188],
+                        [-0.56464247, 0.39568697, 0.72430014]])
+    assert np.allclose(eff_rot_mat, rot_mat)
