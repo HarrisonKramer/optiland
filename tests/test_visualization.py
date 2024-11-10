@@ -137,6 +137,21 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
+    def test_view_non_symmetric(self):
+        lens = ReverseTelephoto()
+        lens.surface_group.surfaces[1].geometry.is_symmetric = False
+        viewer = OpticViewer3D(lens)
+        viewer.system._identify_components()
+        c = viewer.system.components[0]
+        assert not c.is_symmetric
+
+        lens = ReverseTelephoto()
+        lens.surface_group.surfaces[1].geometry.cs.rx = 0.1
+        viewer = OpticViewer3D(lens)
+        viewer.system._identify_components()
+        c = viewer.system.components[0]
+        assert not c.is_symmetric
+
 
 class TestLensInfoViewer:
     def test_view_standard(self, capsys):
