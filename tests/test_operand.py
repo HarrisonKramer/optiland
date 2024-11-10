@@ -226,3 +226,8 @@ class TestOperand:
         input_data = {'optic': hubble}
         op = operand.Operand('f2', 1e5, 1.5, input_data)
         assert np.isclose(op.fun(), -63599.87850239461)
+
+    def test_reregister_operand(self):
+        operand.operand_registry.register('f3', lambda x: x)
+        with pytest.raises(ValueError):
+            operand.operand_registry.register('f3', lambda x: x)
