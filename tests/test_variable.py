@@ -42,6 +42,9 @@ class TestConicVariable:
         self.conic_var.inverse_scale(2.0)
         assert np.isclose(self.conic_var.get_value(), 0.0)
 
+    def test_string_representation(self):
+        assert str(self.conic_var) == 'Conic Constant, Surface 1'
+
 
 class TestThicknessVariable:
     @pytest.fixture(autouse=True)
