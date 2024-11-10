@@ -370,3 +370,17 @@ class TestChebyshevGeometry:
         assert nx == pytest.approx(0.14317439, abs=1e-8)
         assert ny == pytest.approx(-0.07668599, abs=1e-8)
         assert nz == pytest.approx(-0.98672202, abs=1e-8)
+
+    def test_invalid_input(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        with pytest.raises(ValueError):
+            geometry.sag(100, 100)
