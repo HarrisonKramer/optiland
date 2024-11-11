@@ -38,7 +38,7 @@ def get_point_gaussian(sigma):  # pragma: no cover
     return x, y
 
 
-def func_wrapper(func, *args):
+def func_wrapper(func, *args):  # pragma: no cover
     @njit(fastmath=True, cache=True)
     def wrapper():
         return func(*args)
