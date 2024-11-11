@@ -2,7 +2,7 @@ from unittest.mock import patch
 import pytest
 from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
 from optiland.tolerancing.core import Tolerancing
-from optiland.tolerancing.perturbation import RangeSampler
+from optiland.tolerancing.perturbation import RangeSampler, DistributionSampler
 from optiland.samples.objectives import ReverseTelephoto
 import pandas as pd
 import matplotlib
@@ -83,3 +83,11 @@ def test_sensitivity_analysis_view(mock_show, tolerancing):
     sa.view()
     mock_show.assert_called_once()
     plt.close()
+
+
+def test_invalid_sampler(tolerancing):
+    sampler = DistributionSampler(distribution='uniform', low=0, high=1)
+    tolerancing.add_perturbation('radius', sampler, surface_number=1)
+    sa = SensitivityAnalysis(tolerancing)
+    with pytest.raises(ValueError):
+        sa.run()
