@@ -5,7 +5,7 @@ from optiland.rays import RealRays
 
 
 @njit(fastmath=True, cache=True)
-def get_point_lambertian():
+def get_point_lambertian():  # pragma: no cover
     """
     Generates a random point on the 2D unit disk.
 
@@ -20,7 +20,7 @@ def get_point_lambertian():
 
 
 @njit(fastmath=True, cache=True)
-def get_point_gaussian(sigma):
+def get_point_gaussian(sigma):  # pragma: no cover
     """
     Generates a random point from a 2D Gaussian distribution using the
     Box-Muller transform.
@@ -46,7 +46,7 @@ def func_wrapper(func, *args):
 
 
 @njit(fastmath=True, cache=True)
-def scatter(L, M, N, nx, ny, nz, get_point):
+def scatter(L, M, N, nx, ny, nz, get_point):  # pragma: no cover
     """
     Generate a scattered vector in the global coordinate system.
 
@@ -98,7 +98,7 @@ def scatter(L, M, N, nx, ny, nz, get_point):
 
 
 @njit(parallel=True, fastmath=True, cache=True)
-def scatter_parallel(L, M, N, nx, ny, nz, get_point):
+def scatter_parallel(L, M, N, nx, ny, nz, get_point):  # pragma: no cover
     """
     Perform scatter operation in parallel.
 

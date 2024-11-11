@@ -130,14 +130,6 @@ class OperandRegistry:
 operand_registry = OperandRegistry()
 
 
-def register_operand(name):
-    """Decorator to register a function as an operand with the given name."""
-    def decorator(func):
-        operand_registry.register(name, func)
-        return func
-    return decorator
-
-
 # Add all operands to the registry
 for name, func in METRIC_DICT.items():
     operand_registry.register(name, func)

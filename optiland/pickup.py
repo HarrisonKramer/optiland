@@ -58,7 +58,7 @@ class Pickup:
         if self.attr_type == 'radius':
             return surface.geometry.radius
         elif self.attr_type == 'conic':
-            return surface.geometry.conic
+            return surface.geometry.k
         elif self.attr_type == 'thickness':
             return (
                 self.optic.surface_group.get_thickness(self.source_surface_idx)

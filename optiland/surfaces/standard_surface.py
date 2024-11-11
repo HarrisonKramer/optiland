@@ -195,6 +195,8 @@ class Surface:
 
         self._record(rays)
 
+        return rays
+
     def _trace_real(self, rays: RealRays):
         """
         Traces real rays through the surface.
