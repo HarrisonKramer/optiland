@@ -133,9 +133,6 @@ class BaseBSDF(ABC):
         scatter(rays, nx=None, ny=None, nz=None): scatter rays according to
             the BSDF.
     """
-    def __init__(self):
-        self.scattering_function = None
-
     def scatter(self, rays: RealRays, nx: np.ndarray,
                 ny: np.ndarray, nz: np.ndarray):
         """
