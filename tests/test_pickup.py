@@ -34,3 +34,9 @@ class TestPickup:
         pickup = Pickup(lens, 1, 'invalid', 2, scale=1, offset=0)
         with pytest.raises(ValueError):
             pickup.apply()
+
+    def test_invalid_set_attr(self):
+        lens = CookeTriplet()
+        pickup = Pickup(lens, 1, 'invalid', 2, scale=1, offset=0)
+        with pytest.raises(ValueError):
+            pickup._set_value(5.0)
