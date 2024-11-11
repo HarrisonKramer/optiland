@@ -149,3 +149,29 @@ def test_psf_log_tick_formatter():
     assert fftpsf._log_tick_formatter(0) == '$10^{0}$'
     assert fftpsf._log_tick_formatter(-1) == '$10^{-1}$'
     assert fftpsf._log_tick_formatter(-10) == '$10^{-10}$'
+
+
+def test_interpolate_zoom_factor_one():
+    optic = CookeTriplet()
+    field = (0, 1)
+    wavelength = 0.55
+    num_rays = 128
+    grid_size = 128
+
+    fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
+    assert fftpsf._interpolate_psf(fftpsf.psf) is fftpsf.psf
+
+
+def test_large_threshold():
+    optic = CookeTriplet()
+    field = (0, 1)
+    wavelength = 0.55
+    num_rays = 128
+    grid_size = 128
+
+    fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
+    min_x, min_y, max_x, max_y = fftpsf._find_bounds(threshold=100)
+    assert min_x == 0
+    assert min_y == 0
+    assert max_x == grid_size
+    assert max_y == grid_size
