@@ -14,4 +14,3 @@ htmlcov/
 .coverage
 **/_build/
 **/auto_examples/
-**/gui/
