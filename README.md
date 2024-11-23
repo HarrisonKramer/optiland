@@ -16,6 +16,7 @@
     <li><a href="#installation">Installation</a></li>
     <li><a href="#functionalities">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgements-&-references">Acknowledgements & References</a></li>
@@ -134,7 +135,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
-    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Nov. 2024)
+    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Jan. 2025)
         - Waveplates, polarizers, and the Jones matrix
         - Jones pupils
 7. **Advanced Optical Design**
@@ -163,7 +164,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 10c - Custom Optimization Algorithms](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10c_Custom_Optimization_Algorithm.ipynb)
         - Creating a "random walk optimizer" to optimize an aspheric singlet
 11. **Machine Learning in Optical Design**
-    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Nov. 2024)
+    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Jan. 2025)
 
 
 ## Roadmap
@@ -182,6 +183,7 @@ Optiland is constantly evolving to provide new functionalities for optical desig
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Insert your idea here...**
+
 
 ### Community Contributions
 We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
