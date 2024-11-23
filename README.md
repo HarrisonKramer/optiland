@@ -169,7 +169,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 ## Roadmap
 
-Optiland is constantly evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
+Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
 - [ ] **GUI (based on Qt Quick)**
 - [ ] **Multiple Configurations (Zoom Lenses)**
@@ -185,7 +185,7 @@ Optiland is constantly evolving to provide new functionalities for optical desig
 - [ ] **Insert your idea here...**
 
 
-### Community Contributions
+#### Community Contributions
 We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
 
 
@@ -195,8 +195,3 @@ Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKram
 
 ## Contact
 Kramer Harrison - kdanielharrison@gmail.com
-
-## Acknowledgements & References
-- https://www.lens-designs.com/
-- https://github.com/Sterncat/opticspy
-- https://github.com/jordens/rayopt
