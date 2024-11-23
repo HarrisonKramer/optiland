@@ -185,7 +185,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Insert your idea here...**
 
 
-#### Community Contributions
+### Community Contributions
 We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
 
 
