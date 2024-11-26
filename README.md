@@ -181,6 +181,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Huygens PSF & MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
+- [ ] **Non-sequential ray tracing**
 - [ ] **Insert your idea here...**
 
 
