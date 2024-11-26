@@ -16,9 +16,9 @@
     <li><a href="#installation">Installation</a></li>
     <li><a href="#functionalities">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements-&-references">Acknowledgements & References</a></li>
   </ol>
 </details>
 
@@ -134,7 +134,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
-    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Nov. 2024)
+    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Jan. 2025)
         - Waveplates, polarizers, and the Jones matrix
         - Jones pupils
 7. **Advanced Optical Design**
@@ -163,7 +163,30 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 10c - Custom Optimization Algorithms](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10c_Custom_Optimization_Algorithm.ipynb)
         - Creating a "random walk optimizer" to optimize an aspheric singlet
 11. **Machine Learning in Optical Design**
-    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Nov. 2024)
+    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Jan. 2025)
+
+
+## Roadmap
+
+Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
+
+- [ ] **GUI (based on Qt Quick)**
+- [ ] **Multiple Configurations (Zoom Lenses)**
+- [ ] **Thin Film Design and Optimization** 
+- [ ] **Diffractive Optical Elements**
+- [ ] **Jones Pupils**
+- [ ] **Apodization Support** 
+- [ ] **Additional Freeforms (Superconic, Zernike, etc.)**
+- [ ] **Image Simulation**
+- [ ] **Huygens PSF & MTF**
+- [ ] **Interferogram Analysis**
+- [ ] **Additional Tutorials/Examples**
+- [ ] **Non-sequential ray tracing**
+- [ ] **Insert your idea here...**
+
+
+### Community Contributions
+We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
 
 
 ## License
@@ -172,8 +195,3 @@ Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKram
 
 ## Contact
 Kramer Harrison - kdanielharrison@gmail.com
-
-## Acknowledgements & References
-- https://www.lens-designs.com/
-- https://github.com/Sterncat/opticspy
-- https://github.com/jordens/rayopt
