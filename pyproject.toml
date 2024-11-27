@@ -39,6 +39,8 @@ packages = [
     "optiland.analysis",
     "optiland.geometries",
     "optiland.materials",
+    "optiland.optimization.operand",
+    "optiland.optimization.variable",
     "optiland.optimization",
     "optiland.rays",
     "optiland.samples",
