@@ -198,4 +198,4 @@ class LensInfoViewer:
             'Conic': conic,
             'Semi-aperture': semi_aperture
         })
-        print(df.to_markdown(headers='keys', tablefmt='psql'))
+        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
