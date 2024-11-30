@@ -1,5 +1,7 @@
 import numpy as np
 import vtk
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from matplotlib.patches import Polygon
 from optiland.visualization.utils import (
     transform,
@@ -98,7 +100,7 @@ class Lens2D:
 
         return x, y, z
 
-    def _plot_single_lens(self, ax, x, y, z):
+    def _plot_single_lens(self, ax, x, y, z, face_color, edge_color):
         """
         Plot a single lens on the given matplotlib axis.
 
@@ -108,11 +110,13 @@ class Lens2D:
             x (numpy.ndarray): The x coordinates of the lens.
             y (numpy.ndarray): The y coordinates of the lens.
             z (numpy.ndarray): The z coordinates of the lens.
+            face_color (tuple): The face color of the lens.
+            edge_color (tuple): The edge color of the lens.
         """
         vertices = np.column_stack((z, y))
         polygon = Polygon(vertices, closed=True,
-                          facecolor=(0.8, 0.8, 0.8, 0.6),
-                          edgecolor=(0.5, 0.5, 0.5))
+                          facecolor=face_color,
+                          edgecolor=edge_color)
         ax.add_patch(polygon)
 
     def _plot_lenses(self, ax, sags):
@@ -134,7 +138,32 @@ class Lens2D:
             y = np.concatenate([y1, y2[::-1]])
             z = np.concatenate([z1, z2[::-1]])
 
-            self._plot_single_lens(ax, x, y, z)
+            face_color, edge_color = self._get_color_from_dispersion()
+            self._plot_single_lens(ax, x, y, z, face_color, edge_color)
+
+    def _get_color_from_dispersion(self):
+        """
+        Get the face and edge color of the lens based on its relative
+        dispersion.
+
+        The color of the lens is determined by the relative partial dispersion
+        (g and F lines) of the material of the first surface. The color is
+        obtained by mapping the relative dispersion to a color using the
+        'viridis' colormap.
+        """
+        try:
+            dispersion = self.surfaces[0].surf.material_post.PgF()
+        except AttributeError:
+            face_color = (0.8, 0.8, 0.8, 0.6)
+            edge_color = (0.5, 0.5, 0.5, 1.0)
+            return face_color, edge_color
+
+        norm = mcolors.Normalize(vmin=0.52, vmax=0.65)
+        cmap = plt.get_cmap('viridis')
+        color = cmap(norm(dispersion))
+        face_color = (*color[:3], 0.2)
+        edge_color = (0.5, 0.5, 0.5, 1.0)
+        return face_color, edge_color
 
 
 class Lens3D(Lens2D):
