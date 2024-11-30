@@ -47,3 +47,19 @@ class BaseMaterial(ABC):
         nF = self.n(0.4861327)
         nC = self.n(0.6562725)
         return (nD - 1) / (nF - nC)
+
+    def PgF(self):
+        """
+        Calculate the relative partial dispersion of the material at g and F
+        lines.
+
+        Returns:
+            The relative partial dispersion of the material for the g and F
+                lines.
+        """
+        nF = self.n(0.4861327)
+        ng = self.n(0.4358343)
+        nC = self.n(0.6562725)
+        if nF == nC:
+            return 0
+        return (ng - nF) / (nF - nC)
