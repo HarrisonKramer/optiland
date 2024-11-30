@@ -96,7 +96,7 @@ class OptimizationProblem:
         funs = self.fun_array()
         df['Contribution (%)'] = funs / np.sum(funs) * 100
 
-        print(df.to_markdown(headers='keys', tablefmt='psql'))
+        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 
     def variable_info(self):
         """Print information about the variables in the merit function."""
@@ -108,7 +108,7 @@ class OptimizationProblem:
                 'Max. Bound': [var.max_val for var in self.variables]}
 
         df = pd.DataFrame(data)
-        print(df.to_markdown(headers='keys', tablefmt='psql'))
+        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 
     def merit_info(self):
         """Print information about the merit function."""
@@ -123,7 +123,7 @@ class OptimizationProblem:
         data = {'Merit Function Value': [self.sum_squared()],
                 'Improvement (%)': improve_percent}
         df = pd.DataFrame(data)
-        print(df.to_markdown(headers='keys', tablefmt='psql'))
+        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 
     def info(self):
         """Print information about the optimization problem."""
