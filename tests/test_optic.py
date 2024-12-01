@@ -102,7 +102,7 @@ class TestOptic:
                                material='air', thickness=5)
         self.optic.add_surface(index=1, surface_type='standard',
                                material='air', thickness=5)
-        self.optic.set_pickup(0, 'radius', 1, scale=2, offset=1)
+        self.optic.pickups.add(0, 'radius', 1, scale=2, offset=1)
         assert len(self.optic.pickups) == 1
 
     def test_clear_pickups(self):
@@ -110,8 +110,8 @@ class TestOptic:
                                material='air', thickness=5)
         self.optic.add_surface(index=1, surface_type='standard',
                                material='air', thickness=5)
-        self.optic.set_pickup(0, 'radius', 1, scale=2, offset=1)
-        self.optic.clear_pickups()
+        self.optic.pickups.add(0, 'radius', 1, scale=2, offset=1)
+        self.optic.pickups.clear()
         assert len(self.optic.pickups) == 0
 
     def test_set_solve(self):
