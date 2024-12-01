@@ -19,7 +19,7 @@ from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
 from optiland.pickup import PickupManager
-from optiland.solves import SolveFactory
+from optiland.solves import SolveManager
 
 
 class Optic:
@@ -55,7 +55,7 @@ class Optic:
         self.polarization = 'ignore'
 
         self.pickups = PickupManager(self)
-        self.solves = []
+        self.solves = SolveManager(self)
         self.obj_space_telecentric = False
 
     @property
@@ -254,25 +254,6 @@ class Optic:
                              'PolarizationState or "ignore".')
         self.polarization = polarization
 
-    def set_solve(self, solve_type, surface_idx, *args, **kwargs):
-        """
-        Set a solve operation on the optical system.
-
-        Args:
-            solve_type (str): The type of solve operation to be performed.
-            surface_idx (int): The index of the surface in the optic's surface
-                group.
-            *args: Additional arguments for the solve operation.
-            **kwargs: Additional keyword arguments for the solve operation.
-        """
-        solve = SolveFactory.create_solve(self, solve_type, surface_idx,
-                                          *args, **kwargs)
-        self.solves.append(solve)
-
-    def clear_solves(self):
-        """Clear all solves from the optical system."""
-        self.solves = []
-
     def scale_system(self, scale_factor):
         """
         Scales the optical system by a given scale factor.
@@ -371,7 +352,7 @@ class Optic:
         self.polarization = 'ignore'
 
         self.pickups = PickupManager(self)
-        self.solves = []
+        self.solves = SolveManager(self)
         self.obj_space_telecentric = False
 
     def n(self, wavelength='primary'):
@@ -409,8 +390,7 @@ class Optic:
         Update the surfaces based on the pickup operations.
         """
         self.pickups.apply()
-        for solve in self.solves:
-            solve.apply()
+        self.solves.apply()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
