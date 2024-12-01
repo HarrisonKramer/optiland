@@ -3,7 +3,7 @@ import QtQuick
 QtObject {
     id: themeManager
 
-    property var currentTheme: lightTheme
+    property var currentTheme: darkTheme
 
     // https://colorhunt.co/palette/dff2ebb9e5e87ab2d34a628a
     property var lightTheme: QtObject {
