@@ -1,6 +1,6 @@
 import pytest
 from optiland.samples.objectives import CookeTriplet
-from optiland.pickup import Pickup
+from optiland.pickup import Pickup, PickupManager
 
 
 class TestPickup:
@@ -40,3 +40,28 @@ class TestPickup:
         pickup = Pickup(lens, 1, 'invalid', 2, scale=1, offset=0)
         with pytest.raises(ValueError):
             pickup._set_value(5.0)
+
+
+class TestPickupManager:
+
+    def test_add_pickup(self):
+        lens = CookeTriplet()
+        manager = PickupManager(lens)
+        manager.add(1, 'radius', 2, scale=2, offset=3)
+        assert len(manager) == 1
+
+    def test_apply_pickups(self):
+        lens = CookeTriplet()
+        manager = PickupManager(lens)
+        manager.add(1, 'radius', 2, scale=2, offset=3)
+        manager.apply()
+        r0 = lens.surface_group.surfaces[1].geometry.radius
+        r1 = lens.surface_group.surfaces[2].geometry.radius
+        assert r1 == 2 * r0 + 3
+
+    def test_clear_pickups(self):
+        lens = CookeTriplet()
+        manager = PickupManager(lens)
+        manager.add(1, 'radius', 2, scale=2, offset=3)
+        manager.clear()
+        assert len(manager) == 0

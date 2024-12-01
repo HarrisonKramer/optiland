@@ -18,7 +18,7 @@ from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
-from optiland.pickup import Pickup
+from optiland.pickup import PickupManager
 from optiland.solves import SolveFactory
 
 
@@ -54,7 +54,7 @@ class Optic:
 
         self.polarization = 'ignore'
 
-        self.pickups = []
+        self.pickups = PickupManager(self)
         self.solves = []
         self.obj_space_telecentric = False
 
@@ -254,36 +254,6 @@ class Optic:
                              'PolarizationState or "ignore".')
         self.polarization = polarization
 
-    def set_pickup(self, source_surface_idx, attr_type, target_surface_idx,
-                   scale=1, offset=0):
-        """
-        Set a pickup operation on the optical system.
-
-        Args:
-            source_surface_idx (int): The index of the source surface in the
-                optic's surface group.
-            attr_type (str): The type of attribute to be picked up ('radius',
-                'conic', or 'thickness').
-            target_surface_idx (int): The index of the target surface in the
-                optic's surface group.
-            target_attr (str): The attribute to be set on the target surface.
-            scale (float, optional): The scaling factor applied to the picked
-                up value. Defaults to 1.
-            offset (float, optional): The offset added to the picked up value.
-                Defaults to 0.
-
-        Raises:
-            ValueError: If an invalid source attribute is specified.
-        """
-        pickup = Pickup(self, source_surface_idx, attr_type,
-                        target_surface_idx, scale, offset)
-        pickup.apply()
-        self.pickups.append(pickup)
-
-    def clear_pickups(self):
-        """Clear all pickups from the optical system."""
-        self.pickups = []
-
     def set_solve(self, solve_type, surface_idx, *args, **kwargs):
         """
         Set a solve operation on the optical system.
@@ -400,7 +370,7 @@ class Optic:
 
         self.polarization = 'ignore'
 
-        self.pickups = []
+        self.pickups = PickupManager(self)
         self.solves = []
         self.obj_space_telecentric = False
 
@@ -438,8 +408,7 @@ class Optic:
         """
         Update the surfaces based on the pickup operations.
         """
-        for pickup in self.pickups:
-            pickup.apply()
+        self.pickups.apply()
         for solve in self.solves:
             solve.apply()
 
