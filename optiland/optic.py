@@ -18,8 +18,8 @@ from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
-from optiland.pickup import Pickup
-from optiland.solves import SolveFactory
+from optiland.pickup import PickupManager
+from optiland.solves import SolveManager
 
 
 class Optic:
@@ -54,8 +54,8 @@ class Optic:
 
         self.polarization = 'ignore'
 
-        self.pickups = []
-        self.solves = []
+        self.pickups = PickupManager(self)
+        self.solves = SolveManager(self)
         self.obj_space_telecentric = False
 
     @property
@@ -254,55 +254,6 @@ class Optic:
                              'PolarizationState or "ignore".')
         self.polarization = polarization
 
-    def set_pickup(self, source_surface_idx, attr_type, target_surface_idx,
-                   scale=1, offset=0):
-        """
-        Set a pickup operation on the optical system.
-
-        Args:
-            source_surface_idx (int): The index of the source surface in the
-                optic's surface group.
-            attr_type (str): The type of attribute to be picked up ('radius',
-                'conic', or 'thickness').
-            target_surface_idx (int): The index of the target surface in the
-                optic's surface group.
-            target_attr (str): The attribute to be set on the target surface.
-            scale (float, optional): The scaling factor applied to the picked
-                up value. Defaults to 1.
-            offset (float, optional): The offset added to the picked up value.
-                Defaults to 0.
-
-        Raises:
-            ValueError: If an invalid source attribute is specified.
-        """
-        pickup = Pickup(self, source_surface_idx, attr_type,
-                        target_surface_idx, scale, offset)
-        pickup.apply()
-        self.pickups.append(pickup)
-
-    def clear_pickups(self):
-        """Clear all pickups from the optical system."""
-        self.pickups = []
-
-    def set_solve(self, solve_type, surface_idx, *args, **kwargs):
-        """
-        Set a solve operation on the optical system.
-
-        Args:
-            solve_type (str): The type of solve operation to be performed.
-            surface_idx (int): The index of the surface in the optic's surface
-                group.
-            *args: Additional arguments for the solve operation.
-            **kwargs: Additional keyword arguments for the solve operation.
-        """
-        solve = SolveFactory.create_solve(self, solve_type, surface_idx,
-                                          *args, **kwargs)
-        self.solves.append(solve)
-
-    def clear_solves(self):
-        """Clear all solves from the optical system."""
-        self.solves = []
-
     def scale_system(self, scale_factor):
         """
         Scales the optical system by a given scale factor.
@@ -400,8 +351,8 @@ class Optic:
 
         self.polarization = 'ignore'
 
-        self.pickups = []
-        self.solves = []
+        self.pickups = PickupManager(self)
+        self.solves = SolveManager(self)
         self.obj_space_telecentric = False
 
     def n(self, wavelength='primary'):
@@ -438,10 +389,8 @@ class Optic:
         """
         Update the surfaces based on the pickup operations.
         """
-        for pickup in self.pickups:
-            pickup.apply()
-        for solve in self.solves:
-            solve.apply()
+        self.pickups.apply()
+        self.solves.apply()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
