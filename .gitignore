@@ -1,3 +1,4 @@
+# Python
 .idea/
 **/venv/
 **/.venv/
@@ -14,3 +15,8 @@ htmlcov/
 .coverage
 **/_build/
 **/auto_examples/
+
+# Qt Creator
+*.qtcreator/
+*.pyproject.user
+*.user
