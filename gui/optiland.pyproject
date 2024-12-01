@@ -1,6 +1,7 @@
 {
     "files": [
         "main.py",
+        "qml/Theme.qml",
         "qml/main.qml"
     ]
 }
