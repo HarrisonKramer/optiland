@@ -10,8 +10,9 @@ class PickupManager:
             operations to be performed.
 
     Methods:
-        add_pickup(): Adds a new pickup operation to the manager.
-        apply_pickups(): Applies all pickup operations in the manager.
+        add(): Adds a new pickup operation to the manager.
+        apply(): Applies all pickup operations in the manager.
+        clear(): Clears all pickup operations in the manager.
     """
 
     def __init__(self, optic):
