@@ -2,6 +2,7 @@
     "files": [
         "main.py",
         "qml/Theme.qml",
+        "qml/controls/ToggleButton.qml",
         "qml/main.qml"
     ]
 }
