@@ -1,4 +1,3 @@
-# This Python file uses the following encoding: utf-8
 import sys
 from pathlib import Path
 from PySide6.QtCore import QUrl
