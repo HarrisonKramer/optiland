@@ -120,3 +120,7 @@ class SolveManager:
         """Applies all solves in the list."""
         for solve in self.solves:
             solve.apply()
+
+    def clear(self):
+        """Clears the list of solves."""
+        self.solves.clear()
