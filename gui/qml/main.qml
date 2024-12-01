@@ -134,6 +134,12 @@ Window {
                     anchors.leftMargin: 0
                     anchors.topMargin: 0
                     anchors.bottomMargin: 0
+
+                    Column {
+                        id: column
+                        anchors.fill: parent
+
+                    }
                 }
 
                 Rectangle {
