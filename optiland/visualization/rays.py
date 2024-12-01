@@ -1,5 +1,6 @@
 import numpy as np
 import vtk
+import matplotlib.cm as cm
 from optiland.visualization.utils import transform
 
 
@@ -34,6 +35,7 @@ class Rays2D:
 
         n = optic.surface_group.num_surfaces
         self.r_extent = np.zeros(n)
+        self.cmap = cm.get_cmap('tab10')
 
     def plot(self, ax, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y'):
@@ -120,7 +122,9 @@ class Rays2D:
         Returns:
             None
         """
-        # loop through rays
+        # loop through rays and plot each one
+        x = np.linspace(0, 1, self.z.shape[1])
+        alphas = np.interp(x, (0, 0.5, 1.0), (0.7, 1.0, 0.7))
         for k in range(self.z.shape[1]):
             xk = self.x[:, k]
             yk = self.y[:, k]
@@ -132,9 +136,9 @@ class Rays2D:
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx)
+            self._plot_single_line(ax, xk, yk, zk, color_idx, alpha=alphas[k])
 
-    def _plot_single_line(self, ax, x, y, z, color_idx):
+    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1, alpha=1):
         """
         Plots a single line on the given axes.
 
@@ -148,8 +152,9 @@ class Rays2D:
         Returns:
             None
         """
-        color = f'C{color_idx}'
-        ax.plot(z, y, color, linewidth=1)
+        color = self.cmap(color_idx % self.cmap.N)
+        # color = f'C{color_idx % 10}'
+        ax.plot(z, y, color=color, linewidth=linewidth, alpha=alpha)
 
 
 class Rays3D(Rays2D):
