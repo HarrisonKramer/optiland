@@ -13,15 +13,28 @@ Window {
     title: qsTr("Optiland")
 
     // Load Theme
-    property var theme: Theme {}
+    property var theme: Theme {
+        id: currentTheme
+    }
 
     // Properties
     property int windowMargin: 10
+    property color primaryColor: "transparent"
+    property color secondaryColor: "transparent"
+    property color accentColor: "transparent"
+    property color textColor: "transparent"
+
+    Component.onCompleted: {
+        primaryColor = theme.currentTheme.primary
+        secondaryColor = theme.currentTheme.secondary
+        accentColor = theme.currentTheme.accent
+        textColor = theme.currentTheme.text
+    }
 
     Rectangle {
         id: bg
-        color: mainWindow.theme.currentTheme.primary
-        border.color: mainWindow.theme.currentTheme.accent
+        color: mainWindow.primaryColor
+        border.color: mainWindow.primaryColor
         border.width: 1
         anchors.left: parent.left
         anchors.right: parent.right
@@ -33,16 +46,41 @@ Window {
         anchors.topMargin: mainWindow.windowMargin
         z: 0
 
-        // Switch to toggle themes
-        Switch {
-            id: themeSwitch
-            anchors.top: parent.top
+        Rectangle {
+            id: appContainer
+            color: "#00000000"
+            anchors.left: parent.left
             anchors.right: parent.right
-            anchors.margins: 16
-            text: "Dark Mode"
-            checked: mainWindow.theme.currentTheme === mainWindow.theme.darkTheme
-            onCheckedChanged: {
-                mainWindow.theme.currentTheme = checked ? mainWindow.theme.darkTheme : mainWindow.theme.lightTheme
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 1
+            anchors.rightMargin: 1
+            anchors.topMargin: 1
+            anchors.bottomMargin: 1
+
+            Rectangle {
+                id: topBar
+                height: 60
+                color: mainWindow.primaryColor
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.leftMargin: 0
+                anchors.rightMargin: 0
+                anchors.topMargin: 0
+            }
+
+            Rectangle {
+                id: content
+                color: mainWindow.secondaryColor
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: topBar.bottom
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: 0
+                anchors.rightMargin: 0
+                anchors.topMargin: 0
+                anchors.bottomMargin: 0
             }
         }
     }
