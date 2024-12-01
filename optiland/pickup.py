@@ -1,3 +1,59 @@
+class PickupManager:
+    """A class for managing multiple pickup operations on an optic surface
+
+    Args:
+        optic (Optic): The optic object on which the pickup operations are
+            performed.
+
+    Attributes:
+        pickups (list): A list of Pickup objects representing the pickup
+            operations to be performed.
+
+    Methods:
+        add(): Adds a new pickup operation to the manager.
+        apply(): Applies all pickup operations in the manager.
+        clear(): Clears all pickup operations in the manager.
+    """
+
+    def __init__(self, optic):
+        self.optic = optic
+        self.pickups = []
+
+    def __len__(self):
+        return len(self.pickups)
+
+    def add(self, source_surface_idx, attr_type, target_surface_idx,
+            scale=1, offset=0):
+        """
+        Adds a new pickup operation to the manager.
+
+        Parameters:
+            source_surface_idx (int): The index of the source surface in the
+                optic's surface group.
+            attr_type (str): The type of attribute to be picked up ('radius',
+                'conic', or 'thickness').
+            target_surface_idx (int): The index of the target surface in the
+                optic's surface group.
+            scale (float, optional): The scaling factor applied to the picked
+                up value. Defaults to 1.
+            offset (float, optional): The offset added to the picked up value.
+                Defaults to 0.
+        """
+        pickup = Pickup(self.optic, source_surface_idx, attr_type,
+                        target_surface_idx, scale, offset)
+        pickup.apply()
+        self.pickups.append(pickup)
+
+    def apply(self):
+        """Applies all pickup operations in the manager."""
+        for pickup in self.pickups:
+            pickup.apply()
+
+    def clear(self):
+        """Clears all pickup operations in the manager."""
+        self.pickups.clear()
+
+
 class Pickup:
     """A class representing a pickup on an optic surface
 
