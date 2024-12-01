@@ -18,6 +18,9 @@ class PickupManager:
         self.optic = optic
         self.pickups = []
 
+    def __len__(self):
+        return len(self.pickups)
+
     def add(self, source_surface_idx, attr_type, target_surface_idx,
             scale=1, offset=0):
         """
