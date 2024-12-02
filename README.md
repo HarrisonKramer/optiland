@@ -104,6 +104,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Y-Ybar plots
         - Distortion / Grid distortion plots
         - Field curvature plots
+        - RMS spot size & wavefront error vs. field
     - [Tutorial 3b - 1st & 3rd-Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
         - Calculation of seidel, 1st & 3rd-order aberrations
     - [Tutorial 3c - Chromatic Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_3c_Chromatic_Aberrations.ipynb)
