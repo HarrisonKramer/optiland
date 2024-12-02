@@ -19,6 +19,7 @@ class RmsSpotSizeVersusField(SpotDiagram):
     """
     def __init__(self, optic, num_fields=64, wavelengths='all', num_rings=6,
                  distribution='hexapolar'):
+        self.num_fields = num_fields
         fields = [(0, Hy) for Hy in np.linspace(0, 1, num_fields)]
         super().__init__(optic, fields, wavelengths, num_rings, distribution)
 
