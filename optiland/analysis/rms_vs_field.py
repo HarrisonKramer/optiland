@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from optiland.analysis import SpotDiagram
 
 
-class RmsSpotSizeVersusField(SpotDiagram):
+class RmsSpotSizeVsField(SpotDiagram):
     """RMS Spot Size versus Field Coordinate.
 
     This class is used to analyze the RMS spot size versus field coordinate
