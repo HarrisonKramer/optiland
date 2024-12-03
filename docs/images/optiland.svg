@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="80.705856mm"
+   height="24.347971mm"
+   viewBox="0 0 80.705856 24.347971"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1"
+     transform="translate(-63.597321,-67.370041)">
+    <g
+       id="g5">
+      <path
+         id="rect2"
+         style="opacity:1;fill:#31363f;fill-opacity:1;stroke-width:0.2439;paint-order:markers fill stroke"
+         d="m 70.402656,67.370041 h 67.095194 c 3.77016,0 6.80533,3.035179 6.80533,6.805335 v 10.737301 c 0,3.770156 -3.03517,6.805335 -6.80533,6.805335 H 70.402656 c -3.770156,0 -6.805335,-3.035179 -6.805335,-6.805335 V 74.175376 c 0,-3.770156 3.035179,-6.805335 6.805335,-6.805335 z" />
+      <text
+         xml:space="preserve"
+         id="text1"
+         style="font-size:16.9333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:inline;fill:#000000;stroke-width:0.264583"
+         x="103.71874"
+         y="84.637253"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:Georgia;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#76abae;fill-opacity:1;stroke-width:0.264583"
+           id="tspan1">Optiland</tspan></text>
+      <text
+         xml:space="preserve"
+         id="text1-8"
+         style="font-size:16.9333px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"
+         x="103.18958"
+         y="84.108086"><tspan
+           id="tspan3"
+           style="fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"><tspan
+             style="font-family:Georgia;-inkscape-font-specification:Georgia;text-align:center;text-anchor:middle;fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"
+             id="tspan2">Optiland</tspan></tspan></text>
+    </g>
+  </g>
+</svg>
