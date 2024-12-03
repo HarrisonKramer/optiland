@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="104.88355mm"
-   height="30.647795mm"
-   viewBox="0 0 104.88355 30.647795"
+   width="95.008156mm"
+   height="26.391155mm"
+   viewBox="0 0 95.008154 26.391155"
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
@@ -28,8 +28,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="1.5539452"
-     inkscape:cx="146.72332"
-     inkscape:cy="107.79016"
+     inkscape:cx="133.85285"
+     inkscape:cy="96.850262"
      inkscape:window-width="2560"
      inkscape:window-height="1351"
      inkscape:window-x="1911"
@@ -44,7 +44,7 @@
        id="linearGradient4"
        inkscape:collect="always">
       <stop
-         style="stop-color:#0751bb;stop-opacity:1;"
+         style="stop-color:#4a90e2;stop-opacity:1;"
          offset="0"
          id="stop5" />
       <stop
@@ -125,18 +125,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-52.700326,-62.262075)">
+     transform="translate(-56.105637,-65.15659)">
     <g
        id="g5">
       <path
          id="rect2"
-         style="display:none;opacity:1;fill:#31363f;fill-opacity:1;stroke-width:0.311947;paint-order:markers fill stroke"
-         d="m 61.54439,62.262075 h 87.19545 c 4.89961,0 8.84404,3.820505 8.84404,8.566157 v 13.515483 c 0,4.745651 -3.94443,8.566155 -8.84404,8.566155 H 61.54439 c -4.899612,0 -8.844064,-3.820504 -8.844064,-8.566155 V 70.828232 c 0,-4.745652 3.944452,-8.566157 8.844064,-8.566157 z"
+         style="display:none;opacity:1;fill:#f5f5f5;fill-opacity:1;stroke-width:0.27551;paint-order:markers fill stroke"
+         d="m 64.11698,65.15659 h 78.98548 c 4.43829,0 8.01133,3.289879 8.01133,7.376412 v 11.638332 c 0,4.086534 -3.57304,7.376412 -8.01133,7.376412 H 64.11698 c -4.438285,0 -8.011343,-3.289878 -8.011343,-7.376412 V 72.533002 c 0,-4.086533 3.573058,-7.376412 8.011343,-7.376412 z"
          inkscape:label="background" />
       <text
          xml:space="preserve"
          id="text1"
-         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:inline;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none;filter:url(#filter1);opacity:0.71770335"
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:none;opacity:0.717703;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none;filter:url(#filter1)"
          x="103.10445"
          y="84.874283"
          inkscape:label="accent text"><tspan
