@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 <div align="center">
-  <img src="docs/images/optiland.svg" alt="Optiland">
+  <img src="https://github.com/HarrisonKramer/optiland/blob/master/docs/images/optiland.svg" alt="Optiland">
 </div>
 
 <!-- TABLE OF CONTENTS -->
