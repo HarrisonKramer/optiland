@@ -7,37 +7,150 @@
    viewBox="0 0 104.88355 30.647795"
    version="1.1"
    id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="drawing.svg"
+   inkscape:export-filename="optiland.svg"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.5539452"
+     inkscape:cx="146.72332"
+     inkscape:cy="107.79016"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="1911"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g5"
+     showgrid="false"
+     showguides="true" />
   <defs
-     id="defs1" />
+     id="defs1">
+    <linearGradient
+       id="linearGradient4"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#0751bb;stop-opacity:1;"
+         offset="0"
+         id="stop5" />
+      <stop
+         style="stop-color:#0078d4;stop-opacity:1;"
+         offset="1"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1">
+      <stop
+         style="stop-color:#0078d4;stop-opacity:1;"
+         offset="0"
+         id="stop3" />
+      <stop
+         style="stop-color:#4a00e0;stop-opacity:0;"
+         offset="1"
+         id="stop4" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1-1">
+      <stop
+         style="stop-color:#0078d4;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#0078d4;stop-opacity:0;"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <rect
+       x="550.85596"
+       y="358.4425"
+       width="86.232124"
+       height="40.541969"
+       id="rect5" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="255.49953"
+       height="75.385254"
+       id="rect1" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="258.07361"
+       height="79.246391"
+       id="rect1-4" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="153.82281"
+       height="15.537585"
+       id="rect1-4-5" />
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter1"
+       x="-0.010758245"
+       y="-0.043881246"
+       width="1.0215165"
+       height="1.0877625">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.37565681"
+         id="feGaussianBlur1" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4"
+       id="linearGradient6"
+       x1="60.532543"
+       y1="78.096771"
+       x2="146.00584"
+       y2="78.777832"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
   <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-52.700326,-62.262075)">
     <g
        id="g5">
       <path
          id="rect2"
-         style="opacity:1;fill:#31363f;fill-opacity:1;stroke-width:0.311947;paint-order:markers fill stroke"
-         d="m 61.54439,62.262075 h 87.19545 c 4.89961,0 8.84404,3.820505 8.84404,8.566157 v 13.515483 c 0,4.745651 -3.94443,8.566155 -8.84404,8.566155 H 61.54439 c -4.899612,0 -8.844064,-3.820504 -8.844064,-8.566155 V 70.828232 c 0,-4.745652 3.944452,-8.566157 8.844064,-8.566157 z" />
+         style="display:none;opacity:1;fill:#31363f;fill-opacity:1;stroke-width:0.311947;paint-order:markers fill stroke"
+         d="m 61.54439,62.262075 h 87.19545 c 4.89961,0 8.84404,3.820505 8.84404,8.566157 v 13.515483 c 0,4.745651 -3.94443,8.566155 -8.84404,8.566155 H 61.54439 c -4.899612,0 -8.844064,-3.820504 -8.844064,-8.566155 V 70.828232 c 0,-4.745652 3.944452,-8.566157 8.844064,-8.566157 z"
+         inkscape:label="background" />
       <text
          xml:space="preserve"
          id="text1"
-         style="font-size:25.4px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:inline;fill:#000000;stroke-width:0.264583"
-         x="103.71874"
-         y="84.637253"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25.4px;font-family:Georgia;-inkscape-font-specification:Georgia;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#76abae;fill-opacity:1;stroke-width:0.264583"
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:inline;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none;filter:url(#filter1);opacity:0.71770335"
+         x="103.10445"
+         y="84.874283"
+         inkscape:label="accent text"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:Poppins;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
            id="tspan1">Optiland</tspan></text>
       <text
          xml:space="preserve"
          id="text1-8"
-         style="font-size:25.4px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"
-         x="103.18958"
-         y="84.108086"><tspan
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:url(#linearGradient6);fill-opacity:1;stroke-width:0.264583"
+         x="102.57528"
+         y="84.345116"
+         inkscape:label="main text"><tspan
            id="tspan3"
-           style="font-size:25.4px;fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"><tspan
-             style="font-size:25.4px;font-family:Georgia;-inkscape-font-specification:Georgia;text-align:center;text-anchor:middle;fill:#eeeeee;fill-opacity:1;stroke-width:0.264583"
-             id="tspan2">Optiland</tspan></tspan></text>
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:'Poppins Medium';text-align:center;text-anchor:middle;fill:url(#linearGradient6);fill-opacity:1;stroke-width:0.264583">Optiland</tspan></text>
     </g>
   </g>
 </svg>
