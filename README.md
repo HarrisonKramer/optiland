@@ -5,7 +5,9 @@
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-# **Optiland**
+<div align="center">
+  <img src="docs/images/optiland.svg" alt="Optiland">
+</div>
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -21,10 +23,6 @@
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
-
-<figure style="text-align: center;">
-  <img src="docs/images/optiland.svg">
-</figure>
 
 ## Introduction
 **Optiland** is a Python-based, open-source lens design and analysis framework. With a simple and intuitive Python interface, Optiland enables the design, optimization, and analysis of complex optical systems, from paraxial and real raytracing to polarization, coatings, and wavefront analyses. It supports 2D/3D visualization, comprehensive tolerancing, local and global optimization, and freeform optics, among other features. Built on the speed of [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/), Optiland delivers computational efficiency and flexibility across a wide range of optical tasks.
