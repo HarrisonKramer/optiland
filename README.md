@@ -5,7 +5,7 @@
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-<div align="left">
+<div align="center">
   <img src="docs/images/optiland.svg" alt="Optiland">
 </div>
 
