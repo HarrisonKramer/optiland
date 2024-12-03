@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
-   sodipodi:docname="optiland.svg"
+   sodipodi:docname="optiland_round3.svg"
    inkscape:export-filename="optiland.svg"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
@@ -44,11 +44,11 @@
        id="linearGradient4"
        inkscape:collect="always">
       <stop
-         style="stop-color:#4a90e2;stop-opacity:1;"
+         style="stop-color:#5ed3f3;stop-opacity:1;"
          offset="0"
          id="stop5" />
       <stop
-         style="stop-color:#0078d4;stop-opacity:1;"
+         style="stop-color:#007bff;stop-opacity:1;"
          offset="1"
          id="stop6" />
     </linearGradient>
@@ -114,11 +114,11 @@
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient4"
-       id="linearGradient6"
-       x1="60.532543"
-       y1="78.096771"
-       x2="146.00584"
-       y2="78.777832"
+       id="linearGradient12"
+       x1="103.36325"
+       y1="69.032234"
+       x2="103.90668"
+       y2="90.485695"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <g
@@ -145,12 +145,12 @@
       <text
          xml:space="preserve"
          id="text1-8"
-         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:url(#linearGradient6);fill-opacity:1;stroke-width:0.264583"
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:url(#linearGradient12);fill-opacity:1;stroke-width:0.264583"
          x="102.57528"
          y="84.345116"
          inkscape:label="main text"><tspan
            id="tspan3"
-           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:'Poppins Medium';text-align:center;text-anchor:middle;fill:url(#linearGradient6);fill-opacity:1;stroke-width:0.264583">Optiland</tspan></text>
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:'Poppins Medium';text-align:center;text-anchor:middle;fill:url(#linearGradient12);fill-opacity:1;stroke-width:0.264583">Optiland</tspan></text>
     </g>
   </g>
 </svg>
