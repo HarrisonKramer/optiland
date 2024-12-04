@@ -90,8 +90,10 @@ class OpticViewer3D:
         self.ren_win = vtk.vtkRenderWindow()
         self.iren = vtk.vtkRenderWindowInteractor()
 
-    def view(self, fields='all', wavelengths='primary', num_rays=2,
-             distribution='hexapolar', figsize=(1200, 800)):
+        self.dark_mode = False
+
+    def view(self, fields='all', wavelengths='primary', num_rays=24,
+             distribution='ring', figsize=(1200, 800)):
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
 
@@ -109,8 +111,12 @@ class OpticViewer3D:
             vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL
         )
 
-        renderer.SetBackground(0.8, 0.9, 1.0)
-        renderer.SetBackground2(0.4, 0.5, 0.6)
+        if self.dark_mode:
+            renderer.SetBackground(0.13, 0.15, 0.19)
+            renderer.SetBackground2(0.195, 0.21, 0.24)
+        else:
+            renderer.SetBackground(0.8, 0.9, 1.0)
+            renderer.SetBackground2(0.4, 0.5, 0.6)
 
         self.ren_win.SetSize(*figsize)
         self.ren_win.SetWindowName('Optical System - 3D Viewer')
