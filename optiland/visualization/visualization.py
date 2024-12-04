@@ -80,6 +80,24 @@ class OpticViewer:
 
 
 class OpticViewer3D:
+    """
+    A class used to visualize optical systems in 3D.
+
+    Args:
+        optic: The optical system to be visualized.
+
+    Attributes:
+        optic: The optical system to be visualized.
+        rays: An instance of Rays3D for ray tracing.
+        system: An instance of OpticalSystem for system representation.
+        ren_win: The vtkRenderWindow object for visualization.
+        iren: The vtkRenderWindowInteractor object for interaction.
+
+    Methods:
+        view(fields='all', wavelengths='primary', num_rays=24,
+             distribution='ring', figsize=(1200, 800), dark_mode=False):
+            Visualizes the optical system in 3D.
+    """
 
     def __init__(self, optic):
         self.optic = optic
@@ -92,6 +110,23 @@ class OpticViewer3D:
 
     def view(self, fields='all', wavelengths='primary', num_rays=24,
              distribution='ring', figsize=(1200, 800), dark_mode=False):
+        """
+        Visualizes the optical system in 3D.
+
+        Args:
+            fields (str, optional): The fields to be visualized.
+                Defaults to 'all'.
+            wavelengths (str, optional): The wavelengths to be visualized.
+                Defaults to 'primary'.
+            num_rays (int, optional): The number of rays to be visualized.
+                Defaults to 24.
+            distribution (str, optional): The distribution of rays.
+                Defaults to 'ring'.
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (1200, 800).
+            dark_mode (bool, optional): Whether to use dark mode.
+                Defaults to False.
+        """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
 
