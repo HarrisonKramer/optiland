@@ -310,7 +310,7 @@ class Optic:
         viewer.view(fields, wavelengths, num_rays, distribution='line_y',
                     figsize=figsize, xlim=xlim, ylim=ylim)
 
-    def draw3D(self, fields='all', wavelengths='primary', num_rays=2,
+    def draw3D(self, fields='all', wavelengths='primary', num_rays=24,
                figsize=(1200, 800)):
         """
         Draw a 3D representation of the optical system.
@@ -327,7 +327,7 @@ class Optic:
         """
         viewer = OpticViewer3D(self)
         viewer.view(fields, wavelengths, num_rays,
-                    distribution='hexapolar', figsize=figsize)
+                    distribution='ring', figsize=figsize)
 
     def info(self):
         """Display the optical system information."""
