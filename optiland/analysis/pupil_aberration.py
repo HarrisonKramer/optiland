@@ -54,19 +54,14 @@ class PupilAberration:
         for k, field in enumerate(self.fields):
             for wavelength in self.wavelengths:
                 ex = self.data[f'{field}'][f'{wavelength}']['x']
-                i_x = self.data[f'{field}'][f'{wavelength}']['intensity_x']
-                ex[i_x == 0] = np.nan
-
                 ey = self.data[f'{field}'][f'{wavelength}']['y']
-                i_y = self.data[f'{field}'][f'{wavelength}']['intensity_y']
-                ey[i_y == 0] = np.nan
 
                 axs[k, 0].plot(Py, ey, zorder=3, label=f'{wavelength:.4f} µm')
                 axs[k, 0].grid()
                 axs[k, 0].axhline(y=0, lw=1, color='gray')
                 axs[k, 0].axvline(x=0, lw=1, color='gray')
                 axs[k, 0].set_xlabel('$P_y$')
-                axs[k, 0].set_ylabel('$\\epsilon_y$ (mm)')
+                axs[k, 0].set_ylabel('Pupil Aberration (%)')
                 axs[k, 0].set_xlim((-1, 1))
                 axs[k, 0].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
@@ -75,7 +70,7 @@ class PupilAberration:
                 axs[k, 1].axhline(y=0, lw=1, color='gray')
                 axs[k, 1].axvline(x=0, lw=1, color='gray')
                 axs[k, 1].set_xlabel('$P_x$')
-                axs[k, 1].set_ylabel('$\\epsilon_x$ (mm)')
+                axs[k, 1].set_ylabel('Pupil Aberration (%)')
                 axs[k, 0].set_xlim((-1, 1))
                 axs[k, 1].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
 
@@ -92,6 +87,10 @@ class PupilAberration:
         """
         stop_idx = self.optic.surface_group.stop_index
 
+        # determine size of stop
+        self.optic.paraxial.trace(0, 1, self.optic.primary_wavelength)
+        d = self.optic.surface_group.y[stop_idx, 0]
+
         data = {'Px': np.linspace(-1, 1, self.num_points),
                 'Py': np.linspace(-1, 1, self.num_points)}
         for field in self.fields:
@@ -102,30 +101,35 @@ class PupilAberration:
             for wavelength in self.wavelengths:
                 data[f'{field}'][f'{wavelength}'] = {}
 
+                # Trace along the x-axis
                 self.optic.trace(Hx=Hx, Hy=Hy,
                                  wavelength=wavelength,
                                  num_rays=self.num_points,
                                  distribution='line_x')
-                data[f'{field}'][f'{wavelength}']['x'] = \
-                    self.optic.surface_group.x[stop_idx, :]
-                data[f'{field}'][f'{wavelength}']['intensity_x'] = \
-                    self.optic.surface_group.intensity[stop_idx, :]
+                real_x = self.optic.surface_group.x[stop_idx, :]
+                real_int_x = self.optic.surface_group.intensity[stop_idx, :]
 
+                # Trace along the y-axis
                 self.optic.trace(Hx=Hx, Hy=Hy,
                                  wavelength=wavelength,
                                  num_rays=self.num_points,
                                  distribution='line_y')
-                data[f'{field}'][f'{wavelength}']['y'] = \
-                    self.optic.surface_group.y[stop_idx, :]
-                data[f'{field}'][f'{wavelength}']['intensity_y'] = \
-                    self.optic.surface_group.intensity[stop_idx, :]
+                real_y = self.optic.surface_group.y[stop_idx, :]
+                real_int_y = self.optic.surface_group.intensity[stop_idx, :]
+
+                # Paraxial trace
+                H = np.hypot(Hx, Hy)
+                self.optic.paraxial.trace(H, data['Px'], wavelength)
+                parax_x = self.optic.surface_group.y[stop_idx, :]
+
+                # Compute error
+                error_x = (parax_x - real_x) / d * 100
+                error_x[real_int_x == 0] = np.nan
+
+                error_y = (parax_x - real_y) / d * 100
+                error_y[real_int_y == 0] = np.nan
+
+                data[f'{field}'][f'{wavelength}']['x'] = error_x
+                data[f'{field}'][f'{wavelength}']['y'] = error_y
+
         return data
-
-    def _generate_paraxial_data(self):
-        """
-        Generate the paraxial pupil aberration data.
-
-        Returns:
-            dict: The pupil aberration data.
-        """
-        pass
