@@ -580,3 +580,34 @@ class TestWavefrontErrorVsField:
         wavefront_error_vs_field.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
         plt.close()
+
+
+class TestPupilAberration:
+
+    def test_initialization(self, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        assert pupil_ab.optic == telescope_objective
+        assert pupil_ab.fields == [(0.0, 0.0), (0.0, 0.7), (0.0, 1.0)]
+        assert pupil_ab.wavelengths == [0.4861, 0.5876, 0.6563]
+        assert pupil_ab.num_points == 257  # num_points is forced to be odd
+
+    def test_generate_data(self, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        data = pupil_ab._generate_data()
+        assert 'Px' in data
+        assert 'Py' in data
+        assert '(0.0, 0.0)' in data
+        assert '(0.0, 0.7)' in data
+        assert '(0.0, 1.0)' in data
+        assert '0.4861' in data['(0.0, 0.0)']
+        assert '0.5876' in data['(0.0, 0.0)']
+        assert '0.6563' in data['(0.0, 0.0)']
+        assert 'x' in data['(0.0, 0.0)']['0.4861']
+        assert 'y' in data['(0.0, 0.0)']['0.4861']
+
+    @patch('matplotlib.pyplot.show')
+    def test_view(self, mock_show, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        pupil_ab.view()
+        mock_show.assert_called_once()
+        plt.close()
