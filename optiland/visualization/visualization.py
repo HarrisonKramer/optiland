@@ -90,10 +90,8 @@ class OpticViewer3D:
         self.ren_win = vtk.vtkRenderWindow()
         self.iren = vtk.vtkRenderWindowInteractor()
 
-        self.dark_mode = False
-
     def view(self, fields='all', wavelengths='primary', num_rays=24,
-             distribution='ring', figsize=(1200, 800)):
+             distribution='ring', figsize=(1200, 800), dark_mode=False):
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
 
@@ -111,7 +109,7 @@ class OpticViewer3D:
             vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL
         )
 
-        if self.dark_mode:
+        if dark_mode:
             renderer.SetBackground(0.13, 0.15, 0.19)
             renderer.SetBackground2(0.195, 0.21, 0.24)
         else:
