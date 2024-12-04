@@ -6,6 +6,11 @@ class PupilAberration:
     """
     Represents the pupil aberrations of an optic.
 
+    The pupil abberration is defined as the difference between the paraxial
+    and real ray intersection point at the stop surface of the optic. This is
+    specified as a percentage of the on-axis paraxial stop radius at the
+    primary wavelength.
+
     Args:
         optic (Optic): The optic object to analyze.
         fields (str or list, optional): The fields to analyze.
@@ -87,12 +92,17 @@ class PupilAberration:
         """
         stop_idx = self.optic.surface_group.stop_index
 
+        data = {'Px': np.linspace(-1, 1, self.num_points),
+                'Py': np.linspace(-1, 1, self.num_points)}
+
         # determine size of stop
         self.optic.paraxial.trace(0, 1, self.optic.primary_wavelength)
         d = self.optic.surface_group.y[stop_idx, 0]
 
-        data = {'Px': np.linspace(-1, 1, self.num_points),
-                'Py': np.linspace(-1, 1, self.num_points)}
+        # Paraxial trace
+        self.optic.paraxial.trace(0, data['Py'], self.optic.primary_wavelength)
+        parax_ref = self.optic.surface_group.y[stop_idx, :]
+
         for field in self.fields:
             Hx = field[0]
             Hy = field[1]
@@ -117,16 +127,11 @@ class PupilAberration:
                 real_y = self.optic.surface_group.y[stop_idx, :]
                 real_int_y = self.optic.surface_group.intensity[stop_idx, :]
 
-                # Paraxial trace
-                H = np.hypot(Hx, Hy)
-                self.optic.paraxial.trace(H, data['Px'], wavelength)
-                parax_x = self.optic.surface_group.y[stop_idx, :]
-
                 # Compute error
-                error_x = (parax_x - real_x) / d * 100
+                error_x = (parax_ref - real_x) / d * 100
                 error_x[real_int_x == 0] = np.nan
 
-                error_y = (parax_x - real_y) / d * 100
+                error_y = (parax_ref - real_y) / d * 100
                 error_y[real_int_y == 0] = np.nan
 
                 data[f'{field}'][f'{wavelength}']['x'] = error_x
