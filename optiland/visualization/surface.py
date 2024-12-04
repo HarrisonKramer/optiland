@@ -190,7 +190,7 @@ class Surface3D(Surface2D):
         """
         actor.GetProperty().SetColor(1, 1, 1)
         actor.GetProperty().SetAmbient(0.5)
-        actor.GetProperty().SetDiffuse(0.1)
+        actor.GetProperty().SetDiffuse(0.05)
         actor.GetProperty().SetSpecular(1.0)
         actor.GetProperty().SetSpecularPower(100)
 
