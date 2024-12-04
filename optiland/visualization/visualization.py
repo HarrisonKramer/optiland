@@ -80,6 +80,24 @@ class OpticViewer:
 
 
 class OpticViewer3D:
+    """
+    A class used to visualize optical systems in 3D.
+
+    Args:
+        optic: The optical system to be visualized.
+
+    Attributes:
+        optic: The optical system to be visualized.
+        rays: An instance of Rays3D for ray tracing.
+        system: An instance of OpticalSystem for system representation.
+        ren_win: The vtkRenderWindow object for visualization.
+        iren: The vtkRenderWindowInteractor object for interaction.
+
+    Methods:
+        view(fields='all', wavelengths='primary', num_rays=24,
+             distribution='ring', figsize=(1200, 800), dark_mode=False):
+            Visualizes the optical system in 3D.
+    """
 
     def __init__(self, optic):
         self.optic = optic
@@ -90,8 +108,25 @@ class OpticViewer3D:
         self.ren_win = vtk.vtkRenderWindow()
         self.iren = vtk.vtkRenderWindowInteractor()
 
-    def view(self, fields='all', wavelengths='primary', num_rays=2,
-             distribution='hexapolar', figsize=(1200, 800)):
+    def view(self, fields='all', wavelengths='primary', num_rays=24,
+             distribution='ring', figsize=(1200, 800), dark_mode=False):
+        """
+        Visualizes the optical system in 3D.
+
+        Args:
+            fields (str, optional): The fields to be visualized.
+                Defaults to 'all'.
+            wavelengths (str, optional): The wavelengths to be visualized.
+                Defaults to 'primary'.
+            num_rays (int, optional): The number of rays to be visualized.
+                Defaults to 24.
+            distribution (str, optional): The distribution of rays.
+                Defaults to 'ring'.
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (1200, 800).
+            dark_mode (bool, optional): Whether to use dark mode.
+                Defaults to False.
+        """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
 
@@ -109,8 +144,12 @@ class OpticViewer3D:
             vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL
         )
 
-        renderer.SetBackground(0.8, 0.9, 1.0)
-        renderer.SetBackground2(0.4, 0.5, 0.6)
+        if dark_mode:
+            renderer.SetBackground(0.13, 0.15, 0.19)
+            renderer.SetBackground2(0.195, 0.21, 0.24)
+        else:
+            renderer.SetBackground(0.8, 0.9, 1.0)
+            renderer.SetBackground2(0.4, 0.5, 0.6)
 
         self.ren_win.SetSize(*figsize)
         self.ren_win.SetWindowName('Optical System - 3D Viewer')
