@@ -54,3 +54,31 @@ class BaseMaterial(ABC):
         nF = self.n(0.4861327)
         nC = self.n(0.6562725)
         return (nD - 1) / (nF - nC)
+
+    def to_dict(self):
+        """Convert the material to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the material.
+        """
+        return {
+            'type': self.__class__.__name__
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            BaseMaterial: The material.
+        """
+        material_type = data.get("type")
+        if material_type not in cls._registry:
+            raise ValueError(f"Unknown material type: {material_type}")
+
+        # Delegate to the correct subclass's from_dict
+        return cls._registry[material_type].from_dict(data)
