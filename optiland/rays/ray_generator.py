@@ -24,9 +24,7 @@ class RayGenerator:
         Returns:
             RealRays: RealRays object containing the generated rays.
         """
-        vx, vy = self.optic.fields.get_vig_factor(Hx, Hy)
-        vx = 1 - vx
-        vy = 1 - vy
+        vx, vy = 1 - np.array(self.optic.fields.get_vig_factor(Hx, Hy))
         x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
         if self.optic.obj_space_telecentric:
