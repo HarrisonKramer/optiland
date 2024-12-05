@@ -33,6 +33,7 @@ class Surface:
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
     """
+    _registry = {}  # registry for all surfaces
 
     def __init__(self,
                  geometry: BaseGeometry,
@@ -54,6 +55,11 @@ class Surface:
         self.is_reflective = is_reflective
 
         self.reset()
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        Surface._registry[cls.__name__] = cls
 
     def trace(self, rays: BaseRays):
         """
@@ -255,6 +261,7 @@ class Surface:
         Returns a dictionary representation of the surface.
         """
         return {
+            'type': self.__class__.__name__,
             'geometry': self.geometry.to_dict(),
             'material_pre': self.material_pre.to_dict(),
             'material_post': self.material_post.to_dict(),
@@ -276,6 +283,7 @@ class Surface:
         Returns:
             Surface: The surface.
         """
+        surface_type = data.get('type')
         geometry = BaseGeometry.from_dict(data['geometry'])
         material_pre = BaseMaterial.from_dict(data['material_pre'])
         material_post = BaseMaterial.from_dict(data['material_post'])
@@ -286,5 +294,13 @@ class Surface:
         bsdf = BaseBSDF.from_dict(data['bsdf']) \
             if data['bsdf'] else None
 
-        return cls(geometry, material_pre, material_post, data['is_stop'],
-                   aperture, coating, bsdf, data['is_reflective'])
+        return cls._registry[surface_type](
+            geometry,
+            material_pre,
+            material_post,
+            data['is_stop'],
+            aperture,
+            coating,
+            bsdf,
+            data['is_reflective']
+            )
