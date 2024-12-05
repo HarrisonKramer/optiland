@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from optiland.coordinate_systems import CoordinateSystem
 
 
 class BaseGeometry(ABC):
@@ -7,6 +8,7 @@ class BaseGeometry(ABC):
     Args:
         cs (CoordinateSystem): The coordinate system of the geometry.
     """
+    _registry = {}
 
     def __init__(self, coordinate_system):
         self.cs = coordinate_system
@@ -67,3 +69,37 @@ class BaseGeometry(ABC):
             rays (RealRays): The rays to convert.
         """
         self.cs.globalize(rays)
+
+    def to_dict(self):
+        """Convert the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'cs': self.cs.to_dict()
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a geometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the geometry.
+
+        Returns:
+            BaseGeometry: The geometry.
+        """
+        geometry_type = data['type']
+        geometry_cls = cls._registry[geometry_type]
+        cs = CoordinateSystem.from_dict(data['cs'])
+        return geometry_cls(cs)
+
+    @classmethod
+    def register_geometry(cls, geometry_type):
+        """Decorator to register geometry classes."""
+        def wrapper(subclass):
+            cls._registry[geometry_type] = subclass
+            return subclass
+        return wrapper
