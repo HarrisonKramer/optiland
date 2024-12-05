@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from optiland.coordinate_systems import CoordinateSystem
 
 
 class BaseGeometry(ABC):
@@ -12,6 +11,11 @@ class BaseGeometry(ABC):
 
     def __init__(self, coordinate_system):
         self.cs = coordinate_system
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseGeometry._registry[cls.__name__] = cls
 
     @abstractmethod
     def sag(self, x=0, y=0):
@@ -91,15 +95,9 @@ class BaseGeometry(ABC):
         Returns:
             BaseGeometry: The geometry.
         """
-        geometry_type = data['type']
-        geometry_cls = cls._registry[geometry_type]
-        cs = CoordinateSystem.from_dict(data['cs'])
-        return geometry_cls(cs)
+        geometry_type = data.get("type")
+        if geometry_type not in cls._registry:
+            raise ValueError(f"Unknown geometry type: {geometry_type}")
 
-    @classmethod
-    def register_geometry(cls, geometry_type):
-        """Decorator to register geometry classes."""
-        def wrapper(subclass):
-            cls._registry[geometry_type] = subclass
-            return subclass
-        return wrapper
+        # Delegate to the correct subclass's from_dict
+        return cls._registry[geometry_type].from_dict(data)
