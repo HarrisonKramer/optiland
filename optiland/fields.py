@@ -51,6 +51,9 @@ class Field:
         Returns:
             Field: A field object created from the dictionary.
         """
+        if 'field_type' not in field_dict:
+            raise ValueError('Missing required keys: field_type')
+
         return cls(field_dict['field_type'],
                    field_dict.get('x', 0),
                    field_dict.get('y', 0),
