@@ -38,7 +38,11 @@ class Aperture:
         self.object_space_telecentric = object_space_telecentric
 
     def to_dict(self):
-        """Get a dictionary representation of the aperture."""
+        """Get a dictionary representation of the aperture.
+
+        Returns:
+            dict: A dictionary containing the aperture data.
+        """
         return {
             'type': self.ap_type,
             'value': self.value,
@@ -47,7 +51,14 @@ class Aperture:
 
     @classmethod
     def from_dict(cls, data):
-        """Create an Aperture instance from a dictionary representation."""
+        """Create an Aperture instance from a dictionary representation.
+
+        Args:
+            data (dict): A dictionary containing the aperture data.
+
+        Returns:
+            Aperture: A new Aperture instance created from the data.
+        """
         required_keys = {'type', 'value'}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
