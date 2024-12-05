@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="95.008156mm"
+   height="26.391155mm"
+   viewBox="0 0 95.008154 26.391155"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="optiland.svg"
+   inkscape:export-filename="optiland.svg"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.5539452"
+     inkscape:cx="133.53109"
+     inkscape:cy="96.850262"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="1911"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g5"
+     showgrid="false"
+     showguides="true" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient4"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#5ed3f3;stop-opacity:1;"
+         offset="0"
+         id="stop5" />
+      <stop
+         style="stop-color:#007bff;stop-opacity:1;"
+         offset="1"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1">
+      <stop
+         style="stop-color:#0078d4;stop-opacity:1;"
+         offset="0"
+         id="stop3" />
+      <stop
+         style="stop-color:#4a00e0;stop-opacity:0;"
+         offset="1"
+         id="stop4" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1-1">
+      <stop
+         style="stop-color:#0078d4;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#0078d4;stop-opacity:0;"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <rect
+       x="550.85596"
+       y="358.4425"
+       width="86.232124"
+       height="40.541969"
+       id="rect5" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="255.49953"
+       height="75.385254"
+       id="rect1" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="258.07361"
+       height="79.246391"
+       id="rect1-4" />
+    <rect
+       x="133.59872"
+       y="390.63104"
+       width="153.82281"
+       height="15.537585"
+       id="rect1-4-5" />
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter1"
+       x="-0.010758245"
+       y="-0.043881246"
+       width="1.0215165"
+       height="1.0877625">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.37565681"
+         id="feGaussianBlur1" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4"
+       id="linearGradient12"
+       x1="103.36325"
+       y1="69.032234"
+       x2="103.90668"
+       y2="90.485695"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-56.105637,-65.15659)">
+    <g
+       id="g5">
+      <path
+         id="rect2"
+         style="display:none;opacity:1;fill:#f5f5f5;fill-opacity:1;stroke-width:0.27551;paint-order:markers fill stroke"
+         d="m 64.11698,65.15659 h 78.98548 c 4.43829,0 8.01133,3.289879 8.01133,7.376412 v 11.638332 c 0,4.086534 -3.57304,7.376412 -8.01133,7.376412 H 64.11698 c -4.438285,0 -8.011343,-3.289878 -8.011343,-7.376412 V 72.533002 c 0,-4.086533 3.573058,-7.376412 8.011343,-7.376412 z"
+         inkscape:label="background" />
+      <text
+         xml:space="preserve"
+         id="text1"
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;white-space:pre;display:none;opacity:0.717703;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none;filter:url(#filter1)"
+         x="103.10445"
+         y="84.874283"
+         inkscape:label="accent text"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:Poppins;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#888888;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
+           id="tspan1">Optiland</tspan></text>
+      <text
+         xml:space="preserve"
+         id="text1-8"
+         style="font-size:19.7556px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;display:inline;fill:url(#linearGradient12);fill-opacity:1;stroke-width:0.264583;letter-spacing:0.26458333px"
+         x="102.57528"
+         y="84.345116"
+         inkscape:label="main text"><tspan
+           id="tspan3"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:19.7556px;font-family:Poppins;-inkscape-font-specification:'Poppins Medium';text-align:center;text-anchor:middle;fill:url(#linearGradient12);fill-opacity:1;stroke-width:0.264583;letter-spacing:0.26458333px">Optiland</tspan></text>
+    </g>
+  </g>
+</svg>

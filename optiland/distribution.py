@@ -335,6 +335,27 @@ class GaussianQuadrature(BaseDistribution):
         return weights
 
 
+class RingDistribution(BaseDistribution):
+    """RingDistribution class for generating points along a single ring.
+
+    """
+    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+        """Generate points along a ring at the maximum aperture value.
+
+        Args:
+            num_points (int): The number of points to generate in each ring.
+            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
+            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
+        """
+        theta = np.linspace(0, 2 * np.pi, num_points + 1)[:-1]
+
+        x = np.cos(theta)
+        y = np.sin(theta)
+
+        self.x = x * (1 - vx)
+        self.y = y * (1 - vy)
+
+
 def create_distribution(distribution_type):
     """
     Create a distribution based on the given distribution type.
@@ -356,7 +377,8 @@ def create_distribution(distribution_type):
         'random': RandomDistribution,
         'uniform': UniformDistribution,
         'hexapolar': HexagonalDistribution,
-        'cross': CrossDistribution
+        'cross': CrossDistribution,
+        'ring': RingDistribution
     }
 
     if distribution_type not in distribution_classes:
