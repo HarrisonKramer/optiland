@@ -108,7 +108,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         Returns:
             EvenAsphere: The asphere.
         """
-        required_keys = {'coordinate_system', 'radius'}
+        required_keys = {'cs', 'radius'}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
@@ -118,5 +118,5 @@ class EvenAsphere(NewtonRaphsonGeometry):
         max_iter = data.get('max_iter', 100)
         coefficients = data.get('coefficients', [])
 
-        return cls(data['coordinate_system'], data['radius'],
+        return cls(data['cs'], data['radius'],
                    conic, tol, max_iter, coefficients)
