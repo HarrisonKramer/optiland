@@ -294,7 +294,9 @@ class Surface:
         bsdf = BaseBSDF.from_dict(data['bsdf']) \
             if data['bsdf'] else None
 
-        return cls._registry[surface_type](
+        surface_class = cls._registry.get(surface_type, cls)
+
+        return surface_class(
             geometry,
             material_pre,
             material_post,
