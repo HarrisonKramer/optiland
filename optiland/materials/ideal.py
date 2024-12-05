@@ -64,4 +64,4 @@ class IdealMaterial(BaseMaterial):
         Returns:
             Material: The material.
         """
-        return cls(data['index'], data['absorp'])
+        return cls(data['index'], data.get('absorp', 0))
