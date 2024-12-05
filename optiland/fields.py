@@ -215,19 +215,18 @@ class FieldGroup:
                 'telecentric': self.telecentric}
 
     @classmethod
-    def from_dict(cls, field_group_dict):
+    def from_dict(cls, data):
         """
         Create a field group from a dictionary.
 
         Parameters:
-            field_group_dict (dict): A dictionary representation of the field
-                group.
+            data (dict): A dictionary representation of the field group.
 
         Returns:
             FieldGroup: A field group object created from the dictionary.
         """
         field_group = cls()
-        for field_dict in field_group_dict['fields']:
+        for field_dict in data['fields']:
             field_group.add_field(Field.from_dict(field_dict))
-        field_group.set_telecentric(field_group_dict['telecentric'])
+        field_group.set_telecentric(data['telecentric'])
         return field_group
