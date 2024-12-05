@@ -206,3 +206,43 @@ class Material(MaterialFile):
         database_dir = os.path.join(current_dir, '../../database/data-nk')
         full_filename = os.path.join(database_dir, filename)
         return full_filename, material_data
+
+    def to_dict(self):
+        """
+        Converts the material to a dictionary.
+
+        Returns:
+            dict: The material as a dictionary.
+        """
+        material_dict = super().to_dict()
+        material_dict.update({
+            'name': self.name,
+            'reference': self.reference,
+            'robust_search': self.robust,
+            'min_wavelength': self.min_wavelength,
+            'max_wavelength': self.max_wavelength,
+        })
+
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            Material: The material created from the dictionary.
+        """
+        if 'name' not in data:
+            raise ValueError('Missing required key: name')
+
+        return cls(
+            data['name'],
+            data.get('reference', None),
+            data.get('robust_search', True),
+            data.get('min_wavelength', None),
+            data.get('max_wavelength', None)
+        )
