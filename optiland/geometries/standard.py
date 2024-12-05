@@ -111,3 +111,37 @@ class StandardGeometry(BaseGeometry):
         nz = dfdz / mag
 
         return nx, ny, nz
+
+    def to_dict(self):
+        """Convert the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+        """
+        geometry_dict = super().to_dict()
+        geometry_dict.update({
+            'radius': self.radius,
+            'conic': self.k
+        })
+        return geometry_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a geometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the geometry.
+
+        Returns:
+            StandardGeometry: The geometry.
+        """
+        required_keys = {'coordinate_system', 'radius'}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        return cls(
+            data['coordinate_system'],
+            data['radius'],
+            data.get('conic', 0.0)
+        )
