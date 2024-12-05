@@ -95,9 +95,9 @@ class BaseGeometry(ABC):
         Returns:
             BaseGeometry: The geometry.
         """
-        geometry_type = data.get("type")
+        geometry_type = data.get('type')
         if geometry_type not in cls._registry:
-            raise ValueError(f"Unknown geometry type: {geometry_type}")
+            raise ValueError(f'Unknown geometry type: {geometry_type}')
 
         # Delegate to the correct subclass's from_dict
         return cls._registry[geometry_type].from_dict(data)
