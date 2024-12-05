@@ -84,3 +84,39 @@ class EvenAsphere(NewtonRaphsonGeometry):
         nz = -1 / mag
 
         return nx, ny, nz
+
+    def to_dict(self):
+        """
+        Converts the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+        """
+        data = super().to_dict()
+        data["coefficients"] = self.c
+
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates an asphere from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the asphere.
+
+        Returns:
+            EvenAsphere: The asphere.
+        """
+        required_keys = {'coordinate_system', 'radius'}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        conic = data.get('conic', 0.0)
+        tol = data.get('tol', 1e-10)
+        max_iter = data.get('max_iter', 100)
+        coefficients = data.get('coefficients', [])
+
+        return cls(data['coordinate_system'], data['radius'],
+                   conic, tol, max_iter, coefficients)
