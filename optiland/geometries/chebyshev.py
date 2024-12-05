@@ -183,13 +183,13 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             ChebyshevPolynomialGeometry: The Chebyshev polynomial geometry.
         """
-        required_keys = {'coordinate_system', 'radius'}
+        required_keys = {'cs', 'radius'}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
         return cls(
-            data['coordinate_system'],
+            data['cs'],
             data['radius'],
             data.get('conic', 0.0),
             data.get('tol', 1e-10),
