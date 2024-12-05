@@ -6,7 +6,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 <div align="center">
-  <img src="docs/images/optiland.svg" alt="Optiland">
+  <a href="https://optiland.readthedocs.io/">
+    <img src="https://github.com/HarrisonKramer/optiland/blob/master/docs/images/optiland.svg" alt="Optiland">
+  </a>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -106,6 +108,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Y-Ybar plots
         - Distortion / Grid distortion plots
         - Field curvature plots
+        - RMS spot size & wavefront error vs. field
+        - Pupil aberration
     - [Tutorial 3b - 1st & 3rd-Order Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_3b_First_&_Third_Order_Aberrations.ipynb)
         - Calculation of seidel, 1st & 3rd-order aberrations
     - [Tutorial 3c - Chromatic Aberrations](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_3c_Chromatic_Aberrations.ipynb)

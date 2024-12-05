@@ -517,3 +517,97 @@ class TestTelescopeTripletFieldCurvature:
                                                  abs=1e-9)
         assert f.data[2][0][5] == pytest.approx(0.06694956529269887,
                                                 abs=1e-9)
+
+
+class TestSpotVsField:
+
+    def test_rms_spot_size_vs_field_initialization(self, telescope_objective):
+        spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
+        assert spot_vs_field.num_fields == 64
+        assert np.array_equal(spot_vs_field._field[:, 1],
+                              np.linspace(0, 1, 64))
+
+    def test_rms_spot_radius(self, telescope_objective):
+        spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
+        spot_size = spot_vs_field._spot_size
+        assert spot_size.shape == \
+            (64, len(telescope_objective.wavelengths.get_wavelengths()))
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_spot_vs_field(self, mock_show, telescope_objective):
+        spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
+        spot_vs_field.view()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_spot_vs_field_larger_fig(self, mock_show,
+                                           telescope_objective):
+        spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
+        spot_vs_field.view(figsize=(12.4, 10))
+        mock_show.assert_called_once()
+        plt.close()
+
+
+class TestWavefrontErrorVsField:
+
+    def test_rms_wave_init(self, telescope_objective):
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
+            telescope_objective)
+        assert wavefront_error_vs_field.num_fields == 32
+        assert np.array_equal(wavefront_error_vs_field._field[:, 1],
+                              np.linspace(0, 1, 32))
+
+    def test_rms_wave(self, telescope_objective):
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
+            telescope_objective)
+        wavefront_error = wavefront_error_vs_field._wavefront_error
+        assert wavefront_error.shape == \
+            (32, len(telescope_objective.wavelengths.get_wavelengths()))
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_wave(self, mock_show, telescope_objective):
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
+            telescope_objective)
+        wavefront_error_vs_field.view()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_wave_larger_fig(self, mock_show, telescope_objective):
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
+            telescope_objective)
+        wavefront_error_vs_field.view(figsize=(12.4, 10))
+        mock_show.assert_called_once()
+        plt.close()
+
+
+class TestPupilAberration:
+
+    def test_initialization(self, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        assert pupil_ab.optic == telescope_objective
+        assert pupil_ab.fields == [(0.0, 0.0), (0.0, 0.7), (0.0, 1.0)]
+        assert pupil_ab.wavelengths == [0.4861, 0.5876, 0.6563]
+        assert pupil_ab.num_points == 257  # num_points is forced to be odd
+
+    def test_generate_data(self, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        data = pupil_ab._generate_data()
+        assert 'Px' in data
+        assert 'Py' in data
+        assert '(0.0, 0.0)' in data
+        assert '(0.0, 0.7)' in data
+        assert '(0.0, 1.0)' in data
+        assert '0.4861' in data['(0.0, 0.0)']
+        assert '0.5876' in data['(0.0, 0.0)']
+        assert '0.6563' in data['(0.0, 0.0)']
+        assert 'x' in data['(0.0, 0.0)']['0.4861']
+        assert 'y' in data['(0.0, 0.0)']['0.4861']
+
+    @patch('matplotlib.pyplot.show')
+    def test_view(self, mock_show, telescope_objective):
+        pupil_ab = analysis.PupilAberration(telescope_objective)
+        pupil_ab.view()
+        mock_show.assert_called_once()
+        plt.close()
