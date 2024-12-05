@@ -22,6 +22,13 @@ class BaseMaterial(ABC):
             at a given wavelength in microns.
         abbe(): Method to calculate the Abbe number of the material.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseMaterial._registry[cls.__name__] = cls
+
     @abstractmethod
     def n(self, wavelength):
         pass  # pragma: no cover
