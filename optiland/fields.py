@@ -203,3 +203,31 @@ class FieldGroup:
                 space.
         """
         self.telecentric = is_telecentric
+
+    def to_dict(self):
+        """
+        Convert the field group to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the field group.
+        """
+        return {'fields': [field.to_dict() for field in self.fields],
+                'telecentric': self.telecentric}
+
+    @classmethod
+    def from_dict(cls, field_group_dict):
+        """
+        Create a field group from a dictionary.
+
+        Parameters:
+            field_group_dict (dict): A dictionary representation of the field
+                group.
+
+        Returns:
+            FieldGroup: A field group object created from the dictionary.
+        """
+        field_group = cls()
+        for field_dict in field_group_dict['fields']:
+            field_group.add_field(Field.from_dict(field_dict))
+        field_group.set_telecentric(field_group_dict['telecentric'])
+        return field_group
