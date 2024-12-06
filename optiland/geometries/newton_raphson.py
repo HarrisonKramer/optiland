@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import warnings
 import numpy as np
 from optiland.geometries.standard import StandardGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class NewtonRaphsonGeometry(StandardGeometry, ABC):
@@ -166,9 +167,9 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
+        cs = CoordinateSystem.from_dict(data['cs'])
         conic = data.get('conic', 0.0)
         tol = data.get('tol', 1e-10)
         max_iter = data.get('max_iter', 100)
 
-        return cls(data['cs'], data['radius'],
-                   conic, tol, max_iter)
+        return cls(cs, data['radius'], conic, tol, max_iter)
