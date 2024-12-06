@@ -1,5 +1,6 @@
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
@@ -188,8 +189,10 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
+        cs = CoordinateSystem.from_dict(data['cs'])
+
         return cls(
-            data['cs'],
+            cs,
             data['radius'],
             data.get('conic', 0.0),
             data.get('tol', 1e-10),
