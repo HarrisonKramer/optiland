@@ -34,11 +34,12 @@ class BaseSolve(ABC):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, optic, data):
         """
         Creates a solve from a dictionary representation.
 
         Args:
+            optic (Optic): The optic object.
             data (dict): The dictionary representation of the solve.
 
         Returns:
@@ -48,7 +49,7 @@ class BaseSolve(ABC):
         if solve_type not in BaseSolve._registry:
             raise ValueError(f'Unknown solve type: {solve_type}')
         solve_class = BaseSolve._registry[data['type']]
-        return solve_class.from_dict(data)
+        return solve_class.from_dict(optic, data)
 
 
 class MarginalRayHeightSolve(BaseSolve):
@@ -73,6 +74,32 @@ class MarginalRayHeightSolve(BaseSolve):
         # shift current surface and all subsequent surfaces
         for surface in self.optic.surface_group.surfaces[self.surface_idx:]:
             surface.geometry.cs.z += offset
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve.
+
+        Returns:
+            dict: A dictionary representation of the solve.
+        """
+        return {
+            'surface_idx': self.surface_idx,
+            'height': self.height
+        }
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a MarginalRayHeightSolve from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve.
+
+        Returns:
+            MarginalRayHeightSolve: The solve.
+        """
+        return cls(optic, data['surface_idx'], data['height'])
 
 
 class SolveFactory:
@@ -149,6 +176,7 @@ class SolveManager:
         """
         solve = SolveFactory.create_solve(self.optic, solve_type, surface_idx,
                                           *args, **kwargs)
+        solve.apply()
         self.solves.append(solve)
 
     def apply(self):
