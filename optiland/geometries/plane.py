@@ -1,5 +1,6 @@
 import numpy as np
 from optiland.geometries.base import BaseGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class Plane(BaseGeometry):
@@ -82,4 +83,5 @@ class Plane(BaseGeometry):
         Returns:
             Plane: The plane geometry.
         """
-        return cls(data['cs'])
+        cs = CoordinateSystem.from_dict(data)
+        return cls(cs)
