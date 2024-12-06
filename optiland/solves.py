@@ -187,3 +187,32 @@ class SolveManager:
     def clear(self):
         """Clears the list of solves."""
         self.solves.clear()
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve manager.
+
+        Returns:
+            dict: A dictionary representation of the solve manager.
+        """
+        return {
+            'solves': [solve.to_dict() for solve in self.solves]
+        }
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a SolveManager from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve manager.
+
+        Returns:
+            SolveManager: The solve manager.
+        """
+        solve_manager = cls(optic)
+        for solve_data in data['solves']:
+            solve = BaseSolve.from_dict(optic, solve_data)
+            solve_manager.solves.append(solve)
+        return solve_manager
