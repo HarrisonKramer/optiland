@@ -53,6 +53,34 @@ class PickupManager:
         """Clears all pickup operations in the manager."""
         self.pickups.clear()
 
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the pickup manager.
+
+        Returns:
+            dict: A dictionary representation of the pickup manager.
+        """
+        return [pickup.to_dict() for pickup in self.pickups]
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a PickupManager object from a dictionary representation.
+
+        Parameters:
+            optic (Optic): The optic object on which the pickup operations are
+                performed.
+            data (dict): A dictionary representation of the pickup manager.
+
+        Returns:
+            PickupManager: A PickupManager object created from the dictionary
+                representation.
+        """
+        manager = cls(optic)
+        for pickup_data in data:
+            manager.add(**pickup_data)
+        return manager
+
 
 class Pickup:
     """A class representing a pickup on an optic surface
