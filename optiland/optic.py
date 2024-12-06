@@ -489,3 +489,33 @@ class Optic:
         data['fields']['field_type'] = self.field_type
         data['fields']['object_space_telecentric'] = self.obj_space_telecentric
         return data
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an optical system from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the optical system.
+
+        Returns:
+            Optic: The optical system.
+        """
+        optic = cls()
+        optic.aperture = Aperture.from_dict(data['aperture'])
+        optic.surface_group = SurfaceGroup.from_dict(data['surface_group'])
+        optic.fields = FieldGroup.from_dict(data['fields'])
+        optic.wavelengths = WavelengthGroup.from_dict(data['wavelengths'])
+        optic.pickups = PickupManager.from_dict(optic, data['pickups'])
+        optic.solves = SolveManager.from_dict(optic, data['solves'])
+
+        optic.polarization = data['wavelengths']['polarization']
+        optic.field_type = data['fields']['field_type']
+        optic.obj_space_telecentric = \
+            data['fields']['object_space_telecentric']
+
+        optic.paraxial = Paraxial(optic)
+        optic.aberrations = Aberrations(optic)
+        optic.ray_generator = RayGenerator(optic)
+
+        return optic
