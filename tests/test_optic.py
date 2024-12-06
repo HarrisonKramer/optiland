@@ -115,17 +115,15 @@ class TestOptic:
         assert len(self.optic.pickups) == 0
 
     def test_set_solve(self):
-        self.optic.add_surface(index=0, surface_type='standard',
-                               material='air', thickness=5)
-        self.optic.solves.add('marginal_ray_height', 0, height=10)
-        assert len(self.optic.solves) == 1
+        optic = HeliarLens()
+        optic.solves.add('marginal_ray_height', 6, height=10)
+        assert len(optic.solves) == 1
 
     def test_clear_solves(self):
-        self.optic.add_surface(index=0, surface_type='standard',
-                               material='air', thickness=5)
-        self.optic.solves.add('marginal_ray_height', 0, height=10)
-        self.optic.solves.clear()
-        assert len(self.optic.solves) == 0
+        optic = HeliarLens()
+        optic.solves.add('marginal_ray_height', 6, height=10)
+        optic.solves.clear()
+        assert len(optic.solves) == 0
 
     def test_scale_system(self):
         self.optic.add_surface(index=0, surface_type='standard',
