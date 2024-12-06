@@ -255,3 +255,28 @@ class SurfaceGroup:
         for surface in self.surfaces[1:-1]:
             if surface.material_pre != surface.material_post:
                 surface.set_fresnel_coating()
+
+    def to_dict(self):
+        """
+        Convert the surface group to a dictionary.
+
+        Returns:
+            dict: The surface group as a dictionary.
+        """
+        return {
+            'surfaces': [surface.to_dict() for surface in self.surfaces]
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a surface group from a dictionary.
+
+        Args:
+            data (dict): The dictionary to create the surface group from.
+
+        Returns:
+            SurfaceGroup: The surface group created from the dictionary.
+        """
+        return cls([Surface.from_dict(surface_data)
+                    for surface_data in data['surfaces']])
