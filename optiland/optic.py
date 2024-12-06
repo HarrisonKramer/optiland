@@ -468,3 +468,24 @@ class Optic:
         self.surface_group.intensity[-1, :] = rays.i
 
         return rays
+
+    def to_dict(self):
+        """
+        Convert the optical system to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the optical system.
+        """
+        data = {
+            'aperture': self.aperture.to_dict() if self.aperture else None,
+            'surface_group': self.surface_group.to_dict(),
+            'fields': self.fields.to_dict(),
+            'wavelengths': self.wavelengths.to_dict(),
+            'pickups': self.pickups.to_dict(),
+            'solves': self.solves.to_dict()
+        }
+
+        data['wavelengths']['polarization'] = self.polarization
+        data['fields']['field_type'] = self.field_type
+        data['fields']['object_space_telecentric'] = self.obj_space_telecentric
+        return data
