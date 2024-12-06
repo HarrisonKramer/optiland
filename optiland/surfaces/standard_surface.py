@@ -283,6 +283,16 @@ class Surface:
         Returns:
             Surface: The surface.
         """
+        if "type" not in data:
+            raise ValueError("Missing 'type' field.")
+
+        type_name = data["type"]
+        subclass = cls._registry.get(type_name, cls)
+        return subclass._from_dict(data)
+
+    @classmethod
+    def _from_dict(cls, data):
+        """Protected deserialization logic for direct initialization."""
         surface_type = data.get('type')
         geometry = BaseGeometry.from_dict(data['geometry'])
         material_pre = BaseMaterial.from_dict(data['material_pre'])
