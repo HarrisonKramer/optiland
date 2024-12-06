@@ -292,7 +292,14 @@ class Surface:
 
     @classmethod
     def _from_dict(cls, data):
-        """Protected deserialization logic for direct initialization."""
+        """Protected deserialization logic for direct initialization.
+
+        Args:
+            data (dict): The dictionary representation of the surface.
+
+        Returns:
+            Surface: The surface.
+        """
         surface_type = data.get('type')
         geometry = BaseGeometry.from_dict(data['geometry'])
         material_pre = BaseMaterial.from_dict(data['material_pre'])
