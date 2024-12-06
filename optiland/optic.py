@@ -477,6 +477,7 @@ class Optic:
             dict: The dictionary representation of the optical system.
         """
         data = {
+            'version': 1.0,
             'aperture': self.aperture.to_dict() if self.aperture else None,
             'surface_group': self.surface_group.to_dict(),
             'fields': self.fields.to_dict(),
