@@ -11,9 +11,44 @@ class BaseSolve(ABC):
     Raises:
         NotImplementedError: If the method is not implemented by the subclass.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseSolve._registry[cls.__name__] = cls
+
     @abstractmethod
     def apply(self):
         pass  # pragma: no cover
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve.
+
+        Returns:
+            dict: A dictionary representation of the solve.
+        """
+        return {
+            'type': self.__class__.__name__,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a solve from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the solve.
+
+        Returns:
+            BaseSolve: The solve.
+        """
+        solve_type = data['type']
+        if solve_type not in BaseSolve._registry:
+            raise ValueError(f'Unknown solve type: {solve_type}')
+        solve_class = BaseSolve._registry[data['type']]
+        return solve_class.from_dict(data)
 
 
 class MarginalRayHeightSolve(BaseSolve):
