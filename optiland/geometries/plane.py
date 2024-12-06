@@ -83,5 +83,5 @@ class Plane(BaseGeometry):
         Returns:
             Plane: The plane geometry.
         """
-        cs = CoordinateSystem.from_dict(data)
+        cs = CoordinateSystem.from_dict(data['cs'])
         return cls(cs)
