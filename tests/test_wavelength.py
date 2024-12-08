@@ -105,3 +105,7 @@ class TestWavelengthGroups:
         assert wg.get_wavelength(1) == 0.6
         assert wg.primary_wavelength.value == 0.6
         assert wg.primary_index == 1
+
+    def test_from_dict_invalid_key(self):
+        with pytest.raises(ValueError):
+            WavelengthGroup.from_dict({})
