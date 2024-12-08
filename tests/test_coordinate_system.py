@@ -88,3 +88,28 @@ def test_coordinate_system_transform():
                         [0.5316958, 0.84560449, -0.04746188],
                         [-0.56464247, 0.39568697, 0.72430014]])
     assert np.allclose(eff_rot_mat, rot_mat)
+
+
+def test_coordinate_system_to_dict():
+    cs = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
+    cs_dict = cs.to_dict()
+    assert cs_dict['x'] == 1
+    assert cs_dict['y'] == -1.0
+    assert cs_dict['z'] == 2.0
+    assert cs_dict['rx'] == 0.0
+    assert cs_dict['ry'] == 0.0
+    assert cs_dict['rz'] == 0.0
+    assert cs_dict['reference_cs'] is None
+
+
+def test_coordinate_system_from_dict():
+    cs_dict = {'x': 1, 'y': -1, 'z': 2, 'rx': 0, 'ry': 0, 'rz': 0,
+               'reference_cs': None}
+    cs = CoordinateSystem.from_dict(cs_dict)
+    assert cs.x == 1
+    assert cs.y == -1.0
+    assert cs.z == 2.0
+    assert cs.rx == 0.0
+    assert cs.ry == 0.0
+    assert cs.rz == 0.0
+    assert cs.reference_cs is None
