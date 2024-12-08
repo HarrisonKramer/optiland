@@ -1,0 +1,64 @@
+import os
+import json
+from optiland.optic import Optic
+
+
+def load_obj_from_json(cls, filepath):
+    """Load an object from a JSON file.
+
+    Note that this function can be used to load any object that has a class
+    method `from_dict` that can be used to create an instance of the class from
+    a dictionary. In Optiland, this includes most core classes, such as Optic,
+    BaseGeometry, BaseCoating, BaseMaterial, Aperture, FieldGroup,
+    WavelengthGroup, etc.
+
+    Args:
+        cls: The class of the object to load.
+        filepath: The path to the JSON file.
+
+    Returns:
+        An instance of the class
+    """
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File '{filepath}' does not exist.")
+    with open(filepath, 'r') as f:
+        data = json.load(f)
+    return cls.from_dict(data)
+
+
+def save_obj_to_json(obj, filepath):
+    """Save an object to a JSON file.
+
+    Note that this function can be used to save any object that has a method
+    `to_dict` that returns a dictionary representation of the object. In
+    Optiland, this includes most core classes, such as Optic, BaseGeometry,
+    BaseCoating, BaseMaterial, Aperture, FieldGroup, WavelengthGroup, etc.
+
+    Args:
+        obj: The object to save.
+        filepath: The path to the JSON file.
+    """
+    with open(filepath, 'w') as f:
+        json.dump(obj.to_dict(), f, indent=4)
+
+
+def load_optiland_file(filepath):
+    """Load an Optiland Optic from a JSON file.
+
+    Args:
+        filepath: The path to the JSON file.
+
+    Returns:
+        An Optic instance.
+    """
+    return load_obj_from_json(Optic, filepath)
+
+
+def save_optiland_file(obj, filepath):
+    """Save an Optiland Optic to a JSON file.
+
+    Args:
+        obj: The Optic to save.
+        filepath: The path to the JSON file.
+    """
+    save_obj_to_json(obj, filepath)

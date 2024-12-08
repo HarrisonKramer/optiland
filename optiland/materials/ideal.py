@@ -38,3 +38,30 @@ class IdealMaterial(BaseMaterial):
             float: The absorption coefficient of the material.
         """
         return self.absorp
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the material.
+
+        Returns:
+            dict: A dictionary representation of the material.
+        """
+        material_dict = super().to_dict()
+        material_dict.update({
+            'index': self.index,
+            'absorp': self.absorp
+        })
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            Material: The material.
+        """
+        return cls(data['index'], data.get('absorp', 0))

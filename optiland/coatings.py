@@ -15,6 +15,12 @@ class BaseCoating(ABC):
         reflect: Abstract method to handle reflection interaction.
         transmit: Abstract method to handle transmission interaction.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseCoating._registry[cls.__name__] = cls
 
     def interact(self, rays: RealRays, reflect: bool = False,
                  nx: np.ndarray = None, ny: np.ndarray = None,
@@ -80,6 +86,31 @@ class BaseCoating(ABC):
         """
         pass  # pragma: no cover
 
+    def to_dict(self):
+        """
+        Converts the coating to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the coating.
+        """
+        return {
+            'type': self.__class__.__name__,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a coating from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the coating.
+
+        Returns:
+            BaseCoating: The coating created from the dictionary.
+        """
+        coating_type = data['type']
+        return cls._registry[coating_type].from_dict(data)
+
 
 class SimpleCoating(BaseCoating):
     """
@@ -138,6 +169,32 @@ class SimpleCoating(BaseCoating):
         rays.i *= self.transmittance
         return rays
 
+    def to_dict(self):
+        """
+        Converts the coating to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the coating.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'transmittance': self.transmittance,
+            'reflectance': self.reflectance
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a coating from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the coating.
+
+        Returns:
+            BaseCoating: The coating created from the dictionary.
+        """
+        return cls(data['transmittance'], data['reflectance'])
+
 
 class BaseCoatingPolarized(BaseCoating, ABC):
     """
@@ -188,6 +245,32 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         rays.update(jones)
         return rays
 
+    def to_dict(self):
+        """
+        Converts the coating to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the coating.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'material_pre': self.material_pre,
+            'material_post': self.material_post
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a coating from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the coating.
+
+        Returns:
+            BaseCoating: The coating created from the dictionary.
+        """
+        return cls(data['material_pre'], data['material_post'])
+
 
 class FresnelCoating(BaseCoatingPolarized):
     """
@@ -210,3 +293,29 @@ class FresnelCoating(BaseCoatingPolarized):
         self.material_post = material_post
 
         self.jones = JonesFresnel(material_pre, material_post)
+
+    def to_dict(self):
+        """
+        Converts the coating to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the coating.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'material_pre': self.material_pre,
+            'material_post': self.material_post
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a coating from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the coating.
+
+        Returns:
+            BaseCoating: The coating created from the dictionary.
+        """
+        return cls(data['material_pre'], data['material_post'])

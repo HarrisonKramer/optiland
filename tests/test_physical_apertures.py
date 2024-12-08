@@ -23,3 +23,22 @@ class TestRadialAperture:
         aperture.scale(0.5)
         assert aperture.r_max == 2.5
         assert aperture.r_min == 1
+
+    def test_to_dict(self):
+        aperture = physical_apertures.RadialAperture(r_max=5, r_min=2)
+        assert aperture.to_dict() == {
+            'type': 'RadialAperture',
+            'r_max': 5,
+            'r_min': 2
+        }
+
+    def test_from_dict(self):
+        data = {
+            'type': 'RadialAperture',
+            'r_max': 5,
+            'r_min': 2
+        }
+        aperture = physical_apertures.RadialAperture.from_dict(data)
+        assert aperture.r_max == 5
+        assert aperture.r_min == 2
+        assert isinstance(aperture, physical_apertures.RadialAperture)

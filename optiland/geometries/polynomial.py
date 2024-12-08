@@ -1,5 +1,6 @@
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class PolynomialGeometry(NewtonRaphsonGeometry):
@@ -34,7 +35,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0,
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = coefficients
+        self.c = np.atleast_2d(coefficients)
         self.is_symmetric = False
 
         if len(self.c) == 0:
@@ -92,3 +93,41 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         nz = -1 / norm
 
         return nx, ny, nz
+
+    def to_dict(self):
+        """
+        Converts the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+        """
+        geometry_dict = super().to_dict()
+        geometry_dict['coefficients'] = self.c.tolist()
+        return geometry_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a PolynomialGeometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary containing the geometry data.
+
+        Returns:
+            PolynomialGeometry: The geometry created from the dictionary.
+        """
+        required_keys = {'cs', 'radius'}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        cs = CoordinateSystem.from_dict(data['cs'])
+
+        return cls(
+            cs,
+            data['radius'],
+            data.get('conic', 0.0),
+            data.get('tol', 1e-10),
+            data.get('max_iter', 100),
+            data.get('coefficients', [])
+        )

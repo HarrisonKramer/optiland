@@ -1,5 +1,6 @@
 import numpy as np
 from optiland.geometries.base import BaseGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class Plane(BaseGeometry):
@@ -59,3 +60,28 @@ class Plane(BaseGeometry):
                 geometry at each point.
         """
         return 0, 0, 1
+
+    def to_dict(self):
+        """Convert the plane geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the plane geometry.
+        """
+        geometry_dict = super().to_dict()
+        geometry_dict.update({
+            'radius': np.inf,
+        })
+        return geometry_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a plane geometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the plane geometry.
+
+        Returns:
+            Plane: The plane geometry.
+        """
+        cs = CoordinateSystem.from_dict(data['cs'])
+        return cls(cs)

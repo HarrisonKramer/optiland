@@ -78,6 +78,41 @@ class Wavelength:
         else:
             raise ValueError('Unsupported unit for conversion to microns.')
 
+    def to_dict(self):
+        """
+        Get a dictionary representation of the wavelength.
+
+        Returns:
+            dict: A dictionary representation of the wavelength.
+        """
+        return {
+            'value': self._value,
+            'is_primary': self.is_primary,
+            'unit': self._unit
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a Wavelength instance from a dictionary representation.
+
+        Args:
+            data (dict): A dictionary containing the wavelength data.
+
+        Returns:
+            Wavelength: A new Wavelength instance created from the data.
+        """
+        required_keys = {'value', 'is_primary', 'unit'}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        return cls(
+            value=data['value'],
+            is_primary=data['is_primary'],
+            unit=data['unit']
+        )
+
 
 class WavelengthGroup:
     """
@@ -157,3 +192,35 @@ class WavelengthGroup:
             list: A list of wavelength values.
         """
         return [wave.value for wave in self.wavelengths]
+
+    def to_dict(self):
+        """
+        Get a dictionary representation of the wavelength group.
+
+        Returns:
+            dict: A dictionary representation of the wavelength group.
+        """
+        return {
+            'wavelengths': [wave.to_dict() for wave in self.wavelengths]
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a WavelengthGroup instance from a dictionary representation.
+
+        Args:
+            data (dict): A dictionary containing the wavelength group data.
+
+        Returns:
+            WavelengthGroup: A new WavelengthGroup instance created from the
+                data.
+        """
+        if 'wavelengths' not in data:
+            raise ValueError('Missing required key: "wavelengths"')
+
+        new_group = cls()
+        for wave_data in data['wavelengths']:
+            new_group.add_wavelength(**wave_data)
+
+        return new_group

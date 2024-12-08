@@ -1,5 +1,6 @@
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+from optiland.coordinate_system import CoordinateSystem
 
 
 class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
@@ -154,3 +155,49 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             raise ValueError('Chebyshev input coordinates must be normalized '
                              'to [-1, 1]. Consider updating the normalization '
                              'factors.')
+
+    def to_dict(self):
+        """
+        Converts the Chebyshev polynomial geometry to a dictionary.
+
+        Returns:
+            dict: The Chebyshev polynomial geometry as a dictionary.
+        """
+        geometry_dict = super().to_dict()
+        geometry_dict.update({
+            'coefficients': self.c.tolist(),
+            'norm_x': self.norm_x,
+            'norm_y': self.norm_y
+        })
+
+        return geometry_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a Chebyshev polynomial geometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the Chebyshev
+                polynomial geometry.
+
+        Returns:
+            ChebyshevPolynomialGeometry: The Chebyshev polynomial geometry.
+        """
+        required_keys = {'cs', 'radius'}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        cs = CoordinateSystem.from_dict(data['cs'])
+
+        return cls(
+            cs,
+            data['radius'],
+            data.get('conic', 0.0),
+            data.get('tol', 1e-10),
+            data.get('max_iter', 100),
+            data.get('coefficients', []),
+            data.get('norm_x', 1),
+            data.get('norm_y', 1)
+        )

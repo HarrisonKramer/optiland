@@ -324,3 +324,34 @@ class MaterialFile(BaseMaterial):
             self.reference_data = data['REFERENCE']
         except KeyError:
             pass
+
+    def to_dict(self):
+        """
+        Returns the material data as a dictionary.
+
+        Returns:
+            dict: The material data.
+        """
+        material_dict = super().to_dict()
+        material_dict.update({
+            'filename': self.filename,
+        })
+
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            MaterialFile: The material.
+        """
+        if 'filename' not in data:
+            raise ValueError('Material file data missing filename.')
+
+        material = cls(data['filename'])
+        return material

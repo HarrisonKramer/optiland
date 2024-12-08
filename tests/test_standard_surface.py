@@ -86,3 +86,37 @@ class TestSurface:
         self.geometry.cs.x = 0
         self.geometry.cs.y = 0
         assert not self.surface.is_rotationally_symmetric()
+
+    def test_to_dict(self):
+        data = self.surface.to_dict()
+        assert data['type'] == 'Surface'
+
+    def test_from_dict(self):
+        data = self.surface.to_dict()
+        surface = Surface.from_dict(data)
+        assert isinstance(surface, Surface)
+        assert surface.geometry.to_dict() == self.geometry.to_dict()
+        assert surface.material_pre.to_dict() == self.material_pre.to_dict()
+        assert surface.material_post.to_dict() == self.material_post.to_dict()
+        assert surface.is_stop
+        assert surface.aperture == self.aperture
+        assert surface.coating.to_dict() == self.coating.to_dict()
+        assert surface.bsdf.to_dict() == self.bsdf.to_dict()
+        assert surface.is_reflective
+        assert surface.semi_aperture is None
+        assert np.array_equal(surface.y, np.empty(0))
+        assert np.array_equal(surface.u, np.empty(0))
+        assert np.array_equal(surface.x, np.empty(0))
+        assert np.array_equal(surface.z, np.empty(0))
+        assert np.array_equal(surface.L, np.empty(0))
+        assert np.array_equal(surface.M, np.empty(0))
+        assert np.array_equal(surface.N, np.empty(0))
+        assert np.array_equal(surface.intensity, np.empty(0))
+        assert np.array_equal(surface.aoi, np.empty(0))
+        assert np.array_equal(surface.opd, np.empty(0))
+
+    def test_from_dict_missing_type(self):
+        data = self.surface.to_dict()
+        del data['type']
+        with pytest.raises(ValueError):
+            Surface.from_dict(data)

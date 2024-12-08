@@ -66,7 +66,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert surface.geometry.c == [1, 2, 3]
+        assert np.array_equal(surface.geometry.c, np.array([[1, 2, 3]]))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert isinstance(surface.material_pre, IdealMaterial)
