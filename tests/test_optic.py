@@ -203,3 +203,15 @@ class TestOptic:
         state = create_polarization('unpolarized')
         lens.set_polarization(state)
         assert lens.polarization_state == state
+
+    def test_to_dict(self):
+        lens = HeliarLens()
+        lens_dict = lens.to_dict()
+        assert lens_dict is not None
+
+    def test_from_dict(self):
+        lens = HeliarLens()
+        lens_dict = lens.to_dict()
+        new_lens = HeliarLens.from_dict(lens_dict)
+        assert new_lens is not None
+        assert new_lens.total_track == lens.total_track
