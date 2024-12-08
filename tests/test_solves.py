@@ -61,6 +61,17 @@ class TestMarginalRayHeightSolve:
         assert solve.surface_idx == data['surface_idx']
         assert solve.height == data['height']
 
+    def test_from_dict_invalid_type(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'Invalid',
+            'surface_idx': 7,
+            'height': 0.5
+        }
+
+        with pytest.raises(ValueError):
+            solves.BaseSolve.from_dict(optic, data)
+
 
 class TestSolveFactory:
     def test_create_solve(self):
