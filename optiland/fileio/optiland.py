@@ -42,7 +42,7 @@ def save_to_json(obj, filepath):
         json.dump(obj.to_dict(), f, indent=4)
 
 
-def load(filepath):
+def load_optiland_file(filepath):
     """Load an Optiland Optic from a JSON file.
 
     Args:
@@ -54,7 +54,7 @@ def load(filepath):
     return load_from_json(Optic, filepath)
 
 
-def save(obj, filepath):
+def save_optiland_file(obj, filepath):
     """Save an Optiland Optic to a JSON file.
 
     Args:
