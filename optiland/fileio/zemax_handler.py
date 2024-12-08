@@ -13,6 +13,20 @@ from optiland.optic import Optic
 from optiland.materials import BaseMaterial, Material, AbbeMaterial
 
 
+def read_zemax_file(source):
+    """
+    Reads a Zemax file and returns an Optic object.
+
+    Args:
+        source (str): The source of the .zmx file, either a filename or a URL.
+
+    Returns:
+        Optic: An Optic object based on the Zemax data.
+    """
+    reader = ZemaxFileReader(source)
+    return reader.generate_lens()
+
+
 class ZemaxFileReader:
     """
     A class for reading Zemax files and extracting optical data.
