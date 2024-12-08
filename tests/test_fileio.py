@@ -1,9 +1,16 @@
 import os
 from unittest.mock import patch, mock_open
 import pytest
-from optiland.fileio import ZemaxFileReader
+from optiland.fileio import (
+    ZemaxFileReader,
+    load_optiland_file,
+    save_optiland_file)
+from optiland.fileio.optiland_handler import (
+    load_obj_from_json,
+    save_obj_to_json)
 from optiland.optic import Optic
 from optiland.materials import Material
+from optiland.samples.objectives import HeliarLens
 import tempfile
 
 
@@ -260,3 +267,32 @@ class TestZemaxToOpticConverter:
         zemax_file_reader.data['surfaces'][0]['type'] = 'invalid'
         with pytest.raises(ValueError, match='Unsupported surface type.'):
             zemax_file_reader.generate_lens()
+
+
+def test_save_load_json_obj():
+    mat = Material('SF11')
+    with tempfile.NamedTemporaryFile(delete=False,
+                                     mode='w',
+                                     suffix='.json') as temp_file:
+        save_obj_to_json(mat, temp_file.name)
+    assert os.path.exists(temp_file.name)
+
+    mat2 = load_obj_from_json(Material, temp_file.name)
+
+    assert mat.to_dict() == mat2.to_dict()
+
+
+def test_load_invalid_json():
+    with pytest.raises(FileNotFoundError):
+        load_obj_from_json(Material, 'non_existent_file.json')
+
+
+def test_save_load_optiland_file():
+    lens = HeliarLens()
+    with tempfile.NamedTemporaryFile(delete=False,
+                                     mode='w',
+                                     suffix='.json') as temp_file:
+        save_optiland_file(lens, temp_file.name)
+
+    lens2 = load_optiland_file(temp_file.name)
+    assert lens.to_dict() == lens2.to_dict()
