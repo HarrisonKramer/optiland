@@ -480,11 +480,11 @@ class Optic:
         data = {
             'version': 1.0,
             'aperture': self.aperture.to_dict() if self.aperture else None,
-            'surface_group': self.surface_group.to_dict(),
             'fields': self.fields.to_dict(),
             'wavelengths': self.wavelengths.to_dict(),
             'pickups': self.pickups.to_dict(),
-            'solves': self.solves.to_dict()
+            'solves': self.solves.to_dict(),
+            'surface_group': self.surface_group.to_dict()
         }
 
         data['wavelengths']['polarization'] = self.polarization
