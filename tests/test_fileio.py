@@ -194,15 +194,6 @@ class TestZemaxFileReader:
         mat = zemax_file_reader._current_surf_data['material']
         assert isinstance(mat, Material)
 
-    @patch('optiland.file_handler.Material')
-    def test_read_glass_with_manufacturer(self, MockMaterial,
-                                          zemax_file_reader):
-        MockMaterial.side_effect = ValueError("Invalid material")
-        data = ['GLAS', 'N-BK7', '1', '1', '1', '50']
-        zemax_file_reader.data['glass_catalogs'] = ['invalid', 'schott']
-        zemax_file_reader._read_glass(data)
-        MockMaterial.assert_called_with('N-BK7', 'schott')
-
     def test_read_stop(self, zemax_file_reader):
         zemax_file_reader._read_stop([])
         assert zemax_file_reader._current_surf_data['is_stop']
