@@ -63,6 +63,23 @@ class TestPlane:
         assert ny == 0.0
         assert nz == 1.0
 
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        plane = geometries.Plane(cs)
+
+        expected_dict = {'type': 'Plane',
+                         'cs': cs.to_dict(),
+                         'radius': np.inf}
+        assert plane.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        plane = geometries.Plane(cs)
+
+        plane_dict = plane.to_dict()
+        new_plane = geometries.Plane.from_dict(plane_dict)
+        assert new_plane.to_dict() == plane_dict
+
 
 class TestStandardGeometry:
     def test_sag_sphere(self):
