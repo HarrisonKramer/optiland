@@ -1,3 +1,3 @@
 # flake8: noqa
 
-from .zemax import ZemaxFileReader
+from .zemax_handler import ZemaxFileReader
