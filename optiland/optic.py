@@ -398,7 +398,8 @@ class Optic:
         """Update the image position such that the marginal ray crosses the
         optical axis at the image location."""
         ya, ua = self.paraxial.marginal_ray()
-        self.surface_group.surfaces[-1].geometry.cs.z -= ya[-1] / ua[-1]
+        offset = float(ya[-1] / ua[-1])
+        self.surface_group.surfaces[-1].geometry.cs.z -= offset
 
     def trace(self, Hx, Hy, wavelength, num_rays=100,
               distribution='hexapolar'):
