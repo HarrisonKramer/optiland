@@ -270,6 +270,8 @@ class TestEvenAsphere:
                          'cs': cs.to_dict(),
                          'radius': 10.0,
                          'conic': 0.5,
+                         'tol': 1e-10,
+                         'max_iter': 100,
                          'coefficients': [1e-2]}
         assert geometry.to_dict() == expected_dict
 
@@ -367,6 +369,8 @@ class TestPolynomialGeometry:
                          'cs': cs.to_dict(),
                          'radius': -26.0,
                          'conic': 0.1,
+                         'tol': 1e-10,
+                         'max_iter': 100,
                          'coefficients': coefficients.tolist()}
         assert geometry.to_dict() == expected_dict
 
@@ -490,6 +494,8 @@ class TestChebyshevGeometry:
                          'cs': cs.to_dict(),
                          'radius': -26.0,
                          'conic': 0.1,
+                         'tol': 1e-10,
+                         'max_iter': 100,
                          'coefficients': coefficients.tolist(),
                          'norm_x': 10,
                          'norm_y': 10}
