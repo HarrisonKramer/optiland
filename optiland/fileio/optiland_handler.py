@@ -3,7 +3,7 @@ import json
 from optiland.optic import Optic
 
 
-def load_from_json(cls, filepath):
+def load_obj_from_json(cls, filepath):
     """Load an object from a JSON file.
 
     Note that this function can be used to load any object that has a class
@@ -26,7 +26,7 @@ def load_from_json(cls, filepath):
     return cls.from_dict(data)
 
 
-def save_to_json(obj, filepath):
+def save_obj_to_json(obj, filepath):
     """Save an object to a JSON file.
 
     Note that this function can be used to save any object that has a method
@@ -51,7 +51,7 @@ def load_optiland_file(filepath):
     Returns:
         An Optic instance.
     """
-    return load_from_json(Optic, filepath)
+    return load_obj_from_json(Optic, filepath)
 
 
 def save_optiland_file(obj, filepath):
@@ -61,4 +61,4 @@ def save_optiland_file(obj, filepath):
         obj: The Optic to save.
         filepath: The path to the JSON file.
     """
-    save_to_json(obj, filepath)
+    save_obj_to_json(obj, filepath)
