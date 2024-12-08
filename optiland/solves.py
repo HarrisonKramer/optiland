@@ -82,10 +82,12 @@ class MarginalRayHeightSolve(BaseSolve):
         Returns:
             dict: A dictionary representation of the solve.
         """
-        return {
+        solve_dict = super().to_dict()
+        solve_dict.update({
             'surface_idx': self.surface_idx,
             'height': self.height
-        }
+        })
+        return solve_dict
 
     @classmethod
     def from_dict(cls, optic, data):
