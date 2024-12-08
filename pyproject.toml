@@ -37,6 +37,7 @@ packages = [
     "optiland",
     "database",
     "optiland.analysis",
+    "optiland.fileio",
     "optiland.geometries",
     "optiland.materials",
     "optiland.optimization.operand",
