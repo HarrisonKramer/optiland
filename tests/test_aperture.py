@@ -34,4 +34,4 @@ def test_from_dict():
     ap = aperture.Aperture('EPD', 10)
     ap_dict = ap.to_dict()
     ap2 = aperture.Aperture.from_dict(ap_dict)
-    assert ap2 == ap
+    assert ap2.to_dict() == ap.to_dict()
