@@ -13,9 +13,9 @@ from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.materials import BaseMaterial, Material, AbbeMaterial
 
 
-def read_zemax_file(source):
+def load_zemax_file(source):
     """
-    Reads a Zemax file and returns an Optic object.
+    Loads a Zemax file and returns an Optic object.
 
     Args:
         source (str): The source of the .zmx file, either a filename or a URL.
