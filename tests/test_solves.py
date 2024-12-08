@@ -36,6 +36,31 @@ class TestMarginalRayHeightSolve:
         ya, ua = optic.paraxial.marginal_ray()
         assert ya[surface_idx] == pytest.approx(height)
 
+    def test_to_dict(self):
+        optic = CookeTriplet()
+        surface_idx = 7
+        height = 0.5
+
+        solve = solves.MarginalRayHeightSolve(optic, surface_idx, height)
+        data = solve.to_dict()
+
+        assert data['type'] == 'MarginalRayHeightSolve'
+        assert data['surface_idx'] == surface_idx
+        assert data['height'] == height
+
+    def test_from_dict(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'MarginalRayHeightSolve',
+            'surface_idx': 7,
+            'height': 0.5
+        }
+
+        solve = solves.BaseSolve.from_dict(optic, data)
+
+        assert solve.surface_idx == data['surface_idx']
+        assert solve.height == data['height']
+
 
 class TestSolveFactory:
     def test_create_solve(self):
