@@ -35,7 +35,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
     def __init__(self, coordinate_system, radius, conic=0.0,
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = np.array(coefficients)
+        self.c = np.atleast_2d(coefficients)
         self.is_symmetric = False
 
         if len(self.c) == 0:
