@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch, mock_open
 import pytest
-from optiland.file_handler import ZemaxFileReader
+from optiland.fileio import ZemaxFileReader
 from optiland.optic import Optic
 from optiland.materials import Material
 import tempfile
