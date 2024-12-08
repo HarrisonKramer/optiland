@@ -114,3 +114,9 @@ class TestSurface:
         assert np.array_equal(surface.intensity, np.empty(0))
         assert np.array_equal(surface.aoi, np.empty(0))
         assert np.array_equal(surface.opd, np.empty(0))
+
+    def test_from_dict_missing_type(self):
+        data = self.surface.to_dict()
+        del data['type']
+        with pytest.raises(ValueError):
+            Surface.from_dict(data)
