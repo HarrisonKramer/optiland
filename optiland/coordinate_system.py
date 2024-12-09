@@ -150,12 +150,12 @@ class CoordinateSystem:
 
         """
         return {
-            'x': self.x,
-            'y': self.y,
-            'z': self.z,
-            'rx': self.rx,
-            'ry': self.ry,
-            'rz': self.rz,
+            'x': float(self.x),
+            'y': float(self.y),
+            'z': float(self.z),
+            'rx': float(self.rx),
+            'ry': float(self.ry),
+            'rz': float(self.rz),
             'reference_cs': self.reference_cs.to_dict()
             if self.reference_cs else None
         }
