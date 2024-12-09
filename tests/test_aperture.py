@@ -20,3 +20,18 @@ def test_obj_space_telecentric():
     """Confirm error raised when EPD specified with telecentric lens"""
     with pytest.raises(ValueError):
         aperture.Aperture('EPD', 5.0, object_space_telecentric=True)
+
+
+def test_to_dict():
+    """Check to_dict method"""
+    ap = aperture.Aperture('EPD', 10)
+    assert ap.to_dict() == {'type': 'EPD', 'value': 10,
+                            'object_space_telecentric': False}
+
+
+def test_from_dict():
+    """Check from_dict method"""
+    ap = aperture.Aperture('EPD', 10)
+    ap_dict = ap.to_dict()
+    ap2 = aperture.Aperture.from_dict(ap_dict)
+    assert ap2.to_dict() == ap.to_dict()

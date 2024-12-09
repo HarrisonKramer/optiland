@@ -11,9 +11,45 @@ class BaseSolve(ABC):
     Raises:
         NotImplementedError: If the method is not implemented by the subclass.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseSolve._registry[cls.__name__] = cls
+
     @abstractmethod
     def apply(self):
         pass  # pragma: no cover
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve.
+
+        Returns:
+            dict: A dictionary representation of the solve.
+        """
+        return {
+            'type': self.__class__.__name__,
+        }
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a solve from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve.
+
+        Returns:
+            BaseSolve: The solve.
+        """
+        solve_type = data['type']
+        if solve_type not in BaseSolve._registry:
+            raise ValueError(f'Unknown solve type: {solve_type}')
+        solve_class = BaseSolve._registry[data['type']]
+        return solve_class.from_dict(optic, data)
 
 
 class MarginalRayHeightSolve(BaseSolve):
@@ -38,6 +74,34 @@ class MarginalRayHeightSolve(BaseSolve):
         # shift current surface and all subsequent surfaces
         for surface in self.optic.surface_group.surfaces[self.surface_idx:]:
             surface.geometry.cs.z += offset
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve.
+
+        Returns:
+            dict: A dictionary representation of the solve.
+        """
+        solve_dict = super().to_dict()
+        solve_dict.update({
+            'surface_idx': self.surface_idx,
+            'height': self.height
+        })
+        return solve_dict
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a MarginalRayHeightSolve from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve.
+
+        Returns:
+            MarginalRayHeightSolve: The solve.
+        """
+        return cls(optic, data['surface_idx'], data['height'])
 
 
 class SolveFactory:
@@ -114,6 +178,7 @@ class SolveManager:
         """
         solve = SolveFactory.create_solve(self.optic, solve_type, surface_idx,
                                           *args, **kwargs)
+        solve.apply()
         self.solves.append(solve)
 
     def apply(self):
@@ -124,3 +189,32 @@ class SolveManager:
     def clear(self):
         """Clears the list of solves."""
         self.solves.clear()
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve manager.
+
+        Returns:
+            dict: A dictionary representation of the solve manager.
+        """
+        return {
+            'solves': [solve.to_dict() for solve in self.solves]
+        }
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a SolveManager from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve manager.
+
+        Returns:
+            SolveManager: The solve manager.
+        """
+        solve_manager = cls(optic)
+        for solve_data in data['solves']:
+            solve = BaseSolve.from_dict(optic, solve_data)
+            solve_manager.solves.append(solve)
+        return solve_manager

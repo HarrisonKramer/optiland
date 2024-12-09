@@ -398,7 +398,8 @@ class Optic:
         """Update the image position such that the marginal ray crosses the
         optical axis at the image location."""
         ya, ua = self.paraxial.marginal_ray()
-        self.surface_group.surfaces[-1].geometry.cs.z -= ya[-1] / ua[-1]
+        offset = float(ya[-1] / ua[-1])
+        self.surface_group.surfaces[-1].geometry.cs.z -= offset
 
     def trace(self, Hx, Hy, wavelength, num_rays=100,
               distribution='hexapolar'):
@@ -468,3 +469,55 @@ class Optic:
         self.surface_group.intensity[-1, :] = rays.i
 
         return rays
+
+    def to_dict(self):
+        """
+        Convert the optical system to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the optical system.
+        """
+        data = {
+            'version': 1.0,
+            'aperture': self.aperture.to_dict() if self.aperture else None,
+            'fields': self.fields.to_dict(),
+            'wavelengths': self.wavelengths.to_dict(),
+            'pickups': self.pickups.to_dict(),
+            'solves': self.solves.to_dict(),
+            'surface_group': self.surface_group.to_dict()
+        }
+
+        data['wavelengths']['polarization'] = self.polarization
+        data['fields']['field_type'] = self.field_type
+        data['fields']['object_space_telecentric'] = self.obj_space_telecentric
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an optical system from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the optical system.
+
+        Returns:
+            Optic: The optical system.
+        """
+        optic = cls()
+        optic.aperture = Aperture.from_dict(data['aperture'])
+        optic.surface_group = SurfaceGroup.from_dict(data['surface_group'])
+        optic.fields = FieldGroup.from_dict(data['fields'])
+        optic.wavelengths = WavelengthGroup.from_dict(data['wavelengths'])
+        optic.pickups = PickupManager.from_dict(optic, data['pickups'])
+        optic.solves = SolveManager.from_dict(optic, data['solves'])
+
+        optic.polarization = data['wavelengths']['polarization']
+        optic.field_type = data['fields']['field_type']
+        optic.obj_space_telecentric = \
+            data['fields']['object_space_telecentric']
+
+        optic.paraxial = Paraxial(optic)
+        optic.aberrations = Aberrations(optic)
+        optic.ray_generator = RayGenerator(optic)
+
+        return optic

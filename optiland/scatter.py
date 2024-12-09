@@ -133,6 +133,13 @@ class BaseBSDF(ABC):
         scatter(rays, nx=None, ny=None, nz=None): scatter rays according to
             the BSDF.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseBSDF._registry[cls.__name__] = cls
+
     def scatter(self, rays: RealRays, nx: np.ndarray,
                 ny: np.ndarray, nz: np.ndarray):
         """
@@ -161,6 +168,25 @@ class BaseBSDF(ABC):
         rays.N = scattered_vec[:, 2]
         return rays
 
+    def to_dict(self):
+        """
+        Convert the BSDF to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the BSDF.
+        """
+        return {
+            'type': self.__class__.__name__
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a BSDF object from a dictionary.
+        """
+        bsdf_type = data['type']
+        return cls._registry[bsdf_type].from_dict(data)
+
 
 class LambertianBSDF(BaseBSDF):
     """
@@ -171,6 +197,24 @@ class LambertianBSDF(BaseBSDF):
     """
     def __init__(self):
         self.scattering_function = get_point_lambertian
+
+    def to_dict(self):
+        """
+        Convert the BSDF to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the BSDF.
+        """
+        return {
+            'type': 'LambertianBSDF',
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a LambertianBSDF object from a dictionary.
+        """
+        return cls()
 
 
 class GaussianBSDF(BaseBSDF):
@@ -183,3 +227,22 @@ class GaussianBSDF(BaseBSDF):
     def __init__(self, sigma):
         self.sigma = sigma
         self.scattering_function = func_wrapper(get_point_gaussian, sigma)
+
+    def to_dict(self):
+        """
+        Convert the BSDF to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the BSDF.
+        """
+        return {
+            'type': 'GaussianBSDF',
+            'sigma': self.sigma,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a GaussianBSDF object from a dictionary.
+        """
+        return cls(data['sigma'])

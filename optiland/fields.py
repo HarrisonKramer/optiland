@@ -27,6 +27,39 @@ class Field:
         self.vx = vignette_factor_x
         self.vy = vignette_factor_y
 
+    def to_dict(self):
+        """
+        Convert the field to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the field.
+        """
+        return {'field_type': self.field_type,
+                'x': self.x,
+                'y': self.y,
+                'vx': self.vx,
+                'vy': self.vy}
+
+    @classmethod
+    def from_dict(cls, field_dict):
+        """
+        Create a field from a dictionary.
+
+        Parameters:
+            field_dict (dict): A dictionary representation of the field.
+
+        Returns:
+            Field: A field object created from the dictionary.
+        """
+        if 'field_type' not in field_dict:
+            raise ValueError('Missing required keys: field_type')
+
+        return cls(field_dict['field_type'],
+                   field_dict.get('x', 0),
+                   field_dict.get('y', 0),
+                   field_dict.get('vx', 0.0),
+                   field_dict.get('vy', 0.0))
+
 
 class FieldGroup:
     """
@@ -173,3 +206,30 @@ class FieldGroup:
                 space.
         """
         self.telecentric = is_telecentric
+
+    def to_dict(self):
+        """
+        Convert the field group to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the field group.
+        """
+        return {'fields': [field.to_dict() for field in self.fields],
+                'telecentric': self.telecentric}
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a field group from a dictionary.
+
+        Parameters:
+            data (dict): A dictionary representation of the field group.
+
+        Returns:
+            FieldGroup: A field group object created from the dictionary.
+        """
+        field_group = cls()
+        for field_dict in data['fields']:
+            field_group.add_field(Field.from_dict(field_dict))
+        field_group.set_telecentric(data['telecentric'])
+        return field_group

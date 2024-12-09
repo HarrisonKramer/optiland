@@ -7,9 +7,15 @@ class BaseGeometry(ABC):
     Args:
         cs (CoordinateSystem): The coordinate system of the geometry.
     """
+    _registry = {}
 
     def __init__(self, coordinate_system):
         self.cs = coordinate_system
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseGeometry._registry[cls.__name__] = cls
 
     @abstractmethod
     def sag(self, x=0, y=0):
@@ -67,3 +73,31 @@ class BaseGeometry(ABC):
             rays (RealRays): The rays to convert.
         """
         self.cs.globalize(rays)
+
+    def to_dict(self):
+        """Convert the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'cs': self.cs.to_dict()
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a geometry from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the geometry.
+
+        Returns:
+            BaseGeometry: The geometry.
+        """
+        geometry_type = data.get('type')
+        if geometry_type not in cls._registry:
+            raise ValueError(f'Unknown geometry type: {geometry_type}')
+
+        # Delegate to the correct subclass's from_dict
+        return cls._registry[geometry_type].from_dict(data)

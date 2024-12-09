@@ -63,3 +63,35 @@ class AbbeMaterial(BaseMaterial):
 
         coefficients = np.load(coefficients_file)
         return X_poly @ coefficients
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the material.
+
+        Returns:
+            dict: The dictionary representation of the material.
+        """
+        material_dict = super().to_dict()
+        material_dict.update({
+            'index': self.index,
+            'abbe': self.abbe
+        })
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            AbbeMaterial: The material object.
+        """
+        required_keys = ['index', 'abbe']
+        for key in required_keys:
+            if key not in data:
+                raise ValueError(f'Missing required key: {key}')
+
+        return cls(data['index'], data['abbe'])

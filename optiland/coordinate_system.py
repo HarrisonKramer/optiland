@@ -140,3 +140,42 @@ class CoordinateSystem:
         _, eff_rot_mat = self.get_effective_transform()
         # Convert the effective rotation matrix back to Euler angles
         return R.from_matrix(eff_rot_mat).as_euler('xyz')
+
+    def to_dict(self):
+        """
+        Convert the coordinate system to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the coordinate system.
+
+        """
+        return {
+            'x': float(self.x),
+            'y': float(self.y),
+            'z': float(self.z),
+            'rx': float(self.rx),
+            'ry': float(self.ry),
+            'rz': float(self.rz),
+            'reference_cs': self.reference_cs.to_dict()
+            if self.reference_cs else None
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a coordinate system from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the coordinate
+                system.
+
+        Returns:
+            CoordinateSystem: The coordinate system.
+
+        """
+        reference_cs = cls.from_dict(data['reference_cs']) \
+            if data['reference_cs'] else None
+
+        return cls(data.get('x', 0), data.get('y', 0), data.get('z', 0),
+                   data.get('rx', 0), data.get('ry', 0), data.get('rz', 0),
+                   reference_cs)

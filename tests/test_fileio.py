@@ -1,9 +1,16 @@
 import os
 from unittest.mock import patch, mock_open
 import pytest
-from optiland.file_handler import ZemaxFileReader
+from optiland.fileio import (
+    ZemaxFileReader,
+    load_optiland_file,
+    save_optiland_file)
+from optiland.fileio.optiland_handler import (
+    load_obj_from_json,
+    save_obj_to_json)
 from optiland.optic import Optic
 from optiland.materials import Material
+from optiland.samples.objectives import HeliarLens
 import tempfile
 
 
@@ -187,15 +194,6 @@ class TestZemaxFileReader:
         mat = zemax_file_reader._current_surf_data['material']
         assert isinstance(mat, Material)
 
-    @patch('optiland.file_handler.Material')
-    def test_read_glass_with_manufacturer(self, MockMaterial,
-                                          zemax_file_reader):
-        MockMaterial.side_effect = ValueError("Invalid material")
-        data = ['GLAS', 'N-BK7', '1', '1', '1', '50']
-        zemax_file_reader.data['glass_catalogs'] = ['invalid', 'schott']
-        zemax_file_reader._read_glass(data)
-        MockMaterial.assert_called_with('N-BK7', 'schott')
-
     def test_read_stop(self, zemax_file_reader):
         zemax_file_reader._read_stop([])
         assert zemax_file_reader._current_surf_data['is_stop']
@@ -260,3 +258,32 @@ class TestZemaxToOpticConverter:
         zemax_file_reader.data['surfaces'][0]['type'] = 'invalid'
         with pytest.raises(ValueError, match='Unsupported surface type.'):
             zemax_file_reader.generate_lens()
+
+
+def test_save_load_json_obj():
+    mat = Material('SF11')
+    with tempfile.NamedTemporaryFile(delete=False,
+                                     mode='w',
+                                     suffix='.json') as temp_file:
+        save_obj_to_json(mat, temp_file.name)
+    assert os.path.exists(temp_file.name)
+
+    mat2 = load_obj_from_json(Material, temp_file.name)
+
+    assert mat.to_dict() == mat2.to_dict()
+
+
+def test_load_invalid_json():
+    with pytest.raises(FileNotFoundError):
+        load_obj_from_json(Material, 'non_existent_file.json')
+
+
+def test_save_load_optiland_file():
+    lens = HeliarLens()
+    with tempfile.NamedTemporaryFile(delete=False,
+                                     mode='w',
+                                     suffix='.json') as temp_file:
+        save_optiland_file(lens, temp_file.name)
+
+    lens2 = load_optiland_file(temp_file.name)
+    assert lens.to_dict() == lens2.to_dict()
