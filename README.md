@@ -91,6 +91,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Magnification
         - F-Number, Entrance/Exit pupil sizes & positions
         - Focal, Principal, and Nodal points, etc.
+    - [Tutorial 1c - Saving and Loading Lenses](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1c_Save_and_Load_Files.ipynb)
+        - Saving and loading lens files in a json format
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system
