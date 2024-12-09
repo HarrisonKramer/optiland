@@ -339,8 +339,8 @@ class ZemaxFileReader:
         """
         material = data[1]
         self._current_surf_data['material'] = material
-        self._current_surf_data['index'] = float(data[4])
-        self._current_surf_data['abbe'] = float(data[5])
+        self._current_surf_data['index'] = float(data[4].replace(',', '.'))
+        self._current_surf_data['abbe'] = float(data[5].replace(',', '.'))
 
         # Generate a Material object from the material name & manufacturer
         try:
