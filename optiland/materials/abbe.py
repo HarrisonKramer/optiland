@@ -30,6 +30,8 @@ class AbbeMaterial(BaseMaterial):
         Returns:
             float: The refractive index of the material.
         """
+        if np.any(wavelength < 0.380) or np.any(wavelength > 0.750):
+            raise ValueError('Wavelength out of range for this model.')
         return np.polyval(self._p, wavelength)
 
     def k(self, wavelength):
