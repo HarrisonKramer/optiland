@@ -18,6 +18,19 @@ class TestIdealMaterial:
         assert material.k(1.0) == 0.2
         assert material.k(2.0) == 0.2
 
+    def test_ideal_to_dict(self):
+        material = materials.IdealMaterial(n=1.5, k=0.2)
+        assert material.to_dict() == {'index': 1.5, 'absorp': 0.2,
+                                      'type': materials.IdealMaterial.__name__}
+
+    def test_ideal_from_dict(self):
+        material = materials.IdealMaterial.from_dict(
+            {'index': 1.5, 'absorp': 0.2,
+             'type': materials.IdealMaterial.__name__}
+            )
+        assert material.n(0.5) == 1.5
+        assert material.k(0.5) == 0.2
+
 
 def test_mirror_material():
     mirror = materials.Mirror()
@@ -222,6 +235,25 @@ class TestMaterialFile:
         with pytest.raises(ValueError):
             material._set_formula_type('formula 2')
 
+    def test_to_dict(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/glass/ami/AMTIR-3.yml')
+        material = materials.MaterialFile(filename)
+        assert material.to_dict() == {
+            'filename': filename,
+            'type': materials.MaterialFile.__name__
+        }
+
+    def test_from_dict(self):
+        filename = os.path.join(os.path.dirname(__file__),
+                                '../database/data-nk/glass/ami/AMTIR-3.yml')
+        material_dict = {
+            'filename': filename,
+            'type': materials.MaterialFile.__name__
+        }
+        assert materials.MaterialFile.from_dict(material_dict).filename == \
+            filename
+
 
 class TestMaterial:
     def test_standard_material(self):
@@ -279,6 +311,26 @@ class TestMaterial:
             material._raise_material_error(no_matches=False,
                                            multiple_matches=False)
 
+    def test_to_dict(self):
+        material = materials.Material('SF11')
+        mat_dict = material.to_dict()
+        assert mat_dict == {
+            'type': 'Material',
+            'filename': material.filename,
+            'name': 'SF11',
+            'reference': None,
+            'robust_search': True,
+            'min_wavelength': None,
+            'max_wavelength': None
+        }
+
+    def test_from_dict(self):
+        material_dict = {
+            'name': 'SF11',
+            'type': materials.Material.__name__
+        }
+        assert materials.Material.from_dict(material_dict).name == 'SF11'
+
 
 @pytest.fixture
 def abbe_material():
@@ -306,3 +358,19 @@ def test_refractive_index_different_wavelengths(abbe_material):
     wavelengths = [0.4, 0.5, 0.6, 0.7]  # in microns
     for wavelength in wavelengths:
         assert isinstance(abbe_material.n(wavelength), float)
+
+
+def test_abbe_to_dict(abbe_material):
+    abbe_dict = abbe_material.to_dict()
+    assert abbe_dict == {'type': 'AbbeMaterial', 'index': 1.5, 'abbe': 50}
+
+
+def test_abbe_from_dict():
+    abbe_dict = {
+        'type': 'AbbeMaterial',
+        'index': 1.5,
+        'abbe': 50
+    }
+    abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
+    assert abbe_material.index == 1.5
+    assert abbe_material.abbe == 50

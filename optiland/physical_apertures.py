@@ -14,6 +14,12 @@ class BaseAperture(ABC):
     Methods:
         clip(RealRays): Clips the given rays based on the aperture's shape.
     """
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BaseAperture._registry[cls.__name__] = cls
 
     def clip(self, rays):
         """
@@ -36,6 +42,31 @@ class BaseAperture(ABC):
             scale_factor (float): The factor by which to scale the aperture.
         """
         pass  # pragma: no cover
+
+    def to_dict(self):
+        """
+        Convert the aperture to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the aperture.
+        """
+        return {
+            'type': self.__class__.__name__
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an aperture from a dictionary representation.
+
+        Parameters:
+            data (dict): The dictionary representation of the aperture.
+
+        Returns:
+            BaseAperture: The aperture object.
+        """
+        aperture_type = data['type']
+        return cls._registry[aperture_type].from_dict(data)
 
 
 class RadialAperture(BaseAperture):
@@ -73,3 +104,28 @@ class RadialAperture(BaseAperture):
         """
         self.r_max *= scale_factor
         self.r_min *= scale_factor
+
+    def to_dict(self):
+        """
+        Convert the aperture to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the aperture.
+        """
+        aperture_dict = super().to_dict()
+        aperture_dict['r_max'] = self.r_max
+        aperture_dict['r_min'] = self.r_min
+        return aperture_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an aperture from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the aperture.
+
+        Returns:
+            RadialAperture: The aperture object.
+        """
+        return cls(data['r_max'], data['r_min'])

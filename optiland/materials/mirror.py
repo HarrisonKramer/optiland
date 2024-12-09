@@ -14,3 +14,16 @@ class Mirror(IdealMaterial):
 
     def __init__(self):
         super().__init__(n=-1.0, k=0.0)
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create a mirror material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the mirror material.
+
+        Returns:
+            Mirror: The mirror material.
+        """
+        return Mirror()

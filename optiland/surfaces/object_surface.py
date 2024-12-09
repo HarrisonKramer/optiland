@@ -1,6 +1,8 @@
 import numpy as np
 from optiland.rays import RealRays, ParaxialRays
 from optiland.surfaces.standard_surface import Surface
+from optiland.materials import BaseMaterial
+from optiland.geometries import BaseGeometry
 
 
 class ObjectSurface(Surface):
@@ -86,3 +88,28 @@ class ObjectSurface(Surface):
             RealRays: The interacted rays.
         """
         return rays
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the surface.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'geometry': self.geometry.to_dict(),
+            'material_post': self.material_post.to_dict()
+        }
+
+    @classmethod
+    def _from_dict(cls, data):
+        """
+        Creates a surface from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the surface.
+
+        Returns:
+            Surface: The surface.
+        """
+        geometry = BaseGeometry.from_dict(data['geometry'])
+        material_post = BaseMaterial.from_dict(data['material_post'])
+        return cls(geometry, material_post)

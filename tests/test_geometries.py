@@ -5,6 +5,11 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland import geometries
 
 
+def test_unknown_geometry():
+    with pytest.raises(ValueError):
+        geometries.BaseGeometry.from_dict({'type': 'UnknownGeometry'})
+
+
 class TestPlane:
     def test_plane_sag(self):
         cs = CoordinateSystem()
@@ -62,6 +67,23 @@ class TestPlane:
         assert nx == 0.0
         assert ny == 0.0
         assert nz == 1.0
+
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        plane = geometries.Plane(cs)
+
+        expected_dict = {'type': 'Plane',
+                         'cs': cs.to_dict(),
+                         'radius': np.inf}
+        assert plane.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        plane = geometries.Plane(cs)
+
+        plane_dict = plane.to_dict()
+        new_plane = geometries.Plane.from_dict(plane_dict)
+        assert new_plane.to_dict() == plane_dict
 
 
 class TestStandardGeometry:
@@ -161,6 +183,24 @@ class TestStandardGeometry:
         assert ny == pytest.approx(0.2025478734167333, abs=1e-10)
         assert nz == pytest.approx(-0.9740215340114144, abs=1e-10)
 
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
+
+        expected_dict = {'type': 'StandardGeometry',
+                         'cs': cs.to_dict(),
+                         'radius': 10.0,
+                         'conic': 0.5}
+        assert geometry.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
+
+        geometry_dict = geometry.to_dict()
+        new_geometry = geometries.StandardGeometry.from_dict(geometry_dict)
+        assert new_geometry.to_dict() == geometry_dict
+
 
 class TestEvenAsphere:
     def test_sag(self):
@@ -220,6 +260,29 @@ class TestEvenAsphere:
         assert nx == pytest.approx(0.11946945186789681, abs=1e-10)
         assert ny == pytest.approx(0.23893890373579363, abs=1e-10)
         assert nz == pytest.approx(-0.9636572265862595, abs=1e-10)
+
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=10.0, conic=0.5,
+                                          coefficients=[1e-2])
+
+        expected_dict = {'type': 'EvenAsphere',
+                         'cs': cs.to_dict(),
+                         'radius': 10.0,
+                         'conic': 0.5,
+                         'tol': 1e-10,
+                         'max_iter': 100,
+                         'coefficients': [1e-2]}
+        assert geometry.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=10.0, conic=0.5,
+                                          coefficients=[1e-2])
+
+        geometry_dict = geometry.to_dict()
+        new_geometry = geometries.EvenAsphere.from_dict(geometry_dict)
+        assert new_geometry.to_dict() == geometry_dict
 
 
 class TestPolynomialGeometry:
@@ -292,6 +355,37 @@ class TestPolynomialGeometry:
         assert nx == pytest.approx(0.4373017765693584, abs=1e-10)
         assert ny == pytest.approx(-0.04888445345459283, abs=1e-10)
         assert nz == pytest.approx(-0.8979852261700794, abs=1e-10)
+
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, 2e-3]
+        coefficients[1] = [0.1, -1e-2, 1e-3]
+        coefficients[2] = [0.2, 1e-2, 2e-4]
+        geometry = geometries.PolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                 coefficients=coefficients)
+
+        expected_dict = {'type': 'PolynomialGeometry',
+                         'cs': cs.to_dict(),
+                         'radius': -26.0,
+                         'conic': 0.1,
+                         'tol': 1e-10,
+                         'max_iter': 100,
+                         'coefficients': coefficients.tolist()}
+        assert geometry.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, 2e-3]
+        coefficients[1] = [0.1, -1e-2, 1e-3]
+        coefficients[2] = [0.2, 1e-2, 2e-4]
+        geometry = geometries.PolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                 coefficients=coefficients)
+
+        geometry_dict = geometry.to_dict()
+        new_geometry = geometries.PolynomialGeometry.from_dict(geometry_dict)
+        assert new_geometry.to_dict() == geometry_dict
 
 
 class TestChebyshevGeometry:
@@ -384,3 +478,41 @@ class TestChebyshevGeometry:
 
         with pytest.raises(ValueError):
             geometry.sag(100, 100)
+
+    def test_to_dict(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        expected_dict = {'type': 'ChebyshevPolynomialGeometry',
+                         'cs': cs.to_dict(),
+                         'radius': -26.0,
+                         'conic': 0.1,
+                         'tol': 1e-10,
+                         'max_iter': 100,
+                         'coefficients': coefficients.tolist(),
+                         'norm_x': 10,
+                         'norm_y': 10}
+        assert geometry.to_dict() == expected_dict
+
+    def test_from_dict(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=-26.0, conic=0.1,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+
+        geometry_dict = geometry.to_dict()
+        new_geometry = \
+            geometries.ChebyshevPolynomialGeometry.from_dict(geometry_dict)
+        assert new_geometry.to_dict() == geometry_dict

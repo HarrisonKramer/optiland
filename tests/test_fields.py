@@ -95,3 +95,53 @@ def test_field_group_telecentric():
 
     f.set_telecentric(True)
     assert f.telecentric is True
+
+
+def test_field_to_dict():
+    f = fields.Field('angle', 0, 0)
+    assert f.to_dict() == {'field_type': 'angle', 'x': 0, 'y': 0,
+                           'vx': 0, 'vy': 0}
+
+
+def test_field_group_to_dict():
+    input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
+    f = fields.FieldGroup()
+    for field_data in input_data:
+        new_field = fields.Field('angle', *field_data)
+        f.add_field(new_field)
+
+    assert f.to_dict() == {'fields': [{'field_type': 'angle', 'x': 0, 'y': 0,
+                                       'vx': 0, 'vy': 0},
+                                      {'field_type': 'angle', 'x': 2.5, 'y': 0,
+                                       'vx': 0, 'vy': 0},
+                                      {'field_type': 'angle', 'x': 0, 'y': 2,
+                                       'vx': 0, 'vy': 0},
+                                      {'field_type': 'angle', 'x': 4, 'y': 3,
+                                       'vx': 0, 'vy': 0}],
+                           'telecentric': False}
+
+
+def test_field_from_dict():
+    f = fields.Field.from_dict({'field_type': 'angle', 'x': 0, 'y': 0,
+                                'vx': 0, 'vy': 0})
+    assert f.field_type == 'angle'
+    assert f.x == 0
+    assert f.y == 0
+    assert f.vx == 0
+    assert f.vy == 0
+
+
+def test_field_group_from_dict():
+    f = fields.FieldGroup.from_dict(
+        {'fields': [
+            {'field_type': 'angle', 'x': 0, 'y': 0, 'vx': 0, 'vy': 0},
+            {'field_type': 'angle', 'x': 2.5, 'y': 0, 'vx': 0, 'vy': 0},
+            {'field_type': 'angle', 'x': 0, 'y': 2, 'vx': 0, 'vy': 0},
+            {'field_type': 'angle', 'x': 4, 'y': 3, 'vx': 0, 'vy': 0}],
+            'telecentric': False}
+            )
+    assert f.get_field(0).x == 0
+    assert f.get_field(0).y == 0
+    assert f.get_field(3).x == 4
+    assert f.get_field(3).y == 3
+    assert f.telecentric is False

@@ -33,6 +33,30 @@ class TestWavelengths:
         assert wl._unit == 'mm'
         assert wl.value == 500000
 
+    def test_to_dict(self):
+        wl = Wavelength(500, unit='nm')
+        assert wl.to_dict() == {'value': 500, 'unit': 'nm',
+                                'is_primary': True}
+
+    def test_from_dict(self):
+        wl_dict = {'value': 500, 'unit': 'nm', 'is_primary': True}
+        wl = Wavelength.from_dict(wl_dict)
+        assert wl.value == 0.5
+        assert wl.unit == 'um'
+        assert wl.is_primary is True
+
+    def test_is_primary(self):
+        wl = Wavelength(500, is_primary=True, unit='nm')
+        assert wl.is_primary is True
+
+    def test_is_not_primary(self):
+        wl = Wavelength(500, is_primary=False, unit='nm')
+        assert wl.is_primary is False
+
+    def test_is_primary_default(self):
+        wl = Wavelength(500, unit='nm')
+        assert wl.is_primary is True
+
 
 class TestWavelengthGroups:
     def test_add_wavelength(self):
@@ -60,3 +84,28 @@ class TestWavelengthGroups:
         wg.add_wavelength(500, unit='nm')
         wg.add_wavelength(600, unit='nm')
         assert wg.get_wavelengths() == [0.5, 0.6]
+
+    def test_to_dict(self):
+        wg = WavelengthGroup()
+        wg.add_wavelength(500, unit='nm')
+        wg.add_wavelength(600, unit='nm')
+        assert wg.to_dict() == {'wavelengths': [{'value': 500, 'unit': 'nm',
+                                                 'is_primary': False},
+                                                {'value': 600, 'unit': 'nm',
+                                                 'is_primary': True}]}
+
+    def test_from_dict(self):
+        wg_dict = {'wavelengths': [{'value': 500, 'unit': 'nm',
+                                    'is_primary': False},
+                                   {'value': 600, 'unit': 'nm',
+                                    'is_primary': True}]}
+        wg = WavelengthGroup.from_dict(wg_dict)
+        assert wg.num_wavelengths == 2
+        assert wg.get_wavelength(0) == 0.5
+        assert wg.get_wavelength(1) == 0.6
+        assert wg.primary_wavelength.value == 0.6
+        assert wg.primary_index == 1
+
+    def test_from_dict_invalid_key(self):
+        with pytest.raises(ValueError):
+            WavelengthGroup.from_dict({})

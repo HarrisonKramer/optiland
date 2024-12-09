@@ -33,6 +33,7 @@ class Surface:
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
     """
+    _registry = {}  # registry for all surfaces
 
     def __init__(self,
                  geometry: BaseGeometry,
@@ -54,6 +55,11 @@ class Surface:
         self.is_reflective = is_reflective
 
         self.reset()
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        Surface._registry[cls.__name__] = cls
 
     def trace(self, rays: BaseRays):
         """
@@ -249,3 +255,71 @@ class Surface:
             return False
 
         return True
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the surface.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'geometry': self.geometry.to_dict(),
+            'material_pre': self.material_pre.to_dict(),
+            'material_post': self.material_post.to_dict(),
+            'is_stop': self.is_stop,
+            'aperture': self.aperture.to_dict() if self.aperture else None,
+            'coating': self.coating.to_dict() if self.coating else None,
+            'bsdf': self.bsdf.to_dict() if self.bsdf else None,
+            'is_reflective': self.is_reflective
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a surface from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the surface.
+
+        Returns:
+            Surface: The surface.
+        """
+        if "type" not in data:
+            raise ValueError("Missing 'type' field.")
+
+        type_name = data["type"]
+        subclass = cls._registry.get(type_name, cls)
+        return subclass._from_dict(data)
+
+    @classmethod
+    def _from_dict(cls, data):
+        """Protected deserialization logic for direct initialization.
+
+        Args:
+            data (dict): The dictionary representation of the surface.
+
+        Returns:
+            Surface: The surface.
+        """
+        surface_type = data.get('type')
+        geometry = BaseGeometry.from_dict(data['geometry'])
+        material_pre = BaseMaterial.from_dict(data['material_pre'])
+        material_post = BaseMaterial.from_dict(data['material_post'])
+        aperture = BaseAperture.from_dict(data['aperture']) \
+            if data['aperture'] else None
+        coating = BaseCoating.from_dict(data['coating']) \
+            if data['coating'] else None
+        bsdf = BaseBSDF.from_dict(data['bsdf']) \
+            if data['bsdf'] else None
+
+        surface_class = cls._registry.get(surface_type, cls)
+
+        return surface_class(
+            geometry,
+            material_pre,
+            material_post,
+            data['is_stop'],
+            aperture,
+            coating,
+            bsdf,
+            data['is_reflective']
+            )

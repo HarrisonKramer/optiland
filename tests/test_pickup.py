@@ -41,6 +41,32 @@ class TestPickup:
         with pytest.raises(ValueError):
             pickup._set_value(5.0)
 
+    def test_to_dict(self):
+        lens = CookeTriplet()
+        pickup = Pickup(lens, 1, 'radius', 2, scale=2, offset=3)
+        d = pickup.to_dict()
+        assert d['source_surface_idx'] == 1
+        assert d['attr_type'] == 'radius'
+        assert d['target_surface_idx'] == 2
+        assert d['scale'] == 2
+        assert d['offset'] == 3
+
+    def test_from_dict(self):
+        lens = CookeTriplet()
+        d = {
+            'source_surface_idx': 1,
+            'attr_type': 'radius',
+            'target_surface_idx': 2,
+            'scale': 2,
+            'offset': 3
+        }
+        pickup = Pickup.from_dict(lens, d)
+        assert pickup.source_surface_idx == 1
+        assert pickup.attr_type == 'radius'
+        assert pickup.target_surface_idx == 2
+        assert pickup.scale == 2
+        assert pickup.offset == 3
+
 
 class TestPickupManager:
 
@@ -65,3 +91,32 @@ class TestPickupManager:
         manager.add(1, 'radius', 2, scale=2, offset=3)
         manager.clear()
         assert len(manager) == 0
+
+    def test_to_dict(self):
+        lens = CookeTriplet()
+        manager = PickupManager(lens)
+        manager.add(1, 'radius', 2, scale=2, offset=3)
+        d = manager.to_dict()
+        assert len(d) == 1
+        assert d[0]['source_surface_idx'] == 1
+        assert d[0]['attr_type'] == 'radius'
+        assert d[0]['target_surface_idx'] == 2
+        assert d[0]['scale'] == 2
+        assert d[0]['offset'] == 3
+
+    def test_from_dict(self):
+        lens = CookeTriplet()
+        d = [{
+            'source_surface_idx': 1,
+            'attr_type': 'radius',
+            'target_surface_idx': 2,
+            'scale': 2,
+            'offset': 3
+        }]
+        manager = PickupManager.from_dict(lens, d)
+        assert len(manager) == 1
+        assert manager.pickups[0].source_surface_idx == 1
+        assert manager.pickups[0].attr_type == 'radius'
+        assert manager.pickups[0].target_surface_idx == 2
+        assert manager.pickups[0].scale == 2
+        assert manager.pickups[0].offset == 3

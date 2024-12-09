@@ -27,7 +27,7 @@
 </details>
 
 ## Introduction
-**Optiland** is a Python-based, open-source lens design and analysis framework. With a simple and intuitive Python interface, Optiland enables the design, optimization, and analysis of complex optical systems, from paraxial and real raytracing to polarization, coatings, and wavefront analyses. It supports 2D/3D visualization, comprehensive tolerancing, local and global optimization, and freeform optics, among other features. Built on the speed of [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/), Optiland delivers computational efficiency and flexibility across a wide range of optical tasks.
+**Optiland** is a Python-based, open-source optical design and analysis framework. With a simple and intuitive Python interface, Optiland enables the design, optimization, and analysis of complex optical systems, from paraxial and real raytracing to polarization, coatings, and wavefront analyses. It supports 2D/3D visualization, comprehensive tolerancing, local and global optimization, and freeform optics, among other features. Built on the speed of [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/), Optiland delivers computational efficiency and flexibility across a wide range of optical tasks.
 
 Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb), see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide), or read the full documentation at [Read the Docs](https://optiland.readthedocs.io/).
 
@@ -91,6 +91,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Magnification
         - F-Number, Entrance/Exit pupil sizes & positions
         - Focal, Principal, and Nodal points, etc.
+    - [Tutorial 1c - Saving and Loading Lenses](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1c_Save_and_Load_Files.ipynb)
+        - Saving and loading lens files in a json format
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system

@@ -53,6 +53,34 @@ class PickupManager:
         """Clears all pickup operations in the manager."""
         self.pickups.clear()
 
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the pickup manager.
+
+        Returns:
+            dict: A dictionary representation of the pickup manager.
+        """
+        return [pickup.to_dict() for pickup in self.pickups]
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a PickupManager object from a dictionary representation.
+
+        Parameters:
+            optic (Optic): The optic object on which the pickup operations are
+                performed.
+            data (dict): A dictionary representation of the pickup manager.
+
+        Returns:
+            PickupManager: A PickupManager object created from the dictionary
+                representation.
+        """
+        manager = cls(optic)
+        for pickup_data in data:
+            manager.add(**pickup_data)
+        return manager
+
 
 class Pickup:
     """A class representing a pickup on an optic surface
@@ -140,3 +168,34 @@ class Pickup:
             self.optic.set_thickness(value, self.target_surface_idx)
         else:
             raise ValueError('Invalid source attribute')
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the pickup operation.
+
+        Returns:
+            dict: A dictionary representation of the pickup operation.
+        """
+        return {
+            'source_surface_idx': self.source_surface_idx,
+            'attr_type': self.attr_type,
+            'target_surface_idx': self.target_surface_idx,
+            'scale': self.scale,
+            'offset': self.offset
+        }
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a Pickup object from a dictionary representation.
+
+        Parameters:
+            optic (Optic): The optic object on which the pickup operation is
+                performed.
+            data (dict): A dictionary representation of the pickup operation.
+
+        Returns:
+            Pickup: A Pickup object created from the dictionary representation.
+        """
+        return cls(optic, data['source_surface_idx'], data['attr_type'],
+                   data['target_surface_idx'], data['scale'], data['offset'])
