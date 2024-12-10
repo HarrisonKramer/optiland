@@ -447,6 +447,11 @@ class Optic:
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
         """
+        vx, vy = self.fields.get_vig_factor(Hx, Hy)
+
+        Px *= (1 - vx)
+        Py *= (1 - vy)
+
         # assure all variables are arrays of the same size
         max_size = max([np.size(arr) for arr in [Hx, Hy, Px, Py]])
         Hx, Hy, Px, Py = [
