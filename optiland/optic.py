@@ -418,13 +418,12 @@ class Optic:
         Returns:
             RealRays: The RealRays object containing the traced rays.
         """
-        vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
-            distribution.generate_points(num_rays, vx, vy)
-        Px = distribution.x * (1 - vx)
-        Py = distribution.y * (1 - vy)
+            distribution.generate_points(num_rays)
+        Px = distribution.x
+        Py = distribution.y
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
         self.surface_group.trace(rays)

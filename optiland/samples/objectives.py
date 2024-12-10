@@ -6,8 +6,6 @@ class TripletTelescopeObjective(optic.Optic):
     def __init__(self):
         super().__init__()
 
-        self.surface_group.surfaces = []
-
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(index=1, radius=50.098, thickness=4.5,
                          material='N-BK7', is_stop=True)
@@ -30,8 +28,6 @@ class TripletTelescopeObjective(optic.Optic):
         self.add_wavelength(value=0.4861)
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
-
-        self.update_paraxial()
 
 
 class CookeTriplet(optic.Optic):
