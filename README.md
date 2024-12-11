@@ -201,5 +201,11 @@ We welcome suggestions for additional features! If there's something you'd like 
 Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
 
 
-## Contact
+## Contact and Support
+If you have questions, find a bug, have suggestions for new features, or need help, please open an issue in the GitHub repository. This ensures that your concern is visible to others, can be discussed collaboratively, and helps build a public archive of solutions for similar inquiries in the future.
+
+[Open an Issue](https://github.com/HarrisonKramer/optiland/issues)
+
+While I prefer issues as the primary means of communication, you may also contact me via email if necessary.
+
 Kramer Harrison - kdanielharrison@gmail.com
