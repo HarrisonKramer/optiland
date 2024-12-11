@@ -215,3 +215,7 @@ class TestOptic:
         new_lens = HeliarLens.from_dict(lens_dict)
         assert new_lens is not None
         assert new_lens.total_track == lens.total_track
+
+    def test_invalid_field_type(self):
+        with pytest.raises(ValueError):
+            self.optic.set_field_type('invalid')
