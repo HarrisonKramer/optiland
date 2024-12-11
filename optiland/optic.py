@@ -165,7 +165,7 @@ class Optic:
         Args:
             field_type (str): The type of field.
         """
-        if field_type not in ['angle', 'height']:
+        if field_type not in ['angle', 'object_height']:
             raise ValueError('Invalid field type. Must be "angle" '
                              'or "object_height".')
         self.field_type = field_type
