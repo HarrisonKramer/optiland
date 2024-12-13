@@ -5,7 +5,7 @@ This section covers the tolerancing capabilities of Optiland. Tolerancing is use
 acceptable limits of variation in the manufacturing of optical components and systems.
 These variations can arise due to imperfections in the manufacturing process, such as slight 
 deviations in the shape or alignment of optical elements. Tolerancing ensures that despite these 
-imperfections, the optical system will still perform within acceptable parameters.
+imperfections, the performance of an optical system will still fall within an acceptable range.
 
 In Optiland, tolerancing is performed via sensitivity analysis or Monte Carlo simulations.
 
