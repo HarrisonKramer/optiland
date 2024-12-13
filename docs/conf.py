@@ -17,6 +17,7 @@ extensions = ['sphinx.ext.autodoc',
               'nbsphinx',
               'sphinx_gallery.gen_gallery']
 
+add_module_names = False  # Remove module names from class and function names
 autosummary_generate = True  # Automatically generate summaries
 
 templates_path = ['_templates']
