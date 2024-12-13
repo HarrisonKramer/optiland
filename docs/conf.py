@@ -7,11 +7,12 @@ sys.path.insert(0, os.path.abspath('..'))
 project = 'Optiland'
 copyright = '2024, Kramer Harrison'
 author = 'Kramer Harrison'
-release = '0.1.5'
+release = '0.2.0'
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.napoleon',
+              "sphinx.ext.intersphinx",
               'sphinx.ext.viewcode',
               'nbsphinx',
               'sphinx_gallery.gen_gallery']
