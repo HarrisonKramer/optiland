@@ -1,7 +1,7 @@
 """Optic Module
 
 This is the core module of Optiland, which provides the class to define
-generic optical systems. The Optic class encapsulates the core properties 
+generic optical systems. The Optic class encapsulates the core properties
 of an optical system, such as the aperture, fields, surfaces, and
 wavelengths. It also provides methods to draw the optical system, trace rays,
 and perform paraxial and aberration analyses. Instances of the Optic class
