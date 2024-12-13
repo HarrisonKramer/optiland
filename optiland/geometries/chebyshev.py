@@ -1,3 +1,22 @@
+"""Chebyshev Geometry
+
+The Chebyshev polynomial geometry represents a surface defined by a Chebyshev
+polynomial in two dimensions. The surface is defined as:
+
+z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
+    sum(Cij * T_i(x / norm_x) * T_j(y / norm_y))
+
+where
+- r^2 = x^2 + y^2
+- R is the radius of curvature
+- k is the conic constant
+- Cij are the Chebyshev polynomial coefficients
+- T_i(x) is the Chebyshev polynomial of the first kind of degree i
+- norm_x and norm_y are normalization factors for the x and y coordinates
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 from optiland.coordinate_system import CoordinateSystem
