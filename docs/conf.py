@@ -35,3 +35,15 @@ autodoc_mock_imports = ['numpy', 'yaml', 'scipy', 'matplotlib', 'numba',
                         'pandas']
 
 pygments_style = 'sphinx'
+
+# Autodoc configuration: include only public members by default
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": False,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": True,
+}
+
+# Enable autosummary
+autosummary_generate = True
