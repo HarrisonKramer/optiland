@@ -27,19 +27,35 @@ Operands
 
 The `optimization.operand` subpackage contains the following modules:
 
-.. toctree::
-   :maxdepth: 1
-   :glob:
+.. autosummary::
+   :toctree: optimization/operand/
+   :caption: Operand Modules
+   :recursive:
 
-   optimization/operand/*
+   optimization.operand.aberration
+   optimization.operand.operand
+   optimization.operand.paraxial
+   optimization.operand.ray
+
 
 Variables
 ---------
 
 The `optimization.variable` subpackage contains the following modules:
 
-.. toctree::
-   :maxdepth: 1
-   :glob:
+.. autosummary::
+   :toctree: optimization/variable/
+   :caption: Variable Submodules
+   :recursive:
 
-   optimization/variable/*
+   optimization.variable.asphere_coeff
+   optimization.variable.base
+   optimization.variable.chebyshev_coeff
+   optimization.variable.conic
+   optimization.variable.decenter
+   optimization.variable.index
+   optimization.variable.polynomial_coeff
+   optimization.variable.radius
+   optimization.variable.thickness
+   optimization.variable.tilt
+   optimization.variable.variable
