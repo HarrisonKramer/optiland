@@ -44,6 +44,3 @@ autodoc_default_options = {
     "special-members": False,
     "inherited-members": True,
 }
-
-# Enable autosummary
-autosummary_generate = True
