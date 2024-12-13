@@ -7,4 +7,4 @@ This section covers coating functionality of the Optiland package.
    :toctree: coatings/
    :caption: Coating Modules
 
-   optiland.coatings
+   coatings

@@ -7,12 +7,12 @@ This section covers the various analysis functionalities of the Optiland package
    :toctree: analysis/
    :caption: Analysis Modules
 
-   optiland.analysis.distortion
-   optiland.analysis.encircled_energy
-   optiland.analysis.field_curvature
-   optiland.analysis.grid_distortion
-   optiland.analysis.pupil_aberration
-   optiland.analysis.ray_fan
-   optiland.analysis.rms_vs_field
-   optiland.analysis.spot_diagram
-   optiland.analysis.y_ybar
+   analysis.distortion
+   analysis.encircled_energy
+   analysis.field_curvature
+   analysis.grid_distortion
+   analysis.pupil_aberration
+   analysis.ray_fan
+   analysis.rms_vs_field
+   analysis.spot_diagram
+   analysis.y_ybar

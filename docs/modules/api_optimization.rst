@@ -19,13 +19,13 @@ Core Functionalities
    :toctree: optimization/
    :caption: Optimization Modules
 
-   optiland.optimization.optimization
+   optimization.optimization
 
 
 Operands
 --------
 
-The `optiland.optimization.operand` subpackage contains the following modules:
+The `optimization.operand` subpackage contains the following modules:
 
 .. toctree::
    :maxdepth: 1
@@ -36,7 +36,7 @@ The `optiland.optimization.operand` subpackage contains the following modules:
 Variables
 ---------
 
-The `optiland.optimization.variable` subpackage contains the following modules:
+The `optimization.variable` subpackage contains the following modules:
 
 .. toctree::
    :maxdepth: 1

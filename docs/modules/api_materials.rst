@@ -13,7 +13,7 @@ can be accessed by name via the Material class.
    :toctree: materials/
    :caption: Material Modules
 
-   optiland.materials.abbe
-   optiland.materials.ideal
-   optiland.materials.material_file
-   optiland.materials.material
+   materials.abbe
+   materials.ideal
+   materials.material_file
+   materials.material

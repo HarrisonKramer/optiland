@@ -1,12 +1,12 @@
-﻿aperture
+﻿paraxial
 ========
 
-.. automodule:: aperture
+.. automodule:: paraxial
 
    
    .. rubric:: Classes
 
    .. autosummary::
    
-      Aperture
+      Paraxial
    

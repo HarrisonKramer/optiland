@@ -1,11 +1,12 @@
-Coordinate System
-=================
+﻿coordinate\_system
+==================
 
-This module contains the definition of the coordinate system class.
+.. automodule:: coordinate_system
 
-.. automodule:: optiland.coordinate_system
-    :members:
-    :undoc-members: False
-    :private-members: False
-    :special-members: False
-    :show-inheritance: True
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CoordinateSystem
+   

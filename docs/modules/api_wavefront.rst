@@ -8,7 +8,7 @@ including wavefront error, Zernike decomposition, point spread function (PSF) an
    :toctree: wavefront/
    :caption: OPD, PSF, MTF Modules
 
-   optiland.mtf
-   optiland.psf
-   optiland.wavefront
-   optiland.zernike
+   mtf
+   psf
+   wavefront
+   zernike

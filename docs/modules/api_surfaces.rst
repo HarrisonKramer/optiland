@@ -11,8 +11,8 @@ Most analyses are performed on the `SurfaceGroup` level, which abstracts the com
    :toctree: surfaces/
    :caption: Surface Modules
 
-   optiland.surfaces.image_surface
-   optiland.surfaces.object_surface
-   optiland.surfaces.standard_surface
-   optiland.surfaces.surface_factory
-   optiland.surfaces.surface_group
+   surfaces.image_surface
+   surfaces.object_surface
+   surfaces.standard_surface
+   surfaces.surface_factory
+   surfaces.surface_group

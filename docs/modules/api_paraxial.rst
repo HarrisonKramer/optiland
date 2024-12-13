@@ -7,4 +7,4 @@ This section provides an overview of the paraxial optics module in Optiland.
    :toctree: paraxial/
    :caption: Paraxial Modules
 
-   optiland.paraxial
+   paraxial

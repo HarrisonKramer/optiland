@@ -20,8 +20,8 @@ Tolerancing in Optiland requires 4 key components:
    :toctree: tolerancing/
    :caption: Tolerancing Modules
 
-   optiland.tolerancing.compensator
-   optiland.tolerancing.core
-   optiland.tolerancing.monte_carlo
-   optiland.tolerancing.perturbation
-   optiland.tolerancing.sensitivity_analysis
+   tolerancing.compensator
+   tolerancing.core
+   tolerancing.monte_carlo
+   tolerancing.perturbation
+   tolerancing.sensitivity_analysis

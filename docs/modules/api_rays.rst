@@ -8,8 +8,8 @@ Optiland utilizes NumPy arrays to represent rays, which allows for efficient com
    :toctree: rays/
    :caption: Ray Modules
 
-   optiland.rays.paraxial_rays
-   optiland.rays.polarization_state
-   optiland.rays.polarized_rays
-   optiland.rays.ray_generator
-   optiland.rays.real_rays
+   rays.paraxial_rays
+   rays.polarization_state
+   rays.polarized_rays
+   rays.ray_generator
+   rays.real_rays
