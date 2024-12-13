@@ -1,3 +1,21 @@
+"""Polynomial XY Geometry
+
+The Polynomial XY geometry represents a surface defined by a polynomial in two
+dimensions. The surface is defined as:
+
+z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Cij * x^i * y^j)
+
+where
+- r^2 = x^2 + y^2
+- R is the radius of curvature
+- k is the conic constant
+- Cij are the polynomial coefficients
+
+The coefficients are defined in a 2D array where coefficients[i][j] is the
+coefficient for x^i * y^j.
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 from optiland.coordinate_system import CoordinateSystem
