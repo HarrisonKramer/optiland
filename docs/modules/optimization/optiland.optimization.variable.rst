@@ -1,14 +1,14 @@
 ﻿.. autosummary::
    :toctree: variable/
 
-   optiland.optimization.variable.asphere_coeff
-   optiland.optimization.variable.base
-   optiland.optimization.variable.chebyshev_coeff
-   optiland.optimization.variable.conic
-   optiland.optimization.variable.decenter
-   optiland.optimization.variable.index
-   optiland.optimization.variable.polynomial_coeff
-   optiland.optimization.variable.radius
-   optiland.optimization.variable.thickness
-   optiland.optimization.variable.tilt
-   optiland.optimization.variable.variable
+   optimization.variable.asphere_coeff
+   optimization.variable.base
+   optimization.variable.chebyshev_coeff
+   optimization.variable.conic
+   optimization.variable.decenter
+   optimization.variable.index
+   optimization.variable.polynomial_coeff
+   optimization.variable.radius
+   optimization.variable.thickness
+   optimization.variable.tilt
+   optimization.variable.variable
