@@ -1,3 +1,15 @@
+"""Optiland File Handler
+
+This module provides functions for loading and saving Optiland objects and
+Optic instances to and from JSON files. The functions `load_obj_from_json` and
+`save_obj_to_json` can be used to load and save any object that has a class
+method `from_dict` and a method `to_dict`, respectively. In Optiland, this
+includes most core classes, such as Optic, BaseGeometry, BaseCoating,
+BaseMaterial, Aperture, FieldGroup, WavelengthGroup, etc.
+
+Kramer Harrison, 2024
+"""
+
 import os
 import json
 from optiland.optic import Optic
