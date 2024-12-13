@@ -1,4 +1,4 @@
-"""Optiland Paraxial Module
+"""Paraxial Module
 
 This module provides various functionalities for the computation of paraxial
 properties of lens systems.

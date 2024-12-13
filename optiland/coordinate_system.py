@@ -1,6 +1,10 @@
-"""Optiland Coordinate System Module
+"""Coordinate System Module
 
-This module provides standard coordinate system transformation calculations
+This module provides standard coordinate system transformation calculations.
+The CoordinateSystem class represents a coordinate system in 3D space and
+provides methods for localizing and globalizing rays. This class is used
+to define the position and orientation of all optical surfaces in an optical
+system.
 
 Kramer Harrison, 2024
 """

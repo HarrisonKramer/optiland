@@ -1,4 +1,4 @@
-"""Optiland Aberrations Module
+"""Aberrations Module
 
 This module computes first and third order aberrations of optical systems.
 
