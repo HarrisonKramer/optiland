@@ -2,6 +2,8 @@ Analysis
 ========
 
 This section covers the various analysis functionalities of the Optiland package.
+The analysis modules here are used to evaluate the performance of the optical system
+by calculating various parameters such as spot diagram, encircled energy, distortion, etc.
 
 .. autosummary::
    :toctree: analysis/
