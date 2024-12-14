@@ -1,3 +1,11 @@
+"""Image Surface
+
+This module contains the ImageSurface class, which represents an image surface
+in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.surfaces.standard_surface import Surface
 from optiland.rays import ParaxialRays
 from optiland.materials import BaseMaterial
