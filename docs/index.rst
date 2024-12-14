@@ -82,13 +82,13 @@ Python code to generate this 3D visualization:
    modules/api_core
    modules/api_fileio
    modules/api_materials
+   modules/api_wavefront
    modules/api_optimization
    modules/api_paraxial
    modules/api_rays
    modules/api_surfaces
    modules/api_tolerancing
    modules/api_visualization
-   modules/api_wavefront
 
 
 .. toctree::
