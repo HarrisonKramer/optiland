@@ -6,7 +6,6 @@ This section contains the API reference documentation for Optiland.
 .. toctree::
    :maxdepth: 1
    :caption: API Reference
-   :numbered:
 
    modules/api_analysis
    modules/api_coatings
