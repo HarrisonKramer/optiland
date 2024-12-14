@@ -63,8 +63,7 @@ Python code to generate this 3D visualization:
    :maxdepth: 1
    :caption: Developer Guide
 
-   developer_guide
-
+   developers_guide
 
 
 .. toctree::
