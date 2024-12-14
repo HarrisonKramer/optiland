@@ -52,4 +52,4 @@ Dark Mode for VTK
 The `OpticViewer3D` class includes an optional **dark mode** for 3D plots, offering a modern and visually appealing interface for exploring optical systems.
 
 .. note::
-   The image in :ref:`developers_guide` shows an example of the dark mode 3D visualization output for a lithographic lens system.
+   The image in the :ref:`developers_guide` shows an example of the dark mode 3D visualization output for a lithographic lens system.
