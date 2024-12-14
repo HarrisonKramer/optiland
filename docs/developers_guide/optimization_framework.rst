@@ -17,6 +17,7 @@ Components Explained
 --------------------
 
 1. **Optimization Problem**:
+
    - The `OptimizationProblem` class orchestrates the optimization process.
    - Key responsibilities include:
      - Adding **operands** to define the merit function.
@@ -24,6 +25,7 @@ Components Explained
      - Computing the overall objective function.
 
 2. **Optimizers**:
+
    - A base `Optimizer` class wraps `scipy.optimize.minimize` and provides a unified interface.
    - Built-in optimizers include:
      - **Dual Annealing**
@@ -32,6 +34,7 @@ Components Explained
    - Users can subclass the base optimizer for custom methods.
 
 3. **Operands and Variables**:
+
    - **Operands**: Define individual contributions to the merit function. Examples:
      - RMS Spot Size
      - Wavefront Error
