@@ -34,7 +34,7 @@ sphinx_gallery_conf = {
 }
 
 autodoc_mock_imports = ['numpy', 'yaml', 'scipy', 'matplotlib', 'numba',
-                        'pandas']
+                        'pandas', 'vtk']
 
 pygments_style = 'sphinx'
 
