@@ -1,12 +1,10 @@
-"""Optiland Visualization Module
+"""Visualization Module
 
 This module provides visualization tools for optical systems using VTK and
 Matplotlib. It includes the `OpticViewer` class, which allows for the
 visualization of lenses, rays, and their interactions within an optical system.
 The module supports plotting rays with different distributions, wavelengths,
-and through various fields of view. It also visualizes the surfaces of the
-optical elements, providing insights into the design and performance of the
-system.
+and through various fields of view.
 
 Kramer Harrison, 2024
 """
@@ -224,6 +222,9 @@ class LensInfoViewer:
                 mat.append('Air')
             elif isinstance(surf.material_post, materials.IdealMaterial):
                 mat.append(surf.material_post.index)
+            elif isinstance(surf.material_post, materials.AbbeMaterial):
+                mat.append(f'{surf.material_post.index:.4f}, '
+                           f'{surf.material_post.abbe:.2f}')
             else:
                 raise ValueError('Unknown material type')
 

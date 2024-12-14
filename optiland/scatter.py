@@ -1,3 +1,13 @@
+"""Scatter Module
+
+The scatter module is used to model the scattering of rays based on a
+Bidirectional Scattering Distribution Function (BSDF). The BSDF defines the
+probability distribution of the scattered ray direction based on the incident
+ray direction and the surface normal.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC
 import numpy as np
 from numba import njit, prange

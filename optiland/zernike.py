@@ -1,4 +1,4 @@
-"""Optiland Zernike Module
+"""Zernike Module
 
 This module provides functionality for working with Zernike polynomials, which
 are used to represent wavefront aberrations. The `ZernikeStandard` class

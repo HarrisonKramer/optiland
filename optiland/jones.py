@@ -1,3 +1,16 @@
+"""Jones Module
+
+The jones module contains classes for Jones matrices in optics. The module
+defines the base class BaseJones, which is an abstract class that defines the
+interface for Jones matrices. The module also contains classes for specific
+Jones matrices, such as JonesFresnel, JonesPolarizerH, JonesPolarizerV,
+JonesPolarizerL45, JonesPolarizerL135, JonesPolarizerRCP, JonesPolarizerLCP,
+JonesLinearDiattenuator, JonesLinearRetarder, JonesQuarterWaveRetarder, and
+JonesHalfWaveRetarder.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 import numpy as np
 from optiland.rays import RealRays

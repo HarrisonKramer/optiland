@@ -1,3 +1,12 @@
+"""Mirror Material
+
+This module contains the Mirror class, which represents a mirror material.
+This class inherits from the IdealMaterial class and is used to define the
+optical properties of a mirror in the Optiland system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.materials.ideal import IdealMaterial
 
 

@@ -1,3 +1,10 @@
+"""Base Rays
+
+This module contains the base class for rays defined in a 3D space.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 
 

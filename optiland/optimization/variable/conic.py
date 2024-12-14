@@ -1,3 +1,13 @@
+"""Conic Constant Variable Module
+
+This module contains the class for a conic constant variable in an optic
+system. The ConicVariable class is a subclass of the VariableBehavior class
+that represents a variable for the conic constant of a surface in an optic
+system. It is used in the optimization process for conic surfaces.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

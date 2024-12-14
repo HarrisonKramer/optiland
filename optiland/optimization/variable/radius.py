@@ -1,3 +1,12 @@
+"""Radius of Curvature Variable Module
+
+This module contains the RadiusVariable class, which represents a variable for
+the radius of a surface in an optic. The class inherits from the
+VariableBehavior class.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

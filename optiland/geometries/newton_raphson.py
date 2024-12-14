@@ -1,3 +1,12 @@
+"""Newton Raphson Geometry
+
+The Newton Raphson geometry represents a surface utilizing the Newton-Raphson
+method for ray tracing. This is an abstract base class that should be inherited
+by any geometry that uses the Newton-Raphson method for ray tracing.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 import warnings
 import numpy as np

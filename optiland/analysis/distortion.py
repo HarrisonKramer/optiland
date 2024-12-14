@@ -1,4 +1,4 @@
-"""Optiland - Distortion Analysis Module
+"""Distortion Analysis
 
 This module provides a distortion analysis for optical systems.
 

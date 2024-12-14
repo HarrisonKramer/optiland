@@ -1,3 +1,11 @@
+"""Paraxial Rays
+
+This module contains the ParaxialRays class, which represents paraxial rays in
+an optical system.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.rays.base import BaseRays
 

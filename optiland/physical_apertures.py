@@ -1,6 +1,8 @@
-"""Optiland Physical Apertures Module
+"""Physical Apertures Module
 
 This module provides classes to define physical apertures on optical surfaces.
+For example, a telescope primary mirror with a center hole can be represented
+by a radial aperture that clips rays based on their distance from the origin.
 
 Kramer Harrison, 2024
 """

@@ -1,3 +1,12 @@
+"""Polarization State
+
+This module contains the PolarizationState class, which represents the
+polarization state of a light ray or ray bundle. This class may be used
+to define the polarization state of the light rays in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 from typing import Optional
 import numpy as np
 

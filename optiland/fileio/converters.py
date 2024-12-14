@@ -1,3 +1,11 @@
+"""Converters between data formats.
+
+This module contains classes that convert data between different formats,
+including Zemax and Optiland (.json) files.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optic import Optic
 
 

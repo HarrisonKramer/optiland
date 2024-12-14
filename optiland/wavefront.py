@@ -1,6 +1,6 @@
-"""Optiland Wavefront Module
+"""Wavefront Module
 
-This module provides the `Wavefront` class, which is designed to analyze the
+This module defines the `Wavefront` class, which is designed to analyze the
 wavefront of an optical system. It supports the evaluation of wavefront
 aberrations using Zernike polynomials, the generation of wavefront maps for
 different field positions and wavelengths, and the calculation of optical path

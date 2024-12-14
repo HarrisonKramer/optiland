@@ -1,6 +1,7 @@
-"""Optiland Fields Module
+"""Fields Module
 
-This module provides classes for representing fields in an optical system
+This module provides classes for representing the field of view of an optical
+system.
 
 Kramer Harrison, 2023
 """

@@ -1,3 +1,12 @@
+"""Ideal Material
+
+This module contains the IdealMaterial class, which represents an ideal
+material with a fixed refractive index and absorption coefficient for all
+wavelengths.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.materials.base import BaseMaterial
 
 
