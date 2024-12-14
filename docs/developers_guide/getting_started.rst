@@ -1,3 +1,5 @@
+.. _getting_started:
+
 Getting Starting with the Codebase
 ===================================
 

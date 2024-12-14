@@ -1,3 +1,5 @@
+.. _surface_overview:
+
 Surface Overview
 ================
 
