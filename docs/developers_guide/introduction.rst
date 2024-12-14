@@ -29,7 +29,7 @@ Philosophy and Core Principles
 Optiland is built with the following principles in mind:
 
 - **Transparency and Extensibility**: The codebase is designed to be modular and well-documented, making it easy to adapt for new use cases.
-- **Speed and Performance**: Leveraging Python’s power (NumPy, SciPy, etc.) alongside extensible coding frameworks ensures fast, scalable solutions for a wide range of optical problems.
+- **Speed and Performance**: Built on powerful libraries like NumPy and SciPy, Optiland leverages vectorized computations and efficient algorithms to deliver fast, scalable solutions for complex optical problems.
 - **Collaboration and Community**: Optiland is open-source under the MIT License, welcoming contributions from anyone with an interest in advancing optical design tools.
 
 What to Expect in This Guide
