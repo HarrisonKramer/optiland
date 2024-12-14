@@ -1,4 +1,4 @@
-"""PSF Module
+"""Point Spread Function (PSF) Module
 
 This module provides functionality for simulating and analyzing the Pointp
 spread function (PSF) of optical systems using the Fast Fourier Transform
