@@ -24,7 +24,6 @@ The guide is intended to be a living document that evolves with the package.
    developers_guide/ray_overview
    developers_guide/surface_overview
    developers_guide/geometry_overview
-   developers_guide/raytracing_framework
    developers_guide/analysis_framework
    developers_guide/optimization_framework
    developers_guide/tolerancing_framework
