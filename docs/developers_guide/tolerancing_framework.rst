@@ -35,10 +35,10 @@ Workflow
 --------
 
 1. **Create a Tolerancing Instance**: Instantiate an empty `Tolerancing` object.
-2. **Define Perturbations and Variables**: Specify the sampling distributions for perturbations and them as variables to the `Tolerancing` instance.
-3. **Add Operands and Compensators**: Identify which metrics will be evaluated and specify any compensators (e.g., adjusting lens positions or tilts to counteract perturbations).
-4. **Run Analysis**: Pass the `Tolerancing` class instance to either the `SensitivityAnalysis` or `MonteCarlo` class, depending on the desired type of study.
-5. **Interpret Results**: Use the output to identify sensitive parameters or assess the statistical robustness of the design. Optionally print the results as a `pandas.DataFrame` for further analysis.
+2. **Define Perturbations**: Specify perturbations, together with an appropriate sampling distribution, and add them to the `Tolerancing` instance.
+3. **Add Operands and (optionally) Compensators**: Identify which metrics will be evaluated and specify any compensators (e.g., adjusting lens positions or tilts to counteract perturbations).
+4. **Run Analysis**: Pass the `Tolerancing` class instance to either the `SensitivityAnalysis` or `MonteCarlo` class, depending on the desired type of study, and run the analysis.
+5. **Interpret Results**: Use the output to identify sensitive parameters or assess the statistical robustness of the design. Optionally visualize the output using built-in plotting functions, or export the results as a `pandas.DataFrame` for further analysis.
 
 .. tip::
    See the :ref:`learning_guide` for specific demonstrations of both sensitivity and Monte Carlo analyses using the tolerancing framework.
