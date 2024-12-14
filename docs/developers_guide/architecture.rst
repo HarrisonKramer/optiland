@@ -8,10 +8,10 @@ Core Components
 
 The relationships between components are illustrated in the following diagram:
 
-.. figure:: class_diagram.png
+.. figure:: ../images/class_diagram.svg
    :alt: Architectural Diagram of Optiland
    :align: center
-   :figwidth: 85%
+   :figwidth: 100%
 
    Architectural diagram showing relationships between the `Optic` class, which is the core class for optical systems, and other key components like fields,
    surfaces, rays, optimization, analysis, and visualization frameworks.
