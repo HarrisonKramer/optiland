@@ -1,3 +1,5 @@
+.. _ray_overview:
+
 Ray Tracing Framework
 =====================
 
