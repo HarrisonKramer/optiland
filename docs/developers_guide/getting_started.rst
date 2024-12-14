@@ -11,7 +11,7 @@ Optiland is designed with modularity in mind. Here are the key components you’
 - **optic**: Defines the core `Optic` class for building optical systems.
 - **rays**: Defines ray objects and and ray generators for simulating light propagation.
 - **surfaces**: The building blocks for defining optical elements like lenses and mirrors.
-- **optimization**: Tools for optimizing optical systems based on user-defined operands.
+- **optimization**: Tools for optimizing optical systems based on user-defined objectives and variables.
 
 We recommend starting with the **optic** module, as it provides the primary interface for defining optical systems.
 You may also explore the **analysis** module to see how simulations are generally performed.
