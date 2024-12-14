@@ -1,9 +1,6 @@
 Tolerancing Framework
 =====================
 
-Tolerancing Framework
-======================
-
 The tolerancing framework in Optiland is designed to evaluate the **sensitivity** and **robustness** of optical systems by analyzing the
 effects of small perturbations in system parameters. It provides a modular and extensible approach, largely reusing components from the
 optimization framework to maintain consistency and simplicity.
