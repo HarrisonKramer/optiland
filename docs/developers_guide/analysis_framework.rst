@@ -24,7 +24,7 @@ Analysis Workflow
 
 Each analysis follows a similar workflow:
 
-1. An **`Optic`** instance is passed to an analysis class.
+1. An **Optic** instance is passed to an analysis class.
 2. Ray tracing is performed as needed, with relevant rays being traced to specific surfaces or planes.
 3. Results are computed based on the traced rays and the optical system configuration.
 4. The computed results are stored in the analysis instance and can be visualized or exported.
@@ -34,7 +34,7 @@ Example: Spot Diagram Analysis
 
 For example, a spot diagram is computed as follows:
 
-- The `SpotDiagram` class is instantiated with an **`Optic`** instance.
+- The `SpotDiagram` class is instantiated with an **Optic** instance.
 - Rays are traced to the image plane.
 - The intersection points are recorded and visualized.
 
@@ -47,16 +47,22 @@ Running an Analysis
 To run an analysis, follow these general steps:
 
 1. **Select an Analysis Type**: Import the relevant analysis class for the desired evaluation. For example:
-   ```python
+
+.. code:: python
+
    from optiland.analysis import SpotDiagram
 
 2. **Create the Analysis Instance**: Pass your optical system (Optic instance) to the analysis class. When the instance is created, the required data is typically created. Optionally select specific parameters for the analysis.
-    ```python
-    spot_diagram = SpotDiagram(optic, fields='all', wavelengths='all', num_rings=6, distribution='hexapolar')
+
+.. code:: python
+
+   spot_diagram = SpotDiagram(optic, fields='all', wavelengths='all', num_rings=6, distribution='hexapolar')
 
 3. **Visualize the Result**: Use visualization tools to view the results.
-    ```python
-    spot_diagram.view()
+
+.. code:: python
+
+   spot_diagram.view()
 
 Extending the Analysis Framework
 --------------------------------
@@ -64,4 +70,4 @@ Extending the Analysis Framework
 Adding a new analysis type is straightforward:
 
 - Create a new analysis class with methods to perform ray tracing and compute results.
-- Use Optiland's ray tracing framework and to simplify implementation.
+- Use Optiland's ray tracing framework as needed to simplify implementation.
