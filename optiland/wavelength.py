@@ -1,4 +1,4 @@
-"""Optiland Wavelength Module
+"""Wavelength Module
 
 This module defines the `Wavelength` and `WavelengthGroup` classes for
 managing wavelengths in optical simulations. The `Wavelength` class represents

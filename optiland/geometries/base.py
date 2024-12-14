@@ -1,3 +1,11 @@
+"""Base Geometry
+
+The base geometry class for all geometries.
+Geometries are used to define the shape of optical elements.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 
 

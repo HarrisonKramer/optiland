@@ -1,3 +1,11 @@
+"""Mirror Visualization Module
+
+This module contains the Mirror3D class, which is used to visualize a 3D mirror
+surface.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.visualization.surface import Surface3D
 
 

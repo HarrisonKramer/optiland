@@ -1,7 +1,12 @@
-"""Optiland Optic Module
+"""Optic Module
 
 This is the core module of Optiland, which provides the class to define
-optical systems.
+generic optical systems. The Optic class encapsulates the core properties
+of an optical system, such as the aperture, fields, surfaces, and
+wavelengths. It also provides methods to draw the optical system, trace rays,
+and perform paraxial and aberration analyses. Instances of the Optic class
+are used as arguments to various analysis, optimization, and visualization
+functions in Optiland.
 
 Kramer Harrison, 2024
 """
@@ -165,6 +170,9 @@ class Optic:
         Args:
             field_type (str): The type of field.
         """
+        if field_type not in ['angle', 'object_height']:
+            raise ValueError('Invalid field type. Must be "angle" '
+                             'or "object_height".')
         self.field_type = field_type
 
     def set_radius(self, value, surface_number):
@@ -398,7 +406,7 @@ class Optic:
         """Update the image position such that the marginal ray crosses the
         optical axis at the image location."""
         ya, ua = self.paraxial.marginal_ray()
-        offset = float(ya[-1] / ua[-1])
+        offset = float(ya[-1, 0] / ua[-1, 0])
         self.surface_group.surfaces[-1].geometry.cs.z -= offset
 
     def trace(self, Hx, Hy, wavelength, num_rays=100,
@@ -418,13 +426,12 @@ class Optic:
         Returns:
             RealRays: The RealRays object containing the traced rays.
         """
-        vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
-            distribution.generate_points(num_rays, vx, vy)
-        Px = distribution.x * (1 - vx)
-        Py = distribution.y * (1 - vy)
+            distribution.generate_points(num_rays)
+        Px = distribution.x
+        Py = distribution.y
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
         self.surface_group.trace(rays)

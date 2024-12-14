@@ -1,6 +1,8 @@
-"""Optiland - Grid Distortion Analysis Module
+"""Grid Distortion Analysis
 
 This module provides a grid distortion analysis for optical systems.
+This is module enables calculation of the distortion over a grid of points
+for an optical system.
 
 Kramer Harrison, 2024
 """

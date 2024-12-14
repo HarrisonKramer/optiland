@@ -1,3 +1,16 @@
+"""Variable Module
+
+This module contains the Variable class, which represents a variable in an
+optical system. This is the core class for defining variables in the
+optimization process within Optiland. In general, this class is used to define
+any arbitrary variable that can be optimized in an optical system. The class
+provides a common interface for all types of variables, such as radius, conic,
+thickness, index, asphere coefficients, etc. The input parameter 'type' is used
+to specify the type of the variable.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.radius import RadiusVariable
 from optiland.optimization.variable.conic import ConicVariable
 from optiland.optimization.variable.thickness import ThicknessVariable

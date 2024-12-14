@@ -1,3 +1,11 @@
+"""Object Surface
+
+This module contains the ObjectSurface class, which represents an object
+surface in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.rays import RealRays, ParaxialRays
 from optiland.surfaces.standard_surface import Surface

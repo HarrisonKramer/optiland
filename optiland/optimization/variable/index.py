@@ -1,3 +1,13 @@
+"""Refractive Index Variable Module
+
+This module contains the IndexVariable class, which represents a variable for
+the index of refraction at a specific surface and wavelength. The variable can
+be used in optimization problems to optimize the index of refraction at a
+specific surface.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

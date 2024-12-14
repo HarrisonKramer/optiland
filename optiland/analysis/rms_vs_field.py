@@ -1,3 +1,10 @@
+"""RMS versus Field Analysis
+
+This module enables the calculation of both the RMS spot size and the RMS
+wavefront error versus field coordinate of an optical system.
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from optiland.analysis import SpotDiagram

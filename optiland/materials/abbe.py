@@ -1,3 +1,12 @@
+"""Abbe Material
+
+This module defines a material based on the refractive index at the Fraunhofer
+d-line (587.56 nm) and the Abbe number. The refractive index is based on a
+polynomial fit to glass data from the Schott catalog. The absorption
+coefficient is ignored in this model and is always set to zero.
+
+Kramer Harrison, 2024
+"""
 import os
 import numpy as np
 from optiland.materials.base import BaseMaterial

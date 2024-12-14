@@ -1,3 +1,14 @@
+"""Surface Factory
+
+This module contains the SurfaceFactory class, which is used to create surface
+objects based on the given parameters. The SurfaceFactory class is used by the
+SurfaceGroup class to create surfaces for the optical system. The class
+abstracts the creation of surface objects and allows for easy configuration of
+the surface parameters.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.coordinate_system import CoordinateSystem
 from optiland.materials import BaseMaterial, IdealMaterial, Material

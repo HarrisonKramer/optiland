@@ -1,6 +1,8 @@
-"""Optiland File Handler Module
+"""Zemax File Handler
 
-This module provides classes for parsing files, such as Zemax lens data files.
+This module provides functionality for reading Zemax files and converting the
+data into Optiland Optic instances. The `load_zemax_file` function can be used
+to load a Zemax file and return an Optiland Optic object.
 
 Kramer Harrison, 2024
 """

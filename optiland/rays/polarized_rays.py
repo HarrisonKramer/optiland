@@ -1,3 +1,12 @@
+"""Polarized Rays
+
+This module contains the `PolarizedRays` class, which represents a class for
+polarized rays in three-dimensional space. The class inherits from the
+`RealRays` class.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.rays.real_rays import RealRays
 from optiland.rays.polarization_state import PolarizationState

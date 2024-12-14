@@ -1,3 +1,13 @@
+"""Basae Material
+
+This module defines the base class for materials. The base class provides
+methods to calculate the refractive index, extinction coefficient, and Abbe
+number of a material. Subclasses of BaseMaterial should implement the `n` and
+`k` methods to provide specific material properties.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 
 

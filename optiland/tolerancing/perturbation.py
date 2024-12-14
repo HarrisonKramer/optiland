@@ -1,3 +1,12 @@
+"""Perturbation Module
+
+This module contains classes for generating perturbations to optical system
+variables. Perturbations are used to simulate the effects of manufacturing
+errors or other sources of variability in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 import numpy as np
 from optiland.optimization.variable import Variable

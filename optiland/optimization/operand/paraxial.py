@@ -1,3 +1,13 @@
+"""Paraxial Operands Module
+
+This module provides a class that calculates various paraxial values for an
+optical system. It is used in conjunction with the optimization module to
+optimize optical systems.
+
+Kramer Harrison, 2024
+"""
+
+
 class ParaxialOperand:
     """
     A class representing paraxial operands.

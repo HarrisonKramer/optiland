@@ -1,6 +1,6 @@
-"""Optiland Operand Module
+"""Operand Module
 
-This module gives various operands to be used during lens optimization. These
+This module defines various operands to be used during lens optimization. These
 include paraxial, real ray, aberrations, wavefront, spot size, and many other
 operand types.
 

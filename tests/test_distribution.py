@@ -110,15 +110,13 @@ def test_invalid_distribution_error():
 @pytest.mark.parametrize('num_points', [10, 25, 50, 100])
 def test_uniform_distribution(num_points):
     d = distribution.create_distribution('uniform')
-    vx = 0.1
-    vy = 0.2
-    d.generate_points(num_points=num_points, vx=vx, vy=vy)
+    d.generate_points(num_points=num_points)
 
     x = np.linspace(-1, 1, num_points)
     x, y = np.meshgrid(x, x)
     r2 = x**2 + y**2
-    x = x[r2 <= 1] * (1 - vx)
-    y = y[r2 <= 1] * (1 - vy)
+    x = x[r2 <= 1]
+    y = y[r2 <= 1]
 
     assert np.all(d.x >= -1.0) and np.all(d.x <= 1.0)
     assert np.all(d.y >= -1.0) and np.all(d.y <= 1.0)

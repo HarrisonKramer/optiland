@@ -1,3 +1,12 @@
+"""Decenter Variable Module
+
+This module contains the DecenterVariable class, which represents a variable
+for the decenter of an optic surface. The decenter variable can be used to
+optimize the decenter of a surface in the optical system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

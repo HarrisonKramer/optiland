@@ -1,3 +1,14 @@
+"""Material
+
+This module contains the Material class, which represents a generic material
+used in the Optiland system. This class identifies the correct material given
+the material name and (optionally) the reference, which is generally the
+manufacturer name or the author name. This is the primary material class used
+to define the optical properties of a material (or glass) in Optiland.
+
+Kramer Harrison, 2024
+"""
+
 import os
 import pandas as pd
 from optiland.materials.material_file import MaterialFile

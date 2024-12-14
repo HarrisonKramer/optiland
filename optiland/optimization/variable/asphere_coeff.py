@@ -1,3 +1,13 @@
+"""Asphere Coefficients Variable Module
+
+This module contains the AsphereCoeffVariable class, which represents a
+variable for an aspheric coefficient in an optical system. The variable can be
+used in optimization problems to optimize the aspheric coefficients of an
+optical system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 
