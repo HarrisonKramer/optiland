@@ -12,7 +12,7 @@
 </div>
 
 <!-- TABLE OF CONTENTS -->
-<details open>
+<details>
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#introduction">Introduction</a></li>
