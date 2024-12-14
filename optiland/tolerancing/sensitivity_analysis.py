@@ -1,3 +1,12 @@
+"""Sensitivity Analysis Module
+
+This module contains the SensitivityAnalysis class for performing sensitivity
+analysis on a tolerancing system. The SensitivityAnalysis class allows users to
+run a sensitivity analysis on a Tolerancing object and visualize the results.
+
+Kramer Harrison, 2024
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

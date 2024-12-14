@@ -1,3 +1,14 @@
+"""Monte Carlo Module
+
+This module contains the Monte Carlo class for performing Monte Carlo analysis
+on a tolerancing system. The Monte Carlo class is a subclass of the
+SensitivityAnalysis class and provides methods for running Monte Carlo
+simulations, visualizing the results, and analyzing the correlation between
+operands.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
