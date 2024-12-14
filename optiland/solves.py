@@ -1,3 +1,13 @@
+"""Solves Module
+
+The solves module is used to model the application of solves to an optic. A
+solve is an operation that adjusts a property of the optic or a surface to
+satisfy a specific condition. For example, a solve can adjust the height of a
+marginal ray to a specified value on a specific surface.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 
 

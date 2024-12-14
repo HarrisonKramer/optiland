@@ -1,6 +1,6 @@
-"""Optiland Distribution Module
+"""Distribution Module
 
-This module provides various classes representing 2D pupil distributions
+This module provides various classes representing 2D pupil distributions.
 
 Kramer Harrison, 2024
 """

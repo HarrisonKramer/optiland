@@ -1,3 +1,10 @@
+"""Visualization Utilities Module
+
+This module contains utility functions for visualization tasks.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 import vtk
 from optiland.rays import RealRays

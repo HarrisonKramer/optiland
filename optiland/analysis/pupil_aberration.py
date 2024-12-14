@@ -1,3 +1,13 @@
+"""Pupil Aberration Analysis
+
+The pupil abberration is defined as the difference between the paraxial
+and real ray intersection point at the stop surface of the optic. This is
+specified as a percentage of the on-axis paraxial stop radius at the
+primary wavelength.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 

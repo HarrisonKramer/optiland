@@ -1,3 +1,14 @@
+"""Chebyshev Coefficients Variable Module
+
+This module contains the class for a Chebyshev coefficient variable in an optic
+system. The ChebyshevCoeffVariable class is a subclass of the
+PolynomialCoeffVariable class that represents a variable for a Chebyshev
+coefficient of a ChebyshevGeometry. It is used in the optimization process for
+Chebyshev geometries.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.polynomial_coeff import \
     PolynomialCoeffVariable
 

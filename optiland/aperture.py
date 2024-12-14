@@ -1,6 +1,8 @@
-"""Optiland Aperture Module
+"""Aperture Module
 
 This module provides a class for representing apertures in lens systems.
+Aperture options include entrance pupil diameter (EPD), image space F-number
+(imageFNO), and object space numerical aperture (objectNA).
 
 Kramer Harrison, 2024
 """

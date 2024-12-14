@@ -1,4 +1,4 @@
-"""Optiland Surfaces Module
+"""Standard Surface
 
 This module defines the `Surface` class, which represents a surface in an
 optical system. Surfaces are characterized by their geometry, materials before

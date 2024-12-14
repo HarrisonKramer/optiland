@@ -1,4 +1,4 @@
-"""Optiland - Field Curvature Analysis Module
+"""Field Curvature Analysis
 
 This module provides a field curvature analysis for optical systems.
 

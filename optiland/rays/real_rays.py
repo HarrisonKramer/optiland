@@ -1,3 +1,10 @@
+"""Real Rays
+
+This module contains the RealRays class, which represents a collection of real
+rays in 3D space.
+
+Kramer Harrison, 2024
+"""
 
 import numpy as np
 from optiland.materials import BaseMaterial

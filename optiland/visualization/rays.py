@@ -1,3 +1,10 @@
+"""Rays Visualization Module
+
+This module contains classes for visualizing rays in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 import vtk
 from optiland.visualization.utils import transform

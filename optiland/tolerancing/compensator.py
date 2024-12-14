@@ -1,3 +1,12 @@
+"""Compensator Module
+
+This module contains a class for compensating perturbations in an optical
+system. The CompensatorOptimizer class is used to optimize a set of variables
+to compensate for perturbations in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization import (
     OptimizationProblem,
     OptimizerGeneric,
