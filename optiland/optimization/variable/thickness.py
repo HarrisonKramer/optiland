@@ -1,3 +1,12 @@
+"""Thickness Variable Module
+
+This module contains the ThicknessVariable class, which represents a variable
+for the thickness of an optic surface. The class inherits from the
+VariableBehavior class.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 
