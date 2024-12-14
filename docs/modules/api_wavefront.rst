@@ -1,7 +1,7 @@
 OPD, PSF, MTF
 =============
 
-This section provides a comprehensive overview of the wavefront-related analyses available in Optiland,
+This section provides an overview of the wavefront-related analyses available in Optiland,
 including wavefront error, Zernike decomposition, point spread function (PSF) and modulation transfer function (MTF) calculations.
 
 .. autosummary::
