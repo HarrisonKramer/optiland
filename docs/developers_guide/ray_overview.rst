@@ -23,6 +23,7 @@ Rays are the fundamental elements of the ray tracing process. A ray consists of 
 Ray Types
 ---------
 Optiland supports three types of rays:
+
 - **Real Rays**: Standard rays with full 3D attributes, used for detailed tracing.
 - **Paraxial Rays**: Simplified rays using only height (`y`), angle (`u`), wavelength, and starting position (`z`). These are used for first-order system analysis.
 - **Polarized Rays**: Rays with additional polarization information, allowing simulations involving birefringent materials or coatings.
@@ -30,6 +31,7 @@ Optiland supports three types of rays:
 Ray Generation
 --------------
 The ray tracing framework uses a **Ray Generator** to produce rays for tracing. The generator operates based on user-defined parameters, including:
+
 - Field points
 - Wavelengths
 - Aperture sampling (e.g., grid, random)
@@ -42,6 +44,7 @@ specific to that system.
 Tracing Process
 ---------------
 Ray tracing is performed by sequentially propagating rays across the surfaces in the system:
+
 1. Rays are converted into the local coordinate system of the current surface.
 2. Rays intersections with the surface are identified and the ray propagates to the intersection point.
 3. If the surface has a physica aperture, rays may be clipped (intensity set to zero) if they fall outside this aperture.
@@ -58,6 +61,7 @@ Extensibility
 -------------
 
 The framework is designed to be extensible:
+
 - New ray types can be added by subclassing the `BaseRays` base class.
 - Custom ray generators can be implemented by following the existing interface.
 - Additional tracing logic can be integrated into the surface `trace` method for specialized applications.
