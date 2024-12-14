@@ -16,25 +16,25 @@ A surface consists of several components that define its optical properties:
 - **Coatings**: Coatings (e.g., thin films) applied to the surface for modifying reflection, transmission, and/or polarization properties.
 - **Stop Surface Flag**: Indicates if the surface is the aperture stop of the system.
 - **Reflective Flag**: Indicates if the surface is reflective (e.g., mirror) or refractive (e.g., lens).
-- **Aperture (optional)**: A physical or virtual aperture defining the area where rays can interact with the surface.
-- **Physical Aperture** (optional): Defines the boundary for ray propagation.
+- **Physical Aperture (optional)**: A physical or virtual aperture defining the area where rays can interact with the surface.
 - **BSDF** (optional): Bidirectional Scattering Distribution Function for modeling scattering behavior.
 
 Ray Interaction with Surfaces
 -----------------------------
 
-When a ray interacts with a surface:
+When a ray interacts with a surface, the following steps are typically performed:
 
 1. **Intersection**: The ray's path is intersected with the surface's geometry.
 2. **Aperture Check**: The ray's intersection point is checked against the surface's aperture to determine if the ray is blocked.
-3. **Refraction/Reflection**: The ray's direction is updated based on Snell's law or the law of reflection and the surface's material/coating properties.
+3. **Refraction/Reflection**: The ray's direction is updated based on Snell's law or the law of reflection, and the ray properties may be affected by the surface's material/coating properties.
 4. **Scattering**: If the surface has a BSDF, the ray may be scattered based on the scattering distribution function.
-5. **Recording**: Data such as intersection points and modified ray attributes are stored for analysis.
+5. **Recording**: Data such as intersection points and modified ray attributes are stored for later analysis.
 
 Surface Group
 -------------
 
 Surfaces are combined into a **Surface Group**, which manages a collection of surfaces and facilitates operations like ray tracing. The Surface Group:
+
 - Tracks the ordered list of surfaces in the optical system.
 - Propagates rays through the system, invoking surface-specific logic at each step.
 - Records ray interactions for use in subsequent analyses.
