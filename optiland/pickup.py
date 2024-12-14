@@ -1,3 +1,14 @@
+"""Pickup Module
+
+The pickup module contains classes for managing and performing pickup
+operations on an optic surface. A pickup operation involves copying an
+attribute value from one surface to another surface, optionally scaling and
+offsetting the value.
+
+Kramer Harrison, 2024
+"""
+
+
 class PickupManager:
     """A class for managing multiple pickup operations on an optic surface
 

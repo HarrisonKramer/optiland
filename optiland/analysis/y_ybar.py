@@ -1,6 +1,8 @@
-"""Optiland - Y Y-bar Module
+"""Y Y-bar Analysis
 
 This module provides a y y-bar analysis for optical systems.
+This is a plot of the marginal ray height versus the chief ray height
+for each surface in the system.
 
 Kramer Harrison, 2024
 """

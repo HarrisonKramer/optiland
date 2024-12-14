@@ -1,4 +1,4 @@
-"""Optiland - Encircled Energy Analysis Module
+"""Encircled Energy Analysis
 
 This module provides an encircled energy analysis for optical systems.
 

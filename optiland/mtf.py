@@ -1,7 +1,7 @@
-"""Optiland MTF Module
+"""Modulation Transfer Function (MTF) Module
 
 This module provides various classes for the computation of the modulation
-transfer function (MTF)
+transfer function (MTF) of an optical system.
 
 Kramer Harrison, 2024
 """

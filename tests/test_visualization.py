@@ -12,7 +12,11 @@ from optiland.samples.telescopes import HubbleTelescope
 from optiland import fields
 from optiland.geometries import BaseGeometry, EvenAsphere
 from optiland.coordinate_system import CoordinateSystem
-from optiland.materials import BaseMaterial, MaterialFile, IdealMaterial
+from optiland.materials import (
+    BaseMaterial,
+    MaterialFile,
+    IdealMaterial,
+    AbbeMaterial)
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')  # use non-interactive backend for testing
@@ -260,3 +264,9 @@ class TestLensInfoViewer:
         viewer = LensInfoViewer(lens)
         with pytest.raises(ValueError):
             viewer.view()
+
+    def test_view_abbe_material(self):
+        lens = ReverseTelephoto()
+        lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60)
+        viewer = LensInfoViewer(lens)
+        viewer.view()

@@ -1,5 +1,4 @@
-"""
-Optiland Optimization Module
+"""Optiland Optimization Module
 
 This module provides classes for defining and solving optimization problems
 for Optiland Optic instances. It includes an OptimizationProblem class for

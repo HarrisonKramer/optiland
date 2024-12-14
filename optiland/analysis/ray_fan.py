@@ -1,4 +1,4 @@
-"""Optiland - Ray Fan Analysis Module
+"""Ray Aberration Fan Analysis
 
 This module provides a ray fan analysis for optical systems.
 

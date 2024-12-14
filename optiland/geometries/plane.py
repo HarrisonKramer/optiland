@@ -1,3 +1,11 @@
+"""Plane Geometry
+
+The Plane geometry represents an infinite plane in two dimensions. The surface
+is defined as an XY plane with z=0 for all points. Recall that surfaces are
+always defined in the local coordinate system of the geometry.
+
+Kramer Harrison, 2024
+"""
 import numpy as np
 from optiland.geometries.base import BaseGeometry
 from optiland.coordinate_system import CoordinateSystem

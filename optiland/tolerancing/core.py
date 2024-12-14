@@ -1,3 +1,13 @@
+"""Core Tolerancing Module
+
+This module contains the core classes for the tolerancing module. The
+Tolerancing class is the main class for defining a tolerancing problem. It
+allows the user to add operands, perturbations, and compensators to an optical
+system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.tolerancing.perturbation import BaseSampler, Perturbation
 from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.optimization.operand import Operand

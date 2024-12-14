@@ -1,6 +1,6 @@
-"""Optiland Distribution Module
+"""Distribution Module
 
-This module provides various classes representing 2D pupil distributions
+This module provides various classes representing 2D pupil distributions.
 
 Kramer Harrison, 2024
 """
@@ -24,14 +24,12 @@ class BaseDistribution(ABC):
     """
 
     @abstractmethod
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generate points based on the distribution.
 
         Args:
             num_points (int): The number of points to generate.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         pass  # pragma: no cover
 
@@ -84,19 +82,17 @@ class LineXDistribution(BaseDistribution):
     def __init__(self, positive_only: bool = False):
         self.positive_only = positive_only
 
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generates points along the x-axis based on the specified parameters.
 
         Args:
             num_points (int): The number of points to generate.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         if self.positive_only:
-            self.x = np.linspace(0, 1, num_points) * (1 - vx)
+            self.x = np.linspace(0, 1, num_points)
         else:
-            self.x = np.linspace(-1, 1, num_points) * (1 - vx)
+            self.x = np.linspace(-1, 1, num_points)
         self.y = np.zeros(num_points)
 
 
@@ -112,20 +108,18 @@ class LineYDistribution(BaseDistribution):
     def __init__(self, positive_only: bool = False):
         self.positive_only = positive_only
 
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generates points along the line distribution.
 
         Args:
             num_points (int): The number of points to generate.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         self.x = np.zeros(num_points)
         if self.positive_only:
-            self.y = np.linspace(0, 1, num_points) * (1 - vy)
+            self.y = np.linspace(0, 1, num_points)
         else:
-            self.y = np.linspace(-1, 1, num_points) * (1 - vy)
+            self.y = np.linspace(-1, 1, num_points)
 
 
 class RandomDistribution(BaseDistribution):
@@ -141,20 +135,18 @@ class RandomDistribution(BaseDistribution):
     def __init__(self, seed=None):
         self.rng = np.random.default_rng(seed)
 
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generates random points.
 
         Args:
             num_points (int): The number of points to generate.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         r = self.rng.uniform(size=num_points)
         theta = self.rng.uniform(0, 2*np.pi, size=num_points)
 
-        self.x = np.sqrt(r) * np.cos(theta) * (1 - vx)
-        self.y = np.sqrt(r) * np.sin(theta) * (1 - vy)
+        self.x = np.sqrt(r) * np.cos(theta)
+        self.y = np.sqrt(r) * np.sin(theta)
 
 
 class UniformDistribution(BaseDistribution):
@@ -167,20 +159,18 @@ class UniformDistribution(BaseDistribution):
         y (ndarray): The y-coordinates of the generated points.
     """
 
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generates a grid of points within the unit disk.
 
         Args:
             num_points (int): The number of points along each axis to generate.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         x = np.linspace(-1, 1, num_points)
         x, y = np.meshgrid(x, x)
         r2 = x**2 + y**2
-        self.x = x[r2 <= 1] * (1 - vx)
-        self.y = y[r2 <= 1] * (1 - vy)
+        self.x = x[r2 <= 1]
+        self.y = y[r2 <= 1]
 
 
 class HexagonalDistribution(BaseDistribution):
@@ -192,15 +182,13 @@ class HexagonalDistribution(BaseDistribution):
         y (ndarray): Array of y-coordinates of the generated points.
     """
 
-    def generate_points(self, num_rings: int = 6, vx=0.0, vy=0.0):
+    def generate_points(self, num_rings: int = 6):
         """
         Generate points in a hexagonal distribution.
 
         Args:
             num_rings (int): Number of rings in the hexagonal distribution.
                 Defaults to 6.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         x = np.zeros(1)
         y = np.zeros(1)
@@ -212,8 +200,8 @@ class HexagonalDistribution(BaseDistribution):
             x = np.concatenate([x, r[i + 1] * np.cos(theta)])
             y = np.concatenate([y, r[i + 1] * np.sin(theta)])
 
-        self.x = x * (1 - vx)
-        self.y = y * (1 - vy)
+        self.x = x
+        self.y = y
 
 
 class CrossDistribution(BaseDistribution):
@@ -228,21 +216,19 @@ class CrossDistribution(BaseDistribution):
         y (ndarray): Array of y-coordinates of the generated points.
     """
 
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """
         Generate points in the shape of a cross.
 
         Args:
             num_points (int): The number of points to generate in each axis.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         x1 = np.zeros(num_points)
         x2 = np.linspace(-1, 1, num_points)
         y1 = np.linspace(-1, 1, num_points)
         y2 = np.zeros(num_points)
-        self.x = np.concatenate((x1, x2)) * (1 - vx)
-        self.y = np.concatenate((y1, y2)) * (1 - vy)
+        self.x = np.concatenate((x1, x2))
+        self.y = np.concatenate((y1, y2))
 
 
 class GaussianQuadrature(BaseDistribution):
@@ -261,13 +247,11 @@ class GaussianQuadrature(BaseDistribution):
     def __init__(self, is_symmetric=False):
         self.is_symmetric = is_symmetric
 
-    def generate_points(self, num_rings: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_rings: int):
         """Generate points for Gaussian quadrature distribution.
 
         Args:
             num_rings (int): Number of rings for Gaussian quadrature.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         radius = self._get_radius(num_rings)
 
@@ -276,8 +260,8 @@ class GaussianQuadrature(BaseDistribution):
         else:
             theta = np.array([-1.04719755, 0.0, 1.04719755])
 
-        self.x = np.outer(radius, np.cos(theta)).flatten() * (1 - vx)
-        self.y = np.outer(radius, np.sin(theta)).flatten() * (1 - vy)
+        self.x = np.outer(radius, np.cos(theta)).flatten()
+        self.y = np.outer(radius, np.sin(theta)).flatten()
 
     def _get_radius(self, num_rings: int) -> np.ndarray:
         """Get the radius values for the given number of rings.
@@ -339,21 +323,16 @@ class RingDistribution(BaseDistribution):
     """RingDistribution class for generating points along a single ring.
 
     """
-    def generate_points(self, num_points: int, vx=0.0, vy=0.0):
+    def generate_points(self, num_points: int):
         """Generate points along a ring at the maximum aperture value.
 
         Args:
             num_points (int): The number of points to generate in each ring.
-            vx (float, optional): The vignetting factor in x. Defaults to 0.0.
-            vy (float, optional): The vignetting factor in y. Defaults to 0.0.
         """
         theta = np.linspace(0, 2 * np.pi, num_points + 1)[:-1]
 
-        x = np.cos(theta)
-        y = np.sin(theta)
-
-        self.x = x * (1 - vx)
-        self.y = y * (1 - vy)
+        self.x = np.cos(theta)
+        self.y = np.sin(theta)
 
 
 def create_distribution(distribution_type):

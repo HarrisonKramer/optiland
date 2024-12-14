@@ -1,4 +1,4 @@
-"""Optiland - Spot Diagram Analysis Module
+"""Spot Diagram Analysis
 
 This module provides a spot diagram analysis for optical systems.
 

@@ -1,3 +1,11 @@
+"""Material File
+
+This module contains a class for representing a material based on a material
+YAML file from the refractiveindex.info database.
+
+Kramer Harrison, 2024
+"""
+
 import os
 from io import StringIO
 import yaml

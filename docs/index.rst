@@ -77,7 +77,18 @@ Python code to generate this 3D visualization:
    :maxdepth: 1
    :caption: API Reference
 
-   modules/modules
+   modules/api_analysis
+   modules/api_coatings
+   modules/api_core
+   modules/api_fileio
+   modules/api_materials
+   modules/api_wavefront
+   modules/api_optimization
+   modules/api_paraxial
+   modules/api_rays
+   modules/api_surfaces
+   modules/api_tolerancing
+   modules/api_visualization
 
 
 .. toctree::

@@ -1,3 +1,13 @@
+"""Surface Group
+
+This module contains the SurfaceGroup class, which represents a group of
+surfaces in an optical system. The SurfaceGroup class provides methods for
+tracing rays through the surfaces, adding and removing surfaces, and
+converting the group to and from a dictionary for serialization.
+
+Kramer Harrison, 2024
+"""
+
 from typing import List
 from copy import deepcopy
 import numpy as np

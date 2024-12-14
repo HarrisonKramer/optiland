@@ -1,3 +1,12 @@
+"""Polynomial XY Variable Module
+
+This module contains the PolynomialCoeffVariable class, which represents a
+variable for a polynomial coefficient of a PolynomialGeometry. The class
+inherits from the VariableBehavior class.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 from optiland.optimization.variable.base import VariableBehavior
 

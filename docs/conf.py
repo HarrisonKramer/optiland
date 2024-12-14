@@ -2,20 +2,23 @@ import os
 import sys
 
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../optiland/'))
 
 project = 'Optiland'
 copyright = '2024, Kramer Harrison'
 author = 'Kramer Harrison'
-release = '0.1.5'
+release = '0.2.0'
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.napoleon',
+              "sphinx.ext.intersphinx",
               'sphinx.ext.viewcode',
               'nbsphinx',
               'sphinx_gallery.gen_gallery']
 
+add_module_names = False  # Remove module names from class and function names
 autosummary_generate = True  # Automatically generate summaries
 
 templates_path = ['_templates']
@@ -31,6 +34,15 @@ sphinx_gallery_conf = {
 }
 
 autodoc_mock_imports = ['numpy', 'yaml', 'scipy', 'matplotlib', 'numba',
-                        'pandas']
+                        'pandas', 'vtk']
 
 pygments_style = 'sphinx'
+
+# Autodoc configuration: include only public members by default
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": False,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": True,
+}

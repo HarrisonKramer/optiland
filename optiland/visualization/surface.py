@@ -1,3 +1,10 @@
+"""Surface Visualization Module
+
+This module contains classes for visualizing optical surfaces in 2D and 3D.
+
+Kramer Harrison, 2024
+"""
+
 import numpy as np
 import vtk
 from optiland.rays import RealRays

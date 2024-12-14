@@ -1,3 +1,13 @@
+"""Base Variable Module
+
+This module contains the base class for a variable in an optic system. The
+VariableBehavior class is an abstract class that represents the behavior of a
+variable in an optic system. It is used as a base class for all variables in
+the optimization process.
+
+Kramer Harrison, 2024
+"""
+
 from abc import ABC, abstractmethod
 
 

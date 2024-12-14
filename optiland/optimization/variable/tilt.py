@@ -1,3 +1,12 @@
+"""Tilt Variable Module
+
+This module contains the TiltVariable class, which represents a variable for
+the tilt of an optic surface. The tilt variable can be used to optimize the
+tilt of a surface in an optical system.
+
+Kramer Harrison, 2024
+"""
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

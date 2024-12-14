@@ -1,10 +1,11 @@
-"""Optiland PSF Module
+"""Point Spread Function (PSF) Module
 
-This module provides functionality for simulating and analyzing the Point
-Spread Function (PSF) of optical systems using Fast Fourier Transform (FFT).
-It includes capabilities for generating PSF from given wavefront aberrations,
-visualizing the PSF in both 2D and 3D projections, and calculating the Strehl
-ratio, which is a measure of the quality of an optical system.
+This module provides functionality for simulating and analyzing the Pointp
+spread function (PSF) of optical systems using the Fast Fourier Transform
+(FFT). It includes capabilities for generating PSF from given wavefront
+aberrations, visualizing the PSF in both 2D and 3D projections, and
+calculating the Strehl ratio, which is a measure of the quality of an optical
+system.
 
 Kramer Harrison, 2023
 """
