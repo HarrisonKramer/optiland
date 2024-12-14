@@ -32,8 +32,8 @@ Optiland is built with the following principles in mind:
 - **Speed and Performance**: Leveraging Python’s power (NumPy, SciPy, etc.) alongside extensible algorithms ensures fast, scalable solutions for complex optical systems.
 - **Collaboration and Community**: Optiland is open-source under the MIT License, welcoming contributions from anyone with an interest in advancing optical design tools.
 
-How to Use This Guide
----------------------
+What to Expect in This Guide
+----------------------------
 
 Here’s a quick overview of what you’ll find in the Developer’s Guide:
 
