@@ -73,7 +73,7 @@ Python code to generate this 3D visualization:
    contributing
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API Reference
 
    api
