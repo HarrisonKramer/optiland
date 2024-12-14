@@ -13,7 +13,7 @@ For the latest development version, you can clone the repository and install it 
 .. code-block:: bash
 
    git clone https://github.com/HarrisonKramer/optiland.git
-   cd Optiland
+   cd optiland
    pip install -e .
 
 Installation details are also outlined in the :ref:`installation` section of the documentation.

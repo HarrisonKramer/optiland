@@ -1,7 +1,7 @@
+.. _installation:
+
 Installation
 ===================================
-
-.. _installation:
 
 Optiland can be installed via pip or directly from source.
 
