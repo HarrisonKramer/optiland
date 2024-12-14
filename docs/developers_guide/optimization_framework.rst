@@ -85,7 +85,7 @@ Typical Optimization Process
 
 .. code:: python
 
-   problem.info()
+   problem.info()  # print optimization problem details
    print(result)  # standard output from scipy.optimize.minimize
 
 Understanding Operands
