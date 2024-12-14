@@ -21,6 +21,7 @@ The guide is intended to be a living document that evolves with the package.
    developers_guide/installation
    developers_guide/getting_started
    developers_guide/architecture
+   developers_guide/ray_overview
    developers_guide/surface_overview
    developers_guide/geometry_overview
    developers_guide/raytracing_framework

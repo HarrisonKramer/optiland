@@ -31,7 +31,7 @@ coordinates interactions between key components. It encapsulates:
 - **Pickup and Solve Managers**: Tools for linking parameters between surfaces and solving specific system constraints.
 
 Overview of Key Modules
-------------------------
+-----------------------
 
 - **Optic Class**: The central container for an optical system. It manages fields, wavelengths, surfaces, ray generation, and utility tools like paraxial calculations and aberration helpers. The `Optic` class serves as the interface for operations such as optimization, analysis, and tolerancing.
 - **Surface Group**: A collection of surfaces within the `Optic` class. Each surface defines an optical interface with attributes like geometry, materials, coatings, and optional apertures.

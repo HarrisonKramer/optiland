@@ -81,4 +81,4 @@ Once you’ve run the example simulation, explore the following areas:
 - **Use the analysis tools**: Evaluate system performance with tools like spot diagrams or wavefront analysis.
 - **Experiment with optimization**: Learn how to optimize lens thickness, curvature, and other parameters for specific design goals.
 
-For more examples, see the :ref:`learning_guide`.
+For more examples, see the :ref:`example_gallery` or learn Optiland step-by-step with the :ref:`learning_guide`.
