@@ -71,3 +71,6 @@ Adding a new analysis type is straightforward:
 
 - Create a new analysis class with methods to perform ray tracing and compute results.
 - Use Optiland's ray tracing framework as needed to simplify implementation.
+
+.. tip::
+   See individual analysis class documentation for parameter details or the :ref:`example_gallery` example code.
