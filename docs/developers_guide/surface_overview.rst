@@ -38,6 +38,7 @@ Surfaces are combined into a **Surface Group**, which manages a collection of su
 - Tracks the ordered list of surfaces in the optical system.
 - Propagates rays through the system, invoking surface-specific logic at each step.
 - Records ray interactions for use in subsequent analyses.
+- Exposes methods for adding, removing, and modifying surfaces in the system.
 
 .. tip::
    The Surface Group allows efficient iteration over multiple surfaces, simplifying complex ray tracing operations.
@@ -46,13 +47,16 @@ Surface Factory
 ---------------
 
 To streamline surface creation, Optiland includes a **Surface Factory**. The factory:
+
 - Generates the appropriate surface type based on user input.
+- Configures the surface with the specified geometry, material, coatings, and other properties.
 - Adds the surface to the Surface Group at the specified position in the system, based on the surface index.
 
 Extensibility
 -------------
 
 The surface framework is designed for extensibility:
+
 - Custom geometries, coatings, or aperture definitions can be added by subclassing existing components. These may be added to any surface instance.
 - The Surface Factory can be extended to handle new surface types.
 
