@@ -1,4 +1,4 @@
-"""RMS vs. Field Analysis
+"""RMS versus Field Analysis
 
 This module enables the calculation of both the RMS spot size and the RMS
 wavefront error versus field coordinate of an optical system.
