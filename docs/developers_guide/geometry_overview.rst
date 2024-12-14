@@ -10,6 +10,7 @@ Key Components
 --------------
 
 A geometry is defined by:
+
 - **Coordinate System**: Each geometry relies on a `CoordinateSystem` object, which specifies:
 
   - Position: `x`, `y`, `z` (surface origin in the global coordinate space)
@@ -30,6 +31,7 @@ Intersection and Normal Computation
 -----------------------------------
 
 Geometries provide methods for:
+
 1. **Finding the Intersection Point**:
 
    - For simple shapes (e.g., planes, spheres, conics), this is computed using closed-form equations.
