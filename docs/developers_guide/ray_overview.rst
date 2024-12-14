@@ -8,8 +8,8 @@ Ray Representation
 ------------------
 Rays are the fundamental elements of the ray tracing process. A ray consists of the following attributes:
 
-- **Origin (`x`, `y`, `z`)**: The starting point of the ray.
-- **Direction (`L`, `M`, `N`)**: The ray's unit vector indicating its direction.
+- **Origin (x, y, z)**: The starting point of the ray.
+- **Direction (L, M, N)**: The ray's unit vector indicating its direction.
 - **Wavelength**: The wavelength of the ray in the system.
 - **Intensity**: The ray's relative intensity.
 - **Optical Path Length (OPL)**: The accumulated optical path the ray has traveled, weighted by refractive index.
@@ -58,6 +58,6 @@ Extensibility
 The framework is designed to be extensible:
 - New ray types can be added by subclassing the `BaseRays` base class.
 - Custom ray generators can be implemented by following the existing interface.
-- Additional tracing logic can be integrated into the Surface Group for specialized applications.
+- Additional tracing logic can be integrated into the surface `trace` method for specialized applications.
 
 For a practical example of ray tracing, see the :ref:`getting_started` section.
