@@ -115,9 +115,12 @@ class Tolerancing:
             # run optimizer for compensating the perturbations
             self.compensator.run()
 
-            # record the optimized values
-            result = {f'C{i}: {str(var)}': var.value
-                      for i, var in enumerate(self.compensator.variables)}
+            # undo scaling and record the optimized values
+            result = {}
+            for i, var in enumerate(self.compensator.variables):
+                result[f'C{i}: {str(var)}'] = \
+                    var.variable.inverse_scale(var.value)
+
         return result
 
     def evaluate(self):
