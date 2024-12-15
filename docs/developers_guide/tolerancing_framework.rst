@@ -10,7 +10,7 @@ Core Concepts
 
 The tolerancing framework is built around the following key components:
 
-- **Variables**: System parameters subject to perturbations, such as surface curvatures, thicknesses, or material indices. These are tied to the same variable definitions used in the optimization framework, ensuring seamless integration and flexibility.
+- **Variables**: System parameters subject to perturbations, such as surface curvatures, thicknesses, or material indices. These are tied to the same variable definitions used in the optimization framework.
 
 - **Operands**: Metrics used to quantify the system’s performance or deviations due to perturbations. These are also reused from the optimization framework, enabling compatibility with a wide range of analysis metrics.
 

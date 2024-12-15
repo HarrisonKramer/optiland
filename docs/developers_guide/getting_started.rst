@@ -54,8 +54,8 @@ visualizes the system, and traces some rays.
     # draw the system in 2D
     system.draw(num_rays=5)
 
-    # trace some rays
-    rays = system.trace(Hx=0, Hy=0, wavelength=0.587, num_rays=128, distribution='uniform')
+    # trace some rays (~32x32 rays total)
+    rays = system.trace(Hx=0, Hy=0, wavelength=0.587, num_rays=32, distribution='uniform')
 
     # print the first 10 ray y intersection points on the image plane
     print(rays.y[:10])
@@ -71,6 +71,8 @@ Save this script as `example_simulation.py` and run it using:
 .. code-block:: bash
 
    python example_simulation.py
+
+Alternatively, you can run the script in an interactive Python environment like Jupyter Notebook.
 
 You should see a 2D plot of rays passing through the lens. Experiment with different parameters (e.g., radius of curvature, conic) to observe how the system behaves.
 

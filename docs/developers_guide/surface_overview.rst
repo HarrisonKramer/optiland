@@ -37,7 +37,6 @@ Surfaces are combined into a **Surface Group**, which manages a collection of su
 
 - Tracks the ordered list of surfaces in the optical system.
 - Propagates rays through the system, invoking surface-specific logic at each step.
-- Records ray interactions for use in subsequent analyses.
 - Exposes methods for adding, removing, and modifying surfaces in the system.
 
 .. tip::

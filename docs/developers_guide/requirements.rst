@@ -18,7 +18,7 @@ The library does not impose specific hardware requirements. However, for large-s
 Dependencies
 ------------
 
-The following Python libraries are required to use Optiland. Most of these dependencies are automatically installed when you install Optiland via `pip`:
+The following Python libraries are required to use Optiland. These dependencies are automatically installed when you install Optiland via `pip`:
 
 - `numpy` (for vectorized ray tracing)
 - `scipy` (for optimization routines)

@@ -3,7 +3,7 @@ Optiland File Format
 
 The Optiland file format is a **JSON-based format** designed for saving and loading optical systems in a human-readable
 and easily extensible way. This format captures the full state of an `Optic` instance, including all of its attributes and
-associated data, enabling seamless serialization and deserialization of optical designs.
+associated data.
 
 Overview
 --------

@@ -7,7 +7,7 @@ variables. The framework integrates tightly with the `Optic` class.
 
 The Optiland optimization framework includes the following components:
 
-- **Operands**: Quantitative metrics for evaluating optical system performance.
+- **Operands**: Quantitative metrics for evaluating optical system performance or properties (e.g., RMS spot size, wavefront error, etc.).
 - **Variables**: System parameters that can be adjusted (e.g., surface curvatures, separations).
 - **Optimization Problem Class**: Encapsulates the problem definition, linking operands and variables.
 - **Optimizers**: Algorithms for solving optimization problems, such as gradient-based methods or evolutionary strategies.
@@ -20,14 +20,16 @@ Components Explained
 
    - The `OptimizationProblem` class orchestrates the optimization process.
    - Key responsibilities include:
+
      - Adding **operands** to define the merit function.
      - Adding **variables** to define the parameters to optimize.
-     - Computing the overall objective function.
+     - Computing the overall objective function value.
 
 2. **Optimizers**:
 
    - A base `Optimizer` class wraps `scipy.optimize.minimize` and provides a unified interface.
    - Built-in optimizers include:
+
      - **Dual Annealing**
      - **Differential Evolution**
      - **Least Squares** (and more)
@@ -36,10 +38,12 @@ Components Explained
 3. **Operands and Variables**:
 
    - **Operands**: Define individual contributions to the merit function. Examples:
+
      - RMS Spot Size
      - Wavefront Error
      - Focal Length
    - **Variables**: Define the parameters to optimize, such as:
+
      - Radius of curvature
      - Conic constants
      - Material refractive indices

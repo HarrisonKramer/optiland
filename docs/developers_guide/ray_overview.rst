@@ -34,7 +34,7 @@ The ray tracing framework uses a **Ray Generator** to produce rays for tracing. 
 
 - Field points
 - Wavelengths
-- Aperture sampling (e.g., grid, random)
+- Aperture sampling (e.g., uniform grid, random, etc.)
 - Polarization state
 - System properties (e.g., F/#, NA, telecentricity)
 
@@ -51,6 +51,7 @@ Ray tracing is performed by sequentially propagating rays across the surfaces in
 4. The rays interact with the surface, modifying their direction, intensity, polarization matrix, and other attributes.
 5. Ray are transformed back to the global coordinate system.
 6. Ray information (intersection points, intensities, etc.) is recorded on the surface for later analysis and visualization.
+7. The process is repeated for each surface in the system.
 
 Paraxial rays follow a similar process but use simplified equations for faster computations.
 
