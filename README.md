@@ -48,6 +48,7 @@ The full documentation for Optiland is hosted on [Read the Docs](https://optilan
 
 Explore the [Example Gallery](https://optiland.readthedocs.io/en/latest/example_gallery.html) for a wide range of lens designs and analyses created with Optiland.
 
+See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide.html) for an extensive overview of the architecture and design of Optiland. See the [API Reference](https://optiland.readthedocs.io/en/latest/api.html) for detailed documentation of all public classes, methods, and functions.
 
 ## Installation
 
