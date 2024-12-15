@@ -39,13 +39,13 @@ class RayOperand:
         Calculates the x-coordinate of the intercept point on a specific
             surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -60,13 +60,13 @@ class RayOperand:
         Calculates the y-coordinate of the intercept point on a specific
             surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -81,13 +81,13 @@ class RayOperand:
         Calculates the z-coordinate of the intercept point on a specific
             surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -101,13 +101,13 @@ class RayOperand:
         """
         Calculates the direction cosine L of the ray on a specific surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -121,13 +121,13 @@ class RayOperand:
         """
         Calculates the direction cosine M of the ray on a specific surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -141,13 +141,13 @@ class RayOperand:
         """
         Calculates the direction cosine N of the ray on a specific surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
-            Px: The x-coordinate of the point on the surface.
-            Py: The y-coordinate of the point on the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
             wavelength: The wavelength of the ray.
 
         Returns:
@@ -162,11 +162,11 @@ class RayOperand:
         """
         Calculates the root mean square (RMS) spot size on a specific surface.
 
-        Parameters:
+        Args:
             optic: The optic object.
             surface_number: The number of the surface.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
             num_rays: The number of rays to trace.
             wavelength: The wavelength of the rays.
             distribution: The distribution of the rays. Default is 'hexapolar'.
@@ -201,10 +201,10 @@ class RayOperand:
         Calculates the mean optical path difference (OPD) difference for a
             given ray distribution.
 
-        Parameters:
+        Args:
             optic: The optic object.
-            Hx: The x-coordinate of the incoming ray direction.
-            Hy: The y-coordinate of the incoming ray direction.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
             num_rays: The number of rays to trace.
             wavelength: The wavelength of the rays.
             distribution: The distribution of the rays.
