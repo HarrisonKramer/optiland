@@ -1,9 +1,9 @@
+.. _learning_guide:
+
 Optiland Learning Guide
 =======================
 
 This learning guide breaks down Optiland into a series of tutorials that cover the basic concepts and functionalities of the package. Each tutorial is a self-contained Jupyter notebook that demonstrates how to perform a specific task using Optiland. The tutorials are designed to be followed sequentially, starting with an introduction to Optiland and progressing to more advanced topics.
-
-.. _learning_guide:
 
 
 1. Introduction to Optiland
