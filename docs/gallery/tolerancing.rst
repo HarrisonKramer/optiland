@@ -9,3 +9,4 @@ This section contains examples of the tolerancing capabilities of the Optiland l
 
     tolerancing/sensitivity
     tolerancing/monte_carlo
+    tolerancing/compensators
