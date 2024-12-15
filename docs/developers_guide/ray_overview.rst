@@ -14,7 +14,7 @@ Rays are the fundamental elements of the ray tracing process. A ray consists of 
 - **Direction (L, M, N)**: The ray's unit vector indicating its direction.
 - **Wavelength**: The wavelength of the ray in the system.
 - **Intensity**: The ray's relative intensity.
-- **Optical Path Length (OPL)**: The accumulated optical path the ray has traveled, weighted by refractive index.
+- **Optical Path Length (OPL)**: The accumulated path the ray has traveled, weighted by refractive index.
 - **Polarization Matrix (optional)**: A 3x3 matrix representing the transformation of a ray's initial electric field into its final state.
 
 .. note::
