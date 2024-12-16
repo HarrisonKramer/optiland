@@ -11,5 +11,6 @@ The following references were used in the development of this project:
 6. Kingslake, R., & Johnson, R. B. (2010). Lens design fundamentals (2nd ed). Elsevier/Academic Press.
 7. Laikin, M. (2007). Lens design (4th ed). CRC Press.
 8. Macleod, H. A. (2018). Thin-film optical filters (Fifth edition). CRC Press.
-9. Smith, W. J. (2005). Modern lens design (2nd ed). McGraw-Hill.
-10. Smith, W. J. (2008). Modern optical engineering : the design of optical systems (4th ed). McGraw-Hill Professional.
+9. Martin, R. C. (2009). Clean code : a handbook of agile software craftsmanship. Prentice Hall.
+10. Smith, W. J. (2005). Modern lens design (2nd ed). McGraw-Hill.
+11. Smith, W. J. (2008). Modern optical engineering : the design of optical systems (4th ed). McGraw-Hill Professional.
