@@ -171,8 +171,15 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Adding new coating types
     - [Tutorial 10c - Custom Optimization Algorithms](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10c_Custom_Optimization_Algorithm.ipynb)
         - Creating a "random walk optimizer" to optimize an aspheric singlet
-11. **Machine Learning in Optical Design**
-    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Jan. 2025)
+11. **Machine Learning in Optical Design** - note that these notebooks are hosted in the [LensAI repository](https://github.com/HarrisonKramer/LensAI)
+    - [Tutorial 11a - Random Forest Regressor to Predict Optimal Lens Properties](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_1/Singlet_RF_Model_RMS_Spot_Size.ipynb)
+        - Demonstrates how to build and train a random forest regressor to predict the radius of curvature of a plano-convex lens in order to minimize the RMS spot size.
+    - [Tutorial 11b - Ray Path Failure Classification Model](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_2/Ray_Path_Failure_Classification_Model.ipynb)
+        - Uses logistic regression to predict ray path failures in a Cooke triplet design.
+    - [Tutorial 11c - Surrogate Ray Tracing Model Using Neural Networks](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_3/Double_Gauss_Surrogate_Model.ipynb)
+        - Builds a neural network surrogate ray tracing model to increase effective "ray tracing" speed by 10,000x.
+    - [Tutorial 11d - Super-Resolution Generative Adversarial Network to Enhance Wavefront Map Data](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_5/SR_GAN_for_wavefront_data.ipynb)
+        - Utilizes a super-resolution GAN (SRGAN) to upscale low-resolution wavefront data into high-resolution data.
 
 
 ## Roadmap
