@@ -7,7 +7,7 @@
 
 <div align="center">
   <a href="https://optiland.readthedocs.io/">
-    <img src="https://github.com/HarrisonKramer/optiland/blob/master/docs/images/optiland.svg" alt="Optiland">
+    <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/optiland.svg" alt="Optiland">
   </a>
 </div>
 
