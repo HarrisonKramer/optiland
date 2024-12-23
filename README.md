@@ -180,6 +180,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Builds a neural network surrogate ray tracing model to increase effective "ray tracing" speed by 10,000x.
     - [Tutorial 11d - Super-Resolution Generative Adversarial Network to Enhance Wavefront Map Data](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_5/SR_GAN_for_wavefront_data.ipynb)
         - Utilizes a super-resolution GAN (SRGAN) to upscale low-resolution wavefront data into high-resolution data.
+    - [Tutorial 11e - Optimization of Aspheric Lenses via Reinforcement Learning](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_4/RL_aspheric_singlet.ipynb)
+        - Reinforcement learning is applied to the optimization of aspheric singlet lenses to generate new lens designs.
 
 
 ## Roadmap
