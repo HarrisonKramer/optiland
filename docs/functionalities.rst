@@ -45,7 +45,7 @@ Compatibility and Interoperability
 
 Performance
 -----------
-- **Performant Ray Tracing**: On a typical modern machine, Optiland achieves speeds of approximately **5 to 10 million ray surfaces per second**, depending on system complexity and ray properties such as polarization.
+- **Ray Tracing Speed**: On a typical modern machine, Optiland achieves speeds of approximately **5 to 10 million ray surfaces per second**, depending on system complexity and ray properties such as polarization.
 - **Use of NumPy and Numba**: Optiland leverages NumPy for array operations and Numba for just-in-time compilation to achieve high performance.
 
 .. note::
