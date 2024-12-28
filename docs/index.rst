@@ -92,6 +92,11 @@ Python code to generate this 3D visualization:
 
    license
 
+.. toctree::
+   :maxdepth: 1
+   :caption: References
+
+   references
 
 .. |br| raw:: html
 

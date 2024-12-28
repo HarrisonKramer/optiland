@@ -115,7 +115,8 @@ class Material(MaterialFile):
         # Filter rows where input string is substring of category_name or name
         dfi = df[
             df['category_name'].str.lower().str.contains(name) |
-            df['name'].str.lower().str.contains(name)
+            df['name'].str.lower().str.contains(name) |
+            df['filename_no_ext'].str.lower().str.contains(name)
         ].copy()
 
         # If reference given, filter rows non-matching rows
@@ -145,7 +146,10 @@ class Material(MaterialFile):
         dfi['similarity_score'] = dfi.apply(
             lambda row: min(
                 self._levenshtein_distance(name, row['category_name'].lower()),
-                self._levenshtein_distance(name, row['name'].lower())
+                self._levenshtein_distance(name, row['name'].lower()),
+                self._levenshtein_distance(
+                    name, row['filename_no_ext'].lower()
+                    ),
             ), axis=1
         )
 
