@@ -7,7 +7,7 @@
 
 <div align="center">
   <a href="https://optiland.readthedocs.io/">
-    <img src="https://github.com/HarrisonKramer/optiland/blob/master/docs/images/optiland.svg" alt="Optiland">
+    <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/optiland.svg" alt="Optiland">
   </a>
 </div>
 
@@ -48,7 +48,7 @@ The full documentation for Optiland is hosted on [Read the Docs](https://optilan
 
 Explore the [Example Gallery](https://optiland.readthedocs.io/en/latest/example_gallery.html) for a wide range of lens designs and analyses created with Optiland.
 
-See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide.html) for an extensive overview of the architecture and design of Optiland. See the [API Reference](https://optiland.readthedocs.io/en/latest/api.html) for detailed documentation of all public classes, methods, and functions.
+See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide.html) for an extensive overview of the architecture and design of Optiland and the [API Reference](https://optiland.readthedocs.io/en/latest/api.html) for detailed documentation of all public classes, methods, and functions.
 
 ## Installation
 
@@ -171,8 +171,17 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Adding new coating types
     - [Tutorial 10c - Custom Optimization Algorithms](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_10c_Custom_Optimization_Algorithm.ipynb)
         - Creating a "random walk optimizer" to optimize an aspheric singlet
-11. **Machine Learning in Optical Design**
-    - Tutorial 11a - Reinforcement Learning for Lens Design - Update in progress (target completion: Jan. 2025)
+11. **Machine Learning in Optical Design** - note that these notebooks are hosted in the [LensAI repository](https://github.com/HarrisonKramer/LensAI)
+    - [Tutorial 11a - Random Forest Regressor to Predict Optimal Lens Properties](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_1/Singlet_RF_Model_RMS_Spot_Size.ipynb)
+        - Demonstrates how to build and train a random forest regressor to predict the radius of curvature of a plano-convex lens in order to minimize the RMS spot size.
+    - [Tutorial 11b - Ray Path Failure Classification Model](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_2/Ray_Path_Failure_Classification_Model.ipynb)
+        - Uses logistic regression to predict ray path failures in a Cooke triplet design.
+    - [Tutorial 11c - Surrogate Ray Tracing Model Using Neural Networks](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_3/Double_Gauss_Surrogate_Model.ipynb)
+        - Builds a neural network surrogate ray tracing model to increase effective "ray tracing" speed by 10,000x.
+    - [Tutorial 11d - Super-Resolution Generative Adversarial Network to Enhance Wavefront Map Data](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_5/SR_GAN_for_wavefront_data.ipynb)
+        - Utilizes a super-resolution GAN (SRGAN) to upscale low-resolution wavefront data into high-resolution data.
+    - [Tutorial 11e - Optimization of Aspheric Lenses via Reinforcement Learning](https://github.com/HarrisonKramer/LensAI/blob/main/notebooks/Example_4/RL_aspheric_singlet.ipynb)
+        - Reinforcement learning is applied to the optimization of aspheric singlet lenses to generate new lens designs.
 
 
 ## Roadmap

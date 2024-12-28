@@ -11,6 +11,7 @@ This section contains the API reference documentation for Optiland.
    modules/api_coatings
    modules/api_core
    modules/api_fileio
+   modules/api_geometries
    modules/api_materials
    modules/api_wavefront
    modules/api_optimization

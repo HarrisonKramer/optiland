@@ -360,7 +360,7 @@ class OPD(Wavefront):
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
         """
-        opd_map = self._generate_opd_map(num_points)
+        opd_map = self.generate_opd_map(num_points)
         if projection == '2d':
             self._plot_2d(data=opd_map, figsize=figsize)
         elif projection == '3d':
@@ -425,7 +425,7 @@ class OPD(Wavefront):
         fig.tight_layout()
         plt.show()
 
-    def _generate_opd_map(self, num_points=256):
+    def generate_opd_map(self, num_points=256):
         """
         Generates the OPD map data.
 
