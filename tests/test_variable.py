@@ -354,3 +354,10 @@ class TestVariableManager:
             assert isinstance(var, variable.Variable)
             assert var.surface_number == i + 1
         assert i == 1
+
+    def test_delitem(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        del var_manager[0]
+        assert len(var_manager) == 0

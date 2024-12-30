@@ -287,3 +287,9 @@ class TestOperandManager:
         manager.add('f1', 1)
         with pytest.raises(ValueError):
             manager[0] = 1
+
+    def test_delitem(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        del manager[0]
+        assert len(manager) == 0
