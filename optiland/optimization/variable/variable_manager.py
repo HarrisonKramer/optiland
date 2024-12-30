@@ -57,6 +57,8 @@ class VariableManager:
 
     def __setitem__(self, index, value):
         """Set the variable at the specified index"""
+        if not isinstance(value, Variable):
+            raise ValueError("Value must be an instance of Variable")
         self.variables[index] = value
 
     def __delitem__(self, index):
