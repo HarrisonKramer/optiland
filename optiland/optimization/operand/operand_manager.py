@@ -39,8 +39,8 @@ class OperandManager:
 
     def __next__(self):
         """Return the next variable in the list"""
-        if self._index < len(self.variables):
-            result = self.variables[self._index]
+        if self._index < len(self.operands):
+            result = self.operands[self._index]
             self._index += 1
             return result
         else:
