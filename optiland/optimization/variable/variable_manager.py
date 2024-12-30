@@ -50,3 +50,15 @@ class VariableManager:
     def __len__(self):
         """Return the number of variables in the list"""
         return len(self.variables)
+
+    def __getitem__(self, index):
+        """Return the variable at the specified index"""
+        return self.variables[index]
+
+    def __setitem__(self, index, value):
+        """Set the variable at the specified index"""
+        self.variables[index] = value
+
+    def __delitem__(self, index):
+        """Delete the variable at the specified index"""
+        del self.variables[index]

@@ -49,3 +49,17 @@ class OperandManager:
     def __len__(self):
         """Return the number of operands in the list"""
         return len(self.operands)
+
+    def __getitem__(self, index):
+        """Return the operand at the specified index"""
+        return self.operands[index]
+
+    def __setitem__(self, index, value):
+        """Set the operand at the specified index"""
+        if not isinstance(value, Operand):
+            raise ValueError("Value must be an instance of Operand")
+        self.operands[index] = value
+
+    def __delitem__(self, index):
+        """Delete the operand at the specified index"""
+        del self.operands[index]
