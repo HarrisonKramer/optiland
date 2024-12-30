@@ -45,3 +45,7 @@ class OperandManager:
             return result
         else:
             raise StopIteration
+
+    def __len__(self):
+        """Return the number of operands in the list"""
+        return len(self.operands)
