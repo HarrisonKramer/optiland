@@ -31,8 +31,7 @@ class Variable:
     Args:
         optic (OpticalSystem): The optical system to which the variable
             belongs.
-        type (str): The type of the variable. Valid types are 'radius',
-            'conic', 'thickness', 'index' and 'asphere_coeff'.
+        type (str): The type of the variable.
         min_val (float or None): The minimum value allowed for the variable.
             Defaults to None.
         max_val (float or None): The maximum value allowed for the variable.
