@@ -11,8 +11,8 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy import optimize
-from optiland.optimization.variable import Variable
-from optiland.optimization.operand import Operand
+from optiland.optimization.variable import VariableManager
+from optiland.optimization.operand import OperandManager
 
 
 class OptimizationProblem:
@@ -40,27 +40,27 @@ class OptimizationProblem:
     """
 
     def __init__(self):
-        self.operands = []
-        self.variables = []
+        self.operands = OperandManager()
+        self.variables = VariableManager()
         self.initial_value = 0.0
 
     def add_operand(self, operand_type, target, weight=1, input_data={}):
         """Add an operand to the merit function"""
-        self.operands.append(Operand(operand_type, target, weight, input_data))
+        self.operands.add(operand_type, target, weight, input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
         """Add a variable to the merit function"""
-        self.variables.append(Variable(optic, variable_type, **kwargs))
+        self.variables.add(optic, variable_type, **kwargs)
 
     def clear_operands(self):
         """Clear all operands from the merit function"""
         self.initial_value = 0.0
-        self.operands = []
+        self.operands.clear()
 
     def clear_variables(self):
         """Clear all variables from the merit function"""
         self.initial_value = 0.0
-        self.variables = []
+        self.variables.clear()
 
     def fun_array(self):
         """Array of operand weighted deltas squared"""

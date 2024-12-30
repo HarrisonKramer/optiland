@@ -238,3 +238,58 @@ class TestOperand:
 
     def test_repr(self):
         assert isinstance(repr(operand.operand_registry), str)
+
+
+class TestOperandManager:
+
+    def test_add(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        assert len(manager) == 1
+
+    def test_clear(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        manager.clear()
+        assert len(manager) == 0
+
+    def test_iter(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        manager.add('f2', 1)
+        for op in manager:
+            assert isinstance(op, operand.Operand)
+
+    def test_getitem(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        assert isinstance(manager[0], operand.Operand)
+
+    def test_setitem(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        manager[0] = operand.Operand('f2', 1, 1, {})
+        assert len(manager) == 1
+
+    def test_len(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        manager.add('f2', 1)
+        assert len(manager) == 2
+
+    def test_getitem_error(self):
+        manager = operand.OperandManager()
+        with pytest.raises(IndexError):
+            manager[0]
+
+    def test_setitem_invalid_type(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        with pytest.raises(ValueError):
+            manager[0] = 1
+
+    def test_delitem(self):
+        manager = operand.OperandManager()
+        manager.add('f1', 1)
+        del manager[0]
+        assert len(manager) == 0
