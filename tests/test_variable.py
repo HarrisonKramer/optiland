@@ -337,3 +337,20 @@ class TestVariableManager:
         with pytest.raises(IndexError):
             var_manager[0] = variable.Variable(optic, 'radius',
                                                surface_number=2)
+
+    def test_setitem_invalid_type(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        with pytest.raises(ValueError):
+            var_manager[0] = 'invalid'
+
+    def test_iterable(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, 'radius', surface_number=2)
+        for i, var in enumerate(var_manager):
+            assert isinstance(var, variable.Variable)
+            assert var.surface_number == i + 1
+        assert i == 1
