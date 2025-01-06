@@ -12,7 +12,7 @@ Surface Components
 A surface consists of several components that define its optical properties:
 
 - **Geometry**: The shape of the surface (e.g., planar, spherical, aspheric, freeform). This includes the surface's coordinate system.
-- **Materials**: The material type before and after the surface, which determines the refractive index and absorption coefficient.
+- **Materials**: The material type before and after the surface, which determines the refractive index and extinction coefficient.
 - **Coatings**: Coatings (e.g., thin films) applied to the surface for modifying reflection, transmission, and/or polarization properties.
 - **Stop Surface Flag**: Indicates if the surface is the aperture stop of the system.
 - **Reflective Flag**: Indicates if the surface is reflective (e.g., mirror) or refractive (e.g., lens).

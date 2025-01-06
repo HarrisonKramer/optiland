@@ -343,7 +343,7 @@ def test_refractive_index(abbe_material):
     assert pytest.approx(value, rel=1e-5) == 1.4999167964912952
 
 
-def test_absorption_coefficient(abbe_material):
+def test_extinction_coefficient(abbe_material):
     wavelength = 0.58756  # in microns
     assert abbe_material.k(wavelength) == 0
 
