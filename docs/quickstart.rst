@@ -15,6 +15,12 @@ Optiland "Hello, World"
    lens = CookeTriplet()
    lens.draw3D()
 
+.. figure:: images/cooke.png
+   :alt: Cooke Triplet Lens System
+   :align: center
+
+   This shows the resulting 3D visualization of the Cooke triplet lens system.
+
 Optiland for Beginners
 ----------------------
 
