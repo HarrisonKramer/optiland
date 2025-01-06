@@ -116,6 +116,8 @@ class SurfaceGroup:
             if surface.is_stop:
                 return index
 
+        raise ValueError('No stop surface found.')
+
     @property
     def num_surfaces(self):
         """int: the number of surfaces"""
