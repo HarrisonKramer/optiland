@@ -17,7 +17,7 @@ Optiland "Hello, World"
 
 .. figure:: images/cooke.png
    :alt: Cooke Triplet Lens System
-   :align: center
+   :width: 600px
 
    This shows the resulting 3D visualization of the Cooke triplet lens system.
 
