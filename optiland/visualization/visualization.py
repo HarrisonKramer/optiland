@@ -67,13 +67,14 @@ class OpticViewer:
                        num_rays=num_rays, distribution=distribution)
         self.system.plot(ax)
 
+        plt.gca().set_facecolor('#f8f9fa')  # off-white background
+        plt.axis('image')
+
         if xlim:
             ax.set_xlim(xlim)
         if ylim:
             ax.set_ylim(ylim)
 
-        plt.gca().set_facecolor('#f8f9fa')  # off-white background
-        plt.axis('image')
         plt.show()
 
 
@@ -177,6 +178,7 @@ class LensInfoViewer:
     Methods:
         view(): Prints the lens information in a tabular format.
     """
+
     def __init__(self, optic):
         self.optic = optic
 
