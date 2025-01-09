@@ -9,3 +9,4 @@ This section demonstrates the capabilities of the Optiland library for designing
 
     freeform/chebyshev
     freeform/polynomial
+    freeform/off_axis_parabola
