@@ -18,3 +18,4 @@ These lenses demonstrate how simple lens systems can be built using Optiland.
    basic_lenses/eyepiece
    basic_lenses/telephoto
    basic_lenses/petzval
+   basic_lenses/heliar
