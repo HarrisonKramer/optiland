@@ -4,6 +4,8 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/2fa0f839a0f3dbc4d5b1/maintainability)](https://codeclimate.com/github/HarrisonKramer/optiland/maintainability)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14588961.svg)](https://doi.org/10.5281/zenodo.14588961)
+
 
 <div align="center">
   <a href="https://optiland.readthedocs.io/">
@@ -94,6 +96,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Focal, Principal, and Nodal points, etc.
     - [Tutorial 1c - Saving and Loading Lenses](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1c_Save_and_Load_Files.ipynb)
         - Saving and loading lens files in a json format
+    - [Tutorial 1d - Using the Material Database](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1d_Material_Database.ipynb)
+        - Defining materials for glass, chemicals, organics, gases, or using ideal or parameterized materials.
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system
@@ -188,6 +192,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
+- [ ] **Differentiable Ray Tracer via PyTorch**
+- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
 - [ ] **GUI (based on Qt Quick)**
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 

@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: Optiland
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kramer
+    family-names: Harrison
+    orcid: 'https://orcid.org/0009-0000-5494-139X'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.14588962
+repository-code: 'https://github.com/HarrisonKramer/optiland'
+url: 'https://optiland.readthedocs.io/'
+license: MIT
+version: 0.2.3
+date-released: '2025-01-02'

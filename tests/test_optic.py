@@ -219,3 +219,9 @@ class TestOptic:
     def test_invalid_field_type(self):
         with pytest.raises(ValueError):
             self.optic.set_field_type('invalid')
+
+    def test_no_stop(self):
+        for surface in self.optic.surface_group.surfaces:
+            surface.is_stop = False
+        with pytest.raises(ValueError):
+            self.optic.surface_group.stop_index

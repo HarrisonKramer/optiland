@@ -279,3 +279,85 @@ class TestDecenterVariable:
         self.decenter_var_x = variable.DecenterVariable(self.optic, 1, 'x',
                                                         apply_scaling=False)
         assert np.isclose(self.decenter_var_x.get_value(), 0.0)
+
+
+class TestVariableManager:
+
+    def test_add(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        assert len(var_manager) == 1
+
+    def test_clear(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.clear()
+        assert len(var_manager) == 0
+
+    def test_iter(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, 'radius', surface_number=2)
+        for var in var_manager:
+            assert isinstance(var, variable.Variable)
+
+    def test_getitem(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        assert isinstance(var_manager[0], variable.Variable)
+
+    def test_setitem(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager[0] = variable.Variable(optic, 'radius', surface_number=2)
+        assert isinstance(var_manager[0], variable.Variable)
+        assert var_manager[0].surface_number == 2
+        assert len(var_manager) == 1
+
+    def test_len(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, 'radius', surface_number=2)
+        assert len(var_manager) == 2
+
+    def test_getitem_index_error(self):
+        var_manager = variable.VariableManager()
+        with pytest.raises(IndexError):
+            var_manager[0]
+
+    def test_setitem_index_error(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        with pytest.raises(IndexError):
+            var_manager[0] = variable.Variable(optic, 'radius',
+                                               surface_number=2)
+
+    def test_setitem_invalid_type(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        with pytest.raises(ValueError):
+            var_manager[0] = 'invalid'
+
+    def test_iterable(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, 'radius', surface_number=2)
+        for i, var in enumerate(var_manager):
+            assert isinstance(var, variable.Variable)
+            assert var.surface_number == i + 1
+        assert i == 1
+
+    def test_delitem(self):
+        optic = Objective60x()
+        var_manager = variable.VariableManager()
+        var_manager.add(optic, 'radius', surface_number=1)
+        del var_manager[0]
+        assert len(var_manager) == 0

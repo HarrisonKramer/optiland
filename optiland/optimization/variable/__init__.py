@@ -11,3 +11,4 @@ from .asphere_coeff import AsphereCoeffVariable
 from .polynomial_coeff import PolynomialCoeffVariable
 from .chebyshev_coeff import ChebyshevCoeffVariable
 from .variable import Variable
+from .variable_manager import VariableManager
