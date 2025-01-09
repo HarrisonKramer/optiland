@@ -8,6 +8,7 @@ While these lenses are perhaps more complex, they are built using the same basic
 .. nbgallery::
     specialized_lenses/double_Gauss
     specialized_lenses/objective
+    specialized_lenses/f_theta_lens
     specialized_lenses/microscope
     specialized_lenses/catadioptric
     specialized_lenses/infrared
