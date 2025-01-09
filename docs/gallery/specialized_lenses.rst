@@ -1,7 +1,7 @@
 Specialized Lenses
 ==================
 
-While these lenses are more complex, they are still built using the same basic principles as those used in the :ref:`Basic Lenses <basic_lenses>` gallery.
+While these lenses are perhaps more complex, they are built using the same basic principles as those used in the :ref:`Basic Lenses <basic_lenses>` gallery.
 
 .. _advanced_lenses:
 
@@ -11,4 +11,5 @@ While these lenses are more complex, they are still built using the same basic p
     specialized_lenses/microscope
     specialized_lenses/catadioptric
     specialized_lenses/infrared
+    specialized_lenses/infrared_triplet
     specialized_lenses/lithography
