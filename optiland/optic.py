@@ -96,8 +96,7 @@ class Optic:
             return self.polarization
 
     def add_surface(self, new_surface=None, surface_type='standard',
-                    index=None, is_stop=False, material='air', thickness=0,
-                    **kwargs):
+                    index=None, is_stop=False, material='air', **kwargs):
         """
         Adds a new surface to the optic.
 
@@ -112,8 +111,6 @@ class Optic:
             is_stop (bool, optional): Indicates if the surface is the aperture.
             material (str, optional): The material of the surface.
                 Default is 'air'.
-            thickness (float, optional): The thickness of the surface.
-                Default is 0.
             **kwargs: Additional keyword arguments for surface-specific
                 parameters such as radius, conic, dx, dy, rx, ry, aperture.
 
@@ -122,7 +119,7 @@ class Optic:
         """
         self.surface_group.add_surface(
             new_surface=new_surface, surface_type=surface_type, index=index,
-            is_stop=is_stop, material=material, thickness=thickness, **kwargs
+            is_stop=is_stop, material=material, **kwargs
             )
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
