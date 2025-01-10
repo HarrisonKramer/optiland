@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../optiland/'))
 
 project = 'Optiland'
-copyright = '2024, Kramer Harrison'
+copyright = '2024-%Y, Kramer Harrison'
 author = 'Kramer Harrison'
 release = '0.2.0'
 
