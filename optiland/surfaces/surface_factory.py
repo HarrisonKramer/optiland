@@ -141,11 +141,7 @@ class SurfaceFactory:
                                  '"x", "y", "z" position for a previous '
                                  'surface.')
 
-            try:
-                thickness = kwargs['thickness']
-            except ValueError:
-                raise ValueError('Must define "thickness" for surface.')
-
+            thickness = kwargs.get('thickness', 0)
             x = kwargs.get('dx', 0)
             y = kwargs.get('dy', 0)
 
