@@ -1,12 +1,14 @@
 import os
 import sys
+from datetime import datetime
 
 
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../optiland/'))
 
 project = 'Optiland'
-copyright = '2024-%Y, Kramer Harrison'
+current_year = datetime.now().year
+copyright = f'2024-{current_year}, Kramer Harrison'
 author = 'Kramer Harrison'
 release = '0.2.0'
 
