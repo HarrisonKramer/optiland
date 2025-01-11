@@ -1,7 +1,7 @@
 Reflective Systems
 ==================
 
-These examples demonstrate the construction of reflective optical systems using Optiland. Examples also include combination reflective and refractive systems (catadioptric systems).
+These examples demonstrate the construction of reflective optical systems using Optiland. Examples also include several combination reflective and refractive systems (catadioptric systems).
 
 .. _gallery_reflective_systems:
 
