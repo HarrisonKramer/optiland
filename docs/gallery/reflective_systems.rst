@@ -12,3 +12,4 @@ These examples demonstrate the construction of reflective optical systems using 
     reflective/Cassegrain
     reflective/starlight
     reflective/off_axis_parabola
+    reflective/laser_system
