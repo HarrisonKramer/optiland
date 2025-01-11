@@ -40,8 +40,9 @@ class SurfaceFactory:
     def __init__(self, surface_group):
         self._surface_group = surface_group
         self.last_thickness = 0
+        self._use_absolute_cs = False
 
-    def create_surface(self, surface_type, index, is_stop, material, thickness,
+    def create_surface(self, surface_type, index, is_stop, material,
                        **kwargs):
         """
         Create a surface object based on the given parameters.
@@ -51,7 +52,6 @@ class SurfaceFactory:
             index (int): The index of the surface.
             is_stop (bool): Indicates whether the surface is a stop surface.
             material (str): The material of the surface.
-            thickness (float): The thickness of the surface.
             **kwargs: Additional keyword arguments for configuring the surface.
 
         Returns:
@@ -64,7 +64,7 @@ class SurfaceFactory:
             raise ValueError('Surface index cannot be greater than number of '
                              'surfaces.')
 
-        cs = self._configure_cs(index, thickness, **kwargs)
+        cs = self._configure_cs(index, **kwargs)
         material_pre, material_post = self._configure_material(index, material)
         coating = self.configure_coating(kwargs.get('coating', None),
                                          material_pre, material_post)
@@ -115,33 +115,51 @@ class SurfaceFactory:
                        is_reflective=is_reflective, coating=coating,
                        bsdf=bsdf, **filtered_kwargs)
 
-    def _configure_cs(self, index, thickness, **kwargs):
+    def _configure_cs(self, index, **kwargs):
         """
         Configures the coordinate system for a given surface.
 
         Args:
             index (int): The index of the surface.
-            thickness (float): The thickness of the surface.
             **kwargs: Additional keyword arguments for the coordinate system.
                 Options include dx, dy, rx, ry.
 
         Returns:
             CoordinateSystem: The configured coordinate system.
         """
-        dx = kwargs.get('dx', 0)
-        dy = kwargs.get('dy', 0)
+        if 'z' in kwargs:
+            if 'thickness' in kwargs:
+                raise ValueError('Cannot define both "thickness" and "z".')
+
+            x = kwargs.get('x', 0)
+            y = kwargs.get('y', 0)
+            z = kwargs['z']
+            self._use_absolute_cs = True
+        else:
+            if self._use_absolute_cs:
+                raise ValueError('Cannot pass "thickness" after defining '
+                                 '"x", "y", "z" position for a previous '
+                                 'surface.')
+
+            thickness = kwargs.get('thickness', 0)
+            x = kwargs.get('dx', 0)
+            y = kwargs.get('dy', 0)
+
+            if index == 0:  # object surface
+                z = -thickness
+            elif index == 1:
+                z = 0  # first surface, always at zero
+            else:
+                z = float(self._surface_group.positions[index-1]) + \
+                    self.last_thickness
+
+                # self.last_thickness = thickness
+
         rx = kwargs.get('rx', 0)
         ry = kwargs.get('ry', 0)
+        rz = kwargs.get('rz', 0)
 
-        if index == 0:  # object surface
-            z = -thickness
-        elif index == 1:
-            z = 0  # first surface, always at zero
-        else:
-            z = float(self._surface_group.positions[index-1]) + \
-                self.last_thickness
-
-        return CoordinateSystem(x=dx, y=dy, z=z, rx=rx, ry=ry)
+        return CoordinateSystem(x=x, y=y, z=z, rx=rx, ry=ry, rz=rz)
 
     @staticmethod
     def _configure_standard_geometry(cs, **kwargs):

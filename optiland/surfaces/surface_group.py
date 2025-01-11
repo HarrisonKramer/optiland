@@ -159,8 +159,7 @@ class SurfaceGroup:
         return rays
 
     def add_surface(self, new_surface=None, surface_type='standard',
-                    index=None, is_stop=False, material='air', thickness=0,
-                    **kwargs):
+                    index=None, is_stop=False, material='air', **kwargs):
         """
         Adds a new surface to the list of surfaces.
 
@@ -175,11 +174,9 @@ class SurfaceGroup:
             is_stop (bool, optional): Indicates if the surface is the aperture.
             material (str, optional): The material of the surface.
                 Default is 'air'.
-            thickness (float, optional): The thickness of the surface.
-                Default is 0.
             **kwargs: Additional keyword arguments for surface-specific
-                parameters such as radius, conic, dx, dy, rx, ry, aperture,
-                bsdf.
+                parameters such as radius, conic, dx, dy, rx, ry, rz, aperture,
+                bsdf, x, y, z.
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
@@ -189,7 +186,7 @@ class SurfaceGroup:
                 raise ValueError('Must define index when defining surface.')
 
             new_surface = self.surface_factory.create_surface(
-                surface_type, index, is_stop, material, thickness, **kwargs
+                surface_type, index, is_stop, material, **kwargs
                 )
 
         if new_surface.is_stop:
@@ -198,8 +195,7 @@ class SurfaceGroup:
 
         self.surfaces.insert(index, new_surface)
 
-        # record the thickness to the next surface
-        self.surface_factory.last_thickness = thickness
+        self.surface_factory.last_thickness = kwargs.get('thickness', 0)
 
     def remove_surface(self, index):
         """
