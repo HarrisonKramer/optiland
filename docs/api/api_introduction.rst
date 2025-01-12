@@ -1,3 +1,6 @@
+Introduction
+============
+
 This section contains the API reference documentation for Optiland. All public classes, functions, and methods are documented here.
 
 .. figure:: ../images/class_diagram.svg
