@@ -15,7 +15,7 @@ to system definition, raytracing, analysis, optimization, tolerancing, etc.
 The guide is intended to be a living document that evolves with the package.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :numbered:
 
    developers_guide/introduction
