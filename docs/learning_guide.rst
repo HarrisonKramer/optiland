@@ -114,6 +114,8 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
 11. Machine Learning in Optical Design
 --------------------------------------
 
+These examples demonstrate how Optiland can be used in conjunction with machine learning to solve optical design problems.
+Concepts in machine and deep learning are also covered.
 Note that these are hosted on the `LensAI repository <https://github.com/HarrisonKramer/LensAI>`_.
 
 .. toctree::
