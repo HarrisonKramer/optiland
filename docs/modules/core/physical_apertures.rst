@@ -9,5 +9,6 @@
    .. autosummary::
    
       BaseAperture
+      OffsetRadialAperture
       RadialAperture
    
