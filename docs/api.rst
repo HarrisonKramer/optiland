@@ -1,6 +1,3 @@
-Optiland API
-============
-
 This section contains the API reference documentation for Optiland.
 
 .. toctree::

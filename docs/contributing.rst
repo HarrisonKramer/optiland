@@ -1,6 +1,3 @@
-Contributing
-============
-
 .. _contributing:
 
 Thank you for your interest in contributing to **Optiland**! Contributions are welcome in many forms, including but not limited to:
