@@ -1,5 +1,8 @@
 .. _developers_guide:
 
+Developer's Guide
+=================
+
 .. image:: images/developers_guide.png
    :align: center
 
