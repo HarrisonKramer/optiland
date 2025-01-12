@@ -1,19 +1,11 @@
-This section contains the API reference documentation for Optiland.
+This section contains the API reference documentation for Optiland. All public classes, functions, and methods are documented here.
 
-.. toctree::
-   :maxdepth: 1
-   :caption: API Reference
+.. figure:: ../images/class_diagram.svg
+   :alt: Architectural Diagram of Optiland
+   :align: center
+   :figwidth: 100%
 
-   modules/api_analysis
-   modules/api_coatings
-   modules/api_core
-   modules/api_fileio
-   modules/api_geometries
-   modules/api_materials
-   modules/api_wavefront
-   modules/api_optimization
-   modules/api_paraxial
-   modules/api_rays
-   modules/api_surfaces
-   modules/api_tolerancing
-   modules/api_visualization
+   Architectural diagram showing relationships between the `Optic` class, which is the core class for optical systems, and other key components like fields,
+   surfaces, rays, optimization, analysis, and visualization frameworks.
+
+This diagram is not meant to be exhaustive but provides a high-level overview of the core components and their interactions.
