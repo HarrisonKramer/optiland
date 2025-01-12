@@ -45,9 +45,8 @@ Python code to generate this 3D visualization:
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Example Gallery
-   :titlesonly:
 
    gallery/introduction
    gallery/basic_lenses
@@ -59,6 +58,8 @@ Python code to generate this 3D visualization:
    gallery/tolerancing
    gallery/freeforms
 
+
+.. _learning_guide:
 
 .. toctree::
    :maxdepth: 1
