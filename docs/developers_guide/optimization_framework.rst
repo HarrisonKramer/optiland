@@ -113,4 +113,4 @@ Custom operands, variables and optimization algorithms can be added by subclassi
 - Subclass OptimizerGeneric to create a new optimization algorithm.
 
 .. tip::
-   See the :ref:`example_gallery` for demonstrations of custom optimization algorithms and user-defined operands.
+   See the :ref:`Learning Guide <example_gallery>` for demonstrations of custom optimization algorithms and user-defined operands.
