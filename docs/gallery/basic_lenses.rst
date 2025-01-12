@@ -9,8 +9,6 @@ These lenses demonstrate how simple lens systems can be built using Optiland.
 
       These examples illustrate only how to build the lens systems and exclude other analyses or optimization, which are covered in other sections.
 
-.. _basic_lenses:
-
 .. nbgallery::
    basic_lenses/singlet
    basic_lenses/doublet

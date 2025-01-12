@@ -7,11 +7,12 @@ This gallery contains a collection of examples demonstrating the capabilities of
 For more detailed explanations of how to use Optiland, see the step-by-step learning guide.
 
 The following sections are covered:
-1. `Basic lenses <gallery_basic_lenses>`_
-2. `Specialized lenses <gallery_specialized_lenses>`_
-3. `Reflective systems <gallery_reflective_systems>`_
-4. `Analysis <gallery_analysis>`_
-5. `OPD, PSF, and MTF <gallery_opd_psf_mtf>`_
-6. `Optimization <gallery_optimization>`_
-7. `Tolerancing <gallery_tolerancing>`_
-8. `Freeforms <gallery_freeforms>`_
+
+1. :ref:`Basic Lenses <gallery_basic_lenses>`
+2. :ref:`Specialized Lenses <gallery_specialized_lenses>`
+3. :ref:`Refective Systems <gallery_reflective_systems>`
+4. :ref:`Analysis <gallery_analysis>`
+5. :ref:`OPD, PSF, MTF <gallery_opd_psf_mtf>`
+6. :ref:`Optimization <gallery_optimization>`
+7. :ref:`Tolerancing <gallery_tolerancing>`
+8. :ref:`Freeform <gallery_freeforms>`

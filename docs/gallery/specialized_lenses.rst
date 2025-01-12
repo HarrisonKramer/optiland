@@ -3,9 +3,7 @@
 Specialized Lenses
 ==================
 
-While these lenses are perhaps more complex, they are built using the same basic principles as those used in the :ref:`Basic Lenses <basic_lenses>` gallery.
-
-.. _advanced_lenses:
+While these lenses are perhaps more complex, they are built using the same basic principles as those used in the :ref:`Basic Lenses <gallery_basic_lenses>` gallery.
 
 .. nbgallery::
     specialized_lenses/double_Gauss
