@@ -1,5 +1,5 @@
-License
-=======
+MIT License
+-----------
 
 .. _license:
 

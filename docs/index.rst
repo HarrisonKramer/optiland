@@ -47,23 +47,45 @@ Python code to generate this 3D visualization:
 .. toctree::
    :maxdepth: 2
    :caption: Example Gallery
-   :titlesonly:
 
-   example_gallery
+   gallery/introduction
+   gallery/basic_lenses
+   gallery/specialized_lenses
+   gallery/reflective_systems
+   gallery/analysis
+   gallery/opd_psf_mtf
+   gallery/optimization
+   gallery/tolerancing
+   gallery/freeforms
 
+
+.. _learning_guide:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Learning Guide
 
    learning_guide
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Developer's Guide
+   :numbered:
 
-   developers_guide
+   developers_guide/introduction
+   developers_guide/requirements
+   developers_guide/installation
+   developers_guide/getting_started
+   developers_guide/architecture
+   developers_guide/ray_overview
+   developers_guide/surface_overview
+   developers_guide/geometry_overview
+   developers_guide/analysis_framework
+   developers_guide/optimization_framework
+   developers_guide/tolerancing_framework
+   developers_guide/visualization_framework
+   developers_guide/optiland_file_format
 
 
 .. toctree::
@@ -73,10 +95,23 @@ Python code to generate this 3D visualization:
    contributing
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API Reference
 
-   api
+   api/api_introduction
+   api/api_analysis
+   api/api_coatings
+   api/api_core
+   api/api_fileio
+   api/api_geometries
+   api/api_materials
+   api/api_wavefront
+   api/api_optimization
+   api/api_paraxial
+   api/api_rays
+   api/api_surfaces
+   api/api_tolerancing
+   api/api_visualization
 
 
 .. toctree::

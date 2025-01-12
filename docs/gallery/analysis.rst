@@ -1,9 +1,9 @@
+.. _gallery_analysis:
+
 Analysis
 ========
 
 This section constains examples of typical analysis tasks that can be performed with the **Optiland** library. These examples are intended to be illustrative and not exhaustive. For a complete list of available functions and classes, please refer to the `Optiland` API.
-
-.. _gallery_analysis:
 
 .. nbgallery::
     analysis/spot

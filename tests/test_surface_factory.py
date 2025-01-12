@@ -160,3 +160,45 @@ class TestSurfaceFactory:
         )
         assert isinstance(surface, Surface)
         assert isinstance(surface.coating, FresnelCoating)
+
+    def test_invalid_z_with_thickness(self):
+        with pytest.raises(ValueError):
+            self.factory.create_surface(
+                surface_type='standard',
+                index=1,
+                is_stop=False,
+                material='air',
+                thickness=5,
+                z=1
+            )
+
+    def test_absolute_coordinates(self):
+        surface = self.factory.create_surface(
+            surface_type='standard',
+            index=1,
+            is_stop=False,
+            material='air',
+            radius=10,
+            conic=0,
+            x=1,
+            y=2,
+            z=3
+        )
+        assert isinstance(surface, Surface)
+        assert surface.geometry.cs.x == 1
+        assert surface.geometry.cs.y == 2
+        assert surface.geometry.cs.z == 3
+        assert self.factory._use_absolute_cs
+
+    def test_invalid_thickness_for_abs_cs(self):
+        self.factory._use_absolute_cs = True
+        with pytest.raises(ValueError):
+            self.factory.create_surface(
+                surface_type='standard',
+                index=1,
+                is_stop=False,
+                material='air',
+                radius=10,
+                conic=0,
+                thickness=5
+            )

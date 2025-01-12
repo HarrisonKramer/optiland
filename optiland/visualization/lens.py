@@ -181,7 +181,8 @@ class Lens3D(Lens2D):
             geometry = surf.surf.geometry
             if not geometry.is_symmetric:
                 return False
-            if geometry.cs.rx != 0 or geometry.cs.ry != 0:
+            if (geometry.cs.rx != 0 or geometry.cs.ry != 0 or
+                    geometry.cs.x != 0 or geometry.cs.y != 0):
                 return False
         return True
 

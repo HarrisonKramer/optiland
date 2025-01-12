@@ -1,9 +1,9 @@
+.. _gallery_optimization:
+
 Optimization
 ============
 
 These examples demonstrate the optimization capabilities of optical systems using **Optiland**.
-
-.. _gallery_optimization:
 
 .. nbgallery::
     optimization/rms_spot_size
@@ -13,4 +13,5 @@ These examples demonstrate the optimization capabilities of optical systems usin
     optimization/constrained
     optimization/global
     optimization/asphere
+    optimization/beam_expander
     optimization/freeform

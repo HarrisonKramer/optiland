@@ -1,8 +1,5 @@
 .. _functionalities:
 
-Optiland Functionalities
-========================
-
 Optiland provides a comprehensive suite of tools for the design, analysis, and optimization of optical systems. Below is an overview of its key functionalities:
 
 Design Tools
