@@ -110,3 +110,18 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
     examples/Tutorial_10a_Custom_Surface_Types
     examples/Tutorial_10b_Custom_Coating_Types
     examples/Tutorial_10c_Custom_Optimization_Algorithm
+
+11. Machine Learning in Optical Design
+--------------------------------------
+
+Note that these are hosted on the `LensAI repository <https://github.com/HarrisonKramer/LensAI>`_.
+
+.. toctree::
+    :maxdepth: 1
+
+    examples/Singlet_RF_Model_RMS_Spot_Size
+    examples/Ray_Path_Failure_Classification_Model
+    examples/Double_Gauss_Surrogate_Model
+    examples/SR_GAN_for_wavefront_data
+    examples/RL_aspheric_singlet
+    examples/Misalignment_Prediction_Cooke_Triplet
