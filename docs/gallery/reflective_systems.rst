@@ -1,3 +1,5 @@
+.. _gallery_reflective_systems:
+
 Reflective Systems
 ==================
 

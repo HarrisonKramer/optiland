@@ -1,3 +1,5 @@
+.. _gallery_basic_lenses:
+
 Basic Lenses
 ============
 

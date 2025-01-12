@@ -1,3 +1,5 @@
+.. _gallery_specialized_lenses:
+
 Specialized Lenses
 ==================
 

@@ -1,3 +1,5 @@
+.. _gallery_opd_psf_mtf:
+
 OPD, PSF, and MTF
 =================
 

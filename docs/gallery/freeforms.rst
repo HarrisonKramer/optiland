@@ -1,3 +1,5 @@
+.. _gallery_freeforms:
+
 Freeform Optics
 ===============
 
