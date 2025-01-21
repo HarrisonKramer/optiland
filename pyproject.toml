@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optiland"
-version = "0.2.4"
+version = "0.2.5"
 authors = [
   { name="Kramer Harrison", email="kdanielharrison@gmail.com" },
 ]
@@ -16,6 +16,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
+    "setuptools",
     "numpy",
     "scipy",
     "pandas",
@@ -35,8 +36,8 @@ license = { text = "MIT License" }
 [tool.setuptools]
 packages = [
     "optiland",
-    "database",
     "optiland.analysis",
+    "optiland.database",
     "optiland.fileio",
     "optiland.geometries",
     "optiland.materials",
@@ -51,4 +52,4 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"database" = ["*.csv", "*.yml", "**/*.yml"]
+"optiland.database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]
