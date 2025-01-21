@@ -8,8 +8,7 @@ to define the optical properties of a material (or glass) in Optiland.
 
 Kramer Harrison, 2024
 """
-
-import os
+import importlib.resources as pkg_resources
 import pandas as pd
 from optiland.materials.material_file import MaterialFile
 
@@ -41,8 +40,7 @@ class Material(MaterialFile):
     """
 
     _df = None
-    _filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             '../../database/catalog_nk.csv')
+    _filename = pkg_resources.path('optiland.database', 'catalog_nk.csv')
 
     def __init__(self, name, reference=None, robust_search=True,
                  min_wavelength=None, max_wavelength=None):
@@ -217,9 +215,10 @@ class Material(MaterialFile):
         material_data = filtered_df.loc[0].to_dict()
         filename = filtered_df.loc[0, 'filename']
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        database_dir = os.path.join(current_dir, '../../database/data-nk')
-        full_filename = os.path.join(database_dir, filename)
+        with pkg_resources.path(
+            'optiland.database.data_nk', filename
+        ) as full_filename:
+            full_filename = str(full_filename)
         return full_filename, material_data
 
     def to_dict(self):
