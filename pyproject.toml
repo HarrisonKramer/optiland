@@ -24,11 +24,13 @@ numba = "*"
 requests = "*"
 seaborn = "*"
 
+[tool.poetry.include]
+files = [
+    "optiland/database/*.csv",
+    "optiland/database/*.npy",
+    "optiland/database/**/*.yml"
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.include]
-"optiland/database/*.csv" = true
-"optiland/database/*.npy" = true
-"optiland/database/**/*.yml" = true
