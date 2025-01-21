@@ -231,7 +231,7 @@ class TestLensInfoViewer:
     def test_view_material_file(self, capsys):
         lens = ReverseTelephoto()
         filename = os.path.join(os.path.dirname(__file__),
-                                '../database/data-nk/glass/hoya/', 'LAC9.yml')
+                                'database/data-nk/glass/hoya/', 'LAC9.yml')
         mat = MaterialFile(filename)
         lens.surface_group.surfaces[2].material_post = mat
         viewer = LensInfoViewer(lens)
