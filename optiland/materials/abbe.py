@@ -7,7 +7,7 @@ coefficient is ignored in this model and is always set to zero.
 
 Kramer Harrison, 2024
 """
-import importlib.resources as pkg_resources
+import pkg_resources
 import numpy as np
 from optiland.materials.base import BaseMaterial
 
@@ -65,11 +65,9 @@ class AbbeMaterial(BaseMaterial):
         X_poly = np.hstack([X**i for i in range(1, 4)])
 
         # File contains fit coefficients
-        with pkg_resources.path(
+        coefficients_file = pkg_resources.resource_filename(
             'optiland.database', 'glass_model_coefficients.npy'
-        ) as coefficients_file:
-            coefficients = np.load(coefficients_file)
-
+        )
         coefficients = np.load(coefficients_file)
         return X_poly @ coefficients
 
