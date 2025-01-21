@@ -40,7 +40,7 @@ def generate_database(output_file):
 
     # read each file and record wavelength ranges
     for k, row in tqdm(df.iterrows(), total=df.shape[0]):
-        filename = os.path.join('../../database/data-nk', row['filename'])
+        filename = os.path.join('data-nk', row['filename'])
         with open(filename, 'r', encoding='utf-8') as file:
             yaml_data = yaml.safe_load(file)
             try:
