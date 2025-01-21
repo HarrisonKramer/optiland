@@ -32,12 +32,12 @@ license = { text = "MIT License" }
 [project.urls]
 "Homepage" = "https://github.com/HarrisonKramer/optiland"
 
-[tool.setuptools]
+[tool.setuptools.packages.find]
 packages = [
     "optiland",
-    "database",
     "optiland.analysis",
     "optiland.fileio",
+    "optiland.database",
     "optiland.geometries",
     "optiland.materials",
     "optiland.optimization.operand",
@@ -51,4 +51,4 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-"database" = ["*.csv", "*.yml", "**/*.yml"]
+"optiland.database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]
