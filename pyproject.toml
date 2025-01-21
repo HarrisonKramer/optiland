@@ -1,36 +1,54 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "optiland"
-version = "0.2.4"
-description = "Comprehensive optical design, optimization, and analysis in Python."
-authors = ["Kramer Harrison <kdanielharrison@gmail.com>"]
+version = "0.2.5"
+authors = [
+  { name="Kramer Harrison", email="kdanielharrison@gmail.com" },
+]
+description = ""
 readme = "README.md"
-license = "MIT"
-homepage = "https://github.com/HarrisonKramer/optiland"
-python = ">=3.9"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "pyyaml",
+    "matplotlib",
+    "vtk",
+    "tabulate",
+    "numba",
+    "requests",
+    "seaborn"
+]
+license = { text = "MIT License" }
 
-[tool.poetry.dependencies]
-numpy = "*"
-scipy = "*"
-pandas = "*"
-pyyaml = "*"
-matplotlib = "*"
-vtk = "*"
-tabulate = "*"
-numba = "*"
-requests = "*"
-seaborn = "*"
+[project.urls]
+"Homepage" = "https://github.com/HarrisonKramer/optiland"
 
-[tool.poetry.include]
-files = [
-    "optiland/database/*.csv",
-    "optiland/database/*.npy",
-    "optiland/database/**/*.yml"
+[tool.setuptools]
+packages = [
+    "optiland",
+    "optiland.analysis",
+    "optiland.database",
+    "optiland.fileio",
+    "optiland.geometries",
+    "optiland.materials",
+    "optiland.optimization.operand",
+    "optiland.optimization.variable",
+    "optiland.optimization",
+    "optiland.rays",
+    "optiland.samples",
+    "optiland.surfaces",
+    "optiland.tolerancing",
+    "optiland.visualization"
 ]
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools.package-data]
+"optiland.database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]
