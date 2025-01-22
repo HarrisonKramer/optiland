@@ -86,6 +86,12 @@ class ZemaxFileReader:
             'STOP': self._read_stop,
             'MODE': self._read_mode,
             'GCAT': self._read_glass_catalog,
+            'FWGN': self._read_field_weights,
+            'VDXN': self._read_vignette_decenter_x,
+            'VDYN': self._read_vignette_decenter_y,
+            'VCXN': self._read_vignette_compress_x,
+            'VCYN': self._read_vignette_compress_y,
+            'VANN': self._read_vignette_tangent_angle,
         }
 
         self._current_surf = -1
@@ -427,3 +433,69 @@ class ZemaxFileReader:
         """
         key = f'param_{int(data[1])-1}'
         self._current_surf_data[key] = float(data[2])
+
+    def _read_field_weights(self, data):
+        """
+        Extracts the field weights data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['weights'] = \
+            [float(value) for value in data[1:num_fields+1]]
+
+    def _read_vignette_decenter_x(self, data):
+        """
+        Extracts the vignette decenter x data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['vignette_decenter_x'] = \
+            [float(value) for value in data[1:num_fields+1]]
+
+    def _read_vignette_decenter_y(self, data):
+        """
+        Extracts the vignette decenter y data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['vignette_decenter_y'] = \
+            [float(value) for value in data[1:num_fields+1]]
+
+    def _read_vignette_compress_x(self, data):
+        """
+        Extracts the vignette compress x data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['vignette_compress_x'] = \
+            [float(value) for value in data[1:num_fields+1]]
+
+    def _read_vignette_compress_y(self, data):
+        """
+        Extracts the vignette compress y data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['vignette_compress_y'] = \
+            [float(value) for value in data[1:num_fields+1]]
+
+    def _read_vignette_tangent_angle(self, data):
+        """
+        Extracts the vignette tangent angle data.
+
+        Args:
+            data (list): List of data values extracted from the Zemax file.
+        """
+        num_fields = self.data['fields']['num_fields']
+        self.data['fields']['vignette_tangent_angle'] = \
+            [float(value) for value in data[1:num_fields+1]]
