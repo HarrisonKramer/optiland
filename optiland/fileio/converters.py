@@ -94,8 +94,30 @@ class ZemaxToOpticConverter:
         Configure the fields for the optic.
         """
         self.optic.set_field_type(field_type=self.data['fields']['type'])
-        for fx, fy in zip(self.data['fields']['x'], self.data['fields']['y']):
-            self.optic.add_field(x=fx, y=fy)
+
+        field_x = self.data['fields']['x']
+        field_y = self.data['fields']['y']
+
+        try:
+            vig_x = self.data['fields']['vignette_compress_x']
+            vig_y = self.data['fields']['vignette_compress_y']
+        except KeyError:
+            vig_x = [0.0] * len(field_x)
+            vig_y = [0.0] * len(field_y)
+
+        try:
+            dx = self.data['fields']['vignette_decenter_x']
+            dy = self.data['fields']['vignette_decenter_y']
+
+            # TODO: Implement decentering.
+            if any(dx) or any(dy):
+                print('Warning: Vignette decentering is not supported.')
+        except KeyError:
+            pass
+
+        for k in range(len(field_x)):
+            self.optic.add_field(x=field_x[k], y=field_y[k],
+                                 vx=vig_x[k], vy=vig_y[k])
 
     def _configure_wavelengths(self):
         """
