@@ -45,7 +45,7 @@ Python code to generate this 3D visualization:
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Example Gallery
 
    gallery/introduction

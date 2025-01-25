@@ -12,3 +12,5 @@ This section contains the API reference documentation for Optiland. All public c
    surfaces, rays, optimization, analysis, and visualization frameworks.
 
 This diagram is not meant to be exhaustive but provides a high-level overview of the core components and their interactions.
+
+The following sections provide detailed information about the various modules and classes in the Optiland package.

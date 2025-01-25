@@ -23,9 +23,7 @@ The guide is intended to be a living document that evolves with the package.
 Purpose
 -------
 The goal of this guide is to demystify the structure and functionality of the Optiland codebase.
-It provides a roadmap to help developers navigate its architecture, explains core components in
-detail, and accelerates the learning process for new contributors.
-The ultimate goal of this guide is to help the end user to:
+Ultimately, the guide is to intended to help end users to:
 
 - Add new functionality with minimal friction.
 - Extend existing frameworks to meet custom needs.
