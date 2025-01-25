@@ -289,6 +289,13 @@ class TestZemaxToOpticConverter:
         with pytest.raises(ValueError, match='Unsupported surface type.'):
             zemax_file_reader.generate_lens()
 
+    def test_configure_fields(self, zemax_file_reader):
+        vig = [0.5, 0.5, 0.5]
+        zemax_file_reader.data['fields']['vignette_compress_x'] = vig
+        zemax_file_reader.data['fields']['vignette_compress_y'] = vig
+        lens = zemax_file_reader.generate_lens()
+        assert lens.fields.get_vig_factor(Hx=0, Hy=1) == (0.5, 0.5)
+
 
 def test_save_load_json_obj():
     mat = Material('SF11')
