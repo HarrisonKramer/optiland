@@ -14,6 +14,7 @@ that require a numerical solution to find the intersection point with a ray.
    geometries.base
    geometries.chebyshev
    geometries.even_asphere
+   geometries.odd_asphere
    geometries.newton_raphson
    geometries.plane
    geometries.polynomial
