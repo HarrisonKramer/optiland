@@ -50,6 +50,24 @@ class TestSurfaceFactory:
         assert isinstance(surface.material_pre, IdealMaterial)
         assert isinstance(surface.material_post, IdealMaterial)
 
+    def test_create_surface_odd_asphere(self):
+        surface = self.factory.create_surface(
+            surface_type='odd_asphere',
+            index=1,
+            is_stop=False,
+            material='air',
+            thickness=5,
+            radius=10,
+            conic=0,
+            coefficients=[1, 2, 3]
+        )
+        assert isinstance(surface, Surface)
+        assert surface.geometry.radius == 10
+        assert surface.geometry.k == 0
+        assert surface.geometry.c == [1, 2, 3]
+        assert isinstance(surface.material_pre, IdealMaterial)
+        assert isinstance(surface.material_post, IdealMaterial)
+
     def test_create_surface_polynomial(self):
         surface = self.factory.create_surface(
             surface_type='polynomial',
