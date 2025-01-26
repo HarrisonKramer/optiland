@@ -66,6 +66,9 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self.norm_y = norm_y
         self.is_symmetric = False
 
+    def __str__(self):
+        return 'Chebyshev Polynomial'
+
     def sag(self, x=0, y=0):
         """
         Calculates the sag of the Chebyshev polynomial surface at the given

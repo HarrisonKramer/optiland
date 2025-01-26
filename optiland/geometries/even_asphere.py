@@ -50,6 +50,9 @@ class EvenAsphere(NewtonRaphsonGeometry):
         self.c = coefficients
         self.is_symmetric = True
 
+    def __str__(self):
+        return 'Even Asphere'
+
     def sag(self, x=0, y=0):
         """
         Calculates the sag of the asphere at the given coordinates.

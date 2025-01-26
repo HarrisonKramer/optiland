@@ -49,6 +49,9 @@ class OddAsphere(EvenAsphere):
         super().__init__(coordinate_system, radius, conic,
                          tol, max_iter, coefficients)
 
+    def __str__(self):
+        return 'Odd Asphere'
+
     def sag(self, x=0, y=0):
         """
         Calculates the sag of the asphere at the given coordinates.

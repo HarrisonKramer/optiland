@@ -59,6 +59,9 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         if len(self.c) == 0:
             self.c = np.zeros((1, 1))
 
+    def __str__(self):
+        return 'Polynomial XY'
+
     def sag(self, x=0, y=0):
         """
         Calculates the sag of the polynomial surface at the given coordinates.
