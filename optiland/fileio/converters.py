@@ -73,7 +73,7 @@ class ZemaxToOpticConverter:
         surf_type = data['type']
         if surf_type == 'standard':
             return None
-        elif surf_type == 'even_asphere':
+        elif surf_type in ['even_asphere', 'odd_asphere']:
             coefficients = []
             for k in range(8):
                 coefficients.append(data[f'param_{k}'])
