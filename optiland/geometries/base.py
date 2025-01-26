@@ -26,7 +26,7 @@ class BaseGeometry(ABC):
         BaseGeometry._registry[cls.__name__] = cls
 
     def __str__(self):
-        return f'{self.__class__.__name__}'
+        return f'{self.__class__.__name__}'  # pragma: no cover
 
     @abstractmethod
     def sag(self, x=0, y=0):

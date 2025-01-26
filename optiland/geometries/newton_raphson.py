@@ -36,7 +36,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         self.max_iter = max_iter
 
     def __str__(self):
-        return 'Newton Raphson'
+        return 'Newton Raphson'  # pragma: no cover
 
     @abstractmethod
     def sag(self, x=0, y=0):
