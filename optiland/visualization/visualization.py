@@ -194,7 +194,9 @@ class LensInfoViewer:
         surf_type = []
         for surf in self.optic.surface_group.surfaces:
             g = surf.geometry
-            if hasattr(g, '__str__') and g.__str__ is not object.__str__:
+
+            # check if __str__ method exists
+            if type(g).__dict__.get('__str__'):
                 surf_type.append(str(surf.geometry))
             else:
                 raise ValueError('Unknown surface type')
