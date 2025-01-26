@@ -13,6 +13,7 @@ where
 
 Kramer Harrison, 2025
 """
+import warnings
 import numpy as np
 from optiland.geometries.even_asphere import EvenAsphere
 
@@ -66,7 +67,7 @@ class OddAsphere(EvenAsphere):
         z = r2 / (self.radius *
                   (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
-            z += Ci * r ** i
+            z += Ci * r ** (i + 1)
 
         return z
 
@@ -89,9 +90,17 @@ class OddAsphere(EvenAsphere):
         dfdx = x / denom
         dfdy = y / denom
 
-        for i, Ci in enumerate(self.c):
-            dfdx += i * x * Ci * r**(i/2 - 1)
-            dfdy += i * y * Ci * r**(i/2 - 1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for i, Ci in enumerate(self.c):
+                x_term = (i + 1) * x * Ci * r**((i - 1) / 2)
+                y_term = (i + 1) * y * Ci * r**((i - 1) / 2)
+
+                x_term[~np.isfinite(x_term)] = 0
+                y_term[~np.isfinite(y_term)] = 0
+
+                dfdx += x_term
+                dfdy += y_term
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
 
