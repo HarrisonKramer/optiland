@@ -296,6 +296,11 @@ class TestZemaxToOpticConverter:
         lens = zemax_file_reader.generate_lens()
         assert lens.fields.get_vig_factor(Hx=0, Hy=1) == (0.5, 0.5)
 
+    def test_configure_fields_decenter(self, zemax_file_reader):
+        zemax_file_reader.data['fields']['vignette_decenter_x'] = [0.5]
+        zemax_file_reader.data['fields']['vignette_decenter_y'] = [0.5]
+        zemax_file_reader.generate_lens()
+
 
 def test_save_load_json_obj():
     mat = Material('SF11')
