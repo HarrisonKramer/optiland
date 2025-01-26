@@ -49,6 +49,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
         self.is_symmetric = True
+        self.order = 2  # used for optimization scaling
 
     def __str__(self):
         return 'Even Asphere'

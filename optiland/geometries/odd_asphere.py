@@ -49,6 +49,7 @@ class OddAsphere(EvenAsphere):
                  tol=1e-10, max_iter=100, coefficients=[]):
         super().__init__(coordinate_system, radius, conic,
                          tol, max_iter, coefficients)
+        self.order = 1  # used for optimization scaling
 
     def __str__(self):
         return 'Odd Asphere'
