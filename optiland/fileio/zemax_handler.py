@@ -418,7 +418,8 @@ class ZemaxFileReader:
             data (list): List of data values extracted from the Zemax file.
         """
         type_map = {'STANDARD': 'standard',
-                    'EVENASPH': 'even_asphere'}
+                    'EVENASPH': 'even_asphere',
+                    'ODDASPHE': 'odd_asphere'}
         try:
             self._current_surf_data['type'] = type_map[data[1]]
         except KeyError:

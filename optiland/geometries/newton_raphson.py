@@ -35,6 +35,9 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         self.tol = tol
         self.max_iter = max_iter
 
+    def __str__(self):
+        return 'Newton Raphson'  # pragma: no cover
+
     @abstractmethod
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry.

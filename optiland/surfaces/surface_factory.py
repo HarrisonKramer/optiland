@@ -17,6 +17,7 @@ from optiland.geometries import (
     Plane,
     StandardGeometry,
     EvenAsphere,
+    OddAsphere,
     PolynomialGeometry,
     ChebyshevPolynomialGeometry)
 from optiland.surfaces.object_surface import ObjectSurface
@@ -80,6 +81,10 @@ class SurfaceFactory:
             },
             'even_asphere': {
                 'geometry': self._configure_even_asphere_geometry,
+                'expected_params': ['radius', 'conic', 'coefficients']
+            },
+            'odd_asphere': {
+                'geometry': self._configure_odd_asphere_geometry,
                 'expected_params': ['radius', 'conic', 'coefficients']
             },
             'polynomial': {
@@ -204,6 +209,29 @@ class SurfaceFactory:
         coefficients = kwargs.get('coefficients', [])
 
         geometry = EvenAsphere(cs, radius, conic, tol, max_iter, coefficients)
+
+        return geometry
+
+    @staticmethod
+    def _configure_odd_asphere_geometry(cs, **kwargs):
+        """
+        Configures an odd asphere geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius, conic, and coefficients.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+        tol = kwargs.get('tol', 1e-6)
+        max_iter = kwargs.get('max_iter', 100)
+        coefficients = kwargs.get('coefficients', [])
+
+        geometry = OddAsphere(cs, radius, conic, tol, max_iter, coefficients)
 
         return geometry
 

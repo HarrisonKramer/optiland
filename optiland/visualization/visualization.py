@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import vtk
-from optiland import geometries, materials
+from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
@@ -193,12 +193,11 @@ class LensInfoViewer:
 
         surf_type = []
         for surf in self.optic.surface_group.surfaces:
-            if isinstance(surf.geometry, geometries.EvenAsphere):
-                surf_type.append('Even Asphere')
-            elif isinstance(surf.geometry, geometries.Plane):
-                surf_type.append('Planar')
-            elif isinstance(surf.geometry, geometries.StandardGeometry):
-                surf_type.append('Standard')
+            g = surf.geometry
+
+            # check if __str__ method exists
+            if type(g).__dict__.get('__str__'):
+                surf_type.append(str(surf.geometry))
             else:
                 raise ValueError('Unknown surface type')
 

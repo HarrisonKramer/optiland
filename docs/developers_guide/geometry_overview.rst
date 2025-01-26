@@ -50,6 +50,7 @@ Optiland includes a wide range of built-in geometries:
 - **Planes**: Flat surfaces with infinite or finite extent.
 - **Spheres and Conics**: Defined by radius of curvature and conic constant.
 - **Even Aspheres**: Described by polynomial terms for deviations from a sphere.
+- **Odd Aspheres**: Similar to even aspheres but with additional terms for odd powers.
 - **Polynomial XY and Chebyshev Surfaces**: Useful for advanced freeform optical systems.
 - **Custom Geometries**: Users can easily extend the framework by subclassing the `BaseGeometry` (analytical geometries) or `NewtonRaphsonGeometry` (iterative geometries) classes.
 

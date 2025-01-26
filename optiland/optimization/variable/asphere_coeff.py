@@ -32,6 +32,10 @@ class AsphereCoeffVariable(VariableBehavior):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.coeff_number = coeff_number
 
+        # Scaling changes with the order of the asphere per coefficient
+        surf = self._surfaces.surfaces[self.surface_number]
+        self.order = surf.geometry.order
+
     def get_value(self):
         """
         Get the current value of the aspheric coefficient.
@@ -64,7 +68,7 @@ class AsphereCoeffVariable(VariableBehavior):
         Args:
             value: The value to scale
         """
-        return value * 10 ** (4 + 2 * self.coeff_number)
+        return value * 10 ** (4 + self.order * self.coeff_number)
 
     def inverse_scale(self, scaled_value):
         """
@@ -73,7 +77,7 @@ class AsphereCoeffVariable(VariableBehavior):
         Args:
             scaled_value: The scaled value to inverse scale
         """
-        return scaled_value / 10 ** (4 + 2 * self.coeff_number)
+        return scaled_value / 10 ** (4 + self.order * self.coeff_number)
 
     def __str__(self):
         """

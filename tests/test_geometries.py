@@ -11,6 +11,11 @@ def test_unknown_geometry():
 
 
 class TestPlane:
+    def test_str(self):
+        cs = CoordinateSystem()
+        plane = geometries.Plane(cs)
+        assert str(plane) == 'Planar'
+
     def test_plane_sag(self):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
@@ -87,6 +92,11 @@ class TestPlane:
 
 
 class TestStandardGeometry:
+    def test_str(self):
+        cs = CoordinateSystem()
+        geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
+        assert str(geometry) == 'Standard'
+
     def test_sag_sphere(self):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.0)
@@ -203,6 +213,12 @@ class TestStandardGeometry:
 
 
 class TestEvenAsphere:
+    def test_str(self):
+        cs = CoordinateSystem()
+        geometry = geometries.EvenAsphere(cs, radius=10.0, conic=0.5,
+                                          coefficients=[1e-2])
+        assert str(geometry) == 'Even Asphere'
+
     def test_sag(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(cs, radius=27.0, conic=0.0,
@@ -286,6 +302,16 @@ class TestEvenAsphere:
 
 
 class TestPolynomialGeometry:
+    def test_str(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = geometries.PolynomialGeometry(cs, radius=22.0, conic=0.0,
+                                                 coefficients=coefficients)
+        assert str(geometry) == 'Polynomial XY'
+
     def test_sag(self):
         cs = CoordinateSystem()
         coefficients = np.zeros((3, 3))
@@ -389,6 +415,18 @@ class TestPolynomialGeometry:
 
 
 class TestChebyshevGeometry:
+    def test_str(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        coefficients[1] = [0.1, 1e-2, -1e-3]
+        coefficients[2] = [0.2, 1e-2, 0.0]
+        geometry = \
+            geometries.ChebyshevPolynomialGeometry(cs, radius=22.0, conic=0.0,
+                                                   coefficients=coefficients,
+                                                   norm_x=10, norm_y=10)
+        assert str(geometry) == 'Chebyshev Polynomial'
+
     def test_sag(self):
         cs = CoordinateSystem()
         coefficients = np.zeros((3, 3))
@@ -516,3 +554,59 @@ class TestChebyshevGeometry:
         new_geometry = \
             geometries.ChebyshevPolynomialGeometry.from_dict(geometry_dict)
         assert new_geometry.to_dict() == geometry_dict
+
+
+class TestOddAsphere:
+    def test_sag(self):
+        cs = CoordinateSystem()
+        geometry = geometries.OddAsphere(cs, radius=27.0, conic=0.0,
+                                         coefficients=[1e-3, -1e-5])
+
+        # Test sag at (0, 0)
+        assert geometry.sag() == pytest.approx(0.0, abs=1e-10)
+
+        # Test sag at (1, 1)
+        assert geometry.sag(1, 1) == pytest.approx(0.03845668813684687,
+                                                   abs=1e-10)
+
+        # Test sag at (-2, 3)
+        assert geometry.sag(-2, 3) == pytest.approx(0.24529923075615997,
+                                                    abs=1e-10)
+
+        # Test array input
+        x = np.array([0, 3, 8])
+        y = np.array([0, -7, 2.1])
+        sag = np.array([0.0, 1.10336808, 1.30564148])
+        assert np.allclose(geometry.sag(x, y), sag)
+
+    def test_distance(self):
+        cs = CoordinateSystem()
+        geometry = geometries.OddAsphere(cs, radius=-41.1, conic=0.0,
+                                         coefficients=[1e-3, -1e-5, 1e-7])
+
+        # Test distance for a single ray
+        rays = RealRays(1.0, 2.0, -3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        distance = geometry.distance(rays)
+        assert distance == pytest.approx(2.94131486, abs=1e-8)
+
+        # Test distance for multiple rays
+        rays = RealRays([1.0, 2.0], [2.0, 3.0], [-3.0, -4.0], [0.0, 0.0],
+                        [0.0, 0.0], [1.0, 1.0], [1.0, 1.0], [1.0, 1.0])
+        distance = geometry.distance(rays)
+
+    def test_surface_normal(self):
+        cs = CoordinateSystem()
+        geometry = geometries.OddAsphere(cs, radius=10.0, conic=0.5,
+                                         coefficients=[1e-2, -1e-5])
+
+        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+        nx, ny, nz = geometry.surface_normal(rays)
+        assert nx == pytest.approx(0.10537434, abs=1e-8)
+        assert ny == pytest.approx(0.21074867, abs=1e-8)
+        assert nz == pytest.approx(-0.97184425, abs=1e-8)
+
+    def test_str(self):
+        cs = CoordinateSystem()
+        geometry = geometries.OddAsphere(cs, radius=10.0, conic=0.5,
+                                         coefficients=[1e-2, -1e-5])
+        assert str(geometry) == 'Odd Asphere'

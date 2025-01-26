@@ -44,6 +44,9 @@ class StandardGeometry(BaseGeometry):
         self.k = conic
         self.is_symmetric = True
 
+    def __str__(self):
+        return 'Standard'
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.
 

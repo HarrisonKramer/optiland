@@ -23,6 +23,9 @@ class Plane(BaseGeometry):
         self.radius = np.inf
         self.is_symmetric = True
 
+    def __str__(self):
+        return 'Planar'
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
 

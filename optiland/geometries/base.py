@@ -25,6 +25,9 @@ class BaseGeometry(ABC):
         super().__init_subclass__(**kwargs)
         BaseGeometry._registry[cls.__name__] = cls
 
+    def __str__(self):
+        return f'{self.__class__.__name__}'  # pragma: no cover
+
     @abstractmethod
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry.
