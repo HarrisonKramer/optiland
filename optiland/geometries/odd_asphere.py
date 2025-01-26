@@ -29,6 +29,7 @@ class OddAsphere(EvenAsphere):
     - R is the radius of curvature
     - k is the conic constant
     - Ci are the aspheric coefficients
+    - i is an integer from 1 to n
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.
@@ -96,8 +97,8 @@ class OddAsphere(EvenAsphere):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for i, Ci in enumerate(self.c):
-                x_term = (i + 1) * x * Ci * r**((i - 1) / 2)
-                y_term = (i + 1) * y * Ci * r**((i - 1) / 2)
+                x_term = (i + 1) * x * Ci * r**(i - 1)
+                y_term = (i + 1) * y * Ci * r**(i - 1)
 
                 x_term[~np.isfinite(x_term)] = 0
                 y_term[~np.isfinite(y_term)] = 0
