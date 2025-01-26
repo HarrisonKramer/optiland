@@ -341,6 +341,9 @@ class TestMaterial:
         }
         assert materials.Material.from_dict(material_dict).name == 'SF11'
 
+    def test_raise_warning(self):
+        materials.Material('LITHOTEC-CAF2')  # prints a warning
+
 
 @pytest.fixture
 def abbe_material():
@@ -384,3 +387,11 @@ def test_abbe_from_dict():
     abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
     assert abbe_material.index == 1.5
     assert abbe_material.abbe == 50
+
+
+def test_abbe_out_of_bounds_wavelength():
+    abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+    with pytest.raises(ValueError):
+        abbe_material.n(0.3)
+    with pytest.raises(ValueError):
+        abbe_material.n(0.8)

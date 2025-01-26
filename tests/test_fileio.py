@@ -239,6 +239,36 @@ class TestZemaxFileReader:
         val = zemax_file_reader._current_surf_data['param_0']
         assert val == 2
 
+    def test_read_vignette_decenter_x(self, zemax_file_reader):
+        data = ['VDXN', '1', '2']
+        zemax_file_reader._read_vignette_decenter_x(data)
+        val = zemax_file_reader.data['fields']['vignette_decenter_x']
+        assert val == [1, 2]
+
+    def test_read_vignette_decenter_y(self, zemax_file_reader):
+        data = ['VDYN', '1', '2']
+        zemax_file_reader._read_vignette_decenter_y(data)
+        val = zemax_file_reader.data['fields']['vignette_decenter_y']
+        assert val == [1, 2]
+
+    def test_read_vignette_compress_x(self, zemax_file_reader):
+        data = ['VCXN', '1', '2']
+        zemax_file_reader._read_vignette_compress_x(data)
+        val = zemax_file_reader.data['fields']['vignette_compress_x']
+        assert val == [1, 2]
+
+    def test_read_vignette_compress_y(self, zemax_file_reader):
+        data = ['VCYN', '1', '2']
+        zemax_file_reader._read_vignette_compress_y(data)
+        val = zemax_file_reader.data['fields']['vignette_compress_y']
+        assert val == [1, 2]
+
+    def test_read_vignette_tangent_angle(self, zemax_file_reader):
+        data = ['VANN', '1', '2']
+        zemax_file_reader._read_vignette_tangent_angle(data)
+        val = zemax_file_reader.data['fields']['vignette_tangent_angle']
+        assert val == [1, 2]
+
 
 class TestZemaxToOpticConverter:
     def test_generate_lens(self, zemax_file_reader):
@@ -258,6 +288,18 @@ class TestZemaxToOpticConverter:
         zemax_file_reader.data['surfaces'][0]['type'] = 'invalid'
         with pytest.raises(ValueError, match='Unsupported surface type.'):
             zemax_file_reader.generate_lens()
+
+    def test_configure_fields(self, zemax_file_reader):
+        vig = [0.5, 0.5, 0.5]
+        zemax_file_reader.data['fields']['vignette_compress_x'] = vig
+        zemax_file_reader.data['fields']['vignette_compress_y'] = vig
+        lens = zemax_file_reader.generate_lens()
+        assert lens.fields.get_vig_factor(Hx=0, Hy=1) == (0.5, 0.5)
+
+    def test_configure_fields_decenter(self, zemax_file_reader):
+        zemax_file_reader.data['fields']['vignette_decenter_x'] = [0.5]
+        zemax_file_reader.data['fields']['vignette_decenter_y'] = [0.5]
+        zemax_file_reader.generate_lens()
 
 
 def test_save_load_json_obj():
