@@ -331,6 +331,9 @@ class TestMaterial:
         }
         assert materials.Material.from_dict(material_dict).name == 'SF11'
 
+    def test_raise_warning(self):
+        materials.Material('LITHOTEC-CAF2')  # prints a warning
+
 
 @pytest.fixture
 def abbe_material():
