@@ -4,7 +4,6 @@ contained in yaml files, then records relevant material data in a csv file.
 The csv file is used directly in Optiland to retrieve material data. See
 the Material class in optiland.materials.py for more information.
 """
-# pragma: no cover
 import os
 from io import StringIO
 import yaml
