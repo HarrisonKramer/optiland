@@ -11,6 +11,7 @@ properties of the optical system and provides interfaces to core functionalities
    :toctree: core/
    :caption: Core Modules
 
+   aberrations
    aperture
    coordinate_system
    distribution
