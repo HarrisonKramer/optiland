@@ -147,9 +147,6 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
         - Analyzing polarization performance
-    - Tutorial 6c - Advanced Polarization - Update in progress (target completion: Jan. 2025)
-        - Waveplates, polarizers, and the Jones matrix
-        - Jones pupils
 7. **Advanced Optical Design**
     - [Tutorial 7a - Lithographic Projection System](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7a_Lithographic_Projection_System.ipynb)
         - Optimizing and Analyzing a Complex Lithography System
