@@ -43,7 +43,8 @@ class OpticViewer:
         self.system = OpticalSystem(optic, self.rays, projection='2d')
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y', figsize=(10, 4), xlim=None, ylim=None):
+             distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
+             reference=None):
         """
         Visualizes the optical system.
 
@@ -60,11 +61,14 @@ class OpticViewer:
                 Defaults to (10, 4).
             xlim (tuple, optional): The x-axis limits. Defaults to None.
             ylim (tuple, optional): The y-axis limits. Defaults to None.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
         """
         _, ax = plt.subplots(figsize=figsize)
 
         self.rays.plot(ax, fields=fields, wavelengths=wavelengths,
-                       num_rays=num_rays, distribution=distribution)
+                       num_rays=num_rays, distribution=distribution,
+                       reference=reference)
         self.system.plot(ax)
 
         plt.gca().set_facecolor('#f8f9fa')  # off-white background
@@ -108,7 +112,8 @@ class OpticViewer3D:
         self.iren = vtk.vtkRenderWindowInteractor()
 
     def view(self, fields='all', wavelengths='primary', num_rays=24,
-             distribution='ring', figsize=(1200, 800), dark_mode=False):
+             distribution='ring', figsize=(1200, 800), dark_mode=False,
+             reference=None):
         """
         Visualizes the optical system in 3D.
 
@@ -125,6 +130,8 @@ class OpticViewer3D:
                 Defaults to (1200, 800).
             dark_mode (bool, optional): Whether to use dark mode.
                 Defaults to False.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
         """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
@@ -135,7 +142,8 @@ class OpticViewer3D:
         self.iren.SetInteractorStyle(style)
 
         self.rays.plot(renderer, fields=fields, wavelengths=wavelengths,
-                       num_rays=num_rays, distribution=distribution)
+                       num_rays=num_rays, distribution=distribution,
+                       reference=reference)
         self.system.plot(renderer)
 
         renderer.GradientBackgroundOn()

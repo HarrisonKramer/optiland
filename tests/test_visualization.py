@@ -65,6 +65,13 @@ class TestOpticViewer:
         plt.close()
 
     @patch('matplotlib.pyplot.show')
+    def test_view_from_optic(self, mock_show):
+        lens = ReverseTelephoto()
+        lens.draw()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
     def test_view_bonded_lens(self, mock_show):
         lens = TessarLens()
         viewer = OpticViewer(lens)
@@ -88,6 +95,44 @@ class TestOpticViewer:
         lens.add_field(y=0)
         viewer = OpticViewer(lens)
         viewer.view()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_chief_and_bundle(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='chief')
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_marginal_and_bundle(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='marginal')
+        mock_show.assert_called_once()
+        plt.close()
+
+    def test_invalid_reference(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        with pytest.raises(ValueError):
+            viewer.view(reference='invalid')
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_chief_only(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='chief', distribution=None)
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_marginal_only(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='marginal', distribution=None)
         mock_show.assert_called_once()
         plt.close()
 
@@ -167,12 +212,69 @@ class TestOpticViewer3D:
         c = viewer.system.components[0]
         assert not c.is_symmetric
 
+    def test_reference_chief_and_bundle(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='chief')
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_reference_marginal_and_bundle(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='marginal')
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_invalid_reference(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with pytest.raises(ValueError):
+            viewer.view(reference='invalid')
+
+    def test_reference_chief_only(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='chief', distribution=None)
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_reference_marginal_only(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='marginal', distribution=None)
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
 
 class TestLensInfoViewer:
     def test_view_standard(self, capsys):
         lens = TessarLens()
         viewer = LensInfoViewer(lens)
         viewer.view()
+        captured = capsys.readouterr()
+        assert 'Type' in captured.out
+        assert 'Radius' in captured.out
+        assert 'Thickness' in captured.out
+        assert 'Material' in captured.out
+        assert 'Conic' in captured.out
+        assert 'Semi-aperture' in captured.out
+
+    def test_view_from_optic(self, capsys):
+        lens = TessarLens()
+        lens.info()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
         assert 'Radius' in captured.out

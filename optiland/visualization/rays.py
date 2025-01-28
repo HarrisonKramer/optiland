@@ -43,7 +43,7 @@ class Rays2D:
         self.r_extent = np.zeros(n)
 
     def plot(self, ax, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y'):
+             distribution='line_y', reference=None):
         """
         Plots the rays for the given fields and wavelengths.
 
@@ -55,6 +55,8 @@ class Rays2D:
             num_rays: The number of rays to trace for each field and
                 wavelength. Default is 3.
             distribution: The distribution of the rays. Default is 'line_y'.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
         """
         if fields == 'all':
             fields = self.optic.fields.get_field_coords()
@@ -65,17 +67,34 @@ class Rays2D:
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
 
-                # trace rays
-                self._trace(field, wavelength, num_rays, distribution)
-
                 # if only one field, use different colors for each wavelength
                 if len(fields) > 1:
                     color_idx = i
                 else:
                     color_idx = j
 
-                # plot lines
-                self._plot_lines(ax, color_idx)
+                if distribution is None:
+                    # trace only for surface extents
+                    self._trace(field, wavelength, num_rays, 'line_y')
+                else:
+                    # trace rays and plot lines
+                    self._trace(field, wavelength, num_rays, distribution)
+                    self._plot_lines(ax, color_idx)
+
+                # trace reference rays and plot lines
+                if reference is not None:
+                    self._trace_reference(field, wavelength, reference)
+                    self._plot_lines(ax, color_idx, linewidth=1.5)
+
+    def _process_traced_rays(self):
+        """Processes the traced rays and updates the surface extents."""
+        self.x = self.optic.surface_group.x
+        self.y = self.optic.surface_group.y
+        self.z = self.optic.surface_group.z
+        self.i = self.optic.surface_group.intensity
+
+        # update surface extents
+        self._update_surface_extents()
 
     def _trace(self, field, wavelength, num_rays, distribution):
         """
@@ -91,13 +110,28 @@ class Rays2D:
             None
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
-        self.x = self.optic.surface_group.x
-        self.y = self.optic.surface_group.y
-        self.z = self.optic.surface_group.z
-        self.i = self.optic.surface_group.intensity
+        self._process_traced_rays()
 
-        # update surface extents
-        self._update_surface_extents()
+    def _trace_reference(self, field, wavelength, reference):
+        """
+        Traces reference rays through the optical system.
+
+        Args:
+            field (tuple): The field coordinates for the ray tracing.
+            wavelength (float): The wavelength of the rays.
+            reference (str): The type of reference rays to trace.
+
+        Returns:
+            None
+        """
+        if reference == 'chief':
+            self.optic.trace_generic(*field, Px=0, Py=0, wavelength=wavelength)
+        elif reference == 'marginal':
+            self.optic.trace_generic(*field, Px=0, Py=1, wavelength=wavelength)
+        else:
+            raise ValueError(f"Invalid ray reference type: {reference}")
+
+        self._process_traced_rays()
 
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
@@ -110,7 +144,7 @@ class Rays2D:
             r_extent_new[i] = np.nanmax(np.hypot(x, y))
         self.r_extent = np.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx):
+    def _plot_lines(self, ax, color_idx, linewidth=1):
         """
         Plots multiple lines on the given axis.
 
@@ -139,9 +173,9 @@ class Rays2D:
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx)
+            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
 
-    def _plot_single_line(self, ax, x, y, z, color_idx):
+    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1):
         """
         Plots a single line on the given axes.
 
@@ -151,12 +185,13 @@ class Rays2D:
             y (array-like): The y-coordinates of the line.
             z (array-like): The z-coordinates of the line.
             color_idx (int): The index for the color to use for the line.
+            linewidth (float): The width of the line. Default is 1.
 
         Returns:
             None
         """
         color = f'C{color_idx}'
-        ax.plot(z, y, color, linewidth=1)
+        ax.plot(z, y, color, linewidth=linewidth)
 
 
 class Rays3D(Rays2D):
@@ -187,7 +222,7 @@ class Rays3D(Rays2D):
                             (0.737, 0.741, 0.133),
                             (0.090, 0.745, 0.812)]
 
-    def _plot_single_line(self, renderer, x, y, z, color_idx):
+    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
         """
         Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
@@ -199,6 +234,7 @@ class Rays3D(Rays2D):
             z (list of float): The z-coordinates of the line.
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
+            linewidth (float): The width of the line. Default is 1.
         """
         color = self._rgb_colors[color_idx % 10]
         for k in range(1, len(x)):
@@ -213,7 +249,7 @@ class Rays3D(Rays2D):
             line_mapper.SetInputConnection(line_source.GetOutputPort())
             line_actor = vtk.vtkActor()
             line_actor.SetMapper(line_mapper)
-            line_actor.GetProperty().SetLineWidth(1)
+            line_actor.GetProperty().SetLineWidth(linewidth)
             line_actor.GetProperty().SetColor(color)
 
             renderer.AddActor(line_actor)
