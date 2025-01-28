@@ -185,6 +185,7 @@ class Rays2D:
             y (array-like): The y-coordinates of the line.
             z (array-like): The z-coordinates of the line.
             color_idx (int): The index for the color to use for the line.
+            linewidth (float): The width of the line. Default is 1.
 
         Returns:
             None
@@ -221,7 +222,7 @@ class Rays3D(Rays2D):
                             (0.737, 0.741, 0.133),
                             (0.090, 0.745, 0.812)]
 
-    def _plot_single_line(self, renderer, x, y, z, color_idx):
+    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
         """
         Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
@@ -233,6 +234,7 @@ class Rays3D(Rays2D):
             z (list of float): The z-coordinates of the line.
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
+            linewidth (float): The width of the line. Default is 1.
         """
         color = self._rgb_colors[color_idx % 10]
         for k in range(1, len(x)):
@@ -247,7 +249,7 @@ class Rays3D(Rays2D):
             line_mapper.SetInputConnection(line_source.GetOutputPort())
             line_actor = vtk.vtkActor()
             line_actor.SetMapper(line_mapper)
-            line_actor.GetProperty().SetLineWidth(1)
+            line_actor.GetProperty().SetLineWidth(linewidth)
             line_actor.GetProperty().SetColor(color)
 
             renderer.AddActor(line_actor)
