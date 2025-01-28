@@ -65,6 +65,13 @@ class TestOpticViewer:
         plt.close()
 
     @patch('matplotlib.pyplot.show')
+    def test_view_from_optic(self, mock_show):
+        lens = ReverseTelephoto()
+        lens.draw()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
     def test_view_bonded_lens(self, mock_show):
         lens = TessarLens()
         viewer = OpticViewer(lens)
@@ -257,6 +264,17 @@ class TestLensInfoViewer:
         lens = TessarLens()
         viewer = LensInfoViewer(lens)
         viewer.view()
+        captured = capsys.readouterr()
+        assert 'Type' in captured.out
+        assert 'Radius' in captured.out
+        assert 'Thickness' in captured.out
+        assert 'Material' in captured.out
+        assert 'Conic' in captured.out
+        assert 'Semi-aperture' in captured.out
+
+    def test_view_from_optic(self, capsys):
+        lens = TessarLens()
+        lens.info()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
         assert 'Radius' in captured.out
