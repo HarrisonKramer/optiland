@@ -112,7 +112,8 @@ class OpticViewer3D:
         self.iren = vtk.vtkRenderWindowInteractor()
 
     def view(self, fields='all', wavelengths='primary', num_rays=24,
-             distribution='ring', figsize=(1200, 800), dark_mode=False):
+             distribution='ring', figsize=(1200, 800), dark_mode=False,
+             reference=None):
         """
         Visualizes the optical system in 3D.
 
@@ -129,6 +130,8 @@ class OpticViewer3D:
                 Defaults to (1200, 800).
             dark_mode (bool, optional): Whether to use dark mode.
                 Defaults to False.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
         """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
@@ -139,7 +142,8 @@ class OpticViewer3D:
         self.iren.SetInteractorStyle(style)
 
         self.rays.plot(renderer, fields=fields, wavelengths=wavelengths,
-                       num_rays=num_rays, distribution=distribution)
+                       num_rays=num_rays, distribution=distribution,
+                       reference=reference)
         self.system.plot(renderer)
 
         renderer.GradientBackgroundOn()
