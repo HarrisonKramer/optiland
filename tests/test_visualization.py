@@ -91,6 +91,44 @@ class TestOpticViewer:
         mock_show.assert_called_once()
         plt.close()
 
+    @patch('matplotlib.pyplot.show')
+    def test_reference_chief_and_bundle(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='chief')
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_marginal_and_bundle(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='marginal')
+        mock_show.assert_called_once()
+        plt.close()
+
+    def test_invalid_reference(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        with pytest.raises(ValueError):
+            viewer.view(reference='invalid')
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_chief_only(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='chief', distribution=None)
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_reference_marginal_only(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        viewer.view(reference='marginal', distribution=None)
+        mock_show.assert_called_once()
+        plt.close()
+
 
 class TestOpticViewer3D:
     def test_init(self):
@@ -166,6 +204,52 @@ class TestOpticViewer3D:
         viewer.system._identify_components()
         c = viewer.system.components[0]
         assert not c.is_symmetric
+
+    def test_reference_chief_and_bundle(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='chief')
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_reference_marginal_and_bundle(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='marginal')
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_invalid_reference(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with pytest.raises(ValueError):
+            viewer.view(reference='invalid')
+
+    def test_reference_chief_only(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='chief', distribution=None)
+            mock_start.assert_called_once()
+            mock_render.assert_called()
+
+    def test_reference_marginal_only(self):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer3D(lens)
+        with patch.object(viewer.iren, 'Start') as mock_start, \
+             patch.object(viewer.ren_win, 'Render') as mock_render:
+
+            viewer.view(reference='marginal', distribution=None)
+            mock_start.assert_called_once()
+            mock_render.assert_called()
 
 
 class TestLensInfoViewer:
