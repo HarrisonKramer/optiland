@@ -45,7 +45,8 @@ class Optic:
             the optical system.
     """
 
-    def __init__(self):
+    def __init__(self, name:str=None):
+        self.name = name
         self.aperture = None
         self.field_type = None
 
@@ -294,7 +295,7 @@ class Optic:
 
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
-             reference=None):
+             title=None, reference=None):
         """
         Draw a 2D representation of the optical system.
 
@@ -318,7 +319,8 @@ class Optic:
         """
         viewer = OpticViewer(self)
         viewer.view(fields, wavelengths, num_rays, distribution=distribution,
-                    figsize=figsize, xlim=xlim, ylim=ylim, reference=reference)
+                    figsize=figsize, xlim=xlim, ylim=ylim, title=title, 
+                    reference=reference)
 
     def draw3D(self, fields='all', wavelengths='primary', num_rays=24,
                distribution='ring', figsize=(1200, 800), dark_mode=False,

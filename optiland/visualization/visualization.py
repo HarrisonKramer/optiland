@@ -17,6 +17,7 @@ from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
+plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
 class OpticViewer:
     """
@@ -44,7 +45,7 @@ class OpticViewer:
 
     def view(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
-             reference=None):
+             title=None, reference=None):
         """
         Visualizes the optical system.
 
@@ -74,10 +75,17 @@ class OpticViewer:
         plt.gca().set_facecolor('#f8f9fa')  # off-white background
         plt.axis('image')
 
+        ax.set_xlabel(f"Z [mm]")
+        ax.set_ylabel(f"Y [mm]")
+
+        if title:
+            ax.set_title(title)
         if xlim:
             ax.set_xlim(xlim)
         if ylim:
             ax.set_ylim(ylim)
+
+        plt.grid(alpha=0.25)
 
         plt.show()
 
