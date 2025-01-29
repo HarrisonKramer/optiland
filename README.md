@@ -154,6 +154,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Lambertian and Gaussian scatter models
     - [Tutorial 7c - Freeform Surfaces](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7c_Freeform_Surfaces.ipynb)
         - Designing non-standard optical systems with freeform surfaces
+    - [Tutorial 7d - Three Mirror Anastigmat](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7d_Three_Mirror_Anastigmat.ipynb)
+        - Off-axis reflective telescope with freeform surfaces
 8. **Tolerancing**
     - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
