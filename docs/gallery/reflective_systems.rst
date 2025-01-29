@@ -13,3 +13,4 @@ These examples demonstrate the construction of reflective optical systems using 
     reflective/starlight
     reflective/off_axis_parabola
     reflective/laser_system
+    reflective/three_mirror_anastigmat
