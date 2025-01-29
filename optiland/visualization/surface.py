@@ -222,7 +222,7 @@ class Surface3D(Surface2D):
         z = self.surf.geometry.sag(x, y)
         r = np.hypot(x, y)
 
-        in_aperture = r <= self.r_extent
+        in_aperture = r <= self.extent
         x = x[in_aperture]
         y = y[in_aperture]
         z = z[in_aperture]
