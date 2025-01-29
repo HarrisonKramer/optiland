@@ -116,7 +116,7 @@ class RayOperand:
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         intercept = optic.surface_group.x[surface_number, 0]
-        decenter = optic.to_dict()['surface_group']['surfaces'][surface_number]['geometry']['cs']['x']
+        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.x
         return intercept - decenter
 
     @staticmethod
@@ -139,7 +139,7 @@ class RayOperand:
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         intercept = optic.surface_group.y[surface_number, 0]
-        decenter = optic.to_dict()['surface_group']['surfaces'][surface_number]['geometry']['cs']['y']
+        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.y
         return intercept - decenter
 
     @staticmethod
@@ -162,7 +162,7 @@ class RayOperand:
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         intercept = optic.surface_group.z[surface_number, 0]
-        decenter = optic.to_dict()['surface_group']['surfaces'][surface_number]['geometry']['cs']['z']
+        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.z
         return intercept - decenter
     
     @staticmethod
