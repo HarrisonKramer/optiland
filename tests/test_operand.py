@@ -208,23 +208,23 @@ class TestRayOperand:
 class TestOperand:
     def test_get_value(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 1, 1, input_data)
+        op = operand.Operand(operand_type='f2', target=1, weight=1, input_data=input_data)
         assert np.isclose(op.value, 57600.080998403595)
 
     def test_invalid_operand(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f3', 1, 1, input_data)
+        op = operand.Operand(operand_type='f3', target=1, weight=1, input_data=input_data)
         with pytest.raises(ValueError):
             op.value
 
     def test_delta(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 5000, 1, input_data)
+        op = operand.Operand(operand_type='f2', target=5000, weight=1, input_data=input_data)
         assert np.isclose(op.delta(), 52600.080998403595)
 
     def test_fun(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 1e5, 1.5, input_data)
+        op = operand.Operand(operand_type='f2', target=1e5, weight=1.5, input_data=input_data)
         assert np.isclose(op.fun(), -63599.87850239461)
 
     def test_reregister_operand(self):
@@ -268,7 +268,7 @@ class TestOperandManager:
     def test_setitem(self):
         manager = operand.OperandManager()
         manager.add('f1', 1)
-        manager[0] = operand.Operand('f2', 1, 1, {})
+        manager[0] = operand.Operand(operand_type='f2', target=1, weight=1, input_data={})
         assert len(manager) == 1
 
     def test_len(self):

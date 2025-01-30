@@ -33,7 +33,7 @@ def test_add_operand(setup_tolerancing):
     tolerancing.add_operand(operand_type, input_data, target, weight)
     assert len(tolerancing.operands) == 1
     operand = tolerancing.operands[0]
-    assert operand.type == operand_type
+    assert operand.operand_type == operand_type
     assert operand.input_data == input_data
     assert operand.target == target
     assert operand.weight == weight
@@ -46,10 +46,10 @@ def test_add_operand_no_target(setup_tolerancing):
     weight = 2.0
     target = optic.paraxial.f2()
 
-    tolerancing.add_operand(operand_type, input_data, weight=weight)
+    tolerancing.add_operand(operand_type=operand_type, input_data=input_data, weight=weight)
     assert len(tolerancing.operands) == 1
     operand = tolerancing.operands[0]
-    assert operand.type == operand_type
+    assert operand.operand_type == operand_type
     assert operand.input_data == input_data
     assert np.isclose(operand.target, target)
     assert operand.weight == weight
@@ -82,7 +82,7 @@ def test_add_compensator(setup_tolerancing):
 def test_apply_compensators(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
     tolerancing.add_compensator('radius', surface_number=1)
-    tolerancing.add_operand('f2', input_data={'optic': optic})
+    tolerancing.add_operand(operand_type='f2', input_data={'optic': optic})
 
     result = tolerancing.apply_compensators()
     first_key = list(result.keys())[0]
@@ -91,8 +91,8 @@ def test_apply_compensators(setup_tolerancing):
 
 def test_evaluate(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    tolerancing.add_operand('f1', input_data={'optic': optic})
-    tolerancing.add_operand('f2', input_data={'optic': optic})
+    tolerancing.add_operand(operand_type='f1', input_data={'optic': optic})
+    tolerancing.add_operand(operand_type='f2', input_data={'optic': optic})
 
     result = tolerancing.evaluate()
     assert np.allclose(result, [optic.paraxial.f1(), optic.paraxial.f2()])
