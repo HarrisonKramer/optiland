@@ -44,9 +44,9 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
-    def add_operand(self, operand_type, target, weight=1, input_data={}):
+    def add_operand(self, operand_type=None, target=None, bounds=None, more_than=None, less_than=None, weight=1, input_data={}):
         """Add an operand to the merit function"""
-        self.operands.add(operand_type, target, weight, input_data)
+        self.operands.add(operand_type, target, bounds, more_than, less_than, weight, input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
         """Add a variable to the merit function"""
@@ -84,16 +84,19 @@ class OptimizationProblem:
 
     def operand_info(self):
         """Print information about the operands in the merit function"""
-        data = {'Operand Type': [op.type.replace('_', ' ')
+        data = {'Operand Type': [op.operand_type.replace('_', ' ')
                                  for op in self.operands],
-                'Target': [op.target for op in self.operands],
+                'Target': [f'{op.target:+.3f}' if op.target is not None else ''  for op in self.operands],
+                'Bounds': [op.bounds if op.bounds else '' for op in self.operands],
+                'More than': [op.more_than if op.more_than else '' for op in self.operands],
+                'Less than': [op.less_than if op.less_than else '' for op in self.operands],
                 'Weight': [op.weight for op in self.operands],
-                'Value': [op.value for op in self.operands],
-                'Delta': [op.delta() for op in self.operands]}
+                'Value': [f'{op.value:+.3f}' for op in self.operands],
+                'Delta': [f'{op.delta():+.3f}' for op in self.operands]}
 
         df = pd.DataFrame(data)
         funs = self.fun_array()
-        df['Contribution (%)'] = funs / np.sum(funs) * 100
+        df['Contrib. [%]'] = np.round(funs / np.sum(funs) * 100, 2)
 
         print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 

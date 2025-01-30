@@ -15,6 +15,7 @@ can simply do the following:
 
 Kramer Harrison, 2024
 """
+from dataclasses import dataclass
 from optiland.optimization.operand.paraxial import ParaxialOperand
 from optiland.optimization.operand.aberration import AberrationOperand
 from optiland.optimization.operand.ray import RayOperand
@@ -137,47 +138,96 @@ operand_registry = OperandRegistry()
 for name, func in METRIC_DICT.items():
     operand_registry.register(name, func)
 
-
-class Operand(object):
+@dataclass
+class Operand:
     """
     Represents an operand used in optimization calculations.
+    If no target is specified, a default is created at the current value.
 
     Attributes:
-        type (str): The type of the operand.
-        target (float): The target value for the operand.
+        operand_type (str): The type of the operand.
+        target (float): The target value of the operand.
+        bounds (list): The operand should stay between the bounds (bounded operand).
+        more_than (float): The operand should stay above this value (inequality operand).
+        less_than (float): The operand should stay below this value (inequality operand).
         weight (float): The weight of the operand.
-        input_data (dict): Additional input data for the operand's metric
-            function.
+        input_data (dict): Additional input data for the operand.
 
     Methods:
         value(): Get the current value of the operand.
-        delta(): Calculate the difference between the target and current value.
+        delta_target(): Calculate the difference between the target and current value.
+        delta_bounds(): Calculate the difference between the target and the closest bound.
         fun(): Calculate the objective function value.
     """
 
-    def __init__(self, operand_type, target, weight, input_data={}):
-        self.type = operand_type
-        self.target = target
-        self.weight = weight
-        self.input_data = input_data
+    operand_type: str = None
+    target: float = None
+    bounds: list = None
+    more_than: float = None,
+    less_than: float = None,
+    weight: float = None
+    input_data: dict = None
 
+    def __post_init__(self):
+        if self.bounds is not None and self.bounds[0] >= self.bounds[1]:
+            raise ValueError(f"{self.operand_type} operand : lower bound higher than upper bound")
+        if self.target is not None and self.bounds is not None:
+            raise ValueError(f"{self.operand_type} operand cannot accept both a target and bounds")
+        if all(x is None for x in [self.target, self.bounds, self.more_than, self.less_than]):
+            # No target has been defined, default it to the current value
+            self.target = self.value
+        if self.bounds is not None and (self.less_than is not None or self.more_than is not None):
+            raise ValueError(f"{self.operand_type} operand cannot accept both bounds and less_than & more_than")
+        
     @property
     def value(self):
         """Get current value of the operand"""
-        metric_function = operand_registry.get(self.type)
+        metric_function = operand_registry.get(self.operand_type)
         if metric_function:
             return metric_function(**self.input_data)
         else:
-            raise ValueError(f'Unknown operand type: {self.type}')
+            raise ValueError(f'Unknown operand type: {self.operand_type}')
 
+    def delta_target(self):
+        """Calculate the difference between the value and target"""
+        return self.value - self.target
+
+    def delta_bounds(self):
+        """Calculate the difference between the value and the closest bound"""
+        distance_to_closest_bound = min(abs(self.value-self.bounds[0]), abs(self.value-self.bounds[1]))
+        return distance_to_closest_bound
+
+    def delta_ineq(self):
+        """Calculate the difference between the value and the targets"""
+        
+        # One of the two
+        if self.more_than is not None and not self.less_than:
+            return 0 if self.value > self.more_than else self.more_than-self.value
+        
+        # One of the two
+        if self.less_than is not None and not self.more_than:
+            return 0 if self.value < self.less_than else self.value-self.less_than
+        
+        # Both of them
+        if self.less_than is not None and self.more_than is not None:
+            distance_to_closest_target = min(abs(self.value-self.more_than), abs(self.value-self.less_than))
+            return 0 if (self.value > self.more_than and self.value < self.less_than) else distance_to_closest_target
+    
     def delta(self):
-        """Calculate the difference between the target and current value"""
-        return (self.value - self.target)
-
+        """Calculate the difference to target"""
+        if self.target is not None:
+            return self.delta_target()
+        elif self.bounds is not None:
+            return self.delta_bounds()
+        elif self.more_than is not None or self.less_than is not None:
+            return self.delta_ineq()
+        else:
+            raise ValueError(f"{self.operand_type} operand cannot compute delta")
+        
     def fun(self):
         """Calculate the objective function value"""
         return self.weight * self.delta()
 
     def __str__(self):
         """Return a string representation of the operand"""
-        return self.type.replace('_', ' ')
+        return self.operand_type.replace('_', ' ')
