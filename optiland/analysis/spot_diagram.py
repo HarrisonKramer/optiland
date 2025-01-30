@@ -64,13 +64,13 @@ class SpotDiagram:
         self.data = self._generate_data(self.fields, self.wavelengths,
                                         num_rings, distribution)
 
-    def view(self, figsize=(12, 4), is_airy_disc = False):
+    def view(self, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
 
         Args:
             figsize (tuple): the figure size of the output window.
                 Default is (12, 4).
-            is_airy_disc (bool): Airy disc visualization controller.
+            add_airy_disk (bool): Airy disc visualization controller.
 
         Returns:
             None
@@ -91,7 +91,7 @@ class SpotDiagram:
         # plot wavelengths for each field
         for k, field_data in enumerate(data):
             self._plot_field(axs[k], field_data, self.fields[k],
-                             axis_lim, self.wavelengths, is_airy_disc=is_airy_disc)
+                             axis_lim, self.wavelengths, add_airy_disk=add_airy_disk)
 
         # remove empty axes
         for k in range(N, num_rows * 3):
@@ -101,7 +101,7 @@ class SpotDiagram:
         plt.tight_layout()
         plt.show()
 
-    def Airy_Radius(self):
+    def airy_radius(self):
         """ Airy disc for visualization
 
         Returns:
@@ -110,8 +110,8 @@ class SpotDiagram:
 
         primary_wavelength = self.optic.wavelengths.primary_wavelength.value
         F_number = self.optic.paraxial.FNO()
-        airy_radius = 1.22 * primary_wavelength * F_number
-        return airy_radius
+        airy_radius_value = 1.22 * primary_wavelength * F_number
+        return airy_radius_value
 
     def centroid(self):
         """Centroid of each spot
@@ -231,7 +231,7 @@ class SpotDiagram:
         return [x, y, intensity]
 
     def _plot_field(self, ax, field_data, field, axis_lim,
-                    wavelengths, buffer=1.05,  is_airy_disc=False):
+                    wavelengths, buffer=1.05,  add_airy_disk=False):
         """
         Plot the field data on the given axis.
 
@@ -245,19 +245,19 @@ class SpotDiagram:
                 field data.
             buffer (float, optional): Buffer factor to extend the axis limits.
                 Default is 1.05.
-            is_airy_disc (bool, optional): Whether to plot the airy disc or not, for analysis purposes.
+            add_airy_disk (bool, optional): Whether to plot the airy disc or not, for analysis purposes.
 
         Returns:
             None
         """
-        airy_radius = self.Airy_Radius()
         markers = ['o', 's', '^']
         
-        if is_airy_disc:
+        if add_airy_disk:
+            airy_radius_value = self.airy_radius()
             # Use a Circle patch instead of manual line plotting
-            airy_circle = plt.Circle((0, 0), airy_radius, color='black', fill=False, linewidth=1)
+            airy_circle = plt.Circle((0, 0), airy_radius_value, linestyle = "--", color='black', fill=False, linewidth=1)
             ax.add_patch(airy_circle)
-            adjusted_axis_lim = max(axis_lim , airy_radius) * buffer
+            adjusted_axis_lim = max(axis_lim , airy_radius_value) * buffer
         else:
             adjusted_axis_lim = axis_lim*buffer  # if airy disc is not present, prevent over buffering.
 
