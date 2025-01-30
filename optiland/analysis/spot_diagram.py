@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
+
 class SpotDiagram:
     """Spot diagram class
 
