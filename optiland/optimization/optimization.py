@@ -44,9 +44,9 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
-    def add_operand(self, operand_type=None, target=None, bounds=None, more_than=None, less_than=None, weight=1, input_data={}):
+    def add_operand(self, operand_type=None, target=None, min_val=None, max_val=None, weight=1, input_data={}):
         """Add an operand to the merit function"""
-        self.operands.add(operand_type, target, bounds, more_than, less_than, weight, input_data)
+        self.operands.add(operand_type, target, min_val, max_val, weight, input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
         """Add a variable to the merit function"""
@@ -87,9 +87,8 @@ class OptimizationProblem:
         data = {'Operand Type': [op.operand_type.replace('_', ' ')
                                  for op in self.operands],
                 'Target': [f'{op.target:+.3f}' if op.target is not None else ''  for op in self.operands],
-                'Bounds': [op.bounds if op.bounds else '' for op in self.operands],
-                'More than': [op.more_than if op.more_than else '' for op in self.operands],
-                'Less than': [op.less_than if op.less_than else '' for op in self.operands],
+                'Min Bound': [op.min_val if op.min_val else '' for op in self.operands],
+                'Max Bound': [op.max_val if op.max_val else '' for op in self.operands],
                 'Weight': [op.weight for op in self.operands],
                 'Value': [f'{op.value:+.3f}' for op in self.operands],
                 'Delta': [f'{op.delta():+.3f}' for op in self.operands]}

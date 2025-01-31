@@ -146,39 +146,34 @@ class Operand:
 
     Attributes:
         operand_type (str): The type of the operand.
-        target (float): The target value of the operand.
-        bounds (list): The operand should stay between the bounds (bounded operand).
-        more_than (float): The operand should stay above this value (inequality operand).
-        less_than (float): The operand should stay below this value (inequality operand).
+        target (float): The target value of the operand (equality operand).
+        min_val (float): The operand should stay above this value (inequality operand).
+        max_val (float): The operand should stay below this value (inequality operand).
         weight (float): The weight of the operand.
         input_data (dict): Additional input data for the operand.
 
     Methods:
         value(): Get the current value of the operand.
-        delta_target(): Calculate the difference between the target and current value.
-        delta_bounds(): Calculate the difference between the target and the closest bound.
+        delta_target(): Calculate the difference between the value and target.
+        delta_ineq(): Calculate the difference between the value and targets.
         fun(): Calculate the objective function value.
     """
 
     operand_type: str = None
     target: float = None
-    bounds: list = None
-    more_than: float = None,
-    less_than: float = None,
+    min_val: float = None
+    max_val: float = None
     weight: float = None
     input_data: dict = None
 
     def __post_init__(self):
-        if self.bounds is not None and self.bounds[0] >= self.bounds[1]:
-            raise ValueError(f"{self.operand_type} operand : lower bound higher than upper bound")
-        if self.target is not None and self.bounds is not None:
-            raise ValueError(f"{self.operand_type} operand cannot accept both a target and bounds")
-        if all(x is None for x in [self.target, self.bounds, self.more_than, self.less_than]):
-            # No target has been defined, default it to the current value
-            self.target = self.value
-        if self.bounds is not None and (self.less_than is not None or self.more_than is not None):
-            raise ValueError(f"{self.operand_type} operand cannot accept both bounds and less_than & more_than")
-        
+        if self.min_val is not None and self.max_val is not None and self.min_val > self.max_val:
+            raise ValueError(f"{self.operand_type} operand: min_val is higher than max_val")
+        if self.target is not None and (self.min_val is not None or self.max_val is not None):
+            raise ValueError(f"{self.operand_type} operand cannot accept both equality and inequality targets")
+        if all(x is None for x in [self.target, self.min_val, self.max_val]):
+            self.target = self.value # No target has been defined, default it to the current value
+
     @property
     def value(self):
         """Get current value of the operand"""
@@ -192,34 +187,31 @@ class Operand:
         """Calculate the difference between the value and target"""
         return self.value - self.target
 
-    def delta_bounds(self):
-        """Calculate the difference between the value and the closest bound"""
-        distance_to_closest_bound = min(abs(self.value-self.bounds[0]), abs(self.value-self.bounds[1]))
-        return distance_to_closest_bound
-
     def delta_ineq(self):
-        """Calculate the difference between the value and the targets"""
+        """Calculate the difference between the value and targets.
+
+        If the value is on the right side of the bound(s), 
+        then this operand simply is zero.
+        """
         
         # One of the two
-        if self.more_than is not None and not self.less_than:
-            return 0 if self.value > self.more_than else self.more_than-self.value
+        if self.min_val is not None and not self.max_val:
+            return 0 if self.value > self.min_val else self.min_val-self.value
         
         # One of the two
-        if self.less_than is not None and not self.more_than:
-            return 0 if self.value < self.less_than else self.value-self.less_than
+        if self.max_val is not None and not self.min_val:
+            return 0 if self.value < self.max_val else self.value-self.max_val
         
         # Both of them
-        if self.less_than is not None and self.more_than is not None:
-            distance_to_closest_target = min(abs(self.value-self.more_than), abs(self.value-self.less_than))
-            return 0 if (self.value > self.more_than and self.value < self.less_than) else distance_to_closest_target
+        if self.max_val is not None and self.min_val is not None:
+            distance_to_closest_target = min(abs(self.value-self.min_val), abs(self.value-self.max_val))
+            return 0 if (self.value > self.min_val and self.value < self.max_val) else distance_to_closest_target
     
     def delta(self):
         """Calculate the difference to target"""
         if self.target is not None:
             return self.delta_target()
-        elif self.bounds is not None:
-            return self.delta_bounds()
-        elif self.more_than is not None or self.less_than is not None:
+        elif self.min_val is not None or self.max_val is not None:
             return self.delta_ineq()
         else:
             raise ValueError(f"{self.operand_type} operand cannot compute delta")
