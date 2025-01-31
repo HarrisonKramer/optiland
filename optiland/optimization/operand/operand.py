@@ -191,21 +191,12 @@ class Operand:
         """Calculate the difference between the value and targets.
 
         If the value is on the right side of the bound(s), 
-        then this operand simply is zero.
+        then this operand simply is zero. 
+        Otherwise, it is the distance to the closest bound.
         """
-        
-        # One of the two
-        if self.min_val is not None and not self.max_val:
-            return 0 if self.value > self.min_val else self.min_val-self.value
-        
-        # One of the two
-        if self.max_val is not None and not self.min_val:
-            return 0 if self.value < self.max_val else self.value-self.max_val
-        
-        # Both of them
-        if self.max_val is not None and self.min_val is not None:
-            distance_to_closest_target = min(abs(self.value-self.min_val), abs(self.value-self.max_val))
-            return 0 if (self.value > self.min_val and self.value < self.max_val) else distance_to_closest_target
+        lower_penalty = max(0, self.min_val - self.value) if self.min_val is not None else 0
+        upper_penalty = max(0, self.value - self.max_val) if self.max_val is not None else 0
+        return lower_penalty + upper_penalty
     
     def delta(self):
         """Calculate the difference to target"""
