@@ -121,7 +121,7 @@ class OptimizationProblem:
             improve_percent = ((self.initial_value - current_value) /
                                self.initial_value * 100)
 
-        data = {'Merit Function Value': [self.sum_squared()],
+        data = {'Merit Function Value': [current_value],
                 'Improvement (%)': improve_percent}
         df = pd.DataFrame(data)
         print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
@@ -213,11 +213,16 @@ class OptimizerGeneric:
         Returns:
             rss (float): The residual sum of squares.
         """
+
+        # Update all variables to their new values
         for idvar, var in enumerate(self.problem.variables):
             var.update(x[idvar])
-        self.problem.update_optics()  # update all optics (e.g., pickups)
-        funs = np.array([op.fun() for op in self.problem.operands])
-        rss = np.sum(funs**2)
+        
+        # Update optics (e.g., pickups and solves)
+        self.problem.update_optics()
+
+        # Compute merit function value
+        rss = self.problem.sum_squared()
         if np.isnan(rss):
             return 1e10
         else:
