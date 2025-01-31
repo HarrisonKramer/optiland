@@ -155,7 +155,7 @@ class SurfaceFactory:
             elif index == 1:
                 z = 0  # first surface, always at zero
             else:
-                z = float(self._surface_group.positions[index-1]) + \
+                z = float(self._surface_group.positions[index-1].item()) + \
                     self.last_thickness
 
                 # self.last_thickness = thickness
