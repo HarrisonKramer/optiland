@@ -59,21 +59,19 @@ class Tolerancing:
 
     def add_operand(self, operand_type: str, input_data: dict = {},
                     target: float = None, weight: float = 1.0,
-                    bounds: list = None, more_than: float = None, 
-                    less_than: float = None):
+                    min_val: float = None,  max_val: float = None):
         """
         Add an operand to the tolerancing problem.
 
         Args:
             operand_type (str): The type of the operand.
-            target (float): The target value of the operand.
-            bounds (list): The operand should stay between the bounds (bounded operand).
-            more_than (float): The operand should stay above this value (inequality operand).
-            less_than (float): The operand should stay below this value (inequality operand).
+            target (float): The target value of the operand (equality operand).
+            min_val (float): The operand should stay above this value (inequality operand).
+            max_val (float): The operand should stay below this value (inequality operand).
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
         """
-        new_operand = Operand(operand_type, target, bounds, more_than, less_than, weight, input_data)
+        new_operand = Operand(operand_type, target, min_val, max_val, weight, input_data)
         if target is None:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)

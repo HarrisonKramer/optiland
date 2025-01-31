@@ -90,9 +90,8 @@ class TestOptimizationProblem:
         captured = capsys.readouterr()
         assert 'Operand Type' in captured.out
         assert 'Target' in captured.out
-        assert 'Bounds' in captured.out
-        assert 'More than' in captured.out
-        assert 'Less than' in captured.out
+        assert 'Min Bound' in captured.out
+        assert 'Max Bound' in captured.out
         assert 'Weight' in captured.out
         assert 'Value' in captured.out
         assert 'Delta' in captured.out
