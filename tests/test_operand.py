@@ -158,6 +158,24 @@ class TestRayOperand:
         assert np.isclose(operand.RayOperand.z_intercept(**data),
                           6347.146837237045)
 
+    def test_x_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 1.0, 'Hy': 0.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(operand.RayOperand.x_intercept_lcs(**data),
+                          -150.42338010762842)
+
+    def test_y_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(operand.RayOperand.y_intercept_lcs(**data),
+                          150.42338010762842)
+
+    def test_z_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(operand.RayOperand.z_intercept_lcs(**data), 
+                          -18.062712762936826)  # Because Hubble's image is curved, otherwise it would be 0
+        
     def test_L(self, hubble):
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
                 'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
