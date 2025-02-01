@@ -107,11 +107,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         # Base conic 
         z = (rho**2) / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * (rho**2) / self.radius**2)))
 
-        # Add Fringe Zernike contributions
-        # Sum over all nonzero Zernike coefficients
+        # Add normalized Fringe Zernike contributions
+        # Sum over all nonzero coefficients
         non_zero_indices = np.nonzero(self.c)[0]
         for i in non_zero_indices:
-            z += self.c[i] * self._zernike(i+1, rho, theta)
+            normalization_factor = np.sqrt(2*(i+1)/np.pi)
+            z += normalization_factor * self.c[i] * self._zernike(i+1, rho, theta)
 
         return z
         
