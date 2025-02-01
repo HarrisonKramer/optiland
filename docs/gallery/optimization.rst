@@ -11,6 +11,7 @@ These examples demonstrate the optimization capabilities of optical systems usin
     optimization/undo
     optimization/pickups
     optimization/constrained
+    optimization/bounded_operands
     optimization/global
     optimization/asphere
     optimization/beam_expander

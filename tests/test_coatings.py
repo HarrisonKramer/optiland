@@ -103,6 +103,12 @@ class TestSimpleCoating:
 
         assert np.all(aoi == 0)
 
+    def test_to_dict(self):
+        coating = coatings.SimpleCoating(transmittance=0.3, reflectance=0.5)
+        assert coating.to_dict() == {'type': 'SimpleCoating',
+                                     'transmittance': 0.3,
+                                     'reflectance': 0.5}
+
 
 class TestFresnelCoating:
     def test_reflect(self, rays_parallel_polarized):
@@ -139,3 +145,19 @@ class TestFresnelCoating:
         R = ((1.5 - 1.0) / (1.5 + 1.0))**2
         assert np.allclose(rays_after.i * 1.5, (1 - R) * rays_before.i,
                            atol=1e-9)
+
+    def test_to_dict(self):
+        mat1 = materials.IdealMaterial(n=1.0)
+        mat2 = materials.IdealMaterial(n=1.5)
+        coating = coatings.FresnelCoating(mat1, mat2)
+        assert coating.to_dict() == {'type': 'FresnelCoating',
+                                     'material_pre': mat1.to_dict(),
+                                     'material_post': mat2.to_dict()}
+
+    def test_from_dict(self):
+        mat1 = materials.IdealMaterial(n=1.0)
+        mat2 = materials.IdealMaterial(n=1.5)
+        coating = coatings.FresnelCoating(mat1, mat2)
+        coating_dict = coating.to_dict()
+        coating2 = coatings.FresnelCoating.from_dict(coating_dict)
+        assert coating2.to_dict() == coating.to_dict()
