@@ -53,7 +53,7 @@ class TestPlane:
         # Test ray doesn't intersect the plane
         rays = RealRays(1.0, 2.0, -1.5, 0.0, 0.0, -1.0, 1.0, 0.0)
         distance = plane.distance(rays)
-        assert np.isnan(distance)
+        assert np.isclose(distance, -1.5)
 
         # Test distance for ray not parallel to z axis
         L = 0.356
