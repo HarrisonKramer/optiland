@@ -6,6 +6,7 @@ always defined in the local coordinate system of the geometry.
 
 Kramer Harrison, 2024
 """
+import warnings
 import numpy as np
 from optiland.geometries.base import BaseGeometry
 from optiland.coordinate_system import CoordinateSystem
@@ -53,10 +54,9 @@ class Plane(BaseGeometry):
             np.ndarray: The propagation distance to the plane geometry for
                 each ray.
         """
-        t = -rays.z / rays.N
-
-        # if rays do not hit plane, set to NaN
-        t[t < 0] = np.nan
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            t = -rays.z / rays.N
 
         return t
 
