@@ -13,7 +13,8 @@ class TestOptimizationProblem:
         lens = Objective60x()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=50, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=50, weight=1.0,
+                            input_data=input_data)
         assert len(problem.operands) == 1
         assert problem.operands[0].operand_type == 'f2'
         assert problem.operands[0].target == 50
@@ -90,8 +91,8 @@ class TestOptimizationProblem:
         captured = capsys.readouterr()
         assert 'Operand Type' in captured.out
         assert 'Target' in captured.out
-        assert 'Min Bound' in captured.out
-        assert 'Max Bound' in captured.out
+        assert 'Min. Bound' in captured.out
+        assert 'Max. Bound' in captured.out
         assert 'Weight' in captured.out
         assert 'Value' in captured.out
         assert 'Delta' in captured.out
