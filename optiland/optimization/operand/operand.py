@@ -138,6 +138,7 @@ operand_registry = OperandRegistry()
 for name, func in METRIC_DICT.items():
     operand_registry.register(name, func)
 
+
 @dataclass
 class Operand:
     """
@@ -147,8 +148,10 @@ class Operand:
     Attributes:
         operand_type (str): The type of the operand.
         target (float): The target value of the operand (equality operand).
-        min_val (float): The operand should stay above this value (inequality operand).
-        max_val (float): The operand should stay below this value (inequality operand).
+        min_val (float): The operand should stay above this
+            value (inequality operand).
+        max_val (float): The operand should stay below this
+            value (inequality operand).
         weight (float): The weight of the operand.
         input_data (dict): Additional input data for the operand.
 
@@ -167,12 +170,17 @@ class Operand:
     input_data: dict = None
 
     def __post_init__(self):
-        if self.min_val is not None and self.max_val is not None and self.min_val > self.max_val:
-            raise ValueError(f"{self.operand_type} operand: min_val is higher than max_val")
-        if self.target is not None and (self.min_val is not None or self.max_val is not None):
-            raise ValueError(f"{self.operand_type} operand cannot accept both equality and inequality targets")
+        if (self.min_val is not None and self.max_val is not None and
+                self.min_val > self.max_val):
+            raise ValueError(f'{self.operand_type} operand: min_val is higher'
+                             f' than max_val')
+        if self.target is not None and (self.min_val is not None or
+                                        self.max_val is not None):
+            raise ValueError(f'{self.operand_type} operand cannot accept both'
+                             f' equality and inequality targets')
         if all(x is None for x in [self.target, self.min_val, self.max_val]):
-            self.target = self.value # No target has been defined, default it to the current value
+            # No target has been defined, default it to the current value
+            self.target = self.value
 
     @property
     def value(self):
@@ -190,14 +198,16 @@ class Operand:
     def delta_ineq(self):
         """Calculate the difference between the value and targets.
 
-        If the value is on the right side of the bound(s), 
-        then this operand simply is zero. 
+        If the value is within the bound(s), then this operand simply is zero.
         Otherwise, it is the distance to the closest bound.
         """
-        lower_penalty = max(0, self.min_val - self.value) if self.min_val is not None else 0
-        upper_penalty = max(0, self.value - self.max_val) if self.max_val is not None else 0
+        value = self.value  # Calculate the value only once
+        lower_penalty = (max(0, self.min_val - value)
+                         if self.min_val is not None else 0)
+        upper_penalty = (max(0, value - self.max_val)
+                         if self.max_val is not None else 0)
         return lower_penalty + upper_penalty
-    
+
     def delta(self):
         """Calculate the difference to target"""
         if self.target is not None:
@@ -205,8 +215,9 @@ class Operand:
         elif self.min_val is not None or self.max_val is not None:
             return self.delta_ineq()
         else:
-            raise ValueError(f"{self.operand_type} operand cannot compute delta")
-        
+            raise ValueError(f'{self.operand_type} operand cannot'
+                             f' compute delta')
+
     def fun(self):
         """Calculate the objective function value"""
         return self.weight * self.delta()
