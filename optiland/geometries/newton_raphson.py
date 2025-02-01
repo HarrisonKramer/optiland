@@ -164,7 +164,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         return geometry_dict
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data):  # pragma: no cover
         """
         Creates a geometry from a dictionary representation.
 
