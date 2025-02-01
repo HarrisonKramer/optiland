@@ -88,7 +88,8 @@ class OptimizationProblem:
         """Print information about the operands in the merit function"""
         data = {'Operand Type': [op.operand_type.replace('_', ' ')
                                  for op in self.operands],
-                'Target': [f'{op.target:+.3f}' if op.target is not None else ''  for op in self.operands],
+                'Target': [f'{op.target:+.3f}' if op.target is not None
+                           else '' for op in self.operands],
                 'Min. Bound': [op.min_val if op.min_val else ''
                                for op in self.operands],
                 'Max. Bound': [op.max_val if op.max_val else ''
@@ -98,8 +99,12 @@ class OptimizationProblem:
                 'Delta': [f'{op.delta():+.3f}' for op in self.operands]}
 
         df = pd.DataFrame(data)
-        funs = self.fun_array()
-        df['Contrib. [%]'] = np.round(funs / np.sum(funs) * 100, 2)
+        values = self.fun_array()
+        total = np.sum(values)
+        if total == 0.0:
+            df['Contrib. [%]'] = 0.0
+        else:
+            df['Contrib. [%]'] = np.round(values / total * 100, 2)
 
         print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 
