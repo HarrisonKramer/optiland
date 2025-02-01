@@ -311,7 +311,6 @@ class SurfaceFactory:
         tol = kwargs.get('tol', 1e-6)
         max_iter = kwargs.get('max_iter', 100)
         coefficients = kwargs.get('coefficients', [])
-        # print(self._surface_group.surfaces[-1].semi_aperture)
         norm_radius = kwargs.get('norm_radius', 1)
 
         geometry = ZernikePolynomialGeometry(cs, radius, conic, tol,
