@@ -36,7 +36,8 @@ class TestOptimizationProblem:
         lens = Objective60x()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=50, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=50, weight=1.0,
+                            input_data=input_data)
         problem.clear_operands()
         assert len(problem.operands) == 0
 
@@ -52,7 +53,8 @@ class TestOptimizationProblem:
         lens = Objective60x()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=98.57864671748113, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=98.57864671748113,
+                            weight=1.0, input_data=input_data)
         fun_array = problem.fun_array()
         assert np.allclose(fun_array, np.array([0.0]))
 
@@ -60,7 +62,8 @@ class TestOptimizationProblem:
         lens = Objective60x()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         sum_squared = problem.sum_squared()
         val = (lens.paraxial.f2() - 90)**2
         assert np.isclose(sum_squared, val)
@@ -69,7 +72,8 @@ class TestOptimizationProblem:
         lens = UVReflectingMicroscope()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         rss = problem.rss()
         val = np.abs(lens.paraxial.f2() - 90)
         assert np.isclose(rss, val)
@@ -78,7 +82,8 @@ class TestOptimizationProblem:
         lens = UVReflectingMicroscope()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         problem.update_optics()
         # No assertion needed, just ensure no exceptions are raised
 
@@ -86,7 +91,8 @@ class TestOptimizationProblem:
         lens = UVReflectingMicroscope()
         problem = optimization.OptimizationProblem()
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=9090, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=9090, weight=1.0,
+                            input_data=input_data)
         problem.operand_info()
         captured = capsys.readouterr()
         assert 'Operand Type' in captured.out
@@ -117,7 +123,8 @@ class TestOptimizationProblem:
         problem.add_variable(lens, 'radius', surface_number=1,
                              min_val=10, max_val=100)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         problem.merit_info()
         captured = capsys.readouterr()
         assert 'Merit Function Value' in captured.out
@@ -136,7 +143,8 @@ class TestOptimizationProblem:
         problem.add_variable(lens, 'radius', surface_number=1,
                              min_val=10, max_val=100)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         problem.info()
         captured = capsys.readouterr()
         assert 'Merit Function Value' in captured.out
@@ -151,7 +159,8 @@ class TestOptimizerGeneric:
         problem.add_variable(lens, 'radius', surface_number=1, min_val=10,
                              max_val=100)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.OptimizerGeneric(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
@@ -162,7 +171,8 @@ class TestOptimizerGeneric:
         problem.add_variable(lens, 'radius', surface_number=1, min_val=10,
                              max_val=100)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.OptimizerGeneric(problem)
         optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         optimizer.undo()
@@ -179,7 +189,8 @@ class TestOptimizerGeneric:
             input_data = {'optic': lens, 'Hx': 0.0, 'Hy': 0.1,
                           'wavelength': 0.5, 'num_rays': 100,
                           'surface_number': -1}
-            problem.add_operand(operand_type='rms_spot_size', target=0.0, weight=1.0, input_data=input_data)
+            problem.add_operand(operand_type='rms_spot_size', target=0.0,
+                                weight=1.0, input_data=input_data)
             optimizer = optimization.OptimizerGeneric(problem)
             assert optimizer._fun(np.array([0.2])) == 1e10
 
@@ -191,7 +202,8 @@ class TestLeastSquares:
         problem.add_variable(lens, 'conic', surface_number=1, min_val=-1,
                              max_val=1)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
@@ -201,7 +213,8 @@ class TestLeastSquares:
         problem = optimization.OptimizationProblem()
         problem.add_variable(lens, 'conic', surface_number=1)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
@@ -212,7 +225,8 @@ class TestLeastSquares:
         problem.add_variable(lens, 'radius', surface_number=1, min_val=-1000,
                              max_val=None)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=100, disp=True, tol=1e-3)
         assert result.success
@@ -225,7 +239,8 @@ class TestDualAnnealing:
         problem.add_variable(lens, 'thickness', surface_number=1, min_val=10,
                              max_val=100)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=95, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=95, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.DualAnnealing(problem)
         result = optimizer.optimize(maxiter=10, disp=False)
         assert result.success
@@ -235,7 +250,8 @@ class TestDualAnnealing:
         problem = optimization.OptimizationProblem()
         problem.add_variable(lens, 'thickness', surface_number=1)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=95, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=95, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.DualAnnealing(problem)
         with pytest.raises(ValueError):
             optimizer.optimize(maxiter=10, disp=False)
@@ -248,7 +264,8 @@ class TestDifferentialEvolution:
         problem.add_variable(lens, 'index', surface_number=1, min_val=1.2,
                              max_val=1.8, wavelength=0.5)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=1)
         assert result.success
@@ -258,7 +275,8 @@ class TestDifferentialEvolution:
         problem = optimization.OptimizationProblem()
         problem.add_variable(lens, 'index', surface_number=1, wavelength=0.5)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=95, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=95, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.DifferentialEvolution(problem)
         with pytest.raises(ValueError):
             optimizer.optimize(maxiter=10, disp=False)
@@ -269,7 +287,8 @@ class TestDifferentialEvolution:
         problem.add_variable(lens, 'index', surface_number=1, min_val=1.2,
                              max_val=1.8, wavelength=0.5)
         input_data = {'optic': lens}
-        problem.add_operand(operand_type='f2', target=90, weight=1.0, input_data=input_data)
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=-1)
         assert result.success
