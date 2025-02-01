@@ -84,8 +84,8 @@ class SurfaceViewer:
         _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
 
-        ax.set_xlabel('Normalized X [mm]')
-        ax.set_ylabel('Normalized Y [mm]')
+        ax.set_xlabel('Normalized X')
+        ax.set_ylabel('Normalized Y')
         if title is not None:
             ax.set_title(title)
         else:
@@ -118,8 +118,8 @@ class SurfaceViewer:
                                cmap='viridis', linewidth=0,
                                antialiased=False)
 
-        ax.set_xlabel('Normalized X [mm]')
-        ax.set_ylabel('Normalized Y [mm]')
+        ax.set_xlabel('Normalized X')
+        ax.set_ylabel('Normalized Y')
         ax.set_zlabel("Deviation to plane [mm]")
         if title is not None:
             ax.set_title(title)
