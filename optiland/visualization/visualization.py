@@ -20,6 +20,120 @@ from optiland.visualization.system import OpticalSystem
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
 
+class SurfaceViewer:
+    """
+    A class used to visualize surfaces.
+
+    Args:
+        optic: The optical system to be visualized.
+        surface_index: Index of the surface to be visualized.
+    """
+
+    def __init__(self, optic):
+        self.optic = optic
+
+    def view(self,
+             surface_index: int,
+             projection='2d',
+             num_points=256,
+             figsize=(7, 5.5),
+             title: str = None):
+        """
+        Visualize the surface.
+
+        Args:
+            surface_index (int): Index of the surface to be visualized.
+            projection (str): The type of projection to use for visualization.
+                Can be '2d' or '3d'.
+            num_points (int): The number of points to sample along each axis
+                for the visualization.
+            figsize (tuple): The size of the figure in inches.
+                Defaults to (7, 5.5).
+            title (str): Title.
+
+        Raises:
+            ValueError: If the projection is not '2d' or '3d'.
+        """
+        surface = self.optic.surface_group.surfaces[surface_index]
+        x, y = np.meshgrid(np.linspace(-1, 1, num_points),
+                           np.linspace(-1, 1, num_points))
+        z = surface.geometry.sag(x, y)
+        z[np.sqrt(x**2+y**2) > 1] = np.nan
+
+        if projection == '2d':
+            self._plot_2d(z, figsize=figsize, title=title, 
+                          surface_type=surface.surface_type,
+                          surface_index=surface_index)
+        elif projection == '3d':
+            self._plot_3d(x, y, z, figsize=figsize, title=title,
+                          surface_type=surface.surface_type,
+                          surface_index=surface_index)
+        else:
+            raise ValueError('OPD projection must be "2d" or "3d".')
+
+    def _plot_2d(self, z, figsize=(7, 5.5), title: str = None, **kwargs):
+        """
+        Plot a 2D representation of the given data.
+
+        Args:
+            z (numpy.ndarray): The data to be plotted.
+            figsize (tuple, optional): The size of the figure
+                (default is (7, 5.5)).
+            title (str): Title.
+        """
+        _, ax = plt.subplots(figsize=figsize)
+        im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
+
+        ax.set_xlabel('Normalized X [mm]')
+        ax.set_ylabel('Normalized Y [mm]')
+        if title is not None:
+            ax.set_title(title)
+        else:
+            ax.set_title(f'Surface {kwargs.get("surface_index", None)} deviation to plane\n'
+                         f'{kwargs.get("surface_type", None).capitalize()} surface')
+
+        cbar = plt.colorbar(im)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel("Deviation to plane [mm]", rotation=270)
+        plt.grid(alpha=0.25)
+        plt.show()
+
+    def _plot_3d(self, x, y, z, figsize=(7, 5.5), title: str = None, **kwargs):
+        """
+        Plot a 3D surface plot of the given data.
+
+        Args:
+            x (numpy.ndarray): Array of x-coordinates.
+            y (numpy.ndarray): Array of y-coordinates.
+            z (numpy.ndarray): Array of z-coordinates.
+            figsize (tuple, optional): Size of the figure (width, height).
+                Default is (7, 5.5).
+            title (str): Title.
+        """
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
+                               figsize=figsize)
+
+        surf = ax.plot_surface(x, y, z,
+                               rstride=1, cstride=1,
+                               cmap='viridis', linewidth=0,
+                               antialiased=False)
+
+        ax.set_xlabel('Normalized X [mm]')
+        ax.set_ylabel('Normalized Y [mm]')
+        ax.set_zlabel("Deviation to plane [mm]")
+        if title is not None:
+            ax.set_title(title)
+        else:
+            ax.set_title(f'Surface {kwargs.get("surface_index", None)} deviation to plane\n'
+                         f'{kwargs.get("surface_type", None).capitalize()} surface')
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
+                     pad=0.15)
+        fig.tight_layout()
+        plt.show()
+
+
+
+
 class OpticViewer:
     """
     A class used to visualize optical systems.
