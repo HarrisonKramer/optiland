@@ -8,3 +8,4 @@ from .even_asphere import EvenAsphere
 from .odd_asphere import OddAsphere
 from .polynomial import PolynomialGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
+from .zernike import ZernikePolynomialGeometry
