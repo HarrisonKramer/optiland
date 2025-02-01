@@ -196,7 +196,7 @@ class Operand:
         return self.value - self.target
 
     def delta_ineq(self):
-        """Calculate the difference between the value and targets.
+        """Calculate the difference between the value and bounds.
 
         If the value is within the bound(s), then this operand simply is zero.
         Otherwise, it is the distance to the closest bound.
