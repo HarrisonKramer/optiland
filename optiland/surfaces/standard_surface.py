@@ -43,7 +43,9 @@ class Surface:
                  aperture: BaseAperture = None,
                  coating: BaseCoating = None,
                  bsdf: BaseBSDF = None,
-                 is_reflective: bool = False):
+                 is_reflective: bool = False,
+                 surface_type: str = None,
+                 ):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
@@ -53,6 +55,7 @@ class Surface:
         self.coating = coating
         self.bsdf = bsdf
         self.is_reflective = is_reflective
+        self.surface_type = surface_type
 
         self.reset()
 
