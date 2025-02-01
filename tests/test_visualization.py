@@ -2,7 +2,7 @@ import pkg_resources
 from unittest.mock import patch
 import pytest
 import numpy as np
-from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
+from optiland.visualization import SurfaceViewer, OpticViewer, OpticViewer3D, LensInfoViewer
 from optiland.samples.objectives import (
     TessarLens,
     ReverseTelephoto
@@ -48,6 +48,55 @@ class InvalidMaterial(BaseMaterial):
 
     def k(self, wavelength):
         return -42
+
+class TestSurfaceViewer:
+    def test_init(self):
+        lens = TessarLens()
+        viewer = SurfaceViewer(lens)
+        assert viewer.optic == lens
+
+    @patch('matplotlib.pyplot.show')
+    def test_view(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = SurfaceViewer(lens)
+        viewer.view(surface_index=1)
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_2d(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = SurfaceViewer(lens)
+        viewer.view(surface_index=1, projection='2d')
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_3d(self, mock_show):
+        lens = ReverseTelephoto()
+        viewer = SurfaceViewer(lens)
+        viewer.view(surface_index=1, projection='3d')
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_bonded_lens(self, mock_show):
+        lens = TessarLens()
+        viewer = SurfaceViewer(lens)
+        viewer.view(surface_index=1)
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch('matplotlib.pyplot.show')
+    def test_view_reflective_lens(self, mock_show):
+        lens = HubbleTelescope()
+        viewer = SurfaceViewer(lens)
+        viewer.view(surface_index=1)
+        mock_show.assert_called_once()
+        plt.close()
+
+
+
 
 
 class TestOpticViewer:
