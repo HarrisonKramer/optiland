@@ -35,3 +35,10 @@ def test_from_dict():
     ap_dict = ap.to_dict()
     ap2 = aperture.Aperture.from_dict(ap_dict)
     assert ap2.to_dict() == ap.to_dict()
+
+
+def test_invalid_from_dict():
+    """Check from_dict method with invalid dict"""
+    with pytest.raises(ValueError):
+        aperture.Aperture.from_dict({'invalid': 'I am invalid, unfortunately',
+                                     'value': 5.0})
