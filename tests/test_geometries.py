@@ -616,3 +616,15 @@ class TestOddAsphere:
         geometry = geometries.OddAsphere(cs, radius=10.0, conic=0.5,
                                          coefficients=[1e-2, -1e-5])
         assert str(geometry) == 'Odd Asphere'
+
+
+class TestZernikeGeometry:
+    def test_str(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        geometry = \
+            geometries.ZernikePolynomialGeometry(cs, radius=22.0, conic=0.0,
+                                                 coefficients=coefficients,
+                                                 norm_radius=10)
+        assert str(geometry) == 'Zernike Polynomial'

@@ -404,13 +404,25 @@ class Optic:
         yb = np.abs(np.ravel(yb))
         for k, surface in enumerate(self.surface_group.surfaces):
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
+            self.update_normalization(surface)
 
-    def update(self):
+    def update_normalization(self, surface)->None:
+        """
+        Update the normalization radius of non-spherical surfaces.
+        """
+        if surface.surface_type in ['even_asphere', 'odd_asphere', 'polynomial', 'chebyshev']:
+            surface.geometry.norm_x = surface.semi_aperture
+            surface.geometry.norm_y = surface.semi_aperture
+        if surface.surface_type == 'zernike':
+            surface.geometry.norm_radius = surface.semi_aperture*1.1
+
+    def update(self)->None:
         """
         Update the surfaces based on the pickup operations.
         """
         self.pickups.apply()
         self.solves.apply()
+        self.update_paraxial()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
