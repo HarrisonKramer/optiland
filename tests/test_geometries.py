@@ -211,6 +211,12 @@ class TestStandardGeometry:
         new_geometry = geometries.StandardGeometry.from_dict(geometry_dict)
         assert new_geometry.to_dict() == geometry_dict
 
+    def test_From_dict_invalid_dict(self):
+        with pytest.raises(ValueError):
+            geometries.StandardGeometry.from_dict(
+                {'invalid_key': 'invalid_value'}
+            )
+
 
 class TestEvenAsphere:
     def test_str(self):
