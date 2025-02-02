@@ -22,10 +22,7 @@ $$
 The base conic is in the form:
 
 $$
-z_{\text{base}}(x,y)
-=
-\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)}
-\qquad \text{with} \qquad
+z_{\text{base}}(x,y) = \frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)} \qquad \text{with} \qquad
 \begin{cases}
   r^2 = x^2 + y^2\\[6pt]
   cc \text{ the conic constant}
@@ -72,9 +69,7 @@ $$
 A typical derivative for the conic portion is (and similarly for $\partial z / \partial y$):
 
 $$
-\frac{\partial z_{\text{conic}}}{\partial x}
-=
-\frac{x}{R \sqrt{1 - (1+cc)r^2 / R^2}}
+\frac{\partial z_{\text{conic}}}{\partial x} = \frac{x}{R \sqrt{1 - (1+cc)r^2 / R^2}}
 $$
 
 <br />
@@ -84,23 +79,15 @@ $$
 In order to get $\frac{\partial Z}{\partial x}$ and $\frac{\partial Z}{\partial y}$ we note that:
 
 $$
-\frac{\partial Z}{\partial x}
-=
-\frac{\partial Z}{\partial \rho}\frac{\partial \rho}{\partial x}
-+
+\frac{\partial Z}{\partial x} = \frac{\partial Z}{\partial \rho}\frac{\partial \rho}{\partial x} +
 \frac{\partial Z}{\partial \theta}\frac{\partial \theta}{\partial x}.
 $$
 
 Since
 
 $$
-\rho
-=
-\sqrt{\Bigl(\tfrac{x}{\text{norm}_x}\Bigr)^2 + \Bigl(\tfrac{y}{\text{norm}_y}\Bigr)^2}
-\quad \quad \text{and} \quad \quad
-\theta
-=
-\arctan2\Bigl(\tfrac{y}{\text{norm}_y}, \tfrac{x}{\text{norm}_x}\Bigr)
+\rho = \sqrt{\Bigl(\tfrac{x}{\text{norm}_x}\Bigr)^2 + \Bigl(\tfrac{y}{\text{norm}_y}\Bigr)^2}
+\quad \quad \text{and} \quad \quad \theta = \arctan2\Bigl(\tfrac{y}{\text{norm}_y}, \tfrac{x}{\text{norm}_x}\Bigr)
 $$
 
 one derives:
