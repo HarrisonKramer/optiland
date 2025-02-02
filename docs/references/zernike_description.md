@@ -97,10 +97,7 @@ $$
   \frac{\partial \rho}{\partial x} = \frac{x}{\text{norm}_x^2 \cdot \rho} \\
   \frac{\partial \rho}{\partial y} = \frac{y}{\text{norm}_y^2 \cdot \rho} \\
 \end{cases}
-
-
 \quad \quad \text{and} \quad \quad
-
 \begin{cases}
   \frac{\partial \theta}{\partial x} = -\frac{y}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\
   \frac{\partial \theta}{\partial y} = +\frac{x}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\
@@ -128,13 +125,12 @@ $$
 - Derivative wrt $\theta$:
 
 $$
-\frac{\partial Z}{\partial \theta} = 
-\frac{\partial}{\partial \theta}
-  \begin{cases}
-    R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\
-    R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\
-    R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
-  \end{cases}
+\frac{\partial Z}{\partial \theta} = \frac{\partial}{\partial \theta}
+\begin{cases}
+  R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\
+  R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\
+  R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
+\end{cases}
 $$
 
 <br />
