@@ -34,9 +34,9 @@ class SurfaceViewer:
 
     def view(self,
              surface_index: int,
-             projection='2d',
-             num_points=256,
-             figsize=(7, 5.5),
+             projection: str = '2d',
+             num_points: int = 256,
+             figsize: tuple = (7, 5.5),
              title: str = None):
         """
         Visualize the surface.
@@ -54,24 +54,36 @@ class SurfaceViewer:
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
         """
+        # Update optics and compute surface sag
+        self.optic.update_paraxial()
         surface = self.optic.surface_group.surfaces[surface_index]
-        x, y = np.meshgrid(np.linspace(-1, 1, num_points),
-                           np.linspace(-1, 1, num_points))
+        semi_aperture = surface.semi_aperture
+        x, y = np.meshgrid(
+            np.linspace(-semi_aperture, semi_aperture, num_points),
+            np.linspace(-semi_aperture, semi_aperture, num_points),)
         z = surface.geometry.sag(x, y)
-        z[np.sqrt(x**2+y**2) > 1] = np.nan
+        z[np.sqrt(x**2+y**2) > semi_aperture] = np.nan
 
+        # Plot in 2D
         if projection == '2d':
             self._plot_2d(z, figsize=figsize, title=title, 
                           surface_type=surface.surface_type,
-                          surface_index=surface_index)
+                          surface_index=surface_index,
+                          semi_aperture=semi_aperture)
+        # Plot in 3D
         elif projection == '3d':
             self._plot_3d(x, y, z, figsize=figsize, title=title,
                           surface_type=surface.surface_type,
-                          surface_index=surface_index)
+                          surface_index=surface_index,
+                          semi_aperture=semi_aperture)
         else:
-            raise ValueError('OPD projection must be "2d" or "3d".')
+            raise ValueError('Projection must be "2d" or "3d".')
 
-    def _plot_2d(self, z, figsize=(7, 5.5), title: str = None, **kwargs):
+    def _plot_2d(self,
+                 z: np.ndarray,
+                 figsize: tuple = (7, 5.5),
+                 title: str = None,
+                 **kwargs):
         """
         Plot a 2D representation of the given data.
 
@@ -82,10 +94,18 @@ class SurfaceViewer:
             title (str): Title.
         """
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
 
-        ax.set_xlabel('Normalized X')
-        ax.set_ylabel('Normalized Y')
+        if 'semi_aperture' in kwargs:
+            semi_aperture = kwargs['semi_aperture']
+            extent = [-semi_aperture, semi_aperture, -semi_aperture, semi_aperture]
+            ax.set_xlabel('X [mm]')
+            ax.set_ylabel('Y [mm]')
+        else:
+            extent = [-1, 1, -1, 1]
+            ax.set_xlabel('Normalized X')
+            ax.set_ylabel('Normalized Y')
+        im = ax.imshow(np.flipud(z), extent=extent)
+
         if title is not None:
             ax.set_title(title)
         else:
@@ -98,7 +118,13 @@ class SurfaceViewer:
         plt.grid(alpha=0.25)
         plt.show()
 
-    def _plot_3d(self, x, y, z, figsize=(7, 5.5), title: str = None, **kwargs):
+    def _plot_3d(self,
+                 x: np.ndarray,
+                 y: np.ndarray,
+                 z: np.ndarray,
+                 figsize: tuple = (7, 5.5),
+                 title: str = None,
+                 **kwargs):
         """
         Plot a 3D surface plot of the given data.
 
@@ -118,16 +144,23 @@ class SurfaceViewer:
                                cmap='viridis', linewidth=0,
                                antialiased=False)
 
-        ax.set_xlabel('Normalized X')
-        ax.set_ylabel('Normalized Y')
+        if 'semi_aperture' in kwargs:
+            ax.set_xlabel('X [mm]')
+            ax.set_ylabel('Y [mm]')
+        else:
+            ax.set_xlabel('Normalized X')
+            ax.set_ylabel('Normalized Y')
         ax.set_zlabel("Deviation to plane [mm]")
+
         if title is not None:
             ax.set_title(title)
         else:
             ax.set_title(f'Surface {kwargs.get("surface_index", None)} deviation to plane\n'
                          f'{kwargs.get("surface_type", None).capitalize()} surface')
+        
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
                      pad=0.15)
+        
         fig.tight_layout()
         plt.show()
 
