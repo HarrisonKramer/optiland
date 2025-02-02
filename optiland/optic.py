@@ -22,7 +22,11 @@ from optiland.rays import PolarizedRays, PolarizationState, RayGenerator
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import SurfaceViewer, OpticViewer, OpticViewer3D, LensInfoViewer
+from optiland.visualization import (
+    SurfaceViewer,
+    OpticViewer,
+    OpticViewer3D,
+    LensInfoViewer)
 from optiland.pickup import PickupManager
 from optiland.solves import SolveManager
 
@@ -294,11 +298,11 @@ class Optic:
                 surface.aperture.scale(scale_factor)
 
     def draw_surface(self,
-        surface_index,
-        projection='2d',
-        num_points=256,
-        figsize=(7, 5.5),
-        title=None):
+                     surface_index,
+                     projection='2d',
+                     num_points=256,
+                     figsize=(7, 5.5),
+                     title=None):
         """
         Visualize a surface.
 
@@ -314,7 +318,7 @@ class Optic:
         """
         viewer = SurfaceViewer(self)
         viewer.view(surface_index, projection, num_points, figsize, title)
-        
+
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
              title=None, reference=None):
@@ -428,17 +432,18 @@ class Optic:
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
             self.update_normalization(surface)
 
-    def update_normalization(self, surface)->None:
+    def update_normalization(self, surface) -> None:
         """
         Update the normalization radius of non-spherical surfaces.
         """
-        if surface.surface_type in ['even_asphere', 'odd_asphere', 'polynomial', 'chebyshev']:
-            surface.geometry.norm_x = surface.semi_aperture
-            surface.geometry.norm_y = surface.semi_aperture
+        if surface.surface_type in ['even_asphere', 'odd_asphere',
+                                    'polynomial', 'chebyshev']:
+            surface.geometry.norm_x = surface.semi_aperture*1.1
+            surface.geometry.norm_y = surface.semi_aperture*1.1
         if surface.surface_type == 'zernike':
             surface.geometry.norm_radius = surface.semi_aperture*1.1
 
-    def update(self)->None:
+    def update(self) -> None:
         """
         Update the surfaces based on the pickup operations.
         """

@@ -2,7 +2,12 @@ import pkg_resources
 from unittest.mock import patch
 import pytest
 import numpy as np
-from optiland.visualization import SurfaceViewer, OpticViewer, OpticViewer3D, LensInfoViewer
+from optiland.visualization import (
+    SurfaceViewer,
+    OpticViewer,
+    OpticViewer3D,
+    LensInfoViewer
+)
 from optiland.samples.objectives import (
     TessarLens,
     ReverseTelephoto
@@ -49,6 +54,7 @@ class InvalidMaterial(BaseMaterial):
     def k(self, wavelength):
         return -42
 
+
 class TestSurfaceViewer:
     def test_init(self):
         lens = TessarLens()
@@ -94,9 +100,6 @@ class TestSurfaceViewer:
         viewer.view(surface_index=1)
         mock_show.assert_called_once()
         plt.close()
-
-
-
 
 
 class TestOpticViewer:
