@@ -6,10 +6,13 @@ Analytical expressions of the surface sag, its derivatives, and surface normal v
 
 ## The Fringe Zernike Surface 
 A point on a freeform surface represented by a set of Fringe Zernike polynomials up to degree $N$ is modeled as:  
+
 $$
 z(x,y) = z_{\mathrm{conic}}(x,y)+\sum_{i=0}^{N-1}c_iZ_i\bigl(\rho,\theta\bigr)
 $$  
+
 The polar coordinates are extracted from the cartesian coordinates:
+
 $$
 \rho =\sqrt{\bigl(\tfrac{x}{\text{norm}_x}\bigr)^2 + \bigl(\tfrac{y}{\text{norm}_y}\bigr)^2}
 \quad \quad \text{and} \quad \quad
@@ -17,6 +20,7 @@ $$
 $$
 
 The base conic is in the form:
+
 $$
 z_{\text{base}}(x,y)
 =
@@ -31,6 +35,7 @@ $$
 <br />
 
 A single $ Z_n^m(\rho,\theta) $ can be written as the combination of a radial term $R_n^m(\rho)$ and an azimutal term:
+
 $$
 Z_n^m(\rho,\theta) =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
@@ -43,9 +48,11 @@ Z_n^m(\rho,\theta) =
 $$  
 
 The conversion from Standard to Fringe ordering follows :
+
 $$i = int\biggr[\biggr(\frac{n+|m|}{2}+1\biggr)^2 -2|m|+\frac{1-sgn(m)}{2} \biggr]$$
 
 Alternatively the radial and azimutal indexes $(n,m)$ from the fringe index $i$:
+
 $$
 n = \text{ceil}\biggr[\frac{-3+\sqrt{9+8i}}{2}\biggr] 
 \quad \quad \text{and} \quad \quad 
@@ -59,10 +66,7 @@ The base conic part $z_{\text{base}}$ often has a known partial derivative formu
 Example for a conic (sphere, paraboloid ...):
 
 $$
-z_{\text{conic}}(x,y)
-=
-\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)} 
-\qquad \text{with} \qquad r^2 = x^2 + y^2
+z_{\text{conic}}(x,y) = \frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)} \qquad \text{with} \qquad r^2 = x^2 + y^2
 $$
 
 A typical derivative for the conic portion is (and similarly for $\partial z / \partial y$):
@@ -78,6 +82,7 @@ $$
 ## Zernike derivatives 
 
 In order to get $\frac{\partial Z}{\partial x}$ and $\frac{\partial Z}{\partial y}$ we note that:
+
 $$
 \frac{\partial Z}{\partial x}
 =
@@ -85,7 +90,9 @@ $$
 +
 \frac{\partial Z}{\partial \theta}\frac{\partial \theta}{\partial x}.
 $$
+
 Since
+
 $$
 \rho
 =
@@ -95,7 +102,9 @@ $$
 =
 \arctan2\Bigl(\tfrac{y}{\text{norm}_y}, \tfrac{x}{\text{norm}_x}\Bigr)
 $$
+
 one derives:
+
 $$
 \begin{cases}
   \frac{\partial \rho}{\partial x} = \frac{x}{\text{norm}_x^2 \cdot \rho} \\[6pt]
@@ -110,6 +119,7 @@ $$
   \frac{\partial \theta}{\partial y} = +\frac{x}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\[6pt]
 \end{cases}
 $$
+
 The  signs and denominators come from the derivative of $\arctan⁡2(y/x)$.
 
 <br />
@@ -117,6 +127,7 @@ The  signs and denominators come from the derivative of $\arctan⁡2(y/x)$.
 We also compute the surface derivatives in polar coordinates:
 
 - Derivative wrt $\rho$:
+
 $$
 \frac{\partial Z}{\partial \rho} =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
@@ -128,6 +139,7 @@ $$
 $$
 
 - Derivative wrt $\theta$:
+
 $$
 \frac{\partial Z}{\partial \theta} = 
 \frac{\partial}{\partial \theta}
@@ -143,20 +155,27 @@ $$
 ## Surface Normal
 
 Once we have the two partial derivatives:
+
 $$
 dzdx = \frac{\partial z}{\partial x}
 \quad \quad \text{and} \quad \quad
 dzdy = \frac{\partial z}{\partial y}
 $$
+
 we form the (unnormalized) normal vector:
+
 $$
 \Bigl(-dzdx,-dzdy,1\Bigr)
 $$
+
 Its magnitude is:
+
 $$
 \sqrt{(dzdx)^2 + (dzdy)^2 + 1}
 $$
+
 so the **unit normal** is:
+
 $$
 \vec{N}(x,y)
 =
