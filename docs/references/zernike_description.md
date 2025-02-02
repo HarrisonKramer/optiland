@@ -31,7 +31,7 @@ $$
 
 <br />
 
-A single $ Z_n^m(\rho,\theta) $ can be written as the combination of a radial term $R_n^m(\rho)$ and an azimutal term:
+A given $Z_n^m(\rho,\theta)$ can be written as the combination of a radial term $R_n^m(\rho)$ and an azimutal term:
 
 $$
 Z_n^m(\rho,\theta) =
@@ -125,11 +125,11 @@ $$
 - Derivative wrt $\theta$:
 
 $$
-\frac{\partial Z}{\partial\theta} = \frac{\partial}{\partial\theta}
+\frac{\partial Z}{\partial \theta} = \frac{\partial}{\partial \theta}
 \begin{cases}
-  R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\
-  R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\
-  R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
+  R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta)\quad & m>0 \\
+  R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta)\quad & m<0 \\
+  R_n^0(\rho)\quad\text{(no } \theta \text{-dependence)}\quad & m=0
 \end{cases}
 $$
 
