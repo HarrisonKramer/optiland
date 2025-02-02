@@ -7,7 +7,7 @@ Analytical expressions of the surface sag, its derivatives, and surface normal v
 ## The Fringe Zernike Surface 
 A point on a freeform surface represented by a set of Fringe Zernike polynomials up to degree $N$ is modeled as:  
 $$
-z(x,y) \;=\; z_{\mathrm{conic}}(x,y)\;+\;\sum_{i=0}^{N-1}\,c_i\,Z_i\bigl(\rho,\theta\bigr)
+z(x,y) = z_{\mathrm{conic}}(x,y)+\sum_{i=0}^{N-1}\,c_i\,Z_i\bigl(\rho,\theta\bigr)
 $$  
 The polar coordinates are extracted from the cartesian coordinates:
 $$
@@ -20,7 +20,7 @@ The base conic is in the form:
 $$
 z_{\text{base}}(x,y)
 =
-\frac{r^2}{R\;\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)}
+\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)}
 \qquad \text{with} \qquad
 \begin{cases}
   r^2 = x^2 + y^2\\[6pt]
@@ -32,9 +32,9 @@ $$
 
 A single $ Z_n^m(\rho,\theta) $ can be written as the combination of a radial term $R_n^m(\rho)$ and an azimutal term:
 $$
-Z_n^m(\rho,\theta) \;=\;
+Z_n^m(\rho,\theta) =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
-(-1)^k\;\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,
+(-1)^k\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,
 \rho^{\,n-2k}.
   \begin{cases}
     \cos(m\,\theta) & \text{if } m \ge 0\\[6pt]
@@ -60,8 +60,8 @@ Example for a conic (sphere, paraboloid ...):
 
 $$
 z_{\text{conic}}(x,y)
-\;=\;
-\frac{r^2}{R\;\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)} 
+=
+\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)} 
 \qquad \text{with} \qquad r^2 = x^2 + y^2
 $$
 
@@ -69,8 +69,8 @@ A typical derivative for the conic portion is (and similarly for $\partial z / \
 
 $$
 \frac{\partial z_{\text{conic}}}{\partial x}
-\;=\;
-\frac{x}{\;R \;\sqrt{1 - (1+cc)\,r^2 / R^2}\;}
+=
+\frac{x}{R \sqrt{1 - (1+cc)\,r^2 / R^2}}
 $$
 
 <br />
@@ -80,19 +80,19 @@ $$
 In order to get $\frac{\partial Z}{\partial x}$ and $\frac{\partial Z}{\partial y}$ we note that:
 $$
 \frac{\partial Z}{\partial x}
-\;=\;
+=
 \frac{\partial Z}{\partial \rho}\,\frac{\partial \rho}{\partial x}
-\;+\;
++
 \frac{\partial Z}{\partial \theta}\,\frac{\partial \theta}{\partial x}.
 $$
 Since
 $$
 \rho
-\;=\;
+=
 \sqrt{\Bigl(\tfrac{x}{\text{norm}_x}\Bigr)^2 + \Bigl(\tfrac{y}{\text{norm}_y}\Bigr)^2}
 \quad \quad \text{and} \quad \quad
 \theta
-\;=\;
+=
 \arctan2\Bigl(\tfrac{y}{\text{norm}_y}, \tfrac{x}{\text{norm}_x}\Bigr)
 $$
 one derives:
@@ -120,7 +120,7 @@ We also compute the surface derivatives in polar coordinates:
 $$
 \frac{\partial Z}{\partial \rho} =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
-(-1)^k\;\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,\bigl(n-2k\bigr)\,\rho^{\,n-2k-1} \cdot
+(-1)^k\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,\bigl(n-2k\bigr)\,\rho^{\,n-2k-1} \cdot
 \begin{cases}
     \cos(m\,\theta) & m \ge 0\\[6pt]
     \sin(|m|\,\theta) & m<0\\[6pt]
@@ -132,9 +132,9 @@ $$
 \frac{\partial Z}{\partial \theta} = 
 \frac{\partial}{\partial \theta}
   \begin{cases}
-    R_n^m(\rho)\,\cos(m\,\theta) \;\;\;=\; -\,m\,R_n^m(\rho)\,\sin(m\,\theta), & m>0,\\[6pt]
-    R_n^m(\rho)\,\sin(|m|\,\theta) \;\;=\; |m|\,R_n^m(\rho)\,\cos(|m|\,\theta), & m<0,\\[6pt]
-    R_n^0(\rho)\;\;\;\;\;\;\;\;\;\;\text{(no \(\theta\)-dependence)}, & m=0.
+    R_n^m(\rho)\,\cos(m\,\theta) = -\,m\,R_n^m(\rho)\,\sin(m\,\theta), & m>0,\\[6pt]
+    R_n^m(\rho)\,\sin(|m|\,\theta) = |m|\,R_n^m(\rho)\,\cos(|m|\,\theta), & m<0,\\[6pt]
+    R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
   \end{cases}
 $$
 
@@ -150,7 +150,7 @@ dzdy = \frac{\partial z}{\partial y}
 $$
 we form the (unnormalized) normal vector:
 $$
-\Bigl(-\,dzdx,\;\,-\,dzdy,\;\,1\Bigr)
+\Bigl(-\,dzdx,\,-\,dzdy,\,1\Bigr)
 $$
 Its magnitude is:
 $$
