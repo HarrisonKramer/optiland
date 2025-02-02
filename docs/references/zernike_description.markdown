@@ -7,20 +7,20 @@ Analytical expressions of the surface sag, its derivatives, and surface normal v
 ## The Fringe Zernike Surface 
 A point on a freeform surface represented by a set of Fringe Zernike polynomials up to degree $N$ is modeled as:  
 $$
-z(x,y) = z_{\mathrm{conic}}(x,y)+\sum_{i=0}^{N-1}\,c_i\,Z_i\bigl(\rho,\theta\bigr)
+z(x,y) = z_{\mathrm{conic}}(x,y)+\sum_{i=0}^{N-1}c_iZ_i\bigl(\rho,\theta\bigr)
 $$  
 The polar coordinates are extracted from the cartesian coordinates:
 $$
 \rho =\sqrt{\bigl(\tfrac{x}{\text{norm}_x}\bigr)^2 + \bigl(\tfrac{y}{\text{norm}_y}\bigr)^2}
 \quad \quad \text{and} \quad \quad
-\theta = \arctan2\bigl(\tfrac{y}{\text{norm}_y},\,\tfrac{x}{\text{norm}_x}\bigr)
+\theta = \arctan2\bigl(\tfrac{y}{\text{norm}_y},\tfrac{x}{\text{norm}_x}\bigr)
 $$
 
 The base conic is in the form:
 $$
 z_{\text{base}}(x,y)
 =
-\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)}
+\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)}
 \qquad \text{with} \qquad
 \begin{cases}
   r^2 = x^2 + y^2\\[6pt]
@@ -34,11 +34,11 @@ A single $ Z_n^m(\rho,\theta) $ can be written as the combination of a radial te
 $$
 Z_n^m(\rho,\theta) =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
-(-1)^k\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,
-\rho^{\,n-2k}.
+(-1)^k\frac{(n-k)!}{k!\bigl(\tfrac{n+|m|}{2}-k\bigr)!\bigl(\tfrac{n-|m|}{2}-k\bigr)!}
+\rho^{n-2k}.
   \begin{cases}
-    \cos(m\,\theta) & \text{if } m \ge 0\\[6pt]
-    \sin(|m|\,\theta) & \text{if } m < 0
+    \cos(m\theta) & \text{if } m \ge 0\\[6pt]
+    \sin(|m|\theta) & \text{if } m < 0
   \end{cases}
 $$  
 
@@ -61,7 +61,7 @@ Example for a conic (sphere, paraboloid ...):
 $$
 z_{\text{conic}}(x,y)
 =
-\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)\,r^2 / R^2}\Bigr)} 
+\frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)} 
 \qquad \text{with} \qquad r^2 = x^2 + y^2
 $$
 
@@ -70,7 +70,7 @@ A typical derivative for the conic portion is (and similarly for $\partial z / \
 $$
 \frac{\partial z_{\text{conic}}}{\partial x}
 =
-\frac{x}{R \sqrt{1 - (1+cc)\,r^2 / R^2}}
+\frac{x}{R \sqrt{1 - (1+cc)r^2 / R^2}}
 $$
 
 <br />
@@ -81,9 +81,9 @@ In order to get $\frac{\partial Z}{\partial x}$ and $\frac{\partial Z}{\partial 
 $$
 \frac{\partial Z}{\partial x}
 =
-\frac{\partial Z}{\partial \rho}\,\frac{\partial \rho}{\partial x}
+\frac{\partial Z}{\partial \rho}\frac{\partial \rho}{\partial x}
 +
-\frac{\partial Z}{\partial \theta}\,\frac{\partial \theta}{\partial x}.
+\frac{\partial Z}{\partial \theta}\frac{\partial \theta}{\partial x}.
 $$
 Since
 $$
@@ -120,10 +120,10 @@ We also compute the surface derivatives in polar coordinates:
 $$
 \frac{\partial Z}{\partial \rho} =
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
-(-1)^k\frac{(n-k)!}{k!\,\bigl(\tfrac{n+|m|}{2}-k\bigr)!\,\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\,\bigl(n-2k\bigr)\,\rho^{\,n-2k-1} \cdot
+(-1)^k\frac{(n-k)!}{k!\bigl(\tfrac{n+|m|}{2}-k\bigr)!\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\bigl(n-2k\bigr)\rho^{n-2k-1} \cdot
 \begin{cases}
-    \cos(m\,\theta) & m \ge 0\\[6pt]
-    \sin(|m|\,\theta) & m<0\\[6pt]
+    \cos(m\theta) & m \ge 0\\[6pt]
+    \sin(|m|\theta) & m<0\\[6pt]
 \end{cases}
 $$
 
@@ -132,8 +132,8 @@ $$
 \frac{\partial Z}{\partial \theta} = 
 \frac{\partial}{\partial \theta}
   \begin{cases}
-    R_n^m(\rho)\,\cos(m\,\theta) = -\,m\,R_n^m(\rho)\,\sin(m\,\theta), & m>0,\\[6pt]
-    R_n^m(\rho)\,\sin(|m|\,\theta) = |m|\,R_n^m(\rho)\,\cos(|m|\,\theta), & m<0,\\[6pt]
+    R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\[6pt]
+    R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\[6pt]
     R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
   \end{cases}
 $$
@@ -150,7 +150,7 @@ dzdy = \frac{\partial z}{\partial y}
 $$
 we form the (unnormalized) normal vector:
 $$
-\Bigl(-\,dzdx,\,-\,dzdy,\,1\Bigr)
+\Bigl(-dzdx,-dzdy,1\Bigr)
 $$
 Its magnitude is:
 $$
@@ -161,9 +161,9 @@ $$
 \vec{N}(x,y)
 =
 \frac{
-\bigl(-dzdx,\,-dzdy,\,1\bigr)
+\bigl(-dzdx,-dzdy,1\bigr)
 }{
-\sqrt{\, (dzdx)^2 + (dzdy)^2\,+1}
+\sqrt{ (dzdx)^2 + (dzdy)^2+1}
 }.
 $$
 
