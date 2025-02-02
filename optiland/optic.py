@@ -22,7 +22,11 @@ from optiland.rays import PolarizedRays, PolarizationState, RayGenerator
 from optiland.distribution import create_distribution
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
+from optiland.visualization import (
+    SurfaceViewer,
+    OpticViewer,
+    OpticViewer3D,
+    LensInfoViewer)
 from optiland.pickup import PickupManager
 from optiland.solves import SolveManager
 
@@ -293,6 +297,29 @@ class Optic:
             if surface.aperture is not None:
                 surface.aperture.scale(scale_factor)
 
+    def draw_surface(self,
+                     surface_index,
+                     projection='2d',
+                     plot_dev_to_bfs=False,
+                     num_points=256,
+                     figsize=(7, 5.5),
+                     title=None):
+        """
+        Visualize a surface.
+
+        Args:
+            surface_index (int): Index of the surface to be visualized.
+            projection (str): The type of projection to use for visualization.
+                Can be '2d' or '3d'.
+            num_points (int): The number of points to sample along each axis
+                for the visualization.
+            figsize (tuple): The size of the figure in inches.
+                Defaults to (7, 5.5).
+            title (str): Title.
+        """
+        viewer = SurfaceViewer(self)
+        viewer.view(surface_index, projection, plot_dev_to_bfs, num_points, figsize, title)
+
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
              title=None, reference=None):
@@ -417,7 +444,7 @@ class Optic:
         if surface.surface_type == 'zernike':
             surface.geometry.norm_radius = surface.semi_aperture*1.1
 
-    def update(self)->None:
+    def update(self) -> None:
         """
         Update the surfaces based on the pickup operations.
         """
