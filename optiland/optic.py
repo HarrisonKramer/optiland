@@ -406,11 +406,12 @@ class Optic:
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
             self.update_normalization(surface)
 
-    def update_normalization(self, surface)->None:
+    def update_normalization(self, surface) -> None:
         """
         Update the normalization radius of non-spherical surfaces.
         """
-        if surface.surface_type in ['even_asphere', 'odd_asphere', 'polynomial', 'chebyshev']:
+        if surface.surface_type in ['even_asphere', 'odd_asphere',
+                                    'polynomial', 'chebyshev']:
             surface.geometry.norm_x = surface.semi_aperture*1.1
             surface.geometry.norm_y = surface.semi_aperture*1.1
         if surface.surface_type == 'zernike':
