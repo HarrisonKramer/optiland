@@ -438,8 +438,8 @@ class Optic:
         """
         if surface.surface_type in ['even_asphere', 'odd_asphere',
                                     'polynomial', 'chebyshev']:
-            surface.geometry.norm_x = surface.semi_aperture
-            surface.geometry.norm_y = surface.semi_aperture
+            surface.geometry.norm_x = surface.semi_aperture*1.1
+            surface.geometry.norm_y = surface.semi_aperture*1.1
         if surface.surface_type == 'zernike':
             surface.geometry.norm_radius = surface.semi_aperture*1.1
 
