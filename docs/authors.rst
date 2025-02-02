@@ -3,8 +3,21 @@ Authors
 
 .. _authors:
 
-**Optiland** was created and is maintained by:
+**Optiland** was created and is actively maintained by:
 
-- Kramer Harrison: `https://github.com/HarrisonKramer <https://github.com/HarrisonKramer>`_
+- **Kramer Harrison** (`GitHub <https://github.com/HarrisonKramer>`_)
 
-If you would like to contribute to **Optiland**, please see the :ref:`Contributing <contributing>` section.
+Contributors
+------------
+
+We sincerely appreciate the contributions of the following individuals, whose efforts have helped improve **Optiland**:
+
+- **drpaprika** (`GitHub <https://github.com/drpaprika>`_)
+- **David Fariña** (`GitHub <https://github.com/edavidfs>`_)
+- **Christoph Mahnke** (`GitHub <https://github.com/xmhk>`_)
+- **Andrei Utina** (`GitHub <https://github.com/AndreiUtina>`_)
+
+Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
+
+Want to contribute?  
+We welcome new contributors! If you're interested, please check out the :ref:`Contributing <contributing>` section to get started.
