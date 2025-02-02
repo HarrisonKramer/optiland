@@ -24,7 +24,7 @@ The base conic is in the form:
 $$
 z_{\text{base}}(x,y) = \frac{r^2}{R\Bigl(1 + \sqrt{1 - (1+cc)r^2 / R^2}\Bigr)} \qquad \text{with} \qquad
 \begin{cases}
-  r^2 = x^2 + y^2\\[6pt]
+  r^2 = x^2 + y^2\\
   cc \text{ the conic constant}
 \end{cases}
 $$
@@ -39,7 +39,7 @@ Z_n^m(\rho,\theta) =
 (-1)^k\frac{(n-k)!}{k!\bigl(\tfrac{n+|m|}{2}-k\bigr)!\bigl(\tfrac{n-|m|}{2}-k\bigr)!}
 \rho^{n-2k}.
   \begin{cases}
-    \cos(m\theta) & \text{if } m \ge 0\\[6pt]
+    \cos(m\theta) & \text{if } m \ge 0\\
     \sin(|m|\theta) & \text{if } m < 0
   \end{cases}
 $$  
@@ -94,16 +94,16 @@ one derives:
 
 $$
 \begin{cases}
-  \frac{\partial \rho}{\partial x} = \frac{x}{\text{norm}_x^2 \cdot \rho} \\[6pt]
-  \frac{\partial \rho}{\partial y} = \frac{y}{\text{norm}_y^2 \cdot \rho} \\[6pt]
+  \frac{\partial \rho}{\partial x} = \frac{x}{\text{norm}_x^2 \cdot \rho} \\
+  \frac{\partial \rho}{\partial y} = \frac{y}{\text{norm}_y^2 \cdot \rho} \\
 \end{cases}
 
 
 \quad \quad \text{and} \quad \quad
 
 \begin{cases}
-  \frac{\partial \theta}{\partial x} = -\frac{y}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\[6pt]
-  \frac{\partial \theta}{\partial y} = +\frac{x}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\[6pt]
+  \frac{\partial \theta}{\partial x} = -\frac{y}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\
+  \frac{\partial \theta}{\partial y} = +\frac{x}{\rho^2 \cdot \text{norm}_y \cdot \text{norm}_x} \\
 \end{cases}
 $$
 
@@ -120,8 +120,8 @@ $$
 \sum_{k=0}^{\lfloor (n - |m|)/2 \rfloor}
 (-1)^k\frac{(n-k)!}{k!\bigl(\tfrac{n+|m|}{2}-k\bigr)!\bigl(\tfrac{n-|m|}{2}-k\bigr)!}\bigl(n-2k\bigr)\rho^{n-2k-1} \cdot
 \begin{cases}
-    \cos(m\theta) & m \ge 0\\[6pt]
-    \sin(|m|\theta) & m<0\\[6pt]
+    \cos(m\theta) & m \ge 0\\
+    \sin(|m|\theta) & m<0\\
 \end{cases}
 $$
 
@@ -131,8 +131,8 @@ $$
 \frac{\partial Z}{\partial \theta} = 
 \frac{\partial}{\partial \theta}
   \begin{cases}
-    R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\[6pt]
-    R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\[6pt]
+    R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\
+    R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\
     R_n^0(\rho)\text{(no \(\theta\)-dependence)}, & m=0.
   \end{cases}
 $$
@@ -164,13 +164,7 @@ $$
 so the **unit normal** is:
 
 $$
-\vec{N}(x,y)
-=
-\frac{
-\bigl(-dzdx,-dzdy,1\bigr)
-}{
-\sqrt{ (dzdx)^2 + (dzdy)^2+1}
-}.
+\vec{N}(x,y) = \frac{\bigl(-dzdx,-dzdy,1\bigr)}{\sqrt{ (dzdx)^2 + (dzdy)^2+1}}
 $$
 
 <br />
