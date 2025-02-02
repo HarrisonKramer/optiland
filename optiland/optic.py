@@ -300,6 +300,7 @@ class Optic:
     def draw_surface(self,
                      surface_index,
                      projection='2d',
+                     plot_dev_to_bfs=False,
                      num_points=256,
                      figsize=(7, 5.5),
                      title=None):
@@ -317,7 +318,7 @@ class Optic:
             title (str): Title.
         """
         viewer = SurfaceViewer(self)
-        viewer.view(surface_index, projection, num_points, figsize, title)
+        viewer.view(surface_index, projection, plot_dev_to_bfs, num_points, figsize, title)
 
     def draw(self, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,

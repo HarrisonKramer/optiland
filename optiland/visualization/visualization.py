@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import vtk
+from scipy import optimize
+
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
@@ -35,6 +37,7 @@ class SurfaceViewer:
     def view(self,
              surface_index: int,
              projection: str = '2d',
+             plot_dev_to_bfs: bool = False,
              num_points: int = 256,
              figsize: tuple = (7, 5.5),
              title: str = None):
@@ -44,7 +47,9 @@ class SurfaceViewer:
         Args:
             surface_index (int): Index of the surface to be visualized.
             projection (str): The type of projection to use for visualization.
-                Can be '2d' or '3d'.
+            Can be '2d' or '3d'.
+            plot_dev_to_bfs (bool): If True, plot the deviation to the best 
+                fir sphere instead of the deviation to a plane.
             num_points (int): The number of points to sample along each axis
                 for the visualization.
             figsize (tuple): The size of the figure in inches.
@@ -61,7 +66,12 @@ class SurfaceViewer:
         x, y = np.meshgrid(
             np.linspace(-semi_aperture, semi_aperture, num_points),
             np.linspace(-semi_aperture, semi_aperture, num_points),)
+        
         z = surface.geometry.sag(x, y)
+
+        if plot_dev_to_bfs:
+            z = self._compute_deviation_to_best_fit_sphere(x, y, z)
+
         z[np.sqrt(x**2+y**2) > semi_aperture] = np.nan
 
         # Plot in 2D
@@ -69,13 +79,15 @@ class SurfaceViewer:
             self._plot_2d(z, figsize=figsize, title=title, 
                           surface_type=surface.surface_type,
                           surface_index=surface_index,
-                          semi_aperture=semi_aperture)
+                          semi_aperture=semi_aperture,
+                          plot_dev_to_bfs=plot_dev_to_bfs)
         # Plot in 3D
         elif projection == '3d':
             self._plot_3d(x, y, z, figsize=figsize, title=title,
                           surface_type=surface.surface_type,
                           surface_index=surface_index,
-                          semi_aperture=semi_aperture)
+                          semi_aperture=semi_aperture,
+                          plot_dev_to_bfs=plot_dev_to_bfs)
         else:
             raise ValueError('Projection must be "2d" or "3d".')
 
@@ -106,7 +118,8 @@ class SurfaceViewer:
         else:
             ax.set_title(
                 f'Surface {kwargs.get("surface_index", None)} '
-                f'deviation to plane\n'
+                f'deviation to '
+                f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"}\n'
                 f'{kwargs.get("surface_type", None).capitalize()} surface'
             )
 
@@ -151,15 +164,63 @@ class SurfaceViewer:
         else:
             ax.set_title(
                 f'Surface {kwargs.get("surface_index", None)} '
-                f'deviation to plane\n'
+                f'deviation to '
+                f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"}\n'
                 f'{kwargs.get("surface_type", None).capitalize()} surface'
             )
+        
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
                      pad=0.15)
         
         fig.tight_layout()
         plt.show()
 
+    @staticmethod
+    def _sphere_sag(x, y, R):
+        """Compute the sag of a sphere with radius R.
+        
+        Args:
+            x, y: 2D arrays of coordinates.
+            R: Sphere radius.
+
+        Returns:
+            2D array of sag values.
+        """
+        return R - np.sqrt(R**2 - x**2 - y**2)
+
+    def _best_fit_sphere(self, x, y, z, radius):
+        """Find the best-fit sphere radius.
+        
+        Args:
+            x, y: 2D arrays of coordinates.
+            z: 2D array of sags.
+
+        Returns:
+            Optimal sphere radius.
+        """
+        def rms_error(R):
+            z_s = self._sphere_sag(x, y, R)
+            return np.sum((z - z_s) ** 2)  # RMS error
+
+        initial_guess = np.max(np.sqrt(x**2 + y**2))
+        res = optimize.minimize(rms_error, initial_guess)
+        return res.x[0]
+
+    def _compute_deviation_to_best_fit_sphere(self, x, y, z):
+        """Compute deviation from the best-fit sphere.
+        
+        Args:
+            x, y: 2D arrays of coordinates.
+            z: 2D array of sags.
+
+        Returns:
+            2D array of deviation values.
+        """
+        R = self._best_fit_sphere(x, y, z)
+        print("R=", R)
+        z_s = self._sphere_sag(x, y, R)
+        return z - z_s
+    
 
 class OpticViewer:
     """
