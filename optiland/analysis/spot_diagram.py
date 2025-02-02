@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
@@ -101,18 +102,120 @@ class SpotDiagram:
         plt.tight_layout()
         plt.show()
 
-    def airy_radius(self):
-        """ Airy disc for visualization
+    def get_image_coordinates(self):
+        """Generates the coordinate list on the image plane.
 
         Returns:
-            airy_radius(float): Airy radii for primary wavelength.
+            coordinate_list (List): x, and y coordinates as float.
+        """
+        field_coords = self.optic.fields.get_field_coords()
+        coordinate_list = []
+        for idx in range(len(field_coords)):
+            ray = self.optic.trace_generic(Hx = field_coords[idx][0], 
+                                           Hy = field_coords[idx][1], 
+                                           Px = 0, Py = 0, 
+                                           wavelength=self.optic.wavelengths.primary_wavelength.value)
+            coordinate_list.append([ray.x, ray.y])
+        return coordinate_list
+        
+
+    def angle_from_cosine(self, cos1, cos2):
+        """Calculate the angle (in radians and degrees) between two vectors given their cosine values.
+
+        Returns:
+            theta_rad (float): angle in radians.
+        """
+        # Compute the angle using arccos
+        theta_rad = np.abs(np.arccos(cos1) % (np.pi/2)  - np.arccos(cos2)% (np.pi/2))
+        #theta_deg = np.degrees(theta_rad)  # Convert to degrees
+
+        return theta_rad
+
+    def f_number(self, n, theta):
+        """Calculates the F#
+
+        Returns:
+            N_w (float): Physical F number.
+        """
+        N_w = 1 / (2 * n * np.sin(theta))
+        return N_w
+
+    def airy_radius(self, n_w, wavelength):
+        """
+        Calculates the airy radius
+        Returns:
+            r (float): Airy radius.
+        """
+        r = 1.22 * n_w * wavelength
+        return r
+    
+    def generate_marginal_rays(self, wavelength):
+        """Generates marginal rays at the edges of the stop.
+        
+        Returns:
+            ray_north, ray_south, ray_east, ray_west (RealRays tuple):  
+        """
+        ray_north = self.optic.trace_generic(Hx=0, Hy=0, Px=1, Py=0, wavelength=wavelength)
+        ray_south = self.optic.trace_generic(Hx=0, Hy=0, Px=-1, Py=0, wavelength=wavelength)
+        ray_east = self.optic.trace_generic(Hx=0, Hy=0, Px=0, Py=1, wavelength=wavelength)
+        ray_west = self.optic.trace_generic(Hx=0, Hy=0, Px=0, Py=-1, wavelength=wavelength)
+
+        return ray_north, ray_south, ray_east, ray_west
+
+    # generate multiple chief ray's angle
+    def generate_chief_rays_cosines(self, wavelength):
+        """Generates the cosine values of chief rays for each field at the image plane.
+
+        Returns:
+            chief_ray_cosines_list (List): 2D list, each having (x, y) data of cosine value (direction vectors of the rays) at the image plane. 
+        """
+        coords = self.optic.fields.get_field_coords()
+        chief_ray_cosines_list = []
+        for coord in coords:
+            H_x, H_y = coord[0], coord[1]
+            ray_chief = self.optic.trace_generic(Hx=H_x, Hy=H_y, Px=0, Py=0, wavelength=wavelength) 
+            chief_ray_cosines_x = ray_chief.L
+            chief_ray_cosines_y = ray_chief.M
+            chief_ray_cosines_list.append([chief_ray_cosines_x, chief_ray_cosines_y])
+            
+        return chief_ray_cosines_list
+    def airy_disc_x_y(self, wavelength):
+
+        """Generates marginal rays, chief rays, then compares the angle between them.
+        Averaging each x and y axes, produces F# (N_w), then calculates the airy airy radius at each x-y axes.
+        The procedure is done for each field defined by the user.
+
+        Returns:
+            airy_rad_tuple (tuple): A tuple containing arrays of airy radius at each x-y axis (r_x, r_y).
         """
 
-        primary_wavelength = self.optic.wavelengths.primary_wavelength.value
-        F_number = self.optic.paraxial.FNO()
-        airy_radius_value = 1.22 * primary_wavelength * F_number
-        return airy_radius_value
-
+        ray_north, ray_south, ray_east, ray_west =  self.generate_marginal_rays(wavelength)
+        
+        chief_ray_cosines_list = self.generate_chief_rays_cosines(wavelength)
+        
+        airy_rad_x_list = []
+        airy_rad_y_list = []
+        for chief_ray_cosines in chief_ray_cosines_list:
+            # relative angles along x axis
+            rel_angle_north = abs(self.angle_from_cosine(chief_ray_cosines[0], ray_north.L))
+            rel_angle_south = abs(self.angle_from_cosine(chief_ray_cosines[0], ray_south.L))
+            # relative angles along y axis
+            rel_angle_east = abs(self.angle_from_cosine(chief_ray_cosines[1], ray_east.M))
+            rel_angle_west = abs(self.angle_from_cosine(chief_ray_cosines[1], ray_west.M))
+            
+            avg_angle_x = (rel_angle_north + rel_angle_south) / 2
+            avg_angle_y = (rel_angle_east + rel_angle_west) / 2
+        
+            N_w_x = self.f_number(n = 1, theta = avg_angle_x)
+            N_w_y = self.f_number(n = 1, theta = avg_angle_y)
+            
+            airy_rad_x = self.airy_radius(N_w_x, wavelength)
+            airy_rad_y = self.airy_radius(N_w_y, wavelength)
+            airy_rad_x_list.append(airy_rad_x)
+            airy_rad_y_list.append(airy_rad_y)
+        airy_rad_tuple = (airy_rad_x_list, airy_rad_y_list)
+        return airy_rad_tuple
+    
     def centroid(self):
         """Centroid of each spot
 
@@ -251,13 +354,15 @@ class SpotDiagram:
             None
         """
         markers = ['o', 's', '^']
-        
+        coordinate_list = self.get_image_coordinates()  # final coordinate list on the image plane.
         if add_airy_disk:
-            airy_radius_value = self.airy_radius()
-            # Use a Circle patch instead of manual line plotting
-            airy_circle = plt.Circle((0, 0), airy_radius_value, linestyle = "--", color='black', fill=False, linewidth=1)
-            ax.add_patch(airy_circle)
-            adjusted_axis_lim = max(axis_lim , airy_radius_value) * buffer
+            airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=self.optic.wavelengths.primary_wavelength.value)
+            # Add the ellipse at the image planes.
+            for k, coordinates in enumerate(coordinate_list):
+                ellipse = patches.Ellipse((coordinates[0], coordinates[1]), width=airy_rad_x[k], height=airy_rad_y[k], linestyle = "--", edgecolor='black', fill=False, linewidth=1)
+                ax.add_patch(ellipse)
+
+            adjusted_axis_lim = max(axis_lim , max(airy_rad_x), max(airy_rad_y)) * buffer
         else:
             adjusted_axis_lim = axis_lim*buffer  # if airy disc is not present, prevent over buffering.
 
