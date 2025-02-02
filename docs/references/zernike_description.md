@@ -125,7 +125,7 @@ $$
 - Derivative wrt $\theta$:
 
 $$
-\frac{\partial Z}{\partial \theta} = \frac{\partial}{\partial \theta}
+\frac{\partial Z}{\partial\theta} = \frac{\partial}{\partial\theta}
 \begin{cases}
   R_n^m(\rho)\cos(m\theta) = -mR_n^m(\rho)\sin(m\theta), & m>0,\\
   R_n^m(\rho)\sin(|m|\theta) = |m|R_n^m(\rho)\cos(|m|\theta), & m<0,\\
