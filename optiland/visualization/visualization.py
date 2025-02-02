@@ -95,15 +95,10 @@ class SurfaceViewer:
         """
         _, ax = plt.subplots(figsize=figsize)
 
-        if 'semi_aperture' in kwargs:
-            semi_aperture = kwargs['semi_aperture']
-            extent = [-semi_aperture, semi_aperture, -semi_aperture, semi_aperture]
-            ax.set_xlabel('X [mm]')
-            ax.set_ylabel('Y [mm]')
-        else:
-            extent = [-1, 1, -1, 1]
-            ax.set_xlabel('Normalized X')
-            ax.set_ylabel('Normalized Y')
+        semi_aperture = kwargs['semi_aperture']
+        extent = [-semi_aperture, semi_aperture, -semi_aperture, semi_aperture]
+        ax.set_xlabel('X [mm]')
+        ax.set_ylabel('Y [mm]')
         im = ax.imshow(np.flipud(z), extent=extent)
 
         if title is not None:
@@ -147,12 +142,8 @@ class SurfaceViewer:
                                cmap='viridis', linewidth=0,
                                antialiased=False)
 
-        if 'semi_aperture' in kwargs:
-            ax.set_xlabel('X [mm]')
-            ax.set_ylabel('Y [mm]')
-        else:
-            ax.set_xlabel('Normalized X')
-            ax.set_ylabel('Normalized Y')
+        ax.set_xlabel('X [mm]')
+        ax.set_ylabel('Y [mm]')
         ax.set_zlabel("Deviation to plane [mm]")
 
         if title is not None:
