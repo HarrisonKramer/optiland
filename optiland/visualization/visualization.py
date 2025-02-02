@@ -69,7 +69,7 @@ class SurfaceViewer:
                           surface_type=surface.surface_type,
                           surface_index=surface_index)
         else:
-            raise ValueError('OPD projection must be "2d" or "3d".')
+            raise ValueError('Projection must be "2d" or "3d".')
 
     def _plot_2d(self, z, figsize=(7, 5.5), title: str = None, **kwargs):
         """
@@ -89,8 +89,11 @@ class SurfaceViewer:
         if title is not None:
             ax.set_title(title)
         else:
-            ax.set_title(f'Surface {kwargs.get("surface_index", None)} deviation to plane\n'
-                         f'{kwargs.get("surface_type", None).capitalize()} surface')
+            ax.set_title(
+                f'Surface {kwargs.get("surface_index", None)} '
+                f'deviation to plane\n'
+                f'{kwargs.get("surface_type", None).capitalize()} surface'
+            )
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
@@ -124,14 +127,15 @@ class SurfaceViewer:
         if title is not None:
             ax.set_title(title)
         else:
-            ax.set_title(f'Surface {kwargs.get("surface_index", None)} deviation to plane\n'
-                         f'{kwargs.get("surface_type", None).capitalize()} surface')
+            ax.set_title(
+                f'Surface {kwargs.get("surface_index", None)} '
+                f'deviation to plane\n'
+                f'{kwargs.get("surface_type", None).capitalize()} surface'
+            )
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
                      pad=0.15)
         fig.tight_layout()
         plt.show()
-
-
 
 
 class OpticViewer:
