@@ -90,10 +90,6 @@ class StandardGeometry(BaseGeometry):
             t1 = (-b + np.sqrt(d)) / (2 * a)
             t2 = (-b - np.sqrt(d)) / (2 * a)
 
-        # intersections "behind" ray, set to inf to ignore
-        t1[t1 < 0] = np.inf
-        t2[t2 < 0] = np.inf
-
         # find intersection points in z
         z1 = rays.z + t1 * rays.N
         z2 = rays.z + t2 * rays.N

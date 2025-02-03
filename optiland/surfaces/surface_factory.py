@@ -19,7 +19,9 @@ from optiland.geometries import (
     EvenAsphere,
     OddAsphere,
     PolynomialGeometry,
-    ChebyshevPolynomialGeometry)
+    ChebyshevPolynomialGeometry,
+    ZernikePolynomialGeometry,
+)
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.standard_surface import Surface
 
@@ -96,7 +98,12 @@ class SurfaceFactory:
                 'geometry': self._configure_chebyshev_geometry,
                 'expected_params': ['radius', 'conic', 'coefficients',
                                     'tol', 'max_iter', 'norm_x', 'norm_y']
-            }
+            },
+            'zernike': {
+                'geometry': self._configure_zernike_geometry,
+                'expected_params': ['radius', 'conic', 'coefficients',
+                                    'tol', 'max_iter', 'norm_radius']
+            },
         }
 
         if surface_type not in surface_config:
@@ -118,7 +125,7 @@ class SurfaceFactory:
 
         return Surface(geometry, material_pre, material_post, is_stop,
                        is_reflective=is_reflective, coating=coating,
-                       bsdf=bsdf, **filtered_kwargs)
+                       bsdf=bsdf, surface_type=surface_type, **filtered_kwargs)
 
     def _configure_cs(self, index, **kwargs):
         """
@@ -155,7 +162,7 @@ class SurfaceFactory:
             elif index == 1:
                 z = 0  # first surface, always at zero
             else:
-                z = float(self._surface_group.positions[index-1]) + \
+                z = float(self._surface_group.positions[index-1].item()) + \
                     self.last_thickness
 
                 # self.last_thickness = thickness
@@ -286,6 +293,32 @@ class SurfaceFactory:
 
         return geometry
 
+    # @staticmethod
+    def _configure_zernike_geometry(self, cs, **kwargs):
+        """
+        Configures a Zernike geometry based on the given parameters.
+
+        Parameters:
+            cs: The coordinate system for the geometry.
+            **kwargs: Additional keyword arguments for the geometry. Options
+                include radius, conic, coefficients, tol, and max_iter.
+
+        Returns:
+            geometry: The configured geometry object.
+        """
+        radius = kwargs.get('radius', np.inf)
+        conic = kwargs.get('conic', 0)
+        tol = kwargs.get('tol', 1e-6)
+        max_iter = kwargs.get('max_iter', 100)
+        coefficients = kwargs.get('coefficients', [])
+        norm_radius = kwargs.get('norm_radius', 1)
+
+        geometry = ZernikePolynomialGeometry(cs, radius, conic, tol,
+                                             max_iter, coefficients,
+                                             norm_radius)
+
+        return geometry
+    
     def _configure_material(self, index, material):
         """
         Configures the material for a surface based on the given index and

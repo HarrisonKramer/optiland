@@ -94,6 +94,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         x, y, z = self._intersection_sphere(rays)
         intersections = np.column_stack((x, y, z))
         ray_directions = np.column_stack((rays.L, rays.M, rays.N))
+
         for i in range(self.max_iter):
             z_surface = self.sag(intersections[:, 0], intersections[:, 1])
             dz = intersections[:, 2] - z_surface
@@ -101,6 +102,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             intersections -= distance[:, None] * ray_directions
             if np.max(np.abs(dz)) < self.tol:
                 break
+
         position = np.column_stack((rays.x, rays.y, rays.z))
         return np.linalg.norm(intersections - position, axis=1)
 
@@ -127,10 +129,6 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             warnings.simplefilter('ignore')
             t1 = (-b + np.sqrt(d)) / (2 * a)
             t2 = (-b - np.sqrt(d)) / (2 * a)
-
-        # intersections "behind" ray, set to inf to ignore
-        t1[t1 < 0] = np.inf
-        t2[t2 < 0] = np.inf
 
         # find intersection points in z
         z1 = rays.z + t1 * rays.N
@@ -164,7 +162,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         return geometry_dict
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data):  # pragma: no cover
         """
         Creates a geometry from a dictionary representation.
 

@@ -44,9 +44,11 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
-    def add_operand(self, operand_type, target, weight=1, input_data={}):
+    def add_operand(self, operand_type=None, target=None, min_val=None,
+                    max_val=None, weight=1, input_data={}):
         """Add an operand to the merit function"""
-        self.operands.add(operand_type, target, weight, input_data)
+        self.operands.add(operand_type, target, min_val, max_val, weight,
+                          input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
         """Add a variable to the merit function"""
@@ -84,16 +86,25 @@ class OptimizationProblem:
 
     def operand_info(self):
         """Print information about the operands in the merit function"""
-        data = {'Operand Type': [op.type.replace('_', ' ')
+        data = {'Operand Type': [op.operand_type.replace('_', ' ')
                                  for op in self.operands],
-                'Target': [op.target for op in self.operands],
+                'Target': [f'{op.target:+.3f}' if op.target is not None
+                           else '' for op in self.operands],
+                'Min. Bound': [op.min_val if op.min_val else ''
+                               for op in self.operands],
+                'Max. Bound': [op.max_val if op.max_val else ''
+                               for op in self.operands],
                 'Weight': [op.weight for op in self.operands],
-                'Value': [op.value for op in self.operands],
-                'Delta': [op.delta() for op in self.operands]}
+                'Value': [f'{op.value:+.3f}' for op in self.operands],
+                'Delta': [f'{op.delta():+.3f}' for op in self.operands]}
 
         df = pd.DataFrame(data)
-        funs = self.fun_array()
-        df['Contribution (%)'] = funs / np.sum(funs) * 100
+        values = self.fun_array()
+        total = np.sum(values)
+        if total == 0.0:
+            df['Contrib. [%]'] = 0.0
+        else:
+            df['Contrib. [%]'] = np.round(values / total * 100, 2)
 
         print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
 
@@ -119,7 +130,7 @@ class OptimizationProblem:
             improve_percent = ((self.initial_value - current_value) /
                                self.initial_value * 100)
 
-        data = {'Merit Function Value': [self.sum_squared()],
+        data = {'Merit Function Value': [current_value],
                 'Improvement (%)': improve_percent}
         df = pd.DataFrame(data)
         print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
@@ -201,7 +212,7 @@ class OptimizerGeneric:
                 var.update(x0[idvar])
             self._x.pop(-1)
 
-    def _fun(self, x):
+    def _fun(self, x)->float:
         """
         Internal function to evaluate the objective function.
 
@@ -211,15 +222,23 @@ class OptimizerGeneric:
         Returns:
             rss (float): The residual sum of squares.
         """
+
+        # Update all variables to their new values
         for idvar, var in enumerate(self.problem.variables):
             var.update(x[idvar])
-        self.problem.update_optics()  # update all optics (e.g., pickups)
-        funs = np.array([op.fun() for op in self.problem.operands])
-        rss = np.sum(funs**2)
-        if np.isnan(rss):
+
+        # Update optics (e.g., pickups and solves)
+        self.problem.update_optics()
+
+        # Compute merit function value
+        try:   
+            rss = self.problem.sum_squared()
+            if np.isnan(rss):
+                return 1e10
+            else:
+                return rss
+        except ValueError:
             return 1e10
-        else:
-            return rss
 
 
 class LeastSquares(OptimizerGeneric):

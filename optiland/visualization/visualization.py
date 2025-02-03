@@ -19,6 +19,7 @@ from optiland.visualization.system import OpticalSystem
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
+
 class OpticViewer:
     """
     A class used to visualize optical systems.
@@ -75,8 +76,8 @@ class OpticViewer:
         plt.gca().set_facecolor('#f8f9fa')  # off-white background
         plt.axis('image')
 
-        ax.set_xlabel(f"Z [mm]")
-        ax.set_ylabel(f"Y [mm]")
+        ax.set_xlabel("Z [mm]")
+        ax.set_ylabel("Y [mm]")
 
         if title:
             ax.set_title(title)

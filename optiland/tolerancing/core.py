@@ -58,21 +58,20 @@ class Tolerancing:
         self.compensator = CompensatorOptimizer(method=method, tol=tol)
 
     def add_operand(self, operand_type: str, input_data: dict = {},
-                    target: float = None, weight: float = 1.0):
+                    target: float = None, weight: float = 1.0,
+                    min_val: float = None,  max_val: float = None):
         """
         Add an operand to the tolerancing problem.
 
         Args:
-            operand_type: The type of the operand.
-            input_data: A dictionary of input data for the operand. Defaults to
-                an empty dictionary.
-            target: The target value for the operand. Defaults to None, in
-                which case the target is set based on the current value of
-                the operand.
-            weight: The weight of the operand for optimization during
-                compensation. Defaults to 1.0.
+            operand_type (str): The type of the operand.
+            target (float): The target value of the operand (equality operand).
+            min_val (float): The operand should stay above this value (inequality operand).
+            max_val (float): The operand should stay below this value (inequality operand).
+            weight (float): The weight of the operand.
+            input_data (dict): Additional input data for the operand.
         """
-        new_operand = Operand(operand_type, target, weight, input_data)
+        new_operand = Operand(operand_type, target, min_val, max_val, weight, input_data)
         if target is None:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)

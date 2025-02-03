@@ -370,3 +370,29 @@ def test_calculate_FNO(optic_instance, values):
 @pytest.mark.parametrize('optic_instance,values', get_optic_data())
 def test_calculate_invariant(optic_instance, values):
     assert optic_instance.paraxial.invariant() == values['invariant']
+
+
+def test_get_object_position_finite_object():
+    lens = Edmund_49_847()
+
+    # move object to z = -10
+    lens.surface_group.surfaces[0].geometry.cs.z = -10
+    y, z = lens.paraxial._get_object_position(Hy=0, y1=0, EPL=-5)
+
+    assert z.item() == -10
+    assert y.item() == 0
+
+    # make field type object height
+    lens.set_field_type(field_type='object_height')
+    y, z = lens.paraxial._get_object_position(Hy=1, y1=0, EPL=-5)
+    assert z.item() == -10
+    assert y.item() == -14
+
+
+def test_invalid_object_position_call():
+    # object position can't be calculated for field type object height
+    # when the object is at infinity
+    lens = Edmund_49_847()
+    lens.set_field_type(field_type='object_height')
+    with pytest.raises(ValueError):
+        lens.paraxial._get_object_position(Hy=0, y1=0, EPL=5)

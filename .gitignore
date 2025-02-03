@@ -9,7 +9,7 @@ dist/
 .vscode/
 optiland.egg-info/
 **/Scripts/
-references/
+/references/
 htmlcov/
 .coverage
 **/_build/

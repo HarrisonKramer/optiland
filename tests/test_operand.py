@@ -158,6 +158,25 @@ class TestRayOperand:
         assert np.isclose(operand.RayOperand.z_intercept(**data),
                           6347.146837237045)
 
+    def test_x_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 1.0, 'Hy': 0.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(operand.RayOperand.x_intercept_lcs(**data),
+                          -150.42338010762842)
+
+    def test_y_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(operand.RayOperand.y_intercept_lcs(**data),
+                          150.42338010762842)
+
+    def test_z_intercept_lcs(self, hubble):
+        data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
+                'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
+        assert np.isclose(
+            operand.RayOperand.z_intercept_lcs(**data), -18.062712762936826
+            )  # Because Hubble's image is curved, otherwise it would be 0
+
     def test_L(self, hubble):
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
                 'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
@@ -208,23 +227,27 @@ class TestRayOperand:
 class TestOperand:
     def test_get_value(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 1, 1, input_data)
+        op = operand.Operand(operand_type='f2', target=1, weight=1,
+                             input_data=input_data)
         assert np.isclose(op.value, 57600.080998403595)
 
     def test_invalid_operand(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f3', 1, 1, input_data)
+        op = operand.Operand(operand_type='f3', target=1, weight=1,
+                             input_data=input_data)
         with pytest.raises(ValueError):
             op.value
 
     def test_delta(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 5000, 1, input_data)
+        op = operand.Operand(operand_type='f2', target=5000, weight=1,
+                             input_data=input_data)
         assert np.isclose(op.delta(), 52600.080998403595)
 
     def test_fun(self, hubble):
         input_data = {'optic': hubble}
-        op = operand.Operand('f2', 1e5, 1.5, input_data)
+        op = operand.Operand(operand_type='f2', target=1e5, weight=1.5,
+                             input_data=input_data)
         assert np.isclose(op.fun(), -63599.87850239461)
 
     def test_reregister_operand(self):
@@ -238,6 +261,60 @@ class TestOperand:
 
     def test_repr(self):
         assert isinstance(repr(operand.operand_registry), str)
+
+    def test_invalid_bounds(self):
+        with pytest.raises(ValueError):
+            operand.Operand(operand_type='f1', min_val=1, max_val=0)
+
+    def test_invalid_bounds_and_target(self):
+        with pytest.raises(ValueError):
+            operand.Operand(operand_type='f1', min_val=1, max_val=0, target=1)
+
+    def test_delta_ineq(self):
+        input_data = {'optic': HubbleTelescope()}
+        op = operand.Operand(operand_type='f2', min_val=1e6, max_val=1e11,
+                             weight=1, input_data=input_data)
+        hubble = HubbleTelescope()
+        f2 = hubble.paraxial.f2()
+
+        # check on the lower bound
+        assert np.isclose(op.delta_ineq(), 1e6-f2)
+
+        op = operand.Operand(operand_type='f2', min_val=0, max_val=1,
+                             weight=1, input_data=input_data)
+
+        # check on the upper bound
+        assert np.isclose(op.delta_ineq(), f2-1)
+
+    def test_delta_ineq_no_bounds(self):
+        input_data = {'optic': HubbleTelescope()}
+        op = operand.Operand(operand_type='f2', weight=1,
+                             input_data=input_data)
+        assert np.isclose(op.delta_ineq(), 0)
+
+    def test_delta_with_bounds(self):
+        input_data = {'optic': HubbleTelescope()}
+        op = operand.Operand(operand_type='f2', min_val=1e6, max_val=1e11,
+                             weight=1, input_data=input_data)
+        hubble = HubbleTelescope()
+        f2 = hubble.paraxial.f2()
+
+        # check on the lower bound
+        assert np.isclose(op.delta(), 1e6-f2)
+
+        op = operand.Operand(operand_type='f2', min_val=0, max_val=1,
+                             weight=1, input_data=input_data)
+
+        # check on the upper bound
+        assert np.isclose(op.delta(), f2-1)
+
+    def test_invalid_delta(self):
+        input_data = {'optic': HubbleTelescope()}
+        op = operand.Operand(operand_type='f2', input_data=input_data)
+        # manually remove target to make the operand invalid
+        op.target = None
+        with pytest.raises(ValueError):
+            op.delta()
 
 
 class TestOperandManager:
@@ -268,7 +345,8 @@ class TestOperandManager:
     def test_setitem(self):
         manager = operand.OperandManager()
         manager.add('f1', 1)
-        manager[0] = operand.Operand('f2', 1, 1, {})
+        manager[0] = operand.Operand(operand_type='f2', target=1, weight=1,
+                                     input_data={})
         assert len(manager) == 1
 
     def test_len(self):

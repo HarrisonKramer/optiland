@@ -11,6 +11,7 @@ import matplotlib.patches as patches
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
+
 class SpotDiagram:
     """Spot diagram class
 
