@@ -405,3 +405,57 @@ class DifferentialEvolution(OptimizerGeneric):
                                                      updating=updating,
                                                      workers=workers)
         return result
+
+
+class SHGO(OptimizerGeneric):
+    """
+    Simplicity Homology Global Optimization (SHGO).
+
+
+
+    Args:
+        problem (OptimizationProblem): The optimization problem to be solved.
+
+    Methods:
+        optimize(maxiter=1000, disp=True, workers=-1): Runs the SHGO algorithm.
+    """
+
+    def __init__(self, problem: OptimizationProblem):
+        """
+        Initializes a new instance of the SHGO class.
+
+        Args:
+            problem (OptimizationProblem): The optimization problem to be
+                solved.
+        """
+        super().__init__(problem)
+
+    def optimize(self, workers=-1, *args, **kwargs):
+        """
+        Runs the SHGO algorithm. Note that the SHGO algorithm accepts the same
+        arguments as the scipy.optimize.shgo function.
+
+        Args:
+            workers (int): Number of parallel workers to use. Set to -1 to use
+                all available CPU processors. Default is -1.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            result (OptimizeResult): The optimization result.
+
+        Raises:
+            ValueError: If any variable in the problem does not have bounds.
+        """
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        bounds = tuple([var.bounds for var in self.problem.variables])
+        if any(None in bound for bound in bounds):
+            raise ValueError('SHGO requires all variables have bounds.')
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+
+            result = optimize.shgo(self._fun, bounds=bounds,
+                                   workers=workers, *args, **kwargs)
+        return result
