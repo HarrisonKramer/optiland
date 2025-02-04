@@ -212,7 +212,7 @@ class OptimizerGeneric:
                 var.update(x0[idvar])
             self._x.pop(-1)
 
-    def _fun(self, x)->float:
+    def _fun(self, x) -> float:
         """
         Internal function to evaluate the objective function.
 
@@ -231,7 +231,7 @@ class OptimizerGeneric:
         self.problem.update_optics()
 
         # Compute merit function value
-        try:   
+        try:
             rss = self.problem.sum_squared()
             if np.isnan(rss):
                 return 1e10
