@@ -292,3 +292,53 @@ class TestDifferentialEvolution:
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=-1)
         assert result.success
+
+
+class TestSHGO:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1,
+                             min_val=10, max_val=100)
+        input_data = {'optic': lens}
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
+        optimizer = optimization.SHGO(problem)
+        result = optimizer.optimize()
+        assert result.success
+
+    def test_raise_error_no_bounds(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1)
+        input_data = {'optic': lens}
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
+        optimizer = optimization.SHGO(problem)
+        with pytest.raises(ValueError):
+            optimizer.optimize()
+
+
+class TestBasinHopping:
+    def test_optimize(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1)
+        input_data = {'optic': lens}
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
+        optimizer = optimization.BasinHopping(problem)
+        result = optimizer.optimize(niter=10)
+        assert result.fun < problem.initial_value
+
+    def test_raise_error_with_bounds(self):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, 'radius', surface_number=1,
+                             min_val=10, max_val=100)
+        input_data = {'optic': lens}
+        problem.add_operand(operand_type='f2', target=90, weight=1.0,
+                            input_data=input_data)
+        optimizer = optimization.BasinHopping(problem)
+        with pytest.raises(ValueError):
+            optimizer.optimize(niter=10)
