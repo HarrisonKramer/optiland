@@ -24,6 +24,7 @@ class ParaxialSurface(Surface):
     """
 
     def __init__(self,
+                 focal_length,
                  material_pre,
                  material_post,
                  is_stop=False,
@@ -32,6 +33,7 @@ class ParaxialSurface(Surface):
                  bsdf=None,
                  is_reflective=False,
                  ):
+        self.f = focal_length
         cs = CoordinateSystem()
         geometry = Plane(cs)
         surface_type = 'paraxial'
@@ -48,30 +50,39 @@ class ParaxialSurface(Surface):
         Returns:
             RealRays: The refracted rays.
         """
-        # find surface normals
-        nx, ny, nz = self.geometry.surface_normal(rays)
+        n1 = self.material_pre.n(rays.w)
+        n2 = self.material_post.n(rays.w)
 
-        # Interact with surface (refract or reflect)
         if self.is_reflective:
-            rays.reflect(nx, ny, nz)
-        else:
-            n1 = self.material_pre.n(rays.w)
-            n2 = self.material_post.n(rays.w)
-            rays.refract(nx, ny, nz, n1, n2)
+            n2 = -n2
+
+        ux1 = rays.L / rays.N
+        uy1 = rays.M / rays.N
+
+        ux2 = 1 / n2 * (n1 * ux1 - rays.x / self.f)
+        uy2 = 1 / n2 * (n1 * uy1 - rays.y / self.f)
+
+        # New direction cosines (not normalized in paraxial approximation)
+        L = ux2
+        M = uy2
+        N = 1
+
+        # TODO: work out how to maintain non-normalized direction cosines,
+        # as required for paraxial approximation (or is it?)
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:
-            rays = self.bsdf.scatter(rays, nx, ny, nz)
+            rays = self.bsdf.scatter(rays, nx=0, ny=0, nz=1)
 
         # if there is a coating, modify ray properties
         if self.coating:
             rays = self.coating.interact(rays, reflect=self.is_reflective,
-                                         nx=nx, ny=ny, nz=nz)
+                                         nx=0, ny=0, nz=1)
         else:
             # update polarization matrices, if PolarizedRays
             rays.update()
 
-        return rays
+        return rays, L, M, N
 
     def _trace_paraxial(self, rays):
         """
