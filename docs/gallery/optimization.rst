@@ -13,6 +13,7 @@ These examples demonstrate the optimization capabilities of optical systems usin
     optimization/constrained
     optimization/bounded_operands
     optimization/global
+    optimization/shgo
     optimization/asphere
     optimization/beam_expander
     optimization/freeform
