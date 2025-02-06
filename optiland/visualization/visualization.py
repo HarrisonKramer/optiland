@@ -18,6 +18,7 @@ from scipy import optimize
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
+from optiland.surfaces.object_surface import ObjectSurface
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
@@ -59,14 +60,29 @@ class SurfaceViewer:
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
         """
-        # Update optics and compute surface sag
+        # Update optics
         self.optic.update_paraxial()
         surface = self.optic.surface_group.surfaces[surface_index]
+
+        # Mandatory checks
+        if isinstance(surface, ObjectSurface):
+            raise AttributeError(f"Surface {surface_index} is the object surface, "
+                                 f"please select another one.")
+        if surface_index == self.optic.surface_group.num_surfaces:
+            raise AttributeError(f"Surface {surface_index} is the image surface, "
+                                 f"please select another one.")
+        if surface_index > self.optic.surface_group.num_surfaces:
+            raise AttributeError('Surface index cannot be greater than number of '
+                                 'surfaces.')  
+
+        # Set surface aperture 
         semi_aperture = surface.semi_aperture
+        
         x, y = np.meshgrid(
             np.linspace(-semi_aperture, semi_aperture, num_points),
             np.linspace(-semi_aperture, semi_aperture, num_points),)
         
+        # compute surface sag
         z = surface.geometry.sag(x, y)
 
         if plot_dev_to_bfs:
@@ -186,9 +202,9 @@ class SurfaceViewer:
         Returns:
             2D array of sag values.
         """
-        return R - np.sqrt(R**2 - x**2 - y**2)
+        return R - np.sign(R) * np.sqrt(R**2 - x**2 - y**2)
 
-    def _best_fit_sphere(self, x, y, z, radius):
+    def _best_fit_sphere(self, x, y, z):
         """Find the best-fit sphere radius.
         
         Args:
@@ -202,8 +218,8 @@ class SurfaceViewer:
             z_s = self._sphere_sag(x, y, R)
             return np.sum((z - z_s) ** 2)  # RMS error
 
-        initial_guess = np.max(np.sqrt(x**2 + y**2))
-        res = optimize.minimize(rms_error, initial_guess)
+        initial_guess = np.mean(z + (x**2 + y**2) / (2 * z))  # first order approx
+        res = optimize.minimize(rms_error, initial_guess, method='Nelder-Mead')
         return res.x[0]
 
     def _compute_deviation_to_best_fit_sphere(self, x, y, z):
