@@ -60,20 +60,20 @@ class SurfaceViewer:
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
         """
+        if surface_index > self.optic.surface_group.num_surfaces-1:
+            raise AttributeError('The surface index cannot be greater than the number '
+                                 'of surfaces.')  
         # Update optics
         self.optic.update_paraxial()
         surface = self.optic.surface_group.surfaces[surface_index]
-
-        # Mandatory checks
+        
+        # Checks
         if isinstance(surface, ObjectSurface):
             raise AttributeError(f"Surface {surface_index} is the object surface, "
                                  f"please select another one.")
-        if surface_index == self.optic.surface_group.num_surfaces:
+        if surface_index == self.optic.surface_group.num_surfaces-1:
             raise AttributeError(f"Surface {surface_index} is the image surface, "
                                  f"please select another one.")
-        if surface_index > self.optic.surface_group.num_surfaces:
-            raise AttributeError('Surface index cannot be greater than number of '
-                                 'surfaces.')  
 
         # Set surface aperture 
         semi_aperture = surface.semi_aperture
