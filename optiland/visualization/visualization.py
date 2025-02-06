@@ -233,7 +233,6 @@ class SurfaceViewer:
             2D array of deviation values.
         """
         R = self._best_fit_sphere(x, y, z)
-        print("R=", R)
         z_s = self._sphere_sag(x, y, R)
         return z - z_s
     
