@@ -8,8 +8,6 @@ used for first-order layout of optical systems.
 
 Kramer Harrison, 2024
 """
-from optiland.coordinate_system import CoordinateSystem
-from optiland.geometries import Plane
 from optiland.surfaces.standard_surface import Surface
 from optiland.rays.polarized_rays import PolarizedRays
 
@@ -25,6 +23,7 @@ class ParaxialSurface(Surface):
 
     def __init__(self,
                  focal_length,
+                 geometry,
                  material_pre,
                  material_post,
                  is_stop=False,
@@ -34,8 +33,6 @@ class ParaxialSurface(Surface):
                  is_reflective=False,
                  surface_type='paraxial'):
         self.f = focal_length
-        cs = CoordinateSystem()
-        geometry = Plane(cs)
         super().__init__(geometry, material_pre, material_post, is_stop,
                          aperture, coating, bsdf, is_reflective, surface_type)
 

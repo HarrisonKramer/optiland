@@ -106,7 +106,7 @@ class SurfaceFactory:
                                     'tol', 'max_iter', 'norm_radius']
             },
             'paraxial': {
-                'geometry': None,
+                'geometry': self._configure_standard_geometry,
                 'expected_params': ['f']
             }
         }
@@ -115,18 +115,16 @@ class SurfaceFactory:
             raise ValueError(f'Surface type {surface_type} not recognized.')
 
         # Generate geometry for the surface type
-        if surface_type != 'paraxial':
-            config = surface_config[surface_type]
-            filtered_params = {key: value for key, value in kwargs.items()
-                               if key in config['expected_params']}
-            geometry = config['geometry'](cs, **filtered_params)
+        config = surface_config[surface_type]
+        filtered_params = {key: value for key, value in kwargs.items()
+                           if key in config['expected_params']}
+        geometry = config['geometry'](cs, **filtered_params)
 
-            if index == 0:
-                return ObjectSurface(geometry, material_post)
-        else:
-            if index == 0:
+        if index == 0:
+            if surface_type == 'paraxial':
                 raise ValueError('Paraxial surface cannot be the object '
                                  'surface.')
+            return ObjectSurface(geometry, material_post)
 
         # Filter out unexpected surface parameters
         common_params = ['aperture']
@@ -134,8 +132,9 @@ class SurfaceFactory:
                            if key in common_params}
 
         if surface_type == 'paraxial':
-            return ParaxialSurface(kwargs['f'], material_pre, material_post,
-                                   is_stop, is_reflective=is_reflective,
+            return ParaxialSurface(kwargs['f'], geometry, material_pre,
+                                   material_post, is_stop,
+                                   is_reflective=is_reflective,
                                    coating=coating, bsdf=bsdf,
                                    surface_type=surface_type,
                                    **filtered_kwargs)
