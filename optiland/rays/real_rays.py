@@ -50,6 +50,8 @@ class RealRays(BaseRays):
         self.M0 = None
         self.N0 = None
 
+        self.is_normalized = True
+
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
         y = self.y * np.cos(rx) - self.z * np.sin(rx)
@@ -93,6 +95,14 @@ class RealRays(BaseRays):
             k = material.k(self.w)
             alpha = 4 * np.pi * k / self.w
             self.i *= np.exp(-alpha * t * 1e3)  # mm to microns
+
+        # normalize, if required
+        if not self.is_normalized:
+            mag = np.sqrt(self.L**2 + self.M**2 + self.N**2)
+            self.L /= mag
+            self.M /= mag
+            self.N /= mag
+            self.is_normalized = True
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
