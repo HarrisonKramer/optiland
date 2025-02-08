@@ -53,7 +53,7 @@ class TestPlane:
         # Test ray doesn't intersect the plane
         rays = RealRays(1.0, 2.0, -1.5, 0.0, 0.0, -1.0, 1.0, 0.0)
         distance = plane.distance(rays)
-        assert np.isnan(distance)
+        assert np.isclose(distance, -1.5)
 
         # Test distance for ray not parallel to z axis
         L = 0.356
@@ -210,6 +210,12 @@ class TestStandardGeometry:
         geometry_dict = geometry.to_dict()
         new_geometry = geometries.StandardGeometry.from_dict(geometry_dict)
         assert new_geometry.to_dict() == geometry_dict
+
+    def test_From_dict_invalid_dict(self):
+        with pytest.raises(ValueError):
+            geometries.StandardGeometry.from_dict(
+                {'invalid_key': 'invalid_value'}
+            )
 
 
 class TestEvenAsphere:
@@ -610,3 +616,15 @@ class TestOddAsphere:
         geometry = geometries.OddAsphere(cs, radius=10.0, conic=0.5,
                                          coefficients=[1e-2, -1e-5])
         assert str(geometry) == 'Odd Asphere'
+
+
+class TestZernikeGeometry:
+    def test_str(self):
+        cs = CoordinateSystem()
+        coefficients = np.zeros((3, 3))
+        coefficients[0] = [0.0, 1e-2, -2e-3]
+        geometry = \
+            geometries.ZernikePolynomialGeometry(cs, radius=22.0, conic=0.0,
+                                                 coefficients=coefficients,
+                                                 norm_radius=10)
+        assert str(geometry) == 'Zernike Polynomial'

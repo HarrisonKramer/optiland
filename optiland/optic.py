@@ -45,7 +45,7 @@ class Optic:
             the optical system.
     """
 
-    def __init__(self, name:str=None):
+    def __init__(self, name: str = None):
         self.name = name
         self.aperture = None
         self.field_type = None
@@ -319,7 +319,7 @@ class Optic:
         """
         viewer = OpticViewer(self)
         viewer.view(fields, wavelengths, num_rays, distribution=distribution,
-                    figsize=figsize, xlim=xlim, ylim=ylim, title=title, 
+                    figsize=figsize, xlim=xlim, ylim=ylim, title=title,
                     reference=reference)
 
     def draw3D(self, fields='all', wavelengths='primary', num_rays=24,
@@ -404,13 +404,26 @@ class Optic:
         yb = np.abs(np.ravel(yb))
         for k, surface in enumerate(self.surface_group.surfaces):
             surface.set_semi_aperture(r_max=ya[k]+yb[k])
+            self.update_normalization(surface)
 
-    def update(self):
+    def update_normalization(self, surface) -> None:
+        """
+        Update the normalization radius of non-spherical surfaces.
+        """
+        if surface.surface_type in ['even_asphere', 'odd_asphere',
+                                    'polynomial', 'chebyshev']:
+            surface.geometry.norm_x = surface.semi_aperture*1.1
+            surface.geometry.norm_y = surface.semi_aperture*1.1
+        if surface.surface_type == 'zernike':
+            surface.geometry.norm_radius = surface.semi_aperture*1.1
+
+    def update(self)->None:
         """
         Update the surfaces based on the pickup operations.
         """
         self.pickups.apply()
         self.solves.apply()
+        self.update_paraxial()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the

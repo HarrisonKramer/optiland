@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from optiland.optimization import variable
-from optiland.geometries import PolynomialGeometry, ChebyshevPolynomialGeometry
+from optiland.geometries import PolynomialGeometry, ChebyshevPolynomialGeometry, ZernikePolynomialGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
 from optiland.samples.simple import AsphericSinglet
@@ -189,6 +189,41 @@ class TestChebyshevCoeffVariable:
 
     def test_string_representation(self):
         assert str(self.poly_var) == 'Chebyshev Coeff. (1, 1), Surface 0'
+
+
+class TestZernikeCoeffVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = AsphericSinglet()
+        poly_geo = ZernikePolynomialGeometry(CoordinateSystem(), 100,
+                                               coefficients=np.zeros(3))
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
+
+    def test_get_value(self):
+        assert self.poly_var.get_value() == 0.0
+
+    def test_update_value(self):
+        self.poly_var.update_value(1.0)
+        assert np.isclose(self.poly_var.get_value(), 1.0)
+
+    def test_get_value_index_error(self):
+        self.optic = AsphericSinglet()
+        poly_geo = ZernikePolynomialGeometry(CoordinateSystem(), 100)
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
+        assert self.poly_var.get_value() == 0.0
+
+    def test_update_value_index_error(self):
+        self.optic = AsphericSinglet()
+        poly_geo = ZernikePolynomialGeometry(CoordinateSystem(), 100)
+        self.optic.surface_group.surfaces[0].geometry = poly_geo
+        self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
+        self.poly_var.update_value(1.0)
+        assert np.isclose(self.poly_var.get_value(), 1.0)
+
+    def test_string_representation(self):
+        assert str(self.poly_var) == 'Zernike Coeff. 1, Surface 0'
 
 
 class TestVariable:

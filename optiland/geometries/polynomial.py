@@ -14,6 +14,12 @@ where
 The coefficients are defined in a 2D array where coefficients[i][j] is the
 coefficient for x^i * y^j.
 
+Historically, XY-polynomials were the first type of polynomials used 
+for low-order freeform surfaces (see https://doi.org/10.1364/AO.38.003572).
+These polynomials remain common surface descriptors of freeform surfaces; 
+however their lack of orthogonality renders them less desirable than 
+their orthogonal counterparts for highly corrected imaging systems.
+
 Kramer Harrison, 2024
 """
 import numpy as np
@@ -35,6 +41,12 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
 
     The coefficients are defined in a 2D array where coefficients[i][j] is the
     coefficient for x^i * y^j.
+
+    Historically, XY-polynomials were the first type of polynomials used 
+    for low-order freeform surfaces (see https://doi.org/10.1364/AO.38.003572).
+    These polynomials remain common surface descriptors of freeform surfaces; 
+    however their lack of orthogonality renders them less desirable than 
+    their orthogonal counterparts for highly corrected imaging systems.
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.

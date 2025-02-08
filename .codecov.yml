@@ -1,0 +1,35 @@
+# For more configuration details:
+# https://docs.codecov.com/docs/codecov-yaml
+
+# Check if this file is valid by running in bash:
+# curl -X POST --data-binary @.codecov.yml https://codecov.io/validate
+
+# or run this inPowerShell (Windows):
+# Invoke-WebRequest -Uri "https://codecov.io/validate" -Method Post -InFile ".codecov.yml" -ContentType "application/x-yaml"
+
+codecov:
+  require_ci_to_pass: yes  # Only report if CI runs successfully
+  notify:
+    after_n_builds: 1  # Post reports after at least one build finishes
+
+coverage:
+  status:
+    project:
+      default:
+        target: 90%  # Desired coverage
+        threshold: 5%  # Allows slight drops before failing
+        base: auto  # Compares against the base branch
+    patch:
+      default:
+        target: 75%  # Ensures new changes have appropriate coverage
+        threshold: 5%
+        base: auto
+
+ignore:
+  - "tests/*"  # Ignore test files
+  - "optiland/database/generate_csv_database.py"
+
+comment:
+  layout: "reach, diff, files"
+  require_changes: no  # Post even if no coverage changes
+  behavior: default  # Uses default commenting behavior

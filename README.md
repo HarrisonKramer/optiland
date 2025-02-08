@@ -199,12 +199,13 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Diffractive Optical Elements**
 - [ ] **Jones Pupils**
 - [ ] **Apodization Support** 
-- [ ] **Additional Freeforms (Superconic, Zernike, etc.)**
+- [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
 - [ ] **Huygens PSF & MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
+- [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
 
 

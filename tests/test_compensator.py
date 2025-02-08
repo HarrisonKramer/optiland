@@ -32,7 +32,7 @@ def test_run_optimizer_generic():
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method='generic')
     optimizer.add_variable(optic, 'radius', surface_number=1)
-    optimizer.add_operand('f2', 25, 1, {'optic': optic})
+    optimizer.add_operand(operand_type='f2', target=25, weight=1, input_data={'optic': optic})
     result = optimizer.run()
     assert result is not None
 
@@ -41,7 +41,7 @@ def test_run_optimizer_least_squares():
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method='least_squares')
     optimizer.add_variable(optic, 'radius', surface_number=1)
-    optimizer.add_operand('f2', 25, 1, {'optic': optic})
+    optimizer.add_operand(operand_type='f2', target=2525, weight=1, input_data={'optic': optic})
     result = optimizer.run()
     assert result is not None
 

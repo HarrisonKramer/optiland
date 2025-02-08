@@ -22,7 +22,8 @@ from optiland.optimization.variable.polynomial_coeff import \
     PolynomialCoeffVariable
 from optiland.optimization.variable.chebyshev_coeff import \
     ChebyshevCoeffVariable
-
+from optiland.optimization.variable.zernike_coeff import \
+    ZernikeCoeffVariable
 
 class Variable:
     """
@@ -102,7 +103,8 @@ class Variable:
             'index': IndexVariable,
             'asphere_coeff': AsphereCoeffVariable,
             'polynomial_coeff': PolynomialCoeffVariable,
-            'chebyshev_coeff': ChebyshevCoeffVariable
+            'chebyshev_coeff': ChebyshevCoeffVariable,
+            'zernike_coeff': ZernikeCoeffVariable,
         }
 
         variable_class = variable_types.get(self.type)
