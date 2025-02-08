@@ -1,17 +1,18 @@
 """Paraxial Surface
 
 This module contains the class ParaxialSurface, which is a subclass of the
-Surface class. It is used to represent a paraxial surface, which is planar,
-yet imparts a phase shift to the incident light, causing refraction. This
-class is used to model the behavior of a lens in the paraxial approximation
-and can be used for first-order layout of optical systems.
+Surface class. It is used to represent a paraxial surface, or a thin lens,
+which is defined simply by its effective focal length in air. This class is
+used to model the behavior of a lens in the paraxial approximation and can be
+used for first-order layout of optical systems.
 
-Kramer Harrison, 2025
+Kramer Harrison, 2024
 """
 import numpy as np
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
 from optiland.surfaces.standard_surface import Surface
+from optiland.rays.polarized_rays import PolarizedRays
 
 
 class ParaxialSurface(Surface):
@@ -44,12 +45,19 @@ class ParaxialSurface(Surface):
         """
         Interacts the rays with the surface by either reflecting or refracting
 
+        Note that phase is added assuming a thin lens as a phase
+        transformation. A cosine correction is applied for rays propagating
+        off-axis. This correction is equivalent to the ray z direction cosine.
+
         Args:
             rays: The rays.
 
         Returns:
             RealRays: The refracted rays.
         """
+        # add optical path length
+        rays.opd += (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
+
         n1 = self.material_pre.n(rays.w)
         n2 = self.material_post.n(rays.w)
 
@@ -62,13 +70,15 @@ class ParaxialSurface(Surface):
         ux2 = 1 / n2 * (n1 * ux1 - rays.x / self.f)
         uy2 = 1 / n2 * (n1 * uy1 - rays.y / self.f)
 
-        # New direction cosines (not normalized in paraxial approximation)
         L = ux2
         M = uy2
-        N = 1
 
-        # TODO: work out how to maintain non-normalized direction cosines,
-        # as required for paraxial approximation (or is it?)
+        # only normalize if required
+        if self.bsdf or self.coating or isinstance(rays, PolarizedRays):
+            mag = np.sqrt(L**2 + M**2 + 1)
+            rays.L = L / mag
+            rays.M = M / mag
+            rays.N = 1 / mag
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:
@@ -82,7 +92,13 @@ class ParaxialSurface(Surface):
             # update polarization matrices, if PolarizedRays
             rays.update()
 
-        return rays, L, M, N
+        # paraxial approximation -> direction is not necessarily unit vector
+        rays.L = L
+        rays.M = M
+        rays.N = 1
+        rays.is_normalized = False
+
+        return rays
 
     def _trace_paraxial(self, rays):
         """
@@ -117,46 +133,6 @@ class ParaxialSurface(Surface):
         # inverse transform coordinate system
         self.geometry.globalize(rays)
 
-        self._record(rays)
-
-        return rays
-
-    def _trace_real(self, rays):
-        """
-        Traces real rays through the surface.
-
-        Args:
-            rays (RealRays): The real rays to be traced.
-
-        Returns:
-            RealRays: The traced real rays.
-        """
-        # reset recorded information
-        self.reset()
-
-        # transform coordinate system
-        self.geometry.localize(rays)
-
-        # find distance from rays to the surface
-        t = self.geometry.distance(rays)
-
-        # propagate the rays a distance t through material
-        rays.propagate(t, self.material_pre)
-
-        # update OPD
-        rays.opd += np.abs(t * self.material_pre.n(rays.w))
-
-        # if there is a limiting aperture, clip rays outside of it
-        if self.aperture:
-            self.aperture.clip(rays)
-
-        # interact with surface
-        rays = self._interact(rays)
-
-        # inverse transform coordinate system
-        self.geometry.globalize(rays)
-
-        # record ray information
         self._record(rays)
 
         return rays
