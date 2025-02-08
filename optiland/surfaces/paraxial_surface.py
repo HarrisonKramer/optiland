@@ -58,10 +58,11 @@ class ParaxialSurface(Surface):
         rays.opd += (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
 
         n1 = self.material_pre.n(rays.w)
-        n2 = self.material_post.n(rays.w)
 
         if self.is_reflective:
-            n2 = -n2
+            n2 = -n1
+        else:
+            n2 = self.material_post.n(rays.w)
 
         ux1 = rays.L / rays.N
         uy1 = rays.M / rays.N

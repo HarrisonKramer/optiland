@@ -81,21 +81,21 @@ class OpticalSystem:
                 if not surf.is_infinite:
                     self._add_component('surface', surf, extent)
 
-            # Image surface
-            if k == num_surf - 1:
+            # Image surface or paraxial surface
+            elif k == num_surf - 1 or surf.surface_type == 'paraxial':
                 self._add_component('surface', surf, extent)
 
             # Surface is a mirror
-            if surf.is_reflective:
+            elif surf.is_reflective:
                 self._add_component('mirror', surf, extent)
 
             # Front surface of a lens
-            if n[k] > 1:
+            elif n[k] > 1:
                 surface = self._get_lens_surface(surf, extent)
                 lens_surfaces.append(surface)
 
             # Back surface of a lens
-            if n[k] == 1 and n[k-1] > 1:
+            elif n[k] == 1 and n[k-1] > 1:
                 if lens_surfaces:
                     surface = self._get_lens_surface(surf, extent)
                     lens_surfaces.append(surface)
