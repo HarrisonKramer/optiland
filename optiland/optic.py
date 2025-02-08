@@ -419,7 +419,7 @@ class Optic:
 
     def update(self) -> None:
         """
-        Update the surfaces based on the pickup operations.
+        Update the surface properties (pickups, solves, paraxial properties).
         """
         self.pickups.apply()
         self.solves.apply()
