@@ -90,12 +90,25 @@ class SpotDiagram:
         geometric_size = self.geometric_spot_radius()
         axis_lim = np.max(geometric_size)
 
+        wavelength = self.optic.wavelengths.primary_wavelength.value
+        centroids = self.centroid()
+        chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
+        airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
+
         # plot wavelengths for each field
         for k, field_data in enumerate(data):
+            # Calculate the real centroid difference for the current field
+            real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
+            real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
             self._plot_field(axs[k], field_data, self.fields[k],
                              axis_lim, self.wavelengths,
                              add_airy_disk=add_airy_disk,
-                             field_index=k)
+                             field_index=k,
+                             airy_rad_x=airy_rad_x,
+                             airy_rad_y=airy_rad_y,
+                             real_centroid_x=real_centroid_x, 
+                             real_centroid_y=real_centroid_y
+)
 
         # remove empty axes
         for k in range(N, num_rows * 3):
@@ -368,7 +381,11 @@ class SpotDiagram:
         return [x, y, intensity]
 
     def _plot_field(self, ax, field_data, field, axis_lim,
-                    wavelengths, buffer=1.05, add_airy_disk=False, field_index=None):
+                    wavelengths, buffer=1.05, 
+                    add_airy_disk=False, field_index=None,
+                    airy_rad_x=None, airy_rad_y=None,
+                    real_centroid_x=None, real_centroid_y=None
+):
         """
         Plot the field data on the given axis.
 
@@ -386,13 +403,6 @@ class SpotDiagram:
         Returns:
             None
         """
-
-        wavelength = self.optic.wavelengths.primary_wavelength.value
-        centroid = self.centroid()
-        chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
-        real_centroid_x = chief_ray_centers[field_index][0] - centroid[field_index][0] 
-        real_centroid_y = chief_ray_centers[field_index][1] - centroid[field_index][1]
-
         markers = ['o', 's', '^']
         for k, points in enumerate(field_data):
             x, y, intensity = points
@@ -402,10 +412,6 @@ class SpotDiagram:
                        marker=markers[k % 3], alpha=0.7)
 
         if add_airy_disk and field_index is not None:
-            airy_rad_x, airy_rad_y = self.airy_disc_x_y(
-                wavelength=wavelength
-            )
-
             # Draw ellipse ONLY for the current field_index
             ellipse = patches.Ellipse(
                 (real_centroid_x , real_centroid_y),
