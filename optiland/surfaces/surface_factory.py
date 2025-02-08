@@ -24,6 +24,7 @@ from optiland.geometries import (
 )
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 
 
 class SurfaceFactory:
@@ -104,28 +105,45 @@ class SurfaceFactory:
                 'expected_params': ['radius', 'conic', 'coefficients',
                                     'tol', 'max_iter', 'norm_radius']
             },
+            'paraxial': {
+                'geometry': None,
+                'expected_params': ['f']
+            }
         }
 
         if surface_type not in surface_config:
             raise ValueError(f'Surface type {surface_type} not recognized.')
 
         # Generate geometry for the surface type
-        config = surface_config[surface_type]
-        filtered_params = {key: value for key, value in kwargs.items()
-                           if key in config['expected_params']}
-        geometry = config['geometry'](cs, **filtered_params)
+        if surface_type != 'paraxial':
+            config = surface_config[surface_type]
+            filtered_params = {key: value for key, value in kwargs.items()
+                               if key in config['expected_params']}
+            geometry = config['geometry'](cs, **filtered_params)
 
-        if index == 0:
-            return ObjectSurface(geometry, material_post)
+            if index == 0:
+                return ObjectSurface(geometry, material_post)
+        else:
+            if index == 0:
+                raise ValueError('Paraxial surface cannot be the object '
+                                 'surface.')
 
         # Filter out unexpected surface parameters
         common_params = ['aperture']
         filtered_kwargs = {key: value for key, value in kwargs.items()
                            if key in common_params}
 
-        return Surface(geometry, material_pre, material_post, is_stop,
-                       is_reflective=is_reflective, coating=coating,
-                       bsdf=bsdf, surface_type=surface_type, **filtered_kwargs)
+        if surface_type == 'paraxial':
+            return ParaxialSurface(kwargs['f'], material_pre, material_post,
+                                   is_stop, is_reflective=is_reflective,
+                                   coating=coating, bsdf=bsdf,
+                                   surface_type=surface_type,
+                                   **filtered_kwargs)
+        else:
+            return Surface(geometry, material_pre, material_post, is_stop,
+                           is_reflective=is_reflective, coating=coating,
+                           bsdf=bsdf, surface_type=surface_type,
+                           **filtered_kwargs)
 
     def _configure_cs(self, index, **kwargs):
         """
