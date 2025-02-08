@@ -336,7 +336,7 @@ class SurfaceFactory:
                                              norm_radius)
 
         return geometry
-    
+
     def _configure_material(self, index, material):
         """
         Configures the material for a surface based on the given index and
