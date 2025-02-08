@@ -8,6 +8,7 @@ used for first-order layout of optical systems.
 
 Kramer Harrison, 2024
 """
+import numpy as np
 from optiland.surfaces.standard_surface import Surface
 from optiland.rays.polarized_rays import PolarizedRays
 
@@ -88,7 +89,7 @@ class ParaxialSurface(Surface):
         # paraxial approximation -> direction is not necessarily unit vector
         rays.L = L
         rays.M = M
-        rays.N = 1
+        rays.N = np.ones_like(L)
         rays.is_normalized = False
 
         return rays
