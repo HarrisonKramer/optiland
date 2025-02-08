@@ -8,7 +8,6 @@ used for first-order layout of optical systems.
 
 Kramer Harrison, 2024
 """
-import numpy as np
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
 from optiland.surfaces.standard_surface import Surface
@@ -75,10 +74,7 @@ class ParaxialSurface(Surface):
 
         # only normalize if required
         if self.bsdf or self.coating or isinstance(rays, PolarizedRays):
-            mag = np.sqrt(L**2 + M**2 + 1)
-            rays.L = L / mag
-            rays.M = M / mag
-            rays.N = 1 / mag
+            rays.normalize()
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:

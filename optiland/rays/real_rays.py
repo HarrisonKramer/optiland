@@ -98,11 +98,7 @@ class RealRays(BaseRays):
 
         # normalize, if required
         if not self.is_normalized:
-            mag = np.sqrt(self.L**2 + self.M**2 + self.N**2)
-            self.L /= mag
-            self.M /= mag
-            self.N /= mag
-            self.is_normalized = True
+            self.normalize()
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
@@ -162,6 +158,14 @@ class RealRays(BaseRays):
     def update(self, jones_matrix: np.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
         pass
+
+    def normalize(self):
+        """Normalize the direction vectors of the rays."""
+        mag = np.sqrt(self.L**2 + self.M**2 + self.N**2)
+        self.L /= mag
+        self.M /= mag
+        self.N /= mag
+        self.is_normalized = True
 
     def _align_surface_normal(self, nx, ny, nz):
         """Align the surface normal with the incident ray vectors.
