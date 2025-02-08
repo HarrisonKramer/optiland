@@ -117,18 +117,17 @@ class ParaxialSurface(Surface):
         t = -rays.z
         rays.propagate(t)
 
+        n1 = self.material_pre.n(rays.w)
         if self.is_reflective:
             # reflect (derived from paraxial equations when n'=-n)
-            rays.u = -rays.u - 2 * rays.y / self.geometry.radius
+            rays.u = rays.y / (self.f * n1) - rays.u
 
         else:
             # surface power
-            n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
-            power = (n2 - n1) / self.geometry.radius
 
             # refract
-            rays.u = 1 / n2 * (n1 * rays.u - rays.y * power)
+            rays.u = 1 / n2 * (n1 * rays.u - rays.y / self.f)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
