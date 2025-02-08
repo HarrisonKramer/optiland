@@ -33,11 +33,10 @@ class ParaxialSurface(Surface):
                  coating=None,
                  bsdf=None,
                  is_reflective=False,
-                 ):
+                 surface_type='paraxial'):
         self.f = focal_length
         cs = CoordinateSystem()
         geometry = Plane(cs)
-        surface_type = 'paraxial'
         super().__init__(geometry, material_pre, material_post, is_stop,
                          aperture, coating, bsdf, is_reflective, surface_type)
 
