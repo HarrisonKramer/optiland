@@ -52,7 +52,7 @@ class ParaxialSurface(Surface):
             RealRays: The refracted rays.
         """
         # add optical path length
-        rays.opd += (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
+        rays.opd -= (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
 
         n1 = self.material_pre.n(rays.w)
 
