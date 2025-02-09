@@ -14,7 +14,6 @@ To install Optiland via pip, run the following command in your terminal:
 
    pip install optiland
 
-
 Installing from Source
 ----------------------
 
@@ -36,7 +35,7 @@ To install Optiland from source, follow these steps:
 Verify Installation
 -------------------
 
-You can verify installation by importing Optiland in Python:
+You can verify installation by importing Optiland in Python.
 
 .. code-block:: python
 
@@ -50,3 +49,6 @@ Optionally, you may generate and visualize a lens system:
 
    lens = ReverseTelephoto()
    lens.draw3D()
+
+
+Note that import may take longer the first time Optiland is run due to caching and compilation of code. Subsequent imports will be faster.
