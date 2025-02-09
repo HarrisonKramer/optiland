@@ -12,7 +12,7 @@ To install Optiland via pip, run the following command in your terminal:
 
 .. code-block:: console
 
-   > pip install optiland
+   pip install optiland
 
 
 Installing from Source
@@ -24,14 +24,14 @@ To install Optiland from source, follow these steps:
 
    .. code-block:: console
 
-      > git clone https://github.com/HarrisonKramer/optiland.git
-      > cd optiland
+      git clone https://github.com/HarrisonKramer/optiland.git
+      cd optiland
 
 2. Install Optiland and its dependencies:
 
    .. code-block:: console
 
-      > pip install .
+      pip install .
 
 Verify Installation
 -------------------
