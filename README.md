@@ -193,12 +193,12 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
-- [ ] **Differentiable Ray Tracer via PyTorch**
-- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
-- [ ] **GUI (based on Qt Quick)**
+- [ ] **GUI (PySide6-based)**
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 
 - [ ] **Diffractive Optical Elements**
+- [ ] **Differentiable Ray Tracer via PyTorch**
+- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
 - [ ] **Jones Pupils**
 - [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
