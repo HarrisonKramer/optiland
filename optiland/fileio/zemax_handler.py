@@ -115,7 +115,7 @@ class ZemaxFileReader:
         Returns:
             bool: True if the source is a URL, False otherwise.
         """
-        return re.match(r'^https?://', source) is not None
+        return re.match(r'^https?:\/\/', source) is not None
 
     def _configure_source_input(self):
         """
@@ -137,7 +137,7 @@ class ZemaxFileReader:
         """
         Reads the Zemax file and extracts the optical data.
         """
-        encodings = ['utf-16', 'utf-8']
+        encodings = ['utf-16', 'utf-8', 'iso-8859-1']
         success = False
         for encoding in encodings:
             try:
