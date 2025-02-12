@@ -115,7 +115,7 @@ class ZemaxFileReader:
         Returns:
             bool: True if the source is a URL, False otherwise.
         """
-        return re.match(r'^https?:\/\/', source) is not None
+        return re.match(r'^https?://', source) is not None
 
     def _configure_source_input(self):
         """
