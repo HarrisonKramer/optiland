@@ -11,9 +11,9 @@ where
 - k is the conic constant
 - Ci are the aspheric coefficients
 
-Even-order aspheric surfaces are commonly used to correct specific aberrations 
-while maintaining rotational symmetry. These surfaces are defined by polynomial 
-terms with even exponents, ensuring symmetry about the optical axis. 
+Even-order aspheric surfaces are commonly used to correct specific aberrations
+while maintaining rotational symmetry. These surfaces are defined by polynomial
+terms with even exponents, ensuring symmetry about the optical axis.
 
 Kramer Harrison, 2024
 """
@@ -34,9 +34,10 @@ class EvenAsphere(NewtonRaphsonGeometry):
     - k is the conic constant
     - Ci are the aspheric coefficients
 
-    Even-order aspheric surfaces are commonly used to correct specific aberrations 
-    while maintaining rotational symmetry. These surfaces are defined by polynomial 
-    terms with even exponents, ensuring symmetry about the optical axis. 
+    Even-order aspheric surfaces are commonly used to correct specific
+    aberrations while maintaining rotational symmetry. These surfaces are
+    defined by polynomial terms with even exponents, ensuring symmetry about
+    the optical axis.
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.

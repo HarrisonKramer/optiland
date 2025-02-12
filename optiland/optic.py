@@ -417,13 +417,16 @@ class Optic:
         if surface.surface_type == 'zernike':
             surface.geometry.norm_radius = surface.semi_aperture*1.1
 
-    def update(self)->None:
+    def update(self) -> None:
         """
         Update the surfaces based on the pickup operations.
         """
         self.pickups.apply()
         self.solves.apply()
-        self.update_paraxial()
+
+        if any(surface.surface_type in ['chebyshev', 'zernike']
+           for surface in self.surface_group.surfaces):
+            self.update_paraxial()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the

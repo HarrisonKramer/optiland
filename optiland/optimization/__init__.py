@@ -22,5 +22,7 @@ from .optimization import (
     OptimizerGeneric,
     LeastSquares,
     DualAnnealing,
-    DifferentialEvolution
+    DifferentialEvolution,
+    SHGO,
+    BasinHopping
 )

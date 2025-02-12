@@ -10,7 +10,7 @@ project = 'Optiland'
 current_year = datetime.now().year
 copyright = f'2024-{current_year}, Kramer Harrison & contributors'
 author = 'Kramer Harrison'
-release = '0.2.5'
+release = '0.2.6'
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
