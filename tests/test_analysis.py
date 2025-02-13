@@ -86,7 +86,7 @@ class TestCookeTripetSpotDiagram:
         assert rms_radius[2][0] == pytest.approx(0.013229165357157, abs=1e-9)
         assert rms_radius[2][1] == pytest.approx(0.012081348897953, abs=1e-9)
         assert rms_radius[2][2] == pytest.approx(0.013596802321537, abs=1e-9)
-
+        
     def test_airy_disc(self, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         airy_radius = spot.airy_disc_x_y(wavelength = cooke_triplet.primary_wavelength)
@@ -624,4 +624,3 @@ class TestPupilAberration:
         pupil_ab.view()
         mock_show.assert_called_once()
         plt.close()
-
