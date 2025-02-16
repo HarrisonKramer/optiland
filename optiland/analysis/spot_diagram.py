@@ -450,10 +450,19 @@ class SpotDiagram:
             # Without the airy disk, just use the geometric spot radius with a buffer.
             adjusted_axis_lim = axis_lim * buffer
 
+        # Determining the labels for the x and y axes based on the image surface effective orientation.
+        cs = self.optic.image_surface.geometry.cs
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
+        # Define a small tolerance to apply the new label 
+        tol = 0.01 # adjust it, if necessary
+        if effective_orientation[0] > tol or effective_orientation[1] > tol:
+            x_label, y_label = 'U (mm)', 'V (mm)'
+        else:
+            x_label, y_label = 'X (mm)', 'Y (mm)'         
         
         ax.axis('square')
-        ax.set_xlabel('X (mm)')
-        ax.set_ylabel('Y (mm)')
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
         ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
