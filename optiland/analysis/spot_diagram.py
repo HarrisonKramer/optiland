@@ -371,13 +371,25 @@ class SpotDiagram:
                 rays. Defaults to 'hexapolar'.
 
         Returns:
-            list: A list containing the x, y, and intensity values of the
+            list: A list containing the local x-coordinates, local y-coordinates, and intensity values of the
                 generated spot data.
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
-        x = self.optic.surface_group.x[-1, :]
-        y = self.optic.surface_group.y[-1, :]
+        
+        # Extract the global intersection coordinates from the image surface (i.e. final surface)
+        
+        x_global = self.optic.surface_group.x[-1, :]
+        y_global = self.optic.surface_group.y[-1, :]
+        z_global = self.optic.surface_group.z[-1, :] 
         intensity = self.optic.surface_group.intensity[-1, :]
+        
+        from optiland.visualization.utils import transform
+        
+        # Now, convert the global coordinates to the image's local coordinate system.
+        # If is_global == True, then the transform function will call the image surface's geometry.localize(points) method
+        # to convert the global coordinates into local coordinates
+        x, y, _ = transform(x_global, y_global, z_global, self.optic.image_surface, is_global=True)
+        
         return [x, y, intensity]
 
     def _plot_field(self, ax, field_data, field, axis_lim,
@@ -438,10 +450,19 @@ class SpotDiagram:
             # Without the airy disk, just use the geometric spot radius with a buffer.
             adjusted_axis_lim = axis_lim * buffer
 
+        # Determining the labels for the x and y axes based on the image surface effective orientation.
+        cs = self.optic.image_surface.geometry.cs
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
+        # Define a small tolerance to apply the new label 
+        tol = 0.01 # adjust it, if necessary
+        if effective_orientation[0] > tol or effective_orientation[1] > tol:
+            x_label, y_label = 'U (mm)', 'V (mm)'
+        else:
+            x_label, y_label = 'X (mm)', 'Y (mm)'         
         
         ax.axis('square')
-        ax.set_xlabel('X (mm)')
-        ax.set_ylabel('Y (mm)')
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
         ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
