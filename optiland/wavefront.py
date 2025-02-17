@@ -86,7 +86,7 @@ class Wavefront:
 
                 # Reference sphere center and radius
                 xc, yc, zc, R = self._get_reference_sphere(pupil_z)
-                opd_ref = self._get_path_length(xc, yc, zc, R)
+                opd_ref = self._get_path_length(xc, yc, zc, R, wavelength)
                 opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
 
                 field_data.append(self._generate_field_data(field, wavelength,
@@ -116,7 +116,7 @@ class Wavefront:
         # trace distribution through pupil
         self.optic.trace(*field, wavelength, None, self.distribution)
         intensity = self.optic.surface_group.intensity[-1, :]
-        opd = self._get_path_length(xc, yc, zc, R)
+        opd = self._get_path_length(xc, yc, zc, R, wavelength)
         opd = self._correct_tilt(field, opd)
         return (opd_ref - opd) / (wavelength * 1e-3), intensity
 
@@ -159,7 +159,7 @@ class Wavefront:
 
         return xc, yc, zc, R
 
-    def _get_path_length(self, xc, yc, zc, r):
+    def _get_path_length(self, xc, yc, zc, r, wavelength):
         """
         Calculates the optical path difference.
 
@@ -168,12 +168,13 @@ class Wavefront:
             yc (float): The y-coordinate of the reference sphere center.
             zc (float): The z-coordinate of the reference sphere center.
             r (float): The radius of the reference sphere.
+            wavelength (float): The wavelength of the light.
 
         Returns:
             float: The optical path difference.
         """
         opd = self.optic.surface_group.opd[-1, :]
-        return opd - self._opd_image_to_xp(xc, yc, zc, r)
+        return opd - self._opd_image_to_xp(xc, yc, zc, r, wavelength)
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """
@@ -203,7 +204,7 @@ class Wavefront:
                                (1 - y) * np.sin(np.radians(y_tilt)) * EPD / 2)
         return opd - tilt_correction
 
-    def _opd_image_to_xp(self, xc, yc, zc, R):
+    def _opd_image_to_xp(self, xc, yc, zc, R, wavelength):
         """
         Finds propagation distance from image plane to reference sphere.
 
@@ -212,6 +213,7 @@ class Wavefront:
             yc (float): The y-coordinate of the reference sphere center.
             zc (float): The z-coordinate of the reference sphere center.
             R (float): The radius of the reference sphere.
+            wavelength (float): The wavelength of the light.
 
         Returns:
             float: Propagation distance from image plane to reference sphere.
@@ -232,7 +234,10 @@ class Wavefront:
         d = b ** 2 - 4 * a * c
         t = (-b - np.sqrt(d)) / (2 * a)
         t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
-        return t
+
+        # refractive index in image space
+        n = self.optic.image_surface.material_pre.n(wavelength)
+        return n * t
 
 
 class OPDFan(Wavefront):
