@@ -143,7 +143,12 @@ class FieldGroup:
         fields = np.stack((self.x_fields, self.y_fields), axis=-1)
         v_data = np.stack((self.vx, self.vy), axis=-1)
         interpolator = NearestNDInterpolator(fields, v_data)
-        return interpolator(Hx, Hy)
+        if hasattr(Hx, 'item'):
+            Hx = Hx.item()
+        if hasattr(Hy, 'item'):
+            Hy = Hy.item()
+        vx_new, vy_new = interpolator(Hx, Hy)
+        return vx_new, vy_new
 
     def get_field_coords(self):
         """
