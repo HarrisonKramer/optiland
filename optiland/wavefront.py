@@ -191,8 +191,9 @@ class Wavefront:
         tilt_correction = 0
         if self.optic.field_type == 'angle':
             Hx, Hy = field
-            x_tilt = self.optic.fields.max_x_field * Hx
-            y_tilt = self.optic.fields.max_y_field * Hy
+            max_field = self.optic.fields.max_field
+            x_tilt = max_field * Hx
+            y_tilt = max_field * Hy
             if x is None:
                 x = self.distribution.x
             if y is None:
