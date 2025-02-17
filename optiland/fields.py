@@ -127,6 +127,9 @@ class FieldGroup:
         """
         Calculates the vignetting factors for a given field position.
 
+        Note that the vignetting factors are interpolated using the nearest
+        neighbor method.
+
         Parameters:
             Hx (float): The normalized x component of the field.
             Hy (float): The normalized y component of the field.
