@@ -191,14 +191,15 @@ class Wavefront:
         tilt_correction = 0
         if self.optic.field_type == 'angle':
             Hx, Hy = field
-            x_tilt = self.optic.fields.max_x_field * Hx
-            y_tilt = self.optic.fields.max_y_field * Hy
+            max_field = self.optic.fields.max_field
+            x_tilt = max_field * Hx
+            y_tilt = max_field * Hy
             if x is None:
                 x = self.distribution.x
             if y is None:
                 y = self.distribution.y
             EPD = self.optic.paraxial.EPD()
-            tilt_correction = ((1 - x) * np.sin(np.radians(x_tilt)) * EPD / 2 +
+            tilt_correction = ((x - 1) * np.sin(np.radians(x_tilt)) * EPD / 2 +
                                (1 - y) * np.sin(np.radians(y_tilt)) * EPD / 2)
         return opd - tilt_correction
 

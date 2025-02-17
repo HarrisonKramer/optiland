@@ -6,6 +6,7 @@ system.
 Kramer Harrison, 2023
 """
 import numpy as np
+from scipy.interpolate import NearestNDInterpolator
 
 
 class Field:
@@ -126,6 +127,9 @@ class FieldGroup:
         """
         Calculates the vignetting factors for a given field position.
 
+        Note that the vignetting factors are interpolated using the nearest
+        neighbor method.
+
         Parameters:
             Hx (float): The normalized x component of the field.
             Hy (float): The normalized y component of the field.
@@ -135,27 +139,14 @@ class FieldGroup:
                 vignetting factor.
             vy_new (float): The interpolated y-component of the
                 vignetting factor.
-
-        Raises:
-            NotImplementedError: If the system is not rotationally-symmetric.
         """
-        if np.all(self.x_fields == 0):  # assume rotationally symmetric
-            idx_sorted = np.argsort(self.y_fields)
-            if self.max_y_field == 0:
-                h_sorted = np.zeros(self.num_fields)
-            else:
-                h_sorted = self.y_fields[idx_sorted] / self.max_y_field
-            vx_sorted = self.vx[idx_sorted]
-            vy_sorted = self.vy[idx_sorted]
-
-            h = np.sqrt(Hx**2 + Hy**2)
-
-            vx_new = np.interp(h, h_sorted, vx_sorted)
-            vy_new = np.interp(h, h_sorted, vy_sorted)
-            return vx_new, vy_new
-        else:
-            raise NotImplementedError('Currently only rotationally-symmetric '
-                                      'systems may set vignetting factors')
+        fields = np.stack((self.x_fields, self.y_fields), axis=-1)
+        v_data = np.stack((self.vx, self.vy), axis=-1)
+        interpolator = NearestNDInterpolator(fields, v_data)
+        result = interpolator(Hx, Hy)
+        vx_new = result[..., 0]
+        vy_new = result[..., 1]
+        return vx_new, vy_new
 
     def get_field_coords(self):
         """

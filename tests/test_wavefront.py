@@ -219,3 +219,42 @@ class TestZernikeOPD:
         assert np.isclose(c[2], -0.14504379704525455)
         assert np.isclose(c[6], -1.160298338689596e-13)
         assert np.isclose(c[24], -0.0007283668376039182)
+
+    def test_zernike_xy_symmetry(self):
+        optic = CookeTriplet()
+        zernike_opd0 = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        c0 = zernike_opd0.zernike.coeffs
+
+        # swap x and y fields
+        optic.fields.fields[0].x = 0
+        optic.fields.fields[0].y = 0
+        optic.fields.fields[1].x = 14
+        optic.fields.fields[1].y = 0
+        optic.fields.fields[2].x = 20
+        optic.fields.fields[2].y = 0
+
+        # run at max y field (should be the same field)
+        zernike_opd1 = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        c1 = zernike_opd1.zernike.coeffs
+        assert np.allclose(c0, c1)
+
+    def test_zernike_xy_axis_swap(self):
+        optic = CookeTriplet()
+        zernike_opd0 = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
+        c0 = zernike_opd0.zernike.coeffs
+
+        # swap x and y fields
+        optic.fields.fields[0].x = 0
+        optic.fields.fields[0].y = 0
+        optic.fields.fields[1].x = 0
+        optic.fields.fields[1].y = 14
+        optic.fields.fields[2].x = 0
+        optic.fields.fields[2].y = 20
+
+        # run at max x field
+        zernike_opd1 = wavefront.ZernikeOPD(optic, (1, 0), 0.55)
+        c1 = zernike_opd1.zernike.coeffs
+
+        # x and y tilts swapped
+        assert np.isclose(c0[1], c1[2])
+        assert np.isclose(c0[2], c1[1])
