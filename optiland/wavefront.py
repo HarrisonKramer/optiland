@@ -236,7 +236,7 @@ class Wavefront:
         t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
 
         # refractive index in image space
-        n = self.optic.image_surface.material_pre.n(wavelength)
+        n = self.optic.image_surface.material_post.n(wavelength)
         return n * t
 
 
