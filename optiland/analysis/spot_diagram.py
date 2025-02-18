@@ -85,21 +85,34 @@ class SpotDiagram:
                                 sharex=True, sharey=True)
         axs = axs.flatten()
 
-        # subtract centroid and find limits
+        # Subtract centroid and find limits
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
         axis_lim = np.max(geometric_size)
 
-        wavelength = self.optic.wavelengths.primary_wavelength.value
-        centroids = self.centroid()
-        chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
-        airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
-
-        # plot wavelengths for each field
+        if add_airy_disk == True:
+            wavelength = self.optic.wavelengths.primary_wavelength.value
+            centroids = self.centroid()
+            chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
+            airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
+        # Do not calculate airy disc parameters if not required.
+        elif add_airy_disk == False:
+            wavelength = None
+            centroids = None
+            chief_ray_centers = None
+            airy_rad_x, airy_rad_y = None, None
+        # Raise an error if the user tries to define a value that is not boolean.
+        else:
+            raise ValueError('add_airy_disc type must be boolean, i.e True (1) or False (0). ')
+        
+        # Plot wavelengths for each field
         for k, field_data in enumerate(data):
-            # Calculate the real centroid difference for the current field
-            real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
-            real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
+            # Calculate the real centroid difference for the current field for airy disc
+            if add_airy_disk == True:
+                real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
+                real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
+            else:
+                real_centroid_x, real_centroid_y = None, None
             self._plot_field(axs[k], field_data, self.fields[k],
                              axis_lim, self.wavelengths,
                              add_airy_disk=add_airy_disk,
@@ -110,7 +123,7 @@ class SpotDiagram:
                              real_centroid_y=real_centroid_y
 )
 
-        # remove empty axes
+        # Remove empty axes
         for k in range(N, num_rows * 3):
             fig.delaxes(axs[k])
 
@@ -128,7 +141,6 @@ class SpotDiagram:
         a = a / np.linalg.norm(a)
         b = b / np.linalg.norm(b)
         theta = np.arccos(np.clip(np.dot(a, b), -1, 1)) 
-        #theta_deg = np.degrees(theta_rad)  # Convert to degrees
 
         return theta
 
