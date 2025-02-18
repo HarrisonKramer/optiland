@@ -67,7 +67,7 @@ class TestWavefront:
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
-        path_length = w._get_path_length(xc, yc, zc, R)
+        path_length = w._get_path_length(xc, yc, zc, R, 0.55)
         assert np.allclose(path_length, np.array([34.84418309]))
 
     def test_correct_tilt(self):
@@ -86,7 +86,7 @@ class TestWavefront:
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
-        t = w._opd_image_to_xp(xc, yc, zc, R)
+        t = w._opd_image_to_xp(xc, yc, zc, R, 0.55)
         assert np.allclose(t, np.array([39.454938]))
 
 
