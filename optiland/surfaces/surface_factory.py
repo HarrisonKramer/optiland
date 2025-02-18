@@ -23,7 +23,6 @@ from optiland.geometries import (
     ZernikePolynomialGeometry,
 )
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.image_surface import ImageSurface
 from optiland.surfaces.standard_surface import Surface
 
 
@@ -125,25 +124,9 @@ class SurfaceFactory:
         filtered_kwargs = {key: value for key, value in kwargs.items()
                            if key in common_params}
 
-        new_surface = Surface(geometry, material_pre, material_post, is_stop,
-                              is_reflective=is_reflective, coating=coating,
-                              bsdf=bsdf, surface_type=surface_type,
-                              **filtered_kwargs)
-
-        # adding a surface at the end of the list --> new image surface
-        if index == self._surface_group.num_surfaces:
-            # generate an image surface object
-            aperture = kwargs.get('aperture', None)
-            image_surface = ImageSurface(geometry, material_pre, aperture)
-
-            # convert previous last surface to standard surface
-            if self._last_surface is not None:
-                self._surface_group.surfaces[-1] = self._last_surface
-            self._last_surface = new_surface
-
-            return image_surface
-
-        return new_surface
+        return Surface(geometry, material_pre, material_post, is_stop,
+                       is_reflective=is_reflective, coating=coating,
+                       bsdf=bsdf, surface_type=surface_type, **filtered_kwargs)
 
     def _configure_cs(self, index, **kwargs):
         """
