@@ -12,24 +12,26 @@ def setup_image_surface():
     cs = CoordinateSystem()
     geometry = StandardGeometry(cs, 100)
     material_pre = IdealMaterial(1, 0)
+    material_post = IdealMaterial(1, 0)
     image_surface = ImageSurface(
         geometry=geometry,
         material_pre=material_pre,
+        material_post=material_post,
         aperture=None
     )
-    return image_surface, geometry, material_pre
+    return image_surface, geometry, material_pre, material_post
 
 
 def test_initialization(setup_image_surface):
-    image_surface, geometry, material_pre = setup_image_surface
+    image_surface, geometry, material_pre, material_post = setup_image_surface
     assert image_surface.geometry == geometry
     assert image_surface.material_pre == material_pre
-    assert image_surface.material_post == material_pre
+    assert image_surface.material_post == material_post
     assert not image_surface.is_stop
 
 
 def test_trace_paraxial(setup_image_surface):
-    image_surface, _, _ = setup_image_surface
+    image_surface, _, _, _ = setup_image_surface
     y = np.array([1])
     u = np.array([0])
     z = np.array([-10])
@@ -39,7 +41,7 @@ def test_trace_paraxial(setup_image_surface):
 
 
 def test_interact(setup_image_surface):
-    image_surface, _, _ = setup_image_surface
+    image_surface, _, _, _ = setup_image_surface
     x = np.random.rand(10)
     rays = RealRays(x, x, x, x, x, x, x, x)
     modified_rays = image_surface._interact(rays)
