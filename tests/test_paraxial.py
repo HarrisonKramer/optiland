@@ -23,6 +23,7 @@ from optiland.samples.objectives import (
     PetzvalLens,
     Telephoto
 )
+# TODO: add tests for non-air object and image spaces
 
 
 def get_optic_data():
