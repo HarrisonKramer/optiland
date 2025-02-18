@@ -3,9 +3,11 @@ import numpy as np
 from optiland.samples.objectives import TessarLens
 from optiland.surfaces.surface_factory import SurfaceFactory
 from optiland.surfaces.object_surface import ObjectSurface
+from optiland.surfaces.image_surface import ImageSurface
 from optiland.surfaces.standard_surface import Surface
 from optiland.coatings import SimpleCoating, FresnelCoating
 from optiland.materials import IdealMaterial
+from optiland.optic import Optic
 
 
 class TestSurfaceFactory:
@@ -220,3 +222,19 @@ class TestSurfaceFactory:
                 conic=0,
                 thickness=5
             )
+
+    def test_valid_image_surface_generation(self):
+        lens = Optic()
+        lens.add_surface(index=0)
+        lens.add_surface(index=1, radius=10, thickness=5, material='BK7')
+
+        # last surface (index 1) is image surface
+        assert isinstance(lens.surface_group.surfaces[1], ImageSurface)
+
+        lens.add_surface(index=2, radius=10, thickness=5, is_stop=True)
+
+        # surface at index 1 no longer image surface
+        assert not isinstance(lens.surface_group.surfaces[1], ImageSurface)
+
+        # surface at index 2 is image surface
+        assert isinstance(lens.surface_group.surfaces[2], ImageSurface)
