@@ -51,7 +51,12 @@ class ImageSurface(Surface):
         t = -rays.z
         rays.propagate(t)
 
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
         self._record(rays)
+
+        return rays
 
     def _interact(self, rays):
         """
