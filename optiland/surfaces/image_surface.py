@@ -25,11 +25,11 @@ class ImageSurface(Surface):
     """
 
     def __init__(self, geometry: BaseGeometry, material_pre: BaseMaterial,
-                 aperture: BaseAperture = None):
+                 material_post: BaseMaterial, aperture: BaseAperture = None):
         super().__init__(
             geometry=geometry,
             material_pre=material_pre,
-            material_post=material_pre,
+            material_post=material_post,
             is_stop=False,
             aperture=aperture
         )
@@ -51,7 +51,12 @@ class ImageSurface(Surface):
         t = -rays.z
         rays.propagate(t)
 
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
         self._record(rays)
+
+        return rays
 
     def _interact(self, rays):
         """

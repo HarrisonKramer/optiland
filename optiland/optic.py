@@ -452,6 +452,10 @@ class Optic:
         Returns:
             RealRays: The RealRays object containing the traced rays.
         """
+        if (not np.all((-1 <= Hx) & (Hx <= 1))
+                or not np.all((-1 <= Hy) & (Hy <= 1))):
+            raise ValueError('Normalized field coordinates Hx and Hy must be '
+                             'within (-1, 1)')
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
@@ -481,6 +485,16 @@ class Optic:
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
         """
+        if (not np.all((-1 <= Hx) & (Hx <= 1))
+                or not np.all((-1 <= Hy) & (Hy <= 1))):
+            raise ValueError('Normalized field coordinates Hx and Hy must be '
+                             'within (-1, 1)')
+
+        if (not np.all((-1 <= Px) & (Px <= 1))
+                or not np.all((-1 <= Py) & (Py <= 1))):
+            raise ValueError('Normalized pupil coordinates Px and Py must be '
+                             'within (-1, 1)')
+
         vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
         Px *= (1 - vx)

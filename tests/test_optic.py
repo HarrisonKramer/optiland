@@ -177,6 +177,21 @@ class TestOptic:
         rays = lens.trace_generic(0.0, 0.0, 0.0, 0.0, 0.55)
         assert rays is not None
 
+    def test_trace_invalid_field(self):
+        lens = HeliarLens()
+        with pytest.raises(ValueError):
+            lens.trace(0.0, 2.0, 0.55)
+
+    def test_trace_generic_invalid_field(self):
+        lens = HeliarLens()
+        with pytest.raises(ValueError):
+            lens.trace_generic(0.0, 0.0, 0.0, 2.0, 0.55)
+
+    def test_trace_generic_invalid_pupil(self):
+        lens = HeliarLens()
+        with pytest.raises(ValueError):
+            lens.trace_generic(0.0, 5.0, 0.0, 0.0, 0.55)
+
     def test_trace_polarized(self):
         lens = HeliarLens()
         state = create_polarization('unpolarized')

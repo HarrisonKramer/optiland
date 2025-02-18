@@ -87,6 +87,27 @@ class TestCookeTripetSpotDiagram:
         assert rms_radius[2][1] == pytest.approx(0.012081348897953, abs=1e-9)
         assert rms_radius[2][2] == pytest.approx(0.013596802321537, abs=1e-9)
 
+    def test_airy_disc(self, cooke_triplet):
+        spot = analysis.SpotDiagram(cooke_triplet)
+        airy_radius = spot.airy_disc_x_y(
+            wavelength=cooke_triplet.primary_wavelength
+            )
+        airy_radius_x, airy_radius_y = airy_radius
+
+        assert airy_radius_x[0] == pytest.approx(0.0033403700287742426,
+                                                 abs=1e-9)
+        assert airy_radius_x[1] == pytest.approx(0.003579789351003376,
+                                                 abs=1e-9)
+        assert airy_radius_x[2] == pytest.approx(0.003825501589577882,
+                                                 abs=1e-9)
+
+        assert airy_radius_y[0] == pytest.approx(0.0033403700287742426,
+                                                 abs=1e-9)
+        assert airy_radius_y[1] == pytest.approx(0.003430811760325915,
+                                                 abs=1e-9)
+        assert airy_radius_y[2] == pytest.approx(0.0035453238661865244,
+                                                 abs=1e-9)
+
     @patch('matplotlib.pyplot.show')
     def test_view_spot_diagram(self, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
