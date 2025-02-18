@@ -417,13 +417,16 @@ class Optic:
         if surface.surface_type == 'zernike':
             surface.geometry.norm_radius = surface.semi_aperture*1.1
 
-    def update(self)->None:
+    def update(self) -> None:
         """
         Update the surfaces based on the pickup operations.
         """
         self.pickups.apply()
         self.solves.apply()
-        self.update_paraxial()
+
+        if any(surface.surface_type in ['chebyshev', 'zernike']
+           for surface in self.surface_group.surfaces):
+            self.update_paraxial()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
@@ -449,6 +452,10 @@ class Optic:
         Returns:
             RealRays: The RealRays object containing the traced rays.
         """
+        if (not np.all((-1 <= Hx) & (Hx <= 1))
+                or not np.all((-1 <= Hy) & (Hy <= 1))):
+            raise ValueError('Normalized field coordinates Hx and Hy must be '
+                             'within (-1, 1)')
 
         if isinstance(distribution, str):
             distribution = create_distribution(distribution)
@@ -478,6 +485,16 @@ class Optic:
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
         """
+        if (not np.all((-1 <= Hx) & (Hx <= 1))
+                or not np.all((-1 <= Hy) & (Hy <= 1))):
+            raise ValueError('Normalized field coordinates Hx and Hy must be '
+                             'within (-1, 1)')
+
+        if (not np.all((-1 <= Px) & (Px <= 1))
+                or not np.all((-1 <= Py) & (Py <= 1))):
+            raise ValueError('Normalized pupil coordinates Px and Py must be '
+                             'within (-1, 1)')
+
         vx, vy = self.fields.get_vig_factor(Hx, Hy)
 
         Px *= (1 - vx)

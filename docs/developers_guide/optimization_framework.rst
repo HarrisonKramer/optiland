@@ -30,9 +30,12 @@ Components Explained
    - A base `Optimizer` class wraps `scipy.optimize.minimize` and provides a unified interface.
    - Built-in optimizers include:
 
-     - **Dual Annealing**
-     - **Differential Evolution**
-     - **Least Squares** (and more)
+     - **Dual Annealing** (global)
+     - **Differential Evolution** (global)
+     - **Basin Hopping** (global)
+     - **SHGO** (global)
+     - **Least Squares** (local)
+     - **Nelder-Mead**, **Powell**, **BFGS**, **L-BFGS-B**, **COBYLA**, etc. (local optimization, from `scipy.optimize.minimize`)
    - Users can subclass the base optimizer for custom methods.
 
 3. **Operands and Variables**:

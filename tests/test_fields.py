@@ -78,17 +78,6 @@ def test_field_group_get_vig_factor():
     assert vx == 0.2
 
 
-def test_field_group_get_vig_factor_raise_error():
-    input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
-    f = fields.FieldGroup()
-    for field_data in input_data:
-        new_field = fields.Field('angle', *field_data)
-        f.add_field(new_field)
-
-    with pytest.raises(NotImplementedError):
-        f.get_vig_factor(1, 1)
-
-
 def test_field_group_telecentric():
     f = fields.FieldGroup()
     assert f.telecentric is False

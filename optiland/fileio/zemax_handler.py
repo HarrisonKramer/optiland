@@ -137,7 +137,7 @@ class ZemaxFileReader:
         """
         Reads the Zemax file and extracts the optical data.
         """
-        encodings = ['utf-16', 'utf-8']
+        encodings = ['utf-16', 'utf-8', 'iso-8859-1']
         success = False
         for encoding in encodings:
             try:

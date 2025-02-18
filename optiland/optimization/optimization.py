@@ -212,7 +212,7 @@ class OptimizerGeneric:
                 var.update(x0[idvar])
             self._x.pop(-1)
 
-    def _fun(self, x)->float:
+    def _fun(self, x) -> float:
         """
         Internal function to evaluate the objective function.
 
@@ -231,7 +231,7 @@ class OptimizerGeneric:
         self.problem.update_optics()
 
         # Compute merit function value
-        try:   
+        try:
             rss = self.problem.sum_squared()
             if np.isnan(rss):
                 return 1e10
@@ -404,4 +404,109 @@ class DifferentialEvolution(OptimizerGeneric):
                                                      disp=disp,
                                                      updating=updating,
                                                      workers=workers)
+        return result
+
+
+class SHGO(OptimizerGeneric):
+    """
+    Simplicity Homology Global Optimization (SHGO).
+
+    Args:
+        problem (OptimizationProblem): The optimization problem to be solved.
+
+    Methods:
+        optimize(workers=-1, *args, **kwargs): Runs the SHGO algorithm.
+    """
+
+    def __init__(self, problem: OptimizationProblem):
+        """
+        Initializes a new instance of the SHGO class.
+
+        Args:
+            problem (OptimizationProblem): The optimization problem to be
+                solved.
+        """
+        super().__init__(problem)
+
+    def optimize(self, workers=-1, *args, **kwargs):
+        """
+        Runs the SHGO algorithm. Note that the SHGO algorithm accepts the same
+        arguments as the scipy.optimize.shgo function.
+
+        Args:
+            workers (int): Number of parallel workers to use. Set to -1 to use
+                all available CPU processors. Default is -1.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            result (OptimizeResult): The optimization result.
+
+        Raises:
+            ValueError: If any variable in the problem does not have bounds.
+        """
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        bounds = tuple([var.bounds for var in self.problem.variables])
+        if any(None in bound for bound in bounds):
+            raise ValueError('SHGO requires all variables have bounds.')
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+
+            result = optimize.shgo(self._fun, bounds=bounds,
+                                   workers=workers, *args, **kwargs)
+        return result
+
+
+class BasinHopping(OptimizerGeneric):
+    """
+    Basin-hopping optimizer for solving optimization problems.
+
+    Args:
+        problem (OptimizationProblem): The optimization problem to be solved.
+
+    Methods:
+        optimize(maxiter=1000, disp=True, workers=-1): Runs the basin-hopping
+            optimization algorithm.
+    """
+
+    def __init__(self, problem: OptimizationProblem):
+        """
+        Initializes a new instance of the BasinHopping class.
+
+        Args:
+            problem (OptimizationProblem): The optimization problem to be
+                solved.
+        """
+        super().__init__(problem)
+
+    def optimize(self, niter=100, *args, **kwargs):
+        """
+        Runs the basin-hopping algorithm. Note that the basin-hopping
+        algorithm accepts the same arguments as the
+        scipy.optimize.basinhopping function.
+
+        Args:
+            niter (int): Number of iterations to perform. Default is 100.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            result (OptimizeResult): The optimization result.
+
+        Raises:
+            ValueError: If any variable in the problem does not have bounds.
+        """
+        x0 = [var.value for var in self.problem.variables]
+        self._x.append(x0)
+        bounds = tuple([var.bounds for var in self.problem.variables])
+        if not all(x is None for pair in bounds for x in pair):
+            raise ValueError('Basin-hopping does not accept bounds.')
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+
+            result = optimize.basinhopping(self._fun, x0=x0,
+                                           niter=niter, *args, **kwargs)
         return result

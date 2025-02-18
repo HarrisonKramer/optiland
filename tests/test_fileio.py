@@ -21,9 +21,21 @@ def zemax_file():
     return filename
 
 
+@pytest.fixture(scope="module", params=['zemax_files/lens1.zmx', 'zemax_files/lens_thorlabs_iso_8859_1.zmx'])
+def zemax_file_formats(request):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    filename = os.path.join(current_dir, request.param)
+    return filename
+
+
 @pytest.fixture
 def zemax_file_reader(zemax_file):
     return ZemaxFileReader(zemax_file)
+
+
+@pytest.fixture
+def zemax_file_formats_reader(zemax_file_formats):
+    return ZemaxFileReader(zemax_file_formats)
 
 
 def replace_line_in_zmx(zmx_file, line_prefix, new_line):
@@ -72,11 +84,11 @@ class TestZemaxFileReader:
         assert zemax_file_reader.filename == 'temp.zmx'
 
     @patch('builtins.open', new_callable=mock_open)
-    def test_configure_source_input_file(self, mock_open, zemax_file_reader):
-        zemax_file_reader.source = 'local_file.zmx'
-        zemax_file_reader._configure_source_input()
+    def test_configure_source_input_file(self, mock_open, zemax_file_formats_reader):
+        zemax_file_formats_reader.source = 'local_file.zmx'
+        zemax_file_formats_reader._configure_source_input()
 
-        assert zemax_file_reader.filename == 'local_file.zmx'
+        assert zemax_file_formats_reader.filename == 'local_file.zmx'
         mock_open.assert_not_called()
 
     @patch('requests.get')

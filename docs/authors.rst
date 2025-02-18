@@ -16,6 +16,9 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **David Fariña** (`GitHub <https://github.com/edavidfs>`_)
 - **Christoph Mahnke** (`GitHub <https://github.com/xmhk>`_)
 - **Andrei Utina** (`GitHub <https://github.com/AndreiUtina>`_)
+- **manuelFragata** (`GitHub <https://gist.github.com/manuelFragata>`_)
+- **Seçkin Berkay Öztürk** (`GitHub <https://github.com/SeckinBerkay>`_)
+
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
 

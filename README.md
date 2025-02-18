@@ -98,6 +98,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Saving and loading lens files in a json format
     - [Tutorial 1d - Using the Material Database](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1d_Material_Database.ipynb)
         - Defining materials for glass, chemicals, organics, gases, or using ideal or parameterized materials.
+    - [Tutorial 1e - Non-rotationally Symmetric Systems](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1e_Non_Rotationally_Symmetric_Systems.ipynb)
+        - Coordinate systems in Optiland and how to design non-rotationally symmetric systems
 2. **Real Raytracing & Analysis**
     - [Tutorial 2a - Tracing & Analyzing Rays](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_2a_Tracing_&_Analyzing_Rays.ipynb)
         - How to trace rays through a system
@@ -191,12 +193,12 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
-- [ ] **Differentiable Ray Tracer via PyTorch**
-- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
-- [ ] **GUI (based on Qt Quick)**
+- [ ] **GUI (PySide6-based)**
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 
 - [ ] **Diffractive Optical Elements**
+- [ ] **Differentiable Ray Tracer via PyTorch**
+- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
 - [ ] **Jones Pupils**
 - [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
@@ -205,6 +207,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
+- [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
 
 

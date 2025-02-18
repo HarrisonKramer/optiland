@@ -52,7 +52,7 @@ Optiland includes a wide range of built-in geometries:
 - **Even Aspheres**: Described by polynomial terms for deviations from a sphere.
 - **Odd Aspheres**: Similar to even aspheres but with additional terms for odd powers.
 - **Polynomial XY and Chebyshev Surfaces**: Useful for advanced freeform optical systems.
-- **Zernike Surfaces**: Represented by Zernike polynomials.
+- **Zernike Surfaces**: Represented by Zernike polynomials. For a detailed mathematical description of the Zernike geometry, see the `Zernike Geometry Mathematics Reference <https://github.com/HarrisonKramer/optiland/blob/master/docs/references/zernike_description.md>`_.
 - **Custom Geometries**: Users can easily extend the framework by subclassing the `BaseGeometry` (analytical geometries) or `NewtonRaphsonGeometry` (iterative geometries) classes.
 
 Extensibility

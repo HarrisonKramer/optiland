@@ -44,6 +44,7 @@ class SurfaceFactory:
         self._surface_group = surface_group
         self.last_thickness = 0
         self._use_absolute_cs = False
+        self._last_surface = None  # placeholder for last surface object
 
     def create_surface(self, surface_type, index, is_stop, material,
                        **kwargs):
@@ -318,7 +319,7 @@ class SurfaceFactory:
                                              norm_radius)
 
         return geometry
-    
+
     def _configure_material(self, index, material):
         """
         Configures the material for a surface based on the given index and
@@ -335,8 +336,16 @@ class SurfaceFactory:
             tuple: A tuple containing the material before and after the
                 surface.
         """
+        # object surface
         if index == 0:
             material_pre = None
+
+        # image surface
+        elif (index == self._surface_group.num_surfaces
+              and self._last_surface is not None):
+            material_pre = self._last_surface.material_post
+
+        # intermediate surface
         else:
             previous_surface = self._surface_group.surfaces[index-1]
             material_pre = previous_surface.material_post
