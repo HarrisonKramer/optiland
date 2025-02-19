@@ -129,7 +129,7 @@ class ZernikeStandard:
         if m >= 0:
             return np.cos(m * phi)
         else:
-            return np.sin(m * phi)
+            return np.sin(np.abs(m) * phi)
 
     def _norm_constant(self, n=0, m=0):
         """Calculate the normalization constant of the Zernike polynomial.
