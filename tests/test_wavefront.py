@@ -216,7 +216,7 @@ class TestZernikeOPD:
         c = zernike_opd.zernike.coeffs
         assert np.isclose(c[0], 0.8430890395012354)
         assert np.isclose(c[1], 6.863699034904449e-13)
-        assert np.isclose(c[2], -0.14504379704525455)
+        assert np.isclose(c[2], 0.14504379704525455)
         assert np.isclose(c[6], -1.160298338689596e-13)
         assert np.isclose(c[24], -0.0007283668376039182)
 

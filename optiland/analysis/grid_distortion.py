@@ -116,7 +116,7 @@ class GridDistortion:
                                 (self.num_points, self.num_points))
 
         # optical system flips x, so must correct this
-        data['xp'] = np.flip(xp)
+        data['xp'] = xp
         data['yp'] = yp
 
         # Find max distortion

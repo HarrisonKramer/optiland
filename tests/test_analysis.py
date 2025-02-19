@@ -350,7 +350,6 @@ class TestTelescopeTripletDistortion:
 class TestTelescopeTripletGridDistortion:
     def test_grid_distortion_values(self, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
-
         assert dist.data['max_distortion'] == \
             pytest.approx(0.005785718069180374, abs=1e-9)
 
@@ -359,9 +358,9 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['xp'].shape == (10, 10)
         assert dist.data['yp'].shape == (10, 10)
 
-        assert dist.data['xr'][0, 0] == pytest.approx(1.2342622299776145,
+        assert dist.data['xr'][0, 0] == pytest.approx(-1.2342622299776145,
                                                       abs=1e-9)
-        assert dist.data['xr'][4, 6] == pytest.approx(-0.41137984374933073,
+        assert dist.data['xr'][4, 6] == pytest.approx(0.41137984374933073,
                                                       abs=1e-9)
 
         assert dist.data['yr'][1, 0] == pytest.approx(-0.959951505834632,
@@ -369,9 +368,9 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['yr'][2, 6] == pytest.approx(-0.6856458243955965,
                                                       abs=1e-9)
 
-        assert dist.data['xp'][0, 2] == pytest.approx(0.6856375010477692,
+        assert dist.data['xp'][0, 2] == pytest.approx(-0.6856375010477692,
                                                       abs=1e-9)
-        assert dist.data['xp'][4, 4] == pytest.approx(0.13712543741510327,
+        assert dist.data['xp'][4, 4] == pytest.approx(-0.13712543741510327,
                                                       abs=1e-9)
 
         assert dist.data['yp'][-1, 0] == pytest.approx(1.2341908231761498,
@@ -391,9 +390,9 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['xp'].shape == (10, 10)
         assert dist.data['yp'].shape == (10, 10)
 
-        assert dist.data['xr'][0, 0] == pytest.approx(1.2342622299776145,
+        assert dist.data['xr'][0, 0] == pytest.approx(-1.2342622299776145,
                                                       abs=1e-9)
-        assert dist.data['xr'][4, 6] == pytest.approx(-0.41137984374933073,
+        assert dist.data['xr'][4, 6] == pytest.approx(0.41137984374933073,
                                                       abs=1e-9)
 
         assert dist.data['yr'][1, 0] == pytest.approx(-0.959951505834632,
@@ -401,9 +400,9 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data['yr'][2, 6] == pytest.approx(-0.6856458243955965,
                                                       abs=1e-9)
 
-        assert dist.data['xp'][0, 2] == pytest.approx(0.6856267573347536,
+        assert dist.data['xp'][0, 2] == pytest.approx(-0.6856267573347536,
                                                       abs=1e-9)
-        assert dist.data['xp'][4, 4] == pytest.approx(0.13712535146695065,
+        assert dist.data['xp'][4, 4] == pytest.approx(-0.13712535146695065,
                                                       abs=1e-9)
 
         assert dist.data['yp'][-1, 0] == pytest.approx(1.2341281632025562,

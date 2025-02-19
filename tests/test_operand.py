@@ -144,7 +144,7 @@ class TestRayOperand:
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 1.0, 'Hy': 0.0,
                 'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
         assert np.isclose(operand.RayOperand.x_intercept(**data),
-                          -150.42338010762842)
+                          150.42338010762842)
 
     def test_y_intercept(self, hubble):
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
@@ -162,7 +162,7 @@ class TestRayOperand:
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 1.0, 'Hy': 0.0,
                 'Px': 0.0, 'Py': 0.0, 'wavelength': 0.55}
         assert np.isclose(operand.RayOperand.x_intercept_lcs(**data),
-                          -150.42338010762842)
+                          150.42338010762842)
 
     def test_y_intercept_lcs(self, hubble):
         data = {'optic': hubble, 'surface_number': -1, 'Hx': 0.0, 'Hy': 1.0,
