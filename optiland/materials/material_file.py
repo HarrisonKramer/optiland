@@ -91,12 +91,14 @@ class MaterialFile(BaseMaterial):
         Raises:
             ValueError: If no extinction coefficient data is found.
         """
-        try:
-            return np.interp(wavelength, self._k_wavelength, self._k)
-        except ValueError:
-            file = os.path.basename(self.filename)
-            raise ValueError(f'No extinction coefficient data found for '
-                             f'{file}.')
+        # If the extinction coefficient is missing from the file, return 0
+        if self._k is None or self._k_wavelength is None:
+            print("WARNING: Extinction coefficient not found. It is assumed to be 0")
+            if np.isscalar(wavelength):
+                return 0.0
+            else:
+                return np.zeros_like(wavelength) # if there is an array of wvls
+        return np.interp(wavelength, self._k_wavelength, self._k)
 
     def _formula_1(self, w):
         """
