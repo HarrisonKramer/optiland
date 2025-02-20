@@ -267,3 +267,74 @@ class RectangularAperture(BaseAperture):
         """
         return cls(data['x_min'], data['x_max'],
                    data['y_min'], data['y_max'])
+
+
+class EllipticalAperture(BaseAperture):
+    """
+    Represents an elliptical aperture that clips rays based on their position.
+
+    Attributes:
+        a (float): The semi-major axis of the ellipse.
+        b (float): The semi-minor axis of the ellipse.
+        offset_x (float): The x-coordinate of the aperture's center.
+        offset_y (float): The y-coordinate of the aperture's center.
+    """
+
+    def __init__(self, a, b, offset_x=0, offset_y=0):
+        super().__init__()
+        self.a = a
+        self.b = b
+        self.offset_x = offset_x
+        self.offset_y = offset_y
+
+    def clip(self, rays):
+        """
+        Clips the given rays based on their position.
+
+        Args:
+            rays (Rays): The rays to be clipped.
+        """
+        x = rays.x - self.offset_x
+        y = rays.y - self.offset_y
+        condition = (x**2 / self.a**2 + y**2 / self.b**2) > 1
+        rays.clip(condition)
+
+    def scale(self, scale_factor):
+        """
+        Scales the aperture by the given factor.
+
+        Args:
+            scale_factor (float): The factor by which to scale the aperture.
+        """
+        self.a *= scale_factor
+        self.b *= scale_factor
+        self.offset_x *= scale_factor
+        self.offset_y *= scale_factor
+
+    def to_dict(self):
+        """
+        Convert the aperture to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the aperture.
+        """
+        aperture_dict = super().to_dict()
+        aperture_dict['a'] = self.a
+        aperture_dict['b'] = self.b
+        aperture_dict['offset_x'] = self.offset_x
+        aperture_dict['offset_y'] = self.offset_y
+        return aperture_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an aperture from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the aperture.
+
+        Returns:
+            EllipticalAperture: The aperture object.
+        """
+        return cls(data['a'], data['b'],
+                   data['offset_x'], data['offset_y'])
