@@ -61,9 +61,13 @@ class TestRadialAperture:
     @patch('matplotlib.pyplot.show')
     def test_view(self, mock_show):
         aperture = RadialAperture(r_max=5, r_min=2)
-        aperture.view(x_min=-10, x_max=10, y_min=-10, y_max=10)
+        aperture.view()
         mock_show.assert_called_once()
         plt.close()
+
+    def test_extent(self):
+        aperture = RadialAperture(r_max=5, r_min=2)
+        assert aperture.extent == (-5, 5, -5, 5)
 
 
 class TestOffsetRadialAperture:
@@ -124,6 +128,12 @@ class TestOffsetRadialAperture:
         assert aperture.offset_y == 1
         assert isinstance(aperture, OffsetRadialAperture)
 
+    def test_extent(self):
+        aperture = OffsetRadialAperture(
+            r_max=5, r_min=2, offset_x=1, offset_y=1
+        )
+        assert aperture.extent == (-4, 6, -4, 6)
+
 
 class TestBooleanApertures:
     def setup_method(self):
@@ -170,6 +180,18 @@ class TestBooleanApertures:
     def test_difference_type(self):
         a = self.aperture1 - self.aperture2
         assert isinstance(a, DifferenceAperture)
+
+    def test_extent(self):
+        union_aperture = UnionAperture(self.aperture1, self.aperture2)
+        assert union_aperture.extent == (-1, 1, -1, 1)
+
+        intersection_aperture = IntersectionAperture(self.aperture1,
+                                                     self.aperture2)
+        assert intersection_aperture.extent == (-1, 1, -1, 1)
+
+        difference_aperture = DifferenceAperture(self.aperture1,
+                                                 self.aperture2)
+        assert difference_aperture.extent == (-1, 1, -1, 1)
 
 
 class TestRectangularAperture:
@@ -222,6 +244,9 @@ class TestRectangularAperture:
         assert aperture.y_max == 86
         assert isinstance(aperture, RectangularAperture)
 
+    def test_extent(self):
+        assert self.aperture.extent == (-1, 1, -0.5, 0.5)
+
 
 class TestEllipticalAperture:
     def setup_method(self):
@@ -268,6 +293,9 @@ class TestEllipticalAperture:
         assert aperture.offset_y == 0.123
         assert isinstance(aperture, EllipticalAperture)
 
+    def test_extent(self):
+        assert self.aperture.extent == (-1, 1, -0.5, 0.5)
+
 
 class TestPolygonAperture:
     def setup_method(self):
@@ -312,6 +340,9 @@ class TestPolygonAperture:
         assert np.all(aperture.y == [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
 
+    def test_extent(self):
+        assert self.aperture.extent == (-10, 10, -15, 15)
+
 
 class TestFileAperture:
     def setup_method(self, temp_aperture_file):
@@ -354,3 +385,6 @@ class TestFileAperture:
         aperture = FileAperture.from_dict(data)
         assert aperture.filepath == self.aperture.filepath
         assert isinstance(aperture, FileAperture)
+
+    def test_extent(self):
+        assert self.aperture.extent == (0, 1, 0, 1)
