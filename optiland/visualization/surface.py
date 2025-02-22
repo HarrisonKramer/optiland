@@ -13,6 +13,7 @@ from optiland.visualization.utils import (
     transform_3d,
     revolve_contour
 )
+from optiland.physical_apertures import RadialAperture
 
 
 class Surface2D:
@@ -118,7 +119,12 @@ class Surface3D(Surface2D):
             actor: The surface actor, either symmetric or asymmetric, based on
                 the surface geometry.
         """
-        if self.surf.geometry.is_symmetric:
+        has_symmetric_aperture = (
+            isinstance(self.surf.aperture, RadialAperture)
+            or self.surf.aperture is None  # "no aperture" is symmetric
+            )
+        is_symmetric = self.surf.geometry.is_symmetric
+        if is_symmetric and has_symmetric_aperture:
             actor = self._get_symmetric_surface()
         else:
             actor = self._get_asymmetric_surface()
@@ -203,6 +209,28 @@ class Surface3D(Surface2D):
 
         return actor
 
+    def _apply_aperture_filter(self, x, y, z):
+        """
+        Applies aperture filtering to a grid of points.
+
+        If the surface has an aperture, then only points within the aperture
+        are retained. Otherwise, a default circular aperture (with
+        radius = extent) is used.
+
+        Args:
+            x, y, z (ndarray): 2D arrays representing the surface grid.
+
+        Returns:
+            tuple: Filtered arrays (x, y, z) containing only points within the
+                aperture.
+        """
+        if self.surf.aperture is not None:
+            mask = self.surf.aperture.contains(x, y)
+        else:
+            r = np.hypot(x, y)
+            mask = r <= self.extent
+        return x[mask], y[mask], z[mask]
+
     def _compute_sag_3d(self):
         """
         Computes the 3D sag (surface height) of the optical surface within the
@@ -220,11 +248,5 @@ class Surface3D(Surface2D):
         x = np.linspace(-self.extent, self.extent, 128)
         x, y = np.meshgrid(x, x)
         z = self.surf.geometry.sag(x, y)
-        r = np.hypot(x, y)
-
-        in_aperture = r <= self.extent
-        x = x[in_aperture]
-        y = y[in_aperture]
-        z = z[in_aperture]
-
+        x, y, z = self._apply_aperture_filter(x, y, z)
         return x, y, z
