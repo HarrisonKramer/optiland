@@ -94,6 +94,9 @@ class FileAperture(PolygonAperture):
             two columns.
     """
     def __init__(self, filepath, delimiter=None, skip_header=0):
+        self.filepath = filepath
+        self.delimiter = delimiter
+        self.skip_header = skip_header
         x, y = self._load_vertices(filepath, delimiter, skip_header)
         super().__init__(x, y)
 
@@ -116,7 +119,7 @@ class FileAperture(PolygonAperture):
         try:
             data = np.genfromtxt(filepath, delimiter=delimiter,
                                  skip_header=skip_header)
-            if data.shape[1] == 2:
+            if data.shape[1] != 2:
                 raise ValueError('File must contain exactly two columns for '
                                  'x and y coordinates.')
 
@@ -126,3 +129,29 @@ class FileAperture(PolygonAperture):
 
         except Exception as e:
             raise ValueError(f"Error reading aperture file '{filepath}': {e}")
+
+    def to_dict(self):
+        """
+        Convert the aperture to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the aperture.
+        """
+        aperture_dict = super().to_dict()
+        aperture_dict['filepath'] = self.filepath
+        aperture_dict['delimiter'] = self.delimiter
+        aperture_dict['skip_header'] = self.skip_header
+        return aperture_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an aperture from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the aperture.
+
+        Returns:
+            FileAperture: The aperture object.
+        """
+        return cls(data['filepath'], data['delimiter'], data['skip_header'])
