@@ -21,6 +21,16 @@ class PolygonAperture(BaseAperture):
         self.vertices = np.column_stack((self.x, self.y))
         self._path = Path(self.vertices)
 
+    @property
+    def extent(self):
+        """
+        Returns the extent of the aperture.
+
+        Returns:
+            tuple: The extent of the aperture in the x and y directions.
+        """
+        return (self.x.min(), self.x.max(), self.y.min(), self.y.max())
+
     def contains(self, x, y):
         """
         Checks if the given point is inside the aperture.
