@@ -104,8 +104,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         theta = np.arctan2(y_norm, x_norm)
 
         # Base conic
-        z = (rho**2) / (self.radius * (1 + np.sqrt(
-            1 - (1 + self.k) * (rho**2) / self.radius**2)))
+        r2 = x**2 + y**2
+        z = r2 / (self.radius *
+                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
         # Add normalized Fringe Zernike contributions
         # Sum over all nonzero coefficients
@@ -256,17 +257,14 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         """
         # Conic partial derivatives:
         r2 = x**2 + y**2
-        denom = self.radius * np.sqrt(
-            1.0 - (1.0 + self.k) * r2 / self.radius**2
-        )
+        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        dzdx = x / denom
+        dzdy = y / denom
 
         # Protect against divide-by-zero for r=0
         # or handle small r if needed
         eps = 1e-14
         denom = np.where(np.abs(denom) < eps, eps, denom)
-
-        dzdx = x / denom
-        dzdy = y / denom
 
         # Now add partial derivatives from the Zernike expansions
         x_norm = x / self.norm_radius
@@ -311,7 +309,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     @staticmethod
     def _fringezernike_order_to_zernike_order(k: int) -> tuple[float, float]:
         """Convert Fringe Zernike index k to classical Zernike (n, m).
-        https://wp.optics.arizona.edu/visualopticslab/wp-content/uploads/sites/52/2021/10/Zernike-Fit.pdf"""
+
+        https://wp.optics.arizona.edu/visualopticslab/wp-content/
+        uploads/sites/52/2021/10/Zernike-Fit.pdf"""
         n = np.ceil((-3 + np.sqrt(9 + 8*k))/2)
         m = 2 * k - n * (n + 2)
         return (n.astype(int), m.astype(int))
