@@ -168,7 +168,8 @@ class OptimizerGeneric:
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
 
-    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3):
+    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3,
+                 callback=None):
         """
         Optimize the problem using the specified parameters.
 
@@ -182,7 +183,8 @@ class OptimizerGeneric:
             disp (bool, optional): Whether to display optimization information.
                 Default is True.
             tol (float, optional): Tolerance for convergence. Default is 1e-3.
-
+            callback (callable): A callable called after each iteration.
+        
         Returns:
             result (OptimizeResult): The optimization result.
         """
@@ -199,7 +201,16 @@ class OptimizerGeneric:
                                        method=method,
                                        bounds=bounds,
                                        options=options,
-                                       tol=tol)
+                                       tol=tol,
+                                       callback=callback,
+                                    )
+        
+        # The last function evaluation is not necessarily the lowest.
+        # Update all lens variables to their optimized values
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+        self.problem.update_optics()
+
         return result
 
     def undo(self):
