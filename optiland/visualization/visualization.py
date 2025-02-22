@@ -66,7 +66,7 @@ class SurfaceViewer:
         # Update optics
         self.optic.update_paraxial()
         surface = self.optic.surface_group.surfaces[surface_index]
-        
+
         # Checks
         if isinstance(surface, ObjectSurface):
             raise AttributeError(f"Surface {surface_index} is the object surface, "
@@ -86,7 +86,8 @@ class SurfaceViewer:
         z = surface.geometry.sag(x, y)
 
         if plot_dev_to_bfs:
-            z = self._compute_deviation_to_best_fit_sphere(x, y, z)
+            k = surface.geometry.k
+            z = self._compute_deviation_to_best_fit_conic(x, y, z, k)
 
         z[np.sqrt(x**2+y**2) > semi_aperture] = np.nan
 
@@ -141,7 +142,9 @@ class SurfaceViewer:
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel("Deviation to plane [mm]", rotation=270)
+        cbar.ax.set_ylabel(f'Deviation to '
+                           f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"} [mm]',
+                           rotation=270)
         plt.grid(alpha=0.25)
         plt.show()
 
@@ -173,7 +176,8 @@ class SurfaceViewer:
 
         ax.set_xlabel('X [mm]')
         ax.set_ylabel('Y [mm]')
-        ax.set_zlabel("Deviation to plane [mm]")
+        ax.set_zlabel(f'Deviation to '
+                      f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"} [mm]',)
 
         if title is not None:
             ax.set_title(title)
@@ -192,49 +196,59 @@ class SurfaceViewer:
         plt.show()
 
     @staticmethod
-    def _sphere_sag(x, y, R):
-        """Compute the sag of a sphere with radius R.
-        
+    def _conic_sag(x, y, R, k):
+        """Compute the sag of a conic section with radius R and conic constant k.
+
         Args:
             x, y: 2D arrays of coordinates.
-            R: Sphere radius.
+            R: Radius of curvature at the vertex.
+            k: Conic constant. k = 0 for a sphere, k = -1 for a paraboloid,
+               -1 < k < 0 for an ellipsoid, and k < -1 for a hyperboloid.
 
         Returns:
             2D array of sag values.
         """
-        return R - np.sign(R) * np.sqrt(R**2 - x**2 - y**2)
-
-    def _best_fit_sphere(self, x, y, z):
-        """Find the best-fit sphere radius.
+        if k == 0:
+            # Sphere case
+            return R - np.sign(R) * np.sqrt(R**2 - x**2 - y**2)
+        else:
+            # Conic case
+            return (x**2 + y**2) / (R * (1 + np.sqrt(1 + (1 + k) * (x**2 + y**2) / R**2)))
+        
+    def _best_fit_conic(self, x, y, z, k):
+        """Find the best-fit conic.
         
         Args:
             x, y: 2D arrays of coordinates.
             z: 2D array of sags.
-
+            k: Conic constant.
+        
         Returns:
-            Optimal sphere radius.
+            Fitted conic radius & conic constant.
         """
-        def rms_error(R):
-            z_s = self._sphere_sag(x, y, R)
+        def rms_error(params:np.array):
+            z_s = self._conic_sag(x, y, params[0], params[1])
             return np.sum((z - z_s) ** 2)  # RMS error
 
-        initial_guess = np.mean(z + (x**2 + y**2) / (2 * z))  # first order approx
-        res = optimize.minimize(rms_error, initial_guess, method='Nelder-Mead')
-        return res.x[0]
+        initial_guess = [np.mean(z + (x**2 + y**2) / (2 * z)), k]
+        res = optimize.minimize(rms_error, x0=initial_guess, method='Nelder-Mead')
+        print(f"Residual RMS error : {res.fun:.2e}")
+        return res.x[0], res.x[1]
 
-    def _compute_deviation_to_best_fit_sphere(self, x, y, z):
-        """Compute deviation from the best-fit sphere.
+    def _compute_deviation_to_best_fit_conic(self, x, y, z, k):
+        """Compute deviation from the best-fit conic.
         
         Args:
             x, y: 2D arrays of coordinates.
             z: 2D array of sags.
-
+            k: Conic constant.
+        
         Returns:
             2D array of deviation values.
         """
-        R = self._best_fit_sphere(x, y, z)
-        z_s = self._sphere_sag(x, y, R)
-        return z - z_s
+        R_bfs, k_bfs = self._best_fit_conic(x, y, z, k)
+        best_fit_sag = self._conic_sag(x, y, R_bfs, k_bfs)
+        return z - best_fit_sag
     
 
 class OpticViewer:
