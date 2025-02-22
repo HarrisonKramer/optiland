@@ -16,9 +16,9 @@ class PolygonAperture(BaseAperture):
 
     def __init__(self, x, y):
         super().__init__()
-        self.x = x
-        self.y = y
-        self.vertices = np.column_stack((x, y))
+        self.x = np.array(x, dtype=float)
+        self.y = np.array(y, dtype=float)
+        self.vertices = np.column_stack((self.x, self.y))
         self._path = Path(self.vertices)
 
     def contains(self, x, y):
@@ -33,6 +33,8 @@ class PolygonAperture(BaseAperture):
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
         """
+        x = np.array(x)
+        y = np.array(y)
         points = np.column_stack((x.ravel(), y.ravel()))
         return self._path.contains_points(points).reshape(x.shape)
 
