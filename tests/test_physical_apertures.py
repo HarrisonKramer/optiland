@@ -142,3 +142,69 @@ class TestBooleanApertures:
         result = difference_aperture.contains(x, y)
         expected = np.array([False, False, True, False])
         np.testing.assert_array_equal(result, expected)
+
+    def test_union_type(self):
+        a = self.aperture1 | self.aperture2
+        assert isinstance(a, UnionAperture)
+
+        a = self.aperture1 + self.aperture2
+        assert isinstance(a, UnionAperture)
+
+    def test_intersection_type(self):
+        a = self.aperture1 & self.aperture2
+        assert isinstance(a, IntersectionAperture)
+
+    def test_difference_type(self):
+        a = self.aperture1 - self.aperture2
+        assert isinstance(a, DifferenceAperture)
+
+
+class TestRectangularAperture:
+    def setup_method(self):
+        self.aperture = RectangularAperture(x_min=-1, x_max=1,
+                                            y_min=-0.5, y_max=0.5)
+
+    def test_clip(self):
+        rays = RealRays([0, 1, 2, 3, 4, 5], [0, 0.5, 2, 3, 4, 5],
+                        [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1])
+        self.aperture.clip(rays)
+        assert np.all(rays.i == [1, 1, 0, 0, 0, 0])
+
+    def test_scale(self):
+        self.aperture.scale(2)
+        assert self.aperture.x_min == -2
+        assert self.aperture.x_max == 2
+        assert self.aperture.y_min == -1
+        assert self.aperture.y_max == 1
+
+        self.aperture.scale(0.5)
+        assert self.aperture.x_min == -1
+        assert self.aperture.x_max == 1
+        assert self.aperture.y_min == -0.5
+        assert self.aperture.y_max == 0.5
+
+    def test_to_dict(self):
+        assert self.aperture.to_dict() == {
+            'type': 'RectangularAperture',
+            'x_min': -1,
+            'x_max': 1,
+            'y_min': -0.5,
+            'y_max': 0.5
+        }
+
+    def test_from_dict(self):
+        data = {
+            'type': 'RectangularAperture',
+            'x_min': -1,
+            'x_max': 1,
+            'y_min': -0.5,
+            'y_max': 86
+        }
+        aperture = RectangularAperture.from_dict(data)
+        assert aperture.x_min == -1
+        assert aperture.x_max == 1
+        assert aperture.y_min == -0.5
+        assert aperture.y_max == 86
+        assert isinstance(aperture, RectangularAperture)
