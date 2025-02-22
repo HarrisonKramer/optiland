@@ -224,6 +224,7 @@ class Surface3D(Surface2D):
             tuple: Filtered arrays (x, y, z) containing only points within the
                 aperture.
         """
+        # TODO: account for holes in the aperture
         if self.surf.aperture is not None:
             mask = self.surf.aperture.contains(x, y)
         else:
