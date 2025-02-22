@@ -168,7 +168,8 @@ class OptimizerGeneric:
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
 
-    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3):
+    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3,
+                 callback=None):
         """
         Optimize the problem using the specified parameters.
 
@@ -182,7 +183,8 @@ class OptimizerGeneric:
             disp (bool, optional): Whether to display optimization information.
                 Default is True.
             tol (float, optional): Tolerance for convergence. Default is 1e-3.
-
+            callback (callable): A callable called after each iteration.
+        
         Returns:
             result (OptimizeResult): The optimization result.
         """
@@ -199,7 +201,16 @@ class OptimizerGeneric:
                                        method=method,
                                        bounds=bounds,
                                        options=options,
-                                       tol=tol)
+                                       tol=tol,
+                                       callback=callback,
+                                    )
+        
+        # The last function evaluation is not necessarily the lowest.
+        # Update all lens variables to their optimized values
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+        self.problem.update_optics()
+
         return result
 
     def undo(self):
@@ -319,13 +330,14 @@ class DualAnnealing(OptimizerGeneric):
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
 
-    def optimize(self, maxiter=1000, disp=True):
+    def optimize(self, maxiter=1000, disp=True, callback=None):
         """
         Runs the dual annealing algorithm to optimize the problem.
 
         Parameters:
             maxiter (int): Maximum number of iterations.
             disp (bool): Whether to display the optimization process.
+            callback (callable): A callable called after each iteration.
 
         Returns:
             result: The result of the optimization.
@@ -341,7 +353,8 @@ class DualAnnealing(OptimizerGeneric):
             result = optimize.dual_annealing(self._fun,
                                              bounds=bounds,
                                              maxiter=maxiter,
-                                             x0=x0)
+                                             x0=x0,
+                                             callback=callback)
         return result
 
 
@@ -367,7 +380,7 @@ class DifferentialEvolution(OptimizerGeneric):
         """
         super().__init__(problem)
 
-    def optimize(self, maxiter=1000, disp=True, workers=-1):
+    def optimize(self, maxiter=1000, disp=True, workers=-1, callback=None):
         """
         Runs the differential evolution optimization algorithm.
 
@@ -376,6 +389,7 @@ class DifferentialEvolution(OptimizerGeneric):
             disp (bool): Set to True to display status messages.
             workers (int): Number of parallel workers to use. Set to -1 to use
                 all available processors.
+            callback (callable): A callable called after each iteration.
 
         Returns:
             result (OptimizeResult): The optimization result.
@@ -403,7 +417,8 @@ class DifferentialEvolution(OptimizerGeneric):
                                                      x0=x0,
                                                      disp=disp,
                                                      updating=updating,
-                                                     workers=workers)
+                                                     workers=workers,
+                                                     callback=callback)
         return result
 
 
@@ -428,7 +443,7 @@ class SHGO(OptimizerGeneric):
         """
         super().__init__(problem)
 
-    def optimize(self, workers=-1, *args, **kwargs):
+    def optimize(self, workers=-1, callback=None, *args, **kwargs):
         """
         Runs the SHGO algorithm. Note that the SHGO algorithm accepts the same
         arguments as the scipy.optimize.shgo function.
@@ -436,6 +451,7 @@ class SHGO(OptimizerGeneric):
         Args:
             workers (int): Number of parallel workers to use. Set to -1 to use
                 all available CPU processors. Default is -1.
+            callback (callable): A callable called after each iteration.
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
 
@@ -455,7 +471,8 @@ class SHGO(OptimizerGeneric):
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
             result = optimize.shgo(self._fun, bounds=bounds,
-                                   workers=workers, *args, **kwargs)
+                                   workers=workers, callback=callback,
+                                   *args, **kwargs)
         return result
 
 
@@ -481,7 +498,7 @@ class BasinHopping(OptimizerGeneric):
         """
         super().__init__(problem)
 
-    def optimize(self, niter=100, *args, **kwargs):
+    def optimize(self, niter=100, callback=None, *args, **kwargs):
         """
         Runs the basin-hopping algorithm. Note that the basin-hopping
         algorithm accepts the same arguments as the
@@ -489,6 +506,7 @@ class BasinHopping(OptimizerGeneric):
 
         Args:
             niter (int): Number of iterations to perform. Default is 100.
+            callback (callable): A callable called after each iteration.
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
 
@@ -508,5 +526,6 @@ class BasinHopping(OptimizerGeneric):
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
             result = optimize.basinhopping(self._fun, x0=x0,
-                                           niter=niter, *args, **kwargs)
+                                           niter=niter, callback=callback,
+                                           *args, **kwargs)
         return result
