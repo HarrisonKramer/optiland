@@ -26,6 +26,17 @@ class BaseAperture(ABC):
         super().__init_subclass__(**kwargs)
         BaseAperture._registry[cls.__name__] = cls
 
+    @property
+    @abstractmethod
+    def extent(self):
+        """
+        Returns the extent of the aperture.
+
+        Returns:
+            tuple: The extent of the aperture in the x and y directions.
+        """
+        pass  # pragma: no cover
+
     @abstractmethod
     def contains(self, x, y):
         """
@@ -89,22 +100,24 @@ class BaseAperture(ABC):
         aperture_type = data['type']
         return cls._registry[aperture_type].from_dict(data)
 
-    def view(self, x_min, x_max, y_min, y_max, nx=256, ny=256,
-             ax=None, **kwargs):
+    def view(self, nx=256, ny=256,
+             ax=None, buffer=1.1, **kwargs):
         """
         Visualize the aperture.
 
         Args:
-            x_min (float): The minimum x-coordinate of the plot.
-            x_max (float): The maximum x-coordinate of the plot.
-            y_min (float): The minimum y-coordinate of the plot.
-            y_max (float): The maximum y-coordinate of the plot.
             nx (int): The number of points in the x-direction.
             ny (int): The number of points in the y-direction.
             ax (matplotlib.axes.Axes): The axes to plot on.
+            buffer (float): The buffer around the aperture.
             **kwargs: Additional keyword arguments to pass to the plot
                 function.
         """
+        x_min, x_max, y_min, y_max = self.extent
+        x_min *= buffer
+        x_max *= buffer
+        y_min *= buffer
+        y_max *= buffer
         if ax is None:
             fig, ax = plt.subplots()
         x = np.linspace(x_min, x_max, nx)
@@ -112,8 +125,8 @@ class BaseAperture(ABC):
         X, Y = np.meshgrid(x, y)
         Z = self.contains(X, Y)
         ax.contourf(X, Y, Z, **kwargs)
-        ax.set_xlabel('x [mm]')
-        ax.set_ylabel('y [mm]')
+        ax.set_xlabel('X [mm]')
+        ax.set_ylabel('Y [mm]')
         ax.set_aspect('equal')
         plt.show()
 
@@ -145,6 +158,22 @@ class BaseBooleanAperture(BaseAperture):
     def __init__(self, a: BaseAperture, b: BaseAperture):
         self.a = a
         self.b = b
+
+    @property
+    def extent(self):
+        """
+        Returns the extent of the aperture.
+
+        Returns:
+            tuple: The extent of the aperture in the x and y directions.
+        """
+        a_extent = self.a.extent
+        b_extent = self.b.extent
+        x_min = min(a_extent[0], b_extent[0])
+        x_max = max(a_extent[1], b_extent[1])
+        y_min = min(a_extent[2], b_extent[2])
+        y_max = max(a_extent[3], b_extent[3])
+        return x_min, x_max, y_min, y_max
 
     @abstractmethod
     def contains(self, x, y):

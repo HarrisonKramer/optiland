@@ -16,6 +16,16 @@ class RadialAperture(BaseAperture):
         self.r_max = r_max
         self.r_min = r_min
 
+    @property
+    def extent(self):
+        """
+        Returns the extent of the aperture.
+
+        Returns:
+            tuple: The extent of the aperture in the x and y directions.
+        """
+        return -self.r_max, self.r_max, -self.r_max, self.r_max
+
     def contains(self, x, y):
         """
         Checks if the given point is inside the aperture.
