@@ -1,4 +1,7 @@
+from unittest.mock import patch
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 from optiland.physical_apertures import (
     RadialAperture,
     OffsetRadialAperture,
@@ -7,9 +10,11 @@ from optiland.physical_apertures import (
     DifferenceAperture,
     RectangularAperture,
     EllipticalAperture,
-    PolygonAperture
+    PolygonAperture,
+    FileAperture
 )
 from optiland.rays import RealRays
+matplotlib.use('Agg')  # use non-interactive backend for testing
 
 
 class TestRadialAperture:
@@ -51,6 +56,13 @@ class TestRadialAperture:
         assert aperture.r_max == 5
         assert aperture.r_min == 2
         assert isinstance(aperture, RadialAperture)
+
+    @patch('matplotlib.pyplot.show')
+    def test_view(self, mock_show):
+        aperture = RadialAperture(r_max=5, r_min=2)
+        aperture.view(x_min=-10, x_max=10, y_min=-10, y_max=10)
+        mock_show.assert_called_once()
+        plt.close()
 
 
 class TestOffsetRadialAperture:
@@ -208,3 +220,93 @@ class TestRectangularAperture:
         assert aperture.y_min == -0.5
         assert aperture.y_max == 86
         assert isinstance(aperture, RectangularAperture)
+
+
+class TestEllipticalAperture:
+    def setup_method(self):
+        self.aperture = EllipticalAperture(a=1, b=0.5)
+
+    def test_clip(self):
+        rays = RealRays([0, 1, 0, 3, 4, 5], [0, 0, 0.5, 3, 4, 5],
+                        [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1])
+        self.aperture.clip(rays)
+        assert np.all(rays.i == [1, 1, 1, 0, 0, 0])
+
+    def test_scale(self):
+        self.aperture.scale(2)
+        assert self.aperture.a == 2
+        assert self.aperture.b == 1
+
+        self.aperture.scale(0.5)
+        assert self.aperture.a == 1
+        assert self.aperture.b == 0.5
+
+    def test_to_dict(self):
+        assert self.aperture.to_dict() == {
+            'type': 'EllipticalAperture',
+            'a': 1,
+            'b': 0.5,
+            'offset_x': 0,
+            'offset_y': 0
+        }
+
+    def test_from_dict(self):
+        data = {
+            'type': 'EllipticalAperture',
+            'a': 1,
+            'b': 0.5,
+            'offset_x': 0,
+            'offset_y': 0.123
+        }
+        aperture = EllipticalAperture.from_dict(data)
+        assert aperture.a == 1
+        assert aperture.b == 0.5
+        assert aperture.offset_x == 0
+        assert aperture.offset_y == 0.123
+        assert isinstance(aperture, EllipticalAperture)
+
+
+class TestPolygonAperture:
+    def setup_method(self):
+        self.aperture = PolygonAperture(x=[-10, 10, 10, -10],
+                                        y=[-15, -15, 15, 15])
+
+    def test_clip(self):
+        rays = RealRays([0, 5, 0, 10, 20, 20], [0, 0, 6, 15, 0, 21],
+                        [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1])
+        self.aperture.clip(rays)
+        assert np.all(rays.i == [1, 1, 1, 1, 0, 0])
+
+    def test_scale(self):
+        self.aperture.scale(2)
+        assert np.all(
+            self.aperture.vertices == np.array([[-20, -30], [20, -30],
+                                                [20, 30], [-20, 30]])
+            )
+
+        self.aperture.scale(0.5)
+        assert np.all(
+            self.aperture.vertices == np.array([[-10, -15], [10, -15],
+                                                [10, 15], [-10, 15]])
+            )
+
+    def test_to_dict(self):
+        data = self.aperture.to_dict()
+        assert data['type'] == 'PolygonAperture'
+        assert np.all(data['x'] == [-10, 10, 10, -10])
+        assert np.all(data['y'] == [-15, -15, 15, 15])
+
+    def test_from_dict(self):
+        data = {
+            'type': 'PolygonAperture',
+            'x': [0, 1, 1, 0],
+            'y': [0, 0, 1, 1]
+        }
+        aperture = PolygonAperture.from_dict(data)
+        assert np.all(aperture.x == [0, 1, 1, 0])
+        assert np.all(aperture.y == [0, 0, 1, 1])
+        assert isinstance(aperture, PolygonAperture)
