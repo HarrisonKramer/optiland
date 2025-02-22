@@ -10,5 +10,4 @@ from .radial import RadialAperture
 from .rectangular import RectangularAperture
 from .offset_radial import OffsetRadialAperture
 from .elliptical import EllipticalAperture
-from .polygon import PolygonAperture
-from .file import FileAperture
+from .polygon import PolygonAperture, FileAperture
