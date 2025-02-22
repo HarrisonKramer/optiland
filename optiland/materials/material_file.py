@@ -91,10 +91,10 @@ class MaterialFile(BaseMaterial):
         """
         # If the extinction coefficient is missing from the file, return 0
         if self._k is None or self._k_wavelength is None:
-            if not self.k_warning_printed:
+            if not self._k_warning_printed:
                 material_name = os.path.basename(self.filename)
                 print(f"WARNING: No extinction coefficient data found for {material_name}. Assuming it is 0.")
-                self.k_warning_printed = True # we set it to True to avoid printing the warning again            
+                self._k_warning_printed = True # we set it to True to avoid printing the warning again            
             
             if np.isscalar(wavelength):
                 return 0.0
