@@ -102,9 +102,8 @@ class TestMaterialFile:
         assert material.n(1.5) == pytest.approx(1.9081487808757178, abs=1e-10)
         assert material.abbe() == pytest.approx(40.87771013627357, abs=1e-10)
 
-        # This material has no k values, check that it raises an error
-        with pytest.raises(ValueError):
-            material.k(1.0)
+        # This material has no k values, check that it raises a warning
+        assert material.k(1.0) == 0.0
 
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
@@ -139,9 +138,8 @@ class TestMaterialFile:
         assert material.n(1.5) == pytest.approx(1.0004386003514163, abs=1e-10)
         assert material.abbe() == pytest.approx(76.08072467952312, abs=1e-10)
 
-        # This material has no k values, check that it raises an error
-        with pytest.raises(ValueError):
-            material.k(1.0)
+        # This material has no k values, check that it raises a warning
+        assert material.k(1.0) == 0.0
 
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
@@ -178,9 +176,8 @@ class TestMaterialFile:
         assert material.n(0.65) == pytest.approx(2.237243954654548, abs=1e-10)
         assert material.abbe() == pytest.approx(14.551572168536392, abs=1e-10)
 
-        # This material has no k values, check that it raises an error
-        with pytest.raises(ValueError):
-            material.k(1.0)
+        # This material has no k values, check that it raises a warning
+        assert material.k(1.0) == 0.0
 
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12]
@@ -198,9 +195,8 @@ class TestMaterialFile:
         assert material.n(1.0) == pytest.approx(1.5908956870937045, abs=1e-10)
         assert material.abbe() == pytest.approx(34.60221948120884, abs=1e-10)
 
-        # This material has no k values, check that it raises an error
-        with pytest.raises(ValueError):
-            material.k(1.0)
+        # This material has no k values, check that it raises a warning
+        assert material.k(1.0) == 0.0
 
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
@@ -218,9 +214,8 @@ class TestMaterialFile:
         assert material.n(3.0) == pytest.approx(1.7855, abs=1e-10)
         assert material.abbe() == pytest.approx(52.043469741225195, abs=1e-10)
 
-        # This material has no k values, check that it raises an error
-        with pytest.raises(ValueError):
-            material.k(1.0)
+        # This material has no k values, check that it raises a warning
+        assert material.k(1.0) == 0.0
 
         # Test case when no tabulated data available
         material._n = None
