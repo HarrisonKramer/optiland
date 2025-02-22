@@ -1,4 +1,5 @@
 from unittest.mock import patch
+import tempfile
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -310,3 +311,46 @@ class TestPolygonAperture:
         assert np.all(aperture.x == [0, 1, 1, 0])
         assert np.all(aperture.y == [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
+
+
+class TestFileAperture:
+    def setup_method(self, temp_aperture_file):
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write('0, 0\n1, 0\n1, 1\n0, 1')
+            temp_path = f.name
+        self.aperture = FileAperture(temp_path, delimiter=',')
+
+    def test_clip(self):
+        rays = RealRays([0.5, 0, 1, 10, 20, 20], [0.5, 1, 1, 15, 0, 21],
+                        [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1])
+        self.aperture.clip(rays)
+        assert np.all(rays.i == [1, 1, 1, 0, 0, 0])
+
+    def test_scale(self):
+        self.aperture.scale(2)
+        assert np.all(
+            self.aperture.vertices == np.array([[0, 0], [2, 0],
+                                                [2, 2], [0, 2]])
+            )
+
+    def test_to_dict(self):
+        data = self.aperture.to_dict()
+        assert data['type'] == 'FileAperture'
+        assert data['filepath'] == self.aperture.filepath
+        assert data['delimiter'] == ','
+        assert data['skip_header'] == 0
+        assert np.all(data['x'] == [0, 1, 1, 0])
+        assert np.all(data['y'] == [0, 0, 1, 1])
+
+    def test_from_dict(self):
+        data = {
+            'type': 'FileAperture',
+            'filepath': self.aperture.filepath,
+            'delimiter': ',',
+            'skip_header': 0
+        }
+        aperture = FileAperture.from_dict(data)
+        assert aperture.filepath == self.aperture.filepath
+        assert isinstance(aperture, FileAperture)
