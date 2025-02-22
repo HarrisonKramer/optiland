@@ -40,7 +40,7 @@ class MaterialFile(BaseMaterial):
     """
     def __init__(self, filename):
         self.filename = filename
-
+        self._k_warning_printed = False
         self.coefficients = []
         self._k_wavelength = None
         self._k = None
@@ -91,7 +91,7 @@ class MaterialFile(BaseMaterial):
         """
         # If the extinction coefficient is missing from the file, return 0
         if self._k is None or self._k_wavelength is None:
-            if not hasattr(self, "k_warning_printed") or not self.k_warning_printed:
+            if not self.k_warning_printed:
                 material_name = os.path.basename(self.filename)
                 print(f"WARNING: No extinction coefficient data found for {material_name}. Assuming it is 0.")
                 self.k_warning_printed = True # we set it to True to avoid printing the warning again            
