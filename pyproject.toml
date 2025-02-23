@@ -44,6 +44,7 @@ packages = [
     "optiland.optimization.operand",
     "optiland.optimization.variable",
     "optiland.optimization",
+    "optiland.physical_apertures",
     "optiland.rays",
     "optiland.samples",
     "optiland.surfaces",
