@@ -1,5 +1,4 @@
 import numpy as np
-from shapely.geometry import Point
 from optiland.physical_apertures.radial import RadialAperture
 
 
@@ -83,15 +82,3 @@ class OffsetRadialAperture(RadialAperture):
         """
         return cls(data['r_max'], data['r_min'],
                    data['offset_x'], data['offset_y'])
-
-    def get_shapely_polygon(self):
-        """
-        Returns a Shapely polygon representing the aperture.
-
-        Returns:
-            Polygon: The Shapely polygon representing the aperture.
-        """
-        center = (self.offset_x, self.offset_y)
-        outer = Point(center).buffer(self.r_max, resolution=128)
-        inner = Point(center).buffer(self.r_min, resolution=128)
-        return outer.difference(inner)
