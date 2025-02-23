@@ -126,8 +126,8 @@ class QuickFocusSolve(BaseSolve):
         self.num_surfaces = self.optic.surface_group.num_surfaces
         self.last_surf_idx = self.optic.surface_group.num_surfaces - 2 # Index of the last surface before the image surface.
         if self.num_surfaces > 2:
-            pos2 = self.optic.surface_group.positions[self.last_surf_idx]
-            pos1 = self.optic.surface_group.positions[self.last_surf_idx-1]
+            pos2 = self.optic.surface_group.positions[-1].astype(float)[0]
+            pos1 = self.optic.surface_group.positions[-2].astype(float)[0]
             self.thickness = pos2 - pos1
         elif self.num_surfaces <= 2:
             raise ValueError('Can not optimize for an empty optical system')
@@ -142,8 +142,8 @@ class QuickFocusSolve(BaseSolve):
         problem.add_variable(self.optic, 'thickness', surface_number=self.last_surf_idx, min_val=0, max_val=1000)
         optimizer = OptimizerGeneric(problem)
         optimizer.optimize()
-        pos2_optimized = self.optic.surface_group.positions[self.last_surf_idx]
-        pos1_optimized = self.optic.surface_group.positions[self.last_surf_idx-1]
+        pos2_optimized = self.optic.surface_group.positions[-1].astype(float)[0]
+        pos1_optimized = self.optic.surface_group.positions[-2].astype(float)[0]
         self.thickness = pos2_optimized - pos1_optimized
 
     def to_dict(self):
