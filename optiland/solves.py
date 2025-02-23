@@ -9,7 +9,8 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-
+from optiland.optimization import OptimizationProblem, OptimizerGeneric
+from numpy import inf
 
 class BaseSolve(ABC):
     """
@@ -60,8 +61,7 @@ class BaseSolve(ABC):
             raise ValueError(f'Unknown solve type: {solve_type}')
         solve_class = BaseSolve._registry[data['type']]
         return solve_class.from_dict(optic, data)
-
-
+    
 class MarginalRayHeightSolve(BaseSolve):
     """
     Initializes a MarginalRayHeightSolve object.
@@ -113,6 +113,66 @@ class MarginalRayHeightSolve(BaseSolve):
         """
         return cls(optic, data['surface_idx'], data['height'])
 
+class QuickFocusSolve(BaseSolve):
+    """ Quick Focus
+    Args:
+        optic (Optic): The optic object.
+
+    Raises:
+            ValueError: If the optical system is not defined.
+    """
+    def __init__(self, optic):
+        self.optic = optic
+        self.num_surfaces = self.optic.surface_group.num_surfaces
+        self.last_surf_idx = self.optic.surface_group.num_surfaces - 2 # Index of the last surface before the image surface.
+        if self.num_surfaces > 2:
+            pos2 = self.optic.surface_group.positions[self.last_surf_idx]
+            pos1 = self.optic.surface_group.positions[self.last_surf_idx-1]
+            self.thickness = pos2 - pos1
+        elif self.num_surfaces <= 2:
+            raise ValueError('Can not optimize for an empty optical system')
+        
+    def apply(self):
+        problem = OptimizationProblem()
+        for wave in self.optic.wavelengths.get_wavelengths():
+            for field in self.optic.fields.get_field_coords():
+                input_data = {'optic': self.optic, 'Hx': field[0], 'Hy': field[1], 'num_rays': 3, 'wavelength': wave, 'distribution': 'gaussian_quad'}
+                problem.add_operand(operand_type='OPD_difference', target=0, weight=1, input_data=input_data)
+
+        problem.add_variable(self.optic, 'thickness', surface_number=self.last_surf_idx, min_val=0, max_val=1000)
+        optimizer = OptimizerGeneric(problem)
+        optimizer.optimize()
+        pos2_optimized = self.optic.surface_group.positions[self.last_surf_idx]
+        pos1_optimized = self.optic.surface_group.positions[self.last_surf_idx-1]
+        self.thickness = pos2_optimized - pos1_optimized
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the solve.
+
+        Returns:
+            dict: A dictionary representation of the solve.
+        """
+        solve_dict = super().to_dict()
+        solve_dict.update({
+            'thickness': float(self.thickness)
+        })
+        return solve_dict
+
+    @classmethod
+    def from_dict(cls, optic, data):
+        """
+        Creates a QuickFocusSolve from a dictionary representation.
+
+        Args:
+            optic (Optic): The optic object.
+
+        Returns:
+            QuickFocusSolve: The solve.
+        """
+        instance = cls(optic)
+        instance.thickness = data['thickness']
+        return instance
 
 class SolveFactory:
     """
@@ -126,7 +186,8 @@ class SolveFactory:
             based on the given solve type.
     """
     _solve_map = {
-        'marginal_ray_height': MarginalRayHeightSolve
+        'marginal_ray_height': MarginalRayHeightSolve,
+        'quick_focus': QuickFocusSolve
     }
 
     @staticmethod

@@ -72,6 +72,54 @@ class TestMarginalRayHeightSolve:
         with pytest.raises(ValueError):
             solves.BaseSolve.from_dict(optic, data)
 
+class TestQuickfocusSolve:
+    def test_marginal_ray_height_solve_constructor(self):
+        optic = CookeTriplet()
+        solve = solves.QuickFocusSolve(optic)
+
+        assert solve.optic == optic
+
+    def test_marginal_ray_height_solve_apply(self):
+        optic = CookeTriplet()
+        thickness = 60.2342033372244
+        solve = solves.QuickFocusSolve(optic)
+        solve.apply()
+
+        # Check that surface has been shifted
+        assert optic.surface_group.positions[-1][0] == thickness
+
+    def test_to_dict(self):
+        optic = CookeTriplet()
+        thickness = 60.2342033372244
+
+        solve = solves.QuickFocusSolve(optic)
+        data = solve.to_dict()
+
+        assert data['type'] == 'QuickFocusSolve'
+        assert data['thickness'] == thickness
+
+    def test_from_dict(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'QuickFocusSolve',
+            'thickness': 60.2342033372244
+        }
+
+        solve = solves.BaseSolve.from_dict(optic, data)
+
+        assert solve.thickness == data['thickness']
+
+    def test_from_dict_invalid_type(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'Invalid',
+            'thickness': 60.2342033372244
+        }
+
+        with pytest.raises(ValueError):
+            solves.BaseSolve.from_dict(optic, data)
+
+
 
 class TestSolveFactory:
     def test_create_solve(self):
