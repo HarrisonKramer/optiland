@@ -1,8 +1,11 @@
-"""Physical Apertures Module
+"""Physical Apertures Base Module
 
-This module provides classes to define physical apertures on optical surfaces.
-For example, a telescope primary mirror with a center hole can be represented
-by a radial aperture that clips rays based on their distance from the origin.
+This module contains the base classes for physical apertures. The BaseAperture
+class is an abstract base class that defines the interface for physical
+apertures. The BaseBooleanAperture class is an abstract base class for boolean
+operations on apertures. The UnionAperture, IntersectionAperture, and
+DifferenceAperture classes are concrete classes that implement the union,
+intersection, and difference of two apertures, respectively.
 
 Kramer Harrison, 2024
 """

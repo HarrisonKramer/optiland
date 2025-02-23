@@ -1,3 +1,10 @@
+"""Rectangular Aperture Module
+
+This module contains the RectangularAperture class, which represents a
+rectangular aperture that clips rays based on their position.
+
+Kramer Harrison, 2025
+"""
 from optiland.physical_apertures.base import BaseAperture
 
 

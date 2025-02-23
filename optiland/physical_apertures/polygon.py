@@ -1,3 +1,12 @@
+"""Polygon Aperture Module
+
+This module contains the PolygonAperture class, which represents a polygonal
+aperture that clips rays based on a set of vertices. It also contains the
+FileAperture class, which reads an aperture definition from a file and creates
+a polygon-based aperture.
+
+Kramer Harrison, 2025
+"""
 import numpy as np
 from matplotlib.path import Path
 from optiland.physical_apertures.base import BaseAperture

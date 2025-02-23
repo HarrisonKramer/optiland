@@ -1,3 +1,11 @@
+"""Offset Radial Aperture Module
+
+This module contains the OffsetRadialAperture class, which represents a radial
+aperture that clips rays based on their distance from the origin, with an
+offset in the x and y directions.
+
+Kramer Harrison, 2025
+"""
 import numpy as np
 from optiland.physical_apertures.radial import RadialAperture
 

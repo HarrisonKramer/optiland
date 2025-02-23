@@ -1,3 +1,10 @@
+"""Radial Aperture Module
+
+This module contains the RadialAperture class, which represents a radial
+aperture that clips rays based on their distance from the origin.
+
+Kramer Harrison, 2025
+"""
 from optiland.physical_apertures.base import BaseAperture
 
 

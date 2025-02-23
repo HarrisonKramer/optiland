@@ -1,3 +1,10 @@
+"""Elliptical Aperture Module
+
+This module contains the EllipticalAperture class, which represents an
+elliptical aperture that clips rays based on their position.
+
+Kramer Harrison, 2025
+"""
 from optiland.physical_apertures.base import BaseAperture
 
 
