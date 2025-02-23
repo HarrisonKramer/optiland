@@ -13,12 +13,243 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import vtk
+from scipy import optimize
+
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
+from optiland.surfaces.object_surface import ObjectSurface
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
+
+class SurfaceViewer:
+    """
+    A class used to visualize surfaces.
+
+    Args:
+        optic: The optical system to be visualized.
+        surface_index: Index of the surface to be visualized.
+    """
+
+    def __init__(self, optic):
+        self.optic = optic
+
+    def view(self,
+             surface_index: int,
+             projection: str = '2d',
+             plot_dev_to_bfs: bool = False,
+             num_points: int = 256,
+             figsize: tuple = (7, 5.5),
+             title: str = None):
+        """
+        Visualize the surface.
+
+        Args:
+            surface_index (int): Index of the surface to be visualized.
+            projection (str): The type of projection to use for visualization.
+            Can be '2d' or '3d'.
+            plot_dev_to_bfs (bool): If True, plot the deviation to the best 
+                fir sphere instead of the deviation to a plane.
+            num_points (int): The number of points to sample along each axis
+                for the visualization.
+            figsize (tuple): The size of the figure in inches.
+                Defaults to (7, 5.5).
+            title (str): Title.
+
+        Raises:
+            ValueError: If the projection is not '2d' or '3d'.
+        """
+        if surface_index > self.optic.surface_group.num_surfaces-1:
+            raise AttributeError('The surface index cannot be greater than the number '
+                                 'of surfaces.')  
+        # Update optics
+        self.optic.update_paraxial()
+        surface = self.optic.surface_group.surfaces[surface_index]
+
+        # Checks
+        if isinstance(surface, ObjectSurface):
+            raise AttributeError(f"Surface {surface_index} is the object surface, "
+                                 f"please select another one.")
+        if surface_index == self.optic.surface_group.num_surfaces-1:
+            raise AttributeError(f"Surface {surface_index} is the image surface, "
+                                 f"please select another one.")
+
+        # Set surface aperture 
+        semi_aperture = surface.semi_aperture
+        
+        x, y = np.meshgrid(
+            np.linspace(-semi_aperture, semi_aperture, num_points),
+            np.linspace(-semi_aperture, semi_aperture, num_points),)
+        
+        # compute surface sag
+        z = surface.geometry.sag(x, y)
+
+        if plot_dev_to_bfs:
+            k = surface.geometry.k
+            z = self._compute_deviation_to_best_fit_conic(x, y, z, k)
+
+        z[np.sqrt(x**2+y**2) > semi_aperture] = np.nan
+
+        # Plot in 2D
+        if projection == '2d':
+            self._plot_2d(z, figsize=figsize, title=title, 
+                          surface_type=surface.surface_type,
+                          surface_index=surface_index,
+                          semi_aperture=semi_aperture,
+                          plot_dev_to_bfs=plot_dev_to_bfs)
+        # Plot in 3D
+        elif projection == '3d':
+            self._plot_3d(x, y, z, figsize=figsize, title=title,
+                          surface_type=surface.surface_type,
+                          surface_index=surface_index,
+                          semi_aperture=semi_aperture,
+                          plot_dev_to_bfs=plot_dev_to_bfs)
+        else:
+            raise ValueError('Projection must be "2d" or "3d".')
+
+    def _plot_2d(self,
+                 z: np.ndarray,
+                 figsize: tuple = (7, 5.5),
+                 title: str = None,
+                 **kwargs):
+        """
+        Plot a 2D representation of the given data.
+
+        Args:
+            z (numpy.ndarray): The data to be plotted.
+            figsize (tuple, optional): The size of the figure
+                (default is (7, 5.5)).
+            title (str): Title.
+        """
+        _, ax = plt.subplots(figsize=figsize)
+
+        semi_aperture = kwargs['semi_aperture']
+        extent = [-semi_aperture, semi_aperture, -semi_aperture, semi_aperture]
+        ax.set_xlabel('X [mm]')
+        ax.set_ylabel('Y [mm]')
+        im = ax.imshow(np.flipud(z), extent=extent)
+
+        if title is not None:
+            ax.set_title(title)
+        else:
+            ax.set_title(
+                f'Surface {kwargs.get("surface_index", None)} '
+                f'deviation to '
+                f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"}\n'
+                f'{kwargs.get("surface_type", None).capitalize()} surface'
+            )
+
+        cbar = plt.colorbar(im)
+        cbar.ax.get_yaxis().labelpad = 15
+        cbar.ax.set_ylabel(f'Deviation to '
+                           f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"} [mm]',
+                           rotation=270)
+        plt.grid(alpha=0.25)
+        plt.show()
+
+    def _plot_3d(self,
+                 x: np.ndarray,
+                 y: np.ndarray,
+                 z: np.ndarray,
+                 figsize: tuple = (7, 5.5),
+                 title: str = None,
+                 **kwargs):
+        """
+        Plot a 3D surface plot of the given data.
+
+        Args:
+            x (numpy.ndarray): Array of x-coordinates.
+            y (numpy.ndarray): Array of y-coordinates.
+            z (numpy.ndarray): Array of z-coordinates.
+            figsize (tuple, optional): Size of the figure (width, height).
+                Default is (7, 5.5).
+            title (str): Title.
+        """
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
+                               figsize=figsize)
+
+        surf = ax.plot_surface(x, y, z,
+                               rstride=1, cstride=1,
+                               cmap='viridis', linewidth=0,
+                               antialiased=False)
+
+        ax.set_xlabel('X [mm]')
+        ax.set_ylabel('Y [mm]')
+        ax.set_zlabel(f'Deviation to '
+                      f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"} [mm]',)
+
+        if title is not None:
+            ax.set_title(title)
+        else:
+            ax.set_title(
+                f'Surface {kwargs.get("surface_index", None)} '
+                f'deviation to '
+                f'{"BFS" if kwargs.get("plot_dev_to_bfs", False) else "plane"}\n'
+                f'{kwargs.get("surface_type", None).capitalize()} surface'
+            )
+        
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
+                     pad=0.15)
+        
+        fig.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def _conic_sag(x, y, R, k):
+        """Compute the sag of a conic section with radius R and conic constant k.
+
+        Args:
+            x, y: 2D arrays of coordinates.
+            R: Radius of curvature at the vertex.
+            k: Conic constant. k = 0 for a sphere, k = -1 for a paraboloid,
+               -1 < k < 0 for an ellipsoid, and k < -1 for a hyperboloid.
+
+        Returns:
+            2D array of sag values.
+        """
+        if k == 0:
+            # Sphere case
+            return R - np.sign(R) * np.sqrt(R**2 - x**2 - y**2)
+        else:
+            # Conic case
+            return (x**2 + y**2) / (R * (1 + np.sqrt(1 + (1 + k) * (x**2 + y**2) / R**2)))
+        
+    def _best_fit_conic(self, x, y, z, k):
+        """Find the best-fit conic.
+        
+        Args:
+            x, y: 2D arrays of coordinates.
+            z: 2D array of sags.
+            k: Conic constant.
+        
+        Returns:
+            Fitted conic radius & conic constant.
+        """
+        def rms_error(params:np.array):
+            z_s = self._conic_sag(x, y, params[0], params[1])
+            return np.sum((z - z_s) ** 2)  # RMS error
+
+        initial_guess = [np.mean(z + (x**2 + y**2) / (2 * z)), k]
+        res = optimize.minimize(rms_error, x0=initial_guess, method='Nelder-Mead')
+        print(f"Residual RMS error : {res.fun:.2e}")
+        return res.x[0], res.x[1]
+
+    def _compute_deviation_to_best_fit_conic(self, x, y, z, k):
+        """Compute deviation from the best-fit conic.
+        
+        Args:
+            x, y: 2D arrays of coordinates.
+            z: 2D array of sags.
+            k: Conic constant.
+        
+        Returns:
+            2D array of deviation values.
+        """
+        R_bfs, k_bfs = self._best_fit_conic(x, y, z, k)
+        best_fit_sag = self._conic_sag(x, y, R_bfs, k_bfs)
+        return z - best_fit_sag
+    
 
 class OpticViewer:
     """
