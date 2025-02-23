@@ -128,7 +128,6 @@ class BaseAperture(ABC):
         ax.set_xlabel('X [mm]')
         ax.set_ylabel('Y [mm]')
         ax.set_aspect('equal')
-        plt.show()
 
     def __or__(self, other):
         """Union: a point is inside if it is in either region."""
