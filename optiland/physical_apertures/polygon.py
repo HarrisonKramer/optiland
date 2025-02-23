@@ -91,7 +91,8 @@ class FileAperture(PolygonAperture):
 
     The file should contain two columns representing the x and y coordinates,
     respectively. It supports various file formats (e.g. CSV, TXT) by allowing
-    you to specify a delimiter and the number of header lines to skip.
+    you to specify a delimiter and the number of header lines to skip. Comments
+    can be added to the file by starting a line with '//'.
 
     Args:
         filepath (str): Path to the aperture file.
@@ -126,19 +127,27 @@ class FileAperture(PolygonAperture):
             ValueError: If the file cannot be parsed or does not contain at
                 exactly two columns.
         """
-        try:
-            data = np.genfromtxt(filepath, delimiter=delimiter,
-                                 skip_header=skip_header)
-            if data.shape[1] != 2:
-                raise ValueError('File must contain exactly two columns for '
-                                 'x and y coordinates.')
+        encodings = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'utf-32',
+                     'utf-32le', 'utf-32be', 'latin1', 'ascii']
+        data = None
+        for encoding in encodings:
+            try:
+                with open(filepath, 'r', encoding=encoding) as f:
+                    # delimiter defaults to space if not specified
+                    delim = delimiter if delimiter is not None else ' '
+                    data = np.genfromtxt(f, delimiter=delim, comments='//',
+                                         skip_header=skip_header)
+                if data is not None:
+                    break
+            except UnicodeDecodeError:
+                continue
 
-            x = data[:, 0]
-            y = data[:, 1]
-            return x, y
+        if data is None or data.ndim != 2 or data.shape[1] != 2:
+            raise ValueError(f'Error reading aperture file "{filepath}"')
 
-        except Exception as e:
-            raise ValueError(f"Error reading aperture file '{filepath}': {e}")
+        x = data[:, 0]
+        y = data[:, 1]
+        return x, y
 
     def to_dict(self):
         """
