@@ -120,7 +120,7 @@ class Surface3D(Surface2D):
                 the surface geometry.
         """
         has_symmetric_aperture = (
-            isinstance(self.surf.aperture, RadialAperture)
+            type(self.surf.aperture) is RadialAperture
             or self.surf.aperture is None  # "no aperture" is symmetric
             )
         is_symmetric = self.surf.geometry.is_symmetric
@@ -161,24 +161,47 @@ class Surface3D(Surface2D):
         """
         x, y, z = self._compute_sag_3d()
 
+        # Apply aperture filtering to the grid of points
+        if self.surf.aperture is not None:
+            mask = self.surf.aperture.contains(x, y)
+        else:
+            r = np.hypot(x, y)
+            mask = r <= self.extent
+
+        # Create VTK points.
         points = vtk.vtkPoints()
-        for i in range(len(x)):
-            points.InsertNextPoint(x[i], y[i], z[i])
+        num_rows, num_cols = x.shape
 
-        # Create a poly_data object to store the points
-        poly_data = vtk.vtkPolyData()
-        poly_data.SetPoints(points)
+        # Map grid indices to point IDs
+        point_ids = -np.ones((num_rows, num_cols), dtype=int)
+        for i in range(num_rows):
+            for j in range(num_cols):
+                point_ids[i, j] = points.InsertNextPoint(
+                    x[i, j], y[i, j], z[i, j]
+                )
 
-        # Apply Delaunay triangulation to generate surface mesh
-        delaunay = vtk.vtkDelaunay2D()
-        delaunay.SetInputData(poly_data)
-        delaunay.Update()
+        # Create cells (quads) for the surface
+        # Only include a quad if all four of its vertices lie inside aperture
+        cells = vtk.vtkCellArray()
+        for i in range(num_rows - 1):
+            for j in range(num_cols - 1):
+                # Check the four corners of the cell.
+                if (mask[i, j] and mask[i+1, j]
+                        and mask[i+1, j+1] and mask[i, j+1]):
+                    quad = vtk.vtkQuad()
+                    quad.GetPointIds().SetId(0, point_ids[i, j])
+                    quad.GetPointIds().SetId(1, point_ids[i+1, j])
+                    quad.GetPointIds().SetId(2, point_ids[i+1, j+1])
+                    quad.GetPointIds().SetId(3, point_ids[i, j+1])
+                    cells.InsertNextCell(quad)
 
-        # Map the surface to a VTK actor for rendering
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(points)
+        polydata.SetPolys(cells)
+
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(delaunay.GetOutput())
+        mapper.SetInputData(polydata)
 
-        # Configure the actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor = self._configure_material(actor)
@@ -209,45 +232,20 @@ class Surface3D(Surface2D):
 
         return actor
 
-    def _apply_aperture_filter(self, x, y, z):
-        """
-        Applies aperture filtering to a grid of points.
-
-        If the surface has an aperture, then only points within the aperture
-        are retained. Otherwise, a default circular aperture (with
-        radius = extent) is used.
-
-        Args:
-            x, y, z (ndarray): 2D arrays representing the surface grid.
-
-        Returns:
-            tuple: Filtered arrays (x, y, z) containing only points within the
-                aperture.
-        """
-        # TODO: account for holes in the aperture
-        if self.surf.aperture is not None:
-            mask = self.surf.aperture.contains(x, y)
-        else:
-            r = np.hypot(x, y)
-            mask = r <= self.extent
-        return x[mask], y[mask], z[mask]
-
     def _compute_sag_3d(self):
         """
         Computes the 3D sag (surface height) of the optical surface within the
         given extent.
 
         This method calculates the sag of the optical surface over a 2D grid
-        of points within the maximum radial extent defined by the object's
-        extent attribute. The sag is computed using the surface's geometry.
+        of points. The sag is computed using the surface's geometry.
 
         Returns:
             tuple: A tuple containing three numpy arrays (x, y, z)
                 representing the coordinates of the points on the surface
                 within the maximum radial extent.
         """
-        x = np.linspace(-self.extent, self.extent, 128)
+        x = np.linspace(-self.extent, self.extent, 256)
         x, y = np.meshgrid(x, x)
         z = self.surf.geometry.sag(x, y)
-        x, y, z = self._apply_aperture_filter(x, y, z)
         return x, y, z
