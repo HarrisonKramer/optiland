@@ -85,8 +85,8 @@ class TestQuickfocusSolve:
         solve.apply()
 
         # Check that surface has been shifted
-        pos2 = optic.surface_group.positions[-1][0]
-        pos1 = optic.surface_group.positions[-2][0]
+        pos2 = optic.surface_group.positions[-1].astype(float)[0]
+        pos1 = optic.surface_group.positions[-2].astype(float)[0]
 
         assert pos2 - pos1 == pytest.approx(thickness)
 
