@@ -245,7 +245,14 @@ class Surface3D(Surface2D):
                 representing the coordinates of the points on the surface
                 within the maximum radial extent.
         """
-        x = np.linspace(-self.extent, self.extent, 256)
-        x, y = np.meshgrid(x, x)
+        if self.surf.aperture is not None:
+            x_min, x_max, y_min, y_max = self.surf.aperture.extent
+            x = np.linspace(x_min, x_max, 256)
+            y = np.linspace(y_min, y_max, 256)
+            x, y = np.meshgrid(x, y)
+        else:
+            x = np.linspace(-self.extent, self.extent, 256)
+            x, y = np.meshgrid(x, x)
+
         z = self.surf.geometry.sag(x, y)
         return x, y, z
