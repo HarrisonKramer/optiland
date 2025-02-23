@@ -62,6 +62,7 @@ class TestRadialAperture:
     def test_view(self, mock_show):
         aperture = RadialAperture(r_max=5, r_min=2)
         aperture.view()
+        plt.show()
         mock_show.assert_called_once()
         plt.close()
 
