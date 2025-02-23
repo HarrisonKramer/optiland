@@ -3,7 +3,6 @@ import numpy as np
 from optiland import solves
 from optiland.samples.objectives import CookeTriplet
 
-
 class TestMarginalRayHeightSolve:
     def test_marginal_ray_height_solve_constructor(self):
         optic = CookeTriplet()
@@ -71,6 +70,57 @@ class TestMarginalRayHeightSolve:
 
         with pytest.raises(ValueError):
             solves.BaseSolve.from_dict(optic, data)
+
+class TestQuickfocusSolve:
+    def test_quick_focus_solve_constructor(self):
+        optic = CookeTriplet()
+        solve = solves.QuickFocusSolve(optic)
+
+        assert solve.optic == optic
+
+    def test_quick_focus_solve_apply(self):
+        optic = CookeTriplet()
+        thickness = 42.2652333372244
+        solve = solves.QuickFocusSolve(optic)
+        solve.apply()
+
+        # Check that surface has been shifted
+        pos2 = optic.surface_group.positions[-1].astype(float)[0]
+        pos1 = optic.surface_group.positions[-2].astype(float)[0]
+
+        assert pos2 - pos1 == pytest.approx(thickness)
+
+    def test_to_dict(self):
+        optic = CookeTriplet()
+        thickness = 42.20778
+
+        solve = solves.QuickFocusSolve(optic)
+        data = solve.to_dict()
+
+        assert data['type'] == 'QuickFocusSolve'
+        assert data['thickness'] == thickness
+
+    def test_from_dict(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'QuickFocusSolve',
+            'thickness': 42.2652333372244
+        }
+
+        solve = solves.BaseSolve.from_dict(optic, data)
+
+        assert solve.thickness == data['thickness']
+
+    def test_from_dict_invalid_type(self):
+        optic = CookeTriplet()
+        data = {
+            'type': 'Invalid',
+            'thickness': 42.2652333372244
+        }
+
+        with pytest.raises(ValueError):
+            solves.BaseSolve.from_dict(optic, data)
+
 
 
 class TestSolveFactory:
