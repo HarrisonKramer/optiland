@@ -216,7 +216,7 @@ class Optic:
         positions[surface_number+1:] += delta_t
         positions -= positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.surface_group.surfaces):
-            surface.geometry.cs.z = positions[k]
+            surface.geometry.cs.z = float(positions[k])
 
     def set_index(self, value, surface_number):
         """
