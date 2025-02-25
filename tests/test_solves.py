@@ -90,7 +90,14 @@ class TestQuickfocusSolve:
         pos2 = optic.surface_group.positions[-1].astype(float)[0]
         pos1 = optic.surface_group.positions[-2].astype(float)[0]
 
-        assert pos2 - pos1 == pytest.approx(thickness)
+        assert solve.thickness == pytest.approx(thickness, rel=1e-3)
+
+        # Implementing the extreme shift case.
+        optic.surface_group.surfaces[-1].geometry.cs.z += 1000
+        solve = solves.QuickFocusSolve(optic)
+        solve.apply()
+        
+        assert solve.thickness == pytest.approx(thickness, rel=1e-1)
 
     def test_to_dict(self):
         optic = CookeTriplet()
