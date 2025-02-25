@@ -174,7 +174,7 @@ class QuickFocusSolve(BaseSolve):
         
     def apply(self):
         """Applies QuickFocusSolve to the optic"""
-        t_opt = self.optimal_focus_distance()
+        t_opt = self.optimal_focus_distance(wavelength=self.optic.wavelengths.primary_wavelength.value)
 
         self.optic.surface_group.surfaces[-1].geometry.cs.z = t_opt
 
