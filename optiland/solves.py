@@ -9,8 +9,7 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-from optiland.optimization import OptimizationProblem, OptimizerGeneric
-from numpy import inf
+from numpy import mean
 
 class BaseSolve(ABC):
     """
@@ -124,27 +123,62 @@ class QuickFocusSolve(BaseSolve):
     def __init__(self, optic):
         self.optic = optic
         self.num_surfaces = self.optic.surface_group.num_surfaces
-        self.last_surf_idx = self.optic.surface_group.num_surfaces - 2 # Index of the last surface before the image surface.
         if self.num_surfaces > 2:
-            pos2 = self.optic.surface_group.positions[-1].astype(float)[0]
-            pos1 = self.optic.surface_group.positions[-2].astype(float)[0]
-            self.thickness = pos2 - pos1
+            self.pos2 = self.optic.surface_group.positions[-1].astype(float)[0]
+            self.pos1 = self.optic.surface_group.positions[-2].astype(float)[0]
+            self.thickness = self.pos2 - self.pos1
         elif self.num_surfaces <= 2:
             raise ValueError('Can not optimize for an empty optical system')
         
-    def apply(self):
-        problem = OptimizationProblem()
-        for wave in self.optic.wavelengths.get_wavelengths():
-            for field in self.optic.fields.get_field_coords():
-                input_data = {'optic': self.optic, 'Hx': field[0], 'Hy': field[1], 'num_rays': 3, 'wavelength': wave, 'distribution': 'gaussian_quad'}
-                problem.add_operand(operand_type='OPD_difference', target=0, weight=1, input_data=input_data)
+    def optimal_focus_distance(self, Hx=0, Hy=0, wavelength=0.55, num_rays=5, distribution='hexapolar'):
+        """
+        Compute the optimal location of the image plane where the RMS spot size is minimized.
+        This is based on solving the quadratic equation that describes the RMS spot size as a function
+        of the propagation distance.
+        
+        Args:
+            ...
+            
+        Returns:
+            t_opt : The propagation distance from the image plane that minimizes the RMS spot size.
+        """
+        # Trace rays to the image plane
+        rays = self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength, num_rays=num_rays, distribution=distribution)
 
-        problem.add_variable(self.optic, 'thickness', surface_number=self.last_surf_idx, min_val=0, max_val=1000)
-        optimizer = OptimizerGeneric(problem)
-        optimizer.optimize()
-        pos2_optimized = self.optic.surface_group.positions[-1].astype(float)[0]
-        pos1_optimized = self.optic.surface_group.positions[-2].astype(float)[0]
-        self.thickness = pos2_optimized - pos1_optimized
+        # Compute centroids at t = 0 (i.e., on image plane)
+        x0 = mean(rays.x)
+        y0 = mean(rays.y)
+        
+        # Compute average direction cosines
+        L_avg = mean(rays.L)
+        M_avg = mean(rays.M)
+        
+        # Differences from the means
+        delta_x = rays.x - x0
+        delta_y = rays.y - y0
+        delta_L = rays.L - L_avg
+        delta_M = rays.M - M_avg
+        
+        # Compute coefficients A and B from the quadratic:
+        # f(t) = A*t^2 + 2B*t + C --> we want to find the minimum of f(t)
+        A = mean(delta_L**2 + delta_M**2)
+        B = mean(delta_x * delta_L + delta_y * delta_M)
+        
+        # Check to avoid division by zero if A is zero (i.e., no dependence on t)
+        if A == 0:
+            return 0.0
+        
+        t_opt = -B / A
+        z_focus = mean(rays.z + t_opt * rays.N)
+        return z_focus
+        
+    def apply(self):
+        """Applies QuickFocusSolve to the optic"""
+        t_opt = self.optimal_focus_distance()
+
+        self.optic.surface_group.surfaces[-1].geometry.cs.z = t_opt
+
+        self.thickness = self.pos1 - t_opt
 
     def to_dict(self):
         """
@@ -166,6 +200,7 @@ class QuickFocusSolve(BaseSolve):
 
         Args:
             optic (Optic): The optic object.
+            data (dict): The dictionary representation of the solve.
 
         Returns:
             QuickFocusSolve: The solve.

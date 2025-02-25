@@ -74,13 +74,15 @@ class TestMarginalRayHeightSolve:
 class TestQuickfocusSolve:
     def test_quick_focus_solve_constructor(self):
         optic = CookeTriplet()
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
         solve = solves.QuickFocusSolve(optic)
 
         assert solve.optic == optic
 
     def test_quick_focus_solve_apply(self):
         optic = CookeTriplet()
-        thickness = 42.2652333372244
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        thickness = 42.21812063592369
         solve = solves.QuickFocusSolve(optic)
         solve.apply()
 
@@ -92,7 +94,8 @@ class TestQuickfocusSolve:
 
     def test_to_dict(self):
         optic = CookeTriplet()
-        thickness = 42.20778
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        thickness = 32.20778     # The thickness before optimization (.apply is not called)
 
         solve = solves.QuickFocusSolve(optic)
         data = solve.to_dict()
@@ -102,9 +105,10 @@ class TestQuickfocusSolve:
 
     def test_from_dict(self):
         optic = CookeTriplet()
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
         data = {
             'type': 'QuickFocusSolve',
-            'thickness': 42.2652333372244
+            'thickness': 42.21812063592369
         }
 
         solve = solves.BaseSolve.from_dict(optic, data)
@@ -115,7 +119,7 @@ class TestQuickfocusSolve:
         optic = CookeTriplet()
         data = {
             'type': 'Invalid',
-            'thickness': 42.2652333372244
+            'thickness': 42.21812063592369
         }
 
         with pytest.raises(ValueError):
