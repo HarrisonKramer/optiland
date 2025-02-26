@@ -90,49 +90,18 @@ class TestQuickfocusSolve:
         pos2 = optic.surface_group.positions[-1].astype(float)[0]
         pos1 = optic.surface_group.positions[-2].astype(float)[0]
 
-        assert solve.thickness == pytest.approx(thickness, rel=1e-3)
+        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
 
         # Implementing the extreme shift case.
         optic.surface_group.surfaces[-1].geometry.cs.z += 1000
         solve = solves.QuickFocusSolve(optic)
         solve.apply()
-        
-        assert solve.thickness == pytest.approx(thickness, rel=1e-1)
 
-    def test_to_dict(self):
-        optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
-        thickness = 32.20778     # The thickness before optimization (.apply is not called)
+        # Check that surface has been shifted
+        pos2 = optic.surface_group.positions[-1].astype(float)[0]
+        pos1 = optic.surface_group.positions[-2].astype(float)[0]
 
-        solve = solves.QuickFocusSolve(optic)
-        data = solve.to_dict()
-
-        assert data['type'] == 'QuickFocusSolve'
-        assert data['thickness'] == thickness
-
-    def test_from_dict(self):
-        optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
-        data = {
-            'type': 'QuickFocusSolve',
-            'thickness': 42.21812063592369
-        }
-
-        solve = solves.BaseSolve.from_dict(optic, data)
-
-        assert solve.thickness == data['thickness']
-
-    def test_from_dict_invalid_type(self):
-        optic = CookeTriplet()
-        data = {
-            'type': 'Invalid',
-            'thickness': 42.21812063592369
-        }
-
-        with pytest.raises(ValueError):
-            solves.BaseSolve.from_dict(optic, data)
-
-
+        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
 
 class TestSolveFactory:
     def test_create_solve(self):

@@ -9,7 +9,7 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-from numpy import mean
+from numpy import mean, errstate, where, nan, nanmean
 
 class BaseSolve(ABC):
     """
@@ -123,14 +123,10 @@ class QuickFocusSolve(BaseSolve):
     def __init__(self, optic):
         self.optic = optic
         self.num_surfaces = self.optic.surface_group.num_surfaces
-        if self.num_surfaces > 2:
-            self.pos2 = self.optic.surface_group.positions[-1].astype(float)[0]
-            self.pos1 = self.optic.surface_group.positions[-2].astype(float)[0]
-            self.thickness = self.pos2 - self.pos1
-        elif self.num_surfaces <= 2:
+        if self.num_surfaces <= 2:
             raise ValueError('Can not optimize for an empty optical system')
         
-    def optimal_focus_distance(self, Hx=0, Hy=0, wavelength=0.55, num_rays=5, distribution='hexapolar', max_iter=50_000):
+    def optimal_focus_distance(self, Hx=0, Hy=0, wavelength=0.55, num_rays=5, distribution='hexapolar'):
         """
         Compute the optimal location of the image plane where the RMS spot size is minimized.
         This is based on solving the quadratic equation that describes the RMS spot size as a function
@@ -143,77 +139,24 @@ class QuickFocusSolve(BaseSolve):
             t_opt : The propagation distance from the image plane that minimizes the RMS spot size.
         """
         # Trace rays to the image plane
-        rays = self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength, num_rays=num_rays, distribution=distribution)
-        z_focus_old = mean(rays.z)
-        for iter in range(max_iter):
-            # Compute centroids at t = 0 (i.e., on image plane)
-            x0 = mean(rays.x)
-            y0 = mean(rays.y)
-            
-            # Compute average direction cosines
-            L_avg = mean(rays.L)
-            M_avg = mean(rays.M)
-            
-            # Differences from the means
-            delta_x = rays.x - x0
-            delta_y = rays.y - y0
-            delta_L = rays.L - L_avg
-            delta_M = rays.M - M_avg
-            
-            # Compute coefficients A and B from the quadratic:
-            # f(t) = A*t^2 + 2B*t + C --> we want to find the minimum of f(t)
-            A = mean(delta_L**2 + delta_M**2)
-            B = mean(delta_x * delta_L + delta_y * delta_M)
-            
-            # Check to avoid division by zero if A is zero (i.e., no dependence on t)
-            if A == 0:
-                return 0.0
-            
-            t_opt = -B / A
-            z_focus = mean(rays.z + t_opt * rays.N)
-            if abs(z_focus - z_focus_old) <= 1e-6:
-                break
-            rays.propagate(t_opt)
-            z_focus_old = z_focus
+        # Trace rays to the image plane
 
+        rays = self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength, num_rays=num_rays, distribution=distribution)
+
+        A = rays.L**2 + rays.M**2
+        B = rays.L * rays.x + rays.M * rays.y
+        with errstate(divide='ignore', invalid='ignore'):
+            t_opt = where(A != 0, -B/A, nan)
+        z_focus = nanmean(rays.z + t_opt * rays.N)
+        
         return z_focus
         
     def apply(self):
         """Applies QuickFocusSolve to the optic"""
         z_focus = self.optimal_focus_distance(wavelength=self.optic.wavelengths.primary_wavelength.value)
-
+        
         self.optic.surface_group.surfaces[-1].geometry.cs.z = z_focus
 
-        self.thickness = z_focus - self.pos1 
-
-    def to_dict(self):
-        """
-        Returns a dictionary representation of the solve.
-
-        Returns:
-            dict: A dictionary representation of the solve.
-        """
-        solve_dict = super().to_dict()
-        solve_dict.update({
-            'thickness': float(self.thickness)
-        })
-        return solve_dict
-
-    @classmethod
-    def from_dict(cls, optic, data):
-        """
-        Creates a QuickFocusSolve from a dictionary representation.
-
-        Args:
-            optic (Optic): The optic object.
-            data (dict): The dictionary representation of the solve.
-
-        Returns:
-            QuickFocusSolve: The solve.
-        """
-        instance = cls(optic)
-        instance.thickness = data['thickness']
-        return instance
 
 class SolveFactory:
     """
