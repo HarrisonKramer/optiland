@@ -9,7 +9,7 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-
+from numpy import mean, errstate, where, nan, nanmean
 
 class BaseSolve(ABC):
     """
@@ -60,8 +60,7 @@ class BaseSolve(ABC):
             raise ValueError(f'Unknown solve type: {solve_type}')
         solve_class = BaseSolve._registry[data['type']]
         return solve_class.from_dict(optic, data)
-
-
+    
 class MarginalRayHeightSolve(BaseSolve):
     """
     Initializes a MarginalRayHeightSolve object.
@@ -113,6 +112,51 @@ class MarginalRayHeightSolve(BaseSolve):
         """
         return cls(optic, data['surface_idx'], data['height'])
 
+class QuickFocusSolve(BaseSolve):
+    """ Quick Focus
+    Args:
+        optic (Optic): The optic object.
+
+    Raises:
+            ValueError: If the optical system is not defined.
+    """
+    def __init__(self, optic):
+        self.optic = optic
+        self.num_surfaces = self.optic.surface_group.num_surfaces
+        if self.num_surfaces <= 2:
+            raise ValueError('Can not optimize for an empty optical system')
+        
+    def optimal_focus_distance(self, Hx=0, Hy=0, wavelength=0.55, num_rays=5, distribution='hexapolar'):
+        """
+        Compute the optimal location of the image plane where the RMS spot size is minimized.
+        This is based on solving the quadratic equation that describes the RMS spot size as a function
+        of the propagation distance.
+        
+        Args:
+            ...
+            
+        Returns:
+            t_opt : The propagation distance from the image plane that minimizes the RMS spot size.
+        """
+        # Trace rays to the image plane
+        # Trace rays to the image plane
+
+        rays = self.optic.trace(Hx=Hx, Hy=Hy, wavelength=wavelength, num_rays=num_rays, distribution=distribution)
+
+        A = rays.L**2 + rays.M**2
+        B = rays.L * rays.x + rays.M * rays.y
+        with errstate(divide='ignore', invalid='ignore'):
+            t_opt = where(A != 0, -B/A, nan)
+        z_focus = nanmean(rays.z + t_opt * rays.N)
+        
+        return z_focus
+        
+    def apply(self):
+        """Applies QuickFocusSolve to the optic"""
+        z_focus = self.optimal_focus_distance(wavelength=self.optic.wavelengths.primary_wavelength.value)
+        
+        self.optic.surface_group.surfaces[-1].geometry.cs.z = z_focus
+
 
 class SolveFactory:
     """
@@ -126,7 +170,8 @@ class SolveFactory:
             based on the given solve type.
     """
     _solve_map = {
-        'marginal_ray_height': MarginalRayHeightSolve
+        'marginal_ray_height': MarginalRayHeightSolve,
+        'quick_focus': QuickFocusSolve
     }
 
     @staticmethod

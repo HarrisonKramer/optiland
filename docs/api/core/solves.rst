@@ -10,6 +10,7 @@
    
       BaseSolve
       MarginalRayHeightSolve
+      QuickFocusSolve
       SolveFactory
       SolveManager
    
