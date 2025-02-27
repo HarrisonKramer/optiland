@@ -3,7 +3,6 @@ import numpy as np
 from optiland import solves
 from optiland.samples.objectives import CookeTriplet
 
-
 class TestMarginalRayHeightSolve:
     def test_marginal_ray_height_solve_constructor(self):
         optic = CookeTriplet()
@@ -72,6 +71,37 @@ class TestMarginalRayHeightSolve:
         with pytest.raises(ValueError):
             solves.BaseSolve.from_dict(optic, data)
 
+class TestQuickfocusSolve:
+    def test_quick_focus_solve_constructor(self):
+        optic = CookeTriplet()
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        solve = solves.QuickFocusSolve(optic)
+
+        assert solve.optic == optic
+
+    def test_quick_focus_solve_apply(self):
+        optic = CookeTriplet()
+        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        thickness = 42.21812063592369
+        solve = solves.QuickFocusSolve(optic)
+        solve.apply()
+
+        # Check that surface has been shifted
+        pos2 = optic.surface_group.positions[-1].astype(float)[0]
+        pos1 = optic.surface_group.positions[-2].astype(float)[0]
+
+        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
+
+        # Implementing the extreme shift case.
+        optic.surface_group.surfaces[-1].geometry.cs.z += 1000
+        solve = solves.QuickFocusSolve(optic)
+        solve.apply()
+
+        # Check that surface has been shifted
+        pos2 = optic.surface_group.positions[-1].astype(float)[0]
+        pos1 = optic.surface_group.positions[-2].astype(float)[0]
+
+        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
 
 class TestSolveFactory:
     def test_create_solve(self):
