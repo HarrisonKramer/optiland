@@ -46,13 +46,14 @@ class SurfaceFactory:
         self._use_absolute_cs = False
         self._last_surface = None  # placeholder for last surface object
 
-    def create_surface(self, surface_type, index, is_stop, material,
+    def create_surface(self, surface_type, comment, index, is_stop, material,
                        **kwargs):
         """
         Create a surface object based on the given parameters.
 
         Args:
             surface_type (str): The type of surface to create.
+            comment (str): A comment for the surface.
             index (int): The index of the surface.
             is_stop (bool): Indicates whether the surface is a stop surface.
             material (str): The material of the surface.
@@ -117,7 +118,7 @@ class SurfaceFactory:
         geometry = config['geometry'](cs, **filtered_params)
 
         if index == 0:
-            return ObjectSurface(geometry, material_post)
+            return ObjectSurface(geometry, material_post, comment)
 
         # Filter out unexpected surface parameters
         common_params = ['aperture']
@@ -126,7 +127,7 @@ class SurfaceFactory:
 
         return Surface(geometry, material_pre, material_post, is_stop,
                        is_reflective=is_reflective, coating=coating,
-                       bsdf=bsdf, surface_type=surface_type, **filtered_kwargs)
+                       bsdf=bsdf, surface_type=surface_type, comment=comment, **filtered_kwargs)
 
     def _configure_cs(self, index, **kwargs):
         """

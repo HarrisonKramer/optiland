@@ -50,6 +50,15 @@ class TestOptic:
         self.optic.set_field_type('angle')
         assert self.optic.field_type == 'angle'
 
+    def test_set_comment(self):
+        self.optic.add_surface(index=0, surface_type='standard',
+                               material='SF11', thickness=5, comment="Object surface")
+        self.optic.add_surface(index=1, surface_type='standard',
+                               material='SF11', thickness=5, comment="First surface")
+        
+        assert self.optic.surface_group.surfaces[0].comment == "Object surface"
+        assert self.optic.surface_group.surfaces[1].comment == "First surface"
+
     def test_set_radius(self):
         self.optic.add_surface(index=0, surface_type='standard',
                                material='SF11', thickness=5)
