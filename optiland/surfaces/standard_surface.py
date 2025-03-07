@@ -45,6 +45,7 @@ class Surface:
                  bsdf: BaseBSDF = None,
                  is_reflective: bool = False,
                  surface_type: str = None,
+                 comment: str = "",
                  ):
         self.geometry = geometry
         self.material_pre = material_pre
@@ -56,6 +57,7 @@ class Surface:
         self.bsdf = bsdf
         self.is_reflective = is_reflective
         self.surface_type = surface_type
+        self.comment = comment
 
         self.reset()
 

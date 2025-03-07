@@ -158,7 +158,7 @@ class SurfaceGroup:
             surface.trace(rays)
         return rays
 
-    def add_surface(self, new_surface=None, surface_type='standard',
+    def add_surface(self, new_surface=None, surface_type='standard', comment='',
                     index=None, is_stop=False, material='air', **kwargs):
         """
         Adds a new surface to the list of surfaces.
@@ -186,7 +186,7 @@ class SurfaceGroup:
                 raise ValueError('Must define index when defining surface.')
 
             new_surface = self.surface_factory.create_surface(
-                surface_type, index, is_stop, material, **kwargs
+                surface_type, comment, index, is_stop, material, **kwargs
                 )
 
         if new_surface.is_stop:
