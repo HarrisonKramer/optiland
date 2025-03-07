@@ -27,13 +27,14 @@ class ObjectSurface(Surface):
             far away.
     """
 
-    def __init__(self, geometry, material_post):
+    def __init__(self, geometry, material_post, comment=''):
         super().__init__(
             geometry=geometry,
             material_pre=material_post,
             material_post=material_post,
             is_stop=False,
-            aperture=None
+            aperture=None,
+            comment=comment,
         )
 
     @property

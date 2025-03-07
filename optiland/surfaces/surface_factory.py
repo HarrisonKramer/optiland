@@ -117,7 +117,7 @@ class SurfaceFactory:
         geometry = config['geometry'](cs, **filtered_params)
 
         if index == 0:
-            return ObjectSurface(geometry, material_post)
+            return ObjectSurface(geometry, material_post, comment)
 
         # Filter out unexpected surface parameters
         common_params = ['aperture']
