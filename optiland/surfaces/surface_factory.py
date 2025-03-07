@@ -53,6 +53,7 @@ class SurfaceFactory:
 
         Args:
             surface_type (str): The type of surface to create.
+            comment (str): A comment for the surface.
             index (int): The index of the surface.
             is_stop (bool): Indicates whether the surface is a stop surface.
             material (str): The material of the surface.

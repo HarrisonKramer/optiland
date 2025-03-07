@@ -32,6 +32,7 @@ class Surface:
             surface. Defaults to None.
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
+        comment (str, optional): A comment for the surface. Defaults to ''.
     """
     _registry = {}  # registry for all surfaces
 
@@ -45,7 +46,7 @@ class Surface:
                  bsdf: BaseBSDF = None,
                  is_reflective: bool = False,
                  surface_type: str = None,
-                 comment: str = "",
+                 comment: str = '',
                  ):
         self.geometry = geometry
         self.material_pre = material_pre

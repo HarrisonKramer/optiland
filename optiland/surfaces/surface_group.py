@@ -168,6 +168,7 @@ class SurfaceGroup:
                 provided, a new surface will be created based on the other
                 arguments.
             surface_type (str, optional): The type of surface to create.
+            comment (str, optional): A comment for the surface. Defaults to ''.
             index (int, optional): The index at which to insert the new
                 surface. If not provided, the surface will be appended to the
                 end of the list.
