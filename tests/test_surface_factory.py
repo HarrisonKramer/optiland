@@ -19,6 +19,7 @@ class TestSurfaceFactory:
     def test_create_surface_standard(self):
         surface = self.factory.create_surface(
             surface_type='standard',
+            comment='Standard',
             index=1,
             is_stop=False,
             material='air',
@@ -35,6 +36,7 @@ class TestSurfaceFactory:
     def test_create_surface_even_asphere(self):
         surface = self.factory.create_surface(
             surface_type='even_asphere',
+            comment='Even Asphere',
             index=1,
             is_stop=False,
             material='air',
@@ -53,6 +55,7 @@ class TestSurfaceFactory:
     def test_create_surface_odd_asphere(self):
         surface = self.factory.create_surface(
             surface_type='odd_asphere',
+            comment='Odd Asphere',
             index=1,
             is_stop=False,
             material='air',
@@ -71,6 +74,7 @@ class TestSurfaceFactory:
     def test_create_surface_polynomial(self):
         surface = self.factory.create_surface(
             surface_type='polynomial',
+            comment='Polynomial',
             index=1,
             is_stop=False,
             material='air',
@@ -93,6 +97,7 @@ class TestSurfaceFactory:
     def test_create_surface_chebyshev(self):
         surface = self.factory.create_surface(
             surface_type='chebyshev',
+            comment='Chebyshev',
             index=1,
             is_stop=False,
             material='air',
@@ -119,6 +124,7 @@ class TestSurfaceFactory:
     def test_create_surface_object(self):
         surface = self.factory.create_surface(
             surface_type='standard',
+            comment='Object',
             index=0,
             is_stop=False,
             material='air',
@@ -135,6 +141,7 @@ class TestSurfaceFactory:
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type='invalid',
+                comment='Invalid',
                 index=1,
                 is_stop=False,
                 material='air',
@@ -145,6 +152,7 @@ class TestSurfaceFactory:
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type='standard',
+                comment='Invalid',
                 index=42,
                 is_stop=False,
                 material='air',
@@ -154,6 +162,7 @@ class TestSurfaceFactory:
     def test_create_surface_with_coating(self):
         surface = self.factory.create_surface(
             surface_type='standard',
+            comment='Coating',
             index=1,
             is_stop=False,
             material='air',
@@ -168,6 +177,7 @@ class TestSurfaceFactory:
     def test_create_surface_with_fresnel(self):
         surface = self.factory.create_surface(
             surface_type='standard',
+            comment='Fresnel',
             index=1,
             is_stop=False,
             material='air',
@@ -183,6 +193,7 @@ class TestSurfaceFactory:
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type='standard',
+                comment='Invalid',
                 index=1,
                 is_stop=False,
                 material='air',
@@ -193,6 +204,7 @@ class TestSurfaceFactory:
     def test_absolute_coordinates(self):
         surface = self.factory.create_surface(
             surface_type='standard',
+            comment='Absolute',
             index=1,
             is_stop=False,
             material='air',
@@ -213,6 +225,7 @@ class TestSurfaceFactory:
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type='standard',
+                comment='Invalid',
                 index=1,
                 is_stop=False,
                 material='air',

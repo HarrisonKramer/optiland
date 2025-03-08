@@ -279,6 +279,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -290,6 +291,7 @@ class TestLensInfoViewer:
         lens.info()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -302,6 +304,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -321,6 +324,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -336,6 +340,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -357,6 +362,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out
@@ -371,6 +377,7 @@ class TestLensInfoViewer:
         viewer.view()
         captured = capsys.readouterr()
         assert 'Type' in captured.out
+        assert 'Comment' in captured.out
         assert 'Radius' in captured.out
         assert 'Thickness' in captured.out
         assert 'Material' in captured.out

@@ -21,19 +21,22 @@ class ObjectSurface(Surface):
         geometry (Geometry): The geometry of the surface.
         material_post (Material): The material of the surface after
             interaction.
+        comment (str, optional): A comment for the surface. Defaults 
+            to ''.
 
     Attributes:
         is_infinite (bool): Indicates whether the surface is infinitely
             far away.
     """
 
-    def __init__(self, geometry, material_post):
+    def __init__(self, geometry, material_post, comment=''):
         super().__init__(
             geometry=geometry,
             material_pre=material_post,
             material_post=material_post,
             is_stop=False,
-            aperture=None
+            aperture=None,
+            comment=comment,
         )
 
     @property
