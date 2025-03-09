@@ -97,7 +97,7 @@ class Optic:
             return self.polarization
 
     def add_surface(self, new_surface=None, surface_type='standard',
-                    index=None, is_stop=False, material='air', **kwargs):
+                    comment='', index=None, is_stop=False, material='air', **kwargs):
         """
         Adds a new surface to the optic.
 
@@ -119,8 +119,8 @@ class Optic:
             ValueError: If index is not provided when defining a new surface.
         """
         self.surface_group.add_surface(
-            new_surface=new_surface, surface_type=surface_type, index=index,
-            is_stop=is_stop, material=material, **kwargs
+            new_surface=new_surface, surface_type=surface_type, comment=comment,
+            index=index, is_stop=is_stop, material=material, **kwargs
             )
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
@@ -216,7 +216,7 @@ class Optic:
         positions[surface_number+1:] += delta_t
         positions -= positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.surface_group.surfaces):
-            surface.geometry.cs.z = positions[k]
+            surface.geometry.cs.z = float(positions[k])
 
     def set_index(self, value, surface_number):
         """

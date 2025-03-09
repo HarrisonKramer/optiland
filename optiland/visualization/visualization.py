@@ -221,6 +221,7 @@ class LensInfoViewer:
             if surf.is_stop:
                 surf_type[-1] = 'Stop - ' + surf_type[-1]
 
+        comments = [surf.comment for surf in self.optic.surface_group.surfaces]
         radii = self.optic.surface_group.radii
         thicknesses = np.diff(self.optic.surface_group.positions.ravel(),
                               append=np.nan)
@@ -250,6 +251,7 @@ class LensInfoViewer:
 
         df = pd.DataFrame({
             'Type': surf_type,
+            'Comment': comments,
             'Radius': radii,
             'Thickness': thicknesses,
             'Material': mat,

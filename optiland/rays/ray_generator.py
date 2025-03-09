@@ -117,7 +117,7 @@ class RayGenerator:
             offset = self._get_starting_z_offset()
 
             # x, y, z positions of ray starting points
-            x = np.tan(np.radians(field_x)) * (offset + EPL)
+            x = -np.tan(np.radians(field_x)) * (offset + EPL)
             y = -np.tan(np.radians(field_y)) * (offset + EPL)
             z = self.optic.surface_group.positions[1] - offset
 
@@ -133,7 +133,7 @@ class RayGenerator:
             elif self.optic.field_type == 'angle':
                 EPL = self.optic.paraxial.EPL()
                 z = self.optic.surface_group.positions[0]
-                x = np.tan(np.radians(field_x)) * (EPL - z)
+                x = -np.tan(np.radians(field_x)) * (EPL - z)
                 y = -np.tan(np.radians(field_y)) * (EPL - z)
 
             x0 = np.full_like(Px, x)

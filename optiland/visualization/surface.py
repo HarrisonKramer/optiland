@@ -13,6 +13,7 @@ from optiland.visualization.utils import (
     transform_3d,
     revolve_contour
 )
+from optiland.physical_apertures import RadialAperture
 
 
 class Surface2D:
@@ -118,7 +119,12 @@ class Surface3D(Surface2D):
             actor: The surface actor, either symmetric or asymmetric, based on
                 the surface geometry.
         """
-        if self.surf.geometry.is_symmetric:
+        has_symmetric_aperture = (
+            type(self.surf.aperture) is RadialAperture
+            or self.surf.aperture is None  # "no aperture" is symmetric
+            )
+        is_symmetric = self.surf.geometry.is_symmetric
+        if is_symmetric and has_symmetric_aperture:
             actor = self._get_symmetric_surface()
         else:
             actor = self._get_asymmetric_surface()
@@ -155,24 +161,47 @@ class Surface3D(Surface2D):
         """
         x, y, z = self._compute_sag_3d()
 
+        # Apply aperture filtering to the grid of points
+        if self.surf.aperture is not None:
+            mask = self.surf.aperture.contains(x, y)
+        else:
+            r = np.hypot(x, y)
+            mask = r <= self.extent
+
+        # Create VTK points.
         points = vtk.vtkPoints()
-        for i in range(len(x)):
-            points.InsertNextPoint(x[i], y[i], z[i])
+        num_rows, num_cols = x.shape
 
-        # Create a poly_data object to store the points
-        poly_data = vtk.vtkPolyData()
-        poly_data.SetPoints(points)
+        # Map grid indices to point IDs
+        point_ids = -np.ones((num_rows, num_cols), dtype=int)
+        for i in range(num_rows):
+            for j in range(num_cols):
+                point_ids[i, j] = points.InsertNextPoint(
+                    x[i, j], y[i, j], z[i, j]
+                )
 
-        # Apply Delaunay triangulation to generate surface mesh
-        delaunay = vtk.vtkDelaunay2D()
-        delaunay.SetInputData(poly_data)
-        delaunay.Update()
+        # Create cells (quads) for the surface
+        # Only include a quad if all four of its vertices lie inside aperture
+        cells = vtk.vtkCellArray()
+        for i in range(num_rows - 1):
+            for j in range(num_cols - 1):
+                # Check the four corners of the cell.
+                if (mask[i, j] and mask[i+1, j]
+                        and mask[i+1, j+1] and mask[i, j+1]):
+                    quad = vtk.vtkQuad()
+                    quad.GetPointIds().SetId(0, point_ids[i, j])
+                    quad.GetPointIds().SetId(1, point_ids[i+1, j])
+                    quad.GetPointIds().SetId(2, point_ids[i+1, j+1])
+                    quad.GetPointIds().SetId(3, point_ids[i, j+1])
+                    cells.InsertNextCell(quad)
 
-        # Map the surface to a VTK actor for rendering
+        polydata = vtk.vtkPolyData()
+        polydata.SetPoints(points)
+        polydata.SetPolys(cells)
+
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(delaunay.GetOutput())
+        mapper.SetInputData(polydata)
 
-        # Configure the actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor = self._configure_material(actor)
@@ -209,22 +238,21 @@ class Surface3D(Surface2D):
         given extent.
 
         This method calculates the sag of the optical surface over a 2D grid
-        of points within the maximum radial extent defined by the object's
-        extent attribute. The sag is computed using the surface's geometry.
+        of points. The sag is computed using the surface's geometry.
 
         Returns:
             tuple: A tuple containing three numpy arrays (x, y, z)
                 representing the coordinates of the points on the surface
                 within the maximum radial extent.
         """
-        x = np.linspace(-self.extent, self.extent, 128)
-        x, y = np.meshgrid(x, x)
+        if self.surf.aperture is not None:
+            x_min, x_max, y_min, y_max = self.surf.aperture.extent
+            x = np.linspace(x_min, x_max, 256)
+            y = np.linspace(y_min, y_max, 256)
+            x, y = np.meshgrid(x, y)
+        else:
+            x = np.linspace(-self.extent, self.extent, 256)
+            x, y = np.meshgrid(x, x)
+
         z = self.surf.geometry.sag(x, y)
-        r = np.hypot(x, y)
-
-        in_aperture = r <= self.extent
-        x = x[in_aperture]
-        y = y[in_aperture]
-        z = z[in_aperture]
-
         return x, y, z
