@@ -16,6 +16,7 @@ import vtk
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
+from ipyvtklink.viewer import ViewInteractiveWidget
 
 plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
 
@@ -122,7 +123,7 @@ class OpticViewer3D:
 
     def view(self, fields='all', wavelengths='primary', num_rays=24,
              distribution='ring', figsize=(1200, 800), dark_mode=False,
-             reference=None):
+             reference=None, is_jupyter=False):
         """
         Visualizes the optical system in 3D.
 
@@ -141,6 +142,8 @@ class OpticViewer3D:
                 Defaults to False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            is_jupyter (bool, optional): If the plot is required to be plotted 
+                inside the jupyter notebook/lab.
         """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
@@ -178,8 +181,13 @@ class OpticViewer3D:
         renderer.GetActiveCamera().Elevation(0)
         renderer.GetActiveCamera().Azimuth(150)
 
-        self.ren_win.Render()
-        self.iren.Start()
+        if is_jupyter:
+            print("Jupyter branch entered")
+            widget = ViewInteractiveWidget(self.ren_win)
+            return widget
+        else:
+            self.ren_win.Render()
+            self.iren.Start()
 
 
 class LensInfoViewer:
@@ -221,7 +229,6 @@ class LensInfoViewer:
             if surf.is_stop:
                 surf_type[-1] = 'Stop - ' + surf_type[-1]
 
-        comments = [surf.comment for surf in self.optic.surface_group.surfaces]
         radii = self.optic.surface_group.radii
         thicknesses = np.diff(self.optic.surface_group.positions.ravel(),
                               append=np.nan)
@@ -251,7 +258,6 @@ class LensInfoViewer:
 
         df = pd.DataFrame({
             'Type': surf_type,
-            'Comment': comments,
             'Radius': radii,
             'Thickness': thicknesses,
             'Material': mat,
