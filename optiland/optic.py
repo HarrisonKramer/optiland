@@ -97,7 +97,7 @@ class Optic:
             return self.polarization
 
     def add_surface(self, new_surface=None, surface_type='standard',
-                    comment='', index=None, is_stop=False, material='air', **kwargs):
+                    index=None, is_stop=False, material='air', **kwargs):
         """
         Adds a new surface to the optic.
 
@@ -119,8 +119,8 @@ class Optic:
             ValueError: If index is not provided when defining a new surface.
         """
         self.surface_group.add_surface(
-            new_surface=new_surface, surface_type=surface_type, comment=comment,
-            index=index, is_stop=is_stop, material=material, **kwargs
+            new_surface=new_surface, surface_type=surface_type, index=index,
+            is_stop=is_stop, material=material, **kwargs
             )
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
@@ -324,7 +324,7 @@ class Optic:
 
     def draw3D(self, fields='all', wavelengths='primary', num_rays=24,
                distribution='ring', figsize=(1200, 800), dark_mode=False,
-               reference=None):
+               reference=None, is_jupyter=False):
         """
         Draw a 3D representation of the optical system.
 
@@ -343,11 +343,23 @@ class Optic:
                 False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            is_jupyter (bool, optional): If the plot is required to be plotted 
+                inside the jupyter notebook/lab.
         """
-        viewer = OpticViewer3D(self)
-        viewer.view(fields, wavelengths, num_rays,
-                    distribution=distribution, figsize=figsize,
-                    dark_mode=dark_mode, reference=reference)
+        if is_jupyter:
+            viewer = OpticViewer3D(self)
+            widget = viewer.view(fields, wavelengths, num_rays,
+                        distribution=distribution, figsize=figsize,
+                        dark_mode=dark_mode, reference=reference,
+                        is_jupyter=is_jupyter)
+            return widget  # This will display the interactive visualization
+        
+        elif not is_jupyter:
+            viewer = OpticViewer3D(self)
+            viewer.view(fields, wavelengths, num_rays,
+                        distribution=distribution, figsize=figsize,
+                        dark_mode=dark_mode, reference=reference,
+                        is_jupyter=is_jupyter)
 
     def info(self):
         """Display the optical system information."""
