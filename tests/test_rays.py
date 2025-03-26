@@ -816,3 +816,16 @@ class TestRayGenerator:
 
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+
+    def test_normalize(self):
+        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+
+        # normalize during propagation
+        rays.is_normalized = False
+        rays.propagate(1.0)
+        assert rays.is_normalized is True
+
+        # manually normalize
+        rays.is_normalized = False
+        rays.normalize()
+        assert rays.is_normalized is True
