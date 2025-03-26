@@ -4,6 +4,7 @@ from optiland.samples.objectives import TessarLens
 from optiland.surfaces.surface_factory import SurfaceFactory
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.coatings import SimpleCoating, FresnelCoating
 from optiland.materials import IdealMaterial
 
@@ -232,4 +233,29 @@ class TestSurfaceFactory:
                 radius=10,
                 conic=0,
                 thickness=5
+            )
+
+    def test_create_paraxial_standard(self):
+        surface = self.factory.create_surface(
+            surface_type='paraxial',
+            comment='Paraxial',
+            f=100,
+            index=1,
+            is_stop=False,
+            material='air',
+            thickness=5,
+        )
+        assert isinstance(surface, ParaxialSurface)
+        assert surface.f == 100
+
+    def test_invalid_paraxial_surface(self):
+        with pytest.raises(ValueError):
+            self.factory.create_surface(
+                surface_type='paraxial',
+                comment='Paraxial',
+                f=100,
+                index=0,
+                is_stop=False,
+                material='air',
+                thickness=5,
             )
