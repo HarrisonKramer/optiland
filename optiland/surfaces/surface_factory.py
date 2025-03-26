@@ -24,6 +24,7 @@ from optiland.geometries import (
 )
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 
 
 class SurfaceFactory:
@@ -106,6 +107,10 @@ class SurfaceFactory:
                 'expected_params': ['radius', 'conic', 'coefficients',
                                     'tol', 'max_iter', 'norm_radius']
             },
+            'paraxial': {
+                'geometry': self._configure_standard_geometry,
+                'expected_params': ['f']
+            }
         }
 
         if surface_type not in surface_config:
@@ -118,6 +123,9 @@ class SurfaceFactory:
         geometry = config['geometry'](cs, **filtered_params)
 
         if index == 0:
+            if surface_type == 'paraxial':
+                raise ValueError('Paraxial surface cannot be the object '
+                                 'surface.')
             return ObjectSurface(geometry, material_post, comment)
 
         # Filter out unexpected surface parameters
@@ -125,9 +133,18 @@ class SurfaceFactory:
         filtered_kwargs = {key: value for key, value in kwargs.items()
                            if key in common_params}
 
-        return Surface(geometry, material_pre, material_post, is_stop,
-                       is_reflective=is_reflective, coating=coating,
-                       bsdf=bsdf, surface_type=surface_type, comment=comment, **filtered_kwargs)
+        if surface_type == 'paraxial':
+            return ParaxialSurface(kwargs['f'], geometry, material_pre,
+                                   material_post, is_stop,
+                                   is_reflective=is_reflective,
+                                   coating=coating, bsdf=bsdf,
+                                   surface_type=surface_type,
+                                   **filtered_kwargs)
+        else:
+            return Surface(geometry, material_pre, material_post, is_stop,
+                           is_reflective=is_reflective, coating=coating,
+                           bsdf=bsdf, surface_type=surface_type,
+                           comment=comment, **filtered_kwargs)
 
     def _configure_cs(self, index, **kwargs):
         """
