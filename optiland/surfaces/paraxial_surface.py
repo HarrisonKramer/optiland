@@ -11,6 +11,11 @@ Kramer Harrison, 2024
 import numpy as np
 from optiland.surfaces.standard_surface import Surface
 from optiland.rays.polarized_rays import PolarizedRays
+from optiland.materials import BaseMaterial
+from optiland.physical_apertures import BaseAperture
+from optiland.scatter import BaseBSDF
+from optiland.geometries import BaseGeometry
+from optiland.coatings import BaseCoating
 
 
 class ParaxialSurface(Surface):
@@ -130,3 +135,53 @@ class ParaxialSurface(Surface):
         self._record(rays)
 
         return rays
+
+    def to_dict(self):
+        """
+        Returns a dictionary representation of the surface.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'focal_length': self.f,
+            'geometry': self.geometry.to_dict(),
+            'material_pre': self.material_pre.to_dict(),
+            'material_post': self.material_post.to_dict(),
+            'is_stop': self.is_stop,
+            'aperture': self.aperture.to_dict() if self.aperture else None,
+            'coating': self.coating.to_dict() if self.coating else None,
+            'bsdf': self.bsdf.to_dict() if self.bsdf else None,
+            'is_reflective': self.is_reflective
+        }
+
+    @classmethod
+    def _from_dict(cls, data):
+        """Protected deserialization logic for direct initialization.
+
+        Args:
+            data (dict): The dictionary representation of the surface.
+
+        Returns:
+            Surface: The surface.
+        """
+        focal_length = data['focal_length']
+        geometry = BaseGeometry.from_dict(data['geometry'])
+        material_pre = BaseMaterial.from_dict(data['material_pre'])
+        material_post = BaseMaterial.from_dict(data['material_post'])
+        aperture = BaseAperture.from_dict(data['aperture']) \
+            if data['aperture'] else None
+        coating = BaseCoating.from_dict(data['coating']) \
+            if data['coating'] else None
+        bsdf = BaseBSDF.from_dict(data['bsdf']) \
+            if data['bsdf'] else None
+
+        return ParaxialSurface(
+            focal_length,
+            geometry,
+            material_pre,
+            material_post,
+            data['is_stop'],
+            aperture,
+            coating,
+            bsdf,
+            data['is_reflective']
+            )
