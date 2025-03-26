@@ -24,7 +24,7 @@ Paraxial Surfaces
 
 A special surface type is the **Paraxial Surface**, which is a simplified ideal lens defined only by its focal length (assumed in air). This surface can be used for first order layouts
 at the beginning of the optical design process. See the :ref:`gallery_basic_lenses` for an example of using paraxial surfaces. Under the hood, paraxial surfaces are defined as planar
-surfaces anf the use simplified ray tracing logic, which assumes paraxial behavior.
+surfaces and use simplified ray tracing logic, which assumes paraxial behavior.
 
 Ray Interaction with Surfaces
 -----------------------------
