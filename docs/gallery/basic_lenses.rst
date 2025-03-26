@@ -12,7 +12,7 @@ These lenses demonstrate how simple lens systems can be built using Optiland.
 .. nbgallery::
    basic_lenses/singlet
    basic_lenses/doublet
-   basic_lens/first_order_layout
+   basic_lenses/first_order_layout
    basic_lenses/triplet
    basic_lenses/Cooke_Triplet
    basic_lenses/eyepiece
