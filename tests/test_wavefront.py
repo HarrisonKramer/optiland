@@ -1,11 +1,13 @@
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland import wavefront, distribution
-from optiland.samples.objectives import CookeTriplet, DoubleGauss
-from optiland.samples.eyepieces import EyepieceErfle
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from optiland import distribution, wavefront
+from optiland.samples.eyepieces import EyepieceErfle
+from optiland.samples.objectives import CookeTriplet, DoubleGauss
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

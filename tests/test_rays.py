@@ -1,16 +1,17 @@
-import pytest
 import numpy as np
+import pytest
+
 from optiland.rays import (
     BaseRays,
-    RealRays,
     ParaxialRays,
     PolarizationState,
-    create_polarization,
     PolarizedRays,
     RayGenerator,
+    RealRays,
+    create_polarization,
 )
-from optiland.samples.objectives import TessarLens
 from optiland.samples.lithography import UVProjectionLens
+from optiland.samples.objectives import TessarLens
 
 
 def test_translate():

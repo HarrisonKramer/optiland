@@ -8,6 +8,7 @@ Kramer Harrison, 2025
 """
 
 import numpy as np
+
 from optiland.physical_apertures.radial import RadialAperture
 
 

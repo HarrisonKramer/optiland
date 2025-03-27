@@ -8,7 +8,8 @@ Kramer Harrison, 2024
 import numpy as np
 import vtk
 from matplotlib.patches import Polygon
-from optiland.visualization.utils import transform, transform_3d, revolve_contour
+
+from optiland.visualization.utils import revolve_contour, transform, transform_3d
 
 
 class Lens2D:

@@ -8,9 +8,11 @@ converting the group to and from a dictionary for serialization.
 Kramer Harrison, 2024
 """
 
-from typing import List
 from copy import deepcopy
+from typing import List
+
 import numpy as np
+
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces.surface_factory import SurfaceFactory

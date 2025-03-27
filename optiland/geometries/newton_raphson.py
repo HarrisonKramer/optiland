@@ -7,11 +7,13 @@ by any geometry that uses the Newton-Raphson method for ray tracing.
 Kramer Harrison, 2024
 """
 
-from abc import ABC, abstractmethod
 import warnings
+from abc import ABC, abstractmethod
+
 import numpy as np
-from optiland.geometries.standard import StandardGeometry
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.standard import StandardGeometry
 
 
 class NewtonRaphsonGeometry(StandardGeometry, ABC):

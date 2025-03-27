@@ -1,12 +1,13 @@
-import pytest
 import numpy as np
-from optiland.optimization import variable
+import pytest
+
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
-    PolynomialGeometry,
     ChebyshevPolynomialGeometry,
+    PolynomialGeometry,
     ZernikePolynomialGeometry,
 )
-from optiland.coordinate_system import CoordinateSystem
+from optiland.optimization import variable
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
 from optiland.samples.simple import AsphericSinglet
 

@@ -7,10 +7,11 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.rays import RealRays, ParaxialRays
-from optiland.surfaces.standard_surface import Surface
-from optiland.materials import BaseMaterial
+
 from optiland.geometries import BaseGeometry
+from optiland.materials import BaseMaterial
+from optiland.rays import ParaxialRays, RealRays
+from optiland.surfaces.standard_surface import Surface
 
 
 class ObjectSurface(Surface):

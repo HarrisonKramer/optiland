@@ -10,7 +10,9 @@ Kramer Harrison, 2024
 
 # import pkg_resources
 from importlib import resources
+
 import numpy as np
+
 from optiland.materials.base import BaseMaterial
 
 

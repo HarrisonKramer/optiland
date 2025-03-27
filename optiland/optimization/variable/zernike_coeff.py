@@ -10,6 +10,7 @@ drpaprika, 2025
 """
 
 import numpy as np
+
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 

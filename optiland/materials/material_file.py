@@ -8,8 +8,10 @@ Kramer Harrison, 2024
 
 import os
 from io import StringIO
-import yaml
+
 import numpy as np
+import yaml
+
 from optiland.materials.base import BaseMaterial
 
 

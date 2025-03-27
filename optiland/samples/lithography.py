@@ -1,5 +1,6 @@
 import numpy as np
-from optiland import optic, materials
+
+from optiland import materials, optic
 
 
 class UVProjectionLens(optic.Optic):

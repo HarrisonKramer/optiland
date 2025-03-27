@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
 

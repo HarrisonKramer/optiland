@@ -6,10 +6,12 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
+
 import numpy as np
-from optiland.rays import RealRays
+
 from optiland.jones import JonesFresnel
 from optiland.materials import BaseMaterial
+from optiland.rays import RealRays
 
 
 class BaseCoating(ABC):

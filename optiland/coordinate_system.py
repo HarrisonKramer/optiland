@@ -11,6 +11,7 @@ Kramer Harrison, 2024
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
 from optiland.rays import RealRays
 
 

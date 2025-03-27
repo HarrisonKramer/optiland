@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
-from optiland.rays import RealRays
+import pytest
+
 from optiland import jones, materials
+from optiland.rays import RealRays
 
 
 class TestJonesFresnel:

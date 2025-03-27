@@ -19,8 +19,9 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 
 class EvenAsphere(NewtonRaphsonGeometry):

@@ -8,6 +8,7 @@ Kramer Harrison, 2024
 """
 
 from typing import Optional
+
 import numpy as np
 
 

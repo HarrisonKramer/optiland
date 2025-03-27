@@ -1,12 +1,13 @@
-import pytest
 import numpy as np
-from optiland.samples.objectives import TessarLens
-from optiland.surfaces.surface_factory import SurfaceFactory
-from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces.paraxial_surface import ParaxialSurface
-from optiland.coatings import SimpleCoating, FresnelCoating
+import pytest
+
+from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.materials import IdealMaterial
+from optiland.samples.objectives import TessarLens
+from optiland.surfaces.object_surface import ObjectSurface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
+from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.surface_factory import SurfaceFactory
 
 
 class TestSurfaceFactory:

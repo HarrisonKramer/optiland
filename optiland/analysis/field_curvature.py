@@ -5,8 +5,8 @@ This module provides a field curvature analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class FieldCurvature:

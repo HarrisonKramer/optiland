@@ -11,7 +11,9 @@ Kramer Harrison, 2024
 
 # import pkg_resources
 from importlib import resources
+
 import pandas as pd
+
 from optiland.materials.material_file import MaterialFile
 
 

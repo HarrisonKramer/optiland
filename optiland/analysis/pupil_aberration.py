@@ -8,8 +8,8 @@ primary wavelength.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class PupilAberration:

@@ -8,9 +8,10 @@ the Material class in optiland.materials.py for more information.
 # pragma: no cover
 import os
 from io import StringIO
-import yaml
+
 import numpy as np
 import pandas as pd
+import yaml
 from tqdm import tqdm
 
 

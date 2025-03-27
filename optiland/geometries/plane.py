@@ -8,9 +8,11 @@ Kramer Harrison, 2024
 """
 
 import warnings
+
 import numpy as np
-from optiland.geometries.base import BaseGeometry
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.base import BaseGeometry
 
 
 class Plane(BaseGeometry):

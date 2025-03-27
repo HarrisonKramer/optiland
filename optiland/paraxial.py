@@ -6,8 +6,9 @@ properties of lens systems.
 Kramer Harrison, 2024
 """
 
-from optiland.rays import ParaxialRays
 import numpy as np
+
+from optiland.rays import ParaxialRays
 
 
 class Paraxial:

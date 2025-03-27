@@ -10,13 +10,14 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.surfaces.standard_surface import Surface
-from optiland.rays.polarized_rays import PolarizedRays
+
+from optiland.coatings import BaseCoating
+from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
+from optiland.rays.polarized_rays import PolarizedRays
 from optiland.scatter import BaseBSDF
-from optiland.geometries import BaseGeometry
-from optiland.coatings import BaseCoating
+from optiland.surfaces.standard_surface import Surface
 
 
 class ParaxialSurface(Surface):

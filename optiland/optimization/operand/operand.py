@@ -17,10 +17,10 @@ Kramer Harrison, 2024
 """
 
 from dataclasses import dataclass
-from optiland.optimization.operand.paraxial import ParaxialOperand
-from optiland.optimization.operand.aberration import AberrationOperand
-from optiland.optimization.operand.ray import RayOperand
 
+from optiland.optimization.operand.aberration import AberrationOperand
+from optiland.optimization.operand.paraxial import ParaxialOperand
+from optiland.optimization.operand.ray import RayOperand
 
 # Dictionary of operands and their associated functions
 METRIC_DICT = {

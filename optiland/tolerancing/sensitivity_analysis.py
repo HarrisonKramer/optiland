@@ -7,9 +7,10 @@ run a sensitivity analysis on a Tolerancing object and visualize the results.
 Kramer Harrison, 2024
 """
 
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
 

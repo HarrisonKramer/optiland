@@ -11,12 +11,13 @@ Kramer Harrison, 2023
 """
 
 import numpy as np
-from optiland.rays import BaseRays, RealRays, ParaxialRays
+
+from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
+from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
-from optiland.geometries import BaseGeometry
-from optiland.coatings import BaseCoating, FresnelCoating
 
 
 class Surface:

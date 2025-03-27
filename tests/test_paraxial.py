@@ -1,28 +1,30 @@
 import pytest
+
 from optiland.optic import Optic
 from optiland.paraxial import Paraxial
 from optiland.samples.eyepieces import EyepieceErfle
-from optiland.samples.telescopes import HubbleTelescope
 from optiland.samples.infrared import InfraredTriplet, InfraredTripletF4
+from optiland.samples.objectives import (
+    CookeTriplet,
+    DoubleGauss,
+    HeliarLens,
+    LensWithFieldCorrector,
+    ObjectiveUS008879901,
+    PetzvalLens,
+    ReverseTelephoto,
+    Telephoto,
+    TelescopeObjective48Inch,
+    TessarLens,
+    TripletTelescopeObjective,
+)
 from optiland.samples.simple import (
+    CementedAchromat,
     Edmund_49_847,
     SingletStopSurf2,
     TelescopeDoublet,
-    CementedAchromat,
 )
-from optiland.samples.objectives import (
-    TripletTelescopeObjective,
-    CookeTriplet,
-    DoubleGauss,
-    ReverseTelephoto,
-    ObjectiveUS008879901,
-    TelescopeObjective48Inch,
-    HeliarLens,
-    TessarLens,
-    LensWithFieldCorrector,
-    PetzvalLens,
-    Telephoto,
-)
+from optiland.samples.telescopes import HubbleTelescope
+
 # TODO: add tests for non-air object and image spaces
 
 

@@ -12,20 +12,22 @@ Kramer Harrison, 2024
 """
 
 from typing import Union
+
 import numpy as np
-from optiland.fields import Field, FieldGroup
-from optiland.surfaces import SurfaceGroup, ObjectSurface
-from optiland.wavelength import WavelengthGroup
-from optiland.paraxial import Paraxial
+
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
-from optiland.rays import PolarizedRays, PolarizationState, RayGenerator
 from optiland.distribution import create_distribution
+from optiland.fields import Field, FieldGroup
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
+from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
+from optiland.rays import PolarizationState, PolarizedRays, RayGenerator
 from optiland.solves import SolveManager
+from optiland.surfaces import ObjectSurface, SurfaceGroup
+from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.wavelength import WavelengthGroup
 
 
 class Optic:

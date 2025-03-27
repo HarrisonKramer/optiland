@@ -1,12 +1,14 @@
 from unittest.mock import patch
-import pytest
-from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
-from optiland.tolerancing.core import Tolerancing
-from optiland.tolerancing.perturbation import RangeSampler, DistributionSampler
-from optiland.samples.objectives import ReverseTelephoto
-import pandas as pd
+
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
+import pytest
+
+from optiland.samples.objectives import ReverseTelephoto
+from optiland.tolerancing.core import Tolerancing
+from optiland.tolerancing.perturbation import DistributionSampler, RangeSampler
+from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

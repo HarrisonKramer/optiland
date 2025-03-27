@@ -1,8 +1,9 @@
-import pytest
 import numpy as np
-from optiland.rays import RealRays
-from optiland.coordinate_system import CoordinateSystem
+import pytest
+
 from optiland import geometries
+from optiland.coordinate_system import CoordinateSystem
+from optiland.rays import RealRays
 
 
 def test_unknown_geometry():

@@ -6,11 +6,11 @@ in an optical system.
 Kramer Harrison, 2024
 """
 
-from optiland.surfaces.standard_surface import Surface
-from optiland.rays import ParaxialRays
+from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
-from optiland.geometries import BaseGeometry
+from optiland.rays import ParaxialRays
+from optiland.surfaces.standard_surface import Surface
 
 
 class ImageSurface(Surface):

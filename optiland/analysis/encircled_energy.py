@@ -6,8 +6,10 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 from optiland.analysis.spot_diagram import SpotDiagram
 
 

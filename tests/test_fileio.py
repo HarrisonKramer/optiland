@@ -1,12 +1,14 @@
 import os
-from unittest.mock import patch, mock_open
+import tempfile
+from unittest.mock import mock_open, patch
+
 import pytest
+
 from optiland.fileio import ZemaxFileReader, load_optiland_file, save_optiland_file
 from optiland.fileio.optiland_handler import load_obj_from_json, save_obj_to_json
-from optiland.optic import Optic
 from optiland.materials import Material
+from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
-import tempfile
 
 
 @pytest.fixture

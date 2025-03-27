@@ -1,9 +1,10 @@
-import pytest
 import numpy as np
+import pytest
+
+from optiland.samples.simple import Edmund_49_847
+from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import Perturbation, ScalarSampler
-from optiland.tolerancing.compensator import CompensatorOptimizer
-from optiland.samples.simple import Edmund_49_847
 
 
 @pytest.fixture

@@ -10,11 +10,12 @@ system.
 Kramer Harrison, 2023
 """
 
-import numpy as np
-from scipy.ndimage import zoom
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 import matplotlib.ticker as mticker
+import numpy as np
+from matplotlib.colors import LogNorm
+from scipy.ndimage import zoom
+
 from optiland.wavefront import Wavefront
 
 

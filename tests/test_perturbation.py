@@ -1,12 +1,13 @@
-import pytest
 import numpy as np
+import pytest
+
+from optiland.samples.objectives import TessarLens
 from optiland.tolerancing.perturbation import (
-    ScalarSampler,
-    RangeSampler,
     DistributionSampler,
     Perturbation,
+    RangeSampler,
+    ScalarSampler,
 )
-from optiland.samples.objectives import TessarLens
 
 
 def test_scalar_sampler():

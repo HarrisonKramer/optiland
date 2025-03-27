@@ -9,11 +9,13 @@ Kramer Harrison, 2024
 """
 
 import warnings
+
 import numpy as np
 import pandas as pd
 from scipy import optimize
-from optiland.optimization.variable import VariableManager
+
 from optiland.optimization.operand import OperandManager
+from optiland.optimization.variable import VariableManager
 
 
 class OptimizationProblem:

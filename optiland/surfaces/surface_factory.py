@@ -10,21 +10,22 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.coordinate_system import CoordinateSystem
-from optiland.materials import BaseMaterial, IdealMaterial, Material
+
 from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
-    Plane,
-    StandardGeometry,
+    ChebyshevPolynomialGeometry,
     EvenAsphere,
     OddAsphere,
+    Plane,
     PolynomialGeometry,
-    ChebyshevPolynomialGeometry,
+    StandardGeometry,
     ZernikePolynomialGeometry,
 )
+from optiland.materials import BaseMaterial, IdealMaterial, Material
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
+from optiland.surfaces.standard_surface import Surface
 
 
 class SurfaceFactory:

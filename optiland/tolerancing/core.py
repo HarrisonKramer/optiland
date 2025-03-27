@@ -8,9 +8,9 @@ system.
 Kramer Harrison, 2024
 """
 
-from optiland.tolerancing.perturbation import BaseSampler, Perturbation
-from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.optimization.operand import Operand
+from optiland.tolerancing.compensator import CompensatorOptimizer
+from optiland.tolerancing.perturbation import BaseSampler, Perturbation
 
 
 class Tolerancing:

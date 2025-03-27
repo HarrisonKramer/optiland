@@ -1,12 +1,13 @@
-import pytest
 import numpy as np
+import pytest
+
+from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.coordinate_system import CoordinateSystem
-from optiland.surfaces.standard_surface import Surface
-from optiland.rays import RealRays, ParaxialRays
-from optiland.materials import IdealMaterial
-from optiland.scatter import LambertianBSDF
 from optiland.geometries import Plane
-from optiland.coatings import SimpleCoating, FresnelCoating
+from optiland.materials import IdealMaterial
+from optiland.rays import ParaxialRays, RealRays
+from optiland.scatter import LambertianBSDF
+from optiland.surfaces.standard_surface import Surface
 
 
 class TestSurface:

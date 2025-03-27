@@ -1,18 +1,20 @@
 # import pkg_resources
 from importlib import resources
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland.visualization import OpticViewer, OpticViewer3D, LensInfoViewer
-from optiland.samples.objectives import TessarLens, ReverseTelephoto
-from optiland.samples.simple import Edmund_49_847
-from optiland.samples.telescopes import HubbleTelescope
-from optiland import fields
-from optiland.geometries import BaseGeometry, EvenAsphere
-from optiland.coordinate_system import CoordinateSystem
-from optiland.materials import BaseMaterial, MaterialFile, IdealMaterial, AbbeMaterial
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from optiland import fields
+from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries import BaseGeometry, EvenAsphere
+from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, MaterialFile
+from optiland.samples.objectives import ReverseTelephoto, TessarLens
+from optiland.samples.simple import Edmund_49_847
+from optiland.samples.telescopes import HubbleTelescope
+from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

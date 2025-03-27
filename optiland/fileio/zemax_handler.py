@@ -9,11 +9,13 @@ Kramer Harrison, 2024
 
 import os
 import re
-import requests
 import tempfile
+
 import numpy as np
+import requests
+
 from optiland.fileio.converters import ZemaxToOpticConverter
-from optiland.materials import BaseMaterial, Material, AbbeMaterial
+from optiland.materials import AbbeMaterial, BaseMaterial, Material
 
 
 def load_zemax_file(source):

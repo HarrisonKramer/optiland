@@ -7,9 +7,10 @@ Kramer Harrison, 2024
 
 import numpy as np
 import vtk
-from optiland.rays import RealRays
-from optiland.visualization.utils import transform, transform_3d, revolve_contour
+
 from optiland.physical_apertures import RadialAperture
+from optiland.rays import RealRays
+from optiland.visualization.utils import revolve_contour, transform, transform_3d
 
 
 class Surface2D:

@@ -1,11 +1,13 @@
 from unittest.mock import patch
-import pytest
-from optiland.tolerancing.monte_carlo import MonteCarlo
-from optiland.tolerancing.perturbation import DistributionSampler
-from optiland.tolerancing.core import Tolerancing
-from optiland.samples.objectives import ReverseTelephoto
+
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
+
+from optiland.samples.objectives import ReverseTelephoto
+from optiland.tolerancing.core import Tolerancing
+from optiland.tolerancing.monte_carlo import MonteCarlo
+from optiland.tolerancing.perturbation import DistributionSampler
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

@@ -1,5 +1,6 @@
 import numpy as np
-from optiland import optic, materials, physical_apertures
+
+from optiland import materials, optic, physical_apertures
 
 
 class Objective60x(optic.Optic):

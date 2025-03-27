@@ -8,7 +8,9 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
+
 import numpy as np
+
 from optiland.optimization.variable import Variable
 
 

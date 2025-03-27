@@ -11,8 +11,9 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class BaseAperture(ABC):

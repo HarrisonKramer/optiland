@@ -10,8 +10,9 @@ BaseMaterial, Aperture, FieldGroup, WavelengthGroup, etc.
 Kramer Harrison, 2024
 """
 
-import os
 import json
+import os
+
 from optiland.optic import Optic
 
 

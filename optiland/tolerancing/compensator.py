@@ -7,7 +7,7 @@ to compensate for perturbations in an optical system.
 Kramer Harrison, 2024
 """
 
-from optiland.optimization import OptimizationProblem, OptimizerGeneric, LeastSquares
+from optiland.optimization import LeastSquares, OptimizationProblem, OptimizerGeneric
 
 
 class CompensatorOptimizer(OptimizationProblem):

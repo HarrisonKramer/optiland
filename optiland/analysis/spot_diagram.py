@@ -6,9 +6,10 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-import numpy as np
-import matplotlib.pyplot as plt
+
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
 
 plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 

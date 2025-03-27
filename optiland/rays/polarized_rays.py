@@ -8,8 +8,9 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.rays.real_rays import RealRays
+
 from optiland.rays.polarization_state import PolarizationState
+from optiland.rays.real_rays import RealRays
 
 
 class PolarizedRays(RealRays):

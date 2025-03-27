@@ -13,8 +13,9 @@ Kramer Harrison, 2023
 """
 
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.optimize import least_squares
 
 

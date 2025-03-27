@@ -6,8 +6,9 @@ transfer function (MTF) of an optical system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 from optiland.analysis import SpotDiagram
 from optiland.psf import FFTPSF
 

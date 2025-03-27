@@ -7,8 +7,9 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
-from optiland.rays.real_rays import RealRays
+
 from optiland.rays.polarized_rays import PolarizedRays
+from optiland.rays.real_rays import RealRays
 
 
 class RayGenerator:

@@ -1,7 +1,8 @@
 import pytest
-from optiland.tolerancing.compensator import CompensatorOptimizer
-from optiland.optimization import OptimizerGeneric, LeastSquares
+
+from optiland.optimization import LeastSquares, OptimizerGeneric
 from optiland.samples.simple import Edmund_49_847
+from optiland.tolerancing.compensator import CompensatorOptimizer
 
 
 def test_initialization_default():

@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from optiland import solves
 from optiland.samples.objectives import CookeTriplet
 

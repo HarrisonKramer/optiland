@@ -10,6 +10,7 @@ Kramer Harrison, 2025
 
 import numpy as np
 from matplotlib.path import Path
+
 from optiland.physical_apertures.base import BaseAperture
 
 

@@ -1,11 +1,13 @@
-import pytest
-import numpy as np
 from unittest.mock import patch
-from optiland.optic import Optic
-from optiland import analysis
-from optiland.samples.objectives import TripletTelescopeObjective, CookeTriplet
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from optiland import analysis
+from optiland.optic import Optic
+from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

@@ -11,15 +11,15 @@ to specify the type of the variable.
 Kramer Harrison, 2024
 """
 
-from optiland.optimization.variable.radius import RadiusVariable
-from optiland.optimization.variable.conic import ConicVariable
-from optiland.optimization.variable.thickness import ThicknessVariable
-from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
-from optiland.optimization.variable.tilt import TiltVariable
-from optiland.optimization.variable.decenter import DecenterVariable
-from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
+from optiland.optimization.variable.conic import ConicVariable
+from optiland.optimization.variable.decenter import DecenterVariable
+from optiland.optimization.variable.index import IndexVariable
+from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
+from optiland.optimization.variable.radius import RadiusVariable
+from optiland.optimization.variable.thickness import ThicknessVariable
+from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
 
 

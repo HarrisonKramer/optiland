@@ -1,7 +1,9 @@
 from copy import deepcopy
-import pytest
+
 import numpy as np
-from optiland import coatings, rays, materials
+import pytest
+
+from optiland import coatings, materials, rays
 
 
 @pytest.fixture

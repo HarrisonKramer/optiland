@@ -1,13 +1,14 @@
-import pytest
 import numpy as np
-from optiland.coordinate_system import CoordinateSystem
-from optiland.surfaces.paraxial_surface import ParaxialSurface
-from optiland.rays import RealRays, ParaxialRays
-from optiland.materials import IdealMaterial
-from optiland.scatter import LambertianBSDF
-from optiland.geometries import Plane
+import pytest
+
 from optiland.coatings import SimpleCoating
+from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries import Plane
+from optiland.materials import IdealMaterial
 from optiland.optic import Optic
+from optiland.rays import ParaxialRays, RealRays
+from optiland.scatter import LambertianBSDF
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 
 
 class TestParaxialSurface:

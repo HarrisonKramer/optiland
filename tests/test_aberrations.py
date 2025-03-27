@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
-from optiland.optic import Optic
+import pytest
+
 from optiland.aberrations import Aberrations
+from optiland.optic import Optic
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
 

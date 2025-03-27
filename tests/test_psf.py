@@ -1,10 +1,12 @@
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland.psf import FFTPSF
-from optiland.samples.objectives import CookeTriplet
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from optiland.psf import FFTPSF
+from optiland.samples.objectives import CookeTriplet
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

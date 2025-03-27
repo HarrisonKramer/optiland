@@ -1,4 +1,5 @@
 import pytest
+
 from optiland import aperture
 
 

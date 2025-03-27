@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
+
 from optiland.rays.base import BaseRays
 
 

@@ -9,8 +9,10 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC
+
 import numpy as np
 from numba import njit, prange
+
 from optiland.rays import RealRays
 
 

@@ -1,10 +1,11 @@
-import pytest
 import numpy as np
+import pytest
+
 from optiland.coordinate_system import CoordinateSystem
-from optiland.surfaces.image_surface import ImageSurface
-from optiland.materials import IdealMaterial
 from optiland.geometries import StandardGeometry
+from optiland.materials import IdealMaterial
 from optiland.rays import ParaxialRays, RealRays
+from optiland.surfaces.image_surface import ImageSurface
 
 
 @pytest.fixture

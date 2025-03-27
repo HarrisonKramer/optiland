@@ -1,18 +1,20 @@
-from unittest.mock import patch
 import tempfile
-import numpy as np
+from unittest.mock import patch
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+
 from optiland.physical_apertures import (
-    RadialAperture,
-    OffsetRadialAperture,
-    UnionAperture,
-    IntersectionAperture,
     DifferenceAperture,
-    RectangularAperture,
     EllipticalAperture,
-    PolygonAperture,
     FileAperture,
+    IntersectionAperture,
+    OffsetRadialAperture,
+    PolygonAperture,
+    RadialAperture,
+    RectangularAperture,
+    UnionAperture,
 )
 from optiland.rays import RealRays
 

@@ -1,9 +1,11 @@
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland import zernike
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from optiland import zernike
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

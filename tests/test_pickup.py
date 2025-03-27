@@ -1,6 +1,7 @@
 import pytest
-from optiland.samples.objectives import CookeTriplet
+
 from optiland.pickup import Pickup, PickupManager
+from optiland.samples.objectives import CookeTriplet
 
 
 class TestPickup:

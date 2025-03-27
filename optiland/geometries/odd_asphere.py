@@ -15,7 +15,9 @@ Kramer Harrison, 2025
 """
 
 import warnings
+
 import numpy as np
+
 from optiland.geometries.even_asphere import EvenAsphere
 
 

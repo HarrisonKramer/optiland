@@ -11,9 +11,10 @@ optical system modeling capabilities.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.interpolate import griddata
+
 from optiland.distribution import create_distribution
 from optiland.zernike import ZernikeFit
 
