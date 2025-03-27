@@ -1,7 +1,10 @@
 import pytest
 import numpy as np
 from optiland.optimization import variable
-from optiland.geometries import PolynomialGeometry, ChebyshevPolynomialGeometry, ZernikePolynomialGeometry
+from optiland.geometries import (
+    PolynomialGeometry,
+    ChebyshevPolynomialGeometry,
+    ZernikePolynomialGeometry)
 from optiland.coordinate_system import CoordinateSystem
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
 from optiland.samples.simple import AsphericSinglet
@@ -196,7 +199,7 @@ class TestZernikeCoeffVariable:
     def setup(self):
         self.optic = AsphericSinglet()
         poly_geo = ZernikePolynomialGeometry(CoordinateSystem(), 100,
-                                               coefficients=np.zeros(3))
+                                             coefficients=np.zeros(3))
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
 

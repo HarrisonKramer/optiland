@@ -46,7 +46,8 @@ def test_add_operand_no_target(setup_tolerancing):
     weight = 2.0
     target = optic.paraxial.f2()
 
-    tolerancing.add_operand(operand_type=operand_type, input_data=input_data, weight=weight)
+    tolerancing.add_operand(operand_type=operand_type, input_data=input_data,
+                            weight=weight)
     assert len(tolerancing.operands) == 1
     operand = tolerancing.operands[0]
     assert operand.operand_type == operand_type
