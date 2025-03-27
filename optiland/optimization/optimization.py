@@ -184,7 +184,7 @@ class OptimizerGeneric:
                 Default is True.
             tol (float, optional): Tolerance for convergence. Default is 1e-3.
             callback (callable): A callable called after each iteration.
-        
+
         Returns:
             result (OptimizeResult): The optimization result.
         """
@@ -203,8 +203,8 @@ class OptimizerGeneric:
                                        options=options,
                                        tol=tol,
                                        callback=callback,
-                                    )
-        
+                                       )
+
         # The last function evaluation is not necessarily the lowest.
         # Update all lens variables to their optimized values
         for idvar, var in enumerate(self.problem.variables):

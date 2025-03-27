@@ -80,8 +80,8 @@ class MaterialFile(BaseMaterial):
     def k(self, wavelength):
         """
         Retrieves the extinction coefficient of the material at a
-        given wavelength. If no exxtinction coefficient data is found, it is 
-        assumed to be 0 and prints a warning message, only once. 
+        given wavelength. If no exxtinction coefficient data is found, it is
+        assumed to be 0 and prints a warning message, only once.
 
         Args:
             wavelength (float or numpy.ndarray): The wavelength(s) in microns.
@@ -93,14 +93,18 @@ class MaterialFile(BaseMaterial):
         if self._k is None or self._k_wavelength is None:
             if not self._k_warning_printed:
                 material_name = os.path.basename(self.filename)
-                print(f"WARNING: No extinction coefficient data found for {material_name}. Assuming it is 0.")
-                self._k_warning_printed = True # we set it to True to avoid printing the warning again            
-            
+                print(f"WARNING: No extinction coefficient data found "
+                      f"for {material_name}. Assuming it is 0.")
+
+                # we set it to True to avoid printing the warning again
+                self._k_warning_printed = True
+
             if np.isscalar(wavelength):
                 return 0.0
             else:
-                return np.zeros_like(wavelength) # if there is an array of wvls
-            
+                # if there is an array of wavelengths, return array of zeros
+                return np.zeros_like(wavelength)
+
         return np.interp(wavelength, self._k_wavelength, self._k)
 
     def _formula_1(self, w):

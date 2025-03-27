@@ -21,7 +21,7 @@ class ObjectSurface(Surface):
         geometry (Geometry): The geometry of the surface.
         material_post (Material): The material of the surface after
             interaction.
-        comment (str, optional): A comment for the surface. Defaults 
+        comment (str, optional): A comment for the surface. Defaults
             to ''.
 
     Attributes:

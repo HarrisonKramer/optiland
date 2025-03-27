@@ -95,7 +95,7 @@ class RayOperand:
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         return optic.surface_group.z[surface_number, 0]
-    
+
     @staticmethod
     def x_intercept_lcs(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         """
@@ -163,15 +163,15 @@ class RayOperand:
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
         intercept = optic.surface_group.z[surface_number, 0]
         decenter = optic.surface_group.surfaces[surface_number].geometry.cs.z
-        
+
         # For some reason decenter can sometimes be a single-element array.
         # In that case, retreive the float inside.
         # This is a workaround until a solution is found.
-        if type(decenter) == np.ndarray:
+        if type(decenter) is np.ndarray:
             decenter = decenter.item()
 
         return intercept - decenter
-    
+
     @staticmethod
     def L(optic, surface_number, Hx, Hy, Px, Py, wavelength):
         """

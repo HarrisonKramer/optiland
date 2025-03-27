@@ -208,11 +208,34 @@ class LensInfoViewer:
         """
         self.optic.update_paraxial()
 
+        surf_type = self._get_surface_types()
+        comments = self._get_comments()
+        radii = self.optic.surface_group.radii
+        thicknesses = self._get_thicknesses()
+        conic = self.optic.surface_group.conic
+        semi_aperture = self._get_semi_apertures()
+        mat = self._get_materials()
+
+        self.optic.update_paraxial()
+
+        df = pd.DataFrame({
+            'Type': surf_type,
+            'Comment': comments,
+            'Radius': radii,
+            'Thickness': thicknesses,
+            'Material': mat,
+            'Conic': conic,
+            'Semi-aperture': semi_aperture
+        })
+        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+
+    def _get_surface_types(self):
+        """Extracts and formats the surface types."""
         surf_type = []
         for surf in self.optic.surface_group.surfaces:
             g = surf.geometry
 
-            # check if __str__ method exists
+            # Check if __str__ method exists
             if type(g).__dict__.get('__str__'):
                 surf_type.append(str(surf.geometry))
             else:
@@ -220,15 +243,25 @@ class LensInfoViewer:
 
             if surf.is_stop:
                 surf_type[-1] = 'Stop - ' + surf_type[-1]
+        return surf_type
 
-        comments = [surf.comment for surf in self.optic.surface_group.surfaces]
-        radii = self.optic.surface_group.radii
-        thicknesses = np.diff(self.optic.surface_group.positions.ravel(),
-                              append=np.nan)
-        conic = self.optic.surface_group.conic
-        semi_aperture = [surf.semi_aperture
-                         for surf in self.optic.surface_group.surfaces]
+    def _get_comments(self):
+        """Extracts comments for each surface."""
+        return [surf.comment for surf in self.optic.surface_group.surfaces]
 
+    def _get_thicknesses(self):
+        """Calculates thicknesses between surfaces."""
+        return np.diff(
+            self.optic.surface_group.positions.ravel(), append=np.nan
+        )
+
+    def _get_semi_apertures(self):
+        """Extracts semi-aperture values for each surface."""
+        return [surf.semi_aperture
+                for surf in self.optic.surface_group.surfaces]
+
+    def _get_materials(self):
+        """Determines the material for each surface."""
         mat = []
         for surf in self.optic.surface_group.surfaces:
             if surf.is_reflective:
@@ -246,16 +279,4 @@ class LensInfoViewer:
                            f'{surf.material_post.abbe:.2f}')
             else:
                 raise ValueError('Unknown material type')
-
-        self.optic.update_paraxial()
-
-        df = pd.DataFrame({
-            'Type': surf_type,
-            'Comment': comments,
-            'Radius': radii,
-            'Thickness': thicknesses,
-            'Material': mat,
-            'Conic': conic,
-            'Semi-aperture': semi_aperture
-        })
-        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+        return mat

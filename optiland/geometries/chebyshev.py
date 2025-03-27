@@ -14,10 +14,10 @@ where
 - T_i(x) is the Chebyshev polynomial of the first kind of degree i
 - norm_x and norm_y are normalization factors for the x and y coordinates
 
-Chebyshev polynomials are derived in Cartesian coordinates, 
-which - unlike many other polynomial freeform surfaces used 
-to describe rotationally-symmetric systems - allows for 
-straightforward definition of anamorphic or non-rotationally 
+Chebyshev polynomials are derived in Cartesian coordinates,
+which - unlike many other polynomial freeform surfaces used
+to describe rotationally-symmetric systems - allows for
+straightforward definition of anamorphic or non-rotationally
 symmetric systems and non-elliptical apertures.
 
 Kramer Harrison, 2024
@@ -46,10 +46,10 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     The coefficients are defined in a 2D array where coefficients[i][j] is the
     coefficient for T_i(x) * T_j(y).
 
-    Chebyshev polynomials are derived in Cartesian coordinates, 
-    which - unlike many other polynomial freeform surfaces used 
-    to describe rotationally-symmetric systems - allows for 
-    straightforward definition of anamorphic or non-rotationally 
+    Chebyshev polynomials are derived in Cartesian coordinates,
+    which - unlike many other polynomial freeform surfaces used
+    to describe rotationally-symmetric systems - allows for
+    straightforward definition of anamorphic or non-rotationally
     symmetric systems and non-elliptical apertures.
 
     Args:

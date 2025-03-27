@@ -66,12 +66,15 @@ class Tolerancing:
         Args:
             operand_type (str): The type of the operand.
             target (float): The target value of the operand (equality operand).
-            min_val (float): The operand should stay above this value (inequality operand).
-            max_val (float): The operand should stay below this value (inequality operand).
+            min_val (float): The operand should stay above this
+                value (inequality operand).
+            max_val (float): The operand should stay below this
+                value (inequality operand).
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
         """
-        new_operand = Operand(operand_type, target, min_val, max_val, weight, input_data)
+        new_operand = Operand(operand_type, target,
+                              min_val, max_val, weight, input_data)
         if target is None:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)

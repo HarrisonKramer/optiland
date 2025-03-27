@@ -8,7 +8,6 @@ to define the optical properties of a material (or glass) in Optiland.
 
 Kramer Harrison, 2024
 """
-import os
 #import pkg_resources
 from importlib import resources
 import pandas as pd
