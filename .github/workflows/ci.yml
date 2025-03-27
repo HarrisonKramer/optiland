@@ -39,22 +39,11 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install build codecov
-
-      - name: Build the package wheel
-        run: |
-          python -m build --wheel .
-
-      - name: Install the built package
-        run: |
-          pip install dist/*.whl
 
       - name: Run tests with coverage
         run: |
