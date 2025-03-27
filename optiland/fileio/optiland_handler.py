@@ -33,7 +33,7 @@ def load_obj_from_json(cls, filepath):
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File '{filepath}' does not exist.")
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         data = json.load(f)
     return cls.from_dict(data)
 
@@ -50,7 +50,7 @@ def save_obj_to_json(obj, filepath):
         obj: The object to save.
         filepath: The path to the JSON file.
     """
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(obj.to_dict(), f, indent=4)
 
 

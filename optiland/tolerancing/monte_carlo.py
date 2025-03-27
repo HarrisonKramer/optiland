@@ -95,10 +95,12 @@ class MonteCarlo(SensitivityAnalysis):
                 result[key] = perturbation.value
 
             # save results - operand values
-            result.update({
-                f'{name}': value
-                for name, value in zip(self.operand_names, operand_values)
-            })
+            result.update(
+                {
+                    f"{name}": value
+                    for name, value in zip(self.operand_names, operand_values)
+                }
+            )
 
             # save results - compensator values
             result.update(compensator_result)
@@ -115,14 +117,14 @@ class MonteCarlo(SensitivityAnalysis):
             kde (bool): If True, a Kernel Density Estimate (KDE) is plotted.
                 Otherwise, a histogram is plotted.
         """
-        self._plot(plot_type='histogram', kde=kde)
+        self._plot(plot_type="histogram", kde=kde)
 
     def view_cdf(self):
         """
         Generates and displays a cumulative distribution function (CDF) plot
         of the data.
         """
-        self._plot(plot_type='cdf')
+        self._plot(plot_type="cdf")
 
     def view_heatmap(self, figsize=(8, 6), vmin=None, vmax=None):
         """
@@ -138,9 +140,17 @@ class MonteCarlo(SensitivityAnalysis):
         mask = np.triu(np.ones_like(corr, dtype=bool))
         f, ax = plt.subplots(figsize=figsize)
         cmap = sns.diverging_palette(230, 20, as_cmap=True)
-        sns.heatmap(corr, mask=mask, cmap=cmap, center=0, square=True,
-                    linewidths=.5, vmin=vmin, vmax=vmax,
-                    cbar_kws={"shrink": .5})
+        sns.heatmap(
+            corr,
+            mask=mask,
+            cmap=cmap,
+            center=0,
+            square=True,
+            linewidths=0.5,
+            vmin=vmin,
+            vmax=vmax,
+            cbar_kws={"shrink": 0.5},
+        )
         plt.tight_layout()
         plt.show()
 
@@ -165,27 +175,27 @@ class MonteCarlo(SensitivityAnalysis):
         fig, axes = plt.subplots(rows, cols, figsize=(12, 4 * rows))
         axes = axes.flatten()
 
-        colors = sns.color_palette('viridis', len(self.operand_names))
+        colors = sns.color_palette("viridis", len(self.operand_names))
 
         df = self._results
         for i in range(num):
-
             key = self.operand_names[i]
-            if plot_type == 'histogram':
+            if plot_type == "histogram":
                 if kde:
-                    sns.kdeplot(df[key], ax=axes[i], color=colors[i],
-                                fill=True, alpha=0.3)
+                    sns.kdeplot(
+                        df[key], ax=axes[i], color=colors[i], fill=True, alpha=0.3
+                    )
                 else:
-                    sns.histplot(df[key], kde=False, ax=axes[i],
-                                 color=colors[i], alpha=0.5)
+                    sns.histplot(
+                        df[key], kde=False, ax=axes[i], color=colors[i], alpha=0.5
+                    )
 
-            elif plot_type == 'cdf':
+            elif plot_type == "cdf":
                 data = df[key]
                 data_sorted = np.sort(data)
                 cdf = np.arange(1, len(data_sorted) + 1) / len(data_sorted)
                 axes[i].plot(data_sorted, cdf, color=colors[i])
-                axes[i].fill_between(data_sorted, 0, cdf, color=colors[i],
-                                     alpha=0.3)
+                axes[i].fill_between(data_sorted, 0, cdf, color=colors[i], alpha=0.3)
                 axes[i].grid()
                 axes[i].set_xlim([None, data_sorted[-1]])
                 axes[i].set_ylim([0, None])
@@ -193,7 +203,7 @@ class MonteCarlo(SensitivityAnalysis):
                 axes[i].set_title(key)
 
             else:
-                raise ValueError(f'Invalid plot type: {plot_type}')
+                raise ValueError(f"Invalid plot type: {plot_type}")
 
         for j in range(num, len(axes)):
             fig.delaxes(axes[j])
@@ -212,8 +222,7 @@ class MonteCarlo(SensitivityAnalysis):
                 system.
         """
         if not self.tolerancing.operands:
-            raise ValueError('No operands found in the tolerancing system.')
+            raise ValueError("No operands found in the tolerancing system.")
 
         if not self.tolerancing.perturbations:
-            raise ValueError('No perturbations found in the tolerancing '
-                             'system.')
+            raise ValueError("No perturbations found in the tolerancing system.")

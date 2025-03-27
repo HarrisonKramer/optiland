@@ -33,8 +33,7 @@ class PickupManager:
     def __len__(self):
         return len(self.pickups)
 
-    def add(self, source_surface_idx, attr_type, target_surface_idx,
-            scale=1, offset=0):
+    def add(self, source_surface_idx, attr_type, target_surface_idx, scale=1, offset=0):
         """
         Adds a new pickup operation to the manager.
 
@@ -50,8 +49,9 @@ class PickupManager:
             offset (float, optional): The offset added to the picked up value.
                 Defaults to 0.
         """
-        pickup = Pickup(self.optic, source_surface_idx, attr_type,
-                        target_surface_idx, scale, offset)
+        pickup = Pickup(
+            self.optic, source_surface_idx, attr_type, target_surface_idx, scale, offset
+        )
         pickup.apply()
         self.pickups.append(pickup)
 
@@ -118,8 +118,15 @@ class Pickup:
         ValueError: If an invalid source attribute is specified.
     """
 
-    def __init__(self, optic, source_surface_idx, attr_type,
-                 target_surface_idx, scale=1, offset=0):
+    def __init__(
+        self,
+        optic,
+        source_surface_idx,
+        attr_type,
+        target_surface_idx,
+        scale=1,
+        offset=0,
+    ):
         self.optic = optic
         self.source_surface_idx = source_surface_idx
         self.attr_type = attr_type
@@ -150,16 +157,14 @@ class Pickup:
             ValueError: If the source attribute is invalid.
         """
         surface = self.optic.surface_group.surfaces[self.source_surface_idx]
-        if self.attr_type == 'radius':
+        if self.attr_type == "radius":
             return surface.geometry.radius
-        elif self.attr_type == 'conic':
+        elif self.attr_type == "conic":
             return surface.geometry.k
-        elif self.attr_type == 'thickness':
-            return (
-                self.optic.surface_group.get_thickness(self.source_surface_idx)
-            )
+        elif self.attr_type == "thickness":
+            return self.optic.surface_group.get_thickness(self.source_surface_idx)
         else:
-            raise ValueError('Invalid source attribute')
+            raise ValueError("Invalid source attribute")
 
     def _set_value(self, value):
         """
@@ -171,14 +176,14 @@ class Pickup:
         Raises:
             ValueError: If the source attribute is invalid.
         """
-        if self.attr_type == 'radius':
+        if self.attr_type == "radius":
             self.optic.set_radius(value, self.target_surface_idx)
-        elif self.attr_type == 'conic':
+        elif self.attr_type == "conic":
             self.optic.set_conic(value, self.target_surface_idx)
-        elif self.attr_type == 'thickness':
+        elif self.attr_type == "thickness":
             self.optic.set_thickness(value, self.target_surface_idx)
         else:
-            raise ValueError('Invalid source attribute')
+            raise ValueError("Invalid source attribute")
 
     def to_dict(self):
         """
@@ -188,11 +193,11 @@ class Pickup:
             dict: A dictionary representation of the pickup operation.
         """
         return {
-            'source_surface_idx': self.source_surface_idx,
-            'attr_type': self.attr_type,
-            'target_surface_idx': self.target_surface_idx,
-            'scale': self.scale,
-            'offset': self.offset
+            "source_surface_idx": self.source_surface_idx,
+            "attr_type": self.attr_type,
+            "target_surface_idx": self.target_surface_idx,
+            "scale": self.scale,
+            "offset": self.offset,
         }
 
     @classmethod
@@ -208,5 +213,11 @@ class Pickup:
         Returns:
             Pickup: A Pickup object created from the dictionary representation.
         """
-        return cls(optic, data['source_surface_idx'], data['attr_type'],
-                   data['target_surface_idx'], data['scale'], data['offset'])
+        return cls(
+            optic,
+            data["source_surface_idx"],
+            data["attr_type"],
+            data["target_surface_idx"],
+            data["scale"],
+            data["offset"],
+        )

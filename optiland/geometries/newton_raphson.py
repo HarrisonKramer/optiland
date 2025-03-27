@@ -29,14 +29,13 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             calculations. Defaults to 100.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0, tol=1e-10,
-                 max_iter=100):
+    def __init__(self, coordinate_system, radius, conic=0.0, tol=1e-10, max_iter=100):
         super().__init__(coordinate_system, radius, conic)
         self.tol = tol
         self.max_iter = max_iter
 
     def __str__(self):
-        return 'Newton Raphson'  # pragma: no cover
+        return "Newton Raphson"  # pragma: no cover
 
     @abstractmethod
     def sag(self, x=0, y=0):
@@ -117,16 +116,20 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             tuple: The intersection points (x, y, z).
         """
         a = rays.L**2 + rays.M**2 + rays.N**2
-        b = (2 * rays.L * rays.x + 2 * rays.M * rays.y -
-             2 * rays.N * self.radius + 2 * rays.N * rays.z)
-        c = (rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z)
+        b = (
+            2 * rays.L * rays.x
+            + 2 * rays.M * rays.y
+            - 2 * rays.N * self.radius
+            + 2 * rays.N * rays.z
+        )
+        c = rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z
 
         # discriminant
-        d = b ** 2 - 4 * a * c
+        d = b**2 - 4 * a * c
 
         # two solutions for distance to sphere
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             t1 = (-b + np.sqrt(d)) / (2 * a)
             t2 = (-b - np.sqrt(d)) / (2 * a)
 
@@ -155,10 +158,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             dict: The dictionary representation of the geometry.
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({
-            'tol': self.tol,
-            'max_iter': self.max_iter
-        })
+        geometry_dict.update({"tol": self.tol, "max_iter": self.max_iter})
         return geometry_dict
 
     @classmethod
@@ -172,14 +172,14 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         Returns:
             NewtonRaphsonGeometry: The geometry created from the dictionary.
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
-        conic = data.get('conic', 0.0)
-        tol = data.get('tol', 1e-10)
-        max_iter = data.get('max_iter', 100)
+        cs = CoordinateSystem.from_dict(data["cs"])
+        conic = data.get("conic", 0.0)
+        tol = data.get("tol", 1e-10)
+        max_iter = data.get("max_iter", 100)
 
-        return cls(cs, data['radius'], conic, tol, max_iter)
+        return cls(cs, data["radius"], conic, tol, max_iter)

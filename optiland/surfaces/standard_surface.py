@@ -9,6 +9,7 @@ absorption based on the surface properties and materials involved.
 
 Kramer Harrison, 2023
 """
+
 import numpy as np
 from optiland.rays import BaseRays, RealRays, ParaxialRays
 from optiland.materials import BaseMaterial
@@ -34,20 +35,22 @@ class Surface:
             Defaults to None.
         comment (str, optional): A comment for the surface. Defaults to ''.
     """
+
     _registry = {}  # registry for all surfaces
 
-    def __init__(self,
-                 geometry: BaseGeometry,
-                 material_pre: BaseMaterial,
-                 material_post: BaseMaterial,
-                 is_stop: bool = False,
-                 aperture: BaseAperture = None,
-                 coating: BaseCoating = None,
-                 bsdf: BaseBSDF = None,
-                 is_reflective: bool = False,
-                 surface_type: str = None,
-                 comment: str = '',
-                 ):
+    def __init__(
+        self,
+        geometry: BaseGeometry,
+        material_pre: BaseMaterial,
+        material_post: BaseMaterial,
+        is_stop: bool = False,
+        aperture: BaseAperture = None,
+        coating: BaseCoating = None,
+        bsdf: BaseBSDF = None,
+        is_reflective: bool = False,
+        surface_type: str = None,
+        comment: str = "",
+    ):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
@@ -164,8 +167,9 @@ class Surface:
 
         # if there is a coating, modify ray properties
         if self.coating:
-            rays = self.coating.interact(rays, reflect=self.is_reflective,
-                                         nx=nx, ny=ny, nz=nz)
+            rays = self.coating.interact(
+                rays, reflect=self.is_reflective, nx=nx, ny=ny, nz=nz
+            )
         else:
             # update polarization matrices, if PolarizedRays
             rays.update()
@@ -267,15 +271,15 @@ class Surface:
         Returns a dictionary representation of the surface.
         """
         return {
-            'type': self.__class__.__name__,
-            'geometry': self.geometry.to_dict(),
-            'material_pre': self.material_pre.to_dict(),
-            'material_post': self.material_post.to_dict(),
-            'is_stop': self.is_stop,
-            'aperture': self.aperture.to_dict() if self.aperture else None,
-            'coating': self.coating.to_dict() if self.coating else None,
-            'bsdf': self.bsdf.to_dict() if self.bsdf else None,
-            'is_reflective': self.is_reflective
+            "type": self.__class__.__name__,
+            "geometry": self.geometry.to_dict(),
+            "material_pre": self.material_pre.to_dict(),
+            "material_post": self.material_post.to_dict(),
+            "is_stop": self.is_stop,
+            "aperture": self.aperture.to_dict() if self.aperture else None,
+            "coating": self.coating.to_dict() if self.coating else None,
+            "bsdf": self.bsdf.to_dict() if self.bsdf else None,
+            "is_reflective": self.is_reflective,
         }
 
     @classmethod
@@ -306,16 +310,15 @@ class Surface:
         Returns:
             Surface: The surface.
         """
-        surface_type = data.get('type')
-        geometry = BaseGeometry.from_dict(data['geometry'])
-        material_pre = BaseMaterial.from_dict(data['material_pre'])
-        material_post = BaseMaterial.from_dict(data['material_post'])
-        aperture = BaseAperture.from_dict(data['aperture']) \
-            if data['aperture'] else None
-        coating = BaseCoating.from_dict(data['coating']) \
-            if data['coating'] else None
-        bsdf = BaseBSDF.from_dict(data['bsdf']) \
-            if data['bsdf'] else None
+        surface_type = data.get("type")
+        geometry = BaseGeometry.from_dict(data["geometry"])
+        material_pre = BaseMaterial.from_dict(data["material_pre"])
+        material_post = BaseMaterial.from_dict(data["material_post"])
+        aperture = (
+            BaseAperture.from_dict(data["aperture"]) if data["aperture"] else None
+        )
+        coating = BaseCoating.from_dict(data["coating"]) if data["coating"] else None
+        bsdf = BaseBSDF.from_dict(data["bsdf"]) if data["bsdf"] else None
 
         surface_class = cls._registry.get(surface_type, cls)
 
@@ -323,9 +326,9 @@ class Surface:
             geometry,
             material_pre,
             material_post,
-            data['is_stop'],
+            data["is_stop"],
             aperture,
             coating,
             bsdf,
-            data['is_reflective']
-            )
+            data["is_reflective"],
+        )

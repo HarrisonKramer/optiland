@@ -45,15 +45,26 @@ class FFTPSF(Wavefront):
     """
 
     def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
-        super().__init__(optic=optic, fields=[field], wavelengths=[wavelength],
-                         num_rays=num_rays, distribution='uniform')
+        super().__init__(
+            optic=optic,
+            fields=[field],
+            wavelengths=[wavelength],
+            num_rays=num_rays,
+            distribution="uniform",
+        )
 
         self.grid_size = grid_size
         self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
 
-    def view(self, projection='2d', log=False, figsize=(7, 5.5),
-             threshold=0.05, num_points=128):
+    def view(
+        self,
+        projection="2d",
+        log=False,
+        figsize=(7, 5.5),
+        threshold=0.05,
+        num_points=128,
+    ):
         """
         Visualizes the PSF.
 
@@ -76,9 +87,9 @@ class FFTPSF(Wavefront):
         x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
-        if projection == '2d':
+        if projection == "2d":
             self._plot_2d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
-        elif projection == '3d':
+        elif projection == "3d":
             self._plot_3d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
@@ -90,7 +101,7 @@ class FFTPSF(Wavefront):
         Returns:
             float: The Strehl ratio.
         """
-        return self.psf[self.grid_size//2, self.grid_size//2] / 100
+        return self.psf[self.grid_size // 2, self.grid_size // 2] / 100
 
     def _plot_2d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
         """
@@ -113,16 +124,16 @@ class FFTPSF(Wavefront):
         # replace values <= 0 with smallest non-zero value in image
         image[image <= 0] = np.min(image[image > 0])
 
-        extent = [-x_extent/2, x_extent/2, -y_extent/2, y_extent/2]
+        extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(image, norm=norm, extent=extent)
 
-        ax.set_xlabel('X (µm)')
-        ax.set_ylabel('Y (µm)')
-        ax.set_title('FFT PSF')
+        ax.set_xlabel("X (µm)")
+        ax.set_ylabel("Y (µm)")
+        ax.set_title("FFT PSF")
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel('Relative Intensity (%)', rotation=270)
+        cbar.ax.set_ylabel("Relative Intensity (%)", rotation=270)
         plt.show()
 
     def _plot_3d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
@@ -137,11 +148,10 @@ class FFTPSF(Wavefront):
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 5.5).
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
-                               figsize=figsize)
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        x = np.linspace(-x_extent/2, x_extent/2, image.shape[1])
-        y = np.linspace(-y_extent/2, y_extent/2, image.shape[0])
+        x = np.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
+        y = np.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
@@ -155,16 +165,23 @@ class FFTPSF(Wavefront):
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
             log_formatter = self._log_colorbar_formatter
 
-        surf = ax.plot_surface(X, Y, image, rstride=1, cstride=1,
-                               cmap='viridis', linewidth=0, antialiased=False)
+        surf = ax.plot_surface(
+            X,
+            Y,
+            image,
+            rstride=1,
+            cstride=1,
+            cmap="viridis",
+            linewidth=0,
+            antialiased=False,
+        )
 
-        ax.set_xlabel('X (µm)')
-        ax.set_ylabel('Y (µm)')
-        ax.set_zlabel('Relative Intensity (%)')
-        ax.set_title('FFT PSF')
+        ax.set_xlabel("X (µm)")
+        ax.set_ylabel("Y (µm)")
+        ax.set_zlabel("Relative Intensity (%)")
+        ax.set_title("FFT PSF")
 
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
-                     pad=0.15, format=log_formatter)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15, format=log_formatter)
         fig.tight_layout()
         plt.show()
 
@@ -196,7 +213,7 @@ class FFTPSF(Wavefront):
             str: The formatted tick label.
         """
         linear_value = 10**value
-        return '{:.1e}'.format(linear_value)
+        return "{:.1e}".format(linear_value)
 
     def _generate_pupils(self):
         """
@@ -311,8 +328,9 @@ class FFTPSF(Wavefront):
         pupils_padded = []
         for pupil in self.pupils:
             pad = (self.grid_size - pupil.shape[0]) // 2
-            pupil = np.pad(pupil, ((pad, pad), (pad, pad)),
-                           mode='constant', constant_values=0)
+            pupil = np.pad(
+                pupil, ((pad, pad), (pad, pad)), mode="constant", constant_values=0
+            )
             pupils_padded.append(pupil)
         return pupils_padded
 
@@ -351,7 +369,7 @@ class FFTPSF(Wavefront):
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= (1 + np.abs(m) / p)
+            FNO *= 1 + np.abs(m) / p
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q

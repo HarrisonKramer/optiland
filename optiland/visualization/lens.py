@@ -8,11 +8,7 @@ Kramer Harrison, 2024
 import numpy as np
 import vtk
 from matplotlib.patches import Polygon
-from optiland.visualization.utils import (
-    transform,
-    transform_3d,
-    revolve_contour
-)
+from optiland.visualization.utils import transform, transform_3d, revolve_contour
 
 
 class Lens2D:
@@ -117,9 +113,12 @@ class Lens2D:
             z (numpy.ndarray): The z coordinates of the lens.
         """
         vertices = np.column_stack((z, y))
-        polygon = Polygon(vertices, closed=True,
-                          facecolor=(0.8, 0.8, 0.8, 0.6),
-                          edgecolor=(0.5, 0.5, 0.5))
+        polygon = Polygon(
+            vertices,
+            closed=True,
+            facecolor=(0.8, 0.8, 0.8, 0.6),
+            edgecolor=(0.5, 0.5, 0.5),
+        )
         ax.add_patch(polygon)
 
     def _plot_lenses(self, ax, sags):
@@ -132,9 +131,9 @@ class Lens2D:
             sags (list): A list of tuples containing arrays of x, y, and z
                 coordinates for each surface.
         """
-        for k in range(len(sags)-1):
+        for k in range(len(sags) - 1):
             x1, y1, z1 = sags[k]
-            x2, y2, z2 = sags[k+1]
+            x2, y2, z2 = sags[k + 1]
 
             # plot lens
             x = np.concatenate([x1, x2[::-1]])
@@ -181,8 +180,12 @@ class Lens3D(Lens2D):
             geometry = surf.surf.geometry
             if not geometry.is_symmetric:
                 return False
-            if (geometry.cs.rx != 0 or geometry.cs.ry != 0 or
-                    geometry.cs.x != 0 or geometry.cs.y != 0):
+            if (
+                geometry.cs.rx != 0
+                or geometry.cs.ry != 0
+                or geometry.cs.x != 0
+                or geometry.cs.y != 0
+            ):
                 return False
         return True
 
@@ -327,9 +330,9 @@ class Lens3D(Lens2D):
             x, y, z = transform(x, y, z, surface.surf, is_global=False)
             circles.append(np.stack((x, y, z), axis=-1))
 
-        for k in range(len(circles)-1):
+        for k in range(len(circles) - 1):
             circle1 = circles[k]
-            circle2 = circles[k+1]
+            circle2 = circles[k + 1]
             actor = self._get_edge_surface(circle1, circle2)
             renderer.AddActor(actor)
 
@@ -345,7 +348,7 @@ class Lens3D(Lens2D):
                 coordinates.
         """
         max_extent = self._get_max_extent()
-        theta = np.linspace(0, 2*np.pi, 256)
+        theta = np.linspace(0, 2 * np.pi, 256)
 
         x = max_extent * np.cos(theta)
         y = max_extent * np.sin(theta)

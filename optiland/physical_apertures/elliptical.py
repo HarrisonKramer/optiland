@@ -5,6 +5,7 @@ elliptical aperture that clips rays based on their position.
 
 Kramer Harrison, 2025
 """
+
 from optiland.physical_apertures.base import BaseAperture
 
 
@@ -72,10 +73,10 @@ class EllipticalAperture(BaseAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['a'] = self.a
-        aperture_dict['b'] = self.b
-        aperture_dict['offset_x'] = self.offset_x
-        aperture_dict['offset_y'] = self.offset_y
+        aperture_dict["a"] = self.a
+        aperture_dict["b"] = self.b
+        aperture_dict["offset_x"] = self.offset_x
+        aperture_dict["offset_y"] = self.offset_y
         return aperture_dict
 
     @classmethod
@@ -89,5 +90,4 @@ class EllipticalAperture(BaseAperture):
         Returns:
             EllipticalAperture: The aperture object.
         """
-        return cls(data['a'], data['b'],
-                   data['offset_x'], data['offset_y'])
+        return cls(data["a"], data["b"], data["offset_x"], data["offset_y"])

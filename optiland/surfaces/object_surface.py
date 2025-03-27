@@ -29,7 +29,7 @@ class ObjectSurface(Surface):
             far away.
     """
 
-    def __init__(self, geometry, material_post, comment=''):
+    def __init__(self, geometry, material_post, comment=""):
         super().__init__(
             geometry=geometry,
             material_pre=material_post,
@@ -105,9 +105,9 @@ class ObjectSurface(Surface):
         Returns a dictionary representation of the surface.
         """
         return {
-            'type': self.__class__.__name__,
-            'geometry': self.geometry.to_dict(),
-            'material_post': self.material_post.to_dict()
+            "type": self.__class__.__name__,
+            "geometry": self.geometry.to_dict(),
+            "material_post": self.material_post.to_dict(),
         }
 
     @classmethod
@@ -121,6 +121,6 @@ class ObjectSurface(Surface):
         Returns:
             Surface: The surface.
         """
-        geometry = BaseGeometry.from_dict(data['geometry'])
-        material_post = BaseMaterial.from_dict(data['material_post'])
+        geometry = BaseGeometry.from_dict(data["geometry"])
+        material_post = BaseMaterial.from_dict(data["material_post"])
         return cls(geometry, material_post)

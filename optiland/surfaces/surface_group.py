@@ -73,8 +73,7 @@ class SurfaceGroup:
     @property
     def opd(self):
         """np.array: optical path difference recorded on all surfaces"""
-        return np.array([surf.opd for surf in self.surfaces
-                         if surf.opd.size > 0])
+        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
 
     @property
     def u(self):
@@ -84,14 +83,14 @@ class SurfaceGroup:
     @property
     def intensity(self):
         """np.array: ray intensities on all surfaces"""
-        return np.array([surf.intensity for surf in self.surfaces
-                         if surf.intensity.size > 0])
+        return np.array(
+            [surf.intensity for surf in self.surfaces if surf.intensity.size > 0]
+        )
 
     @property
     def positions(self):
         """np.array: z positions of surface vertices"""
-        return np.array([surf.geometry.cs.position_in_gcs[2]
-                         for surf in self.surfaces])
+        return np.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
 
     @property
     def radii(self):
@@ -116,7 +115,7 @@ class SurfaceGroup:
             if surface.is_stop:
                 return index
 
-        raise ValueError('No stop surface found.')
+        raise ValueError("No stop surface found.")
 
     @property
     def num_surfaces(self):
@@ -142,7 +141,7 @@ class SurfaceGroup:
             float: The thickness between the two surfaces.
         """
         t = self.positions
-        return t[surface_number+1] - t[surface_number]
+        return t[surface_number + 1] - t[surface_number]
 
     def trace(self, rays, skip=0):
         """
@@ -158,8 +157,16 @@ class SurfaceGroup:
             surface.trace(rays)
         return rays
 
-    def add_surface(self, new_surface=None, surface_type='standard', comment='',
-                    index=None, is_stop=False, material='air', **kwargs):
+    def add_surface(
+        self,
+        new_surface=None,
+        surface_type="standard",
+        comment="",
+        index=None,
+        is_stop=False,
+        material="air",
+        **kwargs,
+    ):
         """
         Adds a new surface to the list of surfaces.
 
@@ -184,11 +191,11 @@ class SurfaceGroup:
         """
         if new_surface is None:
             if index is None:
-                raise ValueError('Must define index when defining surface.')
+                raise ValueError("Must define index when defining surface.")
 
             new_surface = self.surface_factory.create_surface(
                 surface_type, comment, index, is_stop, material, **kwargs
-                )
+            )
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -196,7 +203,7 @@ class SurfaceGroup:
 
         self.surfaces.insert(index, new_surface)
 
-        self.surface_factory.last_thickness = kwargs.get('thickness', 0)
+        self.surface_factory.last_thickness = kwargs.get("thickness", 0)
 
     def remove_surface(self, index):
         """
@@ -212,7 +219,7 @@ class SurfaceGroup:
         None
         """
         if index == 0:
-            raise ValueError('Cannot remove object surface.')
+            raise ValueError("Cannot remove object surface.")
         del self.surfaces[index]
 
     def reset(self):
@@ -272,9 +279,7 @@ class SurfaceGroup:
         Returns:
             dict: The surface group as a dictionary.
         """
-        return {
-            'surfaces': [surface.to_dict() for surface in self.surfaces]
-        }
+        return {"surfaces": [surface.to_dict() for surface in self.surfaces]}
 
     @classmethod
     def from_dict(cls, data):
@@ -287,5 +292,6 @@ class SurfaceGroup:
         Returns:
             SurfaceGroup: The surface group created from the dictionary.
         """
-        return cls([Surface.from_dict(surface_data)
-                    for surface_data in data['surfaces']])
+        return cls(
+            [Surface.from_dict(surface_data) for surface_data in data["surfaces"]]
+        )

@@ -15,6 +15,7 @@ class RayGenerator:
     """
     Generator class for creating rays.
     """
+
     def __init__(self, optic):
         self.optic = optic
 
@@ -36,15 +37,18 @@ class RayGenerator:
         x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
         if self.optic.obj_space_telecentric:
-            if self.optic.field_type == 'angle':
-                raise ValueError('Field type cannot be "angle" for telecentric'
-                                 ' object space.')
-            if self.optic.aperture.ap_type == 'EPD':
-                raise ValueError('Aperture type cannot be "EPD" for '
-                                 'telecentric object space.')
-            elif self.optic.aperture.ap_type == 'imageFNO':
-                raise ValueError('Aperture type cannot be "imageFNO" for '
-                                 'telecentric object space.')
+            if self.optic.field_type == "angle":
+                raise ValueError(
+                    'Field type cannot be "angle" for telecentric object space.'
+                )
+            if self.optic.aperture.ap_type == "EPD":
+                raise ValueError(
+                    'Aperture type cannot be "EPD" for telecentric object space.'
+                )
+            elif self.optic.aperture.ap_type == "imageFNO":
+                raise ValueError(
+                    'Aperture type cannot be "imageFNO" for telecentric object space.'
+                )
 
             sin = self.optic.aperture.value
             z = np.sqrt(1 - sin**2) / sin + z0
@@ -59,7 +63,7 @@ class RayGenerator:
             y1 = Py * EPD * vy / 2
             z1 = np.full_like(Px, EPL)
 
-        mag = np.sqrt((x1 - x0)**2 + (y1 - y0)**2 + (z1 - z0)**2)
+        mag = np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
         L = (x1 - x0) / mag
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
@@ -71,10 +75,12 @@ class RayGenerator:
         intensity = np.ones_like(x1)
         wavelength = np.ones_like(x1) * wavelength
 
-        if self.optic.polarization == 'ignore':
+        if self.optic.polarization == "ignore":
             if self.optic.surface_group.uses_polarization:
-                raise ValueError('Polarization must be set when surfaces have '
-                                 'polarization-dependent coatings.')
+                raise ValueError(
+                    "Polarization must be set when surfaces have "
+                    "polarization-dependent coatings."
+                )
             return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
         else:
             return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
@@ -105,12 +111,14 @@ class RayGenerator:
         field_x = max_field * Hx
         field_y = max_field * Hy
         if obj.is_infinite:
-            if self.optic.field_type == 'object_height':
-                raise ValueError('Field type cannot be "object_height" for an '
-                                 'object at infinity.')
+            if self.optic.field_type == "object_height":
+                raise ValueError(
+                    'Field type cannot be "object_height" for an object at infinity.'
+                )
             if self.optic.obj_space_telecentric:
-                raise ValueError('Object space cannot be telecentric for an '
-                                 'object at infinity.')
+                raise ValueError(
+                    "Object space cannot be telecentric for an object at infinity."
+                )
             EPL = self.optic.paraxial.EPL()
             EPD = self.optic.paraxial.EPD()
 
@@ -125,12 +133,12 @@ class RayGenerator:
             y0 = Py * EPD / 2 * vy + y
             z0 = np.full_like(Px, z)
         else:
-            if self.optic.field_type == 'object_height':
+            if self.optic.field_type == "object_height":
                 x = field_x
                 y = field_y
                 z = obj.geometry.sag(x, y) + obj.geometry.cs.z
 
-            elif self.optic.field_type == 'angle':
+            elif self.optic.field_type == "angle":
                 EPL = self.optic.paraxial.EPL()
                 z = self.optic.surface_group.positions[0]
                 x = -np.tan(np.radians(field_x)) * (EPL - z)

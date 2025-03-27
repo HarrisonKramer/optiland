@@ -70,8 +70,17 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             Defaults to 1.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[], norm_x=1, norm_y=1):
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=[],
+        norm_x=1,
+        norm_y=1,
+    ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = np.atleast_2d(coefficients)
         self.norm_x = norm_x
@@ -79,7 +88,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self.is_symmetric = False
 
     def __str__(self):
-        return 'Chebyshev Polynomial'
+        return "Chebyshev Polynomial"
 
     def sag(self, x=0, y=0):
         """
@@ -101,13 +110,11 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self._validate_inputs(x_norm, y_norm)
 
         r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
         non_zero_indices = np.argwhere(self.c != 0)
         for i, j in non_zero_indices:
-            z += (self.c[i, j] *
-                  self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm))
+            z += self.c[i, j] * self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm)
 
         return z
 
@@ -129,16 +136,22 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         self._validate_inputs(x_norm, y_norm)
 
         r2 = x**2 + y**2
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dzdx = x / denom
         dzdy = y / denom
 
         non_zero_indices = np.argwhere(self.c != 0)
         for i, j in non_zero_indices:
-            dzdx += (self._chebyshev_derivative(i, x_norm) *
-                     self.c[i, j] * self._chebyshev(j, y_norm))
-            dzdy += (self._chebyshev_derivative(j, y_norm) *
-                     self.c[i, j] * self._chebyshev(i, x_norm))
+            dzdx += (
+                self._chebyshev_derivative(i, x_norm)
+                * self.c[i, j]
+                * self._chebyshev(j, y_norm)
+            )
+            dzdy += (
+                self._chebyshev_derivative(j, y_norm)
+                * self.c[i, j]
+                * self._chebyshev(i, x_norm)
+            )
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
@@ -186,9 +199,11 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             y_norm (np.ndarray): The normalized y values.
         """
         if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
-            raise ValueError('Chebyshev input coordinates must be normalized '
-                             'to [-1, 1]. Consider updating the normalization '
-                             'factors.')
+            raise ValueError(
+                "Chebyshev input coordinates must be normalized "
+                "to [-1, 1]. Consider updating the normalization "
+                "factors."
+            )
 
     def to_dict(self):
         """
@@ -198,11 +213,13 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             dict: The Chebyshev polynomial geometry as a dictionary.
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({
-            'coefficients': self.c.tolist(),
-            'norm_x': self.norm_x,
-            'norm_y': self.norm_y
-        })
+        geometry_dict.update(
+            {
+                "coefficients": self.c.tolist(),
+                "norm_x": self.norm_x,
+                "norm_y": self.norm_y,
+            }
+        )
 
         return geometry_dict
 
@@ -218,20 +235,20 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             ChebyshevPolynomialGeometry: The Chebyshev polynomial geometry.
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
+        cs = CoordinateSystem.from_dict(data["cs"])
 
         return cls(
             cs,
-            data['radius'],
-            data.get('conic', 0.0),
-            data.get('tol', 1e-10),
-            data.get('max_iter', 100),
-            data.get('coefficients', []),
-            data.get('norm_x', 1),
-            data.get('norm_y', 1)
+            data["radius"],
+            data.get("conic", 0.0),
+            data.get("tol", 1e-10),
+            data.get("max_iter", 100),
+            data.get("coefficients", []),
+            data.get("norm_x", 1),
+            data.get("norm_y", 1),
         )

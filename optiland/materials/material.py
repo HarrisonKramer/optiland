@@ -8,7 +8,8 @@ to define the optical properties of a material (or glass) in Optiland.
 
 Kramer Harrison, 2024
 """
-#import pkg_resources
+
+# import pkg_resources
 from importlib import resources
 import pandas as pd
 from optiland.materials.material_file import MaterialFile
@@ -41,13 +42,16 @@ class Material(MaterialFile):
     """
 
     _df = None
-    _filename = str(
-        resources.files('optiland.database').joinpath('catalog_nk.csv')
-        )
+    _filename = str(resources.files("optiland.database").joinpath("catalog_nk.csv"))
 
-
-    def __init__(self, name, reference=None, robust_search=True,
-                 min_wavelength=None, max_wavelength=None):
+    def __init__(
+        self,
+        name,
+        reference=None,
+        robust_search=True,
+        min_wavelength=None,
+        max_wavelength=None,
+    ):
         self.name = name
         self.reference = reference
         self.robust = robust_search
@@ -89,13 +93,15 @@ class Material(MaterialFile):
         # Calculate the distance
         for i in range(1, rows):
             for j in range(1, cols):
-                if s1[i-1] == s2[j-1]:
+                if s1[i - 1] == s2[j - 1]:
                     cost = 0
                 else:
                     cost = 1
-                distance_matrix[i][j] = min(distance_matrix[i-1][j] + 1,
-                                            distance_matrix[i][j-1] + 1,
-                                            distance_matrix[i-1][j-1] + cost)
+                distance_matrix[i][j] = min(
+                    distance_matrix[i - 1][j] + 1,
+                    distance_matrix[i][j - 1] + 1,
+                    distance_matrix[i - 1][j - 1] + cost,
+                )
 
         return distance_matrix[-1][-1]
 
@@ -116,52 +122,57 @@ class Material(MaterialFile):
 
         # Filter rows where input string is substring of category_name or name
         dfi = df[
-            df['category_name'].str.lower().str.contains(name) |
-            df['name'].str.lower().str.contains(name) |
-            df['filename_no_ext'].str.lower().str.contains(name)
+            df["category_name"].str.lower().str.contains(name)
+            | df["name"].str.lower().str.contains(name)
+            | df["filename_no_ext"].str.lower().str.contains(name)
         ].copy()
 
         # If reference given, filter rows non-matching rows
         if self.reference:
             reference = self.reference.lower()
             dfi = dfi[
-                dfi['category_name'].str.lower().str.contains(reference) |
-                dfi['category_name_full'].str.lower().str.contains(reference) |
-                dfi['reference'].str.lower().str.contains(reference) |
-                dfi['name'].str.lower().str.contains(reference) |
-                dfi['filename'].str.lower().str.contains(reference)
+                dfi["category_name"].str.lower().str.contains(reference)
+                | dfi["category_name_full"].str.lower().str.contains(reference)
+                | dfi["reference"].str.lower().str.contains(reference)
+                | dfi["name"].str.lower().str.contains(reference)
+                | dfi["filename"].str.lower().str.contains(reference)
             ]
 
         # Filter rows based on wavelength range
         if self.min_wavelength:
-            dfi = dfi[(dfi['min_wavelength'] <= self.min_wavelength) &
-                      (dfi['max_wavelength'] >= self.min_wavelength)]
+            dfi = dfi[
+                (dfi["min_wavelength"] <= self.min_wavelength)
+                & (dfi["max_wavelength"] >= self.min_wavelength)
+            ]
         if self.max_wavelength:
-            dfi = dfi[(dfi['min_wavelength'] <= self.max_wavelength) &
-                      (dfi['max_wavelength'] >= self.max_wavelength)]
+            dfi = dfi[
+                (dfi["min_wavelength"] <= self.max_wavelength)
+                & (dfi["max_wavelength"] >= self.max_wavelength)
+            ]
 
         # If no rows match, return an empty DataFrame
         if dfi.empty:
             return pd.DataFrame()
 
         # Calculate similarity scores using Levenshtein distance
-        dfi['similarity_score'] = dfi.apply(
+        dfi["similarity_score"] = dfi.apply(
             lambda row: min(
-                self._levenshtein_distance(name, row['category_name'].lower()),
-                self._levenshtein_distance(name, row['name'].lower()),
-                self._levenshtein_distance(
-                    name, row['filename_no_ext'].lower()
-                    ),
-            ), axis=1
+                self._levenshtein_distance(name, row["category_name"].lower()),
+                self._levenshtein_distance(name, row["name"].lower()),
+                self._levenshtein_distance(name, row["filename_no_ext"].lower()),
+            ),
+            axis=1,
         )
 
         # Sort by similarity score in ascending order
-        dfi = dfi.sort_values(by='similarity_score').reset_index(drop=True)
+        dfi = dfi.sort_values(by="similarity_score").reset_index(drop=True)
 
         # Warning if no exact matches found
-        if dfi['similarity_score'].iloc[0] > 0:
-            print(f'Warning: No exact matches found for material {self.name}. '
-                  'Material may be invalid.')
+        if dfi["similarity_score"].iloc[0] > 0:
+            print(
+                f"Warning: No exact matches found for material {self.name}. "
+                "Material may be invalid."
+            )
 
         return dfi
 
@@ -179,20 +190,18 @@ class Material(MaterialFile):
                 material.
         """
         if no_matches:
-            message = f'No matches found for material {self.name}'
+            message = f"No matches found for material {self.name}"
         elif multiple_matches:
-            message = f'Multiple matches found for material {self.name}'
+            message = f"Multiple matches found for material {self.name}"
         else:
-            message = f'Error finding material {self.name}'
+            message = f"Error finding material {self.name}"
 
         if self.reference:
-            message += f' with reference {self.reference}'
+            message += f" with reference {self.reference}"
 
         if self.min_wavelength or self.max_wavelength:
-            wavelength_range = (
-                f'({self.min_wavelength}, {self.max_wavelength}) µm'
-            )
-            message += f' within wavelength range {wavelength_range}'
+            wavelength_range = f"({self.min_wavelength}, {self.max_wavelength}) µm"
+            message += f" within wavelength range {wavelength_range}"
 
         raise ValueError(message)
 
@@ -217,11 +226,11 @@ class Material(MaterialFile):
             self._raise_material_error(multiple_matches=True)
 
         material_data = filtered_df.loc[0].to_dict()
-        filename = filtered_df.loc[0, 'filename']
+        filename = filtered_df.loc[0, "filename"]
 
         full_filename = str(
-            resources.files('optiland.database').joinpath('data-nk', filename)
-            )
+            resources.files("optiland.database").joinpath("data-nk", filename)
+        )
 
         return full_filename, material_data
 
@@ -233,13 +242,15 @@ class Material(MaterialFile):
             dict: The material as a dictionary.
         """
         material_dict = super().to_dict()
-        material_dict.update({
-            'name': self.name,
-            'reference': self.reference,
-            'robust_search': self.robust,
-            'min_wavelength': self.min_wavelength,
-            'max_wavelength': self.max_wavelength,
-        })
+        material_dict.update(
+            {
+                "name": self.name,
+                "reference": self.reference,
+                "robust_search": self.robust,
+                "min_wavelength": self.min_wavelength,
+                "max_wavelength": self.max_wavelength,
+            }
+        )
 
         return material_dict
 
@@ -254,13 +265,13 @@ class Material(MaterialFile):
         Returns:
             Material: The material created from the dictionary.
         """
-        if 'name' not in data:
-            raise ValueError('Missing required key: name')
+        if "name" not in data:
+            raise ValueError("Missing required key: name")
 
         return cls(
-            data['name'],
-            data.get('reference', None),
-            data.get('robust_search', True),
-            data.get('min_wavelength', None),
-            data.get('max_wavelength', None)
+            data["name"],
+            data.get("reference", None),
+            data.get("robust_search", True),
+            data.get("min_wavelength", None),
+            data.get("max_wavelength", None),
         )

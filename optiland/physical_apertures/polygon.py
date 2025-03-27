@@ -7,6 +7,7 @@ a polygon-based aperture.
 
 Kramer Harrison, 2025
 """
+
 import numpy as np
 from matplotlib.path import Path
 from optiland.physical_apertures.base import BaseAperture
@@ -75,8 +76,8 @@ class PolygonAperture(BaseAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['x'] = self.x
-        aperture_dict['y'] = self.y
+        aperture_dict["x"] = self.x
+        aperture_dict["y"] = self.y
         return aperture_dict
 
     @classmethod
@@ -90,7 +91,7 @@ class PolygonAperture(BaseAperture):
         Returns:
             PolygonAperture: The aperture object.
         """
-        return cls(data['x'], data['y'])
+        return cls(data["x"], data["y"])
 
 
 class FileAperture(PolygonAperture):
@@ -113,6 +114,7 @@ class FileAperture(PolygonAperture):
         ValueError: If the file cannot be read or does not contain exactly
             two columns.
     """
+
     def __init__(self, filepath, delimiter=None, skip_header=0):
         self.filepath = filepath
         self.delimiter = delimiter
@@ -136,16 +138,26 @@ class FileAperture(PolygonAperture):
             ValueError: If the file cannot be parsed or does not contain at
                 exactly two columns.
         """
-        encodings = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'utf-32',
-                     'utf-32le', 'utf-32be', 'latin1', 'ascii']
+        encodings = [
+            "utf-8",
+            "utf-16",
+            "utf-16le",
+            "utf-16be",
+            "utf-32",
+            "utf-32le",
+            "utf-32be",
+            "latin1",
+            "ascii",
+        ]
         data = None
         for encoding in encodings:
             try:
-                with open(filepath, 'r', encoding=encoding) as f:
+                with open(filepath, "r", encoding=encoding) as f:
                     # delimiter defaults to space if not specified
-                    delim = delimiter if delimiter is not None else ' '
-                    data = np.genfromtxt(f, delimiter=delim, comments='//',
-                                         skip_header=skip_header)
+                    delim = delimiter if delimiter is not None else " "
+                    data = np.genfromtxt(
+                        f, delimiter=delim, comments="//", skip_header=skip_header
+                    )
                 if data is not None:
                     break
             except UnicodeDecodeError:
@@ -166,9 +178,9 @@ class FileAperture(PolygonAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['filepath'] = self.filepath
-        aperture_dict['delimiter'] = self.delimiter
-        aperture_dict['skip_header'] = self.skip_header
+        aperture_dict["filepath"] = self.filepath
+        aperture_dict["delimiter"] = self.delimiter
+        aperture_dict["skip_header"] = self.skip_header
         return aperture_dict
 
     @classmethod
@@ -182,4 +194,4 @@ class FileAperture(PolygonAperture):
         Returns:
             FileAperture: The aperture object.
         """
-        return cls(data['filepath'], data['delimiter'], data['skip_header'])
+        return cls(data["filepath"], data["delimiter"], data["skip_header"])

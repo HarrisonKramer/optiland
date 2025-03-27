@@ -22,6 +22,7 @@ class BaseAperture(ABC):
     Methods:
         clip(RealRays): Clips the given rays based on the aperture's shape.
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -85,9 +86,7 @@ class BaseAperture(ABC):
         Returns:
             dict: The dictionary representation of the aperture.
         """
-        return {
-            'type': self.__class__.__name__
-        }
+        return {"type": self.__class__.__name__}
 
     @classmethod
     def from_dict(cls, data):
@@ -100,11 +99,10 @@ class BaseAperture(ABC):
         Returns:
             BaseAperture: The aperture object.
         """
-        aperture_type = data['type']
+        aperture_type = data["type"]
         return cls._registry[aperture_type].from_dict(data)
 
-    def view(self, nx=256, ny=256,
-             ax=None, buffer=1.1, **kwargs):
+    def view(self, nx=256, ny=256, ax=None, buffer=1.1, **kwargs):
         """
         Visualize the aperture.
 
@@ -128,9 +126,9 @@ class BaseAperture(ABC):
         X, Y = np.meshgrid(x, y)
         Z = self.contains(X, Y)
         ax.contourf(X, Y, Z, **kwargs)
-        ax.set_xlabel('X [mm]')
-        ax.set_ylabel('Y [mm]')
-        ax.set_aspect('equal')
+        ax.set_xlabel("X [mm]")
+        ax.set_ylabel("Y [mm]")
+        ax.set_aspect("equal")
 
     def __or__(self, other):
         """Union: a point is inside if it is in either region."""
@@ -157,6 +155,7 @@ class BaseBooleanAperture(BaseAperture):
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         self.a = a
         self.b = b
@@ -210,10 +209,7 @@ class BaseBooleanAperture(BaseAperture):
             dict: The dictionary representation of the aperture.
         """
         data = super().to_dict()
-        data.update({
-            'a': self.a.to_dict(),
-            'b': self.b.to_dict()
-        })
+        data.update({"a": self.a.to_dict(), "b": self.b.to_dict()})
         return data
 
     @classmethod
@@ -227,8 +223,8 @@ class BaseBooleanAperture(BaseAperture):
         Returns:
             BaseBooleanAperture: The aperture object.
         """
-        a = BaseAperture.from_dict(data['a'])
-        b = BaseAperture.from_dict(data['b'])
+        a = BaseAperture.from_dict(data["a"])
+        b = BaseAperture.from_dict(data["b"])
         return cls(a, b)
 
 
@@ -240,6 +236,7 @@ class UnionAperture(BaseBooleanAperture):
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
@@ -266,6 +263,7 @@ class IntersectionAperture(BaseBooleanAperture):
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
@@ -292,6 +290,7 @@ class DifferenceAperture(BaseBooleanAperture):
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
@@ -307,5 +306,6 @@ class DifferenceAperture(BaseBooleanAperture):
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
         """
-        return np.logical_and(self.a.contains(x, y),
-                              np.logical_not(self.b.contains(x, y)))
+        return np.logical_and(
+            self.a.contains(x, y), np.logical_not(self.b.contains(x, y))
+        )

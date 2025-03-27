@@ -13,6 +13,7 @@ where
 
 Kramer Harrison, 2025
 """
+
 import warnings
 import numpy as np
 from optiland.geometries.even_asphere import EvenAsphere
@@ -45,14 +46,20 @@ class OddAsphere(EvenAsphere):
             used.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[]):
-        super().__init__(coordinate_system, radius, conic,
-                         tol, max_iter, coefficients)
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=[],
+    ):
+        super().__init__(coordinate_system, radius, conic, tol, max_iter, coefficients)
         self.order = 1  # used for optimization scaling
 
     def __str__(self):
-        return 'Odd Asphere'
+        return "Odd Asphere"
 
     def sag(self, x=0, y=0):
         """
@@ -69,8 +76,7 @@ class OddAsphere(EvenAsphere):
         """
         r2 = x**2 + y**2
         r = np.sqrt(r2)
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
             z += Ci * r ** (i + 1)
 
@@ -91,15 +97,15 @@ class OddAsphere(EvenAsphere):
         r2 = x**2 + y**2
         r = np.sqrt(r2)
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for i, Ci in enumerate(self.c):
-                x_term = (i + 1) * x * Ci * r**(i - 1)
-                y_term = (i + 1) * y * Ci * r**(i - 1)
+                x_term = (i + 1) * x * Ci * r ** (i - 1)
+                y_term = (i + 1) * y * Ci * r ** (i - 1)
 
                 x_term[~np.isfinite(x_term)] = 0
                 y_term[~np.isfinite(y_term)] = 0

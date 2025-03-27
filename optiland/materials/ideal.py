@@ -56,10 +56,7 @@ class IdealMaterial(BaseMaterial):
             dict: A dictionary representation of the material.
         """
         material_dict = super().to_dict()
-        material_dict.update({
-            'index': self.index,
-            'absorp': self.absorp
-        })
+        material_dict.update({"index": self.index, "absorp": self.absorp})
         return material_dict
 
     @classmethod
@@ -73,4 +70,4 @@ class IdealMaterial(BaseMaterial):
         Returns:
             Material: The material.
         """
-        return cls(data['index'], data.get('absorp', 0))
+        return cls(data["index"], data.get("absorp", 0))

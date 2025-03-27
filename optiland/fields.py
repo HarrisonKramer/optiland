@@ -5,6 +5,7 @@ system.
 
 Kramer Harrison, 2023
 """
+
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 
@@ -21,8 +22,9 @@ class Field:
         vy (float): The vignette factor in the y-direction.
     """
 
-    def __init__(self, field_type, x=0, y=0,
-                 vignette_factor_x=0.0, vignette_factor_y=0.0):
+    def __init__(
+        self, field_type, x=0, y=0, vignette_factor_x=0.0, vignette_factor_y=0.0
+    ):
         self.field_type = field_type
         self.x = x
         self.y = y
@@ -36,11 +38,13 @@ class Field:
         Returns:
             dict: A dictionary representation of the field.
         """
-        return {'field_type': self.field_type,
-                'x': self.x,
-                'y': self.y,
-                'vx': self.vx,
-                'vy': self.vy}
+        return {
+            "field_type": self.field_type,
+            "x": self.x,
+            "y": self.y,
+            "vx": self.vx,
+            "vy": self.vy,
+        }
 
     @classmethod
     def from_dict(cls, field_dict):
@@ -53,14 +57,16 @@ class Field:
         Returns:
             Field: A field object created from the dictionary.
         """
-        if 'field_type' not in field_dict:
-            raise ValueError('Missing required keys: field_type')
+        if "field_type" not in field_dict:
+            raise ValueError("Missing required keys: field_type")
 
-        return cls(field_dict['field_type'],
-                   field_dict.get('x', 0),
-                   field_dict.get('y', 0),
-                   field_dict.get('vx', 0.0),
-                   field_dict.get('vy', 0.0))
+        return cls(
+            field_dict["field_type"],
+            field_dict.get("x", 0),
+            field_dict.get("y", 0),
+            field_dict.get("vx", 0.0),
+            field_dict.get("vy", 0.0),
+        )
 
 
 class FieldGroup:
@@ -162,8 +168,10 @@ class FieldGroup:
         max_field = self.max_field
         if max_field == 0:
             return [(0, 0)]
-        return [(float(x/max_field), float(y/max_field))
-                for x, y in zip(self.x_fields, self.y_fields)]
+        return [
+            (float(x / max_field), float(y / max_field))
+            for x, y in zip(self.x_fields, self.y_fields)
+        ]
 
     def add_field(self, field):
         """
@@ -206,8 +214,10 @@ class FieldGroup:
         Returns:
             dict: A dictionary representation of the field group.
         """
-        return {'fields': [field.to_dict() for field in self.fields],
-                'telecentric': self.telecentric}
+        return {
+            "fields": [field.to_dict() for field in self.fields],
+            "telecentric": self.telecentric,
+        }
 
     @classmethod
     def from_dict(cls, data):
@@ -221,7 +231,7 @@ class FieldGroup:
             FieldGroup: A field group object created from the dictionary.
         """
         field_group = cls()
-        for field_dict in data['fields']:
+        for field_dict in data["fields"]:
             field_group.add_field(Field.from_dict(field_dict))
-        field_group.set_telecentric(data['telecentric'])
+        field_group.set_telecentric(data["telecentric"])
         return field_group

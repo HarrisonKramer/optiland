@@ -8,6 +8,7 @@ system.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from optiland.rays import RealRays
@@ -37,9 +38,16 @@ class CoordinateSystem:
 
     """
 
-    def __init__(self, x: float = 0, y: float = 0, z: float = 0,
-                 rx: float = 0, ry: float = 0, rz: float = 0,
-                 reference_cs: 'CoordinateSystem' = None):
+    def __init__(
+        self,
+        x: float = 0,
+        y: float = 0,
+        z: float = 0,
+        rx: float = 0,
+        ry: float = 0,
+        rz: float = 0,
+        reference_cs: "CoordinateSystem" = None,
+    ):
         self.x = x
         self.y = y
         self.z = z
@@ -109,7 +117,7 @@ class CoordinateSystem:
             np.ndarray: The rotation matrix of the coordinate system.
         """
         rotation = np.array([self.rx, self.ry, self.rz])
-        return R.from_euler('xyz', rotation).as_matrix()
+        return R.from_euler("xyz", rotation).as_matrix()
 
     def get_effective_transform(self):
         """Get the effective translation and rotation matrix of the CS
@@ -124,8 +132,7 @@ class CoordinateSystem:
 
         else:
             # Get the effective transform of the reference coordinate system
-            ref_translation, ref_rot_mat = \
-                self.reference_cs.get_effective_transform()
+            ref_translation, ref_rot_mat = self.reference_cs.get_effective_transform()
 
             # Combine translations
             eff_translation = ref_translation + ref_rot_mat @ translation
@@ -143,7 +150,7 @@ class CoordinateSystem:
         """
         _, eff_rot_mat = self.get_effective_transform()
         # Convert the effective rotation matrix back to Euler angles
-        return R.from_matrix(eff_rot_mat).as_euler('xyz')
+        return R.from_matrix(eff_rot_mat).as_euler("xyz")
 
     def to_dict(self):
         """
@@ -154,14 +161,13 @@ class CoordinateSystem:
 
         """
         return {
-            'x': float(self.x),
-            'y': float(self.y),
-            'z': float(self.z),
-            'rx': float(self.rx),
-            'ry': float(self.ry),
-            'rz': float(self.rz),
-            'reference_cs': self.reference_cs.to_dict()
-            if self.reference_cs else None
+            "x": float(self.x),
+            "y": float(self.y),
+            "z": float(self.z),
+            "rx": float(self.rx),
+            "ry": float(self.ry),
+            "rz": float(self.rz),
+            "reference_cs": self.reference_cs.to_dict() if self.reference_cs else None,
         }
 
     @classmethod
@@ -177,9 +183,16 @@ class CoordinateSystem:
             CoordinateSystem: The coordinate system.
 
         """
-        reference_cs = cls.from_dict(data['reference_cs']) \
-            if data['reference_cs'] else None
+        reference_cs = (
+            cls.from_dict(data["reference_cs"]) if data["reference_cs"] else None
+        )
 
-        return cls(data.get('x', 0), data.get('y', 0), data.get('z', 0),
-                   data.get('rx', 0), data.get('ry', 0), data.get('rz', 0),
-                   reference_cs)
+        return cls(
+            data.get("x", 0),
+            data.get("y", 0),
+            data.get("z", 0),
+            data.get("rx", 0),
+            data.get("ry", 0),
+            data.get("rz", 0),
+            reference_cs,
+        )

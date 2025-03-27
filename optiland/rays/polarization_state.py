@@ -24,19 +24,26 @@ class PolarizationState:
         phase_y (Optional[float]): Phase of the y-component of the electric
             field.
     """
-    def __init__(self, is_polarized: bool = False,
-                 Ex: Optional[float] = None,
-                 Ey: Optional[float] = None,
-                 phase_x: Optional[float] = None,
-                 phase_y: Optional[float] = None):
+
+    def __init__(
+        self,
+        is_polarized: bool = False,
+        Ex: Optional[float] = None,
+        Ey: Optional[float] = None,
+        phase_x: Optional[float] = None,
+        phase_y: Optional[float] = None,
+    ):
         if is_polarized:
             if None in [Ex, Ey, phase_x, phase_y]:
-                raise ValueError('All parameters must be provided for a '
-                                 'polarized state.')
+                raise ValueError(
+                    "All parameters must be provided for a polarized state."
+                )
         else:
             if not all(var is None for var in [Ex, Ey, phase_x, phase_y]):
-                raise ValueError('Ex, Ey, phase_x, and phase_y must be None '
-                                 'for a non-polarized state.')
+                raise ValueError(
+                    "Ex, Ey, phase_x, and phase_y must be None "
+                    "for a non-polarized state."
+                )
 
         self.is_polarized = is_polarized
         self.Ex = float(Ex) if Ex is not None else None
@@ -57,8 +64,10 @@ class PolarizationState:
             str: The string representation of the polarization state.
         """
         if self.is_polarized:
-            return f"Polarized Light: Ex: {self.Ex}, Ey: {self.Ey}, " \
-                   f"Phase x: {self.phase_x}, Phase y: {self.phase_y}"
+            return (
+                f"Polarized Light: Ex: {self.Ex}, Ey: {self.Ey}, "
+                f"Phase x: {self.phase_x}, Phase y: {self.phase_y}"
+            )
         else:
             return "Unpolarized Light"
 
@@ -92,40 +101,42 @@ def create_polarization(pol_type: str):
     Raises:
         ValueError: If an invalid polarization type is provided.
     """
-    if pol_type == 'unpolarized':
+    if pol_type == "unpolarized":
         return PolarizationState(is_polarized=False)
-    elif pol_type == 'H':
+    elif pol_type == "H":
         Ex = 1
         Ey = 0
         phase_x = 0
         phase_y = 0
-    elif pol_type == 'V':
+    elif pol_type == "V":
         Ex = 0
         Ey = 1
         phase_x = 0
         phase_y = 0
-    elif pol_type == 'L+45':
+    elif pol_type == "L+45":
         Ex = 1
         Ey = 1
         phase_x = 0
         phase_y = 0
-    elif pol_type == 'L-45':
+    elif pol_type == "L-45":
         Ex = 1
         Ey = -1
         phase_x = 0
         phase_y = 0
-    elif pol_type == 'RCP':
+    elif pol_type == "RCP":
         Ex = np.sqrt(2) / 2
         Ey = np.sqrt(2) / 2
         phase_x = 0
         phase_y = -np.pi / 2
-    elif pol_type == 'LCP':
+    elif pol_type == "LCP":
         Ex = np.sqrt(2) / 2
         Ey = np.sqrt(2) / 2
         phase_x = 0
         phase_y = np.pi / 2
     else:
-        raise ValueError('Invalid polarization type. Must be H, V, L+45, L-45,'
-                         ' RCP or LCP.')
-    return PolarizationState(is_polarized=True, Ex=Ex, Ey=Ey,
-                             phase_x=phase_x, phase_y=phase_y)
+        raise ValueError(
+            "Invalid polarization type. Must be H, V, L+45, L-45, RCP or LCP."
+        )
+    return PolarizationState(
+        is_polarized=True, Ex=Ex, Ey=Ey, phase_x=phase_x, phase_y=phase_y
+    )

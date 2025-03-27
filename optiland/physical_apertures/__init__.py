@@ -1,11 +1,6 @@
 # flake8: noqa
 
-from .base import (
-    BaseAperture,
-    UnionAperture,
-    IntersectionAperture,
-    DifferenceAperture
-)
+from .base import BaseAperture, UnionAperture, IntersectionAperture, DifferenceAperture
 from .radial import RadialAperture
 from .rectangular import RectangularAperture
 from .offset_radial import OffsetRadialAperture

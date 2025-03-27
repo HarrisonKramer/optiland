@@ -23,6 +23,7 @@ class BaseCoating(ABC):
         reflect: Abstract method to handle reflection interaction.
         transmit: Abstract method to handle transmission interaction.
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -30,9 +31,14 @@ class BaseCoating(ABC):
         super().__init_subclass__(**kwargs)
         BaseCoating._registry[cls.__name__] = cls
 
-    def interact(self, rays: RealRays, reflect: bool = False,
-                 nx: np.ndarray = None, ny: np.ndarray = None,
-                 nz: np.ndarray = None):
+    def interact(
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Performs an interaction based on the given parameters.
 
@@ -67,8 +73,13 @@ class BaseCoating(ABC):
         return np.arccos(dot)
 
     @abstractmethod
-    def reflect(self, rays: RealRays, nx: np.ndarray = None,
-                ny: np.ndarray = None, nz: np.ndarray = None):
+    def reflect(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Abstract method to handle reflection interaction.
 
@@ -81,8 +92,13 @@ class BaseCoating(ABC):
         pass  # pragma: no cover
 
     @abstractmethod
-    def transmit(self, rays: RealRays, nx: np.ndarray = None,
-                 ny: np.ndarray = None, nz: np.ndarray = None):
+    def transmit(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Abstract method to handle transmission interaction.
 
@@ -102,7 +118,7 @@ class BaseCoating(ABC):
             dict: The dictionary representation of the coating.
         """
         return {
-            'type': self.__class__.__name__,
+            "type": self.__class__.__name__,
         }
 
     @classmethod
@@ -116,7 +132,7 @@ class BaseCoating(ABC):
         Returns:
             BaseCoating: The coating created from the dictionary.
         """
-        coating_type = data['type']
+        coating_type = data["type"]
         return cls._registry[coating_type].from_dict(data)
 
 
@@ -148,8 +164,13 @@ class SimpleCoating(BaseCoating):
         self.reflectance = reflectance
         self.absorptance = 1 - reflectance - transmittance
 
-    def reflect(self, rays: RealRays, nx: np.ndarray = None,
-                ny: np.ndarray = None, nz: np.ndarray = None):
+    def reflect(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Reflects the rays based on the reflectance of the coating.
 
@@ -162,8 +183,13 @@ class SimpleCoating(BaseCoating):
         rays.i *= self.reflectance
         return rays
 
-    def transmit(self, rays: RealRays, nx: np.ndarray = None,
-                 ny: np.ndarray = None, nz: np.ndarray = None):
+    def transmit(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Transmits the rays through the coating by multiplying their intensity
         with the transmittance.
@@ -185,9 +211,9 @@ class SimpleCoating(BaseCoating):
             dict: The dictionary representation of the coating.
         """
         return {
-            'type': self.__class__.__name__,
-            'transmittance': self.transmittance,
-            'reflectance': self.reflectance
+            "type": self.__class__.__name__,
+            "transmittance": self.transmittance,
+            "reflectance": self.reflectance,
         }
 
     @classmethod
@@ -201,7 +227,7 @@ class SimpleCoating(BaseCoating):
         Returns:
             BaseCoating: The coating created from the dictionary.
         """
-        return cls(data['transmittance'], data['reflectance'])
+        return cls(data["transmittance"], data["reflectance"])
 
 
 class BaseCoatingPolarized(BaseCoating, ABC):
@@ -215,8 +241,14 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         reflect(rays, nx, ny, nz): Reflects the rays off the coating.
         transmit(rays, nx, ny, nz): Transmits the rays through the coating.
     """
-    def reflect(self, rays: RealRays, nx: np.ndarray = None,
-                ny: np.ndarray = None, nz: np.ndarray = None):
+
+    def reflect(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Reflects the rays off the coating.
 
@@ -234,8 +266,13 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         rays.update(jones)
         return rays
 
-    def transmit(self, rays: RealRays, nx: np.ndarray = None,
-                 ny: np.ndarray = None, nz: np.ndarray = None):
+    def transmit(
+        self,
+        rays: RealRays,
+        nx: np.ndarray = None,
+        ny: np.ndarray = None,
+        nz: np.ndarray = None,
+    ):
         """
         Transmits the rays through the coating.
 
@@ -261,9 +298,9 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             dict: The dictionary representation of the coating.
         """
         return {
-            'type': self.__class__.__name__,
-            'material_pre': self.material_pre.to_dict(),
-            'material_post': self.material_post.to_dict()
+            "type": self.__class__.__name__,
+            "material_pre": self.material_pre.to_dict(),
+            "material_post": self.material_post.to_dict(),
         }
 
     @classmethod
@@ -277,7 +314,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         Returns:
             BaseCoating: The coating created from the dictionary.
         """
-        return cls(data['material_pre'], data['material_post'])
+        return cls(data["material_pre"], data["material_post"])
 
 
 class FresnelCoating(BaseCoatingPolarized):
@@ -310,9 +347,9 @@ class FresnelCoating(BaseCoatingPolarized):
             dict: The dictionary representation of the coating.
         """
         return {
-            'type': self.__class__.__name__,
-            'material_pre': self.material_pre.to_dict(),
-            'material_post': self.material_post.to_dict()
+            "type": self.__class__.__name__,
+            "material_pre": self.material_pre.to_dict(),
+            "material_post": self.material_post.to_dict(),
         }
 
     @classmethod
@@ -326,5 +363,7 @@ class FresnelCoating(BaseCoatingPolarized):
         Returns:
             BaseCoating: The coating created from the dictionary.
         """
-        return cls(BaseMaterial.from_dict(data['material_pre']),
-                   BaseMaterial.from_dict(data['material_post']))
+        return cls(
+            BaseMaterial.from_dict(data["material_pre"]),
+            BaseMaterial.from_dict(data["material_post"]),
+        )

@@ -5,6 +5,7 @@ aperture that clips rays based on their distance from the origin.
 
 Kramer Harrison, 2025
 """
+
 from optiland.physical_apertures.base import BaseAperture
 
 
@@ -67,8 +68,8 @@ class RadialAperture(BaseAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['r_max'] = self.r_max
-        aperture_dict['r_min'] = self.r_min
+        aperture_dict["r_max"] = self.r_max
+        aperture_dict["r_min"] = self.r_min
         return aperture_dict
 
     @classmethod
@@ -82,4 +83,4 @@ class RadialAperture(BaseAperture):
         Returns:
             RadialAperture: The aperture object.
         """
-        return cls(data['r_max'], data['r_min'])
+        return cls(data["r_max"], data["r_min"])

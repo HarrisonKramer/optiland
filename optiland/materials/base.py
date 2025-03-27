@@ -32,6 +32,7 @@ class BaseMaterial(ABC):
             at a given wavelength in microns.
         abbe(): Method to calculate the Abbe number of the material.
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -71,9 +72,7 @@ class BaseMaterial(ABC):
         Returns:
             dict: The dictionary representation of the material.
         """
-        return {
-            'type': self.__class__.__name__
-        }
+        return {"type": self.__class__.__name__}
 
     @classmethod
     def from_dict(cls, data):

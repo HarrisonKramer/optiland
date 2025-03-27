@@ -7,10 +7,7 @@ to compensate for perturbations in an optical system.
 Kramer Harrison, 2024
 """
 
-from optiland.optimization import (
-    OptimizationProblem,
-    OptimizerGeneric,
-    LeastSquares)
+from optiland.optimization import OptimizationProblem, OptimizerGeneric, LeastSquares
 
 
 class CompensatorOptimizer(OptimizationProblem):
@@ -32,14 +29,14 @@ class CompensatorOptimizer(OptimizationProblem):
             respective classes.
     """
 
-    def __init__(self, method='generic', tol=1e-5):
+    def __init__(self, method="generic", tol=1e-5):
         super().__init__()
         self.method = method
         self.tol = tol
 
         self._optimizer_map = {
-            'generic': OptimizerGeneric,
-            'least_squares': LeastSquares
+            "generic": OptimizerGeneric,
+            "least_squares": LeastSquares,
         }
 
     def get_optimizer(self):

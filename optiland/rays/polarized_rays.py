@@ -72,24 +72,29 @@ class PolarizedRays(RealRays):
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
-            self.i = np.sum(np.abs(E1)**2, axis=1)
+            self.i = np.sum(np.abs(E1) ** 2, axis=1)
         else:
             # Local x-axis field
-            state_x = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0,
-                                        phase_x=0.0, phase_y=0.0)
+            state_x = PolarizationState(
+                is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
+            )
             E0_x = self._get_3d_electric_field(state_x)
             E1_x = self.get_output_field(E0_x)
 
             # Local y-axis field
-            state_y = PolarizationState(is_polarized=True, Ex=0.0, Ey=1.0,
-                                        phase_x=0.0, phase_y=0.0)
+            state_y = PolarizationState(
+                is_polarized=True, Ex=0.0, Ey=1.0, phase_x=0.0, phase_y=0.0
+            )
             E0_y = self._get_3d_electric_field(state_y)
             E1_y = self.get_output_field(E0_y)
 
             # average two orthogonal polarizations to get mean intensity,
             # scale by initial ray intensity
-            self.i = (np.sum(np.abs(E1_x)**2, axis=1) +
-                      np.sum(np.abs(E1_y)**2, axis=1)) * self._i0 / 2
+            self.i = (
+                (np.sum(np.abs(E1_x) ** 2, axis=1) + np.sum(np.abs(E1_y) ** 2, axis=1))
+                * self._i0
+                / 2
+            )
 
     def update(self, jones_matrix: np.ndarray = None):
         """
@@ -127,7 +132,7 @@ class PolarizedRays(RealRays):
         if jones_matrix is None:
             p = np.matmul(o_out, o_in)
         else:
-            p = np.einsum('nij,njk,nkl->nil', o_out, jones_matrix, o_in)
+            p = np.einsum("nij,njk,nkl->nil", o_out, jones_matrix, o_in)
 
         # update polarization matrices of rays
         self.p = np.matmul(p, self.p)
@@ -149,14 +154,15 @@ class PolarizedRays(RealRays):
 
         norms = np.linalg.norm(p, axis=1)
         if np.any(norms == 0):
-            raise ValueError('k-vector parallel to x-axis is not currently '
-                             'supported.')
+            raise ValueError("k-vector parallel to x-axis is not currently supported.")
 
         p /= norms[:, np.newaxis]
 
         s = np.cross(p, k)
 
-        E = (state.Ex * np.exp(1j * state.phase_x) * s +
-             state.Ey * np.exp(1j * state.phase_y) * p)
+        E = (
+            state.Ex * np.exp(1j * state.phase_x) * s
+            + state.Ey * np.exp(1j * state.phase_y) * p
+        )
 
         return E

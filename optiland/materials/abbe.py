@@ -7,7 +7,8 @@ coefficient is ignored in this model and is always set to zero.
 
 Kramer Harrison, 2024
 """
-#import pkg_resources
+
+# import pkg_resources
 from importlib import resources
 import numpy as np
 from optiland.materials.base import BaseMaterial
@@ -41,7 +42,7 @@ class AbbeMaterial(BaseMaterial):
             float: The refractive index of the material.
         """
         if np.any(wavelength < 0.380) or np.any(wavelength > 0.750):
-            raise ValueError('Wavelength out of range for this model.')
+            raise ValueError("Wavelength out of range for this model.")
         return np.polyval(self._p, wavelength)
 
     def k(self, wavelength):
@@ -69,11 +70,13 @@ class AbbeMaterial(BaseMaterial):
 
         # File contains fit coefficients
         coefficients_file = str(
-        resources.files('optiland.database').joinpath('glass_model_coefficients.npy')
+            resources.files("optiland.database").joinpath(
+                "glass_model_coefficients.npy"
+            )
         )
-        #coefficients_file = pkg_resources.resource_filename(
+        # coefficients_file = pkg_resources.resource_filename(
         #    'optiland.database', 'glass_model_coefficients.npy'
-        #)
+        # )
         coefficients = np.load(coefficients_file)
         return X_poly @ coefficients
 
@@ -85,10 +88,7 @@ class AbbeMaterial(BaseMaterial):
             dict: The dictionary representation of the material.
         """
         material_dict = super().to_dict()
-        material_dict.update({
-            'index': self.index,
-            'abbe': self.abbe
-        })
+        material_dict.update({"index": self.index, "abbe": self.abbe})
         return material_dict
 
     @classmethod
@@ -102,9 +102,9 @@ class AbbeMaterial(BaseMaterial):
         Returns:
             AbbeMaterial: The material object.
         """
-        required_keys = ['index', 'abbe']
+        required_keys = ["index", "abbe"]
         for key in required_keys:
             if key not in data:
-                raise ValueError(f'Missing required key: {key}')
+                raise ValueError(f"Missing required key: {key}")
 
-        return cls(data['index'], data['abbe'])
+        return cls(data["index"], data["abbe"])

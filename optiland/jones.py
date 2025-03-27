@@ -25,8 +25,9 @@ class BaseJones(ABC):
     """
 
     @abstractmethod
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -58,8 +59,9 @@ class JonesFresnel(BaseJones):
         self.material_pre = material_pre
         self.material_post = material_post
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -80,14 +82,14 @@ class JonesFresnel(BaseJones):
         # precomputations for speed
         cos_theta_i = np.cos(aoi)
         n = n2 / n1
-        radicand = (n**2 - np.sin(aoi)**2).astype(complex)
+        radicand = (n**2 - np.sin(aoi) ** 2).astype(complex)
         root = np.sqrt(radicand)
 
         # compute fresnel coefficients & compute jones matrices
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         if reflect:
             s = (cos_theta_i - root) / (cos_theta_i + root)
-            p = (n**2*cos_theta_i - root) / (n**2*cos_theta_i + root)
+            p = (n**2 * cos_theta_i - root) / (n**2 * cos_theta_i + root)
 
             jones_matrix[:, 0, 0] = s
             jones_matrix[:, 1, 1] = -p
@@ -108,8 +110,9 @@ class JonesPolarizerH(BaseJones):
     Class representing the Jones matrix for a horizontal polarizer.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -136,8 +139,9 @@ class JonesPolarizerV(BaseJones):
     Class representing the Jones matrix for a vertical polarizer.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -164,8 +168,9 @@ class JonesPolarizerL45(BaseJones):
     Class representing the Jones matrix for a linear polarizer at 45 degrees.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -194,8 +199,9 @@ class JonesPolarizerL135(BaseJones):
     Class representing the Jones matrix for a linear polarizer at 135 degrees.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -224,8 +230,9 @@ class JonesPolarizerRCP(BaseJones):
     Class representing the Jones matrix for a right circular polarizer.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -254,8 +261,9 @@ class JonesPolarizerLCP(BaseJones):
     Class representing the Jones matrix for a left circular polarizer.
     """
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -301,8 +309,9 @@ class JonesLinearDiattenuator(BaseJones):
         self.t_max = t_max
         self.theta = theta
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -316,12 +325,13 @@ class JonesLinearDiattenuator(BaseJones):
         Returns:
             np.ndarray: The calculated Jones matrix.
         """
-        j00 = (self.t_max * np.cos(self.theta)**2 +
-               self.t_min * np.sin(self.theta)**2)
-        j0x = (self.t_max -
-               self.t_min * np.cos(self.theta) * np.sin(self.theta))
-        j11 = (self.t_max * np.sin(self.theta)**2 +
-               self.t_min * np.cos(self.theta)**2)
+        j00 = (
+            self.t_max * np.cos(self.theta) ** 2 + self.t_min * np.sin(self.theta) ** 2
+        )
+        j0x = self.t_max - self.t_min * np.cos(self.theta) * np.sin(self.theta)
+        j11 = (
+            self.t_max * np.sin(self.theta) ** 2 + self.t_min * np.cos(self.theta) ** 2
+        )
 
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = j00
@@ -351,8 +361,9 @@ class JonesLinearRetarder(BaseJones):
         self.retardance = retardance
         self.theta = theta
 
-    def calculate_matrix(self, rays: RealRays, reflect: bool = False,
-                         aoi: np.ndarray = None):
+    def calculate_matrix(
+        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+    ):
         """
         Calculate the Jones matrix for the given rays.
 
@@ -368,11 +379,9 @@ class JonesLinearRetarder(BaseJones):
         """
         d = self.retardance
         t = self.theta
-        j00 = (np.exp(-1j * d / 2) * np.cos(t)**2 +
-               np.exp(1j * d / 2) * np.sin(t)**2)
+        j00 = np.exp(-1j * d / 2) * np.cos(t) ** 2 + np.exp(1j * d / 2) * np.sin(t) ** 2
         j0x = -1j * np.sin(d / 2) * np.sin(2 * t)
-        j11 = (np.exp(1j * d / 2) * np.cos(t)**2 +
-               np.exp(-1j * d / 2) * np.sin(t)**2)
+        j11 = np.exp(1j * d / 2) * np.cos(t) ** 2 + np.exp(-1j * d / 2) * np.sin(t) ** 2
 
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = j00

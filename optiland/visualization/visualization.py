@@ -8,6 +8,7 @@ and through various fields of view.
 
 Kramer Harrison, 2024
 """
+
 import os
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
-plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
+plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 
 
 class OpticViewer:
@@ -42,11 +43,20 @@ class OpticViewer:
         self.optic = optic
 
         self.rays = Rays2D(optic)
-        self.system = OpticalSystem(optic, self.rays, projection='2d')
+        self.system = OpticalSystem(optic, self.rays, projection="2d")
 
-    def view(self, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y', figsize=(10, 4), xlim=None, ylim=None,
-             title=None, reference=None):
+    def view(
+        self,
+        fields="all",
+        wavelengths="primary",
+        num_rays=3,
+        distribution="line_y",
+        figsize=(10, 4),
+        xlim=None,
+        ylim=None,
+        title=None,
+        reference=None,
+    ):
         """
         Visualizes the optical system.
 
@@ -68,13 +78,18 @@ class OpticViewer:
         """
         _, ax = plt.subplots(figsize=figsize)
 
-        self.rays.plot(ax, fields=fields, wavelengths=wavelengths,
-                       num_rays=num_rays, distribution=distribution,
-                       reference=reference)
+        self.rays.plot(
+            ax,
+            fields=fields,
+            wavelengths=wavelengths,
+            num_rays=num_rays,
+            distribution=distribution,
+            reference=reference,
+        )
         self.system.plot(ax)
 
-        plt.gca().set_facecolor('#f8f9fa')  # off-white background
-        plt.axis('image')
+        plt.gca().set_facecolor("#f8f9fa")  # off-white background
+        plt.axis("image")
 
         ax.set_xlabel("Z [mm]")
         ax.set_ylabel("Y [mm]")
@@ -115,14 +130,21 @@ class OpticViewer3D:
         self.optic = optic
 
         self.rays = Rays3D(optic)
-        self.system = OpticalSystem(optic, self.rays, projection='3d')
+        self.system = OpticalSystem(optic, self.rays, projection="3d")
 
         self.ren_win = vtk.vtkRenderWindow()
         self.iren = vtk.vtkRenderWindowInteractor()
 
-    def view(self, fields='all', wavelengths='primary', num_rays=24,
-             distribution='ring', figsize=(1200, 800), dark_mode=False,
-             reference=None):
+    def view(
+        self,
+        fields="all",
+        wavelengths="primary",
+        num_rays=24,
+        distribution="ring",
+        figsize=(1200, 800),
+        dark_mode=False,
+        reference=None,
+    ):
         """
         Visualizes the optical system in 3D.
 
@@ -150,15 +172,18 @@ class OpticViewer3D:
         style = vtk.vtkInteractorStyleTrackballCamera()
         self.iren.SetInteractorStyle(style)
 
-        self.rays.plot(renderer, fields=fields, wavelengths=wavelengths,
-                       num_rays=num_rays, distribution=distribution,
-                       reference=reference)
+        self.rays.plot(
+            renderer,
+            fields=fields,
+            wavelengths=wavelengths,
+            num_rays=num_rays,
+            distribution=distribution,
+            reference=reference,
+        )
         self.system.plot(renderer)
 
         renderer.GradientBackgroundOn()
-        renderer.SetGradientMode(
-            vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL
-        )
+        renderer.SetGradientMode(vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL)
 
         if dark_mode:
             renderer.SetBackground(0.13, 0.15, 0.19)
@@ -168,7 +193,7 @@ class OpticViewer3D:
             renderer.SetBackground2(0.4, 0.5, 0.6)
 
         self.ren_win.SetSize(*figsize)
-        self.ren_win.SetWindowName('Optical System - 3D Viewer')
+        self.ren_win.SetWindowName("Optical System - 3D Viewer")
         self.ren_win.Render()
 
         renderer.GetActiveCamera().SetPosition(1, 0, 0)
@@ -218,16 +243,18 @@ class LensInfoViewer:
 
         self.optic.update_paraxial()
 
-        df = pd.DataFrame({
-            'Type': surf_type,
-            'Comment': comments,
-            'Radius': radii,
-            'Thickness': thicknesses,
-            'Material': mat,
-            'Conic': conic,
-            'Semi-aperture': semi_aperture
-        })
-        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+        df = pd.DataFrame(
+            {
+                "Type": surf_type,
+                "Comment": comments,
+                "Radius": radii,
+                "Thickness": thicknesses,
+                "Material": mat,
+                "Conic": conic,
+                "Semi-aperture": semi_aperture,
+            }
+        )
+        print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
     def _get_surface_types(self):
         """Extracts and formats the surface types."""
@@ -236,13 +263,13 @@ class LensInfoViewer:
             g = surf.geometry
 
             # Check if __str__ method exists
-            if type(g).__dict__.get('__str__'):
+            if type(g).__dict__.get("__str__"):
                 surf_type.append(str(surf.geometry))
             else:
-                raise ValueError('Unknown surface type')
+                raise ValueError("Unknown surface type")
 
             if surf.is_stop:
-                surf_type[-1] = 'Stop - ' + surf_type[-1]
+                surf_type[-1] = "Stop - " + surf_type[-1]
         return surf_type
 
     def _get_comments(self):
@@ -251,32 +278,30 @@ class LensInfoViewer:
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
-        return np.diff(
-            self.optic.surface_group.positions.ravel(), append=np.nan
-        )
+        return np.diff(self.optic.surface_group.positions.ravel(), append=np.nan)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""
-        return [surf.semi_aperture
-                for surf in self.optic.surface_group.surfaces]
+        return [surf.semi_aperture for surf in self.optic.surface_group.surfaces]
 
     def _get_materials(self):
         """Determines the material for each surface."""
         mat = []
         for surf in self.optic.surface_group.surfaces:
             if surf.is_reflective:
-                mat.append('Mirror')
+                mat.append("Mirror")
             elif isinstance(surf.material_post, materials.Material):
                 mat.append(surf.material_post.name)
             elif isinstance(surf.material_post, materials.MaterialFile):
                 mat.append(os.path.basename(surf.material_post.filename))
             elif surf.material_post.index == 1:
-                mat.append('Air')
+                mat.append("Air")
             elif isinstance(surf.material_post, materials.IdealMaterial):
                 mat.append(surf.material_post.index)
             elif isinstance(surf.material_post, materials.AbbeMaterial):
-                mat.append(f'{surf.material_post.index:.4f}, '
-                           f'{surf.material_post.abbe:.2f}')
+                mat.append(
+                    f"{surf.material_post.index:.4f}, {surf.material_post.abbe:.2f}"
+                )
             else:
-                raise ValueError('Unknown material type')
+                raise ValueError("Unknown material type")
         return mat

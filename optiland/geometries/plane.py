@@ -6,6 +6,7 @@ always defined in the local coordinate system of the geometry.
 
 Kramer Harrison, 2024
 """
+
 import warnings
 import numpy as np
 from optiland.geometries.base import BaseGeometry
@@ -25,7 +26,7 @@ class Plane(BaseGeometry):
         self.is_symmetric = True
 
     def __str__(self):
-        return 'Planar'
+        return "Planar"
 
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
@@ -55,7 +56,7 @@ class Plane(BaseGeometry):
                 each ray.
         """
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             t = -rays.z / rays.N
 
         return t
@@ -79,9 +80,11 @@ class Plane(BaseGeometry):
             dict: The dictionary representation of the plane geometry.
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({
-            'radius': np.inf,
-        })
+        geometry_dict.update(
+            {
+                "radius": np.inf,
+            }
+        )
         return geometry_dict
 
     @classmethod
@@ -94,5 +97,5 @@ class Plane(BaseGeometry):
         Returns:
             Plane: The plane geometry.
         """
-        cs = CoordinateSystem.from_dict(data['cs'])
+        cs = CoordinateSystem.from_dict(data["cs"])
         return cls(cs)

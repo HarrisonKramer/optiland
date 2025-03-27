@@ -38,8 +38,7 @@ class IndexVariable(VariableBehavior):
             at the specified surface.
     """
 
-    def __init__(self, optic, surface_number, wavelength, apply_scaling=True,
-                 **kwargs):
+    def __init__(self, optic, surface_number, wavelength, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.wavelength = wavelength
 

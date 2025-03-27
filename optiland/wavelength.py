@@ -25,7 +25,7 @@ class Wavelength:
         _convert_to_um(): Converts the wavelength value to microns.
     """
 
-    def __init__(self, value, is_primary=True, unit='um'):
+    def __init__(self, value, is_primary=True, unit="um"):
         self._value = value
         self.is_primary = is_primary
         self._unit = unit.lower()
@@ -39,7 +39,7 @@ class Wavelength:
     @property
     def unit(self):
         """str: the unit of the wavelength"""
-        return 'um'
+        return "um"
 
     @unit.setter
     def unit(self, new_unit):
@@ -64,19 +64,13 @@ class Wavelength:
             ValueError: If the current unit is not supported for conversion to
                 micrometers. Supported units: 'nm', 'um', 'mm', 'cm', 'm'.
         """
-        unit_conversion = {
-            'nm': 0.001,
-            'um': 1,
-            'mm': 1000,
-            'cm': 10000,
-            'm': 1000000
-        }
+        unit_conversion = {"nm": 0.001, "um": 1, "mm": 1000, "cm": 10000, "m": 1000000}
 
         if self._unit in unit_conversion:
             conversion_factor = unit_conversion[self._unit]
             return self._value * conversion_factor
         else:
-            raise ValueError('Unsupported unit for conversion to microns.')
+            raise ValueError("Unsupported unit for conversion to microns.")
 
     def to_dict(self):
         """
@@ -85,11 +79,7 @@ class Wavelength:
         Returns:
             dict: A dictionary representation of the wavelength.
         """
-        return {
-            'value': self._value,
-            'is_primary': self.is_primary,
-            'unit': self._unit
-        }
+        return {"value": self._value, "is_primary": self.is_primary, "unit": self._unit}
 
     @classmethod
     def from_dict(cls, data):
@@ -102,15 +92,13 @@ class Wavelength:
         Returns:
             Wavelength: A new Wavelength instance created from the data.
         """
-        required_keys = {'value', 'is_primary', 'unit'}
+        required_keys = {"value", "is_primary", "unit"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
         return cls(
-            value=data['value'],
-            is_primary=data['is_primary'],
-            unit=data['unit']
+            value=data["value"], is_primary=data["is_primary"], unit=data["unit"]
         )
 
 
@@ -153,7 +141,7 @@ class WavelengthGroup:
         """float: the primary wavelength"""
         return self.wavelengths[self.primary_index]
 
-    def add_wavelength(self, value, is_primary=True, unit='um'):
+    def add_wavelength(self, value, is_primary=True, unit="um"):
         """
         Adds a new wavelength to the list of wavelengths.
 
@@ -200,9 +188,7 @@ class WavelengthGroup:
         Returns:
             dict: A dictionary representation of the wavelength group.
         """
-        return {
-            'wavelengths': [wave.to_dict() for wave in self.wavelengths]
-        }
+        return {"wavelengths": [wave.to_dict() for wave in self.wavelengths]}
 
     @classmethod
     def from_dict(cls, data):
@@ -216,11 +202,11 @@ class WavelengthGroup:
             WavelengthGroup: A new WavelengthGroup instance created from the
                 data.
         """
-        if 'wavelengths' not in data:
+        if "wavelengths" not in data:
             raise ValueError('Missing required key: "wavelengths"')
 
         new_group = cls()
-        for wave_data in data['wavelengths']:
+        for wave_data in data["wavelengths"]:
             new_group.add_wavelength(**wave_data)
 
         return new_group

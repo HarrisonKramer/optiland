@@ -17,8 +17,15 @@ class OperandManager:
     def __init__(self):
         self.operands = []
 
-    def add(self, operand_type=None, target=None, min_val=None, max_val=None,
-            weight=1, input_data={}):
+    def add(
+        self,
+        operand_type=None,
+        target=None,
+        min_val=None,
+        max_val=None,
+        weight=1,
+        input_data={},
+    ):
         """Add an operand to the merit function
 
         Args:
@@ -31,8 +38,9 @@ class OperandManager:
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
         """
-        self.operands.append(Operand(operand_type, target, min_val, max_val,
-                                     weight, input_data))
+        self.operands.append(
+            Operand(operand_type, target, min_val, max_val, weight, input_data)
+        )
 
     def clear(self):
         """Clear all operands from the merit function"""

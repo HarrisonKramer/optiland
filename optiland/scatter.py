@@ -52,6 +52,7 @@ def func_wrapper(func, *args):  # pragma: no cover
     @njit(fastmath=True, cache=True)
     def wrapper():
         return func(*args)
+
     return wrapper
 
 
@@ -143,6 +144,7 @@ class BaseBSDF(ABC):
         scatter(rays, nx=None, ny=None, nz=None): scatter rays according to
             the BSDF.
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -150,8 +152,7 @@ class BaseBSDF(ABC):
         super().__init_subclass__(**kwargs)
         BaseBSDF._registry[cls.__name__] = cls
 
-    def scatter(self, rays: RealRays, nx: np.ndarray,
-                ny: np.ndarray, nz: np.ndarray):
+    def scatter(self, rays: RealRays, nx: np.ndarray, ny: np.ndarray, nz: np.ndarray):
         """
         Scatter rays according to the BSDF.
 
@@ -171,8 +172,9 @@ class BaseBSDF(ABC):
         if np.isscalar(nz):
             nz = np.full_like(rays.L, nz)
 
-        scattered_vec = scatter_parallel(rays.L, rays.M, rays.N, nx, ny, nz,
-                                         self.scattering_function)
+        scattered_vec = scatter_parallel(
+            rays.L, rays.M, rays.N, nx, ny, nz, self.scattering_function
+        )
         rays.L = scattered_vec[:, 0]
         rays.M = scattered_vec[:, 1]
         rays.N = scattered_vec[:, 2]
@@ -185,16 +187,14 @@ class BaseBSDF(ABC):
         Returns:
             dict: A dictionary representation of the BSDF.
         """
-        return {
-            'type': self.__class__.__name__
-        }
+        return {"type": self.__class__.__name__}
 
     @classmethod
     def from_dict(cls, data):
         """
         Create a BSDF object from a dictionary.
         """
-        bsdf_type = data['type']
+        bsdf_type = data["type"]
         return cls._registry[bsdf_type].from_dict(data)
 
 
@@ -205,6 +205,7 @@ class LambertianBSDF(BaseBSDF):
     This class represents a Lambertian BSDF, which is generally used to model
     diffuse scattering.
     """
+
     def __init__(self):
         self.scattering_function = get_point_lambertian
 
@@ -216,7 +217,7 @@ class LambertianBSDF(BaseBSDF):
             dict: A dictionary representation of the BSDF.
         """
         return {
-            'type': 'LambertianBSDF',
+            "type": "LambertianBSDF",
         }
 
     @classmethod
@@ -234,6 +235,7 @@ class GaussianBSDF(BaseBSDF):
     This class represents a Gaussian BSDF, which models scattering based on a
     2D Gaussian distribution.
     """
+
     def __init__(self, sigma):
         self.sigma = sigma
         self.scattering_function = func_wrapper(get_point_gaussian, sigma)
@@ -246,8 +248,8 @@ class GaussianBSDF(BaseBSDF):
             dict: A dictionary representation of the BSDF.
         """
         return {
-            'type': 'GaussianBSDF',
-            'sigma': self.sigma,
+            "type": "GaussianBSDF",
+            "sigma": self.sigma,
         }
 
     @classmethod
@@ -255,4 +257,4 @@ class GaussianBSDF(BaseBSDF):
         """
         Create a GaussianBSDF object from a dictionary.
         """
-        return cls(data['sigma'])
+        return cls(data["sigma"])

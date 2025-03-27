@@ -49,7 +49,7 @@ class Tolerancing:
         reset(self): Resets the optic to its nominal state.
     """
 
-    def __init__(self, optic, method='generic', tol=1e-5):
+    def __init__(self, optic, method="generic", tol=1e-5):
         self.optic = optic
         self.method = method
         self.tol = tol
@@ -57,9 +57,15 @@ class Tolerancing:
         self.perturbations = []
         self.compensator = CompensatorOptimizer(method=method, tol=tol)
 
-    def add_operand(self, operand_type: str, input_data: dict = {},
-                    target: float = None, weight: float = 1.0,
-                    min_val: float = None,  max_val: float = None):
+    def add_operand(
+        self,
+        operand_type: str,
+        input_data: dict = {},
+        target: float = None,
+        weight: float = 1.0,
+        min_val: float = None,
+        max_val: float = None,
+    ):
         """
         Add an operand to the tolerancing problem.
 
@@ -73,14 +79,14 @@ class Tolerancing:
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
         """
-        new_operand = Operand(operand_type, target,
-                              min_val, max_val, weight, input_data)
+        new_operand = Operand(
+            operand_type, target, min_val, max_val, weight, input_data
+        )
         if target is None:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)
 
-    def add_perturbation(self, variable_type: str, sampler: BaseSampler,
-                         **kwargs):
+    def add_perturbation(self, variable_type: str, sampler: BaseSampler, **kwargs):
         """
         Add a perturbation to the optic.
 
@@ -91,8 +97,7 @@ class Tolerancing:
             sampler: The sampler object used to generate perturbation values.
             **kwargs: Additional keyword arguments for the variable.
         """
-        perturbation = Perturbation(self.optic, variable_type,
-                                    sampler, **kwargs)
+        perturbation = Perturbation(self.optic, variable_type, sampler, **kwargs)
         self.perturbations.append(perturbation)
 
     def add_compensator(self, variable_type: str, **kwargs):
@@ -120,8 +125,7 @@ class Tolerancing:
             # undo scaling and record the optimized values
             result = {}
             for i, var in enumerate(self.compensator.variables):
-                result[f'C{i}: {str(var)}'] = \
-                    var.variable.inverse_scale(var.value)
+                result[f"C{i}: {str(var)}"] = var.variable.inverse_scale(var.value)
 
         return result
 

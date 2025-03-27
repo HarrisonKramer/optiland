@@ -22,6 +22,7 @@ their orthogonal counterparts for highly corrected imaging systems.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 from optiland.coordinate_system import CoordinateSystem
@@ -62,8 +63,15 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             polynomial coefficients are used.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[]):
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=[],
+    ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = np.atleast_2d(coefficients)
         self.is_symmetric = False
@@ -72,7 +80,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             self.c = np.zeros((1, 1))
 
     def __str__(self):
-        return 'Polynomial XY'
+        return "Polynomial XY"
 
     def sag(self, x=0, y=0):
         """
@@ -88,11 +96,10 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             float: The sag value at the given coordinates.
         """
         r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i in range(len(self.c)):
             for j in range(len(self.c[i])):
-                z += self.c[i][j] * (x ** i) * (y ** j)
+                z += self.c[i][j] * (x**i) * (y**j)
         return z
 
     def _surface_normal(self, x, y):
@@ -108,17 +115,17 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             tuple: The surface normal components (nx, ny, nz).
         """
         r2 = x**2 + y**2
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dzdx = x / denom
         dzdy = y / denom
 
         for i in range(1, len(self.c)):
             for j in range(len(self.c[i])):
-                dzdx += i * self.c[i][j] * (x ** (i - 1)) * (y ** j)
+                dzdx += i * self.c[i][j] * (x ** (i - 1)) * (y**j)
 
         for i in range(len(self.c)):
             for j in range(1, len(self.c[i])):
-                dzdy += j * self.c[i][j] * (x ** i) * (y ** (j - 1))
+                dzdy += j * self.c[i][j] * (x**i) * (y ** (j - 1))
 
         norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
@@ -135,7 +142,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             dict: The dictionary representation of the geometry.
         """
         geometry_dict = super().to_dict()
-        geometry_dict['coefficients'] = self.c.tolist()
+        geometry_dict["coefficients"] = self.c.tolist()
         return geometry_dict
 
     @classmethod
@@ -149,18 +156,18 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         Returns:
             PolynomialGeometry: The geometry created from the dictionary.
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
+        cs = CoordinateSystem.from_dict(data["cs"])
 
         return cls(
             cs,
-            data['radius'],
-            data.get('conic', 0.0),
-            data.get('tol', 1e-10),
-            data.get('max_iter', 100),
-            data.get('coefficients', [])
+            data["radius"],
+            data.get("conic", 0.0),
+            data.get("tol", 1e-10),
+            data.get("max_iter", 100),
+            data.get("coefficients", []),
         )

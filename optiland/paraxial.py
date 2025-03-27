@@ -5,6 +5,7 @@ properties of lens systems.
 
 Kramer Harrison, 2024
 """
+
 from optiland.rays import ParaxialRays
 import numpy as np
 
@@ -136,8 +137,9 @@ class Paraxial:
         z0 = surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
 
-        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(
+            y0, u0, z0, wavelength, reverse=True, skip=stop_index + 1
+        )
 
         loc_relative = y[-1] / u[-1]
         return loc_relative[0]
@@ -151,13 +153,13 @@ class Paraxial:
         ap_type = self.optic.aperture.ap_type
         ap_value = self.optic.aperture.value
 
-        if ap_type == 'EPD':
+        if ap_type == "EPD":
             return ap_value
 
-        elif ap_type == 'imageFNO':
+        elif ap_type == "imageFNO":
             return self.f2() / ap_value
 
-        elif ap_type == 'objectNA':
+        elif ap_type == "objectNA":
             obj_z = self.optic.object_surface.geometry.cs.z
             wavelength = self.optic.primary_wavelength
             n0 = self.optic.object_surface.material_post.n(wavelength)
@@ -174,8 +176,7 @@ class Paraxial:
         stop_index = self.surfaces.stop_index
         z_start = self.surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength, skip=stop_index + 1)
         loc_relative = -y[-1] / u[-1]
         return loc_relative[0]
 
@@ -204,20 +205,20 @@ class Paraxial:
             float: image-space F-number
         """
         ap_type = self.optic.aperture.ap_type
-        if ap_type == 'imageFNO':
+        if ap_type == "imageFNO":
             return self.optic.aperture.value
         else:
             return self.f2() / self.EPD()
 
     def magnification(self):
-        '''Calculate the magnification
+        """Calculate the magnification
 
         Returns:
             float: the system magnification
-        '''
+        """
         _, ua = self.marginal_ray()
         n = self.optic.n()
-        mag = n[0]*ua[0]/(n[-1]*ua[-1])
+        mag = n[0] * ua[0] / (n[-1] * ua[-1])
         return mag[0]
 
     def invariant(self):
@@ -267,18 +268,20 @@ class Paraxial:
         z0 = surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
 
-        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(
+            y0, u0, z0, wavelength, reverse=True, skip=stop_index + 1
+        )
 
         max_field = self.optic.fields.max_y_field
 
-        if self.optic.field_type == 'object_height':
+        if self.optic.field_type == "object_height":
             u1 = 0.1 * max_field / y[-1]
-        elif self.optic.field_type == 'angle':
+        elif self.optic.field_type == "angle":
             u1 = 0.1 * np.tan(np.deg2rad(max_field)) / u[-1]
 
-        yn, un = self._trace_generic(y0, u1, z0, wavelength, reverse=True,
-                                     skip=stop_index+1)
+        yn, un = self._trace_generic(
+            y0, u1, z0, wavelength, reverse=True, skip=stop_index + 1
+        )
 
         # trace in forward direction
         z0 = self.surfaces.positions[1]
@@ -306,9 +309,10 @@ class Paraxial:
         field_y = self.optic.fields.max_field * Hy
 
         if obj.is_infinite:
-            if self.optic.field_type == 'object_height':
-                raise ValueError('Field type cannot be "object_height" for an '
-                                 'object at infinity.')
+            if self.optic.field_type == "object_height":
+                raise ValueError(
+                    'Field type cannot be "object_height" for an object at infinity.'
+                )
 
             y = -np.tan(np.radians(field_y)) * EPL
             z = self.optic.surface_group.positions[1]
@@ -316,14 +320,14 @@ class Paraxial:
             y0 = y1 + y
             z0 = np.ones_like(y1) * z
         else:
-            if self.optic.field_type == 'object_height':
+            if self.optic.field_type == "object_height":
                 y = -field_y
                 z = obj.geometry.cs.z
 
                 y0 = np.ones_like(y1) * y
                 z0 = np.ones_like(y1) * z
 
-            elif self.optic.field_type == 'angle':
+            elif self.optic.field_type == "angle":
                 y = -np.tan(np.radians(field_y))
                 z = self.optic.surface_group.positions[0]
 

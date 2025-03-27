@@ -19,6 +19,7 @@ class BaseSampler(ABC):
     This class defines the interface for samplers in the optiland.tolerancing
     module.
     """
+
     @abstractmethod
     def sample(self):
         pass  # pragma: no cover
@@ -65,6 +66,7 @@ class RangeSampler(BaseSampler):
         end (float or int): The end of the range.
         size (int): The number of samples to generate.
     """
+
     def __init__(self, start, end, steps):
         self.values = np.linspace(start, end, steps)
         self.index = 0
@@ -103,6 +105,7 @@ class DistributionSampler(BaseSampler):
     Raises:
         ValueError: If the distribution type is unknown.
     """
+
     def __init__(self, distribution, seed=None, **params):
         if seed is not None:
             np.random.seed(seed)
@@ -117,12 +120,12 @@ class DistributionSampler(BaseSampler):
             float: A random value sampled from the specified distribution.
         """
         # TODO: consider vectorizing this method with 'size' parameter
-        if self.distribution == 'normal':
+        if self.distribution == "normal":
             return np.random.normal(**self.params)
-        elif self.distribution == 'uniform':
+        elif self.distribution == "uniform":
             return np.random.uniform(**self.params)
         else:
-            raise ValueError(f'Unknown distribution: {self.distribution}')
+            raise ValueError(f"Unknown distribution: {self.distribution}")
 
 
 class Perturbation:
@@ -145,12 +148,12 @@ class Perturbation:
         variable: The Variable object representing the perturbed variable.
         value: The value of the perturbation.
     """
+
     def __init__(self, optic, variable_type, sampler, **kwargs):
         self.optic = optic
         self.type = variable_type
         self.sampler = sampler
-        self.variable = Variable(optic, variable_type, apply_scaling=False,
-                                 **kwargs)
+        self.variable = Variable(optic, variable_type, apply_scaling=False, **kwargs)
         self.value = None
 
     def apply(self):

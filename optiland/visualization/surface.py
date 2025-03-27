@@ -8,11 +8,7 @@ Kramer Harrison, 2024
 import numpy as np
 import vtk
 from optiland.rays import RealRays
-from optiland.visualization.utils import (
-    transform,
-    transform_3d,
-    revolve_contour
-)
+from optiland.visualization.utils import transform, transform_3d, revolve_contour
 from optiland.physical_apertures import RadialAperture
 
 
@@ -50,7 +46,7 @@ class Surface2D:
         # convert to global coordinates and return
         x, y, z = transform(x, y, z, self.surf, is_global=False)
 
-        ax.plot(z, y, 'gray')
+        ax.plot(z, y, "gray")
 
     def _compute_sag(self):
         """
@@ -122,7 +118,7 @@ class Surface3D(Surface2D):
         has_symmetric_aperture = (
             type(self.surf.aperture) is RadialAperture
             or self.surf.aperture is None  # "no aperture" is symmetric
-            )
+        )
         is_symmetric = self.surf.geometry.is_symmetric
         if is_symmetric and has_symmetric_aperture:
             actor = self._get_symmetric_surface()
@@ -176,9 +172,7 @@ class Surface3D(Surface2D):
         point_ids = -np.ones((num_rows, num_cols), dtype=int)
         for i in range(num_rows):
             for j in range(num_cols):
-                point_ids[i, j] = points.InsertNextPoint(
-                    x[i, j], y[i, j], z[i, j]
-                )
+                point_ids[i, j] = points.InsertNextPoint(x[i, j], y[i, j], z[i, j])
 
         # Create cells (quads) for the surface
         # Only include a quad if all four of its vertices lie inside aperture
@@ -186,13 +180,17 @@ class Surface3D(Surface2D):
         for i in range(num_rows - 1):
             for j in range(num_cols - 1):
                 # Check the four corners of the cell.
-                if (mask[i, j] and mask[i+1, j]
-                        and mask[i+1, j+1] and mask[i, j+1]):
+                if (
+                    mask[i, j]
+                    and mask[i + 1, j]
+                    and mask[i + 1, j + 1]
+                    and mask[i, j + 1]
+                ):
                     quad = vtk.vtkQuad()
                     quad.GetPointIds().SetId(0, point_ids[i, j])
-                    quad.GetPointIds().SetId(1, point_ids[i+1, j])
-                    quad.GetPointIds().SetId(2, point_ids[i+1, j+1])
-                    quad.GetPointIds().SetId(3, point_ids[i, j+1])
+                    quad.GetPointIds().SetId(1, point_ids[i + 1, j])
+                    quad.GetPointIds().SetId(2, point_ids[i + 1, j + 1])
+                    quad.GetPointIds().SetId(3, point_ids[i, j + 1])
                     cells.InsertNextCell(quad)
 
         polydata = vtk.vtkPolyData()

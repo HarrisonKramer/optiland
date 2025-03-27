@@ -24,14 +24,19 @@ class ImageSurface(Surface):
             Defaults to None.
     """
 
-    def __init__(self, geometry: BaseGeometry, material_pre: BaseMaterial,
-                 material_post: BaseMaterial, aperture: BaseAperture = None):
+    def __init__(
+        self,
+        geometry: BaseGeometry,
+        material_pre: BaseMaterial,
+        material_post: BaseMaterial,
+        aperture: BaseAperture = None,
+    ):
         super().__init__(
             geometry=geometry,
             material_pre=material_pre,
             material_post=material_post,
             is_stop=False,
-            aperture=aperture
+            aperture=aperture,
         )
 
     def _trace_paraxial(self, rays: ParaxialRays):

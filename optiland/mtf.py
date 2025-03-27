@@ -5,6 +5,7 @@ transfer function (MTF) of an optical system.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from optiland.analysis import SpotDiagram
@@ -51,15 +52,23 @@ class GeometricMTF(SpotDiagram):
             given field point.
     """
 
-    def __init__(self, optic, fields='all', wavelength='primary',
-                 num_rays=100, distribution='uniform', num_points=256,
-                 max_freq='cutoff', scale=True):
+    def __init__(
+        self,
+        optic,
+        fields="all",
+        wavelength="primary",
+        num_rays=100,
+        distribution="uniform",
+        num_points=256,
+        max_freq="cutoff",
+        scale=True,
+    ):
         self.num_points = num_points
         self.scale = scale
 
-        if wavelength == 'primary':
+        if wavelength == "primary":
             wavelength = optic.primary_wavelength
-        if max_freq == 'cutoff':
+        if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
             self.max_freq = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
 
@@ -80,17 +89,16 @@ class GeometricMTF(SpotDiagram):
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
-            self._plot_field(ax, data, self.fields[k], color=f'C{k}')
+            self._plot_field(ax, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
-            ax.plot(self.freq, self.diff_limited_mtf, 'k--',
-                    label='Diffraction Limit')
+            ax.plot(self.freq, self.diff_limited_mtf, "k--", label="Diffraction Limit")
 
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.set_xlim([0, self.max_freq])
         ax.set_ylim([0, 1])
-        ax.set_xlabel('Frequency (cycles/mm)', labelpad=10)
-        ax.set_ylabel('Modulation', labelpad=10)
+        ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
+        ax.set_ylabel("Modulation", labelpad=10)
         plt.tight_layout()
         plt.show()
 
@@ -110,8 +118,12 @@ class GeometricMTF(SpotDiagram):
         mtf = []  # TODO: add option for polychromatic MTF
         for field_data in self.data:
             xi, yi = field_data[0][0], field_data[0][1]
-            mtf.append([self._compute_field_data(yi, self.freq, scale_factor),
-                        self._compute_field_data(xi, self.freq, scale_factor)])
+            mtf.append(
+                [
+                    self._compute_field_data(yi, self.freq, scale_factor),
+                    self._compute_field_data(xi, self.freq, scale_factor),
+                ]
+            )
         return mtf, scale_factor
 
     def _compute_field_data(self, xi, v, scale_factor):
@@ -125,7 +137,7 @@ class GeometricMTF(SpotDiagram):
         Returns:
             ndarray: The MTF data for the field point.
         """
-        A, edges = np.histogram(xi, bins=self.num_points+1)
+        A, edges = np.histogram(xi, bins=self.num_points + 1)
         x = (edges[1:] + edges[:-1]) / 2
         dx = x[1] - x[0]
 
@@ -147,12 +159,20 @@ class GeometricMTF(SpotDiagram):
             field (tuple): The field point coordinates.
             color (str): The color of the plotted lines.
         """
-        ax.plot(self.freq, mtf_data[0],
-                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
-                color=color, linestyle='-')
-        ax.plot(self.freq, mtf_data[1],
-                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal',
-                color=color, linestyle='--')
+        ax.plot(
+            self.freq,
+            mtf_data[0],
+            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential",
+            color=color,
+            linestyle="-",
+        )
+        ax.plot(
+            self.freq,
+            mtf_data[1],
+            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal",
+            color=color,
+            linestyle="--",
+        )
 
 
 class FFTMTF:
@@ -189,8 +209,15 @@ class FFTMTF:
         view(figsize=(12, 4), add_reference=False): Visualizes the MTF.
     """
 
-    def __init__(self, optic, fields='all', wavelength='primary',
-                 num_rays=128, grid_size=1024, max_freq='cutoff'):
+    def __init__(
+        self,
+        optic,
+        fields="all",
+        wavelength="primary",
+        num_rays=128,
+        grid_size=1024,
+        max_freq="cutoff",
+    ):
         self.optic = optic
         self.max_freq = max_freq
         self.fields = fields
@@ -200,19 +227,22 @@ class FFTMTF:
 
         self.FNO = self._get_fno()
 
-        if self.fields == 'all':
+        if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
 
-        if self.wavelength == 'primary':
+        if self.wavelength == "primary":
             self.wavelength = optic.primary_wavelength
 
-        if max_freq == 'cutoff':
+        if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
             self.max_freq = 1 / (self.wavelength * 1e-3 * self.FNO)
 
-        self.psf = [FFTPSF(self.optic, field, self.wavelength,
-                           self.num_rays, self.grid_size).psf
-                    for field in self.fields]
+        self.psf = [
+            FFTPSF(
+                self.optic, field, self.wavelength, self.num_rays, self.grid_size
+            ).psf
+            for field in self.fields
+        ]
 
         self.mtf = self._generate_mtf_data()
 
@@ -227,25 +257,25 @@ class FFTMTF:
                 limit reference line. Defaults to False.
         """
         dx = self._get_mtf_units()
-        freq = np.arange(self.grid_size//2) * dx
+        freq = np.arange(self.grid_size // 2) * dx
 
         _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
-            self._plot_field(ax, freq, data, self.fields[k], color=f'C{k}')
+            self._plot_field(ax, freq, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
             ratio = freq / self.max_freq
             ratio = np.clip(ratio, -1, 1)  # avoid invalid value in arccos
             phi = np.arccos(ratio)
             diff_limited_mtf = 2 / np.pi * (phi - np.cos(phi) * np.sin(phi))
-            ax.plot(freq, diff_limited_mtf, 'k--', label='Diffraction Limit')
+            ax.plot(freq, diff_limited_mtf, "k--", label="Diffraction Limit")
 
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.set_xlim([0, self.max_freq])
         ax.set_ylim([0, 1])
-        ax.set_xlabel('Frequency (cycles/mm)', labelpad=10)
-        ax.set_ylabel('Modulation Transfer Function', labelpad=10)
+        ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
+        ax.set_ylabel("Modulation Transfer Function", labelpad=10)
         plt.tight_layout()
         plt.show()
 
@@ -260,12 +290,20 @@ class FFTMTF:
             field (tuple): The field values (Hx, Hy).
             color (str): The color of the plot.
         """
-        ax.plot(freq, mtf_data[0],
-                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential',
-                color=color, linestyle='-')
-        ax.plot(freq, mtf_data[1],
-                label=f'Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal',
-                color=color, linestyle='--')
+        ax.plot(
+            freq,
+            mtf_data[0],
+            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential",
+            color=color,
+            linestyle="-",
+        )
+        ax.plot(
+            freq,
+            mtf_data[1],
+            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal",
+            color=color,
+            linestyle="--",
+        )
 
     def _generate_mtf_data(self):
         """
@@ -277,14 +315,12 @@ class FFTMTF:
             list: A list of MTF data for each field. Each MTF data is a list
                 containing the tangential and sagittal MTF values.
         """
-        mtf_data = [np.abs(np.fft.fftshift(np.fft.fft2(psf)))
-                    for psf in self.psf]
+        mtf_data = [np.abs(np.fft.fftshift(np.fft.fft2(psf))) for psf in self.psf]
         mtf = []
         for data in mtf_data:
-            tangential = data[self.grid_size//2:, self.grid_size//2]
-            sagittal = data[self.grid_size//2, self.grid_size//2:]
-            mtf.append([tangential/np.max(tangential),
-                        sagittal/np.max(sagittal)])
+            tangential = data[self.grid_size // 2 :, self.grid_size // 2]
+            sagittal = data[self.grid_size // 2, self.grid_size // 2 :]
+            mtf.append([tangential / np.max(tangential), sagittal / np.max(sagittal)])
         return mtf
 
     def _get_fno(self):
@@ -301,7 +337,7 @@ class FFTMTF:
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= (1 + np.abs(m) / p)
+            FNO *= 1 + np.abs(m) / p
 
         return FNO
 

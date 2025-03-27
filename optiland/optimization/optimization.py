@@ -7,6 +7,7 @@ using different optimization algorithms.
 
 Kramer Harrison, 2024
 """
+
 import warnings
 import numpy as np
 import pandas as pd
@@ -44,11 +45,17 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
-    def add_operand(self, operand_type=None, target=None, min_val=None,
-                    max_val=None, weight=1, input_data={}):
+    def add_operand(
+        self,
+        operand_type=None,
+        target=None,
+        min_val=None,
+        max_val=None,
+        weight=1,
+        input_data={},
+    ):
         """Add an operand to the merit function"""
-        self.operands.add(operand_type, target, min_val, max_val, weight,
-                          input_data)
+        self.operands.add(operand_type, target, min_val, max_val, weight, input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
         """Add a variable to the merit function"""
@@ -66,7 +73,7 @@ class OptimizationProblem:
 
     def fun_array(self):
         """Array of operand weighted deltas squared"""
-        return np.array([op.fun() for op in self.operands])**2
+        return np.array([op.fun() for op in self.operands]) ** 2
 
     def sum_squared(self):
         """Calculate the sum of squared operand weighted deltas"""
@@ -86,39 +93,41 @@ class OptimizationProblem:
 
     def operand_info(self):
         """Print information about the operands in the merit function"""
-        data = {'Operand Type': [op.operand_type.replace('_', ' ')
-                                 for op in self.operands],
-                'Target': [f'{op.target:+.3f}' if op.target is not None
-                           else '' for op in self.operands],
-                'Min. Bound': [op.min_val if op.min_val else ''
-                               for op in self.operands],
-                'Max. Bound': [op.max_val if op.max_val else ''
-                               for op in self.operands],
-                'Weight': [op.weight for op in self.operands],
-                'Value': [f'{op.value:+.3f}' for op in self.operands],
-                'Delta': [f'{op.delta():+.3f}' for op in self.operands]}
+        data = {
+            "Operand Type": [op.operand_type.replace("_", " ") for op in self.operands],
+            "Target": [
+                f"{op.target:+.3f}" if op.target is not None else ""
+                for op in self.operands
+            ],
+            "Min. Bound": [op.min_val if op.min_val else "" for op in self.operands],
+            "Max. Bound": [op.max_val if op.max_val else "" for op in self.operands],
+            "Weight": [op.weight for op in self.operands],
+            "Value": [f"{op.value:+.3f}" for op in self.operands],
+            "Delta": [f"{op.delta():+.3f}" for op in self.operands],
+        }
 
         df = pd.DataFrame(data)
         values = self.fun_array()
         total = np.sum(values)
         if total == 0.0:
-            df['Contrib. [%]'] = 0.0
+            df["Contrib. [%]"] = 0.0
         else:
-            df['Contrib. [%]'] = np.round(values / total * 100, 2)
+            df["Contrib. [%]"] = np.round(values / total * 100, 2)
 
-        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+        print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
     def variable_info(self):
         """Print information about the variables in the merit function."""
-        data = {'Variable Type': [var.type for var in self.variables],
-                'Surface': [var.surface_number for var in self.variables],
-                'Value': [var.variable.inverse_scale(var.value)
-                          for var in self.variables],
-                'Min. Bound': [var.min_val for var in self.variables],
-                'Max. Bound': [var.max_val for var in self.variables]}
+        data = {
+            "Variable Type": [var.type for var in self.variables],
+            "Surface": [var.surface_number for var in self.variables],
+            "Value": [var.variable.inverse_scale(var.value) for var in self.variables],
+            "Min. Bound": [var.min_val for var in self.variables],
+            "Max. Bound": [var.max_val for var in self.variables],
+        }
 
         df = pd.DataFrame(data)
-        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+        print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
     def merit_info(self):
         """Print information about the merit function."""
@@ -127,13 +136,16 @@ class OptimizationProblem:
         if self.initial_value == 0.0:
             improve_percent = 0.0
         else:
-            improve_percent = ((self.initial_value - current_value) /
-                               self.initial_value * 100)
+            improve_percent = (
+                (self.initial_value - current_value) / self.initial_value * 100
+            )
 
-        data = {'Merit Function Value': [current_value],
-                'Improvement (%)': improve_percent}
+        data = {
+            "Merit Function Value": [current_value],
+            "Improvement (%)": improve_percent,
+        }
         df = pd.DataFrame(data)
-        print(df.to_markdown(headers='keys', tablefmt='fancy_outline'))
+        print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
     def info(self):
         """Print information about the optimization problem."""
@@ -168,8 +180,7 @@ class OptimizerGeneric:
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
 
-    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3,
-                 callback=None):
+    def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3, callback=None):
         """
         Optimize the problem using the specified parameters.
 
@@ -192,18 +203,19 @@ class OptimizerGeneric:
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
 
-        options = {'maxiter': maxiter, 'disp': disp}
+        options = {"maxiter": maxiter, "disp": disp}
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            result = optimize.minimize(self._fun,
-                                       x0,
-                                       method=method,
-                                       bounds=bounds,
-                                       options=options,
-                                       tol=tol,
-                                       callback=callback,
-                                       )
+            result = optimize.minimize(
+                self._fun,
+                x0,
+                method=method,
+                bounds=bounds,
+                options=options,
+                tol=tol,
+                callback=callback,
+            )
 
         # The last function evaluation is not necessarily the lowest.
         # Update all lens variables to their optimized values
@@ -292,10 +304,14 @@ class LeastSquares(OptimizerGeneric):
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
 
-        lower = [var.bounds[0] if var.bounds[0] is not None
-                 else -np.inf for var in self.problem.variables]
-        upper = [var.bounds[1] if var.bounds[1] is not None
-                 else np.inf for var in self.problem.variables]
+        lower = [
+            var.bounds[0] if var.bounds[0] is not None else -np.inf
+            for var in self.problem.variables
+        ]
+        upper = [
+            var.bounds[1] if var.bounds[1] is not None else np.inf
+            for var in self.problem.variables
+        ]
         bounds = (lower, upper)
 
         if disp:
@@ -305,12 +321,14 @@ class LeastSquares(OptimizerGeneric):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            result = optimize.least_squares(self._fun,
-                                            x0,
-                                            bounds=bounds,
-                                            max_nfev=maxiter,
-                                            verbose=verbose,
-                                            ftol=tol)
+            result = optimize.least_squares(
+                self._fun,
+                x0,
+                bounds=bounds,
+                max_nfev=maxiter,
+                verbose=verbose,
+                ftol=tol,
+            )
         return result
 
 
@@ -346,15 +364,12 @@ class DualAnnealing(OptimizerGeneric):
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
-            raise ValueError('Dual annealing requires all variables'
-                             ' have bounds.')
+            raise ValueError("Dual annealing requires all variables have bounds.")
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            result = optimize.dual_annealing(self._fun,
-                                             bounds=bounds,
-                                             maxiter=maxiter,
-                                             x0=x0,
-                                             callback=callback)
+            result = optimize.dual_annealing(
+                self._fun, bounds=bounds, maxiter=maxiter, x0=x0, callback=callback
+            )
         return result
 
 
@@ -401,24 +416,27 @@ class DifferentialEvolution(OptimizerGeneric):
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
-            raise ValueError('Differential evolution requires all variables'
-                             ' have bounds.')
+            raise ValueError(
+                "Differential evolution requires all variables have bounds."
+            )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
             if workers == -1:
-                updating = 'deferred'
+                updating = "deferred"
             else:
-                updating = 'immediate'
+                updating = "immediate"
 
-            result = optimize.differential_evolution(self._fun,
-                                                     bounds=bounds,
-                                                     maxiter=maxiter,
-                                                     x0=x0,
-                                                     disp=disp,
-                                                     updating=updating,
-                                                     workers=workers,
-                                                     callback=callback)
+            result = optimize.differential_evolution(
+                self._fun,
+                bounds=bounds,
+                maxiter=maxiter,
+                x0=x0,
+                disp=disp,
+                updating=updating,
+                workers=workers,
+                callback=callback,
+            )
         return result
 
 
@@ -465,14 +483,19 @@ class SHGO(OptimizerGeneric):
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
-            raise ValueError('SHGO requires all variables have bounds.')
+            raise ValueError("SHGO requires all variables have bounds.")
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
-            result = optimize.shgo(self._fun, bounds=bounds,
-                                   workers=workers, callback=callback,
-                                   *args, **kwargs)
+            result = optimize.shgo(
+                self._fun,
+                bounds=bounds,
+                workers=workers,
+                callback=callback,
+                *args,
+                **kwargs,
+            )
         return result
 
 
@@ -520,12 +543,12 @@ class BasinHopping(OptimizerGeneric):
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if not all(x is None for pair in bounds for x in pair):
-            raise ValueError('Basin-hopping does not accept bounds.')
+            raise ValueError("Basin-hopping does not accept bounds.")
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
-            result = optimize.basinhopping(self._fun, x0=x0,
-                                           niter=niter, callback=callback,
-                                           *args, **kwargs)
+            result = optimize.basinhopping(
+                self._fun, x0=x0, niter=niter, callback=callback, *args, **kwargs
+            )
         return result

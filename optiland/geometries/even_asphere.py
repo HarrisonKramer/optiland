@@ -17,6 +17,7 @@ terms with even exponents, ensuring symmetry about the optical axis.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 from optiland.coordinate_system import CoordinateSystem
@@ -53,15 +54,22 @@ class EvenAsphere(NewtonRaphsonGeometry):
             used.
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[]):
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=[],
+    ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
         self.is_symmetric = True
         self.order = 2  # used for optimization scaling
 
     def __str__(self):
-        return 'Even Asphere'
+        return "Even Asphere"
 
     def sag(self, x=0, y=0):
         """
@@ -77,8 +85,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
             float: The sag value at the given coordinates.
         """
         r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
             z += Ci * r2 ** (i + 1)
 
@@ -98,13 +105,13 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """
         r2 = x**2 + y**2
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
         for i, Ci in enumerate(self.c):
-            dfdx += 2 * (i+1) * x * Ci * r2**i
-            dfdy += 2 * (i+1) * y * Ci * r2**i
+            dfdx += 2 * (i + 1) * x * Ci * r2**i
+            dfdy += 2 * (i + 1) * y * Ci * r2**i
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
 
@@ -137,16 +144,15 @@ class EvenAsphere(NewtonRaphsonGeometry):
         Returns:
             EvenAsphere: The asphere.
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
-        conic = data.get('conic', 0.0)
-        tol = data.get('tol', 1e-10)
-        max_iter = data.get('max_iter', 100)
-        coefficients = data.get('coefficients', [])
+        cs = CoordinateSystem.from_dict(data["cs"])
+        conic = data.get("conic", 0.0)
+        tol = data.get("tol", 1e-10)
+        max_iter = data.get("max_iter", 100)
+        coefficients = data.get("coefficients", [])
 
-        return cls(cs, data['radius'],
-                   conic, tol, max_iter, coefficients)
+        return cls(cs, data["radius"], conic, tol, max_iter, coefficients)

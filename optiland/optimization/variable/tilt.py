@@ -31,12 +31,11 @@ class TiltVariable(VariableBehavior):
         update_value(new_value): Updates the tilt value of the surface.
     """
 
-    def __init__(self, optic, surface_number, axis, apply_scaling=True,
-                 **kwargs):
+    def __init__(self, optic, surface_number, axis, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.axis = axis
 
-        if self.axis not in ['x', 'y']:
+        if self.axis not in ["x", "y"]:
             raise ValueError(f'Invalid axis "{self.axis}" for tilt variable.')
 
     def get_value(self):
@@ -47,9 +46,9 @@ class TiltVariable(VariableBehavior):
             float: The current tilt value.
         """
         surf = self._surfaces.surfaces[self.surface_number]
-        if self.axis == 'x':
+        if self.axis == "x":
             value = surf.geometry.cs.rx
-        elif self.axis == 'y':
+        elif self.axis == "y":
             value = surf.geometry.cs.ry
 
         if self.apply_scaling:
@@ -67,9 +66,9 @@ class TiltVariable(VariableBehavior):
             new_value = self.inverse_scale(new_value)
 
         surf = self._surfaces.surfaces[self.surface_number]
-        if self.axis == 'x':
+        if self.axis == "x":
             surf.geometry.cs.rx = new_value
-        elif self.axis == 'y':
+        elif self.axis == "y":
             surf.geometry.cs.ry = new_value
 
     def scale(self, value):

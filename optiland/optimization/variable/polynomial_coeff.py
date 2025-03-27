@@ -28,8 +28,9 @@ class PolynomialCoeffVariable(VariableBehavior):
         coeff_number (int): The index of the polynomial coefficient.
     """
 
-    def __init__(self, optic, surface_number, coeff_index, apply_scaling=True,
-                 **kwargs):
+    def __init__(
+        self, optic, surface_number, coeff_index, apply_scaling=True, **kwargs
+    ):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.coeff_index = coeff_index
 
@@ -47,10 +48,12 @@ class PolynomialCoeffVariable(VariableBehavior):
         except IndexError:
             pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
             pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-            c_new = np.pad(surf.geometry.c,
-                           pad_width=((0, pad_width_i), (0, pad_width_j)),
-                           mode='constant',
-                           constant_values=0)
+            c_new = np.pad(
+                surf.geometry.c,
+                pad_width=((0, pad_width_i), (0, pad_width_j)),
+                mode="constant",
+                constant_values=0,
+            )
             surf.geometry.c = c_new
             value = 0
         if self.apply_scaling:
@@ -73,10 +76,12 @@ class PolynomialCoeffVariable(VariableBehavior):
         except IndexError:
             pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
             pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-            c_new = np.pad(surf.geometry.c,
-                           pad_width=((0, pad_width_i), (0, pad_width_j)),
-                           mode='constant',
-                           constant_values=0)
+            c_new = np.pad(
+                surf.geometry.c,
+                pad_width=((0, pad_width_i), (0, pad_width_j)),
+                mode="constant",
+                constant_values=0,
+            )
             c_new[i][j] = new_value
             surf.geometry.c = c_new
 
@@ -105,5 +110,4 @@ class PolynomialCoeffVariable(VariableBehavior):
         Returns:
             str: A string representation of the variable.
         """
-        return f"Poly. Coeff. {self.coeff_index}, " \
-            f"Surface {self.surface_number}"
+        return f"Poly. Coeff. {self.coeff_index}, Surface {self.surface_number}"

@@ -18,12 +18,10 @@ from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.decenter import DecenterVariable
-from optiland.optimization.variable.polynomial_coeff import \
-    PolynomialCoeffVariable
-from optiland.optimization.variable.chebyshev_coeff import \
-    ChebyshevCoeffVariable
-from optiland.optimization.variable.zernike_coeff import \
-    ZernikeCoeffVariable
+from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
+from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
+from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
+
 
 class Variable:
     """
@@ -53,8 +51,9 @@ class Variable:
         ValueError: If an invalid variable type is provided.
     """
 
-    def __init__(self, optic, type_name, min_val=None, max_val=None,
-                 apply_scaling=True, **kwargs):
+    def __init__(
+        self, optic, type_name, min_val=None, max_val=None, apply_scaling=True, **kwargs
+    ):
         self.optic = optic
         self.type = type_name
         self.min_val = min_val
@@ -77,8 +76,7 @@ class Variable:
         This method returns a set of strings that are the names of allowed
         attributes.
         """
-        return {'surface_number', 'coeff_number', 'wavelength', 'coeff_index',
-                'axis'}
+        return {"surface_number", "coeff_number", "wavelength", "coeff_index", "axis"}
 
     def _get_variable(self):
         """
@@ -88,23 +86,23 @@ class Variable:
             The behavior of the variable, or None if an error occurs.
         """
         behavior_kwargs = {
-            'type_name': self.type,
-            'optic': self.optic,
-            'apply_scaling': self.apply_scaling,
-            **self.kwargs
+            "type_name": self.type,
+            "optic": self.optic,
+            "apply_scaling": self.apply_scaling,
+            **self.kwargs,
         }
 
         variable_types = {
-            'radius': RadiusVariable,
-            'conic': ConicVariable,
-            'thickness': ThicknessVariable,
-            'tilt': TiltVariable,
-            'decenter': DecenterVariable,
-            'index': IndexVariable,
-            'asphere_coeff': AsphereCoeffVariable,
-            'polynomial_coeff': PolynomialCoeffVariable,
-            'chebyshev_coeff': ChebyshevCoeffVariable,
-            'zernike_coeff': ZernikeCoeffVariable,
+            "radius": RadiusVariable,
+            "conic": ConicVariable,
+            "thickness": ThicknessVariable,
+            "tilt": TiltVariable,
+            "decenter": DecenterVariable,
+            "index": IndexVariable,
+            "asphere_coeff": AsphereCoeffVariable,
+            "polynomial_coeff": PolynomialCoeffVariable,
+            "chebyshev_coeff": ChebyshevCoeffVariable,
+            "zernike_coeff": ZernikeCoeffVariable,
         }
 
         variable_class = variable_types.get(self.type)
@@ -134,10 +132,12 @@ class Variable:
         Returns:
             tuple: the bounds of the variable
         """
-        min_val = (self.variable.scale(self.min_val)
-                   if self.min_val is not None else None)
-        max_val = (self.variable.scale(self.max_val)
-                   if self.max_val is not None else None)
+        min_val = (
+            self.variable.scale(self.min_val) if self.min_val is not None else None
+        )
+        max_val = (
+            self.variable.scale(self.max_val) if self.max_val is not None else None
+        )
         return min_val, max_val
 
     def update(self, new_value):

@@ -10,6 +10,7 @@ optical system modeling capabilities.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
@@ -41,19 +42,25 @@ class Wavefront:
         data (list): The generated wavefront data.
     """
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rays=12,
-                 distribution='hexapolar'):
+    def __init__(
+        self,
+        optic,
+        fields="all",
+        wavelengths="all",
+        num_rays=12,
+        distribution="hexapolar",
+    ):
         self.optic = optic
         self.fields = fields
         self.wavelengths = wavelengths
         self.num_rays = num_rays
 
-        if self.fields == 'all':
+        if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
 
-        if self.wavelengths == 'all':
+        if self.wavelengths == "all":
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
-        elif self.wavelengths == 'primary':
+        elif self.wavelengths == "primary":
             self.wavelengths = [optic.primary_wavelength]
 
         if isinstance(distribution, str):
@@ -74,8 +81,7 @@ class Wavefront:
         Returns:
             list: The generated wavefront data.
         """
-        pupil_z = (self.optic.paraxial.XPL() +
-                   self.optic.surface_group.positions[-1])
+        pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
 
         data = []
         for field in fields:
@@ -89,9 +95,9 @@ class Wavefront:
                 opd_ref = self._get_path_length(xc, yc, zc, R, wavelength)
                 opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
 
-                field_data.append(self._generate_field_data(field, wavelength,
-                                                            opd_ref,
-                                                            xc, yc, zc, R))
+                field_data.append(
+                    self._generate_field_data(field, wavelength, opd_ref, xc, yc, zc, R)
+                )
             data.append(field_data)
         return data
 
@@ -146,8 +152,7 @@ class Wavefront:
             ValueError: If the chief ray cannot be determined.
         """
         if self.optic.surface_group.x[-1, :].size != 1:
-            raise ValueError('Chief ray cannot be determined. '
-                             'It must be traced alone.')
+            raise ValueError("Chief ray cannot be determined. It must be traced alone.")
 
         # chief ray intersection location
         xc = self.optic.surface_group.x[-1, :]
@@ -155,7 +160,7 @@ class Wavefront:
         zc = self.optic.surface_group.z[-1, :]
 
         # radius of sphere - exit pupil origin vs. center
-        R = np.sqrt(xc**2 + yc**2 + (zc - pupil_z)**2)
+        R = np.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
 
         return xc, yc, zc, R
 
@@ -190,7 +195,7 @@ class Wavefront:
             float: The corrected optical path difference.
         """
         tilt_correction = 0
-        if self.optic.field_type == 'angle':
+        if self.optic.field_type == "angle":
             Hx, Hy = field
             max_field = self.optic.fields.max_field
             x_tilt = max_field * Hx
@@ -200,8 +205,9 @@ class Wavefront:
             if y is None:
                 y = self.distribution.y
             EPD = self.optic.paraxial.EPD()
-            tilt_correction = ((1 - x) * np.sin(np.radians(x_tilt)) * EPD / 2 +
-                               (1 - y) * np.sin(np.radians(y_tilt)) * EPD / 2)
+            tilt_correction = (1 - x) * np.sin(np.radians(x_tilt)) * EPD / 2 + (
+                1 - y
+            ) * np.sin(np.radians(y_tilt)) * EPD / 2
         return opd - tilt_correction
 
     def _opd_image_to_xp(self, xc, yc, zc, R, wavelength):
@@ -227,11 +233,21 @@ class Wavefront:
         N = -self.optic.surface_group.N[-1, :]
 
         a = L**2 + M**2 + N**2
-        b = 2*L*(xr - xc) + 2*M*(yr - yc) + 2*N*(zr - zc)
-        c = (xr**2 + yr**2 + zr**2 - 2*xr*xc + xc**2 - 2*yr*yc + yc**2 -
-             2*zr*zc + zc**2 - R**2)
+        b = 2 * L * (xr - xc) + 2 * M * (yr - yc) + 2 * N * (zr - zc)
+        c = (
+            xr**2
+            + yr**2
+            + zr**2
+            - 2 * xr * xc
+            + xc**2
+            - 2 * yr * yc
+            + yc**2
+            - 2 * zr * zc
+            + zc**2
+            - R**2
+        )
 
-        d = b ** 2 - 4 * a * c
+        d = b**2 - 4 * a * c
         t = (-b - np.sqrt(d)) / (2 * a)
         t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
 
@@ -261,10 +277,15 @@ class OPDFan(Wavefront):
         view: Plots the wavefront error.
     """
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rays=100):
+    def __init__(self, optic, fields="all", wavelengths="all", num_rays=100):
         self.pupil_coord = np.linspace(-1, 1, num_rays)
-        super().__init__(optic, fields=fields, wavelengths=wavelengths,
-                         num_rays=num_rays, distribution='cross')
+        super().__init__(
+            optic,
+            fields=fields,
+            wavelengths=wavelengths,
+            num_rays=num_rays,
+            distribution="cross",
+        )
 
     def view(self, figsize=(10, 3)):
         """
@@ -281,7 +302,7 @@ class OPDFan(Wavefront):
             ncols=2,
             figsize=(figsize[0], num_rows * figsize[1]),
             sharex=True,
-            sharey=True
+            sharey=True,
         )
 
         # assure axes is a 2D array
@@ -289,36 +310,38 @@ class OPDFan(Wavefront):
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
-                wx = self.data[i][j][0][self.num_rays:]
-                wy = self.data[i][j][0][:self.num_rays]
+                wx = self.data[i][j][0][self.num_rays :]
+                wy = self.data[i][j][0][: self.num_rays]
 
-                intensity_x = self.data[i][j][1][self.num_rays:]
-                intensity_y = self.data[i][j][1][:self.num_rays]
+                intensity_x = self.data[i][j][1][self.num_rays :]
+                intensity_y = self.data[i][j][1][: self.num_rays]
 
                 wx[intensity_x == 0] = np.nan
                 wy[intensity_y == 0] = np.nan
 
-                axs[i, 0].plot(self.pupil_coord, wy, zorder=3,
-                               label=f'{wavelength:.4f} µm')
+                axs[i, 0].plot(
+                    self.pupil_coord, wy, zorder=3, label=f"{wavelength:.4f} µm"
+                )
                 axs[i, 0].grid()
-                axs[i, 0].axhline(y=0, lw=1, color='gray')
-                axs[i, 0].axvline(x=0, lw=1, color='gray')
-                axs[i, 0].set_xlabel('$P_y$')
-                axs[i, 0].set_ylabel('Wavefront Error (waves)')
+                axs[i, 0].axhline(y=0, lw=1, color="gray")
+                axs[i, 0].axvline(x=0, lw=1, color="gray")
+                axs[i, 0].set_xlabel("$P_y$")
+                axs[i, 0].set_ylabel("Wavefront Error (waves)")
                 axs[i, 0].set_xlim((-1, 1))
-                axs[i, 0].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+                axs[i, 0].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-                axs[i, 1].plot(self.pupil_coord, wx, zorder=3,
-                               label=f'{wavelength:.4f} µm')
+                axs[i, 1].plot(
+                    self.pupil_coord, wx, zorder=3, label=f"{wavelength:.4f} µm"
+                )
                 axs[i, 1].grid()
-                axs[i, 1].axhline(y=0, lw=1, color='gray')
-                axs[i, 1].axvline(x=0, lw=1, color='gray')
-                axs[i, 1].set_xlabel('$P_x$')
-                axs[i, 1].set_ylabel('Wavefront Error (waves)')
+                axs[i, 1].axhline(y=0, lw=1, color="gray")
+                axs[i, 1].axvline(x=0, lw=1, color="gray")
+                axs[i, 1].set_xlabel("$P_x$")
+                axs[i, 1].set_ylabel("Wavefront Error (waves)")
                 axs[i, 0].set_xlim((-1, 1))
-                axs[i, 1].set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+                axs[i, 1].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3)
+        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3)
         plt.subplots_adjust(top=1)
         plt.tight_layout()
         plt.show()
@@ -350,10 +373,15 @@ class OPD(Wavefront):
     """
 
     def __init__(self, optic, field, wavelength, num_rings=15):
-        super().__init__(optic, fields=[field], wavelengths=[wavelength],
-                         num_rays=num_rings, distribution='hexapolar')
+        super().__init__(
+            optic,
+            fields=[field],
+            wavelengths=[wavelength],
+            num_rays=num_rings,
+            distribution="hexapolar",
+        )
 
-    def view(self, projection='2d', num_points=256, figsize=(7, 5.5)):
+    def view(self, projection="2d", num_points=256, figsize=(7, 5.5)):
         """
         Visualizes the OPD wavefront.
 
@@ -367,9 +395,9 @@ class OPD(Wavefront):
             ValueError: If the projection is not '2d' or '3d'.
         """
         opd_map = self.generate_opd_map(num_points)
-        if projection == '2d':
+        if projection == "2d":
             self._plot_2d(data=opd_map, figsize=figsize)
-        elif projection == '3d':
+        elif projection == "3d":
             self._plot_3d(data=opd_map, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
@@ -381,7 +409,7 @@ class OPD(Wavefront):
         Returns:
             float: The RMS value.
         """
-        return np.sqrt(np.mean(self.data[0][0][0]**2))
+        return np.sqrt(np.mean(self.data[0][0][0] ** 2))
 
     def _plot_2d(self, data, figsize=(7, 5.5)):
         """
@@ -392,15 +420,15 @@ class OPD(Wavefront):
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
         """
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(np.flipud(data['z']), extent=[-1, 1, -1, 1])
+        im = ax.imshow(np.flipud(data["z"]), extent=[-1, 1, -1, 1])
 
-        ax.set_xlabel('Pupil X')
-        ax.set_ylabel('Pupil Y')
-        ax.set_title(f'OPD Map: RMS={self.rms():.3f} waves')
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
+        ax.set_title(f"OPD Map: RMS={self.rms():.3f} waves")
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel('OPD (waves)', rotation=270)
+        cbar.ax.set_ylabel("OPD (waves)", rotation=270)
         plt.show()
 
     def _plot_3d(self, data, figsize=(7, 5.5)):
@@ -411,23 +439,25 @@ class OPD(Wavefront):
             data (dict): The OPD map data.
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
-                               figsize=figsize)
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        surf = ax.plot_surface(data['x'],
-                               data['y'],
-                               data['z'],
-                               rstride=1, cstride=1,
-                               cmap='viridis', linewidth=0,
-                               antialiased=False)
+        surf = ax.plot_surface(
+            data["x"],
+            data["y"],
+            data["z"],
+            rstride=1,
+            cstride=1,
+            cmap="viridis",
+            linewidth=0,
+            antialiased=False,
+        )
 
-        ax.set_xlabel('Pupil X')
-        ax.set_ylabel('Pupil Y')
-        ax.set_zlabel('OPD (waves)')
-        ax.set_title(f'OPD Map: RMS={self.rms():.3f} waves')
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
+        ax.set_zlabel("OPD (waves)")
+        ax.set_title(f"OPD Map: RMS={self.rms():.3f} waves")
 
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
-                     pad=0.15)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
         fig.tight_layout()
         plt.show()
 
@@ -447,14 +477,14 @@ class OPD(Wavefront):
         z = self.data[0][0][0]
         intensity = self.data[0][0][1]
 
-        x_interp, y_interp = np.meshgrid(np.linspace(-1, 1, num_points),
-                                         np.linspace(-1, 1, num_points))
+        x_interp, y_interp = np.meshgrid(
+            np.linspace(-1, 1, num_points), np.linspace(-1, 1, num_points)
+        )
 
         points = np.column_stack((x.flatten(), y.flatten()))
         values = z.flatten() * intensity.flatten()
 
-        z_interp = griddata(points, values, (x_interp, y_interp),
-                            method='cubic')
+        z_interp = griddata(points, values, (x_interp, y_interp), method="cubic")
 
         data = dict(x=x_interp, y=y_interp, z=z_interp)
         return data
@@ -479,8 +509,15 @@ class ZernikeOPD(ZernikeFit, OPD):
             calculation. Default is 37.
     """
 
-    def __init__(self, optic, field, wavelength, num_rings=15,
-                 zernike_type='fringe', num_terms=37):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rings=15,
+        zernike_type="fringe",
+        num_terms=37,
+    ):
         OPD.__init__(self, optic, field, wavelength, num_rings)
 
         x = self.distribution.x

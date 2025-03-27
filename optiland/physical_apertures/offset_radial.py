@@ -6,6 +6,7 @@ offset in the x and y directions.
 
 Kramer Harrison, 2025
 """
+
 import numpy as np
 from optiland.physical_apertures.radial import RadialAperture
 
@@ -35,8 +36,12 @@ class OffsetRadialAperture(RadialAperture):
         Returns:
             tuple: The extent of the aperture in the x and y directions.
         """
-        return (self.offset_x - self.r_max, self.offset_x + self.r_max,
-                self.offset_y - self.r_max, self.offset_y + self.r_max)
+        return (
+            self.offset_x - self.r_max,
+            self.offset_x + self.r_max,
+            self.offset_y - self.r_max,
+            self.offset_y + self.r_max,
+        )
 
     def contains(self, x, y):
         """
@@ -50,9 +55,8 @@ class OffsetRadialAperture(RadialAperture):
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
         """
-        radius2 = (x - self.offset_x)**2 + (y - self.offset_y)**2
-        return np.logical_and(radius2 <= self.r_max**2,
-                              radius2 >= self.r_min**2)
+        radius2 = (x - self.offset_x) ** 2 + (y - self.offset_y) ** 2
+        return np.logical_and(radius2 <= self.r_max**2, radius2 >= self.r_min**2)
 
     def scale(self, scale_factor):
         """
@@ -73,8 +77,8 @@ class OffsetRadialAperture(RadialAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['offset_x'] = self.offset_x
-        aperture_dict['offset_y'] = self.offset_y
+        aperture_dict["offset_x"] = self.offset_x
+        aperture_dict["offset_y"] = self.offset_y
         return aperture_dict
 
     @classmethod
@@ -88,5 +92,4 @@ class OffsetRadialAperture(RadialAperture):
         Returns:
             OffsetRadialAperture: The aperture object.
         """
-        return cls(data['r_max'], data['r_min'],
-                   data['offset_x'], data['offset_y'])
+        return cls(data["r_max"], data["r_min"], data["offset_x"], data["offset_y"])

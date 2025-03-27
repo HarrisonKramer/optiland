@@ -27,13 +27,14 @@ class Aperture:
     """
 
     def __init__(self, aperture_type, value, object_space_telecentric=False):
-        if aperture_type not in ['EPD', 'imageFNO', 'objectNA']:
-            raise ValueError('Aperture type must be "EPD", "imageFNO", '
-                             '"objectNA"')
+        if aperture_type not in ["EPD", "imageFNO", "objectNA"]:
+            raise ValueError('Aperture type must be "EPD", "imageFNO", "objectNA"')
 
-        if aperture_type in ['EPD', 'imageFNO'] and object_space_telecentric:
-            raise ValueError('Cannot set aperture type to "EPD" or "imageFNO" '
-                             'if lens is telecentric in object space.')
+        if aperture_type in ["EPD", "imageFNO"] and object_space_telecentric:
+            raise ValueError(
+                'Cannot set aperture type to "EPD" or "imageFNO" '
+                "if lens is telecentric in object space."
+            )
 
         self.ap_type = aperture_type
         self.value = value
@@ -46,9 +47,9 @@ class Aperture:
             dict: A dictionary containing the aperture data.
         """
         return {
-            'type': self.ap_type,
-            'value': self.value,
-            'object_space_telecentric': self.object_space_telecentric
+            "type": self.ap_type,
+            "value": self.value,
+            "object_space_telecentric": self.object_space_telecentric,
         }
 
     @classmethod
@@ -61,14 +62,13 @@ class Aperture:
         Returns:
             Aperture: A new Aperture instance created from the data.
         """
-        required_keys = {'type', 'value'}
+        required_keys = {"type", "value"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
         return cls(
-            aperture_type=data['type'],
-            value=data['value'],
-            object_space_telecentric=data.get('object_space_telecentric',
-                                              False)
+            aperture_type=data["type"],
+            value=data["value"],
+            object_space_telecentric=data.get("object_space_telecentric", False),
         )

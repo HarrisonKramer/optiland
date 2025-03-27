@@ -67,9 +67,10 @@ class AberrationOperand:
         TchC_sum(optic): Returns the sum of transverse
             chromatic aberration values for the optic.
     """
+
     @staticmethod
     def seidels(optic, seidel_number):
-        return optic.aberrations.seidels()[seidel_number-1]
+        return optic.aberrations.seidels()[seidel_number - 1]
 
     @staticmethod
     def TSC(optic, surface_number):

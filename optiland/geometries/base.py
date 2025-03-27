@@ -15,6 +15,7 @@ class BaseGeometry(ABC):
     Args:
         cs (CoordinateSystem): The coordinate system of the geometry.
     """
+
     _registry = {}
 
     def __init__(self, coordinate_system):
@@ -26,7 +27,7 @@ class BaseGeometry(ABC):
         BaseGeometry._registry[cls.__name__] = cls
 
     def __str__(self):
-        return f'{self.__class__.__name__}'  # pragma: no cover
+        return f"{self.__class__.__name__}"  # pragma: no cover
 
     @abstractmethod
     def sag(self, x=0, y=0):
@@ -91,10 +92,7 @@ class BaseGeometry(ABC):
         Returns:
             dict: The dictionary representation of the geometry.
         """
-        return {
-            'type': self.__class__.__name__,
-            'cs': self.cs.to_dict()
-        }
+        return {"type": self.__class__.__name__, "cs": self.cs.to_dict()}
 
     @classmethod
     def from_dict(cls, data):
@@ -106,9 +104,9 @@ class BaseGeometry(ABC):
         Returns:
             BaseGeometry: The geometry.
         """
-        geometry_type = data.get('type')
+        geometry_type = data.get("type")
         if geometry_type not in cls._registry:
-            raise ValueError(f'Unknown geometry type: {geometry_type}')
+            raise ValueError(f"Unknown geometry type: {geometry_type}")
 
         # Delegate to the correct subclass's from_dict
         return cls._registry[geometry_type].from_dict(data)

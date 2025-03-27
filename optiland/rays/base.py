@@ -54,5 +54,6 @@ class BaseRays:
         elif isinstance(data, np.ndarray):
             return np.ravel(data).astype(float)
         else:
-            raise ValueError('Unsupported input type. Must be a scalar, '
-                             'a list, or a NumPy array.')
+            raise ValueError(
+                "Unsupported input type. Must be a scalar, a list, or a NumPy array."
+            )

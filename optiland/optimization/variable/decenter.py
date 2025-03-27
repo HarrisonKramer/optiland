@@ -31,14 +31,12 @@ class DecenterVariable(VariableBehavior):
         update_value(new_value): Updates the decenter value of the surface.
     """
 
-    def __init__(self, optic, surface_number, axis, apply_scaling=True,
-                 **kwargs):
+    def __init__(self, optic, surface_number, axis, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.axis = axis
 
-        if self.axis not in ['x', 'y']:
-            raise ValueError(f'Invalid axis "{self.axis}" for decenter '
-                             'variable.')
+        if self.axis not in ["x", "y"]:
+            raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
 
     def get_value(self):
         """
@@ -48,9 +46,9 @@ class DecenterVariable(VariableBehavior):
             float: The current decenter value.
         """
         surf = self._surfaces.surfaces[self.surface_number]
-        if self.axis == 'x':
+        if self.axis == "x":
             value = surf.geometry.cs.x
-        elif self.axis == 'y':
+        elif self.axis == "y":
             value = surf.geometry.cs.y
 
         if self.apply_scaling:
@@ -68,9 +66,9 @@ class DecenterVariable(VariableBehavior):
             new_value = self.inverse_scale(new_value)
 
         surf = self._surfaces.surfaces[self.surface_number]
-        if self.axis == 'x':
+        if self.axis == "x":
             surf.geometry.cs.x = new_value
-        elif self.axis == 'y':
+        elif self.axis == "y":
             surf.geometry.cs.y = new_value
 
     def scale(self, value):

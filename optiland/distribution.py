@@ -4,6 +4,7 @@ This module provides various classes representing 2D pupil distributions.
 
 Kramer Harrison, 2024
 """
+
 from abc import ABC, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
@@ -60,13 +61,13 @@ class BaseDistribution(ABC):
         This method plots the distribution points and a unit circle for
             reference.
         """
-        plt.plot(self.x, self.y, 'k*')
+        plt.plot(self.x, self.y, "k*")
         t = np.linspace(0, 2 * np.pi, 256)
         x, y = np.cos(t), np.sin(t)
-        plt.plot(x, y, 'r')
-        plt.xlabel('Normalized Pupil Coordinate X')
-        plt.ylabel('Normalized Pupil Coordinate Y')
-        plt.axis('equal')
+        plt.plot(x, y, "r")
+        plt.xlabel("Normalized Pupil Coordinate X")
+        plt.ylabel("Normalized Pupil Coordinate Y")
+        plt.axis("equal")
         plt.show()
 
 
@@ -143,7 +144,7 @@ class RandomDistribution(BaseDistribution):
             num_points (int): The number of points to generate.
         """
         r = self.rng.uniform(size=num_points)
-        theta = self.rng.uniform(0, 2*np.pi, size=num_points)
+        theta = self.rng.uniform(0, 2 * np.pi, size=num_points)
 
         self.x = np.sqrt(r) * np.cos(theta)
         self.y = np.sqrt(r) * np.sin(theta)
@@ -281,11 +282,10 @@ class GaussianQuadrature(BaseDistribution):
             3: np.array([0.33571, 0.70711, 0.94196]),
             4: np.array([0.26350, 0.57446, 0.81853, 0.96466]),
             5: np.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]),
-            6: np.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300])
+            6: np.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
         }
         if num_rings not in radius_dict:
-            raise ValueError('Gaussian quadrature must have between 1 and '
-                             '6 rings.')
+            raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
         return radius_dict[num_rings]
 
     def get_weights(self, num_rings):
@@ -303,11 +303,10 @@ class GaussianQuadrature(BaseDistribution):
             3: np.array([0.13889, 0.22222, 0.13889]),
             4: np.array([0.08696, 0.16304, 0.16304, 0.08696]),
             5: np.array([0.059231, 0.11966, 0.14222, 0.11966, 0.059231]),
-            6: np.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283])
+            6: np.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
         }
         if num_rings not in weights_dict:
-            raise ValueError('Gaussian quadrature must have between 1 and'
-                             ' 6 rings.')
+            raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
 
         weights = weights_dict[num_rings]
 
@@ -320,9 +319,8 @@ class GaussianQuadrature(BaseDistribution):
 
 
 class RingDistribution(BaseDistribution):
-    """RingDistribution class for generating points along a single ring.
+    """RingDistribution class for generating points along a single ring."""
 
-    """
     def generate_points(self, num_points: int):
         """Generate points along a ring at the maximum aperture value.
 
@@ -349,18 +347,18 @@ def create_distribution(distribution_type):
         ValueError: If an invalid distribution type is provided.
     """
     distribution_classes = {
-        'line_x': LineXDistribution,
-        'line_y': LineYDistribution,
-        'positive_line_x': lambda: LineXDistribution(positive_only=True),
-        'positive_line_y': lambda: LineYDistribution(positive_only=True),
-        'random': RandomDistribution,
-        'uniform': UniformDistribution,
-        'hexapolar': HexagonalDistribution,
-        'cross': CrossDistribution,
-        'ring': RingDistribution
+        "line_x": LineXDistribution,
+        "line_y": LineYDistribution,
+        "positive_line_x": lambda: LineXDistribution(positive_only=True),
+        "positive_line_y": lambda: LineYDistribution(positive_only=True),
+        "random": RandomDistribution,
+        "uniform": UniformDistribution,
+        "hexapolar": HexagonalDistribution,
+        "cross": CrossDistribution,
+        "ring": RingDistribution,
     }
 
     if distribution_type not in distribution_classes:
-        raise ValueError('Invalid distribution type.')
+        raise ValueError("Invalid distribution type.")
 
     return distribution_classes[distribution_type]()

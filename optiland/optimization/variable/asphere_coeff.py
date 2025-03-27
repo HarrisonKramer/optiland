@@ -28,8 +28,9 @@ class AsphereCoeffVariable(VariableBehavior):
         coeff_number (int): The index of the aspheric coefficient.
     """
 
-    def __init__(self, optic, surface_number, coeff_number, apply_scaling=True,
-                 **kwargs):
+    def __init__(
+        self, optic, surface_number, coeff_number, apply_scaling=True, **kwargs
+    ):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.coeff_number = coeff_number
 
@@ -49,10 +50,12 @@ class AsphereCoeffVariable(VariableBehavior):
             value = surf.geometry.c[self.coeff_number]
         except IndexError:
             pad_width_i = max(0, self.coeff_number + 1)
-            c_new = np.pad(surf.geometry.c,
-                           pad_width=(0, pad_width_i),
-                           mode='constant',
-                           constant_values=0)
+            c_new = np.pad(
+                surf.geometry.c,
+                pad_width=(0, pad_width_i),
+                mode="constant",
+                constant_values=0,
+            )
             surf.geometry.c = c_new
             value = 0
         if self.apply_scaling:
@@ -68,8 +71,7 @@ class AsphereCoeffVariable(VariableBehavior):
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
-        self.optic.set_asphere_coeff(new_value, self.surface_number,
-                                     self.coeff_number)
+        self.optic.set_asphere_coeff(new_value, self.surface_number, self.coeff_number)
 
     def scale(self, value):
         """
@@ -96,5 +98,4 @@ class AsphereCoeffVariable(VariableBehavior):
         Returns:
             str: A string representation of the variable.
         """
-        return f"Asphere Coeff. {self.coeff_number}, " \
-            f"Surface {self.surface_number}"
+        return f"Asphere Coeff. {self.coeff_number}, Surface {self.surface_number}"

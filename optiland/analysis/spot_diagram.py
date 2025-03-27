@@ -4,12 +4,13 @@ This module provides a spot diagram analysis for optical systems.
 
 Kramer Harrison, 2024
 """
+
 from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-plt.rcParams.update({'font.size': 12, 'font.family': 'cambria'})
+plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 
 
 class SpotDiagram:
@@ -30,8 +31,14 @@ class SpotDiagram:
             (dim 2).
     """
 
-    def __init__(self, optic, fields='all', wavelengths='all', num_rings=6,
-                 distribution='hexapolar'):
+    def __init__(
+        self,
+        optic,
+        fields="all",
+        wavelengths="all",
+        num_rings=6,
+        distribution="hexapolar",
+    ):
         """Create an instance of SpotDiagram
 
         Note:
@@ -57,14 +64,15 @@ class SpotDiagram:
         self.optic = optic
         self.fields = fields
         self.wavelengths = wavelengths
-        if self.fields == 'all':
+        if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
 
-        if self.wavelengths == 'all':
+        if self.wavelengths == "all":
             self.wavelengths = self.optic.wavelengths.get_wavelengths()
 
-        self.data = self._generate_data(self.fields, self.wavelengths,
-                                        num_rings, distribution)
+        self.data = self._generate_data(
+            self.fields, self.wavelengths, num_rings, distribution
+        )
 
     def view(self, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
@@ -80,9 +88,13 @@ class SpotDiagram:
         N = len(self.fields)
         num_rows = (N + 2) // 3
 
-        fig, axs = plt.subplots(num_rows, 3,
-                                figsize=(figsize[0], num_rows*figsize[1]),
-                                sharex=True, sharey=True)
+        fig, axs = plt.subplots(
+            num_rows,
+            3,
+            figsize=(figsize[0], num_rows * figsize[1]),
+            sharex=True,
+            sharey=True,
+        )
         axs = axs.flatten()
 
         # Subtract centroid and find limits
@@ -93,9 +105,7 @@ class SpotDiagram:
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
             centroids = self.centroid()
-            chief_ray_centers = self.generate_chief_rays_centers(
-                wavelength=wavelength
-            )
+            chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
             airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
 
         # Do not calculate airy disc parameters if not required.
@@ -114,21 +124,25 @@ class SpotDiagram:
                 real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
             else:
                 real_centroid_x, real_centroid_y = None, None
-            self._plot_field(axs[k], field_data, self.fields[k],
-                             axis_lim, self.wavelengths,
-                             add_airy_disk=add_airy_disk,
-                             field_index=k,
-                             airy_rad_x=airy_rad_x,
-                             airy_rad_y=airy_rad_y,
-                             real_centroid_x=real_centroid_x,
-                             real_centroid_y=real_centroid_y
-                             )
+            self._plot_field(
+                axs[k],
+                field_data,
+                self.fields[k],
+                axis_lim,
+                self.wavelengths,
+                add_airy_disk=add_airy_disk,
+                field_index=k,
+                airy_rad_x=airy_rad_x,
+                airy_rad_y=airy_rad_y,
+                real_centroid_x=real_centroid_x,
+                real_centroid_y=real_centroid_y,
+            )
 
         # Remove empty axes
         for k in range(N, num_rows * 3):
             fig.delaxes(axs[k])
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         plt.tight_layout()
         plt.show()
 
@@ -173,17 +187,17 @@ class SpotDiagram:
                 east (Px=1), west (Px=-1)directions.
         """
         ray_north = self.optic.trace_generic(
-            Hx=H_x, Hy=H_y, Px=0,  Py=1, wavelength=wavelength
-            )
+            Hx=H_x, Hy=H_y, Px=0, Py=1, wavelength=wavelength
+        )
         ray_south = self.optic.trace_generic(
-            Hx=H_x, Hy=H_y, Px=0,  Py=-1, wavelength=wavelength
-            )
+            Hx=H_x, Hy=H_y, Px=0, Py=-1, wavelength=wavelength
+        )
         ray_east = self.optic.trace_generic(
-            Hx=H_x, Hy=H_y, Px=1,  Py=0, wavelength=wavelength
-            )
+            Hx=H_x, Hy=H_y, Px=1, Py=0, wavelength=wavelength
+        )
         ray_west = self.optic.trace_generic(
             Hx=H_x, Hy=H_y, Px=-1, Py=0, wavelength=wavelength
-            )
+        )
 
         ray_tuple = ray_north, ray_south, ray_east, ray_west
 
@@ -197,28 +211,16 @@ class SpotDiagram:
             cosines_tuple (tuple): Contains directional cosines of marginal
                 each rays.
         """
-        ray_north, ray_south, ray_east, ray_west = \
-            self.generate_marginal_rays(H_x, H_y, wavelength)
+        ray_north, ray_south, ray_east, ray_west = self.generate_marginal_rays(
+            H_x, H_y, wavelength
+        )
 
-        north_cosines = np.array(
-            [ray_north.L, ray_north.M, ray_north.N]
-            ).ravel()
-        south_cosines = np.array(
-            [ray_south.L, ray_south.M, ray_south.N]
-            ).ravel()
-        east_cosines = np.array(
-            [ray_east.L,  ray_east.M,  ray_east.N]
-            ).ravel()
-        west_cosines = np.array(
-            [ray_west.L,  ray_west.M,  ray_west.N]
-            ).ravel()
+        north_cosines = np.array([ray_north.L, ray_north.M, ray_north.N]).ravel()
+        south_cosines = np.array([ray_south.L, ray_south.M, ray_south.N]).ravel()
+        east_cosines = np.array([ray_east.L, ray_east.M, ray_east.N]).ravel()
+        west_cosines = np.array([ray_west.L, ray_west.M, ray_west.N]).ravel()
 
-        cosines_tuple = (
-            north_cosines,
-            south_cosines,
-            east_cosines,
-            west_cosines
-            )
+        cosines_tuple = (north_cosines, south_cosines, east_cosines, west_cosines)
         return cosines_tuple
 
     def generate_chief_rays_cosines(self, wavelength):
@@ -242,10 +244,10 @@ class SpotDiagram:
             # Always pass the field values—even for 'angle' type.
             ray_chief = self.optic.trace_generic(
                 Hx=H_x, Hy=H_y, Px=0, Py=0, wavelength=wavelength
-                )
+            )
             chief_ray_cosines_list.append(
                 np.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel()
-                )
+            )
         chief_ray_cosines_list = np.array(chief_ray_cosines_list)
         return chief_ray_cosines_list
 
@@ -263,7 +265,7 @@ class SpotDiagram:
             # Always pass the field values—even for 'angle' type.
             ray_chief = self.optic.trace_generic(
                 Hx=H_x, Hy=H_y, Px=0, Py=0, wavelength=wavelength
-                )
+            )
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
@@ -285,8 +287,9 @@ class SpotDiagram:
 
         for idx, (H_x, H_y) in enumerate(self.fields):
             # Get marginal rays for the current field
-            north_cos, south_cos, east_cos, west_cos = \
+            north_cos, south_cos, east_cos, west_cos = (
                 self.generate_marginal_rays_cosines(H_x, H_y, wavelength)
+            )
 
             chief_cos = chief_ray_cosines_list[idx]
 
@@ -339,7 +342,7 @@ class SpotDiagram:
         for field_data in data:
             geometric_size_field = []
             for wave_data in field_data:
-                r = np.sqrt(wave_data[0]**2 + wave_data[1]**2)
+                r = np.sqrt(wave_data[0] ** 2 + wave_data[1] ** 2)
                 geometric_size_field.append(np.max(r))
             geometric_size.append(geometric_size_field)
         return geometric_size
@@ -355,7 +358,7 @@ class SpotDiagram:
         for field_data in data:
             rms_field = []
             for wave_data in field_data:
-                r2 = wave_data[0]**2 + wave_data[1]**2
+                r2 = wave_data[0] ** 2 + wave_data[1] ** 2
                 rms_field.append(np.sqrt(np.mean(r2)))
             rms.append(rms_field)
         return rms
@@ -379,8 +382,9 @@ class SpotDiagram:
                 wave_data[1] -= centroids[i][1]
         return data
 
-    def _generate_data(self, fields, wavelengths, num_rays=100,
-                       distribution='hexapolar'):
+    def _generate_data(
+        self, fields, wavelengths, num_rays=100, distribution="hexapolar"
+    ):
         """
         Generate spot data for the given fields and wavelengths.
 
@@ -400,15 +404,15 @@ class SpotDiagram:
         for field in fields:
             field_data = []
             for wavelength in wavelengths:
-                field_data.append(self._generate_field_data(field,
-                                                            wavelength,
-                                                            num_rays,
-                                                            distribution))
+                field_data.append(
+                    self._generate_field_data(field, wavelength, num_rays, distribution)
+                )
             data.append(field_data)
         return data
 
-    def _generate_field_data(self, field, wavelength, num_rays=100,
-                             distribution='hexapolar'):
+    def _generate_field_data(
+        self, field, wavelength, num_rays=100, distribution="hexapolar"
+    ):
         """
         Generates spot data for a given field and wavelength.
 
@@ -442,21 +446,26 @@ class SpotDiagram:
         # will call the image surface's geometry.localize(points) method
         # to convert the global coordinates into local coordinates
         x, y, _ = transform(
-                x_global,
-                y_global,
-                z_global,
-                self.optic.image_surface,
-                is_global=True
-            )
+            x_global, y_global, z_global, self.optic.image_surface, is_global=True
+        )
 
         return [x, y, intensity]
 
-    def _plot_field(self, ax, field_data, field, axis_lim,
-                    wavelengths, buffer=1.05,
-                    add_airy_disk=False, field_index=None,
-                    airy_rad_x=None, airy_rad_y=None,
-                    real_centroid_x=None, real_centroid_y=None
-                    ):
+    def _plot_field(
+        self,
+        ax,
+        field_data,
+        field,
+        axis_lim,
+        wavelengths,
+        buffer=1.05,
+        add_airy_disk=False,
+        field_index=None,
+        airy_rad_x=None,
+        airy_rad_y=None,
+        real_centroid_x=None,
+        real_centroid_y=None,
+    ):
         """
         Plot the field data on the given axis.
 
@@ -474,24 +483,29 @@ class SpotDiagram:
         Returns:
             None
         """
-        markers = ['o', 's', '^']
+        markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
             x, y, intensity = points
             mask = intensity != 0
-            ax.scatter(x[mask], y[mask], s=10,
-                       label=f'{wavelengths[k]:.4f} µm',
-                       marker=markers[k % 3], alpha=0.7)
+            ax.scatter(
+                x[mask],
+                y[mask],
+                s=10,
+                label=f"{wavelengths[k]:.4f} µm",
+                marker=markers[k % 3],
+                alpha=0.7,
+            )
 
         if add_airy_disk and field_index is not None:
             # Draw ellipse ONLY for the current field_index
             ellipse = patches.Ellipse(
                 (real_centroid_x, real_centroid_y),
-                width=2*airy_rad_y[field_index],    # diameter, not radius
-                height=2*airy_rad_x[field_index],
+                width=2 * airy_rad_y[field_index],  # diameter, not radius
+                height=2 * airy_rad_x[field_index],
                 linestyle="--",
                 edgecolor="black",
                 fill=False,
-                linewidth=2
+                linewidth=2,
             )
             ax.add_patch(ellipse)
 
@@ -517,14 +531,14 @@ class SpotDiagram:
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:
-            x_label, y_label = 'U (mm)', 'V (mm)'
+            x_label, y_label = "U (mm)", "V (mm)"
         else:
-            x_label, y_label = 'X (mm)', 'Y (mm)'
+            x_label, y_label = "X (mm)", "Y (mm)"
 
-        ax.axis('square')
+        ax.axis("square")
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
-        ax.set_title(f'Hx: {field[0]:.3f}, Hy: {field[1]:.3f}')
+        ax.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
         ax.grid(alpha=0.25)

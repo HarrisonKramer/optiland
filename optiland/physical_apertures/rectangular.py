@@ -5,6 +5,7 @@ rectangular aperture that clips rays based on their position.
 
 Kramer Harrison, 2025
 """
+
 from optiland.physical_apertures.base import BaseAperture
 
 
@@ -48,8 +49,12 @@ class RectangularAperture(BaseAperture):
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
         """
-        return ((self.x_min <= x) & (x <= self.x_max) &
-                (self.y_min <= y) & (y <= self.y_max))
+        return (
+            (self.x_min <= x)
+            & (x <= self.x_max)
+            & (self.y_min <= y)
+            & (y <= self.y_max)
+        )
 
     def scale(self, scale_factor):
         """
@@ -71,10 +76,10 @@ class RectangularAperture(BaseAperture):
             dict: The dictionary representation of the aperture.
         """
         aperture_dict = super().to_dict()
-        aperture_dict['x_min'] = self.x_min
-        aperture_dict['x_max'] = self.x_max
-        aperture_dict['y_min'] = self.y_min
-        aperture_dict['y_max'] = self.y_max
+        aperture_dict["x_min"] = self.x_min
+        aperture_dict["x_max"] = self.x_max
+        aperture_dict["y_min"] = self.y_min
+        aperture_dict["y_max"] = self.y_max
         return aperture_dict
 
     @classmethod
@@ -88,5 +93,4 @@ class RectangularAperture(BaseAperture):
         Returns:
             RectangularAperture: The aperture object.
         """
-        return cls(data['x_min'], data['x_max'],
-                   data['y_min'], data['y_max'])
+        return cls(data["x_min"], data["x_max"], data["y_min"], data["y_max"])

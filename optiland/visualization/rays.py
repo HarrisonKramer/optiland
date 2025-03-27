@@ -42,8 +42,15 @@ class Rays2D:
         n = optic.surface_group.num_surfaces
         self.r_extent = np.zeros(n)
 
-    def plot(self, ax, fields='all', wavelengths='primary', num_rays=3,
-             distribution='line_y', reference=None):
+    def plot(
+        self,
+        ax,
+        fields="all",
+        wavelengths="primary",
+        num_rays=3,
+        distribution="line_y",
+        reference=None,
+    ):
         """
         Plots the rays for the given fields and wavelengths.
 
@@ -58,15 +65,14 @@ class Rays2D:
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
         """
-        if fields == 'all':
+        if fields == "all":
             fields = self.optic.fields.get_field_coords()
 
-        if wavelengths == 'primary':
+        if wavelengths == "primary":
             wavelengths = [self.optic.wavelengths.primary_wavelength.value]
 
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
-
                 # if only one field, use different colors for each wavelength
                 if len(fields) > 1:
                     color_idx = i
@@ -75,7 +81,7 @@ class Rays2D:
 
                 if distribution is None:
                     # trace only for surface extents
-                    self._trace(field, wavelength, num_rays, 'line_y')
+                    self._trace(field, wavelength, num_rays, "line_y")
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
@@ -124,9 +130,9 @@ class Rays2D:
         Returns:
             None
         """
-        if reference == 'chief':
+        if reference == "chief":
             self.optic.trace_generic(*field, Px=0, Py=0, wavelength=wavelength)
-        elif reference == 'marginal':
+        elif reference == "marginal":
             self.optic.trace_generic(*field, Px=0, Py=1, wavelength=wavelength)
         else:
             raise ValueError(f"Invalid ray reference type: {reference}")
@@ -138,8 +144,7 @@ class Rays2D:
         r_extent_new = np.zeros_like(self.r_extent)
         for i, surf in enumerate(self.optic.surface_group.surfaces):
             # convert to local coordinate system
-            x, y, _ = transform(self.x[i], self.y[i], self.z[i],
-                                surf, is_global=True)
+            x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
 
             r_extent_new[i] = np.nanmax(np.hypot(x, y))
         self.r_extent = np.fmax(self.r_extent, r_extent_new)
@@ -190,7 +195,7 @@ class Rays2D:
         Returns:
             None
         """
-        color = f'C{color_idx}'
+        color = f"C{color_idx}"
         ax.plot(z, y, color, linewidth=linewidth)
 
 
@@ -211,16 +216,18 @@ class Rays3D(Rays2D):
         super().__init__(optic)
 
         # matplotlib default colors converted to RGB
-        self._rgb_colors = [(0.122, 0.467, 0.706),
-                            (1.000, 0.498, 0.055),
-                            (0.173, 0.627, 0.173),
-                            (0.839, 0.153, 0.157),
-                            (0.580, 0.404, 0.741),
-                            (0.549, 0.337, 0.294),
-                            (0.890, 0.467, 0.761),
-                            (0.498, 0.498, 0.498),
-                            (0.737, 0.741, 0.133),
-                            (0.090, 0.745, 0.812)]
+        self._rgb_colors = [
+            (0.122, 0.467, 0.706),
+            (1.000, 0.498, 0.055),
+            (0.173, 0.627, 0.173),
+            (0.839, 0.153, 0.157),
+            (0.580, 0.404, 0.741),
+            (0.549, 0.337, 0.294),
+            (0.890, 0.467, 0.761),
+            (0.498, 0.498, 0.498),
+            (0.737, 0.741, 0.133),
+            (0.090, 0.745, 0.812),
+        ]
 
     def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
         """
@@ -238,7 +245,7 @@ class Rays3D(Rays2D):
         """
         color = self._rgb_colors[color_idx % 10]
         for k in range(1, len(x)):
-            p0 = [x[k-1], y[k-1], z[k-1]]
+            p0 = [x[k - 1], y[k - 1], z[k - 1]]
             p1 = [x[k], y[k], z[k]]
 
             line_source = vtk.vtkLineSource()

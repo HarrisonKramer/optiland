@@ -6,6 +6,7 @@ for each surface in the system.
 
 Kramer Harrison, 2024
 """
+
 import matplotlib.pyplot as plt
 
 
@@ -22,9 +23,9 @@ class YYbar:
         view(figsize=(7, 5.5)): Visualizes the YYbar analysis.
     """
 
-    def __init__(self, optic, wavelength='primary'):
+    def __init__(self, optic, wavelength="primary"):
         self.optic = optic
-        if wavelength == 'primary':
+        if wavelength == "primary":
             wavelength = optic.primary_wavelength
         self.wavelength = wavelength
 
@@ -45,17 +46,18 @@ class YYbar:
         yb = yb.flatten()
 
         for k in range(2, len(ya)):
-            label = ''
+            label = ""
             if k == 2:
-                label = 'Surface 1'
-            elif k == len(ya)-1:
-                label = 'Image'
-            ax.plot([yb[k-1], yb[k]], [ya[k-1], ya[k]], '.-',
-                    label=label, markersize=8)
+                label = "Surface 1"
+            elif k == len(ya) - 1:
+                label = "Image"
+            ax.plot(
+                [yb[k - 1], yb[k]], [ya[k - 1], ya[k]], ".-", label=label, markersize=8
+            )
 
-        ax.axhline(y=0, linewidth=0.5, color='k')
-        ax.axvline(x=0, linewidth=0.5, color='k')
-        ax.set_xlabel('Chief Ray Height (mm)')
-        ax.set_ylabel('Marginal Ray Height (mm)')
+        ax.axhline(y=0, linewidth=0.5, color="k")
+        ax.axvline(x=0, linewidth=0.5, color="k")
+        ax.set_xlabel("Chief Ray Height (mm)")
+        ax.set_ylabel("Marginal Ray Height (mm)")
         ax.legend()
         plt.show()

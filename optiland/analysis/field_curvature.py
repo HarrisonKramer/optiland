@@ -4,6 +4,7 @@ This module provides a field curvature analysis for optical systems.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -30,9 +31,9 @@ class FieldCurvature:
             analysis.
     """
 
-    def __init__(self, optic, wavelengths='all', num_points=128):
+    def __init__(self, optic, wavelengths="all", num_points=128):
         self.optic = optic
-        if wavelengths == 'all':
+        if wavelengths == "all":
             wavelengths = self.optic.wavelengths.get_wavelengths()
         self.wavelengths = wavelengths
         self.num_points = num_points
@@ -51,20 +52,30 @@ class FieldCurvature:
         field = np.linspace(0, self.optic.fields.max_field, self.num_points)
 
         for k, wavelength in enumerate(self.wavelengths):
-            ax.plot(self.data[k][0], field, f'C{k}', zorder=10,
-                    label=f'{wavelength:.4f} µm, Tangential')
-            ax.plot(self.data[k][1], field, f'C{k}--', zorder=10,
-                    label=f'{wavelength:.4f} µm, Sagittal')
+            ax.plot(
+                self.data[k][0],
+                field,
+                f"C{k}",
+                zorder=10,
+                label=f"{wavelength:.4f} µm, Tangential",
+            )
+            ax.plot(
+                self.data[k][1],
+                field,
+                f"C{k}--",
+                zorder=10,
+                label=f"{wavelength:.4f} µm, Sagittal",
+            )
 
-        ax.set_xlabel('Image Plane Delta (mm)')
-        ax.set_ylabel('Field')
+        ax.set_xlabel("Image Plane Delta (mm)")
+        ax.set_ylabel("Field")
 
         ax.set_ylim([0, self.optic.fields.max_field])
         current_xlim = plt.xlim()
         ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
-        ax.set_title('Field Curvature')
-        plt.axvline(x=0, color='k', linewidth=0.5)
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        ax.set_title("Field Curvature")
+        plt.axvline(x=0, color="k", linewidth=0.5)
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         fig.tight_layout()
         plt.show()
 
@@ -118,7 +129,7 @@ class FieldCurvature:
         y02 = self.optic.surface_group.y[-1, 1::2]
         z02 = self.optic.surface_group.z[-1, 1::2]
 
-        t1 = (M2*z01 - M2*z02 - N2*y01 + N2*y02) / (M1*N2 - M2*N1)
+        t1 = (M2 * z01 - M2 * z02 - N2 * y01 + N2 * y02) / (M1 * N2 - M2 * N1)
 
         return t1 * N1
 
@@ -154,6 +165,6 @@ class FieldCurvature:
         x02 = self.optic.surface_group.x[-1, 1::2]
         z02 = self.optic.surface_group.z[-1, 1::2]
 
-        t2 = (L2*z01 - L2*z02 - N2*x01 + N2*x02) / (L1*N2 - L2*N1)
+        t2 = (L2 * z01 - L2 * z02 - N2 * x01 + N2 * x02) / (L1 * N2 - L2 * N1)
 
         return t2 * N1
