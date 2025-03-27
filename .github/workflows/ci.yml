@@ -45,6 +45,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install dependencies
+        run: |
+          uv install pytest codecov
+
       - name: Run tests with coverage
         run: |
           uv run pytest -v --durations=0 --cov --cov-report=xml
