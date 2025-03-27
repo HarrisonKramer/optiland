@@ -57,3 +57,9 @@ packages = [
 
 [tool.ruff]
 line-length = 88
+
+[dependency-groups]
+dev = [
+    "codecov>=2.1.13",
+    "pytest>=8.3.5",
+]
