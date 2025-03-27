@@ -55,7 +55,7 @@ class TestOptic:
                                material='SF11', thickness=5, comment="Object surface")
         self.optic.add_surface(index=1, surface_type='standard',
                                material='SF11', thickness=5, comment="First surface")
-        
+
         assert self.optic.surface_group.surfaces[0].comment == "Object surface"
         assert self.optic.surface_group.surfaces[1].comment == "First surface"
 
