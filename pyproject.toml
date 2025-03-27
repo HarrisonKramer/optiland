@@ -1,14 +1,14 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "optiland"
 version = "0.3.0"
 authors = [
-  { name="Kramer Harrison", email="kdanielharrison@gmail.com" },
+  { name = "Kramer Harrison", email = "kdanielharrison@gmail.com" },
 ]
-description = ""
+description = "Open Source Optical Design in Python"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -31,7 +31,7 @@ dependencies = [
 license = { text = "MIT License" }
 
 [project.urls]
-"Homepage" = "https://github.com/HarrisonKramer/optiland"
+Homepage = "https://github.com/HarrisonKramer/optiland"
 
 [tool.setuptools]
 packages = [
@@ -54,3 +54,6 @@ packages = [
 
 [tool.setuptools.package-data]
 "optiland.database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]
+
+[tool.ruff]
+line-length = 88
