@@ -16,7 +16,7 @@ def setup_tolerancing():
 def test_init(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
     assert tolerancing.optic == optic
-    assert tolerancing.method == 'generic'
+    assert tolerancing.method == "generic"
     assert tolerancing.tol == 1e-5
     assert tolerancing.operands == []
     assert tolerancing.perturbations == []
@@ -25,8 +25,8 @@ def test_init(setup_tolerancing):
 
 def test_add_operand(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    operand_type = 'f2'
-    input_data = {'optic': optic}
+    operand_type = "f2"
+    input_data = {"optic": optic}
     target = 20.0
     weight = 2.0
 
@@ -41,13 +41,14 @@ def test_add_operand(setup_tolerancing):
 
 def test_add_operand_no_target(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    operand_type = 'f2'
-    input_data = {'optic': optic}
+    operand_type = "f2"
+    input_data = {"optic": optic}
     weight = 2.0
     target = optic.paraxial.f2()
 
-    tolerancing.add_operand(operand_type=operand_type, input_data=input_data,
-                            weight=weight)
+    tolerancing.add_operand(
+        operand_type=operand_type, input_data=input_data, weight=weight
+    )
     assert len(tolerancing.operands) == 1
     operand = tolerancing.operands[0]
     assert operand.operand_type == operand_type
@@ -58,7 +59,7 @@ def test_add_operand_no_target(setup_tolerancing):
 
 def test_add_perturbation(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    variable_type = 'radius'
+    variable_type = "radius"
     perturbation = ScalarSampler(value=100.0)
 
     tolerancing.add_perturbation(variable_type, perturbation, surface_number=1)
@@ -71,7 +72,7 @@ def test_add_perturbation(setup_tolerancing):
 
 def test_add_compensator(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    variable_type = 'thickness'
+    variable_type = "thickness"
 
     tolerancing.add_compensator(variable_type, surface_number=2)
     assert len(tolerancing.compensator.variables) == 1
@@ -82,18 +83,18 @@ def test_add_compensator(setup_tolerancing):
 
 def test_apply_compensators(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    tolerancing.add_compensator('radius', surface_number=1)
-    tolerancing.add_operand(operand_type='f2', input_data={'optic': optic})
+    tolerancing.add_compensator("radius", surface_number=1)
+    tolerancing.add_operand(operand_type="f2", input_data={"optic": optic})
 
     result = tolerancing.apply_compensators()
     first_key = list(result.keys())[0]
-    assert first_key == 'C0: Radius of Curvature, Surface 1'
+    assert first_key == "C0: Radius of Curvature, Surface 1"
 
 
 def test_evaluate(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    tolerancing.add_operand(operand_type='f1', input_data={'optic': optic})
-    tolerancing.add_operand(operand_type='f2', input_data={'optic': optic})
+    tolerancing.add_operand(operand_type="f1", input_data={"optic": optic})
+    tolerancing.add_operand(operand_type="f2", input_data={"optic": optic})
 
     result = tolerancing.evaluate()
     assert np.allclose(result, [optic.paraxial.f1(), optic.paraxial.f2()])
@@ -101,8 +102,7 @@ def test_evaluate(setup_tolerancing):
 
 def test_reset(setup_tolerancing):
     tolerancing, optic = setup_tolerancing
-    tolerancing.add_perturbation('radius', ScalarSampler(value=100.0),
-                                 surface_number=1)
+    tolerancing.add_perturbation("radius", ScalarSampler(value=100.0), surface_number=1)
     tolerancing.perturbations[0].apply()
     assert tolerancing.perturbations[0].value == 100.0
     tolerancing.reset()

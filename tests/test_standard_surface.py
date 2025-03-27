@@ -10,7 +10,6 @@ from optiland.coatings import SimpleCoating, FresnelCoating
 
 
 class TestSurface:
-
     @pytest.fixture(autouse=True)
     def setup(self):
         cs = CoordinateSystem()
@@ -28,7 +27,7 @@ class TestSurface:
             aperture=self.aperture,
             coating=self.coating,
             bsdf=self.bsdf,
-            is_reflective=True
+            is_reflective=True,
         )
 
     def test_trace_paraxial_rays(self):
@@ -89,7 +88,7 @@ class TestSurface:
 
     def test_to_dict(self):
         data = self.surface.to_dict()
-        assert data['type'] == 'Surface'
+        assert data["type"] == "Surface"
 
     def test_from_dict(self):
         data = self.surface.to_dict()
@@ -117,6 +116,6 @@ class TestSurface:
 
     def test_from_dict_missing_type(self):
         data = self.surface.to_dict()
-        del data['type']
+        del data["type"]
         with pytest.raises(ValueError):
             Surface.from_dict(data)

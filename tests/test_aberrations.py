@@ -28,16 +28,17 @@ def simple_singlet():
 
     # add surfaces
     lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    lens.add_surface(index=1, thickness=7, radius=19.93, is_stop=True,
-                     material='N-SF11')
+    lens.add_surface(
+        index=1, thickness=7, radius=19.93, is_stop=True, material="N-SF11"
+    )
     lens.add_surface(index=2, thickness=21.48)
     lens.add_surface(index=3)
 
     # add aperture
-    lens.set_aperture(aperture_type='EPD', value=20.0)
+    lens.set_aperture(aperture_type="EPD", value=20.0)
 
     # add field
-    lens.set_field_type(field_type='angle')
+    lens.set_field_type(field_type="angle")
     lens.add_field(y=0)
 
     # add wavelength

@@ -17,7 +17,7 @@ def setup_image_surface():
         geometry=geometry,
         material_pre=material_pre,
         material_post=material_post,
-        aperture=None
+        aperture=None,
     )
     return image_surface, geometry, material_pre, material_post
 

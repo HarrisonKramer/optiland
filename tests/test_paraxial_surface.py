@@ -11,7 +11,6 @@ from optiland.optic import Optic
 
 
 class TestParaxialSurface:
-
     @pytest.fixture(autouse=True)
     def setup(self):
         cs = CoordinateSystem()
@@ -31,7 +30,7 @@ class TestParaxialSurface:
             aperture=self.aperture,
             coating=self.coating,
             bsdf=self.bsdf,
-            is_reflective=True
+            is_reflective=True,
         )
 
     def test_init(self):
@@ -43,7 +42,7 @@ class TestParaxialSurface:
         assert self.coating == self.surface.coating
         assert self.bsdf == self.surface.bsdf
         assert self.surface.is_reflective is True
-        assert self.surface.surface_type == 'paraxial'
+        assert self.surface.surface_type == "paraxial"
 
     def test_trace_paraxial_rays(self):
         y = np.array([1])
@@ -65,23 +64,25 @@ class TestParaxialSurface:
 
         # add surfaces
         lens.add_surface(index=0, thickness=np.inf)
-        lens.add_surface(index=1, surface_type='paraxial', thickness=100,
-                         f=100, is_stop=True)
+        lens.add_surface(
+            index=1, surface_type="paraxial", thickness=100, f=100, is_stop=True
+        )
         lens.add_surface(index=2)
 
         # add aperture
-        lens.set_aperture(aperture_type='EPD', value=20)
+        lens.set_aperture(aperture_type="EPD", value=20)
 
         # add field
-        lens.set_field_type(field_type='angle')
+        lens.set_field_type(field_type="angle")
         lens.add_field(y=0)
         # lens.add_field(y=5)
 
         # add wavelength
         lens.add_wavelength(value=0.55, is_primary=True)
 
-        rays = lens.trace(Hx=0, Hy=0, wavelength=0.55,
-                          distribution='uniform', num_rays=32)
+        rays = lens.trace(
+            Hx=0, Hy=0, wavelength=0.55, distribution="uniform", num_rays=32
+        )
 
         # confirm all points exactly on axis
         assert np.allclose(rays.y, 0, atol=1e-10)
@@ -91,8 +92,8 @@ class TestParaxialSurface:
 
     def test_to_dict(self):
         data = self.surface.to_dict()
-        assert data['type'] == 'ParaxialSurface'
-        assert data['focal_length'] == self.focal_length
+        assert data["type"] == "ParaxialSurface"
+        assert data["focal_length"] == self.focal_length
 
     def test_from_dict(self):
         data = self.surface.to_dict()
