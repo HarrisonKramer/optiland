@@ -71,8 +71,10 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         conic=0.0,
         tol=1e-10,
         max_iter=100,
-        coefficients=[],
+        coefficients=None,
     ):
+        if coefficients is None:
+            coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = np.atleast_2d(coefficients)
         self.is_symmetric = False

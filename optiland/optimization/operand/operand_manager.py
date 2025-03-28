@@ -24,7 +24,7 @@ class OperandManager:
         min_val=None,
         max_val=None,
         weight=1,
-        input_data={},
+        input_data=None,
     ):
         """Add an operand to the merit function
 
@@ -39,6 +39,8 @@ class OperandManager:
             input_data (dict): Additional input data for the operand.
 
         """
+        if input_data is None:
+            input_data = {}
         self.operands.append(
             Operand(operand_type, target, min_val, max_val, weight, input_data),
         )

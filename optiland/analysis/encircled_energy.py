@@ -107,7 +107,7 @@ class EncircledEnergy(SpotDiagram):
             radii = np.sqrt(x**2 + y**2)
 
             def vectorized_ee(r):
-                return np.nansum(energy[radii <= r])
+                return np.nansum(energy[radii <= r])  # noqa: B023
 
             ee = np.vectorize(vectorized_ee)(r_step)
             ax.plot(r_step, ee, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")

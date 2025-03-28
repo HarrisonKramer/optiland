@@ -98,7 +98,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         intersections = np.column_stack((x, y, z))
         ray_directions = np.column_stack((rays.L, rays.M, rays.N))
 
-        for i in range(self.max_iter):
+        for _ in range(self.max_iter):
             z_surface = self.sag(intersections[:, 0], intersections[:, 1])
             dz = intersections[:, 2] - z_surface
             distance = dz / ray_directions[:, 2]

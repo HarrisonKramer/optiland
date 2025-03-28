@@ -6,6 +6,7 @@ YAML file from the refractiveindex.info database.
 Kramer Harrison, 2024
 """
 
+import contextlib
 import os
 from io import StringIO
 
@@ -129,8 +130,8 @@ class MaterialFile(BaseMaterial):
             n = 1 + c[0]
             for k in range(1, len(c), 2):
                 n += c[k] * w**2 / (w**2 - c[k + 1] ** 2)
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 1.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 1.") from err
         return np.sqrt(n)
 
     def _formula_2(self, w):
@@ -149,8 +150,8 @@ class MaterialFile(BaseMaterial):
             n = 1 + c[0]
             for k in range(1, len(c), 2):
                 n += c[k] * w**2 / (w**2 - c[k + 1])
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 2.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 2.") from err
         return np.sqrt(n)
 
     def _formula_3(self, w):
@@ -170,8 +171,8 @@ class MaterialFile(BaseMaterial):
             for k in range(1, len(c), 2):
                 n += c[k] * w ** c[k + 1]
             return np.sqrt(n)
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 3.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 3.") from err
 
     def _formula_4(self, w):
         """Calculate the refractive index using dispersion formula 4 from
@@ -194,8 +195,8 @@ class MaterialFile(BaseMaterial):
             for k in range(9, len(c), 2):
                 n += c[k] * w ** c[k + 1]
             return np.sqrt(n)
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 4.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 4.") from err
 
     def _formula_5(self, w):
         """Calculate the refractive index using dispersion formula 5 from
@@ -214,8 +215,8 @@ class MaterialFile(BaseMaterial):
             for k in range(1, len(c), 2):
                 n += c[k] * w ** c[k + 1]
             return n
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 5.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 5.") from err
 
     def _formula_6(self, w):
         """Calculate the refractive index using dispersion formula 6 from
@@ -234,8 +235,8 @@ class MaterialFile(BaseMaterial):
             for k in range(1, len(c), 2):
                 n += c[k] / (c[k + 1] - w**-2)
             return n
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 6.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 6.") from err
 
     def _formula_7(self, w):
         """Calculate the refractive index using dispersion formula 7 from
@@ -254,8 +255,8 @@ class MaterialFile(BaseMaterial):
             for k in range(3, len(c)):
                 n += c[k] * w ** (2 * (k - 2))
             return n
-        except IndexError:
-            raise ValueError("Invalid coefficients for dispersion formula 7.")
+        except IndexError as err:
+            raise ValueError("Invalid coefficients for dispersion formula 7.") from err
 
     def _formula_8(self, w):
         """Calculate the refractive index using dispersion formula 8 from
@@ -297,8 +298,8 @@ class MaterialFile(BaseMaterial):
         """Calculate the refractive index using tabulated data."""
         try:
             return np.interp(w, self._n_wavelength, self._n)
-        except ValueError:
-            raise ValueError("No tabular refractive index data found.")
+        except ValueError as err:
+            raise ValueError("No tabular refractive index data found.") from err
 
     def _read_file(self):
         """Read the material file."""
@@ -344,10 +345,8 @@ class MaterialFile(BaseMaterial):
                     self._set_formula_type(sub_data_type)
 
         # Parse reference info, if available
-        try:
+        with contextlib.suppress(KeyError):
             self.reference_data = data["REFERENCE"]
-        except KeyError:
-            pass
 
     def to_dict(self):
         """Returns the material data as a dictionary.

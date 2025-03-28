@@ -55,8 +55,10 @@ class OddAsphere(EvenAsphere):
         conic=0.0,
         tol=1e-10,
         max_iter=100,
-        coefficients=[],
+        coefficients=None,
     ):
+        if coefficients is None:
+            coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter, coefficients)
         self.order = 1  # used for optimization scaling
 

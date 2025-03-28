@@ -78,10 +78,12 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         conic=0.0,
         tol=1e-10,
         max_iter=100,
-        coefficients=[],
+        coefficients=None,
         norm_x=1,
         norm_y=1,
     ):
+        if coefficients is None:
+            coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = np.atleast_2d(coefficients)
         self.norm_x = norm_x
