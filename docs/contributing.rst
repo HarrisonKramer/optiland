@@ -60,6 +60,7 @@ Ruff can be used to automatically apply fixes for formatting and linting issues 
     pip install ruff
 
 Then, you can run Ruff to automatically fix issues in your code::
+
     ruff format .
 
 Key Formatting Rules:
