@@ -9,18 +9,19 @@ absorption based on the surface properties and materials involved.
 
 Kramer Harrison, 2023
 """
+
 import numpy as np
-from optiland.rays import BaseRays, RealRays, ParaxialRays
+
+from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
+from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
-from optiland.geometries import BaseGeometry
-from optiland.coatings import BaseCoating, FresnelCoating
 
 
 class Surface:
-    """
-    Represents a standard refractice surface in an optical system.
+    """Represents a standard refractice surface in an optical system.
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
@@ -32,20 +33,25 @@ class Surface:
             surface. Defaults to None.
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
+        comment (str, optional): A comment for the surface. Defaults to ''.
+
     """
+
     _registry = {}  # registry for all surfaces
 
-    def __init__(self,
-                 geometry: BaseGeometry,
-                 material_pre: BaseMaterial,
-                 material_post: BaseMaterial,
-                 is_stop: bool = False,
-                 aperture: BaseAperture = None,
-                 coating: BaseCoating = None,
-                 bsdf: BaseBSDF = None,
-                 is_reflective: bool = False,
-                 surface_type: str = None,
-                 ):
+    def __init__(
+        self,
+        geometry: BaseGeometry,
+        material_pre: BaseMaterial,
+        material_post: BaseMaterial,
+        is_stop: bool = False,
+        aperture: BaseAperture = None,
+        coating: BaseCoating = None,
+        bsdf: BaseBSDF = None,
+        is_reflective: bool = False,
+        surface_type: str = None,
+        comment: str = "",
+    ):
         self.geometry = geometry
         self.material_pre = material_pre
         self.material_post = material_post
@@ -56,6 +62,7 @@ class Surface:
         self.bsdf = bsdf
         self.is_reflective = is_reflective
         self.surface_type = surface_type
+        self.comment = comment
 
         self.reset()
 
@@ -65,33 +72,31 @@ class Surface:
         Surface._registry[cls.__name__] = cls
 
     def trace(self, rays: BaseRays):
-        """
-        Traces the given rays through the surface.
+        """Traces the given rays through the surface.
 
         Args:
             rays (BaseRays): The rays to be traced.
 
         Returns:
             BaseRays: The traced rays.
+
         """
         if isinstance(rays, ParaxialRays):
             return self._trace_paraxial(rays)
-        elif isinstance(rays, RealRays):
+        if isinstance(rays, RealRays):
             return self._trace_real(rays)
 
     def set_semi_aperture(self, r_max: float):
-        """
-        Sets the physical semi-aperture of the surface.
+        """Sets the physical semi-aperture of the surface.
 
         Args:
             r_max (float): The maximum radius of the semi-aperture.
+
         """
         self.semi_aperture = r_max
 
     def reset(self):
-        """
-        Resets the recorded information of the surface.
-        """
+        """Resets the recorded information of the surface."""
         self.y = np.empty(0)
         self.u = np.empty(0)
         self.x = np.empty(0)
@@ -107,17 +112,15 @@ class Surface:
         self.opd = np.empty(0)
 
     def set_fresnel_coating(self):
-        """
-        Sets the coating of the surface to a Fresnel coating.
-        """
+        """Sets the coating of the surface to a Fresnel coating."""
         self.coating = FresnelCoating(self.material_pre, self.material_post)
 
     def _record(self, rays):
-        """
-        Records the ray information.
+        """Records the ray information.
 
         Args:
             rays: The rays.
+
         """
         if isinstance(rays, ParaxialRays):
             self.y = np.copy(np.atleast_1d(rays.y))
@@ -135,14 +138,14 @@ class Surface:
             self.opd = np.copy(np.atleast_1d(rays.opd))
 
     def _interact(self, rays):
-        """
-        Interacts the rays with the surface by either reflecting or refracting
+        """Interacts the rays with the surface by either reflecting or refracting
 
         Args:
             rays: The rays.
 
         Returns:
             RealRays: The refracted rays.
+
         """
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
@@ -161,8 +164,13 @@ class Surface:
 
         # if there is a coating, modify ray properties
         if self.coating:
-            rays = self.coating.interact(rays, reflect=self.is_reflective,
-                                         nx=nx, ny=ny, nz=nz)
+            rays = self.coating.interact(
+                rays,
+                reflect=self.is_reflective,
+                nx=nx,
+                ny=ny,
+                nz=nz,
+            )
         else:
             # update polarization matrices, if PolarizedRays
             rays.update()
@@ -170,11 +178,11 @@ class Surface:
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays):
-        """
-        Traces paraxial rays through the surface.
+        """Traces paraxial rays through the surface.
 
         Args:
             ParaxialRays: The paraxial rays to be traced.
+
         """
         # reset recorded information
         self.reset()
@@ -207,14 +215,14 @@ class Surface:
         return rays
 
     def _trace_real(self, rays: RealRays):
-        """
-        Traces real rays through the surface.
+        """Traces real rays through the surface.
 
         Args:
             rays (RealRays): The real rays to be traced.
 
         Returns:
             RealRays: The traced real rays.
+
         """
         # reset recorded information
         self.reset()
@@ -247,44 +255,37 @@ class Surface:
         return rays
 
     def is_rotationally_symmetric(self):
-        """
-        Returns True if the surface is rotationally symmetric, False otherwise.
-        """
+        """Returns True if the surface is rotationally symmetric, False otherwise."""
         if not self.geometry.is_symmetric:
             return False
 
         cs = self.geometry.cs
-        if cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0:
-            return False
-
-        return True
+        return not (cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0)
 
     def to_dict(self):
-        """
-        Returns a dictionary representation of the surface.
-        """
+        """Returns a dictionary representation of the surface."""
         return {
-            'type': self.__class__.__name__,
-            'geometry': self.geometry.to_dict(),
-            'material_pre': self.material_pre.to_dict(),
-            'material_post': self.material_post.to_dict(),
-            'is_stop': self.is_stop,
-            'aperture': self.aperture.to_dict() if self.aperture else None,
-            'coating': self.coating.to_dict() if self.coating else None,
-            'bsdf': self.bsdf.to_dict() if self.bsdf else None,
-            'is_reflective': self.is_reflective
+            "type": self.__class__.__name__,
+            "geometry": self.geometry.to_dict(),
+            "material_pre": self.material_pre.to_dict(),
+            "material_post": self.material_post.to_dict(),
+            "is_stop": self.is_stop,
+            "aperture": self.aperture.to_dict() if self.aperture else None,
+            "coating": self.coating.to_dict() if self.coating else None,
+            "bsdf": self.bsdf.to_dict() if self.bsdf else None,
+            "is_reflective": self.is_reflective,
         }
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a surface from a dictionary representation.
+        """Creates a surface from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the surface.
 
         Returns:
             Surface: The surface.
+
         """
         if "type" not in data:
             raise ValueError("Missing 'type' field.")
@@ -302,17 +303,17 @@ class Surface:
 
         Returns:
             Surface: The surface.
+
         """
-        surface_type = data.get('type')
-        geometry = BaseGeometry.from_dict(data['geometry'])
-        material_pre = BaseMaterial.from_dict(data['material_pre'])
-        material_post = BaseMaterial.from_dict(data['material_post'])
-        aperture = BaseAperture.from_dict(data['aperture']) \
-            if data['aperture'] else None
-        coating = BaseCoating.from_dict(data['coating']) \
-            if data['coating'] else None
-        bsdf = BaseBSDF.from_dict(data['bsdf']) \
-            if data['bsdf'] else None
+        surface_type = data.get("type")
+        geometry = BaseGeometry.from_dict(data["geometry"])
+        material_pre = BaseMaterial.from_dict(data["material_pre"])
+        material_post = BaseMaterial.from_dict(data["material_post"])
+        aperture = (
+            BaseAperture.from_dict(data["aperture"]) if data["aperture"] else None
+        )
+        coating = BaseCoating.from_dict(data["coating"]) if data["coating"] else None
+        bsdf = BaseBSDF.from_dict(data["bsdf"]) if data["bsdf"] else None
 
         surface_class = cls._registry.get(surface_type, cls)
 
@@ -320,9 +321,9 @@ class Surface:
             geometry,
             material_pre,
             material_post,
-            data['is_stop'],
+            data["is_stop"],
             aperture,
             coating,
             bsdf,
-            data['is_reflective']
-            )
+            data["is_reflective"],
+        )

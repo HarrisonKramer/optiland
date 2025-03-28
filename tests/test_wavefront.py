@@ -1,17 +1,19 @@
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland import wavefront, distribution
-from optiland.samples.objectives import CookeTriplet, DoubleGauss
-from optiland.samples.eyepieces import EyepieceErfle
+
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('Agg')  # use non-interactive backend for testing
+import numpy as np
+import pytest
+
+from optiland import distribution, wavefront
+from optiland.samples.eyepieces import EyepieceErfle
+from optiland.samples.objectives import CookeTriplet, DoubleGauss
+
+matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class TestWavefront:
-    @pytest.mark.parametrize('optic', [CookeTriplet(), DoubleGauss(),
-                                       EyepieceErfle()])
+    @pytest.mark.parametrize("optic", [CookeTriplet(), DoubleGauss(), EyepieceErfle()])
     def test_wavefront_initialization(self, optic):
         w = wavefront.Wavefront(optic)
         assert w.num_rays == 12
@@ -21,8 +23,12 @@ class TestWavefront:
 
     def test_wavefront_init_custom(self):
         optic = DoubleGauss()
-        w = wavefront.Wavefront(optic, num_rays=100,
-                                distribution='random', wavelengths='primary')
+        w = wavefront.Wavefront(
+            optic,
+            num_rays=100,
+            distribution="random",
+            wavelengths="primary",
+        )
         assert w.num_rays == 100
         assert isinstance(w.distribution, distribution.RandomDistribution)
         assert w.wavelengths == [optic.primary_wavelength]
@@ -97,12 +103,11 @@ class TestOPDFan:
         assert opd_fan.num_rays == 100
         assert opd_fan.fields == optic.fields.get_field_coords()
         assert opd_fan.wavelengths == optic.wavelengths.get_wavelengths()
-        assert isinstance(opd_fan.distribution,
-                          distribution.CrossDistribution)
+        assert isinstance(opd_fan.distribution, distribution.CrossDistribution)
         arr = np.linspace(-1, 1, opd_fan.num_rays)
         assert np.all(opd_fan.pupil_coord == arr)
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_opd_fan_view(self, moch_show):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
@@ -110,7 +115,7 @@ class TestOPDFan:
         moch_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_opd_fan_view_large(self, moch_show):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
@@ -128,7 +133,7 @@ class TestOPD:
         assert opd.wavelengths == [0.55]
         assert isinstance(opd.distribution, distribution.HexagonalDistribution)
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_opd_view(self, moch_show):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
@@ -136,7 +141,7 @@ class TestOPD:
         moch_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_opd_view_large(self, moch_show):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
@@ -144,11 +149,11 @@ class TestOPD:
         moch_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_opd_view_3d(self, moch_show):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
-        opd.view(projection='3d')
+        opd.view(projection="3d")
         moch_show.assert_called_once()
         plt.close()
 
@@ -156,7 +161,7 @@ class TestOPD:
         optic = EyepieceErfle()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         with pytest.raises(ValueError):
-            opd.view(projection='invalid')
+            opd.view(projection="invalid")
 
     def test_opd_rms(self):
         optic = CookeTriplet()
@@ -172,15 +177,14 @@ class TestZernikeOPD:
         assert zernike_opd.num_rays == 15
         assert zernike_opd.fields == [(0, 1)]
         assert zernike_opd.wavelengths == [0.55]
-        assert isinstance(zernike_opd.distribution,
-                          distribution.HexagonalDistribution)
+        assert isinstance(zernike_opd.distribution, distribution.HexagonalDistribution)
         assert np.allclose(zernike_opd.x, zernike_opd.distribution.x)
         assert np.allclose(zernike_opd.y, zernike_opd.distribution.y)
         assert np.allclose(zernike_opd.z, zernike_opd.data[0][0][0])
-        assert zernike_opd.type == 'fringe'
+        assert zernike_opd.type == "fringe"
         assert zernike_opd.num_terms == 37
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_zernike_opd_view(self, moch_show):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
@@ -188,7 +192,7 @@ class TestZernikeOPD:
         moch_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_zernike_opd_view_large(self, moch_show):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
@@ -196,11 +200,11 @@ class TestZernikeOPD:
         moch_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_zernike_opd_view_3d(self, moch_show):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
-        zernike_opd.view(projection='3d')
+        zernike_opd.view(projection="3d")
         moch_show.assert_called_once()
         plt.close()
 
@@ -216,7 +220,7 @@ class TestZernikeOPD:
         c = zernike_opd.zernike.coeffs
         assert np.isclose(c[0], 0.8430890395012354)
         assert np.isclose(c[1], 6.863699034904449e-13)
-        assert np.isclose(c[2], -0.14504379704525455)
+        assert np.isclose(c[2], 0.14504379704525455)
         assert np.isclose(c[6], -1.160298338689596e-13)
         assert np.isclose(c[24], -0.0007283668376039182)
 

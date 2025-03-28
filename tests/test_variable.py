@@ -1,8 +1,13 @@
-import pytest
 import numpy as np
-from optiland.optimization import variable
-from optiland.geometries import PolynomialGeometry, ChebyshevPolynomialGeometry, ZernikePolynomialGeometry
+import pytest
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries import (
+    ChebyshevPolynomialGeometry,
+    PolynomialGeometry,
+    ZernikePolynomialGeometry,
+)
+from optiland.optimization import variable
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
 from optiland.samples.simple import AsphericSinglet
 
@@ -43,7 +48,7 @@ class TestConicVariable:
         assert np.isclose(self.conic_var.get_value(), 0.0)
 
     def test_string_representation(self):
-        assert str(self.conic_var) == 'Conic Constant, Surface 1'
+        assert str(self.conic_var) == "Conic Constant, Surface 1"
 
 
 class TestThicknessVariable:
@@ -61,8 +66,11 @@ class TestThicknessVariable:
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
-        self.thickness_var = variable.ThicknessVariable(self.optic, 2,
-                                                        apply_scaling=False)
+        self.thickness_var = variable.ThicknessVariable(
+            self.optic,
+            2,
+            apply_scaling=False,
+        )
         assert np.isclose(self.thickness_var.get_value(), 4.4)
 
 
@@ -81,12 +89,16 @@ class TestIndexVariable:
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
-        self.index_var = variable.IndexVariable(self.optic, 1, 0.55,
-                                                apply_scaling=False)
+        self.index_var = variable.IndexVariable(
+            self.optic,
+            1,
+            0.55,
+            apply_scaling=False,
+        )
         assert np.isclose(self.index_var.get_value(), 1.4877935552990422)
 
     def test_string_representation(self):
-        assert str(self.index_var) == 'Refractive Index, Surface 1'
+        assert str(self.index_var) == "Refractive Index, Surface 1"
 
 
 class TestAsphereCoeffVariable:
@@ -104,20 +116,27 @@ class TestAsphereCoeffVariable:
 
     def test_get_value_no_scaling(self):
         self.optic = AsphericSinglet()
-        self.asphere_var = variable.AsphereCoeffVariable(self.optic, 1, 0,
-                                                         apply_scaling=False)
+        self.asphere_var = variable.AsphereCoeffVariable(
+            self.optic,
+            1,
+            0,
+            apply_scaling=False,
+        )
         assert np.isclose(self.asphere_var.get_value(), -0.0002248851)
 
     def test_string_representation(self):
-        assert str(self.asphere_var) == 'Asphere Coeff. 0, Surface 1'
+        assert str(self.asphere_var) == "Asphere Coeff. 0, Surface 1"
 
 
 class TestPolynomialCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
-        poly_geo = PolynomialGeometry(CoordinateSystem(), 100,
-                                      coefficients=np.zeros((3, 3)))
+        poly_geo = PolynomialGeometry(
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
+        )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
 
@@ -144,15 +163,22 @@ class TestPolynomialCoeffVariable:
         assert np.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
-        assert str(self.poly_var) == 'Poly. Coeff. (1, 1), Surface 0'
+        assert str(self.poly_var) == "Poly. Coeff. (1, 1), Surface 0"
 
     def test_get_value_no_scaling(self):
         self.optic = AsphericSinglet()
-        poly_geo = PolynomialGeometry(CoordinateSystem(), 100,
-                                      coefficients=np.zeros((3, 3)))
+        poly_geo = PolynomialGeometry(
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
+        )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
-        self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1),
-                                                         apply_scaling=False)
+        self.poly_var = variable.PolynomialCoeffVariable(
+            self.optic,
+            0,
+            (1, 1),
+            apply_scaling=False,
+        )
         assert self.poly_var.get_value() == 0.0
 
 
@@ -160,8 +186,11 @@ class TestChebyshevCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
-        poly_geo = ChebyshevPolynomialGeometry(CoordinateSystem(), 100,
-                                               coefficients=np.zeros((3, 3)))
+        poly_geo = ChebyshevPolynomialGeometry(
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
+        )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ChebyshevCoeffVariable(self.optic, 0, (1, 1))
 
@@ -188,15 +217,18 @@ class TestChebyshevCoeffVariable:
         assert np.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
-        assert str(self.poly_var) == 'Chebyshev Coeff. (1, 1), Surface 0'
+        assert str(self.poly_var) == "Chebyshev Coeff. (1, 1), Surface 0"
 
 
 class TestZernikeCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
-        poly_geo = ZernikePolynomialGeometry(CoordinateSystem(), 100,
-                                               coefficients=np.zeros(3))
+        poly_geo = ZernikePolynomialGeometry(
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros(3),
+        )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
 
@@ -223,33 +255,37 @@ class TestZernikeCoeffVariable:
         assert np.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
-        assert str(self.poly_var) == 'Zernike Coeff. 1, Surface 0'
+        assert str(self.poly_var) == "Zernike Coeff. 1, Surface 0"
 
 
 class TestVariable:
     def test_get_value(self):
         optic = Objective60x()
-        radius_var = variable.Variable(optic, 'radius', surface_number=1)
+        radius_var = variable.Variable(optic, "radius", surface_number=1)
         assert np.isclose(radius_var.value, 4.5325999999999995)
 
     def test_unrecognized_attribute(self):
         optic = Objective60x()
-        radius_var = variable.Variable(optic, 'radius', surface_number=1,
-                                       unrecognized_attribute=1)
+        radius_var = variable.Variable(
+            optic,
+            "radius",
+            surface_number=1,
+            unrecognized_attribute=1,
+        )
         assert np.isclose(radius_var.value, 4.5325999999999995)
 
     def test_invalid_type(self):
         optic = Objective60x()
         with pytest.raises(ValueError):
-            variable.Variable(optic, 'invalid', surface_number=1)
+            variable.Variable(optic, "invalid", surface_number=1)
 
 
 class TestTiltVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = Objective60x()
-        self.tilt_var_x = variable.TiltVariable(self.optic, 1, 'x')
-        self.tilt_var_y = variable.TiltVariable(self.optic, 1, 'y')
+        self.tilt_var_x = variable.TiltVariable(self.optic, 1, "x")
+        self.tilt_var_y = variable.TiltVariable(self.optic, 1, "y")
 
     def test_get_value_x(self):
         assert np.isclose(self.tilt_var_x.get_value(), 0.0)
@@ -267,16 +303,15 @@ class TestTiltVariable:
 
     def test_invalid_axis(self):
         with pytest.raises(ValueError):
-            variable.TiltVariable(self.optic, 1, 'z')
+            variable.TiltVariable(self.optic, 1, "z")
 
     def test_str(self):
-        assert str(self.tilt_var_x) == 'Tilt X, Surface 1'
-        assert str(self.tilt_var_y) == 'Tilt Y, Surface 1'
+        assert str(self.tilt_var_x) == "Tilt X, Surface 1"
+        assert str(self.tilt_var_y) == "Tilt Y, Surface 1"
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
-        self.tilt_var_x = variable.TiltVariable(self.optic, 1, 'x',
-                                                apply_scaling=False)
+        self.tilt_var_x = variable.TiltVariable(self.optic, 1, "x", apply_scaling=False)
         assert np.isclose(self.tilt_var_x.get_value(), 0.0)
 
 
@@ -284,8 +319,8 @@ class TestDecenterVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = Objective60x()
-        self.decenter_var_x = variable.DecenterVariable(self.optic, 1, 'x')
-        self.decenter_var_y = variable.DecenterVariable(self.optic, 1, 'y')
+        self.decenter_var_x = variable.DecenterVariable(self.optic, 1, "x")
+        self.decenter_var_y = variable.DecenterVariable(self.optic, 1, "y")
 
     def test_get_value_x(self):
         assert np.isclose(self.decenter_var_x.get_value(), 0.0)
@@ -303,53 +338,56 @@ class TestDecenterVariable:
 
     def test_invalid_axis(self):
         with pytest.raises(ValueError):
-            variable.DecenterVariable(self.optic, 1, 'z')
+            variable.DecenterVariable(self.optic, 1, "z")
 
     def test_str(self):
-        assert str(self.decenter_var_x) == 'Decenter X, Surface 1'
-        assert str(self.decenter_var_y) == 'Decenter Y, Surface 1'
+        assert str(self.decenter_var_x) == "Decenter X, Surface 1"
+        assert str(self.decenter_var_y) == "Decenter Y, Surface 1"
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
-        self.decenter_var_x = variable.DecenterVariable(self.optic, 1, 'x',
-                                                        apply_scaling=False)
+        self.decenter_var_x = variable.DecenterVariable(
+            self.optic,
+            1,
+            "x",
+            apply_scaling=False,
+        )
         assert np.isclose(self.decenter_var_x.get_value(), 0.0)
 
 
 class TestVariableManager:
-
     def test_add(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, "radius", surface_number=1)
         assert len(var_manager) == 1
 
     def test_clear(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, "radius", surface_number=1)
         var_manager.clear()
         assert len(var_manager) == 0
 
     def test_iter(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
-        var_manager.add(optic, 'radius', surface_number=2)
+        var_manager.add(optic, "radius", surface_number=1)
+        var_manager.add(optic, "radius", surface_number=2)
         for var in var_manager:
             assert isinstance(var, variable.Variable)
 
     def test_getitem(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, "radius", surface_number=1)
         assert isinstance(var_manager[0], variable.Variable)
 
     def test_setitem(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
-        var_manager[0] = variable.Variable(optic, 'radius', surface_number=2)
+        var_manager.add(optic, "radius", surface_number=1)
+        var_manager[0] = variable.Variable(optic, "radius", surface_number=2)
         assert isinstance(var_manager[0], variable.Variable)
         assert var_manager[0].surface_number == 2
         assert len(var_manager) == 1
@@ -357,8 +395,8 @@ class TestVariableManager:
     def test_len(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
-        var_manager.add(optic, 'radius', surface_number=2)
+        var_manager.add(optic, "radius", surface_number=1)
+        var_manager.add(optic, "radius", surface_number=2)
         assert len(var_manager) == 2
 
     def test_getitem_index_error(self):
@@ -370,21 +408,20 @@ class TestVariableManager:
         optic = Objective60x()
         var_manager = variable.VariableManager()
         with pytest.raises(IndexError):
-            var_manager[0] = variable.Variable(optic, 'radius',
-                                               surface_number=2)
+            var_manager[0] = variable.Variable(optic, "radius", surface_number=2)
 
     def test_setitem_invalid_type(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, "radius", surface_number=1)
         with pytest.raises(ValueError):
-            var_manager[0] = 'invalid'
+            var_manager[0] = "invalid"
 
     def test_iterable(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
-        var_manager.add(optic, 'radius', surface_number=2)
+        var_manager.add(optic, "radius", surface_number=1)
+        var_manager.add(optic, "radius", surface_number=2)
         for i, var in enumerate(var_manager):
             assert isinstance(var, variable.Variable)
             assert var.surface_number == i + 1
@@ -393,6 +430,6 @@ class TestVariableManager:
     def test_delitem(self):
         optic = Objective60x()
         var_manager = variable.VariableManager()
-        var_manager.add(optic, 'radius', surface_number=1)
+        var_manager.add(optic, "radius", surface_number=1)
         del var_manager[0]
         assert len(var_manager) == 0

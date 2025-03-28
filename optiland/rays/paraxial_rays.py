@@ -7,12 +7,12 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
+
 from optiland.rays.base import BaseRays
 
 
 class ParaxialRays(BaseRays):
-    """
-    Class representing paraxial rays in an optical system.
+    """Class representing paraxial rays in an optical system.
 
     Attributes:
         y (array-like): The y-coordinate of the rays.
@@ -22,6 +22,7 @@ class ParaxialRays(BaseRays):
 
     Methods:
         propagate(t): Propagates the rays by a given distance.
+
     """
 
     def __init__(self, y, u, z, wavelength):
@@ -33,23 +34,23 @@ class ParaxialRays(BaseRays):
         self.w = self._process_input(wavelength)
 
     def propagate(self, t: float):
-        """
-        Propagates the rays by a given distance.
+        """Propagates the rays by a given distance.
 
         Args:
             t (float): The distance to propagate the rays.
+
         """
         self.z += t
         self.y += t * self.u
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def rotate_y(self, ry: float):
         """Rotate the rays about the y-axis."""
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def rotate_z(self, rz: float):
         """Rotate the rays about the z-axis."""
-        pass  # pragma: no cover
+        # pragma: no cover

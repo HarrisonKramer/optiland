@@ -13,14 +13,16 @@ where
 
 Kramer Harrison, 2025
 """
+
 import warnings
+
 import numpy as np
+
 from optiland.geometries.even_asphere import EvenAsphere
 
 
 class OddAsphere(EvenAsphere):
-    """
-    Represents an odd asphere geometry defined as:
+    """Represents an odd asphere geometry defined as:
 
     z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Ci * r^i)
 
@@ -43,20 +45,28 @@ class OddAsphere(EvenAsphere):
         coefficients (list, optional): The coefficients of the asphere.
             Defaults to an empty list, indicating no aspheric coefficients are
             used.
+
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[]):
-        super().__init__(coordinate_system, radius, conic,
-                         tol, max_iter, coefficients)
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=None,
+    ):
+        if coefficients is None:
+            coefficients = []
+        super().__init__(coordinate_system, radius, conic, tol, max_iter, coefficients)
         self.order = 1  # used for optimization scaling
 
     def __str__(self):
-        return 'Odd Asphere'
+        return "Odd Asphere"
 
     def sag(self, x=0, y=0):
-        """
-        Calculates the sag of the asphere at the given coordinates.
+        """Calculates the sag of the asphere at the given coordinates.
 
         Args:
             x (float, np.ndarray, optional): The x-coordinate(s).
@@ -66,19 +76,18 @@ class OddAsphere(EvenAsphere):
 
         Returns:
             float: The sag value at the given coordinates.
+
         """
         r2 = x**2 + y**2
         r = np.sqrt(r2)
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
             z += Ci * r ** (i + 1)
 
         return z
 
     def _surface_normal(self, x, y):
-        """
-        Calculates the surface normal of the asphere at the given x and y
+        """Calculates the surface normal of the asphere at the given x and y
         position.
 
         Args:
@@ -87,19 +96,20 @@ class OddAsphere(EvenAsphere):
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
         r2 = x**2 + y**2
         r = np.sqrt(r2)
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for i, Ci in enumerate(self.c):
-                x_term = (i + 1) * x * Ci * r**(i - 1)
-                y_term = (i + 1) * y * Ci * r**(i - 1)
+                x_term = (i + 1) * x * Ci * r ** (i - 1)
+                y_term = (i + 1) * y * Ci * r ** (i - 1)
 
                 x_term[~np.isfinite(x_term)] = 0
                 y_term[~np.isfinite(y_term)] = 0

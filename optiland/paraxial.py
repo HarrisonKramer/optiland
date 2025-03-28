@@ -5,13 +5,14 @@ properties of lens systems.
 
 Kramer Harrison, 2024
 """
-from optiland.rays import ParaxialRays
+
 import numpy as np
+
+from optiland.rays import ParaxialRays
 
 
 class Paraxial:
-    """
-    A class representing a paraxial optical system.
+    """A class representing a paraxial optical system.
 
     This class provides methods to calculate various properties of the optical
     system, such as focal lengths, entrance pupil location, exit pupil
@@ -24,6 +25,7 @@ class Paraxial:
     Attributes:
         optic (Optic): The optical system being analyzed.
         surfaces (SurfaceGroup): The surface group of the optical system.
+
     """
 
     def __init__(self, optic):
@@ -35,6 +37,7 @@ class Paraxial:
 
         Returns:
             float: front focal length
+
         """
         surfaces = self.surfaces.inverted()
         # start tracing 1 lens unit before first surface
@@ -49,6 +52,7 @@ class Paraxial:
 
         Returns:
             float: back focal length
+
         """
         # start tracing 1 lens unit before first surface
         z_start = self.surfaces.positions[1] - 1
@@ -62,6 +66,7 @@ class Paraxial:
 
         Returns:
             float: front focal point location
+
         """
         surfaces = self.surfaces.inverted()
         # start tracing 1 lens unit before first surface
@@ -76,6 +81,7 @@ class Paraxial:
 
         Returns:
             float: back focal point location
+
         """
         # start tracing 1 lens unit before first surface
         z_start = self.surfaces.positions[1] - 1
@@ -89,6 +95,7 @@ class Paraxial:
 
         Returns:
             float: front principle plane location
+
         """
         return self.F1() - self.f1()
 
@@ -97,6 +104,7 @@ class Paraxial:
 
         Returns:
             float: back principle plane location
+
         """
         return self.F2() - self.f2()
 
@@ -105,6 +113,7 @@ class Paraxial:
 
         Returns:
             float: front nodal plane location
+
         """
         return self.P1() + self.f1() + self.f2()
 
@@ -113,6 +122,7 @@ class Paraxial:
 
         Returns:
             float: back nodal plane location
+
         """
         return self.P2() + self.f1() + self.f2()
 
@@ -122,6 +132,7 @@ class Paraxial:
         Returns:
             float: entrance pupil position relative to first surface, which
                 lies at z=0 by definition.
+
         """
         stop_index = self.surfaces.stop_index
         if stop_index == 0:
@@ -136,8 +147,14 @@ class Paraxial:
         z0 = surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
 
-        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(
+            y0,
+            u0,
+            z0,
+            wavelength,
+            reverse=True,
+            skip=stop_index + 1,
+        )
 
         loc_relative = y[-1] / u[-1]
         return loc_relative[0]
@@ -147,17 +164,18 @@ class Paraxial:
 
         Returns:
             float: entrance pupil diameter
+
         """
         ap_type = self.optic.aperture.ap_type
         ap_value = self.optic.aperture.value
 
-        if ap_type == 'EPD':
+        if ap_type == "EPD":
             return ap_value
 
-        elif ap_type == 'imageFNO':
+        if ap_type == "imageFNO":
             return self.f2() / ap_value
 
-        elif ap_type == 'objectNA':
+        if ap_type == "objectNA":
             obj_z = self.optic.object_surface.geometry.cs.z
             wavelength = self.optic.primary_wavelength
             n0 = self.optic.object_surface.material_post.n(wavelength)
@@ -170,12 +188,12 @@ class Paraxial:
 
         Returns:
             float: exit pupil location relative to the image surface
+
         """
         stop_index = self.surfaces.stop_index
         z_start = self.surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength, skip=stop_index + 1)
         loc_relative = -y[-1] / u[-1]
         return loc_relative[0]
 
@@ -184,6 +202,7 @@ class Paraxial:
 
         Returns:
             float: exit pupil diameter
+
         """
         # find marginal ray height at image surface
         ya, ua = self.marginal_ray()
@@ -202,22 +221,23 @@ class Paraxial:
 
         Returns:
             float: image-space F-number
+
         """
         ap_type = self.optic.aperture.ap_type
-        if ap_type == 'imageFNO':
+        if ap_type == "imageFNO":
             return self.optic.aperture.value
-        else:
-            return self.f2() / self.EPD()
+        return self.f2() / self.EPD()
 
     def magnification(self):
-        '''Calculate the magnification
+        """Calculate the magnification
 
         Returns:
             float: the system magnification
-        '''
+
+        """
         _, ua = self.marginal_ray()
         n = self.optic.n()
-        mag = n[0]*ua[0]/(n[-1]*ua[-1])
+        mag = n[0] * ua[0] / (n[-1] * ua[-1])
         return mag[0]
 
     def invariant(self):
@@ -225,6 +245,7 @@ class Paraxial:
 
         Returns:
             float: the Lagrange invariant
+
         """
         ya, ua = self.marginal_ray()
         yb, ub = self.chief_ray()
@@ -237,6 +258,7 @@ class Paraxial:
 
         Returns:
             tuple: marginal ray heights and angles as type np.ndarray
+
         """
         EPD = self.EPD()
         obj_z = self.surfaces.positions[1] - 10  # 10 mm before first surface
@@ -257,6 +279,7 @@ class Paraxial:
 
         Returns:
             tuple: chief ray heights and angles as type np.ndarray
+
         """
         surfaces = self.surfaces.inverted()
         stop_index = surfaces.stop_index
@@ -267,18 +290,30 @@ class Paraxial:
         z0 = surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
 
-        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True,
-                                   skip=stop_index+1)
+        y, u = self._trace_generic(
+            y0,
+            u0,
+            z0,
+            wavelength,
+            reverse=True,
+            skip=stop_index + 1,
+        )
 
         max_field = self.optic.fields.max_y_field
 
-        if self.optic.field_type == 'object_height':
+        if self.optic.field_type == "object_height":
             u1 = 0.1 * max_field / y[-1]
-        elif self.optic.field_type == 'angle':
+        elif self.optic.field_type == "angle":
             u1 = 0.1 * np.tan(np.deg2rad(max_field)) / u[-1]
 
-        yn, un = self._trace_generic(y0, u1, z0, wavelength, reverse=True,
-                                     skip=stop_index+1)
+        yn, un = self._trace_generic(
+            y0,
+            u1,
+            z0,
+            wavelength,
+            reverse=True,
+            skip=stop_index + 1,
+        )
 
         # trace in forward direction
         z0 = self.surfaces.positions[1]
@@ -286,8 +321,7 @@ class Paraxial:
         return self._trace_generic(-yn[-1], un[-1], z0, wavelength)
 
     def _get_object_position(self, Hy, y1, EPL):
-        """
-        Calculate the position of the object in the paraxial optical system.
+        """Calculate the position of the object in the paraxial optical system.
 
         Args:
             Hy (float): The normalized field height.
@@ -301,46 +335,47 @@ class Paraxial:
         Raises:
             ValueError: If the field type is "object_height" and the object is
                 at infinity.
+
         """
         obj = self.optic.object_surface
         field_y = self.optic.fields.max_field * Hy
 
         if obj.is_infinite:
-            if self.optic.field_type == 'object_height':
-                raise ValueError('Field type cannot be "object_height" for an '
-                                 'object at infinity.')
+            if self.optic.field_type == "object_height":
+                raise ValueError(
+                    'Field type cannot be "object_height" for an object at infinity.',
+                )
 
             y = -np.tan(np.radians(field_y)) * EPL
             z = self.optic.surface_group.positions[1]
 
             y0 = y1 + y
             z0 = np.ones_like(y1) * z
-        else:
-            if self.optic.field_type == 'object_height':
-                y = -field_y
-                z = obj.geometry.cs.z
+        elif self.optic.field_type == "object_height":
+            y = -field_y
+            z = obj.geometry.cs.z
 
-                y0 = np.ones_like(y1) * y
-                z0 = np.ones_like(y1) * z
+            y0 = np.ones_like(y1) * y
+            z0 = np.ones_like(y1) * z
 
-            elif self.optic.field_type == 'angle':
-                y = -np.tan(np.radians(field_y))
-                z = self.optic.surface_group.positions[0]
+        elif self.optic.field_type == "angle":
+            y = -np.tan(np.radians(field_y))
+            z = self.optic.surface_group.positions[0]
 
-                y0 = y1 + y
-                z0 = np.ones_like(y1) * z
+            y0 = y1 + y
+            z0 = np.ones_like(y1) * z
 
         return y0, z0
 
     def trace(self, Hy, Py, wavelength):
-        """
-        Trace paraxial ray through the optical system based on specified field
+        """Trace paraxial ray through the optical system based on specified field
         and pupil coordinates.
 
         Args:
             Hy (float): Normalized field coordinate.
             Py (float): Normalized pupil coordinate.
             wavelength (float): Wavelength of the light.
+
         """
         EPL = self.EPL()
         EPD = self.EPD()
@@ -354,8 +389,7 @@ class Paraxial:
         self.optic.surface_group.trace(rays)
 
     def _trace_generic(self, y, u, z, wavelength, reverse=False, skip=0):
-        """
-        Trace generically-defined paraxial rays through the optical system.
+        """Trace generically-defined paraxial rays through the optical system.
 
         Args:
             y (float or array-like): The initial height(s) of the rays.
@@ -370,15 +404,13 @@ class Paraxial:
         Returns:
             tuple: A tuple containing the final height(s) and slope(s) of the
                 rays after tracing.
+
         """
         self._process_input(y)
         self._process_input(u)
         self._process_input(z)
 
-        if reverse:
-            surfaces = self.surfaces.inverted()
-        else:
-            surfaces = self.surfaces
+        surfaces = self.surfaces.inverted() if reverse else self.surfaces
 
         rays = ParaxialRays(y, u, z, wavelength)
         surfaces.trace(rays, skip)
@@ -386,16 +418,15 @@ class Paraxial:
         return surfaces.y, surfaces.u
 
     def _process_input(self, x):
-        """
-        Process input to ensure it is a numpy array.
+        """Process input to ensure it is a numpy array.
 
         Args:
             x (float or array-like): The input to process.
 
         Returns:
             np.ndarray: The processed input.
+
         """
         if np.isscalar(x):
             return np.array([x], dtype=float)
-        else:
-            return np.array(x, dtype=float)
+        return np.array(x, dtype=float)

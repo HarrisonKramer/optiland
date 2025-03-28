@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
-from optiland.optic import Optic
+import pytest
+
 from optiland.aberrations import Aberrations
+from optiland.optic import Optic
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
 
@@ -23,21 +24,26 @@ def singlet_stop_surf_two():
 
 @pytest.fixture
 def simple_singlet():
-    """singlet with single field and wavelength"""
+    """Singlet with single field and wavelength"""
     lens = Optic()
 
     # add surfaces
     lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    lens.add_surface(index=1, thickness=7, radius=19.93, is_stop=True,
-                     material='N-SF11')
+    lens.add_surface(
+        index=1,
+        thickness=7,
+        radius=19.93,
+        is_stop=True,
+        material="N-SF11",
+    )
     lens.add_surface(index=2, thickness=21.48)
     lens.add_surface(index=3)
 
     # add aperture
-    lens.set_aperture(aperture_type='EPD', value=20.0)
+    lens.set_aperture(aperture_type="EPD", value=20.0)
 
     # add field
-    lens.set_field_type(field_type='angle')
+    lens.set_field_type(field_type="angle")
     lens.add_field(y=0)
 
     # add wavelength

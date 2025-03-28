@@ -8,30 +8,31 @@ converting the group to and from a dictionary for serialization.
 Kramer Harrison, 2024
 """
 
-from typing import List
 from copy import deepcopy
+
 import numpy as np
+
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces.surface_factory import SurfaceFactory
 
 
 class SurfaceGroup:
-    """
-    Represents a group of surfaces in an optical system.
+    """Represents a group of surfaces in an optical system.
 
     Attributes:
         surfaces (list): List of surfaces in the group.
         _last_thickness (float): The thickness of the last surface added.
+
     """
 
-    def __init__(self, surfaces: List[Surface] = None):
-        """
-        Initializes a new instance of the SurfaceGroup class.
+    def __init__(self, surfaces: list[Surface] = None):
+        """Initializes a new instance of the SurfaceGroup class.
 
         Args:
             surfaces (List, optional): List of surfaces to initialize the
                 group with. Defaults to None.
+
         """
         if surfaces is None:
             self.surfaces = []
@@ -73,8 +74,7 @@ class SurfaceGroup:
     @property
     def opd(self):
         """np.array: optical path difference recorded on all surfaces"""
-        return np.array([surf.opd for surf in self.surfaces
-                         if surf.opd.size > 0])
+        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
 
     @property
     def u(self):
@@ -84,14 +84,14 @@ class SurfaceGroup:
     @property
     def intensity(self):
         """np.array: ray intensities on all surfaces"""
-        return np.array([surf.intensity for surf in self.surfaces
-                         if surf.intensity.size > 0])
+        return np.array(
+            [surf.intensity for surf in self.surfaces if surf.intensity.size > 0],
+        )
 
     @property
     def positions(self):
         """np.array: z positions of surface vertices"""
-        return np.array([surf.geometry.cs.position_in_gcs[2]
-                         for surf in self.surfaces])
+        return np.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
 
     @property
     def radii(self):
@@ -116,7 +116,7 @@ class SurfaceGroup:
             if surface.is_stop:
                 return index
 
-        raise ValueError('No stop surface found.')
+        raise ValueError("No stop surface found.")
 
     @property
     def num_surfaces(self):
@@ -132,42 +132,50 @@ class SurfaceGroup:
         return False
 
     def get_thickness(self, surface_number):
-        """
-        Calculate the thickness between two surfaces.
+        """Calculate the thickness between two surfaces.
 
         Args:
             surface_number (int): The index of the first surface.
 
         Returns:
             float: The thickness between the two surfaces.
+
         """
         t = self.positions
-        return t[surface_number+1] - t[surface_number]
+        return t[surface_number + 1] - t[surface_number]
 
     def trace(self, rays, skip=0):
-        """
-        Trace the given rays through the surfaces.
+        """Trace the given rays through the surfaces.
 
         Args:
             rays (BaseRays): List of rays to be traced.
             skip (int, optional): Number of surfaces to skip before tracing.
                 Defaults to 0.
+
         """
         self.reset()
         for surface in self.surfaces[skip:]:
             surface.trace(rays)
         return rays
 
-    def add_surface(self, new_surface=None, surface_type='standard',
-                    index=None, is_stop=False, material='air', **kwargs):
-        """
-        Adds a new surface to the list of surfaces.
+    def add_surface(
+        self,
+        new_surface=None,
+        surface_type="standard",
+        comment="",
+        index=None,
+        is_stop=False,
+        material="air",
+        **kwargs,
+    ):
+        """Adds a new surface to the list of surfaces.
 
         Args:
             new_surface (Surface, optional): The new surface to add. If not
                 provided, a new surface will be created based on the other
                 arguments.
             surface_type (str, optional): The type of surface to create.
+            comment (str, optional): A comment for the surface. Defaults to ''.
             index (int, optional): The index at which to insert the new
                 surface. If not provided, the surface will be appended to the
                 end of the list.
@@ -180,14 +188,20 @@ class SurfaceGroup:
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
+
         """
         if new_surface is None:
             if index is None:
-                raise ValueError('Must define index when defining surface.')
+                raise ValueError("Must define index when defining surface.")
 
             new_surface = self.surface_factory.create_surface(
-                surface_type, index, is_stop, material, **kwargs
-                )
+                surface_type,
+                comment,
+                index,
+                is_stop,
+                material,
+                **kwargs,
+            )
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -195,11 +209,10 @@ class SurfaceGroup:
 
         self.surfaces.insert(index, new_surface)
 
-        self.surface_factory.last_thickness = kwargs.get('thickness', 0)
+        self.surface_factory.last_thickness = kwargs.get("thickness", 0)
 
     def remove_surface(self, index):
-        """
-        Remove a surface from the list of surfaces.
+        """Remove a surface from the list of surfaces.
 
         Args:
             index (int): The index of the surface to remove.
@@ -209,14 +222,14 @@ class SurfaceGroup:
 
         Returns:
         None
+
         """
         if index == 0:
-            raise ValueError('Cannot remove object surface.')
+            raise ValueError("Cannot remove object surface.")
         del self.surfaces[index]
 
     def reset(self):
-        """
-        Resets all the surfaces in the collection.
+        """Resets all the surfaces in the collection.
 
         This method iterates over each surface in the collection and calls
             its `reset` method.
@@ -257,34 +270,31 @@ class SurfaceGroup:
         return SurfaceGroup(surfs_inverted)
 
     def set_fresnel_coatings(self):
-        """
-        Set Fresnel coatings on all surfaces in the group.
-        """
+        """Set Fresnel coatings on all surfaces in the group."""
         for surface in self.surfaces[1:-1]:
             if surface.material_pre != surface.material_post:
                 surface.set_fresnel_coating()
 
     def to_dict(self):
-        """
-        Convert the surface group to a dictionary.
+        """Convert the surface group to a dictionary.
 
         Returns:
             dict: The surface group as a dictionary.
+
         """
-        return {
-            'surfaces': [surface.to_dict() for surface in self.surfaces]
-        }
+        return {"surfaces": [surface.to_dict() for surface in self.surfaces]}
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a surface group from a dictionary.
+        """Create a surface group from a dictionary.
 
         Args:
             data (dict): The dictionary to create the surface group from.
 
         Returns:
             SurfaceGroup: The surface group created from the dictionary.
+
         """
-        return cls([Surface.from_dict(surface_data)
-                    for surface_data in data['surfaces']])
+        return cls(
+            [Surface.from_dict(surface_data) for surface_data in data["surfaces"]],
+        )

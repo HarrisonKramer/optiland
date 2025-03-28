@@ -11,23 +11,20 @@ to specify the type of the variable.
 Kramer Harrison, 2024
 """
 
-from optiland.optimization.variable.radius import RadiusVariable
-from optiland.optimization.variable.conic import ConicVariable
-from optiland.optimization.variable.thickness import ThicknessVariable
-from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
-from optiland.optimization.variable.tilt import TiltVariable
+from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
+from optiland.optimization.variable.conic import ConicVariable
 from optiland.optimization.variable.decenter import DecenterVariable
-from optiland.optimization.variable.polynomial_coeff import \
-    PolynomialCoeffVariable
-from optiland.optimization.variable.chebyshev_coeff import \
-    ChebyshevCoeffVariable
-from optiland.optimization.variable.zernike_coeff import \
-    ZernikeCoeffVariable
+from optiland.optimization.variable.index import IndexVariable
+from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
+from optiland.optimization.variable.radius import RadiusVariable
+from optiland.optimization.variable.thickness import ThicknessVariable
+from optiland.optimization.variable.tilt import TiltVariable
+from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
+
 
 class Variable:
-    """
-    Represents a variable in an optical system.
+    """Represents a variable in an optical system.
 
     Args:
         optic (OpticalSystem): The optical system to which the variable
@@ -51,10 +48,18 @@ class Variable:
 
     Raises:
         ValueError: If an invalid variable type is provided.
+
     """
 
-    def __init__(self, optic, type_name, min_val=None, max_val=None,
-                 apply_scaling=True, **kwargs):
+    def __init__(
+        self,
+        optic,
+        type_name,
+        min_val=None,
+        max_val=None,
+        apply_scaling=True,
+        **kwargs,
+    ):
         self.optic = optic
         self.type = type_name
         self.min_val = min_val
@@ -73,38 +78,36 @@ class Variable:
 
     @staticmethod
     def allowed_attributes():
-        """
-        This method returns a set of strings that are the names of allowed
+        """This method returns a set of strings that are the names of allowed
         attributes.
         """
-        return {'surface_number', 'coeff_number', 'wavelength', 'coeff_index',
-                'axis'}
+        return {"surface_number", "coeff_number", "wavelength", "coeff_index", "axis"}
 
     def _get_variable(self):
-        """
-        Get the variable.
+        """Get the variable.
 
         Returns:
             The behavior of the variable, or None if an error occurs.
+
         """
         behavior_kwargs = {
-            'type_name': self.type,
-            'optic': self.optic,
-            'apply_scaling': self.apply_scaling,
-            **self.kwargs
+            "type_name": self.type,
+            "optic": self.optic,
+            "apply_scaling": self.apply_scaling,
+            **self.kwargs,
         }
 
         variable_types = {
-            'radius': RadiusVariable,
-            'conic': ConicVariable,
-            'thickness': ThicknessVariable,
-            'tilt': TiltVariable,
-            'decenter': DecenterVariable,
-            'index': IndexVariable,
-            'asphere_coeff': AsphereCoeffVariable,
-            'polynomial_coeff': PolynomialCoeffVariable,
-            'chebyshev_coeff': ChebyshevCoeffVariable,
-            'zernike_coeff': ZernikeCoeffVariable,
+            "radius": RadiusVariable,
+            "conic": ConicVariable,
+            "thickness": ThicknessVariable,
+            "tilt": TiltVariable,
+            "decenter": DecenterVariable,
+            "index": IndexVariable,
+            "asphere_coeff": AsphereCoeffVariable,
+            "polynomial_coeff": PolynomialCoeffVariable,
+            "chebyshev_coeff": ChebyshevCoeffVariable,
+            "zernike_coeff": ZernikeCoeffVariable,
         }
 
         variable_class = variable_types.get(self.type)
@@ -112,8 +115,7 @@ class Variable:
         # Instantiate the class if it exists
         if variable_class:
             return variable_class(**behavior_kwargs)
-        else:
-            raise ValueError(f'Invalid variable type "{self.type}"')
+        raise ValueError(f'Invalid variable type "{self.type}"')
 
     @property
     def value(self):
@@ -124,6 +126,7 @@ class Variable:
 
         Raises:
             ValueError: If the variable type is invalid.
+
         """
         return self.variable.get_value()
 
@@ -133,11 +136,14 @@ class Variable:
 
         Returns:
             tuple: the bounds of the variable
+
         """
-        min_val = (self.variable.scale(self.min_val)
-                   if self.min_val is not None else None)
-        max_val = (self.variable.scale(self.max_val)
-                   if self.max_val is not None else None)
+        min_val = (
+            self.variable.scale(self.min_val) if self.min_val is not None else None
+        )
+        max_val = (
+            self.variable.scale(self.max_val) if self.max_val is not None else None
+        )
         return min_val, max_val
 
     def update(self, new_value):
@@ -148,6 +154,7 @@ class Variable:
 
         Raises:
             ValueError: If the variable type is invalid.
+
         """
         self.variable.update_value(new_value)
 
@@ -160,5 +167,6 @@ class Variable:
 
         Returns:
             str: A string representation of the variable.
+
         """
         return str(self.variable)

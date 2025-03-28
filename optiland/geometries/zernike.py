@@ -26,13 +26,13 @@ drpaprika, 2025
 """
 
 import numpy as np
-from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 
 class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
-    """
-    Represents a Fringe Zernike polynomial geometry defined as:
+    """Represents a Fringe Zernike polynomial geometry defined as:
 
     z(x,y) = z_{base}(x,y) + r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
         sum_i [c[i] * Z_i(rho, theta)]
@@ -64,27 +64,29 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             Defaults to 1.
         norm_y (int, optional): The normalization factor for the y-coordinate.
             Defaults to 1.
+
     """
 
-    def __init__(self, coordinate_system: str,
-                 radius: float,
-                 conic: float = 0.0,
-                 tol: float = 1e-10,
-                 max_iter: int = 100,
-                 coefficients: np.ndarray = None,
-                 norm_radius: float = 1,
-                 ):
+    def __init__(
+        self,
+        coordinate_system: str,
+        radius: float,
+        conic: float = 0.0,
+        tol: float = 1e-10,
+        max_iter: int = 100,
+        coefficients: np.ndarray = None,
+        norm_radius: float = 1,
+    ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = np.atleast_1d(coefficients)
         self.norm_radius = norm_radius
         self.is_symmetric = False
 
     def __str__(self) -> str:
-        return 'Zernike Polynomial'
+        return "Zernike Polynomial"
 
     def sag(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """
-        Calculate the sag of the Zernike polynomial surface at the given
+        """Calculate the sag of the Zernike polynomial surface at the given
         coordinates.
 
         Args:
@@ -93,6 +95,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             np.ndarray: The sag value at the given Cartesian coordinates.
+
         """
         x_norm = x / self.norm_radius
         y_norm = y / self.norm_radius
@@ -104,26 +107,21 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         theta = np.arctan2(y_norm, x_norm)
 
         # Base conic
-        z = (rho**2) / (self.radius * (1 + np.sqrt(
-            1 - (1 + self.k) * (rho**2) / self.radius**2)))
+        r2 = x**2 + y**2
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
         # Add normalized Fringe Zernike contributions
         # Sum over all nonzero coefficients
         non_zero_indices = np.nonzero(self.c)[0]
         for i in non_zero_indices:
-            normalization_factor = np.sqrt(2*(i+1)/np.pi)
+            normalization_factor = np.sqrt(2 * (i + 1) / np.pi)
             z_i = self._zernike(i + 1, rho, theta)
             z += normalization_factor * self.c[i] * z_i
 
         return z
 
-    def _zernike(self,
-                 i: int,
-                 rho: np.ndarray,
-                 theta: np.ndarray
-                 ) -> np.ndarray:
-        """
-        Calculate the i-th Fringe Zernike polynomial at the given rho, theta.
+    def _zernike(self, i: int, rho: np.ndarray, theta: np.ndarray) -> np.ndarray:
+        """Calculate the i-th Fringe Zernike polynomial at the given rho, theta.
 
         Args:
             i (int): The degree of the Zernike polynomial.
@@ -132,24 +130,24 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             float or np.ndarray: Z_i(rho, theta).
+
         """
         n, m = self._fringezernike_order_to_zernike_order(i)
         Rnm = self._radial_poly(n, abs(m), rho)
 
         if m == 0:
             return Rnm
-        elif m > 0:
+        if m > 0:
             return Rnm * np.cos(m * theta)
-        else:
-            return Rnm * np.sin(abs(m) * theta)
+        return Rnm * np.sin(abs(m) * theta)
 
-    def _zernike_derivative(self,
-                            i: int,
-                            rho: np.ndarray,
-                            theta: np.ndarray
-                            ) -> tuple[np.ndarray, np.ndarray]:
-        """
-        Return partial derivatives of Z_i w.r.t. rho and theta:
+    def _zernike_derivative(
+        self,
+        i: int,
+        rho: np.ndarray,
+        theta: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Return partial derivatives of Z_i w.r.t. rho and theta:
         (dZ/drho, dZ/dtheta).
         We'll use them in chain rule for partial derivatives w.r.t x,y.
 
@@ -160,6 +158,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Return:
             (dZdrho, dZdtheta) as floats or ndarrays
+
         """
         n, m = self._fringezernike_order_to_zernike_order(i)
         Rnm = self._radial_poly(n, abs(m), rho)
@@ -183,8 +182,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         return dZdrho, dZdtheta
 
     def _radial_poly(self, n: int, m: int, rho: np.ndarray) -> np.ndarray:
-        """
-        Compute the radial polynomial R_n^m(rho).
+        """Compute the radial polynomial R_n^m(rho).
 
         R_n^m(rho) = sum_{k=0}^{(n - m)/2} (-1)^k * (n-k)! /
                      [k! ((n+m)/2 - k)! ((n-m)/2 - k)!] * rho^(n - 2k)
@@ -196,23 +194,21 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             float or np.ndarray: The radial polynomial evaluated at rho.
+
         """
         val = 0.0
         upper_k = (n - m) // 2
         for k in range(upper_k + 1):
-            sign = (-1)**k
+            sign = (-1) ** k
             numerator = factorial(n - k)
             denominator = (
-                factorial(k) *
-                factorial((n + m)//2 - k) *
-                factorial((n - m)//2 - k)
+                factorial(k) * factorial((n + m) // 2 - k) * factorial((n - m) // 2 - k)
             )
-            val += sign * (numerator / denominator) * (rho ** (n - 2*k))
+            val += sign * (numerator / denominator) * (rho ** (n - 2 * k))
         return val
 
     def _radial_poly_derivative(self, n: int, m: int, rho: np.ndarray):
-        """
-        Derivative of the radial polynomial R_n^m(rho) with respect to rho.
+        """Derivative of the radial polynomial R_n^m(rho) with respect to rho.
 
         d/d(rho) R_n^m(rho) = sum_{k=0} (...) (n-2k) * rho^(n-2k-1)
 
@@ -223,28 +219,29 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             float or np.ndarray: d/d rho of R_n^m(rho).
+
         """
         val = 0.0
         upper_k = (n - m) // 2
         for k in range(upper_k + 1):
-            sign = (-1)**k
+            sign = (-1) ** k
             numerator = factorial(n - k)
-            denominator = (factorial(k) *
-                           factorial((n + m)//2 - k) *
-                           factorial((n - m)//2 - k))
-            factor = (n - 2*k)
+            denominator = (
+                factorial(k) * factorial((n + m) // 2 - k) * factorial((n - m) // 2 - k)
+            )
+            factor = n - 2 * k
             if factor < 0:
                 continue
-            power_term = rho**(n - 2*k - 1) if (n - 2*k - 1) >= 0 else 0
+            power_term = rho ** (n - 2 * k - 1) if (n - 2 * k - 1) >= 0 else 0
             val += sign * (numerator / denominator) * factor * power_term
         return val
 
-    def _surface_normal(self,
-                        x: np.ndarray,
-                        y: np.ndarray
-                        ) -> tuple[float, float, float]:
-        """
-        Calculate the surface normal of the full surface (conic + Zernike)
+    def _surface_normal(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+    ) -> tuple[float, float, float]:
+        """Calculate the surface normal of the full surface (conic + Zernike)
         in Cartesian coordinates at (x, y).
 
         Args:
@@ -253,20 +250,18 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             (nx, ny, nz): Normal vector components in Cartesian coords.
+
         """
         # Conic partial derivatives:
         r2 = x**2 + y**2
-        denom = self.radius * np.sqrt(
-            1.0 - (1.0 + self.k) * r2 / self.radius**2
-        )
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
+        dzdx = x / denom
+        dzdy = y / denom
 
         # Protect against divide-by-zero for r=0
         # or handle small r if needed
         eps = 1e-14
         denom = np.where(np.abs(denom) < eps, eps, denom)
-
-        dzdx = x / denom
-        dzdy = y / denom
 
         # Now add partial derivatives from the Zernike expansions
         x_norm = x / self.norm_radius
@@ -279,14 +274,18 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         # We'll define the partials of (rho,theta) wrt x:
         #   drho/dx    = x / (norm_x^2 * rho)
         #   dtheta/dx  = - y / (rho^2 * norm_y * norm_x)
-        drho_dx = np.zeros_like(x) if np.all(rho == 0) else (
-            (x / (self.norm_radius**2)) / (rho + eps)
+        drho_dx = (
+            np.zeros_like(x)
+            if np.all(rho == 0)
+            else ((x / (self.norm_radius**2)) / (rho + eps))
         )
-        drho_dy = np.zeros_like(y) if np.all(rho == 0) else (
-            (y / (self.norm_radius**2)) / (rho + eps)
+        drho_dy = (
+            np.zeros_like(y)
+            if np.all(rho == 0)
+            else ((y / (self.norm_radius**2)) / (rho + eps))
         )
-        dtheta_dx = -(y_norm)/(rho**2 + eps) * (1.0/self.norm_radius)
-        dtheta_dy = +(x_norm)/(rho**2 + eps) * (1.0/self.norm_radius)
+        dtheta_dx = -(y_norm) / (rho**2 + eps) * (1.0 / self.norm_radius)
+        dtheta_dy = +(x_norm) / (rho**2 + eps) * (1.0 / self.norm_radius)
 
         non_zero_indices = np.nonzero(self.c)[0]
         for i in non_zero_indices:
@@ -311,42 +310,48 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     @staticmethod
     def _fringezernike_order_to_zernike_order(k: int) -> tuple[float, float]:
         """Convert Fringe Zernike index k to classical Zernike (n, m).
-        https://wp.optics.arizona.edu/visualopticslab/wp-content/uploads/sites/52/2021/10/Zernike-Fit.pdf"""
-        n = np.ceil((-3 + np.sqrt(9 + 8*k))/2)
+
+        https://wp.optics.arizona.edu/visualopticslab/wp-content/
+        uploads/sites/52/2021/10/Zernike-Fit.pdf
+        """
+        n = np.ceil((-3 + np.sqrt(9 + 8 * k)) / 2)
         m = 2 * k - n * (n + 2)
         return (n.astype(int), m.astype(int))
 
     def _validate_inputs(self, x_norm: float, y_norm: float) -> None:
-        """
-        Validate the input coordinates for the Zernike polynomial surface.
+        """Validate the input coordinates for the Zernike polynomial surface.
 
         Args:
             x_norm (np.ndarray): The normalized x values.
+
         """
         if np.any(np.abs(x_norm) > 1) or np.any(np.abs(y_norm) > 1):
-            raise ValueError('Zernike coordinates must be normalized '
-                             'to [-1, 1]. Consider updating the normalization '
-                             'radius to 1.1x the surface aperture.')
+            raise ValueError(
+                "Zernike coordinates must be normalized "
+                "to [-1, 1]. Consider updating the normalization "
+                "radius to 1.1x the surface aperture.",
+            )
 
     def to_dict(self) -> dict:
-        """
-        Convert the Zernike polynomial geometry to a dictionary.
+        """Convert the Zernike polynomial geometry to a dictionary.
 
         Returns:
             dict: The Zernike polynomial geometry as a dictionary.
+
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({
-            'coefficients': self.c.tolist(),
-            'norm_radius': self.norm_radius,
-        })
+        geometry_dict.update(
+            {
+                "coefficients": self.c.tolist(),
+                "norm_radius": self.norm_radius,
+            },
+        )
 
         return geometry_dict
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'ZernikePolynomialGeometry':
-        """
-        Create a Zernike polynomial geometry from a dictionary.
+    def from_dict(cls, data: dict) -> "ZernikePolynomialGeometry":
+        """Create a Zernike polynomial geometry from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the Zernike
@@ -354,25 +359,26 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             ZernikePolynomialGeometry: The Zernike polynomial geometry.
+
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
+        cs = CoordinateSystem.from_dict(data["cs"])
 
         return cls(
             cs,
-            data['radius'],
-            data.get('conic', 0.0),
-            data.get('tol', 1e-10),
-            data.get('max_iter', 100),
-            data.get('coefficients', []),
-            data.get('norm_x', 1),
-            data.get('norm_y', 1)
+            data["radius"],
+            data.get("conic", 0.0),
+            data.get("tol", 1e-10),
+            data.get("max_iter", 100),
+            data.get("coefficients", []),
+            data.get("norm_x", 1),
+            data.get("norm_y", 1),
         )
 
 
 def factorial(n):
-    return np.prod(range(1, n+1))
+    return np.prod(range(1, n + 1))

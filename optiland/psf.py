@@ -10,17 +10,17 @@ system.
 Kramer Harrison, 2023
 """
 
-import numpy as np
-from scipy.ndimage import zoom
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 import matplotlib.ticker as mticker
+import numpy as np
+from matplotlib.colors import LogNorm
+from scipy.ndimage import zoom
+
 from optiland.wavefront import Wavefront
 
 
 class FFTPSF(Wavefront):
-    """
-    Class representing the Fast Fourier Transform (FFT)
+    """Class representing the Fast Fourier Transform (FFT)
     Point Spread Function (PSF).
 
     Args:
@@ -42,20 +42,31 @@ class FFTPSF(Wavefront):
         view(projection='2d', log=False, figsize=(7, 5.5), threshold=0.05,
             num_points=128): Visualizes the PSF.
         strehl_ratio(): Computes the Strehl ratio of the PSF.
+
     """
 
     def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
-        super().__init__(optic=optic, fields=[field], wavelengths=[wavelength],
-                         num_rays=num_rays, distribution='uniform')
+        super().__init__(
+            optic=optic,
+            fields=[field],
+            wavelengths=[wavelength],
+            num_rays=num_rays,
+            distribution="uniform",
+        )
 
         self.grid_size = grid_size
         self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
 
-    def view(self, projection='2d', log=False, figsize=(7, 5.5),
-             threshold=0.05, num_points=128):
-        """
-        Visualizes the PSF.
+    def view(
+        self,
+        projection="2d",
+        log=False,
+        figsize=(7, 5.5),
+        threshold=0.05,
+        num_points=128,
+    ):
+        """Visualizes the PSF.
 
         Args:
             projection (str, optional): The projection type. Can be '2d' or
@@ -70,31 +81,31 @@ class FFTPSF(Wavefront):
 
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
+
         """
         min_x, min_y, max_x, max_y = self._find_bounds(threshold)
         psf_zoomed = self.psf[min_x:max_x, min_y:max_y]
         x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
-        if projection == '2d':
+        if projection == "2d":
             self._plot_2d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
-        elif projection == '3d':
+        elif projection == "3d":
             self._plot_3d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
     def strehl_ratio(self):
-        """
-        Computes the Strehl ratio of the PSF.
+        """Computes the Strehl ratio of the PSF.
 
         Returns:
             float: The Strehl ratio.
+
         """
-        return self.psf[self.grid_size//2, self.grid_size//2] / 100
+        return self.psf[self.grid_size // 2, self.grid_size // 2] / 100
 
     def _plot_2d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
-        """
-        Plot the PSF in 2d.
+        """Plot the PSF in 2d.
 
         Args:
             image (numpy.ndarray): The 2D image of the PSF to plot..
@@ -103,31 +114,28 @@ class FFTPSF(Wavefront):
             y_extent (float): The extent of the y-axis.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 5.5).
+
         """
         _, ax = plt.subplots(figsize=figsize)
-        if log:
-            norm = LogNorm()
-        else:
-            norm = None
+        norm = LogNorm() if log else None
 
         # replace values <= 0 with smallest non-zero value in image
         image[image <= 0] = np.min(image[image > 0])
 
-        extent = [-x_extent/2, x_extent/2, -y_extent/2, y_extent/2]
+        extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(image, norm=norm, extent=extent)
 
-        ax.set_xlabel('X (µm)')
-        ax.set_ylabel('Y (µm)')
-        ax.set_title('FFT PSF')
+        ax.set_xlabel("X (µm)")
+        ax.set_ylabel("Y (µm)")
+        ax.set_title("FFT PSF")
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel('Relative Intensity (%)', rotation=270)
+        cbar.ax.set_ylabel("Relative Intensity (%)", rotation=270)
         plt.show()
 
     def _plot_3d(self, image, log, x_extent, y_extent, figsize=(7, 5.5)):
-        """
-        Plot the PSF in 3d.
+        """Plot the PSF in 3d.
 
         Args:
             image (ndarray): The PSF image data.
@@ -136,12 +144,12 @@ class FFTPSF(Wavefront):
             y_extent (float): The extent of the y-axis.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 5.5).
-        """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
-                               figsize=figsize)
 
-        x = np.linspace(-x_extent/2, x_extent/2, image.shape[1])
-        y = np.linspace(-y_extent/2, y_extent/2, image.shape[0])
+        """
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
+
+        x = np.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
+        y = np.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
         X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
@@ -155,56 +163,68 @@ class FFTPSF(Wavefront):
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
             log_formatter = self._log_colorbar_formatter
 
-        surf = ax.plot_surface(X, Y, image, rstride=1, cstride=1,
-                               cmap='viridis', linewidth=0, antialiased=False)
+        surf = ax.plot_surface(
+            X,
+            Y,
+            image,
+            rstride=1,
+            cstride=1,
+            cmap="viridis",
+            linewidth=0,
+            antialiased=False,
+        )
 
-        ax.set_xlabel('X (µm)')
-        ax.set_ylabel('Y (µm)')
-        ax.set_zlabel('Relative Intensity (%)')
-        ax.set_title('FFT PSF')
+        ax.set_xlabel("X (µm)")
+        ax.set_ylabel("Y (µm)")
+        ax.set_zlabel("Relative Intensity (%)")
+        ax.set_title("FFT PSF")
 
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
-                     pad=0.15, format=log_formatter)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15, format=log_formatter)
         fig.tight_layout()
         plt.show()
 
     def _log_tick_formatter(self, value, pos=None):
-        """
-        Format the tick labels for a logarithmic scale.
+        """Format the tick labels for a logarithmic scale.
 
-        Parameters:
+        Parameters
+        ----------
             value (float): The tick value.
             pos (int, optional): The position of the tick.
 
-        Returns:
+        Returns
+        -------
             str: The formatted tick label.
 
-        References:
+        References
+        ----------
             https://stackoverflow.com/questions/3909794/plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale
+
         """
         return f"$10^{{{int(value)}}}$"
 
     def _log_colorbar_formatter(self, value, pos=None):
-        """
-        Formats the tick labels for a logarithmic colorbar.
+        """Formats the tick labels for a logarithmic colorbar.
 
-        Parameters:
+        Parameters
+        ----------
             value (float): The tick value.
             pos (int, optional): The position of the tick.
 
-        Returns:
+        Returns
+        -------
             str: The formatted tick label.
+
         """
         linear_value = 10**value
-        return '{:.1e}'.format(linear_value)
+        return f"{linear_value:.1e}"
 
     def _generate_pupils(self):
-        """
-        Generate the pupils for each wavelength. Utilizes wavefront.Wavefront.
+        """Generate the pupils for each wavelength. Utilizes wavefront.Wavefront.
 
         Returns:
             list: A list of complex arrays representing the pupils for each
                 wavelength.
+
         """
         x = np.linspace(-1, 1, self.num_rays)
         x, y = np.meshgrid(x, x)
@@ -224,11 +244,11 @@ class FFTPSF(Wavefront):
         return pupils
 
     def _compute_psf(self):
-        """
-        Compute the Point Spread Function (PSF) for the given optical system.
+        """Compute the Point Spread Function (PSF) for the given optical system.
 
         Returns:
             np.ndarray: The computed PSF as a 2D numpy array.
+
         """
         # TODO: add ability to compute polychromatic PSF.
         # Interpolate for each wavelength, then incoherently sum.
@@ -243,8 +263,7 @@ class FFTPSF(Wavefront):
         return np.real(np.sum(psf, axis=0)) / norm_factor * 100
 
     def _interpolate_psf(self, image, n=128):
-        """
-        Interpolates the point spread function (PSF) of an image. Used for
+        """Interpolates the point spread function (PSF) of an image. Used for
             visualization purposes only.
 
         Args:
@@ -254,26 +273,28 @@ class FFTPSF(Wavefront):
 
         Returns:
             numpy.ndarray: The interpolated PSF grid.
+
         """
         zoom_factor = n / image.shape[0]
 
         if zoom_factor == 1:
             return image
-        else:
-            return zoom(image, zoom_factor, order=3)
+        return zoom(image, zoom_factor, order=3)
 
     def _find_bounds(self, threshold=0.25):
-        """
-        Finds the bounding box coordinates for the non-zero elements in the
+        """Finds the bounding box coordinates for the non-zero elements in the
         PSF matrix.
 
-        Parameters:
+        Parameters
+        ----------
             threshold (float): The threshold value for determining non-zero
                 elements in the PSF matrix. Default is 0.25.
 
-        Returns:
+        Returns
+        -------
             tuple: A tuple containing the minimum and maximum x and y
                 coordinates of the bounding box.
+
         """
         thresholded_psf = self.psf > threshold
         non_zero_indices = np.argwhere(thresholded_psf)
@@ -302,26 +323,30 @@ class FFTPSF(Wavefront):
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
     def _pad_pupils(self):
-        """
-        Pad the pupils with zeros to match the grid size.
+        """Pad the pupils with zeros to match the grid size.
 
         Returns:
             list: A list of padded pupils.
+
         """
         pupils_padded = []
         for pupil in self.pupils:
             pad = (self.grid_size - pupil.shape[0]) // 2
-            pupil = np.pad(pupil, ((pad, pad), (pad, pad)),
-                           mode='constant', constant_values=0)
+            pupil = np.pad(
+                pupil,
+                ((pad, pad), (pad, pad)),
+                mode="constant",
+                constant_values=0,
+            )
             pupils_padded.append(pupil)
         return pupils_padded
 
     def _get_normalization(self):
-        """
-        Calculate the normalization factor for the Point Spread Function (PSF).
+        """Calculate the normalization factor for the Point Spread Function (PSF).
 
         Returns:
             float: The normalization factor for the PSF.
+
         """
         P_nom = self.pupils[0].copy()
         P_nom[P_nom != 0] = 1
@@ -331,19 +356,22 @@ class FFTPSF(Wavefront):
         return np.real(np.max(psf_norm) * len(self.pupils))
 
     def _get_psf_units(self, image):
-        """
-        Calculate the physical units of the point spread function (PSF) based
+        """Calculate the physical units of the point spread function (PSF) based
         on the given image.
 
-        Parameters:
+        Parameters
+        ----------
             image (numpy.ndarray): The input PSF image.
 
-        Returns:
+        Returns
+        -------
             tuple: A tuple containing the physical units of the PSF in the
                 x and y directions.
 
-        References:
+        References
+        ----------
             https://www.strollswithmydog.com/wavefront-to-psf-to-mtf-physical-units/#iv
+
         """
         FNO = self.optic.paraxial.FNO()
 
@@ -351,7 +379,7 @@ class FFTPSF(Wavefront):
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= (1 + np.abs(m) / p)
+            FNO *= 1 + np.abs(m) / p
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q

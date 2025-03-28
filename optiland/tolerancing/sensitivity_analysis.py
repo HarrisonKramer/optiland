@@ -7,16 +7,16 @@ run a sensitivity analysis on a Tolerancing object and visualize the results.
 Kramer Harrison, 2024
 """
 
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
 
 
 class SensitivityAnalysis:
-    """
-    Class for performing sensitivity analysis on a tolerancing system.
+    """Class for performing sensitivity analysis on a tolerancing system.
 
     Args:
         tolerancing (Tolerancing): The tolerancing system to perform
@@ -34,20 +34,19 @@ class SensitivityAnalysis:
         get_results(): Returns the sensitivity analysis results.
         view(figsize=(2.2, 3), sharex='col', sharey='row'): Visualizes the
             sensitivity analysis results.
+
     """
 
     def __init__(self, tolerancing: Tolerancing):
         self.tolerancing = tolerancing
         self.operand_names = [
-            f'{i}: {operand}'
-            for i, operand in enumerate(tolerancing.operands)
+            f"{i}: {operand}" for i, operand in enumerate(tolerancing.operands)
         ]
         self._results = pd.DataFrame()
         self._validate()
 
     def run(self):
-        """
-        Run the sensitivity analysis.
+        """Run the sensitivity analysis.
 
         This method performs a sensitivity analysis by iterating over the
         perturbations defined in the tolerancing object. For each
@@ -58,12 +57,13 @@ class SensitivityAnalysis:
         Raises:
             ValueError: If a perturbation sampler other than RangeSampler is
                 used.
+
         """
         results = []
 
         for perturbation in self.tolerancing.perturbations:
             if not isinstance(perturbation.sampler, RangeSampler):
-                raise ValueError('Only range samplers are supported.')
+                raise ValueError("Only range samplers are supported.")
 
             num_iterations = perturbation.sampler.size
             for _ in range(num_iterations):
@@ -81,15 +81,17 @@ class SensitivityAnalysis:
 
                 # save results - perturbation type & value
                 result = {
-                    'perturbation_type': str(perturbation.variable),
-                    'perturbation_value': perturbation.value,
+                    "perturbation_type": str(perturbation.variable),
+                    "perturbation_value": perturbation.value,
                 }
 
                 # save results - operand values
-                result.update({
-                    f'{name}': value
-                    for name, value in zip(self.operand_names, operand_values)
-                })
+                result.update(
+                    {
+                        f"{name}": value
+                        for name, value in zip(self.operand_names, operand_values)
+                    },
+                )
 
                 # save results - compensator values
                 result.update(compensator_result)
@@ -100,17 +102,16 @@ class SensitivityAnalysis:
         self.tolerancing.reset()
 
     def get_results(self):
-        """
-        Returns the results of the sensitivity analysis.
+        """Returns the results of the sensitivity analysis.
 
         Returns:
             pd.DataFrame: The results of the sensitivity analysis.
+
         """
         return self._results
 
-    def view(self, figsize=(2.5, 3.3), sharex='col', sharey='row'):
-        """
-        Visualizes the sensitivity analysis results.
+    def view(self, figsize=(2.5, 3.3), sharex="col", sharey="row"):
+        """Visualizes the sensitivity analysis results.
 
         Args:
             figsize (tuple, optional): The size of the figure in inches for
@@ -119,9 +120,10 @@ class SensitivityAnalysis:
                 subplots. Default is 'col'.
             sharey (str, optional): Specifies how the y-axis is shared among
                 subplots. Default is 'row'.
+
         """
         df = self._results
-        unique_types = df['perturbation_type'].unique()
+        unique_types = df["perturbation_type"].unique()
 
         m = len(self.operand_names)
         n = len(unique_types)
@@ -129,19 +131,23 @@ class SensitivityAnalysis:
         size_x = m * figsize[0]
         size_y = n * figsize[1]
 
-        fig, axes = plt.subplots(m, n, figsize=(size_y, size_x), sharex=sharex,
-                                 sharey=sharey)
+        fig, axes = plt.subplots(
+            m,
+            n,
+            figsize=(size_y, size_x),
+            sharex=sharex,
+            sharey=sharey,
+        )
 
         # handle single row and/or column
         axes = np.array(axes).reshape(m, n)
 
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):
-                x = df.loc[df.perturbation_type == pert_type,
-                           'perturbation_value']
+                x = df.loc[df.perturbation_type == pert_type, "perturbation_value"]
                 y = df.loc[df.perturbation_type == pert_type, name]
 
-                axes[i, j].plot(x, y, color=f'C{i}', linewidth=2)
+                axes[i, j].plot(x, y, color=f"C{i}", linewidth=2)
                 axes[i, j].grid()
 
                 if j == 0:
@@ -154,8 +160,7 @@ class SensitivityAnalysis:
         plt.show()
 
     def _validate(self):
-        """
-        Validates the tolerancing system before performing sensitivity
+        """Validates the tolerancing system before performing sensitivity
         analysis.
 
         Raises:
@@ -164,17 +169,16 @@ class SensitivityAnalysis:
                 system.
             ValueError: If the number of operands exceeds 6.
             ValueError: If the number of perturbations exceeds 6.
+
         """
         if not self.tolerancing.operands:
-            raise ValueError('No operands found in the tolerancing system.')
+            raise ValueError("No operands found in the tolerancing system.")
 
         if not self.tolerancing.perturbations:
-            raise ValueError('No perturbations found in the tolerancing '
-                             'system.')
+            raise ValueError("No perturbations found in the tolerancing system.")
 
         if len(self.tolerancing.operands) > 6:
-            raise ValueError('Sensitivity analysis is limited to 6 operands.')
+            raise ValueError("Sensitivity analysis is limited to 6 operands.")
 
         if len(self.tolerancing.perturbations) > 6:
-            raise ValueError('Sensitivity analysis is limited to 6 '
-                             'perturbations.')
+            raise ValueError("Sensitivity analysis is limited to 6 perturbations.")

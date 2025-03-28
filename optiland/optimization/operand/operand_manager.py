@@ -2,8 +2,7 @@ from optiland.optimization.operand import Operand
 
 
 class OperandManager:
-    """
-    Manages a list of operands in a merit function.
+    """Manages a list of operands in a merit function.
 
     Attributes:
         operands (list): A list of Operand objects.
@@ -12,24 +11,39 @@ class OperandManager:
         add(operand_type, target, weight=1, input_data={}): Add an operand to
             the merit function.
         clear(): Clear all operands from the merit function.
+
     """
 
     def __init__(self):
         self.operands = []
 
-    def add(self, operand_type=None, target=None, min_val=None, max_val=None, weight=1, input_data={}):
+    def add(
+        self,
+        operand_type=None,
+        target=None,
+        min_val=None,
+        max_val=None,
+        weight=1,
+        input_data=None,
+    ):
         """Add an operand to the merit function
 
         Args:
             operand_type (str): The type of the operand.
             target (float): The target value of the operand.
-            min_val (float): The operand should stay above this value (inequality operand).
-            max_val (float): The operand should stay below this value (inequality operand).
+            min_val (float): The operand should stay above this
+                value (inequality operand).
+            max_val (float): The operand should stay below this
+                value (inequality operand).
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
-        
+
         """
-        self.operands.append(Operand(operand_type, target, min_val, max_val, weight, input_data))
+        if input_data is None:
+            input_data = {}
+        self.operands.append(
+            Operand(operand_type, target, min_val, max_val, weight, input_data),
+        )
 
     def clear(self):
         """Clear all operands from the merit function"""
@@ -46,8 +60,7 @@ class OperandManager:
             result = self.operands[self._index]
             self._index += 1
             return result
-        else:
-            raise StopIteration
+        raise StopIteration
 
     def __len__(self):
         """Return the number of operands in the list"""

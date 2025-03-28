@@ -12,8 +12,7 @@ from optiland.optimization.variable.base import VariableBehavior
 
 
 class ConicVariable(VariableBehavior):
-    """
-    Represents a variable for the conic constant of a surface in an optic.
+    """Represents a variable for the conic constant of a surface in an optic.
 
     Args:
         optic (Optic): The optic object to which the surface belongs.
@@ -29,23 +28,23 @@ class ConicVariable(VariableBehavior):
     Methods:
         get_value: Returns the current conic constant of the surface.
         update_value: Updates the conic value of the surface.
+
     """
 
     def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
 
     def get_value(self):
-        """
-        Returns the current conic constant of the surface.
+        """Returns the current conic constant of the surface.
 
         Returns:
             float: The conic constant of the surface.
+
         """
         return self._surfaces.conic[self.surface_number]
 
     def update_value(self, new_value):
-        """
-        Updates the conic value of the surface.
+        """Updates the conic value of the surface.
 
         Args:
             new_value (float): The new conic constant to set.
@@ -54,28 +53,28 @@ class ConicVariable(VariableBehavior):
         self.optic.set_conic(new_value, self.surface_number)
 
     def scale(self, value):
-        """
-        Scale the value of the variable for improved optimization performance.
+        """Scale the value of the variable for improved optimization performance.
 
         Args:
             value: The value to scale
+
         """
         return value
 
     def inverse_scale(self, scaled_value):
-        """
-        Inverse scale the value of the variable.
+        """Inverse scale the value of the variable.
 
         Args:
             scaled_value: The scaled value to inverse scale
+
         """
         return scaled_value
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Conic Constant, Surface {self.surface_number}"

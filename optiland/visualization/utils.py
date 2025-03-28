@@ -7,12 +7,12 @@ Kramer Harrison, 2024
 
 import numpy as np
 import vtk
+
 from optiland.rays import RealRays
 
 
 def transform(x, y, z, surface, is_global=True):
-    """
-    Transforms the coordinates (x, y, z) based on the surface geometry.
+    """Transforms the coordinates (x, y, z) based on the surface geometry.
 
     Args:
         x (numpy.ndarray): The x-coordinates of the points.
@@ -22,8 +22,10 @@ def transform(x, y, z, surface, is_global=True):
             transformation.
         is_global (bool, optional): If True, localize the points to the
             surface geometry. If False, globalize the points. Defaults to True.
+
     Returns:
         tuple: Transformed x, y, and z coordinates as numpy arrays.
+
     """
     if np.isscalar(x):
         x = np.array([x])
@@ -43,8 +45,7 @@ def transform(x, y, z, surface, is_global=True):
 
 
 def transform_3d(actor, surface):
-    """
-    Applies the effective rotation and translation of a surface to an actor.
+    """Applies the effective rotation and translation of a surface to an actor.
 
     Args:
         actor: The actor to be transformed. This is typically an instance of a
@@ -53,6 +54,7 @@ def transform_3d(actor, surface):
 
     Returns:
         The transformed actor with the applied rotation and translation.
+
     """
     # Get the effective rotation and translation of the surface
     cs = surface.geometry.cs
@@ -70,8 +72,7 @@ def transform_3d(actor, surface):
 
 
 def revolve_contour(x, y, z):
-    """
-    Revolves a contour defined by the input points (x, y, z) around the z-axis
+    """Revolves a contour defined by the input points (x, y, z) around the z-axis
     to create a 3D surface and returns the corresponding VTK actor.
 
     Args:
@@ -81,6 +82,7 @@ def revolve_contour(x, y, z):
 
     Returns:
         vtk.vtkActor: VTK actor representing the revolved 3D surface.
+
     """
     pts = [(xi, yi, zi) for xi, yi, zi in zip(x, y, z)]
 

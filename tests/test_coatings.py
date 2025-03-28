@@ -1,7 +1,9 @@
 from copy import deepcopy
-import pytest
+
 import numpy as np
-from optiland import coatings, rays, materials
+import pytest
+
+from optiland import coatings, materials, rays
 
 
 @pytest.fixture
@@ -50,7 +52,7 @@ def rays_non_parallel():
     z = np.linspace(-5, 10, num)
     L = np.linspace(0, 0.5, num)
     M = np.linspace(-0.3, 0.4, num)
-    N = np.sqrt(1 - L ** 2 - M ** 2)
+    N = np.sqrt(1 - L**2 - M**2)
     intensity = np.ones(num)
     wavelength = np.ones(num)
 
@@ -105,9 +107,11 @@ class TestSimpleCoating:
 
     def test_to_dict(self):
         coating = coatings.SimpleCoating(transmittance=0.3, reflectance=0.5)
-        assert coating.to_dict() == {'type': 'SimpleCoating',
-                                     'transmittance': 0.3,
-                                     'reflectance': 0.5}
+        assert coating.to_dict() == {
+            "type": "SimpleCoating",
+            "transmittance": 0.3,
+            "reflectance": 0.5,
+        }
 
 
 class TestFresnelCoating:
@@ -125,7 +129,7 @@ class TestFresnelCoating:
         rays_after = coating.reflect(rays_parallel_polarized, nx, ny, nz)
         rays_after.update_intensity(state)
 
-        R = ((1.5 - 1.0) / (1.5 + 1.0))**2
+        R = ((1.5 - 1.0) / (1.5 + 1.0)) ** 2
         assert np.all(rays_after.i == R * rays_before.i)
 
     def test_transmit(self, rays_parallel_polarized):
@@ -142,17 +146,18 @@ class TestFresnelCoating:
         rays_after = coating.transmit(rays_parallel_polarized, nx, ny, nz)
         rays_after.update_intensity(state)
 
-        R = ((1.5 - 1.0) / (1.5 + 1.0))**2
-        assert np.allclose(rays_after.i * 1.5, (1 - R) * rays_before.i,
-                           atol=1e-9)
+        R = ((1.5 - 1.0) / (1.5 + 1.0)) ** 2
+        assert np.allclose(rays_after.i * 1.5, (1 - R) * rays_before.i, atol=1e-9)
 
     def test_to_dict(self):
         mat1 = materials.IdealMaterial(n=1.0)
         mat2 = materials.IdealMaterial(n=1.5)
         coating = coatings.FresnelCoating(mat1, mat2)
-        assert coating.to_dict() == {'type': 'FresnelCoating',
-                                     'material_pre': mat1.to_dict(),
-                                     'material_post': mat2.to_dict()}
+        assert coating.to_dict() == {
+            "type": "FresnelCoating",
+            "material_pre": mat1.to_dict(),
+            "material_post": mat2.to_dict(),
+        }
 
     def test_from_dict(self):
         mat1 = materials.IdealMaterial(n=1.0)

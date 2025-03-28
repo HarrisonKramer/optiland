@@ -11,8 +11,7 @@ from optiland.optimization.variable.base import VariableBehavior
 
 
 class RadiusVariable(VariableBehavior):
-    """
-    Represents a variable for the radius of a surface in an optic.
+    """Represents a variable for the radius of a surface in an optic.
 
     Args:
         optic (Optic): The optic object that contains the surface.
@@ -28,17 +27,18 @@ class RadiusVariable(VariableBehavior):
     Methods:
         get_value(): Returns the current value of the radius.
         update_value(new_value): Updates the value of the radius.
+
     """
 
     def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
 
     def get_value(self):
-        """
-        Returns the current value of the radius.
+        """Returns the current value of the radius.
 
         Returns:
             float: The current value of the radius.
+
         """
         value = self._surfaces.radii[self.surface_number]
         if self.apply_scaling:
@@ -46,39 +46,39 @@ class RadiusVariable(VariableBehavior):
         return value
 
     def update_value(self, new_value):
-        """
-        Updates the value of the radius.
+        """Updates the value of the radius.
 
         Args:
             new_value (float): The new value of the radius.
+
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
         self.optic.set_radius(new_value, self.surface_number)
 
     def scale(self, value):
-        """
-        Scale the value of the variable for improved optimization performance.
+        """Scale the value of the variable for improved optimization performance.
 
         Args:
             value: The value to scale
+
         """
         return value / 100.0 - 1.0
 
     def inverse_scale(self, scaled_value):
-        """
-        Inverse scale the value of the variable.
+        """Inverse scale the value of the variable.
 
         Args:
             scaled_value: The scaled value to inverse scale
+
         """
         return (scaled_value + 1.0) * 100.0
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Radius of Curvature, Surface {self.surface_number}"

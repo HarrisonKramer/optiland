@@ -9,14 +9,9 @@ from .variable import (
     AsphereCoeffVariable,
     PolynomialCoeffVariable,
     ChebyshevCoeffVariable,
-    Variable
+    Variable,
 )
-from .operand import (
-    ParaxialOperand,
-    AberrationOperand,
-    RayOperand,
-    Operand
-)
+from .operand import ParaxialOperand, AberrationOperand, RayOperand, Operand
 from .optimization import (
     OptimizationProblem,
     OptimizerGeneric,
@@ -24,5 +19,5 @@ from .optimization import (
     DualAnnealing,
     DifferentialEvolution,
     SHGO,
-    BasinHopping
+    BasinHopping,
 )

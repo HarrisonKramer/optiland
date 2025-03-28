@@ -19,7 +19,6 @@ properties of the optical system and provides interfaces to core functionalities
    jones
    optic
    pickup
-   physical_apertures
    scatter
    solves
    wavelength

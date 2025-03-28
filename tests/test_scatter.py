@@ -1,4 +1,5 @@
 import numpy as np
+
 from optiland import scatter
 from optiland.rays import RealRays
 
@@ -35,15 +36,15 @@ class TestGetPointGaussian:
 class TestScatter:
     def test_output_type(self):
         L, M, N, nx, ny, nz = np.random.rand(6)
-        s = scatter.scatter(L, M, N, nx, ny, nz,
-                            scatter.get_point_lambertian)
+        s = scatter.scatter(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
         assert isinstance(s, np.ndarray)
 
     def test_randomness(self):
         L, M, N, nx, ny, nz = np.random.rand(6)
-        points = [scatter.scatter(L, M, N, nx, ny, nz,
-                                  scatter.get_point_lambertian)
-                  for _ in range(1000)]
+        points = [
+            scatter.scatter(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
+            for _ in range(1000)
+        ]
         unique_points = list(set(tuple(point) for point in points))
         assert len(unique_points) == 1000
 
@@ -54,8 +55,7 @@ class TestScatter:
         L = 0.99999
         M = 0.0
         N = np.sqrt(1 - L**2)
-        s = scatter.scatter(L, M, N, nx, ny, nz,
-                            scatter.get_point_lambertian)
+        s = scatter.scatter(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
         assert np.isclose(np.linalg.norm(s), 1)
 
     def test_output_unit_vector(self):
@@ -72,8 +72,7 @@ class TestScatter:
             ny /= mag
             nz /= mag
 
-            s = scatter.scatter(L, M, N, nx, ny, nz,
-                                scatter.get_point_lambertian)
+            s = scatter.scatter(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
             assert np.isclose(np.linalg.norm(s), 1)
 
 
@@ -93,14 +92,20 @@ class TestFuncWrapper:
 class TestScatterParallel:
     def test_output_type(self):
         L, M, N, nx, ny, nz = np.random.rand(6, 10)
-        s = scatter.scatter_parallel(L, M, N, nx, ny, nz,
-                                     scatter.get_point_lambertian)
+        s = scatter.scatter_parallel(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
         assert isinstance(s, np.ndarray)
 
     def test_randomness(self):
         L, M, N, nx, ny, nz = np.random.rand(6, 1000)
-        points = scatter.scatter_parallel(L, M, N, nx, ny, nz,
-                                          scatter.get_point_lambertian)
+        points = scatter.scatter_parallel(
+            L,
+            M,
+            N,
+            nx,
+            ny,
+            nz,
+            scatter.get_point_lambertian,
+        )
         unique_points = list(set(tuple(point) for point in points))
         assert len(unique_points) == 1000
 
@@ -117,8 +122,7 @@ class TestScatterParallel:
         ny /= mag
         nz /= mag
 
-        s = scatter.scatter_parallel(L, M, N, nx, ny, nz,
-                                     scatter.get_point_lambertian)
+        s = scatter.scatter_parallel(L, M, N, nx, ny, nz, scatter.get_point_lambertian)
         assert np.allclose(np.linalg.norm(s, axis=1), 1)
 
 
