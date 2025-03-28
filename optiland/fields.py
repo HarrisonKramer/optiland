@@ -5,13 +5,13 @@ system.
 
 Kramer Harrison, 2023
 """
+
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 
 
 class Field:
-    """
-    Represents a field with specific properties.
+    """Represents a field with specific properties.
 
     Attributes:
         field_type (str): The type of the field.
@@ -19,10 +19,17 @@ class Field:
         y (int): The y-coordinate of the field.
         vx (float): The vignette factor in the x-direction.
         vy (float): The vignette factor in the y-direction.
+
     """
 
-    def __init__(self, field_type, x=0, y=0,
-                 vignette_factor_x=0.0, vignette_factor_y=0.0):
+    def __init__(
+        self,
+        field_type,
+        x=0,
+        y=0,
+        vignette_factor_x=0.0,
+        vignette_factor_y=0.0,
+    ):
         self.field_type = field_type
         self.x = x
         self.y = y
@@ -30,42 +37,47 @@ class Field:
         self.vy = vignette_factor_y
 
     def to_dict(self):
-        """
-        Convert the field to a dictionary.
+        """Convert the field to a dictionary.
 
         Returns:
             dict: A dictionary representation of the field.
+
         """
-        return {'field_type': self.field_type,
-                'x': self.x,
-                'y': self.y,
-                'vx': self.vx,
-                'vy': self.vy}
+        return {
+            "field_type": self.field_type,
+            "x": self.x,
+            "y": self.y,
+            "vx": self.vx,
+            "vy": self.vy,
+        }
 
     @classmethod
     def from_dict(cls, field_dict):
-        """
-        Create a field from a dictionary.
+        """Create a field from a dictionary.
 
-        Parameters:
+        Parameters
+        ----------
             field_dict (dict): A dictionary representation of the field.
 
-        Returns:
+        Returns
+        -------
             Field: A field object created from the dictionary.
-        """
-        if 'field_type' not in field_dict:
-            raise ValueError('Missing required keys: field_type')
 
-        return cls(field_dict['field_type'],
-                   field_dict.get('x', 0),
-                   field_dict.get('y', 0),
-                   field_dict.get('vx', 0.0),
-                   field_dict.get('vy', 0.0))
+        """
+        if "field_type" not in field_dict:
+            raise ValueError("Missing required keys: field_type")
+
+        return cls(
+            field_dict["field_type"],
+            field_dict.get("x", 0),
+            field_dict.get("y", 0),
+            field_dict.get("vx", 0.0),
+            field_dict.get("vy", 0.0),
+        )
 
 
 class FieldGroup:
-    """
-    A class representing a group of fields.
+    """A class representing a group of fields.
 
     Attributes:
         fields (list): A list of fields in the group.
@@ -77,6 +89,7 @@ class FieldGroup:
         get_field_coords: Returns the normalized coordinates of the fields.
         add_field(field): Adds a field to the group.
         get_field(field_number): Returns the field at the specified index.
+
     """
 
     def __init__(self):
@@ -124,21 +137,23 @@ class FieldGroup:
         return np.array([field.vy for field in self.fields])
 
     def get_vig_factor(self, Hx, Hy):
-        """
-        Calculates the vignetting factors for a given field position.
+        """Calculates the vignetting factors for a given field position.
 
         Note that the vignetting factors are interpolated using the nearest
         neighbor method.
 
-        Parameters:
+        Parameters
+        ----------
             Hx (float): The normalized x component of the field.
             Hy (float): The normalized y component of the field.
 
-        Returns:
+        Returns
+        -------
             vx_new (float): The interpolated x-component of the
                 vignetting factor.
             vy_new (float): The interpolated y-component of the
                 vignetting factor.
+
         """
         fields = np.stack((self.x_fields, self.y_fields), axis=-1)
         v_data = np.stack((self.vx, self.vy), axis=-1)
@@ -149,8 +164,7 @@ class FieldGroup:
         return vx_new, vy_new
 
     def get_field_coords(self):
-        """
-        Returns the coordinates of the fields.
+        """Returns the coordinates of the fields.
 
         If the maximum field size is 0, it returns a single coordinate (0, 0).
         Otherwise, it calculates the normalized coordinates for each field
@@ -158,25 +172,28 @@ class FieldGroup:
 
         Returns:
             list: A list of tuples representing the coordinates of the fields.
+
         """
         max_field = self.max_field
         if max_field == 0:
             return [(0, 0)]
-        return [(float(x/max_field), float(y/max_field))
-                for x, y in zip(self.x_fields, self.y_fields)]
+        return [
+            (float(x / max_field), float(y / max_field))
+            for x, y in zip(self.x_fields, self.y_fields)
+        ]
 
     def add_field(self, field):
-        """
-        Add a field to the list of fields.
+        """Add a field to the list of fields.
 
-        Parameters:
+        Parameters
+        ----------
             field: The field to be added.
+
         """
         self.fields.append(field)
 
     def get_field(self, field_number):
-        """
-        Retrieve the field at the specified field_number.
+        """Retrieve the field at the specified field_number.
 
         Args:
             field_number (int): The index of the field to retrieve.
@@ -186,42 +203,47 @@ class FieldGroup:
 
         Raises:
             IndexError: If the field_number is out of range.
+
         """
         return self.fields[field_number]
 
     def set_telecentric(self, is_telecentric):
-        """
-        Speocify whether the system is telecentric in object space.
+        """Speocify whether the system is telecentric in object space.
 
         Args:
             is_telecentric (bool): Whether the system is telecentric in object
                 space.
+
         """
         self.telecentric = is_telecentric
 
     def to_dict(self):
-        """
-        Convert the field group to a dictionary.
+        """Convert the field group to a dictionary.
 
         Returns:
             dict: A dictionary representation of the field group.
+
         """
-        return {'fields': [field.to_dict() for field in self.fields],
-                'telecentric': self.telecentric}
+        return {
+            "fields": [field.to_dict() for field in self.fields],
+            "telecentric": self.telecentric,
+        }
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a field group from a dictionary.
+        """Create a field group from a dictionary.
 
-        Parameters:
+        Parameters
+        ----------
             data (dict): A dictionary representation of the field group.
 
-        Returns:
+        Returns
+        -------
             FieldGroup: A field group object created from the dictionary.
+
         """
         field_group = cls()
-        for field_dict in data['fields']:
+        for field_dict in data["fields"]:
             field_group.add_field(Field.from_dict(field_dict))
-        field_group.set_telecentric(data['telecentric'])
+        field_group.set_telecentric(data["telecentric"])
         return field_group

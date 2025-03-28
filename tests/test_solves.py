@@ -1,7 +1,9 @@
-import pytest
 import numpy as np
+import pytest
+
 from optiland import solves
 from optiland.samples.objectives import CookeTriplet
+
 
 class TestMarginalRayHeightSolve:
     def test_marginal_ray_height_solve_constructor(self):
@@ -43,33 +45,26 @@ class TestMarginalRayHeightSolve:
         solve = solves.MarginalRayHeightSolve(optic, surface_idx, height)
         data = solve.to_dict()
 
-        assert data['type'] == 'MarginalRayHeightSolve'
-        assert data['surface_idx'] == surface_idx
-        assert data['height'] == height
+        assert data["type"] == "MarginalRayHeightSolve"
+        assert data["surface_idx"] == surface_idx
+        assert data["height"] == height
 
     def test_from_dict(self):
         optic = CookeTriplet()
-        data = {
-            'type': 'MarginalRayHeightSolve',
-            'surface_idx': 7,
-            'height': 0.5
-        }
+        data = {"type": "MarginalRayHeightSolve", "surface_idx": 7, "height": 0.5}
 
         solve = solves.BaseSolve.from_dict(optic, data)
 
-        assert solve.surface_idx == data['surface_idx']
-        assert solve.height == data['height']
+        assert solve.surface_idx == data["surface_idx"]
+        assert solve.height == data["height"]
 
     def test_from_dict_invalid_type(self):
         optic = CookeTriplet()
-        data = {
-            'type': 'Invalid',
-            'surface_idx': 7,
-            'height': 0.5
-        }
+        data = {"type": "Invalid", "surface_idx": 7, "height": 0.5}
 
         with pytest.raises(ValueError):
             solves.BaseSolve.from_dict(optic, data)
+
 
 class TestQuickfocusSolve:
     def test_quick_focus_solve_constructor(self):
@@ -103,15 +98,15 @@ class TestQuickfocusSolve:
 
         assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
 
+
 class TestSolveFactory:
     def test_create_solve(self):
         optic = CookeTriplet()
-        solve_type = 'marginal_ray_height'
+        solve_type = "marginal_ray_height"
         surface_idx = 7
         height = 0.5
 
-        solve = solves.SolveFactory.create_solve(optic, solve_type,
-                                                 surface_idx, height)
+        solve = solves.SolveFactory.create_solve(optic, solve_type, surface_idx, height)
 
         assert isinstance(solve, solves.MarginalRayHeightSolve)
         assert solve.optic == optic
@@ -120,13 +115,12 @@ class TestSolveFactory:
 
     def test_create_solve_invalid_solve_type(self):
         optic = CookeTriplet()
-        solve_type = 'invalid'
+        solve_type = "invalid"
         surface_idx = 7
         height = 0.5
 
         with pytest.raises(ValueError):
-            solves.SolveFactory.create_solve(optic, solve_type,
-                                             surface_idx, height)
+            solves.SolveFactory.create_solve(optic, solve_type, surface_idx, height)
 
 
 class TestSolveManager:
@@ -140,7 +134,7 @@ class TestSolveManager:
     def test_add_solve(self):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
-        solve_type = 'marginal_ray_height'
+        solve_type = "marginal_ray_height"
         surface_idx = 7
         height = 0.5
 
@@ -155,7 +149,7 @@ class TestSolveManager:
     def test_apply_solves(self):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
-        solve_type = 'marginal_ray_height'
+        solve_type = "marginal_ray_height"
         surface_idx = 7
         height = 0.5
 
@@ -177,7 +171,7 @@ class TestSolveManager:
     def test_clear_solves(self):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
-        solve_type = 'marginal_ray_height'
+        solve_type = "marginal_ray_height"
         surface_idx = 7
         height = 0.5
 

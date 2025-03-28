@@ -12,8 +12,7 @@ from optiland.optimization.variable.base import VariableBehavior
 
 
 class IndexVariable(VariableBehavior):
-    """
-    Represents a variable for the index of refraction at a specific surface
+    """Represents a variable for the index of refraction at a specific surface
     and wavelength.
 
     Args:
@@ -36,20 +35,20 @@ class IndexVariable(VariableBehavior):
             specified surface and wavelength.
         update_value(new_value): Updates the value of the index of refraction
             at the specified surface.
+
     """
 
-    def __init__(self, optic, surface_number, wavelength, apply_scaling=True,
-                 **kwargs):
+    def __init__(self, optic, surface_number, wavelength, apply_scaling=True, **kwargs):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.wavelength = wavelength
 
     def get_value(self):
-        """
-        Returns the value of the index of refraction at the specified surface
+        """Returns the value of the index of refraction at the specified surface
         and wavelength.
 
         Returns:
             float: The value of the index of refraction.
+
         """
         n = self.optic.n(self.wavelength)
         value = n[self.surface_number]
@@ -58,39 +57,39 @@ class IndexVariable(VariableBehavior):
         return value
 
     def update_value(self, new_value):
-        """
-        Updates the value of the index of refraction at the specified surface.
+        """Updates the value of the index of refraction at the specified surface.
 
         Args:
             new_value (float): The new value of the index of refraction.
+
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
         self.optic.set_index(new_value, self.surface_number)
 
     def scale(self, value):
-        """
-        Scale the value of the variable for improved optimization performance.
+        """Scale the value of the variable for improved optimization performance.
 
         Args:
             value: The value to scale
+
         """
         return value - 1.5
 
     def inverse_scale(self, scaled_value):
-        """
-        Inverse scale the value of the variable.
+        """Inverse scale the value of the variable.
 
         Args:
             scaled_value: The scaled value to inverse scale
+
         """
         return scaled_value + 1.5
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Refractive Index, Surface {self.surface_number}"

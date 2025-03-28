@@ -11,17 +11,19 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class BaseAperture(ABC):
-    """
-    Base class for physical apertures.
+    """Base class for physical apertures.
 
     Methods:
         clip(RealRays): Clips the given rays based on the aperture's shape.
+
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -32,18 +34,17 @@ class BaseAperture(ABC):
     @property
     @abstractmethod
     def extent(self):
-        """
-        Returns the extent of the aperture.
+        """Returns the extent of the aperture.
 
         Returns:
             tuple: The extent of the aperture in the x and y directions.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     @abstractmethod
     def contains(self, x, y):
-        """
-        Checks if the given point is inside the aperture.
+        """Checks if the given point is inside the aperture.
 
         Args:
             x (np.ndarray): The x-coordinate of the point.
@@ -52,61 +53,58 @@ class BaseAperture(ABC):
         Returns:
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def clip(self, rays):
-        """
-        Clips the given rays based on the aperture's shape.
+        """Clips the given rays based on the aperture's shape.
 
         Args:
             rays (RealRays): List of rays to be clipped.
 
         Returns:
             list: List of clipped rays.
+
         """
         inside = self.contains(rays.x, rays.y)
         rays.clip(~inside)
 
     @abstractmethod
     def scale(self, scale_factor):
-        """
-        Scales the aperture by the given factor.
+        """Scales the aperture by the given factor.
 
         Args:
             scale_factor (float): The factor by which to scale the aperture.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def to_dict(self):
-        """
-        Convert the aperture to a dictionary.
+        """Convert the aperture to a dictionary.
 
         Returns:
             dict: The dictionary representation of the aperture.
+
         """
-        return {
-            'type': self.__class__.__name__
-        }
+        return {"type": self.__class__.__name__}
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create an aperture from a dictionary representation.
+        """Create an aperture from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the aperture.
 
         Returns:
             BaseAperture: The aperture object.
+
         """
-        aperture_type = data['type']
+        aperture_type = data["type"]
         return cls._registry[aperture_type].from_dict(data)
 
-    def view(self, nx=256, ny=256,
-             ax=None, buffer=1.1, **kwargs):
-        """
-        Visualize the aperture.
+    def view(self, nx=256, ny=256, ax=None, buffer=1.1, **kwargs):
+        """Visualize the aperture.
 
         Args:
             nx (int): The number of points in the x-direction.
@@ -115,6 +113,7 @@ class BaseAperture(ABC):
             buffer (float): The buffer around the aperture.
             **kwargs: Additional keyword arguments to pass to the plot
                 function.
+
         """
         x_min, x_max, y_min, y_max = self.extent
         x_min *= buffer
@@ -128,9 +127,9 @@ class BaseAperture(ABC):
         X, Y = np.meshgrid(x, y)
         Z = self.contains(X, Y)
         ax.contourf(X, Y, Z, **kwargs)
-        ax.set_xlabel('X [mm]')
-        ax.set_ylabel('Y [mm]')
-        ax.set_aspect('equal')
+        ax.set_xlabel("X [mm]")
+        ax.set_ylabel("Y [mm]")
+        ax.set_aspect("equal")
 
     def __or__(self, other):
         """Union: a point is inside if it is in either region."""
@@ -150,24 +149,25 @@ class BaseAperture(ABC):
 
 
 class BaseBooleanAperture(BaseAperture):
-    """
-    Base class for boolean operations on apertures.
+    """Base class for boolean operations on apertures.
 
     Args:
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
+
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         self.a = a
         self.b = b
 
     @property
     def extent(self):
-        """
-        Returns the extent of the aperture.
+        """Returns the extent of the aperture.
 
         Returns:
             tuple: The extent of the aperture in the x and y directions.
+
         """
         a_extent = self.a.extent
         b_extent = self.b.extent
@@ -179,8 +179,7 @@ class BaseBooleanAperture(BaseAperture):
 
     @abstractmethod
     def contains(self, x, y):
-        """
-        Checks if the given point is inside the aperture.
+        """Checks if the given point is inside the aperture.
 
         Args:
             x (np.ndarray): The x-coordinate of the point.
@@ -189,63 +188,61 @@ class BaseBooleanAperture(BaseAperture):
         Returns:
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def scale(self, scale_factor):
-        """
-        Scales the aperture by the given factor.
+        """Scales the aperture by the given factor.
 
         Args:
             scale_factor (float): The factor by which to scale the aperture.
+
         """
         self.a.scale(scale_factor)
         self.b.scale(scale_factor)
 
     def to_dict(self):
-        """
-        Convert the aperture to a dictionary.
+        """Convert the aperture to a dictionary.
 
         Returns:
             dict: The dictionary representation of the aperture.
+
         """
         data = super().to_dict()
-        data.update({
-            'a': self.a.to_dict(),
-            'b': self.b.to_dict()
-        })
+        data.update({"a": self.a.to_dict(), "b": self.b.to_dict()})
         return data
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create an aperture from a dictionary representation.
+        """Create an aperture from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the aperture.
 
         Returns:
             BaseBooleanAperture: The aperture object.
+
         """
-        a = BaseAperture.from_dict(data['a'])
-        b = BaseAperture.from_dict(data['b'])
+        a = BaseAperture.from_dict(data["a"])
+        b = BaseAperture.from_dict(data["b"])
         return cls(a, b)
 
 
 class UnionAperture(BaseBooleanAperture):
-    """
-    Class for union of two apertures.
+    """Class for union of two apertures.
 
     Args:
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
+
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
     def contains(self, x, y):
-        """
-        Checks if the given point is inside either aperture.
+        """Checks if the given point is inside either aperture.
 
         Args:
             x (np.ndarray): The x-coordinate of the point.
@@ -254,24 +251,25 @@ class UnionAperture(BaseBooleanAperture):
         Returns:
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
+
         """
         return np.logical_or(self.a.contains(x, y), self.b.contains(x, y))
 
 
 class IntersectionAperture(BaseBooleanAperture):
-    """
-    Class for intersection of two apertures.
+    """Class for intersection of two apertures.
 
     Args:
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
+
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
     def contains(self, x, y):
-        """
-        Checks if the given point is inside the aperture.
+        """Checks if the given point is inside the aperture.
 
         Args:
             x (np.ndarray): The x-coordinate of the point.
@@ -280,24 +278,25 @@ class IntersectionAperture(BaseBooleanAperture):
         Returns:
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
+
         """
         return np.logical_and(self.a.contains(x, y), self.b.contains(x, y))
 
 
 class DifferenceAperture(BaseBooleanAperture):
-    """
-    Class for difference of two apertures.
+    """Class for difference of two apertures.
 
     Args:
         a (BaseAperture): The first aperture.
         b (BaseAperture): The second aperture.
+
     """
+
     def __init__(self, a: BaseAperture, b: BaseAperture):
         super().__init__(a, b)
 
     def contains(self, x, y):
-        """
-        Checks if the given point is inside the aperture.
+        """Checks if the given point is inside the aperture.
 
         Args:
             x (np.ndarray): The x-coordinate of the point.
@@ -306,6 +305,9 @@ class DifferenceAperture(BaseBooleanAperture):
         Returns:
             np.ndarray: Boolean array indicating if the point is inside the
                 aperture
+
         """
-        return np.logical_and(self.a.contains(x, y),
-                              np.logical_not(self.b.contains(x, y)))
+        return np.logical_and(
+            self.a.contains(x, y),
+            np.logical_not(self.b.contains(x, y)),
+        )

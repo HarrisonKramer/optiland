@@ -17,14 +17,15 @@ terms with even exponents, ensuring symmetry about the optical axis.
 
 Kramer Harrison, 2024
 """
+
 import numpy as np
-from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
+
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 
 class EvenAsphere(NewtonRaphsonGeometry):
-    """
-    Represents an even asphere geometry defined as:
+    """Represents an even asphere geometry defined as:
 
     z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Ci * r^(2i))
 
@@ -51,21 +52,30 @@ class EvenAsphere(NewtonRaphsonGeometry):
         coefficients (list, optional): The coefficients of the asphere.
             Defaults to an empty list, indicating no aspheric coefficients are
             used.
+
     """
 
-    def __init__(self, coordinate_system, radius, conic=0.0,
-                 tol=1e-10, max_iter=100, coefficients=[]):
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        conic=0.0,
+        tol=1e-10,
+        max_iter=100,
+        coefficients=None,
+    ):
+        if coefficients is None:
+            coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = coefficients
         self.is_symmetric = True
         self.order = 2  # used for optimization scaling
 
     def __str__(self):
-        return 'Even Asphere'
+        return "Even Asphere"
 
     def sag(self, x=0, y=0):
-        """
-        Calculates the sag of the asphere at the given coordinates.
+        """Calculates the sag of the asphere at the given coordinates.
 
         Args:
             x (float, np.ndarray, optional): The x-coordinate(s).
@@ -75,18 +85,17 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         Returns:
             float: The sag value at the given coordinates.
+
         """
         r2 = x**2 + y**2
-        z = r2 / (self.radius *
-                  (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
             z += Ci * r2 ** (i + 1)
 
         return z
 
     def _surface_normal(self, x, y):
-        """
-        Calculates the surface normal of the asphere at the given x and y
+        """Calculates the surface normal of the asphere at the given x and y
         position.
 
         Args:
@@ -95,16 +104,17 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
         r2 = x**2 + y**2
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k)*r2 / self.radius**2)
+        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
         for i, Ci in enumerate(self.c):
-            dfdx += 2 * (i+1) * x * Ci * r2**i
-            dfdy += 2 * (i+1) * y * Ci * r2**i
+            dfdx += 2 * (i + 1) * x * Ci * r2**i
+            dfdy += 2 * (i + 1) * y * Ci * r2**i
 
         mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
 
@@ -115,11 +125,11 @@ class EvenAsphere(NewtonRaphsonGeometry):
         return nx, ny, nz
 
     def to_dict(self):
-        """
-        Converts the geometry to a dictionary.
+        """Converts the geometry to a dictionary.
 
         Returns:
             dict: The dictionary representation of the geometry.
+
         """
         data = super().to_dict()
         data["coefficients"] = self.c
@@ -128,25 +138,24 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates an asphere from a dictionary representation.
+        """Creates an asphere from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the asphere.
 
         Returns:
             EvenAsphere: The asphere.
+
         """
-        required_keys = {'cs', 'radius'}
+        required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
-        cs = CoordinateSystem.from_dict(data['cs'])
-        conic = data.get('conic', 0.0)
-        tol = data.get('tol', 1e-10)
-        max_iter = data.get('max_iter', 100)
-        coefficients = data.get('coefficients', [])
+        cs = CoordinateSystem.from_dict(data["cs"])
+        conic = data.get("conic", 0.0)
+        tol = data.get("tol", 1e-10)
+        max_iter = data.get("max_iter", 100)
+        coefficients = data.get("coefficients", [])
 
-        return cls(cs, data['radius'],
-                   conic, tol, max_iter, coefficients)
+        return cls(cs, data["radius"], conic, tol, max_iter, coefficients)

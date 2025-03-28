@@ -9,8 +9,7 @@ Kramer Harrison, 2024
 
 
 class ParaxialOperand:
-    """
-    A class representing paraxial operands.
+    """A class representing paraxial operands.
 
     This class provides static methods to calculate various paraxial
         properties of an optic.
@@ -32,6 +31,7 @@ class ParaxialOperand:
         XPL(optic): Returns the exit pupil distance of the optic.
         XPD(optic): Returns the exit pupil diameter of the optic.
         magnification(optic): Returns the magnification of the optic.
+
     """
 
     @staticmethod

@@ -10,8 +10,9 @@ BaseMaterial, Aperture, FieldGroup, WavelengthGroup, etc.
 Kramer Harrison, 2024
 """
 
-import os
 import json
+import os
+
 from optiland.optic import Optic
 
 
@@ -30,10 +31,11 @@ def load_obj_from_json(cls, filepath):
 
     Returns:
         An instance of the class
+
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"File '{filepath}' does not exist.")
-    with open(filepath, 'r') as f:
+    with open(filepath) as f:
         data = json.load(f)
     return cls.from_dict(data)
 
@@ -49,8 +51,9 @@ def save_obj_to_json(obj, filepath):
     Args:
         obj: The object to save.
         filepath: The path to the JSON file.
+
     """
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(obj.to_dict(), f, indent=4)
 
 
@@ -62,6 +65,7 @@ def load_optiland_file(filepath):
 
     Returns:
         An Optic instance.
+
     """
     return load_obj_from_json(Optic, filepath)
 
@@ -72,5 +76,6 @@ def save_optiland_file(obj, filepath):
     Args:
         obj: The Optic to save.
         filepath: The path to the JSON file.
+
     """
     save_obj_to_json(obj, filepath)
