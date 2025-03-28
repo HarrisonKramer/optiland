@@ -22,7 +22,7 @@ How to Contribute
 Guidelines
 ----------
 
-- **Coding Style:** Follow the project's style guidelines. We use automated tools (e.g., [Ruff](https://beta.ruff.rs/)) to enforce code formatting and linting.
+- **Coding Style:** Follow the project's style guidelines. We use automated tools (e.g., [Ruff](https://docs.astral.sh/ruff/)) to enforce code formatting and linting.
 - **Testing:** Write tests for new features and bug fixes. Ensure all tests pass before submitting a pull request.
 - **Documentation:** Update documentation and examples as necessary.
 - **Commit Messages:** Use clear and descriptive commit messages.
@@ -41,9 +41,20 @@ General Style Rules
 Formatting and Linting
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- Use Ruff for formatting and linting::
+We use `Ruff <https://docs.astral.sh/ruff/>`_ for both linting and formatting. Formatting and linting are **automatically enforced** in pull requests through a GitHub Action and must pass before merging.
 
-      hatch run fmt
+To ensure compliance before committing, install `pre-commit` and set up the hook::
+
+    pip install pre-commit
+    pre-commit install
+
+To manually run Ruff checks before committing, use::
+
+    pre-commit run --all-files
+
+Ruff will automatically apply fixes for formatting and linting issues where possible.
+
+Key Formatting Rules:
 
 - Keep line length to a maximum of **88 characters**.
 - Use spaces instead of tabs for indentation.
