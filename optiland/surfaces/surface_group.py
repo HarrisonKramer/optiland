@@ -9,7 +9,6 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-from typing import List
 
 import numpy as np
 
@@ -27,7 +26,7 @@ class SurfaceGroup:
 
     """
 
-    def __init__(self, surfaces: List[Surface] = None):
+    def __init__(self, surfaces: list[Surface] = None):
         """Initializes a new instance of the SurfaceGroup class.
 
         Args:

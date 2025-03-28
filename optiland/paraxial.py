@@ -410,10 +410,7 @@ class Paraxial:
         self._process_input(u)
         self._process_input(z)
 
-        if reverse:
-            surfaces = self.surfaces.inverted()
-        else:
-            surfaces = self.surfaces
+        surfaces = self.surfaces.inverted() if reverse else self.surfaces
 
         rays = ParaxialRays(y, u, z, wavelength)
         surfaces.trace(rays, skip)

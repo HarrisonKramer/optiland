@@ -117,10 +117,7 @@ class FFTPSF(Wavefront):
 
         """
         _, ax = plt.subplots(figsize=figsize)
-        if log:
-            norm = LogNorm()
-        else:
-            norm = None
+        norm = LogNorm() if log else None
 
         # replace values <= 0 with smallest non-zero value in image
         image[image <= 0] = np.min(image[image > 0])

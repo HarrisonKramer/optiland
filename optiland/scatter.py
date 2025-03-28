@@ -82,10 +82,7 @@ def scatter(L, M, N, nx, ny, nz, get_point):  # pragma: no cover
         r = np.array((L, M, N))
 
         # Arbitrary vector to use as a reference for the cross product
-        if L < 0.999:
-            arbitrary_vector = np.array((1, 0, 0))
-        else:
-            arbitrary_vector = np.array((0, 1, 0))
+        arbitrary_vector = np.array((1, 0, 0)) if L < 0.999 else np.array((0, 1, 0))
 
         # First basis vector for the local coordinate system
         a = np.cross(n, arbitrary_vector)
@@ -134,7 +131,7 @@ def scatter_parallel(L, M, N, nx, ny, nz, get_point):  # pragma: no cover
     return v
 
 
-class BaseBSDF(ABC):
+class BaseBSDF(ABC):  # noqa: B024
     """Abstract base class for Bidirectional Scattering Distribution Function
     (BSDF).
 

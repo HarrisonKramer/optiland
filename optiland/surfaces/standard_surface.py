@@ -260,10 +260,7 @@ class Surface:
             return False
 
         cs = self.geometry.cs
-        if cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0:
-            return False
-
-        return True
+        return not (cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0)
 
     def to_dict(self):
         """Returns a dictionary representation of the surface."""

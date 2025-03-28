@@ -54,9 +54,11 @@ class OptimizationProblem:
         min_val=None,
         max_val=None,
         weight=1,
-        input_data={},
+        input_data=None,
     ):
         """Add an operand to the merit function"""
+        if input_data is None:
+            input_data = {}
         self.operands.add(operand_type, target, min_val, max_val, weight, input_data)
 
     def add_variable(self, optic, variable_type, **kwargs):
@@ -311,10 +313,7 @@ class LeastSquares(OptimizerGeneric):
         ]
         bounds = (lower, upper)
 
-        if disp:
-            verbose = 2
-        else:
-            verbose = 0
+        verbose = 2 if disp else 0
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -427,10 +426,7 @@ class DifferentialEvolution(OptimizerGeneric):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
-            if workers == -1:
-                updating = "deferred"
-            else:
-                updating = "immediate"
+            updating = "deferred" if workers == -1 else "immediate"
 
             result = optimize.differential_evolution(
                 self._fun,
@@ -498,7 +494,6 @@ class SHGO(OptimizerGeneric):
                 bounds=bounds,
                 workers=workers,
                 callback=callback,
-                *args,
                 **kwargs,
             )
         return result
@@ -558,7 +553,6 @@ class BasinHopping(OptimizerGeneric):
                 x0=x0,
                 niter=niter,
                 callback=callback,
-                *args,
                 **kwargs,
             )
         return result
