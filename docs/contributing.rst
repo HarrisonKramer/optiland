@@ -82,7 +82,7 @@ Key Formatting Rules:
 Docstrings and Comments
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Write docstrings for all public functions, classes, and modules using the `**Google** docstring style <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html/>`_.
+- Write docstrings for all public functions, classes, and modules using the `Google docstring style <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html/>`_.
 - Use inline comments sparingly and only when necessary to explain complex logic.
 
 Testing
