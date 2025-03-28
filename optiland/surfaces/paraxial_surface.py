@@ -56,8 +56,7 @@ class ParaxialSurface(Surface):
         )
 
     def _interact(self, rays):
-        """
-        Interacts the rays with the surface by either reflecting or refracting
+        """Interacts the rays with the surface by either reflecting or refracting
 
         Note that phase is added assuming a thin lens as a phase
         transformation. A cosine correction is applied for rays propagating
@@ -68,6 +67,7 @@ class ParaxialSurface(Surface):
 
         Returns:
             RealRays: The refracted rays.
+
         """
         # add optical path length - workaround for now
         # TODO: develop more robust method
@@ -100,7 +100,11 @@ class ParaxialSurface(Surface):
         # if there is a coating, modify ray properties
         if self.coating:
             rays = self.coating.interact(
-                rays, reflect=self.is_reflective, nx=0, ny=0, nz=1
+                rays,
+                reflect=self.is_reflective,
+                nx=0,
+                ny=0,
+                nz=1,
             )
         else:
             # update polarization matrices, if PolarizedRays
@@ -115,11 +119,11 @@ class ParaxialSurface(Surface):
         return rays
 
     def _trace_paraxial(self, rays):
-        """
-        Traces paraxial rays through the surface.
+        """Traces paraxial rays through the surface.
 
         Args:
             ParaxialRays: The paraxial rays to be traced.
+
         """
         # reset recorded information
         self.reset()
@@ -151,9 +155,7 @@ class ParaxialSurface(Surface):
         return rays
 
     def to_dict(self):
-        """
-        Returns a dictionary representation of the surface.
-        """
+        """Returns a dictionary representation of the surface."""
         return {
             "type": self.__class__.__name__,
             "focal_length": self.f,
@@ -176,6 +178,7 @@ class ParaxialSurface(Surface):
 
         Returns:
             Surface: The surface.
+
         """
         focal_length = data["focal_length"]
         geometry = BaseGeometry.from_dict(data["geometry"])

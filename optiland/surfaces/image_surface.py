@@ -14,14 +14,14 @@ from optiland.surfaces.standard_surface import Surface
 
 
 class ImageSurface(Surface):
-    """
-    Represents an image surface in an optical system.
+    """Represents an image surface in an optical system.
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
         material_pre (BaseMaterial): The material before the surface.
         aperture (BaseAperture, optional): The aperture of the surface.
             Defaults to None.
+
     """
 
     def __init__(
@@ -40,11 +40,11 @@ class ImageSurface(Surface):
         )
 
     def _trace_paraxial(self, rays: ParaxialRays):
-        """
-        Traces paraxial rays through the surface.
+        """Traces paraxial rays through the surface.
 
         Args:
             rays (ParaxialRays): The paraxial rays to be traced.
+
         """
         # reset recorded information
         self.reset()
@@ -64,13 +64,13 @@ class ImageSurface(Surface):
         return rays
 
     def _interact(self, rays):
-        """
-        Interacts rays with the surface.
+        """Interacts rays with the surface.
 
         Args:
             rays: The rays to be interacted with the surface.
 
         Returns:
             RealRays: The modified rays after interaction with the surface.
+
         """
         return rays

@@ -31,8 +31,7 @@ from optiland.wavelength import WavelengthGroup
 
 
 class Optic:
-    """
-    The Optic class represents an optical system.
+    """The Optic class represents an optical system.
 
     Attributes:
         aperture (Aperture): The aperture of the optical system.
@@ -46,6 +45,7 @@ class Optic:
             optical system.
         aberrations (Aberrations): The aberrations analysis helper class for
             the optical system.
+
     """
 
     def __init__(self, name: str = None):
@@ -96,7 +96,7 @@ class Optic:
         """PolarizationState: the polarization state of the optic"""
         if self.polarization == "ignore":
             return None
-        elif isinstance(self.polarization, PolarizationState):
+        if isinstance(self.polarization, PolarizationState):
             return self.polarization
 
     def add_surface(
@@ -109,8 +109,7 @@ class Optic:
         material="air",
         **kwargs,
     ):
-        """
-        Adds a new surface to the optic.
+        """Adds a new surface to the optic.
 
         Args:
             new_surface (Surface, optional): The new surface to add. If not
@@ -128,6 +127,7 @@ class Optic:
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
+
         """
         self.surface_group.add_surface(
             new_surface=new_surface,
@@ -140,8 +140,7 @@ class Optic:
         )
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
-        """
-        Add a field to the optical system.
+        """Add a field to the optical system.
 
         Args:
             y (float): The y-coordinate of the field.
@@ -151,50 +150,51 @@ class Optic:
                 factor. Defaults to 0.0.
             vy (float, optional): The y-component of the field's vignetting
                 factor. Defaults to 0.0.
+
         """
         new_field = Field(self.field_type, x, y, vx, vy)
         self.fields.add_field(new_field)
 
     def add_wavelength(self, value, is_primary=False, unit="um"):
-        """
-        Add a wavelength to the optical system.
+        """Add a wavelength to the optical system.
 
         Args:
             value (float): The value of the wavelength.
             is_primary (bool, optional): Whether the wavelength is the primary
                 wavelength. Defaults to False.
             unit (str, optional): The unit of the wavelength. Defaults to 'um'.
+
         """
         self.wavelengths.add_wavelength(value, is_primary, unit)
 
     def set_aperture(self, aperture_type, value):
-        """
-        Set the aperture of the optical system.
+        """Set the aperture of the optical system.
 
         Args:
             aperture_type (str): The type of the aperture.
             value (float): The value of the aperture.
+
         """
         self.aperture = Aperture(aperture_type, value)
 
     def set_field_type(self, field_type):
-        """
-        Set the type of field used in the optical system.
+        """Set the type of field used in the optical system.
 
         Args:
             field_type (str): The type of field.
+
         """
         if field_type not in ["angle", "object_height"]:
             raise ValueError('Invalid field type. Must be "angle" or "object_height".')
         self.field_type = field_type
 
     def set_radius(self, value, surface_number):
-        """
-        Set the radius of curvature of a surface.
+        """Set the radius of curvature of a surface.
 
         Args:
             value (float): The value of the radius.
             surface_number (int): The index of the surface.
+
         """
         surface = self.surface_group.surfaces[surface_number]
 
@@ -207,23 +207,23 @@ class Optic:
             surface.geometry.radius = value
 
     def set_conic(self, value, surface_number):
-        """
-        Set the conic constant of a surface.
+        """Set the conic constant of a surface.
 
         Args:
             value (float): The value of the conic constant.
             surface_number (int): The index of the surface.
+
         """
         surface = self.surface_group.surfaces[surface_number]
         surface.geometry.k = value
 
     def set_thickness(self, value, surface_number):
-        """
-        Set the thickness of a surface.
+        """Set the thickness of a surface.
 
         Args:
             value (float): The value of the thickness.
             surface_number (int): The index of the surface.
+
         """
         positions = self.surface_group.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
@@ -233,12 +233,12 @@ class Optic:
             surface.geometry.cs.z = float(positions[k])
 
     def set_index(self, value, surface_number):
-        """
-        Set the index of refraction of a surface.
+        """Set the index of refraction of a surface.
 
         Args:
             value (float): The value of the index of refraction.
             surface_number (int): The index of the surface.
+
         """
         surface = self.surface_group.surfaces[surface_number]
         new_material = IdealMaterial(n=value, k=0)
@@ -248,40 +248,41 @@ class Optic:
         surface_post.material_pre = new_material
 
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
-        """
-        Set the asphere coefficient on a surface
+        """Set the asphere coefficient on a surface
 
         Args:
             value (float): The value of aspheric coefficient
             surface_number (int): The index of the surface.
             aspher_coeff_idx (int): index of the aspheric coefficient on the
                 surface
+
         """
         surface = self.surface_group.surfaces[surface_number]
         surface.geometry.c[aspher_coeff_idx] = value
 
     def set_polarization(self, polarization: Union[PolarizationState, str]):
-        """
-        Set the polarization state of the optic.
+        """Set the polarization state of the optic.
 
-        Parameters:
+        Parameters
+        ----------
             polarization (Union[PolarizationState, str]): The polarization
                 state to set. It can be either a `PolarizationState` object or
                 'ignore'.
+
         """
         if isinstance(polarization, str) and polarization != "ignore":
             raise ValueError(
                 "Invalid polarization state. Must be either "
-                'PolarizationState or "ignore".'
+                'PolarizationState or "ignore".',
             )
         self.polarization = polarization
 
     def scale_system(self, scale_factor):
-        """
-        Scales the optical system by a given scale factor.
+        """Scales the optical system by a given scale factor.
 
         Args:
             scale_factor (float): The factor by which to scale the system.
+
         """
         num_surfaces = self.surface_group.num_surfaces
         radii = self.surface_group.radii
@@ -319,8 +320,7 @@ class Optic:
         title=None,
         reference=None,
     ):
-        """
-        Draw a 2D representation of the optical system.
+        """Draw a 2D representation of the optical system.
 
         Args:
             fields (str or list, optional): The fields to be displayed.
@@ -339,6 +339,7 @@ class Optic:
                 None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
         """
         viewer = OpticViewer(self)
         viewer.view(
@@ -363,8 +364,7 @@ class Optic:
         dark_mode=False,
         reference=None,
     ):
-        """
-        Draw a 3D representation of the optical system.
+        """Draw a 3D representation of the optical system.
 
         Args:
             fields (str or list, optional): The fields to be displayed.
@@ -381,6 +381,7 @@ class Optic:
                 False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
         """
         viewer = OpticViewer3D(self)
         viewer.view(
@@ -399,9 +400,7 @@ class Optic:
         viewer.view()
 
     def reset(self):
-        """
-        Reset the optical system to its initial state.
-        """
+        """Reset the optical system to its initial state."""
         self.aperture = None
         self.field_type = None
 
@@ -420,8 +419,7 @@ class Optic:
         self.obj_space_telecentric = False
 
     def n(self, wavelength="primary"):
-        """
-        Get the refractive indices of the surfaces.
+        """Get the refractive indices of the surfaces.
 
         Args:
             wavelength (float or str, optional): The wavelength for which to
@@ -429,6 +427,7 @@ class Optic:
 
         Returns:
             numpy.ndarray: The refractive indices of the surfaces.
+
         """
         if wavelength == "primary":
             wavelength = self.primary_wavelength
@@ -438,8 +437,7 @@ class Optic:
         return np.array(n)
 
     def update_paraxial(self):
-        """
-        Update the semi-aperture of the surfaces based on the paraxial
+        """Update the semi-aperture of the surfaces based on the paraxial
         analysis.
         """
         ya, _ = self.paraxial.marginal_ray()
@@ -451,9 +449,7 @@ class Optic:
             self.update_normalization(surface)
 
     def update_normalization(self, surface) -> None:
-        """
-        Update the normalization radius of non-spherical surfaces.
-        """
+        """Update the normalization radius of non-spherical surfaces."""
         if surface.surface_type in [
             "even_asphere",
             "odd_asphere",
@@ -466,9 +462,7 @@ class Optic:
             surface.geometry.norm_radius = surface.semi_aperture * 1.1
 
     def update(self) -> None:
-        """
-        Update the surface properties (pickups, solves, paraxial properties).
-        """
+        """Update the surface properties (pickups, solves, paraxial properties)."""
         self.pickups.apply()
         self.solves.apply()
 
@@ -480,14 +474,14 @@ class Optic:
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the
-        optical axis at the image location."""
+        optical axis at the image location.
+        """
         ya, ua = self.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
         self.surface_group.surfaces[-1].geometry.cs.z -= offset
 
     def trace(self, Hx, Hy, wavelength, num_rays=100, distribution="hexapolar"):
-        """
-        Trace a distribution of rays through the optical system.
+        """Trace a distribution of rays through the optical system.
 
         Args:
             Hx (float or numpy.ndarray): The normalized x field coordinate.
@@ -500,10 +494,11 @@ class Optic:
 
         Returns:
             RealRays: The RealRays object containing the traced rays.
+
         """
-        if not np.all((-1 <= Hx) & (Hx <= 1)) or not np.all((-1 <= Hy) & (Hy <= 1)):
+        if not np.all((Hx >= -1) & (Hx <= 1)) or not np.all((Hy >= -1) & (Hy <= 1)):
             raise ValueError(
-                "Normalized field coordinates Hx and Hy must be within (-1, 1)"
+                "Normalized field coordinates Hx and Hy must be within (-1, 1)",
             )
 
         if isinstance(distribution, str):
@@ -524,8 +519,7 @@ class Optic:
         return rays
 
     def trace_generic(self, Hx, Hy, Px, Py, wavelength):
-        """
-        Trace generic rays through the optical system.
+        """Trace generic rays through the optical system.
 
         Args:
             Hx (float or numpy.ndarray): The normalized x field coordinate.
@@ -533,15 +527,16 @@ class Optic:
             Px (float or numpy.ndarray): The normalized x pupil coordinate.
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
+
         """
-        if not np.all((-1 <= Hx) & (Hx <= 1)) or not np.all((-1 <= Hy) & (Hy <= 1)):
+        if not np.all((Hx >= -1) & (Hx <= 1)) or not np.all((Hy >= -1) & (Hy <= 1)):
             raise ValueError(
-                "Normalized field coordinates Hx and Hy must be within (-1, 1)"
+                "Normalized field coordinates Hx and Hy must be within (-1, 1)",
             )
 
-        if not np.all((-1 <= Px) & (Px <= 1)) or not np.all((-1 <= Py) & (Py <= 1)):
+        if not np.all((Px >= -1) & (Px <= 1)) or not np.all((Py >= -1) & (Py <= 1)):
             raise ValueError(
-                "Normalized pupil coordinates Px and Py must be within (-1, 1)"
+                "Normalized pupil coordinates Px and Py must be within (-1, 1)",
             )
 
         vx, vy = self.fields.get_vig_factor(Hx, Hy)
@@ -552,11 +547,11 @@ class Optic:
         # assure all variables are arrays of the same size
         max_size = max([np.size(arr) for arr in [Hx, Hy, Px, Py]])
         Hx, Hy, Px, Py = [
-            np.full(max_size, value)
-            if isinstance(value, (float, int))
-            else value
-            if isinstance(value, np.ndarray)
-            else None
+            (
+                np.full(max_size, value)
+                if isinstance(value, (float, int))
+                else value if isinstance(value, np.ndarray) else None
+            )
             for value in [Hx, Hy, Px, Py]
         ]
 
@@ -569,11 +564,11 @@ class Optic:
         return rays
 
     def to_dict(self):
-        """
-        Convert the optical system to a dictionary.
+        """Convert the optical system to a dictionary.
 
         Returns:
             dict: The dictionary representation of the optical system.
+
         """
         data = {
             "version": 1.0,
@@ -592,14 +587,14 @@ class Optic:
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create an optical system from a dictionary.
+        """Create an optical system from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the optical system.
 
         Returns:
             Optic: The optical system.
+
         """
         optic = cls()
         optic.aperture = Aperture.from_dict(data["aperture"])

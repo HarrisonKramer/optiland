@@ -14,8 +14,7 @@ from optiland.visualization.utils import revolve_contour, transform, transform_3
 
 
 class Surface2D:
-    """
-    A class used to represent a 2D surface for visualization.
+    """A class used to represent a 2D surface for visualization.
 
     Args:
         surf (Surface): The surface object containing the geometry.
@@ -28,6 +27,7 @@ class Surface2D:
     Methods:
         plot(ax):
             Plots the surface on the given matplotlib axis.
+
     """
 
     def __init__(self, surface, extent):
@@ -35,12 +35,12 @@ class Surface2D:
         self.extent = extent
 
     def plot(self, ax):
-        """
-        Plots the surface on the given matplotlib axis.
+        """Plots the surface on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 surface will be plotted.
+
         """
         x, y, z = self._compute_sag()
 
@@ -50,12 +50,12 @@ class Surface2D:
         ax.plot(z, y, "gray")
 
     def _compute_sag(self):
-        """
-        Computes the sag of the surface in local coordinates and handles
+        """Computes the sag of the surface in local coordinates and handles
         clipping due to physical apertures.
 
         Returns:
             tuple: A tuple containing arrays of x, y, and z coordinates.
+
         """
         # local coordinates
         x = np.zeros(128)
@@ -73,8 +73,7 @@ class Surface2D:
 
 
 class Surface3D(Surface2D):
-    """
-    A class used to represent a 3D surface for visualization.
+    """A class used to represent a 3D surface for visualization.
 
     Args:
         surf (Surface): The surface object containing the geometry.
@@ -87,26 +86,26 @@ class Surface3D(Surface2D):
     Methods:
         plot(renderer):
             Plots the 3D surface using the provided VTK renderer.
+
     """
 
     def __init__(self, surface, extent):
         super().__init__(surface, extent)
 
     def plot(self, renderer):
-        """
-        Plots the surface on the given renderer.
+        """Plots the surface on the given renderer.
 
         Args:
             renderer (vtkRenderer): The renderer to which the surface actor
                 will be added.
+
         """
         actor = self.get_surface()
         self._configure_material(actor)
         renderer.AddActor(actor)
 
     def get_surface(self):
-        """
-        Retrieves the surface actor based on the symmetry of the surface
+        """Retrieves the surface actor based on the symmetry of the surface
         geometry.
 
         If the surface geometry is symmetric, it retrieves a symmetric surface
@@ -115,6 +114,7 @@ class Surface3D(Surface2D):
         Returns:
             actor: The surface actor, either symmetric or asymmetric, based on
                 the surface geometry.
+
         """
         has_symmetric_aperture = (
             type(self.surf.aperture) is RadialAperture
@@ -128,14 +128,14 @@ class Surface3D(Surface2D):
         return actor
 
     def _get_symmetric_surface(self):
-        """
-        Generates a symmetric surface actor by computing the sag, revolving
+        """Generates a symmetric surface actor by computing the sag, revolving
         the contour, transforming it in 3D, and configuring its material
         properties.
 
         Returns:
             vtkActor: The configured 3D actor representing the symmetric
                 surface.
+
         """
         x, y, z = self._compute_sag()
         actor = revolve_contour(x, y, z)
@@ -144,8 +144,7 @@ class Surface3D(Surface2D):
         return actor
 
     def _get_asymmetric_surface(self):
-        """
-        Generates an asymmetric surface using Delaunay triangulation and
+        """Generates an asymmetric surface using Delaunay triangulation and
         returns a VTK actor for rendering.
 
         This method computes the 3D sag values, creates a VTK poly data object
@@ -155,6 +154,7 @@ class Surface3D(Surface2D):
 
         Returns:
             vtk.vtkActor: A VTK actor representing the asymmetric surface.
+
         """
         x, y, z = self._compute_sag_3d()
 
@@ -211,8 +211,7 @@ class Surface3D(Surface2D):
         return actor
 
     def _configure_material(self, actor):
-        """
-        Configures the material properties of a given actor.
+        """Configures the material properties of a given actor.
 
         This method sets the color, ambient, diffuse, specular, and specular
         power properties of the actor's material.
@@ -222,6 +221,7 @@ class Surface3D(Surface2D):
 
         Returns:
             The actor with updated material properties.
+
         """
         actor.GetProperty().SetColor(1, 1, 1)
         actor.GetProperty().SetAmbient(0.5)
@@ -232,8 +232,7 @@ class Surface3D(Surface2D):
         return actor
 
     def _compute_sag_3d(self):
-        """
-        Computes the 3D sag (surface height) of the optical surface within the
+        """Computes the 3D sag (surface height) of the optical surface within the
         given extent.
 
         This method calculates the sag of the optical surface over a 2D grid
@@ -243,6 +242,7 @@ class Surface3D(Surface2D):
             tuple: A tuple containing three numpy arrays (x, y, z)
                 representing the coordinates of the points on the surface
                 within the maximum radial extent.
+
         """
         if self.surf.aperture is not None:
             x_min, x_max, y_min, y_max = self.surf.aperture.extent

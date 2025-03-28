@@ -16,8 +16,7 @@ from optiland.materials.base import BaseMaterial
 
 
 class MaterialFile(BaseMaterial):
-    """
-    Represents a material based on a material YAML file from the
+    """Represents a material based on a material YAML file from the
     refractiveindex.info database.
 
     Material refractive indices are based on various dispersion formulas or
@@ -39,6 +38,7 @@ class MaterialFile(BaseMaterial):
             given wavelength.
         k(wavelength): Retrieves the extinction coefficient of the material at
             a given wavelength.
+
     """
 
     def __init__(self, filename):
@@ -70,21 +70,20 @@ class MaterialFile(BaseMaterial):
         self._parse_file(data)
 
     def n(self, wavelength):
-        """
-        Calculates the refractive index of the material at given wavelengths.
+        """Calculates the refractive index of the material at given wavelengths.
 
         Args:
             wavelength (float or numpy.ndarray): The wavelength(s) in microns.
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         func = self.formula_map[self._n_formula]
         return func(wavelength)
 
     def k(self, wavelength):
-        """
-        Retrieves the extinction coefficient of the material at a
+        """Retrieves the extinction coefficient of the material at a
         given wavelength. If no exxtinction coefficient data is found, it is
         assumed to be 0 and prints a warning message, only once.
 
@@ -93,6 +92,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The extinction coefficient of the material.
+
         """
         # If the extinction coefficient is missing from the file, return 0
         if self._k is None or self._k_wavelength is None:
@@ -100,7 +100,7 @@ class MaterialFile(BaseMaterial):
                 material_name = os.path.basename(self.filename)
                 print(
                     f"WARNING: No extinction coefficient data found "
-                    f"for {material_name}. Assuming it is 0."
+                    f"for {material_name}. Assuming it is 0.",
                 )
 
                 # we set it to True to avoid printing the warning again
@@ -108,15 +108,13 @@ class MaterialFile(BaseMaterial):
 
             if np.isscalar(wavelength):
                 return 0.0
-            else:
-                # if there is an array of wavelengths, return array of zeros
-                return np.zeros_like(wavelength)
+            # if there is an array of wavelengths, return array of zeros
+            return np.zeros_like(wavelength)
 
         return np.interp(wavelength, self._k_wavelength, self._k)
 
     def _formula_1(self, w):
-        """
-        Calculate the refractive index using dispersion formula 1 from
+        """Calculate the refractive index using dispersion formula 1 from
         refractiveindex.info (Sellmeier formula).
 
         Args:
@@ -124,6 +122,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -135,8 +134,7 @@ class MaterialFile(BaseMaterial):
         return np.sqrt(n)
 
     def _formula_2(self, w):
-        """
-        Calculate the refractive index using dispersion formula 2 from
+        """Calculate the refractive index using dispersion formula 2 from
         refractiveindex.info (Sellmeier-2 formula).
 
         Args:
@@ -144,6 +142,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -155,8 +154,7 @@ class MaterialFile(BaseMaterial):
         return np.sqrt(n)
 
     def _formula_3(self, w):
-        """
-        Calculate the refractive index using dispersion formula 3 from
+        """Calculate the refractive index using dispersion formula 3 from
         refractiveindex.info (Polynomial formula).
 
         Args:
@@ -164,6 +162,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -175,8 +174,7 @@ class MaterialFile(BaseMaterial):
             raise ValueError("Invalid coefficients for dispersion formula 3.")
 
     def _formula_4(self, w):
-        """
-        Calculate the refractive index using dispersion formula 4 from
+        """Calculate the refractive index using dispersion formula 4 from
         refractiveindex.info (RefractiveIndex.INFO formula).
 
         Args:
@@ -184,6 +182,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -199,8 +198,7 @@ class MaterialFile(BaseMaterial):
             raise ValueError("Invalid coefficients for dispersion formula 4.")
 
     def _formula_5(self, w):
-        """
-        Calculate the refractive index using dispersion formula 5 from
+        """Calculate the refractive index using dispersion formula 5 from
         refractiveindex.info (Cauchy formula).
 
         Args:
@@ -208,6 +206,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -219,8 +218,7 @@ class MaterialFile(BaseMaterial):
             raise ValueError("Invalid coefficients for dispersion formula 5.")
 
     def _formula_6(self, w):
-        """
-        Calculate the refractive index using dispersion formula 6 from
+        """Calculate the refractive index using dispersion formula 6 from
         refractiveindex.info (Gases formula).
 
         Args:
@@ -228,6 +226,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -239,8 +238,7 @@ class MaterialFile(BaseMaterial):
             raise ValueError("Invalid coefficients for dispersion formula 6.")
 
     def _formula_7(self, w):
-        """
-        Calculate the refractive index using dispersion formula 7 from
+        """Calculate the refractive index using dispersion formula 7 from
         refractiveindex.info (Herzberger formula).
 
         Args:
@@ -248,6 +246,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         try:
@@ -259,8 +258,7 @@ class MaterialFile(BaseMaterial):
             raise ValueError("Invalid coefficients for dispersion formula 7.")
 
     def _formula_8(self, w):
-        """
-        Calculate the refractive index using dispersion formula 8 from
+        """Calculate the refractive index using dispersion formula 8 from
         refractiveindex.info (Retro formula).
 
         Args:
@@ -268,6 +266,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         if len(c) != 4:
@@ -277,8 +276,7 @@ class MaterialFile(BaseMaterial):
         return np.sqrt((1 + 2 * b) / (1 - b))
 
     def _formula_9(self, w):
-        """
-        Calculate the refractive index using dispersion formula 9 from
+        """Calculate the refractive index using dispersion formula 9 from
         refractiveindex.info (Exotic formula).
 
         Args:
@@ -286,6 +284,7 @@ class MaterialFile(BaseMaterial):
 
         Returns:
             float or numpy.ndarray: The refractive index(s) of the material.
+
         """
         c = self.coefficients
         if len(c) != 6:
@@ -303,7 +302,7 @@ class MaterialFile(BaseMaterial):
 
     def _read_file(self):
         """Read the material file."""
-        with open(self.filename, "r") as stream:
+        with open(self.filename) as stream:
             return yaml.safe_load(stream)
 
     def _set_formula_type(self, formula_type):
@@ -351,31 +350,31 @@ class MaterialFile(BaseMaterial):
             pass
 
     def to_dict(self):
-        """
-        Returns the material data as a dictionary.
+        """Returns the material data as a dictionary.
 
         Returns:
             dict: The material data.
+
         """
         material_dict = super().to_dict()
         material_dict.update(
             {
                 "filename": self.filename,
-            }
+            },
         )
 
         return material_dict
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a material from a dictionary representation.
+        """Creates a material from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the material.
 
         Returns:
             MaterialFile: The material.
+
         """
         if "filename" not in data:
             raise ValueError("Material file data missing filename.")

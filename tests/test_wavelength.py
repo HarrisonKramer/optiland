@@ -93,7 +93,7 @@ class TestWavelengthGroups:
             "wavelengths": [
                 {"value": 500, "unit": "nm", "is_primary": False},
                 {"value": 600, "unit": "nm", "is_primary": True},
-            ]
+            ],
         }
 
     def test_from_dict(self):
@@ -101,7 +101,7 @@ class TestWavelengthGroups:
             "wavelengths": [
                 {"value": 500, "unit": "nm", "is_primary": False},
                 {"value": 600, "unit": "nm", "is_primary": True},
-            ]
+            ],
         }
         wg = WavelengthGroup.from_dict(wg_dict)
         assert wg.num_wavelengths == 2

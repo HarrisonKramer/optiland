@@ -18,8 +18,7 @@ from optiland.materials.material_file import MaterialFile
 
 
 class Material(MaterialFile):
-    """
-    Represents a generic material used in the Optiland system.
+    """Represents a generic material used in the Optiland system.
     This class identifies the correct material given the material name and
     (optionally) the reference, which is generally the manufacturer name or
     the author name.
@@ -41,6 +40,7 @@ class Material(MaterialFile):
     Attributes:
         name (str): The name of the material.
         reference (str): The reference for the material.
+
     """
 
     _df = None
@@ -71,8 +71,7 @@ class Material(MaterialFile):
 
     @staticmethod
     def _levenshtein_distance(s1, s2):
-        """
-        Calculates the Levenshtein distance between two strings.
+        """Calculates the Levenshtein distance between two strings.
 
         Args:
             s1 (str): The first string.
@@ -80,6 +79,7 @@ class Material(MaterialFile):
 
         Returns:
             int: The Levenshtein distance between the two strings.
+
         """
         # Initialize matrix of zeros
         rows = len(s1) + 1
@@ -108,8 +108,7 @@ class Material(MaterialFile):
         return distance_matrix[-1][-1]
 
     def _find_material_matches(self, df):
-        """
-        Finds material matches in a DataFrame based on the given name and
+        """Finds material matches in a DataFrame based on the given name and
         reference.
 
         Args:
@@ -118,6 +117,7 @@ class Material(MaterialFile):
         Returns:
             pandas.DataFrame: A DataFrame containing the filtered materials
                 that match the given name and reference.
+
         """
         # Make input name lowercase
         name = self.name.lower()
@@ -173,14 +173,13 @@ class Material(MaterialFile):
         if dfi["similarity_score"].iloc[0] > 0:
             print(
                 f"Warning: No exact matches found for material {self.name}. "
-                "Material may be invalid."
+                "Material may be invalid.",
             )
 
         return dfi
 
     def _raise_material_error(self, no_matches=False, multiple_matches=False):
-        """
-        Raises an error if no matches or multiple matches are found for the
+        """Raises an error if no matches or multiple matches are found for the
         material.
 
         Args:
@@ -190,6 +189,7 @@ class Material(MaterialFile):
         Raises:
             ValueError: If no matches or multiple matches are found for the
                 material.
+
         """
         if no_matches:
             message = f"No matches found for material {self.name}"
@@ -208,8 +208,7 @@ class Material(MaterialFile):
         raise ValueError(message)
 
     def _retrieve_file(self):
-        """
-        Retrieves the file path for the material based on the given criteria.
+        """Retrieves the file path for the material based on the given criteria.
 
         Returns:
             str: The file path for the material.
@@ -217,6 +216,7 @@ class Material(MaterialFile):
         Raises:
             ValueError: If no matches are found for the material.
             ValueError: If multiple matches are found for the material.
+
         """
         df = self._load_dataframe()
         filtered_df = self._find_material_matches(df)
@@ -231,17 +231,17 @@ class Material(MaterialFile):
         filename = filtered_df.loc[0, "filename"]
 
         full_filename = str(
-            resources.files("optiland.database").joinpath("data-nk", filename)
+            resources.files("optiland.database").joinpath("data-nk", filename),
         )
 
         return full_filename, material_data
 
     def to_dict(self):
-        """
-        Converts the material to a dictionary.
+        """Converts the material to a dictionary.
 
         Returns:
             dict: The material as a dictionary.
+
         """
         material_dict = super().to_dict()
         material_dict.update(
@@ -251,21 +251,21 @@ class Material(MaterialFile):
                 "robust_search": self.robust,
                 "min_wavelength": self.min_wavelength,
                 "max_wavelength": self.max_wavelength,
-            }
+            },
         )
 
         return material_dict
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a material from a dictionary representation.
+        """Creates a material from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the material.
 
         Returns:
             Material: The material created from the dictionary.
+
         """
         if "name" not in data:
             raise ValueError("Missing required key: name")

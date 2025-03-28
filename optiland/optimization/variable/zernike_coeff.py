@@ -15,8 +15,7 @@ from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVaria
 
 
 class ZernikeCoeffVariable(PolynomialCoeffVariable):
-    """
-    Represents a variable for a Zernike coefficient of a ZernikeGeometry.
+    """Represents a variable for a Zernike coefficient of a ZernikeGeometry.
 
     Args:
         optic (Optic): The optic object associated with the variable.
@@ -28,19 +27,25 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
 
     Attributes:
         coeff_number (int): The index of the Zernike coefficient.
+
     """
 
     def __init__(
-        self, optic, surface_number, coeff_index, apply_scaling=True, **kwargs
+        self,
+        optic,
+        surface_number,
+        coeff_index,
+        apply_scaling=True,
+        **kwargs,
     ):
         super().__init__(optic, surface_number, coeff_index, apply_scaling, **kwargs)
 
     def get_value(self):
-        """
-        Get the current value of the Zernike coefficient.
+        """Get the current value of the Zernike coefficient.
 
         Returns:
             float: The current value of the Zernike coefficient.
+
         """
         surf = self._surfaces.surfaces[self.surface_number]
         i = self.coeff_index
@@ -61,11 +66,11 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         return value
 
     def update_value(self, new_value):
-        """
-        Update the value of the Zernike coefficient.
+        """Update the value of the Zernike coefficient.
 
         Args:
             new_value (float): The new value of the Zernike coefficient.
+
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
@@ -85,10 +90,10 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
             surf.geometry.c = c_new
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Zernike Coeff. {self.coeff_index}, Surface {self.surface_number}"

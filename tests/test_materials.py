@@ -30,7 +30,7 @@ class TestIdealMaterial:
 
     def test_ideal_from_dict(self):
         material = materials.IdealMaterial.from_dict(
-            {"index": 1.5, "absorp": 0.2, "type": materials.IdealMaterial.__name__}
+            {"index": 1.5, "absorp": 0.2, "type": materials.IdealMaterial.__name__},
         )
         assert material.n(0.5) == 1.5
         assert material.k(0.5) == 0.2
@@ -48,8 +48,8 @@ class TestMaterialFile:
     def test_formula_1(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/ami/AMTIR-3.yml"
-            )
+                "data-nk/glass/ami/AMTIR-3.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(4) == pytest.approx(2.6208713861212907, abs=1e-10)
@@ -64,8 +64,8 @@ class TestMaterialFile:
     def test_formula_2(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/schott/BAFN6.yml"
-            )
+                "data-nk/glass/schott/BAFN6.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(0.4) == pytest.approx(1.6111748495969627, abs=1e-10)
@@ -83,8 +83,8 @@ class TestMaterialFile:
     def test_formula_3(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/hikari/BASF6.yml"
-            )
+                "data-nk/glass/hikari/BASF6.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(0.4) == pytest.approx(1.6970537915318815, abs=1e-10)
@@ -120,8 +120,8 @@ class TestMaterialFile:
     def test_formula_5(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/main/YbF3/Amotchkina.yml"
-            )
+                "data-nk/main/YbF3/Amotchkina.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(0.4) == pytest.approx(1.5874342875, abs=1e-10)
@@ -140,8 +140,8 @@ class TestMaterialFile:
     def test_formula_6(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/main/CO2/Bideau-Mehu.yml"
-            )
+                "data-nk/main/CO2/Bideau-Mehu.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(0.4) == pytest.approx(1.0004592281255849, abs=1e-10)
@@ -160,8 +160,8 @@ class TestMaterialFile:
     def test_formula_7(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/main/Y2O3/Nigara.yml"
-            )
+                "data-nk/main/Y2O3/Nigara.yml",
+            ),
         )
         # No material in the database currently uses formula 7, so we fake it
         material = materials.MaterialFile(filename)
@@ -182,8 +182,8 @@ class TestMaterialFile:
     def test_formula_8(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/main/AgBr/Schroter.yml"
-            )
+                "data-nk/main/AgBr/Schroter.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.n(0.5) == pytest.approx(2.3094520454859557, abs=1e-10)
@@ -247,8 +247,8 @@ class TestMaterialFile:
     def test_set_formula_type_twice(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/ami/AMTIR-3.yml"
-            )
+                "data-nk/glass/ami/AMTIR-3.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         with pytest.raises(ValueError):
@@ -257,8 +257,8 @@ class TestMaterialFile:
     def test_to_dict(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/ami/AMTIR-3.yml"
-            )
+                "data-nk/glass/ami/AMTIR-3.yml",
+            ),
         )
         material = materials.MaterialFile(filename)
         assert material.to_dict() == {
@@ -269,8 +269,8 @@ class TestMaterialFile:
     def test_from_dict(self):
         filename = str(
             resources.files("optiland.database").joinpath(
-                "data-nk/glass/ami/AMTIR-3.yml"
-            )
+                "data-nk/glass/ami/AMTIR-3.yml",
+            ),
         )
         material_dict = {"filename": filename, "type": materials.MaterialFile.__name__}
         assert materials.MaterialFile.from_dict(material_dict).filename == filename
@@ -289,7 +289,8 @@ class TestMaterial:
 
         with pytest.raises(ValueError):
             materials.Material(
-                "nonexistent material", reference="it really does not exist"
+                "nonexistent material",
+                reference="it really does not exist",
             )
 
     def test_non_robust_failure(self):

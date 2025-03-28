@@ -232,14 +232,20 @@ class TestEvenAsphere:
     def test_str(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2],
         )
         assert str(geometry) == "Even Asphere"
 
     def test_sag(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=27.0, conic=0.0, coefficients=[1e-3, -1e-5]
+            cs,
+            radius=27.0,
+            conic=0.0,
+            coefficients=[1e-3, -1e-5],
         )
 
         # Test sag at (0, 0)
@@ -260,7 +266,10 @@ class TestEvenAsphere:
     def test_distance(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=-41.1, conic=0.0, coefficients=[1e-3, -1e-5, 1e-7]
+            cs,
+            radius=-41.1,
+            conic=0.0,
+            coefficients=[1e-3, -1e-5, 1e-7],
         )
 
         # Test distance for a single ray
@@ -294,7 +303,10 @@ class TestEvenAsphere:
     def test_surface_normal(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2],
         )
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
@@ -306,7 +318,10 @@ class TestEvenAsphere:
     def test_to_dict(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2],
         )
 
         expected_dict = {
@@ -323,7 +338,10 @@ class TestEvenAsphere:
     def test_from_dict(self):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2],
         )
 
         geometry_dict = geometry.to_dict()
@@ -339,7 +357,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=22.0, conic=0.0, coefficients=coefficients
+            cs,
+            radius=22.0,
+            conic=0.0,
+            coefficients=coefficients,
         )
         assert str(geometry) == "Polynomial XY"
 
@@ -350,7 +371,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=22.0, conic=0.0, coefficients=coefficients
+            cs,
+            radius=22.0,
+            conic=0.0,
+            coefficients=coefficients,
         )
 
         # Test sag at (0, 0)
@@ -375,7 +399,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
         )
 
         # Test distance for a single ray
@@ -413,7 +440,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
         )
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
@@ -429,7 +459,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
         )
 
         expected_dict = {
@@ -450,7 +483,10 @@ class TestPolynomialGeometry:
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
         geometry = geometries.PolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
         )
 
         geometry_dict = geometry.to_dict()
@@ -466,7 +502,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=22.0, conic=0.0, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=22.0,
+            conic=0.0,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
         assert str(geometry) == "Chebyshev Polynomial"
 
@@ -477,7 +518,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=22.0, conic=0.0, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=22.0,
+            conic=0.0,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         # Test sag at (0, 0)
@@ -502,7 +548,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         # Test distance for a single ray
@@ -540,7 +591,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
@@ -556,7 +612,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         with pytest.raises(ValueError):
@@ -569,7 +630,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         expected_dict = {
@@ -592,7 +658,12 @@ class TestChebyshevGeometry:
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
         geometry = geometries.ChebyshevPolynomialGeometry(
-            cs, radius=-26.0, conic=0.1, coefficients=coefficients, norm_x=10, norm_y=10
+            cs,
+            radius=-26.0,
+            conic=0.1,
+            coefficients=coefficients,
+            norm_x=10,
+            norm_y=10,
         )
 
         geometry_dict = geometry.to_dict()
@@ -604,7 +675,10 @@ class TestOddAsphere:
     def test_sag(self):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
-            cs, radius=27.0, conic=0.0, coefficients=[1e-3, -1e-5]
+            cs,
+            radius=27.0,
+            conic=0.0,
+            coefficients=[1e-3, -1e-5],
         )
 
         # Test sag at (0, 0)
@@ -625,7 +699,10 @@ class TestOddAsphere:
     def test_distance(self):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
-            cs, radius=-41.1, conic=0.0, coefficients=[1e-3, -1e-5, 1e-7]
+            cs,
+            radius=-41.1,
+            conic=0.0,
+            coefficients=[1e-3, -1e-5, 1e-7],
         )
 
         # Test distance for a single ray
@@ -649,7 +726,10 @@ class TestOddAsphere:
     def test_surface_normal(self):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2, -1e-5]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2, -1e-5],
         )
 
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
@@ -661,7 +741,10 @@ class TestOddAsphere:
     def test_str(self):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
-            cs, radius=10.0, conic=0.5, coefficients=[1e-2, -1e-5]
+            cs,
+            radius=10.0,
+            conic=0.5,
+            coefficients=[1e-2, -1e-5],
         )
         assert str(geometry) == "Odd Asphere"
 
@@ -672,6 +755,10 @@ class TestZernikeGeometry:
         coefficients = np.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         geometry = geometries.ZernikePolynomialGeometry(
-            cs, radius=22.0, conic=0.0, coefficients=coefficients, norm_radius=10
+            cs,
+            radius=22.0,
+            conic=0.0,
+            coefficients=coefficients,
+            norm_radius=10,
         )
         assert str(geometry) == "Zernike Polynomial"

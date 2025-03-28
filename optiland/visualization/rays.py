@@ -12,8 +12,7 @@ from optiland.visualization.utils import transform
 
 
 class Rays2D:
-    """
-    A class to represent and visualize 2D rays in an optical system.
+    """A class to represent and visualize 2D rays in an optical system.
 
     Args:
         optic (Optic): The optical system to be visualized.
@@ -31,6 +30,7 @@ class Rays2D:
     Methods:
         plot(ax, fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y'):
+
     """
 
     def __init__(self, optic):
@@ -52,8 +52,7 @@ class Rays2D:
         distribution="line_y",
         reference=None,
     ):
-        """
-        Plots the rays for the given fields and wavelengths.
+        """Plots the rays for the given fields and wavelengths.
 
         Args:
             ax: The matplotlib axis to plot on.
@@ -65,6 +64,7 @@ class Rays2D:
             distribution: The distribution of the rays. Default is 'line_y'.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
         """
         if fields == "all":
             fields = self.optic.fields.get_field_coords()
@@ -104,8 +104,7 @@ class Rays2D:
         self._update_surface_extents()
 
     def _trace(self, field, wavelength, num_rays, distribution):
-        """
-        Traces rays through the optical system and updates the surface extents.
+        """Traces rays through the optical system and updates the surface extents.
 
         Args:
             field (tuple): The field coordinates for the ray tracing.
@@ -115,13 +114,13 @@ class Rays2D:
 
         Returns:
             None
+
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
         self._process_traced_rays()
 
     def _trace_reference(self, field, wavelength, reference):
-        """
-        Traces reference rays through the optical system.
+        """Traces reference rays through the optical system.
 
         Args:
             field (tuple): The field coordinates for the ray tracing.
@@ -130,6 +129,7 @@ class Rays2D:
 
         Returns:
             None
+
         """
         if reference == "chief":
             self.optic.trace_generic(*field, Px=0, Py=0, wavelength=wavelength)
@@ -151,8 +151,7 @@ class Rays2D:
         self.r_extent = np.fmax(self.r_extent, r_extent_new)
 
     def _plot_lines(self, ax, color_idx, linewidth=1):
-        """
-        Plots multiple lines on the given axis.
+        """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
         (self.x, self.y, self.z, self.i) and plots each valid ray on the
@@ -166,6 +165,7 @@ class Rays2D:
 
         Returns:
             None
+
         """
         # loop through rays
         for k in range(self.z.shape[1]):
@@ -182,8 +182,7 @@ class Rays2D:
             self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
 
     def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1):
-        """
-        Plots a single line on the given axes.
+        """Plots a single line on the given axes.
 
         Args:
             ax (matplotlib.axes.Axes): The axes on which to plot the line.
@@ -195,14 +194,14 @@ class Rays2D:
 
         Returns:
             None
+
         """
         color = f"C{color_idx}"
         ax.plot(z, y, color, linewidth=linewidth)
 
 
 class Rays3D(Rays2D):
-    """
-    A class to represent 3D rays for visualization using VTK.
+    """A class to represent 3D rays for visualization using VTK.
     Inherits from Rays2D and extends functionality to 3D.
 
     Methods:
@@ -211,6 +210,7 @@ class Rays3D(Rays2D):
 
     Args:
         optic: The optical system to be visualized.
+
     """
 
     def __init__(self, optic):
@@ -231,8 +231,7 @@ class Rays3D(Rays2D):
         ]
 
     def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
-        """
-        Plots a single line in 3D space using VTK with the specified
+        """Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
 
         Args:
@@ -243,6 +242,7 @@ class Rays3D(Rays2D):
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
             linewidth (float): The width of the line. Default is 1.
+
         """
         color = self._rgb_colors[color_idx % 10]
         for k in range(1, len(x)):

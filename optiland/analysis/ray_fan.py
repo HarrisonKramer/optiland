@@ -10,8 +10,7 @@ import numpy as np
 
 
 class RayFan:
-    """
-    Represents a ray fan aberration analysis for an optic.
+    """Represents a ray fan aberration analysis for an optic.
 
     Args:
         optic (Optic): The optic object to analyze.
@@ -31,6 +30,7 @@ class RayFan:
 
     Methods:
         view(figsize=(10, 3.33)): Displays the ray fan plot.
+
     """
 
     def __init__(self, optic, fields="all", wavelengths="all", num_points=256):
@@ -50,12 +50,12 @@ class RayFan:
         self.data = self._generate_data()
 
     def view(self, figsize=(10, 3.33)):
-        """
-        Displays the ray fan plot.
+        """Displays the ray fan plot.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (10, 3.33).
+
         """
         _, axs = plt.subplots(
             nrows=len(self.fields),
@@ -104,11 +104,11 @@ class RayFan:
         plt.show()
 
     def _generate_data(self):
-        """
-        Generates the ray fan data.
+        """Generates the ray fan data.
 
         Returns:
             dict: The generated ray fan data.
+
         """
         data = {}
         data["Px"] = np.linspace(-1, 1, self.num_points)
@@ -129,7 +129,8 @@ class RayFan:
                     distribution="line_x",
                 )
                 data[f"{field}"][f"{wavelength}"]["x"] = self.optic.surface_group.x[
-                    -1, :
+                    -1,
+                    :,
                 ]
                 data[f"{field}"][f"{wavelength}"]["intensity_x"] = (
                     self.optic.surface_group.intensity[-1, :]
@@ -143,7 +144,8 @@ class RayFan:
                     distribution="line_y",
                 )
                 data[f"{field}"][f"{wavelength}"]["y"] = self.optic.surface_group.y[
-                    -1, :
+                    -1,
+                    :,
                 ]
                 data[f"{field}"][f"{wavelength}"]["intensity_y"] = (
                     self.optic.surface_group.intensity[-1, :]

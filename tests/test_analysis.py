@@ -32,7 +32,10 @@ def triplet_four_fields():
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
     lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
     lens.add_surface(
-        index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott")
+        index=3,
+        radius=-22.21328,
+        thickness=0.99997,
+        material=("F2", "schott"),
     )
     lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
     lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
@@ -174,120 +177,156 @@ class TestCookeTripletRayFan:
         assert fan.data["Py"][-1] == 1
 
         assert fan.data["(0.0, 0.0)"]["0.48"]["x"][0] == pytest.approx(
-            0.00238814980958324, abs=1e-9
+            0.00238814980958324,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.48"]["x"][-1] == pytest.approx(
-            -0.00238814980958324, abs=1e-9
+            -0.00238814980958324,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.48"]["y"][0] == pytest.approx(
-            0.00238814980958324, abs=1e-9
+            0.00238814980958324,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.48"]["y"][-1] == pytest.approx(
-            -0.00238814980958324, abs=1e-9
+            -0.00238814980958324,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 0.0)"]["0.55"]["x"][0] == pytest.approx(
-            0.004195677081323623, abs=1e-9
+            0.004195677081323623,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.55"]["x"][-1] == pytest.approx(
-            -0.004195677081323623, abs=1e-9
+            -0.004195677081323623,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.55"]["y"][0] == pytest.approx(
-            0.004195677081323623, abs=1e-9
+            0.004195677081323623,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.55"]["y"][-1] == pytest.approx(
-            -0.004195677081323623, abs=1e-9
+            -0.004195677081323623,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 0.0)"]["0.65"]["x"][0] == pytest.approx(
-            -8.284696919602652e-06, abs=1e-9
+            -8.284696919602652e-06,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.65"]["x"][-1] == pytest.approx(
-            8.284696919602652e-06, abs=1e-9
+            8.284696919602652e-06,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.65"]["y"][0] == pytest.approx(
-            -8.284696919602652e-06, abs=1e-9
+            -8.284696919602652e-06,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.0)"]["0.65"]["y"][-1] == pytest.approx(
-            8.284696919602652e-06, abs=1e-9
+            8.284696919602652e-06,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 0.7)"]["0.48"]["x"][0] == pytest.approx(
-            0.01973142095198721, abs=1e-9
+            0.01973142095198721,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.48"]["x"][-1] == pytest.approx(
-            -0.01973142095198721, abs=1e-9
+            -0.01973142095198721,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.48"]["y"][0] == pytest.approx(
-            -0.023207115035676296, abs=1e-9
+            -0.023207115035676296,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.48"]["y"][-1] == pytest.approx(
-            0.03928464835618861, abs=1e-9
+            0.03928464835618861,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 0.7)"]["0.55"]["x"][0] == pytest.approx(
-            0.021420191179537973, abs=1e-9
+            0.021420191179537973,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.55"]["x"][-1] == pytest.approx(
-            -0.021420191179537973, abs=1e-9
+            -0.021420191179537973,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.55"]["y"][0] == pytest.approx(
-            -0.024812371459915994, abs=1e-9
+            -0.024812371459915994,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.55"]["y"][-1] == pytest.approx(
-            0.04075295155640113, abs=1e-9
+            0.04075295155640113,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 0.7)"]["0.65"]["x"][0] == pytest.approx(
-            0.017025487217305013, abs=1e-9
+            0.017025487217305013,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.65"]["x"][-1] == pytest.approx(
-            -0.017025487217305013, abs=1e-9
+            -0.017025487217305013,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.65"]["y"][0] == pytest.approx(
-            -0.03229666187094615, abs=1e-9
+            -0.03229666187094615,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 0.7)"]["0.65"]["y"][-1] == pytest.approx(
-            0.047721942006075935, abs=1e-9
+            0.047721942006075935,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 1.0)"]["0.48"]["x"][0] == pytest.approx(
-            0.01563881685548374, abs=1e-9
+            0.01563881685548374,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.48"]["x"][-1] == pytest.approx(
-            -0.01563881685548374, abs=1e-9
+            -0.01563881685548374,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.48"]["y"][0] == pytest.approx(
-            -0.0044989771745065354, abs=1e-9
+            -0.0044989771745065354,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.48"]["y"][-1] == pytest.approx(
-            0.013000385049824814, abs=1e-9
+            0.013000385049824814,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 1.0)"]["0.55"]["x"][0] == pytest.approx(
-            0.016936433773790505, abs=1e-9
+            0.016936433773790505,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.55"]["x"][-1] == pytest.approx(
-            -0.016936433773790505, abs=1e-9
+            -0.016936433773790505,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.55"]["y"][0] == pytest.approx(
-            -0.01705141007843025, abs=1e-9
+            -0.01705141007843025,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.55"]["y"][-1] == pytest.approx(
-            0.022501847359645666, abs=1e-9
+            0.022501847359645666,
+            abs=1e-9,
         )
 
         assert fan.data["(0.0, 1.0)"]["0.65"]["x"][0] == pytest.approx(
-            0.01214534602206907, abs=1e-9
+            0.01214534602206907,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.65"]["x"][-1] == pytest.approx(
-            -0.01214534602206907, abs=1e-9
+            -0.01214534602206907,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.65"]["y"][0] == pytest.approx(
-            -0.033957537601747134, abs=1e-9
+            -0.033957537601747134,
+            abs=1e-9,
         )
         assert fan.data["(0.0, 1.0)"]["0.65"]["y"][-1] == pytest.approx(
-            0.036545592330593735, abs=1e-9
+            0.036545592330593735,
+            abs=1e-9,
         )
 
     @patch("matplotlib.pyplot.show")
@@ -369,7 +408,8 @@ class TestTelescopeTripletGridDistortion:
     def test_grid_distortion_values(self, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
         assert dist.data["max_distortion"] == pytest.approx(
-            0.005785718069180374, abs=1e-9
+            0.005785718069180374,
+            abs=1e-9,
         )
 
         assert dist.data["xr"].shape == (10, 10)
@@ -393,7 +433,8 @@ class TestTelescopeTripletGridDistortion:
         dist = analysis.GridDistortion(telescope_objective, distortion_type="f-theta")
 
         assert dist.data["max_distortion"] == pytest.approx(
-            0.010863278146924825, abs=1e-9
+            0.010863278146924825,
+            abs=1e-9,
         )
 
         assert dist.data["xr"].shape == (10, 10)
@@ -444,7 +485,8 @@ class TestTelescopeTripletFieldCurvature:
 
     def test_field_curvature_init_with_wavelength(self, telescope_objective):
         field_curvature = analysis.FieldCurvature(
-            telescope_objective, wavelengths=[0.5, 0.6]
+            telescope_objective,
+            wavelengths=[0.5, 0.6],
         )
         assert field_curvature.optic == telescope_objective
         assert field_curvature.wavelengths == [0.5, 0.6]
@@ -453,7 +495,8 @@ class TestTelescopeTripletFieldCurvature:
     def test_field_curvature_init_with_num_points(self, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
-            telescope_objective, num_points=num_points
+            telescope_objective,
+            num_points=num_points,
         )
         assert field_curvature.optic == telescope_objective
         assert (
@@ -465,7 +508,9 @@ class TestTelescopeTripletFieldCurvature:
     def test_field_curvature_init_with_all_parameters(self, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
-            telescope_objective, wavelengths=[0.55], num_points=num_points
+            telescope_objective,
+            wavelengths=[0.55],
+            num_points=num_points,
         )
         assert field_curvature.optic == telescope_objective
         assert field_curvature.wavelengths == [0.55]
@@ -547,16 +592,17 @@ class TestSpotVsField:
 class TestWavefrontErrorVsField:
     def test_rms_wave_init(self, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective
+            telescope_objective,
         )
         assert wavefront_error_vs_field.num_fields == 32
         assert np.array_equal(
-            wavefront_error_vs_field._field[:, 1], np.linspace(0, 1, 32)
+            wavefront_error_vs_field._field[:, 1],
+            np.linspace(0, 1, 32),
         )
 
     def test_rms_wave(self, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective
+            telescope_objective,
         )
         wavefront_error = wavefront_error_vs_field._wavefront_error
         assert wavefront_error.shape == (
@@ -567,7 +613,7 @@ class TestWavefrontErrorVsField:
     @patch("matplotlib.pyplot.show")
     def test_view_wave(self, mock_show, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective
+            telescope_objective,
         )
         wavefront_error_vs_field.view()
         mock_show.assert_called_once()
@@ -576,7 +622,7 @@ class TestWavefrontErrorVsField:
     @patch("matplotlib.pyplot.show")
     def test_view_wave_larger_fig(self, mock_show, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective
+            telescope_objective,
         )
         wavefront_error_vs_field.view(figsize=(12.4, 10))
         mock_show.assert_called_once()

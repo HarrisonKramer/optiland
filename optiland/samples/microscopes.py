@@ -16,17 +16,26 @@ class Objective60x(optic.Optic):
         self.add_surface(index=4, thickness=17.6, radius=57.131)
         self.add_surface(index=5, thickness=17.6, is_stop=True)
         self.add_surface(
-            index=6, thickness=74.8, radius=-57.646, material=("SF5", "schott")
+            index=6,
+            thickness=74.8,
+            radius=-57.646,
+            material=("SF5", "schott"),
         )
         self.add_surface(index=7, thickness=77.0, radius=196.614, material="N-FK51")
         self.add_surface(index=8, thickness=4.4, radius=-129.243)
         self.add_surface(index=9, thickness=15.4, radius=2062.370, material="N-KZFS4")
         self.add_surface(
-            index=10, thickness=48.4, radius=203.781, material="LITHOTEC-CAF2"
+            index=10,
+            thickness=48.4,
+            radius=203.781,
+            material="LITHOTEC-CAF2",
         )
         self.add_surface(index=11, thickness=4.4, radius=-224.003)
         self.add_surface(
-            index=12, thickness=35.2, radius=219.864, material="LITHOTEC-CAF2"
+            index=12,
+            thickness=35.2,
+            radius=219.864,
+            material="LITHOTEC-CAF2",
         )
         self.add_surface(index=13, thickness=4.4, radius=793.3)
         self.add_surface(index=14, thickness=26.4, radius=349.260, material="N-FK51")
@@ -65,7 +74,10 @@ class Microscope20x(optic.Optic):
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(index=1, radius=-0.2352, thickness=0.0941, material="N-SK16")
         self.add_surface(
-            index=2, radius=-0.1968, thickness=0.0413, material=("SF4", "schott")
+            index=2,
+            radius=-0.1968,
+            thickness=0.0413,
+            material=("SF4", "schott"),
         )
         self.add_surface(index=3, radius=-0.3251, thickness=0.01)
         self.add_surface(index=4, radius=0.5837, thickness=0.1115, material="N-SK16")
@@ -73,7 +85,10 @@ class Microscope20x(optic.Optic):
         self.add_surface(index=6, radius=np.inf, thickness=0.2236, is_stop=True)
         self.add_surface(index=7, radius=0.2077, thickness=0.2, material="N-SK16")
         self.add_surface(
-            index=8, radius=-0.1686, thickness=0.025, material=("SF4", "schott")
+            index=8,
+            radius=-0.1686,
+            thickness=0.025,
+            material=("SF4", "schott"),
         )
         self.add_surface(index=9, radius=0.4108, thickness=0.0965)
         self.add_surface(index=10, radius=np.inf, thickness=0.007, material="N-K5")
@@ -116,7 +131,11 @@ class UVReflectingMicroscope(optic.Optic):
         self.add_surface(index=1, radius=1.72300, thickness=0.0350, material=silica)
         self.add_surface(index=2, radius=2.90631, thickness=0.9731)
         self.add_surface(
-            index=3, radius=0.17783, thickness=-0.4995, material="mirror", is_stop=True
+            index=3,
+            radius=0.17783,
+            thickness=-0.4995,
+            material="mirror",
+            is_stop=True,
         )
 
         obscuration = physical_apertures.RadialAperture(r_max=np.inf, r_min=0.15)

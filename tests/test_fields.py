@@ -67,7 +67,10 @@ def test_field_group_get_vig_factor():
     f = fields.FieldGroup()
     for field_data in input_data:
         new_field = fields.Field(
-            "angle", *field_data, vignette_factor_x=0.2, vignette_factor_y=0.2
+            "angle",
+            *field_data,
+            vignette_factor_x=0.2,
+            vignette_factor_y=0.2,
         )
         f.add_field(new_field)
 
@@ -113,7 +116,7 @@ def test_field_group_to_dict():
 
 def test_field_from_dict():
     f = fields.Field.from_dict(
-        {"field_type": "angle", "x": 0, "y": 0, "vx": 0, "vy": 0}
+        {"field_type": "angle", "x": 0, "y": 0, "vx": 0, "vy": 0},
     )
     assert f.field_type == "angle"
     assert f.x == 0
@@ -132,7 +135,7 @@ def test_field_group_from_dict():
                 {"field_type": "angle", "x": 4, "y": 3, "vx": 0, "vy": 0},
             ],
             "telecentric": False,
-        }
+        },
     )
     assert f.get_field(0).x == 0
     assert f.get_field(0).y == 0

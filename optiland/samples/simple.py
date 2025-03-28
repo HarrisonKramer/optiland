@@ -12,7 +12,11 @@ class Edmund_49_847(optic.Optic):
         # add surfaces
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(
-            index=1, thickness=7, radius=19.93, is_stop=True, material="N-SF11"
+            index=1,
+            thickness=7,
+            radius=19.93,
+            is_stop=True,
+            material="N-SF11",
         )
         self.add_surface(index=2, thickness=21.48)
         self.add_surface(index=3)
@@ -44,7 +48,10 @@ class SingletStopSurf2(optic.Optic):
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(index=1, thickness=10.0, radius=63.73364157, material="LAC9")
         self.add_surface(
-            index=2, thickness=92.73834630, radius=653.29392320, is_stop=True
+            index=2,
+            thickness=92.73834630,
+            radius=653.29392320,
+            is_stop=True,
         )
         self.add_surface(index=3)
 
@@ -73,11 +80,18 @@ class TelescopeDoublet(optic.Optic):
 
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(
-            index=1, radius=29.32908, thickness=0.7, material="N-BK7", is_stop=True
+            index=1,
+            radius=29.32908,
+            thickness=0.7,
+            material="N-BK7",
+            is_stop=True,
         )
         self.add_surface(index=2, radius=-20.06842, thickness=0.032)
         self.add_surface(
-            index=3, radius=-20.08770, thickness=0.5780, material=("SF2", "schott")
+            index=3,
+            radius=-20.08770,
+            thickness=0.5780,
+            material=("SF2", "schott"),
         )
         self.add_surface(index=4, radius=-66.54774, thickness=47.3562)
         self.add_surface(index=5)
@@ -109,10 +123,17 @@ class CementedAchromat(optic.Optic):
         # add surfaces
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(
-            index=1, radius=12.38401, thickness=0.4340, is_stop=True, material="N-BAK1"
+            index=1,
+            radius=12.38401,
+            thickness=0.4340,
+            is_stop=True,
+            material="N-BAK1",
         )
         self.add_surface(
-            index=2, radius=-7.94140, thickness=0.3210, material=("SF2", "schott")
+            index=2,
+            radius=-7.94140,
+            thickness=0.3210,
+            material=("SF2", "schott"),
         )
         self.add_surface(index=3, radius=-48.44396, thickness=19.6059)
         self.add_surface(index=4)

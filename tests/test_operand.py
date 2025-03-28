@@ -54,7 +54,8 @@ class TestParaxialOperand:
 class TestAberrationOperand:
     def test_seidel(self, hubble):
         assert np.isclose(
-            operand.AberrationOperand.seidels(hubble, 0), 0.0014539022855417389
+            operand.AberrationOperand.seidels(hubble, 0),
+            0.0014539022855417389,
         )
 
     def test_TSC(self, hubble):
@@ -178,7 +179,8 @@ class TestRayOperand:
             "wavelength": 0.55,
         }
         assert np.isclose(
-            operand.RayOperand.x_intercept_lcs(**data), 150.42338010762842
+            operand.RayOperand.x_intercept_lcs(**data),
+            150.42338010762842,
         )
 
     def test_y_intercept_lcs(self, hubble):
@@ -192,7 +194,8 @@ class TestRayOperand:
             "wavelength": 0.55,
         }
         assert np.isclose(
-            operand.RayOperand.y_intercept_lcs(**data), 150.42338010762842
+            operand.RayOperand.y_intercept_lcs(**data),
+            150.42338010762842,
         )
 
     def test_z_intercept_lcs(self, hubble):
@@ -206,7 +209,8 @@ class TestRayOperand:
             "wavelength": 0.55,
         }
         assert np.isclose(
-            operand.RayOperand.z_intercept_lcs(**data), -18.062712762936826
+            operand.RayOperand.z_intercept_lcs(**data),
+            -18.062712762936826,
         )  # Because Hubble's image is curved, otherwise it would be 0
 
     def test_L(self, hubble):
@@ -255,7 +259,8 @@ class TestRayOperand:
             "num_rays": 100,
         }
         assert np.isclose(
-            operand.RayOperand.rms_spot_size(**data), 0.025626727777956947
+            operand.RayOperand.rms_spot_size(**data),
+            0.025626727777956947,
         )
 
     def test_rms_spot_size_all_wave(self, hubble):
@@ -268,7 +273,8 @@ class TestRayOperand:
             "num_rays": 100,
         }
         assert np.isclose(
-            operand.RayOperand.rms_spot_size(**data), 0.025626727777956947
+            operand.RayOperand.rms_spot_size(**data),
+            0.025626727777956947,
         )
 
     def test_opd_diff(self, hubble):
@@ -290,7 +296,8 @@ class TestRayOperand:
             "num_rays": 3,
         }
         assert np.isclose(
-            operand.RayOperand.OPD_difference(**data), 0.0013295118803701674
+            operand.RayOperand.OPD_difference(**data),
+            0.0013295118803701674,
         )
 
     def test_opd_diff_new_dist(self, hubble):
@@ -309,14 +316,20 @@ class TestOperand:
     def test_get_value(self, hubble):
         input_data = {"optic": hubble}
         op = operand.Operand(
-            operand_type="f2", target=1, weight=1, input_data=input_data
+            operand_type="f2",
+            target=1,
+            weight=1,
+            input_data=input_data,
         )
         assert np.isclose(op.value, 57600.080998403595)
 
     def test_invalid_operand(self, hubble):
         input_data = {"optic": hubble}
         op = operand.Operand(
-            operand_type="f3", target=1, weight=1, input_data=input_data
+            operand_type="f3",
+            target=1,
+            weight=1,
+            input_data=input_data,
         )
         with pytest.raises(ValueError):
             op.value
@@ -324,14 +337,20 @@ class TestOperand:
     def test_delta(self, hubble):
         input_data = {"optic": hubble}
         op = operand.Operand(
-            operand_type="f2", target=5000, weight=1, input_data=input_data
+            operand_type="f2",
+            target=5000,
+            weight=1,
+            input_data=input_data,
         )
         assert np.isclose(op.delta(), 52600.080998403595)
 
     def test_fun(self, hubble):
         input_data = {"optic": hubble}
         op = operand.Operand(
-            operand_type="f2", target=1e5, weight=1.5, input_data=input_data
+            operand_type="f2",
+            target=1e5,
+            weight=1.5,
+            input_data=input_data,
         )
         assert np.isclose(op.fun(), -63599.87850239461)
 
@@ -371,7 +390,11 @@ class TestOperand:
         assert np.isclose(op.delta_ineq(), 1e6 - f2)
 
         op = operand.Operand(
-            operand_type="f2", min_val=0, max_val=1, weight=1, input_data=input_data
+            operand_type="f2",
+            min_val=0,
+            max_val=1,
+            weight=1,
+            input_data=input_data,
         )
 
         # check on the upper bound
@@ -398,7 +421,11 @@ class TestOperand:
         assert np.isclose(op.delta(), 1e6 - f2)
 
         op = operand.Operand(
-            operand_type="f2", min_val=0, max_val=1, weight=1, input_data=input_data
+            operand_type="f2",
+            min_val=0,
+            max_val=1,
+            weight=1,
+            input_data=input_data,
         )
 
         # check on the upper bound
@@ -441,7 +468,10 @@ class TestOperandManager:
         manager = operand.OperandManager()
         manager.add("f1", 1)
         manager[0] = operand.Operand(
-            operand_type="f2", target=1, weight=1, input_data={}
+            operand_type="f2",
+            target=1,
+            weight=1,
+            input_data={},
         )
         assert len(manager) == 1
 

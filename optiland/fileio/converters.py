@@ -23,6 +23,7 @@ class ZemaxToOpticConverter:
     Methods:
         convert(): Converts the configuration of the file handler into an
             Optic object.
+
     """
 
     def __init__(self, zemax_data):
@@ -30,11 +31,11 @@ class ZemaxToOpticConverter:
         self.optic = None
 
     def convert(self):
-        """
-        Converts the configuration of the file handler into an Optic object.
+        """Converts the configuration of the file handler into an Optic object.
 
         Returns:
             Optic: The Optic object based on the Zemax data.
+
         """
         self.optic = Optic()
         self._configure_surfaces()
@@ -44,17 +45,13 @@ class ZemaxToOpticConverter:
         return self.optic
 
     def _configure_surfaces(self):
-        """
-        Configures the surfaces for the optic.
-        """
+        """Configures the surfaces for the optic."""
         for idx, surf_data in self.data["surfaces"].items():
             self._configure_surface(idx, surf_data)
         self.optic.add_surface(index=len(self.data["surfaces"]))
 
     def _configure_surface(self, index, data):
-        """
-        Configures a surface for the optic.
-        """
+        """Configures a surface for the optic."""
         coefficients = self._configure_surface_coefficients(data)
         self.optic.add_surface(
             index=index,
@@ -68,33 +65,27 @@ class ZemaxToOpticConverter:
         )
 
     def _configure_surface_coefficients(self, data):
-        """
-        Configures the coefficients for the surface. This is None for standard
+        """Configures the coefficients for the surface. This is None for standard
         surfaces.
         """
         surf_type = data["type"]
         if surf_type == "standard":
             return None
-        elif surf_type in ["even_asphere", "odd_asphere"]:
+        if surf_type in ["even_asphere", "odd_asphere"]:
             coefficients = []
             for k in range(8):
                 coefficients.append(data[f"param_{k}"])
             return coefficients
-        else:
-            raise ValueError("Unsupported surface type.")
+        raise ValueError("Unsupported surface type.")
 
     def _configure_aperture(self):
-        """
-        Configures the aperture for the optic.
-        """
+        """Configures the aperture for the optic."""
         aperture_data = self.data["aperture"]
         ap_type, value = next(iter(aperture_data.items()))
         self.optic.set_aperture(aperture_type=ap_type, value=value)
 
     def _configure_fields(self):
-        """
-        Configure the fields for the optic.
-        """
+        """Configure the fields for the optic."""
         self.optic.set_field_type(field_type=self.data["fields"]["type"])
 
         field_x = self.data["fields"]["x"]
@@ -121,9 +112,7 @@ class ZemaxToOpticConverter:
             self.optic.add_field(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
 
     def _configure_wavelengths(self):
-        """
-        Configure the wavelengths for the optic.
-        """
+        """Configure the wavelengths for the optic."""
         primary_idx = self.data["wavelengths"]["primary_index"]
         for idx, value in enumerate(self.data["wavelengths"]["data"]):
             self.optic.add_wavelength(value=value, is_primary=(idx == primary_idx))

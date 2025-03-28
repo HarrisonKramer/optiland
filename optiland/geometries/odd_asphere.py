@@ -22,8 +22,7 @@ from optiland.geometries.even_asphere import EvenAsphere
 
 
 class OddAsphere(EvenAsphere):
-    """
-    Represents an odd asphere geometry defined as:
+    """Represents an odd asphere geometry defined as:
 
     z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Ci * r^i)
 
@@ -46,6 +45,7 @@ class OddAsphere(EvenAsphere):
         coefficients (list, optional): The coefficients of the asphere.
             Defaults to an empty list, indicating no aspheric coefficients are
             used.
+
     """
 
     def __init__(
@@ -64,8 +64,7 @@ class OddAsphere(EvenAsphere):
         return "Odd Asphere"
 
     def sag(self, x=0, y=0):
-        """
-        Calculates the sag of the asphere at the given coordinates.
+        """Calculates the sag of the asphere at the given coordinates.
 
         Args:
             x (float, np.ndarray, optional): The x-coordinate(s).
@@ -75,6 +74,7 @@ class OddAsphere(EvenAsphere):
 
         Returns:
             float: The sag value at the given coordinates.
+
         """
         r2 = x**2 + y**2
         r = np.sqrt(r2)
@@ -85,8 +85,7 @@ class OddAsphere(EvenAsphere):
         return z
 
     def _surface_normal(self, x, y):
-        """
-        Calculates the surface normal of the asphere at the given x and y
+        """Calculates the surface normal of the asphere at the given x and y
         position.
 
         Args:
@@ -95,6 +94,7 @@ class OddAsphere(EvenAsphere):
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
         r2 = x**2 + y**2
         r = np.sqrt(r2)

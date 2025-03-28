@@ -356,7 +356,9 @@ class TestLensInfoViewer:
     def test_view_material_file(self, capsys):
         lens = ReverseTelephoto()
         filename = str(
-            resources.files("optiland.database").joinpath("data-nk/glass/hoya/LAC9.yml")
+            resources.files("optiland.database").joinpath(
+                "data-nk/glass/hoya/LAC9.yml"
+            ),
         )
         # filename = pkg_resources.resource_filename(
         #    'optiland.database', 'data-nk/glass/hoya/LAC9.yml'

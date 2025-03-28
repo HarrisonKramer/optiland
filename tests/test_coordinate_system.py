@@ -48,9 +48,9 @@ def test_coordinate_system_localize():
     assert rays.x == pytest.approx(-23.63610642, abs=1e-8)
     assert rays.y == pytest.approx(-25.40225528, abs=1e-8)
     assert rays.z == pytest.approx(-23.08369058, abs=1e-8)
-    assert rays.L == pytest.approx(0.23129557, abs=1e-8)
-    assert rays.M == pytest.approx(0.2370124, abs=1e-8)
-    assert rays.N == pytest.approx(0.17414787, abs=1e-8)
+    assert pytest.approx(0.23129557, abs=1e-8) == rays.L
+    assert pytest.approx(0.2370124, abs=1e-8) == rays.M
+    assert pytest.approx(0.17414787, abs=1e-8) == rays.N
 
 
 def test_coordinate_system_globalize():
@@ -82,9 +82,9 @@ def test_coordinate_system_globalize():
     assert rays.x == pytest.approx(1.0, abs=1e-8)
     assert rays.y == pytest.approx(2.0, abs=1e-8)
     assert rays.z == pytest.approx(3.0, abs=1e-8)
-    assert rays.L == pytest.approx(0.1, abs=1e-8)
-    assert rays.M == pytest.approx(0.2, abs=1e-8)
-    assert rays.N == pytest.approx(0.3, abs=1e-8)
+    assert pytest.approx(0.1, abs=1e-8) == rays.L
+    assert pytest.approx(0.2, abs=1e-8) == rays.M
+    assert pytest.approx(0.3, abs=1e-8) == rays.N
 
 
 def test_coordinate_system_transform():
@@ -98,7 +98,7 @@ def test_coordinate_system_transform():
             [0.6312515, -0.35830835, 0.68784931],
             [0.5316958, 0.84560449, -0.04746188],
             [-0.56464247, 0.39568697, 0.72430014],
-        ]
+        ],
     )
     assert np.allclose(eff_rot_mat, rot_mat)
 

@@ -9,8 +9,7 @@ Kramer Harrison, 2024
 
 
 class Aperture:
-    """
-    Represents an aperture used in optics.
+    """Represents an aperture used in optics.
 
     Attributes:
         ap_type (str): The type of the aperture. Must be one of 'EPD',
@@ -33,7 +32,7 @@ class Aperture:
         if aperture_type in ["EPD", "imageFNO"] and object_space_telecentric:
             raise ValueError(
                 'Cannot set aperture type to "EPD" or "imageFNO" '
-                "if lens is telecentric in object space."
+                "if lens is telecentric in object space.",
             )
 
         self.ap_type = aperture_type
@@ -45,6 +44,7 @@ class Aperture:
 
         Returns:
             dict: A dictionary containing the aperture data.
+
         """
         return {
             "type": self.ap_type,
@@ -61,6 +61,7 @@ class Aperture:
 
         Returns:
             Aperture: A new Aperture instance created from the data.
+
         """
         required_keys = {"type", "value"}
         if not required_keys.issubset(data):

@@ -24,7 +24,10 @@ class TestWavefront:
     def test_wavefront_init_custom(self):
         optic = DoubleGauss()
         w = wavefront.Wavefront(
-            optic, num_rays=100, distribution="random", wavelengths="primary"
+            optic,
+            num_rays=100,
+            distribution="random",
+            wavelengths="primary",
         )
         assert w.num_rays == 100
         assert isinstance(w.distribution, distribution.RandomDistribution)

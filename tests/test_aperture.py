@@ -4,7 +4,8 @@ from optiland import aperture
 
 
 @pytest.mark.parametrize(
-    "ap_type, value", [("EPD", 10), ("imageFNO", 3.2), ("objectNA", 0.265)]
+    "ap_type, value",
+    [("EPD", 10), ("imageFNO", 3.2), ("objectNA", 0.265)],
 )
 def test_aperture_generate(ap_type, value):
     """Check instantiation of aperture"""
@@ -46,5 +47,5 @@ def test_invalid_from_dict():
     """Check from_dict method with invalid dict"""
     with pytest.raises(ValueError):
         aperture.Aperture.from_dict(
-            {"invalid": "I am invalid, unfortunately", "value": 5.0}
+            {"invalid": "I am invalid, unfortunately", "value": 5.0},
         )

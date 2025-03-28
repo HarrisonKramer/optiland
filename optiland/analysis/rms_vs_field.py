@@ -26,6 +26,7 @@ class RmsSpotSizeVsField(SpotDiagram):
         num_rings (int): the number of rings. Default is 6.
         distribution (str): the distribution of the fields.
             Default is 'hexapolar'.
+
     """
 
     def __init__(
@@ -52,6 +53,7 @@ class RmsSpotSizeVsField(SpotDiagram):
 
         Returns:
             None
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
@@ -84,6 +86,7 @@ class RmsWavefrontErrorVsField(Wavefront):
         num_rays (int): the number of rays. Default is 12.
         distribution (str): the distribution of the fields.
             Default is 'hexapolar'.
+
     """
 
     def __init__(
@@ -110,6 +113,7 @@ class RmsWavefrontErrorVsField(Wavefront):
 
         Returns:
             None
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 

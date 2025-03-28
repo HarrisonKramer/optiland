@@ -11,8 +11,7 @@ from optiland.optimization.variable.base import VariableBehavior
 
 
 class DecenterVariable(VariableBehavior):
-    """
-    Represents a variable for the decenter of an optic surface.
+    """Represents a variable for the decenter of an optic surface.
 
     Args:
         optic (Optic): The optic object to which the surface belongs.
@@ -29,6 +28,7 @@ class DecenterVariable(VariableBehavior):
     Methods:
         get_value(): Returns the current decenter value of the surface.
         update_value(new_value): Updates the decenter value of the surface.
+
     """
 
     def __init__(self, optic, surface_number, axis, apply_scaling=True, **kwargs):
@@ -39,11 +39,11 @@ class DecenterVariable(VariableBehavior):
             raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
 
     def get_value(self):
-        """
-        Returns the current decenter value of the surface.
+        """Returns the current decenter value of the surface.
 
         Returns:
             float: The current decenter value.
+
         """
         surf = self._surfaces.surfaces[self.surface_number]
         if self.axis == "x":
@@ -56,11 +56,11 @@ class DecenterVariable(VariableBehavior):
         return value
 
     def update_value(self, new_value):
-        """
-        Updates the decenter value of the surface.
+        """Updates the decenter value of the surface.
 
         Args:
             new_value (float): The new decenter value.
+
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
@@ -72,28 +72,28 @@ class DecenterVariable(VariableBehavior):
             surf.geometry.cs.y = new_value
 
     def scale(self, value):
-        """
-        Scale the value of the variable for improved optimization performance.
+        """Scale the value of the variable for improved optimization performance.
 
         Args:
             value: The value to scale
+
         """
         return value
 
     def inverse_scale(self, scaled_value):
-        """
-        Inverse scale the value of the variable.
+        """Inverse scale the value of the variable.
 
         Args:
             scaled_value: The scaled value to inverse scale
+
         """
         return scaled_value
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Decenter {self.axis.upper()}, Surface {self.surface_number}"

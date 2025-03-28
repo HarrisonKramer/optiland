@@ -13,16 +13,13 @@ from optiland.rays.real_rays import RealRays
 
 
 class RayGenerator:
-    """
-    Generator class for creating rays.
-    """
+    """Generator class for creating rays."""
 
     def __init__(self, optic):
         self.optic = optic
 
     def generate_rays(self, Hx, Hy, Px, Py, wavelength):
-        """
-        Generates rays for tracing based on the given parameters.
+        """Generates rays for tracing based on the given parameters.
 
         Args:
             Hx (float): Normalized x field coordinate.
@@ -33,6 +30,7 @@ class RayGenerator:
 
         Returns:
             RealRays: RealRays object containing the generated rays.
+
         """
         vx, vy = 1 - np.array(self.optic.fields.get_vig_factor(Hx, Hy))
         x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
@@ -40,15 +38,15 @@ class RayGenerator:
         if self.optic.obj_space_telecentric:
             if self.optic.field_type == "angle":
                 raise ValueError(
-                    'Field type cannot be "angle" for telecentric object space.'
+                    'Field type cannot be "angle" for telecentric object space.',
                 )
             if self.optic.aperture.ap_type == "EPD":
                 raise ValueError(
-                    'Aperture type cannot be "EPD" for telecentric object space.'
+                    'Aperture type cannot be "EPD" for telecentric object space.',
                 )
-            elif self.optic.aperture.ap_type == "imageFNO":
+            if self.optic.aperture.ap_type == "imageFNO":
                 raise ValueError(
-                    'Aperture type cannot be "imageFNO" for telecentric object space.'
+                    'Aperture type cannot be "imageFNO" for telecentric object space.',
                 )
 
             sin = self.optic.aperture.value
@@ -80,15 +78,13 @@ class RayGenerator:
             if self.optic.surface_group.uses_polarization:
                 raise ValueError(
                     "Polarization must be set when surfaces have "
-                    "polarization-dependent coatings."
+                    "polarization-dependent coatings.",
                 )
             return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
-        else:
-            return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
+        return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
 
     def _get_ray_origins(self, Hx, Hy, Px, Py, vx, vy):
-        """
-        Calculate the initial positions for rays originating at the object.
+        """Calculate the initial positions for rays originating at the object.
 
         Args:
             Hx (float): Normalized x field coordinate.
@@ -114,11 +110,11 @@ class RayGenerator:
         if obj.is_infinite:
             if self.optic.field_type == "object_height":
                 raise ValueError(
-                    'Field type cannot be "object_height" for an object at infinity.'
+                    'Field type cannot be "object_height" for an object at infinity.',
                 )
             if self.optic.obj_space_telecentric:
                 raise ValueError(
-                    "Object space cannot be telecentric for an object at infinity."
+                    "Object space cannot be telecentric for an object at infinity.",
                 )
             EPL = self.optic.paraxial.EPL()
             EPD = self.optic.paraxial.EPD()
@@ -152,8 +148,7 @@ class RayGenerator:
         return x0, y0, z0
 
     def _get_starting_z_offset(self):
-        """
-        Calculate the starting ray z-coordinate offset for systems with an
+        """Calculate the starting ray z-coordinate offset for systems with an
         object at infinity. This is relative to the first surface of the optic.
 
         This method chooses a starting point that is equivalent to the entrance
@@ -161,6 +156,7 @@ class RayGenerator:
 
         Returns:
             float: The z-coordinate offset relative to the first surface.
+
         """
         z = self.optic.surface_group.positions[1:-1]
         offset = self.optic.paraxial.EPD()

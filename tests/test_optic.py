@@ -25,7 +25,10 @@ class TestOptic:
 
     def test_add_surface(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="SF11", thickness=5
+            index=0,
+            surface_type="standard",
+            material="SF11",
+            thickness=5,
         )
         assert len(self.optic.surface_group.surfaces) == 1
 
@@ -72,40 +75,64 @@ class TestOptic:
 
     def test_set_radius(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="SF11", thickness=5
+            index=0,
+            surface_type="standard",
+            material="SF11",
+            thickness=5,
         )
         self.optic.set_radius(10.0, 0)
         assert self.optic.surface_group.surfaces[0].geometry.radius == 10.0
 
     def test_set_conic(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="SF11", thickness=5
+            index=0,
+            surface_type="standard",
+            material="SF11",
+            thickness=5,
         )
         self.optic.set_conic(-1.0, 0)
         assert self.optic.surface_group.surfaces[0].geometry.k == -1.0
 
     def test_set_thickness(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=1, surface_type="standard", material="SF11", thickness=5
+            index=1,
+            surface_type="standard",
+            material="SF11",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=2, surface_type="standard", material="air", thickness=10
+            index=2,
+            surface_type="standard",
+            material="air",
+            thickness=10,
         )
         self.optic.set_thickness(10.0, 1)
         assert self.optic.surface_group.get_thickness(1) == 10.0
 
     def test_set_index(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=1, surface_type="standard", material="air", thickness=5
+            index=1,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=2, surface_type="standard", material="air", thickness=10
+            index=2,
+            surface_type="standard",
+            material="air",
+            thickness=10,
         )
         self.optic.set_index(1.5, 1)
         assert self.optic.surface_group.surfaces[1].material_post.n(1) == 1.5
@@ -131,20 +158,32 @@ class TestOptic:
 
     def test_set_pickup(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=1, surface_type="standard", material="air", thickness=5
+            index=1,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.pickups.add(0, "radius", 1, scale=2, offset=1)
         assert len(self.optic.pickups) == 1
 
     def test_clear_pickups(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.add_surface(
-            index=1, surface_type="standard", material="air", thickness=5
+            index=1,
+            surface_type="standard",
+            material="air",
+            thickness=5,
         )
         self.optic.pickups.add(0, "radius", 1, scale=2, offset=1)
         self.optic.pickups.clear()
@@ -163,7 +202,11 @@ class TestOptic:
 
     def test_scale_system(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", radius=10, thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            radius=10,
+            thickness=5,
         )
         self.optic.set_aperture("EPD", 5.0)
         self.optic.scale_system(2)
@@ -172,7 +215,11 @@ class TestOptic:
 
     def test_reset(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", radius=10, thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            radius=10,
+            thickness=5,
         )
         self.optic.reset()
         assert self.optic.aperture is None
@@ -185,7 +232,11 @@ class TestOptic:
 
     def test_n(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", radius=10, thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            radius=10,
+            thickness=5,
         )
         self.optic.add_wavelength(0.55, is_primary=True)
         n_values = self.optic.n()
@@ -243,7 +294,11 @@ class TestOptic:
 
     def test_image_surface_property(self):
         self.optic.add_surface(
-            index=0, surface_type="standard", material="air", radius=10, thickness=5
+            index=0,
+            surface_type="standard",
+            material="air",
+            radius=10,
+            thickness=5,
         )
         assert self.optic.image_surface is self.optic.surface_group.surfaces[0]
 

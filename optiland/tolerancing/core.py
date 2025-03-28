@@ -14,8 +14,7 @@ from optiland.tolerancing.perturbation import BaseSampler, Perturbation
 
 
 class Tolerancing:
-    """
-    A class representing a tolerancing problem. This class is the core of the
+    """A class representing a tolerancing problem. This class is the core of the
     tolerancing module. It allows the user to define a tolerancing problem by
     adding operands (metrics), perturbations, and compensators to an optical
     system.
@@ -47,6 +46,7 @@ class Tolerancing:
         apply_compensators(self): Applies compensators to the optic.
         evaluate(self): Evaluates the operands in the tolerancing problem.
         reset(self): Resets the optic to its nominal state.
+
     """
 
     def __init__(self, optic, method="generic", tol=1e-5):
@@ -66,8 +66,7 @@ class Tolerancing:
         min_val: float = None,
         max_val: float = None,
     ):
-        """
-        Add an operand to the tolerancing problem.
+        """Add an operand to the tolerancing problem.
 
         Args:
             operand_type (str): The type of the operand.
@@ -78,17 +77,22 @@ class Tolerancing:
                 value (inequality operand).
             weight (float): The weight of the operand.
             input_data (dict): Additional input data for the operand.
+
         """
         new_operand = Operand(
-            operand_type, target, min_val, max_val, weight, input_data
+            operand_type,
+            target,
+            min_val,
+            max_val,
+            weight,
+            input_data,
         )
         if target is None:
             new_operand.target = new_operand.value
         self.operands.append(new_operand)
 
     def add_perturbation(self, variable_type: str, sampler: BaseSampler, **kwargs):
-        """
-        Add a perturbation to the optic.
+        """Add a perturbation to the optic.
 
         Args:
             variable_type: The type of the variable to be perturbed, such as
@@ -96,19 +100,20 @@ class Tolerancing:
                 information.
             sampler: The sampler object used to generate perturbation values.
             **kwargs: Additional keyword arguments for the variable.
+
         """
         perturbation = Perturbation(self.optic, variable_type, sampler, **kwargs)
         self.perturbations.append(perturbation)
 
     def add_compensator(self, variable_type: str, **kwargs):
-        """
-        Add a compensator variable to the optimizer.
+        """Add a compensator variable to the optimizer.
 
         Args:
             variable_type: The type of the variable to be used for
                 compensation, such as "thickness", etc. See the variable
                 module for more information.
             **kwargs: Additional keyword arguments for the variable.
+
         """
         self.compensator.add_variable(self.optic, variable_type, **kwargs)
 
@@ -125,7 +130,7 @@ class Tolerancing:
             # undo scaling and record the optimized values
             result = {}
             for i, var in enumerate(self.compensator.variables):
-                result[f"C{i}: {str(var)}"] = var.variable.inverse_scale(var.value)
+                result[f"C{i}: {var!s}"] = var.variable.inverse_scale(var.value)
 
         return result
 

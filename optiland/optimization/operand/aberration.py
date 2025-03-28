@@ -11,8 +11,7 @@ import numpy as np
 
 
 class AberrationOperand:
-    """
-    A class that provides methods to calculate various aberration values for
+    """A class that provides methods to calculate various aberration values for
         an optic.
 
     Methods:
@@ -66,6 +65,7 @@ class AberrationOperand:
             chromatic aberration values for the optic.
         TchC_sum(optic): Returns the sum of transverse
             chromatic aberration values for the optic.
+
     """
 
     @staticmethod

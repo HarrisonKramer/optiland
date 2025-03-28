@@ -66,7 +66,11 @@ class TestParaxialSurface:
         # add surfaces
         lens.add_surface(index=0, thickness=np.inf)
         lens.add_surface(
-            index=1, surface_type="paraxial", thickness=100, f=100, is_stop=True
+            index=1,
+            surface_type="paraxial",
+            thickness=100,
+            f=100,
+            is_stop=True,
         )
         lens.add_surface(index=2)
 
@@ -82,7 +86,11 @@ class TestParaxialSurface:
         lens.add_wavelength(value=0.55, is_primary=True)
 
         rays = lens.trace(
-            Hx=0, Hy=0, wavelength=0.55, distribution="uniform", num_rays=32
+            Hx=0,
+            Hy=0,
+            wavelength=0.55,
+            distribution="uniform",
+            num_rays=32,
         )
 
         # confirm all points exactly on axis

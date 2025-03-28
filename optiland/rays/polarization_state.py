@@ -13,8 +13,7 @@ import numpy as np
 
 
 class PolarizationState:
-    """
-    Represents the polarization state of a light ray.
+    """Represents the polarization state of a light ray.
 
     Attributes:
         is_polarized (bool): Indicates whether the state is polarized.
@@ -24,6 +23,7 @@ class PolarizationState:
             field.
         phase_y (Optional[float]): Phase of the y-component of the electric
             field.
+
     """
 
     def __init__(
@@ -37,14 +37,12 @@ class PolarizationState:
         if is_polarized:
             if None in [Ex, Ey, phase_x, phase_y]:
                 raise ValueError(
-                    "All parameters must be provided for a polarized state."
+                    "All parameters must be provided for a polarized state.",
                 )
-        else:
-            if not all(var is None for var in [Ex, Ey, phase_x, phase_y]):
-                raise ValueError(
-                    "Ex, Ey, phase_x, and phase_y must be None "
-                    "for a non-polarized state."
-                )
+        elif not all(var is None for var in [Ex, Ey, phase_x, phase_y]):
+            raise ValueError(
+                "Ex, Ey, phase_x, and phase_y must be None for a non-polarized state.",
+            )
 
         self.is_polarized = is_polarized
         self.Ex = float(Ex) if Ex is not None else None
@@ -58,33 +56,31 @@ class PolarizationState:
             self.Ey /= mag
 
     def __str__(self):
-        """
-        Returns a string representation of the polarization state.
+        """Returns a string representation of the polarization state.
 
         Returns:
             str: The string representation of the polarization state.
+
         """
         if self.is_polarized:
             return (
                 f"Polarized Light: Ex: {self.Ex}, Ey: {self.Ey}, "
                 f"Phase x: {self.phase_x}, Phase y: {self.phase_y}"
             )
-        else:
-            return "Unpolarized Light"
+        return "Unpolarized Light"
 
     def __repr__(self):
-        """
-        Returns a string representation of the polarization state.
+        """Returns a string representation of the polarization state.
 
         Returns:
             str: The string representation of the polarization state.
+
         """
         return self.__str__()
 
 
 def create_polarization(pol_type: str):
-    """
-    Create a polarization state based on the given polarization type.
+    """Create a polarization state based on the given polarization type.
 
     Args:
         pol_type (str): The type of polarization. Must be one of the following:
@@ -101,10 +97,11 @@ def create_polarization(pol_type: str):
 
     Raises:
         ValueError: If an invalid polarization type is provided.
+
     """
     if pol_type == "unpolarized":
         return PolarizationState(is_polarized=False)
-    elif pol_type == "H":
+    if pol_type == "H":
         Ex = 1
         Ey = 0
         phase_x = 0
@@ -136,8 +133,12 @@ def create_polarization(pol_type: str):
         phase_y = np.pi / 2
     else:
         raise ValueError(
-            "Invalid polarization type. Must be H, V, L+45, L-45, RCP or LCP."
+            "Invalid polarization type. Must be H, V, L+45, L-45, RCP or LCP.",
         )
     return PolarizationState(
-        is_polarized=True, Ex=Ex, Ey=Ey, phase_x=phase_x, phase_y=phase_y
+        is_polarized=True,
+        Ex=Ex,
+        Ey=Ey,
+        phase_x=phase_x,
+        phase_y=phase_y,
     )

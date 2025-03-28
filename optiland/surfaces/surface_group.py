@@ -19,21 +19,21 @@ from optiland.surfaces.surface_factory import SurfaceFactory
 
 
 class SurfaceGroup:
-    """
-    Represents a group of surfaces in an optical system.
+    """Represents a group of surfaces in an optical system.
 
     Attributes:
         surfaces (list): List of surfaces in the group.
         _last_thickness (float): The thickness of the last surface added.
+
     """
 
     def __init__(self, surfaces: List[Surface] = None):
-        """
-        Initializes a new instance of the SurfaceGroup class.
+        """Initializes a new instance of the SurfaceGroup class.
 
         Args:
             surfaces (List, optional): List of surfaces to initialize the
                 group with. Defaults to None.
+
         """
         if surfaces is None:
             self.surfaces = []
@@ -86,7 +86,7 @@ class SurfaceGroup:
     def intensity(self):
         """np.array: ray intensities on all surfaces"""
         return np.array(
-            [surf.intensity for surf in self.surfaces if surf.intensity.size > 0]
+            [surf.intensity for surf in self.surfaces if surf.intensity.size > 0],
         )
 
     @property
@@ -133,26 +133,26 @@ class SurfaceGroup:
         return False
 
     def get_thickness(self, surface_number):
-        """
-        Calculate the thickness between two surfaces.
+        """Calculate the thickness between two surfaces.
 
         Args:
             surface_number (int): The index of the first surface.
 
         Returns:
             float: The thickness between the two surfaces.
+
         """
         t = self.positions
         return t[surface_number + 1] - t[surface_number]
 
     def trace(self, rays, skip=0):
-        """
-        Trace the given rays through the surfaces.
+        """Trace the given rays through the surfaces.
 
         Args:
             rays (BaseRays): List of rays to be traced.
             skip (int, optional): Number of surfaces to skip before tracing.
                 Defaults to 0.
+
         """
         self.reset()
         for surface in self.surfaces[skip:]:
@@ -169,8 +169,7 @@ class SurfaceGroup:
         material="air",
         **kwargs,
     ):
-        """
-        Adds a new surface to the list of surfaces.
+        """Adds a new surface to the list of surfaces.
 
         Args:
             new_surface (Surface, optional): The new surface to add. If not
@@ -190,13 +189,19 @@ class SurfaceGroup:
 
         Raises:
             ValueError: If index is not provided when defining a new surface.
+
         """
         if new_surface is None:
             if index is None:
                 raise ValueError("Must define index when defining surface.")
 
             new_surface = self.surface_factory.create_surface(
-                surface_type, comment, index, is_stop, material, **kwargs
+                surface_type,
+                comment,
+                index,
+                is_stop,
+                material,
+                **kwargs,
             )
 
         if new_surface.is_stop:
@@ -208,8 +213,7 @@ class SurfaceGroup:
         self.surface_factory.last_thickness = kwargs.get("thickness", 0)
 
     def remove_surface(self, index):
-        """
-        Remove a surface from the list of surfaces.
+        """Remove a surface from the list of surfaces.
 
         Args:
             index (int): The index of the surface to remove.
@@ -219,14 +223,14 @@ class SurfaceGroup:
 
         Returns:
         None
+
         """
         if index == 0:
             raise ValueError("Cannot remove object surface.")
         del self.surfaces[index]
 
     def reset(self):
-        """
-        Resets all the surfaces in the collection.
+        """Resets all the surfaces in the collection.
 
         This method iterates over each surface in the collection and calls
             its `reset` method.
@@ -267,33 +271,31 @@ class SurfaceGroup:
         return SurfaceGroup(surfs_inverted)
 
     def set_fresnel_coatings(self):
-        """
-        Set Fresnel coatings on all surfaces in the group.
-        """
+        """Set Fresnel coatings on all surfaces in the group."""
         for surface in self.surfaces[1:-1]:
             if surface.material_pre != surface.material_post:
                 surface.set_fresnel_coating()
 
     def to_dict(self):
-        """
-        Convert the surface group to a dictionary.
+        """Convert the surface group to a dictionary.
 
         Returns:
             dict: The surface group as a dictionary.
+
         """
         return {"surfaces": [surface.to_dict() for surface in self.surfaces]}
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a surface group from a dictionary.
+        """Create a surface group from a dictionary.
 
         Args:
             data (dict): The dictionary to create the surface group from.
 
         Returns:
             SurfaceGroup: The surface group created from the dictionary.
+
         """
         return cls(
-            [Surface.from_dict(surface_data) for surface_data in data["surfaces"]]
+            [Surface.from_dict(surface_data) for surface_data in data["surfaces"]],
         )

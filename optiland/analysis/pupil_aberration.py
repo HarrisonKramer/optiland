@@ -13,8 +13,7 @@ import numpy as np
 
 
 class PupilAberration:
-    """
-    Represents the pupil aberrations of an optic.
+    """Represents the pupil aberrations of an optic.
 
     The pupil abberration is defined as the difference between the paraxial
     and real ray intersection point at the stop surface of the optic. This is
@@ -29,6 +28,7 @@ class PupilAberration:
             Defaults to 'all'.
         num_points (int, optional): The number of points in the pupil
             aberration. Defaults to 256.
+
     """
 
     def __init__(self, optic, fields="all", wavelengths="all", num_points=256):
@@ -48,12 +48,12 @@ class PupilAberration:
         self.data = self._generate_data()
 
     def view(self, figsize=(10, 3.33)):
-        """
-        Displays the pupil aberration plot.
+        """Displays the pupil aberration plot.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (10, 3.33).
+
         """
         _, axs = plt.subplots(
             nrows=len(self.fields),
@@ -97,11 +97,11 @@ class PupilAberration:
         plt.show()
 
     def _generate_data(self):
-        """
-        Generate the real pupil aberration data.
+        """Generate the real pupil aberration data.
 
         Returns:
             dict: The pupil aberration data.
+
         """
         stop_idx = self.optic.surface_group.stop_index
 

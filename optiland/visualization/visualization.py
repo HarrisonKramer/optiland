@@ -24,8 +24,7 @@ plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 
 
 class OpticViewer:
-    """
-    A class used to visualize optical systems.
+    """A class used to visualize optical systems.
 
     Args:
         optic: The optical system to be visualized.
@@ -39,6 +38,7 @@ class OpticViewer:
         view(fields='all', wavelengths='primary', num_rays=3,
              distribution='line_y', figsize=(10, 4), xlim=None, ylim=None):
             Visualizes the optical system with specified parameters.
+
     """
 
     def __init__(self, optic):
@@ -59,8 +59,7 @@ class OpticViewer:
         title=None,
         reference=None,
     ):
-        """
-        Visualizes the optical system.
+        """Visualizes the optical system.
 
         Args:
             fields (str, optional): The fields to be visualized.
@@ -77,6 +76,7 @@ class OpticViewer:
             ylim (tuple, optional): The y-axis limits. Defaults to None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
         """
         _, ax = plt.subplots(figsize=figsize)
 
@@ -109,8 +109,7 @@ class OpticViewer:
 
 
 class OpticViewer3D:
-    """
-    A class used to visualize optical systems in 3D.
+    """A class used to visualize optical systems in 3D.
 
     Args:
         optic: The optical system to be visualized.
@@ -126,6 +125,7 @@ class OpticViewer3D:
         view(fields='all', wavelengths='primary', num_rays=24,
              distribution='ring', figsize=(1200, 800), dark_mode=False):
             Visualizes the optical system in 3D.
+
     """
 
     def __init__(self, optic):
@@ -147,8 +147,7 @@ class OpticViewer3D:
         dark_mode=False,
         reference=None,
     ):
-        """
-        Visualizes the optical system in 3D.
+        """Visualizes the optical system in 3D.
 
         Args:
             fields (str, optional): The fields to be visualized.
@@ -165,6 +164,7 @@ class OpticViewer3D:
                 Defaults to False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
         """
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
@@ -210,8 +210,7 @@ class OpticViewer3D:
 
 
 class LensInfoViewer:
-    """
-    A class for viewing information about a lens.
+    """A class for viewing information about a lens.
 
     Args:
         optic (Optic): The optic object containing the lens information.
@@ -221,14 +220,14 @@ class LensInfoViewer:
 
     Methods:
         view(): Prints the lens information in a tabular format.
+
     """
 
     def __init__(self, optic):
         self.optic = optic
 
     def view(self):
-        """
-        Prints the lens information in a tabular format.
+        """Prints the lens information in a tabular format.
 
         The lens information includes the surface type, radius, thickness,
         material, conic, and semi-aperture of each surface.
@@ -254,7 +253,7 @@ class LensInfoViewer:
                 "Material": mat,
                 "Conic": conic,
                 "Semi-aperture": semi_aperture,
-            }
+            },
         )
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
@@ -302,7 +301,7 @@ class LensInfoViewer:
                 mat.append(surf.material_post.index)
             elif isinstance(surf.material_post, materials.AbbeMaterial):
                 mat.append(
-                    f"{surf.material_post.index:.4f}, {surf.material_post.abbe:.2f}"
+                    f"{surf.material_post.index:.4f}, {surf.material_post.abbe:.2f}",
                 )
             else:
                 raise ValueError("Unknown material type")

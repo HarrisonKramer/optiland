@@ -17,7 +17,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=50, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=50,
+            weight=1.0,
+            input_data=input_data,
         )
         assert len(problem.operands) == 1
         assert problem.operands[0].operand_type == "f2"
@@ -40,7 +43,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=50, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=50,
+            weight=1.0,
+            input_data=input_data,
         )
         problem.clear_operands()
         assert len(problem.operands) == 0
@@ -70,7 +76,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         sum_squared = problem.sum_squared()
         val = (lens.paraxial.f2() - 90) ** 2
@@ -81,7 +90,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         rss = problem.rss()
         val = np.abs(lens.paraxial.f2() - 90)
@@ -92,7 +104,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         problem.update_optics()
         # No assertion needed, just ensure no exceptions are raised
@@ -102,7 +117,10 @@ class TestOptimizationProblem:
         problem = optimization.OptimizationProblem()
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=9090, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=9090,
+            weight=1.0,
+            input_data=input_data,
         )
         problem.operand_info()
         captured = capsys.readouterr()
@@ -133,7 +151,10 @@ class TestOptimizationProblem:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         problem.merit_info()
         captured = capsys.readouterr()
@@ -153,7 +174,10 @@ class TestOptimizationProblem:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         problem.info()
         captured = capsys.readouterr()
@@ -169,7 +193,10 @@ class TestOptimizerGeneric:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.OptimizerGeneric(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
@@ -181,7 +208,10 @@ class TestOptimizerGeneric:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.OptimizerGeneric(problem)
         optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
@@ -221,7 +251,10 @@ class TestLeastSquares:
         problem.add_variable(lens, "conic", surface_number=1, min_val=-1, max_val=1)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
@@ -233,7 +266,10 @@ class TestLeastSquares:
         problem.add_variable(lens, "conic", surface_number=1)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
@@ -243,11 +279,18 @@ class TestLeastSquares:
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         problem.add_variable(
-            lens, "radius", surface_number=1, min_val=-1000, max_val=None
+            lens,
+            "radius",
+            surface_number=1,
+            min_val=-1000,
+            max_val=None,
         )
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=100, disp=True, tol=1e-3)
@@ -259,11 +302,18 @@ class TestDualAnnealing:
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         problem.add_variable(
-            lens, "thickness", surface_number=1, min_val=10, max_val=100
+            lens,
+            "thickness",
+            surface_number=1,
+            min_val=10,
+            max_val=100,
         )
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=95, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.DualAnnealing(problem)
         result = optimizer.optimize(maxiter=10, disp=False)
@@ -275,7 +325,10 @@ class TestDualAnnealing:
         problem.add_variable(lens, "thickness", surface_number=1)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=95, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.DualAnnealing(problem)
         with pytest.raises(ValueError):
@@ -287,11 +340,19 @@ class TestDifferentialEvolution:
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         problem.add_variable(
-            lens, "index", surface_number=1, min_val=1.2, max_val=1.8, wavelength=0.5
+            lens,
+            "index",
+            surface_number=1,
+            min_val=1.2,
+            max_val=1.8,
+            wavelength=0.5,
         )
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=1)
@@ -303,7 +364,10 @@ class TestDifferentialEvolution:
         problem.add_variable(lens, "index", surface_number=1, wavelength=0.5)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=95, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.DifferentialEvolution(problem)
         with pytest.raises(ValueError):
@@ -313,11 +377,19 @@ class TestDifferentialEvolution:
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         problem.add_variable(
-            lens, "index", surface_number=1, min_val=1.2, max_val=1.8, wavelength=0.5
+            lens,
+            "index",
+            surface_number=1,
+            min_val=1.2,
+            max_val=1.8,
+            wavelength=0.5,
         )
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.DifferentialEvolution(problem)
         result = optimizer.optimize(maxiter=10, disp=False, workers=-1)
@@ -331,7 +403,10 @@ class TestSHGO:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.SHGO(problem)
         result = optimizer.optimize()
@@ -343,7 +418,10 @@ class TestSHGO:
         problem.add_variable(lens, "radius", surface_number=1)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.SHGO(problem)
         with pytest.raises(ValueError):
@@ -357,7 +435,10 @@ class TestBasinHopping:
         problem.add_variable(lens, "radius", surface_number=1)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.BasinHopping(problem)
         result = optimizer.optimize(niter=10)
@@ -369,7 +450,10 @@ class TestBasinHopping:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         input_data = {"optic": lens}
         problem.add_operand(
-            operand_type="f2", target=90, weight=1.0, input_data=input_data
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
         )
         optimizer = optimization.BasinHopping(problem)
         with pytest.raises(ValueError):

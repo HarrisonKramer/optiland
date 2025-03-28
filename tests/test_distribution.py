@@ -161,7 +161,8 @@ def test_gaussian_quad_distribution():
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=6)
     assert np.allclose(
-        d.x, np.array([0.18375, 0.41158, 0.617, 0.78696, 0.91138, 0.983])
+        d.x,
+        np.array([0.18375, 0.41158, 0.617, 0.78696, 0.91138, 0.983]),
     )
     assert np.allclose(d.y, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
@@ -169,7 +170,8 @@ def test_gaussian_quad_distribution():
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=1)
     assert np.allclose(
-        d.x, np.array([0.35355500073276686, 0.70711, 0.35355500073276686])
+        d.x,
+        np.array([0.35355500073276686, 0.70711, 0.35355500073276686]),
     )
     assert np.allclose(d.y, np.array([-0.6123752228469513, 0.0, 0.6123752228469513]))
 
@@ -186,7 +188,7 @@ def test_gaussian_quad_distribution():
                 0.4440350009202928,
                 0.88807,
                 0.4440350009202928,
-            ]
+            ],
         ),
     )
     assert np.allclose(
@@ -199,7 +201,7 @@ def test_gaussian_quad_distribution():
                 -0.7690911798075152,
                 0.0,
                 0.7690911798075152,
-            ]
+            ],
         ),
     )
 
@@ -219,7 +221,7 @@ def test_gaussian_quad_distribution():
                 0.4709800009761381,
                 0.94196,
                 0.4709800009761381,
-            ]
+            ],
         ),
     )
     assert np.allclose(
@@ -235,7 +237,7 @@ def test_gaussian_quad_distribution():
                 -0.8157612887852163,
                 0.0,
                 0.8157612887852163,
-            ]
+            ],
         ),
     )
 
@@ -258,7 +260,7 @@ def test_gaussian_quad_distribution():
                 0.4823300009996618,
                 0.96466,
                 0.4823300009996618,
-            ]
+            ],
         ),
     )
     assert np.allclose(
@@ -277,7 +279,7 @@ def test_gaussian_quad_distribution():
                 -0.8354200654375415,
                 0.0,
                 0.8354200654375415,
-            ]
+            ],
         ),
     )
 
@@ -303,7 +305,7 @@ def test_gaussian_quad_distribution():
                 0.4881300010116827,
                 0.97626,
                 0.4881300010116827,
-            ]
+            ],
         ),
     )
     assert np.allclose(
@@ -325,7 +327,7 @@ def test_gaussian_quad_distribution():
                 -0.8454659601145008,
                 0.0,
                 0.8454659601145008,
-            ]
+            ],
         ),
     )
 
@@ -354,7 +356,7 @@ def test_gaussian_quad_distribution():
                 0.4915000010186672,
                 0.983,
                 0.4915000010186672,
-            ]
+            ],
         ),
     )
     assert np.allclose(
@@ -379,7 +381,7 @@ def test_gaussian_quad_distribution():
                 -0.8513029713319753,
                 0.0,
                 0.8513029713319753,
-            ]
+            ],
         ),
     )
 
@@ -436,7 +438,8 @@ def test_gaussian_quad_weights():
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=4)
         assert np.allclose(
-            weights / scale[k], np.array([0.08696, 0.16304, 0.16304, 0.08696])
+            weights / scale[k],
+            np.array([0.08696, 0.16304, 0.16304, 0.08696]),
         )
 
         # 5 rings

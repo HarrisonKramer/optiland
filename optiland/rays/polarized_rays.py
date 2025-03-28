@@ -14,8 +14,7 @@ from optiland.rays.real_rays import RealRays
 
 
 class PolarizedRays(RealRays):
-    """
-    Represents a class for polarized rays in three-dimensional space.
+    """Represents a class for polarized rays in three-dimensional space.
 
     Inherits from the `RealRays` class.
 
@@ -41,6 +40,7 @@ class PolarizedRays(RealRays):
         _get_3d_electric_field(state: PolarizationState) -> np.ndarray:
             Get the 3D electric fields given the polarization state and
             initial rays.
+
     """
 
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
@@ -53,14 +53,14 @@ class PolarizedRays(RealRays):
         self._N0 = N.copy()
 
     def get_output_field(self, E: np.ndarray) -> np.ndarray:
-        """
-        Compute the output electric field given the input electric field.
+        """Compute the output electric field given the input electric field.
 
         Args:
             E (np.ndarray): The input electric field as a numpy array.
 
         Returns:
             np.ndarray: The computed output electric field as a numpy array.
+
         """
         return np.squeeze(np.matmul(self.p, E[:, :, np.newaxis]), axis=2)
 
@@ -69,6 +69,7 @@ class PolarizedRays(RealRays):
 
         Args:
             state (PolarizationState): The polarization state of the ray.
+
         """
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
@@ -77,14 +78,22 @@ class PolarizedRays(RealRays):
         else:
             # Local x-axis field
             state_x = PolarizationState(
-                is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
+                is_polarized=True,
+                Ex=1.0,
+                Ey=0.0,
+                phase_x=0.0,
+                phase_y=0.0,
             )
             E0_x = self._get_3d_electric_field(state_x)
             E1_x = self.get_output_field(E0_x)
 
             # Local y-axis field
             state_y = PolarizationState(
-                is_polarized=True, Ex=0.0, Ey=1.0, phase_x=0.0, phase_y=0.0
+                is_polarized=True,
+                Ex=0.0,
+                Ey=1.0,
+                phase_x=0.0,
+                phase_y=0.0,
             )
             E0_y = self._get_3d_electric_field(state_y)
             E1_y = self.get_output_field(E0_y)
@@ -98,13 +107,13 @@ class PolarizedRays(RealRays):
             )
 
     def update(self, jones_matrix: np.ndarray = None):
-        """
-        Update polarization matrices after interaction with surface.
+        """Update polarization matrices after interaction with surface.
 
         Args:
             jones_matrix (np.ndarray, optional): Jones matrix representing the
                 interaction with the surface. If not provided, the
                 polarization matrix is computed assuming an identity matrix.
+
         """
         # merge k-vector components into matrix for speed
         k0 = np.array([self.L0, self.M0, self.N0]).T
@@ -146,6 +155,7 @@ class PolarizedRays(RealRays):
 
         Returns:
             np.ndarray: The 3D electric fields.
+
         """
         k = np.array([self._L0, self._M0, self._N0]).T
 

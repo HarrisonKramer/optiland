@@ -324,13 +324,13 @@ class TestPolygonAperture:
         self.aperture.scale(2)
         assert np.all(
             self.aperture.vertices
-            == np.array([[-20, -30], [20, -30], [20, 30], [-20, 30]])
+            == np.array([[-20, -30], [20, -30], [20, 30], [-20, 30]]),
         )
 
         self.aperture.scale(0.5)
         assert np.all(
             self.aperture.vertices
-            == np.array([[-10, -15], [10, -15], [10, 15], [-10, 15]])
+            == np.array([[-10, -15], [10, -15], [10, 15], [-10, 15]]),
         )
 
     def test_to_dict(self):
@@ -374,7 +374,7 @@ class TestFileAperture:
     def test_scale(self):
         self.aperture.scale(2)
         assert np.all(
-            self.aperture.vertices == np.array([[0, 0], [2, 0], [2, 2], [0, 2]])
+            self.aperture.vertices == np.array([[0, 0], [2, 0], [2, 2], [0, 2]]),
         )
 
     def test_to_dict(self):

@@ -1,5 +1,4 @@
-"""
-This script scrapes the refractiveindex.info database, retrieves all data
+"""This script scrapes the refractiveindex.info database, retrieves all data
 contained in yaml files, then records relevant material data in a csv file.
 The csv file is used directly in Optiland to retrieve material data. See
 the Material class in optiland.materials.py for more information.
@@ -19,7 +18,7 @@ def generate_database(output_file):
     # load the catalog
     filename = "catalog-nk.yml"
 
-    with open(filename, "r", encoding="utf-8") as file:
+    with open(filename, encoding="utf-8") as file:
         yaml_data = yaml.safe_load(file)
 
     # read data into pandas dataframe
@@ -39,7 +38,7 @@ def generate_database(output_file):
                             mat_data["PAGE"],
                             mat_data["name"],
                             mat_data["data"],
-                        ]
+                        ],
                     )
             except KeyError:
                 pass
@@ -59,7 +58,7 @@ def generate_database(output_file):
     # read each file and record wavelength ranges
     for k, row in tqdm(df.iterrows(), total=df.shape[0]):
         filename = os.path.join("data-nk", row["filename"])
-        with open(filename, "r", encoding="utf-8") as file:
+        with open(filename, encoding="utf-8") as file:
             yaml_data = yaml.safe_load(file)
             try:
                 wave_min = [np.nan]

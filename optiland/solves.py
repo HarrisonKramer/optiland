@@ -14,14 +14,14 @@ import numpy as np
 
 
 class BaseSolve(ABC):
-    """
-    Applies a solve operation.
+    """Applies a solve operation.
 
     This method should be implemented by subclasses to define the specific
     behavior of the solve operation.
 
     Raises:
         NotImplementedError: If the method is not implemented by the subclass.
+
     """
 
     _registry = {}
@@ -36,11 +36,11 @@ class BaseSolve(ABC):
         pass  # pragma: no cover
 
     def to_dict(self):
-        """
-        Returns a dictionary representation of the solve.
+        """Returns a dictionary representation of the solve.
 
         Returns:
             dict: A dictionary representation of the solve.
+
         """
         return {
             "type": self.__class__.__name__,
@@ -48,8 +48,7 @@ class BaseSolve(ABC):
 
     @classmethod
     def from_dict(cls, optic, data):
-        """
-        Creates a solve from a dictionary representation.
+        """Creates a solve from a dictionary representation.
 
         Args:
             optic (Optic): The optic object.
@@ -57,6 +56,7 @@ class BaseSolve(ABC):
 
         Returns:
             BaseSolve: The solve.
+
         """
         solve_type = data["type"]
         if solve_type not in BaseSolve._registry:
@@ -66,13 +66,13 @@ class BaseSolve(ABC):
 
 
 class MarginalRayHeightSolve(BaseSolve):
-    """
-    Initializes a MarginalRayHeightSolve object.
+    """Initializes a MarginalRayHeightSolve object.
 
     Args:
         optic (Optic): The optic object.
         surface_idx (int): The index of the surface.
         height (float): The height of the ray.
+
     """
 
     def __init__(self, optic, surface_idx, height):
@@ -90,11 +90,11 @@ class MarginalRayHeightSolve(BaseSolve):
             surface.geometry.cs.z += offset
 
     def to_dict(self):
-        """
-        Returns a dictionary representation of the solve.
+        """Returns a dictionary representation of the solve.
 
         Returns:
             dict: A dictionary representation of the solve.
+
         """
         solve_dict = super().to_dict()
         solve_dict.update({"surface_idx": self.surface_idx, "height": self.height})
@@ -102,8 +102,7 @@ class MarginalRayHeightSolve(BaseSolve):
 
     @classmethod
     def from_dict(cls, optic, data):
-        """
-        Creates a MarginalRayHeightSolve from a dictionary representation.
+        """Creates a MarginalRayHeightSolve from a dictionary representation.
 
         Args:
             optic (Optic): The optic object.
@@ -111,6 +110,7 @@ class MarginalRayHeightSolve(BaseSolve):
 
         Returns:
             MarginalRayHeightSolve: The solve.
+
         """
         return cls(optic, data["surface_idx"], data["height"])
 
@@ -122,6 +122,7 @@ class QuickFocusSolve(BaseSolve):
 
     Raises:
             ValueError: If the optical system is not defined.
+
     """
 
     def __init__(self, optic):
@@ -131,10 +132,14 @@ class QuickFocusSolve(BaseSolve):
             raise ValueError("Can not optimize for an empty optical system")
 
     def optimal_focus_distance(
-        self, Hx=0, Hy=0, wavelength=0.55, num_rays=5, distribution="hexapolar"
+        self,
+        Hx=0,
+        Hy=0,
+        wavelength=0.55,
+        num_rays=5,
+        distribution="hexapolar",
     ):
-        """
-        Compute the optimal location of the image plane where the RMS spot
+        """Compute the optimal location of the image plane where the RMS spot
         size is minimized. This is based on solving the quadratic equation
         that describes the RMS spot size as a function of the propagation
         distance.
@@ -149,6 +154,7 @@ class QuickFocusSolve(BaseSolve):
         Returns:
             t_opt : The propagation distance from the image plane that
                 minimizes the RMS spot size.
+
         """
         # Trace rays to the image plane
         # Trace rays to the image plane
@@ -172,15 +178,14 @@ class QuickFocusSolve(BaseSolve):
     def apply(self):
         """Applies QuickFocusSolve to the optic"""
         z_focus = self.optimal_focus_distance(
-            wavelength=self.optic.wavelengths.primary_wavelength.value
+            wavelength=self.optic.wavelengths.primary_wavelength.value,
         )
 
         self.optic.surface_group.surfaces[-1].geometry.cs.z = z_focus
 
 
 class SolveFactory:
-    """
-    Factory class for creating solves.
+    """Factory class for creating solves.
 
     Attributes:
         _solve_map (dict): A dictionary mapping solve types to solve classes.
@@ -188,6 +193,7 @@ class SolveFactory:
     Methods:
         create_solve(solve_type, *args, **kwargs): Creates a solve instance
             based on the given solve type.
+
     """
 
     _solve_map = {
@@ -197,8 +203,7 @@ class SolveFactory:
 
     @staticmethod
     def create_solve(optic, solve_type, surface_idx, *args, **kwargs):
-        """
-        Creates a solve instance based on the given solve type.
+        """Creates a solve instance based on the given solve type.
 
         Args:
             optic (Optic): The optic object.
@@ -213,6 +218,7 @@ class SolveFactory:
 
         Raises:
             ValueError: If the solve type is invalid.
+
         """
         solve_class = SolveFactory._solve_map.get(solve_type)
         if solve_class is None:
@@ -221,8 +227,7 @@ class SolveFactory:
 
 
 class SolveManager:
-    """
-    Manages the application of solves to an optic.
+    """Manages the application of solves to an optic.
 
     Args:
         optic (Optic): The optic object
@@ -234,6 +239,7 @@ class SolveManager:
         add(solve_type, surface_idx, *args, **kwargs): Adds a solve
             instance to the list of solves.
         apply(): Applies all solves in the list.
+
     """
 
     def __init__(self, optic):
@@ -244,17 +250,21 @@ class SolveManager:
         return len(self.solves)
 
     def add(self, solve_type, surface_idx, *args, **kwargs):
-        """
-        Adds a solve instance to the list of solves.
+        """Adds a solve instance to the list of solves.
 
         Args:
             solve_type (str): The type of solve to create.
             surface_idx (int): The index of the surface.
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
+
         """
         solve = SolveFactory.create_solve(
-            self.optic, solve_type, surface_idx, *args, **kwargs
+            self.optic,
+            solve_type,
+            surface_idx,
+            *args,
+            **kwargs,
         )
         solve.apply()
         self.solves.append(solve)
@@ -269,18 +279,17 @@ class SolveManager:
         self.solves.clear()
 
     def to_dict(self):
-        """
-        Returns a dictionary representation of the solve manager.
+        """Returns a dictionary representation of the solve manager.
 
         Returns:
             dict: A dictionary representation of the solve manager.
+
         """
         return {"solves": [solve.to_dict() for solve in self.solves]}
 
     @classmethod
     def from_dict(cls, optic, data):
-        """
-        Creates a SolveManager from a dictionary representation.
+        """Creates a SolveManager from a dictionary representation.
 
         Args:
             optic (Optic): The optic object.
@@ -288,6 +297,7 @@ class SolveManager:
 
         Returns:
             SolveManager: The solve manager.
+
         """
         solve_manager = cls(optic)
         for solve_data in data["solves"]:

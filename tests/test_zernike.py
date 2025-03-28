@@ -606,7 +606,10 @@ class TestZernikeFit:
 
     def test_init_standard(self):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         assert np.allclose(zernike_fit_standard.x, self.x)
         assert np.allclose(zernike_fit_standard.y, self.y)
@@ -616,7 +619,10 @@ class TestZernikeFit:
 
     def test_init_noll(self):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         assert np.allclose(zernike_fit_noll.x, self.x)
         assert np.allclose(zernike_fit_noll.y, self.y)
@@ -637,7 +643,10 @@ class TestZernikeFit:
 
     def test_coeffs_standard(self):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         assert len(zernike_fit_standard.coeffs) == 36
 
@@ -646,7 +655,10 @@ class TestZernikeFit:
 
     def test_coeffs_noll(self):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         assert len(zernike_fit_noll.coeffs) == 36
 
@@ -661,7 +673,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_standard(self, mock_show):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         zernike_fit_standard.view(projection="2d")
         mock_show.assert_called_once()
@@ -670,7 +685,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_standard_3d(self, mock_show):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         zernike_fit_standard.view(projection="3d")
         mock_show.assert_called_once()
@@ -679,7 +697,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_noll(self, mock_show):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         zernike_fit_noll.view(projection="2d")
         mock_show.assert_called_once()
@@ -688,7 +709,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_noll_3d(self, mock_show):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         zernike_fit_noll.view(projection="3d")
         mock_show.assert_called_once()
@@ -697,7 +721,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_residual_standard(self, mock_show):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         zernike_fit_standard.view_residual()
         mock_show.assert_called_once()
@@ -706,7 +733,10 @@ class TestZernikeFit:
     @patch("matplotlib.pyplot.show")
     def test_view_residual_noll(self, mock_show):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         zernike_fit_noll.view_residual()
         mock_show.assert_called_once()
@@ -723,7 +753,10 @@ class TestZernikeFit:
 
     def test_objective_standard(self):
         zernike_fit_standard = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="standard"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="standard",
         )
         coeffs = [0.1 for _ in range(zernike_fit_standard.num_terms)]
         objective = zernike_fit_standard._objective(coeffs)
@@ -734,7 +767,10 @@ class TestZernikeFit:
 
     def test_objective_noll(self):
         zernike_fit_noll = zernike.ZernikeFit(
-            self.x, self.y, self.z, zernike_type="noll"
+            self.x,
+            self.y,
+            self.z,
+            zernike_type="noll",
         )
         coeffs = [0.1 for _ in range(zernike_fit_noll.num_terms)]
         objective = zernike_fit_noll._objective(coeffs)

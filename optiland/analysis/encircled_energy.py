@@ -14,8 +14,7 @@ from optiland.analysis.spot_diagram import SpotDiagram
 
 
 class EncircledEnergy(SpotDiagram):
-    """
-    Class representing the Encircled Energy analysis of a given optic.
+    """Class representing the Encircled Energy analysis of a given optic.
 
     Args:
         optic (Optic): The optic for which the Encircled Energy analysis is
@@ -30,6 +29,7 @@ class EncircledEnergy(SpotDiagram):
             Defaults to 'random'.
         num_points (int, optional): The number of points used for plotting the
             Encircled Energy curve. Defaults to 256.
+
     """
 
     def __init__(
@@ -48,12 +48,12 @@ class EncircledEnergy(SpotDiagram):
         super().__init__(optic, fields, [wavelength], num_rays, distribution)
 
     def view(self, figsize=(7, 4.5)):
-        """
-        Plot the Encircled Energy curve.
+        """Plot the Encircled Energy curve.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 4.5).
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
@@ -73,12 +73,12 @@ class EncircledEnergy(SpotDiagram):
         plt.show()
 
     def centroid(self):
-        """
-        Calculate the centroid of the Encircled Energy.
+        """Calculate the centroid of the Encircled Energy.
 
         Returns:
             list: A list of tuples representing the centroid coordinates for
                 each field.
+
         """
         centroid = []
         for field_data in self.data:
@@ -88,8 +88,7 @@ class EncircledEnergy(SpotDiagram):
         return centroid
 
     def _plot_field(self, ax, field_data, field, axis_lim, num_points, buffer=1.2):
-        """
-        Plot the Encircled Energy curve for a specific field.
+        """Plot the Encircled Energy curve for a specific field.
 
         Args:
             ax (matplotlib.axes.Axes): The axes on which to plot the curve.
@@ -99,6 +98,7 @@ class EncircledEnergy(SpotDiagram):
             num_points (int): Number of points for plotting the curve.
             buffer (float, optional): Buffer factor for the axis limit.
                 Defaults to 1.2.
+
         """
         r_max = axis_lim * buffer
         r_step = np.linspace(0, r_max, num_points)
@@ -113,10 +113,13 @@ class EncircledEnergy(SpotDiagram):
             ax.plot(r_step, ee, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
     def _generate_field_data(
-        self, field, wavelength, num_rays=100, distribution="hexapolar"
+        self,
+        field,
+        wavelength,
+        num_rays=100,
+        distribution="hexapolar",
     ):
-        """
-        Generate the field data for a specific field and wavelength.
+        """Generate the field data for a specific field and wavelength.
 
         Args:
             field (tuple): Tuple representing the field coordinates.
@@ -127,6 +130,7 @@ class EncircledEnergy(SpotDiagram):
 
         Returns:
             list: List of field data, including x, y and energy points.
+
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]

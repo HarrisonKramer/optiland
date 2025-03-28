@@ -25,8 +25,7 @@ from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 
 class EvenAsphere(NewtonRaphsonGeometry):
-    """
-    Represents an even asphere geometry defined as:
+    """Represents an even asphere geometry defined as:
 
     z = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) + sum(Ci * r^(2i))
 
@@ -53,6 +52,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         coefficients (list, optional): The coefficients of the asphere.
             Defaults to an empty list, indicating no aspheric coefficients are
             used.
+
     """
 
     def __init__(
@@ -73,8 +73,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         return "Even Asphere"
 
     def sag(self, x=0, y=0):
-        """
-        Calculates the sag of the asphere at the given coordinates.
+        """Calculates the sag of the asphere at the given coordinates.
 
         Args:
             x (float, np.ndarray, optional): The x-coordinate(s).
@@ -84,6 +83,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         Returns:
             float: The sag value at the given coordinates.
+
         """
         r2 = x**2 + y**2
         z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
@@ -93,8 +93,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         return z
 
     def _surface_normal(self, x, y):
-        """
-        Calculates the surface normal of the asphere at the given x and y
+        """Calculates the surface normal of the asphere at the given x and y
         position.
 
         Args:
@@ -103,6 +102,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
         r2 = x**2 + y**2
 
@@ -123,11 +123,11 @@ class EvenAsphere(NewtonRaphsonGeometry):
         return nx, ny, nz
 
     def to_dict(self):
-        """
-        Converts the geometry to a dictionary.
+        """Converts the geometry to a dictionary.
 
         Returns:
             dict: The dictionary representation of the geometry.
+
         """
         data = super().to_dict()
         data["coefficients"] = self.c
@@ -136,14 +136,14 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates an asphere from a dictionary representation.
+        """Creates an asphere from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the asphere.
 
         Returns:
             EvenAsphere: The asphere.
+
         """
         required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):

@@ -77,8 +77,7 @@ METRIC_DICT = {
 
 
 class OperandRegistry:
-    """
-    A registry to manage operand functions.
+    """A registry to manage operand functions.
     This class allows you to register functions with specific operand names,
     retrieve them, and check if an operand name is registered.
 
@@ -95,6 +94,7 @@ class OperandRegistry:
             Check if an operand name is registered.
         __repr__():
             Return a string representation of the OperandRegistry.
+
     """
 
     def __init__(self):
@@ -107,6 +107,7 @@ class OperandRegistry:
             name (str): The name of the operand.
             func (function): The function to be registered.
             overwrite (bool): Whether to overwrite an existing registration.
+
         """
         if name in self._registry and not overwrite:
             raise ValueError(f'Operand "{name}" is already registered.')
@@ -117,6 +118,7 @@ class OperandRegistry:
 
         Args:
             name (str): The name of the operand.
+
         """
         return self._registry.get(name)
 
@@ -125,6 +127,7 @@ class OperandRegistry:
 
         Args:
             name (str): The name of the operand.
+
         """
         return name in self._registry
 
@@ -143,8 +146,7 @@ for name, func in METRIC_DICT.items():
 
 @dataclass
 class Operand:
-    """
-    Represents an operand used in optimization calculations.
+    """Represents an operand used in optimization calculations.
     If no target is specified, a default is created at the current value.
 
     Attributes:
@@ -162,6 +164,7 @@ class Operand:
         delta_target(): Calculate the difference between the value and target.
         delta_ineq(): Calculate the difference between the value and targets.
         fun(): Calculate the objective function value.
+
     """
 
     operand_type: str = None
@@ -178,14 +181,14 @@ class Operand:
             and self.min_val > self.max_val
         ):
             raise ValueError(
-                f"{self.operand_type} operand: min_val is higher than max_val"
+                f"{self.operand_type} operand: min_val is higher than max_val",
             )
         if self.target is not None and (
             self.min_val is not None or self.max_val is not None
         ):
             raise ValueError(
                 f"{self.operand_type} operand cannot accept both"
-                f" equality and inequality targets"
+                f" equality and inequality targets",
             )
         if all(x is None for x in [self.target, self.min_val, self.max_val]):
             # No target has been defined, default it to the current value
@@ -197,8 +200,7 @@ class Operand:
         metric_function = operand_registry.get(self.operand_type)
         if metric_function:
             return metric_function(**self.input_data)
-        else:
-            raise ValueError(f"Unknown operand type: {self.operand_type}")
+        raise ValueError(f"Unknown operand type: {self.operand_type}")
 
     def delta_target(self):
         """Calculate the difference between the value and target"""
@@ -219,10 +221,9 @@ class Operand:
         """Calculate the difference to target"""
         if self.target is not None:
             return self.delta_target()
-        elif self.min_val is not None or self.max_val is not None:
+        if self.min_val is not None or self.max_val is not None:
             return self.delta_ineq()
-        else:
-            raise ValueError(f"{self.operand_type} operand cannot compute delta")
+        raise ValueError(f"{self.operand_type} operand cannot compute delta")
 
     def fun(self):
         """Calculate the objective function value"""

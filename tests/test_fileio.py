@@ -42,7 +42,7 @@ def replace_line_in_zmx(zmx_file, line_prefix, new_line):
     temp_dir = tempfile.mkdtemp()
     temp_file = os.path.join(temp_dir, "temp.zmx")
 
-    with open(zmx_file, "r") as file:
+    with open(zmx_file) as file:
         lines = file.readlines()
 
     with open(temp_file, "w") as file:
@@ -67,7 +67,11 @@ class TestZemaxFileReader:
     @patch("builtins.open", new_callable=mock_open)
     @patch("tempfile.NamedTemporaryFile")
     def test_configure_source_input_url(
-        self, mock_tempfile, mock_open, mock_requests_get, zemax_file_reader
+        self,
+        mock_tempfile,
+        mock_open,
+        mock_requests_get,
+        zemax_file_reader,
     ):
         mock_response = mock_requests_get.return_value
         mock_response.status_code = 200
@@ -94,7 +98,9 @@ class TestZemaxFileReader:
 
     @patch("requests.get")
     def test_configure_source_input_url_download_fail(
-        self, mock_requests_get, zemax_file_reader
+        self,
+        mock_requests_get,
+        zemax_file_reader,
     ):
         mock_response = mock_requests_get.return_value
         mock_response.status_code = 404
@@ -318,7 +324,9 @@ class TestZemaxToOpticConverter:
 def test_save_load_json_obj():
     mat = Material("SF11")
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".json"
+        delete=False,
+        mode="w",
+        suffix=".json",
     ) as temp_file:
         save_obj_to_json(mat, temp_file.name)
     assert os.path.exists(temp_file.name)
@@ -336,7 +344,9 @@ def test_load_invalid_json():
 def test_save_load_optiland_file():
     lens = HeliarLens()
     with tempfile.NamedTemporaryFile(
-        delete=False, mode="w", suffix=".json"
+        delete=False,
+        mode="w",
+        suffix=".json",
     ) as temp_file:
         save_optiland_file(lens, temp_file.name)
 

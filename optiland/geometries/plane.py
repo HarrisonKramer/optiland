@@ -20,6 +20,7 @@ class Plane(BaseGeometry):
 
     Args:
         cs (CoordinateSystem): The coordinate system of the plane geometry.
+
     """
 
     def __init__(self, coordinate_system):
@@ -42,6 +43,7 @@ class Plane(BaseGeometry):
         Returns:
             Union[float, np.ndarray]: The surface sag of the plane at the
                 given point.
+
         """
         if isinstance(y, np.ndarray):
             return np.zeros_like(y)
@@ -56,6 +58,7 @@ class Plane(BaseGeometry):
         Returns:
             np.ndarray: The propagation distance to the plane geometry for
                 each ray.
+
         """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -72,6 +75,7 @@ class Plane(BaseGeometry):
         Returns:
             Tuple[float, float, float]: The surface normal of the plane
                 geometry at each point.
+
         """
         return 0, 0, 1
 
@@ -80,12 +84,13 @@ class Plane(BaseGeometry):
 
         Returns:
             dict: The dictionary representation of the plane geometry.
+
         """
         geometry_dict = super().to_dict()
         geometry_dict.update(
             {
                 "radius": np.inf,
-            }
+            },
         )
         return geometry_dict
 
@@ -98,6 +103,7 @@ class Plane(BaseGeometry):
 
         Returns:
             Plane: The plane geometry.
+
         """
         cs = CoordinateSystem.from_dict(data["cs"])
         return cls(cs)

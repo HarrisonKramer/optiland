@@ -22,8 +22,7 @@ from optiland.geometries.base import BaseGeometry
 
 
 class StandardGeometry(BaseGeometry):
-    """
-    Represents a standard geometry with a given coordinate system, radius, and
+    """Represents a standard geometry with a given coordinate system, radius, and
     conic.
 
     Args:
@@ -38,6 +37,7 @@ class StandardGeometry(BaseGeometry):
             given rays.
         surface_normal(rays): Calculates the surface normal of the geometry at
             the given ray positions.
+
     """
 
     def __init__(self, coordinate_system, radius, conic=0.0):
@@ -60,6 +60,7 @@ class StandardGeometry(BaseGeometry):
 
         Returns:
             float: The sag value at the given coordinates.
+
         """
         r2 = x**2 + y**2
         return r2 / (
@@ -74,6 +75,7 @@ class StandardGeometry(BaseGeometry):
 
         Returns:
             ndarray: The distances to the geometry.
+
         """
         a = self.k * rays.N**2 + rays.L**2 + rays.M**2 + rays.N**2
         b = (
@@ -121,6 +123,7 @@ class StandardGeometry(BaseGeometry):
         Returns:
             Tuple[np.ndarray, np.ndarray, np.ndarray]: The x, y, and z
                 components of the surface normal.
+
         """
         r2 = rays.x**2 + rays.y**2
 
@@ -142,6 +145,7 @@ class StandardGeometry(BaseGeometry):
 
         Returns:
             dict: The dictionary representation of the geometry.
+
         """
         geometry_dict = super().to_dict()
         geometry_dict.update({"radius": self.radius, "conic": self.k})
@@ -156,6 +160,7 @@ class StandardGeometry(BaseGeometry):
 
         Returns:
             StandardGeometry: The geometry.
+
         """
         required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):

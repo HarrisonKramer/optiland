@@ -24,13 +24,17 @@ def singlet_stop_surf_two():
 
 @pytest.fixture
 def simple_singlet():
-    """singlet with single field and wavelength"""
+    """Singlet with single field and wavelength"""
     lens = Optic()
 
     # add surfaces
     lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
     lens.add_surface(
-        index=1, thickness=7, radius=19.93, is_stop=True, material="N-SF11"
+        index=1,
+        thickness=7,
+        radius=19.93,
+        is_stop=True,
+        material="N-SF11",
     )
     lens.add_surface(index=2, thickness=21.48)
     lens.add_surface(index=3)

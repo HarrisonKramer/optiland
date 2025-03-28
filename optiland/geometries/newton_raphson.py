@@ -17,8 +17,7 @@ from optiland.geometries.standard import StandardGeometry
 
 
 class NewtonRaphsonGeometry(StandardGeometry, ABC):
-    """
-    Represents a geometry that uses the Newton-Raphson method for ray tracing.
+    """Represents a geometry that uses the Newton-Raphson method for ray tracing.
 
     Args:
         coordinate_system (str): The coordinate system used for the geometry.
@@ -29,6 +28,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             Defaults to 1e-10.
         max_iter (int, optional): The maximum number of iterations used in
             calculations. Defaults to 100.
+
     """
 
     def __init__(self, coordinate_system, radius, conic=0.0, tol=1e-10, max_iter=100):
@@ -49,8 +49,9 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
         Returns:
             Union[float, np.ndarray]: The surface sag of the geometry.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     @abstractmethod
     def _surface_normal(self, x, y):
@@ -63,24 +64,24 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def surface_normal(self, rays):
-        """
-        Calculates the surface normal of the geometry at the given rays.
+        """Calculates the surface normal of the geometry at the given rays.
 
         Args:
             rays (Rays): The rays used for calculating the surface normal.
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
+
         """
         return self._surface_normal(rays.x, rays.y)
 
     def distance(self, rays):
-        """
-        Calculates the distance between the geometry and the given ray
+        """Calculates the distance between the geometry and the given ray
         positions.
 
         Note:
@@ -91,6 +92,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
         Returns:
             numpy.ndarray: The distances between the geometry and the rays.
+
         """
         x, y, z = self._intersection_sphere(rays)
         intersections = np.column_stack((x, y, z))
@@ -108,14 +110,14 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         return np.linalg.norm(intersections - position, axis=1)
 
     def _intersection_sphere(self, rays):
-        """
-        Calculates the intersection points of the rays with the geometry.
+        """Calculates the intersection points of the rays with the geometry.
 
         Args:
             rays (Rays): The rays to calculate the intersection points for.
 
         Returns:
             tuple: The intersection points (x, y, z).
+
         """
         a = rays.L**2 + rays.M**2 + rays.N**2
         b = (
@@ -153,11 +155,11 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         return x, y, z
 
     def to_dict(self):
-        """
-        Converts the geometry to a dictionary.
+        """Converts the geometry to a dictionary.
 
         Returns:
             dict: The dictionary representation of the geometry.
+
         """
         geometry_dict = super().to_dict()
         geometry_dict.update({"tol": self.tol, "max_iter": self.max_iter})
@@ -165,14 +167,14 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
     @classmethod
     def from_dict(cls, data):  # pragma: no cover
-        """
-        Creates a geometry from a dictionary representation.
+        """Creates a geometry from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the geometry.
 
         Returns:
             NewtonRaphsonGeometry: The geometry created from the dictionary.
+
         """
         required_keys = {"cs", "radius"}
         if not required_keys.issubset(data):

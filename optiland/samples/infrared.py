@@ -19,7 +19,11 @@ class InfraredTriplet(optic.Optic):
 
         self.add_surface(index=0, radius=np.inf, thickness=np.inf)
         self.add_surface(
-            index=1, radius=10.4578, thickness=0.5901, material=germanium, is_stop=True
+            index=1,
+            radius=10.4578,
+            thickness=0.5901,
+            material=germanium,
+            is_stop=True,
         )
         self.add_surface(index=2, radius=14.1079, thickness=4.3909)
         self.add_surface(index=3, radius=-15.8842, thickness=0.59, material=ZnSe)

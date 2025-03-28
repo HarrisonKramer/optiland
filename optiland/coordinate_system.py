@@ -16,8 +16,7 @@ from optiland.rays import RealRays
 
 
 class CoordinateSystem:
-    """
-    Represents a coordinate system in 3D space.
+    """Represents a coordinate system in 3D space.
 
     Args:
         x (float): The x-coordinate of the origin.
@@ -60,8 +59,7 @@ class CoordinateSystem:
         self.reference_cs = reference_cs
 
     def localize(self, rays):
-        """
-        Localizes the rays in the coordinate system.
+        """Localizes the rays in the coordinate system.
 
         Args:
             rays: The rays to be localized.
@@ -79,8 +77,7 @@ class CoordinateSystem:
             rays.rotate_z(-self.rz)
 
     def globalize(self, rays):
-        """
-        Globalizes the rays from the coordinate system.
+        """Globalizes the rays from the coordinate system.
 
         Args:
             rays: The rays to be globalized.
@@ -99,8 +96,7 @@ class CoordinateSystem:
 
     @property
     def position_in_gcs(self):
-        """
-        Returns the position of the coordinate system in the global coordinate
+        """Returns the position of the coordinate system in the global coordinate
             system.
 
         Returns:
@@ -116,6 +112,7 @@ class CoordinateSystem:
 
         Returns:
             np.ndarray: The rotation matrix of the coordinate system.
+
         """
         rotation = np.array([self.rx, self.ry, self.rz])
         return R.from_euler("xyz", rotation).as_matrix()
@@ -125,37 +122,37 @@ class CoordinateSystem:
 
         Returns:
             tuple: The effective translation and rotation matrix
+
         """
         translation = np.array([self.x, self.y, self.z])
         if self.reference_cs is None:
             # No reference coordinate system, return the local transform
             return translation, self.get_rotation_matrix()
 
-        else:
-            # Get the effective transform of the reference coordinate system
-            ref_translation, ref_rot_mat = self.reference_cs.get_effective_transform()
+        # Get the effective transform of the reference coordinate system
+        ref_translation, ref_rot_mat = self.reference_cs.get_effective_transform()
 
-            # Combine translations
-            eff_translation = ref_translation + ref_rot_mat @ translation
+        # Combine translations
+        eff_translation = ref_translation + ref_rot_mat @ translation
 
-            # Combine rotations by multiplying the rotation matrices
-            eff_rot_mat = ref_rot_mat @ self.get_rotation_matrix()
+        # Combine rotations by multiplying the rotation matrices
+        eff_rot_mat = ref_rot_mat @ self.get_rotation_matrix()
 
-            return eff_translation, eff_rot_mat
+        return eff_translation, eff_rot_mat
 
     def get_effective_rotation_euler(self):
         """Get the effective rotation in Euler angles
 
         Returns:
             np.ndarray: The effective rotation in Euler angles
+
         """
         _, eff_rot_mat = self.get_effective_transform()
         # Convert the effective rotation matrix back to Euler angles
         return R.from_matrix(eff_rot_mat).as_euler("xyz")
 
     def to_dict(self):
-        """
-        Convert the coordinate system to a dictionary.
+        """Convert the coordinate system to a dictionary.
 
         Returns:
             dict: The dictionary representation of the coordinate system.
@@ -173,8 +170,7 @@ class CoordinateSystem:
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a coordinate system from a dictionary.
+        """Create a coordinate system from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the coordinate

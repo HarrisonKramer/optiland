@@ -13,8 +13,7 @@ from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVaria
 
 
 class ChebyshevCoeffVariable(PolynomialCoeffVariable):
-    """
-    Represents a variable for a Chebyshev coefficient of a ChebyshevGeometry.
+    """Represents a variable for a Chebyshev coefficient of a ChebyshevGeometry.
 
     Args:
         optic (Optic): The optic object associated with the variable.
@@ -27,18 +26,24 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
 
     Attributes:
         coeff_number (int): The index of the Chebyshev coefficient.
+
     """
 
     def __init__(
-        self, optic, surface_number, coeff_index, apply_scaling=True, **kwargs
+        self,
+        optic,
+        surface_number,
+        coeff_index,
+        apply_scaling=True,
+        **kwargs,
     ):
         super().__init__(optic, surface_number, coeff_index, apply_scaling, **kwargs)
 
     def __str__(self):
-        """
-        Return a string representation of the variable.
+        """Return a string representation of the variable.
 
         Returns:
             str: A string representation of the variable.
+
         """
         return f"Chebyshev Coeff. {self.coeff_index}, Surface {self.surface_number}"

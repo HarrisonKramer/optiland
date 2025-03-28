@@ -11,8 +11,7 @@ from optiland.visualization.surface import Surface2D, Surface3D
 
 
 class OpticalSystem:
-    """
-    A class to represent an optical system for visualization. The optical
+    """A class to represent an optical system for visualization. The optical
     system contains surfaces and lenses.
 
     Args:
@@ -35,6 +34,7 @@ class OpticalSystem:
         plot(ax):
             Identifies and plots the components of the optical system on the
                 given axis (or renderer for 3D plotting).
+
     """
 
     def __init__(self, optic, rays, projection="2d"):
@@ -53,8 +53,7 @@ class OpticalSystem:
         }
 
     def plot(self, ax):
-        """
-        Plots the components of the optical system on the given
+        """Plots the components of the optical system on the given
         axis (or renderer for 3D plotting).
         """
         self._identify_components()
@@ -62,8 +61,7 @@ class OpticalSystem:
             component.plot(ax)
 
     def _identify_components(self):
-        """
-        Identifies the components of the optical system and adds them to the
+        """Identifies the components of the optical system and adds them to the
         list of components.
         """
         self.components = []
@@ -108,9 +106,7 @@ class OpticalSystem:
                 self._add_component("lens", lens_surfaces)
 
     def _add_component(self, component_name, *args):
-        """
-        Adds a component to the list of components.
-        """
+        """Adds a component to the list of components."""
         if component_name in self.component_registry:
             component_class = self.component_registry[component_name][self.projection]
         else:
@@ -119,8 +115,6 @@ class OpticalSystem:
         self.components.append(component_class(*args))
 
     def _get_lens_surface(self, surface, *args):
-        """
-        Gets the lens surface based on the projection type.
-        """
+        """Gets the lens surface based on the projection type."""
         surface_class = self.component_registry["surface"][self.projection]
         return surface_class(surface, *args)

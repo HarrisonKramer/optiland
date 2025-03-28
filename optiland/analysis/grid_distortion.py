@@ -12,8 +12,7 @@ import numpy as np
 
 
 class GridDistortion:
-    """
-    Represents a grid distortion analysis for an optical system.
+    """Represents a grid distortion analysis for an optical system.
 
     Args:
         optic (Optic): The optical system to analyze.
@@ -33,10 +32,15 @@ class GridDistortion:
 
     Methods:
         view(figsize=(7, 5.5)): Visualizes the grid distortion analysis.
+
     """
 
     def __init__(
-        self, optic, wavelength="primary", num_points=10, distortion_type="f-tan"
+        self,
+        optic,
+        wavelength="primary",
+        num_points=10,
+        distortion_type="f-tan",
     ):
         self.optic = optic
         if wavelength == "primary":
@@ -47,12 +51,12 @@ class GridDistortion:
         self.data = self._generate_data()
 
     def view(self, figsize=(7, 5.5)):
-        """
-        Visualizes the grid distortion analysis.
+        """Visualizes the grid distortion analysis.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 5.5).
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
@@ -75,14 +79,14 @@ class GridDistortion:
         plt.show()
 
     def _generate_data(self):
-        """
-        Generates the data for the grid distortion analysis.
+        """Generates the data for the grid distortion analysis.
 
         Returns:
             dict: The generated data.
 
         Raises:
             ValueError: If the distortion type is not 'f-tan' or 'f-theta'.
+
         """
         # trace single reference ray
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=self.wavelength)
@@ -104,21 +108,29 @@ class GridDistortion:
             xp = const * Hx * np.radians(self.optic.fields.max_field)
             yp = const * Hy * np.radians(self.optic.fields.max_field)
         else:
-            raise ValueError('''Distortion type must be "f-tan" or
-                                "f-theta"''')
+            raise ValueError(
+                '''Distortion type must be "f-tan" or
+                                "f-theta"'''
+            )
 
         self.optic.trace_generic(
-            Hx=Hx.flatten(), Hy=Hy.flatten(), Px=0, Py=0, wavelength=self.wavelength
+            Hx=Hx.flatten(),
+            Hy=Hy.flatten(),
+            Px=0,
+            Py=0,
+            wavelength=self.wavelength,
         )
 
         data = {}
 
         # make real grid square for ease of plotting
         data["xr"] = np.reshape(
-            self.optic.surface_group.x[-1, :], (self.num_points, self.num_points)
+            self.optic.surface_group.x[-1, :],
+            (self.num_points, self.num_points),
         )
         data["yr"] = np.reshape(
-            self.optic.surface_group.y[-1, :], (self.num_points, self.num_points)
+            self.optic.surface_group.y[-1, :],
+            (self.num_points, self.num_points),
         )
 
         # optical system flips x, so must correct this

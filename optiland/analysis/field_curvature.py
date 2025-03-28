@@ -10,8 +10,7 @@ import numpy as np
 
 
 class FieldCurvature:
-    """
-    Represents a class for analyzing field curvature of an optic.
+    """Represents a class for analyzing field curvature of an optic.
 
     Args:
         optic (Optic): The optic object to analyze.
@@ -29,6 +28,7 @@ class FieldCurvature:
     Methods:
         view(figsize=(8, 5.5)): Displays a plot of the field curvature
             analysis.
+
     """
 
     def __init__(self, optic, wavelengths="all", num_points=128):
@@ -40,12 +40,12 @@ class FieldCurvature:
         self.data = self._generate_data()
 
     def view(self, figsize=(8, 5.5)):
-        """
-        Displays a plot of the field curvature analysis.
+        """Displays a plot of the field curvature analysis.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (8, 5.5).
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
@@ -80,13 +80,13 @@ class FieldCurvature:
         plt.show()
 
     def _generate_data(self):
-        """
-        Generates field curvature data for each wavelength by calculating the
+        """Generates field curvature data for each wavelength by calculating the
             tangential and sagittal intersections.
 
         Returns:
             list: A list of np.ndarry containing the tangential and sagittal
                 intersection points for each wavelength.
+
         """
         data = []
         for wavelength in self.wavelengths:
@@ -98,8 +98,7 @@ class FieldCurvature:
         return data
 
     def _intersection_parabasal_tangential(self, wavelength, delta=1e-5):
-        """
-        Calculate the intersection of parabasal rays in tangential plane.
+        """Calculate the intersection of parabasal rays in tangential plane.
 
         Args:
             wavelength (float): The wavelength of the light.
@@ -108,6 +107,7 @@ class FieldCurvature:
 
         Returns:
             numpy.ndarray: The calculated intersection values.
+
         """
         Hx = np.zeros(2 * self.num_points)
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
@@ -134,8 +134,7 @@ class FieldCurvature:
         return t1 * N1
 
     def _intersection_parabasal_sagittal(self, wavelength, delta=1e-5):
-        """
-        Calculate the intersection of parabasal rays in sagittal plane.
+        """Calculate the intersection of parabasal rays in sagittal plane.
 
         Args:
             wavelength (float): The wavelength of the light.
@@ -144,6 +143,7 @@ class FieldCurvature:
 
         Returns:
             numpy.ndarray: The calculated intersection values.
+
         """
         Hx = np.zeros(2 * self.num_points)
         Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)

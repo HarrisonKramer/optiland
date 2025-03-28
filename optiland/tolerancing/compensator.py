@@ -11,8 +11,7 @@ from optiland.optimization import LeastSquares, OptimizationProblem, OptimizerGe
 
 
 class CompensatorOptimizer(OptimizationProblem):
-    """
-    A class representing a compensator for a tolerancing problem. This class
+    """A class representing a compensator for a tolerancing problem. This class
     optimizes a set of variables to compensate for perturbations in an optical
     system.
 
@@ -27,6 +26,7 @@ class CompensatorOptimizer(OptimizationProblem):
         tol (float): The tolerance for the optimizer. Default is 1e-5.
         _optimizer_map (dict): A mapping of optimizer types to their
             respective classes.
+
     """
 
     def __init__(self, method="generic", tol=1e-5):
@@ -46,21 +46,21 @@ class CompensatorOptimizer(OptimizationProblem):
 
     @property
     def has_variables(self):
-        """
-        Check if the optimizer has variables. If no variables are present,
+        """Check if the optimizer has variables. If no variables are present,
         then the optimizer will not run.
 
         Returns:
             bool: True if the optimizer has variables, False otherwise.
+
         """
         return bool(self.variables)
 
     def run(self):
-        """
-        Run the optimizer for compensation.
+        """Run the optimizer for compensation.
 
         Returns:
             scipy.optimize.OptimizeResult: The result of the optimizer run.
+
         """
         optimizer = self.get_optimizer()(self)
         return optimizer.optimize(tol=self.tol)

@@ -15,8 +15,7 @@ from optiland.rays import RealRays
 
 
 class BaseCoating(ABC):
-    """
-    Base class for coatings.
+    """Base class for coatings.
 
     This class defines the basic structure and behavior of a coating.
 
@@ -24,6 +23,7 @@ class BaseCoating(ABC):
         interact: Performs an interaction based on the given parameters.
         reflect: Abstract method to handle reflection interaction.
         transmit: Abstract method to handle transmission interaction.
+
     """
 
     _registry = {}
@@ -41,8 +41,7 @@ class BaseCoating(ABC):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Performs an interaction based on the given parameters.
+        """Performs an interaction based on the given parameters.
 
         Args:
             params (InteractionParams): The parameters for the interaction.
@@ -51,15 +50,14 @@ class BaseCoating(ABC):
 
         Returns:
             rays (RealRays): The rays after the interaction.
+
         """
         if reflect:
             return self.reflect(rays, nx, ny, nz)
-        else:
-            return self.transmit(rays, nx, ny, nz)
+        return self.transmit(rays, nx, ny, nz)
 
     def _compute_aoi(self, rays, nx, ny, nz):
-        """
-        Computes the angle of incidence for the given rays and surface normals.
+        """Computes the angle of incidence for the given rays and surface normals.
 
         Args:
             rays: The rays.
@@ -69,6 +67,7 @@ class BaseCoating(ABC):
 
         Returns:
             np.ndarray: The angle of incidence for each ray.
+
         """
         dot = np.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
         dot = np.clip(dot, -1, 1)  # required due to numerical precision
@@ -82,16 +81,16 @@ class BaseCoating(ABC):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Abstract method to handle reflection interaction.
+        """Abstract method to handle reflection interaction.
 
         Args:
             params (InteractionParams): The parameters for the interaction.
 
         Returns:
             rays (RealRays): The rays after the interaction.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     @abstractmethod
     def transmit(
@@ -101,23 +100,23 @@ class BaseCoating(ABC):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Abstract method to handle transmission interaction.
+        """Abstract method to handle transmission interaction.
 
         Args:
             params (InteractionParams): The parameters for the interaction.
 
         Returns:
             rays (RealRays): The rays after the interaction.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def to_dict(self):  # pragma: no cover
-        """
-        Converts the coating to a dictionary.
+        """Converts the coating to a dictionary.
 
         Returns:
             dict: The dictionary representation of the coating.
+
         """
         return {
             "type": self.__class__.__name__,
@@ -125,22 +124,21 @@ class BaseCoating(ABC):
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a coating from a dictionary.
+        """Creates a coating from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the coating.
 
         Returns:
             BaseCoating: The coating created from the dictionary.
+
         """
         coating_type = data["type"]
         return cls._registry[coating_type].from_dict(data)
 
 
 class SimpleCoating(BaseCoating):
-    """
-    A simple coating class that represents a coating with given transmittance
+    """A simple coating class that represents a coating with given transmittance
     and reflectance.
 
     Args:
@@ -159,6 +157,7 @@ class SimpleCoating(BaseCoating):
             Reflects the rays based on the reflectance of the coating.
         transmit(params: InteractionParams) -> Rays:
             Transmits the rays based on the transmittance of the coating.
+
     """
 
     def __init__(self, transmittance, reflectance=0):
@@ -173,14 +172,14 @@ class SimpleCoating(BaseCoating):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Reflects the rays based on the reflectance of the coating.
+        """Reflects the rays based on the reflectance of the coating.
 
         Args:
             params (InteractionParams): The parameters for the interaction.
 
         Returns:
             rays (RealRays): The rays after reflection.
+
         """
         rays.i *= self.reflectance
         return rays
@@ -192,8 +191,7 @@ class SimpleCoating(BaseCoating):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Transmits the rays through the coating by multiplying their intensity
+        """Transmits the rays through the coating by multiplying their intensity
         with the transmittance.
 
         Args:
@@ -201,16 +199,17 @@ class SimpleCoating(BaseCoating):
 
         Returns:
             rays (RealRays): The rays after transmission.
+
         """
         rays.i *= self.transmittance
         return rays
 
     def to_dict(self):
-        """
-        Converts the coating to a dictionary.
+        """Converts the coating to a dictionary.
 
         Returns:
             dict: The dictionary representation of the coating.
+
         """
         return {
             "type": self.__class__.__name__,
@@ -220,21 +219,20 @@ class SimpleCoating(BaseCoating):
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a coating from a dictionary.
+        """Creates a coating from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the coating.
 
         Returns:
             BaseCoating: The coating created from the dictionary.
+
         """
         return cls(data["transmittance"], data["reflectance"])
 
 
 class BaseCoatingPolarized(BaseCoating, ABC):
-    """
-    A base class for polarized coatings.
+    """A base class for polarized coatings.
 
     This class inherits from the `BaseCoating` class and the `ABC`
     (Abstract Base Class) module.
@@ -242,6 +240,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     Methods:
         reflect(rays, nx, ny, nz): Reflects the rays off the coating.
         transmit(rays, nx, ny, nz): Transmits the rays through the coating.
+
     """
 
     def reflect(
@@ -251,8 +250,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Reflects the rays off the coating.
+        """Reflects the rays off the coating.
 
         Args:
             rays (RealRays): The rays to be reflected.
@@ -262,6 +260,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Returns:
             RealRays: The updated rays after reflection.
+
         """
         aoi = self._compute_aoi(rays, nx, ny, nz)
         jones = self.jones.calculate_matrix(rays, reflect=True, aoi=aoi)
@@ -275,8 +274,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         ny: np.ndarray = None,
         nz: np.ndarray = None,
     ):
-        """
-        Transmits the rays through the coating.
+        """Transmits the rays through the coating.
 
         Args:
             rays (RealRays): The rays to be transmitted.
@@ -286,6 +284,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Returns:
             RealRays: The updated rays after transmission through a surface.
+
         """
         aoi = self._compute_aoi(rays, nx, ny, nz)
         jones = self.jones.calculate_matrix(rays, reflect=False, aoi=aoi)
@@ -293,11 +292,11 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         return rays
 
     def to_dict(self):  # pragma: no cover
-        """
-        Converts the coating to a dictionary.
+        """Converts the coating to a dictionary.
 
         Returns:
             dict: The dictionary representation of the coating.
+
         """
         return {
             "type": self.__class__.__name__,
@@ -307,21 +306,20 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
     @classmethod
     def from_dict(cls, data):  # pragma: no cover
-        """
-        Creates a coating from a dictionary.
+        """Creates a coating from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the coating.
 
         Returns:
             BaseCoating: The coating created from the dictionary.
+
         """
         return cls(data["material_pre"], data["material_post"])
 
 
 class FresnelCoating(BaseCoatingPolarized):
-    """
-    Represents a Fresnel coating for polarized light.
+    """Represents a Fresnel coating for polarized light.
 
     This class inherits from the BaseCoatingPolarized class and provides
     interaction functionality for polarized light with uncoated surfaces.
@@ -333,6 +331,7 @@ class FresnelCoating(BaseCoatingPolarized):
         material_post (str): The material after the coating.
         jones (JonesFresnel): The JonesFresnel object, which calculates the
             Jones matrices for given ray properties.
+
     """
 
     def __init__(self, material_pre, material_post):
@@ -342,11 +341,11 @@ class FresnelCoating(BaseCoatingPolarized):
         self.jones = JonesFresnel(material_pre, material_post)
 
     def to_dict(self):
-        """
-        Converts the coating to a dictionary.
+        """Converts the coating to a dictionary.
 
         Returns:
             dict: The dictionary representation of the coating.
+
         """
         return {
             "type": self.__class__.__name__,
@@ -356,14 +355,14 @@ class FresnelCoating(BaseCoatingPolarized):
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a coating from a dictionary.
+        """Creates a coating from a dictionary.
 
         Args:
             data (dict): The dictionary representation of the coating.
 
         Returns:
             BaseCoating: The coating created from the dictionary.
+
         """
         return cls(
             BaseMaterial.from_dict(data["material_pre"]),

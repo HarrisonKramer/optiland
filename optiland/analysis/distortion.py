@@ -10,8 +10,7 @@ import numpy as np
 
 
 class Distortion:
-    """
-    Represents a distortion analysis for an optic.
+    """Represents a distortion analysis for an optic.
 
     Args:
         optic (Optic): The optic object to analyze.
@@ -31,10 +30,15 @@ class Distortion:
 
     Methods:
         view(figsize=(7, 5.5)): Visualizes the distortion analysis.
+
     """
 
     def __init__(
-        self, optic, wavelengths="all", num_points=128, distortion_type="f-tan"
+        self,
+        optic,
+        wavelengths="all",
+        num_points=128,
+        distortion_type="f-tan",
     ):
         self.optic = optic
         if wavelengths == "all":
@@ -45,11 +49,11 @@ class Distortion:
         self.data = self._generate_data()
 
     def view(self, figsize=(7, 5.5)):
-        """
-        Visualize the distortion analysis.
+        """Visualize the distortion analysis.
 
         Args:
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+
         """
         _, ax = plt.subplots(figsize=figsize)
         ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
@@ -67,13 +71,13 @@ class Distortion:
         plt.show()
 
     def _generate_data(self):
-        """
-        Generate data for analysis.
+        """Generate data for analysis.
 
         This method generates the distortion data to be used for plotting.
 
         Returns:
             list: A list of distortion data points.
+
         """
         Hx = np.zeros(self.num_points)
         Hy = np.linspace(1e-10, 1, self.num_points)
@@ -90,8 +94,10 @@ class Distortion:
             elif self.distortion_type == "f-theta":
                 yp = const * Hy * np.radians(self.optic.fields.max_field)
             else:
-                raise ValueError('''Distortion type must be "f-tan" or
-                                 "f-theta"''')
+                raise ValueError(
+                    '''Distortion type must be "f-tan" or
+                                 "f-theta"'''
+                )
 
             data.append(100 * (yr - yp) / yp)
 

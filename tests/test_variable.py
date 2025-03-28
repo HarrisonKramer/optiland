@@ -67,7 +67,9 @@ class TestThicknessVariable:
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
         self.thickness_var = variable.ThicknessVariable(
-            self.optic, 2, apply_scaling=False
+            self.optic,
+            2,
+            apply_scaling=False,
         )
         assert np.isclose(self.thickness_var.get_value(), 4.4)
 
@@ -88,7 +90,10 @@ class TestIndexVariable:
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
         self.index_var = variable.IndexVariable(
-            self.optic, 1, 0.55, apply_scaling=False
+            self.optic,
+            1,
+            0.55,
+            apply_scaling=False,
         )
         assert np.isclose(self.index_var.get_value(), 1.4877935552990422)
 
@@ -112,7 +117,10 @@ class TestAsphereCoeffVariable:
     def test_get_value_no_scaling(self):
         self.optic = AsphericSinglet()
         self.asphere_var = variable.AsphereCoeffVariable(
-            self.optic, 1, 0, apply_scaling=False
+            self.optic,
+            1,
+            0,
+            apply_scaling=False,
         )
         assert np.isclose(self.asphere_var.get_value(), -0.0002248851)
 
@@ -125,7 +133,9 @@ class TestPolynomialCoeffVariable:
     def setup(self):
         self.optic = AsphericSinglet()
         poly_geo = PolynomialGeometry(
-            CoordinateSystem(), 100, coefficients=np.zeros((3, 3))
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
@@ -158,11 +168,16 @@ class TestPolynomialCoeffVariable:
     def test_get_value_no_scaling(self):
         self.optic = AsphericSinglet()
         poly_geo = PolynomialGeometry(
-            CoordinateSystem(), 100, coefficients=np.zeros((3, 3))
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(
-            self.optic, 0, (1, 1), apply_scaling=False
+            self.optic,
+            0,
+            (1, 1),
+            apply_scaling=False,
         )
         assert self.poly_var.get_value() == 0.0
 
@@ -172,7 +187,9 @@ class TestChebyshevCoeffVariable:
     def setup(self):
         self.optic = AsphericSinglet()
         poly_geo = ChebyshevPolynomialGeometry(
-            CoordinateSystem(), 100, coefficients=np.zeros((3, 3))
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ChebyshevCoeffVariable(self.optic, 0, (1, 1))
@@ -208,7 +225,9 @@ class TestZernikeCoeffVariable:
     def setup(self):
         self.optic = AsphericSinglet()
         poly_geo = ZernikePolynomialGeometry(
-            CoordinateSystem(), 100, coefficients=np.zeros(3)
+            CoordinateSystem(),
+            100,
+            coefficients=np.zeros(3),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
@@ -248,7 +267,10 @@ class TestVariable:
     def test_unrecognized_attribute(self):
         optic = Objective60x()
         radius_var = variable.Variable(
-            optic, "radius", surface_number=1, unrecognized_attribute=1
+            optic,
+            "radius",
+            surface_number=1,
+            unrecognized_attribute=1,
         )
         assert np.isclose(radius_var.value, 4.5325999999999995)
 
@@ -325,7 +347,10 @@ class TestDecenterVariable:
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
         self.decenter_var_x = variable.DecenterVariable(
-            self.optic, 1, "x", apply_scaling=False
+            self.optic,
+            1,
+            "x",
+            apply_scaling=False,
         )
         assert np.isclose(self.decenter_var_x.get_value(), 0.0)
 

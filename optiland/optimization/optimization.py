@@ -19,8 +19,7 @@ from optiland.optimization.variable import VariableManager
 
 
 class OptimizationProblem:
-    """
-    Represents an optimization problem.
+    """Represents an optimization problem.
 
     Attributes:
         operands (list): List of operands in the merit function.
@@ -40,6 +39,7 @@ class OptimizationProblem:
             function.
         info: Print information about the merit function, including operand
             and variable info.
+
     """
 
     def __init__(self):
@@ -157,8 +157,7 @@ class OptimizationProblem:
 
 
 class OptimizerGeneric:
-    """
-    Generic optimizer class for solving optimization problems.
+    """Generic optimizer class for solving optimization problems.
 
     Args:
         problem (OptimizationProblem): The optimization problem to be solved.
@@ -173,6 +172,7 @@ class OptimizerGeneric:
             using the specified parameters.
         undo(): Undo the last optimization step.
         _fun(x): Internal function to evaluate the objective function.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
@@ -183,8 +183,7 @@ class OptimizerGeneric:
             self.problem.initial_value = self.problem.sum_squared()
 
     def optimize(self, method=None, maxiter=1000, disp=True, tol=1e-3, callback=None):
-        """
-        Optimize the problem using the specified parameters.
+        """Optimize the problem using the specified parameters.
 
         Args:
             method (str, optional): The optimization method to use. Default is
@@ -200,6 +199,7 @@ class OptimizerGeneric:
 
         Returns:
             result (OptimizeResult): The optimization result.
+
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -228,9 +228,7 @@ class OptimizerGeneric:
         return result
 
     def undo(self):
-        """
-        Undo the last optimization step.
-        """
+        """Undo the last optimization step."""
         if len(self._x) > 0:
             x0 = self._x[-1]
             for idvar, var in enumerate(self.problem.variables):
@@ -238,16 +236,15 @@ class OptimizerGeneric:
             self._x.pop(-1)
 
     def _fun(self, x) -> float:
-        """
-        Internal function to evaluate the objective function.
+        """Internal function to evaluate the objective function.
 
         Args:
             x (array-like): The values of the variables.
 
         Returns:
             rss (float): The residual sum of squares.
-        """
 
+        """
         # Update all variables to their new values
         for idvar, var in enumerate(self.problem.variables):
             var.update(x[idvar])
@@ -260,15 +257,13 @@ class OptimizerGeneric:
             rss = self.problem.sum_squared()
             if np.isnan(rss):
                 return 1e10
-            else:
-                return rss
+            return rss
         except ValueError:
             return 1e10
 
 
 class LeastSquares(OptimizerGeneric):
-    """
-    LeastSquares optimizer class for solving optimization problems using the
+    """LeastSquares optimizer class for solving optimization problems using the
     least squares method.
 
     Args:
@@ -280,14 +275,14 @@ class LeastSquares(OptimizerGeneric):
     Methods:
         optimize(maxiter=None, disp=False, tol=1e-3): Optimize the problem
             using the least squares method.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
 
     def optimize(self, maxiter=None, disp=False, tol=1e-3):
-        """
-        Optimize the problem using the least squares method.
+        """Optimize the problem using the least squares method.
 
         Note:
             The least squares method uses the Trust Region Reflective method.
@@ -301,8 +296,8 @@ class LeastSquares(OptimizerGeneric):
 
         Returns:
             result: The optimization result.
-        """
 
+        """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
 
@@ -335,32 +330,36 @@ class LeastSquares(OptimizerGeneric):
 
 
 class DualAnnealing(OptimizerGeneric):
-    """
-    DualAnnealing is an optimizer that uses the dual annealing algorithm
+    """DualAnnealing is an optimizer that uses the dual annealing algorithm
     to find the minimum of an optimization problem.
 
-    Parameters:
+    Parameters
+    ----------
         problem (OptimizationProblem): The optimization problem to be solved.
 
-    Methods:
+    Methods
+    -------
         optimize(maxiter=1000, disp=True): Runs the dual annealing algorithm
             to optimize the problem and returns the result.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
 
     def optimize(self, maxiter=1000, disp=True, callback=None):
-        """
-        Runs the dual annealing algorithm to optimize the problem.
+        """Runs the dual annealing algorithm to optimize the problem.
 
-        Parameters:
+        Parameters
+        ----------
             maxiter (int): Maximum number of iterations.
             disp (bool): Whether to display the optimization process.
             callback (callable): A callable called after each iteration.
 
-        Returns:
+        Returns
+        -------
             result: The result of the optimization.
+
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -370,14 +369,17 @@ class DualAnnealing(OptimizerGeneric):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             result = optimize.dual_annealing(
-                self._fun, bounds=bounds, maxiter=maxiter, x0=x0, callback=callback
+                self._fun,
+                bounds=bounds,
+                maxiter=maxiter,
+                x0=x0,
+                callback=callback,
             )
         return result
 
 
 class DifferentialEvolution(OptimizerGeneric):
-    """
-    Differential Evolution optimizer for solving optimization problems.
+    """Differential Evolution optimizer for solving optimization problems.
 
     Args:
         problem (OptimizationProblem): The optimization problem to be solved.
@@ -385,21 +387,21 @@ class DifferentialEvolution(OptimizerGeneric):
     Methods:
         optimize(maxiter=1000, disp=True, workers=-1): Runs the differential
             evolution optimization algorithm.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
-        """
-        Initializes a new instance of the DifferentialEvolution class.
+        """Initializes a new instance of the DifferentialEvolution class.
 
         Args:
             problem (OptimizationProblem): The optimization problem to be
                 solved.
+
         """
         super().__init__(problem)
 
     def optimize(self, maxiter=1000, disp=True, workers=-1, callback=None):
-        """
-        Runs the differential evolution optimization algorithm.
+        """Runs the differential evolution optimization algorithm.
 
         Args:
             maxiter (int): Maximum number of iterations.
@@ -413,13 +415,14 @@ class DifferentialEvolution(OptimizerGeneric):
 
         Raises:
             ValueError: If any variable in the problem does not have bounds.
+
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
             raise ValueError(
-                "Differential evolution requires all variables have bounds."
+                "Differential evolution requires all variables have bounds.",
             )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -443,29 +446,28 @@ class DifferentialEvolution(OptimizerGeneric):
 
 
 class SHGO(OptimizerGeneric):
-    """
-    Simplicity Homology Global Optimization (SHGO).
+    """Simplicity Homology Global Optimization (SHGO).
 
     Args:
         problem (OptimizationProblem): The optimization problem to be solved.
 
     Methods:
         optimize(workers=-1, *args, **kwargs): Runs the SHGO algorithm.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
-        """
-        Initializes a new instance of the SHGO class.
+        """Initializes a new instance of the SHGO class.
 
         Args:
             problem (OptimizationProblem): The optimization problem to be
                 solved.
+
         """
         super().__init__(problem)
 
     def optimize(self, workers=-1, callback=None, *args, **kwargs):
-        """
-        Runs the SHGO algorithm. Note that the SHGO algorithm accepts the same
+        """Runs the SHGO algorithm. Note that the SHGO algorithm accepts the same
         arguments as the scipy.optimize.shgo function.
 
         Args:
@@ -480,6 +482,7 @@ class SHGO(OptimizerGeneric):
 
         Raises:
             ValueError: If any variable in the problem does not have bounds.
+
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -502,8 +505,7 @@ class SHGO(OptimizerGeneric):
 
 
 class BasinHopping(OptimizerGeneric):
-    """
-    Basin-hopping optimizer for solving optimization problems.
+    """Basin-hopping optimizer for solving optimization problems.
 
     Args:
         problem (OptimizationProblem): The optimization problem to be solved.
@@ -511,21 +513,21 @@ class BasinHopping(OptimizerGeneric):
     Methods:
         optimize(maxiter=1000, disp=True, workers=-1): Runs the basin-hopping
             optimization algorithm.
+
     """
 
     def __init__(self, problem: OptimizationProblem):
-        """
-        Initializes a new instance of the BasinHopping class.
+        """Initializes a new instance of the BasinHopping class.
 
         Args:
             problem (OptimizationProblem): The optimization problem to be
                 solved.
+
         """
         super().__init__(problem)
 
     def optimize(self, niter=100, callback=None, *args, **kwargs):
-        """
-        Runs the basin-hopping algorithm. Note that the basin-hopping
+        """Runs the basin-hopping algorithm. Note that the basin-hopping
         algorithm accepts the same arguments as the
         scipy.optimize.basinhopping function.
 
@@ -540,6 +542,7 @@ class BasinHopping(OptimizerGeneric):
 
         Raises:
             ValueError: If any variable in the problem does not have bounds.
+
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
@@ -551,6 +554,11 @@ class BasinHopping(OptimizerGeneric):
             warnings.simplefilter("ignore", category=RuntimeWarning)
 
             result = optimize.basinhopping(
-                self._fun, x0=x0, niter=niter, callback=callback, *args, **kwargs
+                self._fun,
+                x0=x0,
+                niter=niter,
+                callback=callback,
+                *args,
+                **kwargs,
             )
         return result

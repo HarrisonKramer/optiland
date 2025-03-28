@@ -544,7 +544,11 @@ class TestPolarizedRays:
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
         state = PolarizationState(
-            is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
+            is_polarized=True,
+            Ex=1.0,
+            Ey=0.0,
+            phase_x=0.0,
+            phase_y=0.0,
         )
 
         rays.update_intensity(state)
@@ -584,7 +588,7 @@ class TestPolarizedRays:
         rays.update(jones_matrix)
         assert rays.p.shape == (1, 3, 3)
         jones_matrix = np.array(
-            [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]]
+            [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]],
         )
         assert np.allclose(rays.p, jones_matrix, atol=1e-10)
 
@@ -608,7 +612,11 @@ class TestPolarizedRays:
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
         state = PolarizationState(
-            is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
+            is_polarized=True,
+            Ex=1.0,
+            Ey=0.0,
+            phase_x=0.0,
+            phase_y=0.0,
         )
 
         E = rays._get_3d_electric_field(state)

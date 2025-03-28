@@ -98,7 +98,13 @@ class TestScatterParallel:
     def test_randomness(self):
         L, M, N, nx, ny, nz = np.random.rand(6, 1000)
         points = scatter.scatter_parallel(
-            L, M, N, nx, ny, nz, scatter.get_point_lambertian
+            L,
+            M,
+            N,
+            nx,
+            ny,
+            nz,
+            scatter.get_point_lambertian,
         )
         unique_points = list(set(tuple(point) for point in points))
         assert len(unique_points) == 1000

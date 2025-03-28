@@ -28,10 +28,12 @@ class BaseJones(ABC):
 
     @abstractmethod
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -42,19 +44,20 @@ class BaseJones(ABC):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         return np.tile(np.eye(3), (rays.x.size, 1, 1))  # pragma: no cover
 
 
 class JonesFresnel(BaseJones):
-    """
-    Class representing the Jones matrix for Fresnel calculations.
+    """Class representing the Jones matrix for Fresnel calculations.
 
     Args:
         material_pre (Material): Material object representing the
             material before the surface.
         material_post (Material): Material object representing the
             material after the surface.
+
     """
 
     def __init__(self, material_pre, material_post):
@@ -62,10 +65,12 @@ class JonesFresnel(BaseJones):
         self.material_post = material_post
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -76,6 +81,7 @@ class JonesFresnel(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         # define local variables
         n1 = self.material_pre.n(rays.w)
@@ -108,15 +114,15 @@ class JonesFresnel(BaseJones):
 
 
 class JonesPolarizerH(BaseJones):
-    """
-    Class representing the Jones matrix for a horizontal polarizer.
-    """
+    """Class representing the Jones matrix for a horizontal polarizer."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -127,6 +133,7 @@ class JonesPolarizerH(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 1
@@ -137,15 +144,15 @@ class JonesPolarizerH(BaseJones):
 
 
 class JonesPolarizerV(BaseJones):
-    """
-    Class representing the Jones matrix for a vertical polarizer.
-    """
+    """Class representing the Jones matrix for a vertical polarizer."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -156,6 +163,7 @@ class JonesPolarizerV(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 0
@@ -166,15 +174,15 @@ class JonesPolarizerV(BaseJones):
 
 
 class JonesPolarizerL45(BaseJones):
-    """
-    Class representing the Jones matrix for a linear polarizer at 45 degrees.
-    """
+    """Class representing the Jones matrix for a linear polarizer at 45 degrees."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -185,6 +193,7 @@ class JonesPolarizerL45(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 0.5
@@ -197,15 +206,15 @@ class JonesPolarizerL45(BaseJones):
 
 
 class JonesPolarizerL135(BaseJones):
-    """
-    Class representing the Jones matrix for a linear polarizer at 135 degrees.
-    """
+    """Class representing the Jones matrix for a linear polarizer at 135 degrees."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -216,6 +225,7 @@ class JonesPolarizerL135(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 0.5
@@ -228,15 +238,15 @@ class JonesPolarizerL135(BaseJones):
 
 
 class JonesPolarizerRCP(BaseJones):
-    """
-    Class representing the Jones matrix for a right circular polarizer.
-    """
+    """Class representing the Jones matrix for a right circular polarizer."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -247,6 +257,7 @@ class JonesPolarizerRCP(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 0.5
@@ -259,15 +270,15 @@ class JonesPolarizerRCP(BaseJones):
 
 
 class JonesPolarizerLCP(BaseJones):
-    """
-    Class representing the Jones matrix for a left circular polarizer.
-    """
+    """Class representing the Jones matrix for a left circular polarizer."""
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -278,6 +289,7 @@ class JonesPolarizerLCP(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         jones_matrix = np.zeros((rays.x.size, 3, 3), dtype=complex)
         jones_matrix[:, 0, 0] = 0.5
@@ -290,8 +302,7 @@ class JonesPolarizerLCP(BaseJones):
 
 
 class JonesLinearDiattenuator(BaseJones):
-    """
-    Represents a linear diattenuator in Jones calculus.
+    """Represents a linear diattenuator in Jones calculus.
 
     Attributes:
         t_min (float): Minimum amplitude transmission coefficient.
@@ -304,6 +315,7 @@ class JonesLinearDiattenuator(BaseJones):
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.
+
     """
 
     def __init__(self, t_min, t_max, theta):
@@ -312,10 +324,12 @@ class JonesLinearDiattenuator(BaseJones):
         self.theta = theta
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -326,6 +340,7 @@ class JonesLinearDiattenuator(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         j00 = (
             self.t_max * np.cos(self.theta) ** 2 + self.t_min * np.sin(self.theta) ** 2
@@ -346,8 +361,7 @@ class JonesLinearDiattenuator(BaseJones):
 
 
 class JonesLinearRetarder(BaseJones):
-    """
-    Represents a linear retarder in Jones calculus.
+    """Represents a linear retarder in Jones calculus.
 
     Attributes:
         retardance (float): Retardance of the retarder, or the absolute value
@@ -357,6 +371,7 @@ class JonesLinearRetarder(BaseJones):
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.
+
     """
 
     def __init__(self, retardance, theta):
@@ -364,10 +379,12 @@ class JonesLinearRetarder(BaseJones):
         self.theta = theta
 
     def calculate_matrix(
-        self, rays: RealRays, reflect: bool = False, aoi: np.ndarray = None
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: np.ndarray = None,
     ):
-        """
-        Calculate the Jones matrix for the given rays.
+        """Calculate the Jones matrix for the given rays.
 
         Args:
             rays (RealRays): Object representing the rays.
@@ -378,6 +395,7 @@ class JonesLinearRetarder(BaseJones):
 
         Returns:
             np.ndarray: The calculated Jones matrix.
+
         """
         d = self.retardance
         t = self.theta
@@ -396,8 +414,7 @@ class JonesLinearRetarder(BaseJones):
 
 
 class JonesQuarterWaveRetarder(JonesLinearRetarder):
-    """
-    Represents a quarter-wave retarder in Jones calculus.
+    """Represents a quarter-wave retarder in Jones calculus.
 
     Attributes:
         theta (float): Angle of the retarder, i.e., the fast axis orientation.
@@ -405,6 +422,7 @@ class JonesQuarterWaveRetarder(JonesLinearRetarder):
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.
+
     """
 
     def __init__(self, theta=0):
@@ -412,8 +430,7 @@ class JonesQuarterWaveRetarder(JonesLinearRetarder):
 
 
 class JonesHalfWaveRetarder(JonesLinearRetarder):
-    """
-    Represents a half-wave retarder in Jones calculus.
+    """Represents a half-wave retarder in Jones calculus.
 
     Attributes:
         theta (float): Angle of the retarder, i.e., the fast axis orientation.
@@ -421,6 +438,7 @@ class JonesHalfWaveRetarder(JonesLinearRetarder):
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.
+
     """
 
     def __init__(self, theta=0):

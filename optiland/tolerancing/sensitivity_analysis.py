@@ -16,8 +16,7 @@ from optiland.tolerancing.perturbation import RangeSampler
 
 
 class SensitivityAnalysis:
-    """
-    Class for performing sensitivity analysis on a tolerancing system.
+    """Class for performing sensitivity analysis on a tolerancing system.
 
     Args:
         tolerancing (Tolerancing): The tolerancing system to perform
@@ -35,6 +34,7 @@ class SensitivityAnalysis:
         get_results(): Returns the sensitivity analysis results.
         view(figsize=(2.2, 3), sharex='col', sharey='row'): Visualizes the
             sensitivity analysis results.
+
     """
 
     def __init__(self, tolerancing: Tolerancing):
@@ -46,8 +46,7 @@ class SensitivityAnalysis:
         self._validate()
 
     def run(self):
-        """
-        Run the sensitivity analysis.
+        """Run the sensitivity analysis.
 
         This method performs a sensitivity analysis by iterating over the
         perturbations defined in the tolerancing object. For each
@@ -58,6 +57,7 @@ class SensitivityAnalysis:
         Raises:
             ValueError: If a perturbation sampler other than RangeSampler is
                 used.
+
         """
         results = []
 
@@ -90,7 +90,7 @@ class SensitivityAnalysis:
                     {
                         f"{name}": value
                         for name, value in zip(self.operand_names, operand_values)
-                    }
+                    },
                 )
 
                 # save results - compensator values
@@ -102,17 +102,16 @@ class SensitivityAnalysis:
         self.tolerancing.reset()
 
     def get_results(self):
-        """
-        Returns the results of the sensitivity analysis.
+        """Returns the results of the sensitivity analysis.
 
         Returns:
             pd.DataFrame: The results of the sensitivity analysis.
+
         """
         return self._results
 
     def view(self, figsize=(2.5, 3.3), sharex="col", sharey="row"):
-        """
-        Visualizes the sensitivity analysis results.
+        """Visualizes the sensitivity analysis results.
 
         Args:
             figsize (tuple, optional): The size of the figure in inches for
@@ -121,6 +120,7 @@ class SensitivityAnalysis:
                 subplots. Default is 'col'.
             sharey (str, optional): Specifies how the y-axis is shared among
                 subplots. Default is 'row'.
+
         """
         df = self._results
         unique_types = df["perturbation_type"].unique()
@@ -132,7 +132,11 @@ class SensitivityAnalysis:
         size_y = n * figsize[1]
 
         fig, axes = plt.subplots(
-            m, n, figsize=(size_y, size_x), sharex=sharex, sharey=sharey
+            m,
+            n,
+            figsize=(size_y, size_x),
+            sharex=sharex,
+            sharey=sharey,
         )
 
         # handle single row and/or column
@@ -156,8 +160,7 @@ class SensitivityAnalysis:
         plt.show()
 
     def _validate(self):
-        """
-        Validates the tolerancing system before performing sensitivity
+        """Validates the tolerancing system before performing sensitivity
         analysis.
 
         Raises:
@@ -166,6 +169,7 @@ class SensitivityAnalysis:
                 system.
             ValueError: If the number of operands exceeds 6.
             ValueError: If the number of perturbations exceeds 6.
+
         """
         if not self.tolerancing.operands:
             raise ValueError("No operands found in the tolerancing system.")

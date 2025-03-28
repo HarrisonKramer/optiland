@@ -20,6 +20,7 @@ class Aberrations:
 
     Attributes:
         optic (optic.Optic): instance of the optic object to be assessed
+
     """
 
     def __init__(self, optic):
@@ -30,6 +31,7 @@ class Aberrations:
 
         Returns:
             None
+
         """
         self.optic = optic
 
@@ -50,6 +52,7 @@ class Aberrations:
             LchC (List[float]): First-order longitudinal axial color
             TchC (List[float]): First-order lateral color
             S (List[float]): Seidel aberration coefficients
+
         """
         self._precalculations()
 
@@ -91,6 +94,7 @@ class Aberrations:
 
         Returns:
             S (List[float]): Seidel aberration coefficients
+
         """
         self._precalculations()
         TSC, CC, TAC, TPC, DC = self._compute_seidel_terms()
@@ -102,6 +106,7 @@ class Aberrations:
 
         Returns:
             TSC (List[float]): Third-order transverse spherical aberration
+
         """
         self._precalculations()
 
@@ -115,6 +120,7 @@ class Aberrations:
 
         Returns:
             SC (List[float]): Third-order longitudinal spherical aberration
+
         """
         self._precalculations()
 
@@ -130,6 +136,7 @@ class Aberrations:
 
         Returns:
             CC (List[float]): Third-order sagittal coma
+
         """
         self._precalculations()
 
@@ -143,6 +150,7 @@ class Aberrations:
 
         Returns:
             TCC (List[float]): Third-order tangential coma
+
         """
         return self.CC() * 3
 
@@ -151,6 +159,7 @@ class Aberrations:
 
         Returns:
             TAC (List[float]): Third-order transverse astigmatism
+
         """
         self._precalculations()
 
@@ -165,6 +174,7 @@ class Aberrations:
 
         Returns:
             AC (List[float]): Third-order longitudinal astigmatism
+
         """
         self._precalculations()
 
@@ -180,6 +190,7 @@ class Aberrations:
 
         Returns:
             TPC (List[float]): Third-order transverse Petzval sum
+
         """
         self._precalculations()
 
@@ -193,6 +204,7 @@ class Aberrations:
 
         Returns:
             PC (List[float]): Third-order longitudinal Petzval sum
+
         """
         self._precalculations()
 
@@ -208,6 +220,7 @@ class Aberrations:
 
         Returns:
             DC (List[float]): Third-order distortion
+
         """
         self._precalculations()
 
@@ -221,6 +234,7 @@ class Aberrations:
 
         Returns:
             TAchC (List[float]): First-order transverse axial color
+
         """
         self._precalculations()
 
@@ -234,6 +248,7 @@ class Aberrations:
 
         Returns:
             LchC (List[float]): First-order longitudinal axial color
+
         """
         self._precalculations()
 
@@ -249,6 +264,7 @@ class Aberrations:
 
         Returns:
             TchC (List[float]): First-order lateral color
+
         """
         self._precalculations()
 
@@ -371,6 +387,6 @@ class Aberrations:
                 -sum(TAC) * self._n[-1] * self._ua[-1] * 2,
                 -sum(TPC) * self._n[-1] * self._ua[-1] * 2,
                 -sum(DC) * self._n[-1] * self._ua[-1] * 2,
-            ]
+            ],
         )
         return S

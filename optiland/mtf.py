@@ -51,6 +51,7 @@ class GeometricMTF(SpotDiagram):
             given field point.
         _plot_field(ax, mtf_data, field, color): Plots the MTF data for a
             given field point.
+
     """
 
     def __init__(
@@ -86,6 +87,7 @@ class GeometricMTF(SpotDiagram):
                 Defaults to (12, 4).
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference curve. Defaults to False.
+
         """
         _, ax = plt.subplots(figsize=figsize)
 
@@ -109,6 +111,7 @@ class GeometricMTF(SpotDiagram):
         Returns:
             tuple: A tuple containing the MTF data for each field point and
                 the scale factor.
+
         """
         if self.scale:
             phi = np.arccos(self.freq / self.max_freq)
@@ -123,7 +126,7 @@ class GeometricMTF(SpotDiagram):
                 [
                     self._compute_field_data(yi, self.freq, scale_factor),
                     self._compute_field_data(xi, self.freq, scale_factor),
-                ]
+                ],
             )
         return mtf, scale_factor
 
@@ -137,6 +140,7 @@ class GeometricMTF(SpotDiagram):
 
         Returns:
             ndarray: The MTF data for the field point.
+
         """
         A, edges = np.histogram(xi, bins=self.num_points + 1)
         x = (edges[1:] + edges[:-1]) / 2
@@ -159,6 +163,7 @@ class GeometricMTF(SpotDiagram):
             mtf_data (ndarray): The MTF data for the field point.
             field (tuple): The field point coordinates.
             color (str): The color of the plotted lines.
+
         """
         ax.plot(
             self.freq,
@@ -177,8 +182,7 @@ class GeometricMTF(SpotDiagram):
 
 
 class FFTMTF:
-    """
-    Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
+    """Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
 
     This class calculates and visualizes the Modulation Transfer Function (MTF)
     of an optic using the Fast Fourier Transform (FFT) method.
@@ -208,6 +212,7 @@ class FFTMTF:
 
     Methods:
         view(figsize=(12, 4), add_reference=False): Visualizes the MTF.
+
     """
 
     def __init__(
@@ -240,7 +245,11 @@ class FFTMTF:
 
         self.psf = [
             FFTPSF(
-                self.optic, field, self.wavelength, self.num_rays, self.grid_size
+                self.optic,
+                field,
+                self.wavelength,
+                self.num_rays,
+                self.grid_size,
             ).psf
             for field in self.fields
         ]
@@ -248,14 +257,14 @@ class FFTMTF:
         self.mtf = self._generate_mtf_data()
 
     def view(self, figsize=(12, 4), add_reference=False):
-        """
-        Visualizes the Modulation Transfer Function (MTF).
+        """Visualizes the Modulation Transfer Function (MTF).
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (12, 4).
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference line. Defaults to False.
+
         """
         dx = self._get_mtf_units()
         freq = np.arange(self.grid_size // 2) * dx
@@ -281,8 +290,7 @@ class FFTMTF:
         plt.show()
 
     def _plot_field(self, ax, freq, mtf_data, field, color):
-        """
-        Plot the MTF data for a specific field.
+        """Plot the MTF data for a specific field.
 
         Args:
             ax (matplotlib.axes.Axes): The axes object to plot on.
@@ -290,6 +298,7 @@ class FFTMTF:
             mtf_data (array-like): The MTF data for the field.
             field (tuple): The field values (Hx, Hy).
             color (str): The color of the plot.
+
         """
         ax.plot(
             freq,
@@ -307,14 +316,14 @@ class FFTMTF:
         )
 
     def _generate_mtf_data(self):
-        """
-        Generates the MTF (Modulation Transfer Function) data for each field.
+        """Generates the MTF (Modulation Transfer Function) data for each field.
         The calculation is based on the PSF, which is calculated during
         construction of the class.
 
         Returns:
             list: A list of MTF data for each field. Each MTF data is a list
                 containing the tangential and sagittal MTF values.
+
         """
         mtf_data = [np.abs(np.fft.fftshift(np.fft.fft2(psf))) for psf in self.psf]
         mtf = []
@@ -325,12 +334,12 @@ class FFTMTF:
         return mtf
 
     def _get_fno(self):
-        """
-        Calculate the effective F-number (FNO) of the optical system.
+        """Calculate the effective F-number (FNO) of the optical system.
         Applies a correction if the object is finite.
 
         Returns:
             float: The effective F-number of the optical system.
+
         """
         FNO = self.optic.paraxial.FNO()
 
@@ -343,12 +352,12 @@ class FFTMTF:
         return FNO
 
     def _get_mtf_units(self):
-        """
-        Calculate the MTF (Modulation Transfer Function) units.
+        """Calculate the MTF (Modulation Transfer Function) units.
 
         Returns:
             float: The MTF units calculated based on the grid size, number
                 of rays, wavelength, and F-number.
+
         """
         Q = self.grid_size / self.num_rays
         dx = Q / (self.wavelength * self.FNO)

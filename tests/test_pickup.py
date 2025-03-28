@@ -112,7 +112,7 @@ class TestPickupManager:
                 "target_surface_idx": 2,
                 "scale": 2,
                 "offset": 3,
-            }
+            },
         ]
         manager = PickupManager.from_dict(lens, d)
         assert len(manager) == 1

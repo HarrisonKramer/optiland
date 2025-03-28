@@ -24,8 +24,7 @@ from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
 
 
 class Variable:
-    """
-    Represents a variable in an optical system.
+    """Represents a variable in an optical system.
 
     Args:
         optic (OpticalSystem): The optical system to which the variable
@@ -49,10 +48,17 @@ class Variable:
 
     Raises:
         ValueError: If an invalid variable type is provided.
+
     """
 
     def __init__(
-        self, optic, type_name, min_val=None, max_val=None, apply_scaling=True, **kwargs
+        self,
+        optic,
+        type_name,
+        min_val=None,
+        max_val=None,
+        apply_scaling=True,
+        **kwargs,
     ):
         self.optic = optic
         self.type = type_name
@@ -72,18 +78,17 @@ class Variable:
 
     @staticmethod
     def allowed_attributes():
-        """
-        This method returns a set of strings that are the names of allowed
+        """This method returns a set of strings that are the names of allowed
         attributes.
         """
         return {"surface_number", "coeff_number", "wavelength", "coeff_index", "axis"}
 
     def _get_variable(self):
-        """
-        Get the variable.
+        """Get the variable.
 
         Returns:
             The behavior of the variable, or None if an error occurs.
+
         """
         behavior_kwargs = {
             "type_name": self.type,
@@ -110,8 +115,7 @@ class Variable:
         # Instantiate the class if it exists
         if variable_class:
             return variable_class(**behavior_kwargs)
-        else:
-            raise ValueError(f'Invalid variable type "{self.type}"')
+        raise ValueError(f'Invalid variable type "{self.type}"')
 
     @property
     def value(self):
@@ -122,6 +126,7 @@ class Variable:
 
         Raises:
             ValueError: If the variable type is invalid.
+
         """
         return self.variable.get_value()
 
@@ -131,6 +136,7 @@ class Variable:
 
         Returns:
             tuple: the bounds of the variable
+
         """
         min_val = (
             self.variable.scale(self.min_val) if self.min_val is not None else None
@@ -148,6 +154,7 @@ class Variable:
 
         Raises:
             ValueError: If the variable type is invalid.
+
         """
         self.variable.update_value(new_value)
 
@@ -160,5 +167,6 @@ class Variable:
 
         Returns:
             str: A string representation of the variable.
+
         """
         return str(self.variable)

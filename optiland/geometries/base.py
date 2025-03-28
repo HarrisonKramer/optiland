@@ -14,6 +14,7 @@ class BaseGeometry(ABC):
 
     Args:
         cs (CoordinateSystem): The coordinate system of the geometry.
+
     """
 
     _registry = {}
@@ -39,8 +40,9 @@ class BaseGeometry(ABC):
 
         Returns:
             Union[float, np.ndarray]: The surface sag of the geometry.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     @abstractmethod
     def distance(self, rays):
@@ -51,8 +53,9 @@ class BaseGeometry(ABC):
 
         Returns:
             np.ndarray: The propagation distance to the geometry.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     @abstractmethod
     def surface_normal(self, rays):
@@ -65,8 +68,9 @@ class BaseGeometry(ABC):
         Returns:
             np.ndarray: The surface normals of the geometry at the given
                 ray positions.
+
         """
-        pass  # pragma: no cover
+        # pragma: no cover
 
     def localize(self, rays):
         """Convert rays from the global coordinate system to the local
@@ -74,6 +78,7 @@ class BaseGeometry(ABC):
 
         Args:
             rays (RealRays): The rays to convert.
+
         """
         self.cs.localize(rays)
 
@@ -83,6 +88,7 @@ class BaseGeometry(ABC):
 
         Args:
             rays (RealRays): The rays to convert.
+
         """
         self.cs.globalize(rays)
 
@@ -91,6 +97,7 @@ class BaseGeometry(ABC):
 
         Returns:
             dict: The dictionary representation of the geometry.
+
         """
         return {"type": self.__class__.__name__, "cs": self.cs.to_dict()}
 
@@ -103,6 +110,7 @@ class BaseGeometry(ABC):
 
         Returns:
             BaseGeometry: The geometry.
+
         """
         geometry_type = data.get("type")
         if geometry_type not in cls._registry:

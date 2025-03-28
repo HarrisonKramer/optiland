@@ -29,8 +29,7 @@ from optiland.surfaces.standard_surface import Surface
 
 
 class SurfaceFactory:
-    """
-    A factory class for creating surface objects.
+    """A factory class for creating surface objects.
 
     Args:
         surface_group (SurfaceGroup): The surface group to which the surfaces
@@ -40,6 +39,7 @@ class SurfaceFactory:
         _surface_group (SurfaceGroup): The surface group to which the surfaces
             belong.
         last_thickness (float): The thickness of the last created surface.
+
     """
 
     def __init__(self, surface_group):
@@ -49,8 +49,7 @@ class SurfaceFactory:
         self._last_surface = None  # placeholder for last surface object
 
     def create_surface(self, surface_type, comment, index, is_stop, material, **kwargs):
-        """
-        Create a surface object based on the given parameters.
+        """Create a surface object based on the given parameters.
 
         Args:
             surface_type (str): The type of surface to create.
@@ -65,6 +64,7 @@ class SurfaceFactory:
 
         Raises:
             ValueError: If the index is greater than the number of surfaces.
+
         """
         if index > self._surface_group.num_surfaces:
             raise ValueError("Surface index cannot be greater than number of surfaces.")
@@ -72,9 +72,11 @@ class SurfaceFactory:
         cs = self._configure_cs(index, **kwargs)
         material_pre, material_post = self._configure_material(index, material)
         coating = self.configure_coating(
-            kwargs.get("coating", None), material_pre, material_post
+            kwargs.get("coating"),
+            material_pre,
+            material_post,
         )
-        bsdf = kwargs.get("bsdf", None)
+        bsdf = kwargs.get("bsdf")
 
         is_reflective = material == "mirror"
 
@@ -167,23 +169,21 @@ class SurfaceFactory:
                 surface_type=surface_type,
                 **filtered_kwargs,
             )
-        else:
-            return Surface(
-                geometry,
-                material_pre,
-                material_post,
-                is_stop,
-                is_reflective=is_reflective,
-                coating=coating,
-                bsdf=bsdf,
-                surface_type=surface_type,
-                comment=comment,
-                **filtered_kwargs,
-            )
+        return Surface(
+            geometry,
+            material_pre,
+            material_post,
+            is_stop,
+            is_reflective=is_reflective,
+            coating=coating,
+            bsdf=bsdf,
+            surface_type=surface_type,
+            comment=comment,
+            **filtered_kwargs,
+        )
 
     def _configure_cs(self, index, **kwargs):
-        """
-        Configures the coordinate system for a given surface.
+        """Configures the coordinate system for a given surface.
 
         Args:
             index (int): The index of the surface.
@@ -192,6 +192,7 @@ class SurfaceFactory:
 
         Returns:
             CoordinateSystem: The configured coordinate system.
+
         """
         if "z" in kwargs:
             if "thickness" in kwargs:
@@ -206,7 +207,7 @@ class SurfaceFactory:
                 raise ValueError(
                     'Cannot pass "thickness" after defining '
                     '"x", "y", "z" position for a previous '
-                    "surface."
+                    "surface.",
                 )
 
             thickness = kwargs.get("thickness", 0)
@@ -233,16 +234,18 @@ class SurfaceFactory:
 
     @staticmethod
     def _configure_standard_geometry(cs, **kwargs):
-        """
-        Configures a standard geometry based on the given parameters.
+        """Configures a standard geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius and conic.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -256,16 +259,18 @@ class SurfaceFactory:
 
     @staticmethod
     def _configure_even_asphere_geometry(cs, **kwargs):
-        """
-        Configures an even asphere geometry based on the given parameters.
+        """Configures an even asphere geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, and coefficients.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -279,16 +284,18 @@ class SurfaceFactory:
 
     @staticmethod
     def _configure_odd_asphere_geometry(cs, **kwargs):
-        """
-        Configures an odd asphere geometry based on the given parameters.
+        """Configures an odd asphere geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, and coefficients.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -302,16 +309,18 @@ class SurfaceFactory:
 
     @staticmethod
     def _configure_polynomial_geometry(cs, **kwargs):
-        """
-        Configures a polynomial geometry based on the given parameters.
+        """Configures a polynomial geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -325,16 +334,18 @@ class SurfaceFactory:
 
     @staticmethod
     def _configure_chebyshev_geometry(cs, **kwargs):
-        """
-        Configures a Chebyshev geometry based on the given parameters.
+        """Configures a Chebyshev geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -345,23 +356,32 @@ class SurfaceFactory:
         norm_y = kwargs.get("norm_y", 1)
 
         geometry = ChebyshevPolynomialGeometry(
-            cs, radius, conic, tol, max_iter, coefficients, norm_x, norm_y
+            cs,
+            radius,
+            conic,
+            tol,
+            max_iter,
+            coefficients,
+            norm_x,
+            norm_y,
         )
 
         return geometry
 
     # @staticmethod
     def _configure_zernike_geometry(self, cs, **kwargs):
-        """
-        Configures a Zernike geometry based on the given parameters.
+        """Configures a Zernike geometry based on the given parameters.
 
-        Parameters:
+        Parameters
+        ----------
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns:
+        Returns
+        -------
             geometry: The configured geometry object.
+
         """
         radius = kwargs.get("radius", np.inf)
         conic = kwargs.get("conic", 0)
@@ -371,14 +391,19 @@ class SurfaceFactory:
         norm_radius = kwargs.get("norm_radius", 1)
 
         geometry = ZernikePolynomialGeometry(
-            cs, radius, conic, tol, max_iter, coefficients, norm_radius
+            cs,
+            radius,
+            conic,
+            tol,
+            max_iter,
+            coefficients,
+            norm_radius,
         )
 
         return geometry
 
     def _configure_material(self, index, material):
-        """
-        Configures the material for a surface based on the given index and
+        """Configures the material for a surface based on the given index and
             material input.
 
         Args:
@@ -391,6 +416,7 @@ class SurfaceFactory:
         Returns:
             tuple: A tuple containing the material before and after the
                 surface.
+
         """
         # object surface
         if index == 0:
@@ -422,8 +448,7 @@ class SurfaceFactory:
         return material_pre, material_post
 
     def configure_coating(self, coating, material_pre, material_post):
-        """
-        Configures the coating for a surface based on the given index and
+        """Configures the coating for a surface based on the given index and
             coating input.
 
         Args:
@@ -435,10 +460,11 @@ class SurfaceFactory:
 
         Returns:
             BaseCoating: The coating for the surface.
+
         """
         if isinstance(coating, BaseCoating):
             return coating
-        elif isinstance(coating, str):
+        if isinstance(coating, str):
             if coating == "fresnel":
                 return FresnelCoating(material_pre, material_post)
         else:
