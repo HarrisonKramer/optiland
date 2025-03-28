@@ -550,7 +550,9 @@ class Optic:
             (
                 np.full(max_size, value)
                 if isinstance(value, (float, int))
-                else value if isinstance(value, np.ndarray) else None
+                else value
+                if isinstance(value, np.ndarray)
+                else None
             )
             for value in [Hx, Hy, Px, Py]
         ]
