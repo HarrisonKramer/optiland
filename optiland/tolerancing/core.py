@@ -60,7 +60,7 @@ class Tolerancing:
     def add_operand(
         self,
         operand_type: str,
-        input_data: dict = {},
+        input_data: dict = None,
         target: float = None,
         weight: float = 1.0,
         min_val: float = None,
@@ -79,6 +79,8 @@ class Tolerancing:
             input_data (dict): Additional input data for the operand.
 
         """
+        if input_data is None:
+            input_data = {}
         new_operand = Operand(
             operand_type,
             target,

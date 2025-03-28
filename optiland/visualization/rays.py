@@ -75,10 +75,7 @@ class Rays2D:
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
                 # if only one field, use different colors for each wavelength
-                if len(fields) > 1:
-                    color_idx = i
-                else:
-                    color_idx = j
+                color_idx = i if len(fields) > 1 else j
 
                 if distribution is None:
                     # trace only for surface extents

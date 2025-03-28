@@ -41,7 +41,10 @@ class ZernikeStandard:
 
     """
 
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
+
         if len(coeffs) > 120:  # partial sum of first 15 natural numbers
             raise ValueError("Number of coefficients is limited to 120.")
 
@@ -191,7 +194,9 @@ class ZernikeFringe(ZernikeStandard):
 
     """
 
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
         super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):
@@ -256,7 +261,9 @@ class ZernikeNoll(ZernikeStandard):
 
     """
 
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
         super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):

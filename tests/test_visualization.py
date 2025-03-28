@@ -20,8 +20,8 @@ matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class InvalidGeometry(BaseGeometry):
-    def __init__(self, coordinate_system=CoordinateSystem()):
-        super().__init__(coordinate_system)
+    def __init__(self, coordinate_system=CoordinateSystem):
+        super().__init__(coordinate_system())
         self.radius = np.inf
 
     def sag(self, x=0, y=0):

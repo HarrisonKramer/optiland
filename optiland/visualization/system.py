@@ -93,13 +93,12 @@ class OpticalSystem:
                 lens_surfaces.append(surface)
 
             # Back surface of a lens
-            elif n[k] == 1 and n[k - 1] > 1:
-                if lens_surfaces:
-                    surface = self._get_lens_surface(surf, extent)
-                    lens_surfaces.append(surface)
-                    self._add_component("lens", lens_surfaces)
+            elif n[k] == 1 and n[k - 1] > 1 and lens_surfaces:
+                surface = self._get_lens_surface(surf, extent)
+                lens_surfaces.append(surface)
+                self._add_component("lens", lens_surfaces)
 
-                    lens_surfaces = []
+                lens_surfaces = []
 
             # add final lens, if any
             if lens_surfaces:

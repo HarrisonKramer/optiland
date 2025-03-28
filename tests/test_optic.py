@@ -334,4 +334,4 @@ class TestOptic:
         for surface in self.optic.surface_group.surfaces:
             surface.is_stop = False
         with pytest.raises(ValueError):
-            self.optic.surface_group.stop_index
+            _ = self.optic.surface_group.stop_index
