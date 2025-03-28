@@ -1,6 +1,7 @@
 # import pkg_resources
 from importlib import resources
 from unittest.mock import patch
+import pytest
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -18,6 +19,11 @@ from optiland.samples.objectives import (
 from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
 from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.geometries import BaseGeometry
+from optiland.coordinate_system import CoordinateSystem
+from optiland.materials import BaseMaterial, MaterialFile, IdealMaterial, AbbeMaterial
+from optiland.geometries import EvenAsphere
+from optiland import fields
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
