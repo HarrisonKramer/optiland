@@ -341,16 +341,13 @@ class RingDistribution(BaseDistribution):
 def create_distribution(distribution_type):
     """Create a distribution based on the given distribution type.
 
-    Parameters
-    ----------
+    Args:
         distribution_type (str): The type of distribution to create.
 
-    Returns
-    -------
+    Returns:
         Distribution: An instance of the specified distribution type.
 
-    Raises
-    ------
+    Raises:
         ValueError: If an invalid distribution type is provided.
 
     """

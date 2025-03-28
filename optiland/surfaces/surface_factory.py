@@ -236,14 +236,12 @@ class SurfaceFactory:
     def _configure_standard_geometry(cs, **kwargs):
         """Configures a standard geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius and conic.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """
@@ -261,14 +259,12 @@ class SurfaceFactory:
     def _configure_even_asphere_geometry(cs, **kwargs):
         """Configures an even asphere geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, and coefficients.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """
@@ -286,14 +282,12 @@ class SurfaceFactory:
     def _configure_odd_asphere_geometry(cs, **kwargs):
         """Configures an odd asphere geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, and coefficients.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """
@@ -311,14 +305,12 @@ class SurfaceFactory:
     def _configure_polynomial_geometry(cs, **kwargs):
         """Configures a polynomial geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """
@@ -336,14 +328,12 @@ class SurfaceFactory:
     def _configure_chebyshev_geometry(cs, **kwargs):
         """Configures a Chebyshev geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """
@@ -372,14 +362,12 @@ class SurfaceFactory:
     def _configure_zernike_geometry(self, cs, **kwargs):
         """Configures a Zernike geometry based on the given parameters.
 
-        Parameters
-        ----------
+        Args:
             cs: The coordinate system for the geometry.
             **kwargs: Additional keyword arguments for the geometry. Options
                 include radius, conic, coefficients, tol, and max_iter.
 
-        Returns
-        -------
+        Returns:
             geometry: The configured geometry object.
 
         """

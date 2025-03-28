@@ -263,8 +263,7 @@ class Optic:
     def set_polarization(self, polarization: Union[PolarizationState, str]):
         """Set the polarization state of the optic.
 
-        Parameters
-        ----------
+        Args:
             polarization (Union[PolarizationState, str]): The polarization
                 state to set. It can be either a `PolarizationState` object or
                 'ignore'.

@@ -524,8 +524,7 @@ class SpotDiagram:
     ):
         """Plot the field data on the given axis.
 
-        Parameters
-        ----------
+        Args:
             ax (matplotlib.axes.Axes): The axis to plot the field data on.
             field_data (list): List of tuples containing x, y, and intensity
                 data points.
@@ -536,8 +535,7 @@ class SpotDiagram:
             buffer (float, optional): Buffer factor to extend the axis limits.
                 Default is 1.05.
 
-        Returns
-        -------
+        Returns:
             None
 
         """

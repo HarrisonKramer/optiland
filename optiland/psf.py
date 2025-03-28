@@ -186,17 +186,14 @@ class FFTPSF(Wavefront):
     def _log_tick_formatter(self, value, pos=None):
         """Format the tick labels for a logarithmic scale.
 
-        Parameters
-        ----------
+        Args:
             value (float): The tick value.
             pos (int, optional): The position of the tick.
 
-        Returns
-        -------
+        Returns:
             str: The formatted tick label.
 
-        References
-        ----------
+        References:
             https://stackoverflow.com/questions/3909794/plotting-mplot3d-axes3d-xyz-surface-plot-with-log-scale
 
         """
@@ -205,13 +202,11 @@ class FFTPSF(Wavefront):
     def _log_colorbar_formatter(self, value, pos=None):
         """Formats the tick labels for a logarithmic colorbar.
 
-        Parameters
-        ----------
+        Args:
             value (float): The tick value.
             pos (int, optional): The position of the tick.
 
-        Returns
-        -------
+        Returns:
             str: The formatted tick label.
 
         """
@@ -285,13 +280,11 @@ class FFTPSF(Wavefront):
         """Finds the bounding box coordinates for the non-zero elements in the
         PSF matrix.
 
-        Parameters
-        ----------
+        Args:
             threshold (float): The threshold value for determining non-zero
                 elements in the PSF matrix. Default is 0.25.
 
-        Returns
-        -------
+        Returns:
             tuple: A tuple containing the minimum and maximum x and y
                 coordinates of the bounding box.
 
@@ -359,17 +352,14 @@ class FFTPSF(Wavefront):
         """Calculate the physical units of the point spread function (PSF) based
         on the given image.
 
-        Parameters
-        ----------
+        Args:
             image (numpy.ndarray): The input PSF image.
 
-        Returns
-        -------
+        Returns:
             tuple: A tuple containing the physical units of the PSF in the
                 x and y directions.
 
-        References
-        ----------
+        References:
             https://www.strollswithmydog.com/wavefront-to-psf-to-mtf-physical-units/#iv
 
         """

@@ -32,8 +32,7 @@ class YYbar:
     def view(self, figsize=(7, 5.5)):
         """Visualizes the ray heights of the marginal and chief rays.
 
-        Parameters
-        ----------
+        Args:
             figsize (tuple): The size of the figure (width, height).
                 Default is (7, 5.5).
 

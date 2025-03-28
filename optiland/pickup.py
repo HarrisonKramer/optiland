@@ -37,8 +37,7 @@ class PickupManager:
     def add(self, source_surface_idx, attr_type, target_surface_idx, scale=1, offset=0):
         """Adds a new pickup operation to the manager.
 
-        Parameters
-        ----------
+        Args:
             source_surface_idx (int): The index of the source surface in the
                 optic's surface group.
             attr_type (str): The type of attribute to be picked up ('radius',
@@ -84,14 +83,12 @@ class PickupManager:
     def from_dict(cls, optic, data):
         """Creates a PickupManager object from a dictionary representation.
 
-        Parameters
-        ----------
+        Args:
             optic (Optic): The optic object on which the pickup operations are
                 performed.
             data (dict): A dictionary representation of the pickup manager.
 
-        Returns
-        -------
+        Returns:
             PickupManager: A PickupManager object created from the dictionary
                 representation.
 
@@ -177,12 +174,10 @@ class Pickup:
     def _set_value(self, value):
         """Sets the value of the target surface attribute.
 
-        Parameters
-        ----------
+        Args:
             value (float): The value to set for the attribute.
 
-        Raises
-        ------
+        Raises:
             ValueError: If the source attribute is invalid.
 
         """
@@ -214,14 +209,12 @@ class Pickup:
     def from_dict(cls, optic, data):
         """Creates a Pickup object from a dictionary representation.
 
-        Parameters
-        ----------
+        Args:
             optic (Optic): The optic object on which the pickup operation is
                 performed.
             data (dict): A dictionary representation of the pickup operation.
 
-        Returns
-        -------
+        Returns:
             Pickup: A Pickup object created from the dictionary representation.
 
         """

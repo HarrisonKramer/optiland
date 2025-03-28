@@ -35,17 +35,14 @@ class BaseRays:
         """Process the input data and convert it into a 1-dimensional NumPy array
         of floats.
 
-        Parameters
-        ----------
+        Args:
             data (int, float, or np.ndarray): The input data to be processed.
 
-        Returns
-        -------
+        Returns:
             np.ndarray: The processed data as a 1-dimensional NumPy array of
                 floats.
 
-        Raises
-        ------
+        Raises:
             ValueError: If the input data type is not supported (must be a
                 scalar or a NumPy array).
 

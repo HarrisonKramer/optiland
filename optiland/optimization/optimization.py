@@ -332,12 +332,10 @@ class DualAnnealing(OptimizerGeneric):
     """DualAnnealing is an optimizer that uses the dual annealing algorithm
     to find the minimum of an optimization problem.
 
-    Parameters
-    ----------
+    Args:
         problem (OptimizationProblem): The optimization problem to be solved.
 
-    Methods
-    -------
+    Methods:
         optimize(maxiter=1000, disp=True): Runs the dual annealing algorithm
             to optimize the problem and returns the result.
 
@@ -349,14 +347,12 @@ class DualAnnealing(OptimizerGeneric):
     def optimize(self, maxiter=1000, disp=True, callback=None):
         """Runs the dual annealing algorithm to optimize the problem.
 
-        Parameters
-        ----------
+        Args:
             maxiter (int): Maximum number of iterations.
             disp (bool): Whether to display the optimization process.
             callback (callable): A callable called after each iteration.
 
-        Returns
-        -------
+        Returns:
             result: The result of the optimization.
 
         """

@@ -55,12 +55,10 @@ class Field:
     def from_dict(cls, field_dict):
         """Create a field from a dictionary.
 
-        Parameters
-        ----------
+        Args:
             field_dict (dict): A dictionary representation of the field.
 
-        Returns
-        -------
+        Returns:
             Field: A field object created from the dictionary.
 
         """
@@ -142,13 +140,11 @@ class FieldGroup:
         Note that the vignetting factors are interpolated using the nearest
         neighbor method.
 
-        Parameters
-        ----------
+        Args
             Hx (float): The normalized x component of the field.
             Hy (float): The normalized y component of the field.
 
-        Returns
-        -------
+        Returns:
             vx_new (float): The interpolated x-component of the
                 vignetting factor.
             vy_new (float): The interpolated y-component of the
@@ -185,8 +181,7 @@ class FieldGroup:
     def add_field(self, field):
         """Add a field to the list of fields.
 
-        Parameters
-        ----------
+        Args:
             field: The field to be added.
 
         """
@@ -233,12 +228,10 @@ class FieldGroup:
     def from_dict(cls, data):
         """Create a field group from a dictionary.
 
-        Parameters
-        ----------
+        Args:
             data (dict): A dictionary representation of the field group.
 
-        Returns
-        -------
+        Returns:
             FieldGroup: A field group object created from the dictionary.
 
         """
