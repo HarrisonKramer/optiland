@@ -10,8 +10,7 @@ from optiland.visualization.surface import Surface3D
 
 
 class Mirror3D(Surface3D):
-    """
-    A class used to represent a 3D Mirror surface.
+    """A class used to represent a 3D Mirror surface.
     Inherits from Surface3D.
 
     Args:
@@ -22,17 +21,18 @@ class Mirror3D(Surface3D):
     Methods:
         _configure_material(actor):
             Configures the material properties of the mirror surface.
+
     """
 
     def __init__(self, surface, extent):
         super().__init__(surface, extent)
 
     def _configure_material(self, actor):
-        """
-        Configures the material properties of the mirror surface.
+        """Configures the material properties of the mirror surface.
 
         Args:
             actor (vtkActor): The actor representing the mirror surface.
+
         """
         actor.GetProperty().SetColor(1, 1, 1)
         actor.GetProperty().SetAmbient(0.3)

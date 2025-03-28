@@ -5,8 +5,10 @@ wavefront error versus field coordinate of an optical system.
 
 Kramer Harrison, 2024
 """
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 from optiland.analysis import SpotDiagram
 from optiland.wavefront import Wavefront
 
@@ -24,9 +26,17 @@ class RmsSpotSizeVsField(SpotDiagram):
         num_rings (int): the number of rings. Default is 6.
         distribution (str): the distribution of the fields.
             Default is 'hexapolar'.
+
     """
-    def __init__(self, optic, num_fields=64, wavelengths='all', num_rings=6,
-                 distribution='hexapolar'):
+
+    def __init__(
+        self,
+        optic,
+        num_fields=64,
+        wavelengths="all",
+        num_rings=6,
+        distribution="hexapolar",
+    ):
         self.num_fields = num_fields
         fields = [(0, Hy) for Hy in np.linspace(0, 1, num_fields)]
         super().__init__(optic, fields, wavelengths, num_rings, distribution)
@@ -43,17 +53,18 @@ class RmsSpotSizeVsField(SpotDiagram):
 
         Returns:
             None
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f'{wavelength:.4f} µm' for wavelength in wavelengths]
+        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
         ax.plot(self._field[:, 1], self._spot_size, label=labels)
 
-        ax.set_xlabel('Normalized Y Field Coordinate')
-        ax.set_ylabel('RMS Spot Size (mm)')
+        ax.set_xlabel("Normalized Y Field Coordinate")
+        ax.set_ylabel("RMS Spot Size (mm)")
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         plt.tight_layout()
         plt.xlim(0, 1)
         plt.ylim(0, None)
@@ -75,10 +86,17 @@ class RmsWavefrontErrorVsField(Wavefront):
         num_rays (int): the number of rays. Default is 12.
         distribution (str): the distribution of the fields.
             Default is 'hexapolar'.
+
     """
 
-    def __init__(self, optic, num_fields=32, wavelengths='all', num_rays=12,
-                 distribution='hexapolar'):
+    def __init__(
+        self,
+        optic,
+        num_fields=32,
+        wavelengths="all",
+        num_rays=12,
+        distribution="hexapolar",
+    ):
         self.num_fields = num_fields
         fields = [(0, Hy) for Hy in np.linspace(0, 1, num_fields)]
         super().__init__(optic, fields, wavelengths, num_rays, distribution)
@@ -95,17 +113,18 @@ class RmsWavefrontErrorVsField(Wavefront):
 
         Returns:
             None
+
         """
         fig, ax = plt.subplots(figsize=figsize)
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f'{wavelength:.4f} µm' for wavelength in wavelengths]
+        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
         ax.plot(self._field[:, 1], self._wavefront_error, label=labels)
 
-        ax.set_xlabel('Normalized Y Field Coordinate')
-        ax.set_ylabel('RMS Wavefront Error (waves)')
+        ax.set_xlabel("Normalized Y Field Coordinate")
+        ax.set_ylabel("RMS Wavefront Error (waves)")
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc='center left')
+        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         plt.tight_layout()
         plt.xlim(0, 1)
         plt.ylim(0, None)
@@ -118,5 +137,5 @@ class RmsWavefrontErrorVsField(Wavefront):
         wavefront_error = np.zeros((self.num_fields, len(self.wavelengths)))
         for i in range(self.num_fields):
             for j in range(len(self.wavelengths)):
-                wavefront_error[i, j] = np.sqrt(np.mean(self.data[i][j][0]**2))
+                wavefront_error[i, j] = np.sqrt(np.mean(self.data[i][j][0] ** 2))
         return wavefront_error

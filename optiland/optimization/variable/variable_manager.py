@@ -2,8 +2,7 @@ from optiland.optimization.variable import Variable
 
 
 class VariableManager:
-    """
-    Manages a list of variables in a merit function.
+    """Manages a list of variables in a merit function.
 
     Attributes:
         variables (list): A list of Variable objects.
@@ -12,6 +11,7 @@ class VariableManager:
         add(optic, variable_type, **kwargs): Add a variable to the merit
             function.
         clear(): Clear all variables from the merit function.
+
     """
 
     def __init__(self):
@@ -26,6 +26,7 @@ class VariableManager:
             variable_type (str): The type of the variable.
             **kwargs: Additional keyword arguments to be passed to the Variable
                 constructor.
+
         """
         self.variables.append(Variable(optic, variable_type, **kwargs))
 
@@ -44,8 +45,7 @@ class VariableManager:
             result = self.variables[self._index]
             self._index += 1
             return result
-        else:
-            raise StopIteration
+        raise StopIteration
 
     def __len__(self):
         """Return the number of variables in the list"""

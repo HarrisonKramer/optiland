@@ -1,10 +1,13 @@
 from unittest.mock import patch
-import pytest
-from optiland import mtf
-from optiland.samples.objectives import CookeTriplet
+
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('Agg')  # use non-interactive backend for testing
+import pytest
+
+from optiland import mtf
+from optiland.samples.objectives import CookeTriplet
+
+matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 @pytest.fixture(autouse=True)
@@ -13,14 +16,14 @@ def optic():
 
 
 class TestGeometricMTF:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_view_mtf(self, mock_show, optic):
         m = mtf.GeometricMTF(optic)
         m.view()
         mock_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_view_mtf_larger_fig(self, mock_show, optic):
         m = mtf.GeometricMTF(optic)
         m.view(figsize=(20, 20), add_reference=True)
@@ -39,14 +42,14 @@ class TestGeometricMTF:
 
 
 class TestFFTMTF:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_view_mtf(self, mock_show, optic):
         m = mtf.FFTMTF(optic)
         m.view()
         mock_show.assert_called_once()
         plt.close()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_view_mtf_larger_fig(self, mock_show, optic):
         m = mtf.FFTMTF(optic)
         m.view(figsize=(20, 20), add_reference=True)

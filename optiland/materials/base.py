@@ -12,8 +12,7 @@ from abc import ABC, abstractmethod
 
 
 class BaseMaterial(ABC):
-    """
-    Base class for materials.
+    """Base class for materials.
 
     This class defines the interface for material properties such as
     refractive index (n) and extinction coefficient (k). It also provides a
@@ -31,7 +30,9 @@ class BaseMaterial(ABC):
         k(wavelength): Abstract method to calculate the extinction coefficient
             at a given wavelength in microns.
         abbe(): Method to calculate the Abbe number of the material.
+
     """
+
     _registry = {}
 
     def __init_subclass__(cls, **kwargs):
@@ -48,8 +49,7 @@ class BaseMaterial(ABC):
         pass  # pragma: no cover
 
     def abbe(self):
-        """
-        Calculate the Abbe number of the material.
+        """Calculate the Abbe number of the material.
 
         The Abbe number is a measure of the dispersion of a material, defined
         as the difference in refractive index between the D-line
@@ -59,6 +59,7 @@ class BaseMaterial(ABC):
 
         Returns:
             The Abbe number of the material.
+
         """
         nD = self.n(0.5875618)
         nF = self.n(0.4861327)
@@ -70,21 +71,20 @@ class BaseMaterial(ABC):
 
         Returns:
             dict: The dictionary representation of the material.
+
         """
-        return {
-            'type': self.__class__.__name__
-        }
+        return {"type": self.__class__.__name__}
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a material from a dictionary representation.
+        """Create a material from a dictionary representation.
 
         Args:
             data (dict): The dictionary representation of the material.
 
         Returns:
             BaseMaterial: The material.
+
         """
         material_type = data.get("type")
         if material_type not in cls._registry:

@@ -8,25 +8,26 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
+
 import numpy as np
+
 from optiland.optimization.variable import Variable
 
 
 class BaseSampler(ABC):
-    """
-    Abstract base class for samplers.
+    """Abstract base class for samplers.
 
     This class defines the interface for samplers in the optiland.tolerancing
     module.
     """
+
     @abstractmethod
     def sample(self):
         pass  # pragma: no cover
 
 
 class ScalarSampler(BaseSampler):
-    """
-    A sampler that always returns a fixed scalar value.
+    """A sampler that always returns a fixed scalar value.
 
     Args:
         value (float or int): The scalar value to be returned by the sampler.
@@ -35,6 +36,7 @@ class ScalarSampler(BaseSampler):
         value (float or int): The scalar value to be returned by the sampler.
         size (int): The size of the sample, which is always 1 for
             ScalarSampler.
+
     """
 
     def __init__(self, value):
@@ -42,18 +44,17 @@ class ScalarSampler(BaseSampler):
         self.size = 1
 
     def sample(self):
-        """
-        Returns the fixed scalar value.
+        """Returns the fixed scalar value.
 
         Returns:
             float or int: The scalar value.
+
         """
         return self.value
 
 
 class RangeSampler(BaseSampler):
-    """
-    A sampler that generates a range of samples over a linear range.
+    """A sampler that generates a range of samples over a linear range.
 
     Args:
         start (float or int): The start of the range.
@@ -64,18 +65,20 @@ class RangeSampler(BaseSampler):
         start (float or int): The start of the range.
         end (float or int): The end of the range.
         size (int): The number of samples to generate.
+
     """
+
     def __init__(self, start, end, steps):
         self.values = np.linspace(start, end, steps)
         self.index = 0
         self.size = steps
 
     def sample(self):
-        """
-        Return the next value in the range.
+        """Return the next value in the range.
 
         Returns:
             float: The next value in the range.
+
         """
         if self.index >= len(self.values):
             self.index = 0  # loop over values
@@ -85,8 +88,7 @@ class RangeSampler(BaseSampler):
 
 
 class DistributionSampler(BaseSampler):
-    """
-    A sampler that generates random samples from a given distribution. Options
+    """A sampler that generates random samples from a given distribution. Options
     for the distribution include 'normal' and 'uniform' and these require
     arguments as follows:
         "normal": loc, scale (corresponding to mean and standard deviation)
@@ -102,7 +104,9 @@ class DistributionSampler(BaseSampler):
 
     Raises:
         ValueError: If the distribution type is unknown.
+
     """
+
     def __init__(self, distribution, seed=None, **params):
         if seed is not None:
             np.random.seed(seed)
@@ -110,24 +114,22 @@ class DistributionSampler(BaseSampler):
         self.params = params
 
     def sample(self):
-        """
-        Return a random value from the given distribution.
+        """Return a random value from the given distribution.
 
         Returns:
             float: A random value sampled from the specified distribution.
+
         """
         # TODO: consider vectorizing this method with 'size' parameter
-        if self.distribution == 'normal':
+        if self.distribution == "normal":
             return np.random.normal(**self.params)
-        elif self.distribution == 'uniform':
+        if self.distribution == "uniform":
             return np.random.uniform(**self.params)
-        else:
-            raise ValueError(f'Unknown distribution: {self.distribution}')
+        raise ValueError(f"Unknown distribution: {self.distribution}")
 
 
 class Perturbation:
-    """
-    A class representing a perturbation to an optic variable. Perturbations
+    """A class representing a perturbation to an optic variable. Perturbations
     are used to simulate the effects of manufacturing errors or other sources
     of variability in an optical system.
 
@@ -144,13 +146,14 @@ class Perturbation:
         sampler: The sampler object used to generate perturbation values.
         variable: The Variable object representing the perturbed variable.
         value: The value of the perturbation.
+
     """
+
     def __init__(self, optic, variable_type, sampler, **kwargs):
         self.optic = optic
         self.type = variable_type
         self.sampler = sampler
-        self.variable = Variable(optic, variable_type, apply_scaling=False,
-                                 **kwargs)
+        self.variable = Variable(optic, variable_type, apply_scaling=False, **kwargs)
         self.value = None
 
     def apply(self):

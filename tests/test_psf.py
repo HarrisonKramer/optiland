@@ -1,11 +1,14 @@
 from unittest.mock import patch
-import pytest
-import numpy as np
-from optiland.psf import FFTPSF
-from optiland.samples.objectives import CookeTriplet
+
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('Agg')  # use non-interactive backend for testing
+import numpy as np
+import pytest
+
+from optiland.psf import FFTPSF
+from optiland.samples.objectives import CookeTriplet
+
+matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 def test_initialization():
@@ -36,7 +39,7 @@ def test_strehl_ratio():
     assert 0 <= strehl_ratio <= 1
 
 
-@patch('matplotlib.pyplot.show')
+@patch("matplotlib.pyplot.show")
 def test_view_2d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
@@ -45,12 +48,12 @@ def test_view_2d(mock_show):
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    fftpsf.view(projection='2d')
+    fftpsf.view(projection="2d")
     mock_show.assert_called_once()
     plt.close()
 
 
-@patch('matplotlib.pyplot.show')
+@patch("matplotlib.pyplot.show")
 def test_view_3d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
@@ -59,7 +62,7 @@ def test_view_3d(mock_show):
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    fftpsf.view(projection='3d')
+    fftpsf.view(projection="3d")
     mock_show.assert_called_once()
     plt.close()
 
@@ -80,7 +83,7 @@ def test_find_bounds():
     assert max_y <= grid_size
 
 
-@patch('matplotlib.pyplot.show')
+@patch("matplotlib.pyplot.show")
 def test_view_log_2d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
@@ -89,12 +92,12 @@ def test_view_log_2d(mock_show):
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    fftpsf.view(projection='2d', log=True)
+    fftpsf.view(projection="2d", log=True)
     mock_show.assert_called_once()
     plt.close()
 
 
-@patch('matplotlib.pyplot.show')
+@patch("matplotlib.pyplot.show")
 def test_view_log_3d(mock_show):
     optic = CookeTriplet()
     field = (0, 1)
@@ -103,7 +106,7 @@ def test_view_log_3d(mock_show):
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    fftpsf.view(projection='3d', log=True)
+    fftpsf.view(projection="3d", log=True)
     mock_show.assert_called_once()
     plt.close()
 
@@ -117,7 +120,7 @@ def test_view_invalid_projection():
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
     with pytest.raises(ValueError):
-        fftpsf.view(projection='invalid', log=True)
+        fftpsf.view(projection="invalid", log=True)
 
 
 def test_get_units_finite_obj():
@@ -144,11 +147,11 @@ def test_psf_log_tick_formatter():
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    assert fftpsf._log_tick_formatter(10) == '$10^{10}$'
-    assert fftpsf._log_tick_formatter(1) == '$10^{1}$'
-    assert fftpsf._log_tick_formatter(0) == '$10^{0}$'
-    assert fftpsf._log_tick_formatter(-1) == '$10^{-1}$'
-    assert fftpsf._log_tick_formatter(-10) == '$10^{-10}$'
+    assert fftpsf._log_tick_formatter(10) == "$10^{10}$"
+    assert fftpsf._log_tick_formatter(1) == "$10^{1}$"
+    assert fftpsf._log_tick_formatter(0) == "$10^{0}$"
+    assert fftpsf._log_tick_formatter(-1) == "$10^{-1}$"
+    assert fftpsf._log_tick_formatter(-10) == "$10^{-10}$"
 
 
 def test_interpolate_zoom_factor_one():

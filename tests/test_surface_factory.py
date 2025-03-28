@@ -1,15 +1,16 @@
-import pytest
 import numpy as np
-from optiland.samples.objectives import TessarLens
-from optiland.surfaces.surface_factory import SurfaceFactory
-from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.standard_surface import Surface
-from optiland.coatings import SimpleCoating, FresnelCoating
+import pytest
+
+from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.materials import IdealMaterial
+from optiland.samples.objectives import TessarLens
+from optiland.surfaces.object_surface import ObjectSurface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
+from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.surface_factory import SurfaceFactory
 
 
 class TestSurfaceFactory:
-
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lens = TessarLens()
@@ -18,13 +19,14 @@ class TestSurfaceFactory:
 
     def test_create_surface_standard(self):
         surface = self.factory.create_surface(
-            surface_type='standard',
+            surface_type="standard",
+            comment="Standard",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
-            conic=0
+            conic=0,
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
@@ -34,14 +36,15 @@ class TestSurfaceFactory:
 
     def test_create_surface_even_asphere(self):
         surface = self.factory.create_surface(
-            surface_type='even_asphere',
+            surface_type="even_asphere",
+            comment="Even Asphere",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
-            coefficients=[1, 2, 3]
+            coefficients=[1, 2, 3],
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
@@ -52,14 +55,15 @@ class TestSurfaceFactory:
 
     def test_create_surface_odd_asphere(self):
         surface = self.factory.create_surface(
-            surface_type='odd_asphere',
+            surface_type="odd_asphere",
+            comment="Odd Asphere",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
-            coefficients=[1, 2, 3]
+            coefficients=[1, 2, 3],
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
@@ -70,16 +74,17 @@ class TestSurfaceFactory:
 
     def test_create_surface_polynomial(self):
         surface = self.factory.create_surface(
-            surface_type='polynomial',
+            surface_type="polynomial",
+            comment="Polynomial",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
             coefficients=[1, 2, 3],
             tol=1e-6,
-            max_iter=100
+            max_iter=100,
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
@@ -92,10 +97,11 @@ class TestSurfaceFactory:
 
     def test_create_surface_chebyshev(self):
         surface = self.factory.create_surface(
-            surface_type='chebyshev',
+            surface_type="chebyshev",
+            comment="Chebyshev",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
@@ -103,7 +109,7 @@ class TestSurfaceFactory:
             tol=1e-6,
             max_iter=100,
             norm_x=1,
-            norm_y=1
+            norm_y=1,
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
@@ -118,13 +124,14 @@ class TestSurfaceFactory:
 
     def test_create_surface_object(self):
         surface = self.factory.create_surface(
-            surface_type='standard',
+            surface_type="standard",
+            comment="Object",
             index=0,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
-            conic=0
+            conic=0,
         )
         assert isinstance(surface, ObjectSurface)
         assert surface.geometry.radius == 10
@@ -134,47 +141,51 @@ class TestSurfaceFactory:
     def test_invalid_surface_type(self):
         with pytest.raises(ValueError):
             self.factory.create_surface(
-                surface_type='invalid',
+                surface_type="invalid",
+                comment="Invalid",
                 index=1,
                 is_stop=False,
-                material='air',
-                thickness=5
+                material="air",
+                thickness=5,
             )
 
     def test_invalid_surface_index(self):
         with pytest.raises(ValueError):
             self.factory.create_surface(
-                surface_type='standard',
+                surface_type="standard",
+                comment="Invalid",
                 index=42,
                 is_stop=False,
-                material='air',
-                thickness=5
+                material="air",
+                thickness=5,
             )
 
     def test_create_surface_with_coating(self):
         surface = self.factory.create_surface(
-            surface_type='standard',
+            surface_type="standard",
+            comment="Coating",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
-            coating=SimpleCoating(0.5, 0.5)
+            coating=SimpleCoating(0.5, 0.5),
         )
         assert isinstance(surface, Surface)
         assert isinstance(surface.coating, SimpleCoating)
 
     def test_create_surface_with_fresnel(self):
         surface = self.factory.create_surface(
-            surface_type='standard',
+            surface_type="standard",
+            comment="Fresnel",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             thickness=5,
             radius=10,
             conic=0,
-            coating='fresnel'
+            coating="fresnel",
         )
         assert isinstance(surface, Surface)
         assert isinstance(surface.coating, FresnelCoating)
@@ -182,25 +193,27 @@ class TestSurfaceFactory:
     def test_invalid_z_with_thickness(self):
         with pytest.raises(ValueError):
             self.factory.create_surface(
-                surface_type='standard',
+                surface_type="standard",
+                comment="Invalid",
                 index=1,
                 is_stop=False,
-                material='air',
+                material="air",
                 thickness=5,
-                z=1
+                z=1,
             )
 
     def test_absolute_coordinates(self):
         surface = self.factory.create_surface(
-            surface_type='standard',
+            surface_type="standard",
+            comment="Absolute",
             index=1,
             is_stop=False,
-            material='air',
+            material="air",
             radius=10,
             conic=0,
             x=1,
             y=2,
-            z=3
+            z=3,
         )
         assert isinstance(surface, Surface)
         assert surface.geometry.cs.x == 1
@@ -212,11 +225,37 @@ class TestSurfaceFactory:
         self.factory._use_absolute_cs = True
         with pytest.raises(ValueError):
             self.factory.create_surface(
-                surface_type='standard',
+                surface_type="standard",
+                comment="Invalid",
                 index=1,
                 is_stop=False,
-                material='air',
+                material="air",
                 radius=10,
                 conic=0,
-                thickness=5
+                thickness=5,
+            )
+
+    def test_create_paraxial_standard(self):
+        surface = self.factory.create_surface(
+            surface_type="paraxial",
+            comment="Paraxial",
+            f=100,
+            index=1,
+            is_stop=False,
+            material="air",
+            thickness=5,
+        )
+        assert isinstance(surface, ParaxialSurface)
+        assert surface.f == 100
+
+    def test_invalid_paraxial_surface(self):
+        with pytest.raises(ValueError):
+            self.factory.create_surface(
+                surface_type="paraxial",
+                comment="Paraxial",
+                f=100,
+                index=0,
+                is_stop=False,
+                material="air",
+                thickness=5,
             )

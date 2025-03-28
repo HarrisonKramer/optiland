@@ -11,9 +11,11 @@ types to data points.
 
 Kramer Harrison, 2023
 """
+
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.optimize import least_squares
 
 
@@ -36,11 +38,15 @@ class ZernikeStandard:
            for reporting the optical aberrations of eyes. J Refract Surg. 2002
            Sep-Oct;18(5):S652-60. doi: 10.3928/1081-597X-20020901-30. PMID:
            12361175.
+
     """
 
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
+
         if len(coeffs) > 120:  # partial sum of first 15 natural numbers
-            raise ValueError('Number of coefficients is limited to 120.')
+            raise ValueError("Number of coefficients is limited to 120.")
 
         self.indices = self._generate_indices()
         self.coeffs = coeffs
@@ -57,11 +63,14 @@ class ZernikeStandard:
 
         Returns:
             float: The calculated value of the Zernike term.
+
         """
-        return (coeff *
-                self._norm_constant(n, m) *
-                self._radial_term(n, m, r) *
-                self._azimuthal_term(m, phi))
+        return (
+            coeff
+            * self._norm_constant(n, m)
+            * self._radial_term(n, m, r)
+            * self._azimuthal_term(m, phi)
+        )
 
     def terms(self, r=0, phi=0):
         """Calculate the Zernike terms for given radial distance and azimuthal
@@ -73,6 +82,7 @@ class ZernikeStandard:
 
         Returns:
             list: List of calculated Zernike term values.
+
         """
         val = []
         for k, idx in enumerate(self.indices):
@@ -93,6 +103,7 @@ class ZernikeStandard:
 
         Returns:
             float: The calculated value of the Zernike polynomial.
+
         """
         return sum(self.terms(r, phi))
 
@@ -106,14 +117,21 @@ class ZernikeStandard:
 
         Returns:
             float: The calculated value of the radial term.
+
         """
         s_max = int((n - abs(m)) / 2 + 1)
         value = 0
         for k in range(s_max):
-            value += (-1)**k * math.factorial(n - k) / \
-                (math.factorial(k) *
-                 math.factorial(int((n + m)/2 - k)) *
-                 math.factorial(int((n - m)/2 - k))) * r ** (n - 2*k)
+            value += (
+                (-1) ** k
+                * math.factorial(n - k)
+                / (
+                    math.factorial(k)
+                    * math.factorial(int((n + m) / 2 - k))
+                    * math.factorial(int((n - m) / 2 - k))
+                )
+                * r ** (n - 2 * k)
+            )
         return value
 
     def _azimuthal_term(self, m=0, phi=0):
@@ -125,11 +143,11 @@ class ZernikeStandard:
 
         Returns:
             float: The calculated value of the azimuthal term.
+
         """
         if m >= 0:
             return np.cos(m * phi)
-        else:
-            return np.sin(m * phi)
+        return np.sin(np.abs(m) * phi)
 
     def _norm_constant(self, n=0, m=0):
         """Calculate the normalization constant of the Zernike polynomial.
@@ -140,6 +158,7 @@ class ZernikeStandard:
 
         Returns:
             float: The calculated value of the normalization constant.
+
         """
         return np.sqrt((2 * n + 2) / (1 + (m == 0)))
 
@@ -149,10 +168,11 @@ class ZernikeStandard:
         Returns:
             list: List of tuples representing the indices (n, m) of the
                 Zernike terms.
+
         """
         indices = []
         for n in range(15):
-            for m in range(-n, n+1):
+            for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
                     indices.append((n, m))
         return indices
@@ -171,14 +191,16 @@ class ZernikeFringe(ZernikeStandard):
     References:
         1. https://en.wikipedia.org/wiki/Zernike_polynomials#Fringe/
            University_of_Arizona_indices
+
     """
 
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
         super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):
-        """
-        Calculate the normalization constant for a given Zernike polynomial.
+        """Calculate the normalization constant for a given Zernike polynomial.
         Note that this is 1 for all terms for Zernike Fringe polynomials.
 
         Args:
@@ -187,6 +209,7 @@ class ZernikeFringe(ZernikeStandard):
 
         Returns:
             float: The normalization constant for the Zernike polynomial.
+
         """
         return 1
 
@@ -196,19 +219,24 @@ class ZernikeFringe(ZernikeStandard):
         Returns:
             list: List of tuples representing the indices (n, m) of the
                 Zernike terms.
+
         """
         number = []
         indices = []
         for n in range(20):
-            for m in range(-n, n+1):
+            for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
-                    number.append(int((1 + (n + np.abs(m))/2)**2 -
-                                      2 * np.abs(m) + (1 - np.sign(m)) / 2))
+                    number.append(
+                        int(
+                            (1 + (n + np.abs(m)) / 2) ** 2
+                            - 2 * np.abs(m)
+                            + (1 - np.sign(m)) / 2,
+                        ),
+                    )
                     indices.append((n, m))
 
         # sort indices according to fringe coefficient number
-        indices_sorted = [element for _, element in
-                          sorted(zip(number, indices))]
+        indices_sorted = [element for _, element in sorted(zip(number, indices))]
 
         # take only 120 indices
         return indices_sorted[:120]
@@ -230,13 +258,16 @@ class ZernikeNoll(ZernikeStandard):
            Zernike_polynomials#Noll's_sequential_indices
         2. Noll, R. J. (1976). "Zernike polynomials and atmospheric
            turbulence". J. Opt. Soc. Am. 66 (3): 207
+
     """
-    def __init__(self, coeffs=[0 for _ in range(36)]):
+
+    def __init__(self, coeffs=None):
+        if coeffs is None:
+            coeffs = [0 for _ in range(36)]
         super().__init__(coeffs)
 
     def _norm_constant(self, n=0, m=0):
-        """
-        Calculate the normalization constant for a given Zernike polynomial.
+        """Calculate the normalization constant for a given Zernike polynomial.
 
         Args:
             n (int): The radial order of the Zernike polynomial.
@@ -244,6 +275,7 @@ class ZernikeNoll(ZernikeStandard):
 
         Returns:
             float: The normalization constant for the Zernike polynomial.
+
         """
         if m == 0:
             return np.sqrt(n + 1)
@@ -255,34 +287,29 @@ class ZernikeNoll(ZernikeStandard):
         Returns:
             list: List of tuples representing the indices (n, m) of the
                 Zernike terms.
+
         """
         number = []
         indices = []
         for n in range(15):
-            for m in range(-n, n+1):
+            for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
                     mod = n % 4
-                    if m > 0 and mod <= 1:
+                    if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
                         c = 0
-                    elif m < 0 and mod >= 2:
-                        c = 0
-                    elif m >= 0 and mod >= 2:
-                        c = 1
-                    elif m <= 0 and mod <= 1:
+                    elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
                         c = 1
                     number.append(n * (n + 1) / 2 + np.abs(m) + c)
                     indices.append((n, m))
 
         # sort indices according to fringe coefficient number
-        indices_sorted = [element for _, element in
-                          sorted(zip(number, indices))]
+        indices_sorted = [element for _, element in sorted(zip(number, indices))]
 
         return indices_sorted
 
 
 class ZernikeFit:
-    """
-    Class for fitting Zernike polynomials to wavefront data.
+    """Class for fitting Zernike polynomials to wavefront data.
 
     Args:
         x (array-like): x-coordinates of the wavefront data.
@@ -313,9 +340,10 @@ class ZernikeFit:
         view_residual(figsize=(7, 5.5), z_label='Residual (waves)'): Visualize
             the residual between the fitted Zernike polynomials and the
             original data.
+
     """
 
-    def __init__(self, x, y, z, zernike_type='fringe', num_terms=36):
+    def __init__(self, x, y, z, zernike_type="fringe", num_terms=36):
         self.x = x
         self.y = y
         self.z = z
@@ -326,15 +354,14 @@ class ZernikeFit:
         self.phi = np.arctan2(self.y, self.x)
         self.num_pts = np.size(self.z)
 
-        if self.type == 'fringe':
+        if self.type == "fringe":
             self.zernike = ZernikeFringe()
-        elif self.type == 'standard':
+        elif self.type == "standard":
             self.zernike = ZernikeStandard()
-        elif self.type == 'noll':
+        elif self.type == "noll":
             self.zernike = ZernikeNoll()
         else:
-            raise ValueError('Zernike type must be "fringe", "standard", or '
-                             '"noll".')
+            raise ValueError('Zernike type must be "fringe", "standard", or "noll".')
 
         self._fit()
 
@@ -343,10 +370,14 @@ class ZernikeFit:
         """list: coefficients of the Zernike fit"""
         return self.zernike.coeffs
 
-    def view(self, projection='2d', num_points=128, figsize=(7, 5.5),
-             z_label='OPD (waves)'):
-        """
-        Visualizes the Zernike polynomial representation of the wavefront.
+    def view(
+        self,
+        projection="2d",
+        num_points=128,
+        figsize=(7, 5.5),
+        z_label="OPD (waves)",
+    ):
+        """Visualizes the Zernike polynomial representation of the wavefront.
 
         Args:
             projection (str): The type of projection to use for visualization.
@@ -360,25 +391,27 @@ class ZernikeFit:
 
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
+
         """
-        x, y = np.meshgrid(np.linspace(-1, 1, num_points),
-                           np.linspace(-1, 1, num_points))
+        x, y = np.meshgrid(
+            np.linspace(-1, 1, num_points),
+            np.linspace(-1, 1, num_points),
+        )
         radius = np.sqrt(x**2 + y**2)
         phi = np.arctan2(y, x)
         z = self.zernike.poly(radius, phi)
 
         z[radius > 1] = np.nan
 
-        if projection == '2d':
+        if projection == "2d":
             self._plot_2d(z, figsize=figsize, z_label=z_label)
-        elif projection == '3d':
+        elif projection == "3d":
             self._plot_3d(x, y, z, figsize=figsize, z_label=z_label)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
 
-    def _plot_2d(self, z, figsize=(7, 5.5), z_label='OPD (waves)'):
-        """
-        Plot a 2D representation of the given data.
+    def _plot_2d(self, z, figsize=(7, 5.5), z_label="OPD (waves)"):
+        """Plot a 2D representation of the given data.
 
         Args:
             z (numpy.ndarray): The data to be plotted.
@@ -386,22 +419,22 @@ class ZernikeFit:
                 (default is (7, 5.5)).
             z_label (str, optional): The label for the colorbar
                 (default is 'OPD (waves)').
+
         """
         _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
 
-        ax.set_xlabel('Pupil X')
-        ax.set_ylabel('Pupil Y')
-        ax.set_title(f'Zernike {self.type.capitalize()} Fit')
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
+        ax.set_title(f"Zernike {self.type.capitalize()} Fit")
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel(z_label, rotation=270)
         plt.show()
 
-    def _plot_3d(self, x, y, z, figsize=(7, 5.5), z_label='OPD (waves)'):
-        """
-        Plot a 3D surface plot of the given data.
+    def _plot_3d(self, x, y, z, figsize=(7, 5.5), z_label="OPD (waves)"):
+        """Plot a 3D surface plot of the given data.
 
         Args:
             x (numpy.ndarray): Array of x-coordinates.
@@ -411,44 +444,49 @@ class ZernikeFit:
                 Default is (7, 5.5).
             z_label (str, optional): Label for the z-axis.
                 Default is 'OPD (waves)'.
+
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"},
-                               figsize=figsize)
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        surf = ax.plot_surface(x, y, z,
-                               rstride=1, cstride=1,
-                               cmap='viridis', linewidth=0,
-                               antialiased=False)
+        surf = ax.plot_surface(
+            x,
+            y,
+            z,
+            rstride=1,
+            cstride=1,
+            cmap="viridis",
+            linewidth=0,
+            antialiased=False,
+        )
 
-        ax.set_xlabel('Pupil X')
-        ax.set_ylabel('Pupil Y')
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
         ax.set_zlabel(z_label)
-        ax.set_title(f'Zernike {self.type.capitalize()} Fit')
+        ax.set_title(f"Zernike {self.type.capitalize()} Fit")
 
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10,
-                     pad=0.15)
+        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
         fig.tight_layout()
         plt.show()
 
-    def view_residual(self, figsize=(7, 5.5), z_label='Residual (waves)'):
-        """
-        Visualizes the residual of the Zernike polynomial fit.
+    def view_residual(self, figsize=(7, 5.5), z_label="Residual (waves)"):
+        """Visualizes the residual of the Zernike polynomial fit.
 
         Args:
             figsize (tuple): The size of the figure (width, height).
                 Default is (7, 5.5).
             z_label (str): The label for the colorbar representing the
                 residual. Default is 'Residual (waves)'.
+
         """
         z = self.zernike.poly(self.radius, self.phi)
-        rms = np.sqrt(np.mean((z-self.z)**2))
+        rms = np.sqrt(np.mean((z - self.z) ** 2))
 
         _, ax = plt.subplots(figsize=figsize)
-        s = ax.scatter(self.x, self.y, c=z-self.z)
+        s = ax.scatter(self.x, self.y, c=z - self.z)
 
-        ax.set_xlabel('Pupil X')
-        ax.set_ylabel('Pupil Y')
-        ax.set_title(f'Residual: RMS={rms:.3}')
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
+        ax.set_title(f"Residual: RMS={rms:.3}")
 
         cbar = plt.colorbar(s)
         cbar.ax.get_yaxis().labelpad = 15
@@ -456,23 +494,21 @@ class ZernikeFit:
         plt.show()
 
     def _objective(self, coeffs):
-        """
-        Compute the objective value for the optimization problem.
+        """Compute the objective value for the optimization problem.
 
         Args:
             coeffs (array-like): Coefficients for the Zernike polynomial.
 
         Returns:
             float: The computed objective value.
+
         """
         self.zernike.coeffs = coeffs
         z_computed = self.zernike.poly(self.radius, self.phi)
         return z_computed - self.z
 
     def _fit(self):
-        """
-        Fits the Zernike coefficients by minimizing the objective function.
-        """
+        """Fits the Zernike coefficients by minimizing the objective function."""
         initial_guess = [0 for _ in range(self.num_terms)]
         result = least_squares(self._objective, initial_guess)
         self.zernike.coeffs = result.x

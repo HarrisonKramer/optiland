@@ -1,11 +1,13 @@
-import pytest
 import numpy as np
-from optiland.tolerancing.perturbation import (
-    ScalarSampler,
-    RangeSampler,
-    DistributionSampler,
-    Perturbation)
+import pytest
+
 from optiland.samples.objectives import TessarLens
+from optiland.tolerancing.perturbation import (
+    DistributionSampler,
+    Perturbation,
+    RangeSampler,
+    ScalarSampler,
+)
 
 
 def test_scalar_sampler():
@@ -33,7 +35,7 @@ def test_range_cycle_twice():
 
 
 def test_distribution_sampler_normal():
-    sampler = DistributionSampler('normal', seed=42, loc=0, scale=1)
+    sampler = DistributionSampler("normal", seed=42, loc=0, scale=1)
     value = sampler.sample()
     np.random.seed(42)
     expected_value = np.random.normal(0, 1)
@@ -41,7 +43,7 @@ def test_distribution_sampler_normal():
 
 
 def test_distribution_sampler_uniform():
-    sampler = DistributionSampler('uniform', seed=42, low=0, high=1)
+    sampler = DistributionSampler("uniform", seed=42, low=0, high=1)
     value = sampler.sample()
     np.random.seed(42)
     expected_value = np.random.uniform(0, 1)
@@ -50,13 +52,13 @@ def test_distribution_sampler_uniform():
 
 def test_distribution_sampler_unknown():
     with pytest.raises(ValueError):
-        DistributionSampler('unknown').sample()
+        DistributionSampler("unknown").sample()
 
 
 def test_perturbation_apply():
     optic = TessarLens()
     sampler = ScalarSampler(1234)
-    perturbation = Perturbation(optic, 'radius', sampler, surface_number=1)
+    perturbation = Perturbation(optic, "radius", sampler, surface_number=1)
     perturbation.apply()
     assert perturbation.value == 1234
     assert perturbation.variable.value == 1234
@@ -73,8 +75,8 @@ def test_range_sampler_reset():
 
 
 def test_distribution_sampler_seed():
-    sampler1 = DistributionSampler('normal', seed=42, loc=0, scale=1)
+    sampler1 = DistributionSampler("normal", seed=42, loc=0, scale=1)
     value1 = sampler1.sample()
-    sampler2 = DistributionSampler('normal', seed=42, loc=0, scale=1)
+    sampler2 = DistributionSampler("normal", seed=42, loc=0, scale=1)
     value2 = sampler2.sample()
     assert np.isclose(value1, value2)

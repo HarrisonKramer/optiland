@@ -7,13 +7,13 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
+
 from optiland.materials import BaseMaterial
 from optiland.rays.base import BaseRays
 
 
 class RealRays(BaseRays):
-    """
-    Represents a collection of real rays in 3D space.
+    """Represents a collection of real rays in 3D space.
 
     Attributes:
         x (ndarray): The x-coordinates of the rays.
@@ -32,6 +32,7 @@ class RealRays(BaseRays):
         rotate_z(rz: float): Rotate the rays about the z-axis.
         propagate(t: float): Propagate the rays a distance t.
         clip(condition): Clip the rays based on a condition.
+
     """
 
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
@@ -49,6 +50,8 @@ class RealRays(BaseRays):
         self.L0 = None
         self.M0 = None
         self.N0 = None
+
+        self.is_normalized = True
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
@@ -94,13 +97,16 @@ class RealRays(BaseRays):
             alpha = 4 * np.pi * k / self.w
             self.i *= np.exp(-alpha * t * 1e3)  # mm to microns
 
+        # normalize, if required
+        if not self.is_normalized:
+            self.normalize()
+
     def clip(self, condition):
         """Clip the rays based on a condition."""
         self.i[condition] = 0.0
 
     def refract(self, nx, ny, nz, n1, n2):
-        """
-        Refract rays on the surface.
+        """Refract rays on the surface.
 
         Args:
             rays: The rays.
@@ -110,6 +116,7 @@ class RealRays(BaseRays):
 
         Returns:
             RealRays: The refracted rays.
+
         """
         self.L0 = self.L.copy()
         self.M0 = self.M.copy()
@@ -128,8 +135,7 @@ class RealRays(BaseRays):
         self.N = tz
 
     def reflect(self, nx, ny, nz):
-        """
-        Reflects the rays on the surface.
+        """Reflects the rays on the surface.
 
         Args:
             nx: The x-component of the surface normal.
@@ -138,6 +144,7 @@ class RealRays(BaseRays):
 
         Returns:
             RealRays: The reflected rays.
+
         """
         self.L0 = self.L.copy()
         self.M0 = self.M.copy()
@@ -151,7 +158,14 @@ class RealRays(BaseRays):
 
     def update(self, jones_matrix: np.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
-        pass
+
+    def normalize(self):
+        """Normalize the direction vectors of the rays."""
+        mag = np.sqrt(self.L**2 + self.M**2 + self.N**2)
+        self.L /= mag
+        self.M /= mag
+        self.N /= mag
+        self.is_normalized = True
 
     def _align_surface_normal(self, nx, ny, nz):
         """Align the surface normal with the incident ray vectors.
@@ -172,6 +186,7 @@ class RealRays(BaseRays):
             nz: The corrected z-component of the surface normal.
             dot: The dot product of the surface normal and the incident ray
                 vectors.
+
         """
         dot = self.L0 * nx + self.M0 * ny + self.N0 * nz
 

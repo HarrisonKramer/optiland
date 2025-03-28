@@ -11,6 +11,7 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
    examples/Tutorial_1b_Lens_Properties
    examples/Tutorial_1c_Save_and_Load_Files
    examples/Tutorial_1d_Material_Database
+   examples/Tutorial_1e_Non_Rotationally_Symmetric_Systems
 
 
 2. Real Raytracing & Analysis
@@ -78,6 +79,7 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
     examples/Tutorial_7a_Lithographic_Projection_System
     examples/Tutorial_7b_Surface_Roughness_&_Scattering
     examples/Tutorial_7c_Freeform_Surfaces
+    examples/Tutorial_7d_Three_Mirror_Anastigmat
 
 
 8. Tolerancing
