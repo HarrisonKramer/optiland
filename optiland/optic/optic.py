@@ -71,6 +71,11 @@ class Optic:
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
 
+    def __add__(self, other):
+        """Add two Optic objects together."""
+        self.surface_group = self.surface_group + other.surface_group
+        return self
+
     @property
     def primary_wavelength(self):
         """float: the primary wavelength in microns"""

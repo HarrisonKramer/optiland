@@ -41,6 +41,10 @@ class SurfaceGroup:
 
         self.surface_factory = SurfaceFactory(self)
 
+    def __add__(self, other):
+        """Add two SurfaceGroup objects together."""
+        return SurfaceGroup(self.surfaces + other.surfaces)
+
     @property
     def x(self):
         """np.array: x intersection points on all surfaces"""
