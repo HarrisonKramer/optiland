@@ -42,8 +42,16 @@ class SurfaceGroup:
         self.surface_factory = SurfaceFactory(self)
 
     def __add__(self, other):
-        """Add two SurfaceGroup objects together."""
-        return SurfaceGroup(self.surfaces + other.surfaces)
+        """Add two SurfaceGroup objects together.
+
+        Note that this ignores the image surface of the current group and the object
+        surface of the other group.
+        """
+        # add the offset of the last surface in self to each surface in other
+        offset = self.surfaces[-1].geometry.cs.z
+        for surf in other.surfaces[1:]:
+            surf.geometry.cs.z += offset
+        return SurfaceGroup(self.surfaces[:-1] + other.surfaces[1:])
 
     @property
     def x(self):
