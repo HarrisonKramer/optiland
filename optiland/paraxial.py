@@ -30,7 +30,11 @@ class Paraxial:
 
     def __init__(self, optic):
         self.optic = optic
-        self.surfaces = self.optic.surface_group
+
+    @property
+    def surfaces(self):
+        """SurfaceGroup: the surface group of the optical system."""
+        return self.optic.surface_group
 
     def f1(self):
         """Calculate the front focal length
