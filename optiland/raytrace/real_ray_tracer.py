@@ -75,7 +75,7 @@ class RealRayTracer:
         self._validate_normalized_coordinates(Hx, Hy, "field")
         self._validate_normalized_coordinates(Px, Py, "pupil")
 
-        vx, vy = self.fields.get_vig_factor(Hx, Hy)
+        vx, vy = self.optic.fields.get_vig_factor(Hx, Hy)
 
         Px *= 1 - vx
         Py *= 1 - vy
