@@ -17,13 +17,13 @@ import numpy as np
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
-from optiland.distribution import create_distribution
 from optiland.fields import Field, FieldGroup
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
-from optiland.rays import PolarizationState, PolarizedRays, RayGenerator
+from optiland.rays import PolarizationState, RayGenerator
+from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
 from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
@@ -63,7 +63,7 @@ class Optic:
 
         self.paraxial = Paraxial(self)
         self.aberrations = Aberrations(self)
-        self.ray_generator = RayGenerator(self)
+        self.ray_tracer = RealRayTracer(self)
 
         self.polarization = "ignore"
 
@@ -487,27 +487,7 @@ class Optic:
             RealRays: The RealRays object containing the traced rays.
 
         """
-        if not np.all((Hx >= -1) & (Hx <= 1)) or not np.all((Hy >= -1) & (Hy <= 1)):
-            raise ValueError(
-                "Normalized field coordinates Hx and Hy must be within (-1, 1)",
-            )
-
-        if isinstance(distribution, str):
-            distribution = create_distribution(distribution)
-            distribution.generate_points(num_rays)
-        Px = distribution.x
-        Py = distribution.y
-
-        rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        self.surface_group.trace(rays)
-
-        if isinstance(rays, PolarizedRays):
-            rays.update_intensity(self.polarization_state)
-
-        # update ray intensity
-        self.surface_group.intensity[-1, :] = rays.i
-
-        return rays
+        return self.ray_tracer.trace(Hx, Hy, wavelength, num_rays, distribution)
 
     def trace_generic(self, Hx, Hy, Px, Py, wavelength):
         """Trace generic rays through the optical system.
@@ -520,41 +500,7 @@ class Optic:
             wavelength (float): The wavelength of the rays.
 
         """
-        if not np.all((Hx >= -1) & (Hx <= 1)) or not np.all((Hy >= -1) & (Hy <= 1)):
-            raise ValueError(
-                "Normalized field coordinates Hx and Hy must be within (-1, 1)",
-            )
-
-        if not np.all((Px >= -1) & (Px <= 1)) or not np.all((Py >= -1) & (Py <= 1)):
-            raise ValueError(
-                "Normalized pupil coordinates Px and Py must be within (-1, 1)",
-            )
-
-        vx, vy = self.fields.get_vig_factor(Hx, Hy)
-
-        Px *= 1 - vx
-        Py *= 1 - vy
-
-        # assure all variables are arrays of the same size
-        max_size = max([np.size(arr) for arr in [Hx, Hy, Px, Py]])
-        Hx, Hy, Px, Py = [
-            (
-                np.full(max_size, value)
-                if isinstance(value, (float, int))
-                else value
-                if isinstance(value, np.ndarray)
-                else None
-            )
-            for value in [Hx, Hy, Px, Py]
-        ]
-
-        rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        rays = self.surface_group.trace(rays)
-
-        # update intensity
-        self.surface_group.intensity[-1, :] = rays.i
-
-        return rays
+        return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
 
     def to_dict(self):
         """Convert the optical system to a dictionary.
