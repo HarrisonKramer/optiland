@@ -41,6 +41,29 @@ class SurfaceGroup:
 
         self.surface_factory = SurfaceFactory(self)
 
+    def __add__(self, other):
+        """Add two SurfaceGroup objects together.
+
+        Note that this ignores the image surface of the current group and the object
+        surface of the other group.
+        """
+        # add the offset of the last surface in self to each surface in other
+        offset = self.surfaces[-1].geometry.cs.z
+
+        # add object surface distance if finite
+        object_distance = other.surfaces[0].geometry.cs.z
+        if np.isfinite(object_distance):
+            offset -= object_distance
+
+        for surf in other.surfaces[1:]:
+            surf.geometry.cs.z += offset
+
+        # remove stop surface from other
+        for surface in other.surfaces:
+            surface.is_stop = False
+
+        return SurfaceGroup(self.surfaces[:-1] + other.surfaces[1:])
+
     @property
     def x(self):
         """np.array: x intersection points on all surfaces"""

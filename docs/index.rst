@@ -57,6 +57,7 @@ Python code to generate this 3D visualization:
    gallery/optimization
    gallery/tolerancing
    gallery/freeforms
+   gallery/miscellaneous
 
 
 .. _learning_guide:

@@ -48,8 +48,8 @@ To ensure compliance before committing, install `pre-commit <https://pre-commit.
     pip install pre-commit
     pre-commit install
 
-This will manually install the pre-commit hooks in your local repository. The pre-commit hooks will automatically run Ruff checks on staged files before committing.
-Information about the pre-commit hooks can be found in the ``.pre-commit-config.yaml`` file in the root of the Optiland repository.
+This will manually install the pre-commit hooks from the ``.pre-commit-config.yaml`` file in your local Optiland repository.
+The pre-commit hooks will automatically run Ruff checks on staged files before committing.
 
 To manually run Ruff checks before committing, use::
 

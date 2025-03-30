@@ -50,6 +50,10 @@ class Optic:
 
     def __init__(self, name: str = None):
         self.name = name
+        self.reset()
+
+    def reset(self):
+        """Reset the optical system to its initial state."""
         self.aperture = None
         self.field_type = None
 
@@ -66,6 +70,13 @@ class Optic:
         self.pickups = PickupManager(self)
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
+
+    def __add__(self, other):
+        """Add two Optic objects together."""
+        if other is self:
+            raise ValueError("Cannot add an Optic instance to itself")
+        self.surface_group = self.surface_group + other.surface_group
+        return self
 
     @property
     def primary_wavelength(self):
@@ -397,25 +408,6 @@ class Optic:
         """Display the optical system information."""
         viewer = LensInfoViewer(self)
         viewer.view()
-
-    def reset(self):
-        """Reset the optical system to its initial state."""
-        self.aperture = None
-        self.field_type = None
-
-        self.surface_group = SurfaceGroup()
-        self.fields = FieldGroup()
-        self.wavelengths = WavelengthGroup()
-
-        self.paraxial = Paraxial(self)
-        self.aberrations = Aberrations(self)
-        self.ray_generator = RayGenerator(self)
-
-        self.polarization = "ignore"
-
-        self.pickups = PickupManager(self)
-        self.solves = SolveManager(self)
-        self.obj_space_telecentric = False
 
     def n(self, wavelength="primary"):
         """Get the refractive indices of the surfaces.
