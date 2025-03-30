@@ -402,3 +402,8 @@ class TestOptic:
         # test that a ray trace through the combined lens works
         rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
         assert rays is not None
+
+    def test_add_invalid_optic(self):
+        lens = singlet_finite_object()
+        with pytest.raises(ValueError):
+            lens + lens
