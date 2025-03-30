@@ -41,6 +41,7 @@ packages = [
     "optiland.fileio",
     "optiland.geometries",
     "optiland.materials",
+    "optiland.optic",
     "optiland.optimization.operand",
     "optiland.optimization.variable",
     "optiland.optimization",
