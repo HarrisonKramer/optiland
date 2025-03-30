@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
@@ -7,6 +8,52 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+
+
+def singlet_infinite_object():
+    lens = Optic()
+    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(
+        index=1,
+        thickness=7,
+        radius=43.7354,
+        is_stop=True,
+        material="N-SF11",
+    )
+    lens.add_surface(index=2, radius=-46.2795, thickness=50)
+    lens.add_surface(index=3)
+
+    lens.set_aperture(aperture_type="EPD", value=25)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+
+    lens.add_wavelength(value=0.5, is_primary=True)
+
+    return lens
+
+
+def singlet_finite_object():
+    lens = Optic()
+    lens.add_surface(index=0, radius=np.inf, thickness=50)
+    lens.add_surface(
+        index=1,
+        thickness=7,
+        radius=43.7354,
+        is_stop=True,
+        material="N-SF11",
+    )
+    lens.add_surface(index=2, radius=-46.2795, thickness=50)
+    lens.add_surface(index=3)
+
+    lens.set_aperture(aperture_type="EPD", value=25)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+
+    lens.add_wavelength(value=0.5, is_primary=True)
+
+    return lens
 
 
 class TestOptic:
@@ -335,3 +382,23 @@ class TestOptic:
             surface.is_stop = False
         with pytest.raises(ValueError):
             _ = self.optic.surface_group.stop_index
+
+    def test_add_infinite_object(self):
+        lens1 = singlet_infinite_object()
+        lens2 = singlet_infinite_object()
+        lens_combined = lens1 + lens2
+        assert lens_combined.surface_group.num_surfaces == 6
+
+        # test that a ray trace through the combined lens works
+        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        assert rays is not None
+
+    def test_add_finite_object(self):
+        lens1 = singlet_finite_object()
+        lens2 = singlet_finite_object()
+        lens_combined = lens1 + lens2
+        assert lens_combined.surface_group.num_surfaces == 6
+
+        # test that a ray trace through the combined lens works
+        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        assert rays is not None
