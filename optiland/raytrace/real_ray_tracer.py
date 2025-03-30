@@ -81,7 +81,7 @@ class RealRayTracer:
         Py *= 1 - vy
 
         # assure all variables are arrays of the same size
-        Hx, Hy, Px, Py = self._ensure_array_size(Hx, Hy, Px, Py)
+        Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
         rays = self.optic.surface_group.trace(rays)
