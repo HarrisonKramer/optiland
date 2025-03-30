@@ -18,8 +18,7 @@ import numpy as np
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.fields import Field, FieldGroup
-from optiland.geometries import Plane, StandardGeometry
-from optiland.materials import IdealMaterial
+from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
 from optiland.rays import PolarizationState, RayGenerator
@@ -70,6 +69,7 @@ class Optic:
         self.pickups = PickupManager(self)
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
+        self._updater = OpticUpdater(self)
 
     def __add__(self, other):
         """Add two Optic objects together."""
@@ -207,15 +207,7 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        surface = self.surface_group.surfaces[surface_number]
-
-        # change geometry from plane to standard
-        if isinstance(surface.geometry, Plane):
-            cs = surface.geometry.cs
-            new_geometry = StandardGeometry(cs, radius=value, conic=0)
-            surface.geometry = new_geometry
-        else:
-            surface.geometry.radius = value
+        self._updater.set_radius(value, surface_number)
 
     def set_conic(self, value, surface_number):
         """Set the conic constant of a surface.
@@ -225,8 +217,7 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        surface = self.surface_group.surfaces[surface_number]
-        surface.geometry.k = value
+        self._updater.set_conic(value, surface_number)
 
     def set_thickness(self, value, surface_number):
         """Set the thickness of a surface.
@@ -236,12 +227,7 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        positions = self.surface_group.positions
-        delta_t = value - positions[surface_number + 1] + positions[surface_number]
-        positions[surface_number + 1 :] += delta_t
-        positions -= positions[1]  # force surface 1 to be at zero
-        for k, surface in enumerate(self.surface_group.surfaces):
-            surface.geometry.cs.z = float(positions[k])
+        self._updater.set_thickness(value, surface_number)
 
     def set_index(self, value, surface_number):
         """Set the index of refraction of a surface.
@@ -251,12 +237,7 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        surface = self.surface_group.surfaces[surface_number]
-        new_material = IdealMaterial(n=value, k=0)
-        surface.material_post = new_material
-
-        surface_post = self.surface_group.surfaces[surface_number + 1]
-        surface_post.material_pre = new_material
+        self._updater.set_index(value, surface_number)
 
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
@@ -268,8 +249,7 @@ class Optic:
                 surface
 
         """
-        surface = self.surface_group.surfaces[surface_number]
-        surface.geometry.c[aspher_coeff_idx] = value
+        self._updater.set_asphere_coeff(value, surface_number.aspher_coeff_idx)
 
     def set_polarization(self, polarization: Union[PolarizationState, str]):
         """Set the polarization state of the optic.
@@ -280,12 +260,7 @@ class Optic:
                 'ignore'.
 
         """
-        if isinstance(polarization, str) and polarization != "ignore":
-            raise ValueError(
-                "Invalid polarization state. Must be either "
-                'PolarizationState or "ignore".',
-            )
-        self.polarization = polarization
+        self._updater.set_polarization(polarization)
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
@@ -294,29 +269,27 @@ class Optic:
             scale_factor (float): The factor by which to scale the system.
 
         """
-        num_surfaces = self.surface_group.num_surfaces
-        radii = self.surface_group.radii
-        thicknesses = [
-            self.surface_group.get_thickness(surf_idx)[0]
-            for surf_idx in range(num_surfaces - 1)
-        ]
+        self._updater.scale_system(scale_factor)
 
-        # Scale radii & thicknesses
-        for surf_idx in range(num_surfaces):
-            if not np.isinf(radii[surf_idx]):
-                self.set_radius(radii[surf_idx] * scale_factor, surf_idx)
+    def update_paraxial(self):
+        """Update the semi-aperture of the surfaces based on the paraxial
+        analysis.
+        """
+        self._updater.update_paraxial()
 
-            if surf_idx != num_surfaces - 1 and not np.isinf(thicknesses[surf_idx]):
-                self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
+    def update_normalization(self, surface) -> None:
+        """Update the normalization radius of non-spherical surfaces."""
+        self._updater.update_normalization(surface)
 
-        # Scale aperture, if aperture type is EPD
-        if self.aperture.ap_type == "EPD":
-            self.aperture.value *= scale_factor
+    def update(self) -> None:
+        """Update the surface properties (pickups, solves, paraxial properties)."""
+        self._updater.update()
 
-        # Scale physical apertures
-        for surface in self.surface_group.surfaces:
-            if surface.aperture is not None:
-                surface.aperture.scale(scale_factor)
+    def image_solve(self):
+        """Update the image position such that the marginal ray crosses the
+        optical axis at the image location.
+        """
+        self._updater.image_solve()
 
     def draw(
         self,
@@ -426,50 +399,6 @@ class Optic:
         for surface in self.surface_group.surfaces:
             n.append(surface.material_post.n(wavelength))
         return np.array(n)
-
-    def update_paraxial(self):
-        """Update the semi-aperture of the surfaces based on the paraxial
-        analysis.
-        """
-        ya, _ = self.paraxial.marginal_ray()
-        yb, _ = self.paraxial.chief_ray()
-        ya = np.abs(np.ravel(ya))
-        yb = np.abs(np.ravel(yb))
-        for k, surface in enumerate(self.surface_group.surfaces):
-            surface.set_semi_aperture(r_max=ya[k] + yb[k])
-            self.update_normalization(surface)
-
-    def update_normalization(self, surface) -> None:
-        """Update the normalization radius of non-spherical surfaces."""
-        if surface.surface_type in [
-            "even_asphere",
-            "odd_asphere",
-            "polynomial",
-            "chebyshev",
-        ]:
-            surface.geometry.norm_x = surface.semi_aperture * 1.1
-            surface.geometry.norm_y = surface.semi_aperture * 1.1
-        if surface.surface_type == "zernike":
-            surface.geometry.norm_radius = surface.semi_aperture * 1.1
-
-    def update(self) -> None:
-        """Update the surface properties (pickups, solves, paraxial properties)."""
-        self.pickups.apply()
-        self.solves.apply()
-
-        if any(
-            surface.surface_type in ["chebyshev", "zernike"]
-            for surface in self.surface_group.surfaces
-        ):
-            self.update_paraxial()
-
-    def image_solve(self):
-        """Update the image position such that the marginal ray crosses the
-        optical axis at the image location.
-        """
-        ya, ua = self.paraxial.marginal_ray()
-        offset = float(ya[-1, 0] / ua[-1, 0])
-        self.surface_group.surfaces[-1].geometry.cs.z -= offset
 
     def trace(self, Hx, Hy, wavelength, num_rays=100, distribution="hexapolar"):
         """Trace a distribution of rays through the optical system.
