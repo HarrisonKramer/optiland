@@ -73,6 +73,8 @@ class Optic:
 
     def __add__(self, other):
         """Add two Optic objects together."""
+        if other is self:
+            raise ValueError("Cannot add an Optic instance to itself")
         self.surface_group = self.surface_group + other.surface_group
         return self
 
