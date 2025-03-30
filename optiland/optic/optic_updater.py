@@ -82,11 +82,11 @@ class OpticUpdater:
             surface_number (int): The index of the surface.
 
         """
-        surface = self.surface_group.surfaces[surface_number]
+        surface = self.optic.surface_group.surfaces[surface_number]
         new_material = IdealMaterial(n=value, k=0)
         surface.material_post = new_material
 
-        surface_post = self.surface_group.surfaces[surface_number + 1]
+        surface_post = self.optic.surface_group.surfaces[surface_number + 1]
         surface_post.material_pre = new_material
 
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
@@ -116,7 +116,7 @@ class OpticUpdater:
                 "Invalid polarization state. Must be either "
                 'PolarizationState or "ignore".',
             )
-        self.polarization = polarization
+        self.optic.polarization = polarization
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
@@ -125,10 +125,10 @@ class OpticUpdater:
             scale_factor (float): The factor by which to scale the system.
 
         """
-        num_surfaces = self.surface_group.num_surfaces
-        radii = self.surface_group.radii
+        num_surfaces = self.optic.surface_group.num_surfaces
+        radii = self.optic.surface_group.radii
         thicknesses = [
-            self.surface_group.get_thickness(surf_idx)[0]
+            self.optic.surface_group.get_thickness(surf_idx)[0]
             for surf_idx in range(num_surfaces - 1)
         ]
 
@@ -141,11 +141,11 @@ class OpticUpdater:
                 self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
 
         # Scale aperture, if aperture type is EPD
-        if self.aperture.ap_type == "EPD":
-            self.aperture.value *= scale_factor
+        if self.optic.aperture.ap_type == "EPD":
+            self.optic.aperture.value *= scale_factor
 
         # Scale physical apertures
-        for surface in self.surface_group.surfaces:
+        for surface in self.optic.surface_group.surfaces:
             if surface.aperture is not None:
                 surface.aperture.scale(scale_factor)
 
@@ -181,7 +181,7 @@ class OpticUpdater:
 
         if any(
             surface.surface_type in ["chebyshev", "zernike"]
-            for surface in self.surface_group.surfaces
+            for surface in self.optic.surface_group.surfaces
         ):
             self.update_paraxial()
 

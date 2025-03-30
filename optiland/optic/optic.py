@@ -249,7 +249,7 @@ class Optic:
                 surface
 
         """
-        self._updater.set_asphere_coeff(value, surface_number.aspher_coeff_idx)
+        self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
     def set_polarization(self, polarization: Union[PolarizationState, str]):
         """Set the polarization state of the optic.
