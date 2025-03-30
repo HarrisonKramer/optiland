@@ -54,7 +54,7 @@ class RealRayTracer:
         self.optic.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
-            rays.update_intensity(self.polarization_state)
+            rays.update_intensity(self.optic.polarization_state)
 
         # update ray intensity
         self.optic.surface_group.intensity[-1, :] = rays.i
