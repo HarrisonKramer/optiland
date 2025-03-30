@@ -33,13 +33,13 @@ class RealRayTracer:
         Py = distribution.y
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        self.surface_group.trace(rays)
+        self.optic.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
             rays.update_intensity(self.polarization_state)
 
         # update ray intensity
-        self.surface_group.intensity[-1, :] = rays.i
+        self.optic.surface_group.intensity[-1, :] = rays.i
 
         return rays
 
@@ -63,23 +63,13 @@ class RealRayTracer:
         Py *= 1 - vy
 
         # assure all variables are arrays of the same size
-        max_size = max([np.size(arr) for arr in [Hx, Hy, Px, Py]])
-        Hx, Hy, Px, Py = [
-            (
-                np.full(max_size, value)
-                if isinstance(value, (float, int))
-                else value
-                if isinstance(value, np.ndarray)
-                else None
-            )
-            for value in [Hx, Hy, Px, Py]
-        ]
+        Hx, Hy, Px, Py = self._ensure_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        rays = self.surface_group.trace(rays)
+        rays = self.optic.surface_group.trace(rays)
 
         # update intensity
-        self.surface_group.intensity[-1, :] = rays.i
+        self.optic.surface_group.intensity[-1, :] = rays.i
 
         return rays
 
@@ -99,3 +89,24 @@ class RealRayTracer:
             raise ValueError(
                 f"Normalized {coord_type} coordinates must be within (-1, 1)"
             )
+
+    def _validate_array_size(self, *arrays):
+        """Ensure all input variables are arrays of the same size.
+
+        Args:
+            *arrays: A variable number of inputs (float, int, or numpy.ndarray).
+
+        Returns:
+            list: A list of numpy arrays, all of the same size.
+        """
+        max_size = max([np.size(arr) for arr in arrays])
+        return [
+            (
+                np.full(max_size, value)
+                if isinstance(value, (float, int))
+                else value
+                if isinstance(value, np.ndarray)
+                else None
+            )
+            for value in arrays
+        ]
