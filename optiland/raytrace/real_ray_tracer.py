@@ -1,3 +1,12 @@
+"""Real Ray Tracer Module
+
+This module contains the RealRayTracer class, which is responsible for tracing
+real rays through an optical system. It uses the RayGenerator class to create
+rays and the surface group of the optical system to trace them.
+
+Kramer Harrison, 2025
+"""
+
 import numpy as np
 
 from optiland.distribution import create_distribution
@@ -5,6 +14,15 @@ from optiland.rays import PolarizedRays, RayGenerator
 
 
 class RealRayTracer:
+    """Class to trace real rays through an optical system
+
+    This class is responsible for building rays (via a ray generator) and tracing these
+    through an optical system (via the surface group).
+
+    Args:
+        optic (Optic): The optical system to be traced.
+    """
+
     def __init__(self, optic):
         self.optic = optic
         self.ray_generator = RayGenerator(optic)
