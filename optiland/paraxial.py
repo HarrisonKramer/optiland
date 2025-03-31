@@ -335,7 +335,7 @@ class Paraxial:
             wavelength (float): Wavelength of the light.
 
         """
-        return self._ray_tracer.trace(Hy, Py, wavelength)
+        self._ray_tracer.trace(Hy, Py, wavelength)
 
     def _trace_generic(self, y, u, z, wavelength, reverse=False, skip=0):
         """Trace generically-defined paraxial rays through the optical system.
@@ -355,4 +355,4 @@ class Paraxial:
                 rays after tracing.
 
         """
-        self._ray_tracer.trace_generic(y, u, z, wavelength, reverse, skip)
+        return self._ray_tracer.trace_generic(y, u, z, wavelength, reverse, skip)

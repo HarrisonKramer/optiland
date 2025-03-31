@@ -64,7 +64,9 @@ class ParaxialRayTracer:
         self._process_input(u)
         self._process_input(z)
 
-        surfaces = self.optic.surface_group.inverted() if reverse else self.surfaces
+        surfaces = (
+            self.optic.surface_group.inverted() if reverse else self.optic.surface_group
+        )
 
         rays = ParaxialRays(y, u, z, wavelength)
         surfaces.trace(rays, skip)
