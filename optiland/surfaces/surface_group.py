@@ -154,6 +154,13 @@ class SurfaceGroup:
                 return True
         return False
 
+    def total_track(self):
+        """float: the total track length of the system"""
+        if len(self.num_surfaces) < 2:
+            raise ValueError("Not enough surfaces to calculate total track.")
+        z = self.positions[1:-1]
+        return np.max(z) - np.min(z)
+
     def n(self, wavelength):
         """Get the refractive indices of the surfaces.
 

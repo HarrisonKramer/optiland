@@ -353,6 +353,13 @@ class TestOptic:
         lens = HeliarLens()
         assert lens.total_track == 3.6291
 
+    def test_total_track_error(self):
+        lens = HeliarLens()
+        # manually remove all but first surface
+        lens.surface_group.surfaces = [lens.surface_group.surfaces[0]]
+        with pytest.raises(ValueError):
+            _ = lens.total_track
+
     def test_polarization_state_property(self):
         lens = HeliarLens()
         assert lens.polarization_state is None

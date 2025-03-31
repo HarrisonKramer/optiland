@@ -14,8 +14,6 @@ Kramer Harrison, 2024
 from copy import deepcopy
 from typing import Union
 
-import numpy as np
-
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.fields import Field, FieldGroup
@@ -99,8 +97,7 @@ class Optic:
     @property
     def total_track(self):
         """float: the total track length of the system"""
-        z = self.surface_group.positions[1:-1]
-        return np.max(z) - np.min(z)
+        return self.surface_group.total_track
 
     @property
     def polarization_state(self):
