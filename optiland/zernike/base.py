@@ -1,3 +1,10 @@
+"""Base Zernike Module
+
+This module contains the abstract base class for all zernike-related classes.
+
+Kramer Harrison, 2025
+"""
+
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -7,13 +14,18 @@ from scipy.special import comb
 class BaseZernike(ABC):
     """
     Abstract base class for Zernike polynomials.
+
+    Args:
+        coeffs (array-like): The Zernike coefficients.
+        num_terms (int): the maximum number of terms. Only used if coeffs is None.
+            Defaults to 36.
     """
 
     MAX_TERMS = 120
 
-    def __init__(self, coeffs=None, max_terms=36):
+    def __init__(self, coeffs=None, num_terms=36):
         if coeffs is None:
-            coeffs = np.zeros(max_terms, dtype=np.float64)
+            coeffs = np.zeros(num_terms, dtype=np.float64)
         if len(coeffs) > self.MAX_TERMS:
             raise ValueError("Number of coefficients is limited to 120.")
 
@@ -23,9 +35,90 @@ class BaseZernike(ABC):
     @abstractmethod
     def generate_indices(self):
         """Generate the indices for Zernike terms."""
-        pass
+        # pragma: no cover
+
+    def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
+        """Calculate the Zernike term for given coefficients and parameters.
+
+        Args:
+            coeff (float): Coefficient value for the Zernike term.
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
+            r (float): Radial distance from the origin.
+            phi (float): Azimuthal angle in radians.
+
+        Returns:
+            float: The calculated value of the Zernike term.
+
+        """
+        return (
+            coeff
+            * self._norm_constant(n, m)
+            * self._radial_term(n, m, r)
+            * self._azimuthal_term(m, phi)
+        )
+
+    def terms(self, r=0, phi=0):
+        """Calculate the Zernike terms for given radial distance and azimuthal
+        angle.
+
+        Args:
+            r (float): Radial distance from the origin.
+            phi (float): Azimuthal angle in radians.
+
+        Returns:
+            list: List of calculated Zernike term values.
+
+        """
+        val = []
+        for k, idx in enumerate(self.indices):
+            n, m = idx
+            try:
+                val.append(self.get_term(self.coeffs[k], n, m, r, phi))
+            except IndexError:
+                break
+        return val
+
+    def poly(self, r=0, phi=0):
+        """Calculate the Zernike polynomial for given radial distance and
+        azimuthal angle.
+
+        Args:
+            r (float): Radial distance from the origin.
+            phi (float): Azimuthal angle in radians.
+
+        Returns:
+            float: The calculated value of the Zernike polynomial.
+
+        """
+        return sum(self.terms(r, phi))
+
+    @abstractmethod
+    def _norm_constant(self, n, m):
+        """Calculate the normalization constant of the Zernike polynomial.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
+
+        Returns:
+            float: The calculated value of the normalization constant.
+
+        """
+        # pragma: no cover
 
     def _radial_term(self, n, m, r):
+        """Calculate the radial term of the Zernike polynomial.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
+            r (float): Radial distance from the origin.
+
+        Returns:
+            float: The calculated value of the radial term.
+
+        """
         k = np.arange((n - abs(m)) // 2 + 1)
         terms = (
             (-1) ** k
@@ -35,15 +128,17 @@ class BaseZernike(ABC):
         )
         return terms.sum()
 
-    def norm_constant(self, n, m):
-        """Normalization constant for the Zernike polynomials."""
-        return np.sqrt((2 * (n + 1)) / (1 + (m == 0)))
+    def _azimuthal_term(self, m=0, phi=0):
+        """Calculate the azimuthal term of the Zernike polynomial.
 
-    def evaluate(self, r, phi):
-        """Compute the Zernike polynomial value at (r, phi)."""
-        zernike_sum = 0
-        for (n, m), coeff in zip(self.indices, self.coeffs):
-            radial = self._radial_term(n, m, r)
-            angular = np.cos(m * phi) if m >= 0 else np.sin(-m * phi)
-            zernike_sum += coeff * self.norm_constant(n, m) * radial * angular
-        return zernike_sum
+        Args:
+            m (int): Azimuthal order of the Zernike term.
+            phi (float): Azimuthal angle in radians.
+
+        Returns:
+            float: The calculated value of the azimuthal term.
+
+        """
+        if m >= 0:
+            return np.cos(m * phi)
+        return np.sin(np.abs(m) * phi)
