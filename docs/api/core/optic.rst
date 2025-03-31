@@ -1,12 +1,9 @@
 ﻿optic
 =====
 
-.. automodule:: optic
+.. autosummary::
+   :toctree: optic/
+   :caption: Optic Modules
 
-   
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      Optic
-   
+   optic.optic
+   optic.optic_updater
