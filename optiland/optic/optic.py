@@ -395,10 +395,7 @@ class Optic:
         """
         if wavelength == "primary":
             wavelength = self.primary_wavelength
-        n = []
-        for surface in self.surface_group.surfaces:
-            n.append(surface.material_post.n(wavelength))
-        return np.array(n)
+        return self.surface_group.n(wavelength)
 
     def trace(self, Hx, Hy, wavelength, num_rays=100, distribution="hexapolar"):
         """Trace a distribution of rays through the optical system.

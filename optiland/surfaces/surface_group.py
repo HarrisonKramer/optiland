@@ -154,6 +154,22 @@ class SurfaceGroup:
                 return True
         return False
 
+    def n(self, wavelength):
+        """Get the refractive indices of the surfaces.
+
+        Args:
+            wavelength (float or str, optional): The wavelength for which to
+                calculate the refractive indices.
+
+        Returns:
+            numpy.ndarray: The refractive indices of the surfaces.
+
+        """
+        n = []
+        for surface in self.surfaces:
+            n.append(surface.material_post.n(wavelength))
+        return np.array(n)
+
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.
 
