@@ -26,6 +26,34 @@ class TestRadiusVariable:
         assert np.isclose(self.radius_var.get_value(), 5.0)
 
 
+class TestReciprocalRadiusVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = Objective60x()
+        self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(self.optic, 1)
+
+    def test_get_value(self):
+        # Expected reciprocal = 1 / radius; radius from TestRadiusVariable ≈ 4.5326
+        expected = 1.0 / 4.5326
+        assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
+
+    def test_update_value(self):
+        # Update reciprocal value to 0.25, expect new radius = 1/0.25 = 4.0
+        self.reciprocal_radius_var.update_value(0.25)
+        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.25, atol=1e-4)
+
+    def test_get_value_infinity(self):
+        # Set the surface radius to 0 so reciprocal becomes infinity (division by zero)
+        self.optic.set_radius(0, self.reciprocal_radius_var.surface_number)
+        val = self.reciprocal_radius_var.get_value()
+        assert val == float("inf")
+
+    def test_update_value_zero(self):
+        # Update reciprocal value to 0 -> new radius set to infinity, so reciprocal becomes 0
+        self.reciprocal_radius_var.update_value(0.0)
+        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.0)
+
+
 class TestConicVariable:
     @pytest.fixture(autouse=True)
     def setup(self):

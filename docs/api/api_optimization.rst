@@ -1,9 +1,9 @@
 Optimization
 ============
 
-This section covers the optimization functionality of the Optiland package. The optimization module 
-provides a set of tools for optimizing optical systems. It includes a variety of optimization algorithms, 
-such as gradient-based and evolutionary algorithms, as well as tools for defining optimization variables 
+This section covers the optimization functionality of the Optiland package. The optimization module
+provides a set of tools for optimizing optical systems. It includes a variety of optimization algorithms,
+such as gradient-based and evolutionary algorithms, as well as tools for defining optimization variables
 and objectives.
 
 The optimization module is divided into three subcategories:
@@ -56,6 +56,7 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.index
    optimization.variable.polynomial_coeff
    optimization.variable.radius
+   optimization.variable.reciprocal_radius
    optimization.variable.thickness
    optimization.variable.tilt
    optimization.variable.variable
