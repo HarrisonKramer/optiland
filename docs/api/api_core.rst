@@ -17,9 +17,7 @@ properties of the optical system and provides interfaces to core functionalities
    distribution
    fields
    jones
-   optic
    pickup
-   raytrace
    scatter
    solves
    wavelength
