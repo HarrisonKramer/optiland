@@ -104,8 +104,13 @@ class Optic:
         """PolarizationState: the polarization state of the optic"""
         if self.polarization == "ignore":
             return None
-        if isinstance(self.polarization, PolarizationState):
+        elif isinstance(self.polarization, PolarizationState):
             return self.polarization
+        else:
+            raise ValueError(
+                "Invalid polarization state. Must be either "
+                'PolarizationState or "ignore".',
+            )
 
     def reset(self):
         """Reset the optical system to its initial state."""

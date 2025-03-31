@@ -368,6 +368,12 @@ class TestOptic:
         lens.set_polarization(state)
         assert lens.polarization_state == state
 
+    def test_polarization_state_error(self):
+        lens = HeliarLens()
+        lens.polarization = "invalid"
+        with pytest.raises(ValueError):
+            _ = lens.polarization_state
+
     def test_to_dict(self):
         lens = HeliarLens()
         lens_dict = lens.to_dict()
