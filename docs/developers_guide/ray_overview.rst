@@ -41,6 +41,16 @@ The ray tracing framework uses a **Ray Generator** to produce rays for tracing. 
 Generated rays are passed to the **Surface Group** for tracing through the optical system. Each `Optic` instance has both a ray generator and a surface group
 specific to that system.
 
+Ray Tracing
+-----------
+For real rays, the ray tracing process is managed by the **RealRayTracer**. The ray tracer is responsible for:
+
+- Generating the appropriate rays based on the selected ray generator.
+- Ray tracing input validation.
+- Propagating rays through the surface group.
+
+For paraxial rays, the **ParaxialRayTracer** is used. This tracer is similar in form to the RealRayTracer but uses simplified equations for faster computations.
+
 Tracing Process
 ---------------
 Ray tracing is performed by sequentially propagating rays across the surfaces in the system:

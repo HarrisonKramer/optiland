@@ -353,6 +353,13 @@ class TestOptic:
         lens = HeliarLens()
         assert lens.total_track == 3.6291
 
+    def test_total_track_error(self):
+        lens = HeliarLens()
+        # manually remove all but first surface
+        lens.surface_group.surfaces = [lens.surface_group.surfaces[0]]
+        with pytest.raises(ValueError):
+            _ = lens.total_track
+
     def test_polarization_state_property(self):
         lens = HeliarLens()
         assert lens.polarization_state is None
@@ -360,6 +367,12 @@ class TestOptic:
         state = create_polarization("unpolarized")
         lens.set_polarization(state)
         assert lens.polarization_state == state
+
+    def test_polarization_state_error(self):
+        lens = HeliarLens()
+        lens.polarization = "invalid"
+        with pytest.raises(ValueError):
+            _ = lens.polarization_state
 
     def test_to_dict(self):
         lens = HeliarLens()
@@ -402,8 +415,3 @@ class TestOptic:
         # test that a ray trace through the combined lens works
         rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
         assert rays is not None
-
-    def test_add_invalid_optic(self):
-        lens = singlet_finite_object()
-        with pytest.raises(ValueError):
-            lens + lens

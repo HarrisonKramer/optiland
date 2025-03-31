@@ -154,6 +154,30 @@ class SurfaceGroup:
                 return True
         return False
 
+    @property
+    def total_track(self):
+        """float: the total track length of the system"""
+        if self.num_surfaces < 2:
+            raise ValueError("Not enough surfaces to calculate total track.")
+        z = self.positions[1:-1]
+        return np.max(z) - np.min(z)
+
+    def n(self, wavelength):
+        """Get the refractive indices of the surfaces.
+
+        Args:
+            wavelength (float or str, optional): The wavelength for which to
+                calculate the refractive indices.
+
+        Returns:
+            numpy.ndarray: The refractive indices of the surfaces.
+
+        """
+        n = []
+        for surface in self.surfaces:
+            n.append(surface.material_post.n(wavelength))
+        return np.array(n)
+
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.
 
