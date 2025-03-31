@@ -16,7 +16,7 @@ class BaseZernike(ABC):
     Abstract base class for Zernike polynomials.
 
     Args:
-        coeffs (array-like): The Zernike coefficients.
+        coeffs (array-like): The Zernike coefficients. Defaults to None.
         num_terms (int): the maximum number of terms. Only used if coeffs is None.
             Defaults to 36.
     """
@@ -31,11 +31,6 @@ class BaseZernike(ABC):
 
         self.coeffs = coeffs
         self.indices = self.generate_indices()
-
-    @abstractmethod
-    def generate_indices(self):
-        """Generate the indices for Zernike terms."""
-        # pragma: no cover
 
     def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
         """Calculate the Zernike term for given coefficients and parameters.
@@ -94,7 +89,13 @@ class BaseZernike(ABC):
         return sum(self.terms(r, phi))
 
     @abstractmethod
-    def _norm_constant(self, n, m):
+    @staticmethod
+    def _generate_indices():
+        """Generate the indices for Zernike terms."""
+        # pragma: no cover
+
+    @abstractmethod
+    def _norm_constant(n, m):
         """Calculate the normalization constant of the Zernike polynomial.
 
         Args:

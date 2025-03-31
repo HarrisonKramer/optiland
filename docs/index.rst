@@ -116,6 +116,7 @@ Python code to generate this 3D visualization:
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
+   api/api_zernike
 
 
 .. toctree::
