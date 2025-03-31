@@ -5,10 +5,10 @@ This module contains the abstract base class for all zernike-related classes.
 Kramer Harrison, 2025
 """
 
+import math
 from abc import ABC, abstractmethod
 
 import numpy as np
-from scipy.special import comb
 
 
 class BaseZernike(ABC):
@@ -30,7 +30,7 @@ class BaseZernike(ABC):
             raise ValueError("Number of coefficients is limited to 120.")
 
         self.coeffs = coeffs
-        self.indices = self.generate_indices()
+        self.indices = self._generate_indices()
 
     def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
         """Calculate the Zernike term for given coefficients and parameters.
@@ -88,8 +88,8 @@ class BaseZernike(ABC):
         """
         return sum(self.terms(r, phi))
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _generate_indices():
         """Generate the indices for Zernike terms."""
         # pragma: no cover
@@ -120,14 +120,20 @@ class BaseZernike(ABC):
             float: The calculated value of the radial term.
 
         """
-        k = np.arange((n - abs(m)) // 2 + 1)
-        terms = (
-            (-1) ** k
-            * comb(n - k, k)
-            * comb((n + m) // 2 - k, (n - m) // 2 - k)
-            * r ** (n - 2 * k)
-        )
-        return terms.sum()
+        s_max = int((n - abs(m)) / 2 + 1)
+        value = 0
+        for k in range(s_max):
+            value += (
+                (-1) ** k
+                * math.factorial(n - k)
+                / (
+                    math.factorial(k)
+                    * math.factorial(int((n + m) / 2 - k))
+                    * math.factorial(int((n - m) / 2 - k))
+                )
+                * r ** (n - 2 * k)
+            )
+        return value
 
     def _azimuthal_term(self, m=0, phi=0):
         """Calculate the azimuthal term of the Zernike polynomial.
