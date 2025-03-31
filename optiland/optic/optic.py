@@ -51,7 +51,7 @@ class Optic:
         self.name = name
         self.reset()
 
-    def reset(self):
+    def _initialize_attributes(self):
         """Reset the optical system to its initial state."""
         self.aperture = None
         self.field_type = None
@@ -109,6 +109,10 @@ class Optic:
             return None
         if isinstance(self.polarization, PolarizationState):
             return self.polarization
+
+    def reset(self):
+        """Reset the optical system to its initial state."""
+        self._initialize_attributes()
 
     def add_surface(
         self,
