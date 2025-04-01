@@ -7,7 +7,7 @@ from optiland.samples.objectives import TessarLens
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces.surface_factory import SurfaceFactory
+from optiland.surfaces import SurfaceFactory
 
 
 class TestSurfaceFactory:
@@ -219,10 +219,10 @@ class TestSurfaceFactory:
         assert surface.geometry.cs.x == 1
         assert surface.geometry.cs.y == 2
         assert surface.geometry.cs.z == 3
-        assert self.factory._use_absolute_cs
+        assert self.factory.use_absolute_cs
 
     def test_invalid_thickness_for_abs_cs(self):
-        self.factory._use_absolute_cs = True
+        self.factory.use_absolute_cs = True
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type="standard",
