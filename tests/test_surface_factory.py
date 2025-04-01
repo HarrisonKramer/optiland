@@ -7,7 +7,7 @@ from optiland.samples.objectives import TessarLens
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces.surface_factory import SurfaceFactory
+from optiland.surfaces import SurfaceFactory
 
 
 class TestSurfaceFactory:
