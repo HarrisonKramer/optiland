@@ -22,7 +22,7 @@ class CoordinateSystemFactory:
         self.surface_factory = surface_factory
         self.last_thickness = 0
 
-    def create_coordinate_system(self, index, surface_group, **kwargs):
+    def create(self, index, surface_group, **kwargs):
         """Creates and returns a CoordinateSystem instance.
 
         Args:

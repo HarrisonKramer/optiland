@@ -18,9 +18,44 @@ class MaterialFactory:
     including ideal materials, predefined materials, and user-defined materials.
     """
 
+    def __init__(self):
+        self._last_material = None
+
+    def create(self, index, material_spec, surface_group):
+        """Determines the material before and after a surface based on its position.
+
+        Args:
+            index (int): The index of the surface within the surface group.
+            material_spec (BaseMaterial | tuple | str): The material specification.
+            surface_group (SurfaceGroup): The surface group containing the surfaces.
+
+        Returns:
+            tuple[BaseMaterial | None, BaseMaterial]:
+                - The material before the surface (None for the object surface).
+                - The material after the surface.
+        """
+        # Determine material before the surface
+        if index == 0:
+            material_pre = None  # Object surface has no preceding material
+        elif index == surface_group.num_surfaces and self._last_material is not None:
+            material_pre = self._last_material  # Image surface
+        else:
+            previous_surface = surface_group.surfaces[index - 1]
+            material_pre = previous_surface.material_post
+
+        # Determine material after the surface
+        material_post = MaterialFactory._configure_post_material(material_spec)
+        self._last_material = material_post
+
+        # Special case for mirrors: maintain the same material before and after
+        if material_spec == "mirror":
+            material_post = material_pre
+
+        return material_pre, material_post
+
     @staticmethod
-    def create_material(material_spec):
-        """Creates a material instance based on the given specification.
+    def _configure_post_material(material_spec):
+        """Creates a post-surface material instance based on the given specification.
 
         Args:
             material_spec (BaseMaterial | tuple | str): The material specification.
@@ -50,36 +85,3 @@ class MaterialFactory:
             return Material(material_spec)
 
         raise ValueError(f"Unrecognized material specification: {material_spec}")
-
-    @staticmethod
-    def configure_material(index, material_spec, surface_group, last_surface):
-        """Determines the material before and after a surface based on its position.
-
-        Args:
-            index (int): The index of the surface within the surface group.
-            material_spec (BaseMaterial | tuple | str): The material specification.
-            surface_group (SurfaceGroup): The surface group containing the surfaces.
-            last_surface (Surface | None): The last created surface, if available.
-
-        Returns:
-            tuple[BaseMaterial | None, BaseMaterial]:
-                - The material before the surface (None for the object surface).
-                - The material after the surface.
-        """
-        # Determine material before the surface
-        if index == 0:
-            material_pre = None  # Object surface has no preceding material
-        elif index == surface_group.num_surfaces and last_surface is not None:
-            material_pre = last_surface.material_post  # Image surface
-        else:
-            previous_surface = surface_group.surfaces[index - 1]
-            material_pre = previous_surface.material_post
-
-        # Determine material after the surface
-        material_post = MaterialFactory.create_material(material_spec)
-
-        # Special case for mirrors: maintain the same material before and after
-        if material_spec == "mirror":
-            material_post = material_pre
-
-        return material_pre, material_post

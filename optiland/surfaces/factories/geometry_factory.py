@@ -219,7 +219,7 @@ class GeometryFactory:
     """Factory for creating surface geometry objects based on configuration."""
 
     @staticmethod
-    def create_geometry(surface_type: str, cs: Any, config: GeometryConfig) -> Any:
+    def create(surface_type: str, cs: Any, config: GeometryConfig) -> Any:
         """
         Create and return a geometry object based on the surface type and configuration.
 

@@ -9,11 +9,13 @@ the surface parameters.
 Kramer Harrison, 2024
 """
 
+import numpy as np
+
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
 )
-from optiland.surfaces.factories.geometry_factory import GeometryFactory
+from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
 from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
@@ -43,6 +45,8 @@ class SurfaceFactory:
         self._material_factory = MaterialFactory()
         self._coating_factory = CoatingFactory()
 
+        self.use_absolute_cs = False
+
     def create_surface(self, surface_type, comment, index, is_stop, material, **kwargs):
         """Creates a surface object based on the given parameters.
 
@@ -63,22 +67,37 @@ class SurfaceFactory:
         if index > self._surface_group.num_surfaces:
             raise ValueError("Surface index cannot be greater than number of surfaces.")
 
+        # Build coordinate system
         coordinate_system = self._coordinate_factory.create(
             index, self._surface_group, **kwargs
         )
 
+        # Build pre and post surface materials
         material_pre, material_post = self._material_factory.create(
             index, material, self._surface_group
         )
 
+        # Build coating
         coating = self._coating_factory.create(
             kwargs.get("coating"), material_pre, material_post
         )
 
         is_reflective = material == "mirror"
 
+        # Build geometry
+        geometry_config = GeometryConfig(
+            radius=kwargs.get("radius", np.inf),
+            conic=kwargs.get("conic", 0.0),
+            coefficients=kwargs.get("coefficients", []),
+            tol=kwargs.get("tol", 1e-6),
+            max_iter=kwargs.get("max_iter", 100),
+            norm_x=kwargs.get("norm_x", 1.0),
+            norm_y=kwargs.get("norm_y", 1.0),
+            norm_radius=kwargs.get("norm_radius", 1.0),
+        )
+
         geometry = self._geometry_factory.create(
-            surface_type, coordinate_system, **kwargs
+            surface_type, coordinate_system, geometry_config
         )
 
         # Special case: object surface

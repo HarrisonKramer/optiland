@@ -26,7 +26,7 @@ class CoatingFactory:
     """
 
     @staticmethod
-    def create_coating(
+    def create(
         coating: str | BaseCoating,
         material_pre: BaseMaterial,
         material_post: BaseMaterial,
