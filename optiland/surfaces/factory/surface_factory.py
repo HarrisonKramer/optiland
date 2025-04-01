@@ -358,8 +358,8 @@ class SurfaceFactory:
 
         return geometry
 
-    # @staticmethod
-    def _configure_zernike_geometry(self, cs, **kwargs):
+    @staticmethod
+    def _configure_zernike_geometry(cs, **kwargs):
         """Configures a Zernike geometry based on the given parameters.
 
         Args:
