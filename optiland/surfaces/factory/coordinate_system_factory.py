@@ -18,14 +18,16 @@ class CoordinateSystemFactory:
     correct transformations are applied to each surface within an optical system.
     """
 
-    @staticmethod
-    def create_coordinate_system(index, surface_group, surface_factory, **kwargs):
+    def __init__(self, surface_factory):
+        self.surface_factory = surface_factory
+        self.last_thickness = 0
+
+    def create_coordinate_system(self, index, surface_group, **kwargs):
         """Creates and returns a CoordinateSystem instance.
 
         Args:
             index (int): The index of the surface within the optical system.
             surface_group (SurfaceGroup): The group containing all surfaces.
-            surface_factory (SurfaceFactory): The surface factory.
             **kwargs: Additional keyword arguments specifying position and rotation.
                 - x (float): X-coordinate (if absolute positioning is used).
                 - y (float): Y-coordinate (if absolute positioning is used).
@@ -51,9 +53,9 @@ class CoordinateSystemFactory:
             x = kwargs.get("x", 0)
             y = kwargs.get("y", 0)
             z = kwargs["z"]
-            surface_factory.use_absolute_cs = True
+            self.surface_factory.use_absolute_cs = True
         else:
-            if surface_factory.use_absolute_cs:
+            if self.surface_factory.use_absolute_cs:
                 raise ValueError(
                     'Cannot pass "thickness" after defining '
                     '"x", "y", "z" position for a previous '
@@ -71,10 +73,10 @@ class CoordinateSystemFactory:
             else:
                 z = (
                     float(surface_group.positions[index - 1].item())
-                    + surface_factory.last_thickness
+                    + self.surface_factory.last_thickness
                 )
 
-                # self.last_thickness = thickness
+                self.last_thickness = thickness
 
         rx = kwargs.get("rx", 0)
         ry = kwargs.get("ry", 0)
