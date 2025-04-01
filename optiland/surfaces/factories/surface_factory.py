@@ -9,10 +9,12 @@ the surface parameters.
 Kramer Harrison, 2024
 """
 
-from optiland.factories.coating_factory import CoatingFactory
-from optiland.factories.coordinate_system_factory import CoordinateSystemFactory
-from optiland.factories.geometry_factory import GeometryFactory
-from optiland.factories.material_factory import MaterialFactory
+from optiland.surfaces.factories.coating_factory import CoatingFactory
+from optiland.surfaces.factories.coordinate_system_factory import (
+    CoordinateSystemFactory,
+)
+from optiland.surfaces.factories.geometry_factory import GeometryFactory
+from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface

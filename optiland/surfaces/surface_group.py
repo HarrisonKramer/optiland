@@ -13,7 +13,7 @@ from copy import deepcopy
 import numpy as np
 
 from optiland.coatings import BaseCoatingPolarized
-from optiland.surfaces.factory.surface_factory import SurfaceFactory
+from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
 
 
