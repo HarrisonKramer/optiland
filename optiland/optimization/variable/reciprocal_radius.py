@@ -96,4 +96,8 @@ class ReciprocalRadiusVariable(VariableBehavior):
         Returns:
             str: A string representation of the reciprocal radius variable.
         """
-        return f"Reciprocal Radius of Curvature, Surface {self.surface_number}"
+        s = "scaled" if self.apply_scaling else "unscaled"
+        n = self.surface_number
+        v = self.get_value()
+
+        return f"Reciprocal Radius of Curvature - Surface {n} - {s} value: {v}"
