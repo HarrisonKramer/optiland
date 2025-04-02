@@ -12,8 +12,9 @@ Daniel Miranda, 2025
 ALL rights ceded to Kramer Harrison
 """
 
-from optiland.optimization.variable.base import VariableBehavior
 import numpy as np
+
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class ReciprocalRadiusVariable(VariableBehavior):
@@ -32,7 +33,8 @@ class ReciprocalRadiusVariable(VariableBehavior):
 
     Methods:
         get_value(): Returns the current value of the reciprocal radius.
-        update_value(new_value): Updates the value via the reciprocal, converting back to radius.
+        update_value(new_value): Updates the value via the reciprocal, converting back
+         to radius.
     """
 
     def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
@@ -75,7 +77,7 @@ class ReciprocalRadiusVariable(VariableBehavior):
         Returns:
             float: The scaled reciprocal value.
         """
-        return value * 1000
+        return value * 10.0
 
     def inverse_scale(self, scaled_value):
         """Inverse scale the reciprocal value.
@@ -86,7 +88,7 @@ class ReciprocalRadiusVariable(VariableBehavior):
         Returns:
             float: The original reciprocal value.
         """
-        return scaled_value / 1000
+        return scaled_value / 10.0
 
     def __str__(self):
         """Return a string representation of the variable.
