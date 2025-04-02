@@ -16,3 +16,21 @@ Most analyses are performed on the `SurfaceGroup` level, which abstracts the com
    surfaces.standard_surface
    surfaces.surface_factory
    surfaces.surface_group
+
+Surface Factory
+---------------
+
+The `surfaces.factories` subpackage is used to build surface instances based on user-provided inputs. The primary class class in this subpackage
+is the `SurfaceFactory`, which orchestrates generation of surfaces and delegates creation of surface subcomponents to several
+submodules, which are listed here.
+
+.. autosummary::
+   :toctree: surfaces/factories/
+   :caption: Factory Modules
+   :recursive:
+
+   surfaces.factories.coating_factory
+   surfaces.factories.coordinate_system_factory
+   surfaces.factories.geometry_factory
+   surfaces.factories.material_factory
+   surfaces.factories.surface_factory
