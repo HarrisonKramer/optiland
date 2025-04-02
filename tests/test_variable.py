@@ -7,9 +7,9 @@ from optiland.geometries import (
     PolynomialGeometry,
     ZernikePolynomialGeometry,
 )
-from optiland.optimization import variable
+from optiland.optimization import variable, OptimizationProblem, OptimizerGeneric
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
-from optiland.samples.simple import AsphericSinglet
+from optiland.samples.simple import AsphericSinglet, Edmund_49_847
 
 
 class TestRadiusVariable:
@@ -24,6 +24,102 @@ class TestRadiusVariable:
     def test_update_value(self):
         self.radius_var.update_value(5.0)
         assert np.isclose(self.radius_var.get_value(), 5.0)
+
+
+class TestReciprocalRadiusVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = Edmund_49_847()
+        self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(self.optic, 1)
+        self.radius_var = variable.RadiusVariable(self.optic, 1, apply_scaling=False)
+        self.scaling = 10.0
+        self.problem = OptimizationProblem()
+        input_data = {
+            "optic": self.optic,
+            "Hx": 0.0,
+            "Hy": 0.0,
+            "num_rays": 5,
+            "wavelength": self.optic.wavelengths.primary_wavelength.value,
+            "distribution": "hexapolar",
+            "surface_number": 3,
+        }
+        self.problem.add_operand(
+            operand_type="rms_spot_size", target=0, weight=1, input_data=input_data
+        )
+
+    def test_get_value(self):
+        # Expected reciprocal = 1 / radius; radius from TestRadiusVariable ≈ 553.260
+        expected = self.scaling * (1.0 / self.radius_var.get_value())
+        assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
+        a=str(self.reciprocal_radius_var)
+        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - scaled value: 0.50')
+
+    def test_get_value_without_scaling(self):
+        self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(
+            self.optic, 1, apply_scaling=False
+        )
+        expected = 1.0 / self.radius_var.get_value()
+        assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
+        a=str(self.reciprocal_radius_var)
+        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - unscaled value: 0.050')
+
+
+    def test_update_value(self):
+        # Update reciprocal value to 0.25, expect new radius = 1/0.25 = 4.0
+        self.reciprocal_radius_var.update_value(0.25)
+        expected_radius = self.scaling * (1.0 / 0.25)
+        assert np.isclose(self.radius_var.get_value(), expected_radius, atol=1e-4)
+        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.25, atol=1e-4)
+
+    def test_get_value_infinity(self):
+        # Set the surface radius to 0 so reciprocal becomes infinity (division by zero)
+        self.radius_var.update_value(0.0)
+        val = self.reciprocal_radius_var.get_value()
+        assert val == np.inf
+
+    def test_update_value_zero(self):
+        # Update reciprocal value to 0 -> new radius set to infinity, so reciprocal becomes 0
+        self.reciprocal_radius_var.update_value(0.0)
+        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.0)
+
+    def test_optimization(self):
+        # Add the reciprocal radius variable for the first surface
+        self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
+
+        # Run the optimization
+        optimizer = OptimizerGeneric(self.problem)
+
+        # this will set the radius of surface 1 to scale*(1/0.1) = 10*(10) = 100
+        self.reciprocal_radius_var.update_value(0.1)
+        optimizer.optimize(tol=1e-9)
+
+        # Check if the radius of the first surface is close to the expected value
+        expected_radius = 19.93  # Expected value from the initial definition
+        optimized_radius = self.radius_var.get_value()
+        # just make sure the final value is in the ballpark, and there were no exceptions thrown
+        assert np.isclose(optimized_radius, expected_radius, atol=5)
+
+    def test_optimization_with_flat_surface(self):
+        # Add the reciprocal radius variable for the first surface
+        self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
+
+        # Make the first surface mathematically flat
+        self.radius_var.update_value(-np.inf)
+
+        # Run the optimization
+        optimizer = OptimizerGeneric(self.problem)
+        optimizer.optimize(tol=1e-9)
+
+        # the optimization above stops prematurely, so we have to try again.
+        # TODO: understand the problem and fix it or at least properly document it.
+        # trying again:
+        optimizer.optimize(tol=1e-9)
+
+        # Check if the radius of the first surface is close to the expected value
+        expected_radius = 19.93  # Expected value from the initial definition
+        optimized_radius = self.radius_var.get_value()
+        # just make sure the final value is in the ballpark, and there were no exceptions thrown
+        assert np.isclose(optimized_radius, expected_radius, atol=5)
 
 
 class TestConicVariable:
