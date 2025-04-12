@@ -6,7 +6,7 @@ implements an interface similar to the NumPy backend, enabling seamless switchin
 between them. It also allows global configuration options including device
 selection (CPU or CUDA), gradient calculation control, and float precision.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 import contextlib
