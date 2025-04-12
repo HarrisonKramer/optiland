@@ -37,6 +37,7 @@ dev = [
     "codecov>=2.1.13",
     "pytest>=8.3.5",
 ]
+torch = ["torch"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
