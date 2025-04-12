@@ -5,14 +5,16 @@ from optiland import backend as be
 
 @pytest.fixture(autouse=True)
 def reset_backend_state():
-    be.set_backend("numpy")
-    numpy_backend = be.__getattr__.__globals__["_backends"]["numpy"]
-    for attr in list(numpy_backend.__dict__.keys()):
-        if attr.startswith("test_attr_"):
-            delattr(numpy_backend, attr)
-    if hasattr(numpy_backend, "_lib"):
-        delattr(numpy_backend, "_lib")
+    # Store original state
+    original_backend = be.get_backend()
     yield
+    # Restore original state after test
+    try:
+        be.set_backend(original_backend)
+    except Exception as e:
+        # If restoration fails, fall back to numpy
+        print(f"Error restoring original backend {original_backend}: {e}")
+        be.set_backend("numpy")
 
 
 @pytest.fixture(autouse=True)
@@ -21,6 +23,8 @@ def cleanup_dummy_backend():
     backends = be.__getattr__.__globals__["_backends"]
     if "dummy" in backends:
         del backends["dummy"]
+    # Ensure we're back to numpy
+    be.set_backend("numpy")
 
 
 def test_default_backend():

@@ -9,7 +9,7 @@ backends may be added in the future.
 Kramer Harrison, 2025
 """
 
-from optiland.backend import numpy_backend
+from optiland.backend import numpy_backend, torch_backend  # noqa: F401
 
 # Registry for available backends.
 # To add a new backend, import it and include it in this dictionary.
