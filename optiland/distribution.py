@@ -18,10 +18,8 @@ class BaseDistribution(ABC):
         visualizing the distribution.
 
     Attributes:
-        dx (float): The step size in x calculated as the difference between
-            two adjacent x points.
-        dy (float): The step size in y calculated as the difference between
-            two adjacent y points.
+        x (ndarray): The x-coordinates of the generated points.
+        y (ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -34,26 +32,6 @@ class BaseDistribution(ABC):
 
         """
         # pragma: no cover
-
-    @property
-    def dx(self):
-        """The difference between the x-coordinates of two adjacent points.
-
-        Returns:
-            float: The step size in x.
-
-        """
-        return self.x[1] - self.x[0]
-
-    @property
-    def dy(self):
-        """The difference between the y-coordinates of two adjacent points.
-
-        Returns:
-            float: The step size in y.
-
-        """
-        return self.y[1] - self.y[0]
 
     def view(self):
         """Visualize the distribution.
