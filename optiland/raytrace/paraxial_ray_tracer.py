@@ -6,7 +6,7 @@ paraxial rays through an optical system.
 Kramer Harrison, 2025
 """
 
-import numpy as np
+import optiland.backend as be
 
 from optiland.rays.paraxial_rays import ParaxialRays
 
@@ -99,24 +99,24 @@ class ParaxialRayTracer:
                     'Field type cannot be "object_height" for an object at infinity.',
                 )
 
-            y = -np.tan(np.radians(field_y)) * EPL
+            y = -be.tan(be.radians(field_y)) * EPL
             z = self.optic.surface_group.positions[1]
 
             y0 = y1 + y
-            z0 = np.ones_like(y1) * z
+            z0 = be.ones_like(y1) * z
         elif self.optic.field_type == "object_height":
             y = -field_y
             z = obj.geometry.cs.z
 
-            y0 = np.ones_like(y1) * y
-            z0 = np.ones_like(y1) * z
+            y0 = be.ones_like(y1) * y
+            z0 = be.ones_like(y1) * z
 
         elif self.optic.field_type == "angle":
-            y = -np.tan(np.radians(field_y))
+            y = -be.tan(be.radians(field_y))
             z = self.optic.surface_group.positions[0]
 
             y0 = y1 + y
-            z0 = np.ones_like(y1) * z
+            z0 = be.ones_like(y1) * z
 
         return y0, z0
 
@@ -127,9 +127,9 @@ class ParaxialRayTracer:
             x (float or array-like): The input to process.
 
         Returns:
-            np.ndarray: The processed input.
+            be.ndarray: The processed input.
 
         """
-        if np.isscalar(x):
-            return np.array([x], dtype=float)
-        return np.array(x, dtype=float)
+        if be.isscalar(x):
+            return be.array([x], dtype=float)
+        return be.array(x, dtype=float)

@@ -6,7 +6,7 @@ surface in an optical system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
+import optiland.backend as be
 
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
@@ -43,7 +43,7 @@ class ObjectSurface(Surface):
     @property
     def is_infinite(self):
         """Returns True if the surface is infinitely far away, False otherwise."""
-        return np.isinf(self.geometry.cs.z)
+        return be.isinf(self.geometry.cs.z)
 
     def set_aperture(self):
         """Sets the aperture of the surface."""
