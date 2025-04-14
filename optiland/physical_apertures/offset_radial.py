@@ -8,7 +8,6 @@ Kramer Harrison, 2025
 """
 
 import optiland.backend as be
-
 from optiland.physical_apertures.radial import RadialAperture
 
 

@@ -10,10 +10,10 @@ Kramer Harrison, 2024
 
 import warnings
 
-import optiland.backend as be
 import pandas as pd
 from scipy import optimize
 
+import optiland.backend as be
 from optiland.optimization.operand import OperandManager
 from optiland.optimization.variable import VariableManager
 

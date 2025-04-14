@@ -12,10 +12,10 @@ Kramer Harrison, 2024
 import os
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 import pandas as pd
 import vtk
 
+import optiland.backend as be
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem

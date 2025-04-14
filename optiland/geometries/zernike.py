@@ -26,7 +26,6 @@ drpaprika, 2025
 """
 
 import optiland.backend as be
-
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 

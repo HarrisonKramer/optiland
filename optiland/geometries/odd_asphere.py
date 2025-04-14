@@ -17,7 +17,6 @@ Kramer Harrison, 2025
 import warnings
 
 import optiland.backend as be
-
 from optiland.geometries.even_asphere import EvenAsphere
 
 

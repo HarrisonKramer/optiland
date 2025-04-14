@@ -10,7 +10,6 @@ Kramer Harrison, 2025
 from typing import Union
 
 import optiland.backend as be
-
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.rays import PolarizationState

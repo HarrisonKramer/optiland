@@ -5,10 +5,10 @@ This module contains classes for visualizing lenses in 2D and 3D.
 Kramer Harrison, 2024
 """
 
-import optiland.backend as be
 import vtk
 from matplotlib.patches import Polygon
 
+import optiland.backend as be
 from optiland.visualization.utils import revolve_contour, transform, transform_3d
 
 

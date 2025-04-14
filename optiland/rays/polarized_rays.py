@@ -8,7 +8,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland.rays.polarization_state import PolarizationState
 from optiland.rays.real_rays import RealRays
 

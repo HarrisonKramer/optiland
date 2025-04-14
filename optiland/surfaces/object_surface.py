@@ -7,7 +7,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.rays import ParaxialRays, RealRays

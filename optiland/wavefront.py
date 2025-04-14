@@ -12,9 +12,9 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 from scipy.interpolate import griddata
 
+import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.zernike import ZernikeFit
 

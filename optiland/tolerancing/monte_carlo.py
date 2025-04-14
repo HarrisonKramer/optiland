@@ -10,10 +10,10 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 import pandas as pd
 import seaborn as sns
 
+import optiland.backend as be
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
 

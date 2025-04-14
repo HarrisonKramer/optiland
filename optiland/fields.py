@@ -6,8 +6,9 @@ system.
 Kramer Harrison, 2023
 """
 
-import optiland.backend as be
 from scipy.interpolate import NearestNDInterpolator
+
+import optiland.backend as be
 
 
 class Field:

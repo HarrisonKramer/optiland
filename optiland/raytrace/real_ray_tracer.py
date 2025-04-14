@@ -8,7 +8,6 @@ Kramer Harrison, 2025
 """
 
 import optiland.backend as be
-
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
 

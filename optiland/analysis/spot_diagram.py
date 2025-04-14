@@ -8,8 +8,9 @@ Kramer Harrison, 2024
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 from matplotlib import patches
+
+import optiland.backend as be
 
 
 class SpotDiagram:

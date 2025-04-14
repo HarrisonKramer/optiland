@@ -10,9 +10,9 @@ import contextlib
 import os
 from io import StringIO
 
-import optiland.backend as be
 import yaml
 
+import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
 

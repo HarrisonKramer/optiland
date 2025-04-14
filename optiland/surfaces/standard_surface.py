@@ -11,7 +11,6 @@ Kramer Harrison, 2023
 """
 
 import optiland.backend as be
-
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial

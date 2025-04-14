@@ -10,7 +10,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,

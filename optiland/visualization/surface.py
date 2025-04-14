@@ -5,9 +5,9 @@ This module contains classes for visualizing optical surfaces in 2D and 3D.
 Kramer Harrison, 2024
 """
 
-import optiland.backend as be
 import vtk
 
+import optiland.backend as be
 from optiland.physical_apertures import RadialAperture
 from optiland.rays import RealRays
 from optiland.visualization.utils import revolve_contour, transform, transform_3d

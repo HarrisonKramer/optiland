@@ -7,7 +7,6 @@ Kramer Harrison, 2025
 """
 
 import optiland.backend as be
-
 from optiland.rays.paraxial_rays import ParaxialRays
 
 

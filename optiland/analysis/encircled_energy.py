@@ -8,8 +8,8 @@ Kramer Harrison, 2024
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 
+import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
 
 

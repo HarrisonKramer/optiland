@@ -7,8 +7,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import optiland.backend as be
 
+import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.psf import FFTPSF
 

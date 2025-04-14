@@ -7,7 +7,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
 

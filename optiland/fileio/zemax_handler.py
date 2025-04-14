@@ -11,9 +11,9 @@ import os
 import re
 import tempfile
 
-import optiland.backend as be
 import requests
 
+import optiland.backend as be
 from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.materials import AbbeMaterial, BaseMaterial, Material
 

@@ -8,7 +8,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland import wavefront
 from optiland.distribution import GaussianQuadrature
 

@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import optiland.backend as be
-
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,

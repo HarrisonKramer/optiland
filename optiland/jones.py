@@ -14,7 +14,6 @@ Kramer Harrison, 2024
 from abc import ABC, abstractmethod
 
 import optiland.backend as be
-
 from optiland.rays import RealRays
 
 

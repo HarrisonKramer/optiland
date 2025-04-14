@@ -12,7 +12,6 @@ Kramer Harrison, 2024
 from importlib import resources
 
 import optiland.backend as be
-
 from optiland.materials.base import BaseMaterial
 
 

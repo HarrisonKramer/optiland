@@ -8,9 +8,9 @@ a polygon-based aperture.
 Kramer Harrison, 2025
 """
 
-import optiland.backend as be
 from matplotlib.path import Path
 
+import optiland.backend as be
 from optiland.physical_apertures.base import BaseAperture
 
 

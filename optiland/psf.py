@@ -12,10 +12,10 @@ Kramer Harrison, 2023
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import optiland.backend as be
 from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
+import optiland.backend as be
 from optiland.wavefront import Wavefront
 
 

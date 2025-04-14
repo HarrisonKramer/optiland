@@ -7,7 +7,6 @@ Kramer Harrison, 2024
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-
 # Link to the underlying library
 _lib = np
 

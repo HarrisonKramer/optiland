@@ -11,7 +11,6 @@ Kramer Harrison, 2024
 from copy import deepcopy
 
 import optiland.backend as be
-
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface

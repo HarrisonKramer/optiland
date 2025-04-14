@@ -10,7 +10,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-
 from optiland.coatings import BaseCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial

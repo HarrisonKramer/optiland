@@ -5,9 +5,9 @@ This module contains classes for visualizing rays in an optical system.
 Kramer Harrison, 2024
 """
 
-import optiland.backend as be
 import vtk
 
+import optiland.backend as be
 from optiland.visualization.utils import transform
 
 

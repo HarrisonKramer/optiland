@@ -6,6 +6,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+
 import optiland.backend as be
 
 
