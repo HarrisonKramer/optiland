@@ -11,10 +11,9 @@ from scipy.spatial.transform import Rotation as R
 _lib = np
 
 
-def array(x):
-    """Create an array/tensor."""
-    return np.asarray(x, dtype=float)
-
+def array(x, dtype=None, **kwargs):
+    """Create an array/tensor"""
+    return np.array(x, dtype=dtype, **kwargs)
 
 def from_matrix(matrix):
     return R.from_matrix(matrix)
