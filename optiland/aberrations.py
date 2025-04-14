@@ -8,7 +8,7 @@ Modern Optical Engineering by Warren Smith (Chapter 6.3).
 Kramer Harrison, 2023
 """
 
-import numpy as np
+import optiland.backend as be
 
 
 class Aberrations:
@@ -235,7 +235,7 @@ class Aberrations:
             numpy.ndarray: Array of computed term values over surfaces 1 to N-2.
         """
         terms = [term_func(k) for k in range(1, self._N - 1)]
-        return np.array(terms)
+        return be.array(terms)
 
     def _precalculations(self):
         """
@@ -255,10 +255,10 @@ class Aberrations:
 
         # Initialize arrays for intermediate variables over surfaces 1 to N-2.
         num = self._N - 2
-        self._i = np.zeros(num)
-        self._ip = np.zeros(num)
-        self._B = np.zeros(num)
-        self._Bp = np.zeros(num)
+        self._i = be.zeros(num)
+        self._ip = be.zeros(num)
+        self._B = be.zeros(num)
+        self._Bp = be.zeros(num)
 
         for k in range(1, self._N - 1):
             idx = k - 1
@@ -404,12 +404,12 @@ class Aberrations:
             numpy.ndarray: Array of Seidel aberration coefficients.
         """
         factor = self._n[-1] * self._ua[-1] * 2
-        return np.array(
+        return be.array(
             [
-                -np.sum(TSC) * factor,
-                -np.sum(CC) * factor,
-                -np.sum(TAC) * factor,
-                -np.sum(TPC) * factor,
-                -np.sum(DC) * factor,
+                -be.sum(TSC) * factor,
+                -be.sum(CC) * factor,
+                -be.sum(TAC) * factor,
+                -be.sum(TPC) * factor,
+                -be.sum(DC) * factor,
             ]
         )
