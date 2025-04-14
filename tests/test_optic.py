@@ -12,7 +12,7 @@ from optiland.wavelength import WavelengthGroup
 
 def singlet_infinite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(
         index=1,
         thickness=7,
@@ -35,7 +35,7 @@ def singlet_infinite_object():
 
 def singlet_finite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=np.inf, thickness=50)
+    lens.add_surface(index=0, radius=be.inf, thickness=50)
     lens.add_surface(
         index=1,
         thickness=7,
