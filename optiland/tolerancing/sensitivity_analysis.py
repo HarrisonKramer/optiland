@@ -8,7 +8,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pandas as pd
 
 from optiland.tolerancing.core import Tolerancing
@@ -140,7 +140,7 @@ class SensitivityAnalysis:
         )
 
         # handle single row and/or column
-        axes = np.array(axes).reshape(m, n)
+        axes = be.array(axes).reshape(m, n)
 
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):

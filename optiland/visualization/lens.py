@@ -5,7 +5,7 @@ This module contains classes for visualizing lenses in 2D and 3D.
 Kramer Harrison, 2024
 """
 
-import numpy as np
+import optiland.backend as be
 import vtk
 from matplotlib.patches import Polygon
 
@@ -76,8 +76,8 @@ class Lens2D:
             float: The maximum radial extent of all surfaces in the lens.
 
         """
-        extents = np.array([surf.extent for surf in self.surfaces])
-        return np.nanmax(extents, axis=0)
+        extents = be.array([surf.extent for surf in self.surfaces])
+        return be.nanmax(extents, axis=0)
 
     def _extend_surface(self, x, y, z, surface, extent):
         """Extends the surface to the maximum extent.
@@ -93,10 +93,10 @@ class Lens2D:
             tuple: A tuple containing the extended x, y, and z coordinates.
 
         """
-        y_new = np.array([extent])
-        x = np.concatenate([np.array([0]), x, np.array([0])])
-        y = np.concatenate([-y_new, y, y_new])
-        z = np.concatenate([np.array([z[0]]), z, np.array([z[-1]])])
+        y_new = be.array([extent])
+        x = be.concatenate([be.array([0]), x, be.array([0])])
+        y = be.concatenate([-y_new, y, y_new])
+        z = be.concatenate([be.array([z[0]]), z, be.array([z[-1]])])
 
         surface.extent = extent
 

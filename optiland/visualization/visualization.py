@@ -12,7 +12,7 @@ Kramer Harrison, 2024
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be   
 import pandas as pd
 import vtk
 
@@ -277,7 +277,7 @@ class LensInfoViewer:
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
-        return np.diff(self.optic.surface_group.positions.ravel(), append=np.nan)
+        return be.diff(self.optic.surface_group.positions.ravel(), append=be.nan)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""

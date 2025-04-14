@@ -10,7 +10,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pandas as pd
 import seaborn as sns
 
@@ -137,7 +137,7 @@ class MonteCarlo(SensitivityAnalysis):
         """
         df = self._results
         corr = df.corr()
-        mask = np.triu(np.ones_like(corr, dtype=bool))
+        mask = be.triu(be.ones_like(corr, dtype=bool))
         f, ax = plt.subplots(figsize=figsize)
         cmap = sns.diverging_palette(230, 20, as_cmap=True)
         sns.heatmap(
@@ -201,8 +201,8 @@ class MonteCarlo(SensitivityAnalysis):
 
             elif plot_type == "cdf":
                 data = df[key]
-                data_sorted = np.sort(data)
-                cdf = np.arange(1, len(data_sorted) + 1) / len(data_sorted)
+                data_sorted = be.sort(data)
+                cdf = be.arange(1, len(data_sorted) + 1) / len(data_sorted)
                 axes[i].plot(data_sorted, cdf, color=colors[i])
                 axes[i].fill_between(data_sorted, 0, cdf, color=colors[i], alpha=0.3)
                 axes[i].grid()
