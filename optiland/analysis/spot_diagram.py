@@ -11,8 +11,6 @@ import matplotlib.pyplot as plt
 import optiland.backend as be
 from matplotlib import patches
 
-plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
-
 
 class SpotDiagram:
     """Spot diagram class

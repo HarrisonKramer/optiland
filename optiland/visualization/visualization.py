@@ -20,8 +20,6 @@ from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
-plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
-
 
 class OpticViewer:
     """A class used to visualize optical systems.

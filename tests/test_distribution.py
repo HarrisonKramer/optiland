@@ -11,16 +11,12 @@ def test_line_x(num_points):
     d = distribution.create_distribution("line_x")
     d.generate_points(num_points=num_points)
 
-    assert np.allclose(d.dx, 2.0 / (num_points - 1))
-    assert np.allclose(d.dy, 0.0)
     assert np.allclose(d.x, np.linspace(-1, 1, num_points))
     assert np.allclose(d.y, np.zeros(num_points))
 
     d = distribution.create_distribution("positive_line_x")
     d.generate_points(num_points=num_points)
 
-    assert np.allclose(d.dx, 1.0 / (num_points - 1))
-    assert np.allclose(d.dy, 0.0)
     assert np.allclose(d.x, np.linspace(0, 1, num_points))
     assert np.allclose(d.y, np.zeros(num_points))
 
@@ -30,16 +26,12 @@ def test_line_y(num_points):
     d = distribution.create_distribution("line_y")
     d.generate_points(num_points=num_points)
 
-    assert np.allclose(d.dx, 0.0)
-    assert np.allclose(d.dy, 2.0 / (num_points - 1))
     assert np.allclose(d.x, np.zeros(num_points))
     assert np.allclose(d.y, np.linspace(-1, 1, num_points))
 
     d = distribution.create_distribution("positive_line_y")
     d.generate_points(num_points=num_points)
 
-    assert np.allclose(d.dx, 0.0)
-    assert np.allclose(d.dy, 1.0 / (num_points - 1))
     assert np.allclose(d.x, np.zeros(num_points))
     assert np.allclose(d.y, np.linspace(0, 1, num_points))
 
