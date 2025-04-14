@@ -1,6 +1,6 @@
 import warnings
 
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.optimization import optimization

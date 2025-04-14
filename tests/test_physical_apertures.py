@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 
 from optiland.physical_apertures import (
     DifferenceAperture,

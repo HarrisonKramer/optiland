@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coordinate_system import CoordinateSystem
@@ -51,8 +51,10 @@ class TestReciprocalRadiusVariable:
         # Expected reciprocal = 1 / radius; radius from TestRadiusVariable ≈ 553.260
         expected = self.scaling * (1.0 / self.radius_var.get_value())
         assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
-        a=str(self.reciprocal_radius_var)
-        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - scaled value: 0.50')
+        a = str(self.reciprocal_radius_var)
+        assert a.startswith(
+            "Reciprocal Radius of Curvature - Surface 1 - scaled value: 0.50"
+        )
 
     def test_get_value_without_scaling(self):
         self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(
@@ -60,9 +62,10 @@ class TestReciprocalRadiusVariable:
         )
         expected = 1.0 / self.radius_var.get_value()
         assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
-        a=str(self.reciprocal_radius_var)
-        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - unscaled value: 0.050')
-
+        a = str(self.reciprocal_radius_var)
+        assert a.startswith(
+            "Reciprocal Radius of Curvature - Surface 1 - unscaled value: 0.050"
+        )
 
     def test_update_value(self):
         # Update reciprocal value to 0.25, expect new radius = 1/0.25 = 4.0

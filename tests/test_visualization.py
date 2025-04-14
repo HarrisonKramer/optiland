@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import fields

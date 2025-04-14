@@ -1,6 +1,6 @@
 from importlib import resources
 
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import materials

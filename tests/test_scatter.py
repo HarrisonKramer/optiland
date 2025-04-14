@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 
 from optiland import scatter
 from optiland.rays import RealRays

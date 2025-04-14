@@ -1,5 +1,5 @@
 import pytest
-import numpy as np
+import optiland.backend as be
 
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
@@ -403,7 +403,9 @@ class TestOptic:
         assert lens_combined.surface_group.num_surfaces == 6
 
         # test that a ray trace through the combined lens works
-        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
         assert rays is not None
 
     def test_add_finite_object(self):
@@ -413,5 +415,7 @@ class TestOptic:
         assert lens_combined.surface_group.num_surfaces == 6
 
         # test that a ray trace through the combined lens works
-        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
         assert rays is not None
