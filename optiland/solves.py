@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 
 import optiland.backend as be
 
+
 class BaseSolve(ABC):
     """Applies a solve operation.
 

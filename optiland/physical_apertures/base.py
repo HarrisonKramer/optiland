@@ -13,7 +13,7 @@ Kramer Harrison, 2024
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
-import optiland.backend as be   
+import optiland.backend as be
 
 
 class BaseAperture(ABC):

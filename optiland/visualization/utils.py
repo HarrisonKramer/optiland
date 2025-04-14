@@ -5,7 +5,7 @@ This module contains utility functions for visualization tasks.
 Kramer Harrison, 2024
 """
 
-import optiland.backend as be   
+import optiland.backend as be
 import vtk
 
 from optiland.rays import RealRays

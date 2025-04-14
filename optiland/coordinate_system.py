@@ -9,7 +9,7 @@ system.
 Kramer Harrison, 2024
 """
 
-import optiland.backend as be   
+import optiland.backend as be
 from scipy.spatial.transform import Rotation as R
 
 from optiland.rays import RealRays

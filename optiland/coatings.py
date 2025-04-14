@@ -7,7 +7,7 @@ Kramer Harrison, 2024
 
 from abc import ABC, abstractmethod
 
-import optiland.backend as be   
+import optiland.backend as be
 
 from optiland.jones import JonesFresnel
 from optiland.materials import BaseMaterial
