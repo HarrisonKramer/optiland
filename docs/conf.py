@@ -44,6 +44,7 @@ autodoc_mock_imports = [
     "numba",
     "pandas",
     "vtk",
+    "torch",
 ]
 
 pygments_style = "sphinx"
