@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coatings import SimpleCoating
@@ -46,16 +46,16 @@ class TestParaxialSurface:
         assert self.surface.surface_type == "paraxial"
 
     def test_trace_paraxial_rays(self):
-        y = np.array([1])
-        u = np.array([0])
-        z = np.array([-10])
-        w = np.array([1])
+        y = be.array([1])
+        u = be.array([0])
+        z = be.array([-10])
+        w = be.array([1])
         rays = ParaxialRays(y, u, z, w)
         traced_rays = self.surface.trace(rays)
         assert isinstance(traced_rays, ParaxialRays)
 
     def test_trace_real_rays(self):
-        x = np.random.rand(10)
+        x = be.random.rand(10)
         rays = RealRays(x, x, x, x, x, x, x, x)
         traced_rays = self.surface.trace(rays)
         assert isinstance(traced_rays, RealRays)
@@ -64,7 +64,7 @@ class TestParaxialSurface:
         lens = Optic()
 
         # add surfaces
-        lens.add_surface(index=0, thickness=np.inf)
+        lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(
             index=1,
             surface_type="paraxial",
@@ -94,10 +94,10 @@ class TestParaxialSurface:
         )
 
         # confirm all points exactly on axis
-        assert np.allclose(rays.y, 0, atol=1e-10)
+        assert be.allclose(rays.y, 0, atol=1e-10)
 
         # confirm all points at exact same z
-        assert np.allclose(rays.z, 100, atol=1e-10)
+        assert be.allclose(rays.z, 100, atol=1e-10)
 
     def test_to_dict(self):
         data = self.surface.to_dict()
@@ -118,13 +118,13 @@ class TestParaxialSurface:
         assert surface.bsdf.to_dict() == self.bsdf.to_dict()
         assert surface.is_reflective
         assert surface.semi_aperture is None
-        assert np.array_equal(surface.y, np.empty(0))
-        assert np.array_equal(surface.u, np.empty(0))
-        assert np.array_equal(surface.x, np.empty(0))
-        assert np.array_equal(surface.z, np.empty(0))
-        assert np.array_equal(surface.L, np.empty(0))
-        assert np.array_equal(surface.M, np.empty(0))
-        assert np.array_equal(surface.N, np.empty(0))
-        assert np.array_equal(surface.intensity, np.empty(0))
-        assert np.array_equal(surface.aoi, np.empty(0))
-        assert np.array_equal(surface.opd, np.empty(0))
+        assert be.array_equal(surface.y, be.empty(0))
+        assert be.array_equal(surface.u, be.empty(0))
+        assert be.array_equal(surface.x, be.empty(0))
+        assert be.array_equal(surface.z, be.empty(0))
+        assert be.array_equal(surface.L, be.empty(0))
+        assert be.array_equal(surface.M, be.empty(0))
+        assert be.array_equal(surface.N, be.empty(0))
+        assert be.array_equal(surface.intensity, be.empty(0))
+        assert be.array_equal(surface.aoi, be.empty(0))
+        assert be.array_equal(surface.opd, be.empty(0))

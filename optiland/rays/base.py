@@ -5,7 +5,7 @@ This module contains the base class for rays defined in a 3D space.
 Kramer Harrison, 2024
 """
 
-import numpy as np
+import optiland.backend as be
 
 
 class BaseRays:
@@ -36,10 +36,10 @@ class BaseRays:
         of floats.
 
         Args:
-            data (int, float, or np.ndarray): The input data to be processed.
+            data (int, float, or be.ndarray): The input data to be processed.
 
         Returns:
-            np.ndarray: The processed data as a 1-dimensional NumPy array of
+            be.ndarray: The processed data as a 1-dimensional NumPy array of
                 floats.
 
         Raises:
@@ -48,11 +48,11 @@ class BaseRays:
 
         """
         if isinstance(data, (int, float)):
-            return np.array([data], dtype=float)
+            return be.array([data], dtype=float)
         if isinstance(data, list):
-            return np.array(data, dtype=float)
-        if isinstance(data, np.ndarray):
-            return np.ravel(data).astype(float)
+            return be.array(data, dtype=float)
+        if isinstance(data, be.ndarray):
+            return be.ravel(data).astype(float)
         raise ValueError(
             "Unsupported input type. Must be a scalar, a list, or a NumPy array.",
         )

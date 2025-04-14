@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.samples.simple import Edmund_49_847
@@ -56,7 +56,7 @@ def test_add_operand_no_target(setup_tolerancing):
     operand = tolerancing.operands[0]
     assert operand.operand_type == operand_type
     assert operand.input_data == input_data
-    assert np.isclose(operand.target, target)
+    assert be.isclose(operand.target, target)
     assert operand.weight == weight
 
 
@@ -100,7 +100,7 @@ def test_evaluate(setup_tolerancing):
     tolerancing.add_operand(operand_type="f2", input_data={"optic": optic})
 
     result = tolerancing.evaluate()
-    assert np.allclose(result, [optic.paraxial.f1(), optic.paraxial.f2()])
+    assert be.allclose(result, [optic.paraxial.f1(), optic.paraxial.f2()])
 
 
 def test_reset(setup_tolerancing):

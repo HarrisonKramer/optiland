@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.rays import (
@@ -51,7 +51,7 @@ def test__process_input():
     # Test scalar input
     data = 1
     processed_data = rays._process_input(data)
-    assert isinstance(processed_data, np.ndarray)
+    assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
     assert processed_data.dtype == float
     assert processed_data[0] == 1.0
@@ -59,18 +59,18 @@ def test__process_input():
     # Test float input
     data = 2.5
     processed_data = rays._process_input(data)
-    assert isinstance(processed_data, np.ndarray)
+    assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
     assert processed_data.dtype == float
     assert processed_data[0] == 2.5
 
     # Test numpy array input
-    data = np.array([3, 4, 5])
+    data = be.array([3, 4, 5])
     processed_data = rays._process_input(data)
-    assert isinstance(processed_data, np.ndarray)
+    assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (3,)
     assert processed_data.dtype == float
-    assert np.array_equal(processed_data, np.array([3.0, 4.0, 5.0]))
+    assert be.array_equal(processed_data, be.array([3.0, 4.0, 5.0]))
 
     # Test unsupported input type
     data = "invalid"
@@ -90,47 +90,47 @@ def test_real_rays_init():
 
     rays = RealRays(x, y, z, L, M, N, intensity, wavelength)
 
-    assert isinstance(rays.x, np.ndarray)
+    assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
     assert rays.x.dtype == float
     assert rays.x[0] == 1.0
 
-    assert isinstance(rays.y, np.ndarray)
+    assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
     assert rays.y.dtype == float
     assert rays.y[0] == 2.0
 
-    assert isinstance(rays.z, np.ndarray)
+    assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
     assert rays.z.dtype == float
     assert rays.z[0] == 3.0
 
-    assert isinstance(rays.L, np.ndarray)
+    assert isinstance(rays.L, be.ndarray)
     assert rays.L.shape == (1,)
     assert rays.L.dtype == float
     assert rays.L[0] == 4.0
 
-    assert isinstance(rays.M, np.ndarray)
+    assert isinstance(rays.M, be.ndarray)
     assert rays.M.shape == (1,)
     assert rays.M.dtype == float
     assert rays.M[0] == 5.0
 
-    assert isinstance(rays.N, np.ndarray)
+    assert isinstance(rays.N, be.ndarray)
     assert rays.N.shape == (1,)
     assert rays.N.dtype == float
     assert rays.N[0] == 6.0
 
-    assert isinstance(rays.i, np.ndarray)
+    assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
     assert rays.i.dtype == float
     assert rays.i[0] == 7.0
 
-    assert isinstance(rays.w, np.ndarray)
+    assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
     assert rays.w.dtype == float
     assert rays.w[0] == 8.0
 
-    assert isinstance(rays.opd, np.ndarray)
+    assert isinstance(rays.opd, be.ndarray)
     assert rays.opd.shape == (1,)
     assert rays.opd.dtype == float
     assert rays.opd[0] == 0.0
@@ -139,7 +139,7 @@ def test_real_rays_init():
 def test_rotate_x():
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
-    rays.rotate_x(np.pi / 2)
+    rays.rotate_x(be.pi / 2)
 
     assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(-3.0, abs=1e-10)
@@ -148,7 +148,7 @@ def test_rotate_x():
     assert rays.M[0] == pytest.approx(-1.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(0.0, abs=1e-10)
 
-    rays.rotate_x(-np.pi / 2)
+    rays.rotate_x(-be.pi / 2)
 
     assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
@@ -157,7 +157,7 @@ def test_rotate_x():
     assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
 
-    rays.rotate_x(np.pi)
+    rays.rotate_x(be.pi)
 
     assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(-2.0, abs=1e-10)
@@ -179,7 +179,7 @@ def test_rotate_x():
 def test_rotate_y():
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
-    rays.rotate_y(np.pi / 2)
+    rays.rotate_y(be.pi / 2)
 
     assert rays.x[0] == pytest.approx(3.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
@@ -188,7 +188,7 @@ def test_rotate_y():
     assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(0.0, abs=1e-10)
 
-    rays.rotate_y(-np.pi / 2)
+    rays.rotate_y(-be.pi / 2)
 
     assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
@@ -197,7 +197,7 @@ def test_rotate_y():
     assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
 
-    rays.rotate_y(np.pi)
+    rays.rotate_y(be.pi)
 
     assert rays.x[0] == pytest.approx(-1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
@@ -219,7 +219,7 @@ def test_rotate_y():
 def test_rotate_z():
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
-    rays.rotate_z(np.pi / 2)
+    rays.rotate_z(be.pi / 2)
 
     assert rays.x[0] == pytest.approx(-2.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(1.0, abs=1e-10)
@@ -228,7 +228,7 @@ def test_rotate_z():
     assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
 
-    rays.rotate_z(-np.pi / 2)
+    rays.rotate_z(-be.pi / 2)
 
     assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
@@ -237,7 +237,7 @@ def test_rotate_z():
     assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
     assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
 
-    rays.rotate_z(np.pi)
+    rays.rotate_z(be.pi)
 
     assert rays.x[0] == pytest.approx(-1.0, abs=1e-10)
     assert rays.y[0] == pytest.approx(-2.0, abs=1e-10)
@@ -318,32 +318,32 @@ def test_paraxial_rays_init():
 
     rays = ParaxialRays(y, u, z, wavelength)
 
-    assert isinstance(rays.x, np.ndarray)
+    assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
     assert rays.x.dtype == float
     assert rays.x[0] == pytest.approx(0.0, abs=1e-10)
 
-    assert isinstance(rays.y, np.ndarray)
+    assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
     assert rays.y.dtype == float
     assert rays.y[0] == pytest.approx(1.0, abs=1e-10)
 
-    assert isinstance(rays.z, np.ndarray)
+    assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
     assert rays.z.dtype == float
     assert rays.z[0] == pytest.approx(-10.0, abs=1e-10)
 
-    assert isinstance(rays.u, np.ndarray)
+    assert isinstance(rays.u, be.ndarray)
     assert rays.u.shape == (1,)
     assert rays.u.dtype == float
     assert rays.u[0] == pytest.approx(0.1, abs=1e-10)
 
-    assert isinstance(rays.i, np.ndarray)
+    assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
     assert rays.i.dtype == float
     assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
 
-    assert isinstance(rays.w, np.ndarray)
+    assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
     assert rays.w.dtype == float
     assert rays.w[0] == pytest.approx(2.0, abs=1e-10)
@@ -410,8 +410,8 @@ class TestPolarizationState:
     def test_constructor(self):
         state = PolarizationState(is_polarized=True, Ex=1, Ey=2, phase_x=0, phase_y=1)
         assert state.is_polarized is True
-        assert state.Ex == 1 / np.sqrt(5)
-        assert state.Ey == 2 / np.sqrt(5)
+        assert state.Ex == 1 / be.sqrt(5)
+        assert state.Ey == 2 / be.sqrt(5)
         assert state.phase_x == 0
         assert state.phase_y == 1
 
@@ -464,34 +464,34 @@ class TestCreatePolarization:
     def test_create_polarization_linear_45(self):
         state = create_polarization("L+45")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
         assert state.phase_x == pytest.approx(0.0, abs=1e-10)
         assert state.phase_y == pytest.approx(0.0, abs=1e-10)
 
     def test_create_polarization_linear_minus_45(self):
         state = create_polarization("L-45")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(-np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(-be.sqrt(2) / 2, abs=1e-10)
         assert state.phase_x == pytest.approx(0.0, abs=1e-10)
         assert state.phase_y == pytest.approx(0.0, abs=1e-10)
 
     def test_create_polarization_right_circular(self):
         state = create_polarization("RCP")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
         assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(-np.pi / 2, abs=1e-10)
+        assert state.phase_y == pytest.approx(-be.pi / 2, abs=1e-10)
 
     def test_create_polarization_left_circular(self):
         state = create_polarization("LCP")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(np.sqrt(2) / 2, abs=1e-10)
+        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
+        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
         assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(np.pi / 2, abs=1e-10)
+        assert state.phase_y == pytest.approx(be.pi / 2, abs=1e-10)
 
     def test_create_polarization_invalid(self):
         with pytest.raises(ValueError):
@@ -500,47 +500,47 @@ class TestCreatePolarization:
 
 class TestPolarizedRays:
     def test_init(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([0.0])
-        M = np.array([0.0])
-        N = np.array([1.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([0.0])
+        M = be.array([0.0])
+        N = be.array([1.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
 
-        assert isinstance(rays.p, np.ndarray)
+        assert isinstance(rays.p, be.ndarray)
         assert rays.p.shape == (1, 3, 3)
-        assert np.array_equal(rays.p[0], np.eye(3))
+        assert be.array_equal(rays.p[0], be.eye(3))
 
     def test_get_output_field(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([0.0])
-        M = np.array([0.0])
-        N = np.array([1.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([0.0])
+        M = be.array([0.0])
+        N = be.array([1.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
-        E = np.array([[1.0, 0.0, 0.0]])
+        E = be.array([[1.0, 0.0, 0.0]])
 
         output_field = rays.get_output_field(E)
         assert output_field.shape == (1, 3)
-        assert np.array_equal(output_field, E)
+        assert be.array_equal(output_field, E)
 
     def test_update_intensity(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([0.0])
-        M = np.array([0.0])
-        N = np.array([1.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([0.0])
+        M = be.array([0.0])
+        N = be.array([1.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
         state = PolarizationState(
@@ -562,53 +562,53 @@ class TestPolarizedRays:
         assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
 
     def test_update(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([0.0])
-        M = np.array([0.0])
-        N = np.array([1.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([0.0])
+        M = be.array([0.0])
+        N = be.array([1.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
-        rays.L0 = np.array([0.0])
-        rays.M0 = np.array([0.0])
-        rays.N0 = np.array([1.0])
-        jones_matrix = np.array([[[1, 0, 0], [0, 1, 0], [0, 0, 1]]])
+        rays.L0 = be.array([0.0])
+        rays.M0 = be.array([0.0])
+        rays.N0 = be.array([1.0])
+        jones_matrix = be.array([[[1, 0, 0], [0, 1, 0], [0, 0, 1]]])
 
         rays.update(jones_matrix)
         assert rays.p.shape == (1, 3, 3)
-        assert np.array_equal(rays.p, jones_matrix)
+        assert be.array_equal(rays.p, jones_matrix)
 
         # test case when k not orthogonal to N0
-        rays.L0 = np.array([0.0])
-        rays.M0 = np.array([0.1])
-        rays.N0 = np.sqrt([1 - 0.1**2])
+        rays.L0 = be.array([0.0])
+        rays.M0 = be.array([0.1])
+        rays.N0 = be.sqrt([1 - 0.1**2])
         rays.update(jones_matrix)
         assert rays.p.shape == (1, 3, 3)
-        jones_matrix = np.array(
+        jones_matrix = be.array(
             [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]],
         )
-        assert np.allclose(rays.p, jones_matrix, atol=1e-10)
+        assert be.allclose(rays.p, jones_matrix, atol=1e-10)
 
         # test case when jones = None
-        rays.L0 = np.array([0.0])
-        rays.M0 = np.array([0.0])
-        rays.N0 = np.array([1.0])
+        rays.L0 = be.array([0.0])
+        rays.M0 = be.array([0.0])
+        rays.N0 = be.array([1.0])
         rays.update(None)
         assert rays.p.shape == (1, 3, 3)
-        assert np.allclose(rays.p, jones_matrix, atol=1e-10)
+        assert be.allclose(rays.p, jones_matrix, atol=1e-10)
 
     def test_get_3d_electric_field(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([0.0])
-        M = np.array([0.0])
-        N = np.array([1.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([0.0])
+        M = be.array([0.0])
+        N = be.array([1.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
         state = PolarizationState(
@@ -621,22 +621,22 @@ class TestPolarizedRays:
 
         E = rays._get_3d_electric_field(state)
         assert E.shape == (1, 3)
-        assert np.allclose(E, np.array([[1.0, 0.0, 0.0]]), atol=1e-10)
+        assert be.allclose(E, be.array([[1.0, 0.0, 0.0]]), atol=1e-10)
 
     def test_get_3d_electric_field_error(self):
-        x = np.array([1.0])
-        y = np.array([2.0])
-        z = np.array([3.0])
-        L = np.array([1.0])  # k-vector propagates in x-direction
-        M = np.array([0.0])
-        N = np.array([0.0])
-        intensity = np.array([1.0])
-        wavelength = np.array([1.0])
+        x = be.array([1.0])
+        y = be.array([2.0])
+        z = be.array([3.0])
+        L = be.array([1.0])  # k-vector propagates in x-direction
+        M = be.array([0.0])
+        N = be.array([0.0])
+        intensity = be.array([1.0])
+        wavelength = be.array([1.0])
 
         rays = PolarizedRays(x, y, z, L, M, N, intensity, wavelength)
-        rays._L0 = np.array([1.0])
-        rays._M0 = np.array([0.0])
-        rays._N0 = np.array([0.0])
+        rays._L0 = be.array([1.0])
+        rays._M0 = be.array([0.0])
+        rays._N0 = be.array([0.0])
         state = PolarizationState(is_polarized=True, Ex=1, Ey=0, phase_x=0, phase_y=0)
 
         with pytest.raises(ValueError):
@@ -647,8 +647,8 @@ class TestRayGenerator:
     def test_generate_rays(self):
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         wavelength = 0.55
 
         lens = TessarLens()
@@ -665,14 +665,14 @@ class TestRayGenerator:
         assert rays.i.shape == (2,)
         assert rays.w.shape == (2,)
 
-        assert np.allclose(rays.x, np.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert np.allclose(rays.y, np.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert np.allclose(rays.z, np.array([-0.88839505, -0.88839505]), atol=1e-8)
-        assert np.allclose(rays.L, np.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert np.allclose(rays.M, np.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert np.allclose(rays.N, np.array([0.96882189, 0.96882189]), atol=1e-8)
-        assert np.allclose(rays.i, np.array([1.0, 1.0]), atol=1e-8)
-        assert np.allclose(rays.w, np.array([0.55, 0.55]), atol=1e-8)
+        assert be.allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert be.allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert be.allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
+        assert be.allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert be.allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert be.allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
+        assert be.allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
+        assert be.allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
     def test_generate_rays_telecentric(self):
         lens = UVProjectionLens()
@@ -685,14 +685,14 @@ class TestRayGenerator:
         wavelength = 0.248
 
         rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        assert np.isclose(rays.x[0], 0.0, atol=1e-8)
-        assert np.isclose(rays.y[0], 48.0, atol=1e-8)
-        assert np.isclose(rays.z[0], -110.85883544, atol=1e-8)
-        assert np.isclose(rays.L[0], 0.10674041, atol=1e-8)
-        assert np.isclose(rays.M[0], 0.0, atol=1e-8)
-        assert np.isclose(rays.N[0], 0.99428692, atol=1e-8)
-        assert np.isclose(rays.i[0], 1.0, atol=1e-8)
-        assert np.isclose(rays.w[0], 0.248, atol=1e-8)
+        assert be.isclose(rays.x[0], 0.0, atol=1e-8)
+        assert be.isclose(rays.y[0], 48.0, atol=1e-8)
+        assert be.isclose(rays.z[0], -110.85883544, atol=1e-8)
+        assert be.isclose(rays.L[0], 0.10674041, atol=1e-8)
+        assert be.isclose(rays.M[0], 0.0, atol=1e-8)
+        assert be.isclose(rays.N[0], 0.99428692, atol=1e-8)
+        assert be.isclose(rays.i[0], 1.0, atol=1e-8)
+        assert be.isclose(rays.w[0], 0.248, atol=1e-8)
 
     def test_generate_rays_invalid_field_type(self):
         lens = UVProjectionLens()
@@ -700,8 +700,8 @@ class TestRayGenerator:
 
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         wavelength = 0.55
 
         lens.set_aperture("EPD", 1.0)
@@ -723,8 +723,8 @@ class TestRayGenerator:
 
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         wavelength = 0.55
 
         # polarization type is 'ignore' but lens has coatings
@@ -734,8 +734,8 @@ class TestRayGenerator:
     def test_generate_polarized_rays(self):
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         wavelength = 0.55
 
         lens = TessarLens()
@@ -755,14 +755,14 @@ class TestRayGenerator:
         assert rays.w.shape == (2,)
         assert rays.p.shape == (2, 3, 3)
 
-        assert np.allclose(rays.x, np.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert np.allclose(rays.y, np.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert np.allclose(rays.z, np.array([-0.88839505, -0.88839505]), atol=1e-8)
-        assert np.allclose(rays.L, np.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert np.allclose(rays.M, np.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert np.allclose(rays.N, np.array([0.96882189, 0.96882189]), atol=1e-8)
-        assert np.allclose(rays.i, np.array([1.0, 1.0]), atol=1e-8)
-        assert np.allclose(rays.w, np.array([0.55, 0.55]), atol=1e-8)
+        assert be.allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert be.allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert be.allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
+        assert be.allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert be.allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert be.allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
+        assert be.allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
+        assert be.allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
     def test_get_ray_origins_infinite_object(self):
         lens = TessarLens()
@@ -770,8 +770,8 @@ class TestRayGenerator:
 
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         vx = 0.0
         vy = 0.0
 
@@ -788,8 +788,8 @@ class TestRayGenerator:
 
         Hx = 0.5
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         vx = 0.0
         vy = 0.1
 
@@ -803,8 +803,8 @@ class TestRayGenerator:
 
         Hx = 0.0
         Hy = 0.5
-        Px = np.array([0.1, 0.2])
-        Py = np.array([0.1, 0.2])
+        Px = be.array([0.1, 0.2])
+        Py = be.array([0.1, 0.2])
         vx = 0.0
         vy = 0.1
 

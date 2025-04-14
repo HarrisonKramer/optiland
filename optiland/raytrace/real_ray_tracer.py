@@ -7,8 +7,7 @@ rays and the surface group of the optical system to trace them.
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
 
@@ -103,7 +102,7 @@ class RealRayTracer:
         Raises:
             ValueError: If the coordinates are not within the range (-1, 1).
         """
-        if not np.all((x >= -1) & (x <= 1)) or not np.all((y >= -1) & (y <= 1)):
+        if not be.all((x >= -1) & (x <= 1)) or not be.all((y >= -1) & (y <= 1)):
             raise ValueError(
                 f"Normalized {coord_type} coordinates must be within (-1, 1)"
             )
@@ -117,13 +116,13 @@ class RealRayTracer:
         Returns:
             list: A list of numpy arrays, all of the same size.
         """
-        max_size = max([np.size(arr) for arr in arrays])
+        max_size = max([be.size(arr) for arr in arrays])
         return [
             (
-                np.full(max_size, value)
+                be.full(max_size, value)
                 if isinstance(value, (float, int))
                 else value
-                if isinstance(value, np.ndarray)
+                if isinstance(value, be.ndarray)
                 else None
             )
             for value in arrays

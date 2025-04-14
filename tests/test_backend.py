@@ -17,12 +17,12 @@ def reset_backend_state():
         be.set_backend("numpy")
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def cleanup_dummy_backend():
     yield
-    backends = be.__getattr__.__globals__["_backends"]
-    if "dummy" in backends:
-        del backends["dummy"]
+    # Remove any dummy backends that might have been added
+    if "dummy" in be.__getattr__.__globals__["_backends"]:
+        del be.__getattr__.__globals__["_backends"]["dummy"]
     # Ensure we're back to numpy
     be.set_backend("numpy")
 

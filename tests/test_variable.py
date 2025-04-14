@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coordinate_system import CoordinateSystem
@@ -19,11 +19,11 @@ class TestRadiusVariable:
         self.radius_var = variable.RadiusVariable(self.optic, 1)
 
     def test_get_value(self):
-        assert np.isclose(self.radius_var.get_value(), 4.5325999999999995)
+        assert be.isclose(self.radius_var.get_value(), 4.5325999999999995)
 
     def test_update_value(self):
         self.radius_var.update_value(5.0)
-        assert np.isclose(self.radius_var.get_value(), 5.0)
+        assert be.isclose(self.radius_var.get_value(), 5.0)
 
 
 class TestReciprocalRadiusVariable:
@@ -50,37 +50,40 @@ class TestReciprocalRadiusVariable:
     def test_get_value(self):
         # Expected reciprocal = 1 / radius; radius from TestRadiusVariable ≈ 553.260
         expected = self.scaling * (1.0 / self.radius_var.get_value())
-        assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
-        a=str(self.reciprocal_radius_var)
-        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - scaled value: 0.50')
+        assert be.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
+        a = str(self.reciprocal_radius_var)
+        assert a.startswith(
+            "Reciprocal Radius of Curvature - Surface 1 - scaled value: 0.50"
+        )
 
     def test_get_value_without_scaling(self):
         self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(
             self.optic, 1, apply_scaling=False
         )
         expected = 1.0 / self.radius_var.get_value()
-        assert np.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
-        a=str(self.reciprocal_radius_var)
-        assert a.startswith('Reciprocal Radius of Curvature - Surface 1 - unscaled value: 0.050')
-
+        assert be.isclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
+        a = str(self.reciprocal_radius_var)
+        assert a.startswith(
+            "Reciprocal Radius of Curvature - Surface 1 - unscaled value: 0.050"
+        )
 
     def test_update_value(self):
         # Update reciprocal value to 0.25, expect new radius = 1/0.25 = 4.0
         self.reciprocal_radius_var.update_value(0.25)
         expected_radius = self.scaling * (1.0 / 0.25)
-        assert np.isclose(self.radius_var.get_value(), expected_radius, atol=1e-4)
-        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.25, atol=1e-4)
+        assert be.isclose(self.radius_var.get_value(), expected_radius, atol=1e-4)
+        assert be.isclose(self.reciprocal_radius_var.get_value(), 0.25, atol=1e-4)
 
     def test_get_value_infinity(self):
         # Set the surface radius to 0 so reciprocal becomes infinity (division by zero)
         self.radius_var.update_value(0.0)
         val = self.reciprocal_radius_var.get_value()
-        assert val == np.inf
+        assert val == be.inf
 
     def test_update_value_zero(self):
         # Update reciprocal value to 0 -> new radius set to infinity, so reciprocal becomes 0
         self.reciprocal_radius_var.update_value(0.0)
-        assert np.isclose(self.reciprocal_radius_var.get_value(), 0.0)
+        assert be.isclose(self.reciprocal_radius_var.get_value(), 0.0)
 
     def test_optimization(self):
         # Add the reciprocal radius variable for the first surface
@@ -97,14 +100,14 @@ class TestReciprocalRadiusVariable:
         expected_radius = 19.93  # Expected value from the initial definition
         optimized_radius = self.radius_var.get_value()
         # just make sure the final value is in the ballpark, and there were no exceptions thrown
-        assert np.isclose(optimized_radius, expected_radius, atol=5)
+        assert be.isclose(optimized_radius, expected_radius, atol=5)
 
     def test_optimization_with_flat_surface(self):
         # Add the reciprocal radius variable for the first surface
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
 
         # Make the first surface mathematically flat
-        self.radius_var.update_value(-np.inf)
+        self.radius_var.update_value(-be.inf)
 
         # Run the optimization
         optimizer = OptimizerGeneric(self.problem)
@@ -119,7 +122,7 @@ class TestReciprocalRadiusVariable:
         expected_radius = 19.93  # Expected value from the initial definition
         optimized_radius = self.radius_var.get_value()
         # just make sure the final value is in the ballpark, and there were no exceptions thrown
-        assert np.isclose(optimized_radius, expected_radius, atol=5)
+        assert be.isclose(optimized_radius, expected_radius, atol=5)
 
 
 class TestConicVariable:
@@ -129,19 +132,19 @@ class TestConicVariable:
         self.conic_var = variable.ConicVariable(self.optic, 1)
 
     def test_get_value(self):
-        assert np.isclose(self.conic_var.get_value(), 0.0)
+        assert be.isclose(self.conic_var.get_value(), 0.0)
 
     def test_update_value(self):
         self.conic_var.update_value(-0.5)
-        assert np.isclose(self.conic_var.get_value(), -0.5)
+        assert be.isclose(self.conic_var.get_value(), -0.5)
 
     def test_scale_value(self):
         self.conic_var.scale(2.0)
-        assert np.isclose(self.conic_var.get_value(), 0.0)
+        assert be.isclose(self.conic_var.get_value(), 0.0)
 
     def test_inverse_scale_value(self):
         self.conic_var.inverse_scale(2.0)
-        assert np.isclose(self.conic_var.get_value(), 0.0)
+        assert be.isclose(self.conic_var.get_value(), 0.0)
 
     def test_string_representation(self):
         assert str(self.conic_var) == "Conic Constant, Surface 1"
@@ -154,11 +157,11 @@ class TestThicknessVariable:
         self.thickness_var = variable.ThicknessVariable(self.optic, 2)
 
     def test_get_value(self):
-        assert np.isclose(self.thickness_var.get_value(), -0.5599999999999994)
+        assert be.isclose(self.thickness_var.get_value(), -0.5599999999999994)
 
     def test_update_value(self):
         self.thickness_var.update_value(-0.6)
-        assert np.isclose(self.thickness_var.get_value(), -0.6)
+        assert be.isclose(self.thickness_var.get_value(), -0.6)
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
@@ -167,7 +170,7 @@ class TestThicknessVariable:
             2,
             apply_scaling=False,
         )
-        assert np.isclose(self.thickness_var.get_value(), 4.4)
+        assert be.isclose(self.thickness_var.get_value(), 4.4)
 
 
 class TestIndexVariable:
@@ -177,11 +180,11 @@ class TestIndexVariable:
         self.index_var = variable.IndexVariable(self.optic, 1, 0.55)
 
     def test_get_value(self):
-        assert np.isclose(self.index_var.get_value(), -0.012206444700957775)
+        assert be.isclose(self.index_var.get_value(), -0.012206444700957775)
 
     def test_update_value(self):
         self.index_var.update_value(0.1)
-        assert np.isclose(self.index_var.get_value(), 0.1)
+        assert be.isclose(self.index_var.get_value(), 0.1)
 
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
@@ -191,7 +194,7 @@ class TestIndexVariable:
             0.55,
             apply_scaling=False,
         )
-        assert np.isclose(self.index_var.get_value(), 1.4877935552990422)
+        assert be.isclose(self.index_var.get_value(), 1.4877935552990422)
 
     def test_string_representation(self):
         assert str(self.index_var) == "Refractive Index, Surface 1"
@@ -204,11 +207,11 @@ class TestAsphereCoeffVariable:
         self.asphere_var = variable.AsphereCoeffVariable(self.optic, 1, 0)
 
     def test_get_value(self):
-        assert np.isclose(self.asphere_var.get_value(), -2.248851)
+        assert be.isclose(self.asphere_var.get_value(), -2.248851)
 
     def test_update_value(self):
         self.asphere_var.update_value(-2.0)
-        assert np.isclose(self.asphere_var.get_value(), -2.0)
+        assert be.isclose(self.asphere_var.get_value(), -2.0)
 
     def test_get_value_no_scaling(self):
         self.optic = AsphericSinglet()
@@ -218,7 +221,7 @@ class TestAsphereCoeffVariable:
             0,
             apply_scaling=False,
         )
-        assert np.isclose(self.asphere_var.get_value(), -0.0002248851)
+        assert be.isclose(self.asphere_var.get_value(), -0.0002248851)
 
     def test_string_representation(self):
         assert str(self.asphere_var) == "Asphere Coeff. 0, Surface 1"
@@ -231,7 +234,7 @@ class TestPolynomialCoeffVariable:
         poly_geo = PolynomialGeometry(
             CoordinateSystem(),
             100,
-            coefficients=np.zeros((3, 3)),
+            coefficients=be.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
@@ -241,7 +244,7 @@ class TestPolynomialCoeffVariable:
 
     def test_update_value(self):
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_get_value_index_error(self):
         self.optic = AsphericSinglet()
@@ -256,7 +259,7 @@ class TestPolynomialCoeffVariable:
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(self.optic, 0, (1, 1))
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
         assert str(self.poly_var) == "Poly. Coeff. (1, 1), Surface 0"
@@ -266,7 +269,7 @@ class TestPolynomialCoeffVariable:
         poly_geo = PolynomialGeometry(
             CoordinateSystem(),
             100,
-            coefficients=np.zeros((3, 3)),
+            coefficients=be.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.PolynomialCoeffVariable(
@@ -285,7 +288,7 @@ class TestChebyshevCoeffVariable:
         poly_geo = ChebyshevPolynomialGeometry(
             CoordinateSystem(),
             100,
-            coefficients=np.zeros((3, 3)),
+            coefficients=be.zeros((3, 3)),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ChebyshevCoeffVariable(self.optic, 0, (1, 1))
@@ -295,7 +298,7 @@ class TestChebyshevCoeffVariable:
 
     def test_update_value(self):
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_get_value_index_error(self):
         self.optic = AsphericSinglet()
@@ -310,7 +313,7 @@ class TestChebyshevCoeffVariable:
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ChebyshevCoeffVariable(self.optic, 0, (1, 1))
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
         assert str(self.poly_var) == "Chebyshev Coeff. (1, 1), Surface 0"
@@ -323,7 +326,7 @@ class TestZernikeCoeffVariable:
         poly_geo = ZernikePolynomialGeometry(
             CoordinateSystem(),
             100,
-            coefficients=np.zeros(3),
+            coefficients=be.zeros(3),
         )
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
@@ -333,7 +336,7 @@ class TestZernikeCoeffVariable:
 
     def test_update_value(self):
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_get_value_index_error(self):
         self.optic = AsphericSinglet()
@@ -348,7 +351,7 @@ class TestZernikeCoeffVariable:
         self.optic.surface_group.surfaces[0].geometry = poly_geo
         self.poly_var = variable.ZernikeCoeffVariable(self.optic, 0, 1)
         self.poly_var.update_value(1.0)
-        assert np.isclose(self.poly_var.get_value(), 1.0)
+        assert be.isclose(self.poly_var.get_value(), 1.0)
 
     def test_string_representation(self):
         assert str(self.poly_var) == "Zernike Coeff. 1, Surface 0"
@@ -358,7 +361,7 @@ class TestVariable:
     def test_get_value(self):
         optic = Objective60x()
         radius_var = variable.Variable(optic, "radius", surface_number=1)
-        assert np.isclose(radius_var.value, 4.5325999999999995)
+        assert be.isclose(radius_var.value, 4.5325999999999995)
 
     def test_unrecognized_attribute(self):
         optic = Objective60x()
@@ -368,7 +371,7 @@ class TestVariable:
             surface_number=1,
             unrecognized_attribute=1,
         )
-        assert np.isclose(radius_var.value, 4.5325999999999995)
+        assert be.isclose(radius_var.value, 4.5325999999999995)
 
     def test_invalid_type(self):
         optic = Objective60x()
@@ -384,18 +387,18 @@ class TestTiltVariable:
         self.tilt_var_y = variable.TiltVariable(self.optic, 1, "y")
 
     def test_get_value_x(self):
-        assert np.isclose(self.tilt_var_x.get_value(), 0.0)
+        assert be.isclose(self.tilt_var_x.get_value(), 0.0)
 
     def test_get_value_y(self):
-        assert np.isclose(self.tilt_var_y.get_value(), 0.0)
+        assert be.isclose(self.tilt_var_y.get_value(), 0.0)
 
     def test_update_value_x(self):
         self.tilt_var_x.update_value(5.0)
-        assert np.isclose(self.tilt_var_x.get_value(), 5.0)
+        assert be.isclose(self.tilt_var_x.get_value(), 5.0)
 
     def test_update_value_y(self):
         self.tilt_var_y.update_value(5.0)
-        assert np.isclose(self.tilt_var_y.get_value(), 5.0)
+        assert be.isclose(self.tilt_var_y.get_value(), 5.0)
 
     def test_invalid_axis(self):
         with pytest.raises(ValueError):
@@ -408,7 +411,7 @@ class TestTiltVariable:
     def test_get_value_no_scaling(self):
         self.optic = Objective60x()
         self.tilt_var_x = variable.TiltVariable(self.optic, 1, "x", apply_scaling=False)
-        assert np.isclose(self.tilt_var_x.get_value(), 0.0)
+        assert be.isclose(self.tilt_var_x.get_value(), 0.0)
 
 
 class TestDecenterVariable:
@@ -419,18 +422,18 @@ class TestDecenterVariable:
         self.decenter_var_y = variable.DecenterVariable(self.optic, 1, "y")
 
     def test_get_value_x(self):
-        assert np.isclose(self.decenter_var_x.get_value(), 0.0)
+        assert be.isclose(self.decenter_var_x.get_value(), 0.0)
 
     def test_get_value_y(self):
-        assert np.isclose(self.decenter_var_y.get_value(), 0.0)
+        assert be.isclose(self.decenter_var_y.get_value(), 0.0)
 
     def test_update_value_x(self):
         self.decenter_var_x.update_value(5.0)
-        assert np.isclose(self.decenter_var_x.get_value(), 5.0)
+        assert be.isclose(self.decenter_var_x.get_value(), 5.0)
 
     def test_update_value_y(self):
         self.decenter_var_y.update_value(5.0)
-        assert np.isclose(self.decenter_var_y.get_value(), 5.0)
+        assert be.isclose(self.decenter_var_y.get_value(), 5.0)
 
     def test_invalid_axis(self):
         with pytest.raises(ValueError):
@@ -448,7 +451,7 @@ class TestDecenterVariable:
             "x",
             apply_scaling=False,
         )
-        assert np.isclose(self.decenter_var_x.get_value(), 0.0)
+        assert be.isclose(self.decenter_var_x.get_value(), 0.0)
 
 
 class TestVariableManager:

@@ -11,8 +11,7 @@ Kramer Harrison, 2025
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
@@ -30,7 +29,7 @@ class GeometryConfig:
     """Configuration parameters for creating a surface geometry.
 
     Attributes:
-        radius (float): radius of curvature of the geometry. Defaults to np.inf.
+        radius (float): radius of curvature of the geometry. Defaults to be.inf.
         conic (float): conic constant of the geometry. Defaults to 0.0.as_integer_ratio
         coefficients (list): list of geometry coefficients. Defaults to empty list.
         tol (float): tolerance to use for Newton-Raphson method. Defaults to 1e-6.
@@ -41,7 +40,7 @@ class GeometryConfig:
         norm_radius (float): normalization radius. Defaults to 1.0.
     """
 
-    radius: float = np.inf
+    radius: float = be.inf
     conic: float = 0.0
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
@@ -77,7 +76,7 @@ def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
         StandardGeometry or Plane
     """
     # Use a Plane if the radius is infinity.
-    if np.isinf(config.radius):
+    if be.isinf(config.radius):
         return Plane(cs)
     return StandardGeometry(cs, config.radius, config.conic)
 

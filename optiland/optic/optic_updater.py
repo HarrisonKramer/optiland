@@ -9,8 +9,7 @@ Kramer Harrison, 2025
 
 from typing import Union
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.rays import PolarizationState
@@ -134,10 +133,10 @@ class OpticUpdater:
 
         # Scale radii & thicknesses
         for surf_idx in range(num_surfaces):
-            if not np.isinf(radii[surf_idx]):
+            if not be.isinf(radii[surf_idx]):
                 self.set_radius(radii[surf_idx] * scale_factor, surf_idx)
 
-            if surf_idx != num_surfaces - 1 and not np.isinf(thicknesses[surf_idx]):
+            if surf_idx != num_surfaces - 1 and not be.isinf(thicknesses[surf_idx]):
                 self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
 
         # Scale aperture, if aperture type is EPD
@@ -155,8 +154,8 @@ class OpticUpdater:
         """
         ya, _ = self.optic.paraxial.marginal_ray()
         yb, _ = self.optic.paraxial.chief_ray()
-        ya = np.abs(np.ravel(ya))
-        yb = np.abs(np.ravel(yb))
+        ya = be.abs(be.ravel(ya))
+        yb = be.abs(be.ravel(yb))
         for k, surface in enumerate(self.optic.surface_group.surfaces):
             surface.set_semi_aperture(r_max=ya[k] + yb[k])
             self.update_normalization(surface)

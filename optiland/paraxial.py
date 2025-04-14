@@ -6,8 +6,7 @@ properties of lens systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
 
@@ -64,7 +63,7 @@ class Paraxial:
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
         f2 = -y[0] / u[-1]
-        return np.abs(f2[0])
+        return be.abs(f2[0])
 
     def F1(self):
         """Calculate the front focal point location
@@ -184,9 +183,9 @@ class Paraxial:
             obj_z = self.optic.object_surface.geometry.cs.z
             wavelength = self.optic.primary_wavelength
             n0 = self.optic.object_surface.material_post.n(wavelength)
-            u0 = np.arcsin(ap_value / n0)
+            u0 = be.arcsin(ap_value / n0)
             z = self.EPL() - obj_z
-            return 2 * z * np.tan(u0)
+            return 2 * z * be.tan(u0)
 
     def XPL(self):
         """Calculate the exit pupil location
@@ -262,7 +261,7 @@ class Paraxial:
         """Find the marginal ray heights and angles
 
         Returns:
-            tuple: marginal ray heights and angles as type np.ndarray
+            tuple: marginal ray heights and angles as type be.ndarray
 
         """
         EPD = self.EPD()
@@ -283,7 +282,7 @@ class Paraxial:
         """Find the chief ray heights and angles
 
         Returns:
-            tuple: chief ray heights and angles as type np.ndarray
+            tuple: chief ray heights and angles as type be.ndarray
 
         """
         surfaces = self.surfaces.inverted()
@@ -309,7 +308,7 @@ class Paraxial:
         if self.optic.field_type == "object_height":
             u1 = 0.1 * max_field / y[-1]
         elif self.optic.field_type == "angle":
-            u1 = 0.1 * np.tan(np.deg2rad(max_field)) / u[-1]
+            u1 = 0.1 * be.tan(be.deg2rad(max_field)) / u[-1]
 
         yn, un = self._trace_generic(
             y0,

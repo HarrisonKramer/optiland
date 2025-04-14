@@ -9,8 +9,7 @@ the surface parameters.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
@@ -86,7 +85,7 @@ class SurfaceFactory:
 
         # Build geometry
         geometry_config = GeometryConfig(
-            radius=kwargs.get("radius", np.inf),
+            radius=kwargs.get("radius", be.inf),
             conic=kwargs.get("conic", 0.0),
             coefficients=kwargs.get("coefficients", []),
             tol=kwargs.get("tol", 1e-6),

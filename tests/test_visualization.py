@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import fields
@@ -22,7 +22,7 @@ matplotlib.use("Agg")  # use non-interactive backend for testing
 class InvalidGeometry(BaseGeometry):
     def __init__(self, coordinate_system=CoordinateSystem):
         super().__init__(coordinate_system())
-        self.radius = np.inf
+        self.radius = be.inf
 
     def sag(self, x=0, y=0):
         return 0

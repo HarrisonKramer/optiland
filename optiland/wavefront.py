@@ -12,9 +12,9 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 from scipy.interpolate import griddata
 
+import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.zernike import ZernikeFit
 
@@ -161,7 +161,7 @@ class Wavefront:
         zc = self.optic.surface_group.z[-1, :]
 
         # radius of sphere - exit pupil origin vs. center
-        R = np.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
+        R = be.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
 
         return xc, yc, zc, R
 
@@ -206,9 +206,9 @@ class Wavefront:
             if y is None:
                 y = self.distribution.y
             EPD = self.optic.paraxial.EPD()
-            tilt_correction = (1 - x) * np.sin(np.radians(x_tilt)) * EPD / 2 + (
+            tilt_correction = (1 - x) * be.sin(be.radians(x_tilt)) * EPD / 2 + (
                 1 - y
-            ) * np.sin(np.radians(y_tilt)) * EPD / 2
+            ) * be.sin(be.radians(y_tilt)) * EPD / 2
         return opd - tilt_correction
 
     def _opd_image_to_xp(self, xc, yc, zc, R, wavelength):
@@ -249,8 +249,8 @@ class Wavefront:
         )
 
         d = b**2 - 4 * a * c
-        t = (-b - np.sqrt(d)) / (2 * a)
-        t[t < 0] = (-b[t < 0] + np.sqrt(d[t < 0])) / (2 * a[t < 0])
+        t = (-b - be.sqrt(d)) / (2 * a)
+        t[t < 0] = (-b[t < 0] + be.sqrt(d[t < 0])) / (2 * a[t < 0])
 
         # refractive index in image space
         n = self.optic.image_surface.material_post.n(wavelength)
@@ -279,7 +279,7 @@ class OPDFan(Wavefront):
     """
 
     def __init__(self, optic, fields="all", wavelengths="all", num_rays=100):
-        self.pupil_coord = np.linspace(-1, 1, num_rays)
+        self.pupil_coord = be.linspace(-1, 1, num_rays)
         super().__init__(
             optic,
             fields=fields,
@@ -307,7 +307,7 @@ class OPDFan(Wavefront):
         )
 
         # assure axes is a 2D array
-        axs = np.atleast_2d(axs)
+        axs = be.atleast_2d(axs)
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
@@ -317,8 +317,8 @@ class OPDFan(Wavefront):
                 intensity_x = self.data[i][j][1][self.num_rays :]
                 intensity_y = self.data[i][j][1][: self.num_rays]
 
-                wx[intensity_x == 0] = np.nan
-                wy[intensity_y == 0] = np.nan
+                wx[intensity_x == 0] = be.nan
+                wy[intensity_y == 0] = be.nan
 
                 axs[i, 0].plot(
                     self.pupil_coord,
@@ -416,7 +416,7 @@ class OPD(Wavefront):
             float: The RMS value.
 
         """
-        return np.sqrt(np.mean(self.data[0][0][0] ** 2))
+        return be.sqrt(be.mean(self.data[0][0][0] ** 2))
 
     def _plot_2d(self, data, figsize=(7, 5.5)):
         """Plots the 2D visualization of the OPD wavefront.
@@ -427,7 +427,7 @@ class OPD(Wavefront):
 
         """
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(np.flipud(data["z"]), extent=[-1, 1, -1, 1])
+        im = ax.imshow(be.flipud(data["z"]), extent=[-1, 1, -1, 1])
 
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
@@ -484,12 +484,12 @@ class OPD(Wavefront):
         z = self.data[0][0][0]
         intensity = self.data[0][0][1]
 
-        x_interp, y_interp = np.meshgrid(
-            np.linspace(-1, 1, num_points),
-            np.linspace(-1, 1, num_points),
+        x_interp, y_interp = be.meshgrid(
+            be.linspace(-1, 1, num_points),
+            be.linspace(-1, 1, num_points),
         )
 
-        points = np.column_stack((x.flatten(), y.flatten()))
+        points = be.column_stack((x.flatten(), y.flatten()))
         values = z.flatten() * intensity.flatten()
 
         z_interp = griddata(points, values, (x_interp, y_interp), method="cubic")

@@ -10,8 +10,7 @@ Kramer Harrison, 2024
 
 from copy import deepcopy
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
@@ -52,7 +51,7 @@ class SurfaceGroup:
 
         # add object surface distance if finite
         object_distance = other.surfaces[0].geometry.cs.z
-        if np.isfinite(object_distance):
+        if be.isfinite(object_distance):
             offset -= object_distance
 
         for surf in other.surfaces[1:]:
@@ -66,71 +65,71 @@ class SurfaceGroup:
 
     @property
     def x(self):
-        """np.array: x intersection points on all surfaces"""
-        return np.array([surf.x for surf in self.surfaces if surf.x.size > 0])
+        """be.array: x intersection points on all surfaces"""
+        return be.array([surf.x for surf in self.surfaces if surf.x.size > 0])
 
     @property
     def y(self):
-        """np.array: y intersection points on all surfaces"""
-        return np.array([surf.y for surf in self.surfaces if surf.y.size > 0])
+        """be.array: y intersection points on all surfaces"""
+        return be.array([surf.y for surf in self.surfaces if surf.y.size > 0])
 
     @property
     def z(self):
-        """np.array: z intersection points on all surfaces"""
-        return np.array([surf.z for surf in self.surfaces if surf.z.size > 0])
+        """be.array: z intersection points on all surfaces"""
+        return be.array([surf.z for surf in self.surfaces if surf.z.size > 0])
 
     @property
     def L(self):
-        """np.array: x direction cosines on all surfaces"""
-        return np.array([surf.L for surf in self.surfaces if surf.L.size > 0])
+        """be.array: x direction cosines on all surfaces"""
+        return be.array([surf.L for surf in self.surfaces if surf.L.size > 0])
 
     @property
     def M(self):
-        """np.array: y direction cosines on all surfaces"""
-        return np.array([surf.M for surf in self.surfaces if surf.M.size > 0])
+        """be.array: y direction cosines on all surfaces"""
+        return be.array([surf.M for surf in self.surfaces if surf.M.size > 0])
 
     @property
     def N(self):
-        """np.array: z direction cosines on all surfaces"""
-        return np.array([surf.N for surf in self.surfaces if surf.N.size > 0])
+        """be.array: z direction cosines on all surfaces"""
+        return be.array([surf.N for surf in self.surfaces if surf.N.size > 0])
 
     @property
     def opd(self):
-        """np.array: optical path difference recorded on all surfaces"""
-        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
+        """be.array: optical path difference recorded on all surfaces"""
+        return be.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
 
     @property
     def u(self):
-        """np.array: paraxial ray angles on all surfaces"""
-        return np.array([surf.u for surf in self.surfaces if surf.u.size > 0])
+        """be.array: paraxial ray angles on all surfaces"""
+        return be.array([surf.u for surf in self.surfaces if surf.u.size > 0])
 
     @property
     def intensity(self):
-        """np.array: ray intensities on all surfaces"""
-        return np.array(
+        """be.array: ray intensities on all surfaces"""
+        return be.array(
             [surf.intensity for surf in self.surfaces if surf.intensity.size > 0],
         )
 
     @property
     def positions(self):
-        """np.array: z positions of surface vertices"""
-        return np.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
+        """be.array: z positions of surface vertices"""
+        return be.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
 
     @property
     def radii(self):
-        """np.array: radii of curvature of all surfaces"""
-        return np.array([surf.geometry.radius for surf in self.surfaces])
+        """be.array: radii of curvature of all surfaces"""
+        return be.array([surf.geometry.radius for surf in self.surfaces])
 
     @property
     def conic(self):
-        """np.array: conic constant of all surfaces"""
+        """be.array: conic constant of all surfaces"""
         values = []
         for surf in self.surfaces:
             try:
                 values.append(surf.geometry.k)
             except AttributeError:
                 values.append(0)
-        return np.array(values)
+        return be.array(values)
 
     @property
     def stop_index(self):
@@ -160,7 +159,7 @@ class SurfaceGroup:
         if self.num_surfaces < 2:
             raise ValueError("Not enough surfaces to calculate total track.")
         z = self.positions[1:-1]
-        return np.max(z) - np.min(z)
+        return be.max(z) - be.min(z)
 
     def n(self, wavelength):
         """Get the refractive indices of the surfaces.
@@ -176,7 +175,7 @@ class SurfaceGroup:
         n = []
         for surface in self.surfaces:
             n.append(surface.material_post.n(wavelength))
-        return np.array(n)
+        return be.array(n)
 
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.

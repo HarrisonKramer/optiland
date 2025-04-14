@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coordinate_system import CoordinateSystem
@@ -92,15 +92,15 @@ def test_coordinate_system_transform():
     cs2 = CoordinateSystem(10, 20, 30, 0.5, 0.6, 0.7, cs1)
 
     eff_translation, eff_rot_mat = cs2.get_effective_transform()
-    assert np.allclose(eff_translation, np.array([11, 19, 32]))
-    rot_mat = np.array(
+    assert be.allclose(eff_translation, be.array([11, 19, 32]))
+    rot_mat = be.array(
         [
             [0.6312515, -0.35830835, 0.68784931],
             [0.5316958, 0.84560449, -0.04746188],
             [-0.56464247, 0.39568697, 0.72430014],
         ],
     )
-    assert np.allclose(eff_rot_mat, rot_mat)
+    assert be.allclose(eff_rot_mat, rot_mat)
 
 
 def test_coordinate_system_to_dict():

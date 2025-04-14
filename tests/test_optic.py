@@ -1,5 +1,5 @@
 import pytest
-import numpy as np
+import optiland.backend as be
 
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
@@ -12,7 +12,7 @@ from optiland.wavelength import WavelengthGroup
 
 def singlet_infinite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(
         index=1,
         thickness=7,
@@ -35,7 +35,7 @@ def singlet_infinite_object():
 
 def singlet_finite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=np.inf, thickness=50)
+    lens.add_surface(index=0, radius=be.inf, thickness=50)
     lens.add_surface(
         index=1,
         thickness=7,
@@ -403,7 +403,9 @@ class TestOptic:
         assert lens_combined.surface_group.num_surfaces == 6
 
         # test that a ray trace through the combined lens works
-        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
         assert rays is not None
 
     def test_add_finite_object(self):
@@ -413,5 +415,7 @@ class TestOptic:
         assert lens_combined.surface_group.num_surfaces == 6
 
         # test that a ray trace through the combined lens works
-        rays = lens_combined.trace(Hx=0, Hy=0, distribution='random', num_rays=42, wavelength=0.5)
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
         assert rays is not None

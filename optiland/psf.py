@@ -12,10 +12,10 @@ Kramer Harrison, 2023
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import numpy as np
 from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
+import optiland.backend as be
 from optiland.wavefront import Wavefront
 
 
@@ -120,7 +120,7 @@ class FFTPSF(Wavefront):
         norm = LogNorm() if log else None
 
         # replace values <= 0 with smallest non-zero value in image
-        image[image <= 0] = np.min(image[image > 0])
+        image[image <= 0] = be.min(image[image > 0])
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(image, norm=norm, extent=extent)
@@ -148,16 +148,16 @@ class FFTPSF(Wavefront):
         """
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        x = np.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
-        y = np.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
-        X, Y = np.meshgrid(x, y)
+        x = be.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
+        y = be.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
+        X, Y = be.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
-        image[image <= 0] = np.min(image[image > 0])
+        image[image <= 0] = be.min(image[image > 0])
 
         log_formatter = None
         if log:
-            image = np.log10(image)
+            image = be.log10(image)
             formatter = mticker.FuncFormatter(self._log_tick_formatter)
             ax.zaxis.set_major_formatter(formatter)
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -221,19 +221,19 @@ class FFTPSF(Wavefront):
                 wavelength.
 
         """
-        x = np.linspace(-1, 1, self.num_rays)
-        x, y = np.meshgrid(x, x)
+        x = be.linspace(-1, 1, self.num_rays)
+        x, y = be.meshgrid(x, x)
         x = x.ravel()
         y = y.ravel()
-        R = np.sqrt(x**2 + y**2)
+        R = be.sqrt(x**2 + y**2)
 
         pupils = []
 
         for k in range(len(self.wavelengths)):
-            P = np.zeros_like(x, dtype=complex)
-            amplitude = self.data[0][k][1] / np.mean(self.data[0][k][1])
-            P[R <= 1] = amplitude * np.exp(1j * 2 * np.pi * self.data[0][k][0])
-            P = np.reshape(P, (self.num_rays, self.num_rays))
+            P = be.zeros_like(x, dtype=complex)
+            amplitude = self.data[0][k][1] / be.mean(self.data[0][k][1])
+            P[R <= 1] = amplitude * be.exp(1j * 2 * be.pi * self.data[0][k][0])
+            P = be.reshape(P, (self.num_rays, self.num_rays))
             pupils.append(P)
 
         return pupils
@@ -242,7 +242,7 @@ class FFTPSF(Wavefront):
         """Compute the Point Spread Function (PSF) for the given optical system.
 
         Returns:
-            np.ndarray: The computed PSF as a 2D numpy array.
+            be.ndarray: The computed PSF as a 2D numpy array.
 
         """
         # TODO: add ability to compute polychromatic PSF.
@@ -252,10 +252,10 @@ class FFTPSF(Wavefront):
 
         psf = []
         for pupil in pupils:
-            amp = np.fft.fftshift(np.fft.fft2(pupil))
-            psf.append(amp * np.conj(amp))
+            amp = be.fft.fftshift(be.fft.fft2(pupil))
+            psf.append(amp * be.conj(amp))
 
-        return np.real(np.sum(psf, axis=0)) / norm_factor * 100
+        return be.real(be.sum(psf, axis=0)) / norm_factor * 100
 
     def _interpolate_psf(self, image, n=128):
         """Interpolates the point spread function (PSF) of an image. Used for
@@ -290,11 +290,11 @@ class FFTPSF(Wavefront):
 
         """
         thresholded_psf = self.psf > threshold
-        non_zero_indices = np.argwhere(thresholded_psf)
+        non_zero_indices = be.argwhere(thresholded_psf)
 
         try:
-            min_x, min_y = np.min(non_zero_indices, axis=0)
-            max_x, max_y = np.max(non_zero_indices, axis=0)
+            min_x, min_y = be.min(non_zero_indices, axis=0)
+            max_x, max_y = be.max(non_zero_indices, axis=0)
         except ValueError:
             min_x, min_y = 0, 0
             max_x, max_y = self.psf.shape
@@ -325,7 +325,7 @@ class FFTPSF(Wavefront):
         pupils_padded = []
         for pupil in self.pupils:
             pad = (self.grid_size - pupil.shape[0]) // 2
-            pupil = np.pad(
+            pupil = be.pad(
                 pupil,
                 ((pad, pad), (pad, pad)),
                 mode="constant",
@@ -344,9 +344,9 @@ class FFTPSF(Wavefront):
         P_nom = self.pupils[0].copy()
         P_nom[P_nom != 0] = 1
 
-        amp_norm = np.fft.fftshift(np.fft.fft2(P_nom))
-        psf_norm = amp_norm * np.conj(amp_norm)
-        return np.real(np.max(psf_norm) * len(self.pupils))
+        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
+        psf_norm = amp_norm * be.conj(amp_norm)
+        return be.real(be.max(psf_norm) * len(self.pupils))
 
     def _get_psf_units(self, image):
         """Calculate the physical units of the point spread function (PSF) based
@@ -369,7 +369,7 @@ class FFTPSF(Wavefront):
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= 1 + np.abs(m) / p
+            FNO *= 1 + be.abs(m) / p
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q
