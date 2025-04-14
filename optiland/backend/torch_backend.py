@@ -11,7 +11,11 @@ Kramer Harrison, 2025
 
 import contextlib
 
-import torch
+try:
+    import torch
+except ImportError as err:
+    torch = None
+    raise ImportError("PyTorch is not installed.") from err
 
 # Global variables for backend configuration.
 _current_device = "cpu"

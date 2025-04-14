@@ -9,14 +9,26 @@ backends may be added in the future.
 Kramer Harrison, 2025
 """
 
-from optiland.backend import numpy_backend, torch_backend  # noqa: F401
+from optiland.backend import numpy_backend
+
+try:
+    from optiland.backend import torch_backend
+
+    _torch_available = True
+except ImportError:
+    torch_backend = None
+    _torch_available = False
 
 # Registry for available backends.
 # To add a new backend, import it and include it in this dictionary.
 _backends = {
     "numpy": numpy_backend,
-    # "torch": torch_backend,  # Uncomment when torch_backend is implemented.
 }
+
+# Add torch_backend to the registry only if it is available.
+# TODO: uncomment when torch_backend is implemented
+# if _torch_available:
+#     _backends["torch"] = torch_backend
 
 # Default backend
 _current_backend = "numpy"
