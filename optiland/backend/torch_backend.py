@@ -123,3 +123,8 @@ def array(x):
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
+
+
+def is_array_like(x):
+    """Check if the input is array-like."""
+    return isinstance(x, (torch.Tensor, list, tuple))

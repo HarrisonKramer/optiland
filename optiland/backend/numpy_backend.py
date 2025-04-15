@@ -11,9 +11,14 @@ from scipy.spatial.transform import Rotation as R
 _lib = np
 
 
-def array(x, dtype=None, **kwargs):
+def array(x):
     """Create an array/tensor"""
-    return np.array(x, dtype=dtype, **kwargs)
+    return np.array(x, dtype=float)
+
+
+def is_array_like(x):
+    """Check if x is array-like"""
+    return isinstance(x, (np.ndarray, list, tuple))
 
 
 def from_matrix(matrix):
