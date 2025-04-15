@@ -27,9 +27,9 @@ class BaseRays:
             dz (float): The amount to shift the rays in the z direction.
 
         """
-        self.x += dx
-        self.y += dy
-        self.z += dz
+        self.x = self.x + dx
+        self.y = self.y + dy
+        self.z = self.z + dz
 
     def _process_input(self, data):
         """Process the input data and convert it into a 1-dimensional NumPy array
@@ -47,10 +47,12 @@ class BaseRays:
                 scalar or a NumPy array).
 
         """
-        if isinstance(data, (int, float, list)):
+        if isinstance(data, (int, float)):
+            return be.array([data])
+        elif isinstance(data, list):
             return be.atleast_1d(data)
         if be.is_array_like(data):
-            return be.ravel(data).astype(float)
+            return be.ravel(data)
         raise ValueError(
             "Unsupported input type. Must be a scalar, a list, or array-like.",
         )
