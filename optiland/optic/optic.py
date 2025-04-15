@@ -24,7 +24,12 @@ from optiland.rays import PolarizationState, RayGenerator
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.visualization import (
+    LensInfoViewer,
+    OpticViewer,
+    OpticViewer3D,
+    SurfaceViewer,
+)
 from optiland.wavelength import WavelengthGroup
 
 
@@ -297,6 +302,33 @@ class Optic:
         """
         self._updater.image_solve()
 
+    def draw_surface(
+        self,
+        surface_index,
+        projection="2d",
+        plot_dev_to_bfs=False,
+        num_points=256,
+        figsize=(7, 5.5),
+        title=None,
+    ):
+        """
+        Visualize a surface.
+
+        Args:
+            surface_index (int): Index of the surface to be visualized.
+            projection (str): The type of projection to use for visualization.
+                Can be '2d' or '3d'.
+            num_points (int): The number of points to sample along each axis
+                for the visualization.
+            figsize (tuple): The size of the figure in inches.
+                Defaults to (7, 5.5).
+            title (str): Title.
+        """
+        viewer = SurfaceViewer(self)
+        viewer.view(
+            surface_index, projection, plot_dev_to_bfs, num_points, figsize, title
+        )
+
     def draw(
         self,
         fields="all",
@@ -309,7 +341,8 @@ class Optic:
         title=None,
         reference=None,
     ):
-        """Draw a 2D representation of the optical system.
+        """
+        Draw a 2D representation of the optical system.
 
         Args:
             fields (str or list, optional): The fields to be displayed.
