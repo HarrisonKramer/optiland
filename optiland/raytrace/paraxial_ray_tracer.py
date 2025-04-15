@@ -59,10 +59,6 @@ class ParaxialRayTracer:
                 rays after tracing.
 
         """
-        self._process_input(y)
-        self._process_input(u)
-        self._process_input(z)
-
         surfaces = (
             self.optic.surface_group.inverted() if reverse else self.optic.surface_group
         )
@@ -118,17 +114,3 @@ class ParaxialRayTracer:
             z0 = be.ones_like(y1) * z
 
         return y0, z0
-
-    def _process_input(self, x):
-        """Process input to ensure it is a numpy array.
-
-        Args:
-            x (float or array-like): The input to process.
-
-        Returns:
-            be.ndarray: The processed input.
-
-        """
-        if be.isscalar(x):
-            return be.array([x], dtype=float)
-        return be.array(x, dtype=float)
