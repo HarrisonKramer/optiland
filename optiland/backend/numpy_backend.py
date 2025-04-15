@@ -21,6 +21,14 @@ def is_array_like(x):
     return isinstance(x, (np.ndarray, list, tuple))
 
 
+def atleast_1d(x):
+    return np.atleast_1d(x).astype(float)
+
+
+def ravel(x):
+    return np.ravel(x).astype(float)
+
+
 def from_matrix(matrix):
     return R.from_matrix(matrix)
 
