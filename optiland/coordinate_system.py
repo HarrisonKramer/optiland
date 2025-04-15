@@ -48,13 +48,13 @@ class CoordinateSystem:
         rz: float = 0,
         reference_cs: "CoordinateSystem" = None,
     ):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = be.array(x)
+        self.y = be.array(y)
+        self.z = be.array(z)
 
-        self.rx = rx
-        self.ry = ry
-        self.rz = rz
+        self.rx = be.array(rx)
+        self.ry = be.array(ry)
+        self.rz = be.array(rz)
 
         self.reference_cs = reference_cs
 
