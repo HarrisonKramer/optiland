@@ -111,3 +111,15 @@ def get_precision() -> torch.dtype:
             (torch.float32 or torch.float64).
     """
     return _current_precision
+
+
+def array(x):
+    """Create an array/tensor."""
+    if isinstance(x, torch.Tensor):
+        return x
+    return torch.tensor(
+        x,
+        device=get_device(),
+        dtype=get_precision(),
+        requires_grad=grad_mode.requires_grad,
+    )
