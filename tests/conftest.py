@@ -10,7 +10,7 @@ def set_test_backend(request):
 
     if backend_name == "torch":
         be.set_device("cpu")  # Use CPU for tests
-        be.grad_mode.disable()  # Disable gradient tracking
+        be.grad_mode.enable()  # Enable gradient tracking
         be.set_precision("float64")  # Set precision to float64 for tests
 
     yield
