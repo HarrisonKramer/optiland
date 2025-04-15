@@ -47,12 +47,10 @@ class BaseRays:
                 scalar or a NumPy array).
 
         """
-        if isinstance(data, (int, float)):
-            return be.array([data])
-        if isinstance(data, list):
-            return be.array(data)
+        if isinstance(data, (int, float, list)):
+            return be.atleast_1d(data)
         if be.is_array_like(data):
-            return be.ravel(data)
+            return be.ravel(data).astype(float)
         raise ValueError(
-            "Unsupported input type. Must be a scalar, a list, or a NumPy array.",
+            "Unsupported input type. Must be a scalar, a list, or array-like.",
         )
