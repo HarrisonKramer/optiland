@@ -18,6 +18,7 @@ from optiland.optimization.variable.decenter import DecenterVariable
 from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.variable.radius import RadiusVariable
+from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVariable
 from optiland.optimization.variable.thickness import ThicknessVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
@@ -108,6 +109,7 @@ class Variable:
             "polynomial_coeff": PolynomialCoeffVariable,
             "chebyshev_coeff": ChebyshevCoeffVariable,
             "zernike_coeff": ZernikeCoeffVariable,
+            "reciprocal_radius": ReciprocalRadiusVariable,
         }
 
         variable_class = variable_types.get(self.type)

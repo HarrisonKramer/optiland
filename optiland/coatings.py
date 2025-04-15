@@ -7,8 +7,7 @@ Kramer Harrison, 2024
 
 from abc import ABC, abstractmethod
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.jones import JonesFresnel
 from optiland.materials import BaseMaterial
 from optiland.rays import RealRays
@@ -37,9 +36,9 @@ class BaseCoating(ABC):
         self,
         rays: RealRays,
         reflect: bool = False,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Performs an interaction based on the given parameters.
 
@@ -66,20 +65,20 @@ class BaseCoating(ABC):
             nz: The z-component of the surface normals.
 
         Returns:
-            np.ndarray: The angle of incidence for each ray.
+            be.ndarray: The angle of incidence for each ray.
 
         """
-        dot = np.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
-        dot = np.clip(dot, -1, 1)  # required due to numerical precision
-        return np.arccos(dot)
+        dot = be.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
+        dot = be.clip(dot, -1, 1)  # required due to numerical precision
+        return be.arccos(dot)
 
     @abstractmethod
     def reflect(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Abstract method to handle reflection interaction.
 
@@ -96,9 +95,9 @@ class BaseCoating(ABC):
     def transmit(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Abstract method to handle transmission interaction.
 
@@ -168,9 +167,9 @@ class SimpleCoating(BaseCoating):
     def reflect(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Reflects the rays based on the reflectance of the coating.
 
@@ -187,9 +186,9 @@ class SimpleCoating(BaseCoating):
     def transmit(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Transmits the rays through the coating by multiplying their intensity
         with the transmittance.
@@ -246,17 +245,17 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     def reflect(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Reflects the rays off the coating.
 
         Args:
             rays (RealRays): The rays to be reflected.
-            nx (np.ndarray): The x-component of the surface normal vector.
-            ny (np.ndarray): The y-component of the surface normal vector.
-            nz (np.ndarray): The z-component of the surface normal vector.
+            nx (be.ndarray): The x-component of the surface normal vector.
+            ny (be.ndarray): The y-component of the surface normal vector.
+            nz (be.ndarray): The z-component of the surface normal vector.
 
         Returns:
             RealRays: The updated rays after reflection.
@@ -270,17 +269,17 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     def transmit(
         self,
         rays: RealRays,
-        nx: np.ndarray = None,
-        ny: np.ndarray = None,
-        nz: np.ndarray = None,
+        nx: be.ndarray = None,
+        ny: be.ndarray = None,
+        nz: be.ndarray = None,
     ):
         """Transmits the rays through the coating.
 
         Args:
             rays (RealRays): The rays to be transmitted.
-            nx (np.ndarray): The x-component of the surface normal vector.
-            ny (np.ndarray): The y-component of the surface normal vector.
-            nz (np.ndarray): The z-component of the surface normal vector.
+            nx (be.ndarray): The x-component of the surface normal vector.
+            ny (be.ndarray): The y-component of the surface normal vector.
+            nz (be.ndarray): The z-component of the surface normal vector.
 
         Returns:
             RealRays: The updated rays after transmission through a surface.

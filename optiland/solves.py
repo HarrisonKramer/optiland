@@ -10,7 +10,7 @@ Kramer Harrison, 2024
 
 from abc import ABC, abstractmethod
 
-import numpy as np
+import optiland.backend as be
 
 
 class BaseSolve(ABC):
@@ -169,9 +169,9 @@ class QuickFocusSolve(BaseSolve):
 
         A = rays.L**2 + rays.M**2
         B = rays.L * rays.x + rays.M * rays.y
-        with np.errstate(divide="ignore", invalid="ignore"):
-            t_opt = np.where(A != 0, -B / A, np.nan)
-        z_focus = np.nanmean(rays.z + t_opt * rays.N)
+        with be.errstate(divide="ignore", invalid="ignore"):
+            t_opt = be.where(A != 0, -B / A, be.nan)
+        z_focus = be.nanmean(rays.z + t_opt * rays.N)
 
         return z_focus
 

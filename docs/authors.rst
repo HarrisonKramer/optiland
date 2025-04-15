@@ -19,6 +19,7 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **manuelFragata** (`GitHub <https://gist.github.com/manuelFragata>`_)
 - **Seçkin Berkay Öztürk** (`GitHub <https://github.com/SeckinBerkay>`_)
 - **crnh** (`GitHub <https://github.com/crnh>`_)
+- **Daniel Araújo Miranda** (`GitHub <https://github.com/mirandadam>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.

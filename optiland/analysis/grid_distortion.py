@@ -8,7 +8,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class GridDistortion:
@@ -91,22 +92,22 @@ class GridDistortion:
         # trace single reference ray
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=self.wavelength)
 
-        max_field = np.sqrt(2) / 2
-        extent = np.linspace(-max_field, max_field, self.num_points)
-        Hx, Hy = np.meshgrid(extent, extent)
+        max_field = be.sqrt(2) / 2
+        extent = be.linspace(-max_field, max_field, self.num_points)
+        Hx, Hy = be.meshgrid(extent, extent)
 
         if self.distortion_type == "f-tan":
             const = self.optic.surface_group.y[-1, 0] / (
-                np.tan(1e-10 * np.radians(self.optic.fields.max_field))
+                be.tan(1e-10 * be.radians(self.optic.fields.max_field))
             )
-            xp = const * np.tan(Hx * np.radians(self.optic.fields.max_field))
-            yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
+            xp = const * be.tan(Hx * be.radians(self.optic.fields.max_field))
+            yp = const * be.tan(Hy * be.radians(self.optic.fields.max_field))
         elif self.distortion_type == "f-theta":
             const = self.optic.surface_group.y[-1, 0] / (
-                1e-10 * np.radians(self.optic.fields.max_field)
+                1e-10 * be.radians(self.optic.fields.max_field)
             )
-            xp = const * Hx * np.radians(self.optic.fields.max_field)
-            yp = const * Hy * np.radians(self.optic.fields.max_field)
+            xp = const * Hx * be.radians(self.optic.fields.max_field)
+            yp = const * Hy * be.radians(self.optic.fields.max_field)
         else:
             raise ValueError(
                 '''Distortion type must be "f-tan" or
@@ -124,11 +125,11 @@ class GridDistortion:
         data = {}
 
         # make real grid square for ease of plotting
-        data["xr"] = np.reshape(
+        data["xr"] = be.reshape(
             self.optic.surface_group.x[-1, :],
             (self.num_points, self.num_points),
         )
-        data["yr"] = np.reshape(
+        data["yr"] = be.reshape(
             self.optic.surface_group.y[-1, :],
             (self.num_points, self.num_points),
         )
@@ -138,9 +139,9 @@ class GridDistortion:
         data["yp"] = yp
 
         # Find max distortion
-        delta = np.sqrt((data["xp"] - data["xr"]) ** 2 + (data["yp"] - data["yr"]) ** 2)
-        rp = np.sqrt(data["xp"] ** 2 + data["yp"] ** 2)
+        delta = be.sqrt((data["xp"] - data["xr"]) ** 2 + (data["yp"] - data["yr"]) ** 2)
+        rp = be.sqrt(data["xp"] ** 2 + data["yp"] ** 2)
 
-        data["max_distortion"] = np.max(100 * delta / rp)
+        data["max_distortion"] = be.max(100 * delta / rp)
 
         return data

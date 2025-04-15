@@ -7,8 +7,7 @@ offset in the x and y directions.
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.physical_apertures.radial import RadialAperture
 
 
@@ -48,16 +47,16 @@ class OffsetRadialAperture(RadialAperture):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
         radius2 = (x - self.offset_x) ** 2 + (y - self.offset_y) ** 2
-        return np.logical_and(radius2 <= self.r_max**2, radius2 >= self.r_min**2)
+        return be.logical_and(radius2 <= self.r_max**2, radius2 >= self.r_min**2)
 
     def scale(self, scale_factor):
         """Scales the aperture by the given factor.

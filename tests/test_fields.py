@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import fields
@@ -23,12 +23,12 @@ def test_field_group_inputs():
         new_field = fields.Field("angle", *field_data)
         f.add_field(new_field)
 
-    assert np.array_equal(f.x_fields, np.array([0, 5, 0, 7]))
-    assert np.array_equal(f.y_fields, np.array([0, 0, 6, 9.2]))
+    assert be.array_equal(f.x_fields, be.array([0, 5, 0, 7]))
+    assert be.array_equal(f.y_fields, be.array([0, 0, 6, 9.2]))
 
     assert f.max_x_field == 7
     assert f.max_y_field == 9.2
-    assert f.max_field == np.sqrt(7**2 + 9.2**2)
+    assert f.max_field == be.sqrt(7**2 + 9.2**2)
 
 
 def test_field_group_getters():

@@ -6,8 +6,7 @@ for tracing through an optical system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays
 
@@ -24,15 +23,15 @@ class RayGenerator:
         Args:
             Hx (float): Normalized x field coordinate.
             Hy (float): Normalized y field coordinate.
-            Px (float or np.ndarray): x-coordinate of the pupil point.
-            Py (float or np.ndarray): y-coordinate of the pupil point.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
             wavelength (float): Wavelength of the rays.
 
         Returns:
             RealRays: RealRays object containing the generated rays.
 
         """
-        vx, vy = 1 - np.array(self.optic.fields.get_vig_factor(Hx, Hy))
+        vx, vy = 1 - be.array(self.optic.fields.get_vig_factor(Hx, Hy))
         x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
         if self.optic.obj_space_telecentric:
@@ -50,8 +49,8 @@ class RayGenerator:
                 )
 
             sin = self.optic.aperture.value
-            z = np.sqrt(1 - sin**2) / sin + z0
-            z1 = np.full_like(Px, z)
+            z = be.sqrt(1 - sin**2) / sin + z0
+            z1 = be.full_like(Px, z)
             x1 = Px * vx + x0
             y1 = Py * vy + y0
         else:
@@ -60,19 +59,19 @@ class RayGenerator:
 
             x1 = Px * EPD * vx / 2
             y1 = Py * EPD * vy / 2
-            z1 = np.full_like(Px, EPL)
+            z1 = be.full_like(Px, EPL)
 
-        mag = np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
+        mag = be.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
         L = (x1 - x0) / mag
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
 
-        x0 = np.full_like(x1, x0)
-        y0 = np.full_like(x1, y0)
-        z0 = np.full_like(x1, z0)
+        x0 = be.full_like(x1, x0)
+        y0 = be.full_like(x1, y0)
+        z0 = be.full_like(x1, z0)
 
-        intensity = np.ones_like(x1)
-        wavelength = np.ones_like(x1) * wavelength
+        intensity = be.ones_like(x1)
+        wavelength = be.ones_like(x1) * wavelength
 
         if self.optic.polarization == "ignore":
             if self.optic.surface_group.uses_polarization:
@@ -89,8 +88,8 @@ class RayGenerator:
         Args:
             Hx (float): Normalized x field coordinate.
             Hy (float): Normalized y field coordinate.
-            Px (float or np.ndarray): x-coordinate of the pupil point.
-            Py (float or np.ndarray): y-coordinate of the pupil point.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
             vx (float): Vignetting factor in the x-direction.
             vy (float): Vignetting factor in the y-direction.
 
@@ -122,13 +121,13 @@ class RayGenerator:
             offset = self._get_starting_z_offset()
 
             # x, y, z positions of ray starting points
-            x = -np.tan(np.radians(field_x)) * (offset + EPL)
-            y = -np.tan(np.radians(field_y)) * (offset + EPL)
+            x = -be.tan(be.radians(field_x)) * (offset + EPL)
+            y = -be.tan(be.radians(field_y)) * (offset + EPL)
             z = self.optic.surface_group.positions[1] - offset
 
             x0 = Px * EPD / 2 * vx + x
             y0 = Py * EPD / 2 * vy + y
-            z0 = np.full_like(Px, z)
+            z0 = be.full_like(Px, z)
         else:
             if self.optic.field_type == "object_height":
                 x = field_x
@@ -138,12 +137,12 @@ class RayGenerator:
             elif self.optic.field_type == "angle":
                 EPL = self.optic.paraxial.EPL()
                 z = self.optic.surface_group.positions[0]
-                x = -np.tan(np.radians(field_x)) * (EPL - z)
-                y = -np.tan(np.radians(field_y)) * (EPL - z)
+                x = -be.tan(be.radians(field_x)) * (EPL - z)
+                y = -be.tan(be.radians(field_y)) * (EPL - z)
 
-            x0 = np.full_like(Px, x)
-            y0 = np.full_like(Px, y)
-            z0 = np.full_like(Px, z)
+            x0 = be.full_like(Px, x)
+            y0 = be.full_like(Px, y)
+            z0 = be.full_like(Px, z)
 
         return x0, y0, z0
 
@@ -160,4 +159,4 @@ class RayGenerator:
         """
         z = self.optic.surface_group.positions[1:-1]
         offset = self.optic.paraxial.EPD()
-        return offset - np.min(z)
+        return offset - be.min(z)

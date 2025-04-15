@@ -8,8 +8,8 @@ Kramer Harrison, 2024
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
-import numpy as np
 
+import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
 
 
@@ -59,7 +59,7 @@ class EncircledEnergy(SpotDiagram):
 
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
-        axis_lim = np.max(geometric_size)
+        axis_lim = be.max(geometric_size)
         for k, field_data in enumerate(data):
             self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
 
@@ -82,8 +82,8 @@ class EncircledEnergy(SpotDiagram):
         """
         centroid = []
         for field_data in self.data:
-            centroid_x = np.mean(field_data[0][0])
-            centroid_y = np.mean(field_data[0][1])
+            centroid_x = be.mean(field_data[0][0])
+            centroid_y = be.mean(field_data[0][1])
             centroid.append((centroid_x, centroid_y))
         return centroid
 
@@ -101,15 +101,15 @@ class EncircledEnergy(SpotDiagram):
 
         """
         r_max = axis_lim * buffer
-        r_step = np.linspace(0, r_max, num_points)
+        r_step = be.linspace(0, r_max, num_points)
         for points in field_data:
             x, y, energy = points
-            radii = np.sqrt(x**2 + y**2)
+            radii = be.sqrt(x**2 + y**2)
 
             def vectorized_ee(r):
-                return np.nansum(energy[radii <= r])  # noqa: B023
+                return be.nansum(energy[radii <= r])  # noqa: B023
 
-            ee = np.vectorize(vectorized_ee)(r_step)
+            ee = be.vectorize(vectorized_ee)(r_step)
             ax.plot(r_step, ee, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
     def _generate_field_data(

@@ -6,7 +6,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class Distortion:
@@ -58,14 +59,14 @@ class Distortion:
         _, ax = plt.subplots(figsize=figsize)
         ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
 
-        field = np.linspace(1e-10, self.optic.fields.max_field, self.num_points)
+        field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
         for k, wavelength in enumerate(self.wavelengths):
             ax.plot(self.data[k], field, label=f"{wavelength:.4f} µm")
             ax.set_xlabel("Distortion (%)")
             ax.set_ylabel("Field")
 
         current_xlim = plt.xlim()
-        plt.xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
+        plt.xlim([-max(be.abs(current_xlim)), max(be.abs(current_xlim))])
         plt.ylim([0, None])
         plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         plt.show()
@@ -79,20 +80,20 @@ class Distortion:
             list: A list of distortion data points.
 
         """
-        Hx = np.zeros(self.num_points)
-        Hy = np.linspace(1e-10, 1, self.num_points)
+        Hx = be.zeros(self.num_points)
+        Hy = be.linspace(1e-10, 1, self.num_points)
 
         data = []
         for wavelength in self.wavelengths:
             self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0, wavelength=wavelength)
             yr = self.optic.surface_group.y[-1, :]
 
-            const = yr[0] / (np.tan(1e-10 * np.radians(self.optic.fields.max_field)))
+            const = yr[0] / (be.tan(1e-10 * be.radians(self.optic.fields.max_field)))
 
             if self.distortion_type == "f-tan":
-                yp = const * np.tan(Hy * np.radians(self.optic.fields.max_field))
+                yp = const * be.tan(Hy * be.radians(self.optic.fields.max_field))
             elif self.distortion_type == "f-theta":
-                yp = const * Hy * np.radians(self.optic.fields.max_field)
+                yp = const * Hy * be.radians(self.optic.fields.max_field)
             else:
                 raise ValueError(
                     '''Distortion type must be "f-tan" or

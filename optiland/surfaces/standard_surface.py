@@ -10,8 +10,7 @@ absorption based on the surface properties and materials involved.
 Kramer Harrison, 2023
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
@@ -97,19 +96,19 @@ class Surface:
 
     def reset(self):
         """Resets the recorded information of the surface."""
-        self.y = np.empty(0)
-        self.u = np.empty(0)
-        self.x = np.empty(0)
-        self.y = np.empty(0)
-        self.z = np.empty(0)
+        self.y = be.empty(0)
+        self.u = be.empty(0)
+        self.x = be.empty(0)
+        self.y = be.empty(0)
+        self.z = be.empty(0)
 
-        self.L = np.empty(0)
-        self.M = np.empty(0)
-        self.N = np.empty(0)
+        self.L = be.empty(0)
+        self.M = be.empty(0)
+        self.N = be.empty(0)
 
-        self.intensity = np.empty(0)
-        self.aoi = np.empty(0)
-        self.opd = np.empty(0)
+        self.intensity = be.empty(0)
+        self.aoi = be.empty(0)
+        self.opd = be.empty(0)
 
     def set_fresnel_coating(self):
         """Sets the coating of the surface to a Fresnel coating."""
@@ -123,19 +122,19 @@ class Surface:
 
         """
         if isinstance(rays, ParaxialRays):
-            self.y = np.copy(np.atleast_1d(rays.y))
-            self.u = np.copy(np.atleast_1d(rays.u))
+            self.y = be.copy(be.atleast_1d(rays.y))
+            self.u = be.copy(be.atleast_1d(rays.u))
         elif isinstance(rays, RealRays):
-            self.x = np.copy(np.atleast_1d(rays.x))
-            self.y = np.copy(np.atleast_1d(rays.y))
-            self.z = np.copy(np.atleast_1d(rays.z))
+            self.x = be.copy(be.atleast_1d(rays.x))
+            self.y = be.copy(be.atleast_1d(rays.y))
+            self.z = be.copy(be.atleast_1d(rays.z))
 
-            self.L = np.copy(np.atleast_1d(rays.L))
-            self.M = np.copy(np.atleast_1d(rays.M))
-            self.N = np.copy(np.atleast_1d(rays.N))
+            self.L = be.copy(be.atleast_1d(rays.L))
+            self.M = be.copy(be.atleast_1d(rays.M))
+            self.N = be.copy(be.atleast_1d(rays.N))
 
-            self.intensity = np.copy(np.atleast_1d(rays.i))
-            self.opd = np.copy(np.atleast_1d(rays.opd))
+            self.intensity = be.copy(be.atleast_1d(rays.i))
+            self.opd = be.copy(be.atleast_1d(rays.opd))
 
     def _interact(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting
@@ -237,7 +236,7 @@ class Surface:
         rays.propagate(t, self.material_pre)
 
         # update OPD
-        rays.opd += np.abs(t * self.material_pre.n(rays.w))
+        rays.opd += be.abs(t * self.material_pre.n(rays.w))
 
         # if there is a limiting aperture, clip rays outside of it
         if self.aperture:

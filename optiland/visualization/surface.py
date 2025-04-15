@@ -5,9 +5,9 @@ This module contains classes for visualizing optical surfaces in 2D and 3D.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import vtk
 
+import optiland.backend as be
 from optiland.physical_apertures import RadialAperture
 from optiland.rays import RealRays
 from optiland.visualization.utils import revolve_contour, transform, transform_3d
@@ -58,16 +58,16 @@ class Surface2D:
 
         """
         # local coordinates
-        x = np.zeros(128)
-        y = np.linspace(-self.extent, self.extent, 128)
+        x = be.zeros(128)
+        y = be.linspace(-self.extent, self.extent, 128)
         z = self.surf.geometry.sag(x, y)
 
         # handle physical apertures
         if self.surf.aperture:
-            intensity = np.ones_like(x)
+            intensity = be.ones_like(x)
             rays = RealRays(x, y, x, x, x, x, intensity, x)
             self.surf.aperture.clip(rays)
-            y[rays.i == 0] = np.nan
+            y[rays.i == 0] = be.nan
 
         return x, y, z
 
@@ -162,7 +162,7 @@ class Surface3D(Surface2D):
         if self.surf.aperture is not None:
             mask = self.surf.aperture.contains(x, y)
         else:
-            r = np.hypot(x, y)
+            r = be.hypot(x, y)
             mask = r <= self.extent
 
         # Create VTK points.
@@ -170,7 +170,7 @@ class Surface3D(Surface2D):
         num_rows, num_cols = x.shape
 
         # Map grid indices to point IDs
-        point_ids = -np.ones((num_rows, num_cols), dtype=int)
+        point_ids = -be.ones((num_rows, num_cols), dtype=int)
         for i in range(num_rows):
             for j in range(num_cols):
                 point_ids[i, j] = points.InsertNextPoint(x[i, j], y[i, j], z[i, j])
@@ -246,12 +246,12 @@ class Surface3D(Surface2D):
         """
         if self.surf.aperture is not None:
             x_min, x_max, y_min, y_max = self.surf.aperture.extent
-            x = np.linspace(x_min, x_max, 256)
-            y = np.linspace(y_min, y_max, 256)
-            x, y = np.meshgrid(x, y)
+            x = be.linspace(x_min, x_max, 256)
+            y = be.linspace(y_min, y_max, 256)
+            x, y = be.meshgrid(x, y)
         else:
-            x = np.linspace(-self.extent, self.extent, 256)
-            x, y = np.meshgrid(x, x)
+            x = be.linspace(-self.extent, self.extent, 256)
+            x, y = be.meshgrid(x, x)
 
         z = self.surf.geometry.sag(x, y)
         return x, y, z

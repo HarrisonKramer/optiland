@@ -8,9 +8,9 @@ a polygon-based aperture.
 Kramer Harrison, 2025
 """
 
-import numpy as np
 from matplotlib.path import Path
 
+import optiland.backend as be
 from optiland.physical_apertures.base import BaseAperture
 
 
@@ -18,18 +18,18 @@ class PolygonAperture(BaseAperture):
     """Represents a polygonal aperture that clips rays based on their position.
 
     Attributes:
-        x (list or np.ndarray): x-coordinates of the polygon's vertices.
-        y (list or np.ndarray): y-coordinates of the polygon's vertices.
-        vertices (np.ndarray): Array-like of shape (n, 2) defining the
+        x (list or be.ndarray): x-coordinates of the polygon's vertices.
+        y (list or be.ndarray): y-coordinates of the polygon's vertices.
+        vertices (be.ndarray): Array-like of shape (n, 2) defining the
             polygon vertices.
 
     """
 
     def __init__(self, x, y):
         super().__init__()
-        self.x = np.array(x, dtype=float)
-        self.y = np.array(y, dtype=float)
-        self.vertices = np.column_stack((self.x, self.y))
+        self.x = be.array(x, dtype=float)
+        self.y = be.array(y, dtype=float)
+        self.vertices = be.column_stack((self.x, self.y))
         self._path = Path(self.vertices)
 
     @property
@@ -46,17 +46,17 @@ class PolygonAperture(BaseAperture):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
-        x = np.array(x)
-        y = np.array(y)
-        points = np.column_stack((x.ravel(), y.ravel()))
+        x = be.array(x)
+        y = be.array(y)
+        points = be.column_stack((x.ravel(), y.ravel()))
         return self._path.contains_points(points).reshape(x.shape)
 
     def scale(self, scale_factor):
@@ -156,7 +156,7 @@ class FileAperture(PolygonAperture):
                 with open(filepath, encoding=encoding) as f:
                     # delimiter defaults to space if not specified
                     delim = delimiter if delimiter is not None else " "
-                    data = np.genfromtxt(
+                    data = be.genfromtxt(
                         f,
                         delimiter=delim,
                         comments="//",

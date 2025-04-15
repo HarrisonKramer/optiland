@@ -13,7 +13,8 @@ Kramer Harrison, 2024
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class BaseAperture(ABC):
@@ -47,11 +48,11 @@ class BaseAperture(ABC):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
@@ -122,9 +123,9 @@ class BaseAperture(ABC):
         y_max *= buffer
         if ax is None:
             fig, ax = plt.subplots()
-        x = np.linspace(x_min, x_max, nx)
-        y = np.linspace(y_min, y_max, ny)
-        X, Y = np.meshgrid(x, y)
+        x = be.linspace(x_min, x_max, nx)
+        y = be.linspace(y_min, y_max, ny)
+        X, Y = be.meshgrid(x, y)
         Z = self.contains(X, Y)
         ax.contourf(X, Y, Z, **kwargs)
         ax.set_xlabel("X [mm]")
@@ -182,11 +183,11 @@ class BaseBooleanAperture(BaseAperture):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
@@ -245,15 +246,15 @@ class UnionAperture(BaseBooleanAperture):
         """Checks if the given point is inside either aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
-        return np.logical_or(self.a.contains(x, y), self.b.contains(x, y))
+        return be.logical_or(self.a.contains(x, y), self.b.contains(x, y))
 
 
 class IntersectionAperture(BaseBooleanAperture):
@@ -272,15 +273,15 @@ class IntersectionAperture(BaseBooleanAperture):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
-        return np.logical_and(self.a.contains(x, y), self.b.contains(x, y))
+        return be.logical_and(self.a.contains(x, y), self.b.contains(x, y))
 
 
 class DifferenceAperture(BaseBooleanAperture):
@@ -299,15 +300,15 @@ class DifferenceAperture(BaseBooleanAperture):
         """Checks if the given point is inside the aperture.
 
         Args:
-            x (np.ndarray): The x-coordinate of the point.
-            y (np.ndarray): The y-coordinate of the point.
+            x (be.ndarray): The x-coordinate of the point.
+            y (be.ndarray): The y-coordinate of the point.
 
         Returns:
-            np.ndarray: Boolean array indicating if the point is inside the
+            be.ndarray: Boolean array indicating if the point is inside the
                 aperture
 
         """
-        return np.logical_and(
+        return be.logical_and(
             self.a.contains(x, y),
-            np.logical_not(self.b.contains(x, y)),
+            be.logical_not(self.b.contains(x, y)),
         )

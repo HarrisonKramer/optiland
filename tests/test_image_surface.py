@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coordinate_system import CoordinateSystem
@@ -33,17 +33,17 @@ def test_initialization(setup_image_surface):
 
 def test_trace_paraxial(setup_image_surface):
     image_surface, _, _, _ = setup_image_surface
-    y = np.array([1])
-    u = np.array([0])
-    z = np.array([-10])
-    w = np.array([1])
+    y = be.array([1])
+    u = be.array([0])
+    z = be.array([-10])
+    w = be.array([1])
     rays = ParaxialRays(y, u, z, w)
     image_surface._trace_paraxial(rays)
 
 
 def test_interact(setup_image_surface):
     image_surface, _, _, _ = setup_image_surface
-    x = np.random.rand(10)
+    x = be.random.rand(10)
     rays = RealRays(x, x, x, x, x, x, x, x)
     modified_rays = image_surface._interact(rays)
     assert modified_rays == rays

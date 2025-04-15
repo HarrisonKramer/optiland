@@ -2,6 +2,7 @@
 
 from .base import VariableBehavior
 from .radius import RadiusVariable
+from .reciprocal_radius import ReciprocalRadiusVariable
 from .conic import ConicVariable
 from .thickness import ThicknessVariable
 from .tilt import TiltVariable

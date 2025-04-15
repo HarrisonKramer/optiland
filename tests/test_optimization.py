@@ -1,6 +1,6 @@
 import warnings
 
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.optimization import optimization
@@ -69,7 +69,7 @@ class TestOptimizationProblem:
             input_data=input_data,
         )
         fun_array = problem.fun_array()
-        assert np.allclose(fun_array, np.array([0.0]))
+        assert be.allclose(fun_array, be.array([0.0]))
 
     def test_sum_squared(self):
         lens = Objective60x()
@@ -83,7 +83,7 @@ class TestOptimizationProblem:
         )
         sum_squared = problem.sum_squared()
         val = (lens.paraxial.f2() - 90) ** 2
-        assert np.isclose(sum_squared, val)
+        assert be.isclose(sum_squared, val)
 
     def test_rss(self):
         lens = UVReflectingMicroscope()
@@ -96,8 +96,8 @@ class TestOptimizationProblem:
             input_data=input_data,
         )
         rss = problem.rss()
-        val = np.abs(lens.paraxial.f2() - 90)
-        assert np.isclose(rss, val)
+        val = be.abs(lens.paraxial.f2() - 90)
+        assert be.isclose(rss, val)
 
     def test_update_optics(self):
         lens = UVReflectingMicroscope()
@@ -241,7 +241,7 @@ class TestOptimizerGeneric:
                 input_data=input_data,
             )
             optimizer = optimization.OptimizerGeneric(problem)
-            assert optimizer._fun(np.array([0.2])) == 1e10
+            assert optimizer._fun(be.array([0.2])) == 1e10
 
 
 class TestLeastSquares:

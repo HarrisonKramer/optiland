@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coatings import FresnelCoating, SimpleCoating
@@ -7,7 +7,7 @@ from optiland.samples.objectives import TessarLens
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces.surface_factory import SurfaceFactory
+from optiland.surfaces import SurfaceFactory
 
 
 class TestSurfaceFactory:
@@ -89,7 +89,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert np.array_equal(surface.geometry.c, np.array([[1, 2, 3]]))
+        assert be.array_equal(surface.geometry.c, be.array([[1, 2, 3]]))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert isinstance(surface.material_pre, IdealMaterial)
@@ -105,7 +105,7 @@ class TestSurfaceFactory:
             thickness=5,
             radius=10,
             conic=0,
-            coefficients=np.arange(9).reshape(3, 3),
+            coefficients=be.arange(9).reshape(3, 3),
             tol=1e-6,
             max_iter=100,
             norm_x=1,
@@ -114,7 +114,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert np.all(surface.geometry.c == np.arange(9).reshape(3, 3))
+        assert be.all(surface.geometry.c == be.arange(9).reshape(3, 3))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert surface.geometry.norm_x == 1
@@ -219,10 +219,10 @@ class TestSurfaceFactory:
         assert surface.geometry.cs.x == 1
         assert surface.geometry.cs.y == 2
         assert surface.geometry.cs.z == 3
-        assert self.factory._use_absolute_cs
+        assert self.factory.use_absolute_cs
 
     def test_invalid_thickness_for_abs_cs(self):
-        self.factory._use_absolute_cs = True
+        self.factory.use_absolute_cs = True
         with pytest.raises(ValueError):
             self.factory.create_surface(
                 surface_type="standard",

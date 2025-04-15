@@ -11,9 +11,9 @@ import os
 import re
 import tempfile
 
-import numpy as np
 import requests
 
+import optiland.backend as be
 from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.materials import AbbeMaterial, BaseMaterial, Material
 
@@ -311,7 +311,7 @@ class ZemaxFileReader:
         try:
             self._current_surf_data["radius"] = 1 / float(data[1])
         except ZeroDivisionError:
-            self._current_surf_data["radius"] = np.inf
+            self._current_surf_data["radius"] = be.inf
 
     def _read_thickness(self, data):
         """Extracts the thickness data.
@@ -321,7 +321,7 @@ class ZemaxFileReader:
 
         """
         if data[1] == "INFINITY":
-            self._current_surf_data["thickness"] = np.inf
+            self._current_surf_data["thickness"] = be.inf
         else:
             self._current_surf_data["thickness"] = float(data[1])
 

@@ -477,14 +477,14 @@ def test_get_object_position_finite_object():
 
     # move object to z = -10
     lens.surface_group.surfaces[0].geometry.cs.z = -10
-    y, z = lens.paraxial._get_object_position(Hy=0, y1=0, EPL=-5)
+    y, z = lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=-5)
 
     assert z.item() == -10
     assert y.item() == 0
 
     # make field type object height
     lens.set_field_type(field_type="object_height")
-    y, z = lens.paraxial._get_object_position(Hy=1, y1=0, EPL=-5)
+    y, z = lens.paraxial._ray_tracer._get_object_position(Hy=1, y1=0, EPL=-5)
     assert z.item() == -10
     assert y.item() == -14
 
@@ -495,4 +495,4 @@ def test_invalid_object_position_call():
     lens = Edmund_49_847()
     lens.set_field_type(field_type="object_height")
     with pytest.raises(ValueError):
-        lens.paraxial._get_object_position(Hy=0, y1=0, EPL=5)
+        lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=5)

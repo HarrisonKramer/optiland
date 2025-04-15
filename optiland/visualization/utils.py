@@ -5,9 +5,9 @@ This module contains utility functions for visualization tasks.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import vtk
 
+import optiland.backend as be
 from optiland.rays import RealRays
 
 
@@ -27,14 +27,14 @@ def transform(x, y, z, surface, is_global=True):
         tuple: Transformed x, y, and z coordinates as numpy arrays.
 
     """
-    if np.isscalar(x):
-        x = np.array([x])
-    if np.isscalar(y):
-        y = np.array([y])
-    if np.isscalar(z):
-        z = np.array([z])
+    if be.isscalar(x):
+        x = be.array([x])
+    if be.isscalar(y):
+        y = be.array([y])
+    if be.isscalar(z):
+        z = be.array([z])
 
-    t = np.zeros(x.shape[0])
+    t = be.zeros(x.shape[0])
     points = RealRays(x, y, z, t, t, t, t, t)
     if is_global:
         surface.geometry.localize(points)
@@ -63,9 +63,9 @@ def transform_3d(actor, surface):
     dx, dy, dz = translation
 
     # Apply the rotation and translation to the actor
-    actor.RotateZ(np.degrees(rz))
-    actor.RotateY(np.degrees(ry))
-    actor.RotateX(np.degrees(rx))
+    actor.RotateZ(be.degrees(rz))
+    actor.RotateY(be.degrees(ry))
+    actor.RotateX(be.degrees(rx))
     actor.SetPosition(dx, dy, dz)
 
     return actor

@@ -18,8 +18,7 @@ terms with even exponents, ensuring symmetry about the optical axis.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
@@ -78,9 +77,9 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """Calculates the sag of the asphere at the given coordinates.
 
         Args:
-            x (float, np.ndarray, optional): The x-coordinate(s).
+            x (float, be.ndarray, optional): The x-coordinate(s).
                 Defaults to 0.
-            y (float, np.ndarray, optional): The y-coordinate(s).
+            y (float, be.ndarray, optional): The y-coordinate(s).
                 Defaults to 0.
 
         Returns:
@@ -88,7 +87,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         """
         r2 = x**2 + y**2
-        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
             z += Ci * r2 ** (i + 1)
 
@@ -99,8 +98,8 @@ class EvenAsphere(NewtonRaphsonGeometry):
         position.
 
         Args:
-            x (np.ndarray): The x values to use for calculation.
-            y (np.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x values to use for calculation.
+            y (be.ndarray): The y values to use for calculation.
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
@@ -108,7 +107,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """
         r2 = x**2 + y**2
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
+        denom = self.radius * be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = x / denom
         dfdy = y / denom
 
@@ -116,7 +115,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
             dfdx += 2 * (i + 1) * x * Ci * r2**i
             dfdy += 2 * (i + 1) * y * Ci * r2**i
 
-        mag = np.sqrt(dfdx**2 + dfdy**2 + 1)
+        mag = be.sqrt(dfdx**2 + dfdy**2 + 1)
 
         nx = dfdx / mag
         ny = dfdy / mag

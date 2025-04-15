@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 
 from optiland.physical_apertures import (
     DifferenceAperture,
@@ -35,7 +35,7 @@ class TestRadialAperture:
             [1, 1, 1, 1, 1, 1],
         )
         aperture.clip(rays)
-        assert np.all(rays.i == [0, 0, 1, 1, 0, 0])
+        assert be.all(rays.i == [0, 0, 1, 1, 0, 0])
 
     def test_scale(self):
         aperture = RadialAperture(r_max=5, r_min=2)
@@ -86,7 +86,7 @@ class TestOffsetRadialAperture:
             [1, 1, 1, 1, 1, 1],
         )
         aperture.clip(rays)
-        assert np.all(rays.i == [0, 0, 0, 1, 1, 0])
+        assert be.all(rays.i == [0, 0, 0, 1, 1, 0])
 
     def test_scale(self):
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
@@ -140,27 +140,27 @@ class TestBooleanApertures:
 
     def test_union_aperture(self):
         union_aperture = UnionAperture(self.aperture1, self.aperture2)
-        x = np.array([0, 0.0, 0.7, 1.5])
-        y = np.array([0, 0.5, 0.0, 1.5])
+        x = be.array([0, 0.0, 0.7, 1.5])
+        y = be.array([0, 0.5, 0.0, 1.5])
         result = union_aperture.contains(x, y)
-        expected = np.array([True, True, True, False])
-        np.testing.assert_array_equal(result, expected)
+        expected = be.array([True, True, True, False])
+        be.testing.assert_array_equal(result, expected)
 
     def test_intersection_aperture(self):
         intersection_aperture = IntersectionAperture(self.aperture1, self.aperture2)
-        x = np.array([0, 0.0, 0.7, 1.5])
-        y = np.array([0, 0.5, 0.0, 1.5])
+        x = be.array([0, 0.0, 0.7, 1.5])
+        y = be.array([0, 0.5, 0.0, 1.5])
         result = intersection_aperture.contains(x, y)
-        expected = np.array([True, True, False, False])
-        np.testing.assert_array_equal(result, expected)
+        expected = be.array([True, True, False, False])
+        be.testing.assert_array_equal(result, expected)
 
     def test_difference_aperture(self):
         difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
-        x = np.array([0, 0.0, 0.7, 1.5])
-        y = np.array([0, 0.5, 0.0, 1.5])
+        x = be.array([0, 0.0, 0.7, 1.5])
+        y = be.array([0, 0.5, 0.0, 1.5])
         result = difference_aperture.contains(x, y)
-        expected = np.array([False, False, True, False])
-        np.testing.assert_array_equal(result, expected)
+        expected = be.array([False, False, True, False])
+        be.testing.assert_array_equal(result, expected)
 
     def test_union_type(self):
         a = self.aperture1 | self.aperture2
@@ -204,7 +204,7 @@ class TestRectangularAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert np.all(rays.i == [1, 1, 0, 0, 0, 0])
+        assert be.all(rays.i == [1, 1, 0, 0, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
@@ -263,7 +263,7 @@ class TestEllipticalAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert np.all(rays.i == [1, 1, 1, 0, 0, 0])
+        assert be.all(rays.i == [1, 1, 1, 0, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
@@ -318,32 +318,32 @@ class TestPolygonAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert np.all(rays.i == [1, 1, 1, 1, 0, 0])
+        assert be.all(rays.i == [1, 1, 1, 1, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
-        assert np.all(
+        assert be.all(
             self.aperture.vertices
-            == np.array([[-20, -30], [20, -30], [20, 30], [-20, 30]]),
+            == be.array([[-20, -30], [20, -30], [20, 30], [-20, 30]]),
         )
 
         self.aperture.scale(0.5)
-        assert np.all(
+        assert be.all(
             self.aperture.vertices
-            == np.array([[-10, -15], [10, -15], [10, 15], [-10, 15]]),
+            == be.array([[-10, -15], [10, -15], [10, 15], [-10, 15]]),
         )
 
     def test_to_dict(self):
         data = self.aperture.to_dict()
         assert data["type"] == "PolygonAperture"
-        assert np.all(data["x"] == [-10, 10, 10, -10])
-        assert np.all(data["y"] == [-15, -15, 15, 15])
+        assert be.all(data["x"] == [-10, 10, 10, -10])
+        assert be.all(data["y"] == [-15, -15, 15, 15])
 
     def test_from_dict(self):
         data = {"type": "PolygonAperture", "x": [0, 1, 1, 0], "y": [0, 0, 1, 1]}
         aperture = PolygonAperture.from_dict(data)
-        assert np.all(aperture.x == [0, 1, 1, 0])
-        assert np.all(aperture.y == [0, 0, 1, 1])
+        assert be.all(aperture.x == [0, 1, 1, 0])
+        assert be.all(aperture.y == [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
 
     def test_extent(self):
@@ -369,12 +369,12 @@ class TestFileAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert np.all(rays.i == [1, 1, 1, 0, 0, 0])
+        assert be.all(rays.i == [1, 1, 1, 0, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
-        assert np.all(
-            self.aperture.vertices == np.array([[0, 0], [2, 0], [2, 2], [0, 2]]),
+        assert be.all(
+            self.aperture.vertices == be.array([[0, 0], [2, 0], [2, 2], [0, 2]]),
         )
 
     def test_to_dict(self):
@@ -383,8 +383,8 @@ class TestFileAperture:
         assert data["filepath"] == self.aperture.filepath
         assert data["delimiter"] == ","
         assert data["skip_header"] == 0
-        assert np.all(data["x"] == [0, 1, 1, 0])
-        assert np.all(data["y"] == [0, 0, 1, 1])
+        assert be.all(data["x"] == [0, 1, 1, 0])
+        assert be.all(data["y"] == [0, 0, 1, 1])
 
     def test_from_dict(self):
         data = {

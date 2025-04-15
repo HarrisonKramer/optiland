@@ -9,7 +9,7 @@ Kramer Harrison, 2024
 
 from typing import Optional
 
-import numpy as np
+import optiland.backend as be
 
 
 class PolarizationState:
@@ -51,7 +51,7 @@ class PolarizationState:
         self.phase_y = float(phase_y) if phase_y is not None else None
 
         if self.Ex is not None and self.Ey is not None:
-            mag = np.sqrt(self.Ex**2 + self.Ey**2)
+            mag = be.sqrt(self.Ex**2 + self.Ey**2)
             self.Ex /= mag
             self.Ey /= mag
 
@@ -122,15 +122,15 @@ def create_polarization(pol_type: str):
         phase_x = 0
         phase_y = 0
     elif pol_type == "RCP":
-        Ex = np.sqrt(2) / 2
-        Ey = np.sqrt(2) / 2
+        Ex = be.sqrt(2) / 2
+        Ey = be.sqrt(2) / 2
         phase_x = 0
-        phase_y = -np.pi / 2
+        phase_y = -be.pi / 2
     elif pol_type == "LCP":
-        Ex = np.sqrt(2) / 2
-        Ey = np.sqrt(2) / 2
+        Ex = be.sqrt(2) / 2
+        Ey = be.sqrt(2) / 2
         phase_x = 0
-        phase_y = np.pi / 2
+        phase_y = be.pi / 2
     else:
         raise ValueError(
             "Invalid polarization type. Must be H, V, L+45, L-45, RCP or LCP.",

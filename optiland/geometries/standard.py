@@ -15,8 +15,7 @@ Kramer Harrison, 2024
 
 import warnings
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.base import BaseGeometry
 
@@ -53,9 +52,9 @@ class StandardGeometry(BaseGeometry):
         """Calculate the surface sag of the geometry at the given coordinates.
 
         Args:
-            x (float, np.ndarray, optional): The x-coordinate(s).
+            x (float, be.ndarray, optional): The x-coordinate(s).
                 Defaults to 0.
-            y (float, np.ndarray, optional): The y-coordinate(s).
+            y (float, be.ndarray, optional): The y-coordinate(s).
                 Defaults to 0.
 
         Returns:
@@ -64,7 +63,7 @@ class StandardGeometry(BaseGeometry):
         """
         r2 = x**2 + y**2
         return r2 / (
-            self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2))
+            self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2))
         )
 
     def distance(self, rays):
@@ -99,15 +98,15 @@ class StandardGeometry(BaseGeometry):
         # two solutions for distance to conic
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            t1 = (-b + np.sqrt(d)) / (2 * a)
-            t2 = (-b - np.sqrt(d)) / (2 * a)
+            t1 = (-b + be.sqrt(d)) / (2 * a)
+            t2 = (-b - be.sqrt(d)) / (2 * a)
 
         # find intersection points in z
         z1 = rays.z + t1 * rays.N
         z2 = rays.z + t2 * rays.N
 
         # take intersection closest to z = 0 (i.e., vertex of geometry)
-        t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
+        t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
 
         # handle case when a = 0
         t[a == 0] = -c[a == 0] / b[a == 0]
@@ -121,18 +120,18 @@ class StandardGeometry(BaseGeometry):
             rays: The ray positions at which to calculate the surface normals.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray, np.ndarray]: The x, y, and z
+            Tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
                 components of the surface normal.
 
         """
         r2 = rays.x**2 + rays.y**2
 
-        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
+        denom = self.radius * be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dfdx = rays.x / denom
         dfdy = rays.y / denom
         dfdz = -1
 
-        mag = np.sqrt(dfdx**2 + dfdy**2 + dfdz**2)
+        mag = be.sqrt(dfdx**2 + dfdy**2 + dfdz**2)
 
         nx = dfdx / mag
         ny = dfdy / mag

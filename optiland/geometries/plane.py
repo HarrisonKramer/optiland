@@ -9,8 +9,7 @@ Kramer Harrison, 2024
 
 import warnings
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.base import BaseGeometry
 
@@ -25,7 +24,7 @@ class Plane(BaseGeometry):
 
     def __init__(self, coordinate_system):
         super().__init__(coordinate_system)
-        self.radius = np.inf
+        self.radius = be.inf
         self.is_symmetric = True
 
     def __str__(self):
@@ -35,18 +34,18 @@ class Plane(BaseGeometry):
         """Calculate the surface sag of the plane geometry.
 
         Args:
-            x (float or np.ndarray, optional): The x-coordinate of the point
+            x (float or be.ndarray, optional): The x-coordinate of the point
                 on the plane. Defaults to 0.
-            y (float or np.ndarray, optional): The y-coordinate of the point
+            y (float or be.ndarray, optional): The y-coordinate of the point
                 on the plane. Defaults to 0.
 
         Returns:
-            Union[float, np.ndarray]: The surface sag of the plane at the
+            Union[float, be.ndarray]: The surface sag of the plane at the
                 given point.
 
         """
-        if isinstance(y, np.ndarray):
-            return np.zeros_like(y)
+        if isinstance(y, be.ndarray):
+            return be.zeros_like(y)
         return 0
 
     def distance(self, rays):
@@ -56,7 +55,7 @@ class Plane(BaseGeometry):
             rays (RealRays): The rays used to calculate the distance.
 
         Returns:
-            np.ndarray: The propagation distance to the plane geometry for
+            be.ndarray: The propagation distance to the plane geometry for
                 each ray.
 
         """
@@ -89,7 +88,7 @@ class Plane(BaseGeometry):
         geometry_dict = super().to_dict()
         geometry_dict.update(
             {
-                "radius": np.inf,
+                "radius": be.inf,
             },
         )
         return geometry_dict

@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import solves
@@ -25,7 +25,7 @@ class TestMarginalRayHeightSolve:
         ya, ua = optic.paraxial.marginal_ray()
         offset = (height - ya[surface_idx]) / ua[surface_idx]
         surf = optic.surface_group.surfaces[surface_idx]
-        z_orig = np.copy(surf.geometry.cs.z)
+        z_orig = be.copy(surf.geometry.cs.z)
 
         solve = solves.MarginalRayHeightSolve(optic, surface_idx, height)
         solve.apply()
@@ -156,7 +156,7 @@ class TestSolveManager:
         ya, ua = optic.paraxial.marginal_ray()
         offset = (height - ya[surface_idx]) / ua[surface_idx]
         surf = optic.surface_group.surfaces[surface_idx]
-        z_orig = np.copy(surf.geometry.cs.z)
+        z_orig = be.copy(surf.geometry.cs.z)
 
         manager.add(solve_type, surface_idx, height)
         manager.apply()

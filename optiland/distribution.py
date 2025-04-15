@@ -8,7 +8,8 @@ Kramer Harrison, 2024
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class BaseDistribution(ABC):
@@ -18,10 +19,8 @@ class BaseDistribution(ABC):
         visualizing the distribution.
 
     Attributes:
-        dx (float): The step size in x calculated as the difference between
-            two adjacent x points.
-        dy (float): The step size in y calculated as the difference between
-            two adjacent y points.
+        x (ndarray): The x-coordinates of the generated points.
+        y (ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -35,26 +34,6 @@ class BaseDistribution(ABC):
         """
         # pragma: no cover
 
-    @property
-    def dx(self):
-        """The difference between the x-coordinates of two adjacent points.
-
-        Returns:
-            float: The step size in x.
-
-        """
-        return self.x[1] - self.x[0]
-
-    @property
-    def dy(self):
-        """The difference between the y-coordinates of two adjacent points.
-
-        Returns:
-            float: The step size in y.
-
-        """
-        return self.y[1] - self.y[0]
-
     def view(self):
         """Visualize the distribution.
 
@@ -62,8 +41,8 @@ class BaseDistribution(ABC):
             reference.
         """
         plt.plot(self.x, self.y, "k*")
-        t = np.linspace(0, 2 * np.pi, 256)
-        x, y = np.cos(t), np.sin(t)
+        t = be.linspace(0, 2 * be.pi, 256)
+        x, y = be.cos(t), be.sin(t)
         plt.plot(x, y, "r")
         plt.xlabel("Normalized Pupil Coordinate X")
         plt.ylabel("Normalized Pupil Coordinate Y")
@@ -91,10 +70,10 @@ class LineXDistribution(BaseDistribution):
 
         """
         if self.positive_only:
-            self.x = np.linspace(0, 1, num_points)
+            self.x = be.linspace(0, 1, num_points)
         else:
-            self.x = np.linspace(-1, 1, num_points)
-        self.y = np.zeros(num_points)
+            self.x = be.linspace(-1, 1, num_points)
+        self.y = be.zeros(num_points)
 
 
 class LineYDistribution(BaseDistribution):
@@ -116,11 +95,11 @@ class LineYDistribution(BaseDistribution):
             num_points (int): The number of points to generate.
 
         """
-        self.x = np.zeros(num_points)
+        self.x = be.zeros(num_points)
         if self.positive_only:
-            self.y = np.linspace(0, 1, num_points)
+            self.y = be.linspace(0, 1, num_points)
         else:
-            self.y = np.linspace(-1, 1, num_points)
+            self.y = be.linspace(-1, 1, num_points)
 
 
 class RandomDistribution(BaseDistribution):
@@ -134,7 +113,7 @@ class RandomDistribution(BaseDistribution):
     """
 
     def __init__(self, seed=None):
-        self.rng = np.random.default_rng(seed)
+        self.rng = be.random.default_rng(seed)
 
     def generate_points(self, num_points: int):
         """Generates random points.
@@ -144,10 +123,10 @@ class RandomDistribution(BaseDistribution):
 
         """
         r = self.rng.uniform(size=num_points)
-        theta = self.rng.uniform(0, 2 * np.pi, size=num_points)
+        theta = self.rng.uniform(0, 2 * be.pi, size=num_points)
 
-        self.x = np.sqrt(r) * np.cos(theta)
-        self.y = np.sqrt(r) * np.sin(theta)
+        self.x = be.sqrt(r) * be.cos(theta)
+        self.y = be.sqrt(r) * be.sin(theta)
 
 
 class UniformDistribution(BaseDistribution):
@@ -167,8 +146,8 @@ class UniformDistribution(BaseDistribution):
             num_points (int): The number of points along each axis to generate.
 
         """
-        x = np.linspace(-1, 1, num_points)
-        x, y = np.meshgrid(x, x)
+        x = be.linspace(-1, 1, num_points)
+        x, y = be.meshgrid(x, x)
         r2 = x**2 + y**2
         self.x = x[r2 <= 1]
         self.y = y[r2 <= 1]
@@ -191,15 +170,15 @@ class HexagonalDistribution(BaseDistribution):
                 Defaults to 6.
 
         """
-        x = np.zeros(1)
-        y = np.zeros(1)
-        r = np.linspace(0, 1, num_rings + 1)
+        x = be.zeros(1)
+        y = be.zeros(1)
+        r = be.linspace(0, 1, num_rings + 1)
 
         for i in range(num_rings):
             num_theta = 6 * (i + 1)
-            theta = np.linspace(0, 2 * np.pi, num_theta + 1)[:-1]
-            x = np.concatenate([x, r[i + 1] * np.cos(theta)])
-            y = np.concatenate([y, r[i + 1] * np.sin(theta)])
+            theta = be.linspace(0, 2 * be.pi, num_theta + 1)[:-1]
+            x = be.concatenate([x, r[i + 1] * be.cos(theta)])
+            y = be.concatenate([y, r[i + 1] * be.sin(theta)])
 
         self.x = x
         self.y = y
@@ -224,12 +203,12 @@ class CrossDistribution(BaseDistribution):
             num_points (int): The number of points to generate in each axis.
 
         """
-        x1 = np.zeros(num_points)
-        x2 = np.linspace(-1, 1, num_points)
-        y1 = np.linspace(-1, 1, num_points)
-        y2 = np.zeros(num_points)
-        self.x = np.concatenate((x1, x2))
-        self.y = np.concatenate((y1, y2))
+        x1 = be.zeros(num_points)
+        x2 = be.linspace(-1, 1, num_points)
+        y1 = be.linspace(-1, 1, num_points)
+        y2 = be.zeros(num_points)
+        self.x = be.concatenate((x1, x2))
+        self.y = be.concatenate((y1, y2))
 
 
 class GaussianQuadrature(BaseDistribution):
@@ -259,33 +238,33 @@ class GaussianQuadrature(BaseDistribution):
         radius = self._get_radius(num_rings)
 
         if self.is_symmetric:
-            theta = np.array([0.0])
+            theta = be.array([0.0])
         else:
-            theta = np.array([-1.04719755, 0.0, 1.04719755])
+            theta = be.array([-1.04719755, 0.0, 1.04719755])
 
-        self.x = np.outer(radius, np.cos(theta)).flatten()
-        self.y = np.outer(radius, np.sin(theta)).flatten()
+        self.x = be.outer(radius, be.cos(theta)).flatten()
+        self.y = be.outer(radius, be.sin(theta)).flatten()
 
-    def _get_radius(self, num_rings: int) -> np.ndarray:
+    def _get_radius(self, num_rings: int) -> be.ndarray:
         """Get the radius values for the given number of rings.
 
         Args:
             num_rings (int): Number of rings for Gaussian quadrature.
 
         Returns:
-            np.ndarray: Radius values for the given number of rings.
+            be.ndarray: Radius values for the given number of rings.
 
         Raises:
             ValueError: If the number of rings is not between 1 and 6.
 
         """
         radius_dict = {
-            1: np.array([0.70711]),
-            2: np.array([0.45970, 0.88807]),
-            3: np.array([0.33571, 0.70711, 0.94196]),
-            4: np.array([0.26350, 0.57446, 0.81853, 0.96466]),
-            5: np.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]),
-            6: np.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
+            1: be.array([0.70711]),
+            2: be.array([0.45970, 0.88807]),
+            3: be.array([0.33571, 0.70711, 0.94196]),
+            4: be.array([0.26350, 0.57446, 0.81853, 0.96466]),
+            5: be.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]),
+            6: be.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
         }
         if num_rings not in radius_dict:
             raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
@@ -302,12 +281,12 @@ class GaussianQuadrature(BaseDistribution):
 
         """
         weights_dict = {
-            1: np.array([0.5]),
-            2: np.array([0.25, 0.25]),
-            3: np.array([0.13889, 0.22222, 0.13889]),
-            4: np.array([0.08696, 0.16304, 0.16304, 0.08696]),
-            5: np.array([0.059231, 0.11966, 0.14222, 0.11966, 0.059231]),
-            6: np.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
+            1: be.array([0.5]),
+            2: be.array([0.25, 0.25]),
+            3: be.array([0.13889, 0.22222, 0.13889]),
+            4: be.array([0.08696, 0.16304, 0.16304, 0.08696]),
+            5: be.array([0.059231, 0.11966, 0.14222, 0.11966, 0.059231]),
+            6: be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
         }
         if num_rings not in weights_dict:
             raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
@@ -332,25 +311,22 @@ class RingDistribution(BaseDistribution):
             num_points (int): The number of points to generate in each ring.
 
         """
-        theta = np.linspace(0, 2 * np.pi, num_points + 1)[:-1]
+        theta = be.linspace(0, 2 * be.pi, num_points + 1)[:-1]
 
-        self.x = np.cos(theta)
-        self.y = np.sin(theta)
+        self.x = be.cos(theta)
+        self.y = be.sin(theta)
 
 
 def create_distribution(distribution_type):
     """Create a distribution based on the given distribution type.
 
-    Parameters
-    ----------
+    Args:
         distribution_type (str): The type of distribution to create.
 
-    Returns
-    -------
+    Returns:
         Distribution: An instance of the specified distribution type.
 
-    Raises
-    ------
+    Raises:
         ValueError: If an invalid distribution type is provided.
 
     """

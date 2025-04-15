@@ -6,8 +6,9 @@ system.
 Kramer Harrison, 2023
 """
 
-import numpy as np
 from scipy.interpolate import NearestNDInterpolator
+
+import optiland.backend as be
 
 
 class Field:
@@ -55,12 +56,10 @@ class Field:
     def from_dict(cls, field_dict):
         """Create a field from a dictionary.
 
-        Parameters
-        ----------
+        Args:
             field_dict (dict): A dictionary representation of the field.
 
-        Returns
-        -------
+        Returns:
             Field: A field object created from the dictionary.
 
         """
@@ -98,28 +97,28 @@ class FieldGroup:
 
     @property
     def x_fields(self):
-        """np.array: x field values"""
-        return np.array([field.x for field in self.fields])
+        """be.array: x field values"""
+        return be.array([field.x for field in self.fields])
 
     @property
     def y_fields(self):
-        """np.array: y field values"""
-        return np.array([field.y for field in self.fields])
+        """be.array: y field values"""
+        return be.array([field.y for field in self.fields])
 
     @property
     def max_x_field(self):
-        """np.array: max field in x"""
-        return np.max(self.x_fields)
+        """be.array: max field in x"""
+        return be.max(self.x_fields)
 
     @property
     def max_y_field(self):
-        """np.array: max field in y"""
-        return np.max(self.y_fields)
+        """be.array: max field in y"""
+        return be.max(self.y_fields)
 
     @property
     def max_field(self):
-        """np.array: max field in radial coordinates"""
-        return np.max(np.sqrt(self.x_fields**2 + self.y_fields**2))
+        """be.array: max field in radial coordinates"""
+        return be.max(be.sqrt(self.x_fields**2 + self.y_fields**2))
 
     @property
     def num_fields(self):
@@ -128,13 +127,13 @@ class FieldGroup:
 
     @property
     def vx(self):
-        """np.array: vignetting factors in x"""
-        return np.array([field.vx for field in self.fields])
+        """be.array: vignetting factors in x"""
+        return be.array([field.vx for field in self.fields])
 
     @property
     def vy(self):
-        """np.array: vignetting factors in y"""
-        return np.array([field.vy for field in self.fields])
+        """be.array: vignetting factors in y"""
+        return be.array([field.vy for field in self.fields])
 
     def get_vig_factor(self, Hx, Hy):
         """Calculates the vignetting factors for a given field position.
@@ -142,21 +141,19 @@ class FieldGroup:
         Note that the vignetting factors are interpolated using the nearest
         neighbor method.
 
-        Parameters
-        ----------
+        Args
             Hx (float): The normalized x component of the field.
             Hy (float): The normalized y component of the field.
 
-        Returns
-        -------
+        Returns:
             vx_new (float): The interpolated x-component of the
                 vignetting factor.
             vy_new (float): The interpolated y-component of the
                 vignetting factor.
 
         """
-        fields = np.stack((self.x_fields, self.y_fields), axis=-1)
-        v_data = np.stack((self.vx, self.vy), axis=-1)
+        fields = be.stack((self.x_fields, self.y_fields), axis=-1)
+        v_data = be.stack((self.vx, self.vy), axis=-1)
         interpolator = NearestNDInterpolator(fields, v_data)
         result = interpolator(Hx, Hy)
         vx_new = result[..., 0]
@@ -185,8 +182,7 @@ class FieldGroup:
     def add_field(self, field):
         """Add a field to the list of fields.
 
-        Parameters
-        ----------
+        Args:
             field: The field to be added.
 
         """
@@ -233,12 +229,10 @@ class FieldGroup:
     def from_dict(cls, data):
         """Create a field group from a dictionary.
 
-        Parameters
-        ----------
+        Args:
             data (dict): A dictionary representation of the field group.
 
-        Returns
-        -------
+        Returns:
             FieldGroup: A field group object created from the dictionary.
 
         """

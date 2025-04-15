@@ -12,15 +12,13 @@ Kramer Harrison, 2024
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import vtk
 
+import optiland.backend as be
 from optiland import materials
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
-
-plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 
 
 class OpticViewer:
@@ -279,7 +277,7 @@ class LensInfoViewer:
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
-        return np.diff(self.optic.surface_group.positions.ravel(), append=np.nan)
+        return be.diff(self.optic.surface_group.positions.ravel(), append=be.nan)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""

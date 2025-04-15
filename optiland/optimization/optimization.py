@@ -10,10 +10,10 @@ Kramer Harrison, 2024
 
 import warnings
 
-import numpy as np
 import pandas as pd
 from scipy import optimize
 
+import optiland.backend as be
 from optiland.optimization.operand import OperandManager
 from optiland.optimization.variable import VariableManager
 
@@ -77,15 +77,15 @@ class OptimizationProblem:
 
     def fun_array(self):
         """Array of operand weighted deltas squared"""
-        return np.array([op.fun() for op in self.operands]) ** 2
+        return be.array([op.fun() for op in self.operands]) ** 2
 
     def sum_squared(self):
         """Calculate the sum of squared operand weighted deltas"""
-        return np.sum(self.fun_array())
+        return be.sum(self.fun_array())
 
     def rss(self):
         """RSS of current merit function"""
-        return np.sqrt(self.sum_squared())
+        return be.sqrt(self.sum_squared())
 
     def update_optics(self):
         """Update all optics considered in the optimization problem"""
@@ -112,11 +112,11 @@ class OptimizationProblem:
 
         df = pd.DataFrame(data)
         values = self.fun_array()
-        total = np.sum(values)
+        total = be.sum(values)
         if total == 0.0:
             df["Contrib. [%]"] = 0.0
         else:
-            df["Contrib. [%]"] = np.round(values / total * 100, 2)
+            df["Contrib. [%]"] = be.round(values / total * 100, 2)
 
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
@@ -257,7 +257,7 @@ class OptimizerGeneric:
         # Compute merit function value
         try:
             rss = self.problem.sum_squared()
-            if np.isnan(rss):
+            if be.isnan(rss):
                 return 1e10
             return rss
         except ValueError:
@@ -304,11 +304,11 @@ class LeastSquares(OptimizerGeneric):
         self._x.append(x0)
 
         lower = [
-            var.bounds[0] if var.bounds[0] is not None else -np.inf
+            var.bounds[0] if var.bounds[0] is not None else -be.inf
             for var in self.problem.variables
         ]
         upper = [
-            var.bounds[1] if var.bounds[1] is not None else np.inf
+            var.bounds[1] if var.bounds[1] is not None else be.inf
             for var in self.problem.variables
         ]
         bounds = (lower, upper)
@@ -332,12 +332,10 @@ class DualAnnealing(OptimizerGeneric):
     """DualAnnealing is an optimizer that uses the dual annealing algorithm
     to find the minimum of an optimization problem.
 
-    Parameters
-    ----------
+    Args:
         problem (OptimizationProblem): The optimization problem to be solved.
 
-    Methods
-    -------
+    Methods:
         optimize(maxiter=1000, disp=True): Runs the dual annealing algorithm
             to optimize the problem and returns the result.
 
@@ -349,14 +347,12 @@ class DualAnnealing(OptimizerGeneric):
     def optimize(self, maxiter=1000, disp=True, callback=None):
         """Runs the dual annealing algorithm to optimize the problem.
 
-        Parameters
-        ----------
+        Args:
             maxiter (int): Maximum number of iterations.
             disp (bool): Whether to display the optimization process.
             callback (callable): A callable called after each iteration.
 
-        Returns
-        -------
+        Returns:
             result: The result of the optimization.
 
         """

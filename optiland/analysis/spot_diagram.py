@@ -8,10 +8,9 @@ Kramer Harrison, 2024
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib import patches
 
-plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
+import optiland.backend as be
 
 
 class SpotDiagram:
@@ -107,7 +106,7 @@ class SpotDiagram:
         # Subtract centroid and find limits
         data = self._center_spots(deepcopy(self.data))
         geometric_size = self.geometric_spot_radius()
-        axis_lim = np.max(geometric_size)
+        axis_lim = be.max(geometric_size)
 
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
@@ -162,9 +161,9 @@ class SpotDiagram:
 
         """
         # Compute the angle using arccos
-        a = a / np.linalg.norm(a)
-        b = b / np.linalg.norm(b)
-        theta = np.arccos(np.clip(np.dot(a, b), -1, 1))
+        a = a / be.linalg.norm(a)
+        b = b / be.linalg.norm(b)
+        theta = be.arccos(be.clip(be.dot(a, b), -1, 1))
 
         return theta
 
@@ -175,7 +174,7 @@ class SpotDiagram:
             N_w (float): Physical F number.
 
         """
-        N_w = 1 / (2 * n * np.sin(theta))
+        N_w = 1 / (2 * n * be.sin(theta))
         return N_w
 
     def airy_radius(self, n_w, wavelength):
@@ -244,10 +243,10 @@ class SpotDiagram:
             wavelength,
         )
 
-        north_cosines = np.array([ray_north.L, ray_north.M, ray_north.N]).ravel()
-        south_cosines = np.array([ray_south.L, ray_south.M, ray_south.N]).ravel()
-        east_cosines = np.array([ray_east.L, ray_east.M, ray_east.N]).ravel()
-        west_cosines = np.array([ray_west.L, ray_west.M, ray_west.N]).ravel()
+        north_cosines = be.array([ray_north.L, ray_north.M, ray_north.N]).ravel()
+        south_cosines = be.array([ray_south.L, ray_south.M, ray_south.N]).ravel()
+        east_cosines = be.array([ray_east.L, ray_east.M, ray_east.N]).ravel()
+        west_cosines = be.array([ray_west.L, ray_west.M, ray_west.N]).ravel()
 
         cosines_tuple = (north_cosines, south_cosines, east_cosines, west_cosines)
         return cosines_tuple
@@ -280,9 +279,9 @@ class SpotDiagram:
                 wavelength=wavelength,
             )
             chief_ray_cosines_list.append(
-                np.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
+                be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = np.array(chief_ray_cosines_list)
+        chief_ray_cosines_list = be.array(chief_ray_cosines_list)
         return chief_ray_cosines_list
 
     def generate_chief_rays_centers(self, wavelength):
@@ -308,7 +307,7 @@ class SpotDiagram:
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
-        chief_ray_centers = np.array(chief_ray_centers)
+        chief_ray_centers = be.array(chief_ray_centers)
         return chief_ray_centers
 
     def airy_disc_x_y(self, wavelength):
@@ -365,8 +364,8 @@ class SpotDiagram:
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
         for field_data in self.data:
-            centroid_x = np.mean(field_data[norm_index][0])
-            centroid_y = np.mean(field_data[norm_index][1])
+            centroid_x = be.mean(field_data[norm_index][0])
+            centroid_y = be.mean(field_data[norm_index][1])
             centroid.append((centroid_x, centroid_y))
         return centroid
 
@@ -383,8 +382,8 @@ class SpotDiagram:
         for field_data in data:
             geometric_size_field = []
             for wave_data in field_data:
-                r = np.sqrt(wave_data[0] ** 2 + wave_data[1] ** 2)
-                geometric_size_field.append(np.max(r))
+                r = be.sqrt(wave_data[0] ** 2 + wave_data[1] ** 2)
+                geometric_size_field.append(be.max(r))
             geometric_size.append(geometric_size_field)
         return geometric_size
 
@@ -401,7 +400,7 @@ class SpotDiagram:
             rms_field = []
             for wave_data in field_data:
                 r2 = wave_data[0] ** 2 + wave_data[1] ** 2
-                rms_field.append(np.sqrt(np.mean(r2)))
+                rms_field.append(be.sqrt(be.mean(r2)))
             rms.append(rms_field)
         return rms
 
@@ -524,8 +523,7 @@ class SpotDiagram:
     ):
         """Plot the field data on the given axis.
 
-        Parameters
-        ----------
+        Args:
             ax (matplotlib.axes.Axes): The axis to plot the field data on.
             field_data (list): List of tuples containing x, y, and intensity
                 data points.
@@ -536,8 +534,7 @@ class SpotDiagram:
             buffer (float, optional): Buffer factor to extend the axis limits.
                 Default is 1.05.
 
-        Returns
-        -------
+        Returns:
             None
 
         """
@@ -585,7 +582,7 @@ class SpotDiagram:
         # Determining the labels for the x and y axes based on the image
         # surface effective orientation.
         cs = self.optic.image_surface.geometry.cs
-        effective_orientation = np.abs(cs.get_effective_rotation_euler())
+        effective_orientation = be.abs(cs.get_effective_rotation_euler())
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:

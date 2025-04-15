@@ -10,8 +10,7 @@ Kramer Harrison, 2024
 import warnings
 from abc import ABC, abstractmethod
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.standard import StandardGeometry
 
@@ -44,11 +43,11 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         """Calculate the surface sag of the geometry.
 
         Args:
-            x (float or np.ndarray, optional): The x-coordinate. Defaults to 0.
-            y (float or np.ndarray, optional): The y-coordinate. Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate. Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate. Defaults to 0.
 
         Returns:
-            Union[float, np.ndarray]: The surface sag of the geometry.
+            Union[float, be.ndarray]: The surface sag of the geometry.
 
         """
         # pragma: no cover
@@ -59,8 +58,8 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         position.
 
         Args:
-            x (float, np.ndarray): The x values to use for calculation.
-            y (float, np.ndarray): The y values to use for calculation.
+            x (float, be.ndarray): The x values to use for calculation.
+            y (float, be.ndarray): The y values to use for calculation.
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
@@ -95,19 +94,19 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
         """
         x, y, z = self._intersection_sphere(rays)
-        intersections = np.column_stack((x, y, z))
-        ray_directions = np.column_stack((rays.L, rays.M, rays.N))
+        intersections = be.column_stack((x, y, z))
+        ray_directions = be.column_stack((rays.L, rays.M, rays.N))
 
         for _ in range(self.max_iter):
             z_surface = self.sag(intersections[:, 0], intersections[:, 1])
             dz = intersections[:, 2] - z_surface
             distance = dz / ray_directions[:, 2]
             intersections -= distance[:, None] * ray_directions
-            if np.max(np.abs(dz)) < self.tol:
+            if be.max(be.abs(dz)) < self.tol:
                 break
 
-        position = np.column_stack((rays.x, rays.y, rays.z))
-        return np.linalg.norm(intersections - position, axis=1)
+        position = be.column_stack((rays.x, rays.y, rays.z))
+        return be.linalg.norm(intersections - position, axis=1)
 
     def _intersection_sphere(self, rays):
         """Calculates the intersection points of the rays with the geometry.
@@ -134,15 +133,15 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         # two solutions for distance to sphere
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            t1 = (-b + np.sqrt(d)) / (2 * a)
-            t2 = (-b - np.sqrt(d)) / (2 * a)
+            t1 = (-b + be.sqrt(d)) / (2 * a)
+            t2 = (-b - be.sqrt(d)) / (2 * a)
 
         # find intersection points in z
         z1 = rays.z + t1 * rays.N
         z2 = rays.z + t2 * rays.N
 
         # take intersection closest to z = 0 (i.e., vertex of geometry)
-        t = np.where(np.abs(z1) <= np.abs(z2), t1, t2)
+        t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
 
         # handle case when a = 0
         cond = a == 0

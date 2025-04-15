@@ -6,7 +6,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class RayFan:
@@ -66,7 +67,7 @@ class RayFan:
         )
 
         # Ensure axs is a 2D array
-        axs = np.atleast_2d(axs)
+        axs = be.atleast_2d(axs)
 
         Px = self.data["Px"]
         Py = self.data["Py"]
@@ -75,11 +76,11 @@ class RayFan:
             for wavelength in self.wavelengths:
                 ex = self.data[f"{field}"][f"{wavelength}"]["x"]
                 i_x = self.data[f"{field}"][f"{wavelength}"]["intensity_x"]
-                ex[i_x == 0] = np.nan
+                ex[i_x == 0] = be.nan
 
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
                 i_y = self.data[f"{field}"][f"{wavelength}"]["intensity_y"]
-                ey[i_y == 0] = np.nan
+                ey[i_y == 0] = be.nan
 
                 axs[k, 0].plot(Py, ey, zorder=3, label=f"{wavelength:.4f} µm")
                 axs[k, 0].grid()
@@ -111,8 +112,8 @@ class RayFan:
 
         """
         data = {}
-        data["Px"] = np.linspace(-1, 1, self.num_points)
-        data["Py"] = np.linspace(-1, 1, self.num_points)
+        data["Px"] = be.linspace(-1, 1, self.num_points)
+        data["Py"] = be.linspace(-1, 1, self.num_points)
         for field in self.fields:
             Hx = field[0]
             Hy = field[1]
@@ -129,8 +130,7 @@ class RayFan:
                     distribution="line_x",
                 )
                 data[f"{field}"][f"{wavelength}"]["x"] = self.optic.surface_group.x[
-                    -1,
-                    :,
+                    -1, :
                 ]
                 data[f"{field}"][f"{wavelength}"]["intensity_x"] = (
                     self.optic.surface_group.intensity[-1, :]
@@ -144,8 +144,7 @@ class RayFan:
                     distribution="line_y",
                 )
                 data[f"{field}"][f"{wavelength}"]["y"] = self.optic.surface_group.y[
-                    -1,
-                    :,
+                    -1, :
                 ]
                 data[f"{field}"][f"{wavelength}"]["intensity_y"] = (
                     self.optic.surface_group.intensity[-1, :]

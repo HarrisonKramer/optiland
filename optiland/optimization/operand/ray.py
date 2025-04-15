@@ -7,8 +7,7 @@ optimize optical systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland import wavefront
 from optiland.distribution import GaussianQuadrature
 
@@ -168,7 +167,7 @@ class RayOperand:
         # For some reason decenter can sometimes be a single-element array.
         # In that case, retreive the float inside.
         # This is a workaround until a solution is found.
-        if type(decenter) is np.ndarray:
+        if type(decenter) is be.ndarray:
             decenter = decenter.item()
 
         return intercept - decenter
@@ -266,15 +265,15 @@ class RayOperand:
                 x.append(optic.surface_group.x[surface_number, :].flatten())
                 y.append(optic.surface_group.y[surface_number, :].flatten())
             wave_idx = optic.wavelengths.primary_index
-            mean_x = np.mean(x[wave_idx])
-            mean_y = np.mean(y[wave_idx])
+            mean_x = be.mean(x[wave_idx])
+            mean_y = be.mean(y[wave_idx])
             r2 = [(x[i] - mean_x) ** 2 + (y[i] - mean_y) ** 2 for i in range(len(x))]
-            return np.sqrt(np.mean(np.concatenate(r2)))
+            return be.sqrt(be.mean(be.concatenate(r2)))
         optic.trace(Hx, Hy, wavelength, num_rays, distribution)
         x = optic.surface_group.x[surface_number, :].flatten()
         y = optic.surface_group.y[surface_number, :].flatten()
-        r2 = (x - np.mean(x)) ** 2 + (y - np.mean(y)) ** 2
-        return np.sqrt(np.mean(r2))
+        r2 = (x - be.mean(x)) ** 2 + (y - be.mean(y)) ** 2
+        return be.sqrt(be.mean(r2))
 
     @staticmethod
     def OPD_difference(
@@ -309,7 +308,7 @@ class RayOperand:
                 weights = distribution.get_weights(num_rays)
             else:
                 distribution = GaussianQuadrature(is_symmetric=False)
-                weights = np.repeat(distribution.get_weights(num_rays), 3)
+                weights = be.repeat(distribution.get_weights(num_rays), 3)
 
             distribution.generate_points(num_rings=num_rays)
 
@@ -320,5 +319,5 @@ class RayOperand:
             num_rays,
             distribution,
         )
-        delta = (wf.data[0][0][0] - np.mean(wf.data[0][0][0])) * weights
-        return np.mean(np.abs(delta))
+        delta = (wf.data[0][0][0] - be.mean(wf.data[0][0][0])) * weights
+        return be.mean(be.abs(delta))

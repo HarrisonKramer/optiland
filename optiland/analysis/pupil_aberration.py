@@ -9,7 +9,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class PupilAberration:
@@ -64,7 +65,7 @@ class PupilAberration:
         )
 
         # Ensure axs is a 2D array
-        axs = np.atleast_2d(axs)
+        axs = be.atleast_2d(axs)
 
         Px = self.data["Px"]
         Py = self.data["Py"]
@@ -106,8 +107,8 @@ class PupilAberration:
         stop_idx = self.optic.surface_group.stop_index
 
         data = {
-            "Px": np.linspace(-1, 1, self.num_points),
-            "Py": np.linspace(-1, 1, self.num_points),
+            "Px": be.linspace(-1, 1, self.num_points),
+            "Py": be.linspace(-1, 1, self.num_points),
         }
 
         # determine size of stop
@@ -150,10 +151,10 @@ class PupilAberration:
 
                 # Compute error
                 error_x = (parax_ref - real_x) / d * 100
-                error_x[real_int_x == 0] = np.nan
+                error_x[real_int_x == 0] = be.nan
 
                 error_y = (parax_ref - real_y) / d * 100
-                error_y[real_int_y == 0] = np.nan
+                error_y[real_int_y == 0] = be.nan
 
                 data[f"{field}"][f"{wavelength}"]["x"] = error_x
                 data[f"{field}"][f"{wavelength}"]["y"] = error_y
