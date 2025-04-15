@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import geometries
@@ -31,10 +31,10 @@ class TestPlane:
         assert plane.sag(-2, 3) == 0.0
 
         # Test array input
-        x = np.array([0, 3, 8e3])
-        y = np.array([0, -7.0, 2.1654])
-        sag = np.array([0.0, 0.0, 0.0])
-        assert np.allclose(plane.sag(x, y), sag)
+        x = be.array([0, 3, 8e3])
+        y = be.array([0, -7.0, 2.1654])
+        sag = be.array([0.0, 0.0, 0.0])
+        assert be.allclose(plane.sag(x, y), sag)
 
     def test_plane_distance(self):
         cs = CoordinateSystem()
@@ -62,12 +62,12 @@ class TestPlane:
         # Test ray doesn't intersect the plane
         rays = RealRays(1.0, 2.0, -1.5, 0.0, 0.0, -1.0, 1.0, 0.0)
         distance = plane.distance(rays)
-        assert np.isclose(distance, -1.5)
+        assert be.isclose(distance, -1.5)
 
         # Test distance for ray not parallel to z axis
         L = 0.356
         M = -0.129
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -16.524, L, M, N, 1.0, 0.0)
         distance = plane.distance(rays)
         assert distance == pytest.approx(17.853374740457518, abs=1e-10)
@@ -86,7 +86,7 @@ class TestPlane:
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
-        expected_dict = {"type": "Plane", "cs": cs.to_dict(), "radius": np.inf}
+        expected_dict = {"type": "Plane", "cs": cs.to_dict(), "radius": be.inf}
         assert plane.to_dict() == expected_dict
 
     def test_from_dict(self):
@@ -118,10 +118,10 @@ class TestStandardGeometry:
         assert geometry.sag(-2, 3) == pytest.approx(0.6726209469111849, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 3, 8])
-        y = np.array([0, -7, 2.1])
-        sag = np.array([0.0, 3.5192593015921396, 4.3795018014414415])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 3, 8])
+        y = be.array([0, -7, 2.1])
+        sag = be.array([0.0, 3.5192593015921396, 4.3795018014414415])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_sag_parabola(self):
         cs = CoordinateSystem()
@@ -137,10 +137,10 @@ class TestStandardGeometry:
         assert geometry.sag(5, 5) == pytest.approx(1.0, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 2, 4])
-        y = np.array([0, -3, 2.1])
-        sag = np.array([0.0, 0.26, 0.4082])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 2, 4])
+        y = be.array([0, -3, 2.1])
+        sag = be.array([0.0, 0.26, 0.4082])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_sag_conic(self):
         cs = CoordinateSystem()
@@ -156,10 +156,10 @@ class TestStandardGeometry:
         assert geometry.sag(2, 5) == pytest.approx(0.5455809402149067, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 5, 6])
-        y = np.array([0, -3, 3.1])
-        sag = np.array([0.0, 0.6414396188168761, 0.8661643140626132])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 5, 6])
+        y = be.array([0, -3, 3.1])
+        sag = be.array([0.0, 0.6414396188168761, 0.8661643140626132])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_distance(self):
         cs = CoordinateSystem()
@@ -188,7 +188,7 @@ class TestStandardGeometry:
         # Test distance for ray not parallel to z axis
         L = 0.359
         M = -0.229
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.201933401020467, abs=1e-10)
@@ -258,10 +258,10 @@ class TestEvenAsphere:
         assert geometry.sag(-2, 3) == pytest.approx(0.25313367948069593, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 3, 8])
-        y = np.array([0, -7, 2.1])
-        sag = np.array([0.0, 1.1206923060227627, 1.3196652673420655])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 3, 8])
+        y = be.array([0, -7, 2.1])
+        sag = be.array([0.0, 1.1206923060227627, 1.3196652673420655])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_distance(self):
         cs = CoordinateSystem()
@@ -295,7 +295,7 @@ class TestEvenAsphere:
         # Test distance for ray not parallel to z axis
         L = 0.222
         M = -0.229
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.625463223037386, abs=1e-10)
@@ -352,7 +352,7 @@ class TestEvenAsphere:
 class TestPolynomialGeometry:
     def test_str(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -366,7 +366,7 @@ class TestPolynomialGeometry:
 
     def test_sag(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -387,14 +387,14 @@ class TestPolynomialGeometry:
         assert geometry.sag(-2, -7) == pytest.approx(1.6294605079733058, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 3, 8])
-        y = np.array([0, -7, 2.1])
-        sag = np.array([0.0, 2.305232559449707, 16.702875375272402])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 3, 8])
+        y = be.array([0, -7, 2.1])
+        sag = be.array([0.0, 2.305232559449707, 16.702875375272402])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_distance(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
@@ -428,14 +428,14 @@ class TestPolynomialGeometry:
         # Test distance for ray not parallel to z axis
         L = 0.164
         M = -0.210
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
         distance = geometry.distance(rays)
         assert distance == pytest.approx(12.610897321951025, abs=1e-10)
 
     def test_surface_normal(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
@@ -454,7 +454,7 @@ class TestPolynomialGeometry:
 
     def test_to_dict(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
@@ -478,7 +478,7 @@ class TestPolynomialGeometry:
 
     def test_from_dict(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
         coefficients[1] = [0.1, -1e-2, 1e-3]
         coefficients[2] = [0.2, 1e-2, 2e-4]
@@ -497,7 +497,7 @@ class TestPolynomialGeometry:
 class TestChebyshevGeometry:
     def test_str(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -513,7 +513,7 @@ class TestChebyshevGeometry:
 
     def test_sag(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -536,14 +536,14 @@ class TestChebyshevGeometry:
         assert geometry.sag(-2, -7) == pytest.approx(1.036336507973306, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 3, 8])
-        y = np.array([0, -7, 2.1])
-        sag = np.array([-0.198, 1.22291856, 1.75689642])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 3, 8])
+        y = be.array([0, -7, 2.1])
+        sag = be.array([-0.198, 1.22291856, 1.75689642])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_distance(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -579,14 +579,14 @@ class TestChebyshevGeometry:
         # Test distance for ray not parallel to z axis
         L = 0.164
         M = -0.210
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -10.2, L, M, N, 1.0, 0.0)
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.29015593, abs=1e-8)
 
     def test_surface_normal(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -607,7 +607,7 @@ class TestChebyshevGeometry:
 
     def test_invalid_input(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -625,7 +625,7 @@ class TestChebyshevGeometry:
 
     def test_to_dict(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -653,7 +653,7 @@ class TestChebyshevGeometry:
 
     def test_from_dict(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         coefficients[1] = [0.1, 1e-2, -1e-3]
         coefficients[2] = [0.2, 1e-2, 0.0]
@@ -691,10 +691,10 @@ class TestOddAsphere:
         assert geometry.sag(-2, 3) == pytest.approx(0.24529923075615997, abs=1e-10)
 
         # Test array input
-        x = np.array([0, 3, 8])
-        y = np.array([0, -7, 2.1])
-        sag = np.array([0.0, 1.10336808, 1.30564148])
-        assert np.allclose(geometry.sag(x, y), sag)
+        x = be.array([0, 3, 8])
+        y = be.array([0, -7, 2.1])
+        sag = be.array([0.0, 1.10336808, 1.30564148])
+        assert be.allclose(geometry.sag(x, y), sag)
 
     def test_distance(self):
         cs = CoordinateSystem()
@@ -752,7 +752,7 @@ class TestOddAsphere:
 class TestZernikeGeometry:
     def test_str(self):
         cs = CoordinateSystem()
-        coefficients = np.zeros((3, 3))
+        coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
         geometry = geometries.ZernikePolynomialGeometry(
             cs,

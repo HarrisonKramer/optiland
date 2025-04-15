@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import analysis
@@ -28,7 +28,7 @@ def triplet_four_fields():
 
     lens.surface_group.surfaces = []
 
-    lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
     lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
     lens.add_surface(
@@ -564,7 +564,7 @@ class TestSpotVsField:
     def test_rms_spot_size_vs_field_initialization(self, telescope_objective):
         spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
         assert spot_vs_field.num_fields == 64
-        assert np.array_equal(spot_vs_field._field[:, 1], np.linspace(0, 1, 64))
+        assert be.array_equal(spot_vs_field._field[:, 1], be.linspace(0, 1, 64))
 
     def test_rms_spot_radius(self, telescope_objective):
         spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
@@ -595,9 +595,9 @@ class TestWavefrontErrorVsField:
             telescope_objective,
         )
         assert wavefront_error_vs_field.num_fields == 32
-        assert np.array_equal(
+        assert be.array_equal(
             wavefront_error_vs_field._field[:, 1],
-            np.linspace(0, 1, 32),
+            be.linspace(0, 1, 32),
         )
 
     def test_rms_wave(self, telescope_objective):

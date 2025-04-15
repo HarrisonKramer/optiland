@@ -16,3 +16,4 @@ The following sections are covered:
 6. :ref:`Optimization <gallery_optimization>`
 7. :ref:`Tolerancing <gallery_tolerancing>`
 8. :ref:`Freeform <gallery_freeforms>`
+9. :ref:`Miscellaneous <gallery_miscellaneous>`

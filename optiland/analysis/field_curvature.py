@@ -6,7 +6,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
+import optiland.backend as be
 
 
 class FieldCurvature:
@@ -49,7 +50,7 @@ class FieldCurvature:
         """
         fig, ax = plt.subplots(figsize=figsize)
 
-        field = np.linspace(0, self.optic.fields.max_field, self.num_points)
+        field = be.linspace(0, self.optic.fields.max_field, self.num_points)
 
         for k, wavelength in enumerate(self.wavelengths):
             ax.plot(
@@ -72,7 +73,7 @@ class FieldCurvature:
 
         ax.set_ylim([0, self.optic.fields.max_field])
         current_xlim = plt.xlim()
-        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
+        ax.set_xlim([-max(be.abs(current_xlim)), max(be.abs(current_xlim))])
         ax.set_title("Field Curvature")
         plt.axvline(x=0, color="k", linewidth=0.5)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
@@ -109,11 +110,11 @@ class FieldCurvature:
             numpy.ndarray: The calculated intersection values.
 
         """
-        Hx = np.zeros(2 * self.num_points)
-        Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
+        Hx = be.zeros(2 * self.num_points)
+        Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
-        Px = np.zeros(2 * self.num_points)
-        Py = np.tile(np.array([-delta, delta]), self.num_points)
+        Px = be.zeros(2 * self.num_points)
+        Py = be.tile(be.array([-delta, delta]), self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
@@ -145,11 +146,11 @@ class FieldCurvature:
             numpy.ndarray: The calculated intersection values.
 
         """
-        Hx = np.zeros(2 * self.num_points)
-        Hy = np.repeat(np.linspace(0, 1, self.num_points), 2)
+        Hx = be.zeros(2 * self.num_points)
+        Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
-        Px = np.tile(np.array([-delta, delta]), self.num_points)
-        Py = np.zeros(2 * self.num_points)
+        Px = be.tile(be.array([-delta, delta]), self.num_points)
+        Py = be.zeros(2 * self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 

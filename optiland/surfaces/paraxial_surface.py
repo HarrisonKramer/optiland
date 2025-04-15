@@ -9,8 +9,7 @@ used for first-order layout of optical systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coatings import BaseCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
@@ -110,7 +109,7 @@ class ParaxialSurface(Surface):
         # paraxial approximation -> direction is not necessarily unit vector
         rays.L = L
         rays.M = M
-        rays.N = np.ones_like(L)
+        rays.N = be.ones_like(L)
         rays.is_normalized = False
 
         return rays

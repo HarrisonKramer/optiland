@@ -7,7 +7,7 @@ optimize optical systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
+import optiland.backend as be
 
 
 class AberrationOperand:
@@ -122,48 +122,48 @@ class AberrationOperand:
 
     @staticmethod
     def TSC_sum(optic):
-        return np.sum(optic.aberrations.TSC())
+        return be.sum(optic.aberrations.TSC())
 
     @staticmethod
     def SC_sum(optic):
-        return np.sum(optic.aberrations.SC())
+        return be.sum(optic.aberrations.SC())
 
     @staticmethod
     def CC_sum(optic):
-        return np.sum(optic.aberrations.CC())
+        return be.sum(optic.aberrations.CC())
 
     @staticmethod
     def TCC_sum(optic):
-        return np.sum(optic.aberrations.TCC())
+        return be.sum(optic.aberrations.TCC())
 
     @staticmethod
     def TAC_sum(optic):
-        return np.sum(optic.aberrations.TAC())
+        return be.sum(optic.aberrations.TAC())
 
     @staticmethod
     def AC_sum(optic):
-        return np.sum(optic.aberrations.AC())
+        return be.sum(optic.aberrations.AC())
 
     @staticmethod
     def TPC_sum(optic):
-        return np.sum(optic.aberrations.TPC())
+        return be.sum(optic.aberrations.TPC())
 
     @staticmethod
     def PC_sum(optic):
-        return np.sum(optic.aberrations.PC())
+        return be.sum(optic.aberrations.PC())
 
     @staticmethod
     def DC_sum(optic):
-        return np.sum(optic.aberrations.DC())
+        return be.sum(optic.aberrations.DC())
 
     @staticmethod
     def TAchC_sum(optic):
-        return np.sum(optic.aberrations.TAchC())
+        return be.sum(optic.aberrations.TAchC())
 
     @staticmethod
     def LchC_sum(optic):
-        return np.sum(optic.aberrations.LchC())
+        return be.sum(optic.aberrations.LchC())
 
     @staticmethod
     def TchC_sum(optic):
-        return np.sum(optic.aberrations.TchC())
+        return be.sum(optic.aberrations.TchC())

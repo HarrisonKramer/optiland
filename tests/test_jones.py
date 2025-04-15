@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import jones, materials
@@ -14,7 +14,7 @@ class TestJonesFresnel:
         jones_fresnel = jones.JonesFresnel(material_pre, material_post)
 
         # Test reflection calculation
-        aoi = np.array([0.0])
+        aoi = be.array([0.0])
         jones_matrix = jones_fresnel.calculate_matrix(rays, reflect=True, aoi=aoi)
 
         assert jones_matrix.shape == (1, 3, 3)
@@ -32,7 +32,7 @@ class TestJonesFresnel:
     def test_non_normal_incidence(self):
         L = 0.1
         M = -0.25
-        N = np.sqrt(1 - L**2 - M**2)
+        N = be.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, 3.0, L, M, N, 1.0, 1.0)
 
         material_pre = materials.IdealMaterial(n=1.0, k=0.0)
@@ -40,7 +40,7 @@ class TestJonesFresnel:
         jones_fresnel = jones.JonesFresnel(material_pre, material_post)
 
         # Test reflection calculation
-        aoi = np.array([0.2])  # use arbitrary angle of incidence
+        aoi = be.array([0.2])  # use arbitrary angle of incidence
         jones_matrix = jones_fresnel.calculate_matrix(rays, reflect=True, aoi=aoi)
 
         assert jones_matrix.shape == (1, 3, 3)
@@ -206,19 +206,19 @@ def test_jones_linear_retarder():
     jones_retarder = jones.JonesLinearRetarder(retardance=0.5, theta=0.0)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(
         0.9689124217106447,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(
         -0.2474039592545229,
         abs=1e-10,
     )
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(
         0.9689124217106447,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(
         0.24740395925452294,
         abs=1e-10,
     )
@@ -228,19 +228,19 @@ def test_jones_linear_retarder():
     jones_retarder = jones.JonesLinearRetarder(retardance=0.5, theta=0.5)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(
         0.9689124217106448,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(
         -0.1336729296661260,
         abs=1e-10,
     )
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(
         0.9689124217106448,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(
         0.13367292966612604,
         abs=1e-10,
     )
@@ -254,19 +254,19 @@ def test_jones_quarter_wave_retarder():
     jones_retarder = jones.JonesQuarterWaveRetarder(theta=0.0)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(
         0.7071067811865476,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(
         -0.7071067811865476,
         abs=1e-10,
     )
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(
         0.7071067811865476,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(
         0.7071067811865476,
         abs=1e-10,
     )
@@ -276,19 +276,19 @@ def test_jones_quarter_wave_retarder():
     jones_retarder = jones.JonesQuarterWaveRetarder(theta=0.5)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(
         0.7071067811865476,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(
         -0.3820514243700897,
         abs=1e-10,
     )
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(
         0.7071067811865476,
         abs=1e-10,
     )
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(
         0.38205142437008976,
         abs=1e-10,
     )
@@ -302,23 +302,23 @@ def test_jones_half_wave_retarder():
     jones_retarder = jones.JonesHalfWaveRetarder(theta=0.0)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(-1.0, abs=1e-10)
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(1.0, abs=1e-10)
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(-1.0, abs=1e-10)
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(1.0, abs=1e-10)
     assert jones_matrix[0, 2, 2] == 1.0
 
     # Test with theta = 0.5
     jones_retarder = jones.JonesHalfWaveRetarder(theta=0.5)
     jones_matrix = jones_retarder.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert np.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
-    assert np.imag(jones_matrix[0, 0, 0]) == pytest.approx(
+    assert be.real(jones_matrix[0, 0, 0]) == pytest.approx(0.0, abs=1e-10)
+    assert be.imag(jones_matrix[0, 0, 0]) == pytest.approx(
         -0.5403023058681398,
         abs=1e-10,
     )
-    assert np.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
-    assert np.imag(jones_matrix[0, 1, 1]) == pytest.approx(
+    assert be.real(jones_matrix[0, 1, 1]) == pytest.approx(0.0, abs=1e-10)
+    assert be.imag(jones_matrix[0, 1, 1]) == pytest.approx(
         0.5403023058681398,
         abs=1e-10,
     )

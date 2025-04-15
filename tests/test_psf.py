@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.psf import FFTPSF
@@ -133,10 +133,10 @@ def test_get_units_finite_obj():
     grid_size = 128
 
     fftpsf = FFTPSF(optic, field, wavelength, num_rays, grid_size)
-    image = np.zeros((128, 128))
+    image = be.zeros((128, 128))
     x, y = fftpsf._get_psf_units(image)
-    assert np.isclose(x, 352.01567006276366)
-    assert np.isclose(y, 352.01567006276366)
+    assert be.isclose(x, 352.01567006276366)
+    assert be.isclose(y, 352.01567006276366)
 
 
 def test_psf_log_tick_formatter():

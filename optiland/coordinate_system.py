@@ -9,9 +9,9 @@ system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+import optiland.backend as be
 from optiland.rays import RealRays
 
 
@@ -111,10 +111,10 @@ class CoordinateSystem:
         """Get the rotation matrix of the coordinate system
 
         Returns:
-            np.ndarray: The rotation matrix of the coordinate system.
+            be.ndarray: The rotation matrix of the coordinate system.
 
         """
-        rotation = np.array([self.rx, self.ry, self.rz])
+        rotation = be.array([self.rx, self.ry, self.rz])
         return R.from_euler("xyz", rotation).as_matrix()
 
     def get_effective_transform(self):
@@ -124,7 +124,7 @@ class CoordinateSystem:
             tuple: The effective translation and rotation matrix
 
         """
-        translation = np.array([self.x, self.y, self.z])
+        translation = be.array([self.x, self.y, self.z])
         if self.reference_cs is None:
             # No reference coordinate system, return the local transform
             return translation, self.get_rotation_matrix()
@@ -144,7 +144,7 @@ class CoordinateSystem:
         """Get the effective rotation in Euler angles
 
         Returns:
-            np.ndarray: The effective rotation in Euler angles
+            be.ndarray: The effective rotation in Euler angles
 
         """
         _, eff_rot_mat = self.get_effective_transform()

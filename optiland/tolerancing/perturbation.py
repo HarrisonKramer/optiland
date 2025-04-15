@@ -9,8 +9,7 @@ Kramer Harrison, 2024
 
 from abc import ABC, abstractmethod
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.optimization.variable import Variable
 
 
@@ -69,7 +68,7 @@ class RangeSampler(BaseSampler):
     """
 
     def __init__(self, start, end, steps):
-        self.values = np.linspace(start, end, steps)
+        self.values = be.linspace(start, end, steps)
         self.index = 0
         self.size = steps
 
@@ -109,7 +108,7 @@ class DistributionSampler(BaseSampler):
 
     def __init__(self, distribution, seed=None, **params):
         if seed is not None:
-            np.random.seed(seed)
+            be.random.seed(seed)
         self.distribution = distribution
         self.params = params
 
@@ -122,9 +121,9 @@ class DistributionSampler(BaseSampler):
         """
         # TODO: consider vectorizing this method with 'size' parameter
         if self.distribution == "normal":
-            return np.random.normal(**self.params)
+            return be.random.normal(**self.params)
         if self.distribution == "uniform":
-            return np.random.uniform(**self.params)
+            return be.random.uniform(**self.params)
         raise ValueError(f"Unknown distribution: {self.distribution}")
 
 

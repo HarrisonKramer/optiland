@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.coatings import FresnelCoating, SimpleCoating
@@ -32,16 +32,16 @@ class TestSurface:
         )
 
     def test_trace_paraxial_rays(self):
-        y = np.array([1])
-        u = np.array([0])
-        z = np.array([-10])
-        w = np.array([1])
+        y = be.array([1])
+        u = be.array([0])
+        z = be.array([-10])
+        w = be.array([1])
         rays = ParaxialRays(y, u, z, w)
         traced_rays = self.surface.trace(rays)
         assert isinstance(traced_rays, ParaxialRays)
 
     def test_trace_real_rays(self):
-        x = np.random.rand(10)
+        x = be.random.rand(10)
         rays = RealRays(x, x, x, x, x, x, x, x)
         traced_rays = self.surface.trace(rays)
         assert isinstance(traced_rays, RealRays)
@@ -104,16 +104,16 @@ class TestSurface:
         assert surface.bsdf.to_dict() == self.bsdf.to_dict()
         assert surface.is_reflective
         assert surface.semi_aperture is None
-        assert np.array_equal(surface.y, np.empty(0))
-        assert np.array_equal(surface.u, np.empty(0))
-        assert np.array_equal(surface.x, np.empty(0))
-        assert np.array_equal(surface.z, np.empty(0))
-        assert np.array_equal(surface.L, np.empty(0))
-        assert np.array_equal(surface.M, np.empty(0))
-        assert np.array_equal(surface.N, np.empty(0))
-        assert np.array_equal(surface.intensity, np.empty(0))
-        assert np.array_equal(surface.aoi, np.empty(0))
-        assert np.array_equal(surface.opd, np.empty(0))
+        assert be.array_equal(surface.y, be.empty(0))
+        assert be.array_equal(surface.u, be.empty(0))
+        assert be.array_equal(surface.x, be.empty(0))
+        assert be.array_equal(surface.z, be.empty(0))
+        assert be.array_equal(surface.L, be.empty(0))
+        assert be.array_equal(surface.M, be.empty(0))
+        assert be.array_equal(surface.N, be.empty(0))
+        assert be.array_equal(surface.intensity, be.empty(0))
+        assert be.array_equal(surface.aoi, be.empty(0))
+        assert be.array_equal(surface.opd, be.empty(0))
 
     def test_from_dict_missing_type(self):
         data = self.surface.to_dict()

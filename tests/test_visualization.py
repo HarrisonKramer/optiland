@@ -6,19 +6,17 @@ import pytest
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from optiland.visualization import (
-    SurfaceViewer,
-    OpticViewer,
-    OpticViewer3D,
-    LensInfoViewer
-)
-from optiland.samples.objectives import (
-    TessarLens,
-    ReverseTelephoto
-)
+import optiland.backend as be
+import pytest
+
+from optiland import fields
+from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries import BaseGeometry, EvenAsphere
+from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, MaterialFile
+from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D, SurfaceViewer
 from optiland.geometries import BaseGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.materials import BaseMaterial, MaterialFile, IdealMaterial, AbbeMaterial
@@ -31,7 +29,7 @@ matplotlib.use("Agg")  # use non-interactive backend for testing
 class InvalidGeometry(BaseGeometry):
     def __init__(self, coordinate_system=CoordinateSystem):
         super().__init__(coordinate_system())
-        self.radius = np.inf
+        self.radius = be.inf
 
     def sag(self, x=0, y=0):
         return 0

@@ -7,8 +7,7 @@ polarized rays in three-dimensional space. The class inherits from the
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.rays.polarization_state import PolarizationState
 from optiland.rays.real_rays import RealRays
 
@@ -28,16 +27,16 @@ class PolarizedRays(RealRays):
         i (ndarray): The intensity of the rays.
         w (ndarray): The wavelength of the rays.
         opd (ndarray): The optical path length of the rays.
-        p (np.ndarray): Array of polarization matrices of the rays.
+        p (be.ndarray): Array of polarization matrices of the rays.
 
     Methods:
-        get_output_field(E: np.ndarray) -> np.ndarray:
+        get_output_field(E: be.ndarray) -> be.ndarray:
             Compute the output electric field given the input electric field.
         update_intensity(state: PolarizationState):
             Update the ray intensity based on the polarization state.
-        update(jones_matrix: np.ndarray = None):
+        update(jones_matrix: be.ndarray = None):
             Update the polarization matrices after interaction with a surface.
-        _get_3d_electric_field(state: PolarizationState) -> np.ndarray:
+        _get_3d_electric_field(state: PolarizationState) -> be.ndarray:
             Get the 3D electric fields given the polarization state and
             initial rays.
 
@@ -46,23 +45,23 @@ class PolarizedRays(RealRays):
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
         super().__init__(x, y, z, L, M, N, intensity, wavelength)
 
-        self.p = np.tile(np.eye(3), (self.x.size, 1, 1))
+        self.p = be.tile(be.eye(3), (self.x.size, 1, 1))
         self._i0 = intensity.copy()
         self._L0 = L.copy()
         self._M0 = M.copy()
         self._N0 = N.copy()
 
-    def get_output_field(self, E: np.ndarray) -> np.ndarray:
+    def get_output_field(self, E: be.ndarray) -> be.ndarray:
         """Compute the output electric field given the input electric field.
 
         Args:
-            E (np.ndarray): The input electric field as a numpy array.
+            E (be.ndarray): The input electric field as a numpy array.
 
         Returns:
-            np.ndarray: The computed output electric field as a numpy array.
+            be.ndarray: The computed output electric field as a numpy array.
 
         """
-        return np.squeeze(np.matmul(self.p, E[:, :, np.newaxis]), axis=2)
+        return be.squeeze(be.matmul(self.p, E[:, :, be.newaxis]), axis=2)
 
     def update_intensity(self, state: PolarizationState):
         """Update ray intensity based on polarization state.
@@ -74,7 +73,7 @@ class PolarizedRays(RealRays):
         if state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
-            self.i = np.sum(np.abs(E1) ** 2, axis=1)
+            self.i = be.sum(be.abs(E1) ** 2, axis=1)
         else:
             # Local x-axis field
             state_x = PolarizationState(
@@ -101,79 +100,79 @@ class PolarizedRays(RealRays):
             # average two orthogonal polarizations to get mean intensity,
             # scale by initial ray intensity
             self.i = (
-                (np.sum(np.abs(E1_x) ** 2, axis=1) + np.sum(np.abs(E1_y) ** 2, axis=1))
+                (be.sum(be.abs(E1_x) ** 2, axis=1) + be.sum(be.abs(E1_y) ** 2, axis=1))
                 * self._i0
                 / 2
             )
 
-    def update(self, jones_matrix: np.ndarray = None):
+    def update(self, jones_matrix: be.ndarray = None):
         """Update polarization matrices after interaction with surface.
 
         Args:
-            jones_matrix (np.ndarray, optional): Jones matrix representing the
+            jones_matrix (be.ndarray, optional): Jones matrix representing the
                 interaction with the surface. If not provided, the
                 polarization matrix is computed assuming an identity matrix.
 
         """
         # merge k-vector components into matrix for speed
-        k0 = np.array([self.L0, self.M0, self.N0]).T
-        k1 = np.array([self.L, self.M, self.N]).T
+        k0 = be.array([self.L0, self.M0, self.N0]).T
+        k1 = be.array([self.L, self.M, self.N]).T
 
         # find s-component
-        s = np.cross(k0, k1)
-        mag = np.linalg.norm(s, axis=1)
+        s = be.cross(k0, k1)
+        mag = be.linalg.norm(s, axis=1)
 
         # handle case when mag = 0 (i.e., k0 parallel to k1)
-        if np.any(mag == 0):
-            s[mag == 0] = np.cross(k0[mag == 0], np.array([1.0, 0.0, 0.0]))
-            mag = np.linalg.norm(s, axis=1)
+        if be.any(mag == 0):
+            s[mag == 0] = be.cross(k0[mag == 0], be.array([1.0, 0.0, 0.0]))
+            mag = be.linalg.norm(s, axis=1)
 
-        s /= mag[:, np.newaxis]
+        s /= mag[:, be.newaxis]
 
         # find p-component pre and post surface
-        p0 = np.cross(k0, s)
-        p1 = np.cross(k1, s)
+        p0 = be.cross(k0, s)
+        p1 = be.cross(k1, s)
 
         # othogonal transformation matrices
-        o_in = np.stack((s, p0, k0), axis=1)
-        o_out = np.stack((s, p1, k1), axis=2)
+        o_in = be.stack((s, p0, k0), axis=1)
+        o_out = be.stack((s, p1, k1), axis=2)
 
         # compute polarization matrix for surface
         if jones_matrix is None:
-            p = np.matmul(o_out, o_in)
+            p = be.matmul(o_out, o_in)
         else:
-            p = np.einsum("nij,njk,nkl->nil", o_out, jones_matrix, o_in)
+            p = be.einsum("nij,njk,nkl->nil", o_out, jones_matrix, o_in)
 
         # update polarization matrices of rays
-        self.p = np.matmul(p, self.p)
+        self.p = be.matmul(p, self.p)
 
-    def _get_3d_electric_field(self, state: PolarizationState) -> np.ndarray:
+    def _get_3d_electric_field(self, state: PolarizationState) -> be.ndarray:
         """Get 3D electric fields given polarization state and initial rays.
 
         Args:
             state (PolarizationState): The polarization state of the rays.
 
         Returns:
-            np.ndarray: The 3D electric fields.
+            be.ndarray: The 3D electric fields.
 
         """
-        k = np.array([self._L0, self._M0, self._N0]).T
+        k = be.array([self._L0, self._M0, self._N0]).T
 
         # TODO - efficiently handle case when k parallel to x-axis
-        x = np.array([1.0, 0.0, 0.0])
-        p = np.cross(k, x)
+        x = be.array([1.0, 0.0, 0.0])
+        p = be.cross(k, x)
 
-        norms = np.linalg.norm(p, axis=1)
-        if np.any(norms == 0):
+        norms = be.linalg.norm(p, axis=1)
+        if be.any(norms == 0):
             raise ValueError("k-vector parallel to x-axis is not currently supported.")
 
-        p /= norms[:, np.newaxis]
+        p /= norms[:, be.newaxis]
 
-        s = np.cross(p, k)
+        s = be.cross(p, k)
 
         E = (
-            state.Ex * np.exp(1j * state.phase_x) * s
-            + state.Ey * np.exp(1j * state.phase_y) * p
+            state.Ex * be.exp(1j * state.phase_x) * s
+            + state.Ey * be.exp(1j * state.phase_y) * p
         )
 
         return E

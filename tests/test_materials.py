@@ -1,6 +1,6 @@
 from importlib import resources
 
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland import materials
@@ -309,8 +309,8 @@ class TestMaterial:
         df_filtered = material._find_material_matches(df)
 
         # Check that all materials have wavelength ranges including 2.0 µm
-        assert np.all(df_filtered["max_wavelength"] >= 2.0)
-        assert np.all(df_filtered["min_wavelength"] <= 2.0)
+        assert be.all(df_filtered["max_wavelength"] >= 2.0)
+        assert be.all(df_filtered["min_wavelength"] <= 2.0)
 
     def test_max_wavelength_filtering(self):
         material = materials.Material("SF11", max_wavelength=2.0)
@@ -318,8 +318,8 @@ class TestMaterial:
         df_filtered = material._find_material_matches(df)
 
         # Check that all materials have wavelength ranges including 2.0 µm
-        assert np.all(df_filtered["max_wavelength"] >= 2.0)
-        assert np.all(df_filtered["min_wavelength"] <= 2.0)
+        assert be.all(df_filtered["max_wavelength"] >= 2.0)
+        assert be.all(df_filtered["min_wavelength"] <= 2.0)
 
     def test_raise_material_error_method(self):
         material = materials.Material("SF11")
@@ -370,7 +370,7 @@ def test_extinction_coefficient(abbe_material):
 
 def test_coefficients(abbe_material):
     coefficients = abbe_material._get_coefficients()
-    assert isinstance(coefficients, np.ndarray)
+    assert isinstance(coefficients, be.ndarray)
     assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
 
 

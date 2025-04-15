@@ -1,4 +1,5 @@
 import pytest
+import optiland.backend as be
 
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
@@ -7,6 +8,52 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+
+
+def singlet_infinite_object():
+    lens = Optic()
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(
+        index=1,
+        thickness=7,
+        radius=43.7354,
+        is_stop=True,
+        material="N-SF11",
+    )
+    lens.add_surface(index=2, radius=-46.2795, thickness=50)
+    lens.add_surface(index=3)
+
+    lens.set_aperture(aperture_type="EPD", value=25)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+
+    lens.add_wavelength(value=0.5, is_primary=True)
+
+    return lens
+
+
+def singlet_finite_object():
+    lens = Optic()
+    lens.add_surface(index=0, radius=be.inf, thickness=50)
+    lens.add_surface(
+        index=1,
+        thickness=7,
+        radius=43.7354,
+        is_stop=True,
+        material="N-SF11",
+    )
+    lens.add_surface(index=2, radius=-46.2795, thickness=50)
+    lens.add_surface(index=3)
+
+    lens.set_aperture(aperture_type="EPD", value=25)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+
+    lens.add_wavelength(value=0.5, is_primary=True)
+
+    return lens
 
 
 class TestOptic:
@@ -306,6 +353,13 @@ class TestOptic:
         lens = HeliarLens()
         assert lens.total_track == 3.6291
 
+    def test_total_track_error(self):
+        lens = HeliarLens()
+        # manually remove all but first surface
+        lens.surface_group.surfaces = [lens.surface_group.surfaces[0]]
+        with pytest.raises(ValueError):
+            _ = lens.total_track
+
     def test_polarization_state_property(self):
         lens = HeliarLens()
         assert lens.polarization_state is None
@@ -313,6 +367,12 @@ class TestOptic:
         state = create_polarization("unpolarized")
         lens.set_polarization(state)
         assert lens.polarization_state == state
+
+    def test_polarization_state_error(self):
+        lens = HeliarLens()
+        lens.polarization = "invalid"
+        with pytest.raises(ValueError):
+            _ = lens.polarization_state
 
     def test_to_dict(self):
         lens = HeliarLens()
@@ -335,3 +395,27 @@ class TestOptic:
             surface.is_stop = False
         with pytest.raises(ValueError):
             _ = self.optic.surface_group.stop_index
+
+    def test_add_infinite_object(self):
+        lens1 = singlet_infinite_object()
+        lens2 = singlet_infinite_object()
+        lens_combined = lens1 + lens2
+        assert lens_combined.surface_group.num_surfaces == 6
+
+        # test that a ray trace through the combined lens works
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
+        assert rays is not None
+
+    def test_add_finite_object(self):
+        lens1 = singlet_finite_object()
+        lens2 = singlet_finite_object()
+        lens_combined = lens1 + lens2
+        assert lens_combined.surface_group.num_surfaces == 6
+
+        # test that a ray trace through the combined lens works
+        rays = lens_combined.trace(
+            Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
+        )
+        assert rays is not None

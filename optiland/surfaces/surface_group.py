@@ -10,11 +10,10 @@ Kramer Harrison, 2024
 
 from copy import deepcopy
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
+from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces.surface_factory import SurfaceFactory
 
 
 class SurfaceGroup:
@@ -41,73 +40,96 @@ class SurfaceGroup:
 
         self.surface_factory = SurfaceFactory(self)
 
+    def __add__(self, other):
+        """Add two SurfaceGroup objects together.
+
+        Note that this ignores the image surface of the current group and the object
+        surface of the other group.
+        """
+        # add the offset of the last surface in self to each surface in other
+        offset = self.surfaces[-1].geometry.cs.z
+
+        # add object surface distance if finite
+        object_distance = other.surfaces[0].geometry.cs.z
+        if be.isfinite(object_distance):
+            offset -= object_distance
+
+        for surf in other.surfaces[1:]:
+            surf.geometry.cs.z += offset
+
+        # remove stop surface from other
+        for surface in other.surfaces:
+            surface.is_stop = False
+
+        return SurfaceGroup(self.surfaces[:-1] + other.surfaces[1:])
+
     @property
     def x(self):
-        """np.array: x intersection points on all surfaces"""
-        return np.array([surf.x for surf in self.surfaces if surf.x.size > 0])
+        """be.array: x intersection points on all surfaces"""
+        return be.array([surf.x for surf in self.surfaces if surf.x.size > 0])
 
     @property
     def y(self):
-        """np.array: y intersection points on all surfaces"""
-        return np.array([surf.y for surf in self.surfaces if surf.y.size > 0])
+        """be.array: y intersection points on all surfaces"""
+        return be.array([surf.y for surf in self.surfaces if surf.y.size > 0])
 
     @property
     def z(self):
-        """np.array: z intersection points on all surfaces"""
-        return np.array([surf.z for surf in self.surfaces if surf.z.size > 0])
+        """be.array: z intersection points on all surfaces"""
+        return be.array([surf.z for surf in self.surfaces if surf.z.size > 0])
 
     @property
     def L(self):
-        """np.array: x direction cosines on all surfaces"""
-        return np.array([surf.L for surf in self.surfaces if surf.L.size > 0])
+        """be.array: x direction cosines on all surfaces"""
+        return be.array([surf.L for surf in self.surfaces if surf.L.size > 0])
 
     @property
     def M(self):
-        """np.array: y direction cosines on all surfaces"""
-        return np.array([surf.M for surf in self.surfaces if surf.M.size > 0])
+        """be.array: y direction cosines on all surfaces"""
+        return be.array([surf.M for surf in self.surfaces if surf.M.size > 0])
 
     @property
     def N(self):
-        """np.array: z direction cosines on all surfaces"""
-        return np.array([surf.N for surf in self.surfaces if surf.N.size > 0])
+        """be.array: z direction cosines on all surfaces"""
+        return be.array([surf.N for surf in self.surfaces if surf.N.size > 0])
 
     @property
     def opd(self):
-        """np.array: optical path difference recorded on all surfaces"""
-        return np.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
+        """be.array: optical path difference recorded on all surfaces"""
+        return be.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
 
     @property
     def u(self):
-        """np.array: paraxial ray angles on all surfaces"""
-        return np.array([surf.u for surf in self.surfaces if surf.u.size > 0])
+        """be.array: paraxial ray angles on all surfaces"""
+        return be.array([surf.u for surf in self.surfaces if surf.u.size > 0])
 
     @property
     def intensity(self):
-        """np.array: ray intensities on all surfaces"""
-        return np.array(
+        """be.array: ray intensities on all surfaces"""
+        return be.array(
             [surf.intensity for surf in self.surfaces if surf.intensity.size > 0],
         )
 
     @property
     def positions(self):
-        """np.array: z positions of surface vertices"""
-        return np.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
+        """be.array: z positions of surface vertices"""
+        return be.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
 
     @property
     def radii(self):
-        """np.array: radii of curvature of all surfaces"""
-        return np.array([surf.geometry.radius for surf in self.surfaces])
+        """be.array: radii of curvature of all surfaces"""
+        return be.array([surf.geometry.radius for surf in self.surfaces])
 
     @property
     def conic(self):
-        """np.array: conic constant of all surfaces"""
+        """be.array: conic constant of all surfaces"""
         values = []
         for surf in self.surfaces:
             try:
                 values.append(surf.geometry.k)
             except AttributeError:
                 values.append(0)
-        return np.array(values)
+        return be.array(values)
 
     @property
     def stop_index(self):
@@ -130,6 +152,30 @@ class SurfaceGroup:
             if isinstance(surf.coating, BaseCoatingPolarized):
                 return True
         return False
+
+    @property
+    def total_track(self):
+        """float: the total track length of the system"""
+        if self.num_surfaces < 2:
+            raise ValueError("Not enough surfaces to calculate total track.")
+        z = self.positions[1:-1]
+        return be.max(z) - be.min(z)
+
+    def n(self, wavelength):
+        """Get the refractive indices of the surfaces.
+
+        Args:
+            wavelength (float or str, optional): The wavelength for which to
+                calculate the refractive indices.
+
+        Returns:
+            numpy.ndarray: The refractive indices of the surfaces.
+
+        """
+        n = []
+        for surface in self.surfaces:
+            n.append(surface.material_post.n(wavelength))
+        return be.array(n)
 
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.

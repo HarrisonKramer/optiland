@@ -5,10 +5,10 @@ This module contains classes for visualizing lenses in 2D and 3D.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import vtk
 from matplotlib.patches import Polygon
 
+import optiland.backend as be
 from optiland.visualization.utils import revolve_contour, transform, transform_3d
 
 
@@ -76,8 +76,8 @@ class Lens2D:
             float: The maximum radial extent of all surfaces in the lens.
 
         """
-        extents = np.array([surf.extent for surf in self.surfaces])
-        return np.nanmax(extents, axis=0)
+        extents = be.array([surf.extent for surf in self.surfaces])
+        return be.nanmax(extents, axis=0)
 
     def _extend_surface(self, x, y, z, surface, extent):
         """Extends the surface to the maximum extent.
@@ -93,10 +93,10 @@ class Lens2D:
             tuple: A tuple containing the extended x, y, and z coordinates.
 
         """
-        y_new = np.array([extent])
-        x = np.concatenate([np.array([0]), x, np.array([0])])
-        y = np.concatenate([-y_new, y, y_new])
-        z = np.concatenate([np.array([z[0]]), z, np.array([z[-1]])])
+        y_new = be.array([extent])
+        x = be.concatenate([be.array([0]), x, be.array([0])])
+        y = be.concatenate([-y_new, y, y_new])
+        z = be.concatenate([be.array([z[0]]), z, be.array([z[-1]])])
 
         surface.extent = extent
 
@@ -113,7 +113,7 @@ class Lens2D:
             z (numpy.ndarray): The z coordinates of the lens.
 
         """
-        vertices = np.column_stack((z, y))
+        vertices = be.column_stack((z, y))
         polygon = Polygon(
             vertices,
             closed=True,
@@ -137,9 +137,9 @@ class Lens2D:
             x2, y2, z2 = sags[k + 1]
 
             # plot lens
-            x = np.concatenate([x1, x2[::-1]])
-            y = np.concatenate([y1, y2[::-1]])
-            z = np.concatenate([z1, z2[::-1]])
+            x = be.concatenate([x1, x2[::-1]])
+            y = be.concatenate([y1, y2[::-1]])
+            z = be.concatenate([z1, z2[::-1]])
 
             self._plot_single_lens(ax, x, y, z)
 
@@ -329,7 +329,7 @@ class Lens3D(Lens2D):
         for surface in self.surfaces:
             x, y, z = self._get_edge_points(surface)
             x, y, z = transform(x, y, z, surface.surf, is_global=False)
-            circles.append(np.stack((x, y, z), axis=-1))
+            circles.append(be.stack((x, y, z), axis=-1))
 
         for k in range(len(circles) - 1):
             circle1 = circles[k]
@@ -349,10 +349,10 @@ class Lens3D(Lens2D):
 
         """
         max_extent = self._get_max_extent()
-        theta = np.linspace(0, 2 * np.pi, 256)
+        theta = be.linspace(0, 2 * be.pi, 256)
 
-        x = max_extent * np.cos(theta)
-        y = max_extent * np.sin(theta)
+        x = max_extent * be.cos(theta)
+        y = max_extent * be.sin(theta)
         z = surface.surf.geometry.sag(x, y)
 
         return x, y, z

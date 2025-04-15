@@ -6,8 +6,7 @@ rays in 3D space.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.materials import BaseMaterial
 from optiland.rays.base import BaseRays
 
@@ -44,7 +43,7 @@ class RealRays(BaseRays):
         self.N = self._process_input(N)
         self.i = self._process_input(intensity)
         self.w = self._process_input(wavelength)
-        self.opd = np.zeros_like(self.x)
+        self.opd = be.zeros_like(self.x)
 
         # variables to hold pre-surface direction cosines
         self.L0 = None
@@ -55,10 +54,10 @@ class RealRays(BaseRays):
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
-        y = self.y * np.cos(rx) - self.z * np.sin(rx)
-        z = self.y * np.sin(rx) + self.z * np.cos(rx)
-        m = self.M * np.cos(rx) - self.N * np.sin(rx)
-        n = self.M * np.sin(rx) + self.N * np.cos(rx)
+        y = self.y * be.cos(rx) - self.z * be.sin(rx)
+        z = self.y * be.sin(rx) + self.z * be.cos(rx)
+        m = self.M * be.cos(rx) - self.N * be.sin(rx)
+        n = self.M * be.sin(rx) + self.N * be.cos(rx)
         self.y = y
         self.z = z
         self.M = m
@@ -66,10 +65,10 @@ class RealRays(BaseRays):
 
     def rotate_y(self, ry: float):
         """Rotate the rays about the y-axis."""
-        x = self.x * np.cos(ry) + self.z * np.sin(ry)
-        z = -self.x * np.sin(ry) + self.z * np.cos(ry)
-        L = self.L * np.cos(ry) + self.N * np.sin(ry)
-        n = -self.L * np.sin(ry) + self.N * np.cos(ry)
+        x = self.x * be.cos(ry) + self.z * be.sin(ry)
+        z = -self.x * be.sin(ry) + self.z * be.cos(ry)
+        L = self.L * be.cos(ry) + self.N * be.sin(ry)
+        n = -self.L * be.sin(ry) + self.N * be.cos(ry)
         self.x = x
         self.z = z
         self.L = L
@@ -77,10 +76,10 @@ class RealRays(BaseRays):
 
     def rotate_z(self, rz: float):
         """Rotate the rays about the z-axis."""
-        x = self.x * np.cos(rz) - self.y * np.sin(rz)
-        y = self.x * np.sin(rz) + self.y * np.cos(rz)
-        L = self.L * np.cos(rz) - self.M * np.sin(rz)
-        m = self.L * np.sin(rz) + self.M * np.cos(rz)
+        x = self.x * be.cos(rz) - self.y * be.sin(rz)
+        y = self.x * be.sin(rz) + self.y * be.cos(rz)
+        L = self.L * be.cos(rz) - self.M * be.sin(rz)
+        m = self.L * be.sin(rz) + self.M * be.cos(rz)
         self.x = x
         self.y = y
         self.L = L
@@ -94,8 +93,8 @@ class RealRays(BaseRays):
 
         if material is not None:
             k = material.k(self.w)
-            alpha = 4 * np.pi * k / self.w
-            self.i *= np.exp(-alpha * t * 1e3)  # mm to microns
+            alpha = 4 * be.pi * k / self.w
+            self.i *= be.exp(-alpha * t * 1e3)  # mm to microns
 
         # normalize, if required
         if not self.is_normalized:
@@ -125,7 +124,7 @@ class RealRays(BaseRays):
         u = n1 / n2
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        root = np.sqrt(1 - u**2 * (1 - dot**2))
+        root = be.sqrt(1 - u**2 * (1 - dot**2))
         tx = u * self.L0 + nx * root - u * nx * dot
         ty = u * self.M0 + ny * root - u * ny * dot
         tz = u * self.N0 + nz * root - u * nz * dot
@@ -156,12 +155,12 @@ class RealRays(BaseRays):
         self.M -= 2 * dot * ny
         self.N -= 2 * dot * nz
 
-    def update(self, jones_matrix: np.ndarray = None):
+    def update(self, jones_matrix: be.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
 
     def normalize(self):
         """Normalize the direction vectors of the rays."""
-        mag = np.sqrt(self.L**2 + self.M**2 + self.N**2)
+        mag = be.sqrt(self.L**2 + self.M**2 + self.N**2)
         self.L /= mag
         self.M /= mag
         self.N /= mag
@@ -190,10 +189,10 @@ class RealRays(BaseRays):
         """
         dot = self.L0 * nx + self.M0 * ny + self.N0 * nz
 
-        sgn = np.sign(dot)
+        sgn = be.sign(dot)
         nx *= sgn
         ny *= sgn
         nz *= sgn
 
-        dot = np.abs(dot)
+        dot = be.abs(dot)
         return nx, ny, nz, dot

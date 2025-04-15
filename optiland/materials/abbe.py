@@ -11,8 +11,7 @@ Kramer Harrison, 2024
 # import pkg_resources
 from importlib import resources
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
 
@@ -43,9 +42,9 @@ class AbbeMaterial(BaseMaterial):
             float: The refractive index of the material.
 
         """
-        if np.any(wavelength < 0.380) or np.any(wavelength > 0.750):
+        if be.any(wavelength < 0.380) or be.any(wavelength > 0.750):
             raise ValueError("Wavelength out of range for this model.")
-        return np.polyval(self._p, wavelength)
+        return be.polyval(self._p, wavelength)
 
     def k(self, wavelength):
         """Returns the extinction coefficient of the material.
@@ -67,8 +66,8 @@ class AbbeMaterial(BaseMaterial):
 
         """
         # Polynomial fit to the refractive index data
-        X = np.array([self.index, self.abbe])
-        X_poly = np.hstack([X**i for i in range(1, 4)])
+        X = be.array([self.index, self.abbe])
+        X_poly = be.hstack([X**i for i in range(1, 4)])
 
         # File contains fit coefficients
         coefficients_file = str(
@@ -79,7 +78,7 @@ class AbbeMaterial(BaseMaterial):
         # coefficients_file = pkg_resources.resource_filename(
         #    'optiland.database', 'glass_model_coefficients.npy'
         # )
-        coefficients = np.load(coefficients_file)
+        coefficients = be.load(coefficients_file)
         return X_poly @ coefficients
 
     def to_dict(self):

@@ -6,8 +6,7 @@ an optical system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.rays.base import BaseRays
 
 
@@ -29,8 +28,8 @@ class ParaxialRays(BaseRays):
         self.y = self._process_input(y)
         self.z = self._process_input(z)
         self.u = self._process_input(u)
-        self.x = np.zeros_like(self.y)
-        self.i = np.ones_like(self.y)
+        self.x = be.zeros_like(self.y)
+        self.i = be.ones_like(self.y)
         self.w = self._process_input(wavelength)
 
     def propagate(self, t: float):

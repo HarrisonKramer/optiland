@@ -1,4 +1,4 @@
-import numpy as np
+import optiland.backend as be
 import pytest
 
 from optiland.samples.objectives import TessarLens
@@ -18,7 +18,7 @@ def test_scalar_sampler():
 
 def test_range_sampler():
     sampler = RangeSampler(0, 10, 5)
-    expected_values = np.linspace(0, 10, 5)
+    expected_values = be.linspace(0, 10, 5)
     for expected in expected_values:
         assert sampler.sample() == expected
     # Test looping over values
@@ -27,7 +27,7 @@ def test_range_sampler():
 
 def test_range_cycle_twice():
     sampler = RangeSampler(0, 10, 5)
-    expected_values = np.linspace(0, 10, 5)
+    expected_values = be.linspace(0, 10, 5)
     for expected in expected_values:
         assert sampler.sample() == expected
     for expected in expected_values:
@@ -37,17 +37,17 @@ def test_range_cycle_twice():
 def test_distribution_sampler_normal():
     sampler = DistributionSampler("normal", seed=42, loc=0, scale=1)
     value = sampler.sample()
-    np.random.seed(42)
-    expected_value = np.random.normal(0, 1)
-    assert np.isclose(value, expected_value)
+    be.random.seed(42)
+    expected_value = be.random.normal(0, 1)
+    assert be.isclose(value, expected_value)
 
 
 def test_distribution_sampler_uniform():
     sampler = DistributionSampler("uniform", seed=42, low=0, high=1)
     value = sampler.sample()
-    np.random.seed(42)
-    expected_value = np.random.uniform(0, 1)
-    assert np.isclose(value, expected_value)
+    be.random.seed(42)
+    expected_value = be.random.uniform(0, 1)
+    assert be.isclose(value, expected_value)
 
 
 def test_distribution_sampler_unknown():
@@ -66,7 +66,7 @@ def test_perturbation_apply():
 
 def test_range_sampler_reset():
     sampler = RangeSampler(0, 10, 5)
-    expected_values = np.linspace(0, 10, 5)
+    expected_values = be.linspace(0, 10, 5)
     for expected in expected_values:
         assert sampler.sample() == expected
     # Test looping over values
@@ -79,4 +79,4 @@ def test_distribution_sampler_seed():
     value1 = sampler1.sample()
     sampler2 = DistributionSampler("normal", seed=42, loc=0, scale=1)
     value2 = sampler2.sample()
-    assert np.isclose(value1, value2)
+    assert be.isclose(value1, value2)

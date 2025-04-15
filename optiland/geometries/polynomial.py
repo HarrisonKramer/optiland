@@ -23,8 +23,7 @@ their orthogonal counterparts for highly corrected imaging systems.
 Kramer Harrison, 2024
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
@@ -58,7 +57,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             Defaults to 1e-10.
         max_iter (int, optional): The maximum number of iterations used in
             calculations. Defaults to 100.
-        coefficients (list or np.ndarray, optional): The coefficients of the
+        coefficients (list or be.ndarray, optional): The coefficients of the
             polynomial surface. Defaults to an empty list, indicating no
             polynomial coefficients are used.
 
@@ -76,11 +75,11 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         if coefficients is None:
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = np.atleast_2d(coefficients)
+        self.c = be.atleast_2d(coefficients)
         self.is_symmetric = False
 
         if len(self.c) == 0:
-            self.c = np.zeros((1, 1))
+            self.c = be.zeros((1, 1))
 
     def __str__(self):
         return "Polynomial XY"
@@ -89,9 +88,9 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         """Calculates the sag of the polynomial surface at the given coordinates.
 
         Args:
-            x (float, np.ndarray, optional): The x-coordinate(s).
+            x (float, be.ndarray, optional): The x-coordinate(s).
                 Defaults to 0.
-            y (float, np.ndarray, optional): The y-coordinate(s).
+            y (float, be.ndarray, optional): The y-coordinate(s).
                 Defaults to 0.
 
         Returns:
@@ -99,7 +98,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
 
         """
         r2 = x**2 + y**2
-        z = r2 / (self.radius * (1 + np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
+        z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i in range(len(self.c)):
             for j in range(len(self.c[i])):
                 z += self.c[i][j] * (x**i) * (y**j)
@@ -110,15 +109,15 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         and y position.
 
         Args:
-            x (np.ndarray): The x values to use for calculation.
-            y (np.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x values to use for calculation.
+            y (be.ndarray): The y values to use for calculation.
 
         Returns:
             tuple: The surface normal components (nx, ny, nz).
 
         """
         r2 = x**2 + y**2
-        denom = self.radius * np.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
+        denom = self.radius * be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)
         dzdx = x / denom
         dzdy = y / denom
 
@@ -130,7 +129,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
             for j in range(1, len(self.c[i])):
                 dzdy += j * self.c[i][j] * (x**i) * (y ** (j - 1))
 
-        norm = np.sqrt(dzdx**2 + dzdy**2 + 1)
+        norm = be.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
         ny = dzdy / norm
         nz = -1 / norm

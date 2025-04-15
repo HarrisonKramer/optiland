@@ -57,6 +57,7 @@ Python code to generate this 3D visualization:
    gallery/optimization
    gallery/tolerancing
    gallery/freeforms
+   gallery/miscellaneous
 
 
 .. _learning_guide:
@@ -106,13 +107,16 @@ Python code to generate this 3D visualization:
    api/api_geometries
    api/api_materials
    api/api_wavefront
+   api/api_optic
    api/api_optimization
    api/api_paraxial
    api/api_physical_apertures
    api/api_rays
+   api/api_raytrace
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
+   api/api_zernike
 
 
 .. toctree::

@@ -5,9 +5,9 @@ This module contains classes for visualizing rays in an optical system.
 Kramer Harrison, 2024
 """
 
-import numpy as np
 import vtk
 
+import optiland.backend as be
 from optiland.visualization.utils import transform
 
 
@@ -19,13 +19,13 @@ class Rays2D:
 
     Attributes:
         optic (Optic): The optical system containing surfaces and fields.
-        x (np.ndarray): X-coordinates of the rays.
-        y (np.ndarray): Y-coordinates of the rays.
-        z (np.ndarray): Z-coordinates of the rays.
-        i (np.ndarray): Intensities of the rays.
-        x_extent (np.ndarray): Extents of the x-coordinates for each surface.
-        y_extent (np.ndarray): Extents of the y-coordinates for each surface.
-        r_extent (np.ndarray): Extents of the radii for each surface.
+        x (be.ndarray): X-coordinates of the rays.
+        y (be.ndarray): Y-coordinates of the rays.
+        z (be.ndarray): Z-coordinates of the rays.
+        i (be.ndarray): Intensities of the rays.
+        x_extent (be.ndarray): Extents of the x-coordinates for each surface.
+        y_extent (be.ndarray): Extents of the y-coordinates for each surface.
+        r_extent (be.ndarray): Extents of the radii for each surface.
 
     Methods:
         plot(ax, fields='all', wavelengths='primary', num_rays=3,
@@ -41,7 +41,7 @@ class Rays2D:
         self.i = None
 
         n = optic.surface_group.num_surfaces
-        self.r_extent = np.zeros(n)
+        self.r_extent = be.zeros(n)
 
     def plot(
         self,
@@ -139,13 +139,13 @@ class Rays2D:
 
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
-        r_extent_new = np.zeros_like(self.r_extent)
+        r_extent_new = be.zeros_like(self.r_extent)
         for i, surf in enumerate(self.optic.surface_group.surfaces):
             # convert to local coordinate system
             x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
 
-            r_extent_new[i] = np.nanmax(np.hypot(x, y))
-        self.r_extent = np.fmax(self.r_extent, r_extent_new)
+            r_extent_new[i] = be.nanmax(be.hypot(x, y))
+        self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
     def _plot_lines(self, ax, color_idx, linewidth=1):
         """Plots multiple lines on the given axis.
@@ -172,9 +172,9 @@ class Rays2D:
             ik = self.i[:, k]
 
             # remove rays outside aperture
-            xk[ik == 0] = np.nan
-            zk[ik == 0] = np.nan
-            yk[ik == 0] = np.nan
+            xk[ik == 0] = be.nan
+            zk[ik == 0] = be.nan
+            yk[ik == 0] = be.nan
 
             self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
 

@@ -22,7 +22,7 @@ How to Contribute
 Guidelines
 ----------
 
-- **Coding Style:** Follow the project's style guidelines. We use automated tools (e.g., [Ruff](https://docs.astral.sh/ruff/)) to enforce code formatting and linting.
+- **Coding Style:** Follow the project's style guidelines. We use automated tools (e.g., `Ruff <https://docs.astral.sh/ruff/>`_) to enforce code formatting and linting.
 - **Testing:** Write tests for new features and bug fixes. Ensure all tests pass before submitting a pull request.
 - **Documentation:** Update documentation and examples as necessary.
 - **Commit Messages:** Use clear and descriptive commit messages.
@@ -43,16 +43,25 @@ Formatting and Linting
 
 We use `Ruff <https://docs.astral.sh/ruff/>`_ for both linting and formatting. Formatting and linting are **automatically enforced** in pull requests through a GitHub Action and must pass before merging.
 
-To ensure compliance before committing, install `pre-commit` and set up the hook::
+To ensure compliance before committing, install `pre-commit <https://pre-commit.com/>`_ and set up the hook::
 
     pip install pre-commit
     pre-commit install
+
+This will manually install the pre-commit hooks from the ``.pre-commit-config.yaml`` file in your local Optiland repository.
+The pre-commit hooks will automatically run Ruff checks on staged files before committing.
 
 To manually run Ruff checks before committing, use::
 
     pre-commit run --all-files
 
-Ruff will automatically apply fixes for formatting and linting issues where possible.
+Ruff can be used to automatically apply fixes for formatting and linting issues where possible. To do this, first install Ruff::
+
+    pip install ruff
+
+Then, you can run Ruff to automatically fix issues in your code::
+
+    ruff format .
 
 Key Formatting Rules:
 
@@ -73,7 +82,7 @@ Key Formatting Rules:
 Docstrings and Comments
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Write docstrings for all public functions, classes, and modules using the `**Google** docstring style <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`.
+- Write docstrings for all public functions, classes, and modules using the `Google docstring style <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html/>`_.
 - Use inline comments sparingly and only when necessary to explain complex logic.
 
 Testing

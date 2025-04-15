@@ -12,17 +12,15 @@ Kramer Harrison, 2024
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import vtk
 from scipy import optimize
 
+import optiland.backend as be
 from optiland import materials
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
-
-plt.rcParams.update({"font.size": 12, "font.family": "cambria"})
 
 
 class SurfaceViewer:
@@ -87,9 +85,9 @@ class SurfaceViewer:
         # Set surface aperture
         semi_aperture = surface.semi_aperture
 
-        x, y = np.meshgrid(
-            np.linspace(-semi_aperture, semi_aperture, num_points),
-            np.linspace(-semi_aperture, semi_aperture, num_points),
+        x, y = be.meshgrid(
+            be.linspace(-semi_aperture, semi_aperture, num_points),
+            be.linspace(-semi_aperture, semi_aperture, num_points),
         )
 
         # compute surface sag
@@ -99,7 +97,7 @@ class SurfaceViewer:
             k = surface.geometry.k
             z = self._compute_deviation_to_best_fit_conic(x, y, z, k)
 
-        z[np.sqrt(x**2 + y**2) > semi_aperture] = np.nan
+        z[be.sqrt(x**2 + y**2) > semi_aperture] = be.nan
 
         # Plot in 2D
         if projection == "2d":
@@ -129,7 +127,7 @@ class SurfaceViewer:
             raise ValueError('Projection must be "2d" or "3d".')
 
     def _plot_2d(
-        self, z: np.ndarray, figsize: tuple = (7, 5.5), title: str = None, **kwargs
+        self, z: be.ndarray, figsize: tuple = (7, 5.5), title: str = None, **kwargs
     ):
         """
         Plot a 2D representation of the given data.
@@ -146,7 +144,7 @@ class SurfaceViewer:
         extent = [-semi_aperture, semi_aperture, -semi_aperture, semi_aperture]
         ax.set_xlabel("X [mm]")
         ax.set_ylabel("Y [mm]")
-        im = ax.imshow(np.flipud(z), extent=extent)
+        im = ax.imshow(be.flipud(z), extent=extent)
 
         if title is not None:
             ax.set_title(title)
@@ -170,9 +168,9 @@ class SurfaceViewer:
 
     def _plot_3d(
         self,
-        x: np.ndarray,
-        y: np.ndarray,
-        z: np.ndarray,
+        x: be.ndarray,
+        y: be.ndarray,
+        z: be.ndarray,
         figsize: tuple = (7, 5.5),
         title: str = None,
         **kwargs,
@@ -238,11 +236,11 @@ class SurfaceViewer:
         """
         if k == 0:
             # Sphere case
-            return R - np.sign(R) * np.sqrt(R**2 - x**2 - y**2)
+            return R - be.sign(R) * be.sqrt(R**2 - x**2 - y**2)
         else:
             # Conic case
             return (x**2 + y**2) / (
-                R * (1 + np.sqrt(1 + (1 + k) * (x**2 + y**2) / R**2))
+                R * (1 + be.sqrt(1 + (1 + k) * (x**2 + y**2) / R**2))
             )
 
     def _best_fit_conic(self, x, y, z, k):
@@ -257,11 +255,11 @@ class SurfaceViewer:
             Fitted conic radius & conic constant.
         """
 
-        def rms_error(params: np.array):
+        def rms_error(params: be.array):
             z_s = self._conic_sag(x, y, params[0], params[1])
-            return np.sum((z - z_s) ** 2)  # RMS error
+            return be.sum((z - z_s) ** 2)  # RMS error
 
-        initial_guess = [np.mean(z + (x**2 + y**2) / (2 * z)), k]
+        initial_guess = [be.mean(z + (x**2 + y**2) / (2 * z)), k]
         res = optimize.minimize(rms_error, x0=initial_guess, method="Nelder-Mead")
         print(f"Residual RMS error : {res.fun:.2e}")
         return res.x[0], res.x[1]
@@ -538,7 +536,7 @@ class LensInfoViewer:
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
-        return np.diff(self.optic.surface_group.positions.ravel(), append=np.nan)
+        return be.diff(self.optic.surface_group.positions.ravel(), append=be.nan)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""
