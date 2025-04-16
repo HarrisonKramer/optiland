@@ -11,7 +11,8 @@ Kramer Harrison, 2025
 from dataclasses import dataclass, field
 from typing import Any
 
-import optiland.backend as be
+import numpy as np
+
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
@@ -40,7 +41,7 @@ class GeometryConfig:
         norm_radius (float): normalization radius. Defaults to 1.0.
     """
 
-    radius: float = be.inf
+    radius: float = np.inf
     conic: float = 0.0
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
@@ -76,7 +77,7 @@ def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
         StandardGeometry or Plane
     """
     # Use a Plane if the radius is infinity.
-    if be.isinf(config.radius):
+    if np.isinf(config.radius):
         return Plane(cs)
     return StandardGeometry(cs, config.radius, config.conic)
 
