@@ -10,6 +10,7 @@ Kramer Harrison, 2025
 """
 
 from optiland.backend import numpy_backend
+from optiland.backend.utils import to_numpy  # noqa: F401
 
 try:
     from optiland.backend import torch_backend
