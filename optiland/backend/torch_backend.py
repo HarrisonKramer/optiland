@@ -340,3 +340,7 @@ def matrix_vector_multiply_and_squeeze(p, E):
 
 def roll(x, shift, axis=None):
     return torch.roll(x, shift, dims=axis)
+
+
+def reshape(x, shape):
+    return x.view(shape)
