@@ -10,6 +10,7 @@ import contextlib
 import os
 from io import StringIO
 
+import numpy as np
 import yaml
 
 import optiland.backend as be
@@ -326,7 +327,7 @@ class MaterialFile(BaseMaterial):
             # Parse tabulated data
             elif sub_data_type.startswith("tabulated"):
                 data_file = StringIO(sub_data["data"])
-                arr = be.atleast_2d(be.loadtxt(data_file))
+                arr = be.atleast_2d(np.loadtxt(data_file))
 
                 if sub_data_type == "tabulated n":
                     self._n_wavelength = arr[:, 0]
