@@ -321,9 +321,10 @@ class MaterialFile(BaseMaterial):
 
             # Parse the data based on the type
             if sub_data_type.startswith("formula "):
-                self.coefficients = be.atleast_2d(
+                self.coefficients = be.array(
                     [float(k) for k in sub_data["coefficients"].split()]
                 )
+                self.coefficients = be.reshape(self.coefficients, (-1, 1))
                 self._set_formula_type(sub_data_type)
 
             # Parse tabulated data
