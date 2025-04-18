@@ -27,8 +27,8 @@ class PolygonAperture(BaseAperture):
 
     def __init__(self, x, y):
         super().__init__()
-        self.x = be.array(x, dtype=float)
-        self.y = be.array(y, dtype=float)
+        self.x = be.array(x)
+        self.y = be.array(y)
         self.vertices = be.column_stack((self.x, self.y))
         self._path = Path(self.vertices)
 
