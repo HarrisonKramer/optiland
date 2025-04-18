@@ -60,10 +60,6 @@ class ParaxialRayTracer:
             tuple: A tuple containing the final height(s) and slope(s) of the
                 rays after tracing.
         """
-        y = self._process_input(y)
-        u = self._process_input(u)
-        z = self._process_input(z)
-
         R = self.optic.surface_group.radii
         n = self.optic.n(wavelength)
         pos = be.ravel(self.optic.surface_group.positions)
