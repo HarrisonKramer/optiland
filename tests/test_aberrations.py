@@ -56,17 +56,14 @@ def simple_singlet():
 
 
 class TestDoubleGaussAberrations:
-    def test_init(self, double_gauss, set_test_backend):
+    def test_init(self, set_test_backend, double_gauss):
         aberrations = Aberrations(double_gauss)
         assert aberrations.optic == double_gauss
 
-    def test_seidels(self, double_gauss):
+    def test_seidels(self, set_test_backend, double_gauss):
         S = double_gauss.aberrations.seidels()
-        assert S[0] == pytest.approx(-0.003929457875534847, abs=1e-9)
-        assert S[1] == pytest.approx(0.0003954597633218682, abs=1e-9)
-        assert S[2] == pytest.approx(0.0034239055031729947, abs=1e-9)
-        assert S[3] == pytest.approx(-0.016264753735226404, abs=1e-9)
-        assert S[4] == pytest.approx(-0.046484107476755930, abs=1e-9)
+        assert_allclose(S, [-0.003929457875534847, 0.0003954597633218682, 0.0034239055031729947, 
+                            -0.016264753735226404, -0.046484107476755930], abs_tol=1e-9)
 
     def test_third_order(self, double_gauss):
         data = double_gauss.aberrations.third_order()
