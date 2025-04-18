@@ -33,6 +33,9 @@ def to_numpy(obj):
     elif isinstance(obj, (int, float)):
         return np.array([obj])
 
+    elif isinstance(obj, list):
+        return np.array(obj)
+
     for converter in CONVERTERS:
         try:
             return converter(obj)
