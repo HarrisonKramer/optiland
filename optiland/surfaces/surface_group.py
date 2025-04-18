@@ -8,8 +8,6 @@ converting the group to and from a dictionary for serialization.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
-
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
@@ -282,38 +280,6 @@ class SurfaceGroup:
         """
         for surface in self.surfaces:
             surface.reset()
-
-    def inverted(self):
-        """Generate inverted surface group.
-
-        This method generates an inverted surface group by performing the
-            following operations:
-            1. Reverses the order of the surfaces in the original surface
-                group.
-            2. Scales the radii of each surface by -1.
-            3. Inverts the z position of each surface by subtracting it from
-                the z position of the last surface.
-            4. Swaps the initial and final materials of each surface.
-
-        Returns:
-            SurfaceGroup: The inverted surface group.
-
-        """
-        surfs_inverted = deepcopy(self.surfaces[::-1])
-        z_shift = self.surfaces[-1].geometry.cs.z
-        for surf in surfs_inverted:
-            # scale radii by -1
-            surf.geometry.radius *= -1
-
-            # invert z position
-            surf.geometry.cs.z = z_shift - surf.geometry.cs.z
-
-            # swap initial and final materials
-            temp = surf.material_pre
-            surf.material_pre = surf.material_post
-            surf.material_post = temp
-
-        return SurfaceGroup(surfs_inverted)
 
     def set_fresnel_coatings(self):
         """Set Fresnel coatings on all surfaces in the group."""
