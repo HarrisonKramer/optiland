@@ -60,6 +60,10 @@ class ParaxialRayTracer:
             tuple: A tuple containing the final height(s) and slope(s) of the
                 rays after tracing.
         """
+        y = self._process_input(y)
+        u = self._process_input(u)
+        z = self._process_input(z)
+
         R = self.optic.surface_group.radii
         n = self.optic.n(wavelength)
         pos = be.ravel(self.optic.surface_group.positions)
@@ -79,8 +83,8 @@ class ParaxialRayTracer:
 
         for k in range(skip, len(R)):
             if isinstance(surfs[k], ObjectSurface):
-                heights.append(be.copy(be.atleast_1d(y)))
-                slopes.append(be.copy(be.atleast_1d(u)))
+                heights.append(be.copy(y))
+                slopes.append(be.copy(u))
                 continue
 
             # propagate to surface
@@ -148,3 +152,18 @@ class ParaxialRayTracer:
             z0 = be.ones_like(y1) * z
 
         return y0, z0
+
+    def _process_input(self, x):
+        """
+        Process input to ensure it is a numpy array.
+
+        Args:
+            x (float or array-like): The input to process.
+
+        Returns:
+            np.ndarray: The processed input.
+        """
+        if isinstance(x, (int, float)):
+            return be.array([x])
+        else:
+            return be.array(x)
