@@ -130,7 +130,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w**2 / (w**2 - c[k + 1] ** 2)
+                n = n + c[k] * w**2 / (w**2 - c[k + 1] ** 2)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 1.") from err
         return be.sqrt(n)
@@ -150,7 +150,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w**2 / (w**2 - c[k + 1])
+                n = n + c[k] * w**2 / (w**2 - c[k + 1])
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 2.") from err
         return be.sqrt(n)
@@ -170,7 +170,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return be.sqrt(n)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 3.") from err
@@ -194,7 +194,7 @@ class MaterialFile(BaseMaterial):
                 + c[5] * w ** c[6] / (w**2 - c[7] ** c[8])
             )
             for k in range(9, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return be.sqrt(n)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 4.") from err
@@ -214,7 +214,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 5.") from err
@@ -234,7 +234,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] / (c[k + 1] - w**-2)
+                n = n + c[k] / (c[k + 1] - w**-2)
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 6.") from err
@@ -254,7 +254,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0] + c[1] / (w**2 - 0.028) + c[2] * (1 / (w**2 - 0.028)) ** 2
             for k in range(3, len(c)):
-                n += c[k] * w ** (2 * (k - 2))
+                n = n + c[k] * w ** (2 * (k - 2))
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 7.") from err
