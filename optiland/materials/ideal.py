@@ -7,7 +7,7 @@ wavelengths.
 Kramer Harrison, 2024
 """
 
-from optiland.backend import be
+import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
 
