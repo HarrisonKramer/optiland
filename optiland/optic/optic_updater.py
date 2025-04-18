@@ -190,4 +190,6 @@ class OpticUpdater:
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
-        self.optic.surface_group.surfaces[-1].geometry.cs.z -= offset
+        self.optic.surface_group.surfaces[-1].geometry.cs.z = (
+            self.optic.surface_group.surfaces[-1].geometry.cs.z - offset
+        )
