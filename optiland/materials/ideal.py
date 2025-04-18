@@ -22,8 +22,8 @@ class IdealMaterial(BaseMaterial):
     """
 
     def __init__(self, n, k=0):
-        self.index = be.array(n)
-        self.absorp = be.array(k)
+        self.index = be.array([n])
+        self.absorp = be.array([k])
 
     def n(self, wavelength):
         """Returns the refractive index of the material.
