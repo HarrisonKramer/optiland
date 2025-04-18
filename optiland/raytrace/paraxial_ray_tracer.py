@@ -79,8 +79,8 @@ class ParaxialRayTracer:
 
         for k in range(skip, len(R)):
             if isinstance(surfs[k], ObjectSurface):
-                heights.append(be.copy(y))
-                slopes.append(be.copy(u))
+                heights.append(be.copy(be.atleast_1d(y)))
+                slopes.append(be.copy(be.atleast_1d(u)))
                 continue
 
             # propagate to surface
