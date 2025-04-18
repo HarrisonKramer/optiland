@@ -66,7 +66,7 @@ class ParaxialRayTracer:
         rays = ParaxialRays(y, u, z, wavelength)
         surfaces.trace(rays, skip)
 
-        return surfaces.y, surfaces.u
+        return surfaces.y.reshape(-1, 1), surfaces.u.reshape(-1, 1)
 
     def _get_object_position(self, Hy, y1, EPL):
         """Calculate the position of the object in the paraxial optical system.
