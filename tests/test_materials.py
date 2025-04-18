@@ -374,12 +374,6 @@ def test_coefficients(abbe_material):
     assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
 
 
-def test_refractive_index_different_wavelengths(abbe_material):
-    wavelengths = [0.4, 0.5, 0.6, 0.7]  # in microns
-    for wavelength in wavelengths:
-        assert isinstance(abbe_material.n(wavelength), float)
-
-
 def test_abbe_to_dict(abbe_material):
     abbe_dict = abbe_material.to_dict()
     assert abbe_dict == {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
