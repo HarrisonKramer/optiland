@@ -173,7 +173,7 @@ class SurfaceGroup:
         n = []
         for surface in self.surfaces:
             n.append(surface.material_post.n(wavelength))
-        return be.array(n)
+        return be.ravel(be.array(n))
 
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.
