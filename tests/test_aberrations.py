@@ -63,28 +63,28 @@ class TestDoubleGaussAberrations:
     def test_seidels(self, set_test_backend, double_gauss):
         S = double_gauss.aberrations.seidels()
         assert_allclose(S, [-0.003929457875534847, 0.0003954597633218682, 0.0034239055031729947, 
-                            -0.016264753735226404, -0.046484107476755930], abs_tol=1e-9)
+                            -0.016264753735226404, -0.046484107476755930])
 
-    def test_third_order(self, double_gauss):
+    def test_third_order(self, set_test_backend, double_gauss):
         data = double_gauss.aberrations.third_order()
         TSC, SC, CC, TCC, TAC, AC, TPC, PC, DC, TAchC, LchC, TchC, S = data
-        assert be.sum(TSC) == pytest.approx(-0.01964728937767421, abs=1e-9)
-        assert be.sum(SC) == pytest.approx(-0.19647289377674193, abs=1e-9)
-        assert be.sum(CC) == pytest.approx(0.0019772988166093623, abs=1e-9)
-        assert be.sum(TCC) == pytest.approx(0.005931896449828042, abs=1e-9)
-        assert be.sum(TAC) == pytest.approx(0.017119527515864978, abs=1e-9)
-        assert be.sum(AC) == pytest.approx(0.17119527515864985, abs=1e-9)
-        assert be.sum(TPC) == pytest.approx(-0.08132376867613199, abs=1e-9)
-        assert be.sum(PC) == pytest.approx(-0.8132376867613212, abs=1e-9)
-        assert be.sum(DC) == pytest.approx(-0.2324205373837797, abs=1e-9)
-        assert be.sum(TAchC) == pytest.approx(0.0295705512988189, abs=1e-9)
-        assert be.sum(LchC) == pytest.approx(0.2957055129881888, abs=1e-9)
-        assert be.sum(TchC) == pytest.approx(-0.01804376318260833, abs=1e-9)
-        assert S[0] == pytest.approx(-0.003929457875534847, abs=1e-9)
-        assert S[1] == pytest.approx(0.0003954597633218682, abs=1e-9)
-        assert S[2] == pytest.approx(0.0034239055031729947, abs=1e-9)
-        assert S[3] == pytest.approx(-0.016264753735226404, abs=1e-9)
-        assert S[4] == pytest.approx(-0.046484107476755930, abs=1e-9)
+        assert_allclose(be.sum(TSC), -0.01964728937767421)
+        assert_allclose(be.sum(SC), -0.19647289377674193)
+        assert_allclose(be.sum(CC), 0.0019772988166093623)
+        assert_allclose(be.sum(TCC), 0.005931896449828042)
+        assert_allclose(be.sum(TAC), 0.017119527515864978)
+        assert_allclose(be.sum(AC), 0.17119527515864985)
+        assert_allclose(be.sum(TPC), -0.08132376867613199)
+        assert_allclose(be.sum(PC), -0.8132376867613212)
+        assert_allclose(be.sum(DC), -0.2324205373837797)
+        assert_allclose(be.sum(TAchC), 0.0295705512988189)
+        assert_allclose(be.sum(LchC), 0.2957055129881888)
+        assert_allclose(be.sum(TchC), -0.01804376318260833)
+        assert_allclose(S[0], -0.003929457875534847)
+        assert_allclose(S[1], 0.0003954597633218682)
+        assert_allclose(S[2], 0.0034239055031729947)
+        assert_allclose(S[3], -0.016264753735226404)
+        assert_allclose(S[4], -0.046484107476755930)
 
     def test_third_order_all_functions(self, double_gauss):
         TSC = double_gauss.aberrations.TSC()
