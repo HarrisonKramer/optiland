@@ -68,8 +68,8 @@ class OpticUpdater:
         """
         positions = self.optic.surface_group.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
-        positions[surface_number + 1 :] += delta_t
-        positions -= positions[1]  # force surface 1 to be at zero
+        positions[surface_number + 1 :] = positions[surface_number + 1 :] + delta_t
+        positions = positions - positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.optic.surface_group.surfaces):
             surface.geometry.cs.z = float(positions[k])
 
