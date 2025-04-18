@@ -283,8 +283,8 @@ class Aberrations:
                     * (self._ub[k] + ip_val)
                     / denom
                 )[0]
-            B_list.append(B_val)
-            Bp_list.append(Bp_val)
+                B_list.append(B_val)
+                Bp_list.append(Bp_val)
 
         self._i = be.array(i_list)
         self._ip = be.array(ip_list)
