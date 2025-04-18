@@ -253,38 +253,43 @@ class Aberrations:
         self._hp = self._inv / (self._n[-1] * self._ua[-1])
         self._dn = self.optic.n(0.4861) - self.optic.n(0.6563)
 
-        # Initialize arrays for intermediate variables over surfaces 1 to N-2.
-        num = self._N - 2
-        self._i = be.zeros(num)
-        self._ip = be.zeros(num)
-        self._B = be.zeros(num)
-        self._Bp = be.zeros(num)
+        i_list = []
+        ip_list = []
+        B_list = []
+        Bp_list = []
 
         for k in range(1, self._N - 1):
-            idx = k - 1
-            # Calculate intermediate angles
-            self._i[idx] = (self._C[k] * self._ya[k] + self._ua[k - 1])[0]
-            self._ip[idx] = (self._C[k] * self._yb[k] + self._ub[k - 1])[0]
+            i_val = (self._C[k] * self._ya[k] + self._ua[k - 1])[0]
+            ip_val = (self._C[k] * self._yb[k] + self._ub[k - 1])[0]
+            i_list.append(i_val)
+            ip_list.append(ip_val)
 
             denom = 2 * self._n[k] * self._inv
             if denom == 0:
-                self._B[idx] = 0
-                self._Bp[idx] = 0
+                B_list.append(0)
+                Bp_list.append(0)
             else:
-                self._B[idx] = (
+                B_val = (
                     self._n[k - 1]
                     * (self._n[k] - self._n[k - 1])
                     * self._ya[k]
-                    * (self._ua[k] + self._i[idx])
+                    * (self._ua[k] + i_val)
                     / denom
                 )[0]
-                self._Bp[idx] = (
+                Bp_val = (
                     self._n[k - 1]
                     * (self._n[k] - self._n[k - 1])
                     * self._yb[k]
-                    * (self._ub[k] + self._ip[idx])
+                    * (self._ub[k] + ip_val)
                     / denom
                 )[0]
+            B_list.append(B_val)
+            Bp_list.append(Bp_val)
+
+        self._i = be.array(i_list)
+        self._ip = be.array(ip_list)
+        self._B = be.array(B_list)
+        self._Bp = be.array(Bp_list)
 
     def _TSC_term(self, k):
         """
