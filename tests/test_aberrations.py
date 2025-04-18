@@ -5,6 +5,7 @@ from optiland.aberrations import Aberrations
 from optiland.optic import Optic
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
+from .utils import assert_allclose
 
 
 @pytest.fixture
@@ -55,7 +56,7 @@ def simple_singlet():
 
 
 class TestDoubleGaussAberrations:
-    def test_init(self, double_gauss):
+    def test_init(self, double_gauss, set_test_backend):
         aberrations = Aberrations(double_gauss)
         assert aberrations.optic == double_gauss
 
