@@ -28,8 +28,8 @@ class AbbeMaterial(BaseMaterial):
     """
 
     def __init__(self, n, abbe):
-        self.index = n
-        self.abbe = abbe
+        self.index = be.array([n])
+        self.abbe = be.array([abbe])
         self._p = self._get_coefficients()
 
     def n(self, wavelength):
@@ -44,7 +44,7 @@ class AbbeMaterial(BaseMaterial):
         """
         if be.any(wavelength < 0.380) or be.any(wavelength > 0.750):
             raise ValueError("Wavelength out of range for this model.")
-        return be.polyval(self._p, wavelength)
+        return be.atleast_1d(be.polyval(self._p, wavelength))
 
     def k(self, wavelength):
         """Returns the extinction coefficient of the material.
@@ -66,7 +66,7 @@ class AbbeMaterial(BaseMaterial):
 
         """
         # Polynomial fit to the refractive index data
-        X = be.array([self.index, self.abbe])
+        X = be.ravel(be.array([self.index, self.abbe]))
         X_poly = be.hstack([X**i for i in range(1, 4)])
 
         # File contains fit coefficients
@@ -89,7 +89,7 @@ class AbbeMaterial(BaseMaterial):
 
         """
         material_dict = super().to_dict()
-        material_dict.update({"index": self.index, "abbe": self.abbe})
+        material_dict.update({"index": float(self.index), "abbe": float(self.abbe)})
         return material_dict
 
     @classmethod
