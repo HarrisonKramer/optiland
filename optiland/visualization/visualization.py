@@ -299,7 +299,8 @@ class LensInfoViewer:
                 mat.append(surf.material_post.index)
             elif isinstance(surf.material_post, materials.AbbeMaterial):
                 mat.append(
-                    f"{surf.material_post.index:.4f}, {surf.material_post.abbe:.2f}",
+                    f"{surf.material_post.index.item():.4f}, "
+                    f"{surf.material_post.abbe.item():.2f}",
                 )
             else:
                 raise ValueError("Unknown material type")
