@@ -8,6 +8,7 @@ Kramer Harrison, 2024
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import optiland.backend as be
 
@@ -40,9 +41,9 @@ class BaseDistribution(ABC):
         This method plots the distribution points and a unit circle for
             reference.
         """
-        plt.plot(self.x, self.y, "k*")
-        t = be.linspace(0, 2 * be.pi, 256)
-        x, y = be.cos(t), be.sin(t)
+        plt.plot(be.to_numpy(self.x), be.to_numpy(self.y), "k*")
+        t = np.linspace(0, 2 * be.pi, 256)
+        x, y = np.cos(t), np.sin(t)
         plt.plot(x, y, "r")
         plt.xlabel("Normalized Pupil Coordinate X")
         plt.ylabel("Normalized Pupil Coordinate Y")
@@ -113,7 +114,7 @@ class RandomDistribution(BaseDistribution):
     """
 
     def __init__(self, seed=None):
-        self.rng = be.random.default_rng(seed)
+        self.rng = be.default_rng(seed)
 
     def generate_points(self, num_points: int):
         """Generates random points.
@@ -122,8 +123,8 @@ class RandomDistribution(BaseDistribution):
             num_points (int): The number of points to generate.
 
         """
-        r = self.rng.uniform(size=num_points)
-        theta = self.rng.uniform(0, 2 * be.pi, size=num_points)
+        r = be.random_uniform(size=num_points, generator=self.rng)
+        theta = be.random_uniform(0, 2 * be.pi, size=num_points, generator=self.rng)
 
         self.x = be.sqrt(r) * be.cos(theta)
         self.y = be.sqrt(r) * be.sin(theta)
@@ -292,11 +293,7 @@ class GaussianQuadrature(BaseDistribution):
             raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
 
         weights = weights_dict[num_rings]
-
-        if self.is_symmetric:
-            weights *= 6.0
-        else:
-            weights *= 2.0
+        weights = weights * 6.0 if self.is_symmetric else weights * 2.0
 
         return weights
 

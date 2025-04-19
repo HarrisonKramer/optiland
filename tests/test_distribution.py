@@ -4,57 +4,58 @@ import optiland.backend as be
 import pytest
 
 from optiland import distribution
+from .utils import assert_allclose
 
 
 @pytest.mark.parametrize("num_points", [10, 25, 106, 512])
-def test_line_x(num_points):
+def test_line_x(set_test_backend, num_points):
     d = distribution.create_distribution("line_x")
     d.generate_points(num_points=num_points)
 
-    assert be.allclose(d.x, be.linspace(-1, 1, num_points))
-    assert be.allclose(d.y, be.zeros(num_points))
+    assert_allclose(d.x, be.linspace(-1, 1, num_points))
+    assert_allclose(d.y, be.zeros(num_points))
 
     d = distribution.create_distribution("positive_line_x")
     d.generate_points(num_points=num_points)
 
-    assert be.allclose(d.x, be.linspace(0, 1, num_points))
-    assert be.allclose(d.y, be.zeros(num_points))
+    assert_allclose(d.x, be.linspace(0, 1, num_points))
+    assert_allclose(d.y, be.zeros(num_points))
 
 
 @pytest.mark.parametrize("num_points", [9, 60, 111, 509])
-def test_line_y(num_points):
+def test_line_y(set_test_backend, num_points):
     d = distribution.create_distribution("line_y")
     d.generate_points(num_points=num_points)
 
-    assert be.allclose(d.x, be.zeros(num_points))
-    assert be.allclose(d.y, be.linspace(-1, 1, num_points))
+    assert_allclose(d.x, be.zeros(num_points))
+    assert_allclose(d.y, be.linspace(-1, 1, num_points))
 
     d = distribution.create_distribution("positive_line_y")
     d.generate_points(num_points=num_points)
 
-    assert be.allclose(d.x, be.zeros(num_points))
-    assert be.allclose(d.y, be.linspace(0, 1, num_points))
+    assert_allclose(d.x, be.zeros(num_points))
+    assert_allclose(d.y, be.linspace(0, 1, num_points))
 
 
 @pytest.mark.parametrize("num_points", [8, 26, 154, 689])
-def test_random(num_points):
+def test_random(set_test_backend, num_points):
     seed = 42
     d = distribution.RandomDistribution(seed=seed)
     d.generate_points(num_points=num_points)
 
-    rng = be.random.default_rng(seed=seed)
-    r = rng.uniform(size=num_points)
-    theta = rng.uniform(0, 2 * be.pi, size=num_points)
+    rng = be.default_rng(seed=seed)
+    r = be.random_uniform(size=num_points, generator=rng)
+    theta = be.random_uniform(0, 2 * be.pi, size=num_points, generator=rng)
 
     x = be.sqrt(r) * be.cos(theta)
     y = be.sqrt(r) * be.sin(theta)
 
-    assert be.allclose(d.x, x)
-    assert be.allclose(d.y, y)
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
 
 
 @pytest.mark.parametrize("num_rings", [3, 7, 15, 220])
-def test_hexapolar(num_rings):
+def test_hexapolar(set_test_backend, num_rings):
     d = distribution.create_distribution("hexapolar")
     d.generate_points(num_rings=num_rings)
 
@@ -68,12 +69,12 @@ def test_hexapolar(num_rings):
         x = be.concatenate([x, r[i + 1] * be.cos(theta)])
         y = be.concatenate([y, r[i + 1] * be.sin(theta)])
 
-    assert be.allclose(d.x, x)
-    assert be.allclose(d.y, y)
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
 
 
 @pytest.mark.parametrize("num_points", [15, 56, 161, 621])
-def test_cross(num_points):
+def test_cross(set_test_backend, num_points):
     d = distribution.create_distribution("cross")
     d.generate_points(num_points=num_points)
 
@@ -84,25 +85,25 @@ def test_cross(num_points):
     x = be.concatenate((x1, x2))
     y = be.concatenate((y1, y2))
 
-    assert be.allclose(d.x, x)
-    assert be.allclose(d.y, y)
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_distribution(mock_show):
+def test_view_distribution(mock_show, set_test_backend):
     d = distribution.create_distribution("random")
     d.generate_points(num_points=10)
     d.view()
     mock_show.assert_called_once()
 
 
-def test_invalid_distribution_error():
+def test_invalid_distribution_error(set_test_backend):
     with pytest.raises(ValueError):
         distribution.create_distribution(distribution_type="invalid")
 
 
 @pytest.mark.parametrize("num_points", [10, 25, 50, 100])
-def test_uniform_distribution(num_points):
+def test_uniform_distribution(set_test_backend, num_points):
     d = distribution.create_distribution("uniform")
     d.generate_points(num_points=num_points)
 
@@ -114,63 +115,63 @@ def test_uniform_distribution(num_points):
 
     assert be.all(d.x >= -1.0) and be.all(d.x <= 1.0)
     assert be.all(d.y >= -1.0) and be.all(d.y <= 1.0)
-    assert be.allclose(d.x, x)
-    assert be.allclose(d.y, y)
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
 
 
-def test_gaussian_quad_distribution():
+def test_gaussian_quad_distribution(set_test_backend):
     # 1 ring - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=1)
-    assert be.allclose(d.x, be.array(0.70711))
-    assert be.allclose(d.y, be.array(0.0))
+    assert_allclose(d.x, be.array(0.70711))
+    assert_allclose(d.y, be.array(0.0))
 
     # 2 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=2)
-    assert be.allclose(d.x, be.array([0.4597, 0.88807]))
-    assert be.allclose(d.y, be.array([0.0, 0.0]))
+    assert_allclose(d.x, be.array([0.4597, 0.88807]))
+    assert_allclose(d.y, be.array([0.0, 0.0]))
 
     # 3 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=3)
-    assert be.allclose(d.x, be.array([0.33571, 0.70711, 0.94196]))
-    assert be.allclose(d.y, be.array([0.0, 0.0, 0.0]))
+    assert_allclose(d.x, be.array([0.33571, 0.70711, 0.94196]))
+    assert_allclose(d.y, be.array([0.0, 0.0, 0.0]))
 
     # 4 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=4)
-    assert be.allclose(d.x, be.array([0.2635, 0.57446, 0.81853, 0.96466]))
-    assert be.allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0]))
+    assert_allclose(d.x, be.array([0.2635, 0.57446, 0.81853, 0.96466]))
+    assert_allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0]))
 
     # 5 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=5)
-    assert be.allclose(d.x, be.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]))
-    assert be.allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0, 0.0]))
+    assert_allclose(d.x, be.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]))
+    assert_allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0, 0.0]))
 
     # 6 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=6)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array([0.18375, 0.41158, 0.617, 0.78696, 0.91138, 0.983]),
     )
-    assert be.allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
+    assert_allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
     # 1 ring - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=1)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array([0.35355500073276686, 0.70711, 0.35355500073276686]),
     )
-    assert be.allclose(d.y, be.array([-0.6123752228469513, 0.0, 0.6123752228469513]))
+    assert_allclose(d.y, be.array([-0.6123752228469513, 0.0, 0.6123752228469513]))
 
     # 2 rings - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=2)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array(
             [
@@ -183,7 +184,7 @@ def test_gaussian_quad_distribution():
             ],
         ),
     )
-    assert be.allclose(
+    assert_allclose(
         d.y,
         be.array(
             [
@@ -200,7 +201,7 @@ def test_gaussian_quad_distribution():
     # 3 rings - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=3)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array(
             [
@@ -216,7 +217,7 @@ def test_gaussian_quad_distribution():
             ],
         ),
     )
-    assert be.allclose(
+    assert_allclose(
         d.y,
         be.array(
             [
@@ -236,7 +237,7 @@ def test_gaussian_quad_distribution():
     # 4 rings - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=4)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array(
             [
@@ -255,7 +256,7 @@ def test_gaussian_quad_distribution():
             ],
         ),
     )
-    assert be.allclose(
+    assert_allclose(
         d.y,
         be.array(
             [
@@ -278,7 +279,7 @@ def test_gaussian_quad_distribution():
     # 5 rings - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=5)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array(
             [
@@ -300,7 +301,7 @@ def test_gaussian_quad_distribution():
             ],
         ),
     )
-    assert be.allclose(
+    assert_allclose(
         d.y,
         be.array(
             [
@@ -326,7 +327,7 @@ def test_gaussian_quad_distribution():
     # 6 rings - asymmetric
     d = distribution.GaussianQuadrature(is_symmetric=False)
     d.generate_points(num_rings=6)
-    assert be.allclose(
+    assert_allclose(
         d.x,
         be.array(
             [
@@ -351,7 +352,7 @@ def test_gaussian_quad_distribution():
             ],
         ),
     )
-    assert be.allclose(
+    assert_allclose(
         d.y,
         be.array(
             [
@@ -378,7 +379,7 @@ def test_gaussian_quad_distribution():
     )
 
 
-def test_gaussian_quad_distribution_errors():
+def test_gaussian_quad_distribution_errors(set_test_backend):
     with pytest.raises(ValueError):
         d = distribution.GaussianQuadrature(is_symmetric=True)
         d.generate_points(num_rings=0)
@@ -408,28 +409,28 @@ def test_gaussian_quad_distribution_errors():
         d.get_weights(num_rings=0)
 
 
-def test_gaussian_quad_weights():
+def test_gaussian_quad_weights(set_test_backend):
     scale = [6.0, 2.0]
     for k, is_symmetric in enumerate([True, False]):
         # 1 ring
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=1)
-        assert be.allclose(weights / scale[k], be.array([0.5]))
+        assert_allclose(weights / scale[k], be.array([0.5]))
 
         # 2 rings
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=2)
-        assert be.allclose(weights / scale[k], be.array([0.25, 0.25]))
+        assert_allclose(weights / scale[k], be.array([0.25, 0.25]))
 
         # 3 rings
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=3)
-        assert be.allclose(weights / scale[k], be.array([0.13889, 0.22222, 0.13889]))
+        assert_allclose(weights / scale[k], be.array([0.13889, 0.22222, 0.13889]))
 
         # 4 rings
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=4)
-        assert be.allclose(
+        assert_allclose(
             weights / scale[k],
             be.array([0.08696, 0.16304, 0.16304, 0.08696]),
         )
@@ -437,7 +438,7 @@ def test_gaussian_quad_weights():
         # 5 rings
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=5)
-        assert be.allclose(
+        assert_allclose(
             weights / scale[k],
             be.array([0.059231, 0.11966, 0.14222, 0.11966, 0.059231]),
         )
@@ -445,7 +446,7 @@ def test_gaussian_quad_weights():
         # 6 rings
         d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
         weights = d.get_weights(num_rings=6)
-        assert be.allclose(
+        assert_allclose(
             weights / scale[k],
             be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
         )
