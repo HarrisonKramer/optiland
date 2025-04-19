@@ -43,6 +43,8 @@ def default_rng(seed=None):
 
 
 def random_uniform(low=0.0, high=1.0, size=None, generator=None):
+    if generator is None:
+        generator = np.random.default_rng()
     return generator.uniform(low, high, size)
 
 
