@@ -359,3 +359,7 @@ def all(x):
     if isinstance(x, bool):
         return x
     return torch.all(x).item()
+
+
+def radians(x):
+    return torch.deg2rad(x)
