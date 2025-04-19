@@ -45,15 +45,15 @@ class PolarizationState:
             )
 
         self.is_polarized = is_polarized
-        self.Ex = float(Ex) if Ex is not None else None
-        self.Ey = float(Ey) if Ey is not None else None
-        self.phase_x = float(phase_x) if phase_x is not None else None
-        self.phase_y = float(phase_y) if phase_y is not None else None
+        self.Ex = be.array(Ex) if Ex is not None else None
+        self.Ey = be.array(Ey) if Ey is not None else None
+        self.phase_x = be.array(phase_x) if phase_x is not None else None
+        self.phase_y = be.array(phase_y) if phase_y is not None else None
 
         if self.Ex is not None and self.Ey is not None:
             mag = be.sqrt(self.Ex**2 + self.Ey**2)
-            self.Ex /= mag
-            self.Ey /= mag
+            self.Ex = self.Ex / mag
+            self.Ey = self.Ey / mag
 
     def __str__(self):
         """Returns a string representation of the polarization state.
