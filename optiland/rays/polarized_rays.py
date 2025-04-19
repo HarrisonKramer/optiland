@@ -45,7 +45,7 @@ class PolarizedRays(RealRays):
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
         super().__init__(x, y, z, L, M, N, intensity, wavelength)
 
-        self.p = be.tile(be.eye(3), (self.x.size, 1, 1))
+        self.p = be.tile(be.eye(3), (be.size(self.x), 1, 1))
         self._i0 = intensity.copy()
         self._L0 = L.copy()
         self._M0 = M.copy()

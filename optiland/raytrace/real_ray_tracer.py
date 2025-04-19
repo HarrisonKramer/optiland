@@ -118,13 +118,13 @@ class RealRayTracer:
         Returns:
             list: A list of numpy arrays, all of the same size.
         """
-        max_size = max([be.size(arr) for arr in arrays])
+        max_size = max([be.size(be.array(arr)) for arr in arrays])
         return [
             (
-                be.full(max_size, value)
+                be.full((max_size,), value)
                 if isinstance(value, (float, int))
                 else value
-                if isinstance(value, be.ndarray)
+                if be.is_array_like(value)
                 else None
             )
             for value in arrays
