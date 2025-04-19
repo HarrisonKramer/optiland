@@ -1,49 +1,91 @@
 .. _functionalities:
 
-Optiland provides a comprehensive suite of tools for the design, analysis, and optimization of optical systems. Below is an overview of its key functionalities:
+Functionalities
+===============
+
+Optiland offers a powerful and extensible platform for the design, analysis, and optimization of optical systems. With a fully differentiable architecture and high-performance backend support, it is suitable for both classical optical engineering and modern machine learning applications. Below is an overview of its main capabilities.
 
 Design Tools
 ------------
-- **Sequential Ray Tracing**: Handle both traditional lens or mirror designs and more complex asymmetric or freeform systems.
-- **Lens System Modeling**: Support for spherical, conical, aspheric, and freeform surfaces.
-- **Aperture, Field and Wavelength Settings**: Configure optical systems for diverse apertures, fields, and wavelengths.
+
+- **Differentiable and Backend-Configurable Architecture**:
+  Optiland supports both NumPy and PyTorch backends for all core computations. This flexibility enables easy integration with scientific computing pipelines and deep learning frameworks.
+- **Sequential Ray Tracing**:
+  Trace rays through traditional or advanced systems, including asymmetric and freeform designs.
+- **Lens System Modeling**:
+  Built-in support for spherical, conic, aspheric, and fully freeform surfaces.
+- **Aperture, Field, and Wavelength Configuration**:
+  Configure optical systems for diverse apertures, fields, and wavelengths.
 
 Analysis Tools
 --------------
-- **Real Ray and Paraxial Ray Tracing**: Perform analyses for both idealized and real optical systems.
-- **Polarization Ray Tracing**: Model polarization-dependent effects with full vector calculations.
-- **Full Analysis Suite**: Generate spot diagrams, ray aberration fans, optical path difference (OPD) fans, distortion curves, and more.
-- **Wavefront Analysis**: Includes Zernike decomposition, wavefront error evaluation, and wavefront maps.
-- **Point Spread Function (PSF) and Modulation Transfer Function (MTF)**: Evaluate imaging system performance.
-- **BSDF and Scattering Analysis**: Evaluate surface scatter using Bidirectional Scattering Distribution Functions (BSDF).
 
-Optimization and Tolerancing Tools
-----------------------------------
-- **Local and Global Optimization**: Includes gradient-based methods, evolutionary algorithms, and global search routines for design optimization.
-- **Operand-Based Framework**: Support for user-defined performance metrics and merit functions.
-- **Tolerancing Analysis**: Perform sensitivity analysis, Monte Carlo simulations, and manufacturability studies.
-- **Optimization Extension**: Extend the optimization framework with custom operands, variables, or optimization algorithms.
+- **Real and Paraxial Ray Tracing**:
+  Perform precise ray-based evaluations for both idealized and physically realistic systems.
+- **Polarization Ray Tracing**:
+  Model vectorial light propagation, including polarization effects and birefringent materials.
+- **Comprehensive Optical Analysis**:
+  Generate spot diagrams, ray aberration fans, OPD maps, distortion plots, and more.
+- **Wavefront Analysis**:
+  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps.
+- **PSF and MTF Computation**:
+  Evaluate image quality and spatial frequency response in imaging systems.
+- **BSDF and Scattering Models**:
+  Simulate surface scattering using measured or analytical BSDF models.
+
+Optimization and Tolerancing
+----------------------------
+
+- **Flexible Optimization Framework**:
+  Includes gradient-based solvers, global search algorithms, and support for automatic differentiation.
+- **Operand-Based Merit Function Design**:
+  Define custom merit functions using symbolic operands, easily extended with user-defined metrics.
+- **Tolerancing and Sensitivity Analysis**:
+  Perform Monte Carlo simulations and parametric sweeps to assess manufacturability and robustness.
+- **Extensible Framework**:
+  Add new optimization variables, constraints, or algorithms with minimal overhead.
 
 Material Database
 -----------------
-- **Extensive Material Library**: Integrated access to refractive index data from refractiveindex.info.
-- **Custom Material Models**: Support for user-defined material models and dispersion formulas.
+
+- **Integrated Refractive Index Library**:
+  Access data from refractiveindex.info directly within the package.
+- **User-Defined Materials**:
+  Create and register new materials with custom dispersion models.
 
 Visualization
 -------------
-- **2D and 3D Visualizations**: Dynamic visualization of optical systems in 2D and 3D via matplotlib and VTK.
-- **Interactive Tools**: Fully interactive visualizations for analysis and debugging.
 
-Compatibility and Interoperability
-----------------------------------
-- **Zemax File Import**: Load and adapt optical systems designed in Zemax.
-- **File Import/Export**: Save and load optical systems in JSON format for easy sharing and interoperability.
-- **Python API**: Automate tasks and extend functionality with Python scripting.
+- **2D and 3D Visualization**:
+  Plot optical layouts, surface properties, and ray traces using matplotlib (2D) and VTK (3D).
+- **Interactive Debugging Tools**:
+  Inspect and interact with optical systems for rapid prototyping and analysis.
+
+Interoperability and Scripting
+------------------------------
+
+- **Zemax File Support**:
+  Import and adapt existing designs from Zemax for further development or analysis.
+- **JSON-Based I/O**:
+  Save and load optical systems in a human-readable JSON format.
+- **Python API**:
+  Build and control optical systems programmatically for scripting, automation, and integration.
 
 Performance
 -----------
-- **Ray Tracing Speed**: On a typical modern machine, Optiland achieves speeds of approximately **5 to 10 million ray surfaces per second**, depending on system complexity and ray properties such as polarization.
-- **Use of NumPy and Numba**: Optiland leverages NumPy for array operations and Numba for just-in-time compilation to achieve high performance.
+
+- **High-Speed Ray Tracing**:
+  Optiland achieves real-time performance on modern hardware, with ray tracing speeds of:
+  
+  - **150–200 million ray surfaces per second** or more using the PyTorch backend on GPU.
+  - **5–10 million ray surfaces per second** on CPU with the NumPy backend.
+
+- **GPU Acceleration**:
+  The PyTorch backend enables seamless GPU acceleration via PyTorch.
+- **ML/DL Integration**:
+  The differentiable PyTorch backend makes Optiland compatible with deep learning pipelines and allows gradient-based optimization of optical systems within broader ML frameworks.
+- **JIT Compilation with Numba**:
+  The NumPy backend uses Numba where appropriate to speed up CPU-bound calculations.
 
 .. note::
-   If there are any functionalities you would like to see in Optiland, please let us know by opening an issue on our GitHub repository.
+   Have suggestions or feature requests? Feel free to open an issue on our GitHub repository. We welcome contributions and ideas from the community.
