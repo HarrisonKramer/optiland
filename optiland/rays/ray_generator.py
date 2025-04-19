@@ -66,10 +66,6 @@ class RayGenerator:
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
 
-        x0 = be.full_like(x1, x0)
-        y0 = be.full_like(x1, y0)
-        z0 = be.full_like(x1, z0)
-
         intensity = be.ones_like(x1)
         wavelength = be.ones_like(x1) * wavelength
 
