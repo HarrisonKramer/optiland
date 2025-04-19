@@ -79,6 +79,7 @@ Python code to generate this 3D visualization:
    developers_guide/installation
    developers_guide/getting_started
    developers_guide/architecture
+   developers_guide/configurable_backend
    developers_guide/ray_overview
    developers_guide/surface_overview
    developers_guide/geometry_overview
