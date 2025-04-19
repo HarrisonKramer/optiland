@@ -94,7 +94,7 @@ class RealRays(BaseRays):
         if material is not None:
             k = material.k(self.w)
             alpha = 4 * be.pi * k / self.w
-            self.i *= be.exp(-alpha * t * 1e3)  # mm to microns
+            self.i = self.i * be.exp(-alpha * t * 1e3)  # mm to microns
 
         # normalize, if required
         if not self.is_normalized:
