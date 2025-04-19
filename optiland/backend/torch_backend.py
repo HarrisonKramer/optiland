@@ -353,3 +353,9 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     dists = torch.sum(diffs**2, dim=-1)
     idx = torch.argmin(dists)
     return values[idx]
+
+
+def all(x):
+    if isinstance(x, bool):
+        return x
+    return torch.all(x).item()

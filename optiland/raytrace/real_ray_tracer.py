@@ -102,7 +102,9 @@ class RealRayTracer:
         Raises:
             ValueError: If the coordinates are not within the range (-1, 1).
         """
-        if not be.all((x >= -1) & (x <= 1)) or not be.all((y >= -1) & (y <= 1)):
+        valid_x = be.all((x >= -1) & (x <= 1))
+        valid_y = be.all((y >= -1) & (y <= 1))
+        if not (valid_x and valid_y):
             raise ValueError(
                 f"Normalized {coord_type} coordinates must be within (-1, 1)"
             )
