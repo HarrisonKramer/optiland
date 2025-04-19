@@ -5,6 +5,7 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
+from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
 
 # Link to the underlying library
@@ -47,3 +48,9 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
 
 def matrix_vector_multiply_and_squeeze(p, E, backend="numpy"):
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
+
+
+def nearest_nd_interpolator(points, values, x, y):
+    interpolator = NearestNDInterpolator(points, values)
+    result = interpolator(x, y)
+    return result

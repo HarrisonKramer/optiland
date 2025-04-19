@@ -344,3 +344,12 @@ def roll(x, shift, axis=None):
 
 def reshape(x, shape):
     return x.view(shape)
+
+
+def nearest_nd_interpolator(points, values, Hx, Hy):
+    """Manual nearest neighbor in PyTorch"""
+    query = torch.tensor([Hx, Hy], dtype=points.dtype, device=points.device)
+    diffs = points - query  # shape: (N, 2)
+    dists = torch.sum(diffs**2, dim=-1)
+    idx = torch.argmin(dists)
+    return values[idx]
