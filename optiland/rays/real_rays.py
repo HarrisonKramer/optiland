@@ -117,9 +117,9 @@ class RealRays(BaseRays):
             RealRays: The refracted rays.
 
         """
-        self.L0 = self.L.copy()
-        self.M0 = self.M.copy()
-        self.N0 = self.N.copy()
+        self.L0 = be.copy(self.L)
+        self.M0 = be.copy(self.M)
+        self.N0 = be.copy(self.N)
 
         u = n1 / n2
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
@@ -145,9 +145,9 @@ class RealRays(BaseRays):
             RealRays: The reflected rays.
 
         """
-        self.L0 = self.L.copy()
-        self.M0 = self.M.copy()
-        self.N0 = self.N.copy()
+        self.L0 = be.copy(self.L)
+        self.M0 = be.copy(self.M)
+        self.N0 = be.copy(self.N)
 
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
