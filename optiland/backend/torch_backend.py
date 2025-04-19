@@ -363,3 +363,23 @@ def all(x):
 
 def radians(x):
     return torch.deg2rad(x)
+
+
+def newaxis():
+    return None
+
+
+def cast(x):
+    return x.to(dtype=get_precision(), device=get_device())
+
+
+def stack(xs, axis=0):
+    return torch.stack([cast(x) for x in xs], dim=axis)
+
+
+def broadcast_to(x, shape):
+    return x.expand(shape)
+
+
+def cross(a, b):
+    return torch.linalg.cross(a, b)
