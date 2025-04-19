@@ -46,10 +46,10 @@ class PolarizedRays(RealRays):
         super().__init__(x, y, z, L, M, N, intensity, wavelength)
 
         self.p = be.tile(be.eye(3), (be.size(self.x), 1, 1))
-        self._i0 = intensity.copy()
-        self._L0 = L.copy()
-        self._M0 = M.copy()
-        self._N0 = N.copy()
+        self._i0 = be.copy(intensity)
+        self._L0 = be.copy(L)
+        self._M0 = be.copy(M)
+        self._N0 = be.copy(N)
 
     def get_output_field(self, E: be.ndarray) -> be.ndarray:
         """Compute the output electric field given the input electric field.
@@ -61,7 +61,7 @@ class PolarizedRays(RealRays):
             be.ndarray: The computed output electric field as a numpy array.
 
         """
-        return be.squeeze(be.matmul(self.p, E[:, :, be.newaxis]), axis=2)
+        return be.mult_p_E(self.p, E)
 
     def update_intensity(self, state: PolarizationState):
         """Update ray intensity based on polarization state.
@@ -115,19 +115,21 @@ class PolarizedRays(RealRays):
 
         """
         # merge k-vector components into matrix for speed
-        k0 = be.array([self.L0, self.M0, self.N0]).T
-        k1 = be.array([self.L, self.M, self.N]).T
+        k0 = be.stack([self.L0, self.M0, self.N0]).T
+        k1 = be.stack([self.L, self.M, self.N]).T
 
         # find s-component
         s = be.cross(k0, k1)
         mag = be.linalg.norm(s, axis=1)
 
         # handle case when mag = 0 (i.e., k0 parallel to k1)
-        if be.any(mag == 0):
-            s[mag == 0] = be.cross(k0[mag == 0], be.array([1.0, 0.0, 0.0]))
+        mask = mag == 0
+        if be.any(mask):
+            fallback = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k0[mask].shape)
+            s[mask] = be.cross(k0[mask], fallback)
             mag = be.linalg.norm(s, axis=1)
 
-        s /= mag[:, be.newaxis]
+        s = s / be.unsqueeze_last(mag)
 
         # find p-component pre and post surface
         p0 = be.cross(k0, s)
@@ -156,17 +158,17 @@ class PolarizedRays(RealRays):
             be.ndarray: The 3D electric fields.
 
         """
-        k = be.array([self._L0, self._M0, self._N0]).T
+        k = be.stack([self._L0, self._M0, self._N0]).T
 
         # TODO - efficiently handle case when k parallel to x-axis
-        x = be.array([1.0, 0.0, 0.0])
+        x = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k.shape)
         p = be.cross(k, x)
 
         norms = be.linalg.norm(p, axis=1)
         if be.any(norms == 0):
             raise ValueError("k-vector parallel to x-axis is not currently supported.")
 
-        p /= norms[:, be.newaxis]
+        p = p / be.unsqueeze_last(norms)
 
         s = be.cross(p, k)
 

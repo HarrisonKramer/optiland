@@ -391,3 +391,9 @@ def unsqueeze_last(x):
 
 def eye(x):
     return torch.eye(x, device=get_device(), dtype=get_precision())
+
+
+def mult_p_E(p, E):
+    # Used only for electric field multiplication in polarized_rays.py
+    p = p.to(torch.complex128)
+    return torch.squeeze(torch.matmul(p, E.unsqueeze(2)), axis=2)

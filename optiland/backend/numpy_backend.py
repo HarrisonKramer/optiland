@@ -58,3 +58,8 @@ def nearest_nd_interpolator(points, values, x, y):
 
 def unsqueeze_last(x):
     return x[:, np.newaxis]
+
+
+def mult_p_E(p, E):
+    # Used only for electric field multiplication in polarized_rays.py
+    return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
