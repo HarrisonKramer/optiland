@@ -236,7 +236,7 @@ class Surface:
         rays.propagate(t, self.material_pre)
 
         # update OPD
-        rays.opd += be.abs(t * self.material_pre.n(rays.w))
+        rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
 
         # if there is a limiting aperture, clip rays outside of it
         if self.aperture:
