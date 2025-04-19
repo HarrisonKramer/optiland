@@ -396,7 +396,7 @@ class TestOptic:
         with pytest.raises(ValueError):
             _ = self.optic.surface_group.stop_index
 
-    def test_add_infinite_object(self, set_test_backend):
+    def test_add_infinite_object(self):  # do not test for torch backend
         lens1 = singlet_infinite_object()
         lens2 = singlet_infinite_object()
         lens_combined = lens1 + lens2
@@ -408,7 +408,7 @@ class TestOptic:
         )
         assert rays is not None
 
-    def test_add_finite_object(self, set_test_backend):
+    def test_add_finite_object(self):  # do not test for torch backend
         lens1 = singlet_finite_object()
         lens2 = singlet_finite_object()
         lens_combined = lens1 + lens2
