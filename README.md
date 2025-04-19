@@ -21,7 +21,7 @@
     <li><a href="#introduction">Introduction</a></li>
     <li><a href="#documentation">Documentation</a></li>
     <li><a href="#installation">Installation</a></li>
-    <li><a href="#functionalities">Functionalities</a></li>
+    <li><a href="#key-features">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#license">License</a></li>
@@ -30,7 +30,16 @@
 </details>
 
 ## Introduction
-**Optiland** is a Python-based, open-source optical design and analysis framework. With a simple and intuitive Python interface, Optiland enables the design, optimization, and analysis of complex optical systems, from paraxial and real raytracing to polarization, coatings, and wavefront analyses. It supports 2D/3D visualization, comprehensive tolerancing, local and global optimization, and freeform optics, among other features. Built on the speed of [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/), Optiland delivers computational efficiency and flexibility across a wide range of optical tasks.
+
+**Optiland** is a Python‑based, open‑source framework for optical design, analysis, and optimization. Its clean, Pythonic API makes it easy to:
+
+- Build, trace, and analyze lens and mirror systems (paraxial → real → polarization-aware)
+- Perform paraxial, wavefront, PSF/MTF, and scattering analyses
+- Optimize via local/global solvers or differentiable ML pipelines
+- Visualize in 2D (matplotlib) and 3D (VTK)
+- Extend with custom surfaces, coatings, optimization operands, and more
+
+Under the hood, Optiland leverages **NumPy** for CPU‑bound tasks and **PyTorch** for GPU acceleration and autograd‑enabled workflows - so you get the best of both worlds.
 
 Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb), see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide), or read the full documentation at [Read the Docs](https://optiland.readthedocs.io/).
 
@@ -46,6 +55,8 @@ lens = ReverseTelephoto()
 lens.draw3D()
 ```
 
+---
+
 ## Documentation
 The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
@@ -55,29 +66,68 @@ See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers
 
 ## Installation
 
-You can install the package using pip. To do so, follow these steps:
+- **Core only**
 
-1. Open a terminal or command prompt.
-2. Run the following command to install the package:
-
-    ```sh
+    ```bash
     pip install optiland
     ```
 
+- **With CPU‑only PyTorch**
 
-## Functionalities
-- Lens entry
-- 2D/3D visualization
-- Paraxial and aberration analyses
-- Real and paraxial ray tracing, including aspherics and freeforms
-- Polarization ray tracing
-- Real analysis functions (spot diagrams, ray aberration fans, OPD fans, distortion, PSF, MTF, etc.)
-- Glass and material catalogue (based on refractiveindex.info)
-- Design optimization (local and global)
-- Wavefront and Zernike analysis
-- Tolerancing, including sensitivity analysis and Monte Carlo methods
-- Coating and surface scatter (BSDF) analysis
-- Zemax file import
+    ```bash
+    pip install optiland[torch]
+    ```
+
+- **GPU‑enabled PyTorch**
+
+    - After installing Optiland, install a CUDA build of PyTorch manually:
+
+    ```bash
+    pip install optiland
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    ```
+
+
+For more details, see the [installation guide](https://optiland.readthedocs.io/en/latest/installation.html) in the docs.
+
+## Key Features
+
+- **Differentiable & Configurable Backends**  
+  Swap seamlessly between NumPy (CPU) and PyTorch (GPU + autograd). Enables integration of optical simulations into ML/DL pipelines.
+
+- **Flexible Lens Construction**  
+  Easily define optical systems, with support for spherical, aspheric, and freeform geometries.
+
+- **2D and 3D Visualization**  
+  Visualize optical layouts with matplotlib and VTK.
+
+- **Ray Tracing (Paraxial and Real)**  
+  Supports paraxial approximations and full real-ray tracing, with accurate handling of aspheric and freeform surfaces.
+
+- **Polarization Ray Tracing**  
+  Track polarization effects using vectorial ray tracing, including birefringence and coating interactions.
+
+- **Aberration and Paraxial Analysis**  
+  Tools for classical paraxial analysis and low-order aberration extraction, including chief and marginal ray tracing.
+
+- **Full Real Analysis Suite**  
+  Compute spot diagrams, OPD and ray aberration fans, PSF, MTF, and Zernike coefficients across fields and wavelengths.
+
+- **Material and Glass Catalogues**  
+  Built-in access to refractiveindex.info data, plus support for custom material models.
+
+- **Design Optimization**  
+  Local gradient-based and global stochastic optimization, with customizable merit functions and constraint handling.
+
+- **Tolerancing Framework**  
+  Monte Carlo and sensitivity analyses for evaluating robustness under manufacturing and alignment variations.
+
+- **Coating and Scattering Support**  
+  Evaluate BSDF-based surface scatter and multilayer coatings using both built-in and user-defined models.
+
+- **Zemax File Import**  
+  Convert legacy designs from Zemax files into Optiland’s internal representation for further simulation or analysis.
+
 
 The code itself is in constant flux and new functionalities are always being added.
 
@@ -199,8 +249,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 
 - [ ] **Diffractive Optical Elements**
-- [ ] **Differentiable Ray Tracer via PyTorch**
-- [ ] **Configurable Backends: NumPy, PyTorch, CuPy**
+- [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
 - [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
