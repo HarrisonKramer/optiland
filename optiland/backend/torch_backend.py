@@ -383,3 +383,11 @@ def broadcast_to(x, shape):
 
 def cross(a, b):
     return torch.linalg.cross(a, b)
+
+
+def unsqueeze_last(x):
+    return x.unsqueeze(-1)
+
+
+def eye(x):
+    return torch.eye(x, device=get_device(), dtype=get_precision())

@@ -54,3 +54,7 @@ def nearest_nd_interpolator(points, values, x, y):
     interpolator = NearestNDInterpolator(points, values)
     result = interpolator(x, y)
     return result
+
+
+def unsqueeze_last(x):
+    return x[:, np.newaxis]
