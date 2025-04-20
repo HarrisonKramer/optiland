@@ -11,9 +11,12 @@ Testing is performed on Linux (Ubuntu latest) and Windows 11.
 
 The library does not impose specific hardware requirements. However, for large-scale simulations or complex optimization tasks, we recommend using a machine with:
 
-- A multi-core processor
-- At least 8 GB of RAM
-- A dedicated GPU (optional, if future extensions leverage GPU-based computations)
+- **CPU**: Multi‑core processor  
+- **Memory**: ≥ 8 GB RAM  
+- **GPU** (optional):  
+  - Required for **CUDA** acceleration with the PyTorch backend.  
+  - If you plan to use GPU‑accelerated ray tracing or differentiable optics, install a CUDA‑enabled PyTorch build manually (see :ref:`installation`).  
+  - Without a GPU, you can still use the PyTorch backend in CPU‑only mode (installed via `optiland[torch]`) or the NumPy backend.  
 
 Dependencies
 ------------
