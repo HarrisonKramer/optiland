@@ -281,7 +281,7 @@ class SpotDiagram:
             chief_ray_cosines_list.append(
                 be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = be.array(chief_ray_cosines_list)
+        chief_ray_cosines_list = be.stack(chief_ray_cosines_list)
         return chief_ray_cosines_list
 
     def generate_chief_rays_centers(self, wavelength):
@@ -307,7 +307,7 @@ class SpotDiagram:
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
-        chief_ray_centers = be.array(chief_ray_centers)
+        chief_ray_centers = be.stack(chief_ray_centers)
         return chief_ray_centers
 
     def airy_disc_x_y(self, wavelength):
