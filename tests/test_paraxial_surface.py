@@ -7,7 +7,6 @@ from optiland.geometries import Plane
 from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.rays import ParaxialRays, RealRays
-from optiland.scatter import LambertianBSDF
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 
 
@@ -21,7 +20,7 @@ class TestParaxialSurface:
         self.material_post = IdealMaterial(1.5, 0)
         self.aperture = None
         self.coating = SimpleCoating(0.5, 0.5)
-        self.bsdf = LambertianBSDF()
+        self.bsdf = None
         self.surface = ParaxialSurface(
             focal_length=self.focal_length,
             geometry=self.geometry,
@@ -30,7 +29,7 @@ class TestParaxialSurface:
             is_stop=True,
             aperture=self.aperture,
             coating=self.coating,
-            bsdf=None,
+            bsdf=self.bsdf,
             is_reflective=True,
         )
 
@@ -41,7 +40,7 @@ class TestParaxialSurface:
         assert self.material_post == self.surface.material_post
         assert self.aperture == self.surface.aperture
         assert self.coating == self.surface.coating
-        assert self.bsdf == None
+        assert self.bsdf is None
         assert self.surface.is_reflective is True
         assert self.surface.surface_type == "paraxial"
 
