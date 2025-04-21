@@ -77,7 +77,7 @@ class OddAsphere(EvenAsphere):
             float: The sag value at the given coordinates.
 
         """
-        r2 = x**2 + y**2
+        r2 = be.array(x**2 + y**2)
         r = be.sqrt(r2)
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
