@@ -6,6 +6,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import optiland.backend as be
 
@@ -60,13 +61,15 @@ class Distortion:
         ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
 
         field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
+        field_np = be.to_numpy(field)
         for k, wavelength in enumerate(self.wavelengths):
-            ax.plot(self.data[k], field, label=f"{wavelength:.4f} µm")
+            dist_k = be.to_numpy(self.data[k])
+            ax.plot(dist_k, field_np, label=f"{wavelength:.4f} µm")
             ax.set_xlabel("Distortion (%)")
             ax.set_ylabel("Field")
 
         current_xlim = plt.xlim()
-        plt.xlim([-max(be.abs(current_xlim)), max(be.abs(current_xlim))])
+        plt.xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
         plt.ylim([0, None])
         plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         plt.show()
