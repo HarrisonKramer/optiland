@@ -44,7 +44,7 @@ class Plane(BaseGeometry):
                 given point.
 
         """
-        if isinstance(y, be.ndarray):
+        if be.is_array_like(y):
             return be.zeros_like(y)
         return 0
 
