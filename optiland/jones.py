@@ -318,9 +318,9 @@ class JonesLinearDiattenuator(BaseJones):
     """
 
     def __init__(self, t_min, t_max, theta):
-        self.t_min = t_min
-        self.t_max = t_max
-        self.theta = theta
+        self.t_min = be.array(t_min)
+        self.t_max = be.array(t_max)
+        self.theta = be.array(theta)
 
     def calculate_matrix(
         self,
@@ -374,8 +374,8 @@ class JonesLinearRetarder(BaseJones):
     """
 
     def __init__(self, retardance, theta):
-        self.retardance = retardance
-        self.theta = theta
+        self.retardance = be.array(retardance)
+        self.theta = be.array(theta)
 
     def calculate_matrix(
         self,
