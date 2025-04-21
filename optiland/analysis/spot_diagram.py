@@ -104,9 +104,16 @@ class SpotDiagram:
         axs = axs.flatten()
 
         # Subtract centroid and find limits
-        data = self._center_spots((self.data))
+        data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
-        axis_lim = be.max(geometric_size)
+        # stack into an (N_fields, N_waves) array/tensor, then reduce:
+        # first convert each row into a 1D tensor/array
+        rows = [be.stack(row, axis=0) for row in geometric_size]
+        # now stack rows into a 2D
+        gs_array = be.stack(rows, axis=0)
+        # take the global max
+        axis_lim = be.max(gs_array)
+        
 
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
@@ -281,7 +288,7 @@ class SpotDiagram:
             chief_ray_cosines_list.append(
                 be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = be.stack(chief_ray_cosines_list)
+        chief_ray_cosines_list = be.stack(chief_ray_cosines_list, axis=0)
         return chief_ray_cosines_list
 
     def generate_chief_rays_centers(self, wavelength):
@@ -307,7 +314,7 @@ class SpotDiagram:
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
-        chief_ray_centers = be.stack(chief_ray_centers)
+        chief_ray_centers = be.stack(chief_ray_centers, axis=0)
         return chief_ray_centers
 
     def airy_disc_x_y(self, wavelength):
