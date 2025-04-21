@@ -6,6 +6,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import optiland.backend as be
 
@@ -51,18 +52,21 @@ class FieldCurvature:
         fig, ax = plt.subplots(figsize=figsize)
 
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
-
+        field_np = be.to_numpy(field)
+        
         for k, wavelength in enumerate(self.wavelengths):
+            dk_np_tan = be.to_numpy(self.data[k][0])
             ax.plot(
-                self.data[k][0],
-                field,
+                dk_np_tan,
+                field_np,
                 f"C{k}",
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Tangential",
             )
+            dk_np_sag = be.to_numpy(self.data[k][1])
             ax.plot(
-                self.data[k][1],
-                field,
+                dk_np_sag,
+                field_np,
                 f"C{k}--",
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Sagittal",
@@ -73,7 +77,7 @@ class FieldCurvature:
 
         ax.set_ylim([0, self.optic.fields.max_field])
         current_xlim = plt.xlim()
-        ax.set_xlim([-max(be.abs(current_xlim)), max(be.abs(current_xlim))])
+        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
         ax.set_title("Field Curvature")
         plt.axvline(x=0, color="k", linewidth=0.5)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
@@ -114,7 +118,7 @@ class FieldCurvature:
         Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
         Px = be.zeros(2 * self.num_points)
-        Py = be.tile(be.array([-delta, delta]), self.num_points)
+        Py = be.repeat(be.array([-delta, delta]), self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
@@ -149,7 +153,7 @@ class FieldCurvature:
         Hx = be.zeros(2 * self.num_points)
         Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
-        Px = be.tile(be.array([-delta, delta]), self.num_points)
+        Px = be.repeat(be.array([-delta, delta]), self.num_points)
         Py = be.zeros(2 * self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
