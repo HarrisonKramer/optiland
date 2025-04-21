@@ -447,52 +447,46 @@ class TestTelescopeTripletDistortion:
 class TestTelescopeTripletGridDistortion:
     def test_grid_distortion_values(self, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
-        assert dist.data["max_distortion"] == pytest.approx(
-            0.005785718069180374,
-            abs=1e-9,
-        )
+        assert_allclose(dist.data["max_distortion"], 0.005785718069180374, atol=1e-9)
 
         assert dist.data["xr"].shape == (10, 10)
         assert dist.data["yr"].shape == (10, 10)
         assert dist.data["xp"].shape == (10, 10)
         assert dist.data["yp"].shape == (10, 10)
 
-        assert dist.data["xr"][0, 0] == pytest.approx(-1.2342622299776145, abs=1e-9)
-        assert dist.data["xr"][4, 6] == pytest.approx(0.41137984374933073, abs=1e-9)
+        assert_allclose(dist.data["xr"][0, 0], -1.2342622299776145, atol=1e-9)
+        assert_allclose(dist.data["xr"][4, 6], 0.41137984374933073, atol=1e-9)
 
-        assert dist.data["yr"][1, 0] == pytest.approx(-0.959951505834632, abs=1e-9)
-        assert dist.data["yr"][2, 6] == pytest.approx(-0.6856458243955965, abs=1e-9)
+        assert_allclose(dist.data["yr"][1, 0], -0.959951505834632, atol=1e-9)
+        assert_allclose(dist.data["yr"][2, 6], -0.6856458243955965, atol=1e-9)
 
-        assert dist.data["xp"][0, 2] == pytest.approx(-0.6856375010477692, abs=1e-9)
-        assert dist.data["xp"][4, 4] == pytest.approx(-0.13712543741510327, abs=1e-9)
+        assert_allclose(dist.data["xp"][0, 2], -0.6856375010477692, atol=1e-9)
+        assert_allclose(dist.data["xp"][4, 4], -0.13712543741510327, atol=1e-9)
 
-        assert dist.data["yp"][-1, 0] == pytest.approx(1.2341908231761498, abs=1e-9)
-        assert dist.data["yp"][1, 5] == pytest.approx(-0.9599069415493584, abs=1e-9)
+        assert_allclose(dist.data["yp"][-1, 0], 1.2341908231761498, atol=1e-9)
+        assert_allclose(dist.data["yp"][1, 5], -0.9599069415493584, atol=1e-9)
 
     def test_f_theta_distortion(self, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective, distortion_type="f-theta")
 
-        assert dist.data["max_distortion"] == pytest.approx(
-            0.010863278146924825,
-            abs=1e-9,
-        )
+        assert_allclose(dist.data["max_distortion"], 0.010863278146924825, atol=1e-9)
 
         assert dist.data["xr"].shape == (10, 10)
         assert dist.data["yr"].shape == (10, 10)
         assert dist.data["xp"].shape == (10, 10)
         assert dist.data["yp"].shape == (10, 10)
 
-        assert dist.data["xr"][0, 0] == pytest.approx(-1.2342622299776145, abs=1e-9)
-        assert dist.data["xr"][4, 6] == pytest.approx(0.41137984374933073, abs=1e-9)
+        assert_allclose(dist.data["xr"][0, 0], -1.2342622299776145, atol=1e-9)
+        assert_allclose(dist.data["xr"][4, 6], 0.41137984374933073, atol=1e-9)
 
-        assert dist.data["yr"][1, 0] == pytest.approx(-0.959951505834632, abs=1e-9)
-        assert dist.data["yr"][2, 6] == pytest.approx(-0.6856458243955965, abs=1e-9)
+        assert_allclose(dist.data["yr"][1, 0], -0.959951505834632, atol=1e-9)
+        assert_allclose(dist.data["yr"][2, 6], -0.6856458243955965, atol=1e-9)
 
-        assert dist.data["xp"][0, 2] == pytest.approx(-0.6856267573347536, abs=1e-9)
-        assert dist.data["xp"][4, 4] == pytest.approx(-0.13712535146695065, abs=1e-9)
+        assert_allclose(dist.data["xp"][0, 2], -0.6856267573347536, atol=1e-9)
+        assert_allclose(dist.data["xp"][4, 4], -0.13712535146695065, atol=1e-9)
 
-        assert dist.data["yp"][-1, 0] == pytest.approx(1.2341281632025562, abs=1e-9)
-        assert dist.data["yp"][1, 5] == pytest.approx(-0.9598774602686547, abs=1e-9)
+        assert_allclose(dist.data["yp"][-1, 0], 1.2341281632025562, atol=1e-9)
+        assert_allclose(dist.data["yp"][1, 5], -0.9598774602686547, atol=1e-9)
 
     def test_invalid_distortion_type(self, set_test_backend, telescope_objective):
         with pytest.raises(ValueError):
@@ -566,38 +560,37 @@ class TestTelescopeTripletFieldCurvature:
     def test_field_curvature_generate_data(self, telescope_objective):
         f = analysis.FieldCurvature(telescope_objective)
 
-        assert f.data[0][0][89] == pytest.approx(-0.0013062169220806206, abs=1e-9)
-        assert f.data[0][1][40] == pytest.approx(0.03435268469825703, abs=1e-9)
-        assert f.data[0][1][112] == pytest.approx(0.012502083379998098, abs=1e-9)
-        assert f.data[0][0][81] == pytest.approx(0.005363808856891348, abs=1e-9)
-        assert f.data[0][0][127] == pytest.approx(-0.041553105637156224, abs=1e-9)
-        assert f.data[0][0][40] == pytest.approx(0.02969815644838593, abs=1e-9)
-        assert f.data[0][0][57] == pytest.approx(0.021608994058848974, abs=1e-9)
-        assert f.data[0][1][45] == pytest.approx(0.03350406866891282, abs=1e-9)
-        assert f.data[0][1][74] == pytest.approx(0.026613511090172324, abs=1e-9)
-        assert f.data[0][1][94] == pytest.approx(0.01990500178194723, abs=1e-9)
+        assert_allclose(f.data[0][0][89], -0.0013062169220806206, atol=1e-9)
+        assert_allclose(f.data[0][1][40], 0.03435268469825703, atol=1e-9)
+        assert_allclose(f.data[0][1][112], 0.012502083379998098, atol=1e-9)
+        assert_allclose(f.data[0][0][81], 0.005363808856891348, atol=1e-9)
+        assert_allclose(f.data[0][0][127], -0.041553105637156224, atol=1e-9)
+        assert_allclose(f.data[0][0][40], 0.02969815644838593, atol=1e-9)
+        assert_allclose(f.data[0][0][57], 0.021608994058848974, atol=1e-9)
+        assert_allclose(f.data[0][1][45], 0.03350406866891282, atol=1e-9)
+        assert_allclose(f.data[0][1][74], 0.026613511090172324, atol=1e-9)
+        assert_allclose(f.data[0][1][94], 0.01990500178194723, atol=1e-9)
 
-        assert f.data[1][1][55] == pytest.approx(-0.004469963728211546, abs=1e-9)
-        assert f.data[1][1][19] == pytest.approx(0.0008003571732224457, abs=1e-9)
-        assert f.data[1][1][93] == pytest.approx(-0.015595499139883678, abs=1e-9)
-        assert f.data[1][0][15] == pytest.approx(0.0004226818372030349, abs=1e-9)
-        assert f.data[1][1][50] == pytest.approx(-0.0034313474749693047, abs=1e-9)
-        assert f.data[1][1][50] == pytest.approx(-0.0034313474749693047, abs=1e-9)
-        assert f.data[1][0][110] == pytest.approx(-0.05718858127937811, abs=1e-9)
-        assert f.data[1][0][89] == pytest.approx(-0.036917737894907106, abs=1e-9)
-        assert f.data[1][1][75] == pytest.approx(-0.00961346547634129, abs=1e-9)
-        assert f.data[1][0][69] == pytest.approx(-0.021587199726177217, abs=1e-9)
+        assert_allclose(f.data[1][1][55], -0.004469963728211546, atol=1e-9)
+        assert_allclose(f.data[1][1][19], 0.0008003571732224457, atol=1e-9)
+        assert_allclose(f.data[1][1][93], -0.015595499139883678, atol=1e-9)
+        assert_allclose(f.data[1][0][15], 0.0004226818372030349, atol=1e-9)
+        assert_allclose(f.data[1][1][50], -0.0034313474749693047, atol=1e-9)
+        assert_allclose(f.data[1][0][110], -0.05718858127937811, atol=1e-9)
+        assert_allclose(f.data[1][0][89], -0.036917737894907106, atol=1e-9)
+        assert_allclose(f.data[1][1][75], -0.00961346547634129, atol=1e-9)
+        assert_allclose(f.data[1][0][69], -0.021587199726177217, atol=1e-9)
 
-        assert f.data[2][1][62] == pytest.approx(0.059485399479466794, abs=1e-9)
-        assert f.data[2][0][103] == pytest.approx(0.015768399161337723, abs=1e-9)
-        assert f.data[2][0][0] == pytest.approx(0.06707048647659668, abs=1e-9)
-        assert f.data[2][1][68] == pytest.approx(0.05794633552031286, abs=1e-9)
-        assert f.data[2][0][6] == pytest.approx(0.06689636005684219, abs=1e-9)
-        assert f.data[2][1][40] == pytest.approx(0.06391326892594748, abs=1e-9)
-        assert f.data[2][0][88] == pytest.approx(0.029620344519446916, abs=1e-9)
-        assert f.data[2][0][5] == pytest.approx(0.06694956529269887, abs=1e-9)
-        assert f.data[2][1][98] == pytest.approx(0.048120430272662294, abs=1e-9)
-        assert f.data[2][0][5] == pytest.approx(0.06694956529269887, abs=1e-9)
+        assert_allclose(f.data[2][1][62], 0.059485399479466794, atol=1e-9)
+        assert_allclose(f.data[2][0][103], 0.015768399161337723, atol=1e-9)
+        assert_allclose(f.data[2][0][0], 0.06707048647659668, atol=1e-9)
+        assert_allclose(f.data[2][1][68], 0.05794633552031286, atol=1e-9)
+        assert_allclose(f.data[2][0][6], 0.06689636005684219, atol=1e-9)
+        assert_allclose(f.data[2][1][40], 0.06391326892594748, atol=1e-9)
+        assert_allclose(f.data[2][0][88], 0.029620344519446916, atol=1e-9)
+        assert_allclose(f.data[2][0][5], 0.06694956529269887, atol=1e-9)
+        assert_allclose(f.data[2][1][98], 0.048120430272662294, atol=1e-9)
+        assert_allclose(f.data[2][0][5], 0.06694956529269887, atol=1e-9)
 
 
 class TestSpotVsField:
