@@ -53,7 +53,7 @@ class FieldCurvature:
 
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
-        
+
         for k, wavelength in enumerate(self.wavelengths):
             dk_np_tan = be.to_numpy(self.data[k][0])
             ax.plot(
@@ -118,7 +118,7 @@ class FieldCurvature:
         Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
         Px = be.zeros(2 * self.num_points)
-        Py = be.repeat(be.array([-delta, delta]), self.num_points)
+        Py = be.tile(be.array([-delta, delta]), self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
@@ -153,7 +153,7 @@ class FieldCurvature:
         Hx = be.zeros(2 * self.num_points)
         Hy = be.repeat(be.linspace(0, 1, self.num_points), 2)
 
-        Px = be.repeat(be.array([-delta, delta]), self.num_points)
+        Px = be.tile(be.array([-delta, delta]), self.num_points)
         Py = be.zeros(2 * self.num_points)
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
