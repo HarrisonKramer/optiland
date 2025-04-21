@@ -362,6 +362,10 @@ def all(x):
 
 
 def radians(x):
+    """Convert degrees→radians, accepting both Python scalars and tensors."""
+    # if it's not already a torch.Tensor, cast it into one
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
     return torch.deg2rad(x)
 
 
@@ -370,6 +374,10 @@ def newaxis():
 
 
 def cast(x):
+    """Ensure x is a torch.Tensor on the right device/dtype."""
+    if not isinstance(x, torch.Tensor):
+        # lift Python scalars or numpy scalars into a tensor
+        return torch.tensor(x, device=get_device(), dtype=get_precision())
     return x.to(dtype=get_precision(), device=get_device())
 
 
@@ -416,3 +424,17 @@ def isscalar(x):
     # 0-Dim torch.Tensor
     if torch.is_tensor(x) and x.dim() == 0:
         return True
+    
+def max(x):
+    """Backend‐agnostic max: returns a Python float when used on a torch.Tensor."""
+    if isinstance(x, torch.Tensor):
+        # detach → CPU → reduce → item()
+        return x.detach().cpu().max().item()
+    # fall back to numpy or builtin for lists/ndarrays
+    return np.max(x)
+
+def min(x):
+    """Same for min."""
+    if isinstance(x, torch.Tensor):
+        return x.detach().cpu().min().item()
+    return np.min(x)

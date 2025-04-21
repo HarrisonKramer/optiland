@@ -557,13 +557,20 @@ class SpotDiagram:
             None
 
         """
+        
+        import numpy as np
+        
         markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
             x, y, intensity = points
-            mask = intensity != 0
+            # one‐liner conversion for BOTH backends:
+            x_np = be.to_numpy(x)
+            y_np = be.to_numpy(y)
+            i_np = be.to_numpy(intensity)
+            mask = (i_np != 0)
             ax.scatter(
-                x[mask],
-                y[mask],
+                x_np[mask],
+                y_np[mask],
                 s=10,
                 label=f"{wavelengths[k]:.4f} µm",
                 marker=markers[k % 3],
@@ -601,7 +608,7 @@ class SpotDiagram:
         # Determining the labels for the x and y axes based on the image
         # surface effective orientation.
         cs = self.optic.image_surface.geometry.cs
-        effective_orientation = be.abs(cs.get_effective_rotation_euler())
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:

@@ -113,7 +113,7 @@ class TestCookeTripetSpotDiagram:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram_larger_fig(self, set_test_backend, mock_show, cooke_triplet):
+    def test_view_spot_diagram_larger_fig(self, mock_show, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
