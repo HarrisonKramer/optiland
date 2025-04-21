@@ -351,6 +351,14 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     Vectorized nearest‐neighbor lookup in PyTorch, working for Hx,Hy of any shape
     without breaking autograd.
     """
+    # lift Python scalars into 0‑dim tensors on the correct device/dtype
+    if not torch.is_tensor(Hx):
+        Hx = torch.tensor(Hx, dtype=points.dtype, device=points.device)
+    if not torch.is_tensor(Hy):
+        Hy = torch.tensor(Hy, dtype=points.dtype, device=points.device)
+    # Ensure Hx/Hy are backend tensors no matter what the caller passed.
+    Hx = array(Hx)
+    Hy = array(Hy)
     # points: (M,2), values: (M,...) ; Hx,Hy: shape (...) query grid
     # 1) pack queries into a flat (K,2) tensor
     q = torch.stack([Hx, Hy], dim=-1)      # (...,2)
@@ -390,6 +398,9 @@ def radians(x):
         x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
     return torch.deg2rad(x)
 
+def deg2rad(x):
+    """Convert degrees to radians, accepting Python scalars or tensors."""
+    return radians(x)
 
 def newaxis():
     return None

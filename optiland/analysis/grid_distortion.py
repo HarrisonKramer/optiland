@@ -8,6 +8,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import optiland.backend as be
 
@@ -61,11 +62,11 @@ class GridDistortion:
         """
         fig, ax = plt.subplots(figsize=figsize)
 
-        ax.plot(self.data["xp"], self.data["yp"], "C1", linewidth=1)
-        ax.plot(self.data["xp"].T, self.data["yp"].T, "C1", linewidth=1)
+        ax.plot(be.to_numpy(self.data["xp"]), be.to_numpy(self.data["yp"]), "C1", linewidth=1)
+        ax.plot(be.to_numpy(self.data["xp"]).T, be.to_numpy(self.data["yp"]).T, "C1", linewidth=1)
 
-        ax.plot(self.data["xr"], self.data["yr"], "C0P")
-        ax.plot(self.data["xr"].T, self.data["yr"].T, "C0P")
+        ax.plot(be.to_numpy(self.data["xr"]), be.to_numpy(self.data["yr"]), "C0P")
+        ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0P")
 
         ax.set_xlabel("Image X (mm)")
         ax.set_ylabel("Image Y (mm)")
@@ -92,7 +93,7 @@ class GridDistortion:
         # trace single reference ray
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=self.wavelength)
 
-        max_field = be.sqrt(2) / 2
+        max_field = be.sqrt(be.array(2.0)) / be.array(2.0)
         extent = be.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = be.meshgrid(extent, extent)
 
