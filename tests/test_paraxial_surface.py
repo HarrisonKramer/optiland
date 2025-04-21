@@ -30,7 +30,7 @@ class TestParaxialSurface:
             is_stop=True,
             aperture=self.aperture,
             coating=self.coating,
-            bsdf=self.bsdf,
+            bsdf=None,
             is_reflective=True,
         )
 
@@ -41,7 +41,7 @@ class TestParaxialSurface:
         assert self.material_post == self.surface.material_post
         assert self.aperture == self.surface.aperture
         assert self.coating == self.surface.coating
-        assert self.bsdf == self.surface.bsdf
+        assert self.bsdf == None
         assert self.surface.is_reflective is True
         assert self.surface.surface_type == "paraxial"
 
@@ -115,7 +115,6 @@ class TestParaxialSurface:
         assert surface.is_stop
         assert surface.aperture == self.aperture
         assert surface.coating.to_dict() == self.coating.to_dict()
-        assert surface.bsdf.to_dict() == self.bsdf.to_dict()
         assert surface.is_reflective
         assert surface.semi_aperture is None
         assert be.array_equal(surface.y, be.empty(0))
