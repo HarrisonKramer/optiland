@@ -132,42 +132,42 @@ def is_array_like(x):
     return isinstance(x, (torch.Tensor, list, tuple))
 
 
-def zeros(shape):
+def zeros(shape, dtype=None):
     """Create an array/tensor filled with zeros."""
     return torch.zeros(
         shape,
         device=get_device(),
-        dtype=get_precision(),
+        dtype=get_precision() if dtype is None else dtype,
         requires_grad=grad_mode.requires_grad,
     )
 
 
-def zeros_like(x):
+def zeros_like(x, dtype=None):
     """Create an array/tensor filled with zeros with the same shape as x."""
     return torch.zeros_like(
         x,
         device=get_device(),
-        dtype=get_precision(),
+        dtype=get_precision() if dtype is None else dtype,
         requires_grad=grad_mode.requires_grad,
     )
 
 
-def ones(shape):
+def ones(shape, dtype=None):
     """Create an array/tensor filled with ones."""
     return torch.ones(
         shape,
         device=get_device(),
-        dtype=get_precision(),
+        dtype=get_precision() if dtype is None else dtype,
         requires_grad=grad_mode.requires_grad,
     )
 
 
-def ones_like(x):
+def ones_like(x, dtype=None):
     """Create an array/tensor filled with ones with the same shape as x."""
     return torch.ones_like(
         x,
         device=get_device(),
-        dtype=get_precision(),
+        dtype=get_precision() if dtype is None else dtype,
         requires_grad=grad_mode.requires_grad,
     )
 
