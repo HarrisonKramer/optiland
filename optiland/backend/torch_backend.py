@@ -438,3 +438,21 @@ def min(x):
     if isinstance(x, torch.Tensor):
         return x.detach().cpu().min().item()
     return np.min(x)
+
+def vectorize(pyfunc):
+    """
+    A very simple elementwise mapper for Torch.
+    Takes a Python scalar→scalar function and returns a new function
+    that applies it over every element of a 1D tensor, preserving shape.
+    """
+    def wrapped(x):
+        # flatten to 1D
+        flat = x.reshape(-1)
+        # call your python function on each element (xi is a 0‑dim tensor)
+        mapped = [pyfunc(xi) for xi in flat]
+        # stack back into a tensor
+        out = torch.stack([m if isinstance(m, torch.Tensor) else torch.tensor(m, 
+            dtype=get_precision(), device=get_device()) 
+            for m in mapped], dim=0)
+        return out.view(x.shape)
+    return wrapped

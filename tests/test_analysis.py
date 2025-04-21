@@ -154,14 +154,14 @@ class TestCookeTripletEncircledEnergy:
         assert_allclose(centroid[2][1], 18.13502264954927, atol=1e-3, rtol=1e-3)
 
     @patch("matplotlib.pyplot.show")
-    def test_view_encircled_energy(self, mock_show, cooke_triplet):
+    def test_view_encircled_energy(self, mock_show, set_test_backend, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_encircled_energy_larger_fig(self, mock_show, cooke_triplet):
+    def test_view_encircled_energy_larger_fig(self, mock_show, set_test_backend, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view(figsize=(20, 10))
         mock_show.assert_called_once()
@@ -169,7 +169,7 @@ class TestCookeTripletEncircledEnergy:
 
 
 class TestCookeTripletRayFan:
-    def test_ray_fan(self, cooke_triplet):
+    def test_ray_fan(self, set_test_backend, cooke_triplet):
         fan = analysis.RayFan(cooke_triplet)
 
         assert fan.data["Px"][0] == -1
@@ -332,14 +332,14 @@ class TestCookeTripletRayFan:
         )
 
     @patch("matplotlib.pyplot.show")
-    def test_view_ray_fan(self, mock_show, cooke_triplet):
+    def test_view_ray_fan(self, mock_show, set_test_backend, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_ray_fan_larger_fig(self, mock_show, cooke_triplet):
+    def test_view_ray_fan_larger_fig(self, mock_show, set_test_backend, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
         ray_fan.view(figsize=(20, 10))
         mock_show.assert_called_once()
@@ -348,14 +348,14 @@ class TestCookeTripletRayFan:
 
 class TestTelescopeTripletYYbar:
     @patch("matplotlib.pyplot.show")
-    def test_view_yybar(self, mock_show, telescope_objective):
+    def test_view_yybar(self, mock_show, set_test_backend, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
         yybar.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_yybar_larger_fig(self, mock_show, telescope_objective):
+    def test_view_yybar_larger_fig(self, mock_show, set_test_backend, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
         yybar.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
@@ -363,7 +363,7 @@ class TestTelescopeTripletYYbar:
 
 
 class TestTelescopeTripletDistortion:
-    def test_distortion_values(self, telescope_objective):
+    def test_distortion_values(self, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
 
         assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
@@ -387,19 +387,19 @@ class TestTelescopeTripletDistortion:
         assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
         assert dist.data[2][-1] == pytest.approx(0.015876125134060767, abs=1e-9)
 
-    def test_invalid_distortion_type(self, telescope_objective):
+    def test_invalid_distortion_type(self, set_test_backend, telescope_objective):
         with pytest.raises(ValueError):
             analysis.Distortion(telescope_objective, distortion_type="invalid")
 
     @patch("matplotlib.pyplot.show")
-    def test_view_distortion(self, mock_show, telescope_objective):
+    def test_view_distortion(self, mock_show, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_distortion_larger_fig(self, mock_show, telescope_objective):
+    def test_view_distortion_larger_fig(self, mock_show, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
@@ -407,7 +407,7 @@ class TestTelescopeTripletDistortion:
 
 
 class TestTelescopeTripletGridDistortion:
-    def test_grid_distortion_values(self, telescope_objective):
+    def test_grid_distortion_values(self, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
         assert dist.data["max_distortion"] == pytest.approx(
             0.005785718069180374,
@@ -431,7 +431,7 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data["yp"][-1, 0] == pytest.approx(1.2341908231761498, abs=1e-9)
         assert dist.data["yp"][1, 5] == pytest.approx(-0.9599069415493584, abs=1e-9)
 
-    def test_f_theta_distortion(self, telescope_objective):
+    def test_f_theta_distortion(self, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective, distortion_type="f-theta")
 
         assert dist.data["max_distortion"] == pytest.approx(
@@ -456,19 +456,19 @@ class TestTelescopeTripletGridDistortion:
         assert dist.data["yp"][-1, 0] == pytest.approx(1.2341281632025562, abs=1e-9)
         assert dist.data["yp"][1, 5] == pytest.approx(-0.9598774602686547, abs=1e-9)
 
-    def test_invalid_distortion_type(self, telescope_objective):
+    def test_invalid_distortion_type(self, set_test_backend, telescope_objective):
         with pytest.raises(ValueError):
             analysis.GridDistortion(telescope_objective, distortion_type="invalid")
 
     @patch("matplotlib.pyplot.show")
-    def test_view_grid_distortion(self, mock_show, telescope_objective):
+    def test_view_grid_distortion(self, mock_show, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
         dist.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_grid_distortion_larger_fig(self, mock_show, telescope_objective):
+    def test_view_grid_distortion_larger_fig(self, mock_show, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
         dist.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
@@ -476,7 +476,7 @@ class TestTelescopeTripletGridDistortion:
 
 
 class TestTelescopeTripletFieldCurvature:
-    def test_field_curvature_init(self, telescope_objective):
+    def test_field_curvature_init(self, set_test_backend, telescope_objective):
         field_curvature = analysis.FieldCurvature(telescope_objective)
         assert field_curvature.optic == telescope_objective
         assert (
@@ -485,7 +485,7 @@ class TestTelescopeTripletFieldCurvature:
         )
         assert field_curvature.num_points == 128
 
-    def test_field_curvature_init_with_wavelength(self, telescope_objective):
+    def test_field_curvature_init_with_wavelength(self, set_test_backend, telescope_objective):
         field_curvature = analysis.FieldCurvature(
             telescope_objective,
             wavelengths=[0.5, 0.6],
@@ -494,7 +494,7 @@ class TestTelescopeTripletFieldCurvature:
         assert field_curvature.wavelengths == [0.5, 0.6]
         assert field_curvature.num_points == 128
 
-    def test_field_curvature_init_with_num_points(self, telescope_objective):
+    def test_field_curvature_init_with_num_points(self, set_test_backend, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
             telescope_objective,
@@ -507,7 +507,7 @@ class TestTelescopeTripletFieldCurvature:
         )
         assert field_curvature.num_points == num_points
 
-    def test_field_curvature_init_with_all_parameters(self, telescope_objective):
+    def test_field_curvature_init_with_all_parameters(self, set_test_backend, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
             telescope_objective,
@@ -519,7 +519,7 @@ class TestTelescopeTripletFieldCurvature:
         assert field_curvature.num_points == num_points
 
     @patch("matplotlib.pyplot.show")
-    def test_field_curvature_view(self, mock_show, telescope_objective):
+    def test_field_curvature_view(self, mock_show, set_test_backend, telescope_objective):
         field_curvature = analysis.FieldCurvature(telescope_objective)
         field_curvature.view()
         mock_show.assert_called_once()
