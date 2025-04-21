@@ -231,12 +231,12 @@ def polyfit(x, y, degree):
 
 
 def polyval(coeffs, x):
-    return sum(c * x**i for i, c in enumerate(coeffs))
+    return sum(c * x**i for i, c in enumerate(reversed(coeffs)))
 
 
 def load(filename):
-    array = np.load(filename)
-    return torch.from_numpy(array)
+    data = np.load(filename)
+    return array(data)
 
 
 def hstack(arrays):
@@ -411,3 +411,7 @@ def matmul(a, b):
 def batched_chain_matmul3(a, b, c):
     dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
+
+
+def isscalar(x):
+    return torch.is_tensor(x) and x.dim() == 0
