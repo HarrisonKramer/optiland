@@ -8,8 +8,9 @@ coefficient is ignored in this model and is always set to zero.
 Kramer Harrison, 2024
 """
 
-# import pkg_resources
 from importlib import resources
+
+import numpy as np
 
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
@@ -66,8 +67,9 @@ class AbbeMaterial(BaseMaterial):
 
         """
         # Polynomial fit to the refractive index data
-        X = be.ravel(be.array([self.index, self.abbe]))
-        X_poly = be.hstack([X**i for i in range(1, 4)])
+        X = np.ravel(np.array([self.index, self.abbe]))
+        X_poly = np.hstack([X**i for i in range(1, 4)])
+        X_poly = be.array(X_poly)
 
         # File contains fit coefficients
         coefficients_file = str(
