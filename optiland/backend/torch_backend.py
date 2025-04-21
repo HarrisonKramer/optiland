@@ -235,8 +235,8 @@ def polyval(coeffs, x):
 
 
 def load(filename):
-    array = np.load(filename)
-    return torch.from_numpy(array)
+    data = np.load(filename)
+    return array(data)
 
 
 def hstack(arrays):
