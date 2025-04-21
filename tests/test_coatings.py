@@ -4,6 +4,7 @@ import optiland.backend as be
 import pytest
 
 from optiland import coatings, materials, rays
+from .utils import assert_allclose
 
 
 @pytest.fixture
@@ -64,37 +65,51 @@ def rays_non_parallel():
 
 
 class TestSimpleCoating:
-    def test_interact_reflect(self, rays_parallel):
+    def test_interact_reflect(self, set_test_backend, rays_parallel):
         coating = coatings.SimpleCoating(transmittance=0.8, reflectance=0.1)
 
-        rays_before = deepcopy(rays_parallel)
+        x_before = be.copy(rays_parallel.x)
+        y_before = be.copy(rays_parallel.y)
+        z_before = be.copy(rays_parallel.z)
+        L_before = be.copy(rays_parallel.L)
+        M_before = be.copy(rays_parallel.M)
+        N_before = be.copy(rays_parallel.N)
+        i_before = be.copy(rays_parallel.i)
+        w_before = be.copy(rays_parallel.w)
         rays_after = coating.interact(rays_parallel, reflect=True)
 
-        assert be.all(rays_after.x == rays_before.x)
-        assert be.all(rays_after.y == rays_before.y)
-        assert be.all(rays_after.z == rays_before.z)
-        assert be.all(rays_after.L == rays_before.L)
-        assert be.all(rays_after.M == rays_before.M)
-        assert be.all(rays_after.N == rays_before.N)
-        assert be.all(rays_after.i == 0.1 * rays_before.i)
-        assert be.all(rays_after.w == rays_before.w)
+        assert_allclose(rays_after.x, x_before)
+        assert_allclose(rays_after.y, y_before)
+        assert_allclose(rays_after.z, z_before)
+        assert_allclose(rays_after.L, L_before)
+        assert_allclose(rays_after.M, M_before)
+        assert_allclose(rays_after.N, N_before)
+        assert_allclose(rays_after.i, 0.1 * i_before)
+        assert_allclose(rays_after.w, w_before)
 
-    def test_interact_transmit(self, rays_parallel):
+    def test_interact_transmit(self, set_test_backend, rays_parallel):
         coating = coatings.SimpleCoating(transmittance=0.3, reflectance=0.5)
 
-        rays_before = deepcopy(rays_parallel)
+        x_before = be.copy(rays_parallel.x)
+        y_before = be.copy(rays_parallel.y)
+        z_before = be.copy(rays_parallel.z)
+        L_before = be.copy(rays_parallel.L)
+        M_before = be.copy(rays_parallel.M)
+        N_before = be.copy(rays_parallel.N)
+        i_before = be.copy(rays_parallel.i)
+        w_before = be.copy(rays_parallel.w)
         rays_after = coating.interact(rays_parallel, reflect=False)
 
-        assert be.all(rays_after.x == rays_before.x)
-        assert be.all(rays_after.y == rays_before.y)
-        assert be.all(rays_after.z == rays_before.z)
-        assert be.all(rays_after.L == rays_before.L)
-        assert be.all(rays_after.M == rays_before.M)
-        assert be.all(rays_after.N == rays_before.N)
-        assert be.all(rays_after.i == 0.3 * rays_before.i)
-        assert be.all(rays_after.w == rays_before.w)
+        assert_allclose(rays_after.x, x_before)
+        assert_allclose(rays_after.y, y_before)
+        assert_allclose(rays_after.z, z_before)
+        assert_allclose(rays_after.L, L_before)
+        assert_allclose(rays_after.M, M_before)
+        assert_allclose(rays_after.N, N_before)
+        assert_allclose(rays_after.i, 0.3 * i_before)
+        assert_allclose(rays_after.w, w_before)
 
-    def test_compute_aoi(self, rays_parallel):
+    def test_compute_aoi(self, set_test_backend, rays_parallel):
         coating = coatings.SimpleCoating(transmittance=0.3, reflectance=0.5)
 
         nx = be.zeros_like(rays_parallel.x)
@@ -105,7 +120,7 @@ class TestSimpleCoating:
 
         assert be.all(aoi == 0)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         coating = coatings.SimpleCoating(transmittance=0.3, reflectance=0.5)
         assert coating.to_dict() == {
             "type": "SimpleCoating",
@@ -115,7 +130,7 @@ class TestSimpleCoating:
 
 
 class TestFresnelCoating:
-    def test_reflect(self, rays_parallel_polarized):
+    def test_reflect(self, set_test_backend, rays_parallel_polarized):
         mat1 = materials.IdealMaterial(n=1.0)
         mat2 = materials.IdealMaterial(n=1.5)
         coating = coatings.FresnelCoating(mat1, mat2)
@@ -125,14 +140,14 @@ class TestFresnelCoating:
         ny = be.zeros_like(rays_parallel_polarized.y)
         nz = be.ones_like(rays_parallel_polarized.z)
 
-        rays_before = deepcopy(rays_parallel_polarized)
+        i_before = be.copy(rays_parallel_polarized.i)
         rays_after = coating.reflect(rays_parallel_polarized, nx, ny, nz)
         rays_after.update_intensity(state)
 
         R = ((1.5 - 1.0) / (1.5 + 1.0)) ** 2
-        assert be.all(rays_after.i == R * rays_before.i)
+        assert be.all(rays_after.i == R * i_before)
 
-    def test_transmit(self, rays_parallel_polarized):
+    def test_transmit(self, set_test_backend, rays_parallel_polarized):
         mat1 = materials.IdealMaterial(n=1.0)
         mat2 = materials.IdealMaterial(n=1.5)
         coating = coatings.FresnelCoating(mat1, mat2)
@@ -142,14 +157,14 @@ class TestFresnelCoating:
         ny = be.zeros_like(rays_parallel_polarized.y)
         nz = be.ones_like(rays_parallel_polarized.z)
 
-        rays_before = deepcopy(rays_parallel_polarized)
+        i_before = be.copy(rays_parallel_polarized.i)
         rays_after = coating.transmit(rays_parallel_polarized, nx, ny, nz)
         rays_after.update_intensity(state)
 
         R = ((1.5 - 1.0) / (1.5 + 1.0)) ** 2
-        assert be.allclose(rays_after.i * 1.5, (1 - R) * rays_before.i, atol=1e-9)
+        assert be.allclose(rays_after.i * 1.5, (1 - R) * i_before)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         mat1 = materials.IdealMaterial(n=1.0)
         mat2 = materials.IdealMaterial(n=1.5)
         coating = coatings.FresnelCoating(mat1, mat2)
@@ -159,7 +174,7 @@ class TestFresnelCoating:
             "material_post": mat2.to_dict(),
         }
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         mat1 = materials.IdealMaterial(n=1.0)
         mat2 = materials.IdealMaterial(n=1.5)
         coating = coatings.FresnelCoating(mat1, mat2)
