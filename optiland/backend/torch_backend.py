@@ -347,12 +347,34 @@ def reshape(x, shape):
 
 
 def nearest_nd_interpolator(points, values, Hx, Hy):
-    """Manual nearest neighbor in PyTorch"""
-    query = torch.tensor([Hx, Hy], dtype=points.dtype, device=points.device)
-    diffs = points - query  # shape: (N, 2)
-    dists = torch.sum(diffs**2, dim=-1)
-    idx = torch.argmin(dists)
-    return values[idx]
+    """
+    Vectorized nearest‐neighbor lookup in PyTorch, working for Hx,Hy of any shape
+    without breaking autograd.
+    """
+    # points: (M,2), values: (M,...) ; Hx,Hy: shape (...) query grid
+    # 1) pack queries into a flat (K,2) tensor
+    q = torch.stack([Hx, Hy], dim=-1)      # (...,2)
+    orig_shape = q.shape[:-1]
+    q_flat = q.reshape(-1, 2)              # (K,2)
+
+    # 2) compute all pairwise distances against the M field‐points
+    pts = points.to(dtype=q.dtype, device=q.device)  # ensure same dtype/device
+    dists = torch.cdist(q_flat, pts)                 # (K, M)
+
+    # 3) find nearest index for each query
+    idx = dists.argmin(dim=1)           # (K,)
+
+    # 4) gather values at those indices
+    #    flatten values to (M, P) so we can index; P is remaining dims
+    vals_flat = values.view(points.shape[0], -1)  # (M, P)
+    out_flat  = vals_flat[idx]                    # (K, P)
+
+    # 5) reshape back to original query shape + any extra dims
+    out = out_flat.view(*orig_shape, *out_flat.shape[1:])
+    # if values was one‑dimensional, squeeze that last axis
+    if out.shape[-1] == 1:
+        out = out.squeeze(-1)
+    return out
 
 
 def all(x):

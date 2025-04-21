@@ -404,14 +404,14 @@ class TestTelescopeTripletDistortion:
     def test_distortion_values(self, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
 
-        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[0][-1] == pytest.approx(0.005950509480884957, abs=1e-9)
+        assert_allclose(dist.data[0][0], 0.0, atol=1e-9)
+        assert_allclose(dist.data[0][-1], 0.005950509480884957, atol=1e-9)
 
-        assert dist.data[1][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[1][-1] == pytest.approx(0.005786305783771451, abs=1e-9)
+        assert_allclose(dist.data[1][0], 0.0, atol=1e-9)
+        assert_allclose(dist.data[1][-1], 0.005786305783771451, atol=1e-9)
 
-        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[2][-1] == pytest.approx(0.005720392850412076, abs=1e-9)
+        assert_allclose(dist.data[0][0], 0.0, atol=1e-9)
+        assert_allclose(dist.data[2][-1], 0.005720392850412076, atol=1e-9)
 
     def test_f_theta_distortion(self, telescope_objective):
         dist = analysis.Distortion(telescope_objective, distortion_type="f-theta")
