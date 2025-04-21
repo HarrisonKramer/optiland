@@ -526,3 +526,13 @@ def isinf(x):
     if not isinstance(x, torch.Tensor):
         x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return torch.isinf(x)
+
+def sqrt(x):
+    """
+    Backend‐agnostic square‐root: accepts Python scalars, NumPy ndarrays, or Tensors.
+    """
+    import torch
+    # lift non‐Tensor inputs into a Tensor on the current device/dtype
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
+    return torch.sqrt(x)
