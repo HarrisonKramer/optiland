@@ -8,6 +8,7 @@ import pytest
 from optiland import analysis
 from optiland.optic import Optic
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
+from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
@@ -62,36 +63,36 @@ class TestCookeTripetSpotDiagram:
     def test_spot_geometric_radius(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         geo_radius = spot.geometric_spot_radius()
+        
+        assert_allclose(geo_radius[0][0], 0.00597244087781)
+        assert_allclose(geo_radius[0][1], 0.00628645771124)
+        assert_allclose(geo_radius[0][2], 0.00931911440064)
 
-        assert geo_radius[0][0] == pytest.approx(0.00597244087781, abs=1e-9)
-        assert geo_radius[0][1] == pytest.approx(0.00628645771124, abs=1e-9)
-        assert geo_radius[0][2] == pytest.approx(0.00931911440064, abs=1e-9)
+        assert_allclose(geo_radius[1][0], 0.03717783072826)
+        assert_allclose(geo_radius[1][1], 0.03864613392848)
+        assert_allclose(geo_radius[1][2], 0.04561512437816)
 
-        assert geo_radius[1][0] == pytest.approx(0.03717783072826, abs=1e-9)
-        assert geo_radius[1][1] == pytest.approx(0.03864613392848, abs=1e-9)
-        assert geo_radius[1][2] == pytest.approx(0.04561512437816, abs=1e-9)
+        assert_allclose(geo_radius[2][0], 0.01951655430245)
+        assert_allclose(geo_radius[2][1], 0.02342659090311)
+        assert_allclose(geo_radius[2][2], 0.03747033587405)
 
-        assert geo_radius[2][0] == pytest.approx(0.01951655430245, abs=1e-9)
-        assert geo_radius[2][1] == pytest.approx(0.02342659090311, abs=1e-9)
-        assert geo_radius[2][2] == pytest.approx(0.03747033587405, abs=1e-9)
-
-    def test_spot_rms_radius(self, cooke_triplet):
+    def test_spot_rms_radius(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         rms_radius = spot.rms_spot_radius()
 
-        assert rms_radius[0][0] == pytest.approx(0.003791335461448, abs=1e-9)
-        assert rms_radius[0][1] == pytest.approx(0.004293689564257, abs=1e-9)
-        assert rms_radius[0][2] == pytest.approx(0.006195618755672, abs=1e-9)
+        assert_allclose(rms_radius[0][0], 0.003791335461448)
+        assert_allclose(rms_radius[0][1], 0.004293689564257)
+        assert_allclose(rms_radius[0][2], 0.006195618755672)
 
-        assert rms_radius[1][0] == pytest.approx(0.015694600107671, abs=1e-9)
-        assert rms_radius[1][1] == pytest.approx(0.016786721284464, abs=1e-9)
-        assert rms_radius[1][2] == pytest.approx(0.019109151416248, abs=1e-9)
+        assert_allclose(rms_radius[1][0], 0.015694600107671)
+        assert_allclose(rms_radius[1][1], 0.016786721284464)
+        assert_allclose(rms_radius[1][2], 0.019109151416248)
 
-        assert rms_radius[2][0] == pytest.approx(0.013229165357157, abs=1e-9)
-        assert rms_radius[2][1] == pytest.approx(0.012081348897953, abs=1e-9)
-        assert rms_radius[2][2] == pytest.approx(0.013596802321537, abs=1e-9)
+        assert_allclose(rms_radius[2][0], 0.013229165357157)
+        assert_allclose(rms_radius[2][1], 0.012081348897953)
+        assert_allclose(rms_radius[2][2], 0.013596802321537)
 
-    def test_airy_disc(self, cooke_triplet):
+    def test_airy_disc(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         airy_radius = spot.airy_disc_x_y(wavelength=cooke_triplet.primary_wavelength)
         airy_radius_x, airy_radius_y = airy_radius
@@ -105,14 +106,14 @@ class TestCookeTripetSpotDiagram:
         assert airy_radius_y[2] == pytest.approx(0.0035453238661865244, abs=1e-9)
 
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram(self, mock_show, cooke_triplet):
+    def test_view_spot_diagram(self, set_test_backend, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram_larger_fig(self, mock_show, cooke_triplet):
+    def test_view_spot_diagram_larger_fig(self, set_test_backend, mock_show, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
@@ -121,14 +122,14 @@ class TestCookeTripetSpotDiagram:
 
 class TestTripetSpotDiagram:
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram(self, mock_show, triplet_four_fields):
+    def test_view_spot_diagram(self, set_test_backend, mock_show, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram_larger_fig(self, mock_show, triplet_four_fields):
+    def test_view_spot_diagram_larger_fig(self, set_test_backend, mock_show, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view(figsize=(20, 10))
         mock_show.assert_called_once()
