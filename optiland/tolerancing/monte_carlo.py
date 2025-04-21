@@ -93,7 +93,7 @@ class MonteCarlo(SensitivityAnalysis):
             # save results - perturbation type & value
             for perturbation in self.tolerancing.perturbations:
                 key = str(perturbation.variable)
-                result[key] = perturbation.value
+                result[key] = float(perturbation.value)
 
             # save results - operand values
             result.update(

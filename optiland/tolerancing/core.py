@@ -132,13 +132,13 @@ class Tolerancing:
             # undo scaling and record the optimized values
             result = {}
             for i, var in enumerate(self.compensator.variables):
-                result[f"C{i}: {var!s}"] = var.variable.inverse_scale(var.value)
+                result[f"C{i}: {var!s}"] = float(var.variable.inverse_scale(var.value))
 
         return result
 
     def evaluate(self):
         """Evaluate the operands."""
-        return [operand.value for operand in self.operands]
+        return [float(operand.value) for operand in self.operands]
 
     def reset(self):
         """Reset the optic to its initial state."""

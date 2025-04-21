@@ -69,33 +69,33 @@ def test_run_no_compensator(set_test_backend, monte_carlo_no_compensator):
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_histogram(mock_show, set_test_backend, monte_carlo):
-    monte_carlo.run(10)
-    monte_carlo.view_histogram(kde=True)
+def test_view_histogram(mock_show, set_test_backend, monte_carlo_no_compensator):
+    monte_carlo_no_compensator.run(10)
+    monte_carlo_no_compensator.view_histogram(kde=True)
     mock_show.assert_called_once()
     plt.close()
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_histogram_no_kde(mock_show, set_test_backend, monte_carlo):
-    monte_carlo.run(10)
-    monte_carlo.view_histogram(kde=False)
+def test_view_histogram_no_kde(mock_show, set_test_backend, monte_carlo_no_compensator):
+    monte_carlo_no_compensator.run(10)
+    monte_carlo_no_compensator.view_histogram(kde=False)
     mock_show.assert_called_once()
     plt.close()
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_cdf(mock_show, set_test_backend, monte_carlo):
-    monte_carlo.run(10)
-    monte_carlo.view_cdf()
+def test_view_cdf(mock_show, set_test_backend, monte_carlo_no_compensator):
+    monte_carlo_no_compensator.run(10)
+    monte_carlo_no_compensator.view_cdf()
     mock_show.assert_called_once()
     plt.close()
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_heatmap(mock_show, set_test_backend, monte_carlo):
-    monte_carlo.run(10)
-    monte_carlo.view_heatmap(figsize=(8, 6))
+def test_view_heatmap(mock_show, set_test_backend, monte_carlo_no_compensator):
+    monte_carlo_no_compensator.run(10)
+    monte_carlo_no_compensator.view_heatmap(figsize=(8, 6))
     mock_show.assert_called_once()
     plt.close()
 
