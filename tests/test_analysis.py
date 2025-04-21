@@ -59,7 +59,7 @@ def triplet_four_fields():
 
 
 class TestCookeTripetSpotDiagram:
-    def test_spot_geometric_radius(self, cooke_triplet):
+    def test_spot_geometric_radius(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
         geo_radius = spot.geometric_spot_radius()
 
