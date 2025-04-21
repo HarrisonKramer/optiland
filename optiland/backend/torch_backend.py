@@ -351,12 +351,12 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     Vectorized nearest‐neighbor lookup in PyTorch, working for Hx,Hy of any shape
     without breaking autograd.
     """
-    # lift Python scalars into 0‑dim tensors on the correct device/dtype
-    if not torch.is_tensor(Hx):
-        Hx = torch.tensor(Hx, dtype=points.dtype, device=points.device)
-    if not torch.is_tensor(Hy):
-        Hy = torch.tensor(Hy, dtype=points.dtype, device=points.device)
-    # Ensure Hx/Hy are backend tensors no matter what the caller passed.
+    # Make sure we actually got values, not None
+    if Hx is None or Hy is None:
+        raise ValueError("nearest_nd_interpolator requires both Hx and Hy, "
+                         f"got Hx={Hx!r}, Hy={Hy!r}")
+
+    # lift Python scalars or numpy arrays into torch.Tensors on the right device/dtype
     Hx = array(Hx)
     Hy = array(Hy)
     # points: (M,2), values: (M,...) ; Hx,Hy: shape (...) query grid
@@ -386,8 +386,14 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
 
 
 def all(x):
+    """Backend‐agnostic “all”: accept Python bool, NumPy arrays, or Tensors."""
+    # Python bool → leave as is
     if isinstance(x, bool):
         return x
+    # Anything else → lift into a torch.Tensor on the right device/dtype
+    if not torch.is_tensor(x):
+        x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
+    # Now we can safely call torch.all
     return torch.all(x).item()
 
 
@@ -509,3 +515,14 @@ def tile(x, dims):
     if isinstance(dims, int):
         return torch.tile(x, dims=(dims,))
     return torch.tile(x, dims)
+
+def isinf(x):
+    """
+    Torch‐backend‐agnostic “is infinity” test:
+    accepts Python scalars, NumPy arrays, or Tensors.
+    """
+    import torch
+    # lift non‐Tensor into a Tensor on the right device/dtype
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
+    return torch.isinf(x)
