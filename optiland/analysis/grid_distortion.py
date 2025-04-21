@@ -93,7 +93,7 @@ class GridDistortion:
         # trace single reference ray
         self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=self.wavelength)
 
-        max_field = be.sqrt(be.array(2.0)) / be.array(2.0)
+        max_field = np.sqrt(2) / 2
         extent = be.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = be.meshgrid(extent, extent)
 
