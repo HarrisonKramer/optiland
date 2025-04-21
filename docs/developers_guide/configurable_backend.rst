@@ -118,7 +118,7 @@ Best Practices
 --------------
 
 - **Use `be.*` everywhere**. Never import `np` or `torch` directly in Optiland modules - you’ll break backend neutrality. There are exceptions, but they are rare.
-- **Test on both backends**. Our CI includes pytest fixtures that run the full test suite under both NumPy and PyTorch modes. If you add a new feature, follow existing patterns to ensure it works on both backends.
+- **Test on both backends**. Our CI includes pytest fixtures that run the full test suite under both NumPy and PyTorch modes. If you add a new feature, follow existing testing patterns to ensure it works on both backends.
 - **Document backend-specific behavior**. If a function has different characteristics, note it in the docstring.
 
 Troubleshooting
