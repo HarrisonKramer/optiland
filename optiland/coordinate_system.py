@@ -114,8 +114,23 @@ class CoordinateSystem:
             be.ndarray: The rotation matrix of the coordinate system.
 
         """
-        rotation = be.array([self.rx, self.ry, self.rz])
-        return R.from_euler("xyz", rotation).as_matrix()
+        rx, ry, rz = self.rx, self.ry, self.rz
+
+        Rx = be.array(
+            [[1, 0, 0], [0, be.cos(rx), -be.sin(rx)], [0, be.sin(rx), be.cos(rx)]]
+        )
+
+        Ry = be.array(
+            [[be.cos(ry), 0, be.sin(ry)], [0, 1, 0], [-be.sin(ry), 0, be.cos(ry)]]
+        )
+
+        Rz = be.array(
+            [[be.cos(rz), -be.sin(rz), 0], [be.sin(rz), be.cos(rz), 0], [0, 0, 1]]
+        )
+
+        R = Rz @ Ry @ Rx
+
+        return R
 
     def get_effective_transform(self):
         """Get the effective translation and rotation matrix of the CS
