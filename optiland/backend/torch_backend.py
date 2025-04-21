@@ -401,3 +401,13 @@ def mult_p_E(p, E):
 
 def to_complex(x):
     return x.to(torch.complex128)
+
+
+def matmul(a, b):
+    dtype = torch.promote_types(a.dtype, b.dtype)
+    return torch.matmul(a.to(dtype), b.to(dtype))
+
+
+def batched_chain_matmul3(a, b, c):
+    dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
+    return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))

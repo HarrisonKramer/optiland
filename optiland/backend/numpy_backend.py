@@ -69,3 +69,8 @@ def mult_p_E(p, E):
 
 def to_complex(x):
     return x.astype(np.complex128) if np.isrealobj(x) else x
+
+
+def batched_chain_matmul3(a, b, c):
+    dtype = np.result_type(a, b, c)
+    return np.matmul(np.matmul(a.astype(dtype), b.astype(dtype)), c.astype(dtype))
