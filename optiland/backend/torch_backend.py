@@ -322,6 +322,13 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
         )
 
 
+def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
+    if generator is None:
+        return torch.randn(size, device=get_device()) * scale + loc
+    else:
+        return torch.randn(size, device=get_device(), generator=generator) * scale + loc
+
+
 def repeat(x, repeats):
     return torch.repeat_interleave(x, repeats)
 
