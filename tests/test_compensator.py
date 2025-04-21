@@ -5,7 +5,7 @@ from optiland.samples.simple import Edmund_49_847
 from optiland.tolerancing.compensator import CompensatorOptimizer
 
 
-def test_initialization_default():
+def test_initialization_default(set_test_backend):
     optimizer = CompensatorOptimizer()
     assert optimizer.method == "generic"
     assert optimizer.tol == 1e-5
@@ -13,13 +13,13 @@ def test_initialization_default():
     assert isinstance(optimizer._optimizer_map["least_squares"], type(LeastSquares))
 
 
-def test_initialization_custom():
+def test_initialization_custom(set_test_backend):
     optimizer = CompensatorOptimizer(method="least_squares", tol=1e-4)
     assert optimizer.method == "least_squares"
     assert optimizer.tol == 1e-4
 
 
-def test_has_variables():
+def test_has_variables(set_test_backend):
     optimizer = CompensatorOptimizer()
     optimizer.variables = []
     assert not optimizer.has_variables
@@ -27,7 +27,7 @@ def test_has_variables():
     assert optimizer.has_variables
 
 
-def test_run_optimizer_generic():
+def test_run_optimizer_generic():  # for optimization, we only test with numpy
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method="generic")
     optimizer.add_variable(optic, "radius", surface_number=1)
@@ -41,7 +41,7 @@ def test_run_optimizer_generic():
     assert result is not None
 
 
-def test_run_optimizer_least_squares():
+def test_run_optimizer_least_squares():  # for optimization, we only test with numpy
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method="least_squares")
     optimizer.add_variable(optic, "radius", surface_number=1)
@@ -55,25 +55,25 @@ def test_run_optimizer_least_squares():
     assert result is not None
 
 
-def test_invalid_method():
+def test_invalid_method(set_test_backend):
     with pytest.raises(ValueError):
         optimizer = CompensatorOptimizer(method="invalid_method")
         optimizer.run()
 
 
-def test_empty_variables_run():
+def test_empty_variables_run(set_test_backend):
     optimizer = CompensatorOptimizer(method="generic")
     optimizer.variables = []
     with pytest.raises(ValueError):
         optimizer.run()
 
 
-def test_tolerance_setting():
+def test_tolerance_setting(set_test_backend):
     optimizer = CompensatorOptimizer(tol=1e-6)
     assert optimizer.tol == 1e-6
 
 
-def test_optimizer_map_content():
+def test_optimizer_map_content(set_test_backend):
     optimizer = CompensatorOptimizer()
     assert "generic" in optimizer._optimizer_map
     assert "least_squares" in optimizer._optimizer_map
