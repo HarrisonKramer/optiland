@@ -104,7 +104,7 @@ class SpotDiagram:
         axs = axs.flatten()
 
         # Subtract centroid and find limits
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots((self.data))
         geometric_size = self.geometric_spot_radius()
         axis_lim = be.max(geometric_size)
 
@@ -377,7 +377,7 @@ class SpotDiagram:
                 wavelength
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = []
         for field_data in data:
             geometric_size_field = []
@@ -394,7 +394,7 @@ class SpotDiagram:
             rms (List): RMS spot radius for each field and wavelength.
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         rms = []
         for field_data in data:
             rms_field = []
@@ -416,12 +416,24 @@ class SpotDiagram:
 
         """
         centroids = self.centroid()
-        data = deepcopy(self.data)
+
+        # Build a true deep copy of the nested list, cloning each array via the backend
+        centered = []
         for i, field_data in enumerate(data):
-            for wave_data in field_data:
-                wave_data[0] -= centroids[i][0]
-                wave_data[1] -= centroids[i][1]
-        return data
+            field_copy = []
+            for (x, y, intensity) in field_data:
+                # clone each array/tensor
+                x2 = be.copy(x)
+                y2 = be.copy(y)
+                i2 = be.copy(intensity)
+
+                # subtract centroid
+                x2 = x2 - centroids[i][0] # not in-place, to prevent breaking autograd
+                y2 = y2 - centroids[i][1]
+
+                field_copy.append([x2, y2, i2])
+            centered.append(field_copy)
+        return centered
 
     def _generate_data(
         self,
