@@ -143,7 +143,7 @@ class PolarizedRays(RealRays):
         if jones_matrix is None:
             p = be.matmul(o_out, o_in)
         else:
-            p = be.einsum("nij,njk,nkl->nil", o_out, jones_matrix, o_in)
+            p = be.batched_chain_matmul3(o_out, jones_matrix, o_in)
 
         # update polarization matrices of rays
         self.p = be.matmul(p, self.p)
