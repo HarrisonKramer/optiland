@@ -122,7 +122,7 @@ class TestCookeTripetSpotDiagram:
 
 class TestTripetSpotDiagram:
     @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram(self, set_test_backend, mock_show, triplet_four_fields):
+    def test_view_spot_diagram(self, mock_show, set_test_backend, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
         spot.view()
         mock_show.assert_called_once()
@@ -137,20 +137,21 @@ class TestTripetSpotDiagram:
 
 
 class TestCookeTripletEncircledEnergy:
-    def test_encircled_energy_centroid(self, cooke_triplet):
+    def test_encircled_energy_centroid(self, set_test_backend, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         centroid = encircled_energy.centroid()
 
         # encircled energy calculation includes randomness, so abs. tolerance
         # is set to 1e-3
-        assert centroid[0][0] == pytest.approx(-8.207497747771947e-06, abs=1e-3)
-        assert centroid[0][1] == pytest.approx(1.989147771098717e-06, abs=1e-3)
+        
+        assert_allclose(centroid[0][0], -8.207497747771947e-06, atol=1e-3, rtol=1e-3)
+        assert_allclose(centroid[0][1], 1.989147771098717e-06, atol=1e-3, rtol=1e-3)
 
-        assert centroid[1][0] == pytest.approx(3.069405792964239e-05, abs=1e-3)
-        assert centroid[1][1] == pytest.approx(12.421326489507168, abs=1e-3)
-
-        assert centroid[2][0] == pytest.approx(3.1631726815066986e-07, abs=1e-3)
-        assert centroid[2][1] == pytest.approx(18.13502264954927, abs=1e-3)
+        assert_allclose(centroid[1][0], 3.069405792964239e-05, atol=1e-3, rtol=1e-3)
+        assert_allclose(centroid[1][1], 12.421326489507168, atol=1e-3, rtol=1e-3)
+        
+        assert_allclose(centroid[2][0], 3.1631726815066986e-07, atol=1e-3, rtol=1e-3)
+        assert_allclose(centroid[2][1], 18.13502264954927, atol=1e-3, rtol=1e-3)
 
     @patch("matplotlib.pyplot.show")
     def test_view_encircled_energy(self, mock_show, cooke_triplet):
