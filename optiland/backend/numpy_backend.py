@@ -65,3 +65,7 @@ def unsqueeze_last(x):
 def mult_p_E(p, E):
     # Used only for electric field multiplication in polarized_rays.py
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
+
+
+def to_complex(x):
+    return x.astype(np.complex128) if np.isrealobj(x) else x

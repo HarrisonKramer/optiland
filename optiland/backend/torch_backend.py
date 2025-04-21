@@ -137,7 +137,7 @@ def zeros(shape):
     return torch.zeros(
         shape,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -147,7 +147,7 @@ def zeros_like(x):
     return torch.zeros_like(
         x,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -157,7 +157,7 @@ def ones(shape):
     return torch.ones(
         shape,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -167,7 +167,7 @@ def ones_like(x):
     return torch.ones_like(
         x,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -178,7 +178,7 @@ def full(shape, fill_value):
         shape,
         fill_value,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -193,7 +193,7 @@ def full_like(x, fill_value):
         x,
         fill_value,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -205,7 +205,7 @@ def linspace(start, stop, num=50):
         stop,
         num,
         device=get_device(),
-        dtype=torch.float32,
+        dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
@@ -260,9 +260,9 @@ def interp(x, xp, fp):
         torch.Tensor: Interpolated values.
     """
     # Ensure tensors are float for arithmetic operations
-    x = torch.as_tensor(x, dtype=torch.float32, device=get_device())
-    xp = torch.as_tensor(xp, dtype=torch.float32, device=get_device())
-    fp = torch.as_tensor(fp, dtype=torch.float32, device=get_device())
+    x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
+    xp = torch.as_tensor(xp, dtype=get_precision(), device=get_device())
+    fp = torch.as_tensor(fp, dtype=get_precision(), device=get_device())
 
     # Sort xp and fp based on xp
     sorted_indices = torch.argsort(xp)
@@ -288,14 +288,14 @@ def interp(x, xp, fp):
 
 
 def atleast_1d(x):
-    x = torch.as_tensor(x, dtype=torch.float32)
+    x = torch.as_tensor(x, dtype=get_precision())
     if x.ndim == 0:  # Scalar -> (1,)
         return x.unsqueeze(0)
     return x  # Already 1D or higher
 
 
 def atleast_2d(x):
-    x = torch.as_tensor(x, dtype=torch.float32)
+    x = torch.as_tensor(x, dtype=get_precision())
     if x.ndim == 0:  # Scalar -> (1, 1)
         return x.unsqueeze(0).unsqueeze(0)
     elif x.ndim == 1:  # 1D array -> (1, N)
@@ -397,3 +397,7 @@ def mult_p_E(p, E):
     # Used only for electric field multiplication in polarized_rays.py
     p = p.to(torch.complex128)
     return torch.squeeze(torch.matmul(p, E.unsqueeze(2)), axis=2)
+
+
+def to_complex(x):
+    return x.to(torch.complex128)
