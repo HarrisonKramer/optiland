@@ -231,7 +231,7 @@ def polyfit(x, y, degree):
 
 
 def polyval(coeffs, x):
-    return sum(c * x**i for i, c in enumerate(coeffs))
+    return sum(c * x**i for i, c in enumerate(reversed(coeffs)))
 
 
 def load(filename):
