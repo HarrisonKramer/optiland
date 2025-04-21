@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+import optiland.backend as be
 from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
 
@@ -147,7 +148,9 @@ class SensitivityAnalysis:
                 x = df.loc[df.perturbation_type == pert_type, "perturbation_value"]
                 y = df.loc[df.perturbation_type == pert_type, name]
 
-                axes[i, j].plot(x, y, color=f"C{i}", linewidth=2)
+                axes[i, j].plot(
+                    be.to_numpy(x), be.to_numpy(y), color=f"C{i}", linewidth=2
+                )
                 axes[i, j].grid()
 
                 if j == 0:
