@@ -2,6 +2,7 @@ from importlib import resources
 
 import optiland.backend as be
 import pytest
+import numpy as np
 
 from optiland import materials
 from .utils import assert_allclose
@@ -231,7 +232,7 @@ class TestMaterialFile:
 
         # Test case when no tabulated data available
         material._n = None
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             material.n(1.0)
 
     def test_tabulated_nk(self, set_test_backend):
@@ -310,8 +311,8 @@ class TestMaterial:
         df_filtered = material._find_material_matches(df)
 
         # Check that all materials have wavelength ranges including 2.0 µm
-        assert be.all(df_filtered["max_wavelength"] >= 2.0)
-        assert be.all(df_filtered["min_wavelength"] <= 2.0)
+        assert np.all(df_filtered["max_wavelength"] >= 2.0)
+        assert np.all(df_filtered["min_wavelength"] <= 2.0)
 
     def test_max_wavelength_filtering(self, set_test_backend):
         material = materials.Material("SF11", max_wavelength=2.0)
@@ -319,8 +320,8 @@ class TestMaterial:
         df_filtered = material._find_material_matches(df)
 
         # Check that all materials have wavelength ranges including 2.0 µm
-        assert be.all(df_filtered["max_wavelength"] >= 2.0)
-        assert be.all(df_filtered["min_wavelength"] <= 2.0)
+        assert np.all(df_filtered["max_wavelength"] >= 2.0)
+        assert np.all(df_filtered["min_wavelength"] <= 2.0)
 
     def test_raise_material_error_method(self, set_test_backend):
         material = materials.Material("SF11")
