@@ -411,3 +411,7 @@ def matmul(a, b):
 def batched_chain_matmul3(a, b, c):
     dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
+
+
+def isscalar(x):
+    return torch.is_tensor(x) and x.dim() == 0
