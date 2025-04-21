@@ -1,23 +1,24 @@
 import optiland.backend as be
 import pytest
-
+import numpy as np
 from optiland import geometries
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
+from .utils import assert_allclose
 
 
-def test_unknown_geometry():
+def test_unknown_geometry(set_test_backend):
     with pytest.raises(ValueError):
         geometries.BaseGeometry.from_dict({"type": "UnknownGeometry"})
 
 
 class TestPlane:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
         assert str(plane) == "Planar"
 
-    def test_plane_sag(self):
+    def test_plane_sag(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
@@ -36,14 +37,14 @@ class TestPlane:
         sag = be.array([0.0, 0.0, 0.0])
         assert be.allclose(plane.sag(x, y), sag)
 
-    def test_plane_distance(self):
+    def test_plane_distance(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
         # Test distance for a single ray
         rays = RealRays(1.0, 2.0, -3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
         distance = plane.distance(rays)
-        assert distance == pytest.approx(3.0, abs=1e-10)
+        assert_allclose(distance, 3.0)
 
         # Test distance for multiple rays
         rays = RealRays(
@@ -57,22 +58,22 @@ class TestPlane:
             [1.0, 1.0],
         )
         distance = plane.distance(rays)
-        assert distance == pytest.approx([3.0, 4.0], abs=1e-10)
+        assert_allclose(distance, [3.0, 4.0])
 
         # Test ray doesn't intersect the plane
         rays = RealRays(1.0, 2.0, -1.5, 0.0, 0.0, -1.0, 1.0, 0.0)
         distance = plane.distance(rays)
-        assert be.isclose(distance, -1.5)
+        assert_allclose(distance, -1.5)
 
         # Test distance for ray not parallel to z axis
         L = 0.356
         M = -0.129
-        N = be.sqrt(1 - L**2 - M**2)
+        N = np.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, -16.524, L, M, N, 1.0, 0.0)
         distance = plane.distance(rays)
-        assert distance == pytest.approx(17.853374740457518, abs=1e-10)
+        assert_allclose(distance, 17.853374740457518)
 
-    def test_plane_surface_normal(self):
+    def test_plane_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
@@ -82,14 +83,14 @@ class TestPlane:
         assert ny == 0.0
         assert nz == 1.0
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
         expected_dict = {"type": "Plane", "cs": cs.to_dict(), "radius": be.inf}
         assert plane.to_dict() == expected_dict
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         cs = CoordinateSystem()
         plane = geometries.Plane(cs)
 
@@ -99,12 +100,12 @@ class TestPlane:
 
 
 class TestStandardGeometry:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
         assert str(geometry) == "Standard"
 
-    def test_sag_sphere(self):
+    def test_sag_sphere(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.0)
 
@@ -123,7 +124,7 @@ class TestStandardGeometry:
         sag = be.array([0.0, 3.5192593015921396, 4.3795018014414415])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_sag_parabola(self):
+    def test_sag_parabola(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=25.0, conic=-1.0)
 
@@ -142,7 +143,7 @@ class TestStandardGeometry:
         sag = be.array([0.0, 0.26, 0.4082])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_sag_conic(self):
+    def test_sag_conic(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=27.0, conic=0.55)
 
@@ -161,7 +162,7 @@ class TestStandardGeometry:
         sag = be.array([0.0, 0.6414396188168761, 0.8661643140626132])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_distance(self):
+    def test_distance(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=-12.0, conic=0.5)
 
@@ -193,7 +194,7 @@ class TestStandardGeometry:
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.201933401020467, abs=1e-10)
 
-    def test_surface_normal(self):
+    def test_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
 
@@ -203,7 +204,7 @@ class TestStandardGeometry:
         assert ny == pytest.approx(0.2025478734167333, abs=1e-10)
         assert nz == pytest.approx(-0.9740215340114144, abs=1e-10)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
 
@@ -215,7 +216,7 @@ class TestStandardGeometry:
         }
         assert geometry.to_dict() == expected_dict
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.StandardGeometry(cs, radius=10.0, conic=0.5)
 
@@ -223,13 +224,13 @@ class TestStandardGeometry:
         new_geometry = geometries.StandardGeometry.from_dict(geometry_dict)
         assert new_geometry.to_dict() == geometry_dict
 
-    def test_From_dict_invalid_dict(self):
+    def test_From_dict_invalid_dict(self, set_test_backend):
         with pytest.raises(ValueError):
             geometries.StandardGeometry.from_dict({"invalid_key": "invalid_value"})
 
 
 class TestEvenAsphere:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -239,7 +240,7 @@ class TestEvenAsphere:
         )
         assert str(geometry) == "Even Asphere"
 
-    def test_sag(self):
+    def test_sag(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -263,7 +264,7 @@ class TestEvenAsphere:
         sag = be.array([0.0, 1.1206923060227627, 1.3196652673420655])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_distance(self):
+    def test_distance(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -300,7 +301,7 @@ class TestEvenAsphere:
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.625463223037386, abs=1e-10)
 
-    def test_surface_normal(self):
+    def test_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -315,7 +316,7 @@ class TestEvenAsphere:
         assert ny == pytest.approx(0.23893890373579363, abs=1e-10)
         assert nz == pytest.approx(-0.9636572265862595, abs=1e-10)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -335,7 +336,7 @@ class TestEvenAsphere:
         }
         assert geometry.to_dict() == expected_dict
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.EvenAsphere(
             cs,
@@ -350,7 +351,7 @@ class TestEvenAsphere:
 
 
 class TestPolynomialGeometry:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -364,7 +365,7 @@ class TestPolynomialGeometry:
         )
         assert str(geometry) == "Polynomial XY"
 
-    def test_sag(self):
+    def test_sag(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -392,7 +393,7 @@ class TestPolynomialGeometry:
         sag = be.array([0.0, 2.305232559449707, 16.702875375272402])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_distance(self):
+    def test_distance(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
@@ -433,7 +434,7 @@ class TestPolynomialGeometry:
         distance = geometry.distance(rays)
         assert distance == pytest.approx(12.610897321951025, abs=1e-10)
 
-    def test_surface_normal(self):
+    def test_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
@@ -452,7 +453,7 @@ class TestPolynomialGeometry:
         assert ny == pytest.approx(-0.04888445345459283, abs=1e-10)
         assert nz == pytest.approx(-0.8979852261700794, abs=1e-10)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
@@ -476,7 +477,7 @@ class TestPolynomialGeometry:
         }
         assert geometry.to_dict() == expected_dict
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, 2e-3]
@@ -495,7 +496,7 @@ class TestPolynomialGeometry:
 
 
 class TestChebyshevGeometry:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -511,7 +512,7 @@ class TestChebyshevGeometry:
         )
         assert str(geometry) == "Chebyshev Polynomial"
 
-    def test_sag(self):
+    def test_sag(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -541,7 +542,7 @@ class TestChebyshevGeometry:
         sag = be.array([-0.198, 1.22291856, 1.75689642])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_distance(self):
+    def test_distance(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -584,7 +585,7 @@ class TestChebyshevGeometry:
         distance = geometry.distance(rays)
         assert distance == pytest.approx(10.29015593, abs=1e-8)
 
-    def test_surface_normal(self):
+    def test_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -605,7 +606,7 @@ class TestChebyshevGeometry:
         assert ny == pytest.approx(-0.07668599, abs=1e-8)
         assert nz == pytest.approx(-0.98672202, abs=1e-8)
 
-    def test_invalid_input(self):
+    def test_invalid_input(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -623,7 +624,7 @@ class TestChebyshevGeometry:
         with pytest.raises(ValueError):
             geometry.sag(100, 100)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -651,7 +652,7 @@ class TestChebyshevGeometry:
         }
         assert geometry.to_dict() == expected_dict
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
@@ -672,7 +673,7 @@ class TestChebyshevGeometry:
 
 
 class TestOddAsphere:
-    def test_sag(self):
+    def test_sag(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
             cs,
@@ -696,7 +697,7 @@ class TestOddAsphere:
         sag = be.array([0.0, 1.10336808, 1.30564148])
         assert be.allclose(geometry.sag(x, y), sag)
 
-    def test_distance(self):
+    def test_distance(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
             cs,
@@ -723,7 +724,7 @@ class TestOddAsphere:
         )
         distance = geometry.distance(rays)
 
-    def test_surface_normal(self):
+    def test_surface_normal(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
             cs,
@@ -738,7 +739,7 @@ class TestOddAsphere:
         assert ny == pytest.approx(0.21074867, abs=1e-8)
         assert nz == pytest.approx(-0.97184425, abs=1e-8)
 
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         geometry = geometries.OddAsphere(
             cs,
@@ -750,7 +751,7 @@ class TestOddAsphere:
 
 
 class TestZernikeGeometry:
-    def test_str(self):
+    def test_str(self, set_test_backend):
         cs = CoordinateSystem()
         coefficients = be.zeros((3, 3))
         coefficients[0] = [0.0, 1e-2, -2e-3]
