@@ -108,7 +108,7 @@ class DistributionSampler(BaseSampler):
 
     def __init__(self, distribution, seed=None, **params):
         if seed is not None:
-            be.random.seed(seed)
+            self.generator = be.default_rng(seed)
         self.distribution = distribution
         self.params = params
 
@@ -126,9 +126,9 @@ class DistributionSampler(BaseSampler):
         """
         # TODO: consider vectorizing this method with 'size' parameter
         if self.distribution == "normal":
-            return be.random_normal(**self.params)
+            return be.random_normal(**self.params, generator=self.generator)
         if self.distribution == "uniform":
-            return be.random_uniform(**self.params)
+            return be.random_uniform(**self.params, generator=self.generator)
         raise ValueError(f"Unknown distribution: {self.distribution}")
 
 

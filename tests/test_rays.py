@@ -46,11 +46,9 @@ def test_translate():
 
 
 def test__process_input():
-    rays = BaseRays()
-
     # Test scalar input
     data = 1
-    processed_data = rays._process_input(data)
+    processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
     assert processed_data.dtype == float
@@ -58,7 +56,7 @@ def test__process_input():
 
     # Test float input
     data = 2.5
-    processed_data = rays._process_input(data)
+    processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
     assert processed_data.dtype == float
@@ -66,7 +64,7 @@ def test__process_input():
 
     # Test numpy array input
     data = be.array([3, 4, 5])
-    processed_data = rays._process_input(data)
+    processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (3,)
     assert processed_data.dtype == float
@@ -75,7 +73,7 @@ def test__process_input():
     # Test unsupported input type
     data = "invalid"
     with pytest.raises(ValueError):
-        rays._process_input(data)
+        be.as_array_1d(data)
 
 
 def test_real_rays_init():
