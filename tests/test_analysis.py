@@ -172,163 +172,201 @@ class TestCookeTripletRayFan:
     def test_ray_fan(self, set_test_backend, cooke_triplet):
         fan = analysis.RayFan(cooke_triplet)
 
-        assert fan.data["Px"][0] == -1
-        assert fan.data["Px"][-1] == 1
+        assert_allclose(fan.data["Px"][0], -1)
+        assert_allclose(fan.data["Px"][-1], 1)
 
-        assert fan.data["Py"][0] == -1
-        assert fan.data["Py"][-1] == 1
+        assert_allclose(fan.data["Py"][0], -1)
+        assert_allclose(fan.data["Py"][-1], 1)
 
-        assert fan.data["(0.0, 0.0)"]["0.48"]["x"][0] == pytest.approx(
+        assert_allclose(fan.data["(0.0, 0.0)"]["0.48"]["x"][0], 0.00238814980958324, atol=1e-9, )
+
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.48"]["x"][0],
             0.00238814980958324,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.48"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.48"]["x"][-1],
             -0.00238814980958324,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.48"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.48"]["y"][0],
             0.00238814980958324,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.48"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.48"]["y"][-1],
             -0.00238814980958324,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 0.0)"]["0.55"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.55"]["x"][0],
             0.004195677081323623,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.55"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.55"]["x"][-1],
             -0.004195677081323623,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.55"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.55"]["y"][0],
             0.004195677081323623,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.55"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.55"]["y"][-1],
             -0.004195677081323623,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 0.0)"]["0.65"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.65"]["x"][0],
             -8.284696919602652e-06,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.65"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.65"]["x"][-1],
             8.284696919602652e-06,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.65"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.65"]["y"][0],
             -8.284696919602652e-06,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.0)"]["0.65"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.0)"]["0.65"]["y"][-1],
             8.284696919602652e-06,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 0.7)"]["0.48"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.48"]["x"][0],
             0.01973142095198721,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.48"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.48"]["x"][-1],
             -0.01973142095198721,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.48"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.48"]["y"][0],
             -0.023207115035676296,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.48"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.48"]["y"][-1],
             0.03928464835618861,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 0.7)"]["0.55"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.55"]["x"][0],
             0.021420191179537973,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.55"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.55"]["x"][-1],
             -0.021420191179537973,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.55"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.55"]["y"][0],
             -0.024812371459915994,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.55"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.55"]["y"][-1],
             0.04075295155640113,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 0.7)"]["0.65"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.65"]["x"][0],
             0.017025487217305013,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.65"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.65"]["x"][-1],
             -0.017025487217305013,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.65"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.65"]["y"][0],
             -0.03229666187094615,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 0.7)"]["0.65"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 0.7)"]["0.65"]["y"][-1],
             0.047721942006075935,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 1.0)"]["0.48"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.48"]["x"][0],
             0.01563881685548374,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.48"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.48"]["x"][-1],
             -0.01563881685548374,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.48"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.48"]["y"][0],
             -0.0044989771745065354,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.48"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.48"]["y"][-1],
             0.013000385049824814,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 1.0)"]["0.55"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.55"]["x"][0],
             0.016936433773790505,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.55"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.55"]["x"][-1],
             -0.016936433773790505,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.55"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.55"]["y"][0],
             -0.01705141007843025,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.55"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.55"]["y"][-1],
             0.022501847359645666,
-            abs=1e-9,
+            atol=1e-9,
         )
 
-        assert fan.data["(0.0, 1.0)"]["0.65"]["x"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.65"]["x"][0],
             0.01214534602206907,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.65"]["x"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.65"]["x"][-1],
             -0.01214534602206907,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.65"]["y"][0] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.65"]["y"][0],
             -0.033957537601747134,
-            abs=1e-9,
+            atol=1e-9,
         )
-        assert fan.data["(0.0, 1.0)"]["0.65"]["y"][-1] == pytest.approx(
+        assert_allclose(
+            fan.data["(0.0, 1.0)"]["0.65"]["y"][-1],
             0.036545592330593735,
-            abs=1e-9,
+            atol=1e-9,
         )
 
     @patch("matplotlib.pyplot.show")

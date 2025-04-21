@@ -156,7 +156,9 @@ class RayFan:
             x_offset = data[f"{field}"][f"{wave_ref}"]["x"][self.num_points // 2]
             y_offset = data[f"{field}"][f"{wave_ref}"]["y"][self.num_points // 2]
             for wavelength in self.wavelengths:
-                data[f"{field}"][f"{wavelength}"]["x"] -= x_offset
-                data[f"{field}"][f"{wavelength}"]["y"] -= y_offset
+                orig_x = data[f"{field}"][f"{wavelength}"]["x"]
+                orig_y = data[f"{field}"][f"{wavelength}"]["y"]
+                data[f"{field}"][f"{wavelength}"]["x"] = orig_x - x_offset
+                data[f"{field}"][f"{wavelength}"]["y"] = orig_y - y_offset
 
         return data

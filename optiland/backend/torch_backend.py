@@ -441,9 +441,9 @@ def min(x):
 
 def vectorize(pyfunc):
     """
-    A very simple elementwise mapper for Torch.
+    simple elementwise mapper for Torch.
     Takes a Python scalar→scalar function and returns a new function
-    that applies it over every element of a 1D tensor, preserving shape.
+    that applies it over every element of a 1D tensor, preserving the shape.
     """
     def wrapped(x):
         # flatten to 1D
