@@ -6,6 +6,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import optiland.backend as be
 
@@ -67,7 +68,7 @@ class RayFan:
         )
 
         # Ensure axs is a 2D array
-        axs = be.atleast_2d(axs)
+        axs = np.atleast_2d(axs)
 
         Px = self.data["Px"]
         Py = self.data["Py"]
@@ -81,8 +82,11 @@ class RayFan:
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
                 i_y = self.data[f"{field}"][f"{wavelength}"]["intensity_y"]
                 ey[i_y == 0] = be.nan
-
-                axs[k, 0].plot(Py, ey, zorder=3, label=f"{wavelength:.4f} µm")
+                
+                # convert everything to numpy before plotting using our backend call
+                Py_np = be.to_numpy(Py)
+                ey_np = be.to_numpy(ey)
+                axs[k, 0].plot(Py_np, ey_np, zorder=3, label=f"{wavelength:.4f} µm")
                 axs[k, 0].grid()
                 axs[k, 0].axhline(y=0, lw=1, color="gray")
                 axs[k, 0].axvline(x=0, lw=1, color="gray")
@@ -91,7 +95,9 @@ class RayFan:
                 axs[k, 0].set_xlim((-1, 1))
                 axs[k, 0].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-                axs[k, 1].plot(Px, ex, zorder=3, label=f"{wavelength:.4f} µm")
+                Px_np = be.to_numpy(Px)
+                ex_np = be.to_numpy(ex)
+                axs[k, 1].plot(Px_np, ex_np, zorder=3, label=f"{wavelength:.4f} µm")
                 axs[k, 1].grid()
                 axs[k, 1].axhline(y=0, lw=1, color="gray")
                 axs[k, 1].axvline(x=0, lw=1, color="gray")
