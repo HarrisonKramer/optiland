@@ -85,8 +85,8 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = be.atleast_2d(coefficients)
-        self.norm_x = norm_x
-        self.norm_y = norm_y
+        self.norm_x = be.array(norm_x)
+        self.norm_y = be.array(norm_y)
         self.is_symmetric = False
 
     def __str__(self):
