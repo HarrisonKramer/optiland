@@ -8,7 +8,9 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+
 import optiland.backend as be
+
 
 class YYbar:
     """Class representing the YYbar analysis of an optic.

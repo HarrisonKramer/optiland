@@ -62,8 +62,18 @@ class GridDistortion:
         """
         fig, ax = plt.subplots(figsize=figsize)
 
-        ax.plot(be.to_numpy(self.data["xp"]), be.to_numpy(self.data["yp"]), "C1", linewidth=1)
-        ax.plot(be.to_numpy(self.data["xp"]).T, be.to_numpy(self.data["yp"]).T, "C1", linewidth=1)
+        ax.plot(
+            be.to_numpy(self.data["xp"]),
+            be.to_numpy(self.data["yp"]),
+            "C1",
+            linewidth=1,
+        )
+        ax.plot(
+            be.to_numpy(self.data["xp"]).T,
+            be.to_numpy(self.data["yp"]).T,
+            "C1",
+            linewidth=1,
+        )
 
         ax.plot(be.to_numpy(self.data["xr"]), be.to_numpy(self.data["yr"]), "C0P")
         ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0P")

@@ -164,7 +164,8 @@ class CoordinateSystem:
         """
         _, eff_rot_mat = self.get_effective_transform()
         # Convert the effective rotation matrix back to Euler angles
-        # detach & convert to plain numpy so SciPy won’t try to call .numpy() on a grad model
+        # detach & convert to plain numpy so SciPy won’t try to call .numpy()
+        # on a grad model
         matrix = be.to_numpy(eff_rot_mat)
         return R.from_matrix(matrix).as_euler("xyz")
 

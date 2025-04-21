@@ -5,8 +5,6 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
-
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
@@ -113,7 +111,6 @@ class SpotDiagram:
         gs_array = be.stack(rows, axis=0)
         # take the global max
         axis_lim = be.max(gs_array)
-        
 
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
@@ -428,14 +425,14 @@ class SpotDiagram:
         centered = []
         for i, field_data in enumerate(data):
             field_copy = []
-            for (x, y, intensity) in field_data:
+            for x, y, intensity in field_data:
                 # clone each array/tensor
                 x2 = be.copy(x)
                 y2 = be.copy(y)
                 i2 = be.copy(intensity)
 
                 # subtract centroid
-                x2 = x2 - centroids[i][0] # not in-place, to prevent breaking autograd
+                x2 = x2 - centroids[i][0]  # not in-place, to prevent breaking autograd
                 y2 = y2 - centroids[i][1]
 
                 field_copy.append([x2, y2, i2])
@@ -557,9 +554,9 @@ class SpotDiagram:
             None
 
         """
-        
+
         import numpy as np
-        
+
         markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
             x, y, intensity = points
@@ -567,7 +564,7 @@ class SpotDiagram:
             x_np = be.to_numpy(x)
             y_np = be.to_numpy(y)
             i_np = be.to_numpy(intensity)
-            mask = (i_np != 0)
+            mask = i_np != 0
             ax.scatter(
                 x_np[mask],
                 y_np[mask],

@@ -82,7 +82,7 @@ class RayFan:
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
                 i_y = self.data[f"{field}"][f"{wavelength}"]["intensity_y"]
                 ey[i_y == 0] = be.nan
-                
+
                 # convert everything to numpy before plotting using our backend call
                 Py_np = be.to_numpy(Py)
                 ey_np = be.to_numpy(ey)

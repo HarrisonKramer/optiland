@@ -5,7 +5,6 @@ This module provides an encircled energy analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
@@ -101,19 +100,19 @@ class EncircledEnergy(SpotDiagram):
         """
         r_max = axis_lim * buffer
         r_step = be.linspace(0, r_max, num_points)
-        
+
         for points in field_data:
             x, y, energy = points
             radii = be.sqrt(x**2 + y**2)
-        
+
             def vectorized_ee(r):
-                    return be.nansum(energy[radii <= r])  # noqa: B023
-        
-        # element‑wise encircled energy (Tensor)
+                return be.nansum(energy[radii <= r])  # noqa: B023
+
+            # element‑wise encircled energy (Tensor)
             ee = be.vectorize(vectorized_ee)(r_step)
 
             # convert both to plain numpy for plotting
-            r_np  = be.to_numpy(r_step)
+            r_np = be.to_numpy(r_step)
             ee_np = be.to_numpy(ee)
             ax.plot(r_np, ee_np, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
