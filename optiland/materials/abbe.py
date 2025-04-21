@@ -10,8 +10,6 @@ Kramer Harrison, 2024
 
 from importlib import resources
 
-import numpy as np
-
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
@@ -43,6 +41,7 @@ class AbbeMaterial(BaseMaterial):
             float: The refractive index of the material.
 
         """
+        wavelength = be.array(wavelength)
         if be.any(wavelength < 0.380) or be.any(wavelength > 0.750):
             raise ValueError("Wavelength out of range for this model.")
         return be.atleast_1d(be.polyval(self._p, wavelength))
@@ -67,9 +66,18 @@ class AbbeMaterial(BaseMaterial):
 
         """
         # Polynomial fit to the refractive index data
-        X = np.ravel(np.array([self.index, self.abbe]))
-        X_poly = np.hstack([X**i for i in range(1, 4)])
-        X_poly = be.array(X_poly)
+        X_poly = be.ravel(
+            be.array(
+                [
+                    self.index,
+                    self.abbe,
+                    self.index**2,
+                    self.abbe**2,
+                    self.index**3,
+                    self.abbe**3,
+                ]
+            )
+        )
 
         # File contains fit coefficients
         coefficients_file = str(
@@ -77,11 +85,8 @@ class AbbeMaterial(BaseMaterial):
                 "glass_model_coefficients.npy",
             ),
         )
-        # coefficients_file = pkg_resources.resource_filename(
-        #    'optiland.database', 'glass_model_coefficients.npy'
-        # )
         coefficients = be.load(coefficients_file)
-        return X_poly @ coefficients
+        return be.matmul(X_poly, coefficients)
 
     def to_dict(self):
         """Returns a dictionary representation of the material.
