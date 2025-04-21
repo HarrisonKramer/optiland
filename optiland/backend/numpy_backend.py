@@ -26,6 +26,20 @@ def atleast_1d(x):
     return np.atleast_1d(x).astype(float)
 
 
+def as_array_1d(data):
+    """Force conversion to a 1D array"""
+    if isinstance(data, (int, float)):
+        return array([data])
+    elif isinstance(data, (list, tuple)):
+        return array(data)
+    elif is_array_like(data):
+        return data.reshape(-1)
+    else:
+        raise ValueError(
+            "Unsupported input type: expected scalar, list, tuple, or array-like."
+        )
+
+
 def ravel(x):
     return np.ravel(x).astype(float)
 

@@ -129,7 +129,7 @@ def array(x):
 
 def is_array_like(x):
     """Check if the input is array-like."""
-    return isinstance(x, (torch.Tensor, list, tuple))
+    return isinstance(x, (torch.Tensor, np.ndarray, list, tuple))
 
 
 def zeros(shape):
@@ -145,7 +145,7 @@ def zeros(shape):
 def zeros_like(x):
     """Create an array/tensor filled with zeros with the same shape as x."""
     return torch.zeros_like(
-        x,
+        array(x),
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -165,7 +165,7 @@ def ones(shape):
 def ones_like(x):
     """Create an array/tensor filled with ones with the same shape as x."""
     return torch.ones_like(
-        x,
+        array(x),
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -301,6 +301,20 @@ def atleast_2d(x):
     elif x.ndim == 1:  # 1D array -> (1, N)
         return x.unsqueeze(0)
     return x  # Already 2D or higher
+
+
+def as_array_1d(data):
+    """Force conversion to a 1D tensor."""
+    if isinstance(data, (int, float)):
+        return array([data])
+    elif isinstance(data, (list, tuple)):
+        return array(data)
+    elif is_array_like(data):
+        return data.reshape(-1)
+    else:
+        raise ValueError(
+            "Unsupported input type: expected scalar, list, tuple, or array-like."
+        )
 
 
 def size(x):
