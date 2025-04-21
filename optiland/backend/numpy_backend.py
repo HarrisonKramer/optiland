@@ -48,6 +48,12 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
     return generator.uniform(low, high, size)
 
 
+def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
+    if generator is None:
+        generator = np.random.default_rng()
+    return generator.normal(loc, scale, size)
+
+
 def matrix_vector_multiply_and_squeeze(p, E, backend="numpy"):
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
 

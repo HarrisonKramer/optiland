@@ -314,6 +314,8 @@ def default_rng(seed=None):
 
 
 def random_uniform(low=0.0, high=1.0, size=None, generator=None):
+    if size is None:
+        size = 1
     if generator is None:
         return torch.empty(size, device=get_device()).uniform_(low, high)
     else:
@@ -323,6 +325,8 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
 
 
 def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
+    if size is None:
+        size = 1
     if generator is None:
         return torch.randn(size, device=get_device()) * scale + loc
     else:
