@@ -35,14 +35,14 @@ class RealRays(BaseRays):
     """
 
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
-        self.x = self._process_input(x)
-        self.y = self._process_input(y)
-        self.z = self._process_input(z)
-        self.L = self._process_input(L)
-        self.M = self._process_input(M)
-        self.N = self._process_input(N)
-        self.i = self._process_input(intensity)
-        self.w = self._process_input(wavelength)
+        self.x = be.as_array_1d(x)
+        self.y = be.as_array_1d(y)
+        self.z = be.as_array_1d(z)
+        self.L = be.as_array_1d(L)
+        self.M = be.as_array_1d(M)
+        self.N = be.as_array_1d(N)
+        self.i = be.as_array_1d(intensity)
+        self.w = be.as_array_1d(wavelength)
         self.opd = be.zeros_like(self.x)
 
         # variables to hold pre-surface direction cosines
