@@ -361,21 +361,21 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     Hy = array(Hy)
     # points: (M,2), values: (M,...) ; Hx,Hy: shape (...) query grid
     # 1) pack queries into a flat (K,2) tensor
-    q = torch.stack([Hx, Hy], dim=-1)      # (...,2)
+    q = torch.stack([Hx, Hy], dim=-1)  # (...,2)
     orig_shape = q.shape[:-1]
-    q_flat = q.reshape(-1, 2)              # (K,2)
+    q_flat = q.reshape(-1, 2)  # (K,2)
 
     # 2) compute all pairwise distances against the M field‐points
     pts = points.to(dtype=q.dtype, device=q.device)  # ensure same dtype/device
-    dists = torch.cdist(q_flat, pts)                 # (K, M)
+    dists = torch.cdist(q_flat, pts)  # (K, M)
 
     # 3) find nearest index for each query
-    idx = dists.argmin(dim=1)           # (K,)
+    idx = dists.argmin(dim=1)  # (K,)
 
     # 4) gather values at those indices
     #    flatten values to (M, P) so we can index; P is remaining dims
     vals_flat = values.view(points.shape[0], -1)  # (M, P)
-    out_flat  = vals_flat[idx]                    # (K, P)
+    out_flat = vals_flat[idx]  # (K, P)
 
     # 5) reshape back to original query shape + any extra dims
     out = out_flat.view(*orig_shape, *out_flat.shape[1:])
@@ -398,9 +398,11 @@ def radians(x):
         x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
     return torch.deg2rad(x)
 
+
 def deg2rad(x):
     """Convert degrees to radians, accepting Python scalars or tensors."""
     return radians(x)
+
 
 def newaxis():
     return None
@@ -453,11 +455,13 @@ def batched_chain_matmul3(a, b, c):
     dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
 
+
 def isscalar(x):
     # 0-Dim torch.Tensor
     if torch.is_tensor(x) and x.dim() == 0:
         return True
-    
+
+
 def max(x):
     """Backend‐agnostic max: returns a Python float when used on a torch.Tensor."""
     if isinstance(x, torch.Tensor):
@@ -466,11 +470,13 @@ def max(x):
     # fall back to numpy or builtin for lists/ndarrays
     return np.max(x)
 
+
 def min(x):
     """Same for min."""
     if isinstance(x, torch.Tensor):
         return x.detach().cpu().min().item()
     return np.min(x)
+
 
 def vectorize(pyfunc):
     """
@@ -478,14 +484,28 @@ def vectorize(pyfunc):
     Takes a Python scalar→scalar function and returns a new function
     that applies it over every element of a 1D tensor, preserving the shape.
     """
+
     def wrapped(x):
         # flatten to 1D
         flat = x.reshape(-1)
         # call your python function on each element (xi is a 0‑dim tensor)
         mapped = [pyfunc(xi) for xi in flat]
         # stack back into a tensor
-        out = torch.stack([m if isinstance(m, torch.Tensor) else torch.tensor(m, 
-            dtype=get_precision(), device=get_device()) 
-            for m in mapped], dim=0)
+        out = torch.stack(
+            [
+                m
+                if isinstance(m, torch.Tensor)
+                else torch.tensor(m, dtype=get_precision(), device=get_device())
+                for m in mapped
+            ],
+            dim=0,
+        )
         return out.view(x.shape)
+
     return wrapped
+
+
+def tile(x, dims):
+    if isinstance(dims, int):
+        return torch.tile(x, dims=(dims,))
+    return torch.tile(x, dims)
