@@ -3,9 +3,10 @@ import pytest
 
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
+from .utils import assert_allclose
 
 
-def test_coordinate_system_init():
+def test_coordinate_system_init(set_test_backend):
     # Test case 1: Initialize with default values
     cs = CoordinateSystem()
     assert cs.x == 0
@@ -28,7 +29,7 @@ def test_coordinate_system_init():
     assert cs.reference_cs == ref_cs
 
 
-def test_coordinate_system_localize():
+def test_coordinate_system_localize(set_test_backend):
     # Test case 1: Localize rays without reference coordinate system
     cs = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
     rays = RealRays(1, 2, 5, 0, 0, 1, 1, 1)
@@ -45,25 +46,25 @@ def test_coordinate_system_localize():
     cs = CoordinateSystem(10, 20, 30, 0.5, 0.6, 0.7, ref_cs)
     rays = RealRays(1, 2, 3, 0.1, 0.2, 0.3, 1, 1)
     cs.localize(rays)
-    assert rays.x == pytest.approx(-23.63610642, abs=1e-8)
-    assert rays.y == pytest.approx(-25.40225528, abs=1e-8)
-    assert rays.z == pytest.approx(-23.08369058, abs=1e-8)
-    assert pytest.approx(0.23129557, abs=1e-8) == rays.L
-    assert pytest.approx(0.2370124, abs=1e-8) == rays.M
-    assert pytest.approx(0.17414787, abs=1e-8) == rays.N
+    assert_allclose(rays.x, -23.63610642)
+    assert_allclose(rays.y, -25.40225528)
+    assert_allclose(rays.z, -23.08369058)
+    assert_allclose(rays.L, 0.23129557)
+    assert_allclose(rays.M, 0.2370124)
+    assert_allclose(rays.N, 0.17414787)
 
 
-def test_coordinate_system_globalize():
+def test_coordinate_system_globalize(set_test_backend):
     # Test case 1: Globalize rays without reference coordinate system
     cs = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
     rays = RealRays(0.0, 3.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     cs.globalize(rays)
-    assert rays.x == 1.0
-    assert rays.y == 2.0
-    assert rays.z == 5.0
-    assert rays.L == 0.0
-    assert rays.M == 0.0
-    assert rays.N == 1.0
+    assert_allclose(rays.x, 1.0)
+    assert_allclose(rays.y, 2.0)
+    assert_allclose(rays.z, 5.0)
+    assert_allclose(rays.L, 0.0)
+    assert_allclose(rays.M, 0.0)
+    assert_allclose(rays.N, 1.0)
 
     # Test case 2: Globalize rays with reference coordinate system
     ref_cs = CoordinateSystem(5, 5, 5, 0.2, 0.3, 0.4)
@@ -79,15 +80,15 @@ def test_coordinate_system_globalize():
         1,
     )
     cs.globalize(rays)
-    assert rays.x == pytest.approx(1.0, abs=1e-8)
-    assert rays.y == pytest.approx(2.0, abs=1e-8)
-    assert rays.z == pytest.approx(3.0, abs=1e-8)
-    assert pytest.approx(0.1, abs=1e-8) == rays.L
-    assert pytest.approx(0.2, abs=1e-8) == rays.M
-    assert pytest.approx(0.3, abs=1e-8) == rays.N
+    assert_allclose(rays.x, 1.0)
+    assert_allclose(rays.y, 2.0)
+    assert_allclose(rays.z, 3.0)
+    assert_allclose(rays.L, 0.1)
+    assert_allclose(rays.M, 0.2)
+    assert_allclose(rays.N, 0.3)
 
 
-def test_coordinate_system_transform():
+def test_coordinate_system_transform(set_test_backend):
     cs1 = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
     cs2 = CoordinateSystem(10, 20, 30, 0.5, 0.6, 0.7, cs1)
 
@@ -103,7 +104,7 @@ def test_coordinate_system_transform():
     assert be.allclose(eff_rot_mat, rot_mat)
 
 
-def test_coordinate_system_to_dict():
+def test_coordinate_system_to_dict(set_test_backend):
     cs = CoordinateSystem(1, -1.0, 2.0, 0.0, 0.0, 0.0)
     cs_dict = cs.to_dict()
     assert cs_dict["x"] == 1
@@ -115,7 +116,7 @@ def test_coordinate_system_to_dict():
     assert cs_dict["reference_cs"] is None
 
 
-def test_coordinate_system_from_dict():
+def test_coordinate_system_from_dict(set_test_backend):
     cs_dict = {"x": 1, "y": -1, "z": 2, "rx": 0, "ry": 0, "rz": 0, "reference_cs": None}
     cs = CoordinateSystem.from_dict(cs_dict)
     assert cs.x == 1
