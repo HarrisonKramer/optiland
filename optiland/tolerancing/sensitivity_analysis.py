@@ -145,8 +145,10 @@ class SensitivityAnalysis:
 
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):
-                x = df.loc[df.perturbation_type == pert_type, "perturbation_value"]
-                y = df.loc[df.perturbation_type == pert_type, name]
+                x = df.loc[
+                    df.perturbation_type == pert_type, "perturbation_value"
+                ].values
+                y = df.loc[df.perturbation_type == pert_type, name].values
 
                 axes[i, j].plot(
                     be.to_numpy(x), be.to_numpy(y), color=f"C{i}", linewidth=2
