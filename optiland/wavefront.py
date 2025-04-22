@@ -152,13 +152,12 @@ class Wavefront:
             ValueError: If the chief ray cannot be determined.
 
         """
-        if self.optic.surface_group.x[-1, :].size != 1:
-            raise ValueError("Chief ray cannot be determined. It must be traced alone.")
+        # pick the LAST ray instead of insisting there is only one
 
         # chief ray intersection location
-        xc = self.optic.surface_group.x[-1, :]
-        yc = self.optic.surface_group.y[-1, :]
-        zc = self.optic.surface_group.z[-1, :]
+        xc = self.optic.surface_group.x[-1, -1]
+        yc = self.optic.surface_group.y[-1, -1]
+        zc = self.optic.surface_group.z[-1, -1]
 
         # radius of sphere - exit pupil origin vs. center
         R = be.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
@@ -179,8 +178,10 @@ class Wavefront:
             float: The optical path difference.
 
         """
-        opd = self.optic.surface_group.opd[-1, :]
-        return opd - self._opd_image_to_xp(xc, yc, zc, r, wavelength)
+        # chief‑ray OPD (last entry)
+        opd_chief = self.optic.surface_group.opd[-1, -1]
+        opd_img   = self._opd_image_to_xp(xc, yc, zc, r, wavelength)[-1]
+        return opd_chief - opd_img
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the optical path difference.

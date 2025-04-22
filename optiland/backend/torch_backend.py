@@ -359,7 +359,9 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     # lift Python scalars or numpy arrays into torch.Tensors on the right device/dtype
     Hx = array(Hx)
     Hy = array(Hy)
-    # points: (M,2), values: (M,...) ; Hx,Hy: shape (...) query grid
+    # Make sure Hx and Hy have the same shape – broadcast if necessary
+    if Hx.shape != Hy.shape:                # <‑‑ NEW
+        Hx, Hy = torch.broadcast_tensors(Hx, Hy)   # <‑‑ NEW
     # 1) pack queries into a flat (K,2) tensor
     q = torch.stack([Hx, Hy], dim=-1)  # (...,2)
     orig_shape = q.shape[:-1]
@@ -484,6 +486,37 @@ def min(x):
     return np.min(x)
 
 
+def mean(x, axis=None, keepdims=False):
+    """
+    Backend-agnostic mean: accepts Python scalars, NumPy arrays, or Tensors.
+    Handles NaN values by ignoring them (similar to np.nanmean).
+    
+    Args:
+        x: Input tensor
+        axis: Axis along which to compute mean (None for overall mean)
+        keepdims: Whether to keep the reduced dimensions
+        
+    Returns:
+        Mean value as a tensor
+    """
+    # If not a tensor, convert to tensor
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
+    
+    # Handle NaN values by replacing them with zeros and creating a mask
+    mask = ~torch.isnan(x)
+    # Count non-NaN elements
+    count = mask.sum(dim=axis, keepdim=keepdims).to(x.dtype)
+    # Sum non-NaN elements (replace NaNs with 0)
+    x_masked = torch.where(mask, x, torch.tensor(0., dtype=x.dtype, device=x.device))
+    sum_val = x_masked.sum(dim=axis, keepdim=keepdims)
+    
+    # Compute mean (avoiding division by zero)
+    result = torch.where(count > 0, sum_val / count, torch.tensor(float('nan'), dtype=x.dtype, device=x.device))
+    
+    return result
+
+
 def vectorize(pyfunc):
     """
     simple elementwise mapper for Torch.
@@ -536,3 +569,18 @@ def sqrt(x):
     if not isinstance(x, torch.Tensor):
         x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return torch.sqrt(x)
+
+def array_equal(a, b):
+    """
+    Backend‑agnostic equivalent of numpy.array_equal for Torch.
+
+    Returns
+    -------
+    bool
+        True iff `a` and `b` have the same shape and every element is equal.
+    """
+    a_t = cast(a)
+    b_t = cast(b)
+    if a_t.shape != b_t.shape:
+        return False
+    return torch.eq(a_t, b_t).all().item()
