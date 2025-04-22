@@ -413,17 +413,17 @@ class TestTelescopeTripletDistortion:
         assert_allclose(dist.data[0][0], 0.0, atol=1e-9)
         assert_allclose(dist.data[2][-1], 0.005720392850412076, atol=1e-9)
 
-    def test_f_theta_distortion(self, telescope_objective):
+    def test_f_theta_distortion(self, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective, distortion_type="f-theta")
 
-        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[0][-1] == pytest.approx(0.016106265133212852, abs=1e-9)
-
-        assert dist.data[1][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[1][-1] == pytest.approx(0.015942044760968603, abs=1e-9)
-
-        assert dist.data[0][0] == pytest.approx(0.0, abs=1e-9)
-        assert dist.data[2][-1] == pytest.approx(0.015876125134060767, abs=1e-9)
+        assert_allclose(dist.data[0][0],0.0, atol=1e-9)
+        assert_allclose(dist.data[0][-1],0.016106265133212852, atol=1e-9)
+        
+        assert_allclose(dist.data[1][0],0.0, atol=1e-9)
+        assert_allclose(dist.data[1][-1],0.015942044760968603, atol=1e-9)
+        
+        assert_allclose(dist.data[2][0],0.0, atol=1e-9)
+        assert_allclose(dist.data[2][-1],0.015876125134060767, atol=1e-9)
 
     def test_invalid_distortion_type(self, set_test_backend, telescope_objective):
         with pytest.raises(ValueError):
