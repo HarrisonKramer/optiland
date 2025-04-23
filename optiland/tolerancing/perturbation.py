@@ -107,8 +107,7 @@ class DistributionSampler(BaseSampler):
     """
 
     def __init__(self, distribution, seed=None, **params):
-        if seed is not None:
-            self.generator = be.default_rng(seed)
+        self.generator = be.default_rng(seed)
         self.distribution = distribution
         self.params = params
 
