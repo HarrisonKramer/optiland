@@ -47,6 +47,11 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
+        if be.get_backend() != "numpy":
+            raise ValueError(
+                "Optiland optimization currently only supports NumPy backend."
+            )
+
     def add_operand(
         self,
         operand_type=None,
