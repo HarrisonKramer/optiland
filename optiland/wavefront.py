@@ -152,7 +152,7 @@ class Wavefront:
             ValueError: If the chief ray cannot be determined.
 
         """
-        if self.optic.surface_group.x[-1, :].size != 1:
+        if be.size(self.optic.surface_group.x[-1, :]) != 1:
             raise ValueError("Chief ray cannot be determined. It must be traced alone.")
 
         # chief ray intersection location
