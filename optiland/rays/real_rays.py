@@ -161,9 +161,9 @@ class RealRays(BaseRays):
     def normalize(self):
         """Normalize the direction vectors of the rays."""
         mag = be.sqrt(self.L**2 + self.M**2 + self.N**2)
-        self.L /= mag
-        self.M /= mag
-        self.N /= mag
+        self.L = self.L / mag
+        self.M = self.M / mag
+        self.N = self.N / mag
         self.is_normalized = True
 
     def _align_surface_normal(self, nx, ny, nz):
