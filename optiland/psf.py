@@ -230,7 +230,7 @@ class FFTPSF(Wavefront):
         pupils = []
 
         for k in range(len(self.wavelengths)):
-            P = be.zeros_like(x, dtype=complex)
+            P = be.to_complex(be.zeros_like(x))
             amplitude = self.data[0][k][1] / be.mean(self.data[0][k][1])
             P[R <= 1] = amplitude * be.exp(1j * 2 * be.pi * self.data[0][k][0])
             P = be.reshape(P, (self.num_rays, self.num_rays))
@@ -254,6 +254,7 @@ class FFTPSF(Wavefront):
         for pupil in pupils:
             amp = be.fft.fftshift(be.fft.fft2(pupil))
             psf.append(amp * be.conj(amp))
+        psf = be.stack(psf)
 
         return be.real(be.sum(psf, axis=0)) / norm_factor * 100
 
@@ -341,12 +342,12 @@ class FFTPSF(Wavefront):
             float: The normalization factor for the PSF.
 
         """
-        P_nom = self.pupils[0].copy()
+        P_nom = be.copy(self.pupils[0])
         P_nom[P_nom != 0] = 1
 
         amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
         psf_norm = amp_norm * be.conj(amp_norm)
-        return be.real(be.max(psf_norm) * len(self.pupils))
+        return be.max(be.real(psf_norm)) * len(self.pupils)
 
     def _get_psf_units(self, image):
         """Calculate the physical units of the point spread function (PSF) based
