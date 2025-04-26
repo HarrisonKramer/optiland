@@ -187,10 +187,13 @@ def full_like(x, fill_value):
     """
     Create an array/tensor filled with fill_value with the same shape as x.
     """
+    # ensure x is a torch tensor (wrap Python scalars)
+    x_tensor = array(x)
+    # unwrap fill_value if it's a tensor
     if isinstance(fill_value, torch.Tensor):
         fill_value = fill_value.item()
     return torch.full_like(
-        x,
+        x_tensor,
         fill_value,
         device=get_device(),
         dtype=get_precision(),

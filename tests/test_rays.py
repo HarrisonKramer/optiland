@@ -643,7 +643,7 @@ class TestPolarizedRays:
 
 
 class TestRayGenerator:
-    def test_generate_rays(self):
+    def test_generate_rays(self, set_test_backend):
         Hx = 0.5
         Hy = 0.5
         Px = be.array([0.1, 0.2])
@@ -664,16 +664,16 @@ class TestRayGenerator:
         assert rays.i.shape == (2,)
         assert rays.w.shape == (2,)
 
-        assert be.allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert be.allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert be.allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
-        assert be.allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert be.allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert be.allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
-        assert be.allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
-        assert be.allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
+        assert_allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert_allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert_allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
+        assert_allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert_allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert_allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
+        assert_allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
+        assert_allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
-    def test_generate_rays_telecentric(self):
+    def test_generate_rays_telecentric(self, set_test_backend):
         lens = UVProjectionLens()
         generator = RayGenerator(lens)
 
@@ -684,16 +684,16 @@ class TestRayGenerator:
         wavelength = 0.248
 
         rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        assert be.isclose(rays.x[0], 0.0, atol=1e-8)
-        assert be.isclose(rays.y[0], 48.0, atol=1e-8)
-        assert be.isclose(rays.z[0], -110.85883544, atol=1e-8)
-        assert be.isclose(rays.L[0], 0.10674041, atol=1e-8)
-        assert be.isclose(rays.M[0], 0.0, atol=1e-8)
-        assert be.isclose(rays.N[0], 0.99428692, atol=1e-8)
-        assert be.isclose(rays.i[0], 1.0, atol=1e-8)
-        assert be.isclose(rays.w[0], 0.248, atol=1e-8)
+        assert_allclose(rays.x[0], 0.0, atol=1e-8)
+        assert_allclose(rays.y[0], 48.0, atol=1e-8)
+        assert_allclose(rays.z[0], -110.85883544, atol=1e-8)
+        assert_allclose(rays.L[0], 0.10674041, atol=1e-8)
+        assert_allclose(rays.M[0], 0.0, atol=1e-8)
+        assert_allclose(rays.N[0], 0.99428692, atol=1e-8)
+        assert_allclose(rays.i[0], 1.0, atol=1e-8)
+        assert_allclose(rays.w[0], 0.248, atol=1e-8)
 
-    def test_generate_rays_invalid_field_type(self):
+    def test_generate_rays_invalid_field_type(self, set_test_backend):
         lens = UVProjectionLens()
         generator = RayGenerator(lens)
 
@@ -715,7 +715,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-    def test_invalid_polarization(self):
+    def test_invalid_polarization(self, set_test_backend):
         lens = TessarLens()
         lens.surface_group.set_fresnel_coatings()
         generator = RayGenerator(lens)
@@ -730,7 +730,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-    def test_generate_polarized_rays(self):
+    def test_generate_polarized_rays(self, set_test_backend):
         Hx = 0.5
         Hy = 0.5
         Px = be.array([0.1, 0.2])
@@ -754,16 +754,16 @@ class TestRayGenerator:
         assert rays.w.shape == (2,)
         assert rays.p.shape == (2, 3, 3)
 
-        assert be.allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert be.allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
-        assert be.allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
-        assert be.allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert be.allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
-        assert be.allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
-        assert be.allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
-        assert be.allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
+        assert_allclose(rays.x, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert_allclose(rays.y, be.array([-0.23535066, -0.1909309]), atol=1e-8)
+        assert_allclose(rays.z, be.array([-0.88839505, -0.88839505]), atol=1e-8)
+        assert_allclose(rays.L, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert_allclose(rays.M, be.array([0.17519154, 0.17519154]), atol=1e-8)
+        assert_allclose(rays.N, be.array([0.96882189, 0.96882189]), atol=1e-8)
+        assert_allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
+        assert_allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
-    def test_get_ray_origins_infinite_object(self):
+    def test_get_ray_origins_infinite_object(self, set_test_backend):
         lens = TessarLens()
         generator = RayGenerator(lens)
 
@@ -780,7 +780,7 @@ class TestRayGenerator:
         assert y0.shape == (2,)
         assert z0.shape == (2,)
 
-    def test_get_ray_origins_invalid_field_type(self):
+    def test_get_ray_origins_invalid_field_type(self, set_test_backend):
         lens = TessarLens()
         lens.set_field_type("object_height")
         generator = RayGenerator(lens)
@@ -795,7 +795,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
-    def test_invalid_ray_origin_telecentric(self):
+    def test_invalid_ray_origin_telecentric(self, set_test_backend):
         lens = TessarLens()
         lens.obj_space_telecentric = True
         generator = RayGenerator(lens)
@@ -810,7 +810,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
-    def test_normalize(self):
+    def test_normalize(self, set_test_backend):
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
         # normalize during propagation
