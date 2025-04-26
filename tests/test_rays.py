@@ -641,9 +641,9 @@ class TestPolarizedRays:
         with pytest.raises(ValueError):
             rays._get_3d_electric_field(state)
 
-
+@pytest.mark.usefixtures("set_test_backend")
 class TestRayGenerator:
-    def test_generate_rays(self, set_test_backend):
+    def test_generate_rays(self):
         Hx = 0.5
         Hy = 0.5
         Px = be.array([0.1, 0.2])
@@ -673,7 +673,7 @@ class TestRayGenerator:
         assert_allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
         assert_allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
-    def test_generate_rays_telecentric(self, set_test_backend):
+    def test_generate_rays_telecentric(self):
         lens = UVProjectionLens()
         generator = RayGenerator(lens)
 
@@ -693,7 +693,7 @@ class TestRayGenerator:
         assert_allclose(rays.i[0], 1.0, atol=1e-8)
         assert_allclose(rays.w[0], 0.248, atol=1e-8)
 
-    def test_generate_rays_invalid_field_type(self, set_test_backend):
+    def test_generate_rays_invalid_field_type(self):
         lens = UVProjectionLens()
         generator = RayGenerator(lens)
 
@@ -715,7 +715,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-    def test_invalid_polarization(self, set_test_backend):
+    def test_invalid_polarization(self):
         lens = TessarLens()
         lens.surface_group.set_fresnel_coatings()
         generator = RayGenerator(lens)
@@ -730,7 +730,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-    def test_generate_polarized_rays(self, set_test_backend):
+    def test_generate_polarized_rays(self):
         Hx = 0.5
         Hy = 0.5
         Px = be.array([0.1, 0.2])
@@ -763,7 +763,7 @@ class TestRayGenerator:
         assert_allclose(rays.i, be.array([1.0, 1.0]), atol=1e-8)
         assert_allclose(rays.w, be.array([0.55, 0.55]), atol=1e-8)
 
-    def test_get_ray_origins_infinite_object(self, set_test_backend):
+    def test_get_ray_origins_infinite_object(self):
         lens = TessarLens()
         generator = RayGenerator(lens)
 
@@ -780,7 +780,7 @@ class TestRayGenerator:
         assert y0.shape == (2,)
         assert z0.shape == (2,)
 
-    def test_get_ray_origins_invalid_field_type(self, set_test_backend):
+    def test_get_ray_origins_invalid_field_type(self):
         lens = TessarLens()
         lens.set_field_type("object_height")
         generator = RayGenerator(lens)
@@ -795,7 +795,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
-    def test_invalid_ray_origin_telecentric(self, set_test_backend):
+    def test_invalid_ray_origin_telecentric(self):
         lens = TessarLens()
         lens.obj_space_telecentric = True
         generator = RayGenerator(lens)
@@ -810,7 +810,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
-    def test_normalize(self, set_test_backend):
+    def test_normalize(self):
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
         # normalize during propagation
