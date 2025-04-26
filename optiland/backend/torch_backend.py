@@ -449,6 +449,8 @@ def batched_chain_matmul3(a, b, c):
 
 def isscalar(x):
     return torch.is_tensor(x) and x.dim() == 0
+
+
 def pad(tensor, pad_width, mode="constant", constant_values=0):
     """
     Mimics numpy.pad for 2D tensors in PyTorch with limited support.
