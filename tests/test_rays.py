@@ -294,21 +294,21 @@ def test_propagate(set_test_backend):
     assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
 
-def test_clip():
+def test_clip(set_test_backend):
     # Test clipping with condition True
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     condition = True
     rays.clip(condition)
-    assert rays.i[0] == pytest.approx(0.0, abs=1e-10)
+    assert_allclose(rays.i[0], 0.0, atol=1e-10)
 
     # Test clipping with condition False
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     condition = False
     rays.clip(condition)
-    assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+    assert_allclose(rays.i[0], 1.0, atol=1e-10)
 
 
-def test_paraxial_rays_init():
+def test_paraxial_rays_init(set_test_backend):
     y = 1.0
     u = 0.1
     z = -10.0
@@ -318,33 +318,33 @@ def test_paraxial_rays_init():
 
     assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
-    assert rays.x.dtype == float
-    assert rays.x[0] == pytest.approx(0.0, abs=1e-10)
+    assert rays.x.dtype == be.array(0.0).dtype
+    assert_allclose(rays.x[0], 0.0, atol=1e-10)
 
     assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
-    assert rays.y.dtype == float
-    assert rays.y[0] == pytest.approx(1.0, abs=1e-10)
+    assert rays.y.dtype == be.array(y).dtype
+    assert_allclose(rays.y[0], 1.0, atol=1e-10)
 
     assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
-    assert rays.z.dtype == float
-    assert rays.z[0] == pytest.approx(-10.0, abs=1e-10)
+    assert rays.z.dtype == be.array(z).dtype
+    assert_allclose(rays.z[0], -10.0, atol=1e-10)
 
     assert isinstance(rays.u, be.ndarray)
     assert rays.u.shape == (1,)
-    assert rays.u.dtype == float
-    assert rays.u[0] == pytest.approx(0.1, abs=1e-10)
+    assert rays.u.dtype == be.array(u).dtype
+    assert_allclose(rays.u[0], 0.1, atol=1e-10)
 
     assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
-    assert rays.i.dtype == float
-    assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+    assert rays.i.dtype == be.array(1.0).dtype
+    assert_allclose(rays.i[0], 1.0, atol=1e-10)
 
     assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
-    assert rays.w.dtype == float
-    assert rays.w[0] == pytest.approx(2.0, abs=1e-10)
+    assert rays.w.dtype == be.array(wavelength).dtype
+    assert_allclose(rays.w[0], 2.0, atol=1e-10)
 
 
 def test_paraxial_propagate():

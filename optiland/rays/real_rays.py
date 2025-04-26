@@ -105,7 +105,13 @@ class RealRays(BaseRays):
 
     def clip(self, condition):
         """Clip the rays based on a condition."""
-        self.i = be.where(condition, be.zeros_like(self.i), self.i)
+        cond = be.array(condition)
+        try:
+            cond = cond.astype(bool)
+        except AttributeError:
+            cond = cond.bool()
+        self.i = be.where(cond, be.zeros_like(self.i), self.i)
+
 
     def refract(self, nx, ny, nz, n1, n2):
         """Refract rays on the surface.
