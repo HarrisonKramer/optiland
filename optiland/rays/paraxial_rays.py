@@ -39,8 +39,8 @@ class ParaxialRays(BaseRays):
             t (float): The distance to propagate the rays.
 
         """
-        self.z += t
-        self.y += t * self.u
+        self.y = self.y + t * self.u
+        self.z = self.z + t
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
