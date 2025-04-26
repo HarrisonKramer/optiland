@@ -41,46 +41,30 @@ def test_strehl_ratio(make_fftpsf):
     assert 0 <= strehl_ratio <= 1
 
 
+@pytest.mark.parametrize("projection, log", [
+    ("2d", False),
+    ("3d", False),
+    ("2d", True),
+    ("3d", True),
+])
 @patch("matplotlib.pyplot.show")
-def test_view_2d(mock_show, make_fftpsf):
+def test_view(mock_show, projection, log, make_fftpsf, set_test_backend):
+    # Skip for torch since view isn't implemented there
     fftpsf = make_fftpsf(field=(0, 1))
-    fftpsf.view(projection="2d")
+    fftpsf.view(projection=projection, log=log)
     mock_show.assert_called_once()
-    plt.close()
-
-
-@patch("matplotlib.pyplot.show")
-def test_view_3d(mock_show, make_fftpsf):
-    fftpsf = make_fftpsf(field=(0, 1))
-    fftpsf.view(projection="3d")
-    mock_show.assert_called_once()
-    plt.close()
+    plt.close("all")
 
 
 def test_find_bounds(make_fftpsf):
     fftpsf = make_fftpsf(field=(0, 1))
 
-    min_x, min_y, max_x, max_y = fftpsf._find_bounds(threshold=0.05)
+    psf = be.to_numpy(fftpsf.psf)
+    min_x, min_y, max_x, max_y = fftpsf._find_bounds(psf, threshold=0.05)
     assert min_x >= 0
     assert min_y >= 0
     assert max_x <= 128
     assert max_y <= 128
-
-
-@patch("matplotlib.pyplot.show")
-def test_view_log_2d(mock_show, make_fftpsf):
-    fftpsf = make_fftpsf(field=(0, 1))
-    fftpsf.view(projection="2d", log=True)
-    mock_show.assert_called_once()
-    plt.close()
-
-
-@patch("matplotlib.pyplot.show")
-def test_view_log_3d(mock_show, make_fftpsf):
-    fftpsf = make_fftpsf(field=(0, 1))
-    fftpsf.view(projection="3d", log=True)
-    mock_show.assert_called_once()
-    plt.close()
 
 
 def test_view_invalid_projection(make_fftpsf):

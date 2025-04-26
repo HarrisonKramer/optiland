@@ -90,6 +90,10 @@ class FFTPSF(Wavefront):
         x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
+        # TODO: workaround for torch backend. Resolve this in the future.
+        if be.get_backend() == "torch":
+            psf_smooth = np.rot90(psf_smooth, k=-1)
+
         if projection == "2d":
             self._plot_2d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         elif projection == "3d":
@@ -150,16 +154,16 @@ class FFTPSF(Wavefront):
         """
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        x = be.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
-        y = be.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
-        X, Y = be.meshgrid(x, y)
+        x = np.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
+        y = np.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
+        X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
-        image[image <= 0] = be.min(image[image > 0])
+        image[image <= 0] = np.min(image[image > 0])
 
         log_formatter = None
         if log:
-            image = be.log10(image)
+            image = np.log10(image)
             formatter = mticker.FuncFormatter(self._log_tick_formatter)
             ax.zaxis.set_major_formatter(formatter)
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -381,7 +385,7 @@ class FFTPSF(Wavefront):
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q
 
-        x = image.shape[1] * dx
-        y = image.shape[0] * dx
+        x = be.to_numpy(image.shape[1] * dx)
+        y = be.to_numpy(image.shape[0] * dx)
 
         return x, y
