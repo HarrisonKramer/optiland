@@ -421,8 +421,12 @@ def eye(x):
 def mult_p_E(p, E):
     # Used only for electric field multiplication in polarized_rays.py
     p = p.to(torch.complex128)
-    return torch.squeeze(torch.matmul(p, E.unsqueeze(2)), axis=2)
-
+    # cast E to complex so matmul(p:complex128, E:complex128) works
+    try:
+        E_c = E.to(torch.complex128)
+    except Exception:
+        E_c = torch.tensor(E, device=get_device(), dtype=torch.complex128)
+    return torch.squeeze(torch.matmul(p, E_c.unsqueeze(2)), axis=2)
 
 def to_complex(x):
     return x.to(torch.complex128)
