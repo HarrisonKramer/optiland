@@ -160,9 +160,9 @@ class RealRays(BaseRays):
 
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        self.L -= 2 * dot * nx
-        self.M -= 2 * dot * ny
-        self.N -= 2 * dot * nz
+        self.L = self.L - 2 * dot * nx
+        self.M = self.M - 2 * dot * ny
+        self.N = self.N - 2 * dot * nz
 
     def update(self, jones_matrix: be.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
