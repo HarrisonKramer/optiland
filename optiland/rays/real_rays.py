@@ -54,6 +54,7 @@ class RealRays(BaseRays):
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
+        rx = be.array(rx)
         y = self.y * be.cos(rx) - self.z * be.sin(rx)
         z = self.y * be.sin(rx) + self.z * be.cos(rx)
         m = self.M * be.cos(rx) - self.N * be.sin(rx)
@@ -65,6 +66,7 @@ class RealRays(BaseRays):
 
     def rotate_y(self, ry: float):
         """Rotate the rays about the y-axis."""
+        ry = be.array(ry)
         x = self.x * be.cos(ry) + self.z * be.sin(ry)
         z = -self.x * be.sin(ry) + self.z * be.cos(ry)
         L = self.L * be.cos(ry) + self.N * be.sin(ry)
@@ -76,6 +78,7 @@ class RealRays(BaseRays):
 
     def rotate_z(self, rz: float):
         """Rotate the rays about the z-axis."""
+        rz = be.array(rz)
         x = self.x * be.cos(rz) - self.y * be.sin(rz)
         y = self.x * be.sin(rz) + self.y * be.cos(rz)
         L = self.L * be.cos(rz) - self.M * be.sin(rz)
