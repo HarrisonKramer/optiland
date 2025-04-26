@@ -15,6 +15,7 @@ import numpy as np
 
 try:
     import torch
+    import torch.nn.functional as F
 except ImportError as err:
     torch = None
     raise ImportError("PyTorch is not installed.") from err
@@ -448,6 +449,33 @@ def batched_chain_matmul3(a, b, c):
 def isscalar(x):
     return torch.is_tensor(x) and x.dim() == 0
 
+
+def pad(tensor, pad_width, mode="constant", constant_values=0):
+    """
+    Mimics numpy.pad for 2D tensors in PyTorch with limited support.
+
+    Args:
+        tensor (Tensor): 2D PyTorch tensor to pad.
+        pad_width (tuple of tuple): ((pad_top, pad_bottom), (pad_left, pad_right))
+        mode (str): Only 'constant' mode is supported.
+        constant_values (int or float): Fill value for constant padding.
+
+    Returns:
+        Padded 2D tensor.
+    """
+    if mode != "constant":
+        raise NotImplementedError("Only mode='constant' is supported in torch backend")
+
+    if not isinstance(pad_width, (tuple, list)) or len(pad_width) != 2:
+        raise ValueError("pad_width must be a tuple of two tuples for 2D input")
+
+    (pad_top, pad_bottom), (pad_left, pad_right) = pad_width
+
+    # PyTorch expects (pad_left, pad_right, pad_top, pad_bottom)
+    padding = (pad_left, pad_right, pad_top, pad_bottom)
+
+    return F.pad(tensor, padding, mode="constant", value=constant_values)
+  
 def sqrt(x):
     return _lib.sqrt(array(x))
 
