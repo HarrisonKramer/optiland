@@ -12,9 +12,9 @@ from optiland.rays import (
 )
 from optiland.samples.lithography import UVProjectionLens
 from optiland.samples.objectives import TessarLens
+from tests.utils import assert_allclose
 
-
-def test_translate():
+def test_translate(set_test_backend):
     rays = BaseRays()
     rays.x = 1.0
     rays.y = 2.0
@@ -22,52 +22,52 @@ def test_translate():
 
     rays.translate(0.5, -1.0, 2.5)
 
-    assert rays.x == 1.5
-    assert rays.y == 1.0
-    assert rays.z == 5.5
+    assert_allclose(rays.x, 1.5)
+    assert_allclose(rays.y, 1.0)
+    assert_allclose(rays.z, 5.5)
 
     rays.translate(-1.5, 0.0, -5.5)
 
-    assert rays.x == 0.0
-    assert rays.y == 1.0
-    assert rays.z == 0.0
+    assert_allclose(rays.x, 0.0)
+    assert_allclose(rays.y, 1.0)
+    assert_allclose(rays.z, 0.0)
 
     rays.translate(0.0, 0.0, 0.0)
 
-    assert rays.x == 0.0
-    assert rays.y == 1.0
-    assert rays.z == 0.0
+    assert_allclose(rays.x, 0.0)
+    assert_allclose(rays.y, 1.0)
+    assert_allclose(rays.z, 0.0)
 
     rays.translate(2.0, -1.0, 3.0)
 
-    assert rays.x == 2.0
-    assert rays.y == 0.0
-    assert rays.z == 3.0
+    assert_allclose(rays.x, 2.0)
+    assert_allclose(rays.y, 0.0)
+    assert_allclose(rays.z, 3.0)
 
 
-def test__process_input():
+def test__process_input(set_test_backend):
     # Test scalar input
     data = 1
     processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
-    assert processed_data.dtype == float
-    assert processed_data[0] == 1.0
+    assert processed_data.dtype == be.array(data).dtype
+    assert_allclose(processed_data[0], 1.0)
 
     # Test float input
     data = 2.5
     processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (1,)
-    assert processed_data.dtype == float
-    assert processed_data[0] == 2.5
+    assert processed_data.dtype == be.array(data).dtype
+    assert_allclose(processed_data[0], 2.5)
 
     # Test numpy array input
     data = be.array([3, 4, 5])
     processed_data = be.as_array_1d(data)
     assert isinstance(processed_data, be.ndarray)
     assert processed_data.shape == (3,)
-    assert processed_data.dtype == float
+    assert processed_data.dtype == be.array(data).dtype
     assert be.array_equal(processed_data, be.array([3.0, 4.0, 5.0]))
 
     # Test unsupported input type
@@ -76,7 +76,7 @@ def test__process_input():
         be.as_array_1d(data)
 
 
-def test_real_rays_init():
+def test_real_rays_init(set_test_backend):
     x = 1
     y = 2
     z = 3
@@ -90,51 +90,51 @@ def test_real_rays_init():
 
     assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
-    assert rays.x.dtype == float
-    assert rays.x[0] == 1.0
+    assert rays.x.dtype == be.array(x).dtype
+    assert_allclose(rays.x[0], 1.0)
 
     assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
-    assert rays.y.dtype == float
-    assert rays.y[0] == 2.0
+    assert rays.y.dtype == be.array(y).dtype
+    assert_allclose(rays.y[0], 2.0)
 
     assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
-    assert rays.z.dtype == float
-    assert rays.z[0] == 3.0
+    assert rays.z.dtype == be.array(z).dtype
+    assert_allclose(rays.z[0], 3.0)
 
     assert isinstance(rays.L, be.ndarray)
     assert rays.L.shape == (1,)
-    assert rays.L.dtype == float
-    assert rays.L[0] == 4.0
+    assert rays.L.dtype == be.array(L).dtype
+    assert_allclose(rays.L[0], 4.0)
 
     assert isinstance(rays.M, be.ndarray)
     assert rays.M.shape == (1,)
-    assert rays.M.dtype == float
-    assert rays.M[0] == 5.0
+    assert rays.M.dtype == be.array(M).dtype
+    assert_allclose(rays.M[0], 5.0)
 
     assert isinstance(rays.N, be.ndarray)
     assert rays.N.shape == (1,)
-    assert rays.N.dtype == float
-    assert rays.N[0] == 6.0
+    assert rays.N.dtype == be.array(N).dtype
+    assert_allclose(rays.N[0], 6.0)
 
     assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
-    assert rays.i.dtype == float
-    assert rays.i[0] == 7.0
+    assert rays.i.dtype == be.array(intensity).dtype
+    assert_allclose(rays.i[0], 7.0)
 
     assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
-    assert rays.w.dtype == float
-    assert rays.w[0] == 8.0
+    assert rays.w.dtype == be.array(wavelength).dtype
+    assert_allclose(rays.w[0], 8.0)
 
     assert isinstance(rays.opd, be.ndarray)
     assert rays.opd.shape == (1,)
-    assert rays.opd.dtype == float
-    assert rays.opd[0] == 0.0
+    assert rays.opd.dtype == be.array(0.0).dtype
+    assert_allclose(rays.opd[0], 0.0)
 
 
-def test_rotate_x():
+def test_rotate_x(set_test_backend):
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
     rays.rotate_x(be.pi / 2)
