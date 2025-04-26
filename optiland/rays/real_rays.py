@@ -90,9 +90,9 @@ class RealRays(BaseRays):
 
     def propagate(self, t: float, material: BaseMaterial = None):
         """Propagate the rays a distance t."""
-        self.x += t * self.L
-        self.y += t * self.M
-        self.z += t * self.N
+        self.x = self.x + t * self.L
+        self.y = self.y + t * self.M
+        self.z = self.z + t * self.N
 
         if material is not None:
             k = material.k(self.w)

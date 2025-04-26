@@ -254,44 +254,44 @@ def test_rotate_z(set_test_backend):
     assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
 
-def test_propagate():
+def test_propagate(set_test_backend):
     rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
     rays.propagate(2.0)
 
-    assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
-    assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
-    assert rays.z[0] == pytest.approx(5.0, abs=1e-10)
-    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
+    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.z[0], 5.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
     rays.propagate(-1.5)
 
-    assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
-    assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
-    assert rays.z[0] == pytest.approx(3.5, abs=1e-10)
-    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
+    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
+    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
     rays.propagate(0.0)
 
-    assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
-    assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
-    assert rays.z[0] == pytest.approx(3.5, abs=1e-10)
-    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
+    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
+    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
     rays.propagate(3.0)
 
-    assert rays.x[0] == pytest.approx(1.0, abs=1e-10)
-    assert rays.y[0] == pytest.approx(2.0, abs=1e-10)
-    assert rays.z[0] == pytest.approx(6.5, abs=1e-10)
-    assert rays.L[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.M[0] == pytest.approx(0.0, abs=1e-10)
-    assert rays.N[0] == pytest.approx(1.0, abs=1e-10)
+    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.z[0], 6.5, rtol=0, atol=1e-10)
+    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
+    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
 
 def test_clip():
