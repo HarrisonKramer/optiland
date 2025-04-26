@@ -432,6 +432,7 @@ def mult_p_E(p, E):
         E_c = torch.tensor(E, device=get_device(), dtype=torch.complex128)
     return torch.squeeze(torch.matmul(p, E_c.unsqueeze(2)), axis=2)
 
+
 def to_complex(x):
     return x.to(torch.complex128)
 
@@ -448,8 +449,6 @@ def batched_chain_matmul3(a, b, c):
 
 def isscalar(x):
     return torch.is_tensor(x) and x.dim() == 0
-
-
 def pad(tensor, pad_width, mode="constant", constant_values=0):
     """
     Mimics numpy.pad for 2D tensors in PyTorch with limited support.
@@ -476,14 +475,19 @@ def pad(tensor, pad_width, mode="constant", constant_values=0):
 
     return F.pad(tensor, padding, mode="constant", value=constant_values)
   
+
 def sqrt(x):
     return _lib.sqrt(array(x))
+
 
 def sin(x):
     return _lib.sin(array(x))
 
+
 def cos(x):
     return _lib.cos(array(x))
 
+
 def exp(x):
     return _lib.exp(array(x))
+

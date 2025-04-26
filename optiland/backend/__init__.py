@@ -9,11 +9,12 @@ backends may be added in the future.
 Kramer Harrison, 2025
 """
 
+# common aliases for ndarray and array_equal across backends --
+import numpy as _np
+
 from optiland.backend import numpy_backend
 from optiland.backend.utils import to_numpy  # noqa: F401
 
-# common aliases for ndarray and array_equal across backends --
-import numpy as _np
 try:
     import torch as _torch
 except ImportError:
@@ -27,11 +28,15 @@ else:
 
 # array_equal: dispatch to numpy.array_equal or torch.equal
 _np_equal = _np.array_equal
-_torch_equal = _torch.equal if (_torch is not None and hasattr(_torch, "equal")) else None
+_torch_equal = (
+    _torch.equal if (_torch is not None and hasattr(_torch, "equal")) else None
+)
+
 
 def array_equal(a, b):
     """Elementwise equality test for arrays/tensors in the active backend."""
     from . import get_backend
+
     if get_backend() == "torch" and _torch_equal is not None:
         return _torch_equal(a, b)
     return _np_equal(a, b)
