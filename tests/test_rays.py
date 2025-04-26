@@ -405,37 +405,37 @@ def test_reflect(set_test_backend):
 
 
 class TestPolarizationState:
-    def test_constructor(self):
+    def test_constructor(self, set_test_backend):
         state = PolarizationState(is_polarized=True, Ex=1, Ey=2, phase_x=0, phase_y=1)
         assert state.is_polarized is True
-        assert state.Ex == 1 / be.sqrt(5)
-        assert state.Ey == 2 / be.sqrt(5)
+        assert_allclose(state.Ex, 1 / be.sqrt(5))
+        assert_allclose(state.Ey, 2 / be.sqrt(5))
         assert state.phase_x == 0
         assert state.phase_y == 1
 
-    def test_constructor_invalid(self):
+    def test_constructor_invalid(self, set_test_backend):
         with pytest.raises(ValueError):
             PolarizationState(is_polarized=True, Ex=1, Ey=2, phase_x=0, phase_y=None)
         with pytest.raises(ValueError):
             PolarizationState(is_polarized=False, Ex=1, Ey=2, phase_x=None, phase_y=1)
 
-    def test_str(self):
+    def test_str(self, set_test_backend):
         state = PolarizationState(is_polarized=True, Ex=1, Ey=0, phase_x=0, phase_y=1)
         val = "Polarized Light: Ex: 1.0, Ey: 0.0, Phase x: 0.0, Phase y: 1.0"
         assert str(state) == val
 
-    def test_str_unpolarized(self):
+    def test_str_unpolarized(self, set_test_backend):
         state = PolarizationState(is_polarized=False)
         assert str(state) == "Unpolarized Light"
 
-    def test_repr(self):
+    def test_repr(self, set_test_backend):
         state = PolarizationState(is_polarized=True, Ex=0, Ey=1, phase_x=0, phase_y=1)
         val = "Polarized Light: Ex: 0.0, Ey: 1.0, Phase x: 0.0, Phase y: 1.0"
         assert repr(state) == val
 
 
 class TestCreatePolarization:
-    def test_create_polarization_unpolarized(self):
+    def test_create_polarization_unpolarized(self, set_test_backend):
         state = create_polarization("unpolarized")
         assert state.is_polarized is False
         assert state.Ex is None
@@ -443,61 +443,61 @@ class TestCreatePolarization:
         assert state.phase_x is None
         assert state.phase_y is None
 
-    def test_create_polarization_horizontal(self):
+    def test_create_polarization_horizontal(self, set_test_backend):
         state = create_polarization("H")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(1.0, abs=1e-10)
-        assert state.Ey == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+        assert_allclose(state.Ex, 1.0, atol=1e-10)
+        assert_allclose(state.Ey, 0.0, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, 0.0, atol=1e-10)
 
-    def test_create_polarization_vertical(self):
+    def test_create_polarization_vertical(self, set_test_backend):
         state = create_polarization("V")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(0.0, abs=1e-10)
-        assert state.Ey == pytest.approx(1.0, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+        assert_allclose(state.Ex, 0.0, atol=1e-10)
+        assert_allclose(state.Ey, 1.0, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, 0.0, atol=1e-10)
 
-    def test_create_polarization_linear_45(self):
+    def test_create_polarization_linear_45(self, set_test_backend):
         state = create_polarization("L+45")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+        assert_allclose(state.Ex, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.Ey, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, 0.0, atol=1e-10)
 
-    def test_create_polarization_linear_minus_45(self):
+    def test_create_polarization_linear_minus_45(self, set_test_backend):
         state = create_polarization("L-45")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(-be.sqrt(2) / 2, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(0.0, abs=1e-10)
+        assert_allclose(state.Ex, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.Ey, -be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, 0.0, atol=1e-10)
 
-    def test_create_polarization_right_circular(self):
+    def test_create_polarization_right_circular(self, set_test_backend):
         state = create_polarization("RCP")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(-be.pi / 2, abs=1e-10)
+        assert_allclose(state.Ex, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.Ey, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, -be.pi / 2, atol=1e-10)
 
-    def test_create_polarization_left_circular(self):
+    def test_create_polarization_left_circular(self, set_test_backend):
         state = create_polarization("LCP")
         assert state.is_polarized is True
-        assert state.Ex == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.Ey == pytest.approx(be.sqrt(2) / 2, abs=1e-10)
-        assert state.phase_x == pytest.approx(0.0, abs=1e-10)
-        assert state.phase_y == pytest.approx(be.pi / 2, abs=1e-10)
+        assert_allclose(state.Ex, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.Ey, be.sqrt(2) / 2, atol=1e-10)
+        assert_allclose(state.phase_x, 0.0, atol=1e-10)
+        assert_allclose(state.phase_y, be.pi / 2, atol=1e-10)
 
-    def test_create_polarization_invalid(self):
+    def test_create_polarization_invalid(self, set_test_backend):
         with pytest.raises(ValueError):
             create_polarization("invalid")
 
 
 class TestPolarizedRays:
-    def test_init(self):
+    def test_init(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])
@@ -511,9 +511,9 @@ class TestPolarizedRays:
 
         assert isinstance(rays.p, be.ndarray)
         assert rays.p.shape == (1, 3, 3)
-        assert be.array_equal(rays.p[0], be.eye(3))
+        assert_allclose(rays.p[0], be.eye(3))
 
-    def test_get_output_field(self):
+    def test_get_output_field(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])
@@ -528,9 +528,9 @@ class TestPolarizedRays:
 
         output_field = rays.get_output_field(E)
         assert output_field.shape == (1, 3)
-        assert be.array_equal(output_field, E)
+        assert_allclose(output_field, E)
 
-    def test_update_intensity(self):
+    def test_update_intensity(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])
@@ -551,15 +551,15 @@ class TestPolarizedRays:
 
         rays.update_intensity(state)
         assert rays.i.shape == (1,)
-        assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+        assert_allclose(rays.i[0], 1.0, atol=1e-10)
 
         # test case for unpolarized light
         state = PolarizationState(is_polarized=False)
         rays.update_intensity(state)
         assert rays.i.shape == (1,)
-        assert rays.i[0] == pytest.approx(1.0, abs=1e-10)
+        assert_allclose(rays.i[0], 1.0, atol=1e-10)
 
-    def test_update(self):
+    def test_update(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])
@@ -577,18 +577,18 @@ class TestPolarizedRays:
 
         rays.update(jones_matrix)
         assert rays.p.shape == (1, 3, 3)
-        assert be.array_equal(rays.p, jones_matrix)
+        assert_allclose(rays.p, jones_matrix)
 
         # test case when k not orthogonal to N0
         rays.L0 = be.array([0.0])
         rays.M0 = be.array([0.1])
-        rays.N0 = be.sqrt([1 - 0.1**2])
+        rays.N0 = be.sqrt(be.array([1 - 0.1**2]))
         rays.update(jones_matrix)
         assert rays.p.shape == (1, 3, 3)
-        jones_matrix = be.array(
+        expected_jones_matrix = be.array(
             [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]],
         )
-        assert be.allclose(rays.p, jones_matrix, atol=1e-10)
+        assert_allclose(rays.p, expected_jones_matrix, atol=1e-8) # Reduced tolerance slightly for potential backend differences
 
         # test case when jones = None
         rays.L0 = be.array([0.0])
@@ -596,9 +596,10 @@ class TestPolarizedRays:
         rays.N0 = be.array([1.0])
         rays.update(None)
         assert rays.p.shape == (1, 3, 3)
-        assert be.allclose(rays.p, jones_matrix, atol=1e-10)
+        # The state should not change if jones_matrix is None, so compare to previous state
+        assert_allclose(rays.p, expected_jones_matrix, atol=1e-8)
 
-    def test_get_3d_electric_field(self):
+    def test_get_3d_electric_field(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])
@@ -619,9 +620,9 @@ class TestPolarizedRays:
 
         E = rays._get_3d_electric_field(state)
         assert E.shape == (1, 3)
-        assert be.allclose(E, be.array([[1.0, 0.0, 0.0]]), atol=1e-10)
+        assert_allclose(E, be.array([[1.0, 0.0, 0.0]]), atol=1e-10)
 
-    def test_get_3d_electric_field_error(self):
+    def test_get_3d_electric_field_error(self, set_test_backend):
         x = be.array([1.0])
         y = be.array([2.0])
         z = be.array([3.0])

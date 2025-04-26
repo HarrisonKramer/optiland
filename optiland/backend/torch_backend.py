@@ -440,3 +440,15 @@ def batched_chain_matmul3(a, b, c):
 
 def isscalar(x):
     return torch.is_tensor(x) and x.dim() == 0
+
+def sqrt(x):
+    return _lib.sqrt(array(x))
+
+def sin(x):
+    return _lib.sin(array(x))
+
+def cos(x):
+    return _lib.cos(array(x))
+
+def exp(x):
+    return _lib.exp(array(x))
