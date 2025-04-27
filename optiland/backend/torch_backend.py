@@ -360,7 +360,7 @@ def flip(x):
 
 
 def meshgrid(*arrays):
-    return torch.meshgrid(*arrays, indexing="ij")
+    return torch.meshgrid(*arrays, indexing="xy")
 
 
 def matrix_vector_multiply_and_squeeze(p, E):
@@ -564,7 +564,7 @@ def min(x):
 
 def mean(x, axis=None, keepdims=False):
     """
-    Backend-agnostic mean: accepts Python scalars, NumPy arrays, or Tensors.
+    Backend-agnostic mean: accepts Tensors.
     Handles NaN values by ignoring them (similar to np.nanmean).
 
     Args:
