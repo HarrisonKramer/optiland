@@ -640,3 +640,8 @@ def array_equal(a, b):
     if a_t.shape != b_t.shape:
         return False
     return torch.eq(a_t, b_t).all().item()
+
+
+@contextlib.contextmanager
+def errstate(**kwargs):
+    yield

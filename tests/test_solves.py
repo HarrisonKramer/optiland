@@ -3,10 +3,11 @@ import pytest
 
 from optiland import solves
 from optiland.samples.objectives import CookeTriplet
+from .utils import assert_allclose
 
 
 class TestMarginalRayHeightSolve:
-    def test_marginal_ray_height_solve_constructor(self):
+    def test_marginal_ray_height_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
         height = 0.5
@@ -17,7 +18,7 @@ class TestMarginalRayHeightSolve:
         assert solve.surface_idx == surface_idx
         assert solve.height == height
 
-    def test_marginal_ray_height_solve_apply(self):
+    def test_marginal_ray_height_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
         height = 0.5
@@ -31,13 +32,13 @@ class TestMarginalRayHeightSolve:
         solve.apply()
 
         # Check that surface has been shifted
-        assert surf.geometry.cs.z == pytest.approx(z_orig + offset)
+        assert_allclose(surf.geometry.cs.z, z_orig + offset)
 
         # Check that marginal ray height is correct on surface
         ya, ua = optic.paraxial.marginal_ray()
-        assert ya[surface_idx] == pytest.approx(height)
+        assert_allclose(ya[surface_idx], height)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
         height = 0.5
@@ -49,7 +50,7 @@ class TestMarginalRayHeightSolve:
         assert data["surface_idx"] == surface_idx
         assert data["height"] == height
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         optic = CookeTriplet()
         data = {"type": "MarginalRayHeightSolve", "surface_idx": 7, "height": 0.5}
 
@@ -58,7 +59,7 @@ class TestMarginalRayHeightSolve:
         assert solve.surface_idx == data["surface_idx"]
         assert solve.height == data["height"]
 
-    def test_from_dict_invalid_type(self):
+    def test_from_dict_invalid_type(self, set_test_backend):
         optic = CookeTriplet()
         data = {"type": "Invalid", "surface_idx": 7, "height": 0.5}
 
@@ -67,25 +68,25 @@ class TestMarginalRayHeightSolve:
 
 
 class TestQuickfocusSolve:
-    def test_quick_focus_solve_constructor(self):
+    def test_quick_focus_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
         solve = solves.QuickFocusSolve(optic)
 
         assert solve.optic == optic
 
-    def test_quick_focus_solve_apply(self):
+    def test_quick_focus_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z -= 10
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
         thickness = 42.21812063592369
         solve = solves.QuickFocusSolve(optic)
         solve.apply()
 
         # Check that surface has been shifted
-        pos2 = optic.surface_group.positions[-1].astype(float)[0]
-        pos1 = optic.surface_group.positions[-2].astype(float)[0]
+        pos2 = optic.surface_group.positions[-1][0]
+        pos1 = optic.surface_group.positions[-2][0]
 
-        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
+        assert_allclose(pos2 - pos1, thickness, rtol=1e-3)
 
         # Implementing the extreme shift case.
         optic.surface_group.surfaces[-1].geometry.cs.z += 1000
@@ -93,14 +94,14 @@ class TestQuickfocusSolve:
         solve.apply()
 
         # Check that surface has been shifted
-        pos2 = optic.surface_group.positions[-1].astype(float)[0]
-        pos1 = optic.surface_group.positions[-2].astype(float)[0]
+        pos2 = optic.surface_group.positions[-1][0]
+        pos1 = optic.surface_group.positions[-2][0]
 
-        assert pos2 - pos1 == pytest.approx(thickness, rel=1e-3)
+        assert_allclose(pos2 - pos1, thickness, rtol=1e-3)
 
 
 class TestSolveFactory:
-    def test_create_solve(self):
+    def test_create_solve(self, set_test_backend):
         optic = CookeTriplet()
         solve_type = "marginal_ray_height"
         surface_idx = 7
@@ -113,7 +114,7 @@ class TestSolveFactory:
         assert solve.surface_idx == surface_idx
         assert solve.height == height
 
-    def test_create_solve_invalid_solve_type(self):
+    def test_create_solve_invalid_solve_type(self, set_test_backend):
         optic = CookeTriplet()
         solve_type = "invalid"
         surface_idx = 7
@@ -124,14 +125,14 @@ class TestSolveFactory:
 
 
 class TestSolveManager:
-    def test_solve_manager_constructor(self):
+    def test_solve_manager_constructor(self, set_test_backend):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
 
         assert manager.optic == optic
         assert len(manager) == 0
 
-    def test_add_solve(self):
+    def test_add_solve(self, set_test_backend):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
         solve_type = "marginal_ray_height"
@@ -146,7 +147,7 @@ class TestSolveManager:
         assert manager.solves[0].surface_idx == surface_idx
         assert manager.solves[0].height == height
 
-    def test_apply_solves(self):
+    def test_apply_solves(self, set_test_backend):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
         solve_type = "marginal_ray_height"
@@ -162,13 +163,13 @@ class TestSolveManager:
         manager.apply()
 
         # Check that surface has been shifted
-        assert surf.geometry.cs.z == pytest.approx(z_orig + offset)
+        assert_allclose(surf.geometry.cs.z, z_orig + offset)
 
         # Check that marginal ray height is correct on surface
         ya, ua = optic.paraxial.marginal_ray()
-        assert ya[surface_idx] == pytest.approx(height)
+        assert_allclose(ya[surface_idx], height)
 
-    def test_clear_solves(self):
+    def test_clear_solves(self, set_test_backend):
         optic = CookeTriplet()
         manager = solves.SolveManager(optic)
         solve_type = "marginal_ray_height"
