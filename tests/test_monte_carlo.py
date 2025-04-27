@@ -69,7 +69,7 @@ def test_run_no_compensator(monte_carlo_no_compensator):
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_histogram(mock_show, set_test_backend, monte_carlo_no_compensator):
+def test_view_histogram(mock_show, monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
     monte_carlo_no_compensator.view_histogram(kde=True)
     mock_show.assert_called_once()
@@ -85,7 +85,7 @@ def test_view_histogram_no_kde(mock_show, monte_carlo_no_compensator):
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_cdf(mock_show, set_test_backend, monte_carlo_no_compensator):
+def test_view_cdf(mock_show, monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
     monte_carlo_no_compensator.view_cdf()
     mock_show.assert_called_once()
@@ -93,7 +93,7 @@ def test_view_cdf(mock_show, set_test_backend, monte_carlo_no_compensator):
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_heatmap(mock_show, set_test_backend, monte_carlo_no_compensator):
+def test_view_heatmap(mock_show, monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
     monte_carlo_no_compensator.view_heatmap(figsize=(8, 6))
     mock_show.assert_called_once()
