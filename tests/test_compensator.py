@@ -5,7 +5,7 @@ from optiland.samples.simple import Edmund_49_847
 from optiland.tolerancing.compensator import CompensatorOptimizer
 
 
-def test_initialization_default(set_test_backend):
+def test_initialization_default():
     optimizer = CompensatorOptimizer()
     assert optimizer.method == "generic"
     assert optimizer.tol == 1e-5
@@ -13,13 +13,13 @@ def test_initialization_default(set_test_backend):
     assert isinstance(optimizer._optimizer_map["least_squares"], type(LeastSquares))
 
 
-def test_initialization_custom(set_test_backend):
+def test_initialization_custom():
     optimizer = CompensatorOptimizer(method="least_squares", tol=1e-4)
     assert optimizer.method == "least_squares"
     assert optimizer.tol == 1e-4
 
 
-def test_has_variables(set_test_backend):
+def test_has_variables():
     optimizer = CompensatorOptimizer()
     optimizer.variables = []
     assert not optimizer.has_variables
@@ -61,19 +61,19 @@ def test_invalid_method(set_test_backend):
         optimizer.run()
 
 
-def test_empty_variables_run(set_test_backend):
+def test_empty_variables_run():
     optimizer = CompensatorOptimizer(method="generic")
     optimizer.variables = []
     with pytest.raises(ValueError):
         optimizer.run()
 
 
-def test_tolerance_setting(set_test_backend):
+def test_tolerance_setting():
     optimizer = CompensatorOptimizer(tol=1e-6)
     assert optimizer.tol == 1e-6
 
 
-def test_optimizer_map_content(set_test_backend):
+def test_optimizer_map_content():
     optimizer = CompensatorOptimizer()
     assert "generic" in optimizer._optimizer_map
     assert "least_squares" in optimizer._optimizer_map

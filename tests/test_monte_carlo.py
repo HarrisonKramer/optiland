@@ -53,7 +53,7 @@ def test_run(monte_carlo):
     assert set(monte_carlo._results.columns) == res
 
 
-def test_run_no_compensator(set_test_backend, monte_carlo_no_compensator):
+def test_run_no_compensator(monte_carlo_no_compensator):
     num_iterations = 10
     monte_carlo_no_compensator.run(num_iterations)
 
@@ -77,7 +77,7 @@ def test_view_histogram(mock_show, set_test_backend, monte_carlo_no_compensator)
 
 
 @patch("matplotlib.pyplot.show")
-def test_view_histogram_no_kde(mock_show, set_test_backend, monte_carlo_no_compensator):
+def test_view_histogram_no_kde(mock_show, monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
     monte_carlo_no_compensator.view_histogram(kde=False)
     mock_show.assert_called_once()
@@ -100,20 +100,20 @@ def test_view_heatmap(mock_show, set_test_backend, monte_carlo_no_compensator):
     plt.close()
 
 
-def test_invalid_plot_type(set_test_backend, monte_carlo):
+def test_invalid_plot_type(monte_carlo):
     msg = "Invalid plot type: invalid"
     with pytest.raises(ValueError, match=msg):
         monte_carlo._plot(plot_type="invalid")
 
 
-def test_validate_no_operands(set_test_backend, monte_carlo):
+def test_validate_no_operands(monte_carlo):
     monte_carlo.tolerancing.operands = []
     msg = "No operands found in the tolerancing system."
     with pytest.raises(ValueError, match=msg):
         monte_carlo._validate()
 
 
-def test_validate_no_perturbations(set_test_backend, monte_carlo):
+def test_validate_no_perturbations(monte_carlo):
     monte_carlo.tolerancing.perturbations = []
     msg = "No perturbations found in the tolerancing system."
     with pytest.raises(ValueError, match=msg):
