@@ -390,8 +390,8 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     Hx = array(Hx)
     Hy = array(Hy)
     # Make sure Hx and Hy have the same shape – broadcast if necessary
-    if Hx.shape != Hy.shape:  # <‑‑ NEW
-        Hx, Hy = torch.broadcast_tensors(Hx, Hy)  # <‑‑ NEW
+    if Hx.shape != Hy.shape:
+        Hx, Hy = torch.broadcast_tensors(Hx, Hy)
     # 1) pack queries into a flat (K,2) tensor
     q = torch.stack([Hx, Hy], dim=-1)  # (...,2)
     orig_shape = q.shape[:-1]
