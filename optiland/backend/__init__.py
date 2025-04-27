@@ -21,10 +21,7 @@ except ImportError:
     _torch = None
 
 # ndarray: either a NumPy ndarray or a PyTorch Tensor
-if _torch is not None:
-    ndarray = (_np.ndarray, _torch.Tensor)
-else:
-    ndarray = _np.ndarray
+ndarray = (_np.ndarray, _torch.Tensor) if _torch is not None else _np.ndarray
 
 # array_equal: dispatch to numpy.array_equal or torch.equal
 _np_equal = _np.array_equal
