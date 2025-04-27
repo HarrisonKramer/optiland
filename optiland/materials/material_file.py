@@ -108,10 +108,9 @@ class MaterialFile(BaseMaterial):
                 # we set it to True to avoid printing the warning again
                 self._k_warning_printed = True
 
-            if be.isscalar(wavelength):
-                return 0.0
-            # if there is an array of wavelengths, return array of zeros
-            return be.zeros_like(wavelength)
+            if be.is_array_like(wavelength):
+                return be.zeros_like(wavelength)
+            return 0.0
 
         return be.interp(wavelength, self._k_wavelength, self._k)
 

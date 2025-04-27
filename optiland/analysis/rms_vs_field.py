@@ -59,7 +59,9 @@ class RmsSpotSizeVsField(SpotDiagram):
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels)
+        ax.plot(
+            be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels
+        )
 
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Spot Size (mm)")
@@ -119,7 +121,11 @@ class RmsWavefrontErrorVsField(Wavefront):
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(be.to_numpy(self._field[:, 1]), be.to_numpy(self._wavefront_error), label=labels)
+        ax.plot(
+            be.to_numpy(self._field[:, 1]),
+            be.to_numpy(self._wavefront_error),
+            label=labels,
+        )
 
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")

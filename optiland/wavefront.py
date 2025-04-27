@@ -152,7 +152,8 @@ class Wavefront:
             ValueError: If the chief ray cannot be determined.
 
         """
-        # pick the LAST ray instead of insisting there is only one
+        if be.size(self.optic.surface_group.x[-1, :]) != 1:
+            raise ValueError("Chief ray cannot be determined. It must be traced alone.")
 
         # chief ray intersection location
         xc = self.optic.surface_group.x[-1, -1]
@@ -180,7 +181,7 @@ class Wavefront:
         """
         # chief‑ray OPD (last entry)
         opd_chief = self.optic.surface_group.opd[-1, -1]
-        opd_img   = self._opd_image_to_xp(xc, yc, zc, r, wavelength)[-1]
+        opd_img = self._opd_image_to_xp(xc, yc, zc, r, wavelength)[-1]
         return opd_chief - opd_img
 
     def _correct_tilt(self, field, opd, x=None, y=None):

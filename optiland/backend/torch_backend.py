@@ -15,6 +15,7 @@ import numpy as np
 
 try:
     import torch
+    import torch.nn.functional as F
 except ImportError as err:
     torch = None
     raise ImportError("PyTorch is not installed.") from err
@@ -129,7 +130,7 @@ def array(x):
 
 def is_array_like(x):
     """Check if the input is array-like."""
-    return isinstance(x, (torch.Tensor, list, tuple))
+    return isinstance(x, (torch.Tensor, np.ndarray, list, tuple))
 
 
 def zeros(shape):
@@ -145,7 +146,7 @@ def zeros(shape):
 def zeros_like(x):
     """Create an array/tensor filled with zeros with the same shape as x."""
     return torch.zeros_like(
-        x,
+        array(x),
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -165,7 +166,7 @@ def ones(shape):
 def ones_like(x):
     """Create an array/tensor filled with ones with the same shape as x."""
     return torch.ones_like(
-        x,
+        array(x),
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -187,10 +188,13 @@ def full_like(x, fill_value):
     """
     Create an array/tensor filled with fill_value with the same shape as x.
     """
+    # ensure x is a torch tensor (wrap Python scalars)
+    x_tensor = array(x)
+    # unwrap fill_value if it's a tensor
     if isinstance(fill_value, torch.Tensor):
         fill_value = fill_value.item()
     return torch.full_like(
-        x,
+        x_tensor,
         fill_value,
         device=get_device(),
         dtype=get_precision(),
@@ -231,12 +235,12 @@ def polyfit(x, y, degree):
 
 
 def polyval(coeffs, x):
-    return sum(c * x**i for i, c in enumerate(coeffs))
+    return sum(c * x**i for i, c in enumerate(reversed(coeffs)))
 
 
 def load(filename):
-    array = np.load(filename)
-    return torch.from_numpy(array)
+    data = np.load(filename)
+    return array(data)
 
 
 def hstack(arrays):
@@ -303,6 +307,20 @@ def atleast_2d(x):
     return x  # Already 2D or higher
 
 
+def as_array_1d(data):
+    """Force conversion to a 1D tensor."""
+    if isinstance(data, (int, float)):
+        return array([data])
+    elif isinstance(data, (list, tuple)):
+        return array(data)
+    elif is_array_like(data):
+        return data.reshape(-1)
+    else:
+        raise ValueError(
+            "Unsupported input type: expected scalar, list, tuple, or array-like."
+        )
+
+
 def size(x):
     return torch.numel(x)
 
@@ -314,12 +332,23 @@ def default_rng(seed=None):
 
 
 def random_uniform(low=0.0, high=1.0, size=None, generator=None):
+    if size is None:
+        size = 1
     if generator is None:
         return torch.empty(size, device=get_device()).uniform_(low, high)
     else:
         return torch.empty(size, device=get_device()).uniform_(
             low, high, generator=generator
         )
+
+
+def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
+    if size is None:
+        size = 1
+    if generator is None:
+        return torch.randn(size, device=get_device()) * scale + loc
+    else:
+        return torch.randn(size, device=get_device(), generator=generator) * scale + loc
 
 
 def repeat(x, repeats):
@@ -353,15 +382,16 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
     """
     # Make sure we actually got values, not None
     if Hx is None or Hy is None:
-        raise ValueError("nearest_nd_interpolator requires both Hx and Hy, "
-                         f"got Hx={Hx!r}, Hy={Hy!r}")
+        raise ValueError(
+            f"nearest_nd_interpolator requires both Hx and Hy, got Hx={Hx!r}, Hy={Hy!r}"
+        )
 
     # lift Python scalars or numpy arrays into torch.Tensors on the right device/dtype
     Hx = array(Hx)
     Hy = array(Hy)
     # Make sure Hx and Hy have the same shape – broadcast if necessary
-    if Hx.shape != Hy.shape:                # <‑‑ NEW
-        Hx, Hy = torch.broadcast_tensors(Hx, Hy)   # <‑‑ NEW
+    if Hx.shape != Hy.shape:  # <‑‑ NEW
+        Hx, Hy = torch.broadcast_tensors(Hx, Hy)  # <‑‑ NEW
     # 1) pack queries into a flat (K,2) tensor
     q = torch.stack([Hx, Hy], dim=-1)  # (...,2)
     orig_shape = q.shape[:-1]
@@ -447,7 +477,12 @@ def eye(x):
 def mult_p_E(p, E):
     # Used only for electric field multiplication in polarized_rays.py
     p = p.to(torch.complex128)
-    return torch.squeeze(torch.matmul(p, E.unsqueeze(2)), axis=2)
+    # cast E to complex so matmul(p:complex128, E:complex128) works
+    try:
+        E_c = E.to(torch.complex128)
+    except Exception:
+        E_c = torch.tensor(E, device=get_device(), dtype=torch.complex128)
+    return torch.squeeze(torch.matmul(p, E_c.unsqueeze(2)), axis=2)
 
 
 def to_complex(x):
@@ -465,9 +500,50 @@ def batched_chain_matmul3(a, b, c):
 
 
 def isscalar(x):
-    # 0-Dim torch.Tensor
-    if torch.is_tensor(x) and x.dim() == 0:
-        return True
+    return torch.is_tensor(x) and x.dim() == 0
+
+
+def pad(tensor, pad_width, mode="constant", constant_values=0):
+    """
+    Mimics numpy.pad for 2D tensors in PyTorch with limited support.
+
+    Args:
+        tensor (Tensor): 2D PyTorch tensor to pad.
+        pad_width (tuple of tuple): ((pad_top, pad_bottom), (pad_left, pad_right))
+        mode (str): Only 'constant' mode is supported.
+        constant_values (int or float): Fill value for constant padding.
+
+    Returns:
+        Padded 2D tensor.
+    """
+    if mode != "constant":
+        raise NotImplementedError("Only mode='constant' is supported in torch backend")
+
+    if not isinstance(pad_width, (tuple, list)) or len(pad_width) != 2:
+        raise ValueError("pad_width must be a tuple of two tuples for 2D input")
+
+    (pad_top, pad_bottom), (pad_left, pad_right) = pad_width
+
+    # PyTorch expects (pad_left, pad_right, pad_top, pad_bottom)
+    padding = (pad_left, pad_right, pad_top, pad_bottom)
+
+    return F.pad(tensor, padding, mode="constant", value=constant_values)
+
+
+def sqrt(x):
+    return _lib.sqrt(array(x))
+
+
+def sin(x):
+    return _lib.sin(array(x))
+
+
+def cos(x):
+    return _lib.cos(array(x))
+
+
+def exp(x):
+    return _lib.exp(array(x))
 
 
 def max(x):
@@ -490,30 +566,34 @@ def mean(x, axis=None, keepdims=False):
     """
     Backend-agnostic mean: accepts Python scalars, NumPy arrays, or Tensors.
     Handles NaN values by ignoring them (similar to np.nanmean).
-    
+
     Args:
         x: Input tensor
         axis: Axis along which to compute mean (None for overall mean)
         keepdims: Whether to keep the reduced dimensions
-        
+
     Returns:
         Mean value as a tensor
     """
     # If not a tensor, convert to tensor
     if not isinstance(x, torch.Tensor):
         x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
-    
+
     # Handle NaN values by replacing them with zeros and creating a mask
     mask = ~torch.isnan(x)
     # Count non-NaN elements
     count = mask.sum(dim=axis, keepdim=keepdims).to(x.dtype)
     # Sum non-NaN elements (replace NaNs with 0)
-    x_masked = torch.where(mask, x, torch.tensor(0., dtype=x.dtype, device=x.device))
+    x_masked = torch.where(mask, x, torch.tensor(0.0, dtype=x.dtype, device=x.device))
     sum_val = x_masked.sum(dim=axis, keepdim=keepdims)
-    
+
     # Compute mean (avoiding division by zero)
-    result = torch.where(count > 0, sum_val / count, torch.tensor(float('nan'), dtype=x.dtype, device=x.device))
-    
+    result = torch.where(
+        count > 0,
+        sum_val / count,
+        torch.tensor(float("nan"), dtype=x.dtype, device=x.device),
+    )
+
     return result
 
 
@@ -549,26 +629,19 @@ def tile(x, dims):
         return torch.tile(x, dims=(dims,))
     return torch.tile(x, dims)
 
+
 def isinf(x):
     """
     Torch‐backend‐agnostic “is infinity” test:
     accepts Python scalars, NumPy arrays, or Tensors.
     """
     import torch
+
     # lift non‐Tensor into a Tensor on the right device/dtype
     if not isinstance(x, torch.Tensor):
         x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return torch.isinf(x)
 
-def sqrt(x):
-    """
-    Backend‐agnostic square‐root: accepts Python scalars, NumPy ndarrays, or Tensors.
-    """
-    import torch
-    # lift non‐Tensor inputs into a Tensor on the current device/dtype
-    if not isinstance(x, torch.Tensor):
-        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
-    return torch.sqrt(x)
 
 def array_equal(a, b):
     """

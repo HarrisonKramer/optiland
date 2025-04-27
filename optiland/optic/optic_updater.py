@@ -72,7 +72,7 @@ class OpticUpdater:
         positions[surface_number + 1 :] = positions[surface_number + 1 :] + delta_t
         positions = positions - positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.optic.surface_group.surfaces):
-            surface.geometry.cs.z = float(positions[k])
+            surface.geometry.cs.z = be.array(positions[k])
 
     def set_index(self, value, surface_number):
         """Set the index of refraction of a surface.

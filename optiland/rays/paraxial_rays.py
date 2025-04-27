@@ -25,12 +25,12 @@ class ParaxialRays(BaseRays):
     """
 
     def __init__(self, y, u, z, wavelength):
-        self.y = self._process_input(y)
-        self.z = self._process_input(z)
-        self.u = self._process_input(u)
+        self.y = be.as_array_1d(y)
+        self.z = be.as_array_1d(z)
+        self.u = be.as_array_1d(u)
         self.x = be.zeros_like(self.y)
         self.i = be.ones_like(self.y)
-        self.w = self._process_input(wavelength)
+        self.w = be.as_array_1d(wavelength)
 
     def propagate(self, t: float):
         """Propagates the rays by a given distance.
@@ -39,8 +39,8 @@ class ParaxialRays(BaseRays):
             t (float): The distance to propagate the rays.
 
         """
-        self.z += t
-        self.y += t * self.u
+        self.y = self.y + t * self.u
+        self.z = self.z + t
 
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""

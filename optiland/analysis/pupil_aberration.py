@@ -76,7 +76,12 @@ class PupilAberration:
                 ex = self.data[f"{field}"][f"{wavelength}"]["x"]
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
 
-                axs[k, 0].plot(be.to_numpy(Py), be.to_numpy(ey), zorder=3, label=f"{wavelength:.4f} µm")
+                axs[k, 0].plot(
+                    be.to_numpy(Py),
+                    be.to_numpy(ey),
+                    zorder=3,
+                    label=f"{wavelength:.4f} µm",
+                )
                 axs[k, 0].grid()
                 axs[k, 0].axhline(y=0, lw=1, color="gray")
                 axs[k, 0].axvline(x=0, lw=1, color="gray")
@@ -85,7 +90,12 @@ class PupilAberration:
                 axs[k, 0].set_xlim((-1, 1))
                 axs[k, 0].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-                axs[k, 1].plot(be.to_numpy(Px), be.to_numpy(ex), zorder=3, label=f"{wavelength:.4f} µm")
+                axs[k, 1].plot(
+                    be.to_numpy(Px),
+                    be.to_numpy(ex),
+                    zorder=3,
+                    label=f"{wavelength:.4f} µm",
+                )
                 axs[k, 1].grid()
                 axs[k, 1].axhline(y=0, lw=1, color="gray")
                 axs[k, 1].axvline(x=0, lw=1, color="gray")
