@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 
 import optiland.backend as be
 
+
 class BaseRays:
     """Base class for rays in a 3D space.
 

@@ -5,8 +5,6 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
-
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
@@ -104,9 +102,15 @@ class SpotDiagram:
         axs = axs.flatten()
 
         # Subtract centroid and find limits
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
-        axis_lim = be.max(geometric_size)
+        # stack into an (N_fields, N_waves) array/tensor, then reduce:
+        # first convert each row into a 1D tensor/array
+        rows = [be.stack(row, axis=0) for row in geometric_size]
+        # now stack rows into a 2D
+        gs_array = be.stack(rows, axis=0)
+        # take the global max
+        axis_lim = be.max(gs_array)
 
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
@@ -281,7 +285,7 @@ class SpotDiagram:
             chief_ray_cosines_list.append(
                 be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = be.array(chief_ray_cosines_list)
+        chief_ray_cosines_list = be.stack(chief_ray_cosines_list, axis=0)
         return chief_ray_cosines_list
 
     def generate_chief_rays_centers(self, wavelength):
@@ -307,7 +311,7 @@ class SpotDiagram:
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
-        chief_ray_centers = be.array(chief_ray_centers)
+        chief_ray_centers = be.stack(chief_ray_centers, axis=0)
         return chief_ray_centers
 
     def airy_disc_x_y(self, wavelength):
@@ -377,7 +381,7 @@ class SpotDiagram:
                 wavelength
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = []
         for field_data in data:
             geometric_size_field = []
@@ -394,7 +398,7 @@ class SpotDiagram:
             rms (List): RMS spot radius for each field and wavelength.
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         rms = []
         for field_data in data:
             rms_field = []
@@ -416,12 +420,24 @@ class SpotDiagram:
 
         """
         centroids = self.centroid()
-        data = deepcopy(self.data)
+
+        # Build a true deep copy of the nested list, cloning each array via the backend
+        centered = []
         for i, field_data in enumerate(data):
-            for wave_data in field_data:
-                wave_data[0] -= centroids[i][0]
-                wave_data[1] -= centroids[i][1]
-        return data
+            field_copy = []
+            for x, y, intensity in field_data:
+                # clone each array/tensor
+                x2 = be.copy(x)
+                y2 = be.copy(y)
+                i2 = be.copy(intensity)
+
+                # subtract centroid
+                x2 = x2 - centroids[i][0]  # not in-place, to prevent breaking autograd
+                y2 = y2 - centroids[i][1]
+
+                field_copy.append([x2, y2, i2])
+            centered.append(field_copy)
+        return centered
 
     def _generate_data(
         self,
@@ -538,13 +554,20 @@ class SpotDiagram:
             None
 
         """
+
+        import numpy as np
+
         markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
             x, y, intensity = points
-            mask = intensity != 0
+            # one‐liner conversion for BOTH backends:
+            x_np = be.to_numpy(x)
+            y_np = be.to_numpy(y)
+            i_np = be.to_numpy(intensity)
+            mask = i_np != 0
             ax.scatter(
-                x[mask],
-                y[mask],
+                x_np[mask],
+                y_np[mask],
                 s=10,
                 label=f"{wavelengths[k]:.4f} µm",
                 marker=markers[k % 3],
@@ -582,7 +605,7 @@ class SpotDiagram:
         # Determining the labels for the x and y axes based on the image
         # surface effective orientation.
         cs = self.optic.image_surface.geometry.cs
-        effective_orientation = be.abs(cs.get_effective_rotation_euler())
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:

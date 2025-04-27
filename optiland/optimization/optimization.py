@@ -10,7 +10,6 @@ Kramer Harrison, 2024
 
 import warnings
 
-import numpy as np
 import pandas as pd
 from scipy import optimize
 
@@ -256,10 +255,7 @@ class OptimizerGeneric:
         """
         # Update all variables to their new values
         for idvar, var in enumerate(self.problem.variables):
-            # --- Convert NumPy x back to backend tensor before updating ---
-             # Create backend tensor/array from corresponding element of SciPy's NumPy array
-             # This allows autograd if backend is PyTorch
-             var.update(be.array(x[idvar]))
+            var.update(be.array(x[idvar]))
 
         # Update optics (e.g., pickups and solves)
         self.problem.update_optics()
@@ -313,7 +309,7 @@ class LeastSquares(OptimizerGeneric):
         """
         # Get initial values in backend format
         x0_backend = [var.value for var in self.problem.variables]
-        self._x.append(x0_backend) # Store backend values
+        self._x.append(x0_backend)  # Store backend values
         # --- Convert x0 to NumPy for SciPy ---
         x0_numpy = be.to_numpy(x0_backend)
 
@@ -372,7 +368,7 @@ class DualAnnealing(OptimizerGeneric):
         """
         # Get initial values in backend format
         x0_backend = [var.value for var in self.problem.variables]
-        self._x.append(x0_backend) # Store backend values
+        self._x.append(x0_backend)  # Store backend values
         # Convert x0 to NumPy for SciPy
         x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])
@@ -431,7 +427,7 @@ class DifferentialEvolution(OptimizerGeneric):
         """
         # Get initial values in backend format
         x0_backend = [var.value for var in self.problem.variables]
-        self._x.append(x0_backend) # Store backend values
+        self._x.append(x0_backend)  # Store backend values
         # Convert x0 to NumPy for SciPy
         x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])
@@ -557,7 +553,7 @@ class BasinHopping(OptimizerGeneric):
         """
         # Get initial values in backend format
         x0_backend = [var.value for var in self.problem.variables]
-        self._x.append(x0_backend) # Store backend values
+        self._x.append(x0_backend)  # Store backend values
         # Convert x0 to NumPy for SciPy
         x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])

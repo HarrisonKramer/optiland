@@ -179,8 +179,9 @@ class Wavefront:
             float: The optical path difference.
 
         """
-        opd = self.optic.surface_group.opd[-1, :]
-        return opd - self._opd_image_to_xp(xc, yc, zc, r, wavelength)
+        opd_chief = self.optic.surface_group.opd[-1, :]
+        opd_img = self._opd_image_to_xp(xc, yc, zc, r, wavelength)
+        return opd_chief - opd_img
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the optical path difference.

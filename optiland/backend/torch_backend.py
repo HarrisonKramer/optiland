@@ -360,7 +360,7 @@ def flip(x):
 
 
 def meshgrid(*arrays):
-    return torch.meshgrid(*arrays, indexing="ij")
+    return torch.meshgrid(*arrays, indexing="xy")
 
 
 def matrix_vector_multiply_and_squeeze(p, E):
@@ -376,22 +376,70 @@ def reshape(x, shape):
 
 
 def nearest_nd_interpolator(points, values, Hx, Hy):
-    """Manual nearest neighbor in PyTorch"""
-    query = torch.tensor([Hx, Hy], dtype=points.dtype, device=points.device)
-    diffs = points - query  # shape: (N, 2)
-    dists = torch.sum(diffs**2, dim=-1)
-    idx = torch.argmin(dists)
-    return values[idx]
+    """
+    Vectorized nearest‐neighbor lookup in PyTorch, working for Hx,Hy of any shape
+    without breaking autograd.
+    """
+    # Make sure we actually got values, not None
+    if Hx is None or Hy is None:
+        raise ValueError(
+            f"nearest_nd_interpolator requires both Hx and Hy, got Hx={Hx!r}, Hy={Hy!r}"
+        )
+
+    # lift Python scalars or numpy arrays into torch.Tensors on the right device/dtype
+    Hx = array(Hx)
+    Hy = array(Hy)
+    # Make sure Hx and Hy have the same shape – broadcast if necessary
+    if Hx.shape != Hy.shape:
+        Hx, Hy = torch.broadcast_tensors(Hx, Hy)
+    # 1) pack queries into a flat (K,2) tensor
+    q = torch.stack([Hx, Hy], dim=-1)  # (...,2)
+    orig_shape = q.shape[:-1]
+    q_flat = q.reshape(-1, 2)  # (K,2)
+
+    # 2) compute all pairwise distances against the M field‐points
+    pts = points.to(dtype=q.dtype, device=q.device)  # ensure same dtype/device
+    dists = torch.cdist(q_flat, pts)  # (K, M)
+
+    # 3) find nearest index for each query
+    idx = dists.argmin(dim=1)  # (K,)
+
+    # 4) gather values at those indices
+    #    flatten values to (M, P) so we can index; P is remaining dims
+    vals_flat = values.view(points.shape[0], -1)  # (M, P)
+    out_flat = vals_flat[idx]  # (K, P)
+
+    # 5) reshape back to original query shape + any extra dims
+    out = out_flat.view(*orig_shape, *out_flat.shape[1:])
+    # if values was one‑dimensional, squeeze that last axis
+    if out.shape[-1] == 1:
+        out = out.squeeze(-1)
+    return out
 
 
 def all(x):
+    """Backend‐agnostic “all”: accept Python bool, NumPy arrays, or Tensors."""
+    # Python bool → leave as is
     if isinstance(x, bool):
         return x
+    # Anything else → lift into a torch.Tensor on the right device/dtype
+    if not torch.is_tensor(x):
+        x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
+    # Now we can safely call torch.all
     return torch.all(x).item()
 
 
 def radians(x):
+    """Convert degrees→radians, accepting both Python scalars and tensors."""
+    # if it's not already a torch.Tensor, cast it into one
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=_current_precision, device=_current_device)
     return torch.deg2rad(x)
+
+
+def deg2rad(x):
+    """Convert degrees to radians, accepting Python scalars or tensors."""
+    return radians(x)
 
 
 def newaxis():
@@ -399,6 +447,10 @@ def newaxis():
 
 
 def cast(x):
+    """Ensure x is a torch.Tensor on the right device/dtype."""
+    if not isinstance(x, torch.Tensor):
+        # lift Python scalars or numpy scalars into a tensor
+        return torch.tensor(x, device=get_device(), dtype=get_precision())
     return x.to(dtype=get_precision(), device=get_device())
 
 
@@ -476,7 +528,7 @@ def pad(tensor, pad_width, mode="constant", constant_values=0):
     padding = (pad_left, pad_right, pad_top, pad_bottom)
 
     return F.pad(tensor, padding, mode="constant", value=constant_values)
-  
+
 
 def sqrt(x):
     return _lib.sqrt(array(x))
@@ -493,3 +545,98 @@ def cos(x):
 def exp(x):
     return _lib.exp(array(x))
 
+
+def max(x):
+    """Backend‐agnostic max: returns a Python float when used on a torch.Tensor."""
+    if isinstance(x, torch.Tensor):
+        # detach → CPU → reduce → item()
+        return x.detach().cpu().max().item()
+    # fall back to numpy or builtin for lists/ndarrays
+    return np.max(x)
+
+
+def min(x):
+    """Same for min."""
+    if isinstance(x, torch.Tensor):
+        return x.detach().cpu().min().item()
+    return np.min(x)
+
+
+def mean(x, axis=None, keepdims=False):
+    """
+    Backend-agnostic mean: accepts Tensors.
+    Handles NaN values by ignoring them (similar to np.nanmean).
+
+    Args:
+        x: Input tensor
+        axis: Axis along which to compute mean (None for overall mean)
+        keepdims: Whether to keep the reduced dimensions
+
+    Returns:
+        Mean value as a tensor
+    """
+    # Handle NaN values by replacing them with zeros and creating a mask
+    mask = ~torch.isnan(x)
+    # Count non-NaN elements
+    count = mask.sum(dim=axis, keepdim=keepdims).to(x.dtype)
+    # Sum non-NaN elements (replace NaNs with 0)
+    x_masked = torch.where(mask, x, torch.tensor(0.0, dtype=x.dtype, device=x.device))
+    sum_val = x_masked.sum(dim=axis, keepdim=keepdims)
+
+    # Compute mean (avoiding division by zero)
+    result = torch.where(
+        count > 0,
+        sum_val / count,
+        torch.tensor(float("nan"), dtype=x.dtype, device=x.device),
+    )
+
+    return result
+
+
+def vectorize(pyfunc):
+    """
+    simple elementwise mapper for Torch.
+    Takes a Python scalar→scalar function and returns a new function
+    that applies it over every element of a 1D tensor, preserving the shape.
+    """
+
+    def wrapped(x):
+        # flatten to 1D
+        flat = x.reshape(-1)
+        # call your python function on each element (xi is a 0‑dim tensor)
+        mapped = [pyfunc(xi) for xi in flat]
+        # stack back into a tensor
+        out = torch.stack(
+            [
+                m
+                if isinstance(m, torch.Tensor)
+                else torch.tensor(m, dtype=get_precision(), device=get_device())
+                for m in mapped
+            ],
+            dim=0,
+        )
+        return out.view(x.shape)
+
+    return wrapped
+
+
+def tile(x, dims):
+    if isinstance(dims, int):
+        return torch.tile(x, dims=(dims,))
+    return torch.tile(x, dims)
+
+
+def array_equal(a, b):
+    """
+    Backend‑agnostic equivalent of numpy.array_equal for Torch.
+
+    Returns
+    -------
+    bool
+        True iff `a` and `b` have the same shape and every element is equal.
+    """
+    a_t = cast(a)
+    b_t = cast(b)
+    if a_t.shape != b_t.shape:
+        return False
+    return torch.eq(a_t, b_t).all().item()

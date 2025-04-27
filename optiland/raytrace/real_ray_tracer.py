@@ -76,8 +76,8 @@ class RealRayTracer:
 
         vx, vy = self.optic.fields.get_vig_factor(Hx, Hy)
 
-        Px *= 1 - vx
-        Py *= 1 - vy
+        Px = Px * (1 - vx)
+        Py = Py * (1 - vy)
 
         # assure all variables are arrays of the same size
         Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
