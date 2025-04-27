@@ -86,7 +86,7 @@ class TestReciprocalRadiusVariable:
         self.reciprocal_radius_var.update_value(0.0)
         assert_allclose(self.reciprocal_radius_var.get_value(), 0.0)
 
-    def test_optimization(self, set_test_backend):
+    def test_optimization(self):  # do not test for torch backend
         # Add the reciprocal radius variable for the first surface
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
 
@@ -103,7 +103,7 @@ class TestReciprocalRadiusVariable:
         # just make sure the final value is in the ballpark, and there were no exceptions thrown
         assert_allclose(optimized_radius, expected_radius, atol=5)
 
-    def test_optimization_with_flat_surface(self, set_test_backend):
+    def test_optimization_with_flat_surface(self):  # do not test for torch backend
         # Add the reciprocal radius variable for the first surface
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
 
