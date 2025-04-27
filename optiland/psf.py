@@ -90,10 +90,6 @@ class FFTPSF(Wavefront):
         x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
-        # TODO: workaround for torch backend. Resolve this in the future.
-        if be.get_backend() == "torch":
-            psf_smooth = np.rot90(psf_smooth, k=-1)
-
         if projection == "2d":
             self._plot_2d(psf_smooth, log, x_extent, y_extent, figsize=figsize)
         elif projection == "3d":
