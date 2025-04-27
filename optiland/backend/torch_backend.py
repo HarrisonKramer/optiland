@@ -575,10 +575,6 @@ def mean(x, axis=None, keepdims=False):
     Returns:
         Mean value as a tensor
     """
-    # If not a tensor, convert to tensor
-    if not isinstance(x, torch.Tensor):
-        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
-
     # Handle NaN values by replacing them with zeros and creating a mask
     mask = ~torch.isnan(x)
     # Count non-NaN elements
@@ -628,19 +624,6 @@ def tile(x, dims):
     if isinstance(dims, int):
         return torch.tile(x, dims=(dims,))
     return torch.tile(x, dims)
-
-
-def isinf(x):
-    """
-    Torch‐backend‐agnostic “is infinity” test:
-    accepts Python scalars, NumPy arrays, or Tensors.
-    """
-    import torch
-
-    # lift non‐Tensor into a Tensor on the right device/dtype
-    if not isinstance(x, torch.Tensor):
-        x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
-    return torch.isinf(x)
 
 
 def array_equal(a, b):
