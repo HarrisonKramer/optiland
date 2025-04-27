@@ -14,8 +14,7 @@ Functionalities are grouped into the following categories:
 - Padding
 - Vectorization
 
-This module provides a backend for numerical operations using PyTorch,
-enabling integration with Optiland's interface.
+This module provides a backend for numerical operations using PyTorch.
 
 Kramer Harrison, 2025
 """
