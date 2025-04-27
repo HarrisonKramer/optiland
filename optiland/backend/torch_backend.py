@@ -112,7 +112,7 @@ grad_mode = _config.grad_mode
 def array(x):
     """Create a tensor with current device, precision, and grad settings."""
     if isinstance(x, torch.Tensor):
-        return x.to(device=get_device(), dtype=get_precision())
+        return x
     return torch.tensor(
         x,
         device=get_device(),
@@ -259,6 +259,10 @@ def tile(x, dims):
     return torch.tile(x, dims if isinstance(dims, (tuple, list)) else (dims,))
 
 
+def isscalar(x):
+    return torch.is_tensor(x) and x.dim() == 0
+
+
 # --------------------------
 # Random Number Generation
 # --------------------------
@@ -378,11 +382,18 @@ def interp(x, xp, fp):
     x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     xp = torch.as_tensor(xp, dtype=get_precision(), device=get_device())
     fp = torch.as_tensor(fp, dtype=get_precision(), device=get_device())
-    idx = torch.searchsorted(*torch.sort(xp), x)
-    idx = torch.clamp(idx, 1, len(xp) - 1)
-    x0, x1 = xp[idx - 1], xp[idx]
-    y0, y1 = fp[idx - 1], fp[idx]
-    return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    sorted_indices = torch.argsort(xp)
+    xp = xp[sorted_indices]
+    fp = fp[sorted_indices]
+    x_clipped = torch.clip(x, xp[0], xp[-1])
+    indices = torch.searchsorted(xp, x_clipped, right=True)
+    indices = torch.clamp(indices, 1, len(xp) - 1)
+    x0 = xp[indices - 1]
+    x1 = xp[indices]
+    y0 = fp[indices - 1]
+    y1 = fp[indices]
+    interpolated = y0 + (y1 - y0) * (x_clipped - x0) / (x1 - x0)
+    return interpolated
 
 
 def nearest_nd_interpolator(points, values, Hx, Hy):
