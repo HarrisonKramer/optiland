@@ -1,7 +1,7 @@
 """
 Torch Backend Module
 
-Refactored structure with grouped functionality:
+Functionalities are grouped into the following categories:
 - Configuration
 - Tensor Creation
 - Array Utilities
