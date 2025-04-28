@@ -14,8 +14,7 @@ References:
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.zernike.base import BaseZernike
 
 
@@ -73,4 +72,4 @@ class ZernikeStandard(BaseZernike):
             float: The calculated value of the normalization constant.
 
         """
-        return np.sqrt((2 * n + 2) / (1 + (m == 0)))
+        return be.sqrt((2 * n + 2) / (1 + (m == 0)))

@@ -340,6 +340,10 @@ def all(x):
     return torch.all(t).item()
 
 
+def factorial(n):
+    return torch.special.gamma(n + 1)
+
+
 # --------------------------
 # Linear Algebra
 # --------------------------

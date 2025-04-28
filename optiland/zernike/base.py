@@ -5,10 +5,9 @@ This module contains the abstract base class for all zernike-related classes.
 Kramer Harrison, 2025
 """
 
-import math
 from abc import ABC, abstractmethod
 
-import numpy as np
+import optiland.backend as be
 
 
 class BaseZernike(ABC):
@@ -25,7 +24,7 @@ class BaseZernike(ABC):
 
     def __init__(self, coeffs=None, num_terms=36):
         if coeffs is None:
-            coeffs = np.zeros(num_terms, dtype=np.float64)
+            coeffs = be.zeros(num_terms)
         if len(coeffs) > self.MAX_TERMS:
             raise ValueError("Number of coefficients is limited to 120.")
 
@@ -109,30 +108,23 @@ class BaseZernike(ABC):
         # pragma: no cover
 
     def _radial_term(self, n, m, r):
-        """Calculate the radial term of the Zernike polynomial.
+        """Calculate the radial term of the Zernike polynomial."""
+        s_max = (n - abs(m)) // 2 + 1
 
-        Args:
-            n (int): Radial order of the Zernike term.
-            m (int): Azimuthal order of the Zernike term.
-            r (float): Radial distance from the origin.
+        # Initialize value with correct backend
+        value = be.zeros_like(r) if not isinstance(r, (int, float)) else 0.0
 
-        Returns:
-            float: The calculated value of the radial term.
-
-        """
-        s_max = int((n - abs(m)) / 2 + 1)
-        value = 0
         for k in range(s_max):
-            value += (
-                (-1) ** k
-                * math.factorial(n - k)
-                / (
-                    math.factorial(k)
-                    * math.factorial(int((n + m) / 2 - k))
-                    * math.factorial(int((n - m) / 2 - k))
-                )
-                * r ** (n - 2 * k)
+            num = be.factorial(n - k)
+            denom = (
+                be.factorial(k)
+                * be.factorial((n + m) // 2 - k)
+                * be.factorial((n - m) // 2 - k)
             )
+            coeff = (-1) ** k * num / denom
+            term = coeff * (r ** (n - 2 * k))
+            value += term
+
         return value
 
     def _azimuthal_term(self, m=0, phi=0):
@@ -147,5 +139,5 @@ class BaseZernike(ABC):
 
         """
         if m >= 0:
-            return np.cos(m * phi)
-        return np.sin(np.abs(m) * phi)
+            return be.cos(m * phi)
+        return be.sin(be.abs(m) * phi)

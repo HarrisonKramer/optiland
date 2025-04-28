@@ -11,7 +11,7 @@ matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class TestZernikeStandard:
-    def test_get_term(self):
+    def test_get_term(self, set_test_backend):
         z = zernike.ZernikeStandard()
         coeff = 1.0
         n = 3
@@ -23,11 +23,11 @@ class TestZernikeStandard:
 
         assert term == pytest.approx(1.0606601717798214)
 
-    def test_invalid_num_terms(self):
+    def test_invalid_num_terms(self, set_test_backend):
         with pytest.raises(ValueError):
             zernike.ZernikeStandard(coeffs=[0 for _ in range(125)])
 
-    def test_terms(self):
+    def test_terms(self, set_test_backend):
         z = zernike.ZernikeStandard(coeffs=[0.2, 0.8, 0.4, -0.8, -0.1])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -39,7 +39,7 @@ class TestZernikeStandard:
         assert be.allclose(terms[3], be.array([0.0, 0.0, 0.0]))
         assert be.allclose(terms[4], be.array([0.16974098, 0.15934867, 0.14202817]))
 
-    def test_poly(self):
+    def test_poly(self, set_test_backend):
         z = zernike.ZernikeStandard(coeffs=[0.5, -0.5, 0.3, -0.8, 1.0])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -47,7 +47,7 @@ class TestZernikeStandard:
         poly = z.poly(r, phi)
         assert be.allclose(poly, be.array([-1.13740979, -1.29348674, -1.10028166]))
 
-    def test_radial_term(self):
+    def test_radial_term(self, set_test_backend):
         z = zernike.ZernikeStandard()
         n = 3
         m = -2
@@ -56,7 +56,7 @@ class TestZernikeStandard:
         radial_term = z._radial_term(n, m, r)
         assert radial_term == pytest.approx(0.375)
 
-    def test_azimuthal_term(self):
+    def test_azimuthal_term(self, set_test_backend):
         z = zernike.ZernikeStandard()
         m = -2
         phi = be.pi / 4.5
@@ -64,7 +64,7 @@ class TestZernikeStandard:
         azimuthal_term = z._azimuthal_term(m, phi)
         assert azimuthal_term == pytest.approx(0.984807753012208)
 
-    def test_norm_constant(self):
+    def test_norm_constant(self, set_test_backend):
         z = zernike.ZernikeStandard()
         n = 3
         m = -2
@@ -72,7 +72,7 @@ class TestZernikeStandard:
         norm_constant = z._norm_constant(n, m)
         assert norm_constant == pytest.approx(2.8284271247461903)
 
-    def test_generate_indices(self):
+    def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeStandard()
 
         indices = z._generate_indices()
@@ -202,7 +202,7 @@ class TestZernikeStandard:
 
 
 class TestZernikeFringe:
-    def test_get_term(self):
+    def test_get_term(self, set_test_backend):
         z = zernike.ZernikeFringe()
         coeff = 1.0
         n = 3
@@ -214,7 +214,7 @@ class TestZernikeFringe:
 
         assert term == pytest.approx(0.375)
 
-    def test_terms(self):
+    def test_terms(self, set_test_backend):
         z = zernike.ZernikeFringe(coeffs=[0.2, 0.8, 0.4, -0.8, -0.1])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -226,7 +226,7 @@ class TestZernikeFringe:
         assert be.allclose(terms[3], be.array([0.784, 0.736, 0.656]))
         assert be.allclose(terms[4], be.array([-0.001, 0.004, -0.009]))
 
-    def test_poly(self):
+    def test_poly(self, set_test_backend):
         z = zernike.ZernikeFringe(coeffs=[0.5, -0.5, 0.3, -0.8, 1.0])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -234,7 +234,7 @@ class TestZernikeFringe:
         poly = z.poly(r, phi)
         assert be.allclose(poly, be.array([1.244, 1.256, 1.396]))
 
-    def test_radial_term(self):
+    def test_radial_term(self, set_test_backend):
         z = zernike.ZernikeFringe()
         n = 3
         m = -2
@@ -243,7 +243,7 @@ class TestZernikeFringe:
         radial_term = z._radial_term(n, m, r)
         assert radial_term == pytest.approx(0.375)
 
-    def test_azimuthal_term(self):
+    def test_azimuthal_term(self, set_test_backend):
         z = zernike.ZernikeFringe()
         m = -2
         phi = be.pi / 4.5
@@ -251,7 +251,7 @@ class TestZernikeFringe:
         azimuthal_term = z._azimuthal_term(m, phi)
         assert azimuthal_term == pytest.approx(0.984807753012208)
 
-    def test_norm_constant(self):
+    def test_norm_constant(self, set_test_backend):
         z = zernike.ZernikeFringe()
         n = 3
         m = -2
@@ -259,7 +259,7 @@ class TestZernikeFringe:
         norm_constant = z._norm_constant(n, m)
         assert norm_constant == pytest.approx(1)
 
-    def test_generate_indices(self):
+    def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeFringe()
 
         indices = z._generate_indices()
@@ -389,7 +389,7 @@ class TestZernikeFringe:
 
 
 class TestZernikeNoll:
-    def test_get_term(self):
+    def test_get_term(self, set_test_backend):
         z = zernike.ZernikeNoll()
         coeff = 1.0
         n = 3
@@ -401,7 +401,7 @@ class TestZernikeNoll:
 
         assert term == pytest.approx(1.0606601717798214)
 
-    def test_terms(self):
+    def test_terms(self, set_test_backend):
         z = zernike.ZernikeNoll(coeffs=[0.2, 0.8, 0.4, -0.8, -0.1])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -413,7 +413,7 @@ class TestZernikeNoll:
         assert be.allclose(terms[3], be.array([1.35792783, 1.27478939, 1.13622533]))
         assert be.allclose(terms[4], be.array([0.0, 0.0, 0.0]))
 
-    def test_poly(self):
+    def test_poly(self, set_test_backend):
         z = zernike.ZernikeNoll(coeffs=[0.5, -0.5, 0.3, -0.8, 1.0])
         r = be.array([0.1, 0.2, 0.3])
         phi = be.array([0.0, be.pi / 2, be.pi])
@@ -421,7 +421,7 @@ class TestZernikeNoll:
         poly = z.poly(r, phi)
         assert be.allclose(poly, be.array([1.75792783, 1.89478939, 1.93622533]))
 
-    def test_radial_term(self):
+    def test_radial_term(self, set_test_backend):
         z = zernike.ZernikeNoll()
         n = 3
         m = -2
@@ -430,7 +430,7 @@ class TestZernikeNoll:
         radial_term = z._radial_term(n, m, r)
         assert radial_term == pytest.approx(0.375)
 
-    def test_azimuthal_term(self):
+    def test_azimuthal_term(self, set_test_backend):
         z = zernike.ZernikeNoll()
         m = -2
         phi = be.pi / 4.5
@@ -438,7 +438,7 @@ class TestZernikeNoll:
         azimuthal_term = z._azimuthal_term(m, phi)
         assert azimuthal_term == pytest.approx(0.984807753012208)
 
-    def test_norm_constant(self):
+    def test_norm_constant(self, set_test_backend):
         z = zernike.ZernikeNoll()
         n = 3
         m = -2
@@ -446,7 +446,7 @@ class TestZernikeNoll:
         norm_constant = z._norm_constant(n, m)
         assert norm_constant == pytest.approx(2.8284271247461903)
 
-    def test_generate_indices(self):
+    def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeNoll()
 
         indices = z._generate_indices()
@@ -576,7 +576,7 @@ class TestZernikeNoll:
 
 
 class TestZernikeFit:
-    def setup_method(self):
+    def setup_method(self, set_test_backend):
         coeffs = [0.1, 0.2, 0.8, -0.2, 0.4, 0.6, 0.0, 0.0, 0.5, 0.1, -0.3]
 
         z = zernike.ZernikeStandard(coeffs=coeffs)
@@ -596,7 +596,7 @@ class TestZernikeFit:
         self.y = y
         self.z = z.poly(r, theta)
 
-    def test_init(self):
+    def test_init(self, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         assert be.allclose(zernike_fit.x, self.x)
         assert be.allclose(zernike_fit.y, self.y)
@@ -604,7 +604,7 @@ class TestZernikeFit:
         assert zernike_fit.type == "fringe"
         assert zernike_fit.num_terms == 36
 
-    def test_init_standard(self):
+    def test_init_standard(self, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -617,7 +617,7 @@ class TestZernikeFit:
         assert zernike_fit_standard.type == "standard"
         assert zernike_fit_standard.num_terms == 36
 
-    def test_init_noll(self):
+    def test_init_noll(self, set_test_backend):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -630,18 +630,18 @@ class TestZernikeFit:
         assert zernike_fit_noll.type == "noll"
         assert zernike_fit_noll.num_terms == 36
 
-    def test_invalid_zernike_type(self):
+    def test_invalid_zernike_type(self, set_test_backend):
         with pytest.raises(ValueError):
             zernike.ZernikeFit(self.x, self.y, self.z, zernike_type="invalid")
 
-    def test_coeffs(self):
+    def test_coeffs(self, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         assert len(zernike_fit.coeffs) == 36
 
         arr = be.array([0.1, 1.6, 0.4, 0.69282032, 1.46969385])
         assert be.allclose(zernike_fit.coeffs[:5], arr)
 
-    def test_coeffs_standard(self):
+    def test_coeffs_standard(self, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -653,7 +653,7 @@ class TestZernikeFit:
         arr = be.array([0.1, 0.2, 0.8, -0.2, 0.4])
         assert be.allclose(zernike_fit_standard.coeffs[:5], arr)
 
-    def test_coeffs_noll(self):
+    def test_coeffs_noll(self, set_test_backend):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -665,13 +665,13 @@ class TestZernikeFit:
         arr = be.array([0.1, 0.8, 0.2, 0.4, -0.2])
         assert be.allclose(zernike_fit_noll.coeffs[:5], arr)
 
-    def test_invalid_view_projection(self):
+    def test_invalid_view_projection(self, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         with pytest.raises(ValueError):
             zernike_fit.view(projection="invalid")
 
     @patch("matplotlib.pyplot.show")
-    def test_view_standard(self, mock_show):
+    def test_view_standard(self, mock_show, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -683,7 +683,7 @@ class TestZernikeFit:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_standard_3d(self, mock_show):
+    def test_view_standard_3d(self, mock_show, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -695,7 +695,7 @@ class TestZernikeFit:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_noll(self, mock_show):
+    def test_view_noll(self, mock_show, set_test_backend):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -706,7 +706,7 @@ class TestZernikeFit:
         mock_show.assert_called_once()
         plt.close()
 
-    @patch("matplotlib.pyplot.show")
+    @patch("matplotlib.pyplot.show", set_test_backend)
     def test_view_noll_3d(self, mock_show):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
@@ -718,7 +718,7 @@ class TestZernikeFit:
         mock_show.assert_called_once()
         plt.close()
 
-    @patch("matplotlib.pyplot.show")
+    @patch("matplotlib.pyplot.show", set_test_backend)
     def test_view_residual_standard(self, mock_show):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
@@ -730,7 +730,7 @@ class TestZernikeFit:
         mock_show.assert_called_once()
         plt.close()
 
-    @patch("matplotlib.pyplot.show")
+    @patch("matplotlib.pyplot.show", set_test_backend)
     def test_view_residual_noll(self, mock_show):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
@@ -742,7 +742,7 @@ class TestZernikeFit:
         mock_show.assert_called_once()
         plt.close()
 
-    def test_objective(self):
+    def test_objective(self, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         coeffs = [0.1 for _ in range(zernike_fit.num_terms)]
         objective = zernike_fit._objective(coeffs)
@@ -751,7 +751,7 @@ class TestZernikeFit:
         arr = be.array([1.30233667, 0.85157615, 0.88422155, 0.96304606, 0.58096649])
         assert be.allclose(objective[:5], arr)
 
-    def test_objective_standard(self):
+    def test_objective_standard(self, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -765,7 +765,7 @@ class TestZernikeFit:
         arr = be.array([1.0484952, 0.93610002, 1.09385253, 0.79558155, 0.41807518])
         assert be.allclose(objective[:5], arr)
 
-    def test_objective_noll(self):
+    def test_objective_noll(self, set_test_backend):
         zernike_fit_noll = zernike.ZernikeFit(
             self.x,
             self.y,
@@ -780,21 +780,21 @@ class TestZernikeFit:
         assert be.allclose(objective[:5], arr)
 
     @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show):
+    def test_view(self, mock_show, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view(projection="2d")
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_3d(self, mock_show):
+    def test_view_3d(self, mock_show, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view(projection="3d")
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_residual(self, mock_show):
+    def test_view_residual(self, mock_show, set_test_backend):
         zernike_fit = zernike.ZernikeFit(self.x, self.y, self.z)
         zernike_fit.view_residual()
         mock_show.assert_called_once()

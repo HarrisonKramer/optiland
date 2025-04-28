@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import least_squares
 
+import optiland.backend as be
 from optiland.zernike import ZernikeFringe, ZernikeNoll, ZernikeStandard
 
 ZERNIKE_CLASSES = {
@@ -62,9 +63,9 @@ class ZernikeFit:
         self.type = zernike_type
         self.num_terms = num_terms
 
-        self.radius = np.sqrt(self.x**2 + self.y**2)
-        self.phi = np.arctan2(self.y, self.x)
-        self.num_pts = np.size(self.z)
+        self.radius = be.sqrt(self.x**2 + self.y**2)
+        self.phi = be.arctan2(self.y, self.x)
+        self.num_pts = be.size(self.z)
 
         if self.type not in ZERNIKE_CLASSES:
             raise ValueError(
@@ -103,15 +104,19 @@ class ZernikeFit:
             ValueError: If the projection is not '2d' or '3d'.
 
         """
-        x, y = np.meshgrid(
-            np.linspace(-1, 1, num_points),
-            np.linspace(-1, 1, num_points),
+        x, y = be.meshgrid(
+            be.linspace(-1, 1, num_points),
+            be.linspace(-1, 1, num_points),
         )
-        radius = np.sqrt(x**2 + y**2)
-        phi = np.arctan2(y, x)
+        radius = be.sqrt(x**2 + y**2)
+        phi = be.arctan2(y, x)
         z = self.zernike.poly(radius, phi)
 
-        z[radius > 1] = np.nan
+        z[radius > 1] = be.nan
+
+        x = be.to_numpy(x)
+        y = be.to_numpy(y)
+        z = be.to_numpy(z)
 
         if projection == "2d":
             self._plot_2d(z, figsize=figsize, z_label=z_label)
@@ -189,7 +194,7 @@ class ZernikeFit:
 
         """
         z = self.zernike.poly(self.radius, self.phi)
-        rms = np.sqrt(np.mean((z - self.z) ** 2))
+        rms = be.sqrt(be.mean((z - self.z) ** 2))
 
         _, ax = plt.subplots(figsize=figsize)
         s = ax.scatter(self.x, self.y, c=z - self.z)

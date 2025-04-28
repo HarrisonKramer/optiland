@@ -10,8 +10,7 @@ References:
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.zernike.base import BaseZernike
 
 
@@ -67,9 +66,9 @@ class ZernikeFringe(BaseZernike):
                 if (n - m) % 2 == 0:
                     number.append(
                         int(
-                            (1 + (n + np.abs(m)) / 2) ** 2
-                            - 2 * np.abs(m)
-                            + (1 - np.sign(m)) / 2,
+                            (1 + (n + be.abs(m)) / 2) ** 2
+                            - 2 * be.abs(m)
+                            + (1 - be.sign(m)) / 2,
                         ),
                     )
                     indices.append((n, m))
