@@ -274,13 +274,19 @@ def default_rng(seed=None):
 def random_uniform(low=0.0, high=1.0, size=None, generator=None):
     size = size or 1
     gen_args = {"generator": generator} if generator else {}
-    return torch.empty(size, device=get_device()).uniform_(low, high, **gen_args)
+    return torch.empty(size, device=get_device(), dtype=get_precision()).uniform_(
+        low, high, **gen_args
+    )
 
 
 def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
     size = size or 1
     gen_args = {"generator": generator} if generator else {}
-    return torch.randn(size, device=get_device(), **gen_args) * scale + loc
+    return (
+        torch.randn(size, device=get_device(), dtype=get_precision(), **gen_args)
+        * scale
+        + loc
+    )
 
 
 # --------------------------
@@ -341,7 +347,7 @@ def all(x):
 
 
 def factorial(n):
-    return torch.special.gamma(n + 1)
+    return torch.lgamma(array(n + 1)).exp()
 
 
 # --------------------------
