@@ -182,7 +182,17 @@ class ZernikeFit:
         cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
         plt.show()
 
-    def _plot_2d(self, z, figsize, z_label):  # noqa: D102
+    def _plot_2d(self, z, figsize, z_label):
+        """Plot a 2D representation of the given data.
+
+        Args:
+            z (numpy.ndarray): The data to be plotted.
+            figsize (tuple, optional): The size of the figure
+                (default is (7, 5.5)).
+            z_label (str, optional): The label for the colorbar
+                (default is 'OPD (waves)').
+
+        """
         _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
         ax.set_xlabel("Pupil X")
@@ -192,7 +202,19 @@ class ZernikeFit:
         cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
         plt.show()
 
-    def _plot_3d(self, x, y, z, figsize, z_label):  # noqa: D102
+    def _plot_3d(self, x, y, z, figsize, z_label):
+        """Plot a 3D surface plot of the given data.
+
+        Args:
+            x (numpy.ndarray): Array of x-coordinates.
+            y (numpy.ndarray): Array of y-coordinates.
+            z (numpy.ndarray): Array of z-coordinates.
+            figsize (tuple, optional): Size of the figure (width, height).
+                Default is (7, 5.5).
+            z_label (str, optional): Label for the z-axis.
+                Default is 'OPD (waves)'.
+
+        """
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(111, projection="3d")
         surf = ax.plot_surface(
