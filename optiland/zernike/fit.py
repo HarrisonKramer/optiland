@@ -7,11 +7,12 @@ but the class can be used for any fitting operation requiring Zernike polynomial
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import least_squares
 
-import optiland.backend as be
+from optiland import backend as be
 from optiland.zernike import ZernikeFringe, ZernikeNoll, ZernikeStandard
 
 ZERNIKE_CLASSES = {
@@ -22,147 +23,178 @@ ZERNIKE_CLASSES = {
 
 
 class ZernikeFit:
-    """Class for fitting Zernike polynomials to wavefront data.
+    """
+    Fit Zernike polynomials to wavefront or arbitrary data points.
+
+    This class constructs a linear design matrix of Zernike basis functions and solves
+    for the coefficients via least squares.
 
     Args:
-        x (array-like): x-coordinates of the wavefront data.
-        y (array-like): y-coordinates of the wavefront data.
-        z (array-like): z-coordinates (wavefront) of the data.
-        zernike_type (str, optional): Type of Zernike polynomials to use.
-            Default is 'fringe'.
-        num_terms (int, optional): Number of Zernike terms to fit.
-            Default is 36.
+        x (array-like): X-coordinates of data points.
+        y (array-like): Y-coordinates of data points.
+        z (array-like): Values at (x, y) to fit.
+        zernike_type (str): Type of Zernike basis: 'fringe', 'standard', or 'noll'.
+        num_terms (int): Number of Zernike terms to include in the fit.
 
     Attributes:
-        x (array-like): x-coordinates of the wavefront data.
-        y (array-like): y-coordinates of the wavefront data.
-        z (array-like): z-coordinates (wavefront) of the data.
-        type (str): Type of Zernike polynomials used.
-        num_terms (int): Number of Zernike terms used.
-        radius (array-like): Distance from the origin for each point in the
-            wavefront data.
-        phi (array-like): Angle from the x-axis for each point in the
-            wavefront data.
-        num_pts (int): Number of points in the wavefront data.
-        zernike (ZernikeBase): Zernike polynomial object used for fitting.
-        coeffs (array-like): Coefficients of the fitted Zernike polynomials.
-
-    Methods:
-        view(projection='2d', num_points=128, figsize=(7, 5.5),
-            z_label='OPD (waves)'): Visualize the fitted Zernike polynomials.
-        view_residual(figsize=(7, 5.5), z_label='Residual (waves)'): Visualize
-            the residual between the fitted Zernike polynomials and the
-            original data.
-
+        x (array-like): Flattened x-coordinates.
+        y (array-like): Flattened y-coordinates.
+        z (array-like): Flattened target values.
+        radius (array-like): Radial coordinate of each point.
+        phi (array-like): Azimuthal coordinate of each point.
+        num_pts (int): Number of data points.
+        zernike (BaseZernike): Zernike basis instance with fitted coefficients.
     """
 
-    def __init__(self, x, y, z, zernike_type="fringe", num_terms=36):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.type = zernike_type
-        self.num_terms = num_terms
+    def __init__(
+        self,
+        x,
+        y,
+        z,
+        zernike_type: str = "fringe",
+        num_terms: int = 36,
+    ):
+        # Convert inputs to backend tensors and flatten
+        self.x = be.asarray(x).reshape(-1)
+        self.y = be.asarray(y).reshape(-1)
+        self.z = be.asarray(z).reshape(-1)
 
+        if self.x.shape != self.y.shape or self.x.shape != self.z.shape:
+            raise ValueError("`x`, `y`, and `z` must have the same number of elements.")
+
+        self.num_terms = num_terms
+        self.num_pts = int(be.size(self.x))
+
+        # Compute polar coordinates
         self.radius = be.sqrt(self.x**2 + self.y**2)
         self.phi = be.arctan2(self.y, self.x)
-        self.num_pts = be.size(self.z)
 
-        if self.type not in ZERNIKE_CLASSES:
+        # Validate Zernike type and instantiate basis
+        if zernike_type not in ZERNIKE_CLASSES:
             raise ValueError(
-                f"Invalid Zernike type '{self.type}'. "
-                f"Valid types are: {list(ZERNIKE_CLASSES.keys())}"
+                f"Invalid Zernike type '{zernike_type}'. "
+                f"Choose from: {list(ZERNIKE_CLASSES)}"
             )
-        self.zernike = ZERNIKE_CLASSES[self.type]()
+        self.zernike_type = zernike_type
+        self.zernike = ZERNIKE_CLASSES[zernike_type](be.ones(num_terms))
 
+        # Fit coefficients
         self._fit()
 
     @property
     def coeffs(self):
-        """list: coefficients of the Zernike fit"""
+        """
+        Tensor: The fitted Zernike coefficients.
+        """
         return self.zernike.coeffs
+
+    def _fit(self):
+        """
+        Build design matrix of Zernike basis functions and solve linear least squares.
+        """
+        # Build design matrix A
+        A = be.stack(self.zernike.terms(self.radius, self.phi), axis=1)
+
+        # Solve linear least squares A c = z
+        try:
+            solution = be.linalg.lstsq(A, self.z, rcond=None)
+            coeffs = solution[0]
+        except (AttributeError, TypeError):
+            # Fallback via pseudoinverse
+            pinv = be.linalg.pinv(A)
+            coeffs = be.matmul(pinv, self.z)
+
+        # Assign coefficients to the main zernike instance
+        self.zernike.coeffs = coeffs
 
     def view(
         self,
-        projection="2d",
-        num_points=128,
-        figsize=(7, 5.5),
-        z_label="OPD (waves)",
+        projection: str = "2d",
+        num_points: int = 128,
+        figsize: tuple[float, float] = (7, 5.5),
+        z_label: str = "OPD (waves)",
     ):
-        """Visualizes the Zernike polynomial representation of the wavefront.
+        """
+        Visualize the fitted Zernike surface.
 
         Args:
-            projection (str): The type of projection to use for visualization.
-                Can be '2d' or '3d'.
-            num_points (int): The number of points to sample along each axis
-                for the visualization.
-            figsize (tuple): The size of the figure in inches.
-                Defaults to (7, 5.5).
-            z_label (str): The label for the z-axis in the visualization.
-                Defaults to 'OPD (waves)'.
+            projection (str): '2d' for image plot, '3d' for surface plot.
+            num_points (int): Grid resolution for display.
+            figsize (tuple): Figure size in inches.
+            z_label (str): Label for the z-axis or colorbar.
 
         Raises:
-            ValueError: If the projection is not '2d' or '3d'.
-
+            ValueError: If `projection` is not '2d' or '3d'.
         """
-        x, y = be.meshgrid(
-            be.linspace(-1, 1, num_points),
-            be.linspace(-1, 1, num_points),
+        # Create grid in unit circle
+        grid_x, grid_y = be.meshgrid(
+            be.linspace(-1.0, 1.0, num_points),
+            be.linspace(-1.0, 1.0, num_points),
         )
-        radius = be.sqrt(x**2 + y**2)
-        phi = be.arctan2(y, x)
-        z = self.zernike.poly(radius, phi)
+        grid_r = be.sqrt(grid_x**2 + grid_y**2)
+        grid_phi = be.arctan2(grid_y, grid_x)
+        grid_z = self.zernike.poly(grid_r, grid_phi)
 
-        z[radius > 1] = be.nan
+        # Mask outside unit circle
+        grid_z = be.where(grid_r > 1.0, be.nan, grid_z)
 
-        x = be.to_numpy(x)
-        y = be.to_numpy(y)
-        z = be.to_numpy(z)
+        # Convert to NumPy for plotting
+        x_np = be.to_numpy(grid_x)
+        y_np = be.to_numpy(grid_y)
+        z_np = be.to_numpy(grid_z)
 
         if projection == "2d":
-            self._plot_2d(z, figsize=figsize, z_label=z_label)
+            self._plot_2d(z_np, figsize=figsize, z_label=z_label)
         elif projection == "3d":
-            self._plot_3d(x, y, z, figsize=figsize, z_label=z_label)
+            self._plot_3d(x_np, y_np, z_np, figsize=figsize, z_label=z_label)
         else:
-            raise ValueError('OPD projection must be "2d" or "3d".')
+            raise ValueError("`projection` must be '2d' or '3d'.")
 
-    def _plot_2d(self, z, figsize=(7, 5.5), z_label="OPD (waves)"):
-        """Plot a 2D representation of the given data.
+    def view_residual(
+        self,
+        figsize: tuple[float, float] = (7, 5.5),
+        z_label: str = "Residual (waves)",
+    ):
+        """
+        Scatter plot of residuals between fitted surface and original data.
 
         Args:
-            z (numpy.ndarray): The data to be plotted.
-            figsize (tuple, optional): The size of the figure
-                (default is (7, 5.5)).
-            z_label (str, optional): The label for the colorbar
-                (default is 'OPD (waves)').
-
+            figsize (tuple): Figure size in inches.
+            z_label (str): Label for the colorbar.
         """
-        _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
+        # Compute fitted values and residuals
+        fitted = self.zernike.poly(self.radius, self.phi)
+        residuals = fitted - self.z
+        rms = be.sqrt(be.mean(residuals**2))
 
+        _, ax = plt.subplots(figsize=figsize)
+        sc = ax.scatter(
+            be.to_numpy(self.x),
+            be.to_numpy(self.y),
+            c=be.to_numpy(residuals),
+            marker="o",
+            edgecolors="none",
+        )
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
-        ax.set_title(f"Zernike {self.type.capitalize()} Fit")
-
-        cbar = plt.colorbar(im)
-        cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel(z_label, rotation=270)
+        ax.set_title(f"Residuals (RMS={rms:.3f})")
+        cbar = plt.colorbar(sc)
+        cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
         plt.show()
 
-    def _plot_3d(self, x, y, z, figsize=(7, 5.5), z_label="OPD (waves)"):
-        """Plot a 3D surface plot of the given data.
+    def _plot_2d(self, z, figsize, z_label):  # noqa: D102
+        _, ax = plt.subplots(figsize=figsize)
+        im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
+        ax.set_xlabel("Pupil X")
+        ax.set_ylabel("Pupil Y")
+        ax.set_title(f"Zernike {self.zernike_type.capitalize()} Fit")
+        cbar = plt.colorbar(im)
+        cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
+        plt.show()
 
-        Args:
-            x (numpy.ndarray): Array of x-coordinates.
-            y (numpy.ndarray): Array of y-coordinates.
-            z (numpy.ndarray): Array of z-coordinates.
-            figsize (tuple, optional): Size of the figure (width, height).
-                Default is (7, 5.5).
-            z_label (str, optional): Label for the z-axis.
-                Default is 'OPD (waves)'.
-
-        """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
-
+    def _plot_3d(self, x, y, z, figsize, z_label):  # noqa: D102
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection="3d")
         surf = ax.plot_surface(
             x,
             y,
@@ -173,57 +205,10 @@ class ZernikeFit:
             linewidth=0,
             antialiased=False,
         )
-
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
         ax.set_zlabel(z_label)
-        ax.set_title(f"Zernike {self.type.capitalize()} Fit")
-
+        ax.set_title(f"Zernike {self.zernike_type.capitalize()} Fit")
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
-        fig.tight_layout()
+        plt.tight_layout()
         plt.show()
-
-    def view_residual(self, figsize=(7, 5.5), z_label="Residual (waves)"):
-        """Visualizes the residual of the Zernike polynomial fit.
-
-        Args:
-            figsize (tuple): The size of the figure (width, height).
-                Default is (7, 5.5).
-            z_label (str): The label for the colorbar representing the
-                residual. Default is 'Residual (waves)'.
-
-        """
-        z = self.zernike.poly(self.radius, self.phi)
-        rms = be.sqrt(be.mean((z - self.z) ** 2))
-
-        _, ax = plt.subplots(figsize=figsize)
-        s = ax.scatter(self.x, self.y, c=z - self.z)
-
-        ax.set_xlabel("Pupil X")
-        ax.set_ylabel("Pupil Y")
-        ax.set_title(f"Residual: RMS={rms:.3}")
-
-        cbar = plt.colorbar(s)
-        cbar.ax.get_yaxis().labelpad = 15
-        cbar.ax.set_ylabel(z_label, rotation=270)
-        plt.show()
-
-    def _objective(self, coeffs):
-        """Compute the objective value for the optimization problem.
-
-        Args:
-            coeffs (array-like): Coefficients for the Zernike polynomial.
-
-        Returns:
-            float: The computed objective value.
-
-        """
-        self.zernike.coeffs = coeffs
-        z_computed = self.zernike.poly(self.radius, self.phi)
-        return z_computed - self.z
-
-    def _fit(self):
-        """Fits the Zernike coefficients by minimizing the objective function."""
-        initial_guess = [0 for _ in range(self.num_terms)]
-        result = least_squares(self._objective, initial_guess)
-        self.zernike.coeffs = result.x

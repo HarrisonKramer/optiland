@@ -111,6 +111,10 @@ class BaseZernike(ABC):
         """Calculate the radial term of the Zernike polynomial."""
         s_max = (n - abs(m)) // 2 + 1
 
+        n = be.array(n)
+        m = be.array(m)
+        r = be.array(r)
+
         # Initialize value with correct backend
         value = be.zeros_like(r) if not isinstance(r, (int, float)) else 0.0
 
@@ -123,7 +127,7 @@ class BaseZernike(ABC):
             )
             coeff = (-1) ** k * num / denom
             term = coeff * (r ** (n - 2 * k))
-            value += term
+            value = value + term
 
         return value
 
@@ -138,6 +142,9 @@ class BaseZernike(ABC):
             float: The calculated value of the azimuthal term.
 
         """
+        m = be.array(m)
+        phi = be.array(phi)
+
         if m >= 0:
             return be.cos(m * phi)
         return be.sin(be.abs(m) * phi)

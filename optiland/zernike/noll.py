@@ -13,6 +13,8 @@ References:
 Kramer Harrison, 2025
 """
 
+import numpy as np
+
 import optiland.backend as be
 from optiland.zernike.base import BaseZernike
 
@@ -54,8 +56,8 @@ class ZernikeNoll(BaseZernike):
 
         """
         if m == 0:
-            return be.sqrt(n + 1)
-        return be.sqrt(2 * n + 2)
+            return be.sqrt(be.array(n + 1))
+        return be.sqrt(be.array(2 * n + 2))
 
     @staticmethod
     def _generate_indices():
@@ -76,7 +78,7 @@ class ZernikeNoll(BaseZernike):
                         c = 0
                     elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
                         c = 1
-                    number.append(n * (n + 1) / 2 + be.abs(m) + c)
+                    number.append(n * (n + 1) / 2 + np.abs(m) + c)
                     indices.append((n, m))
 
         # sort indices according to fringe coefficient number
