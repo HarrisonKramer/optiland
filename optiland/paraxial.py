@@ -112,6 +112,22 @@ class Paraxial:
         """
         return self.F2() - self.f2()
 
+    def P1bar(self):
+        """Calculate the front anti-principal plane location
+
+        Returns:
+            float: front anti-principal plane location
+        """
+        return self.F1() + self.f1()
+
+    def P2bar(self):
+        """Calculate the back anti-principal plane location
+
+        Returns:
+            float: back anti-principal plane location
+        """
+        return self.F2() + self.f2()
+
     def N1(self):
         """Calculate the front nodal plane location
 
@@ -129,6 +145,24 @@ class Paraxial:
 
         """
         return self.P2() + self.f1() + self.f2()
+
+    def N1bar(self):
+        """Calculate the front anti-nodal plane location
+
+        Returns:
+            float: front anti-nodal plane location
+
+        """
+        return self.F1() - self.f2()
+
+    def N2bar(self):
+        """Calculate the back anti-nodal plane location
+
+        Returns:
+            float: back anti-nodal plane location
+
+        """
+        return self.F2() - self.f1()
 
     def EPL(self):
         """Calculate the entrance pupil location in global coordinates
