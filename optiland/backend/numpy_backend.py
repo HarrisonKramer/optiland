@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
+from scipy.special import gamma
 
 # Link to the underlying library
 _lib = np
@@ -94,3 +95,7 @@ def to_complex(x):
 def batched_chain_matmul3(a, b, c):
     dtype = np.result_type(a, b, c)
     return np.matmul(np.matmul(a.astype(dtype), b.astype(dtype)), c.astype(dtype))
+
+
+def factorial(n):
+    return gamma(n + 1)
