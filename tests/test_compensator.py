@@ -27,7 +27,7 @@ def test_has_variables():
     assert optimizer.has_variables
 
 
-def test_run_optimizer_generic():  # for optimization, we only test with numpy
+def test_run_optimizer_generic():
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method="generic")
     optimizer.add_variable(optic, "radius", surface_number=1)
@@ -41,7 +41,7 @@ def test_run_optimizer_generic():  # for optimization, we only test with numpy
     assert result is not None
 
 
-def test_run_optimizer_least_squares():  # for optimization, we only test with numpy
+def test_run_optimizer_least_squares():
     optic = Edmund_49_847()
     optimizer = CompensatorOptimizer(method="least_squares")
     optimizer.add_variable(optic, "radius", surface_number=1)
