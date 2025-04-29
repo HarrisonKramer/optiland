@@ -129,4 +129,3 @@ def test_reset(setup_tolerancing, set_test_backend):
     assert_allclose(tolerancing.perturbations[0].value, 100.0)
     tolerancing.reset()
     assert_allclose(tolerancing.perturbations[0].value, 19.93)  # original value
-
