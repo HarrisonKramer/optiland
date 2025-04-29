@@ -1,6 +1,6 @@
 """Toroidal Geometry
 
-Defines a toroidal surface geometry based on the Zemax definition:
+This module defines a toroidal surface geometry based on the Zemax definition:
 A base curve in the YZ plane (conic + polynomials) is rotated around an
 axis parallel to Y, offset by the radius of rotation R along Z.
 
