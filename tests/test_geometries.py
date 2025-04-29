@@ -764,6 +764,51 @@ class TestZernikeGeometry:
         assert str(geometry) == "Zernike Polynomial"
 
 
+# --- Fixtures for Toroidal Tests ---
+@pytest.fixture
+def basic_toroid_geometry():
+    """Provides a basic ToroidalGeometry instance for testing"""
+    cs = CoordinateSystem(x=0, y=0, z=0)
+    radius_rotation = 100.0  # R (X-Z radius)
+    radius_yz = 50.0         # R_y (Y-Z radius)
+    conic = -0.5             # k_yz (YZ conic)
+    coeffs_poly_y = [1e-5]   
+    return geometries.ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=radius_rotation,
+        radius_yz=radius_yz,
+        conic=conic,
+        coefficients_poly_y=coeffs_poly_y
+    )
+
+@pytest.fixture
+def cylinder_x_geometry():
+    """Provides a cylindrical geometry (flat in X). R_rot = inf"""
+    cs = CoordinateSystem(x=0, y=0, z=0)
+    radius_rotation = be.inf # Flat in X-Z plane
+    radius_yz = -50.0      
+    conic = 0.0
+    return geometries.ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=radius_rotation,
+        radius_yz=radius_yz,
+        conic=conic
+    )
+
+@pytest.fixture
+def cylinder_y_geometry():
+    """Provides a cylindrical geometry (flat in Y). R_yz = inf"""
+    cs = CoordinateSystem(x=0, y=0, z=0)
+    radius_rotation = 100.0 
+    radius_yz = be.inf      # Flat in Y-Z plane
+    conic = 0.0
+    return geometries.ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=radius_rotation,
+        radius_yz=radius_yz,
+        conic=conic
+    )
+
 class TestToroidalGeometry:
 
     def test_toroidal_str(self):
@@ -777,3 +822,10 @@ class TestToroidalGeometry:
             coefficients_poly_y=[1e-5],
         )
         assert str(geometry) == "Toroidal"
+
+    def test_toroidal_sag_vertex(self, basic_toroid_geometry):
+        """Test sag at the vertex (0, 0). Should be 0 by definition."""
+        x = be.array([0.0])
+        y = be.array([0.0])
+        assert basic_toroid_geometry.sag(x, y) == pytest.approx(0.0)
+
