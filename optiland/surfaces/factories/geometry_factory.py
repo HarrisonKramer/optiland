@@ -211,7 +211,7 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
         radius_rotation=config.radius, 
         radius_yz=config.radius_y,     
         conic=config.conic,            
-        coefficients_poly_y=config.coefficients_poly_y, 
+        coefficients_poly_y=config.toroidal_coefficients_poly_y, 
         tol=config.tol,
         max_iter=config.max_iter,
     )

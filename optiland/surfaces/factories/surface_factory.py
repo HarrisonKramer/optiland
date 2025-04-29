@@ -93,6 +93,8 @@ class SurfaceFactory:
             norm_x=kwargs.get("norm_x", 1.0),
             norm_y=kwargs.get("norm_y", 1.0),
             norm_radius=kwargs.get("norm_radius", 1.0),
+            radius_y=kwargs.get("radius_y", be.inf), 
+            toroidal_coefficients_poly_y=kwargs.get("toroidal_coefficients_poly_y", []), 
         )
 
         geometry = self._geometry_factory.create(
