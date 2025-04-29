@@ -46,18 +46,18 @@ def isinf(x):
     """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
-        return torch_backend.isinf(x)
+        return _torch.isinf(x)
     # Fallback to numpy for np.ndarray or Python scalars
     # Assumes numpy_backend defines isinf (e.g., calling np.isinf)
-    return numpy_backend.isinf(x)
+    return _np.isinf(x)
 
 def isnan(x):
     """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         
-        return torch_backend.isnan(x)
+        return _torch.isnan(x)
     
-    return numpy_backend.isnan(x)
+    return _np.isnan(x)
 
 
 try:

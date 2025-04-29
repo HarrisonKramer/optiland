@@ -8,7 +8,7 @@ import pytest
 from optiland import distribution, wavefront
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.objectives import CookeTriplet, DoubleGauss
-from .utils import assert_allclose
+from tests.utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
