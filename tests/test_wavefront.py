@@ -8,20 +8,21 @@ import pytest
 from optiland import distribution, wavefront
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.objectives import CookeTriplet, DoubleGauss
+from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class TestWavefront:
     @pytest.mark.parametrize("optic", [CookeTriplet(), DoubleGauss(), EyepieceErfle()])
-    def test_wavefront_initialization(self, optic):
+    def test_wavefront_initialization(self, optic, set_test_backend):
         w = wavefront.Wavefront(optic)
         assert w.num_rays == 12
         assert w.fields == optic.fields.get_field_coords()
         assert w.wavelengths == optic.wavelengths.get_wavelengths()
         assert isinstance(w.distribution, distribution.HexagonalDistribution)
 
-    def test_wavefront_init_custom(self):
+    def test_wavefront_init_custom(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(
             optic,
@@ -33,7 +34,7 @@ class TestWavefront:
         assert isinstance(w.distribution, distribution.RandomDistribution)
         assert w.wavelengths == [optic.primary_wavelength]
 
-    def test_generate_data(self):
+    def test_generate_data(self, set_test_backend):
         optic = EyepieceErfle()
         w = wavefront.Wavefront(optic)
         data = w._generate_data(w.fields, w.wavelengths)
@@ -44,13 +45,13 @@ class TestWavefront:
         assert isinstance(data[0][0][0], be.ndarray)
         assert w.data[0][0][0].size == 469  # num points in the pupil
 
-    def test_trace_chief_ray(self):
+    def test_trace_chief_ray(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         assert be.all(optic.surface_group.y == 0)
 
-    def test_get_reference_sphere(self):
+    def test_get_reference_sphere(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
@@ -60,7 +61,7 @@ class TestWavefront:
         assert be.allclose(zc, be.array([139.454938]))
         assert be.allclose(R, be.array([39.454938]))
 
-    def test_ger_reference_sphere_error(self):
+    def test_ger_reference_sphere_error(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         optic.trace(Hx=0, Hy=0, wavelength=0.55)
@@ -68,7 +69,7 @@ class TestWavefront:
         with pytest.raises(ValueError):
             w._get_reference_sphere(pupil_z=100)
 
-    def test_get_path_length(self):
+    def test_get_path_length(self, set_test_backend):
         optic = CookeTriplet()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
@@ -76,7 +77,7 @@ class TestWavefront:
         path_length = w._get_path_length(xc, yc, zc, R, 0.55)
         assert be.allclose(path_length, be.array([34.84418309]))
 
-    def test_correct_tilt(self):
+    def test_correct_tilt(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         opd = be.linspace(5, 100, w.distribution.x.size)
@@ -87,7 +88,7 @@ class TestWavefront:
         assert be.isclose(corrected_opd[111], 24.699015344473096)
         assert be.isclose(corrected_opd[242], 52.123070395591235)
 
-    def test_opd_image_to_xp(self):
+    def test_opd_image_to_xp(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)

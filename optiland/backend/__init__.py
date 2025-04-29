@@ -38,6 +38,27 @@ def array_equal(a, b):
         return _torch_equal(a, b)
     return _np_equal(a, b)
 
+# --- Add explicit type-dispatching functions ---
+# Add explicit implementations for functions that might receive
+# arrays/tensors created when a *different* backend was active
+
+def isinf(x):
+    """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
+    if _torch_available and isinstance(x, _torch.Tensor):
+        # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
+        return torch_backend.isinf(x)
+    # Fallback to numpy for np.ndarray or Python scalars
+    # Assumes numpy_backend defines isinf (e.g., calling np.isinf)
+    return numpy_backend.isinf(x)
+
+def isnan(x):
+    """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
+    if _torch_available and isinstance(x, _torch.Tensor):
+        
+        return torch_backend.isnan(x)
+    
+    return numpy_backend.isnan(x)
+
 
 try:
     from optiland.backend import torch_backend
@@ -98,6 +119,9 @@ def __getattr__(name):
     Raises:
         AttributeError: If the attribute is not found in the current backend.
     """
+    if name in globals():
+        return globals()[name]
+    
     backend = _backends[_current_backend]
 
     # Direct attribute lookup in the backend module.
