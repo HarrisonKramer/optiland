@@ -762,3 +762,18 @@ class TestZernikeGeometry:
             norm_radius=10,
         )
         assert str(geometry) == "Zernike Polynomial"
+
+
+class TestToroidalGeometry:
+
+    def test_toroidal_str(self):
+        """Test string representation."""
+        cs = CoordinateSystem()
+        geometry = geometries.ToroidalGeometry(
+            cs,
+            radius_rotation=100.0,
+            radius_yz=50.0,
+            conic=-0.5,
+            coefficients_poly_y=[1e-5],
+        )
+        assert str(geometry) == "Toroidal"
