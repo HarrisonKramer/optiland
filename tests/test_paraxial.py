@@ -520,12 +520,12 @@ def test_calculate_P2anti(optic_instance, values):
 
 @pytest.mark.parametrize("optic_instance,values", get_optic_data())
 def test_calculate_N1(optic_instance, values):
-    assert optic_instance.paraxial.N1() == values["N1"]
+    assert optic_instance.paraxial.N1() == pytest.approx(values["N1"])
 
 
 @pytest.mark.parametrize("optic_instance,values", get_optic_data())
 def test_calculate_N2(optic_instance, values):
-    assert optic_instance.paraxial.N2() == values["N2"]
+    assert optic_instance.paraxial.N2() == pytest.approx(values["N2"])
 
 
 @pytest.mark.parametrize("optic_instance,values", get_optic_data())

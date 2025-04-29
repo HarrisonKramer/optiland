@@ -135,7 +135,7 @@ class Paraxial:
             float: front nodal plane location
 
         """
-        return self.P1() + self.f1() + self.f2()
+        return self.F1() + self.f2()
 
     def N2(self):
         """Calculate the back nodal plane location
@@ -144,7 +144,7 @@ class Paraxial:
             float: back nodal plane location
 
         """
-        return self.P2() + self.f1() + self.f2()
+        return self.F2() + self.f1()
 
     def N1anti(self):
         """Calculate the front anti-nodal plane location
