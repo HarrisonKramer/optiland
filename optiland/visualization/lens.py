@@ -5,6 +5,7 @@ This module contains classes for visualizing lenses in 2D and 3D.
 Kramer Harrison, 2024
 """
 
+import numpy as np
 import vtk
 from matplotlib.patches import Polygon
 
@@ -339,7 +340,7 @@ class Lens3D(Lens2D):
             x = be.to_numpy(x)
             y = be.to_numpy(y)
             z = be.to_numpy(z)
-            circles.append(be.stack((x, y, z), axis=-1))
+            circles.append(np.stack((x, y, z), axis=-1))
 
         for k in range(len(circles) - 1):
             circle1 = circles[k]

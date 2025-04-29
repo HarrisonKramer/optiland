@@ -313,7 +313,13 @@ def radians(x):
     return torch.deg2rad(t)
 
 
+def degrees(x):
+    t = array(x)
+    return torch.rad2deg(t)
+
+
 deg2rad = radians
+rad2deg = degrees
 
 
 def max(x):

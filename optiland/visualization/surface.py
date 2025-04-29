@@ -45,9 +45,8 @@ class Surface2D:
         x, y, z = self._compute_sag()
 
         # convert to global coordinates and return
-        x, y, z = transform(x, y, z, self.surf, is_global=False)
+        _, y, z = transform(x, y, z, self.surf, is_global=False)
 
-        x = be.to_numpy(x)
         y = be.to_numpy(y)
         z = be.to_numpy(z)
 
