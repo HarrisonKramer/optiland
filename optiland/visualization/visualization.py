@@ -302,7 +302,7 @@ class LensInfoViewer:
             elif surf.material_post.index == 1:
                 mat.append("Air")
             elif isinstance(surf.material_post, materials.IdealMaterial):
-                mat.append(surf.material_post.index)
+                mat.append(surf.material_post.index.item())
             elif isinstance(surf.material_post, materials.AbbeMaterial):
                 mat.append(
                     f"{surf.material_post.index.item():.4f}, "

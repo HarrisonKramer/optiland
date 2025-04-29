@@ -328,6 +328,17 @@ def min(x):
     return np.min(x)
 
 
+def nanmax(input_tensor, axis=None, keepdim=False):
+    nan_mask = torch.isnan(input_tensor)
+    replaced = input_tensor.clone()
+    replaced[nan_mask] = float("-inf")
+    if axis is not None:
+        result, _ = torch.max(replaced, dim=axis, keepdim=keepdim)
+    else:
+        result = torch.max(replaced)
+    return result
+
+
 def mean(x, axis=None, keepdims=False):
     x = array(x)
     mask = ~torch.isnan(x)

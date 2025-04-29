@@ -47,6 +47,10 @@ class Surface2D:
         # convert to global coordinates and return
         x, y, z = transform(x, y, z, self.surf, is_global=False)
 
+        x = be.to_numpy(x)
+        y = be.to_numpy(y)
+        z = be.to_numpy(z)
+
         ax.plot(z, y, "gray")
 
     def _compute_sag(self):
@@ -64,6 +68,7 @@ class Surface2D:
 
         # handle physical apertures
         if self.surf.aperture:
+            y = be.copy(y)  # required to maintain gradient for torch backend
             intensity = be.ones_like(x)
             rays = RealRays(x, y, x, x, x, x, intensity, x)
             self.surf.aperture.clip(rays)
