@@ -112,7 +112,7 @@ class Paraxial:
         """
         return self.F2() - self.f2()
 
-    def P1bar(self):
+    def P1anti(self):
         """Calculate the front anti-principal plane location
 
         Returns:
@@ -120,7 +120,7 @@ class Paraxial:
         """
         return self.F1() + self.f1()
 
-    def P2bar(self):
+    def P2anti(self):
         """Calculate the back anti-principal plane location
 
         Returns:
@@ -146,7 +146,7 @@ class Paraxial:
         """
         return self.P2() + self.f1() + self.f2()
 
-    def N1bar(self):
+    def N1anti(self):
         """Calculate the front anti-nodal plane location
 
         Returns:
@@ -155,7 +155,7 @@ class Paraxial:
         """
         return self.F1() - self.f2()
 
-    def N2bar(self):
+    def N2anti(self):
         """Calculate the back anti-nodal plane location
 
         Returns:
