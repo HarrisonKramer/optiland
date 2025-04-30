@@ -13,6 +13,7 @@ Functionalities are grouped into the following categories:
 - Polynomial Operations
 - Padding
 - Vectorization
+- Miscellaneous Utilities
 
 This module provides a backend for numerical operations using PyTorch.
 
@@ -515,6 +516,42 @@ def eye(n):
 @contextlib.contextmanager
 def errstate(**kwargs):
     yield
+
+
+# --------------------------
+# Miscellaneous Utilities
+# --------------------------
+def path_contains_points(
+    vertices: torch.Tensor, points: torch.Tensor
+) -> torch.BoolTensor:
+    """
+    Vectorized ray‐crossing algorithm.
+    vertices: (N,2) tensor of polygon verts in order (closed implicitly: last→first).
+    points:   (M,2) tensor of query points.
+    returns:  BoolTensor of shape (M,) indicating inside‐ness.
+    """
+    # split into x/y
+    vx, vy = vertices[:, 0], vertices[:, 1]
+    px, py = points[:, 0].unsqueeze(1), points[:, 1].unsqueeze(1)  # (M,1)
+
+    # roll vertices to get edge endpoints
+    vx_next = torch.roll(vx, -1)
+    vy_next = torch.roll(vy, -1)
+
+    # test if ray crosses the edge in the y‐direction
+    # mask: (M, N) True where edge straddles the horizontal ray from point
+    cond = (vy > py) != (vy_next > py)
+
+    # compute intersection point’s x coordinate
+    slope = (vx_next - vx) / (vy_next - vy)
+    x_int = vx + slope * (py - vy)
+
+    # does the intersection lie to the right of the point?
+    cross = cond & (px < x_int.unsqueeze(0))
+
+    # count crossings per point (sum over edges) and take parity
+    inside = torch.sum(cross, dim=1) % 2 == 1
+    return inside
 
 
 # --------------------------

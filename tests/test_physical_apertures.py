@@ -3,8 +3,9 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import optiland.backend as be
+import pytest
 
+import optiland.backend as be
 from optiland.physical_apertures import (
     DifferenceAperture,
     EllipticalAperture,
@@ -303,10 +304,11 @@ class TestEllipticalAperture:
 
 
 class TestPolygonAperture:
+    @pytest.fixture(autouse=True)
     def setup_method(self, set_test_backend):
         self.aperture = PolygonAperture(x=[-10, 10, 10, -10], y=[-15, -15, 15, 15])
 
-    def test_clip(self, set_test_backend):
+    def test_clip(self):
         rays = RealRays(
             [0, 5, 0, 10, 20, 20],
             [0, 0, 6, 15, 0, 21],
@@ -320,7 +322,7 @@ class TestPolygonAperture:
         self.aperture.clip(rays)
         assert be.all(rays.i == be.array([1, 1, 1, 1, 0, 0]))
 
-    def test_scale(self, set_test_backend):
+    def test_scale(self):
         self.aperture.scale(2)
         assert be.all(
             self.aperture.vertices
@@ -333,7 +335,7 @@ class TestPolygonAperture:
             == be.array([[-10, -15], [10, -15], [10, 15], [-10, 15]]),
         )
 
-    def test_to_dict(self, set_test_backend):
+    def test_to_dict(self):
         data = self.aperture.to_dict()
         assert data["type"] == "PolygonAperture"
         assert be.all(data["x"] == be.array([-10, 10, 10, -10]))
@@ -346,7 +348,7 @@ class TestPolygonAperture:
         assert be.all(aperture.y == [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
 
-    def test_extent(self, set_test_backend):
+    def test_extent(self):
         assert self.aperture.extent == (-10, 10, -15, 15)
 
 

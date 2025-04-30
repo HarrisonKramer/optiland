@@ -127,7 +127,7 @@ class BaseAperture(ABC):
         y = be.linspace(y_min, y_max, ny)
         X, Y = be.meshgrid(x, y)
         Z = self.contains(X, Y)
-        ax.contourf(X, Y, Z, **kwargs)
+        ax.contourf(be.to_numpy(X), be.to_numpy(Y), be.to_numpy(Z), **kwargs)
         ax.set_xlabel("X [mm]")
         ax.set_ylabel("Y [mm]")
         ax.set_aspect("equal")

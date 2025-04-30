@@ -8,8 +8,6 @@ a polygon-based aperture.
 Kramer Harrison, 2025
 """
 
-from matplotlib.path import Path
-
 import optiland.backend as be
 from optiland.physical_apertures.base import BaseAperture
 
@@ -30,7 +28,6 @@ class PolygonAperture(BaseAperture):
         self.x = be.array(x)
         self.y = be.array(y)
         self.vertices = be.column_stack((self.x, self.y))
-        self._path = Path(self.vertices)
 
     @property
     def extent(self):
@@ -56,8 +53,9 @@ class PolygonAperture(BaseAperture):
         """
         x = be.array(x)
         y = be.array(y)
-        points = be.column_stack((x.ravel(), y.ravel()))
-        return self._path.contains_points(points).reshape(x.shape)
+        pts = be.column_stack((x.ravel(), y.ravel()))
+        mask_flat = be.path_contains_points(self.vertices, pts)
+        return mask_flat.reshape(x.shape)
 
     def scale(self, scale_factor):
         """Scales the aperture by the given factor.
@@ -66,8 +64,9 @@ class PolygonAperture(BaseAperture):
             scale_factor (float): The factor by which to scale the aperture.
 
         """
-        self.vertices *= scale_factor
-        self._path = Path(self.vertices)
+        self.vertices = self.vertices * scale_factor
+        self.x = self.vertices[:, 0]
+        self.y = self.vertices[:, 1]
 
     def to_dict(self):
         """Convert the aperture to a dictionary.
@@ -77,8 +76,8 @@ class PolygonAperture(BaseAperture):
 
         """
         aperture_dict = super().to_dict()
-        aperture_dict["x"] = self.x
-        aperture_dict["y"] = self.y
+        aperture_dict["x"] = be.to_numpy(self.x)
+        aperture_dict["y"] = be.to_numpy(self.y)
         return aperture_dict
 
     @classmethod

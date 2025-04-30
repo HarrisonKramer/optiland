@@ -5,6 +5,7 @@ Kramer Harrison, 2024
 """
 
 import numpy as np
+from matplotlib.path import Path
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
 from scipy.special import gamma
@@ -99,3 +100,9 @@ def batched_chain_matmul3(a, b, c):
 
 def factorial(n):
     return gamma(n + 1)
+
+
+def path_contains_points(vertices: np.ndarray, points: np.ndarray) -> np.ndarray:
+    path = Path(vertices)
+    mask = path.contains_points(points)
+    return np.asarray(mask, dtype=bool)
