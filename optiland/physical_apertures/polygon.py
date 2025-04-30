@@ -8,6 +8,8 @@ a polygon-based aperture.
 Kramer Harrison, 2025
 """
 
+import numpy as np
+
 import optiland.backend as be
 from optiland.physical_apertures.base import BaseAperture
 
@@ -20,6 +22,12 @@ class PolygonAperture(BaseAperture):
         y (list or be.ndarray): y-coordinates of the polygon's vertices.
         vertices (be.ndarray): Array-like of shape (n, 2) defining the
             polygon vertices.
+
+    Note:
+        The implementation of the point-in-polygon algorithm used in this class
+        has slightly different behavior for each backend. FOr the NumPy backend,
+        points on the edge of the polygon are considered to be inside the
+        polygon, while for the PyTorch backend, they are considered to be outside.
 
     """
 
@@ -155,7 +163,7 @@ class FileAperture(PolygonAperture):
                 with open(filepath, encoding=encoding) as f:
                     # delimiter defaults to space if not specified
                     delim = delimiter if delimiter is not None else " "
-                    data = be.genfromtxt(
+                    data = np.genfromtxt(
                         f,
                         delimiter=delim,
                         comments="//",

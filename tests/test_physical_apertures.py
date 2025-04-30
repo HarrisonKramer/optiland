@@ -361,9 +361,14 @@ class TestFileAperture:
         self.aperture = FileAperture(temp_path, delimiter=",")
 
     def test_clip(self, set_test_backend):
+        # manually write the file to avoid backend issues with file creation
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+            f.write("0, 0\n1, 0\n1, 1\n0, 1")
+            temp_path = f.name
+        aperture = FileAperture(temp_path, delimiter=",")
         rays = RealRays(
-            [0.5, 0, 1, 9.999, 20, 20],
-            [0.5, 1, 1, 14.999, 0, 21],
+            [0.5, 0, 0.9, 10, 20, 20],
+            [0.5, 0.9, 0.999, 15, 0, 21],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
@@ -371,7 +376,7 @@ class TestFileAperture:
             [1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1],
         )
-        self.aperture.clip(rays)
+        aperture.clip(rays)
         assert_allclose(rays.i, [1, 1, 1, 0, 0, 0])
 
     def test_scale(self, set_test_backend):
