@@ -392,7 +392,7 @@ class TestDifferentialEvolution:
             input_data=input_data,
         )
         optimizer = optimization.DifferentialEvolution(problem)
-        result = optimizer.optimize(maxiter=10, disp=False, workers=-1)
+        result = optimizer.optimize(maxiter=10, disp=False, workers=1)
         assert result.success
 
 

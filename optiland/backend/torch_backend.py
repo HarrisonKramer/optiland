@@ -547,7 +547,7 @@ def path_contains_points(
     x_int = vx + slope * (py - vy)
 
     # does the intersection lie to the right of the point?
-    cross = cond & (px < x_int.unsqueeze(0))
+    cross = cond & (px < x_int)
 
     # count crossings per point (sum over edges) and take parity
     inside = torch.sum(cross, dim=1) % 2 == 1

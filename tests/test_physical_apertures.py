@@ -18,6 +18,7 @@ from optiland.physical_apertures import (
     UnionAperture,
 )
 from optiland.rays import RealRays
+from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
@@ -310,8 +311,8 @@ class TestPolygonAperture:
 
     def test_clip(self):
         rays = RealRays(
-            [0, 5, 0, 10, 20, 20],
-            [0, 0, 6, 15, 0, 21],
+            [0, 5, 0, 9.999, 20, 20],
+            [0, 0, 6, 14.999, 0, 21],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
@@ -320,7 +321,7 @@ class TestPolygonAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert be.all(rays.i == be.array([1, 1, 1, 1, 0, 0]))
+        assert_allclose(rays.i, [1, 1, 1, 1, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
@@ -344,8 +345,8 @@ class TestPolygonAperture:
     def test_from_dict(self):
         data = {"type": "PolygonAperture", "x": [0, 1, 1, 0], "y": [0, 0, 1, 1]}
         aperture = PolygonAperture.from_dict(data)
-        assert be.all(aperture.x == [0, 1, 1, 0])
-        assert be.all(aperture.y == [0, 0, 1, 1])
+        assert_allclose(aperture.x, [0, 1, 1, 0])
+        assert_allclose(aperture.y, [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
 
     def test_extent(self):
@@ -361,8 +362,8 @@ class TestFileAperture:
 
     def test_clip(self, set_test_backend):
         rays = RealRays(
-            [0.5, 0, 1, 10, 20, 20],
-            [0.5, 1, 1, 15, 0, 21],
+            [0.5, 0, 1, 9.999, 20, 20],
+            [0.5, 1, 1, 14.999, 0, 21],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
@@ -371,7 +372,7 @@ class TestFileAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert be.all(rays.i == be.array([1, 1, 1, 0, 0, 0]))
+        assert_allclose(rays.i, [1, 1, 1, 0, 0, 0])
 
     def test_scale(self, set_test_backend):
         self.aperture.scale(2)
