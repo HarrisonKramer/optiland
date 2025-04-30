@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
@@ -21,6 +22,7 @@ from optiland.geometries import (
     Plane,
     PolynomialGeometry,
     StandardGeometry,
+    ToroidalGeometry,
     ZernikePolynomialGeometry,
 )
 
@@ -39,6 +41,9 @@ class GeometryConfig:
         norm_x (float): normalization factor in x. Defaults to 1.0.
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
+        radius_y (float): toroidal YZ radius. Defaults to be.inf.
+        coefficients_poly_y (list): toroidal YZ polynomial coefficients.
+                                    Defaults to empty list.
     """
 
     radius: float = np.inf
@@ -49,6 +54,8 @@ class GeometryConfig:
     norm_x: float = 1.0
     norm_y: float = 1.0
     norm_radius: float = 1.0
+    radius_y: float = be.inf
+    toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
 
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
@@ -190,6 +197,29 @@ def _create_zernike(cs: CoordinateSystem, config: GeometryConfig):
     )
 
 
+def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a Toroidal geometry
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        ToroidalGeometry
+    """
+
+    return ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=config.radius,
+        radius_yz=config.radius_y,
+        conic=config.conic,
+        coeffs_poly_y=config.toroidal_coeffs_poly_y,
+        tol=config.tol,
+        max_iter=config.max_iter,
+    )
+
+
 def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a paraxial geometry, which is simply a planar surface.
@@ -211,6 +241,7 @@ geometry_mapper = {
     "polynomial": _create_polynomial,
     "chebyshev": _create_chebyshev,
     "zernike": _create_zernike,
+    "toroidal": _create_toroidal,
     "paraxial": _create_paraxial,
 }
 

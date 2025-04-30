@@ -62,3 +62,8 @@ select = [
     "I",  # isort
 ]
 exclude = ["*.ipynb"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
