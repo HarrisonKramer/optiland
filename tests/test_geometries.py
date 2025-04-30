@@ -843,7 +843,6 @@ class TestToroidalGeometry:
         x = be.array([0.0, 10.0, 0.0])
         y = be.array([10.0, 0.0, 5.0])
 
-        # Placeholder: Use the calculated values from the previous example
         expected_z_0_10 = 1.00605051
         expected_z_10_0 = 0.50125628
         expected_z_0_5 = 0.25056330
@@ -851,6 +850,48 @@ class TestToroidalGeometry:
         expected_z = be.array([expected_z_0_10, expected_z_10_0, expected_z_0_5])  
         calculated_z = basic_toroid_geometry.sag(x, y)
         assert be.allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
+    
+    def test_toroidal_normal_known_points(self, basic_toroid_geometry):
+        """Test normal at specific points."""
+        x = be.array([0.0, 10.0])
+        y = be.array([10.0, 0.0])
+
+        expected_nx_0_10 = 0.0
+        expected_ny_0_10 = 0.198219
+        expected_nz_0_10 = -0.980158
+        expected_nx_10_0 = 0.10000
+        expected_ny_10_0 = 0.0
+        expected_nz_10_0 = -0.994987
+
+        expected_nx = be.array([expected_nx_0_10, expected_nx_10_0])
+        expected_ny = be.array([expected_ny_0_10, expected_ny_10_0])
+        expected_nz = be.array([expected_nz_0_10, expected_nz_10_0])
+
+        nx, ny, nz = basic_toroid_geometry._surface_normal(x, y)
+
+        rtol = 1e-5
+        atol = 1e-6
+        assert be.allclose(nx, expected_nx, rtol=rtol, atol=atol)
+        assert be.allclose(ny, expected_ny, rtol=rtol, atol=atol)
+        assert be.allclose(nz, expected_nz, rtol=rtol, atol=atol)
+        
+    def test_cylinder_x_sag(self, cylinder_x_geometry):
+        """Test sag for cylinder flat in X. Should only depend on y."""
+        x = be.array([0.0, 10.0, 10.0])
+        y = be.array([5.0, 5.0, 0.0])
+        
+        expected_z = be.array([-0.25062818, -0.25062818, 0.0]) 
+        calculated_z = cylinder_x_geometry.sag(x, y)
+        be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
+        
+    def test_cylinder_y_sag(self, cylinder_y_geometry):
+        """Test sag for cylinder flat in Y. Should only depend on x."""
+        x = be.array([5.0, 5.0, 0.0])
+        y = be.array([0.0, 10.0, 10.0])
+        
+        expected_z = be.array([0.12507822, 0.12507822, 0.0]) 
+        calculated_z = cylinder_y_geometry.sag(x, y)
+        be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
         
     def test_toroidal_to_dict(self, basic_toroid_geometry):
         """Test serialization to dictionary."""
