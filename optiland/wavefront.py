@@ -12,8 +12,8 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
-from scipy.interpolate import griddata
 import numpy as np
+from scipy.interpolate import griddata
 
 import optiland.backend as be
 from optiland.distribution import create_distribution

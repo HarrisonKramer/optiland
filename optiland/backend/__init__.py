@@ -38,9 +38,11 @@ def array_equal(a, b):
         return _torch_equal(a, b)
     return _np_equal(a, b)
 
+
 # --- Add explicit type-dispatching functions ---
 # Add explicit implementations for functions that might receive
 # arrays/tensors created when a *different* backend was active
+
 
 def isinf(x):
     """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
@@ -51,12 +53,12 @@ def isinf(x):
     # Assumes numpy_backend defines isinf (e.g., calling np.isinf)
     return _np.isinf(x)
 
+
 def isnan(x):
     """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
-        
         return _torch.isnan(x)
-    
+
     return _np.isnan(x)
 
 
@@ -121,7 +123,7 @@ def __getattr__(name):
     """
     if name in globals():
         return globals()[name]
-    
+
     backend = _backends[_current_backend]
 
     # Direct attribute lookup in the backend module.
