@@ -20,9 +20,11 @@ import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
+
 class ToroidalGeometry(NewtonRaphsonGeometry):
     """
-    Represents a simplified toroidal geometry (no Zernike terms as in zemax - may be added later if necessary).
+    Represents a simplified toroidal geometry (no Zernike terms as in zemax - 
+    - may be added later if necessary).
 
     Args:
         coordinate_system (CoordinateSystem): The coordinate system.
@@ -34,23 +36,35 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         tol (float, optional): Newton-Raphson tolerance. Defaults to 1e-10.
         max_iter (int, optional): Newton-Raphson max iterations. Defaults to 100.
     """
-    def __init__(self,coordinate_system: CoordinateSystem,radius_rotation: float,radius_yz: float,
-        conic: float = 0.0,coeffs_poly_y: list[float] = None,tol: float = 1e-10,max_iter: int = 100,):
-        
+
+    def __init__(
+        self,
+        coordinate_system: CoordinateSystem,
+        radius_rotation: float,
+        radius_yz: float,
+        conic: float = 0.0,
+        coeffs_poly_y: list[float] = None,
+        tol: float = 1e-10,
+        max_iter: int = 100,
+    ):
         # Pass radius_rotation as the base 'radius' for NewtonRaphsonGeometry.
-        super().__init__(coordinate_system, radius_rotation, 0.0, tol, max_iter) # Pass 0 for base conic
+        super().__init__(
+            coordinate_system, radius_rotation, 0.0, tol, max_iter
+        )  # Pass 0 for base conic
 
         self.R_rot = radius_rotation
         self.R_yz = radius_yz
-        self.k_yz = conic 
+        self.k_yz = conic
 
         self.coeffs_poly_y = be.asarray([] if coeffs_poly_y is None else coeffs_poly_y)
-        
-        self.is_symmetric = False 
 
-        self.c_yz = 1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
-        self.eps = 1e-14 # safe div
-        
+        self.is_symmetric = False
+
+        self.c_yz = (
+            1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
+        )
+        self.eps = 1e-14  # safe div
+
     def _calculate_zy(self, y: be.ndarray) -> be.ndarray:
         """Calculates the sag of the base Y-Z curve."""
         y2 = y**2
@@ -73,12 +87,14 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         # coeffs_poly_y[i] is coeff for y^(2*(i+1))
         if len(self.coeffs_poly_y) > 0:
             poly_term = be.zeros_like(y)
-            current_y_power = y2 # Start with y^2
+            current_y_power = y2  # Start with y^2
             for coeff in self.coeffs_poly_y:
                 poly_term = poly_term + coeff * current_y_power
-                current_y_power = current_y_power * y2 # Increase power by y^2 for next term
+                current_y_power = (
+                    current_y_power * y2
+                )  # Increase power by y^2 for next term
             z_y = z_y + poly_term
-        
+
         return z_y
 
     def _calculate_zy_derivative(self, y: be.ndarray) -> be.ndarray:
@@ -100,11 +116,13 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         # Derivative of YZ polynomial terms (alpha_i for y^(2(i+1)))
         if len(self.coeffs_poly_y) > 0:
             poly_deriv_term = be.zeros_like(y)
-            current_y_power_deriv = y 
+            current_y_power_deriv = y
             for i, coeff in enumerate(self.coeffs_poly_y):
-                 power_coeff = 2.0 * (i + 1.0)
-                 poly_deriv_term = poly_deriv_term + coeff * power_coeff * current_y_power_deriv
-                 current_y_power_deriv = current_y_power_deriv * y2 
+                power_coeff = 2.0 * (i + 1.0)
+                poly_deriv_term = (
+                    poly_deriv_term + coeff * power_coeff * current_y_power_deriv
+                )
+                current_y_power_deriv = current_y_power_deriv * y2
             dz_dy = dz_dy + poly_deriv_term
 
         return dz_dy
@@ -116,33 +134,32 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         R = self.R_rot
 
         # Calculate base toroidal sag z = R - sqrt((R - z_y)^2 - x^2)
-        if be.isinf(R): 
+        if be.isinf(R):
             z = z_y
         else:
-            term_inside_sqrt = (R - z_y)**2 - x2
-            
-            z = be.where(
-                term_inside_sqrt < 0,
-                be.nan,
-                R - be.sqrt(term_inside_sqrt)
-            )
-        
+            term_inside_sqrt = (R - z_y) ** 2 - x2
+
+            z = be.where(term_inside_sqrt < 0, be.nan, R - be.sqrt(term_inside_sqrt))
+
         return z
 
-    def _surface_normal(self, x: be.ndarray, y: be.ndarray) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
-        """Calculate the surface normal vector (nx, ny, nz) using Optiland convention."""
+    def _surface_normal(
+        self, x: be.ndarray, y: be.ndarray
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
+        """Calculate the surface normal vector (nx, ny, nz) 
+        using Optiland convention."""
         z_y = self._calculate_zy(y)
         dz_dy = self._calculate_zy_derivative(y)
         R = self.R_rot
 
         # Partial derivatives of the toroidal part: dz/dx, dz/dy
         if be.isinf(R):
-             # Cylinder extruded along X: z = z_y(y)
-             fx = be.zeros_like(x)
-             fy = dz_dy
-             term_inside_sqrt = be.inf 
+            # Cylinder extruded along X: z = z_y(y)
+            fx = be.zeros_like(x)
+            fy = dz_dy
+            term_inside_sqrt = be.inf
         else:
-            term_inside_sqrt = (R - z_y)**2 - x**2
+            term_inside_sqrt = (R - z_y) ** 2 - x**2
             #
             valid_mask = term_inside_sqrt >= 0
             safe_term_inside_sqrt = be.where(valid_mask, term_inside_sqrt, self.eps)
@@ -177,18 +194,26 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         """Converts the geometry to a dictionary."""
         geometry_dict = super().to_dict()
         # Add toroidal specific parameters, remove conflicting base keys
-        geometry_dict.update({
-            "geometry_type": self.__str__(),
-            "radius_rotation": self.R_rot,
-            "radius_yz": self.R_yz,
-            "conic_yz": self.k_yz,
-            "coeffs_poly_y": self.coeffs_poly_y.tolist() if hasattr(self.coeffs_poly_y, 'tolist') else self.coeffs_poly_y,
-        })
+        geometry_dict.update(
+            {
+                "geometry_type": self.__str__(),
+                "radius_rotation": self.R_rot,
+                "radius_yz": self.R_yz,
+                "conic_yz": self.k_yz,
+                "coeffs_poly_y": self.coeffs_poly_y.tolist()
+                if hasattr(self.coeffs_poly_y, "tolist")
+                else self.coeffs_poly_y,
+            }
+        )
         # Remove base class keys not relevant or potentially confusing here
-        if "radius" in geometry_dict: del geometry_dict["radius"]
-        if "conic" in geometry_dict: del geometry_dict["conic"]
-        if "coefficients" in geometry_dict: del geometry_dict["coefficients"] # Use specific coeffs_poly_y
-        if "norm_radius" in geometry_dict: del geometry_dict["norm_radius"] # No Zernike
+        if "radius" in geometry_dict:
+            del geometry_dict["radius"]
+        if "conic" in geometry_dict:
+            del geometry_dict["conic"]
+        if "coefficients" in geometry_dict:
+            del geometry_dict["coefficients"]  # Use specific coeffs_poly_y
+        if "norm_radius" in geometry_dict:
+            del geometry_dict["norm_radius"]  # No Zernike
 
         return geometry_dict
 
@@ -206,8 +231,8 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
             coordinate_system=cs,
             radius_rotation=data["radius_rotation"],
             radius_yz=data["radius_yz"],
-            conic=data.get("conic_yz", 0.0), # Match key used in to_dict
+            conic=data.get("conic_yz", 0.0),  # Match key used in to_dict
             coeffs_poly_y=data.get("coeffs_poly_y", []),
             tol=data.get("tol", 1e-10),
-            max_iter=data.get("max_iter", 100)
+            max_iter=data.get("max_iter", 100),
         )

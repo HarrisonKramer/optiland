@@ -20,8 +20,8 @@ from optiland.geometries import (
     Plane,
     PolynomialGeometry,
     StandardGeometry,
+    ToroidalGeometry,
     ZernikePolynomialGeometry,
-    ToroidalGeometry
 )
 
 
@@ -40,7 +40,8 @@ class GeometryConfig:
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
         radius_y (float): toroidal YZ radius. Defaults to be.inf.
-        coefficients_poly_y (list): toroidal YZ polynomial coefficients. Defaults to empty list.
+        coefficients_poly_y (list): toroidal YZ polynomial coefficients. 
+                                    Defaults to empty list.
     """
 
     radius: float = be.inf
@@ -205,13 +206,13 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
     Returns:
         ToroidalGeometry
     """
-    
+
     return ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=config.radius, 
-        radius_yz=config.radius_y,     
-        conic=config.conic,            
-        coeffs_poly_y=config.toroidal_coeffs_poly_y, 
+        radius_rotation=config.radius,
+        radius_yz=config.radius_y,
+        conic=config.conic,
+        coeffs_poly_y=config.toroidal_coeffs_poly_y,
         tol=config.tol,
         max_iter=config.max_iter,
     )

@@ -1,10 +1,11 @@
-from optiland.optic import Optic
-from optiland.materials import IdealMaterial, Material
-from optiland.coordinate_system import CoordinateSystem
-from optiland import geometries
 import numpy as np
-from optiland.rays import RealRays
+
 import optiland.backend as be
+from optiland import geometries
+from optiland.coordinate_system import CoordinateSystem
+from optiland.materials import IdealMaterial
+from optiland.optic import Optic
+from optiland.rays import RealRays
 
 
 def basic_toroid_geometry():
