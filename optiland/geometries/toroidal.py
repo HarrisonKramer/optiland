@@ -23,7 +23,7 @@ from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 class ToroidalGeometry(NewtonRaphsonGeometry):
     """
-    Represents a simplified toroidal geometry (no Zernike terms as in zemax - 
+    Represents a simplified toroidal geometry (no Zernike terms as in zemax -
     - may be added later if necessary).
 
     Args:
@@ -146,7 +146,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
     def _surface_normal(
         self, x: be.ndarray, y: be.ndarray
     ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
-        """Calculate the surface normal vector (nx, ny, nz) 
+        """Calculate the surface normal vector (nx, ny, nz)
         using Optiland convention."""
         z_y = self._calculate_zy(y)
         dz_dy = self._calculate_zy_derivative(y)

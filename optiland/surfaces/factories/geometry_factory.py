@@ -40,7 +40,7 @@ class GeometryConfig:
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
         radius_y (float): toroidal YZ radius. Defaults to be.inf.
-        coefficients_poly_y (list): toroidal YZ polynomial coefficients. 
+        coefficients_poly_y (list): toroidal YZ polynomial coefficients.
                                     Defaults to empty list.
     """
 
