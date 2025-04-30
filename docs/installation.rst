@@ -52,30 +52,37 @@ Installing from Source
 To clone and install the latest development version:
 
 1. **Clone the repository**  
+
    .. code-block:: console
 
       git clone https://github.com/HarrisonKramer/optiland.git
 
 2. **Change the directory**
+
    .. code-block:: console
 
       cd optiland
 
 3. **Install with optional extras**  
+
    - Core only:  
+
      .. code-block:: console
 
         pip install .
 
    - With PyTorch support (CPU‑only):  
+
      .. code-block:: console
 
         pip install .[torch]
 
    - With development dependencies:  
+
      .. code-block:: console
 
         pip install .[dev]
+
 
 Verify Your Installation
 ------------------------
