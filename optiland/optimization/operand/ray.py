@@ -167,7 +167,7 @@ class RayOperand:
         # For some reason decenter can sometimes be a single-element array.
         # In that case, retreive the float inside.
         # This is a workaround until a solution is found.
-        if type(decenter) is be.ndarray:
+        if be.is_array_like(decenter):
             decenter = decenter.item()
 
         return intercept - decenter

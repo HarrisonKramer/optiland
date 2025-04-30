@@ -41,7 +41,7 @@ class ParaxialSurface(Surface):
         is_reflective=False,
         surface_type="paraxial",
     ):
-        self.f = focal_length
+        self.f = be.array(focal_length)
         super().__init__(
             geometry,
             material_pre,
@@ -70,7 +70,7 @@ class ParaxialSurface(Surface):
         """
         # add optical path length - workaround for now
         # TODO: develop more robust method
-        rays.opd -= (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
+        rays.opd = rays.opd - (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
 
         n1 = self.material_pre.n(rays.w)
 

@@ -5,6 +5,7 @@ This module contains classes for visualizing lenses in 2D and 3D.
 Kramer Harrison, 2024
 """
 
+import numpy as np
 import vtk
 from matplotlib.patches import Polygon
 
@@ -113,7 +114,7 @@ class Lens2D:
             z (numpy.ndarray): The z coordinates of the lens.
 
         """
-        vertices = be.column_stack((z, y))
+        vertices = be.to_numpy(be.column_stack((z, y)))
         polygon = Polygon(
             vertices,
             closed=True,
@@ -137,9 +138,9 @@ class Lens2D:
             x2, y2, z2 = sags[k + 1]
 
             # plot lens
-            x = be.concatenate([x1, x2[::-1]])
-            y = be.concatenate([y1, y2[::-1]])
-            z = be.concatenate([z1, z2[::-1]])
+            x = be.concatenate([x1, be.flip(x2)])
+            y = be.concatenate([y1, be.flip(y2)])
+            z = be.concatenate([z1, be.flip(z2)])
 
             self._plot_single_lens(ax, x, y, z)
 
@@ -216,6 +217,9 @@ class Lens3D(Lens2D):
             z (list of float): The z-coordinates of the contour points.
 
         """
+        x = be.to_numpy(x)
+        y = be.to_numpy(y)
+        z = be.to_numpy(z)
         actor = revolve_contour(x, y, z)
         actor = self._configure_material(actor)
         renderer.AddActor(actor)
@@ -255,6 +259,10 @@ class Lens3D(Lens2D):
         """
         sags = self._compute_sag(apply_transform=False)
         for k, (x, y, z) in enumerate(sags):
+            x = be.to_numpy(x)
+            y = be.to_numpy(y)
+            z = be.to_numpy(z)
+
             surface = self.surfaces[k].surf
             actor = revolve_contour(x, y, z)
             actor = transform_3d(actor, surface)
@@ -329,7 +337,10 @@ class Lens3D(Lens2D):
         for surface in self.surfaces:
             x, y, z = self._get_edge_points(surface)
             x, y, z = transform(x, y, z, surface.surf, is_global=False)
-            circles.append(be.stack((x, y, z), axis=-1))
+            x = be.to_numpy(x)
+            y = be.to_numpy(y)
+            z = be.to_numpy(z)
+            circles.append(np.stack((x, y, z), axis=-1))
 
         for k in range(len(circles) - 1):
             circle1 = circles[k]

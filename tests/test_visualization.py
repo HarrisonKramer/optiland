@@ -53,7 +53,7 @@ class TestOpticViewer:
         assert viewer.optic == lens
 
     @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show):
+    def test_view(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         viewer.view()
@@ -61,14 +61,14 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_from_optic(self, mock_show):
+    def test_view_from_optic(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         lens.draw()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_bonded_lens(self, mock_show):
+    def test_view_bonded_lens(self, mock_show, set_test_backend):
         lens = TessarLens()
         viewer = OpticViewer(lens)
         viewer.view()
@@ -76,7 +76,7 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_reflective_lens(self, mock_show):
+    def test_view_reflective_lens(self, mock_show, set_test_backend):
         lens = HubbleTelescope()
         viewer = OpticViewer(lens)
         viewer.view()
@@ -84,7 +84,7 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_single_field(self, mock_show):
+    def test_view_single_field(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type="angle")
@@ -95,7 +95,7 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_reference_chief_and_bundle(self, mock_show):
+    def test_reference_chief_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         viewer.view(reference="chief")
@@ -103,21 +103,21 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_reference_marginal_and_bundle(self, mock_show):
+    def test_reference_marginal_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         viewer.view(reference="marginal")
         mock_show.assert_called_once()
         plt.close()
 
-    def test_invalid_reference(self):
+    def test_invalid_reference(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         with pytest.raises(ValueError):
             viewer.view(reference="invalid")
 
     @patch("matplotlib.pyplot.show")
-    def test_reference_chief_only(self, mock_show):
+    def test_reference_chief_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         viewer.view(reference="chief", distribution=None)
@@ -125,7 +125,7 @@ class TestOpticViewer:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_reference_marginal_only(self, mock_show):
+    def test_reference_marginal_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
         viewer.view(reference="marginal", distribution=None)
@@ -134,12 +134,12 @@ class TestOpticViewer:
 
 
 class TestOpticViewer3D:
-    def test_init(self):
+    def test_init(self, set_test_backend):
         lens = TessarLens()
         viewer = OpticViewer3D(lens)
         assert viewer.optic == lens
 
-    def test_view(self):
+    def test_view(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with (
@@ -150,7 +150,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_view_asymmetric(self):
+    def test_view_asymmetric(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
@@ -162,7 +162,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_view_bonded_lens(self):
+    def test_view_bonded_lens(self, set_test_backend):
         lens = TessarLens()
         viewer = OpticViewer3D(lens)
         with (
@@ -173,7 +173,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_view_reflective_lens(self):
+    def test_view_reflective_lens(self, set_test_backend):
         lens = HubbleTelescope()
         viewer = OpticViewer3D(lens)
         with (
@@ -184,7 +184,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_view_single_field(self):
+    def test_view_single_field(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type="angle")
@@ -198,7 +198,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_non_symmetric(self):
+    def test_non_symmetric(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
@@ -213,7 +213,7 @@ class TestOpticViewer3D:
         c = viewer.system.components[0]
         assert not c.is_symmetric
 
-    def test_view_non_symmetric(self):
+    def test_view_non_symmetric(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
@@ -226,7 +226,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_reference_chief_and_bundle(self):
+    def test_reference_chief_and_bundle(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with (
@@ -237,7 +237,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_reference_marginal_and_bundle(self):
+    def test_reference_marginal_and_bundle(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with (
@@ -248,13 +248,13 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_invalid_reference(self):
+    def test_invalid_reference(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with pytest.raises(ValueError):
             viewer.view(reference="invalid")
 
-    def test_reference_chief_only(self):
+    def test_reference_chief_only(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with (
@@ -265,7 +265,7 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    def test_reference_marginal_only(self):
+    def test_reference_marginal_only(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer3D(lens)
         with (
@@ -278,7 +278,7 @@ class TestOpticViewer3D:
 
 
 class TestLensInfoViewer:
-    def test_view_standard(self, capsys):
+    def test_view_standard(self, capsys, set_test_backend):
         lens = TessarLens()
         viewer = LensInfoViewer(lens)
         viewer.view()
@@ -291,7 +291,7 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
 
-    def test_view_from_optic(self, capsys):
+    def test_view_from_optic(self, capsys, set_test_backend):
         lens = TessarLens()
         lens.info()
         captured = capsys.readouterr()
@@ -303,7 +303,7 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
 
-    def test_view_plano_convex(self, capsys):
+    def test_view_plano_convex(self, capsys, set_test_backend):
         lens = Edmund_49_847()
         viewer = LensInfoViewer(lens)
         viewer.view()
@@ -316,14 +316,14 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
 
-    def test_invalid_geometry(self):
+    def test_invalid_geometry(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[2].geometry = InvalidGeometry()
         viewer = LensInfoViewer(lens)
         with pytest.raises(ValueError):
             viewer.view()
 
-    def test_view_reflective_lens(self, capsys):
+    def test_view_reflective_lens(self, capsys, set_test_backend):
         lens = HubbleTelescope()
         viewer = LensInfoViewer(lens)
         viewer.view()
@@ -337,7 +337,7 @@ class TestLensInfoViewer:
         assert "Semi-aperture" in captured.out
         assert "Mirror" in captured.out
 
-    def test_view_asphere(self, capsys):
+    def test_view_asphere(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
         asphere_geo = EvenAsphere(CoordinateSystem(), 100)
         lens.surface_group.surfaces[2].geometry = asphere_geo
@@ -353,16 +353,13 @@ class TestLensInfoViewer:
         assert "Semi-aperture" in captured.out
         assert "Even Asphere" in captured.out
 
-    def test_view_material_file(self, capsys):
+    def test_view_material_file(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
         filename = str(
             resources.files("optiland.database").joinpath(
                 "data-nk/glass/hoya/LAC9.yml"
             ),
         )
-        # filename = pkg_resources.resource_filename(
-        #    'optiland.database', 'data-nk/glass/hoya/LAC9.yml'
-        # )
         mat = MaterialFile(filename)
         lens.surface_group.surfaces[2].material_post = mat
         viewer = LensInfoViewer(lens)
@@ -376,7 +373,7 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
 
-    def test_view_ideal_material(self, capsys):
+    def test_view_ideal_material(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
         mat = IdealMaterial(1.5)
         lens.surface_group.surfaces[2].material_post = mat
@@ -391,14 +388,14 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
 
-    def test_view_invalid_material(self):
+    def test_view_invalid_material(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[2].material_post = InvalidMaterial()
         viewer = LensInfoViewer(lens)
         with pytest.raises(ValueError):
             viewer.view()
 
-    def test_view_abbe_material(self):
+    def test_view_abbe_material(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60)
         viewer = LensInfoViewer(lens)

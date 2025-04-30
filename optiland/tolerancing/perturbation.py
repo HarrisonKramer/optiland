@@ -107,10 +107,14 @@ class DistributionSampler(BaseSampler):
     """
 
     def __init__(self, distribution, seed=None, **params):
-        if seed is not None:
-            be.random.seed(seed)
+        self.generator = be.default_rng(seed)
         self.distribution = distribution
         self.params = params
+
+        valid_params = ["loc", "scale", "low", "high"]
+        for param in params:
+            if param not in valid_params:
+                raise ValueError(f"Invalid parameter: {param}")
 
     def sample(self):
         """Return a random value from the given distribution.
@@ -121,9 +125,9 @@ class DistributionSampler(BaseSampler):
         """
         # TODO: consider vectorizing this method with 'size' parameter
         if self.distribution == "normal":
-            return be.random.normal(**self.params)
+            return be.random_normal(**self.params, generator=self.generator)
         if self.distribution == "uniform":
-            return be.random.uniform(**self.params)
+            return be.random_uniform(**self.params, generator=self.generator)
         raise ValueError(f"Unknown distribution: {self.distribution}")
 
 

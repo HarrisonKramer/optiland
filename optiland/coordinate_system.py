@@ -48,13 +48,13 @@ class CoordinateSystem:
         rz: float = 0,
         reference_cs: "CoordinateSystem" = None,
     ):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = be.array(x)
+        self.y = be.array(y)
+        self.z = be.array(z)
 
-        self.rx = rx
-        self.ry = ry
-        self.rz = rz
+        self.rx = be.array(rx)
+        self.ry = be.array(ry)
+        self.rz = be.array(rz)
 
         self.reference_cs = reference_cs
 
@@ -114,8 +114,23 @@ class CoordinateSystem:
             be.ndarray: The rotation matrix of the coordinate system.
 
         """
-        rotation = be.array([self.rx, self.ry, self.rz])
-        return R.from_euler("xyz", rotation).as_matrix()
+        rx, ry, rz = self.rx, self.ry, self.rz
+
+        Rx = be.array(
+            [[1, 0, 0], [0, be.cos(rx), -be.sin(rx)], [0, be.sin(rx), be.cos(rx)]]
+        )
+
+        Ry = be.array(
+            [[be.cos(ry), 0, be.sin(ry)], [0, 1, 0], [-be.sin(ry), 0, be.cos(ry)]]
+        )
+
+        Rz = be.array(
+            [[be.cos(rz), -be.sin(rz), 0], [be.sin(rz), be.cos(rz), 0], [0, 0, 1]]
+        )
+
+        R = Rz @ Ry @ Rx
+
+        return R
 
     def get_effective_transform(self):
         """Get the effective translation and rotation matrix of the CS
@@ -149,7 +164,10 @@ class CoordinateSystem:
         """
         _, eff_rot_mat = self.get_effective_transform()
         # Convert the effective rotation matrix back to Euler angles
-        return R.from_matrix(eff_rot_mat).as_euler("xyz")
+        # detach & convert to plain numpy so SciPy won’t try to call .numpy()
+        # on a grad model
+        matrix = be.to_numpy(eff_rot_mat)
+        return R.from_matrix(matrix).as_euler("xyz")
 
     def to_dict(self):
         """Convert the coordinate system to a dictionary.

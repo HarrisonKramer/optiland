@@ -23,7 +23,7 @@ def setup_image_surface():
     return image_surface, geometry, material_pre, material_post
 
 
-def test_initialization(setup_image_surface):
+def test_initialization(set_test_backend, setup_image_surface):
     image_surface, geometry, material_pre, material_post = setup_image_surface
     assert image_surface.geometry == geometry
     assert image_surface.material_pre == material_pre
@@ -31,7 +31,7 @@ def test_initialization(setup_image_surface):
     assert not image_surface.is_stop
 
 
-def test_trace_paraxial(setup_image_surface):
+def test_trace_paraxial(set_test_backend, setup_image_surface):
     image_surface, _, _, _ = setup_image_surface
     y = be.array([1])
     u = be.array([0])
@@ -41,9 +41,9 @@ def test_trace_paraxial(setup_image_surface):
     image_surface._trace_paraxial(rays)
 
 
-def test_interact(setup_image_surface):
+def test_interact(set_test_backend, setup_image_surface):
     image_surface, _, _, _ = setup_image_surface
-    x = be.random.rand(10)
+    x = be.random_uniform(size=10)
     rays = RealRays(x, x, x, x, x, x, x, x)
     modified_rays = image_surface._interact(rays)
     assert modified_rays == rays

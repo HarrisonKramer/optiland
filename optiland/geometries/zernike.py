@@ -77,6 +77,8 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         norm_radius: float = 1,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
+        if coefficients is None:
+            coefficients = []
         self.c = be.atleast_1d(coefficients)
         self.norm_radius = norm_radius
         self.is_symmetric = False

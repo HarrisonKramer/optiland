@@ -45,7 +45,7 @@ class BaseJones(ABC):
             be.ndarray: The calculated Jones matrix.
 
         """
-        return be.tile(be.eye(3), (rays.x.size, 1, 1))  # pragma: no cover
+        return be.tile(be.eye(3), (be.size(rays.x), 1, 1))  # pragma: no cover
 
 
 class JonesFresnel(BaseJones):
@@ -89,11 +89,11 @@ class JonesFresnel(BaseJones):
         # precomputations for speed
         cos_theta_i = be.cos(aoi)
         n = n2 / n1
-        radicand = (n**2 - be.sin(aoi) ** 2).astype(complex)
+        radicand = be.to_complex(n**2 - be.sin(aoi) ** 2)
         root = be.sqrt(radicand)
 
         # compute fresnel coefficients & compute jones matrices
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         if reflect:
             s = (cos_theta_i - root) / (cos_theta_i + root)
             p = (n**2 * cos_theta_i - root) / (n**2 * cos_theta_i + root)
@@ -134,7 +134,7 @@ class JonesPolarizerH(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 1
         jones_matrix[:, 1, 1] = 0
         jones_matrix[:, 2, 2] = 1
@@ -164,7 +164,7 @@ class JonesPolarizerV(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0
         jones_matrix[:, 1, 1] = 1
         jones_matrix[:, 2, 2] = 1
@@ -194,7 +194,7 @@ class JonesPolarizerL45(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
         jones_matrix[:, 0, 1] = 0.5
         jones_matrix[:, 1, 0] = 0.5
@@ -226,7 +226,7 @@ class JonesPolarizerL135(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
         jones_matrix[:, 0, 1] = -0.5
         jones_matrix[:, 1, 0] = -0.5
@@ -258,7 +258,7 @@ class JonesPolarizerRCP(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
         jones_matrix[:, 0, 1] = 1j * 0.5
         jones_matrix[:, 1, 0] = -1j * 0.5
@@ -290,7 +290,7 @@ class JonesPolarizerLCP(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
         jones_matrix[:, 0, 1] = -1j * 0.5
         jones_matrix[:, 1, 0] = 1j * 0.5
@@ -318,9 +318,9 @@ class JonesLinearDiattenuator(BaseJones):
     """
 
     def __init__(self, t_min, t_max, theta):
-        self.t_min = t_min
-        self.t_max = t_max
-        self.theta = theta
+        self.t_min = be.array(t_min)
+        self.t_max = be.array(t_max)
+        self.theta = be.array(theta)
 
     def calculate_matrix(
         self,
@@ -349,7 +349,7 @@ class JonesLinearDiattenuator(BaseJones):
             self.t_max * be.sin(self.theta) ** 2 + self.t_min * be.cos(self.theta) ** 2
         )
 
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = j00
         jones_matrix[:, 0, 1] = j0x
         jones_matrix[:, 1, 0] = j0x
@@ -374,8 +374,8 @@ class JonesLinearRetarder(BaseJones):
     """
 
     def __init__(self, retardance, theta):
-        self.retardance = retardance
-        self.theta = theta
+        self.retardance = be.array(retardance)
+        self.theta = be.array(theta)
 
     def calculate_matrix(
         self,
@@ -402,7 +402,7 @@ class JonesLinearRetarder(BaseJones):
         j0x = -1j * be.sin(d / 2) * be.sin(2 * t)
         j11 = be.exp(1j * d / 2) * be.cos(t) ** 2 + be.exp(-1j * d / 2) * be.sin(t) ** 2
 
-        jones_matrix = be.zeros((rays.x.size, 3, 3), dtype=complex)
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = j00
         jones_matrix[:, 0, 1] = j0x
         jones_matrix[:, 1, 0] = j0x

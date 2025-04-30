@@ -59,7 +59,9 @@ class RmsSpotSizeVsField(SpotDiagram):
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(self._field[:, 1], self._spot_size, label=labels)
+        ax.plot(
+            be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels
+        )
 
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Spot Size (mm)")
@@ -119,7 +121,11 @@ class RmsWavefrontErrorVsField(Wavefront):
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(self._field[:, 1], self._wavefront_error, label=labels)
+        ax.plot(
+            be.to_numpy(self._field[:, 1]),
+            be.to_numpy(self._wavefront_error),
+            label=labels,
+        )
 
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")
@@ -134,8 +140,13 @@ class RmsWavefrontErrorVsField(Wavefront):
 
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""
-        wavefront_error = be.zeros((self.num_fields, len(self.wavelengths)))
+        rows = []
         for i in range(self.num_fields):
+            cols = []
             for j in range(len(self.wavelengths)):
-                wavefront_error[i, j] = be.sqrt(be.mean(self.data[i][j][0] ** 2))
-        return wavefront_error
+                rms_ij = be.sqrt(be.mean(self.data[i][j][0] ** 2))
+                cols.append(rms_ij)
+            # turn this row into a backend array/tensor
+            rows.append(be.stack(cols, axis=0))
+        # stack all rows into the final 2‑D result
+        return be.stack(rows, axis=0)

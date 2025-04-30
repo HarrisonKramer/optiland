@@ -95,14 +95,20 @@ class GeometricMTF(SpotDiagram):
             self._plot_field(ax, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
-            ax.plot(self.freq, self.diff_limited_mtf, "k--", label="Diffraction Limit")
+            ax.plot(
+                be.to_numpy(self.freq),
+                be.to_numpy(self.diff_limited_mtf),
+                "k--",
+                label="Diffraction Limit",
+            )
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        ax.set_xlim([0, self.max_freq])
+        ax.set_xlim([0, be.to_numpy(self.max_freq)])
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation", labelpad=10)
         plt.tight_layout()
+        plt.grid(alpha=0.25)
         plt.show()
 
     def _generate_mtf_data(self):
@@ -146,7 +152,7 @@ class GeometricMTF(SpotDiagram):
         x = (edges[1:] + edges[:-1]) / 2
         dx = x[1] - x[0]
 
-        mtf = be.zeros_like(v)
+        mtf = be.copy(be.zeros_like(v))  # copy required to maintain gradient
         for k in range(len(v)):
             Ac = be.sum(A * be.cos(2 * be.pi * v[k] * x) * dx) / be.sum(A * dx)
             As = be.sum(A * be.sin(2 * be.pi * v[k] * x) * dx) / be.sum(A * dx)
@@ -166,15 +172,15 @@ class GeometricMTF(SpotDiagram):
 
         """
         ax.plot(
-            self.freq,
-            mtf_data[0],
+            be.to_numpy(self.freq),
+            be.to_numpy(mtf_data[0]),
             label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential",
             color=color,
             linestyle="-",
         )
         ax.plot(
-            self.freq,
-            mtf_data[1],
+            be.to_numpy(self.freq),
+            be.to_numpy(mtf_data[1]),
             label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal",
             color=color,
             linestyle="--",
@@ -279,10 +285,15 @@ class FFTMTF:
             ratio = be.clip(ratio, -1, 1)  # avoid invalid value in arccos
             phi = be.arccos(ratio)
             diff_limited_mtf = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
-            ax.plot(freq, diff_limited_mtf, "k--", label="Diffraction Limit")
+            ax.plot(
+                be.to_numpy(freq),
+                be.to_numpy(diff_limited_mtf),
+                "k--",
+                label="Diffraction Limit",
+            )
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        ax.set_xlim([0, self.max_freq])
+        ax.set_xlim([0, be.to_numpy(self.max_freq)])
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation Transfer Function", labelpad=10)
@@ -301,15 +312,15 @@ class FFTMTF:
 
         """
         ax.plot(
-            freq,
-            mtf_data[0],
+            be.to_numpy(freq),
+            be.to_numpy(mtf_data[0]),
             label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential",
             color=color,
             linestyle="-",
         )
         ax.plot(
-            freq,
-            mtf_data[1],
+            be.to_numpy(freq),
+            be.to_numpy(mtf_data[1]),
             label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal",
             color=color,
             linestyle="--",

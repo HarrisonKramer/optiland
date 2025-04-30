@@ -12,6 +12,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.interpolate import griddata
 
 import optiland.backend as be
@@ -152,7 +153,7 @@ class Wavefront:
             ValueError: If the chief ray cannot be determined.
 
         """
-        if self.optic.surface_group.x[-1, :].size != 1:
+        if be.size(self.optic.surface_group.x[-1, :]) != 1:
             raise ValueError("Chief ray cannot be determined. It must be traced alone.")
 
         # chief ray intersection location
@@ -179,8 +180,9 @@ class Wavefront:
             float: The optical path difference.
 
         """
-        opd = self.optic.surface_group.opd[-1, :]
-        return opd - self._opd_image_to_xp(xc, yc, zc, r, wavelength)
+        opd_chief = self.optic.surface_group.opd[-1, :]
+        opd_img = self._opd_image_to_xp(xc, yc, zc, r, wavelength)
+        return opd_chief - opd_img
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the optical path difference.
@@ -307,7 +309,7 @@ class OPDFan(Wavefront):
         )
 
         # assure axes is a 2D array
-        axs = be.atleast_2d(axs)
+        axs = np.atleast_2d(axs)
 
         for i, field in enumerate(self.fields):
             for j, wavelength in enumerate(self.wavelengths):
@@ -317,12 +319,12 @@ class OPDFan(Wavefront):
                 intensity_x = self.data[i][j][1][self.num_rays :]
                 intensity_y = self.data[i][j][1][: self.num_rays]
 
-                wx[intensity_x == 0] = be.nan
-                wy[intensity_y == 0] = be.nan
+                wx[intensity_x == 0] = np.nan
+                wy[intensity_y == 0] = np.nan
 
                 axs[i, 0].plot(
-                    self.pupil_coord,
-                    wy,
+                    be.to_numpy(self.pupil_coord),
+                    be.to_numpy(wy),
                     zorder=3,
                     label=f"{wavelength:.4f} µm",
                 )
@@ -335,8 +337,8 @@ class OPDFan(Wavefront):
                 axs[i, 0].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
                 axs[i, 1].plot(
-                    self.pupil_coord,
-                    wx,
+                    be.to_numpy(self.pupil_coord),
+                    be.to_numpy(wy),
                     zorder=3,
                     label=f"{wavelength:.4f} µm",
                 )
@@ -427,7 +429,7 @@ class OPD(Wavefront):
 
         """
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(be.flipud(data["z"]), extent=[-1, 1, -1, 1])
+        im = ax.imshow(np.flipud(data["z"]), extent=[-1, 1, -1, 1])
 
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
@@ -479,17 +481,17 @@ class OPD(Wavefront):
             dict: The OPD map data.
 
         """
-        x = self.distribution.x
-        y = self.distribution.y
-        z = self.data[0][0][0]
-        intensity = self.data[0][0][1]
+        x = be.to_numpy(self.distribution.x)
+        y = be.to_numpy(self.distribution.y)
+        z = be.to_numpy(self.data[0][0][0])
+        intensity = be.to_numpy(self.data[0][0][1])
 
-        x_interp, y_interp = be.meshgrid(
-            be.linspace(-1, 1, num_points),
-            be.linspace(-1, 1, num_points),
+        x_interp, y_interp = np.meshgrid(
+            np.linspace(-1, 1, num_points),
+            np.linspace(-1, 1, num_points),
         )
 
-        points = be.column_stack((x.flatten(), y.flatten()))
+        points = np.column_stack((x.flatten(), y.flatten()))
         values = z.flatten() * intensity.flatten()
 
         z_interp = griddata(points, values, (x_interp, y_interp), method="cubic")

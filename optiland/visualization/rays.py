@@ -5,6 +5,7 @@ This module contains classes for visualizing rays in an optical system.
 Kramer Harrison, 2024
 """
 
+import numpy as np
 import vtk
 
 import optiland.backend as be
@@ -139,7 +140,7 @@ class Rays2D:
 
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
-        r_extent_new = be.zeros_like(self.r_extent)
+        r_extent_new = be.copy(be.zeros_like(self.r_extent))
         for i, surf in enumerate(self.optic.surface_group.surfaces):
             # convert to local coordinate system
             x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
@@ -166,15 +167,15 @@ class Rays2D:
         """
         # loop through rays
         for k in range(self.z.shape[1]):
-            xk = self.x[:, k]
-            yk = self.y[:, k]
-            zk = self.z[:, k]
-            ik = self.i[:, k]
+            xk = be.to_numpy(self.x[:, k])
+            yk = be.to_numpy(self.y[:, k])
+            zk = be.to_numpy(self.z[:, k])
+            ik = be.to_numpy(self.i[:, k])
 
             # remove rays outside aperture
-            xk[ik == 0] = be.nan
-            zk[ik == 0] = be.nan
-            yk[ik == 0] = be.nan
+            xk[ik == 0] = np.nan
+            zk[ik == 0] = np.nan
+            yk[ik == 0] = np.nan
 
             self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
 

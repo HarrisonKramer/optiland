@@ -1,5 +1,6 @@
 import pytest
 
+import optiland.backend as be
 from optiland.optic import Optic
 from optiland.paraxial import Paraxial
 from optiland.samples.eyepieces import EyepieceErfle
@@ -24,6 +25,7 @@ from optiland.samples.simple import (
     TelescopeDoublet,
 )
 from optiland.samples.telescopes import HubbleTelescope
+from .utils import assert_allclose
 
 # TODO: add tests for non-air object and image spaces
 
@@ -31,7 +33,7 @@ from optiland.samples.telescopes import HubbleTelescope
 def get_optic_data():
     return [
         (
-            EyepieceErfle(),
+            EyepieceErfle,
             {
                 "f1": -79.68780891169393,
                 "f2": 79.68780891169399,
@@ -54,7 +56,7 @@ def get_optic_data():
             },
         ),
         (
-            HubbleTelescope(),
+            HubbleTelescope,
             {
                 "f1": -57600.08099840297,
                 "f2": 57600.080998403595,
@@ -77,7 +79,7 @@ def get_optic_data():
             },
         ),
         (
-            InfraredTriplet(),
+            InfraredTriplet,
             {
                 "f1": -10.002605806173715,
                 "f2": 10.002605806173719,
@@ -100,7 +102,7 @@ def get_optic_data():
             },
         ),
         (
-            InfraredTripletF4(),
+            InfraredTripletF4,
             {
                 "f1": -3.978671113840911,
                 "f2": 3.978671113840912,
@@ -123,7 +125,7 @@ def get_optic_data():
             },
         ),
         (
-            Edmund_49_847(),
+            Edmund_49_847,
             {
                 "f1": -25.397595913429043,
                 "f2": 25.397595913429043,
@@ -146,7 +148,7 @@ def get_optic_data():
             },
         ),
         (
-            SingletStopSurf2(),
+            SingletStopSurf2,
             {
                 "f1": -101.5018259488552,
                 "f2": 101.50182594885518,
@@ -169,7 +171,7 @@ def get_optic_data():
             },
         ),
         (
-            TelescopeDoublet(),
+            TelescopeDoublet,
             {
                 "f1": -48.01075268520558,
                 "f2": 48.01075268520557,
@@ -192,7 +194,7 @@ def get_optic_data():
             },
         ),
         (
-            CementedAchromat(),
+            CementedAchromat,
             {
                 "f1": -20.005995274922704,
                 "f2": 20.005995274922707,
@@ -215,7 +217,7 @@ def get_optic_data():
             },
         ),
         (
-            TripletTelescopeObjective(),
+            TripletTelescopeObjective,
             {
                 "f1": -100.00126142179896,
                 "f2": 100.00126142179887,
@@ -238,7 +240,7 @@ def get_optic_data():
             },
         ),
         (
-            CookeTriplet(),
+            CookeTriplet,
             {
                 "f1": -49.99978307143189,
                 "f2": 49.9997830714319,
@@ -261,7 +263,7 @@ def get_optic_data():
             },
         ),
         (
-            DoubleGauss(),
+            DoubleGauss,
             {
                 "f1": -100.00374787083722,
                 "f2": 100.00374787083722,
@@ -284,7 +286,7 @@ def get_optic_data():
             },
         ),
         (
-            ReverseTelephoto(),
+            ReverseTelephoto,
             {
                 "f1": -2.0052402707991126,
                 "f2": 2.005240270799113,
@@ -307,7 +309,7 @@ def get_optic_data():
             },
         ),
         (
-            ObjectiveUS008879901(),
+            ObjectiveUS008879901,
             {
                 "f1": -35.97568215109414,
                 "f2": 35.97568215109414,
@@ -330,7 +332,7 @@ def get_optic_data():
             },
         ),
         (
-            TelescopeObjective48Inch(),
+            TelescopeObjective48Inch,
             {
                 "f1": -47.98450947876417,
                 "f2": 47.98450947876408,
@@ -353,7 +355,7 @@ def get_optic_data():
             },
         ),
         (
-            HeliarLens(),
+            HeliarLens,
             {
                 "f1": -10.006529335414514,
                 "f2": 10.006529335414516,
@@ -376,7 +378,7 @@ def get_optic_data():
             },
         ),
         (
-            TessarLens(),
+            TessarLens,
             {
                 "f1": -3.9977777470211935,
                 "f2": 3.9977777470211935,
@@ -399,7 +401,7 @@ def get_optic_data():
             },
         ),
         (
-            LensWithFieldCorrector(),
+            LensWithFieldCorrector,
             {
                 "f1": -127.05805143206146,
                 "f2": 127.0580514320616,
@@ -422,7 +424,7 @@ def get_optic_data():
             },
         ),
         (
-            PetzvalLens(),
+            PetzvalLens,
             {
                 "f1": -50.58453173454361,
                 "f2": 50.584531734543596,
@@ -445,7 +447,7 @@ def get_optic_data():
             },
         ),
         (
-            Telephoto(),
+            Telephoto,
             {
                 "f1": -127.01660113786153,
                 "f2": 127.01660113786154,
@@ -470,7 +472,13 @@ def get_optic_data():
     ]
 
 
-def test_paraxial_init():
+@pytest.fixture
+def optic_and_values(set_test_backend, request):
+    cls, values = request.param
+    return cls(), values
+
+
+def test_paraxial_init(set_test_backend):
     optic = Optic()  # Create a dummy Optic object
     paraxial = Paraxial(optic)
 
@@ -478,114 +486,185 @@ def test_paraxial_init():
     assert paraxial.surfaces == optic.surface_group
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_f1(optic_instance, values):
-    assert optic_instance.paraxial.f1() == values["f1"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_f1(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.f1(), values["f1"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_f2(optic_instance, values):
-    assert optic_instance.paraxial.f2() == values["f2"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_f2(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.f2(), values["f2"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_F1(optic_instance, values):
-    assert optic_instance.paraxial.F1() == values["F1"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_F1(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.F1(), values["F1"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_F2(optic_instance, values):
-    assert optic_instance.paraxial.F2() == values["F2"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_F2(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.F2(), values["F2"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_P1(optic_instance, values):
-    assert optic_instance.paraxial.P1() == values["P1"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_P1(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.P1(), values["P1"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_P2(optic_instance, values):
-    assert optic_instance.paraxial.P2() == values["P2"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_P2(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.P2(), values["P2"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_P1anti(optic_instance, values):
-    assert optic_instance.paraxial.P1anti() == values["P1anti"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_P1anti(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.P1anti(), values["P1anti"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_P2anti(optic_instance, values):
-    assert optic_instance.paraxial.P2anti() == values["P2anti"]
+
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_P2anti(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.P2anti(), values["P2anti"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_N1(optic_instance, values):
-    assert optic_instance.paraxial.N1() == pytest.approx(values["N1"])
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_N1(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.N1(), values["N1"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_N2(optic_instance, values):
-    assert optic_instance.paraxial.N2() == pytest.approx(values["N2"])
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_N2(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.N2(), values["N2"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_N1anti(optic_instance, values):
-    assert optic_instance.paraxial.N1anti() == values["N1anti"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_EPL(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.EPL(), values["EPL"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_N2anti(optic_instance, values):
-    assert optic_instance.paraxial.N2anti() == values["N2anti"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_EPD(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.EPD(), values["EPD"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_EPL(optic_instance, values):
-    assert optic_instance.paraxial.EPL() == values["EPL"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_XPL(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.XPL(), values["XPL"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_EPD(optic_instance, values):
-    assert optic_instance.paraxial.EPD() == values["EPD"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_XPD(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.XPD(), values["XPD"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_XPL(optic_instance, values):
-    assert optic_instance.paraxial.XPL() == values["XPL"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_FNO(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.FNO(), values["FNO"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_XPD(optic_instance, values):
-    assert optic_instance.paraxial.XPD() == values["XPD"]
+@pytest.mark.parametrize(
+    "optic_and_values",
+    get_optic_data(),
+    indirect=True
+)
+def test_calculate_invariant(optic_and_values):
+    optic_instance, values = optic_and_values
+    assert_allclose(optic_instance.paraxial.invariant(), values["invariant"])
 
 
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_FNO(optic_instance, values):
-    assert optic_instance.paraxial.FNO() == values["FNO"]
-
-
-@pytest.mark.parametrize("optic_instance,values", get_optic_data())
-def test_calculate_invariant(optic_instance, values):
-    assert optic_instance.paraxial.invariant() == values["invariant"]
-
-
-def test_get_object_position_finite_object():
+def test_get_object_position_finite_object(set_test_backend):
     lens = Edmund_49_847()
 
     # move object to z = -10
-    lens.surface_group.surfaces[0].geometry.cs.z = -10
+    lens.surface_group.surfaces[0].geometry.cs.z = be.array(-10)
     y, z = lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=-5)
 
-    assert z.item() == -10
-    assert y.item() == 0
+    assert_allclose(z, -10)
+    assert_allclose(y, 0)
 
     # make field type object height
     lens.set_field_type(field_type="object_height")
     y, z = lens.paraxial._ray_tracer._get_object_position(Hy=1, y1=0, EPL=-5)
-    assert z.item() == -10
-    assert y.item() == -14
+    assert_allclose(z, -10)
+    assert_allclose(y, -14)
 
 
-def test_invalid_object_position_call():
+def test_invalid_object_position_call(set_test_backend):
     # object position can't be calculated for field type object height
     # when the object is at infinity
     lens = Edmund_49_847()
