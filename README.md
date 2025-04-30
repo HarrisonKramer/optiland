@@ -29,20 +29,21 @@
   </ol>
 </details>
 
+---
+
 ## Introduction
 
-**Optiland** is a Python‑based, open‑source framework for optical design, analysis, and optimization. Its clean, Pythonic API makes it easy to:
+**Optiland** provides a flexible Python interface for optical system design—whether you're tracing rays through traditional lenses or training differentiable models with PyTorch. It supports both classical engineering workflows and cutting-edge research needs.
 
-- Build, trace, and analyze lens and mirror systems (paraxial → real → polarization-aware)
-- Perform paraxial, wavefront, PSF/MTF, and scattering analyses
-- Optimize via local/global solvers or differentiable ML pipelines
-- Visualize in 2D (matplotlib) and 3D (VTK)
-- Extend with custom surfaces, coatings, optimization operands, and more
+It lets you:
 
-Under the hood, Optiland leverages **NumPy** for CPU‑bound tasks and **PyTorch** for GPU acceleration and autograd‑enabled workflows - so you get the best of both worlds.
+- ⚙️ Build lens and mirror systems with a clean, object-oriented API  
+- 🔍 Trace rays through multi-surface optical assemblies, including aspherics and freeforms
+- 📊 Analyze paraxial properties, wavefront errors, PSFs/MTFs, and scatter behavior 
+- 🧠 Optimize via traditional merit functions *or* autograd-enabled differentiable backends  
+- 🎨 Visualize interactively in 2D (Matplotlib) and 3D (VTK)
 
-Get started immediately with [Optiland Tutorial #1](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_1a_Optiland_for_Beginners.ipynb), see the extensive [Learning Guide](https://github.com/HarrisonKramer/optiland?tab=readme-ov-file#learning-guide), or read the full documentation at [Read the Docs](https://optiland.readthedocs.io/).
-
+Under the hood, Optiland uses **NumPy** for fast CPU calculations and **PyTorch** for GPU acceleration and automatic differentiation. Switch between engines depending on your use case—with the same interface.
 
 <figure style="text-align: center;">
   <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/telephoto.png" alt="U.S. patent 2959100" style="width: 800px;">
@@ -54,6 +55,11 @@ from optiland.samples.objectives import ReverseTelephoto
 lens = ReverseTelephoto()
 lens.draw3D()
 ```
+
+🚀 **Quickstart**  
+1. 🌟 [Quickstart Tutorial](https://optiland.readthedocs.io/en/latest/examples/Tutorial_1a_Optiland_for_Beginners.html) – build your first lens in 5 minutes  
+2. 📘 [Full Learning Guide](https://optiland.readthedocs.io/en/latest/learning_guide.html) – in-depth guide to learning Optiland 
+3. 👩‍💻 [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) – explore every class and function  
 
 ---
 
