@@ -2,6 +2,7 @@ import optiland.backend as be
 import pytest
 
 from optiland.optic import Optic
+from optiland.materials import Material, IdealMaterial
 from optiland import geometries
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
@@ -779,7 +780,7 @@ def basic_toroid_geometry():
         radius_rotation=radius_rotation,
         radius_yz=radius_yz,
         conic=conic,
-        coefficients_poly_y=coeffs_poly_y
+        coeffs_poly_y=coeffs_poly_y
     )
 
 @pytest.fixture
@@ -820,7 +821,7 @@ class TestToroidalGeometry:
             radius_rotation=100.0,
             radius_yz=50.0,
             conic=-0.5,
-            coefficients_poly_y=[1e-5],
+            coeffs_poly_y=[1e-5],
         )
         assert str(geometry) == "Toroidal"
 
@@ -894,35 +895,64 @@ class TestToroidalGeometry:
         calculated_z = cylinder_y_geometry.sag(x, y)
         be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
     
-    def test_toroidal_ray_tracing_comparison(self, basic_toroid_geometry):
+    def test_toroidal_sag_vs_zemax(self, basic_toroid_geometry):
+        """
+        Compares sag values calculated by Optiland with
+        Zemax data for the basic_toroid_geometry.
+        """
+        geometry = basic_toroid_geometry
+
+        x_coords = be.array([0.0,  2.5, 0.0, -2.5,  5.0,  -5.0,  2.5, -2.5])
+        y_coords = be.array([0.0,  0.0, 2.5,  0.0,  2.5,  -2.5, -2.5,  2.5])
+
+        # --- Zemax Sag Data ---
+        zemax_z_sag = be.array([
+            0.0,                      # (0, 0) - Vertex
+            3.125488433897521E-002,   # (2.5, 0) 
+            6.258204346657634E-002,   # (0, 2.5) 
+            3.125488433897521E-002,   # (-2.5, 0) 
+            1.877386899843393E-001,   # (5, 2.5) 
+            1.877386899843393E-001,   # (-5, -2.5) 
+            9.385650612446353E-002,   # (2.5, -2.5) 
+            9.385650612446353E-002    # (-2.5, 2.5) 
+        ]) 
+
+        # Calculate sag using Optiland
+        optiland_z_sag = geometry.sag(x_coords, y_coords)
+
+        assert be.allclose(optiland_z_sag,zemax_z_sag,rtol=1e-5,atol=1e-6)
+
+    
+    def test_toroidal_ray_tracing_comparison(self):
         """
         Traces rays through a single toroidal surface and compares output
         with Zemax ray tracing data for the same system.
         """
         # --- System Setup ---
         lens = Optic()
-        lens.add_surface(index=0, thickness=be.inf, material="air")
+        lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(
             index=1,
-            surface_type="toroidal", 
-            thickness=5.0, 
-            material="BK7",
-            is_stop=True, 
-            radius=basic_toroid_geometry.R_rot,
-            radius_y=basic_toroid_geometry.R_yz,
-            conic=basic_toroid_geometry.k_yz,
-            coefficients_poly_y=basic_toroid_geometry.coeffs_poly_y.tolist(),
+            surface_type="toroidal",
+            thickness=5.0,
+            material=IdealMaterial(n=1.5, k=0),
+            is_stop=True,
+            radius=100.0,
+            radius_y=50.0,
+            conic=-0.5,
+            toroidal_coeffs_poly_y=[0.05, 0.0002],
         )
         lens.add_surface(index=2, thickness=10.0, material="air")
         lens.add_surface(index=3)
         
         lens.set_aperture(aperture_type="EPD", value=10.0)
+        lens.add_wavelength(value=0.550, is_primary=True)
         lens.set_field_type("angle")
-        lens.add_field(y=0, x=0)
+        lens.add_field(y=0)
 
         num_rays = 5 # Number of rays per fan
-        wavelength = 0.55
-        z_start = -100.0
+        wavelength = 0.550
+        z_start = 0.0
 
         # --- Tangential (Y) Fan Test ---
         y_coords = be.linspace(-5.0, 5.0, num_rays)
@@ -939,21 +969,14 @@ class TestToroidalGeometry:
 
         # Trace Y-Fan Rays
         rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
-
+        print("Y-Fan Rays:")
+        print(rays_out_yfan.y)
         zemax_x_out_yfan = be.array([0.0] * num_rays) 
-        # with coefficients_poly_y diff than 0
-        zemax_y_out_yfan = be.array([-4.317285472489155, -2.155929946504465, 0, 2.155929946504465, 4.317285472489155]) 
+        zemax_y_out_yfan = be.array([-8.123193233401276E-001, -4.676255499616224E-001, 0, 4.676255499616224E-001, 8.123193233401276E-001]) 
         zemax_z_out_yfan = be.array([15.0] * num_rays) 
         zemax_L_out_yfan = be.array([0.0] * num_rays) 
-        zemax_M_out_yfan = be.array([5.194502608548149e-2, 2.595715309912825e-2, 0.0, -2.595715309912825e-2, -5.194502608548149e-2]) 
-        zemax_N_out_yfan = be.array([9.986499458093305e-1, 9.996630563359779e-1, 1.0, 9.996630563359779-1, 9.986499458093305e-1]) 
-        # with coefficients_poly_y = 0 - ALL GOOD
-        #zemax_y_out_yfan = be.array([-4.317956510122740E+000, -2.156272296229334E+000, 0, 2.156272296229334E+000, 4.317956510122740E+000]) 
-        #zemax_z_out_yfan = be.array([15.0] * num_rays) 
-        #zemax_L_out_yfan = be.array([0.0] * num_rays) 
-        #zemax_M_out_yfan = be.array([5.189343964182488E-002, 2.593126020943911E-002, 0.0, -2.593126020943911E-002, -5.189343964182488E-002]) 
-        #zemax_N_out_yfan = be.array([9.986526277550868E-001, 9.996637283326578E-001, 1.0, 9.996637283326578E-001, 9.986526277550868E-001]) 
-
+        zemax_M_out_yfan = be.array([3.251509839270260E-001, 1.537950377308984E-001, 0.0, -1.537950377308984E-001, -3.251509839270260E-001]) 
+        zemax_N_out_yfan = be.array([9.456621160072382E-001, 9.881027711576116E-001, 1.0, 9.881027711576116E-001, 9.456621160072382E-001]) 
 
         # Comparison Assertions for Y-Fan
         assert be.allclose(rays_out_yfan.x, zemax_x_out_yfan, rtol=1e-5, atol=1e-6)
@@ -973,7 +996,7 @@ class TestToroidalGeometry:
         assert geom_dict["radius_rotation"] == 100.0
         assert geom_dict["radius_yz"] == 50.0
         assert geom_dict["conic_yz"] == -0.5
-        assert geom_dict["coefficients_poly_y"] == [1e-5]
+        assert geom_dict["coeffs_poly_y"] == [1e-5]
         
         assert "radius" not in geom_dict
         assert "conic" not in geom_dict

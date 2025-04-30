@@ -52,7 +52,7 @@ class GeometryConfig:
     norm_y: float = 1.0
     norm_radius: float = 1.0
     radius_y: float = be.inf
-    toroidal_coefficients_poly_y: list[float] = field(default_factory=list)
+    toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
 
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
@@ -211,7 +211,7 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
         radius_rotation=config.radius, 
         radius_yz=config.radius_y,     
         conic=config.conic,            
-        coefficients_poly_y=config.toroidal_coefficients_poly_y, 
+        coeffs_poly_y=config.toroidal_coeffs_poly_y, 
         tol=config.tol,
         max_iter=config.max_iter,
     )

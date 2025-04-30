@@ -29,28 +29,27 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         radius_rotation (float): Radius of rotation R (X-Z radius).
         radius_yz (float): Base Y-Z radius R_y.
         conic (float, optional): Conic constant k for the Y-Z curve. Defaults to 0.0.
-        coefficients_poly_y (list[float], optional): Polynomial coefficients alpha_i
+        coeffs_poly_y (list[float], optional): Polynomial coefficients alpha_i
             for the Y-Z curve (powers y^2, y^4, ...). Defaults to [].
         tol (float, optional): Newton-Raphson tolerance. Defaults to 1e-10.
         max_iter (int, optional): Newton-Raphson max iterations. Defaults to 100.
     """
     def __init__(self,coordinate_system: CoordinateSystem,radius_rotation: float,radius_yz: float,
-        conic: float = 0.0,coefficients_poly_y: list[float] = None,tol: float = 1e-10,max_iter: int = 100,):
+        conic: float = 0.0,coeffs_poly_y: list[float] = None,tol: float = 1e-10,max_iter: int = 100,):
         
         # Pass radius_rotation as the base 'radius' for NewtonRaphsonGeometry.
         super().__init__(coordinate_system, radius_rotation, 0.0, tol, max_iter) # Pass 0 for base conic
 
         self.R_rot = radius_rotation
         self.R_yz = radius_yz
-        self.k_yz = conic # Store YZ conic separately
+        self.k_yz = conic 
 
-        self.coeffs_poly_y = [] if coefficients_poly_y is None else be.array(coefficients_poly_y)
+        self.coeffs_poly_y = be.asarray([] if coeffs_poly_y is None else coeffs_poly_y)
+        
+        self.is_symmetric = False 
 
-        self.is_symmetric = False # Generally not rotationally symmetric
-
-        # Pre-calculate YZ curvature if R_yz is finite
         self.c_yz = 1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
-        self.eps = 1e-14 # Small epsilon for safe division
+        self.eps = 1e-14 # safe div
         
     def _calculate_zy(self, y: be.ndarray) -> be.ndarray:
         """Calculates the sag of the base Y-Z curve."""
@@ -79,7 +78,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
                 poly_term = poly_term + coeff * current_y_power
                 current_y_power = current_y_power * y2 # Increase power by y^2 for next term
             z_y = z_y + poly_term
-
+        
         return z_y
 
     def _calculate_zy_derivative(self, y: be.ndarray) -> be.ndarray:
@@ -92,7 +91,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
             c = self.c_yz
             k = self.k_yz
             root_term_val = 1.0 - (1.0 + k) * c**2 * y2
-            # Ensure root term is non-negative for sqrt and non-zero for division
+            # non-negative for sqrt and non-zero for division
             root_term = be.where(root_term_val < self.eps, self.eps, root_term_val)
             sqrt_val = be.sqrt(root_term)
             safe_sqrt_val = be.where(be.abs(sqrt_val) < self.eps, self.eps, sqrt_val)
@@ -101,11 +100,11 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         # Derivative of YZ polynomial terms (alpha_i for y^(2(i+1)))
         if len(self.coeffs_poly_y) > 0:
             poly_deriv_term = be.zeros_like(y)
-            current_y_power_deriv = y # Start with y^1 for the y^2 term derivative
+            current_y_power_deriv = y 
             for i, coeff in enumerate(self.coeffs_poly_y):
                  power_coeff = 2.0 * (i + 1.0)
                  poly_deriv_term = poly_deriv_term + coeff * power_coeff * current_y_power_deriv
-                 current_y_power_deriv = current_y_power_deriv * y2 # Multiply by y^2 for next term's derivative power
+                 current_y_power_deriv = current_y_power_deriv * y2 
             dz_dy = dz_dy + poly_deriv_term
 
         return dz_dy
@@ -117,11 +116,11 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         R = self.R_rot
 
         # Calculate base toroidal sag z = R - sqrt((R - z_y)^2 - x^2)
-        if be.isinf(R): # Handle cylindrical case
+        if be.isinf(R): 
             z = z_y
         else:
             term_inside_sqrt = (R - z_y)**2 - x2
-            # Handle domain error for sqrt (set sag to NaN)
+            
             z = be.where(
                 term_inside_sqrt < 0,
                 be.nan,
@@ -141,10 +140,10 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
              # Cylinder extruded along X: z = z_y(y)
              fx = be.zeros_like(x)
              fy = dz_dy
-             term_inside_sqrt = be.inf # Placeholder for mask
+             term_inside_sqrt = be.inf 
         else:
             term_inside_sqrt = (R - z_y)**2 - x**2
-            # Need mask for valid domain where term >= 0
+            #
             valid_mask = term_inside_sqrt >= 0
             safe_term_inside_sqrt = be.where(valid_mask, term_inside_sqrt, self.eps)
             sqrt_term = be.sqrt(safe_term_inside_sqrt)
@@ -183,7 +182,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
             "radius_rotation": self.R_rot,
             "radius_yz": self.R_yz,
             "conic_yz": self.k_yz,
-            "coefficients_poly_y": self.coeffs_poly_y.tolist() if hasattr(self.coeffs_poly_y, 'tolist') else self.coeffs_poly_y,
+            "coeffs_poly_y": self.coeffs_poly_y.tolist() if hasattr(self.coeffs_poly_y, 'tolist') else self.coeffs_poly_y,
         })
         # Remove base class keys not relevant or potentially confusing here
         if "radius" in geometry_dict: del geometry_dict["radius"]
@@ -208,7 +207,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
             radius_rotation=data["radius_rotation"],
             radius_yz=data["radius_yz"],
             conic=data.get("conic_yz", 0.0), # Match key used in to_dict
-            coefficients_poly_y=data.get("coefficients_poly_y", []),
+            coeffs_poly_y=data.get("coeffs_poly_y", []),
             tol=data.get("tol", 1e-10),
             max_iter=data.get("max_iter", 100)
         )
