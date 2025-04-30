@@ -1,6 +1,7 @@
 import optiland.backend as be
 import pytest
 
+from optiland.optic import Optic
 from optiland import geometries
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
@@ -810,7 +811,7 @@ def cylinder_y_geometry():
     )
 
 class TestToroidalGeometry:
-
+    
     def test_toroidal_str(self):
         """Test string representation."""
         cs = CoordinateSystem()
@@ -892,7 +893,78 @@ class TestToroidalGeometry:
         expected_z = be.array([0.12507822, 0.12507822, 0.0]) 
         calculated_z = cylinder_y_geometry.sag(x, y)
         be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
+    
+    def test_toroidal_ray_tracing_comparison(self, basic_toroid_geometry):
+        """
+        Traces rays through a single toroidal surface and compares output
+        with Zemax ray tracing data for the same system.
+        """
+        # --- System Setup ---
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf, material="air")
+        lens.add_surface(
+            index=1,
+            surface_type="toroidal", 
+            thickness=5.0, 
+            material="BK7",
+            is_stop=True, 
+            radius=basic_toroid_geometry.R_rot,
+            radius_y=basic_toroid_geometry.R_yz,
+            conic=basic_toroid_geometry.k_yz,
+            coefficients_poly_y=basic_toroid_geometry.coeffs_poly_y.tolist(),
+        )
+        lens.add_surface(index=2, thickness=10.0, material="air")
+        lens.add_surface(index=3)
         
+        lens.set_aperture(aperture_type="EPD", value=10.0)
+        lens.set_field_type("angle")
+        lens.add_field(y=0, x=0)
+
+        num_rays = 5 # Number of rays per fan
+        wavelength = 0.55
+        z_start = -100.0
+
+        # --- Tangential (Y) Fan Test ---
+        y_coords = be.linspace(-5.0, 5.0, num_rays)
+        x_in_yfan = be.zeros(num_rays)
+        y_in_yfan = y_coords
+        z_in_yfan = be.array([z_start] * num_rays)
+        L_in_yfan = be.zeros(num_rays)
+        M_in_yfan = be.zeros(num_rays)
+        N_in_yfan = be.ones(num_rays)
+        intensity_yfan = be.ones(num_rays)
+        rays_in_yfan = RealRays(x=x_in_yfan, y=y_in_yfan, z=z_in_yfan,
+                                L=L_in_yfan, M=M_in_yfan, N=N_in_yfan,
+                                wavelength=wavelength, intensity=intensity_yfan)
+
+        # Trace Y-Fan Rays
+        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+
+        zemax_x_out_yfan = be.array([0.0] * num_rays) 
+        # with coefficients_poly_y diff than 0
+        zemax_y_out_yfan = be.array([-4.317285472489155, -2.155929946504465, 0, 2.155929946504465, 4.317285472489155]) 
+        zemax_z_out_yfan = be.array([15.0] * num_rays) 
+        zemax_L_out_yfan = be.array([0.0] * num_rays) 
+        zemax_M_out_yfan = be.array([5.194502608548149e-2, 2.595715309912825e-2, 0.0, -2.595715309912825e-2, -5.194502608548149e-2]) 
+        zemax_N_out_yfan = be.array([9.986499458093305e-1, 9.996630563359779e-1, 1.0, 9.996630563359779-1, 9.986499458093305e-1]) 
+        # with coefficients_poly_y = 0 - ALL GOOD
+        #zemax_y_out_yfan = be.array([-4.317956510122740E+000, -2.156272296229334E+000, 0, 2.156272296229334E+000, 4.317956510122740E+000]) 
+        #zemax_z_out_yfan = be.array([15.0] * num_rays) 
+        #zemax_L_out_yfan = be.array([0.0] * num_rays) 
+        #zemax_M_out_yfan = be.array([5.189343964182488E-002, 2.593126020943911E-002, 0.0, -2.593126020943911E-002, -5.189343964182488E-002]) 
+        #zemax_N_out_yfan = be.array([9.986526277550868E-001, 9.996637283326578E-001, 1.0, 9.996637283326578E-001, 9.986526277550868E-001]) 
+
+
+        # Comparison Assertions for Y-Fan
+        assert be.allclose(rays_out_yfan.x, zemax_x_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.y, zemax_y_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.z, zemax_z_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.L, zemax_L_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.M, zemax_M_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.N, zemax_N_out_yfan, rtol=1e-5, atol=1e-6)
+
+        
+
     def test_toroidal_to_dict(self, basic_toroid_geometry):
         """Test serialization to dictionary."""
         geom_dict = basic_toroid_geometry.to_dict()
@@ -924,3 +996,5 @@ class TestToroidalGeometry:
         }
         with pytest.raises(ValueError):
             geometries.ToroidalGeometry.from_dict(invalid_dict)
+            
+            
