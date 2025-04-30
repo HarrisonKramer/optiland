@@ -829,3 +829,57 @@ class TestToroidalGeometry:
         y = be.array([0.0])
         assert basic_toroid_geometry.sag(x, y) == pytest.approx(0.0)
 
+    def test_toroidal_normal_vertex(self, basic_toroid_geometry):
+        """" Test the normal vector at the vertex (0, 0). Should be (0, 0, -1) """
+        x = be.array([0.0])
+        y = be.array([0.0])
+        nx, ny, nz = basic_toroid_geometry._surface_normal(x, y)
+        assert nx == pytest.approx(0.0)
+        assert ny == pytest.approx(0.0)
+        assert nz == pytest.approx(-1.0)
+        
+    def test_toroidal_sag_known_points(self, basic_toroid_geometry):
+        """Test sag at specific points"""
+        x = be.array([0.0, 10.0, 0.0])
+        y = be.array([10.0, 0.0, 5.0])
+
+        # Placeholder: Use the calculated values from the previous example
+        expected_z_0_10 = 1.00605051
+        expected_z_10_0 = 0.50125628
+        expected_z_0_5 = 0.25056330
+
+        expected_z = be.array([expected_z_0_10, expected_z_10_0, expected_z_0_5])  
+        calculated_z = basic_toroid_geometry.sag(x, y)
+        assert be.allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
+        
+    def test_toroidal_to_dict(self, basic_toroid_geometry):
+        """Test serialization to dictionary."""
+        geom_dict = basic_toroid_geometry.to_dict()
+        assert geom_dict["type"] == "ToroidalGeometry" 
+        assert geom_dict["geometry_type"] == "Toroidal" 
+        assert geom_dict["radius_rotation"] == 100.0
+        assert geom_dict["radius_yz"] == 50.0
+        assert geom_dict["conic_yz"] == -0.5
+        assert geom_dict["coefficients_poly_y"] == [1e-5]
+        
+        assert "radius" not in geom_dict
+        assert "conic" not in geom_dict
+        assert "coefficients" not in geom_dict
+
+    def test_toroidal_from_dict(self, basic_toroid_geometry):
+        """Test deserialization from dictionary."""
+        geom_dict = basic_toroid_geometry.to_dict()
+        new_geometry = geometries.ToroidalGeometry.from_dict(geom_dict) 
+        assert isinstance(new_geometry, geometries.ToroidalGeometry)
+        assert new_geometry.to_dict() == geom_dict 
+
+    def test_toroidal_from_dict_invalid(self):
+        """Test deserialization with missing keys."""
+        cs = CoordinateSystem()
+        invalid_dict = {
+            "type": "ToroidalGeometry",
+            "cs": cs.to_dict(),
+            # Missing radius_rotation, radius_yz
+        }
+        with pytest.raises(ValueError):
+            geometries.ToroidalGeometry.from_dict(invalid_dict)
