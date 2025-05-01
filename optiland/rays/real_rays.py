@@ -198,9 +198,9 @@ class RealRays(BaseRays):
         dot = self.L0 * nx + self.M0 * ny + self.N0 * nz
 
         sgn = be.sign(dot)
-        nx *= sgn
-        ny *= sgn
-        nz *= sgn
+        nx = nx * sgn
+        ny = ny * sgn
+        nz = nz * sgn
 
         dot = be.abs(dot)
         return nx, ny, nz, dot
