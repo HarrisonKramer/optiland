@@ -58,8 +58,8 @@ lens.draw3D()
 
 🚀 **Quickstart**  
 1. 🌟 [Quickstart Tutorial](https://optiland.readthedocs.io/en/latest/examples/Tutorial_1a_Optiland_for_Beginners.html) – build your first lens in 5 minutes  
-2. 📘 [Full Learning Guide](https://optiland.readthedocs.io/en/latest/learning_guide.html) – in-depth guide to learning Optiland 
-3. 👩‍💻 [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) – explore every class and function  
+2. 📚 [Full Learning Guide](https://optiland.readthedocs.io/en/latest/learning_guide.html) – in-depth guide to mastering Optiland 
+3. 🖼️ [Example Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) – visual showcase of designs and core features
 
 ---
 
