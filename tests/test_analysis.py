@@ -104,6 +104,13 @@ class TestCookeTripetSpotDiagram:
         assert_allclose(airy_radius_y[0], 0.0033403700287742426)
         assert_allclose(airy_radius_y[1], 0.003430811760325915)
         assert_allclose(airy_radius_y[2], 0.0035453238661865244)
+    
+    @patch("matplotlib.pyplot.show")
+    def test_airy_disc_in_view_spot_diagram(self, mock_show, set_test_backend, cooke_triplet):
+        spot = analysis.SpotDiagram(cooke_triplet)
+        spot.view(add_airy_disk=True)
+        mock_show.assert_called_once()
+        plt.close()
 
     @patch("matplotlib.pyplot.show")
     def test_view_spot_diagram(self, mock_show, set_test_backend, cooke_triplet):

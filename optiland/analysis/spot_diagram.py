@@ -575,11 +575,15 @@ class SpotDiagram:
             )
 
         if add_airy_disk and field_index is not None:
+            real_centroid_x_np = be.to_numpy(real_centroid_x)
+            real_centroid_y_np = be.to_numpy(real_centroid_y)
+            airy_rad_x_np = be.to_numpy(airy_rad_x)
+            airy_rad_y_np = be.to_numpy(airy_rad_y)
             # Draw ellipse ONLY for the current field_index
             ellipse = patches.Ellipse(
-                (real_centroid_x, real_centroid_y),
-                width=2 * airy_rad_y[field_index],  # diameter, not radius
-                height=2 * airy_rad_x[field_index],
+                (real_centroid_x_np, real_centroid_y_np),
+                width=2 * airy_rad_y_np[field_index],  # diameter, not radius
+                height=2 * airy_rad_x_np[field_index],
                 linestyle="--",
                 edgecolor="black",
                 fill=False,
@@ -587,12 +591,12 @@ class SpotDiagram:
             )
             ax.add_patch(ellipse)
 
-            offset = abs(max(real_centroid_y, real_centroid_x))
+            offset = abs(max(real_centroid_x_np, real_centroid_x_np))
 
             # Find the maximum extent among the geometric spot radius and the
             # airy disk radii.
-            max_airy_x = max(airy_rad_x)
-            max_airy_y = max(airy_rad_y)
+            max_airy_x = max(airy_rad_x_np)
+            max_airy_y = max(airy_rad_y_np)
             max_extent = max(axis_lim, max_airy_x, max_airy_y)
 
             # Apply a buffer to ensure the data fits nicely in the plot.
