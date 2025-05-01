@@ -63,10 +63,10 @@ class RectangularAperture(BaseAperture):
             scale_factor (float): The factor by which to scale the aperture.
 
         """
-        self.x_min *= scale_factor
-        self.x_max *= scale_factor
-        self.y_min *= scale_factor
-        self.y_max *= scale_factor
+        self.x_min = self.x_min * scale_factor
+        self.x_max = self.x_max * scale_factor
+        self.y_min = self.y_min * scale_factor
+        self.y_max = self.y_max * scale_factor
 
     def to_dict(self):
         """Convert the aperture to a dictionary.

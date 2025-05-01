@@ -50,10 +50,10 @@ class SurfaceGroup:
         # add object surface distance if finite
         object_distance = other.surfaces[0].geometry.cs.z
         if be.isfinite(object_distance):
-            offset -= object_distance
+            offset = offset - object_distance
 
         for surf in other.surfaces[1:]:
-            surf.geometry.cs.z += offset
+            surf.geometry.cs.z = surf.geometry.cs.z + offset
 
         # remove stop surface from other
         for surface in other.surfaces:

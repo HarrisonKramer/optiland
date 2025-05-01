@@ -142,7 +142,7 @@ class OpticUpdater:
 
         # Scale aperture, if aperture type is EPD
         if self.optic.aperture.ap_type == "EPD":
-            self.optic.aperture.value *= scale_factor
+            self.optic.aperture.value = self.optic.aperture.value * scale_factor
 
         # Scale physical apertures
         for surface in self.optic.surface_group.surfaces:

@@ -358,7 +358,7 @@ class FFTMTF:
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= 1 + be.abs(m) / p
+            FNO = FNO * (1 + be.abs(m) / p)
 
         return FNO
 

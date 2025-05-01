@@ -117,10 +117,10 @@ class BaseAperture(ABC):
 
         """
         x_min, x_max, y_min, y_max = self.extent
-        x_min *= buffer
-        x_max *= buffer
-        y_min *= buffer
-        y_max *= buffer
+        x_min = x_min * buffer
+        x_max = x_max * buffer
+        y_min = y_min * buffer
+        y_max = y_max * buffer
         if ax is None:
             fig, ax = plt.subplots()
         x = be.linspace(x_min, x_max, nx)

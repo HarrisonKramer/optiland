@@ -101,7 +101,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             z_surface = self.sag(intersections[:, 0], intersections[:, 1])
             dz = intersections[:, 2] - z_surface
             distance = dz / ray_directions[:, 2]
-            intersections -= distance[:, None] * ray_directions
+            intersections = intersections - distance[:, None] * ray_directions
             if be.max(be.abs(dz)) < self.tol:
                 break
 

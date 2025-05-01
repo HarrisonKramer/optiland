@@ -40,7 +40,7 @@ class RayFan:
         self.fields = fields
         self.wavelengths = wavelengths
         if num_points % 2 == 0:
-            num_points += 1  # force to be odd so a point lies at P=0
+            num_points = num_points + 1  # force to be odd so a point lies at P=0
         self.num_points = num_points
 
         if self.fields == "all":

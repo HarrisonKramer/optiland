@@ -57,8 +57,8 @@ class RadialAperture(BaseAperture):
             scale_factor (float): The factor by which to scale the aperture.
 
         """
-        self.r_max *= scale_factor
-        self.r_min *= scale_factor
+        self.r_max = self.r_max * scale_factor
+        self.r_min = self.r_min * scale_factor
 
     def to_dict(self):
         """Convert the aperture to a dictionary.

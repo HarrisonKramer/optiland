@@ -376,7 +376,7 @@ class FFTPSF(Wavefront):
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= 1 + be.abs(m) / p
+            FNO = FNO * (1 + be.abs(m) / p)
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q
