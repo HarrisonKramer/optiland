@@ -30,6 +30,9 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_theme_options = {
+    "navigation_depth": 1  # Only show top-level headers
+}
 
 sphinx_gallery_conf = {
     "examples_dirs": "examples",  # path to example scripts
