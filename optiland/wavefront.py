@@ -79,7 +79,8 @@ class Wavefront:
             wavelengths (list): The wavelengths to analyze.
 
         Returns:
-            list: The generated wavefront data.
+            list: The (x, y, z) pupil coordinates, generated wavefront data, including
+            the optical path difference and intensity.
 
         """
         pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
@@ -93,58 +94,42 @@ class Wavefront:
 
                 # Reference sphere center and radius
                 xc, yc, zc, R = self._get_reference_sphere(pupil_z)
-                opd_ref = self._get_path_length(xc, yc, zc, R, wavelength)
+
+                # tracing the chief ray back from image plane to exit pupil
+                tc = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
+
+                # calculate OPD for the reference sphere
+                opd_ref = self.optic.surface_group.opd[-1, :] - tc
                 opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
 
+                # trace ray distribution through the pupil
+                rays = self.optic.trace(*field, wavelength, None, self.distribution)
+                t = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
+
+                # retrieve the pupil x,y,z coordinates
+                pupil_x = rays.x - t * rays.L
+                pupil_y = rays.y - t * rays.M
+                pupil_z = rays.z - t * rays.N
+
+                # retrieve the amplitude of the wavefront
+                intensity = self.optic.surface_group.intensity[-1, :]
+
+                # calculate OPDs
+                opd = self.optic.surface_group.opd[-1, :] - t
+                opd = self._correct_tilt(field, opd)
+
                 field_data.append(
-                    self._generate_field_data(
-                        field, wavelength, opd_ref, xc, yc, zc, R
+                    (
+                        pupil_x,
+                        pupil_y,
+                        pupil_z,
+                        (opd_ref - opd) / (wavelength * 1e-3),
+                        intensity,
+                        R.item(),
                     ),
                 )
             data.append(field_data)
         return data
-
-    def _generate_field_data(self, field, wavelength, opd_ref, xc, yc, zc, R):
-        """
-        Generates the wavefront data for a specific field and wavelength.
-
-        Args:
-            field (tuple): The field coordinates.
-            wavelength (float): The wavelength.
-            opd_ref (float): The reference optical path length.
-            xc (float): The x-coordinate of the reference sphere center.
-            yc (float): The y-coordinate of the reference sphere center.
-            zc (float): The z-coordinate of the reference sphere center.
-            R (float): The radius of the reference sphere.
-
-        Returns:
-            tuple: The ( x, y, z) pupil coordinates, generated wavefront data, including
-            the optical path difference and intensity.
-
-        """
-        # trace distribution through pupil
-        rays = self.optic.trace(*field, wavelength, None, self.distribution)
-
-        # trace back from image plane to exit pupil
-        t = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
-
-        # retrieve the pupil x,y,z coordinates
-        pupil_x = rays.x - t * rays.L
-        pupil_y = rays.y - t * rays.M
-        pupil_z = rays.z - t * rays.N
-
-        intensity = self.optic.surface_group.intensity[-1, :]
-        opd = self._get_path_length(xc, yc, zc, R, wavelength)
-        opd = self._correct_tilt(field, opd)
-
-        return (
-            pupil_x,
-            pupil_y,
-            pupil_z,
-            (opd_ref - opd) / (wavelength * 1e-3),
-            intensity,
-            R.item(),
-        )
 
     def _trace_chief_ray(self, field, wavelength):
         """Traces the chief ray for a specific field and wavelength.
@@ -182,23 +167,6 @@ class Wavefront:
         R = be.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
 
         return xc, yc, zc, R
-
-    def _get_path_length(self, xc, yc, zc, r, wavelength):
-        """Calculates the optical path difference.
-
-        Args:
-            xc (float): The x-coordinate of the reference sphere center.
-            yc (float): The y-coordinate of the reference sphere center.
-            zc (float): The z-coordinate of the reference sphere center.
-            r (float): The radius of the reference sphere.
-            wavelength (float): The wavelength of the light.
-
-        Returns:
-            float: The optical path difference.
-
-        """
-        opd = self.optic.surface_group.opd[-1, :]
-        return opd - self._opd_image_to_xp(xc, yc, zc, r, wavelength)
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the optical path difference.
