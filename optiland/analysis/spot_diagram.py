@@ -566,7 +566,6 @@ class SpotDiagram:
         airy_rad_y=None,
         real_centroid_x=None,
         real_centroid_y=None,
-        coordinates="local",
     ):
         """Plot the field data on the given axis.
 
@@ -580,7 +579,6 @@ class SpotDiagram:
                 field data.
             buffer (float, optional): Buffer factor to extend the axis limits.
                 Default is 1.05.
-            coordinates (str): Coordinate system used ('local' or 'global').
 
         Returns:
             None
@@ -645,14 +643,9 @@ class SpotDiagram:
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:
-            base_x_label, base_y_label = "U", "V"
+            x_label, y_label = "U (mm)", "V (mm)"
         else:
-            base_x_label, base_y_label = "X", "Y"
-
-        # Prepend coordinate system type to labels
-        coord_prefix = coordinates.capitalize()
-        x_label = f"{coord_prefix} {base_x_label} (mm)"
-        y_label = f"{coord_prefix} {base_y_label} (mm)"
+            x_label, y_label = "X (mm)", "Y (mm)"
 
         ax.axis("square")
         ax.set_xlabel(x_label)
