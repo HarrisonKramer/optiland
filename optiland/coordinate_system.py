@@ -139,7 +139,7 @@ class CoordinateSystem:
             tuple: The effective translation and rotation matrix
 
         """
-        translation = be.array([self.x, self.y, self.z])
+        translation = be.array([self.x.item(), self.y.item(), self.z.item()])
         if self.reference_cs is None:
             # No reference coordinate system, return the local transform
             return translation, self.get_rotation_matrix()
