@@ -122,6 +122,7 @@ class EncircledEnergy(SpotDiagram):
         wavelength,
         num_rays=100,
         distribution="hexapolar",
+        coordinates="local", 
     ):
         """Generate the field data for a specific field and wavelength.
 
@@ -131,6 +132,7 @@ class EncircledEnergy(SpotDiagram):
             num_rays (int, optional): The number of rays. Defaults to 100.
             distribution (str, optional): The distribution of rays.
                 Defaults to 'hexapolar'.
+            coordinates (str): Coordinate system choice (ignored).
 
         Returns:
             list: List of field data, including x, y and energy points.
