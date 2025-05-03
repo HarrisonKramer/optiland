@@ -527,25 +527,10 @@ class SpotDiagram:
         if coordinates == "local":
             # Now, convert the global coordinates to the image's local
             # coordinate system.
-            # Ensure image surface and its coordinate system exist
-            image_surface = self.optic.image_surface
-            if (
-                image_surface is None
-                or image_surface.geometry is None
-                or image_surface.geometry.cs is None
-            ):
-                print(
-                    "Warning: Image surface or its coordinate system not found for "
-                    f"field {field}, wavelength {wavelength}. Returning global "
-                    "coordinates."
-                )
-                plot_x = x_global
-                plot_y = y_global
-            else:
-                # Do the transformation
-                plot_x, plot_y, _ = transform(
-                    x_global, y_global, z_global, image_surface, is_global=True
-                )
+            # Do the transformation
+            plot_x, plot_y, _ = transform(
+                x_global, y_global, z_global, self.optic.image_surface, is_global=True
+            )
         else:  # coordinates == "global"
             plot_x = x_global
             plot_y = y_global

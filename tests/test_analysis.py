@@ -697,3 +697,30 @@ class TestPupilAberration:
         pupil_ab.view()
         mock_show.assert_called_once()
         plt.close()
+
+def test_spotdiagram_invalid_coordinates(cooke_triplet):
+    with pytest.raises(ValueError) as excinfo:
+        analysis.SpotDiagram(cooke_triplet, coordinates="invalid")
+    assert str(excinfo.value) == "Coordinates must be 'global' or 'local'."
+
+def test_generate_field_data_local(set_test_backend, cooke_triplet):
+
+    spot = analysis.SpotDiagram(cooke_triplet, coordinates="local")
+
+    # Pick the first field and wavelength
+    field = spot.fields[0]
+    wavelength = spot.wavelengths[0]
+
+    data = spot._generate_field_data(
+        field,
+        wavelength,
+        num_rays=10,
+        distribution="hexapolar",
+        coordinates="local",
+    )
+
+    plot_x, plot_y, _ = data
+    global_x = spot.optic.surface_group.x[-1, :]
+    global_y = spot.optic.surface_group.y[-1, :]
+    assert_allclose(plot_x, global_x)
+    assert_allclose(plot_y, global_y)
