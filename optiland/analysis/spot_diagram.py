@@ -5,12 +5,14 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from typing import Literal
+
 import matplotlib.pyplot as plt
 from matplotlib import patches
-from typing import Literal
 
 import optiland.backend as be
 from optiland.visualization.utils import transform
+
 
 class SpotDiagram:
     """Spot diagram class
@@ -28,8 +30,8 @@ class SpotDiagram:
         data (List): contains spot data in a nested list. Data is ordered as
             field (dim 0), wavelength (dim 1), then x, y and intensity data
             (dim 2).
-        coordinates (Literal['global', 'local']): Coordinate system for data 
-                                                  and plotting. 
+        coordinates (Literal['global', 'local']): Coordinate system for data
+                                                  and plotting.
 
     """
 
@@ -40,7 +42,7 @@ class SpotDiagram:
         wavelengths="all",
         num_rings=6,
         distribution="hexapolar",
-        coordinates: Literal['global', 'local'] = "local",
+        coordinates: Literal["global", "local"] = "local",
     ):
         """Create an instance of SpotDiagram
 
@@ -69,11 +71,11 @@ class SpotDiagram:
         """
         self.optic = optic
         self.fields = fields
-        
+
         if coordinates not in ["global", "local"]:
             raise ValueError("Coordinates must be 'global' or 'local'.")
-        self.coordinates = coordinates 
-        
+        self.coordinates = coordinates
+
         self.wavelengths = wavelengths
         if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
@@ -493,7 +495,7 @@ class SpotDiagram:
         wavelength,
         num_rays=100,
         distribution="hexapolar",
-        coordinates='local'
+        coordinates="local",
     ):
         """Generates spot data for a given field and wavelength.
 
@@ -527,14 +529,24 @@ class SpotDiagram:
             # coordinate system.
             # Ensure image surface and its coordinate system exist
             image_surface = self.optic.image_surface
-            if image_surface is None or image_surface.geometry is None or image_surface.geometry.cs is None:
-                 print(f"Warning: Image surface or its coordinate system not found for field {field}, wavelength {wavelength}. Returning global coordinates.")
-                 plot_x = x_global
-                 plot_y = y_global
+            if (
+                image_surface is None
+                or image_surface.geometry is None
+                or image_surface.geometry.cs is None
+            ):
+                print(
+                    "Warning: Image surface or its coordinate system not found for "
+                    f"field {field}, wavelength {wavelength}. Returning global "
+                    "coordinates."
+                )
+                plot_x = x_global
+                plot_y = y_global
             else:
-                 # Do the transformation
-                 plot_x, plot_y, _ = transform(x_global, y_global, z_global, image_surface, is_global=True)
-        else: # coordinates == "global"
+                # Do the transformation
+                plot_x, plot_y, _ = transform(
+                    x_global, y_global, z_global, image_surface, is_global=True
+                )
+        else:  # coordinates == "global"
             plot_x = x_global
             plot_y = y_global
 
