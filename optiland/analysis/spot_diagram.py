@@ -7,9 +7,10 @@ Kramer Harrison, 2024
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
+from typing import Literal
 
 import optiland.backend as be
-
+from optiland.visualization.utils import transform
 
 class SpotDiagram:
     """Spot diagram class
@@ -27,6 +28,8 @@ class SpotDiagram:
         data (List): contains spot data in a nested list. Data is ordered as
             field (dim 0), wavelength (dim 1), then x, y and intensity data
             (dim 2).
+        coordinates (Literal['global', 'local']): Coordinate system for data 
+                                                  and plotting. 
 
     """
 
@@ -37,6 +40,7 @@ class SpotDiagram:
         wavelengths="all",
         num_rings=6,
         distribution="hexapolar",
+        coordinates: Literal['global', 'local'] = "local",
     ):
         """Create an instance of SpotDiagram
 
@@ -56,6 +60,8 @@ class SpotDiagram:
                 tracing. Default is 6.
             distribution (str): pupil distribution type for ray tracing.
                 Default is 'hexapolar'.
+            coordinates (Literal['global', 'local'], optional): Coordinate system
+                for data generation and plotting. Defaults to "local".
 
         Returns:
             None
@@ -63,6 +69,11 @@ class SpotDiagram:
         """
         self.optic = optic
         self.fields = fields
+        
+        if coordinates not in ["global", "local"]:
+            raise ValueError("Coordinates must be 'global' or 'local'.")
+        self.coordinates = coordinates 
+        
         self.wavelengths = wavelengths
         if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
@@ -75,6 +86,7 @@ class SpotDiagram:
             self.wavelengths,
             num_rings,
             distribution,
+            self.coordinates,
         )
 
     def view(self, figsize=(12, 4), add_airy_disk=False):
@@ -445,6 +457,7 @@ class SpotDiagram:
         wavelengths,
         num_rays=100,
         distribution="hexapolar",
+        coordinates="local",
     ):
         """Generate spot data for the given fields and wavelengths.
 
@@ -455,6 +468,7 @@ class SpotDiagram:
                 Defaults to 100.
             distribution (str, optional): The distribution type.
                 Defaults to 'hexapolar'.
+            coordinates (str): The coordinate system ('local' or 'global').
 
         Returns:
             data (List): A nested list of spot intersection data for each
@@ -467,7 +481,7 @@ class SpotDiagram:
             for wavelength in wavelengths:
                 field_data.append(
                     self._generate_field_data(
-                        field, wavelength, num_rays, distribution
+                        field, wavelength, num_rays, distribution, coordinates
                     ),
                 )
             data.append(field_data)
@@ -479,6 +493,7 @@ class SpotDiagram:
         wavelength,
         num_rays=100,
         distribution="hexapolar",
+        coordinates='local'
     ):
         """Generates spot data for a given field and wavelength.
 
@@ -489,6 +504,7 @@ class SpotDiagram:
                 Defaults to 100.
             distribution (str, optional): The distribution pattern of the
                 rays. Defaults to 'hexapolar'.
+            coordinates (str): The coordinate system ('local' or 'global').
 
         Returns:
             list: A list containing the local x-coordinates,
@@ -506,21 +522,23 @@ class SpotDiagram:
         z_global = self.optic.surface_group.z[-1, :]
         intensity = self.optic.surface_group.intensity[-1, :]
 
-        from optiland.visualization.utils import transform
+        if coordinates == "local":
+            # Now, convert the global coordinates to the image's local
+            # coordinate system.
+            # Ensure image surface and its coordinate system exist
+            image_surface = self.optic.image_surface
+            if image_surface is None or image_surface.geometry is None or image_surface.geometry.cs is None:
+                 print(f"Warning: Image surface or its coordinate system not found for field {field}, wavelength {wavelength}. Returning global coordinates.")
+                 plot_x = x_global
+                 plot_y = y_global
+            else:
+                 # Do the transformation
+                 plot_x, plot_y, _ = transform(x_global, y_global, z_global, image_surface, is_global=True)
+        else: # coordinates == "global"
+            plot_x = x_global
+            plot_y = y_global
 
-        # Now, convert the global coordinates to the image's local
-        # coordinate system. If is_global == True, then the transform function
-        # will call the image surface's geometry.localize(points) method
-        # to convert the global coordinates into local coordinates
-        x, y, _ = transform(
-            x_global,
-            y_global,
-            z_global,
-            self.optic.image_surface,
-            is_global=True,
-        )
-
-        return [x, y, intensity]
+        return [plot_x, plot_y, intensity]
 
     def _plot_field(
         self,
@@ -536,6 +554,7 @@ class SpotDiagram:
         airy_rad_y=None,
         real_centroid_x=None,
         real_centroid_y=None,
+        coordinates="local",
     ):
         """Plot the field data on the given axis.
 
@@ -549,6 +568,7 @@ class SpotDiagram:
                 field data.
             buffer (float, optional): Buffer factor to extend the axis limits.
                 Default is 1.05.
+            coordinates (str): Coordinate system used ('local' or 'global').
 
         Returns:
             None
@@ -613,9 +633,14 @@ class SpotDiagram:
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:
-            x_label, y_label = "U (mm)", "V (mm)"
+            base_x_label, base_y_label = "U", "V"
         else:
-            x_label, y_label = "X (mm)", "Y (mm)"
+            base_x_label, base_y_label = "X", "Y"
+
+        # Prepend coordinate system type to labels
+        coord_prefix = coordinates.capitalize()
+        x_label = f"{coord_prefix} {base_x_label} (mm)"
+        y_label = f"{coord_prefix} {base_y_label} (mm)"
 
         ax.axis("square")
         ax.set_xlabel(x_label)
