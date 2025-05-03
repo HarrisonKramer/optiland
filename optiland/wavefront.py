@@ -95,12 +95,11 @@ class Wavefront:
                 # Reference sphere center and radius
                 xc, yc, zc, R = self._get_reference_sphere(pupil_z)
 
-                # tracing the chief ray back from image plane to exit pupil
+                # Tracing the chief ray back from image plane to exit pupil
                 tc = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
 
                 # calculate OPD for the reference sphere
                 opd_ref = self.optic.surface_group.opd[-1, :] - tc
-                opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
 
                 # trace ray distribution through the pupil
                 rays = self.optic.trace(*field, wavelength, None, self.distribution)
@@ -116,7 +115,9 @@ class Wavefront:
 
                 # calculate OPDs
                 opd = self.optic.surface_group.opd[-1, :] - t
-                opd = self._correct_tilt(field, opd)
+
+                # apply tilt correction to the opds
+                opd_ref, opd = self._correct_tilt(field, [opd_ref, opd])
 
                 field_data.append(
                     (
@@ -168,34 +169,42 @@ class Wavefront:
 
         return xc, yc, zc, R
 
-    def _correct_tilt(self, field, opd, x=None, y=None):
+    def _correct_tilt(self, field, opds, x=None, y=None):
         """Corrects for tilt in the optical path difference.
 
         Args:
             field (tuple): The field coordinates.
-            opd (float): The optical path difference.
+            opd (list): The optical path differences.
             x (float, optional): The x-coordinate. Defaults to None.
             y (float, optional): The y-coordinate. Defaults to None.
 
         Returns:
-            float: The corrected optical path difference.
+            list: The corrected optical path differences.
 
         """
-        tilt_correction = 0
-        if self.optic.field_type == "angle":
-            Hx, Hy = field
-            max_field = self.optic.fields.max_field
-            x_tilt = max_field * Hx
-            y_tilt = max_field * Hy
-            if x is None:
-                x = self.distribution.x
-            if y is None:
-                y = self.distribution.y
-            EPD = self.optic.paraxial.EPD()
-            tilt_correction = (1 - x) * be.sin(be.radians(x_tilt)) * EPD / 2 + (
-                1 - y
-            ) * be.sin(be.radians(y_tilt)) * EPD / 2
-        return opd - tilt_correction
+        tilt_correction = []
+        for index, _ in enumerate(opds):
+            x, y = (0, 0) if index == 0 else (None, None)
+
+            if self.optic.field_type == "angle":
+                Hx, Hy = field
+                max_field = self.optic.fields.max_field
+                x_tilt = max_field * Hx
+                y_tilt = max_field * Hy
+                if x is None:
+                    x = self.distribution.x
+                if y is None:
+                    y = self.distribution.y
+                EPD = self.optic.paraxial.EPD()
+                tilt_correction.append(
+                    (1 - x) * be.sin(be.radians(x_tilt)) * EPD / 2
+                    + (1 - y) * be.sin(be.radians(y_tilt)) * EPD / 2
+                )
+
+        corrected_opds = [
+            opd - tilt_correction for opd, tilt_correction in zip(opds, tilt_correction)
+        ]
+        return corrected_opds
 
     def _opd_image_to_xp(self, xc, yc, zc, R, wavelength):
         """Finds propagation distance from image plane to reference sphere.
@@ -211,6 +220,7 @@ class Wavefront:
             float: Propagation distance from image plane to reference sphere.
 
         """
+
         xr = self.optic.surface_group.x[-1, :]
         yr = self.optic.surface_group.y[-1, :]
         zr = self.optic.surface_group.z[-1, :]
