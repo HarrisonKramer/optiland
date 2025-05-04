@@ -11,12 +11,36 @@ optical system modeling capabilities.
 Kramer Harrison, 2024
 """
 
+from dataclasses import dataclass
+
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.zernike import ZernikeFit
+
+
+@dataclass
+class WavefrontData:
+    """
+    Data container for wavefront results at a given field and wavelength.
+
+    Attributes:
+        pupil_x (be.ndarray): x-coordinates of ray intersections at exit pupil.
+        pupil_y (be.ndarray): y-coordinates of ray intersections at exit pupil.
+        pupil_z (be.ndarray): z-coordinates of ray intersections at exit pupil.
+        opd_map (be.ndarray): Optical path difference map, normalized to waves.
+        intensity (be.ndarray): Ray intensities at the exit pupil.
+        radius (be.ndarray): Radius of curvature of the exit pupil reference sphere.
+    """
+
+    pupil_x: be.ndarray
+    pupil_y: be.ndarray
+    pupil_z: be.ndarray
+    opd_map: be.ndarray
+    intensity: be.ndarray
+    radius: be.ndarray
 
 
 class Wavefront:
