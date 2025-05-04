@@ -239,13 +239,6 @@ class CrossDistribution(BaseDistribution):
         self.x = x_all
         self.y = y_all
 
-        # Optional Safeguard: Apply unique again. This might slightly change the
-        # order or exact float values depending on backend implementation.
-        # coords = be.stack([self.x, self.y], axis=1)
-        # unique_coords = be.unique(coords, axis=0)
-        # self.x = unique_coords[:, 0]
-        # self.y = unique_coords[:, 1]
-
 
 class GaussianQuadrature(BaseDistribution):
     """GaussianQuadrature class for generating points and weights for Gaussian
