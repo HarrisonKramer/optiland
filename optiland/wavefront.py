@@ -126,7 +126,7 @@ class Wavefront:
                 xc, yc, zc, R = self._get_reference_sphere(pupil_z)
 
                 # reference OPD (chief ray)
-                opd_ref = self._get_path_length(xc, yc, zc, R, wl)
+                opd_ref, _ = self._get_path_length(xc, yc, zc, R, wl)
                 opd_ref = self._correct_tilt(field, opd_ref, x=0, y=0)
 
                 # generate full field data
@@ -150,11 +150,10 @@ class Wavefront:
         """
         rays = self.optic.trace(*field, wavelength, None, self.distribution)
         intensity = self.optic.surface_group.intensity[-1, :]
-        opd = self._get_path_length(xc, yc, zc, R, wavelength)
+
+        opd, t = self._get_path_length(xc, yc, zc, R, wavelength)
         opd = self._correct_tilt(field, opd)
-        # OPD map in waves
-        opd_wv = (opd_ref - opd) / (wavelength * 1e-3)
-        t = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
+        opd_wv = (opd_ref - opd) / (wavelength * 1e-3)  # OPD map in waves
 
         pupil_x = rays.x - t * rays.L
         pupil_y = rays.y - t * rays.M
@@ -192,7 +191,7 @@ class Wavefront:
         """
         opd_chief = self.optic.surface_group.opd[-1, :]
         opd_img = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
-        return opd_chief - opd_img
+        return opd_chief - opd_img, opd_img
 
     def _correct_tilt(self, field, opd, x=None, y=None):
         """
