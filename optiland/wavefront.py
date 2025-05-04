@@ -74,7 +74,8 @@ class Wavefront:
         self.optic = optic
         self.fields = self._resolve_fields(fields)
         self.wavelengths = self._resolve_wavelengths(wavelengths)
-        self.distribution = self._resolve_distribution(distribution, num_rays)
+        self.num_rays = num_rays
+        self.distribution = self._resolve_distribution(distribution, self.num_rays)
         self.data = {}
         self._compute_all()
 
@@ -287,12 +288,14 @@ class OPDFan(Wavefront):
         axs = np.atleast_2d(axs)
 
         for i, field in enumerate(self.fields):
-            for j, wavelength in enumerate(self.wavelengths):
-                wx = self.data[i][j][0][self.num_rays :]
-                wy = self.data[i][j][0][: self.num_rays]
+            for wavelength in self.wavelengths:
+                data = self.get_data(field, wavelength)
 
-                intensity_x = self.data[i][j][1][self.num_rays :]
-                intensity_y = self.data[i][j][1][: self.num_rays]
+                wx = data.opd[self.num_rays :]
+                wy = data.opd[: self.num_rays]
+
+                intensity_x = data.intensity[self.num_rays :]
+                intensity_y = data.intensity[: self.num_rays]
 
                 wx[intensity_x == 0] = np.nan
                 wy[intensity_y == 0] = np.nan
@@ -456,10 +459,11 @@ class OPD(Wavefront):
             dict: The OPD map data.
 
         """
+        data = self.get_data(self.fields, self.wavelengths[0])
         x = be.to_numpy(self.distribution.x)
         y = be.to_numpy(self.distribution.y)
-        z = be.to_numpy(self.data[0][0][0])
-        intensity = be.to_numpy(self.data[0][0][1])
+        z = be.to_numpy(data.opd)
+        intensity = be.to_numpy(data.intensity)
 
         x_interp, y_interp = np.meshgrid(
             np.linspace(-1, 1, num_points),
@@ -507,6 +511,8 @@ class ZernikeOPD(ZernikeFit, OPD):
 
         x = self.distribution.x
         y = self.distribution.y
-        z = self.data[0][0][0]
+
+        data = self.get_data(self.fields, self.wavelengths[0])
+        z = data.opd
 
         ZernikeFit.__init__(self, x, y, z, zernike_type, num_terms)
