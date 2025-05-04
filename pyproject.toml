@@ -36,6 +36,7 @@ Homepage = "https://github.com/HarrisonKramer/optiland"
 dev = [
     "codecov>=2.1.13",
     "pytest>=8.3.5",
+    "torch",
 ]
 torch = ["torch"]
 
@@ -62,8 +63,3 @@ select = [
     "I",  # isort
 ]
 exclude = ["*.ipynb"]
-
-[dependency-groups]
-dev = [
-    "pytest",
-]

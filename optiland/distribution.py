@@ -188,28 +188,63 @@ class HexagonalDistribution(BaseDistribution):
 class CrossDistribution(BaseDistribution):
     """A class representing a cross-shaped distribution.
 
-    This distribution generates points in the shape of a cross,
+    This distribution generates unique points in the shape of a cross,
         with the x-axis and y-axis as the arms of the cross.
 
     Attributes:
-        x (ndarray): Array of x-coordinates of the generated points.
-        y (ndarray): Array of y-coordinates of the generated points.
+        x (ndarray): Array of unique x-coordinates of the generated points.
+        y (ndarray): Array of unique y-coordinates of the generated points.
 
     """
 
     def generate_points(self, num_points: int):
-        """Generate points in the shape of a cross.
+        """Generate unique points in the shape of a cross.
 
         Args:
-            num_points (int): The number of points to generate in each axis.
+            num_points (int): The number of points to attempt to generate in each axis.
+                                The final number of unique points will be
+                                2*num_points - 1 if num_points is odd, and
+                                2*num_points if num_points is even.
 
         """
+        # Generate points along y-axis (includes (0,0) if num_points is odd)
         x1 = be.zeros(num_points)
-        x2 = be.linspace(-1, 1, num_points)
         y1 = be.linspace(-1, 1, num_points)
-        y2 = be.zeros(num_points)
-        self.x = be.concatenate((x1, x2))
-        self.y = be.concatenate((y1, y2))
+
+        # Generate points along x-axis
+        x2_full = be.linspace(-1, 1, num_points)
+
+        # If num_points is odd, remove the middle element (0.0) from x2
+        # to avoid adding the origin point (0,0) twice.
+        if num_points % 2 != 0:
+            mid_index = num_points // 2
+            x2 = be.concatenate((x2_full[:mid_index], x2_full[mid_index + 1 :]))
+            # Create corresponding zero y-coordinates (one less than num_points)
+            y2 = be.zeros(num_points - 1)
+        else:
+            # If num_points is even, linspace does not include 0.0 exactly in the middle,
+            # so no point needs to be removed.
+            x2 = x2_full
+            y2 = be.zeros(num_points)
+
+        # Concatenate the points from the y-axis and the (potentially modified) x-axis
+        x_all = be.concatenate((x1, x2))
+        y_all = be.concatenate((y1, y2))
+
+        # Assign the combined, now unique points to self.x and self.y
+        # The be.unique call is no longer strictly necessary after this modification
+        # but can be left as a safeguard if desired.
+        # If kept, ensure it handles potential floating point nuances correctly
+        # across backends if very close points need merging.
+        self.x = x_all
+        self.y = y_all
+
+        # Optional Safeguard: Apply unique again. This might slightly change the
+        # order or exact float values depending on backend implementation.
+        # coords = be.stack([self.x, self.y], axis=1)
+        # unique_coords = be.unique(coords, axis=0)
+        # self.x = unique_coords[:, 0]
+        # self.y = unique_coords[:, 1]
 
 
 class GaussianQuadrature(BaseDistribution):
@@ -246,7 +281,7 @@ class GaussianQuadrature(BaseDistribution):
         self.x = be.outer(radius, be.cos(theta)).flatten()
         self.y = be.outer(radius, be.sin(theta)).flatten()
 
-    def _get_radius(self, num_rings: int) -> be.ndarray:
+    def _get_radius(self, num_rings: int):
         """Get the radius values for the given number of rings.
 
         Args:
@@ -259,6 +294,7 @@ class GaussianQuadrature(BaseDistribution):
             ValueError: If the number of rings is not between 1 and 6.
 
         """
+        # Use be.array to ensure backend compatibility
         radius_dict = {
             1: be.array([0.70711]),
             2: be.array([0.45970, 0.88807]),
@@ -269,6 +305,7 @@ class GaussianQuadrature(BaseDistribution):
         }
         if num_rings not in radius_dict:
             raise ValueError("Gaussian quadrature must have between 1 and 6 rings.")
+        # Ensure the dictionary returns the tensor itself
         return radius_dict[num_rings]
 
     def get_weights(self, num_rings):
@@ -278,9 +315,10 @@ class GaussianQuadrature(BaseDistribution):
             num_rings (int): Number of rings for Gaussian quadrature.
 
         Returns:
-            numpy.ndarray: Array of weights.
+            ndarray: Array of weights.
 
         """
+        # Use be.array for weights too
         weights_dict = {
             1: be.array([0.5]),
             2: be.array([0.25, 0.25]),

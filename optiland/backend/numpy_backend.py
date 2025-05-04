@@ -13,6 +13,9 @@ from scipy.special import gamma
 # Link to the underlying library
 _lib = np
 
+# Imaginary unit
+j = 1j
+
 
 def array(x):
     """Create an array/tensor"""
@@ -106,3 +109,8 @@ def path_contains_points(vertices: np.ndarray, points: np.ndarray) -> np.ndarray
     path = Path(vertices)
     mask = path.contains_points(points)
     return np.asarray(mask, dtype=bool)
+
+
+def unique(x, axis=None):
+    """Find the unique elements of an array/tensor, optionally along an axis."""
+    return np.unique(x, axis=axis)

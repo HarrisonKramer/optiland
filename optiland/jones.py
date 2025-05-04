@@ -8,7 +8,7 @@ JonesPolarizerL45, JonesPolarizerL135, JonesPolarizerRCP, JonesPolarizerLCP,
 JonesLinearDiattenuator, JonesLinearRetarder, JonesQuarterWaveRetarder, and
 JonesHalfWaveRetarder.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2024-2025
 """
 
 from abc import ABC, abstractmethod
@@ -260,8 +260,8 @@ class JonesPolarizerRCP(BaseJones):
         """
         jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = 1j * 0.5
-        jones_matrix[:, 1, 0] = -1j * 0.5
+        jones_matrix[:, 0, 1] = be.j * 0.5
+        jones_matrix[:, 1, 0] = -be.j * 0.5
         jones_matrix[:, 1, 1] = 0.5
         jones_matrix[:, 2, 2] = 1
 
@@ -292,8 +292,8 @@ class JonesPolarizerLCP(BaseJones):
         """
         jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = -1j * 0.5
-        jones_matrix[:, 1, 0] = 1j * 0.5
+        jones_matrix[:, 0, 1] = -be.j * 0.5
+        jones_matrix[:, 1, 0] = be.j * 0.5
         jones_matrix[:, 1, 1] = 0.5
         jones_matrix[:, 2, 2] = 1
 
@@ -341,13 +341,12 @@ class JonesLinearDiattenuator(BaseJones):
             be.ndarray: The calculated Jones matrix.
 
         """
-        j00 = (
-            self.t_max * be.cos(self.theta) ** 2 + self.t_min * be.sin(self.theta) ** 2
-        )
-        j0x = self.t_max - self.t_min * be.cos(self.theta) * be.sin(self.theta)
-        j11 = (
-            self.t_max * be.sin(self.theta) ** 2 + self.t_min * be.cos(self.theta) ** 2
-        )
+        c, s = be.cos(self.theta), be.sin(self.theta)
+        j00 = self.t_max * c**2 + self.t_min * s**2
+        # Corrected formula for j0x (off-diagonal element)
+        j0x = (self.t_max - self.t_min) * c * s
+        j11 = self.t_max * s**2 + self.t_min * c**2
+
 
         jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = j00
@@ -398,9 +397,13 @@ class JonesLinearRetarder(BaseJones):
         """
         d = self.retardance
         t = self.theta
-        j00 = be.exp(-1j * d / 2) * be.cos(t) ** 2 + be.exp(1j * d / 2) * be.sin(t) ** 2
-        j0x = -1j * be.sin(d / 2) * be.sin(2 * t)
-        j11 = be.exp(1j * d / 2) * be.cos(t) ** 2 + be.exp(-1j * d / 2) * be.sin(t) ** 2
+        c, s = be.cos(t), be.sin(t) # Use temp vars for clarity
+        exp_plus = be.exp(be.j * d / 2)
+        exp_minus = be.exp(-be.j * d / 2)
+
+        j00 = exp_minus * c**2 + exp_plus * s**2
+        j0x = -be.j * be.sin(d / 2) * be.sin(2 * t)
+        j11 = exp_plus * c**2 + exp_minus * s**2
 
         jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
         jones_matrix[:, 0, 0] = j00

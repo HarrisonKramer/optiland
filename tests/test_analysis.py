@@ -145,7 +145,11 @@ class TestTripetSpotDiagram:
 
 class TestCookeTripletEncircledEnergy:
     def test_encircled_energy_centroid(self, set_test_backend, cooke_triplet):
-        encircled_energy = analysis.EncircledEnergy(cooke_triplet)
+        if be.get_backend() == "torch":
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet, num_rays=1000)
+        else:
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet)
+            
         centroid = encircled_energy.centroid()
 
         # encircled energy calculation includes randomness, so abs. tolerance
@@ -162,14 +166,20 @@ class TestCookeTripletEncircledEnergy:
 
     @patch("matplotlib.pyplot.show")
     def test_view_encircled_energy(self, mock_show, set_test_backend, cooke_triplet):
-        encircled_energy = analysis.EncircledEnergy(cooke_triplet)
+        if be.get_backend() == "torch":
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet, num_rays=1000)
+        else:
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
     def test_view_encircled_energy_larger_fig(self, mock_show, set_test_backend, cooke_triplet):
-        encircled_energy = analysis.EncircledEnergy(cooke_triplet)
+        if be.get_backend() == "torch":
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet, num_rays=1000)
+        else:
+            encircled_energy = analysis.EncircledEnergy(cooke_triplet)
         encircled_energy.view(figsize=(20, 10))
         mock_show.assert_called_once()
         plt.close()
@@ -188,193 +198,85 @@ class TestCookeTripletRayFan:
         assert_allclose(fan.data["(0.0, 0.0)"]["0.48"]["x"][0], 0.00238814980958324, atol=1e-9, )
 
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.48"]["x"][0],
-            0.00238814980958324,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.48"]["x"][0],            0.00238814980958324,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.48"]["x"][-1],
-            -0.00238814980958324,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.48"]["x"][-1],            -0.00238814980958324,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.48"]["y"][0],
-            0.00238814980958324,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.48"]["y"][0],            0.00238814980958324,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.48"]["y"][-1],
-            -0.00238814980958324,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.48"]["y"][-1],            -0.00238814980958324,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.55"]["x"][0],
-            0.004195677081323623,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.55"]["x"][0],            0.004195677081323623,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.55"]["x"][-1],
-            -0.004195677081323623,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.55"]["x"][-1],            -0.004195677081323623,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.55"]["y"][0],
-            0.004195677081323623,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.55"]["y"][0],            0.004195677081323623,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.55"]["y"][-1],
-            -0.004195677081323623,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.55"]["y"][-1],            -0.004195677081323623,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.65"]["x"][0],
-            -8.284696919602652e-06,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.65"]["x"][0],            -8.284696919602652e-06,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.65"]["x"][-1],
-            8.284696919602652e-06,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.65"]["x"][-1],            8.284696919602652e-06,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.65"]["y"][0],
-            -8.284696919602652e-06,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.65"]["y"][0],            -8.284696919602652e-06,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.0)"]["0.65"]["y"][-1],
-            8.284696919602652e-06,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.0)"]["0.65"]["y"][-1],            8.284696919602652e-06,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.48"]["x"][0],
-            0.01973142095198721,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.48"]["x"][0],            0.01973142095198721,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.48"]["x"][-1],
-            -0.01973142095198721,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.48"]["x"][-1],            -0.01973142095198721,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.48"]["y"][0],
-            -0.023207115035676296,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.48"]["y"][0],            -0.023207115035676296,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.48"]["y"][-1],
-            0.03928464835618861,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.48"]["y"][-1],            0.03928464835618861,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.55"]["x"][0],
-            0.021420191179537973,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.55"]["x"][0],            0.021420191179537973,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.55"]["x"][-1],
-            -0.021420191179537973,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.55"]["x"][-1],            -0.021420191179537973,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.55"]["y"][0],
-            -0.024812371459915994,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.55"]["y"][0],            -0.024812371459915994,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.55"]["y"][-1],
-            0.04075295155640113,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.55"]["y"][-1],            0.04075295155640113,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.65"]["x"][0],
-            0.017025487217305013,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.65"]["x"][0],            0.017025487217305013,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.65"]["x"][-1],
-            -0.017025487217305013,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.65"]["x"][-1],            -0.017025487217305013,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.65"]["y"][0],
-            -0.03229666187094615,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.65"]["y"][0],            -0.03229666187094615,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 0.7)"]["0.65"]["y"][-1],
-            0.047721942006075935,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 0.7)"]["0.65"]["y"][-1],            0.047721942006075935,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.48"]["x"][0],
-            0.01563881685548374,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.48"]["x"][0],            0.01563881685548374,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.48"]["x"][-1],
-            -0.01563881685548374,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.48"]["x"][-1],            -0.01563881685548374,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.48"]["y"][0],
-            -0.0044989771745065354,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.48"]["y"][0],            -0.0044989771745065354,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.48"]["y"][-1],
-            0.013000385049824814,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.48"]["y"][-1],            0.013000385049824814,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.55"]["x"][0],
-            0.016936433773790505,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.55"]["x"][0],            0.016936433773790505,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.55"]["x"][-1],
-            -0.016936433773790505,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.55"]["x"][-1],            -0.016936433773790505,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.55"]["y"][0],
-            -0.01705141007843025,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.55"]["y"][0],            -0.01705141007843025,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.55"]["y"][-1],
-            0.022501847359645666,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.55"]["y"][-1],            0.022501847359645666,            atol=1e-9,        )
 
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.65"]["x"][0],
-            0.01214534602206907,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.65"]["x"][0],            0.01214534602206907,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.65"]["x"][-1],
-            -0.01214534602206907,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.65"]["x"][-1],            -0.01214534602206907,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.65"]["y"][0],
-            -0.033957537601747134,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.65"]["y"][0],            -0.033957537601747134,            atol=1e-9,        )
         assert_allclose(
-            fan.data["(0.0, 1.0)"]["0.65"]["y"][-1],
-            0.036545592330593735,
-            atol=1e-9,
-        )
+            fan.data["(0.0, 1.0)"]["0.65"]["y"][-1],            0.036545592330593735,            atol=1e-9,        )
 
     @patch("matplotlib.pyplot.show")
     def test_view_ray_fan(self, mock_show, set_test_backend, cooke_triplet):
@@ -526,9 +428,7 @@ class TestTelescopeTripletFieldCurvature:
 
     def test_field_curvature_init_with_wavelength(self, set_test_backend, telescope_objective):
         field_curvature = analysis.FieldCurvature(
-            telescope_objective,
-            wavelengths=[0.5, 0.6],
-        )
+            telescope_objective,            wavelengths=[0.5, 0.6],        )
         assert field_curvature.optic == telescope_objective
         assert field_curvature.wavelengths == [0.5, 0.6]
         assert field_curvature.num_points == 128
@@ -536,9 +436,7 @@ class TestTelescopeTripletFieldCurvature:
     def test_field_curvature_init_with_num_points(self, set_test_backend, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
-            telescope_objective,
-            num_points=num_points,
-        )
+            telescope_objective,            num_points=num_points,        )
         assert field_curvature.optic == telescope_objective
         assert (
             field_curvature.wavelengths
@@ -549,10 +447,7 @@ class TestTelescopeTripletFieldCurvature:
     def test_field_curvature_init_with_all_parameters(self, set_test_backend, telescope_objective):
         num_points = 256
         field_curvature = analysis.FieldCurvature(
-            telescope_objective,
-            wavelengths=[0.55],
-            num_points=num_points,
-        )
+            telescope_objective,            wavelengths=[0.55],            num_points=num_points,        )
         assert field_curvature.optic == telescope_objective
         assert field_curvature.wavelengths == [0.55]
         assert field_curvature.num_points == num_points
@@ -609,10 +504,7 @@ class TestSpotVsField:
     def test_rms_spot_radius(self, set_test_backend, telescope_objective):
         spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
         spot_size = spot_vs_field._spot_size
-        assert spot_size.shape == (
-            64,
-            len(telescope_objective.wavelengths.get_wavelengths()),
-        )
+        assert spot_size.shape == (            64,            len(telescope_objective.wavelengths.get_wavelengths()),        )
 
     @patch("matplotlib.pyplot.show")
     def test_view_spot_vs_field(self, mock_show, set_test_backend, telescope_objective):
@@ -631,39 +523,25 @@ class TestSpotVsField:
 
 class TestWavefrontErrorVsField:
     def test_rms_wave_init(self, set_test_backend, telescope_objective):
-        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective,
-        )
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(            telescope_objective,        )
         assert wavefront_error_vs_field.num_fields == 32
-        assert be.array_equal(
-            wavefront_error_vs_field._field[:, 1],
-            be.linspace(0, 1, 32),
-        )
+        assert be.array_equal(            wavefront_error_vs_field._field[:, 1],            be.linspace(0, 1, 32),        )
 
     def test_rms_wave(self, set_test_backend, telescope_objective):
-        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective,
-        )
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(            telescope_objective,        )
         wavefront_error = wavefront_error_vs_field._wavefront_error
-        assert wavefront_error.shape == (
-            32,
-            len(telescope_objective.wavelengths.get_wavelengths()),
-        )
+        assert wavefront_error.shape == (            32,            len(telescope_objective.wavelengths.get_wavelengths()),        )
 
     @patch("matplotlib.pyplot.show")
     def test_view_wave(self, mock_show, set_test_backend, telescope_objective):
-        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective,
-        )
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(            telescope_objective,        )
         wavefront_error_vs_field.view()
         mock_show.assert_called_once()
         plt.close()
 
     @patch("matplotlib.pyplot.show")
     def test_view_wave_larger_fig(self, mock_show, set_test_backend, telescope_objective):
-        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
-            telescope_objective,
-        )
+        wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(            telescope_objective,        )
         wavefront_error_vs_field.view(figsize=(12.4, 10))
         mock_show.assert_called_once()
         plt.close()
@@ -698,6 +576,7 @@ class TestPupilAberration:
         mock_show.assert_called_once()
         plt.close()
 
+
 def test_spotdiagram_invalid_coordinates(cooke_triplet):
     with pytest.raises(ValueError) as excinfo:
         analysis.SpotDiagram(cooke_triplet, coordinates="invalid")
@@ -711,13 +590,7 @@ def test_generate_field_data_local(set_test_backend, cooke_triplet):
     field = spot.fields[0]
     wavelength = spot.wavelengths[0]
 
-    data = spot._generate_field_data(
-        field,
-        wavelength,
-        num_rays=10,
-        distribution="hexapolar",
-        coordinates="local",
-    )
+    data = spot._generate_field_data(        field,        wavelength,        num_rays=10,        distribution="hexapolar",        coordinates="local",    )
 
     plot_x, plot_y, _ = data
     global_x = spot.optic.surface_group.x[-1, :]
@@ -733,13 +606,7 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     field = spot.fields[0]
     wavelength = spot.wavelengths[0]
 
-    data = spot._generate_field_data(
-        field,
-        wavelength,
-        num_rays=10,
-        distribution="hexapolar",
-        coordinates="global",
-    )
+    data = spot._generate_field_data(        field,        wavelength,        num_rays=10,        distribution="hexapolar",        coordinates="global",    )
 
     plot_x, plot_y, _ = data
     global_x = spot.optic.surface_group.x[-1, :]

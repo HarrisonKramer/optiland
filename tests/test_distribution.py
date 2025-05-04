@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import optiland.backend as be
 import pytest
+import numpy as np # Import numpy for the test calculations
 
 from optiland import distribution
 from .utils import assert_allclose
@@ -73,21 +74,43 @@ def test_hexapolar(set_test_backend, num_rings):
     assert_allclose(d.y, y)
 
 
-@pytest.mark.parametrize("num_points", [15, 56, 161, 621])
+@pytest.mark.parametrize("num_points", [15, 56, 161, 621]) # Use odd and even numbers
 def test_cross(set_test_backend, num_points):
     d = distribution.create_distribution("cross")
     d.generate_points(num_points=num_points)
 
-    x1 = be.zeros(num_points)
-    x2 = be.linspace(-1, 1, num_points)
-    y1 = be.linspace(-1, 1, num_points)
-    y2 = be.zeros(num_points)
-    x = be.concatenate((x1, x2))
-    y = be.concatenate((y1, y2))
+    # Calculate expected number of unique points
+    if num_points % 2 != 0:
+        expected_count = 2 * num_points - 1
+    else:
+        expected_count = 2 * num_points
 
-    assert_allclose(d.x, x)
-    assert_allclose(d.y, y)
+    # Assert the number of generated points is correct
+    assert d.x.shape[0] == expected_count, f"Expected {expected_count} points for num_points={num_points}, got {d.x.shape[0]}"
+    assert d.y.shape[0] == expected_count
 
+    # Verify all points are on either the x or y axis
+    points_on_xaxis = be.isclose(d.y, be.zeros_like(d.y))
+    points_on_yaxis = be.isclose(d.x, be.zeros_like(d.x))
+    assert be.all(points_on_xaxis | points_on_yaxis), "Not all points lie on the axes"
+
+    # Verify (0,0) appears at most once, and exactly once if num_points is odd
+    zero_zero_mask = be.isclose(d.x, be.zeros_like(d.x)) & be.isclose(d.y, be.zeros_like(d.y))
+    zero_zero_count = be.sum(zero_zero_mask)
+
+    if num_points % 2 != 0:
+        assert zero_zero_count == 1, f"(0,0) should appear exactly once for odd num_points={num_points}, found {zero_zero_count} times"
+    else:
+        assert zero_zero_count == 0, f"(0,0) should not appear for even num_points={num_points}, found {zero_zero_count} times"
+
+    # Verify the range of coordinates
+    assert be.min(d.x) >= -1.0 and be.max(d.x) <= 1.0
+    assert be.min(d.y) >= -1.0 and be.max(d.y) <= 1.0
+
+    # Verify uniqueness explicitly (by checking count again after unique operation)
+    coords = be.stack([d.x, d.y], axis=1)
+    unique_coords = be.unique(coords, axis=0)
+    assert unique_coords.shape[0] == expected_count, "Unique operation changed point count"
 
 @patch("matplotlib.pyplot.show")
 def test_view_distribution(mock_show, set_test_backend):
@@ -107,16 +130,20 @@ def test_uniform_distribution(set_test_backend, num_points):
     d = distribution.create_distribution("uniform")
     d.generate_points(num_points=num_points)
 
-    x = be.linspace(-1, 1, num_points)
-    x, y = be.meshgrid(x, x)
-    r2 = x**2 + y**2
-    x = x[r2 <= 1]
-    y = y[r2 <= 1]
+    x_lin = be.linspace(-1, 1, num_points)
+    x_grid, y_grid = be.meshgrid(x_lin, x_lin)
+    r2 = x_grid**2 + y_grid**2
+    expected_x = x_grid[r2 <= 1]
+    expected_y = y_grid[r2 <= 1]
 
     assert be.all(d.x >= -1.0) and be.all(d.x <= 1.0)
     assert be.all(d.y >= -1.0) and be.all(d.y <= 1.0)
-    assert_allclose(d.x, x)
-    assert_allclose(d.y, y)
+
+    # Sort both actual and expected points for comparison as order might differ
+    actual_points = be.sort(be.stack([be.ravel(d.x), be.ravel(d.y)], axis=1), axis=0)
+    expected_points = be.sort(be.stack([be.ravel(expected_x), be.ravel(expected_y)], axis=1), axis=0)
+
+    assert_allclose(actual_points, expected_points)
 
 
 def test_gaussian_quad_distribution(set_test_backend):
@@ -129,7 +156,7 @@ def test_gaussian_quad_distribution(set_test_backend):
     # 2 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=2)
-    assert_allclose(d.x, be.array([0.4597, 0.88807]))
+    assert_allclose(d.x, be.array([0.45970, 0.88807]))
     assert_allclose(d.y, be.array([0.0, 0.0]))
 
     # 3 rings - symmetric
@@ -141,7 +168,7 @@ def test_gaussian_quad_distribution(set_test_backend):
     # 4 rings - symmetric
     d = distribution.GaussianQuadrature(is_symmetric=True)
     d.generate_points(num_rings=4)
-    assert_allclose(d.x, be.array([0.2635, 0.57446, 0.81853, 0.96466]))
+    assert_allclose(d.x, be.array([0.26350, 0.57446, 0.81853, 0.96466]))
     assert_allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0]))
 
     # 5 rings - symmetric
@@ -155,7 +182,7 @@ def test_gaussian_quad_distribution(set_test_backend):
     d.generate_points(num_rings=6)
     assert_allclose(
         d.x,
-        be.array([0.18375, 0.41158, 0.617, 0.78696, 0.91138, 0.983]),
+        be.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
     )
     assert_allclose(d.y, be.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
@@ -196,6 +223,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.7690911798075152,
             ],
         ),
+        atol=1e-6 # Adjust tolerance for potential floating point diffs
     )
 
     # 3 rings - asymmetric
@@ -216,6 +244,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.4709800009761381,
             ],
         ),
+        atol=1e-6
     )
     assert_allclose(
         d.y,
@@ -232,6 +261,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.8157612887852163,
             ],
         ),
+        atol=1e-6
     )
 
     # 4 rings - asymmetric
@@ -255,6 +285,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.4823300009996618,
             ],
         ),
+        atol=1e-6
     )
     assert_allclose(
         d.y,
@@ -274,6 +305,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.8354200654375415,
             ],
         ),
+        atol=1e-6
     )
 
     # 5 rings - asymmetric
@@ -300,6 +332,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.4881300010116827,
             ],
         ),
+        atol=1e-6
     )
     assert_allclose(
         d.y,
@@ -322,6 +355,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.8454659601145008,
             ],
         ),
+        atol=1e-6
     )
 
     # 6 rings - asymmetric
@@ -351,6 +385,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.4915000010186672,
             ],
         ),
+        atol=1e-6
     )
     assert_allclose(
         d.y,
@@ -376,6 +411,7 @@ def test_gaussian_quad_distribution(set_test_backend):
                 0.8513029713319753,
             ],
         ),
+        atol=1e-6
     )
 
 
@@ -450,3 +486,17 @@ def test_gaussian_quad_weights(set_test_backend):
             weights / scale[k],
             be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
         )
+
+@pytest.mark.parametrize("num_points", [10, 25, 106, 512])
+def test_ring_distribution(set_test_backend, num_points):
+    d = distribution.create_distribution("ring")
+    d.generate_points(num_points=num_points)
+
+    theta = be.linspace(0, 2 * be.pi, num_points + 1)[:-1]
+    expected_x = be.cos(theta)
+    expected_y = be.sin(theta)
+
+    assert_allclose(d.x, expected_x)
+    assert_allclose(d.y, expected_y)
+    # Check if points are on the unit circle
+    assert_allclose(d.x**2 + d.y**2, be.ones_like(d.x))

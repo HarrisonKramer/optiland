@@ -1,4 +1,4 @@
-"""
+'''
 Torch Backend Module
 
 Functionalities are grouped into the following categories:
@@ -18,7 +18,7 @@ Functionalities are grouped into the following categories:
 This module provides a backend for numerical operations using PyTorch.
 
 Kramer Harrison, 2025
-"""
+'''
 
 import contextlib
 
@@ -112,6 +112,10 @@ grad_mode = _config.grad_mode
 def array(x):
     """Create a tensor with current device, precision, and grad settings."""
     if isinstance(x, torch.Tensor):
+        # Ensure tensor respects current device, precision, and grad settings
+        x = x.to(device=get_device(), dtype=get_precision())
+        if x.requires_grad != grad_mode.requires_grad:
+            x = x.detach().requires_grad_(grad_mode.requires_grad)
         return x
     return torch.tensor(
         x,
@@ -162,7 +166,7 @@ def linspace(start, stop, num=50):
 
 def zeros_like(x):
     return torch.zeros_like(
-        array(x),
+        array(x),  # Ensure correct type/device before zeros_like
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -171,7 +175,7 @@ def zeros_like(x):
 
 def ones_like(x):
     return torch.ones_like(
-        array(x),
+        array(x),  # Ensure correct type/device before ones_like
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -179,7 +183,7 @@ def ones_like(x):
 
 
 def full_like(x, fill_value):
-    x_t = array(x)
+    x_t = array(x)  # Ensure correct type/device
     val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
     return torch.full_like(
         x_t,
@@ -220,6 +224,23 @@ def newaxis():
     return None
 
 
+def unique(x, axis=None):
+    """Find the unique elements of a tensor, optionally along a dimension."""
+    if axis is not None:
+        return torch.unique(x, dim=axis, return_inverse=False, return_counts=False)
+    else:
+        return torch.unique(x, return_inverse=False, return_counts=False)
+
+
+def sort(tensor, axis=-1, descending=False):
+    """Sorts the elements of a tensor along a given dimension."""
+    # Ensure tensor is of the correct type and device
+    tensor = array(tensor)
+    # torch.sort returns a named tuple (values, indices)
+    sorted_values, _ = torch.sort(tensor, dim=axis, descending=descending)
+    return sorted_values
+
+
 # --------------------------
 # Shape and Indexing
 # --------------------------
@@ -228,7 +249,9 @@ def reshape(x, shape):
 
 
 def stack(xs, axis=0):
-    return torch.stack([cast(x) for x in xs], dim=axis)
+    # Ensure all inputs are tensors with correct type/device
+    tensors = [array(x) for x in xs]
+    return torch.stack(tensors, dim=axis)
 
 
 def broadcast_to(x, shape):
@@ -244,7 +267,9 @@ def flip(x):
 
 
 def meshgrid(*arrays):
-    return torch.meshgrid(*arrays, indexing="xy")
+    # Ensure all inputs are tensors with correct type/device
+    tensors = [array(a) for a in arrays]
+    return torch.meshgrid(*tensors, indexing="xy")
 
 
 def roll(x, shift, axis=None):
@@ -263,6 +288,10 @@ def isscalar(x):
     return torch.is_tensor(x) and x.dim() == 0
 
 
+def ravel(x):
+    return torch.ravel(x)
+
+
 # --------------------------
 # Random Number Generation
 # --------------------------
@@ -273,7 +302,7 @@ def default_rng(seed=None):
 
 
 def random_uniform(low=0.0, high=1.0, size=None, generator=None):
-    size = size or 1
+    size = size or (1,)
     gen_args = {"generator": generator} if generator else {}
     return torch.empty(size, device=get_device(), dtype=get_precision()).uniform_(
         low, high, **gen_args
@@ -281,7 +310,7 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
 
 
 def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
-    size = size or 1
+    size = size or (1,)
     gen_args = {"generator": generator} if generator else {}
     return (
         torch.randn(size, device=get_device(), dtype=get_precision(), **gen_args)
@@ -360,7 +389,7 @@ def mean(x, axis=None, keepdims=False):
 def all(x):
     if isinstance(x, bool):
         return x
-    t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
+    t = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return torch.all(t).item()
 
 
@@ -368,15 +397,20 @@ def factorial(n):
     return torch.lgamma(array(n + 1)).exp()
 
 
+# Imaginary unit
+j = torch.tensor(1j, dtype=torch.complex128)
+
 # --------------------------
 # Linear Algebra
 # --------------------------
 def matmul(a, b):
+    a, b = array(a), array(b)  # Ensure tensors
     dtype = torch.promote_types(a.dtype, b.dtype)
     return torch.matmul(a.to(dtype), b.to(dtype))
 
 
 def batched_chain_matmul3(a, b, c):
+    a, b, c = array(a), array(b), array(c)  # Ensure tensors
     dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
 
@@ -441,7 +475,7 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
 # --------------------------
 def polyfit(x, y, degree):
     X = torch.stack([x**i for i in range(degree + 1)], dim=1)
-    coeffs, _ = torch.lstsq(y.unsqueeze(1), X)
+    coeffs, _ = torch.linalg.lstsq(X, y.unsqueeze(1))  # Use torch.linalg.lstsq
     return coeffs[: degree + 1].squeeze()
 
 
@@ -483,12 +517,12 @@ def vectorize(pyfunc):
 # Conversion and Utilities
 # --------------------------
 def atleast_1d(x):
-    t = torch.as_tensor(x, dtype=get_precision())
+    t = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return t.unsqueeze(0) if t.ndim == 0 else t
 
 
 def atleast_2d(x):
-    t = torch.as_tensor(x, dtype=get_precision())
+    t = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     if t.ndim == 0:
         return t.unsqueeze(0).unsqueeze(0)
     if t.ndim == 1:
@@ -502,7 +536,8 @@ def as_array_1d(data):
     if isinstance(data, (list, tuple)):
         return array(data)
     if is_array_like(data):
-        return data.reshape(-1)
+        # Ensure it's a tensor and then reshape
+        return array(data).reshape(-1)
     raise ValueError("Unsupported type for as_array_1d")
 
 
@@ -580,6 +615,8 @@ __all__ = [
     "is_array_like",
     "size",
     "newaxis",
+    "unique",
+    "sort",  # Added sort
     # Shape
     "reshape",
     "stack",
@@ -590,6 +627,8 @@ __all__ = [
     "roll",
     "unsqueeze_last",
     "tile",
+    "isscalar",  # Added isscalar
+    "ravel",
     # Random
     "default_rng",
     "random_uniform",
@@ -600,11 +639,16 @@ __all__ = [
     "cos",
     "exp",
     "radians",
+    "degrees",  # Added degrees
     "deg2rad",
+    "rad2deg",  # Added rad2deg
     "max",
     "min",
+    "nanmax",  # Added nanmax
     "mean",
     "all",
+    "factorial",  # Added factorial
+    "j", # Added imaginary unit
     # Linear Algebra
     "matmul",
     "batched_chain_matmul3",
@@ -629,4 +673,6 @@ __all__ = [
     "eye",
     # Error State
     "errstate",
+    # Miscellaneous
+    "path_contains_points",  # Added path_contains_points
 ]
