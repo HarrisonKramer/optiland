@@ -43,9 +43,7 @@ class Paraxial:
             float: front focal length
 
         """
-        surfaces = self.surfaces.inverted()
-        # start tracing 1 lens unit before first surface
-        z_start = surfaces.positions[0] - 1
+        z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
         f1 = y[0] / u[-1]
@@ -72,9 +70,8 @@ class Paraxial:
             float: front focal point location
 
         """
-        surfaces = self.surfaces.inverted()
         # start tracing 1 lens unit before first surface
-        z_start = surfaces.positions[0] - 1
+        z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
         F1 = y[-1] / u[-1]
@@ -112,6 +109,22 @@ class Paraxial:
         """
         return self.F2() - self.f2()
 
+    def P1anti(self):
+        """Calculate the front anti-principal plane location
+
+        Returns:
+            float: front anti-principal plane location
+        """
+        return self.F1() + self.f1()
+
+    def P2anti(self):
+        """Calculate the back anti-principal plane location
+
+        Returns:
+            float: back anti-principal plane location
+        """
+        return self.F2() + self.f2()
+
     def N1(self):
         """Calculate the front nodal plane location
 
@@ -119,7 +132,7 @@ class Paraxial:
             float: front nodal plane location
 
         """
-        return self.P1() + self.f1() + self.f2()
+        return self.F1() + self.f2()
 
     def N2(self):
         """Calculate the back nodal plane location
@@ -128,7 +141,25 @@ class Paraxial:
             float: back nodal plane location
 
         """
-        return self.P2() + self.f1() + self.f2()
+        return self.F2() + self.f1()
+
+    def N1anti(self):
+        """Calculate the front anti-nodal plane location
+
+        Returns:
+            float: front anti-nodal plane location
+
+        """
+        return self.F1() - self.f2()
+
+    def N2anti(self):
+        """Calculate the back anti-nodal plane location
+
+        Returns:
+            float: back anti-nodal plane location
+
+        """
+        return self.F2() - self.f1()
 
     def EPL(self):
         """Calculate the entrance pupil location in global coordinates
@@ -139,26 +170,18 @@ class Paraxial:
 
         """
         stop_index = self.surfaces.stop_index
-        if stop_index == 0:
-            return self.surfaces.positions[1]
-
-        surfaces = self.surfaces.inverted()
-        stop_index = surfaces.stop_index
+        if stop_index == 1:
+            return self.surfaces.positions[1, 0]
 
         y0 = 0
         u0 = 0.1
-        # trace from center of stop on axis
-        z0 = surfaces.positions[stop_index]
+        pos = self.surfaces.positions
+        z0 = pos[-1] - pos[stop_index]
         wavelength = self.optic.primary_wavelength
 
-        y, u = self._trace_generic(
-            y0,
-            u0,
-            z0,
-            wavelength,
-            reverse=True,
-            skip=stop_index + 1,
-        )
+        # trace from center of stop on axis
+        skip = self.surfaces.num_surfaces - stop_index
+        y, u = self._trace_generic(y0, u0, z0[0], wavelength, reverse=True, skip=skip)
 
         loc_relative = y[-1] / u[-1]
         return loc_relative[0]
@@ -285,23 +308,17 @@ class Paraxial:
             tuple: chief ray heights and angles as type be.ndarray
 
         """
-        surfaces = self.surfaces.inverted()
-        stop_index = surfaces.stop_index
-
+        stop_index = self.optic.surface_group.stop_index
         y0 = 0
         u0 = 0.1
-        # trace from center of stop on axis
-        z0 = surfaces.positions[stop_index]
+        pos = self.optic.surface_group.positions
+        z0 = pos[-1] - pos[stop_index]
         wavelength = self.optic.primary_wavelength
+        num_surf = self.surfaces.num_surfaces
+        skip = num_surf - stop_index
 
-        y, u = self._trace_generic(
-            y0,
-            u0,
-            z0,
-            wavelength,
-            reverse=True,
-            skip=stop_index + 1,
-        )
+        # trace from center of stop on axis
+        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True, skip=skip)
 
         max_field = self.optic.fields.max_y_field
 
@@ -310,19 +327,12 @@ class Paraxial:
         elif self.optic.field_type == "angle":
             u1 = 0.1 * be.tan(be.deg2rad(max_field)) / u[-1]
 
-        yn, un = self._trace_generic(
-            y0,
-            u1,
-            z0,
-            wavelength,
-            reverse=True,
-            skip=stop_index + 1,
-        )
+        yn, un = self._trace_generic(y0, u1, z0, wavelength, reverse=True, skip=skip)
 
         # trace in forward direction
-        z0 = self.surfaces.positions[1]
+        z0 = self.optic.surface_group.positions[1]
 
-        return self._trace_generic(-yn[-1], un[-1], z0, wavelength)
+        return self._trace_generic(-yn[-1, 0], un[-1, 0], z0[0], wavelength)
 
     def trace(self, Hy, Py, wavelength):
         """Trace paraxial ray through the optical system based on specified field

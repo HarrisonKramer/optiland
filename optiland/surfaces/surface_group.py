@@ -8,8 +8,6 @@ converting the group to and from a dictionary for serialization.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
-
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
@@ -52,10 +50,10 @@ class SurfaceGroup:
         # add object surface distance if finite
         object_distance = other.surfaces[0].geometry.cs.z
         if be.isfinite(object_distance):
-            offset -= object_distance
+            offset = offset - object_distance
 
         for surf in other.surfaces[1:]:
-            surf.geometry.cs.z += offset
+            surf.geometry.cs.z = surf.geometry.cs.z + offset
 
         # remove stop surface from other
         for surface in other.surfaces:
@@ -65,59 +63,62 @@ class SurfaceGroup:
 
     @property
     def x(self):
-        """be.array: x intersection points on all surfaces"""
-        return be.array([surf.x for surf in self.surfaces if surf.x.size > 0])
+        """np.array: x intersection points on all surfaces"""
+        return be.stack([surf.x for surf in self.surfaces if be.size(surf.x) > 0])
 
     @property
     def y(self):
-        """be.array: y intersection points on all surfaces"""
-        return be.array([surf.y for surf in self.surfaces if surf.y.size > 0])
+        """np.array: y intersection points on all surfaces"""
+        return be.stack([surf.y for surf in self.surfaces if be.size(surf.y) > 0])
 
     @property
     def z(self):
-        """be.array: z intersection points on all surfaces"""
-        return be.array([surf.z for surf in self.surfaces if surf.z.size > 0])
+        """np.array: z intersection points on all surfaces"""
+        return be.stack([surf.z for surf in self.surfaces if be.size(surf.z) > 0])
 
     @property
     def L(self):
-        """be.array: x direction cosines on all surfaces"""
-        return be.array([surf.L for surf in self.surfaces if surf.L.size > 0])
+        """np.array: x direction cosines on all surfaces"""
+        return be.stack([surf.L for surf in self.surfaces if be.size(surf.L) > 0])
 
     @property
     def M(self):
-        """be.array: y direction cosines on all surfaces"""
-        return be.array([surf.M for surf in self.surfaces if surf.M.size > 0])
+        """np.array: y direction cosines on all surfaces"""
+        return be.stack([surf.M for surf in self.surfaces if be.size(surf.M) > 0])
 
     @property
     def N(self):
-        """be.array: z direction cosines on all surfaces"""
-        return be.array([surf.N for surf in self.surfaces if surf.N.size > 0])
+        """np.array: z direction cosines on all surfaces"""
+        return be.stack([surf.N for surf in self.surfaces if be.size(surf.N) > 0])
 
     @property
     def opd(self):
-        """be.array: optical path difference recorded on all surfaces"""
-        return be.array([surf.opd for surf in self.surfaces if surf.opd.size > 0])
+        """np.array: optical path difference recorded on all surfaces"""
+        return be.stack([surf.opd for surf in self.surfaces if be.size(surf.opd) > 0])
 
     @property
     def u(self):
-        """be.array: paraxial ray angles on all surfaces"""
-        return be.array([surf.u for surf in self.surfaces if surf.u.size > 0])
+        """np.array: paraxial ray angles on all surfaces"""
+        return be.stack([surf.u for surf in self.surfaces if be.size(surf.u) > 0])
 
     @property
     def intensity(self):
-        """be.array: ray intensities on all surfaces"""
-        return be.array(
-            [surf.intensity for surf in self.surfaces if surf.intensity.size > 0],
+        """np.array: ray intensities on all surfaces"""
+        return be.stack(
+            [surf.intensity for surf in self.surfaces if be.size(surf.intensity) > 0]
         )
 
     @property
     def positions(self):
-        """be.array: z positions of surface vertices"""
-        return be.array([surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces])
+        """np.array: z positions of surface vertices"""
+        positions = be.array(
+            [surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces]
+        )
+        return positions.reshape(-1, 1)
 
     @property
     def radii(self):
-        """be.array: radii of curvature of all surfaces"""
+        """np.array: radii of curvature of all surfaces"""
         return be.array([surf.geometry.radius for surf in self.surfaces])
 
     @property
@@ -174,8 +175,8 @@ class SurfaceGroup:
         """
         n = []
         for surface in self.surfaces:
-            n.append(surface.material_post.n(wavelength))
-        return be.array(n)
+            n.append(be.atleast_1d(surface.material_post.n(wavelength)))
+        return be.ravel(be.array(n))
 
     def get_thickness(self, surface_number):
         """Calculate the thickness between two surfaces.
@@ -282,38 +283,6 @@ class SurfaceGroup:
         """
         for surface in self.surfaces:
             surface.reset()
-
-    def inverted(self):
-        """Generate inverted surface group.
-
-        This method generates an inverted surface group by performing the
-            following operations:
-            1. Reverses the order of the surfaces in the original surface
-                group.
-            2. Scales the radii of each surface by -1.
-            3. Inverts the z position of each surface by subtracting it from
-                the z position of the last surface.
-            4. Swaps the initial and final materials of each surface.
-
-        Returns:
-            SurfaceGroup: The inverted surface group.
-
-        """
-        surfs_inverted = deepcopy(self.surfaces[::-1])
-        z_shift = self.surfaces[-1].geometry.cs.z
-        for surf in surfs_inverted:
-            # scale radii by -1
-            surf.geometry.radius *= -1
-
-            # invert z position
-            surf.geometry.cs.z = z_shift - surf.geometry.cs.z
-
-            # swap initial and final materials
-            temp = surf.material_pre
-            surf.material_pre = surf.material_post
-            surf.material_post = temp
-
-        return SurfaceGroup(surfs_inverted)
 
     def set_fresnel_coatings(self):
         """Set Fresnel coatings on all surfaces in the group."""

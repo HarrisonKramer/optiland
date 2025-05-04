@@ -55,7 +55,7 @@ def test_run_optimizer_least_squares():
     assert result is not None
 
 
-def test_invalid_method():
+def test_invalid_method(set_test_backend):
     with pytest.raises(ValueError):
         optimizer = CompensatorOptimizer(method="invalid_method")
         optimizer.run()

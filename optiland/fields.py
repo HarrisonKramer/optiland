@@ -6,8 +6,6 @@ system.
 Kramer Harrison, 2023
 """
 
-from scipy.interpolate import NearestNDInterpolator
-
 import optiland.backend as be
 
 
@@ -154,8 +152,7 @@ class FieldGroup:
         """
         fields = be.stack((self.x_fields, self.y_fields), axis=-1)
         v_data = be.stack((self.vx, self.vy), axis=-1)
-        interpolator = NearestNDInterpolator(fields, v_data)
-        result = interpolator(Hx, Hy)
+        result = be.nearest_nd_interpolator(fields, v_data, Hx, Hy)
         vx_new = result[..., 0]
         vy_new = result[..., 1]
         return vx_new, vy_new

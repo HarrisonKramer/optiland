@@ -180,7 +180,7 @@ class SimpleCoating(BaseCoating):
             rays (RealRays): The rays after reflection.
 
         """
-        rays.i *= self.reflectance
+        rays.i = rays.i * self.reflectance
         return rays
 
     def transmit(
@@ -200,7 +200,7 @@ class SimpleCoating(BaseCoating):
             rays (RealRays): The rays after transmission.
 
         """
-        rays.i *= self.transmittance
+        rays.i = rays.i * self.transmittance
         return rays
 
     def to_dict(self):

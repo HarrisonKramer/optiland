@@ -152,6 +152,7 @@ class ZemaxFileReader:
 
             if self.data["aperture"]:
                 success = True
+                break
             else:
                 continue
 

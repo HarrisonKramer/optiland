@@ -15,6 +15,7 @@ Kramer Harrison, 2025
 
 import numpy as np
 
+import optiland.backend as be
 from optiland.zernike.base import BaseZernike
 
 
@@ -55,8 +56,8 @@ class ZernikeNoll(BaseZernike):
 
         """
         if m == 0:
-            return np.sqrt(n + 1)
-        return np.sqrt(2 * n + 2)
+            return be.sqrt(be.array(n + 1))
+        return be.sqrt(be.array(2 * n + 2))
 
     @staticmethod
     def _generate_indices():

@@ -9,6 +9,8 @@ Kramer Harrison, 2024
 
 import matplotlib.pyplot as plt
 
+import optiland.backend as be
+
 
 class YYbar:
     """Class representing the YYbar analysis of an optic.
@@ -52,8 +54,8 @@ class YYbar:
             elif k == len(ya) - 1:
                 label = "Image"
             ax.plot(
-                [yb[k - 1], yb[k]],
-                [ya[k - 1], ya[k]],
+                [be.to_numpy(yb[k - 1]), be.to_numpy(yb[k])],
+                [be.to_numpy(ya[k - 1]), be.to_numpy(ya[k])],
                 ".-",
                 label=label,
                 markersize=8,

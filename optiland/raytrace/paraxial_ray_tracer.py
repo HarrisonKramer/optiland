@@ -8,6 +8,7 @@ Kramer Harrison, 2025
 
 import optiland.backend as be
 from optiland.rays.paraxial_rays import ParaxialRays
+from optiland.surfaces import ObjectSurface
 
 
 class ParaxialRayTracer:
@@ -42,7 +43,8 @@ class ParaxialRayTracer:
         self.optic.surface_group.trace(rays)
 
     def trace_generic(self, y, u, z, wavelength, reverse=False, skip=0):
-        """Trace generically-defined paraxial rays through the optical system.
+        """
+        Trace generically-defined paraxial rays through the optical system.
 
         Args:
             y (float or array-like): The initial height(s) of the rays.
@@ -57,16 +59,52 @@ class ParaxialRayTracer:
         Returns:
             tuple: A tuple containing the final height(s) and slope(s) of the
                 rays after tracing.
-
         """
-        surfaces = (
-            self.optic.surface_group.inverted() if reverse else self.optic.surface_group
-        )
+        y = self._process_input(y)
+        u = self._process_input(u)
+        z = self._process_input(z)
 
-        rays = ParaxialRays(y, u, z, wavelength)
-        surfaces.trace(rays, skip)
+        R = self.optic.surface_group.radii
+        n = self.optic.n(wavelength)
+        pos = be.ravel(self.optic.surface_group.positions)
+        surfs = self.optic.surface_group.surfaces
 
-        return surfaces.y, surfaces.u
+        if reverse:
+            R = -be.flip(R)
+            n = be.roll(n, shift=1)
+            n = be.flip(n)
+            pos = pos[-1] - be.flip(pos)
+            surfs = surfs[::-1]
+
+        power = be.diff(n, prepend=be.array([1])) / R
+
+        heights = []
+        slopes = []
+
+        for k in range(skip, len(R)):
+            if isinstance(surfs[k], ObjectSurface):
+                heights.append(be.copy(y))
+                slopes.append(be.copy(u))
+                continue
+
+            # propagate to surface
+            t = pos[k] - z
+            z = pos[k]
+            y = y + t * u
+
+            # reflect or refract
+            if surfs[k].is_reflective:
+                u = -u - 2 * y / R[k]
+            else:
+                u = 1 / n[k] * (n[k - 1] * u - y * power[k])
+
+            heights.append(be.copy(y))
+            slopes.append(be.copy(u))
+
+        heights = be.array(heights).reshape(-1, 1)
+        slopes = be.array(slopes).reshape(-1, 1)
+
+        return heights, slopes
 
     def _get_object_position(self, Hy, y1, EPL):
         """Calculate the position of the object in the paraxial optical system.
@@ -114,3 +152,18 @@ class ParaxialRayTracer:
             z0 = be.ones_like(y1) * z
 
         return y0, z0
+
+    def _process_input(self, x):
+        """
+        Process input to ensure it is a numpy array.
+
+        Args:
+            x (float or array-like): The input to process.
+
+        Returns:
+            np.ndarray: The processed input.
+        """
+        if isinstance(x, (int, float)):
+            return be.array([x])
+        else:
+            return be.array(x)

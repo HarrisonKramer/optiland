@@ -8,7 +8,6 @@ coefficient is ignored in this model and is always set to zero.
 Kramer Harrison, 2024
 """
 
-# import pkg_resources
 from importlib import resources
 
 import optiland.backend as be
@@ -28,8 +27,8 @@ class AbbeMaterial(BaseMaterial):
     """
 
     def __init__(self, n, abbe):
-        self.index = n
-        self.abbe = abbe
+        self.index = be.array([n])
+        self.abbe = be.array([abbe])
         self._p = self._get_coefficients()
 
     def n(self, wavelength):
@@ -42,9 +41,10 @@ class AbbeMaterial(BaseMaterial):
             float: The refractive index of the material.
 
         """
+        wavelength = be.array(wavelength)
         if be.any(wavelength < 0.380) or be.any(wavelength > 0.750):
             raise ValueError("Wavelength out of range for this model.")
-        return be.polyval(self._p, wavelength)
+        return be.atleast_1d(be.polyval(self._p, wavelength))
 
     def k(self, wavelength):
         """Returns the extinction coefficient of the material.
@@ -66,8 +66,18 @@ class AbbeMaterial(BaseMaterial):
 
         """
         # Polynomial fit to the refractive index data
-        X = be.array([self.index, self.abbe])
-        X_poly = be.hstack([X**i for i in range(1, 4)])
+        X_poly = be.ravel(
+            be.array(
+                [
+                    self.index,
+                    self.abbe,
+                    self.index**2,
+                    self.abbe**2,
+                    self.index**3,
+                    self.abbe**3,
+                ]
+            )
+        )
 
         # File contains fit coefficients
         coefficients_file = str(
@@ -75,11 +85,8 @@ class AbbeMaterial(BaseMaterial):
                 "glass_model_coefficients.npy",
             ),
         )
-        # coefficients_file = pkg_resources.resource_filename(
-        #    'optiland.database', 'glass_model_coefficients.npy'
-        # )
         coefficients = be.load(coefficients_file)
-        return X_poly @ coefficients
+        return be.matmul(X_poly, coefficients)
 
     def to_dict(self):
         """Returns a dictionary representation of the material.
@@ -89,7 +96,7 @@ class AbbeMaterial(BaseMaterial):
 
         """
         material_dict = super().to_dict()
-        material_dict.update({"index": self.index, "abbe": self.abbe})
+        material_dict.update({"index": float(self.index), "abbe": float(self.abbe)})
         return material_dict
 
     @classmethod

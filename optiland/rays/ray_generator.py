@@ -31,7 +31,9 @@ class RayGenerator:
             RealRays: RealRays object containing the generated rays.
 
         """
-        vx, vy = 1 - be.array(self.optic.fields.get_vig_factor(Hx, Hy))
+        vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
+        vx = 1 - be.array(vxf)
+        vy = 1 - be.array(vyf)
         x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
 
         if self.optic.obj_space_telecentric:
@@ -65,10 +67,6 @@ class RayGenerator:
         L = (x1 - x0) / mag
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
-
-        x0 = be.full_like(x1, x0)
-        y0 = be.full_like(x1, y0)
-        z0 = be.full_like(x1, z0)
 
         intensity = be.ones_like(x1)
         wavelength = be.ones_like(x1) * wavelength

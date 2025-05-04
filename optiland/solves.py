@@ -87,7 +87,7 @@ class MarginalRayHeightSolve(BaseSolve):
 
         # shift current surface and all subsequent surfaces
         for surface in self.optic.surface_group.surfaces[self.surface_idx :]:
-            surface.geometry.cs.z += offset
+            surface.geometry.cs.z = surface.geometry.cs.z + offset
 
     def to_dict(self):
         """Returns a dictionary representation of the solve.

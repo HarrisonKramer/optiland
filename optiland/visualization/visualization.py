@@ -234,9 +234,9 @@ class LensInfoViewer:
 
         surf_type = self._get_surface_types()
         comments = self._get_comments()
-        radii = self.optic.surface_group.radii
+        radii = be.to_numpy(self.optic.surface_group.radii)
         thicknesses = self._get_thicknesses()
-        conic = self.optic.surface_group.conic
+        conic = be.to_numpy(self.optic.surface_group.conic)
         semi_aperture = self._get_semi_apertures()
         mat = self._get_materials()
 
@@ -277,11 +277,17 @@ class LensInfoViewer:
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
-        return be.diff(self.optic.surface_group.positions.ravel(), append=be.nan)
+        thicknesses = be.diff(
+            be.ravel(self.optic.surface_group.positions), append=be.array([be.nan])
+        )
+        return be.to_numpy(thicknesses)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""
-        return [surf.semi_aperture for surf in self.optic.surface_group.surfaces]
+        return [
+            be.to_numpy(surf.semi_aperture)
+            for surf in self.optic.surface_group.surfaces
+        ]
 
     def _get_materials(self):
         """Determines the material for each surface."""
@@ -296,10 +302,11 @@ class LensInfoViewer:
             elif surf.material_post.index == 1:
                 mat.append("Air")
             elif isinstance(surf.material_post, materials.IdealMaterial):
-                mat.append(surf.material_post.index)
+                mat.append(surf.material_post.index.item())
             elif isinstance(surf.material_post, materials.AbbeMaterial):
                 mat.append(
-                    f"{surf.material_post.index:.4f}, {surf.material_post.abbe:.2f}",
+                    f"{surf.material_post.index.item():.4f}, "
+                    f"{surf.material_post.abbe.item():.2f}",
                 )
             else:
                 raise ValueError("Unknown material type")

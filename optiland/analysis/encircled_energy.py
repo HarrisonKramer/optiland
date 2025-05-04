@@ -5,8 +5,6 @@ This module provides an encircled energy analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
-
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
@@ -57,7 +55,7 @@ class EncircledEnergy(SpotDiagram):
         """
         fig, ax = plt.subplots(figsize=figsize)
 
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
         axis_lim = be.max(geometric_size)
         for k, field_data in enumerate(data):
@@ -102,6 +100,7 @@ class EncircledEnergy(SpotDiagram):
         """
         r_max = axis_lim * buffer
         r_step = be.linspace(0, r_max, num_points)
+
         for points in field_data:
             x, y, energy = points
             radii = be.sqrt(x**2 + y**2)
@@ -109,8 +108,13 @@ class EncircledEnergy(SpotDiagram):
             def vectorized_ee(r):
                 return be.nansum(energy[radii <= r])  # noqa: B023
 
+            # element‑wise encircled energy (Tensor)
             ee = be.vectorize(vectorized_ee)(r_step)
-            ax.plot(r_step, ee, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+
+            # convert both to plain numpy for plotting
+            r_np = be.to_numpy(r_step)
+            ee_np = be.to_numpy(ee)
+            ax.plot(r_np, ee_np, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
     def _generate_field_data(
         self,
@@ -118,6 +122,7 @@ class EncircledEnergy(SpotDiagram):
         wavelength,
         num_rays=100,
         distribution="hexapolar",
+        coordinates="local",
     ):
         """Generate the field data for a specific field and wavelength.
 
@@ -127,6 +132,7 @@ class EncircledEnergy(SpotDiagram):
             num_rays (int, optional): The number of rays. Defaults to 100.
             distribution (str, optional): The distribution of rays.
                 Defaults to 'hexapolar'.
+            coordinates (str): Coordinate system choice (ignored).
 
         Returns:
             list: List of field data, including x, y and energy points.

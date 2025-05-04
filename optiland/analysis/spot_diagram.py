@@ -5,12 +5,13 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-from copy import deepcopy
+from typing import Literal
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
 import optiland.backend as be
+from optiland.visualization.utils import transform
 
 
 class SpotDiagram:
@@ -29,6 +30,8 @@ class SpotDiagram:
         data (List): contains spot data in a nested list. Data is ordered as
             field (dim 0), wavelength (dim 1), then x, y and intensity data
             (dim 2).
+        coordinates (Literal['global', 'local']): Coordinate system for data
+                                                  and plotting.
 
     """
 
@@ -39,6 +42,7 @@ class SpotDiagram:
         wavelengths="all",
         num_rings=6,
         distribution="hexapolar",
+        coordinates: Literal["global", "local"] = "local",
     ):
         """Create an instance of SpotDiagram
 
@@ -58,6 +62,8 @@ class SpotDiagram:
                 tracing. Default is 6.
             distribution (str): pupil distribution type for ray tracing.
                 Default is 'hexapolar'.
+            coordinates (Literal['global', 'local'], optional): Coordinate system
+                for data generation and plotting. Defaults to "local".
 
         Returns:
             None
@@ -65,6 +71,11 @@ class SpotDiagram:
         """
         self.optic = optic
         self.fields = fields
+
+        if coordinates not in ["global", "local"]:
+            raise ValueError("Coordinates must be 'global' or 'local'.")
+        self.coordinates = coordinates
+
         self.wavelengths = wavelengths
         if self.fields == "all":
             self.fields = self.optic.fields.get_field_coords()
@@ -77,6 +88,7 @@ class SpotDiagram:
             self.wavelengths,
             num_rings,
             distribution,
+            self.coordinates,
         )
 
     def view(self, figsize=(12, 4), add_airy_disk=False):
@@ -104,9 +116,15 @@ class SpotDiagram:
         axs = axs.flatten()
 
         # Subtract centroid and find limits
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
-        axis_lim = be.max(geometric_size)
+        # stack into an (N_fields, N_waves) array/tensor, then reduce:
+        # first convert each row into a 1D tensor/array
+        rows = [be.stack(row, axis=0) for row in geometric_size]
+        # now stack rows into a 2D
+        gs_array = be.stack(rows, axis=0)
+        # take the global max
+        axis_lim = be.max(gs_array)
 
         if add_airy_disk:
             wavelength = self.optic.wavelengths.primary_wavelength.value
@@ -281,7 +299,7 @@ class SpotDiagram:
             chief_ray_cosines_list.append(
                 be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = be.array(chief_ray_cosines_list)
+        chief_ray_cosines_list = be.stack(chief_ray_cosines_list, axis=0)
         return chief_ray_cosines_list
 
     def generate_chief_rays_centers(self, wavelength):
@@ -307,7 +325,7 @@ class SpotDiagram:
             x, y = ray_chief.x, ray_chief.y
             chief_ray_centers.append([x, y])
 
-        chief_ray_centers = be.array(chief_ray_centers)
+        chief_ray_centers = be.stack(chief_ray_centers, axis=0)
         return chief_ray_centers
 
     def airy_disc_x_y(self, wavelength):
@@ -377,7 +395,7 @@ class SpotDiagram:
                 wavelength
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         geometric_size = []
         for field_data in data:
             geometric_size_field = []
@@ -394,7 +412,7 @@ class SpotDiagram:
             rms (List): RMS spot radius for each field and wavelength.
 
         """
-        data = self._center_spots(deepcopy(self.data))
+        data = self._center_spots(self.data)
         rms = []
         for field_data in data:
             rms_field = []
@@ -416,12 +434,24 @@ class SpotDiagram:
 
         """
         centroids = self.centroid()
-        data = deepcopy(self.data)
+
+        # Build a true deep copy of the nested list, cloning each array via the backend
+        centered = []
         for i, field_data in enumerate(data):
-            for wave_data in field_data:
-                wave_data[0] -= centroids[i][0]
-                wave_data[1] -= centroids[i][1]
-        return data
+            field_copy = []
+            for x, y, intensity in field_data:
+                # clone each array/tensor
+                x2 = be.copy(x)
+                y2 = be.copy(y)
+                i2 = be.copy(intensity)
+
+                # subtract centroid
+                x2 = x2 - centroids[i][0]  # not in-place, to prevent breaking autograd
+                y2 = y2 - centroids[i][1]
+
+                field_copy.append([x2, y2, i2])
+            centered.append(field_copy)
+        return centered
 
     def _generate_data(
         self,
@@ -429,6 +459,7 @@ class SpotDiagram:
         wavelengths,
         num_rays=100,
         distribution="hexapolar",
+        coordinates="local",
     ):
         """Generate spot data for the given fields and wavelengths.
 
@@ -439,6 +470,7 @@ class SpotDiagram:
                 Defaults to 100.
             distribution (str, optional): The distribution type.
                 Defaults to 'hexapolar'.
+            coordinates (str): The coordinate system ('local' or 'global').
 
         Returns:
             data (List): A nested list of spot intersection data for each
@@ -451,7 +483,7 @@ class SpotDiagram:
             for wavelength in wavelengths:
                 field_data.append(
                     self._generate_field_data(
-                        field, wavelength, num_rays, distribution
+                        field, wavelength, num_rays, distribution, coordinates
                     ),
                 )
             data.append(field_data)
@@ -463,6 +495,7 @@ class SpotDiagram:
         wavelength,
         num_rays=100,
         distribution="hexapolar",
+        coordinates="local",
     ):
         """Generates spot data for a given field and wavelength.
 
@@ -473,6 +506,7 @@ class SpotDiagram:
                 Defaults to 100.
             distribution (str, optional): The distribution pattern of the
                 rays. Defaults to 'hexapolar'.
+            coordinates (str): The coordinate system ('local' or 'global').
 
         Returns:
             list: A list containing the local x-coordinates,
@@ -490,21 +524,18 @@ class SpotDiagram:
         z_global = self.optic.surface_group.z[-1, :]
         intensity = self.optic.surface_group.intensity[-1, :]
 
-        from optiland.visualization.utils import transform
+        if coordinates == "local":
+            # Now, convert the global coordinates to the image's local
+            # coordinate system.
+            # Do the transformation
+            plot_x, plot_y, _ = transform(
+                x_global, y_global, z_global, self.optic.image_surface, is_global=True
+            )
+        else:  # coordinates == "global"
+            plot_x = x_global
+            plot_y = y_global
 
-        # Now, convert the global coordinates to the image's local
-        # coordinate system. If is_global == True, then the transform function
-        # will call the image surface's geometry.localize(points) method
-        # to convert the global coordinates into local coordinates
-        x, y, _ = transform(
-            x_global,
-            y_global,
-            z_global,
-            self.optic.image_surface,
-            is_global=True,
-        )
-
-        return [x, y, intensity]
+        return [plot_x, plot_y, intensity]
 
     def _plot_field(
         self,
@@ -538,13 +569,20 @@ class SpotDiagram:
             None
 
         """
+
+        import numpy as np
+
         markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
             x, y, intensity = points
-            mask = intensity != 0
+            # one‐liner conversion for BOTH backends:
+            x_np = be.to_numpy(x)
+            y_np = be.to_numpy(y)
+            i_np = be.to_numpy(intensity)
+            mask = i_np != 0
             ax.scatter(
-                x[mask],
-                y[mask],
+                x_np[mask],
+                y_np[mask],
                 s=10,
                 label=f"{wavelengths[k]:.4f} µm",
                 marker=markers[k % 3],
@@ -552,11 +590,15 @@ class SpotDiagram:
             )
 
         if add_airy_disk and field_index is not None:
+            real_centroid_x_np = be.to_numpy(real_centroid_x)
+            real_centroid_y_np = be.to_numpy(real_centroid_y)
+            airy_rad_x_np = be.to_numpy(airy_rad_x)
+            airy_rad_y_np = be.to_numpy(airy_rad_y)
             # Draw ellipse ONLY for the current field_index
             ellipse = patches.Ellipse(
-                (real_centroid_x, real_centroid_y),
-                width=2 * airy_rad_y[field_index],  # diameter, not radius
-                height=2 * airy_rad_x[field_index],
+                (real_centroid_x_np, real_centroid_y_np),
+                width=2 * airy_rad_y_np[field_index],  # diameter, not radius
+                height=2 * airy_rad_x_np[field_index],
                 linestyle="--",
                 edgecolor="black",
                 fill=False,
@@ -564,12 +606,12 @@ class SpotDiagram:
             )
             ax.add_patch(ellipse)
 
-            offset = abs(max(real_centroid_y, real_centroid_x))
+            offset = abs(max(real_centroid_x_np, real_centroid_x_np))
 
             # Find the maximum extent among the geometric spot radius and the
             # airy disk radii.
-            max_airy_x = max(airy_rad_x)
-            max_airy_y = max(airy_rad_y)
+            max_airy_x = max(airy_rad_x_np)
+            max_airy_y = max(airy_rad_y_np)
             max_extent = max(axis_lim, max_airy_x, max_airy_y)
 
             # Apply a buffer to ensure the data fits nicely in the plot.
@@ -582,7 +624,7 @@ class SpotDiagram:
         # Determining the labels for the x and y axes based on the image
         # surface effective orientation.
         cs = self.optic.image_surface.geometry.cs
-        effective_orientation = be.abs(cs.get_effective_rotation_euler())
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
         # Define a small tolerance to apply the new label
         tol = 0.01  # adjust it, if necessary
         if effective_orientation[0] > tol or effective_orientation[1] > tol:

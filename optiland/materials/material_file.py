@@ -10,6 +10,7 @@ import contextlib
 import os
 from io import StringIO
 
+import numpy as np
 import yaml
 
 import optiland.backend as be
@@ -107,10 +108,9 @@ class MaterialFile(BaseMaterial):
                 # we set it to True to avoid printing the warning again
                 self._k_warning_printed = True
 
-            if be.isscalar(wavelength):
-                return 0.0
-            # if there is an array of wavelengths, return array of zeros
-            return be.zeros_like(wavelength)
+            if be.is_array_like(wavelength):
+                return be.zeros_like(wavelength)
+            return 0.0
 
         return be.interp(wavelength, self._k_wavelength, self._k)
 
@@ -129,7 +129,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w**2 / (w**2 - c[k + 1] ** 2)
+                n = n + c[k] * w**2 / (w**2 - c[k + 1] ** 2)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 1.") from err
         return be.sqrt(n)
@@ -149,7 +149,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w**2 / (w**2 - c[k + 1])
+                n = n + c[k] * w**2 / (w**2 - c[k + 1])
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 2.") from err
         return be.sqrt(n)
@@ -169,7 +169,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return be.sqrt(n)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 3.") from err
@@ -193,7 +193,7 @@ class MaterialFile(BaseMaterial):
                 + c[5] * w ** c[6] / (w**2 - c[7] ** c[8])
             )
             for k in range(9, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return be.sqrt(n)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 4.") from err
@@ -213,7 +213,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * w ** c[k + 1]
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 5.") from err
@@ -233,7 +233,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] / (c[k + 1] - w**-2)
+                n = n + c[k] / (c[k + 1] - w**-2)
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 6.") from err
@@ -253,7 +253,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0] + c[1] / (w**2 - 0.028) + c[2] * (1 / (w**2 - 0.028)) ** 2
             for k in range(3, len(c)):
-                n += c[k] * w ** (2 * (k - 2))
+                n = n + c[k] * w ** (2 * (k - 2))
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 7.") from err
@@ -320,13 +320,16 @@ class MaterialFile(BaseMaterial):
 
             # Parse the data based on the type
             if sub_data_type.startswith("formula "):
-                self.coefficients = [float(k) for k in sub_data["coefficients"].split()]
+                self.coefficients = be.array(
+                    [float(k) for k in sub_data["coefficients"].split()]
+                )
+                self.coefficients = be.reshape(self.coefficients, (-1, 1))
                 self._set_formula_type(sub_data_type)
 
             # Parse tabulated data
             elif sub_data_type.startswith("tabulated"):
                 data_file = StringIO(sub_data["data"])
-                arr = be.atleast_2d(be.loadtxt(data_file))
+                arr = be.atleast_2d(np.loadtxt(data_file))
 
                 if sub_data_type == "tabulated n":
                     self._n_wavelength = arr[:, 0]

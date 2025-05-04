@@ -8,6 +8,7 @@ Kramer Harrison, 2024
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 import optiland.backend as be
@@ -140,14 +141,18 @@ class SensitivityAnalysis:
         )
 
         # handle single row and/or column
-        axes = be.array(axes).reshape(m, n)
+        axes = np.array(axes).reshape(m, n)
 
         for i, name in enumerate(self.operand_names):
             for j, pert_type in enumerate(unique_types):
-                x = df.loc[df.perturbation_type == pert_type, "perturbation_value"]
-                y = df.loc[df.perturbation_type == pert_type, name]
+                x = df.loc[
+                    df.perturbation_type == pert_type, "perturbation_value"
+                ].values
+                y = df.loc[df.perturbation_type == pert_type, name].values
 
-                axes[i, j].plot(x, y, color=f"C{i}", linewidth=2)
+                axes[i, j].plot(
+                    be.to_numpy(x), be.to_numpy(y), color=f"C{i}", linewidth=2
+                )
                 axes[i, j].grid()
 
                 if j == 0:

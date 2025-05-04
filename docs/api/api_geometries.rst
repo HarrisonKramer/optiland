@@ -19,4 +19,5 @@ that require a numerical solution to find the intersection point with a ray.
    geometries.plane
    geometries.polynomial
    geometries.standard
+   geometries.toroidal
    geometries.zernike

@@ -60,10 +60,10 @@ class EllipticalAperture(BaseAperture):
             scale_factor (float): The factor by which to scale the aperture.
 
         """
-        self.a *= scale_factor
-        self.b *= scale_factor
-        self.offset_x *= scale_factor
-        self.offset_y *= scale_factor
+        self.a = self.a * scale_factor
+        self.b = self.b * scale_factor
+        self.offset_x = self.offset_x * scale_factor
+        self.offset_y = self.offset_y * scale_factor
 
     def to_dict(self):
         """Convert the aperture to a dictionary.

@@ -41,8 +41,8 @@ class StandardGeometry(BaseGeometry):
 
     def __init__(self, coordinate_system, radius, conic=0.0):
         super().__init__(coordinate_system)
-        self.radius = radius
-        self.k = conic
+        self.radius = be.array(radius)
+        self.k = be.array(conic)
         self.is_symmetric = True
 
     def __str__(self):
@@ -147,7 +147,7 @@ class StandardGeometry(BaseGeometry):
 
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({"radius": self.radius, "conic": self.k})
+        geometry_dict.update({"radius": float(self.radius), "conic": float(self.k)})
         return geometry_dict
 
     @classmethod

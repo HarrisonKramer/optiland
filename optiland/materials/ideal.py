@@ -7,6 +7,7 @@ wavelengths.
 Kramer Harrison, 2024
 """
 
+import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
 
@@ -21,8 +22,8 @@ class IdealMaterial(BaseMaterial):
     """
 
     def __init__(self, n, k=0):
-        self.index = n
-        self.absorp = k
+        self.index = be.array([n])
+        self.absorp = be.array([k])
 
     def n(self, wavelength):
         """Returns the refractive index of the material.
@@ -56,7 +57,7 @@ class IdealMaterial(BaseMaterial):
 
         """
         material_dict = super().to_dict()
-        material_dict.update({"index": self.index, "absorp": self.absorp})
+        material_dict.update({"index": float(self.index), "absorp": float(self.absorp)})
         return material_dict
 
     @classmethod

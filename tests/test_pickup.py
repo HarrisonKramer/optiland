@@ -5,7 +5,7 @@ from optiland.samples.objectives import CookeTriplet
 
 
 class TestPickup:
-    def test_apply_radius(self):
+    def test_apply_radius(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "radius", 2, scale=2, offset=3)
         pickup.apply()
@@ -13,7 +13,7 @@ class TestPickup:
         r1 = lens.surface_group.radii[2]
         assert r1 == 2 * r0 + 3
 
-    def test_apply_conic(self):
+    def test_apply_conic(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "conic", 2, scale=2, offset=3)
         pickup.apply()
@@ -21,7 +21,7 @@ class TestPickup:
         k1 = lens.surface_group.conic[2]
         assert k1 == 2 * k0 + 3
 
-    def test_apply_thickness(self):
+    def test_apply_thickness(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "thickness", 2, scale=1, offset=0)
         pickup.apply()
@@ -29,19 +29,19 @@ class TestPickup:
         t2 = lens.surface_group.get_thickness(2)
         assert t1 == t2
 
-    def test_invalid_attr_type(self):
+    def test_invalid_attr_type(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "invalid", 2, scale=1, offset=0)
         with pytest.raises(ValueError):
             pickup.apply()
 
-    def test_invalid_set_attr(self):
+    def test_invalid_set_attr(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "invalid", 2, scale=1, offset=0)
         with pytest.raises(ValueError):
             pickup._set_value(5.0)
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "radius", 2, scale=2, offset=3)
         d = pickup.to_dict()
@@ -51,7 +51,7 @@ class TestPickup:
         assert d["scale"] == 2
         assert d["offset"] == 3
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         lens = CookeTriplet()
         d = {
             "source_surface_idx": 1,
@@ -69,13 +69,13 @@ class TestPickup:
 
 
 class TestPickupManager:
-    def test_add_pickup(self):
+    def test_add_pickup(self, set_test_backend):
         lens = CookeTriplet()
         manager = PickupManager(lens)
         manager.add(1, "radius", 2, scale=2, offset=3)
         assert len(manager) == 1
 
-    def test_apply_pickups(self):
+    def test_apply_pickups(self, set_test_backend):
         lens = CookeTriplet()
         manager = PickupManager(lens)
         manager.add(1, "radius", 2, scale=2, offset=3)
@@ -84,14 +84,14 @@ class TestPickupManager:
         r1 = lens.surface_group.surfaces[2].geometry.radius
         assert r1 == 2 * r0 + 3
 
-    def test_clear_pickups(self):
+    def test_clear_pickups(self, set_test_backend):
         lens = CookeTriplet()
         manager = PickupManager(lens)
         manager.add(1, "radius", 2, scale=2, offset=3)
         manager.clear()
         assert len(manager) == 0
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         lens = CookeTriplet()
         manager = PickupManager(lens)
         manager.add(1, "radius", 2, scale=2, offset=3)
@@ -103,7 +103,7 @@ class TestPickupManager:
         assert d[0]["scale"] == 2
         assert d[0]["offset"] == 3
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         lens = CookeTriplet()
         d = [
             {

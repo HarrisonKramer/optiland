@@ -101,7 +101,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i in range(len(self.c)):
             for j in range(len(self.c[i])):
-                z += self.c[i][j] * (x**i) * (y**j)
+                z = z + self.c[i][j] * (x**i) * (y**j)
         return z
 
     def _surface_normal(self, x, y):
@@ -123,11 +123,11 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
 
         for i in range(1, len(self.c)):
             for j in range(len(self.c[i])):
-                dzdx += i * self.c[i][j] * (x ** (i - 1)) * (y**j)
+                dzdx = dzdx + i * self.c[i][j] * (x ** (i - 1)) * (y**j)
 
         for i in range(len(self.c)):
             for j in range(1, len(self.c[i])):
-                dzdy += j * self.c[i][j] * (x**i) * (y ** (j - 1))
+                dzdy = dzdy + j * self.c[i][j] * (x**i) * (y ** (j - 1))
 
         norm = be.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm

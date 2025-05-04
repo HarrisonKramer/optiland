@@ -12,8 +12,7 @@ Daniel Miranda, 2025
 ALL rights ceded to Kramer Harrison
 """
 
-import numpy as np
-
+import optiland.backend as be
 from optiland.optimization.variable.base import VariableBehavior
 
 
@@ -49,9 +48,9 @@ class ReciprocalRadiusVariable(VariableBehavior):
         radius = self._surfaces.radii[self.surface_number]
         # Avoid division by zero
         if radius != 0:
-            reciprocal = 1.0 / radius if np.isfinite(radius) else 0.0
+            reciprocal = 1.0 / radius if be.isfinite(radius) else 0.0
         else:
-            reciprocal = np.inf
+            reciprocal = be.inf
         if self.apply_scaling:
             return self.scale(reciprocal)
         return reciprocal
@@ -65,7 +64,7 @@ class ReciprocalRadiusVariable(VariableBehavior):
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
         # Allow zero but handle appropriately
-        new_radius = np.inf if new_value == 0 else 1.0 / new_value
+        new_radius = be.inf if new_value == 0 else 1.0 / new_value
         self.optic.set_radius(new_radius, self.surface_number)
 
     def scale(self, value):

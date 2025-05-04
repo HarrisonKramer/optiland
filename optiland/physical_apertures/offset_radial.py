@@ -66,8 +66,8 @@ class OffsetRadialAperture(RadialAperture):
 
         """
         super().scale(scale_factor)
-        self.offset_x *= scale_factor
-        self.offset_y *= scale_factor
+        self.offset_x = self.offset_x * scale_factor
+        self.offset_y = self.offset_y * scale_factor
 
     def to_dict(self):
         """Convert the aperture to a dictionary.

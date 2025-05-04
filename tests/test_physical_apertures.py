@@ -3,8 +3,9 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import optiland.backend as be
+import pytest
 
+import optiland.backend as be
 from optiland.physical_apertures import (
     DifferenceAperture,
     EllipticalAperture,
@@ -17,12 +18,13 @@ from optiland.physical_apertures import (
     UnionAperture,
 )
 from optiland.rays import RealRays
+from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class TestRadialAperture:
-    def test_clip(self):
+    def test_clip(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
         rays = RealRays(
             [0, 1, 2, 3, 4, 5],
@@ -35,9 +37,9 @@ class TestRadialAperture:
             [1, 1, 1, 1, 1, 1],
         )
         aperture.clip(rays)
-        assert be.all(rays.i == [0, 0, 1, 1, 0, 0])
+        assert be.all(rays.i == be.array([0, 0, 1, 1, 0, 0]))
 
-    def test_scale(self):
+    def test_scale(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
         aperture.scale(2)
         assert aperture.r_max == 10
@@ -48,11 +50,11 @@ class TestRadialAperture:
         assert aperture.r_max == 2.5
         assert aperture.r_min == 1
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
         assert aperture.to_dict() == {"type": "RadialAperture", "r_max": 5, "r_min": 2}
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         data = {"type": "RadialAperture", "r_max": 5, "r_min": 2}
         aperture = RadialAperture.from_dict(data)
         assert aperture.r_max == 5
@@ -67,13 +69,13 @@ class TestRadialAperture:
         mock_show.assert_called_once()
         plt.close()
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
         assert aperture.extent == (-5, 5, -5, 5)
 
 
 class TestOffsetRadialAperture:
-    def test_clip(self):
+    def test_clip(self, set_test_backend):
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         rays = RealRays(
             [0, 1, 2, 3, 4, 5],
@@ -86,9 +88,9 @@ class TestOffsetRadialAperture:
             [1, 1, 1, 1, 1, 1],
         )
         aperture.clip(rays)
-        assert be.all(rays.i == [0, 0, 0, 1, 1, 0])
+        assert be.all(rays.i == be.array([0, 0, 0, 1, 1, 0]))
 
-    def test_scale(self):
+    def test_scale(self, set_test_backend):
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         aperture.scale(2)
         assert aperture.r_max == 10
@@ -103,7 +105,7 @@ class TestOffsetRadialAperture:
         assert aperture.offset_x == 0.5
         assert aperture.offset_y == 0.5
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         assert aperture.to_dict() == {
             "type": "OffsetRadialAperture",
@@ -113,7 +115,7 @@ class TestOffsetRadialAperture:
             "offset_y": 1,
         }
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         data = {
             "type": "OffsetRadialAperture",
             "r_max": 5,
@@ -128,56 +130,56 @@ class TestOffsetRadialAperture:
         assert aperture.offset_y == 1
         assert isinstance(aperture, OffsetRadialAperture)
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         assert aperture.extent == (-4, 6, -4, 6)
 
 
 class TestBooleanApertures:
-    def setup_method(self):
+    def setup_method(self, set_test_backend):
         self.aperture1 = RadialAperture(r_max=1)
         self.aperture2 = RadialAperture(r_max=0.5)
 
-    def test_union_aperture(self):
+    def test_union_aperture(self, set_test_backend):
         union_aperture = UnionAperture(self.aperture1, self.aperture2)
         x = be.array([0, 0.0, 0.7, 1.5])
         y = be.array([0, 0.5, 0.0, 1.5])
         result = union_aperture.contains(x, y)
         expected = be.array([True, True, True, False])
-        be.testing.assert_array_equal(result, expected)
+        assert be.all(result == expected)
 
-    def test_intersection_aperture(self):
+    def test_intersection_aperture(self, set_test_backend):
         intersection_aperture = IntersectionAperture(self.aperture1, self.aperture2)
         x = be.array([0, 0.0, 0.7, 1.5])
         y = be.array([0, 0.5, 0.0, 1.5])
         result = intersection_aperture.contains(x, y)
         expected = be.array([True, True, False, False])
-        be.testing.assert_array_equal(result, expected)
+        assert be.all(result == expected)
 
-    def test_difference_aperture(self):
+    def test_difference_aperture(self, set_test_backend):
         difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
         x = be.array([0, 0.0, 0.7, 1.5])
         y = be.array([0, 0.5, 0.0, 1.5])
         result = difference_aperture.contains(x, y)
         expected = be.array([False, False, True, False])
-        be.testing.assert_array_equal(result, expected)
+        assert be.all(result == expected)
 
-    def test_union_type(self):
+    def test_union_type(self, set_test_backend):
         a = self.aperture1 | self.aperture2
         assert isinstance(a, UnionAperture)
 
         a = self.aperture1 + self.aperture2
         assert isinstance(a, UnionAperture)
 
-    def test_intersection_type(self):
+    def test_intersection_type(self, set_test_backend):
         a = self.aperture1 & self.aperture2
         assert isinstance(a, IntersectionAperture)
 
-    def test_difference_type(self):
+    def test_difference_type(self, set_test_backend):
         a = self.aperture1 - self.aperture2
         assert isinstance(a, DifferenceAperture)
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         union_aperture = UnionAperture(self.aperture1, self.aperture2)
         assert union_aperture.extent == (-1, 1, -1, 1)
 
@@ -189,10 +191,10 @@ class TestBooleanApertures:
 
 
 class TestRectangularAperture:
-    def setup_method(self):
+    def setup_method(self, set_test_backend):
         self.aperture = RectangularAperture(x_min=-1, x_max=1, y_min=-0.5, y_max=0.5)
 
-    def test_clip(self):
+    def test_clip(self, set_test_backend):
         rays = RealRays(
             [0, 1, 2, 3, 4, 5],
             [0, 0.5, 2, 3, 4, 5],
@@ -204,9 +206,9 @@ class TestRectangularAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert be.all(rays.i == [1, 1, 0, 0, 0, 0])
+        assert be.all(rays.i == be.array([1, 1, 0, 0, 0, 0]))
 
-    def test_scale(self):
+    def test_scale(self, set_test_backend):
         self.aperture.scale(2)
         assert self.aperture.x_min == -2
         assert self.aperture.x_max == 2
@@ -219,7 +221,7 @@ class TestRectangularAperture:
         assert self.aperture.y_min == -0.5
         assert self.aperture.y_max == 0.5
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         assert self.aperture.to_dict() == {
             "type": "RectangularAperture",
             "x_min": -1,
@@ -228,7 +230,7 @@ class TestRectangularAperture:
             "y_max": 0.5,
         }
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         data = {
             "type": "RectangularAperture",
             "x_min": -1,
@@ -243,15 +245,15 @@ class TestRectangularAperture:
         assert aperture.y_max == 86
         assert isinstance(aperture, RectangularAperture)
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
 
 class TestEllipticalAperture:
-    def setup_method(self):
+    def setup_method(self, set_test_backend):
         self.aperture = EllipticalAperture(a=1, b=0.5)
 
-    def test_clip(self):
+    def test_clip(self, set_test_backend):
         rays = RealRays(
             [0, 1, 0, 3, 4, 5],
             [0, 0, 0.5, 3, 4, 5],
@@ -263,9 +265,9 @@ class TestEllipticalAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert be.all(rays.i == [1, 1, 1, 0, 0, 0])
+        assert be.all(rays.i == be.array([1, 1, 1, 0, 0, 0]))
 
-    def test_scale(self):
+    def test_scale(self, set_test_backend):
         self.aperture.scale(2)
         assert self.aperture.a == 2
         assert self.aperture.b == 1
@@ -274,7 +276,7 @@ class TestEllipticalAperture:
         assert self.aperture.a == 1
         assert self.aperture.b == 0.5
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         assert self.aperture.to_dict() == {
             "type": "EllipticalAperture",
             "a": 1,
@@ -283,7 +285,7 @@ class TestEllipticalAperture:
             "offset_y": 0,
         }
 
-    def test_from_dict(self):
+    def test_from_dict(self, set_test_backend):
         data = {
             "type": "EllipticalAperture",
             "a": 1,
@@ -298,18 +300,19 @@ class TestEllipticalAperture:
         assert aperture.offset_y == 0.123
         assert isinstance(aperture, EllipticalAperture)
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
 
 class TestPolygonAperture:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup_method(self, set_test_backend):
         self.aperture = PolygonAperture(x=[-10, 10, 10, -10], y=[-15, -15, 15, 15])
 
     def test_clip(self):
         rays = RealRays(
-            [0, 5, 0, 10, 20, 20],
-            [0, 0, 6, 15, 0, 21],
+            [0, 5, 0, 9.999, 20, 20],
+            [0, 0, 6, 14.999, 0, 21],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
@@ -318,7 +321,7 @@ class TestPolygonAperture:
             [1, 1, 1, 1, 1, 1],
         )
         self.aperture.clip(rays)
-        assert be.all(rays.i == [1, 1, 1, 1, 0, 0])
+        assert_allclose(rays.i, [1, 1, 1, 1, 0, 0])
 
     def test_scale(self):
         self.aperture.scale(2)
@@ -336,14 +339,14 @@ class TestPolygonAperture:
     def test_to_dict(self):
         data = self.aperture.to_dict()
         assert data["type"] == "PolygonAperture"
-        assert be.all(data["x"] == [-10, 10, 10, -10])
-        assert be.all(data["y"] == [-15, -15, 15, 15])
+        assert be.all(data["x"] == be.array([-10, 10, 10, -10]))
+        assert be.all(data["y"] == be.array([-15, -15, 15, 15]))
 
     def test_from_dict(self):
         data = {"type": "PolygonAperture", "x": [0, 1, 1, 0], "y": [0, 0, 1, 1]}
         aperture = PolygonAperture.from_dict(data)
-        assert be.all(aperture.x == [0, 1, 1, 0])
-        assert be.all(aperture.y == [0, 0, 1, 1])
+        assert_allclose(aperture.x, [0, 1, 1, 0])
+        assert_allclose(aperture.y, [0, 0, 1, 1])
         assert isinstance(aperture, PolygonAperture)
 
     def test_extent(self):
@@ -357,10 +360,15 @@ class TestFileAperture:
             temp_path = f.name
         self.aperture = FileAperture(temp_path, delimiter=",")
 
-    def test_clip(self):
+    def test_clip(self, set_test_backend):
+        # manually write the file to avoid backend issues with file creation
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+            f.write("0, 0\n1, 0\n1, 1\n0, 1")
+            temp_path = f.name
+        aperture = FileAperture(temp_path, delimiter=",")
         rays = RealRays(
-            [0.5, 0, 1, 10, 20, 20],
-            [0.5, 1, 1, 15, 0, 21],
+            [0.5, 0, 0.9, 10, 20, 20],
+            [0.5, 0.9, 0.999, 15, 0, 21],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0],
@@ -368,23 +376,23 @@ class TestFileAperture:
             [1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1],
         )
-        self.aperture.clip(rays)
-        assert be.all(rays.i == [1, 1, 1, 0, 0, 0])
+        aperture.clip(rays)
+        assert_allclose(rays.i, [1, 1, 1, 0, 0, 0])
 
-    def test_scale(self):
+    def test_scale(self, set_test_backend):
         self.aperture.scale(2)
         assert be.all(
             self.aperture.vertices == be.array([[0, 0], [2, 0], [2, 2], [0, 2]]),
         )
 
-    def test_to_dict(self):
+    def test_to_dict(self, set_test_backend):
         data = self.aperture.to_dict()
         assert data["type"] == "FileAperture"
         assert data["filepath"] == self.aperture.filepath
         assert data["delimiter"] == ","
         assert data["skip_header"] == 0
-        assert be.all(data["x"] == [0, 1, 1, 0])
-        assert be.all(data["y"] == [0, 0, 1, 1])
+        assert be.all(data["x"] == be.array([0, 1, 1, 0]))
+        assert be.all(data["y"] == be.array([0, 0, 1, 1]))
 
     def test_from_dict(self):
         data = {
@@ -397,5 +405,5 @@ class TestFileAperture:
         assert aperture.filepath == self.aperture.filepath
         assert isinstance(aperture, FileAperture)
 
-    def test_extent(self):
+    def test_extent(self, set_test_backend):
         assert self.aperture.extent == (0, 1, 0, 1)

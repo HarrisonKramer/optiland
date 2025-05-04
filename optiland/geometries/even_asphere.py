@@ -89,7 +89,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         r2 = x**2 + y**2
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
         for i, Ci in enumerate(self.c):
-            z += Ci * r2 ** (i + 1)
+            z = z + Ci * r2 ** (i + 1)
 
         return z
 
@@ -112,8 +112,8 @@ class EvenAsphere(NewtonRaphsonGeometry):
         dfdy = y / denom
 
         for i, Ci in enumerate(self.c):
-            dfdx += 2 * (i + 1) * x * Ci * r2**i
-            dfdy += 2 * (i + 1) * y * Ci * r2**i
+            dfdx = dfdx + 2 * (i + 1) * x * Ci * r2**i
+            dfdy = dfdy + 2 * (i + 1) * y * Ci * r2**i
 
         mag = be.sqrt(dfdx**2 + dfdy**2 + 1)
 

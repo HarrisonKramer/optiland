@@ -9,7 +9,7 @@ project = "Optiland"
 current_year = datetime.now().year
 copyright = f"2024-{current_year}, Kramer Harrison & contributors"
 author = "Kramer Harrison"
-release = "0.3.1"
+release = "0.4.1"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -30,6 +30,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_theme_options = {"navigation_depth": 2}
 
 sphinx_gallery_conf = {
     "examples_dirs": "examples",  # path to example scripts

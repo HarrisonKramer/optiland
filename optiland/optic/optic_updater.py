@@ -68,10 +68,11 @@ class OpticUpdater:
         """
         positions = self.optic.surface_group.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
-        positions[surface_number + 1 :] += delta_t
-        positions -= positions[1]  # force surface 1 to be at zero
+        positions = be.copy(positions)  # required to avoid in-place modification
+        positions[surface_number + 1 :] = positions[surface_number + 1 :] + delta_t
+        positions = positions - positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.optic.surface_group.surfaces):
-            surface.geometry.cs.z = float(positions[k])
+            surface.geometry.cs.z = be.array(positions[k])
 
     def set_index(self, value, surface_number):
         """Set the index of refraction of a surface.
@@ -141,7 +142,7 @@ class OpticUpdater:
 
         # Scale aperture, if aperture type is EPD
         if self.optic.aperture.ap_type == "EPD":
-            self.optic.aperture.value *= scale_factor
+            self.optic.aperture.value = self.optic.aperture.value * scale_factor
 
         # Scale physical apertures
         for surface in self.optic.surface_group.surfaces:
@@ -190,4 +191,6 @@ class OpticUpdater:
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
-        self.optic.surface_group.surfaces[-1].geometry.cs.z -= offset
+        self.optic.surface_group.surfaces[-1].geometry.cs.z = (
+            self.optic.surface_group.surfaces[-1].geometry.cs.z - offset
+        )

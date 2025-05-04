@@ -47,6 +47,11 @@ class OptimizationProblem:
         self.variables = VariableManager()
         self.initial_value = 0.0
 
+        if be.get_backend() != "numpy":
+            raise ValueError(
+                "Optiland optimization currently only supports NumPy backend."
+            )
+
     def add_operand(
         self,
         operand_type=None,
@@ -205,6 +210,7 @@ class OptimizerGeneric:
         """
         x0 = [var.value for var in self.problem.variables]
         self._x.append(x0)
+        x0 = be.to_numpy(x0)
         bounds = tuple([var.bounds for var in self.problem.variables])
 
         options = {"maxiter": maxiter, "disp": disp}
@@ -249,7 +255,7 @@ class OptimizerGeneric:
         """
         # Update all variables to their new values
         for idvar, var in enumerate(self.problem.variables):
-            var.update(x[idvar])
+            var.update(be.array(x[idvar]))
 
         # Update optics (e.g., pickups and solves)
         self.problem.update_optics()
@@ -259,7 +265,8 @@ class OptimizerGeneric:
             rss = self.problem.sum_squared()
             if be.isnan(rss):
                 return 1e10
-            return rss
+            # --- Convert result back to float for SciPy ---
+            return float(be.to_numpy(rss))
         except ValueError:
             return 1e10
 
@@ -300,8 +307,11 @@ class LeastSquares(OptimizerGeneric):
             result: The optimization result.
 
         """
-        x0 = [var.value for var in self.problem.variables]
-        self._x.append(x0)
+        # Get initial values in backend format
+        x0_backend = [var.value for var in self.problem.variables]
+        self._x.append(x0_backend)  # Store backend values
+        # --- Convert x0 to NumPy for SciPy ---
+        x0_numpy = be.to_numpy(x0_backend)
 
         lower = [
             var.bounds[0] if var.bounds[0] is not None else -be.inf
@@ -319,7 +329,7 @@ class LeastSquares(OptimizerGeneric):
             warnings.simplefilter("ignore", category=RuntimeWarning)
             result = optimize.least_squares(
                 self._fun,
-                x0,
+                x0_numpy,
                 bounds=bounds,
                 max_nfev=maxiter,
                 verbose=verbose,
@@ -356,8 +366,11 @@ class DualAnnealing(OptimizerGeneric):
             result: The result of the optimization.
 
         """
-        x0 = [var.value for var in self.problem.variables]
-        self._x.append(x0)
+        # Get initial values in backend format
+        x0_backend = [var.value for var in self.problem.variables]
+        self._x.append(x0_backend)  # Store backend values
+        # Convert x0 to NumPy for SciPy
+        x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
             raise ValueError("Dual annealing requires all variables have bounds.")
@@ -367,7 +380,7 @@ class DualAnnealing(OptimizerGeneric):
                 self._fun,
                 bounds=bounds,
                 maxiter=maxiter,
-                x0=x0,
+                x0=x0_numpy,
                 callback=callback,
             )
         return result
@@ -412,8 +425,11 @@ class DifferentialEvolution(OptimizerGeneric):
             ValueError: If any variable in the problem does not have bounds.
 
         """
-        x0 = [var.value for var in self.problem.variables]
-        self._x.append(x0)
+        # Get initial values in backend format
+        x0_backend = [var.value for var in self.problem.variables]
+        self._x.append(x0_backend)  # Store backend values
+        # Convert x0 to NumPy for SciPy
+        x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if any(None in bound for bound in bounds):
             raise ValueError(
@@ -428,7 +444,7 @@ class DifferentialEvolution(OptimizerGeneric):
                 self._fun,
                 bounds=bounds,
                 maxiter=maxiter,
-                x0=x0,
+                x0=x0_numpy,
                 disp=disp,
                 updating=updating,
                 workers=workers,
@@ -535,8 +551,11 @@ class BasinHopping(OptimizerGeneric):
             ValueError: If any variable in the problem does not have bounds.
 
         """
-        x0 = [var.value for var in self.problem.variables]
-        self._x.append(x0)
+        # Get initial values in backend format
+        x0_backend = [var.value for var in self.problem.variables]
+        self._x.append(x0_backend)  # Store backend values
+        # Convert x0 to NumPy for SciPy
+        x0_numpy = be.to_numpy(x0_backend)
         bounds = tuple([var.bounds for var in self.problem.variables])
         if not all(x is None for pair in bounds for x in pair):
             raise ValueError("Basin-hopping does not accept bounds.")
@@ -546,7 +565,7 @@ class BasinHopping(OptimizerGeneric):
 
             result = optimize.basinhopping(
                 self._fun,
-                x0=x0,
+                x0=x0_numpy,
                 niter=niter,
                 callback=callback,
                 **kwargs,

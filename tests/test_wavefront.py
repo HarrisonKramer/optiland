@@ -8,20 +8,22 @@ import pytest
 from optiland import distribution, wavefront
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.objectives import CookeTriplet, DoubleGauss
+from tests.utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 class TestWavefront:
-    @pytest.mark.parametrize("optic", [CookeTriplet(), DoubleGauss(), EyepieceErfle()])
-    def test_wavefront_initialization(self, optic):
+    @pytest.mark.parametrize("OpticClass", [CookeTriplet, DoubleGauss, EyepieceErfle])
+    def test_wavefront_initialization(self, OpticClass, set_test_backend):
+        optic = OpticClass()
         w = wavefront.Wavefront(optic)
         assert w.num_rays == 12
         assert w.fields == optic.fields.get_field_coords()
         assert w.wavelengths == optic.wavelengths.get_wavelengths()
         assert isinstance(w.distribution, distribution.HexagonalDistribution)
 
-    def test_wavefront_init_custom(self):
+    def test_wavefront_init_custom(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(
             optic,
@@ -33,7 +35,7 @@ class TestWavefront:
         assert isinstance(w.distribution, distribution.RandomDistribution)
         assert w.wavelengths == [optic.primary_wavelength]
 
-    def test_generate_data(self):
+    def test_generate_data(self, set_test_backend):
         optic = EyepieceErfle()
         w = wavefront.Wavefront(optic)
         data = w._generate_data(w.fields, w.wavelengths)
@@ -42,15 +44,15 @@ class TestWavefront:
         assert isinstance(data[0], list)
         assert isinstance(data[0][0], tuple)
         assert isinstance(data[0][0][0], be.ndarray)
-        assert w.data[0][0][0].size == 469  # num points in the pupil
+        assert be.size(w.data[0][0][0]) == 469  # num points in the pupil
 
-    def test_trace_chief_ray(self):
+    def test_trace_chief_ray(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         assert be.all(optic.surface_group.y == 0)
 
-    def test_get_reference_sphere(self):
+    def test_get_reference_sphere(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
@@ -60,7 +62,7 @@ class TestWavefront:
         assert be.allclose(zc, be.array([139.454938]))
         assert be.allclose(R, be.array([39.454938]))
 
-    def test_ger_reference_sphere_error(self):
+    def test_ger_reference_sphere_error(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         optic.trace(Hx=0, Hy=0, wavelength=0.55)
@@ -68,7 +70,7 @@ class TestWavefront:
         with pytest.raises(ValueError):
             w._get_reference_sphere(pupil_z=100)
 
-    def test_get_path_length(self):
+    def test_get_path_length(self, set_test_backend):
         optic = CookeTriplet()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
@@ -76,18 +78,18 @@ class TestWavefront:
         path_length = w._get_path_length(xc, yc, zc, R, 0.55)
         assert be.allclose(path_length, be.array([34.84418309]))
 
-    def test_correct_tilt(self):
+    def test_correct_tilt(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
-        opd = be.linspace(5, 100, w.distribution.x.size)
+        opd = be.linspace(5, 100, be.size(w.distribution.x))
         corrected_opd = w._correct_tilt((0, 1), opd, x=None, y=None)
-        assert be.isclose(corrected_opd[0], 2.5806903748015824)
-        assert be.isclose(corrected_opd[10], 5.013823175582515)
-        assert be.isclose(corrected_opd[100], 24.08949048654609)
-        assert be.isclose(corrected_opd[111], 24.699015344473096)
-        assert be.isclose(corrected_opd[242], 52.123070395591235)
+        assert_allclose(corrected_opd[0], 2.5806903748015824)
+        assert_allclose(corrected_opd[10], 5.013823175582515)
+        assert_allclose(corrected_opd[100], 24.08949048654609)
+        assert_allclose(corrected_opd[111], 24.699015344473096)
+        assert_allclose(corrected_opd[242], 52.123070395591235)
 
-    def test_opd_image_to_xp(self):
+    def test_opd_image_to_xp(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
@@ -97,7 +99,7 @@ class TestWavefront:
 
 
 class TestOPDFan:
-    def test_opd_fan_initialization(self):
+    def test_opd_fan_initialization(self, set_test_backend):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
         assert opd_fan.num_rays == 100
@@ -108,7 +110,7 @@ class TestOPDFan:
         assert be.all(opd_fan.pupil_coord == arr)
 
     @patch("matplotlib.pyplot.show")
-    def test_opd_fan_view(self, moch_show):
+    def test_opd_fan_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
         opd_fan.view()
@@ -116,7 +118,7 @@ class TestOPDFan:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_opd_fan_view_large(self, moch_show):
+    def test_opd_fan_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
         opd_fan.view(figsize=(20, 20))
@@ -125,7 +127,7 @@ class TestOPDFan:
 
 
 class TestOPD:
-    def test_opd_initialization(self):
+    def test_opd_initialization(self, set_test_backend):
         optic = EyepieceErfle()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         assert opd.num_rays == 15
@@ -134,7 +136,7 @@ class TestOPD:
         assert isinstance(opd.distribution, distribution.HexagonalDistribution)
 
     @patch("matplotlib.pyplot.show")
-    def test_opd_view(self, moch_show):
+    def test_opd_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         opd.view()
@@ -142,7 +144,7 @@ class TestOPD:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_opd_view_large(self, moch_show):
+    def test_opd_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         opd.view(figsize=(20, 20))
@@ -150,28 +152,27 @@ class TestOPD:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_opd_view_3d(self, moch_show):
+    def test_opd_view_3d(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         opd.view(projection="3d")
         moch_show.assert_called_once()
         plt.close()
 
-    def test_old_invalid_projection(self):
+    def test_old_invalid_projection(self, set_test_backend):
         optic = EyepieceErfle()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         with pytest.raises(ValueError):
             opd.view(projection="invalid")
 
-    def test_opd_rms(self):
+    def test_opd_rms(self, set_test_backend):
         optic = CookeTriplet()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         rms = opd.rms()
-        assert be.isclose(rms, 0.9709788038168692)
-
+        assert_allclose(rms, 0.9709788038168692)
 
 class TestZernikeOPD:
-    def test_zernike_opd_initialization(self):
+    def test_zernike_opd_initialization(self, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         assert zernike_opd.num_rays == 15
@@ -181,11 +182,12 @@ class TestZernikeOPD:
         assert be.allclose(zernike_opd.x, zernike_opd.distribution.x)
         assert be.allclose(zernike_opd.y, zernike_opd.distribution.y)
         assert be.allclose(zernike_opd.z, zernike_opd.data[0][0][0])
-        assert zernike_opd.type == "fringe"
+        assert zernike_opd.zernike_type == "fringe"
+        
         assert zernike_opd.num_terms == 37
 
     @patch("matplotlib.pyplot.show")
-    def test_zernike_opd_view(self, moch_show):
+    def test_zernike_opd_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         zernike_opd.view()
@@ -193,7 +195,7 @@ class TestZernikeOPD:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_zernike_opd_view_large(self, moch_show):
+    def test_zernike_opd_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         zernike_opd.view(figsize=(20, 20))
@@ -201,30 +203,30 @@ class TestZernikeOPD:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_zernike_opd_view_3d(self, moch_show):
+    def test_zernike_opd_view_3d(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         zernike_opd.view(projection="3d")
         moch_show.assert_called_once()
         plt.close()
 
-    def test_zernike_opd_rms(self):
+    def test_zernike_opd_rms(self, set_test_backend):
         optic = CookeTriplet()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         rms = zernike_opd.rms()
-        assert be.isclose(rms, 0.9709788038168692)
+        assert_allclose(rms, 0.9709788038168692)
 
-    def test_zernike_opd_fit(self):
+    def test_zernike_opd_fit(self, set_test_backend):
         optic = CookeTriplet()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         c = zernike_opd.zernike.coeffs
-        assert be.isclose(c[0], 0.8430890395012354)
-        assert be.isclose(c[1], 6.863699034904449e-13)
-        assert be.isclose(c[2], 0.14504379704525455)
-        assert be.isclose(c[6], -1.160298338689596e-13)
-        assert be.isclose(c[24], -0.0007283668376039182)
+        assert_allclose(c[0], 0.8430890395012354)
+        assert_allclose(c[1], 6.863699034904449e-13)
+        assert_allclose(c[2], 0.14504379704525455)
+        assert_allclose(c[6], -1.160298338689596e-13)
+        assert_allclose(c[24], -0.0007283668376039182)
 
-    def test_zernike_xy_symmetry(self):
+    def test_zernike_xy_symmetry(self, set_test_backend):
         optic = CookeTriplet()
         zernike_opd0 = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         c0 = zernike_opd0.zernike.coeffs
@@ -242,7 +244,7 @@ class TestZernikeOPD:
         c1 = zernike_opd1.zernike.coeffs
         assert be.allclose(c0, c1)
 
-    def test_zernike_xy_axis_swap(self):
+    def test_zernike_xy_axis_swap(self, set_test_backend):
         optic = CookeTriplet()
         zernike_opd0 = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
         c0 = zernike_opd0.zernike.coeffs

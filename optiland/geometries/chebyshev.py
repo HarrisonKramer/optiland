@@ -85,8 +85,8 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.c = be.atleast_2d(coefficients)
-        self.norm_x = norm_x
-        self.norm_y = norm_y
+        self.norm_x = be.array(norm_x)
+        self.norm_y = be.array(norm_y)
         self.is_symmetric = False
 
     def __str__(self):
@@ -116,7 +116,9 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         non_zero_indices = be.argwhere(self.c != 0)
         for i, j in non_zero_indices:
-            z += self.c[i, j] * self._chebyshev(i, x_norm) * self._chebyshev(j, y_norm)
+            z = z + self.c[i, j] * self._chebyshev(i, x_norm) * self._chebyshev(
+                j, y_norm
+            )
 
         return z
 
@@ -144,12 +146,12 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         non_zero_indices = be.argwhere(self.c != 0)
         for i, j in non_zero_indices:
-            dzdx += (
+            dzdx = dzdx + (
                 self._chebyshev_derivative(i, x_norm)
                 * self.c[i, j]
                 * self._chebyshev(j, y_norm)
             )
-            dzdy += (
+            dzdy = dzdy + (
                 self._chebyshev_derivative(j, y_norm)
                 * self.c[i, j]
                 * self._chebyshev(i, x_norm)

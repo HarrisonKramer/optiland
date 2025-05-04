@@ -12,6 +12,7 @@ Kramer Harrison, 2023
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import numpy as np
 from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
@@ -83,8 +84,9 @@ class FFTPSF(Wavefront):
             ValueError: If the projection is not '2d' or '3d'.
 
         """
-        min_x, min_y, max_x, max_y = self._find_bounds(threshold)
-        psf_zoomed = self.psf[min_x:max_x, min_y:max_y]
+        psf = be.to_numpy(self.psf)
+        min_x, min_y, max_x, max_y = self._find_bounds(psf, threshold)
+        psf_zoomed = psf[min_x:max_x, min_y:max_y]
         x_extent, y_extent = self._get_psf_units(psf_zoomed)
         psf_smooth = self._interpolate_psf(psf_zoomed, num_points)
 
@@ -120,7 +122,7 @@ class FFTPSF(Wavefront):
         norm = LogNorm() if log else None
 
         # replace values <= 0 with smallest non-zero value in image
-        image[image <= 0] = be.min(image[image > 0])
+        image[image <= 0] = np.min(image[image > 0])
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(image, norm=norm, extent=extent)
@@ -148,16 +150,16 @@ class FFTPSF(Wavefront):
         """
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
-        x = be.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
-        y = be.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
-        X, Y = be.meshgrid(x, y)
+        x = np.linspace(-x_extent / 2, x_extent / 2, image.shape[1])
+        y = np.linspace(-y_extent / 2, y_extent / 2, image.shape[0])
+        X, Y = np.meshgrid(x, y)
 
         # replace values <= 0 with smallest non-zero value in image
-        image[image <= 0] = be.min(image[image > 0])
+        image[image <= 0] = np.min(image[image > 0])
 
         log_formatter = None
         if log:
-            image = be.log10(image)
+            image = np.log10(image)
             formatter = mticker.FuncFormatter(self._log_tick_formatter)
             ax.zaxis.set_major_formatter(formatter)
             ax.zaxis.set_major_locator(mticker.MaxNLocator(integer=True))
@@ -230,9 +232,11 @@ class FFTPSF(Wavefront):
         pupils = []
 
         for k in range(len(self.wavelengths)):
-            P = be.zeros_like(x, dtype=complex)
+            P = be.to_complex(be.zeros_like(x))
             amplitude = self.data[0][k][1] / be.mean(self.data[0][k][1])
-            P[R <= 1] = amplitude * be.exp(1j * 2 * be.pi * self.data[0][k][0])
+            P[R <= 1] = be.to_complex(
+                amplitude * be.exp(1j * 2 * be.pi * self.data[0][k][0])
+            )
             P = be.reshape(P, (self.num_rays, self.num_rays))
             pupils.append(P)
 
@@ -254,6 +258,7 @@ class FFTPSF(Wavefront):
         for pupil in pupils:
             amp = be.fft.fftshift(be.fft.fft2(pupil))
             psf.append(amp * be.conj(amp))
+        psf = be.stack(psf)
 
         return be.real(be.sum(psf, axis=0)) / norm_factor * 100
 
@@ -276,11 +281,13 @@ class FFTPSF(Wavefront):
             return image
         return zoom(image, zoom_factor, order=3)
 
-    def _find_bounds(self, threshold=0.25):
+    @staticmethod
+    def _find_bounds(psf, threshold=0.25):
         """Finds the bounding box coordinates for the non-zero elements in the
         PSF matrix.
 
         Args:
+            psf (numpy.ndarray): The PSF matrix.
             threshold (float): The threshold value for determining non-zero
                 elements in the PSF matrix. Default is 0.25.
 
@@ -289,19 +296,19 @@ class FFTPSF(Wavefront):
                 coordinates of the bounding box.
 
         """
-        thresholded_psf = self.psf > threshold
-        non_zero_indices = be.argwhere(thresholded_psf)
+        thresholded_psf = psf > threshold
+        non_zero_indices = np.argwhere(thresholded_psf)
 
         try:
-            min_x, min_y = be.min(non_zero_indices, axis=0)
-            max_x, max_y = be.max(non_zero_indices, axis=0)
+            min_x, min_y = np.min(non_zero_indices, axis=0)
+            max_x, max_y = np.max(non_zero_indices, axis=0)
         except ValueError:
             min_x, min_y = 0, 0
-            max_x, max_y = self.psf.shape
+            max_x, max_y = psf.shape
 
         size = max(max_x - min_x, max_y - min_y)
 
-        peak_x, peak_y = self.psf.shape[0] // 2, self.psf.shape[1] // 2
+        peak_x, peak_y = psf.shape[0] // 2, psf.shape[1] // 2
 
         min_x = peak_x - size / 2
         max_x = peak_x + size / 2
@@ -310,8 +317,8 @@ class FFTPSF(Wavefront):
 
         min_x = max(0, min_x)
         min_y = max(0, min_y)
-        max_x = min(self.psf.shape[0], max_x)
-        max_y = min(self.psf.shape[1], max_y)
+        max_x = min(psf.shape[0], max_x)
+        max_y = min(psf.shape[1], max_y)
 
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
@@ -341,12 +348,12 @@ class FFTPSF(Wavefront):
             float: The normalization factor for the PSF.
 
         """
-        P_nom = self.pupils[0].copy()
+        P_nom = be.copy(self.pupils[0])
         P_nom[P_nom != 0] = 1
 
         amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
         psf_norm = amp_norm * be.conj(amp_norm)
-        return be.real(be.max(psf_norm) * len(self.pupils))
+        return be.max(be.real(psf_norm)) * len(self.pupils)
 
     def _get_psf_units(self, image):
         """Calculate the physical units of the point spread function (PSF) based
@@ -369,12 +376,12 @@ class FFTPSF(Wavefront):
             D = self.optic.paraxial.XPD()
             p = D / self.optic.paraxial.EPD()
             m = self.optic.paraxial.magnification()
-            FNO *= 1 + be.abs(m) / p
+            FNO = FNO * (1 + be.abs(m) / p)
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q
 
-        x = image.shape[1] * dx
-        y = image.shape[0] * dx
+        x = be.to_numpy(image.shape[1] * dx)
+        y = be.to_numpy(image.shape[0] * dx)
 
         return x, y

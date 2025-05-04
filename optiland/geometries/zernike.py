@@ -77,6 +77,8 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         norm_radius: float = 1,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
+        if coefficients is None:
+            coefficients = []
         self.c = be.atleast_1d(coefficients)
         self.norm_radius = norm_radius
         self.is_symmetric = False
@@ -115,7 +117,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         for i in non_zero_indices:
             normalization_factor = be.sqrt(2 * (i + 1) / be.pi)
             z_i = self._zernike(i + 1, rho, theta)
-            z += normalization_factor * self.c[i] * z_i
+            z = z + normalization_factor * self.c[i] * z_i
 
         return z
 
@@ -203,7 +205,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             denominator = (
                 factorial(k) * factorial((n + m) // 2 - k) * factorial((n - m) // 2 - k)
             )
-            val += sign * (numerator / denominator) * (rho ** (n - 2 * k))
+            val = val + sign * (numerator / denominator) * (rho ** (n - 2 * k))
         return val
 
     def _radial_poly_derivative(self, n: int, m: int, rho: be.ndarray):
@@ -232,7 +234,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             if factor < 0:
                 continue
             power_term = rho ** (n - 2 * k - 1) if (n - 2 * k - 1) >= 0 else 0
-            val += sign * (numerator / denominator) * factor * power_term
+            val = val + sign * (numerator / denominator) * factor * power_term
         return val
 
     def _surface_normal(
@@ -290,9 +292,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         for i in non_zero_indices:
             dZdrho, dZdtheta = self._zernike_derivative(i, rho, theta)
             # partial wrt x
-            dzdx += self.c[i] * (dZdrho * drho_dx + dZdtheta * dtheta_dx)
+            dzdx = dzdx + self.c[i] * (dZdrho * drho_dx + dZdtheta * dtheta_dx)
             # partial wrt y
-            dzdy += self.c[i] * (dZdrho * drho_dy + dZdtheta * dtheta_dy)
+            dzdy = dzdy + self.c[i] * (dZdrho * drho_dy + dZdtheta * dtheta_dy)
 
         # Surface normal vector in cartesian coords: (-dzdx, -dzdy, 1)
         # normalized. Check sign conventions!
@@ -300,8 +302,8 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         ny = +dzdy
         norm = be.sqrt(nx**2 + ny**2 + 1)
         norm = be.where(norm < eps, 1.0, norm)  # Avoid division by zero
-        nx /= norm
-        ny /= norm
+        nx = nx / norm
+        ny = ny / norm
         nz = -be.ones_like(x) / norm
 
         return (nx, ny, nz)
