@@ -31,7 +31,7 @@ class WavefrontData:
         pupil_x (be.ndarray): x-coordinates of ray intersections at exit pupil.
         pupil_y (be.ndarray): y-coordinates of ray intersections at exit pupil.
         pupil_z (be.ndarray): z-coordinates of ray intersections at exit pupil.
-        opd_map (be.ndarray): Optical path difference map, normalized to waves.
+        opd (be.ndarray): Optical path difference data, normalized to waves.
         intensity (be.ndarray): Ray intensities at the exit pupil.
         radius (be.ndarray): Radius of curvature of the exit pupil reference sphere.
     """
@@ -39,33 +39,28 @@ class WavefrontData:
     pupil_x: be.ndarray
     pupil_y: be.ndarray
     pupil_z: be.ndarray
-    opd_map: be.ndarray
+    opd: be.ndarray
     intensity: be.ndarray
     radius: be.ndarray
 
 
 class Wavefront:
-    """Represents a wavefront analysis for an optic.
+    """
+    Performs wavefront analysis on an optical system.
+
+    This class computes ray intersection points with the exit pupil, the optical
+    path difference (OPD) relative to a reference sphere, the radius of curvature
+    of the exit pupil, and ray intensities at the exit pupil.
 
     Args:
-        optic (Optic): The optic on which to perform the wavefront analysis.
-        fields (str or list, optional): The fields to analyze.
-            Defaults to 'all'.
-        wavelengths (str or list, optional): The wavelengths to analyze.
-            Defaults to 'all'.
-        num_rays (int, optional): The number of rays to use for the analysis.
-            Defaults to 12.
-        distribution (str or Distribution, optional): The distribution of rays.
-            Defaults to 'hexapolar'.
+        optic (Optic): Optical system to analyze.
+        fields (Union[str, List[Tuple[float, float]]]): Field coordinates or 'all'.
+        wavelengths (Union[str, List[float]]): Wavelengths or 'all'/'primary'.
+        num_rays (int): Number of rays in the pupil sampling distribution.
+        distribution (Union[str, Distribution]): Ray distribution or name.
 
     Attributes:
-        optic (Optic): The optic object being analyzed.
-        fields (list): The fields to analyze, as a list of (x, y) tuples.
-        wavelengths (list): The wavelengths to analyze.
-        num_rays (int): The number of rays used for the analysis.
-        distribution (Distribution): The distribution of rays.
-        data (list): The generated wavefront data.
-
+        data (Dict[Tuple, WavefrontData]): Nested dict keyed by (field, wavelength).
     """
 
     def __init__(
@@ -77,205 +72,166 @@ class Wavefront:
         distribution="hexapolar",
     ):
         self.optic = optic
-        self.fields = fields
-        self.wavelengths = wavelengths
-        self.num_rays = num_rays
+        self.fields = self._resolve_fields(fields)
+        self.wavelengths = self._resolve_wavelengths(wavelengths)
+        self.distribution = self._resolve_distribution(distribution, num_rays)
+        self.data = {}
+        self._compute_all()
 
-        if self.fields == "all":
-            self.fields = self.optic.fields.get_field_coords()
+    def _resolve_fields(self, fields):
+        if fields == "all":
+            return self.optic.fields.get_field_coords()
+        return fields
 
-        if self.wavelengths == "all":
-            self.wavelengths = self.optic.wavelengths.get_wavelengths()
-        elif self.wavelengths == "primary":
-            self.wavelengths = [optic.primary_wavelength]
+    def _resolve_wavelengths(self, wavelengths):
+        if wavelengths == "all":
+            return self.optic.wavelengths.get_wavelengths()
+        if wavelengths == "primary":
+            return [self.optic.primary_wavelength]
+        return wavelengths
 
-        if isinstance(distribution, str):
-            distribution = create_distribution(distribution)
+    def _resolve_distribution(self, dist, num_rays: int):
+        if isinstance(dist, str):
+            distribution = create_distribution(dist)
             distribution.generate_points(num_rays)
-        self.distribution = distribution
+            return distribution
+        return dist
 
-        self.data = self._generate_data(self.fields, self.wavelengths)
-
-    def _generate_data(self, fields, wavelengths):
-        """Generates the wavefront data for the specified fields and wavelengths.
-
-        Args:
-            fields (list): The fields to analyze.
-            wavelengths (list): The wavelengths to analyze.
-
-        Returns:
-            list: The (x, y, z) pupil coordinates, generated wavefront data, including
-            the optical path difference and intensity.
-
+    def _compute_all(self) -> None:
         """
+        Compute wavefront data for all specified fields and wavelengths.
+        """
+        # z-coordinate of exit pupil from paraxial data and last surface position
         pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
 
-        data = []
-        for field in fields:
-            field_data = []
-            for wavelength in wavelengths:
-                # Trace chief ray for field & find reference sphere properties
-                self._trace_chief_ray(field, wavelength)
-
-                # Reference sphere center and radius
+        for field in self.fields:
+            for wl in self.wavelengths:
+                # trace chief ray and get reference sphere
+                self._trace_chief(field, wl)
                 xc, yc, zc, R = self._get_reference_sphere(pupil_z)
 
-                # Tracing the chief ray back from image plane to exit pupil
-                tc = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
+                # compute propagation distances
+                t_chief = self._prop_distance(xc, yc, zc, R)
+                rays = self.optic.trace(*field, wl, None, self.distribution)
+                t_rays = self._prop_distance(xc, yc, zc, R, rays)
 
-                # calculate OPD for the reference sphere
-                opd_ref = self.optic.surface_group.opd[-1, :] - tc
+                # compute OPDs and intensities
+                opd_ref = self.optic.surface_group.opd[-1, :] - t_chief
+                opd = self.optic.surface_group.opd[-1, :] - t_rays
+                opd_ref_corr, opd_corr = self._apply_tilt_correction(
+                    field, opd_ref, opd
+                )
 
-                # trace ray distribution through the pupil
-                rays = self.optic.trace(*field, wavelength, None, self.distribution)
-                t = self._opd_image_to_xp(xc, yc, zc, R, wavelength)
-
-                # retrieve the pupil x,y,z coordinates
-                pupil_x = rays.x - t * rays.L
-                pupil_y = rays.y - t * rays.M
-                pupil_z = rays.z - t * rays.N
-
-                # retrieve the amplitude of the wavefront
+                opd_map = (opd_ref_corr - opd_corr) / (wl * 1e-3)
                 intensity = self.optic.surface_group.intensity[-1, :]
 
-                # calculate OPDs
-                opd = self.optic.surface_group.opd[-1, :] - t
-
-                # apply tilt correction to the opds
-                opd_ref, opd = self._correct_tilt(field, [opd_ref, opd])
-
-                field_data.append(
-                    (
-                        pupil_x,
-                        pupil_y,
-                        pupil_z,
-                        (opd_ref - opd) / (wavelength * 1e-3),
-                        intensity,
-                        R.item(),
-                    ),
-                )
-            data.append(field_data)
-        return data
-
-    def _trace_chief_ray(self, field, wavelength):
-        """Traces the chief ray for a specific field and wavelength.
-
-        Args:
-            field (tuple): The field coordinates.
-            wavelength (float): The wavelength.
-
-        """
-        self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=wavelength)
-
-    def _get_reference_sphere(self, pupil_z):
-        """Calculates the properties of the reference sphere.
-
-        Args:
-            pupil_z (float): The z-coordinate of the pupil.
-
-        Returns:
-            tuple: The x-coordinate, y-coordinate, z-coordinate, and radius of
-                the reference sphere.
-
-        Raises:
-            ValueError: If the chief ray cannot be determined.
-
-        """
-        if be.size(self.optic.surface_group.x[-1, :]) != 1:
-            raise ValueError("Chief ray cannot be determined. It must be traced alone.")
-
-        # chief ray intersection location
-        xc = self.optic.surface_group.x[-1, :]
-        yc = self.optic.surface_group.y[-1, :]
-        zc = self.optic.surface_group.z[-1, :]
-
-        # radius of sphere - exit pupil origin vs. center
-        R = be.sqrt(xc**2 + yc**2 + (zc - pupil_z) ** 2)
-
-        return xc, yc, zc, R
-
-    def _correct_tilt(self, field, opds, x=None, y=None):
-        """Corrects for tilt in the optical path difference.
-
-        Args:
-            field (tuple): The field coordinates.
-            opd (list): The optical path differences.
-            x (float, optional): The x-coordinate. Defaults to None.
-            y (float, optional): The y-coordinate. Defaults to None.
-
-        Returns:
-            list: The corrected optical path differences.
-
-        """
-        tilt_correction = []
-        for index, _ in enumerate(opds):
-            x, y = (0, 0) if index == 0 else (None, None)
-
-            if self.optic.field_type == "angle":
-                Hx, Hy = field
-                max_field = self.optic.fields.max_field
-                x_tilt = max_field * Hx
-                y_tilt = max_field * Hy
-                if x is None:
-                    x = self.distribution.x
-                if y is None:
-                    y = self.distribution.y
-                EPD = self.optic.paraxial.EPD()
-                tilt_correction.append(
-                    (1 - x) * be.sin(be.radians(x_tilt)) * EPD / 2
-                    + (1 - y) * be.sin(be.radians(y_tilt)) * EPD / 2
+                # store results
+                self.data[(field, wl)] = WavefrontData(
+                    pupil_x=rays.x - t_rays * rays.L,
+                    pupil_y=rays.y - t_rays * rays.M,
+                    pupil_z=rays.z - t_rays * rays.N,
+                    opd=opd_map,
+                    intensity=intensity,
+                    radius=R,
                 )
 
-        corrected_opds = [
-            opd - tilt_correction for opd, tilt_correction in zip(opds, tilt_correction)
-        ]
-        return corrected_opds
-
-    def _opd_image_to_xp(self, xc, yc, zc, R, wavelength):
-        """Finds propagation distance from image plane to reference sphere.
-
-        Args:
-            xc (float): The x-coordinate of the reference sphere center.
-            yc (float): The y-coordinate of the reference sphere center.
-            zc (float): The z-coordinate of the reference sphere center.
-            R (float): The radius of the reference sphere.
-            wavelength (float): The wavelength of the light.
-
-        Returns:
-            float: Propagation distance from image plane to reference sphere.
-
+    def _trace_chief(self, field, wl):
         """
+        Trace the chief ray for a given field and wavelength.
+        """
+        self.optic.trace_generic(*field, Px=0.0, Py=0.0, wavelength=wl)
 
-        xr = self.optic.surface_group.x[-1, :]
-        yr = self.optic.surface_group.y[-1, :]
-        zr = self.optic.surface_group.z[-1, :]
+    def _get_reference_sphere(self, pupil_z: float):
+        """
+        Determine the reference sphere center and radius from the traced chief ray.
+        """
+        x = self.optic.surface_group.x[-1, :]
+        y = self.optic.surface_group.y[-1, :]
+        z = self.optic.surface_group.z[-1, :]
+        if x.size != 1:
+            raise ValueError(
+                "Chief ray must be traced alone to determine reference sphere."
+            )
+        R = float(be.sqrt(x**2 + y**2 + (z - pupil_z) ** 2))
+        return x, y, z, R
 
-        L = -self.optic.surface_group.L[-1, :]
-        M = -self.optic.surface_group.M[-1, :]
-        N = -self.optic.surface_group.N[-1, :]
+    def _prop_distance(self, xc, yc, zc, R, rays=None):
+        """
+        Compute propagation distance from image plane or rays to reference sphere.
 
+        If rays is None, uses last surface_group data for chief ray.
+        """
+        if rays is None:
+            xr = self.optic.surface_group.x[-1, :]
+            yr = self.optic.surface_group.y[-1, :]
+            zr = self.optic.surface_group.z[-1, :]
+            L = -self.optic.surface_group.L[-1, :]
+            M = -self.optic.surface_group.M[-1, :]
+            N = -self.optic.surface_group.N[-1, :]
+        else:
+            xr, yr, zr = rays.x, rays.y, rays.z
+            L, M, N = -rays.L, -rays.M, -rays.N
+
+        # quadratic coefficients
         a = L**2 + M**2 + N**2
-        b = 2 * L * (xr - xc) + 2 * M * (yr - yc) + 2 * N * (zr - zc)
+        b = 2 * (L * (xr - xc) + M * (yr - yc) + N * (zr - zc))
         c = (
             xr**2
             + yr**2
             + zr**2
-            - 2 * xr * xc
+            - 2 * (xr * xc + yr * yc + zr * zc)
             + xc**2
-            - 2 * yr * yc
             + yc**2
-            - 2 * zr * zc
             + zc**2
             - R**2
         )
 
         d = b**2 - 4 * a * c
         t = (-b - be.sqrt(d)) / (2 * a)
-        t[t < 0] = (-b[t < 0] + be.sqrt(d[t < 0])) / (2 * a[t < 0])
+        mask = t < 0
+        t[mask] = (-b[mask] + be.sqrt(d[mask])) / (2 * a[mask])
 
-        # refractive index in image space
-        n = self.optic.image_surface.material_post.n(wavelength)
+        # account for image space refractive index
+        n = self.optic.image_surface.material_post.n(
+            rays.w if rays else self.optic.primary_wavelength
+        )
         return n * t
+
+    def _apply_tilt_correction(self, field, opd_ref, opd):
+        """
+        Apply tilt correction to OPD arrays based on field angle and sampling
+        distribution.
+        """
+        if self.optic.field_type != "angle":
+            return opd_ref, opd
+
+        # angular tilts
+        Hx, Hy = field
+        max_f = self.optic.fields.max_field
+        x_tilt = be.radians(Hx * max_f)
+        y_tilt = be.radians(Hy * max_f)
+        EPD = self.optic.paraxial.EPD()
+
+        # distribution coordinates
+        xs, ys = self.distribution.x, self.distribution.y
+        tilt = ((1 - xs) * be.sin(x_tilt) + (1 - ys) * be.sin(y_tilt)) * EPD / 2
+
+        # reference ray is at xs=ys=0, so its tilt is zero by construction
+        return opd_ref - tilt, opd - tilt
+
+    def get_data(self, field, wl):
+        """
+        Retrieve precomputed wavefront data for a given field and wavelength.
+
+        Args:
+            field (Tuple[float, float]): Field coordinates.
+            wl (float): Wavelength.
+
+        Returns:
+            WavefrontData: Data container with intersections, OPD, intensity, and
+            curvature.
+        """
+        return self.data[(field, wl)]
 
 
 class OPDFan(Wavefront):
