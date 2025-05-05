@@ -95,7 +95,6 @@ class ZemaxFileReader:
             "VCXN": self._read_vignette_compress_x,
             "VCYN": self._read_vignette_compress_y,
             "VANN": self._read_vignette_tangent_angle,
-            "CORB": self._read_coordinate_break,
         }
 
         self._current_surf = -1
@@ -508,13 +507,3 @@ class ZemaxFileReader:
         self.data["fields"]["vignette_tangent_angle"] = [
             float(value) for value in data[1 : num_fields + 1]
         ]
-
-    def _read_coordinate_break(self, data):
-        """ 
-        Extracts the coordinate-break parameters: dx, dy, dz, rx, ry, rz.
-        
-        Args:
-            data (list): List of data values extracted from the Zemax file.
-        
-        """
-        pass
