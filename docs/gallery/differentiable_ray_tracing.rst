@@ -3,7 +3,7 @@
 Differentiable Ray Tracing
 ==========================
 
-These examples demonstrate the use of differentiable ray tracing in **Optiland**. Differentiable ray
+These examples demonstrate the use of differentiable ray tracing in **Optiland** using PyTorch as a computational backend. Differentiable ray
 tracing allows for the computation of gradients with respect to various parameters in optical systems,
 enabling advanced optimization techniques and sensitivity analysis.
 
