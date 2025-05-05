@@ -9,3 +9,4 @@ enabling advanced optimization techniques and sensitivity analysis.
 
 .. nbgallery::
     differentiable_ray_tracing/basic_pytorch_backend
+    differentiable_ray_tracing/gradient_calculation
