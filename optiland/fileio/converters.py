@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 """
 
 from optiland.optic import Optic
+import optiland.backend as be
 
 
 class ZemaxToOpticConverter:
@@ -53,6 +54,16 @@ class ZemaxToOpticConverter:
     def _configure_surface(self, index, data):
         """Configures a surface for the optic."""
         coefficients = self._configure_surface_coefficients(data)
+        if data["type"] == "coordinate_break":
+            extra_params = {}
+            # map the zmx PARM values to the actual decenters and rotations
+            extra_params["dx"] = data.get('param_0', 0.0)
+            extra_params["dy"] = data.get('param_1', 0.0)
+            # convert degrees to radians
+            extra_params['rx'] = be.deg2rad(be.array(data.get('param_2', 0.0)))
+            extra_params['ry'] = be.deg2rad(be.array(data.get('param_3', 0.0)))
+            extra_params['rz'] = be.deg2rad(be.array(data.get('param_4', 0.0)))  
+            extra_params['order_flag'] = data.get('param_5', 0.0)
         self.optic.add_surface(
             index=index,
             surface_type=data["type"],
@@ -62,6 +73,7 @@ class ZemaxToOpticConverter:
             is_stop=data["is_stop"],
             material=data["material"],
             coefficients=coefficients,
+            **extra_params
         )
 
     def _configure_surface_coefficients(self, data):
@@ -69,7 +81,7 @@ class ZemaxToOpticConverter:
         surfaces.
         """
         surf_type = data["type"]
-        if surf_type == "standard":
+        if surf_type == "standard" or surf_type == "coordinate_break":
             return None
         if surf_type in ["even_asphere", "odd_asphere"]:
             coefficients = []
