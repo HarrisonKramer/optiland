@@ -54,8 +54,8 @@ class ZemaxToOpticConverter:
     def _configure_surface(self, index, data):
         """Configures a surface for the optic."""
         coefficients = self._configure_surface_coefficients(data)
+        extra_params = {}
         if data["type"] == "coordinate_break":
-            extra_params = {}
             # map the zmx PARM values to the actual decenters and rotations
             extra_params["dx"] = data.get('param_0', 0.0)
             extra_params["dy"] = data.get('param_1', 0.0)
