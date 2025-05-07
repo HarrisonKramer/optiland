@@ -241,7 +241,6 @@ geometry_mapper = {
     "zernike": _create_zernike,
     "toroidal": _create_toroidal,
     "paraxial": _create_paraxial,
-    "coordinate_break": _create_plane,
 }
 
 
