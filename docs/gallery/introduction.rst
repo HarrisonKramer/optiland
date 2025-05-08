@@ -10,7 +10,7 @@ The following sections are covered:
 
 1. :ref:`Basic Lenses <gallery_basic_lenses>`
 2. :ref:`Specialized Lenses <gallery_specialized_lenses>`
-3. :ref:`Refective Systems <gallery_reflective_systems>`
+3. :ref:`Reflective Systems <gallery_reflective_systems>`
 4. :ref:`Analysis <gallery_analysis>`
 5. :ref:`OPD, PSF, MTF <gallery_opd_psf_mtf>`
 6. :ref:`Optimization <gallery_optimization>`
