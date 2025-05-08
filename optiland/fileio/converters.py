@@ -70,16 +70,21 @@ class ZemaxToOpticConverter:
             if surf.get("type") == "coordinate_break":
                 dx = float(surf.get("param_0", 0.0))
                 dy = float(surf.get("param_1", 0.0))
-                dz = float(surf.get("thickness", 0.0))
+                dz = float(surf.get("thickness", 0.0)) # CB 'thickness'
                 rx = be.deg2rad(surf.get("param_2", 0.0))
                 ry = be.deg2rad(surf.get("param_3", 0.0))
                 rz = be.deg2rad(surf.get("param_4", 0.0))
                 # there is another param: order. implement later
                 
                 # chain a new cs
-                self.current_cs = CoordinateSystem(x=dx, y=dy, z=dz,
+                # first apply rotations and translations
+                cs_rot_decs = CoordinateSystem(x=dx, y=dy, z=0.0,
                                                    rx=rx, ry=ry, rz=rz,
                                                    reference_cs=self.current_cs)
+                # then apply the coordinate break's thickness as a translation
+                # along the Z-axis of the new cs.
+                self.current_cs = CoordinateSystem(x=0.0, y=0.0, z=dz, reference_cs=cs_rot_decs)
+                
                 continue
             
             # now, the usual surfaces from the file
