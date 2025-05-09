@@ -97,9 +97,68 @@ class IncoherentIrradiance:
 
         
 
+    def view(self, figsize=(6,5), cmap="inferno"):
+            """Display false-colour irradiance map."""
+            if not self.irr_data:
+                print("No irradiance data to display.")
+                return
+
+            all_irr_values_list = []
+            for field_block_idx, field_block in enumerate(self.irr_data):
+                if not field_block:
+                    print(f"Warning: Field block {field_block_idx} is empty.")
+                    continue
+                for entry_idx, entry in enumerate(field_block):
+                    if entry is None:
+                        print(f"Warning: Entry {entry_idx} in field block {field_block_idx} is None.")
+                        continue
+                    irr_map, x_edges, y_edges = entry
+                    if irr_map is None:
+                        print(f"Warning: Irradiance map in entry {entry_idx}, field block {field_block_idx} is None.")
+                        continue
+                    all_irr_values_list.append(be.to_numpy(irr_map).flatten())
+            
+            if not all_irr_values_list:
+                print("No valid irradiance map data found to plot.")
+                return
+                
+            all_irr_values = _np.concatenate(all_irr_values_list)
+            if len(all_irr_values) == 0:
+                print("No valid irradiance values to plot after concatenation (all maps might be empty).")
+                return
+
+            vmin_plot, vmax_plot = _np.min(all_irr_values), _np.max(all_irr_values)
+            if vmin_plot == vmax_plot : 
+                vmin_plot -= 0.1 * abs(vmin_plot) if vmin_plot != 0 else 0.1 # Adjust for uniform irradiance
+                vmax_plot += 0.1 * abs(vmax_plot) if vmax_plot != 0 else 0.1
+                if vmin_plot == vmax_plot: vmin_plot, vmax_plot = 0.0, 1.0 # Default if still identical (eg. all zero)
 
 
-    # ADD: utility functions, view(), etc
+            for f_idx, field_block in enumerate(self.irr_data):
+                for w_idx, (irr_map, x_edges, y_edges) in enumerate(field_block):
+                    plt.figure(figsize=figsize)
+                    # Transpose .T because hist is (nx, ny) -> (rows, cols) but imshow expects (rows, cols)
+                    # and extent needs to match x_edges for columns, y_edges for rows.
+                    # origin='lower' means (x_edges[0], y_edges[0]) is at bottom-left.
+                    plt.imshow(be.to_numpy(irr_map).T, aspect='auto', origin='lower', 
+                            extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+                            cmap=cmap, vmin=vmin_plot, vmax=vmax_plot)
+                    plt.colorbar(label="Irradiance (W/mm^2)")
+                    plt.xlabel("X (mm)")
+                    plt.ylabel("Y (mm)")
+
+                    title_str = "Irradiance"
+                    if self.user_initial_rays is not None:
+                        
+                        field_label_info = self.fields[f_idx] # Should be ("user_initial_rays", "N/A")
+                        title_str = f"Irradiance (field index: {field_label_info[0]})"
+                    else:
+                        # For standard tracing, self.fields and self.wavelengths contain actual info
+                        field_coord = self.fields[f_idx]
+                        wavelength_val = self.wavelengths[w_idx]
+                        title_str = f"Irradiance: Field {f_idx} {field_coord}, WL {w_idx} ({wavelength_val:.3f} um)"
+                    plt.title(title_str)
+                    plt.show()
 
     # --- helper functions ---
 
