@@ -47,6 +47,9 @@ class IncoherentIrradiance:
             inner index is wavelength.  Each array has shape
             (res[0],res[1]) with X as the row index so that
             ``irr_data[f][w][i,j]`` refers to X=i, Y=j.
+        user_initial_rays : RealRays | None
+            Optional user-provided initial rays (at the source/object plane) 
+            to be traced through the whole optical system.
         
         Methods
         ---
@@ -58,7 +61,7 @@ class IncoherentIrradiance:
     """
     
     def __init__(self,optic, 
-                 n_rays: int, 
+                 n_rays: int = 5, 
                  res = (128,128),
                  px_size : float = None,
                  detector_surface : int = -1,
@@ -66,49 +69,62 @@ class IncoherentIrradiance:
                  fields = "all",
                  wavelengths = "all",
                  distribution : str = "random",
+                 user_initial_rays = None, # Optional[RealRays]
                  ):
         
         self.optic = optic
         self.n_rays = n_rays
         self.npix_x, self.npix_y = res
-        self.px_size = None if px_size is None else (float(px_size[0]), float(px_size[1]))
+        self.px_size = None if px_size is None else (float(px_size[0]), float(px_size[1])) # in mm
         self.detector_surface = int(detector_surface)
 
         self.fields = (optic.fields.get_field_coords() if fields == "all" else tuple(fields))
         self.wavelengths = (optic.wavelengths.get_wavelengths() if wavelengths == "all" else tuple(wavelengths))
-
+        
+        self.user_initial_rays = user_initial_rays
+        
         # the detector surface must have a physical aperture 
         surf = self.optic.surface_group.surfaces[self.detector_surface]
         if surf.aperture is None:
-            raise ValueError("Detector surface has no physical aperture – set one "
+            raise ValueError("Detector surface has no physical aperture - set one "
                 "(e.g. RectangularAperture) so that the detector size is defined.")
-
+        
         # Generate irradiance for every (field, wvl) pair
-        self.irr_data = (self._generate_data(distribution))
+        if user_initial_rays is not None:
+            self.irr_data = (self._generate_data(distribution, self.user_initial_rays))
+        else: 
+            self.irr_data = (self._generate_data(distribution, self.user_initial_rays))
+
+        
+
+
 
     # ADD: utility functions, view(), etc
 
-    # helper functions
+    # --- helper functions ---
 
     def peak_irradiance(self):
         """Maximum pixel value for each (field,wvl) pair."""
         return [[be.max(irr) for irr, *_ in fblock] for fblock in self.irr_data]
 
-    # data generation functions
+    # --- data generation functions ---
 
-    def _generate_data(self, distribution):
-        data = []
+    def _generate_data(self, distribution, user_initial_rays):
+        data = [] 
         for field in self.fields:
             f_block = []
             for wl in self.wavelengths:
-                f_block.append(self._single_field_wl(field, wl, distribution))
+                f_block.append(self._single_field_wl(field, wl, distribution, user_initial_rays))
             data.append(f_block)
         return data
 
-    def _single_field_wl(self, field, wavelength, distribution):
+    def _single_field_wl(self, field, wavelength, distribution, user_initial_rays):
         """Trace rays and bin their power into the pixels of the detector."""
-        Hx, Hy = field
-        self.optic.trace(Hx, Hy, wavelength, self.n_rays, distribution)
+        if user_initial_rays is None:
+            Hx, Hy = field
+            self.optic.trace(Hx, Hy, wavelength, self.n_rays, distribution)
+        else:
+            self.optic.surface_group.trace(user_initial_rays)
 
         # get ray coords on detector surface 
         surf = self.optic.surface_group.surfaces[self.detector_surface]
