@@ -15,6 +15,7 @@ from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
+from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
 
@@ -55,7 +56,7 @@ class Surface:
         self.material_pre = material_pre
         self.material_post = material_post
         self.is_stop = is_stop
-        self.aperture = aperture
+        self.aperture = configure_aperture(aperture)
         self.semi_aperture = None
         self.coating = coating
         self.bsdf = bsdf

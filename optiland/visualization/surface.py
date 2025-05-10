@@ -22,7 +22,7 @@ class Surface2D:
 
     Attributes:
         surf (Surface): The surface object containing the geometry.
-        extent (tuple): The extent of the surface in the x and y directions.
+        ray_extent (tuple): The extent of rays on the surface.
 
     Methods:
         plot(ax):
@@ -30,9 +30,14 @@ class Surface2D:
 
     """
 
-    def __init__(self, surface, extent):
+    def __init__(self, surface, ray_extent):
         self.surf = surface
-        self.extent = extent
+
+        if self.surf.aperture:
+            x_min, x_max, y_min, y_max = self.surf.aperture.extent
+            self.extent = be.max(be.array([x_min, x_max, y_min, y_max]))
+        else:
+            self.extent = ray_extent
 
     def plot(self, ax):
         """Plots the surface on the given matplotlib axis.
