@@ -1168,10 +1168,10 @@ def test_incoherent_irradiance_initialization(set_test_backend, test_system_irra
 def test_view_normalize_true_peak_zero(mock_show, set_test_backend, test_system_irradiance_v1):
     optic = test_system_irradiance_v1
     irr = analysis.IncoherentIrradiance(optic, n_rays=1, res=(5,5))
-    dummy_edges = be.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]) # numpy array for dummy
+    dummy_edges = np.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]) # numpy array for dummy
     irr.irr_data = [[(be.zeros((5,5)), dummy_edges, dummy_edges)]] # All zero irradiance map
     
-    irr.view(normalize=True) # Should handle peak_val = 0 gracefully
+    irr.view(normalize=True) # Should handle peak_val = 0
     mock_show.assert_called_once()
     plt.close()
 
@@ -1192,4 +1192,4 @@ def test_cross_section_plot_helper_out_of_bounds(mock_print, mock_show, set_test
 
     # Test invalid axis type
     irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'invalid-axis', 0, (6,5), "Test", True)
-    # This should close the plot and return without printing to console or calling show.
+    
