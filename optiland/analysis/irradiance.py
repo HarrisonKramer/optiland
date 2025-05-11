@@ -101,10 +101,7 @@ class IncoherentIrradiance:
             )
 
         # Generate irradiance for every (field, wvl) pair
-        if user_initial_rays is not None:
-            self.irr_data = self._generate_data(distribution, self.user_initial_rays)
-        else:
-            self.irr_data = self._generate_data(distribution, self.user_initial_rays)
+        self.irr_data = self._generate_data(distribution, self.user_initial_rays)
 
     def view(
         self,
@@ -313,7 +310,6 @@ class IncoherentIrradiance:
             plt.close()
             return
 
-        plt.plot(coords_to_plot_against, data_to_plot, linestyle="-.")
         if normalize:
             peak_val = data_to_plot.max()
             if peak_val > 0:
