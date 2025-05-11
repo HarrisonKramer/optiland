@@ -7,7 +7,7 @@ irradiance analysis in a given optical system.
 The analysis is analogous to the SpotDiagram except that
 instead of plotting the landing position of individual rays,
 we accumulate their power on a detector and express the result
-in W/mm^-2.
+in W/mm^2.
 
 
 Manuel Fragata Mendes, 2025
