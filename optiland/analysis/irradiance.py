@@ -268,11 +268,11 @@ class IncoherentIrradiance:
         for field in self.fields:
             f_block = []
             for wl in self.wavelengths:
-                f_block.append(self._single_field_wl(field, wl, distribution, user_initial_rays))
+                f_block.append(self._generate_field_data(field, wl, distribution, user_initial_rays))
             data.append(f_block)
         return data
 
-    def _single_field_wl(self, field, wavelength, distribution, user_initial_rays):
+    def _generate_field_data(self, field, wavelength, distribution, user_initial_rays):
         """Trace rays and bin their power into the pixels of the detector."""
         if user_initial_rays is None:
             Hx, Hy = field

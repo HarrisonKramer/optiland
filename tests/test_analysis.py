@@ -944,3 +944,252 @@ class TestIncoherentIrradiance:
 
         irr_perfect.view()
         plt.close()
+        
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_plot_cross_section_gaussian(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        res_val = (50, 50)
+        num_rays_edge = 100
+        sigma_val = 0.5
+
+        x_rays_np = np.linspace(-2.5, 2.5, num_rays_edge)
+        x_np_mesh, y_np_mesh = np.meshgrid(x_rays_np, x_rays_np)
+        x_be_flat = be.array(x_np_mesh.flatten())
+        y_be_flat = be.array(y_np_mesh.flatten())
+        num_rays_flat = x_be_flat.shape[0]
+
+        gaussian_intensities = _apply_gaussian_apodization(x_be_flat, y_be_flat, sigma_x=sigma_val, sigma_y=sigma_val)
+        user_rays_apodized = RealRays(
+            x=x_be_flat, y=y_be_flat, z=be.zeros((num_rays_flat,)),
+            L=be.zeros((num_rays_flat,)), M=be.zeros((num_rays_flat,)), N=be.ones((num_rays_flat,)),
+            intensity=gaussian_intensities, wavelength=be.full((num_rays_flat,), 0.55)
+        )
+        irr_apodized = analysis.IncoherentIrradiance(optic_sys, res=res_val, user_initial_rays=user_rays_apodized)
+
+        # Test cross-X plot at center
+        irr_apodized.view(cross_section=('cross-x', res_val[0] // 2))
+        # Test cross-Y plot at default middle slice
+        irr_apodized.view(cross_section=('cross-y', None))
+        # Test cross-X plot with normalize=False
+        irr_apodized.view(cross_section=('cross-x', res_val[0] // 2), normalize=False)
+
+        assert mock_show.call_count >= 3
+        plt.close('all') 
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_peak_irradiance(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=20, res=(10,10))
+        peaks = irr.peak_irradiance() 
+        assert len(peaks) == len(irr.fields)
+        assert len(peaks[0]) == len(irr.wavelengths)
+        assert be.to_numpy(peaks[0][0]) >= 0 
+
+    def test_detector_surface_no_aperture(self, set_test_backend):
+        class TestSystemNoAperture(Optic):
+            def __init__(self):
+                super().__init__()
+                self.add_surface(index=0, thickness=be.inf)
+                self.add_surface(index=1, thickness=0, is_stop=True)
+                self.add_surface(index=2, thickness=10)
+                self.add_surface(index=3) # Image plane, no aperture
+                self.add_wavelength(0.55)
+                self.set_field_type('angle')
+                self.add_field(y=0)
+                self.set_aperture('EPD', 5.0)
+        optic_no_ap = TestSystemNoAperture()
+        with pytest.raises(ValueError, match="Detector surface has no physical aperture"):
+            analysis.IncoherentIrradiance(optic_no_ap, n_rays=5, res=(5,5))
+
+    @patch("matplotlib.pyplot.show")
+    @patch("builtins.print") 
+    def test_px_size_overrides_res_warning(self, mock_print, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        # Detector aperture is 5mm x 5mm. px_size of (1.0, 1.0) should result in 5x5 pixels.
+        # res of (10,10) should be ignored and a warning printed.
+        irr = analysis.IncoherentIrradiance(optic_sys, res=(10,10), px_size=(1.0, 1.0), n_rays=10)
+        irr_map_be, x_edges, y_edges = irr.irr_data[0][0]
+
+        # Check that the effective resolution is 5x5
+        assert irr_map_be.shape == (5, 5)
+        assert len(x_edges) == 5 + 1 # x_edges has N+1 elements for N pixels
+        assert len(y_edges) == 5 + 1
+
+        # Check that the warning was printed
+        mock_print.assert_any_call("[IncoherentIrradiance] Warning: res parameter ignored - derived from px_size instead → (5,5) pixels")
+        irr.view()
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_view_options(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=10, res=(10,10))
+
+        # Test with different cmap and normalize=False
+        irr.view(cmap="viridis", normalize=False)
+        mock_show.assert_called_once()
+        plt.close()
+        mock_show.reset_mock() 
+
+        # Test with cross-section, normalize=True, and different cmap
+        irr.view(cross_section=('cross-x', 0), normalize=True, cmap="magma")
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    @patch("builtins.print")
+    def test_irradiance_cross_section_invalid_slice(self, mock_print, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        res_val = (5,5)
+        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=10, res=res_val)
+
+        # Invalid slice index for cross-x
+        irr.view(cross_section=('cross-x', res_val[0] + 5)) # Index out of bounds
+        mock_print.assert_any_call(f"[IncoherentIrradiance] Warning: X-slice index {res_val[0]+5} is out of bounds for map shape {(res_val[0],res_val[1])}. Skipping plot.")
+        
+        # Invalid slice index for cross-y
+        irr.view(cross_section=('cross-y', res_val[1] + 5)) # Index out of bounds
+        mock_print.assert_any_call(f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1]+5} is out of bounds for map shape {(res_val[0],res_val[1])}. Skipping plot.")
+
+        # Invalid cross_section_info format (not tuple)
+        irr.view(cross_section="invalid")
+        mock_print.assert_any_call("[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot.")
+        # Invalid cross_section_info format (tuple wrong length)
+        irr.view(cross_section=('cross-x',))
+        mock_print.assert_any_call("[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot.")
+         # Invalid cross_section_info format (tuple wrong types)
+        irr.view(cross_section=(123, 'cross-y'))
+        mock_print.assert_any_call("[IncoherentIrradiance] Warning: Invalid cross_section_info format. Expected ('cross-x' or 'cross-y', int). Defaulting to 2D plot.")
+        plt.close('all')
+
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_view_no_data(self, mock_show, capsys, set_test_backend, test_system_irradiance_v1):
+        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, n_rays=1, res=(2,2)) # Minimal rays to get some data
+        irr.irr_data = [] # Force no data
+        irr.view()
+        captured = capsys.readouterr()
+        assert "No irradiance data to display." in captured.out
+        mock_show.assert_not_called()
+        plt.close()
+
+        # Test with empty field block
+        irr.irr_data = [[]]
+        irr.view()
+        captured = capsys.readouterr()
+        assert "Warning: Field block 0 is empty." in captured.out or "No valid irradiance map data found to plot." in captured.out
+        plt.close()
+
+        # Test with None entry in field block
+        irr.irr_data = [[None]]
+        irr.view()
+        captured = capsys.readouterr()
+        assert "Warning: Entry 0 in field block 0 is None." in captured.out or "No valid irradiance map data found to plot." in captured.out
+        plt.close()
+
+        # Test with None irradiance map in entry
+        dummy_edges = be.array([0.0,1.0]) 
+        irr.irr_data = [[(None, dummy_edges, dummy_edges)]]
+        irr.view()
+        captured = capsys.readouterr()
+        assert "Warning: Irradiance map in entry 0, field block 0 is None." in captured.out or "No valid irradiance map data found to plot." in captured.out
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_vmin_vmax_equal_case(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        num_rays = 10
+        user_rays = RealRays(
+            x=be.full((num_rays,), 0.0), y=be.full((num_rays,), 0.0), z=be.zeros((num_rays,)),
+            L=be.zeros((num_rays,)), M=be.zeros((num_rays,)), N=be.ones((num_rays,)),
+            intensity=be.ones((num_rays,)), wavelength=be.full((num_rays,), 0.55)
+        )
+        res_tuple = (5,5)
+        irr = analysis.IncoherentIrradiance(optic_sys, res=res_tuple, user_initial_rays=user_rays)
+        dummy_edges = np.array([-2.5, -1.5, -0.5,  0.5,  1.5,  2.5]) # numpy array for dummy edges
+
+        # Case 1: All pixels have same non-zero irradiance
+        irr.irr_data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
+        irr.view(normalize=False) # Test the vmin=vmax branch in plotting
+        mock_show.assert_called_once()
+        plt.close()
+        mock_show.reset_mock()
+
+        # Case 2: All pixels are zero
+        irr.irr_data = [[(be.zeros(res_tuple), dummy_edges, dummy_edges)]]
+        irr.view(normalize=False)
+        mock_show.assert_called_once()
+        plt.close()
+        mock_show.reset_mock()
+
+        # Case 3: Normalization active, vmin/vmax will be 0 and 1
+        irr.irr_data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
+        irr.view(normalize=True)
+        mock_show.assert_called_once()
+        plt.close()
+
+    def test_peak_irradiance_empty_data(self, set_test_backend, test_system_irradiance_v1):
+        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, n_rays=1, res=(2,2))
+        irr.irr_data = []
+        assert irr.peak_irradiance() == []
+
+        irr.irr_data = [[]]
+        assert irr.peak_irradiance() == [[]]
+
+        dummy_edges = be.array([0., 1.]) # numpy array for dummy edges
+        # Ensure float values for irradiance maps for consistent type with backend
+        irr.irr_data = [[(be.array([[1.0,2.0],[3.0,4.0]]), dummy_edges, dummy_edges), 
+                         (be.array([[5.0,6.0],[7.0,8.0]]), dummy_edges, dummy_edges)]]
+        peaks = irr.peak_irradiance() # list of lists of backend scalars
+        assert_allclose(peaks[0][0], be.array(4.0)) # Compare backend scalar with backend scalar
+        assert_allclose(peaks[0][1], be.array(8.0))
+
+
+def test_incoherent_irradiance_initialization(set_test_backend, test_system_irradiance_v1):
+    optic = test_system_irradiance_v1
+    irr = analysis.IncoherentIrradiance(optic, n_rays=10, res=(64, 64), px_size=(0.1, 0.1),
+                               detector_surface=-1, fields="all", wavelengths="all",
+                               distribution="random", user_initial_rays=None)
+    assert irr.optic == optic
+    assert irr.n_rays == 10
+    # npix_x/y get overridden by px_size if px_size implies a different resolution
+    # Detector is 5mm wide. 0.1mm pixels -> 50 pixels.
+    assert irr.npix_x == 50 
+    assert irr.npix_y == 50
+    assert irr.px_size == (0.1, 0.1)
+    assert irr.detector_surface == -1
+    assert irr.fields == optic.fields.get_field_coords()
+    assert irr.wavelengths == optic.wavelengths.get_wavelengths()
+    assert irr.user_initial_rays is None
+    assert len(irr.irr_data) == len(optic.fields.get_field_coords())
+    assert len(irr.irr_data[0]) == len(optic.wavelengths.get_wavelengths())
+
+@patch("matplotlib.pyplot.show")
+def test_view_normalize_true_peak_zero(mock_show, set_test_backend, test_system_irradiance_v1):
+    optic = test_system_irradiance_v1
+    irr = analysis.IncoherentIrradiance(optic, n_rays=1, res=(5,5))
+    dummy_edges = be.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]) # numpy array for dummy
+    irr.irr_data = [[(be.zeros((5,5)), dummy_edges, dummy_edges)]] # All zero irradiance map
+    
+    irr.view(normalize=True) # Should handle peak_val = 0 gracefully
+    mock_show.assert_called_once()
+    plt.close()
+
+@patch("matplotlib.pyplot.show")
+@patch("builtins.print")
+def test_cross_section_plot_helper_out_of_bounds(mock_print, mock_show, set_test_backend, test_system_irradiance_v1):
+    optic = test_system_irradiance_v1
+    irr = analysis.IncoherentIrradiance(optic, n_rays=5, res=(5,5))
+    irr_map_be, x_edges, y_edges = irr.irr_data[0][0] # x_edges, y_edges are numpy arrays
+
+    # Test cross-x out of bounds
+    irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'cross-x', 10, (6,5), "Test", True)
+    mock_print.assert_any_call("[IncoherentIrradiance] Warning: X-slice index 10 is out of bounds for map shape (5, 5). Skipping plot.")
+    
+    # Test cross-y out of bounds
+    irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'cross-y', 10, (6,5), "Test", True)
+    mock_print.assert_any_call("[IncoherentIrradiance] Warning: Y-slice index 10 is out of bounds for map shape (5, 5). Skipping plot.")
+
+    # Test invalid axis type
+    irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'invalid-axis', 0, (6,5), "Test", True)
+    # This should close the plot and return without printing to console or calling show.
