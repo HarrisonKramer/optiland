@@ -8,6 +8,7 @@ import pytest
 from optiland import analysis
 from optiland.optic import Optic
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
+from optiland.physical_apertures import RectangularAperture
 from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
@@ -746,3 +747,37 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     global_y = spot.optic.surface_group.y[-1, :]
     assert_allclose(plot_x, global_x)
     assert_allclose(plot_y, global_y)
+    
+@pytest.fixture
+def test_system_irradiance_v1():
+    class TestSystemIrradianceV1(Optic):
+        def __init__(self):
+            super().__init__()
+            self.add_surface(index=0, thickness=be.inf)
+            self.add_surface(index=1, thickness=0, is_stop=True)
+            self.add_surface(index=2, thickness=10)
+            self.add_surface(index=3)  # image
+            detector_size = RectangularAperture(x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5)
+            self.surface_group.surfaces[-1].aperture = detector_size
+            self.add_wavelength(0.55)
+            self.set_field_type('angle')
+            self.add_field(y=0)
+            self.set_aperture('EPD', 5.0)
+    return TestSystemIrradianceV1()
+
+@pytest.fixture
+def perfect_mirror_system():
+    class PerfectMirror(Optic):
+        def __init__(self):
+            super().__init__()
+            self.add_surface(index=0, thickness=be.inf)
+            self.add_surface(index=1, thickness=50)
+            self.add_surface(index=2, thickness=-25, radius=-50, conic=-1.0, material='mirror', is_stop=True)
+            self.add_surface(index=3)  # image
+            detector_size = RectangularAperture(x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5)
+            self.surface_group.surfaces[-1].aperture = detector_size
+            self.add_wavelength(0.55)
+            self.set_field_type('angle')
+            self.add_field(y=0)
+            self.set_aperture('EPD', 5.0)
+    return PerfectMirror()
