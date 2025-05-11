@@ -9,6 +9,7 @@ from optiland import analysis
 from optiland.optic import Optic
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
 from optiland.physical_apertures import RectangularAperture
+from optiland.rays import RealRays
 from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
@@ -781,3 +782,55 @@ def perfect_mirror_system():
             self.add_field(y=0)
             self.set_aperture('EPD', 5.0)
     return PerfectMirror()
+
+def _create_square_grid_rays(num_rays_edge, min_coord, max_coord, wavelength_val=0.55):
+    x_rays_np = be.linspace(min_coord, max_coord, num_rays_edge)
+    x_np, y_np = be.meshgrid(x_rays_np, x_rays_np)
+    x_be_flat = be.array(x_np.flatten())
+    y_be_flat = be.array(y_np.flatten())
+    num_rays = x_be_flat.shape[0]
+
+    z_be = be.zeros((num_rays,)) # pass shape as tuple because of torch backend
+    L_be = be.zeros((num_rays,)) 
+    M_be = be.zeros((num_rays,)) 
+    N_be = be.ones((num_rays,))  
+    I_be = be.ones((num_rays,))  
+    W_be = be.full((num_rays,), wavelength_val) 
+    return RealRays(x_be_flat, y_be_flat, z_be, L_be, M_be, N_be, I_be, W_be)
+
+def _apply_gaussian_apodization(x_coords_flat, y_coords_flat, sigma_x, sigma_y, peak_intensity=1.0):
+    # x_coords_flat and y_coords_flat are expected to be 1D backend arrays
+    x_np = be.to_numpy(x_coords_flat) 
+    y_np = be.to_numpy(y_coords_flat)
+    exponent = -(((x_np**2) / (2 * sigma_x**2)) + ((y_np**2) / (2 * sigma_y**2)))
+    intensities_np = peak_intensity * be.exp(exponent)
+    return be.array(intensities_np)
+
+
+class TestIncoherentIrradiance:
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_v1_uniform_and_user_defined_rays(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        res = (5, 5)
+
+        # Test with default uniform rays
+        irr_uniform = analysis.IncoherentIrradiance(optic_sys, n_rays=5, distribution='uniform', res=res) 
+        irr_map_uniform, _, _ = irr_uniform.irr_data[0][0]
+        
+        # This is a basic check, not a precise value assertion
+        assert be.sum(irr_map_uniform) > 0
+        assert be.max(irr_map_uniform) > 0
+        irr_uniform.view()
+        plt.close()
+
+
+        # Test with user-defined rays
+        user_rays = _create_square_grid_rays(num_rays_edge=5, min_coord=-2.25, max_coord=1.75)
+        irr_user = analysis.IncoherentIrradiance(optic_sys, res=res, user_initial_rays=user_rays)
+        irr_map_user, _, _ = irr_user.irr_data[0][0]
+    
+        pixel_area_expected = ( (2.5 - (-2.5)) / res[0] ) * ( (2.5 - (-2.5)) / res[1] )
+        expected_irr_value = 1.0 / pixel_area_expected
+        assert_allclose(irr_map_user, be.full(res, expected_irr_value), atol=1e-5)
+        irr_user.view()
+        plt.close()
