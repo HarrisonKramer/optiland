@@ -13,7 +13,6 @@ in W/mm^-2.
 Manuel Fragata Mendes, 2025
 """
 
-
 import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for the binning. Later extend to
 
@@ -381,7 +380,7 @@ class IncoherentIrradiance:
             exp_ny = len(y_edges) - 1
             if (exp_nx, exp_ny) != (self.npix_x, self.npix_y):
                 print(
-                    f"[IncoherentIrradiance] Warning: res parameter ignored - " 
+                    f"[IncoherentIrradiance] Warning: res parameter ignored - "
                     f"derived from px_size instead → ({exp_nx},{exp_ny}) pixels"
                 )
                 self.npix_x, self.npix_y = exp_nx, exp_ny
