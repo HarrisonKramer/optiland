@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import optiland.backend as be
 import pytest
 
@@ -833,4 +834,113 @@ class TestIncoherentIrradiance:
         expected_irr_value = 1.0 / pixel_area_expected
         assert_allclose(irr_map_user, be.full(res, expected_irr_value), atol=1e-5)
         irr_user.view()
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_v1_one_ray_per_other_pixel(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        res_val = (10, 10)
+
+        # Use be.linspace and be.meshgrid if available and compatible, otherwise numpy is fine for test setup
+        x_centers_np = be.linspace(-2.25, 2.25, 10)
+        selected_x_np = x_centers_np[::2]
+        selected_y_np = x_centers_np[::2]
+        x_np_mesh, y_np_mesh = be.meshgrid(selected_x_np, selected_y_np) # Use numpy for meshgrid setup
+        
+        x_be_flat = be.array(x_np_mesh.flatten())
+        y_be_flat = be.array(y_np_mesh.flatten())
+        num_rays_flat = x_be_flat.shape[0]
+
+        user_rays = RealRays(
+            x=x_be_flat,
+            y=y_be_flat,
+            z=be.zeros((num_rays_flat,)),
+            L=be.zeros((num_rays_flat,)),
+            M=be.zeros((num_rays_flat,)),
+            N=be.ones((num_rays_flat,)),
+            intensity=be.ones((num_rays_flat,)),      
+            wavelength=be.full((num_rays_flat,), 0.55) 
+        )
+
+        irr_analysis = analysis.IncoherentIrradiance(optic_sys, res=res_val, user_initial_rays=user_rays)
+        irr_map_be, _, _ = irr_analysis.irr_data[0][0]
+
+        expected_map_np = np.zeros(res_val) # create the expected map with numpy 
+        pixel_area_expected = ((2.5 - (-2.5)) / res_val[0]) * ((2.5 - (-2.5)) / res_val[1])
+        irr_value_per_ray = 1.0 / pixel_area_expected
+
+        for i in range(0, res_val[0], 2):
+            for j in range(0, res_val[1], 2):
+                expected_map_np[i, j] = irr_value_per_ray
+
+        assert_allclose(irr_map_be, expected_map_np, atol=1e-5) # assert_allclose handles be_tensor vs np_array
+        irr_analysis.view()
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_gaussian_apodization(self, mock_show, set_test_backend, test_system_irradiance_v1):
+        optic_sys = test_system_irradiance_v1
+        res_val = (50, 50)
+        num_rays_edge = 100
+        sigma_val = 0.5
+
+        x_rays_np = be.linspace(-2.5, 2.5, num_rays_edge)
+        x_np_mesh, y_np_mesh = be.meshgrid(x_rays_np, x_rays_np)
+        x_be_flat = be.array(x_np_mesh.flatten())
+        y_be_flat = be.array(y_np_mesh.flatten())
+        num_rays_flat = x_be_flat.shape[0]
+
+        gaussian_intensities = _apply_gaussian_apodization(x_be_flat, y_be_flat, sigma_x=sigma_val, sigma_y=sigma_val)
+
+        user_rays_apodized = RealRays(
+            x=x_be_flat, y=y_be_flat, z=be.zeros((num_rays_flat,)),
+            L=be.zeros((num_rays_flat,)), M=be.zeros((num_rays_flat,)), N=be.ones((num_rays_flat,)),
+            intensity=gaussian_intensities, wavelength=be.full((num_rays_flat,), 0.55)
+        )
+
+        irr_apodized = analysis.IncoherentIrradiance(optic_sys, res=res_val, user_initial_rays=user_rays_apodized)
+        irr_map_apodized_be, x_edges, y_edges = irr_apodized.irr_data[0][0]
+
+        center_idx_x = res_val[0] // 2
+        center_idx_y = res_val[1] // 2
+        
+        val_center = irr_map_apodized_be[center_idx_x, center_idx_y]
+        val_corner1 = irr_map_apodized_be[0, 0]
+        val_corner2 = irr_map_apodized_be[res_val[0]-1, res_val[1]-1]
+        max_val_be = be.max(irr_map_apodized_be)
+
+        assert be.to_numpy(val_center) > be.to_numpy(val_corner1)
+        assert be.to_numpy(val_center) > be.to_numpy(val_corner2)
+        assert_allclose(val_center, max_val_be, rtol=1e-3) 
+
+        irr_apodized.view()
+        plt.close()
+
+
+    @patch("matplotlib.pyplot.show")
+    def test_irradiance_perfect_mirror_focus(self, mock_show, set_test_backend, perfect_mirror_system):
+        optic_sys = perfect_mirror_system
+        res_val = (21, 21)
+        num_rays_epd = 51
+
+        user_rays_grid = _create_square_grid_rays(num_rays_edge=num_rays_epd, min_coord=-2.5, max_coord=2.5)
+
+        irr_perfect = analysis.IncoherentIrradiance(optic_sys, res=res_val, user_initial_rays=user_rays_grid)
+        irr_map_perfect_be = irr_perfect.irr_data[0][0][0] 
+
+        center_x_idx = res_val[0] // 2
+        center_y_idx = res_val[1] // 2
+
+        total_sum_be = be.sum(irr_map_perfect_be)
+        center_pixel_value_be = irr_map_perfect_be[center_x_idx, center_y_idx]
+
+        assert be.to_numpy(total_sum_be) > 1e-9 
+        assert_allclose(center_pixel_value_be, total_sum_be, atol=1e-5)
+
+        irr_map_perfect_np = be.to_numpy(irr_map_perfect_be) # convert for easy masking with numpy
+        mask = np.ones(irr_map_perfect_np.shape, dtype=bool)
+        mask[center_x_idx, center_y_idx] = False
+        assert_allclose(np.sum(irr_map_perfect_np[mask]), 0.0, atol=1e-5)
+
+        irr_perfect.view()
         plt.close()
