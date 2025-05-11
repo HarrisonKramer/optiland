@@ -815,7 +815,7 @@ class TestIncoherentIrradiance:
         res = (5, 5)
 
         # Test with default uniform rays
-        irr_uniform = analysis.IncoherentIrradiance(optic_sys, n_rays=5, distribution='uniform', res=res) 
+        irr_uniform = analysis.IncoherentIrradiance(optic_sys, num_rays=5, distribution='uniform', res=res) 
         irr_map_uniform, _, _ = irr_uniform.irr_data[0][0]
         
         # This is a basic check, not a precise value assertion
@@ -979,7 +979,7 @@ class TestIncoherentIrradiance:
     @patch("matplotlib.pyplot.show")
     def test_irradiance_peak_irradiance(self, mock_show, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
-        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=20, res=(10,10))
+        irr = analysis.IncoherentIrradiance(optic_sys, num_rays=20, res=(10,10))
         peaks = irr.peak_irradiance() 
         assert len(peaks) == len(irr.fields)
         assert len(peaks[0]) == len(irr.wavelengths)
@@ -999,7 +999,7 @@ class TestIncoherentIrradiance:
                 self.set_aperture('EPD', 5.0)
         optic_no_ap = TestSystemNoAperture()
         with pytest.raises(ValueError, match="Detector surface has no physical aperture"):
-            analysis.IncoherentIrradiance(optic_no_ap, n_rays=5, res=(5,5))
+            analysis.IncoherentIrradiance(optic_no_ap, num_rays=5, res=(5,5))
 
     @patch("matplotlib.pyplot.show")
     @patch("builtins.print") 
@@ -1007,7 +1007,7 @@ class TestIncoherentIrradiance:
         optic_sys = test_system_irradiance_v1
         # Detector aperture is 5mm x 5mm. px_size of (1.0, 1.0) should result in 5x5 pixels.
         # res of (10,10) should be ignored and a warning printed.
-        irr = analysis.IncoherentIrradiance(optic_sys, res=(10,10), px_size=(1.0, 1.0), n_rays=10)
+        irr = analysis.IncoherentIrradiance(optic_sys, res=(10,10), px_size=(1.0, 1.0), num_rays=10)
         irr_map_be, x_edges, y_edges = irr.irr_data[0][0]
 
         # Check that the effective resolution is 5x5
@@ -1023,7 +1023,7 @@ class TestIncoherentIrradiance:
     @patch("matplotlib.pyplot.show")
     def test_irradiance_view_options(self, mock_show, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
-        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=10, res=(10,10))
+        irr = analysis.IncoherentIrradiance(optic_sys, num_rays=10, res=(10,10))
 
         # Test with different cmap and normalize=False
         irr.view(cmap="viridis", normalize=False)
@@ -1041,7 +1041,7 @@ class TestIncoherentIrradiance:
     def test_irradiance_cross_section_invalid_slice(self, mock_print, mock_show, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
         res_val = (5,5)
-        irr = analysis.IncoherentIrradiance(optic_sys, n_rays=10, res=res_val)
+        irr = analysis.IncoherentIrradiance(optic_sys, num_rays=10, res=res_val)
 
         # Invalid slice index for cross-x
         irr.view(cross_section=('cross-x', res_val[0] + 5)) # Index out of bounds
@@ -1065,7 +1065,7 @@ class TestIncoherentIrradiance:
 
     @patch("matplotlib.pyplot.show")
     def test_irradiance_view_no_data(self, mock_show, capsys, set_test_backend, test_system_irradiance_v1):
-        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, n_rays=1, res=(2,2)) # Minimal rays to get some data
+        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, num_rays=1, res=(2,2)) # Minimal rays to get some data
         irr.irr_data = [] # Force no data
         irr.view()
         captured = capsys.readouterr()
@@ -1129,7 +1129,7 @@ class TestIncoherentIrradiance:
         plt.close()
 
     def test_peak_irradiance_empty_data(self, set_test_backend, test_system_irradiance_v1):
-        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, n_rays=1, res=(2,2))
+        irr = analysis.IncoherentIrradiance(test_system_irradiance_v1, num_rays=1, res=(2,2))
         irr.irr_data = []
         assert irr.peak_irradiance() == []
 
@@ -1147,11 +1147,11 @@ class TestIncoherentIrradiance:
 
 def test_incoherent_irradiance_initialization(set_test_backend, test_system_irradiance_v1):
     optic = test_system_irradiance_v1
-    irr = analysis.IncoherentIrradiance(optic, n_rays=10, res=(64, 64), px_size=(0.1, 0.1),
+    irr = analysis.IncoherentIrradiance(optic, num_rays=10, res=(64, 64), px_size=(0.1, 0.1),
                                detector_surface=-1, fields="all", wavelengths="all",
                                distribution="random", user_initial_rays=None)
     assert irr.optic == optic
-    assert irr.n_rays == 10
+    assert irr.num_rays == 10
     # npix_x/y get overridden by px_size if px_size implies a different resolution
     # Detector is 5mm wide. 0.1mm pixels -> 50 pixels.
     assert irr.npix_x == 50 
@@ -1167,7 +1167,7 @@ def test_incoherent_irradiance_initialization(set_test_backend, test_system_irra
 @patch("matplotlib.pyplot.show")
 def test_view_normalize_true_peak_zero(mock_show, set_test_backend, test_system_irradiance_v1):
     optic = test_system_irradiance_v1
-    irr = analysis.IncoherentIrradiance(optic, n_rays=1, res=(5,5))
+    irr = analysis.IncoherentIrradiance(optic, num_rays=1, res=(5,5))
     dummy_edges = np.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]) # numpy array for dummy
     irr.irr_data = [[(be.zeros((5,5)), dummy_edges, dummy_edges)]] # All zero irradiance map
     
@@ -1179,7 +1179,7 @@ def test_view_normalize_true_peak_zero(mock_show, set_test_backend, test_system_
 @patch("builtins.print")
 def test_cross_section_plot_helper_out_of_bounds(mock_print, mock_show, set_test_backend, test_system_irradiance_v1):
     optic = test_system_irradiance_v1
-    irr = analysis.IncoherentIrradiance(optic, n_rays=5, res=(5,5))
+    irr = analysis.IncoherentIrradiance(optic, num_rays=5, res=(5,5))
     irr_map_be, x_edges, y_edges = irr.irr_data[0][0] # x_edges, y_edges are numpy arrays
 
     # Test cross-x out of bounds
