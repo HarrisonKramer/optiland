@@ -210,8 +210,10 @@ class IncoherentIrradiance:
                 else:
                     field_coord = self.fields[f_idx]
                     wavelength_val = self.wavelengths[w_idx]
-                    title_str_base = f"Irradiance: Field {f_idx} {field_coord}, "
-                    f"WL {w_idx} ({wavelength_val:.3f} um)"
+                    title_str_base = (
+                        f"Irradiance: Field {f_idx} {field_coord}, "
+                        f"WL {w_idx} ({wavelength_val:.3f} µm)"
+                    )
 
                 # call helper cross section
                 if plot_cross_section_requested and valid_cross_section_request:
