@@ -34,7 +34,7 @@ class IncoherentIrradiance:
      px_size : tuple[float, float] | None
          Physical pixel pitch (dx,dy) in mm.  If ``None`` the pitch is
          derived from the surface aperture and `res`.
-     n_rays : int
+     num_rays : int
          Number of real rays launched for every (field,wavelength) pair.
      fields, wavelengths : tuple | "all"
          Convenience selectors that work exactly like those in
@@ -63,7 +63,7 @@ class IncoherentIrradiance:
     def __init__(
         self,
         optic,
-        n_rays: int = 5,
+        num_rays: int = 5,
         res=(128, 128),
         px_size: float = None,
         detector_surface: int = -1,
@@ -74,7 +74,7 @@ class IncoherentIrradiance:
         user_initial_rays=None,  # Optional[RealRays]
     ):
         self.optic = optic
-        self.n_rays = n_rays
+        self.num_rays = num_rays
         self.npix_x, self.npix_y = res
         self.px_size = (
             None if px_size is None else (float(px_size[0]), float(px_size[1]))
@@ -340,7 +340,7 @@ class IncoherentIrradiance:
         """Trace rays and bin their power into the pixels of the detector."""
         if user_initial_rays is None:
             Hx, Hy = field
-            self.optic.trace(Hx, Hy, wavelength, self.n_rays, distribution)
+            self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
         else:
             self.optic.surface_group.trace(user_initial_rays)
 
