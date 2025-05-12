@@ -141,7 +141,7 @@ class OpticUpdater:
                 self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
 
         # Scale aperture, if aperture type is EPD
-        if self.optic.aperture.ap_type == "EPD":
+        if self.optic.aperture.ap_type in ["EPD", "float_by_stop_size"]:
             self.optic.aperture.value = self.optic.aperture.value * scale_factor
 
         # Scale physical apertures
