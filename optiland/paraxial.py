@@ -199,16 +199,29 @@ class Paraxial:
         if ap_type == "EPD":
             return ap_value
 
-        if ap_type == "imageFNO":
+        elif ap_type == "imageFNO":
             return self.f2() / ap_value
 
-        if ap_type == "objectNA":
+        elif ap_type == "objectNA":
             obj_z = self.optic.object_surface.geometry.cs.z
             wavelength = self.optic.primary_wavelength
             n0 = self.optic.object_surface.material_post.n(wavelength)
             u0 = be.arcsin(ap_value / n0)
             z = self.EPL() - obj_z
             return 2 * z * be.tan(u0)
+
+        elif ap_type == "float_by_stop_size":
+            stop_index = self.surfaces.stop_index
+            wavelength = self.optic.primary_wavelength
+            if self.optic.object_surface.is_infinite:
+                y, _ = self._trace_generic(1.0, 0.0, -1, wavelength)
+                return ap_value / y[stop_index]
+            else:
+                obj_z = self.optic.object_surface.geometry.cs.z
+                EPL = self.EPL()
+                y, _ = self._trace_generic(0.0, 0.1, obj_z, wavelength)
+                u0 = 0.1 * ap_value / y[stop_index]
+                return u0 * (EPL - obj_z)
 
     def XPL(self):
         """Calculate the exit pupil location
