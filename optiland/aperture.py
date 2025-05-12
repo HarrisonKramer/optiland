@@ -26,13 +26,22 @@ class Aperture:
     """
 
     def __init__(self, aperture_type, value, object_space_telecentric=False):
-        if aperture_type not in ["EPD", "imageFNO", "objectNA"]:
-            raise ValueError('Aperture type must be "EPD", "imageFNO", "objectNA"')
+        if aperture_type not in ["EPD", "imageFNO", "objectNA", "float_by_stop_size"]:
+            raise ValueError(
+                'Aperture type must be "EPD", "imageFNO", '
+                '"objectNA", "float_by_stop_size"'
+            )
 
         if aperture_type in ["EPD", "imageFNO"] and object_space_telecentric:
             raise ValueError(
                 'Cannot set aperture type to "EPD" or "imageFNO" '
                 "if lens is telecentric in object space.",
+            )
+
+        if value is None and aperture_type != "float_by_stop_size":
+            raise ValueError(
+                "Aperture value must be provided when aperture "
+                "type is 'float_by_stop_size'"
             )
 
         self.ap_type = aperture_type
