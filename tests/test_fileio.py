@@ -357,6 +357,11 @@ class TestZemaxToOpticConverter:
         for i, key in enumerate(expected_keys):
             assert zemax_fold_mirrors_reader._current_surf_data[key] == params_to_test_values[i]
 
+    def test_generate_complicated_system(self, set_test_backend, zemax_fold_mirrors_reader):
+            lens = zemax_fold_mirrors_reader.generate_lens()
+            assert lens is not None
+            assert isinstance(lens, Optic)
+
 def test_save_load_json_obj(set_test_backend):
     mat = Material("SF11")
     with tempfile.NamedTemporaryFile(
