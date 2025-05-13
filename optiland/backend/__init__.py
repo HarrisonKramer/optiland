@@ -9,14 +9,19 @@ backends may be added in the future.
 Kramer Harrison, 2025
 """
 
+import numpy as np
+
 from optiland.backend import numpy_backend
 from optiland.backend.utils import to_numpy  # noqa: F401
 
 try:
+    import torch
+
     from optiland.backend import torch_backend
 
     _torch_available = True
 except ImportError:
+    torch = None
     torch_backend = None
     _torch_available = False
 
@@ -31,6 +36,8 @@ if _torch_available:
 
 # Default backend
 _current_backend = "numpy"
+
+ndarray = (np.ndarray, torch.Tensor) if _torch_available is not None else np.ndarray
 
 
 def set_backend(name: str):
