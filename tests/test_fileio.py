@@ -331,6 +331,31 @@ class TestZemaxToOpticConverter:
         zemax_file_reader.data["fields"]["vignette_decenter_y"] = [0.5]
         zemax_file_reader.generate_lens()
 
+    def test_read_surface_coordinate_break(self, set_test_backend, zemax_fold_mirrors_reader):
+        data = ["TYPE", "COORDBRK"]
+        zemax_fold_mirrors_reader._current_surf_data = {} 
+        zemax_fold_mirrors_reader._read_surf_type(data)
+        assert zemax_fold_mirrors_reader._current_surf_data["type"] == "coordinate_break"
+
+    def test_read_glass_mirror(self, set_test_backend, zemax_fold_mirrors_reader):
+        zemax_fold_mirrors_reader._current_surf_data = {} 
+        data = ["GLAS", "MIRROR", "0", "0", "0", "0"] 
+        zemax_fold_mirrors_reader._read_glass(data)
+        assert zemax_fold_mirrors_reader._current_surf_data["material"] == "mirror"
+        assert "index" not in zemax_fold_mirrors_reader._current_surf_data
+        assert "abbe" not in zemax_fold_mirrors_reader._current_surf_data
+
+    def test_read_coordinate_break_params(self, set_test_backend, zemax_fold_mirrors_reader):
+        zemax_fold_mirrors_reader._current_surf_data = {"type": "coordinate_break"}
+        
+        params_to_test_values = [1.0, 2.0, 30.0, 5.0, -10.0, 0.0] 
+        expected_keys = ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5"]
+
+        for i, val in enumerate(params_to_test_values):
+            zemax_fold_mirrors_reader._read_surface_parameter(["PARM", str(i + 1), str(val)])
+        
+        for i, key in enumerate(expected_keys):
+            assert zemax_fold_mirrors_reader._current_surf_data[key] == params_to_test_values[i]
 
 def test_save_load_json_obj(set_test_backend):
     mat = Material("SF11")
