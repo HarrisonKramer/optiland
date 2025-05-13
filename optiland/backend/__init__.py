@@ -9,19 +9,64 @@ backends may be added in the future.
 Kramer Harrison, 2025
 """
 
-import numpy as np
+# common aliases for ndarray and array_equal across backends --
+import numpy as _np
 
 from optiland.backend import numpy_backend
 from optiland.backend.utils import to_numpy  # noqa: F401
 
 try:
-    import torch
+    import torch as _torch
+except ImportError:
+    _torch = None
 
+# ndarray: either a NumPy ndarray or a PyTorch Tensor
+ndarray = (_np.ndarray, _torch.Tensor) if _torch is not None else _np.ndarray
+
+# array_equal: dispatch to numpy.array_equal or torch.equal
+_np_equal = _np.array_equal
+_torch_equal = (
+    _torch.equal if (_torch is not None and hasattr(_torch, "equal")) else None
+)
+
+
+def array_equal(a, b):
+    """Elementwise equality test for arrays/tensors in the active backend."""
+    from . import get_backend
+
+    if get_backend() == "torch" and _torch_equal is not None:
+        return _torch_equal(a, b)
+    return _np_equal(a, b)
+
+
+# --- Add explicit type-dispatching functions ---
+# Add explicit implementations for functions that might receive
+# arrays/tensors created when a *different* backend was active
+
+
+def isinf(x):
+    """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
+    if _torch_available and isinstance(x, _torch.Tensor):
+        # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
+        return _torch.isinf(x)
+    # Fallback to numpy for np.ndarray or Python scalars
+    # Assumes numpy_backend defines isinf (e.g., calling np.isinf)
+    return _np.isinf(x)
+
+
+def isnan(x):
+    """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
+    if _torch_available and isinstance(x, _torch.Tensor):
+        return _torch.isnan(x)
+
+    return _np.isnan(x)
+
+
+try:
     from optiland.backend import torch_backend
 
     _torch_available = True
 except ImportError:
-    torch = None
     torch_backend = None
     _torch_available = False
 
@@ -36,8 +81,6 @@ if _torch_available:
 
 # Default backend
 _current_backend = "numpy"
-
-ndarray = (np.ndarray, torch.Tensor) if _torch_available is not None else np.ndarray
 
 
 def set_backend(name: str):
