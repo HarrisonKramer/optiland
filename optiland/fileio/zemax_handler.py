@@ -344,9 +344,9 @@ class ZemaxFileReader:
 
         """
         material = data[1]
-        
+
         # for now we consider that there are no glasses directly
-        # after a mirror. This is not always true. Later we have 
+        # after a mirror. This is not always true. Later we have
         # to account for it too.
         if material.upper() == "MIRROR":
             self._current_surf_data["material"] = "mirror"
