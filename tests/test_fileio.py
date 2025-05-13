@@ -37,6 +37,15 @@ def zemax_file_reader(zemax_file):
 def zemax_file_formats_reader(zemax_file_formats):
     return ZemaxFileReader(zemax_file_formats)
 
+@pytest.fixture
+def zemax_file_fold_mirrors():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    filename = os.path.join(current_dir, "zemax_files/complicated_fold_mirrors_setup_v2.zmx")
+    return filename
+
+@pytest.fixture
+def zemax_fold_mirrors_reader(zemax_file_fold_mirrors):
+    return ZemaxFileReader(zemax_file_fold_mirrors)
 
 def replace_line_in_zmx(zmx_file, line_prefix, new_line):
     temp_dir = tempfile.mkdtemp()
