@@ -38,12 +38,6 @@ class Aperture:
                 "if lens is telecentric in object space.",
             )
 
-        if value is None and aperture_type != "float_by_stop_size":
-            raise ValueError(
-                "Aperture value must be provided when aperture "
-                "type is 'float_by_stop_size'"
-            )
-
         self.ap_type = aperture_type
         self.value = value
         self.object_space_telecentric = object_space_telecentric

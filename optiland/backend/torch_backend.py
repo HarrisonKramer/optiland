@@ -220,6 +220,10 @@ def newaxis():
     return None
 
 
+def array_equal(a, b):
+    return torch.equal(a, b)
+
+
 # --------------------------
 # Shape and Indexing
 # --------------------------

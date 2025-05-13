@@ -671,3 +671,55 @@ def test_invalid_object_position_call(set_test_backend):
     lens.set_field_type(field_type="object_height")
     with pytest.raises(ValueError):
         lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=5)
+
+
+def test_EPD_float_by_stop_size_finite(set_test_backend):
+    lens = Optic()
+
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
+    lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
+    lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
+    lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
+    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
+    lens.add_surface(index=7)
+
+    lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+    lens.add_field(y=14)
+    lens.add_field(y=20)
+
+    lens.add_wavelength(value=0.48)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_wavelength(value=0.65)
+
+    assert_allclose(lens.paraxial.EPD(), 9.997764563903155)
+
+
+def test_EPD_float_by_stop_size_infinite(set_test_backend):
+    lens = Optic()
+
+    lens.add_surface(index=0, radius=be.inf, thickness=10_000)
+    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
+    lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
+    lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
+    lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
+    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
+    lens.add_surface(index=7)
+
+    lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
+
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+    lens.add_field(y=14)
+    lens.add_field(y=20)
+
+    lens.add_wavelength(value=0.48)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_wavelength(value=0.65)
+
+    assert_allclose(lens.paraxial.EPD(), 9.997764563903152)
