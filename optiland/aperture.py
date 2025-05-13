@@ -2,7 +2,9 @@
 
 This module provides a class for representing apertures in lens systems.
 Aperture options include entrance pupil diameter (EPD), image space F-number
-(imageFNO), and object space numerical aperture (objectNA).
+(imageFNO), and object space numerical aperture (objectNA), or float by
+stop size (float_by_stop_size). If the `float_by_stop_size` is chosen,
+the input provided is the diameter of the stop surface.
 
 Kramer Harrison, 2024
 """
