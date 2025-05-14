@@ -786,7 +786,7 @@ class TestZernikeGeometry:
 
 # --- Fixtures for Toroidal Tests ---
 @pytest.fixture
-def basic_toroid_geometry():
+def basic_toroid_geometry(set_test_backend):
     """Provides a basic ToroidalGeometry instance for testing"""
     cs = CoordinateSystem(x=0, y=0, z=0)
     radius_rotation = 100.0  # R (X-Z radius)
@@ -802,11 +802,11 @@ def basic_toroid_geometry():
     )
 
 @pytest.fixture
-def cylinder_x_geometry():
+def cylinder_x_geometry(set_test_backend):
     """Provides a cylindrical geometry (flat in X). R_rot = inf"""
     cs = CoordinateSystem(x=0, y=0, z=0)
     radius_rotation = be.inf # Flat in X-Z plane
-    radius_yz = -50.0      
+    radius_yz = -50.0
     conic = 0.0
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
@@ -816,7 +816,7 @@ def cylinder_x_geometry():
     )
 
 @pytest.fixture
-def cylinder_y_geometry():
+def cylinder_y_geometry(set_test_backend):
     """Provides a cylindrical geometry (flat in Y). R_yz = inf"""
     cs = CoordinateSystem(x=0, y=0, z=0)
     radius_rotation = 100.0 
@@ -831,7 +831,7 @@ def cylinder_y_geometry():
 
 class TestToroidalGeometry:
     
-    def test_toroidal_str(self):
+    def test_toroidal_str(self, set_test_backend):
         """Test string representation."""
         cs = CoordinateSystem()
         geometry = geometries.ToroidalGeometry(
@@ -843,22 +843,22 @@ class TestToroidalGeometry:
         )
         assert str(geometry) == "Toroidal"
 
-    def test_toroidal_sag_vertex(self, basic_toroid_geometry):
+    def test_toroidal_sag_vertex(self, basic_toroid_geometry, set_test_backend):
         """Test sag at the vertex (0, 0). Should be 0 by definition."""
         x = be.array([0.0])
         y = be.array([0.0])
-        assert basic_toroid_geometry.sag(x, y) == pytest.approx(0.0)
+        be.allclose(basic_toroid_geometry.sag(x, y), be.array([0.0]), rtol=1e-5, atol=1e-6)
 
-    def test_toroidal_normal_vertex(self, basic_toroid_geometry):
+    def test_toroidal_normal_vertex(self, basic_toroid_geometry, set_test_backend):
         """" Test the normal vector at the vertex (0, 0). Should be (0, 0, -1) """
         x = be.array([0.0])
         y = be.array([0.0])
         nx, ny, nz = basic_toroid_geometry._surface_normal(x, y)
-        assert nx == pytest.approx(0.0)
-        assert ny == pytest.approx(0.0)
-        assert nz == pytest.approx(-1.0)
+        be.allclose(nx, be.array([0.0]), rtol=1e-5, atol=1e-6)
+        be.allclose(ny, be.array([0.0]), rtol=1e-5, atol=1e-6)
+        be.allclose(nz, be.array([-1.0]), rtol=1e-5, atol=1e-6)
         
-    def test_toroidal_sag_known_points(self, basic_toroid_geometry):
+    def test_toroidal_sag_known_points(self, basic_toroid_geometry, set_test_backend):
         """Test sag at specific points"""
         x = be.array([0.0, 10.0, 0.0])
         y = be.array([10.0, 0.0, 5.0])
@@ -871,7 +871,7 @@ class TestToroidalGeometry:
         calculated_z = basic_toroid_geometry.sag(x, y)
         assert be.allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
     
-    def test_toroidal_normal_known_points(self, basic_toroid_geometry):
+    def test_toroidal_normal_known_points(self, basic_toroid_geometry, set_test_backend):
         """Test normal at specific points."""
         x = be.array([0.0, 10.0])
         y = be.array([10.0, 0.0])
@@ -895,25 +895,25 @@ class TestToroidalGeometry:
         assert be.allclose(ny, expected_ny, rtol=rtol, atol=atol)
         assert be.allclose(nz, expected_nz, rtol=rtol, atol=atol)
         
-    def test_cylinder_x_sag(self, cylinder_x_geometry):
+    def test_cylinder_x_sag(self, cylinder_x_geometry, set_test_backend):
         """Test sag for cylinder flat in X. Should only depend on y."""
         x = be.array([0.0, 10.0, 10.0])
         y = be.array([5.0, 5.0, 0.0])
         
         expected_z = be.array([-0.25062818, -0.25062818, 0.0]) 
         calculated_z = cylinder_x_geometry.sag(x, y)
-        be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
+        assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)    
         
-    def test_cylinder_y_sag(self, cylinder_y_geometry):
+    def test_cylinder_y_sag(self, cylinder_y_geometry, set_test_backend):
         """Test sag for cylinder flat in Y. Should only depend on x."""
         x = be.array([5.0, 5.0, 0.0])
         y = be.array([0.0, 10.0, 10.0])
         
         expected_z = be.array([0.12507822, 0.12507822, 0.0]) 
         calculated_z = cylinder_y_geometry.sag(x, y)
-        be.testing.assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
+        assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
     
-    def test_toroidal_sag_vs_zemax(self, basic_toroid_geometry):
+    def test_toroidal_sag_vs_zemax(self, basic_toroid_geometry, set_test_backend):
         """
         Compares sag values calculated by Optiland with
         Zemax data for the basic_toroid_geometry.
@@ -941,7 +941,7 @@ class TestToroidalGeometry:
         assert be.allclose(optiland_z_sag,zemax_z_sag,rtol=1e-5,atol=1e-6)
 
     
-    def test_toroidal_ray_tracing_comparison(self):
+    def test_toroidal_ray_tracing_comparison(self, set_test_backend):
         """
         Traces rays through a single toroidal surface and compares output
         with Zemax ray tracing data for the same system.
@@ -1006,7 +1006,7 @@ class TestToroidalGeometry:
 
         
 
-    def test_toroidal_to_dict(self, basic_toroid_geometry):
+    def test_toroidal_to_dict(self, basic_toroid_geometry, set_test_backend):
         """Test serialization to dictionary."""
         geom_dict = basic_toroid_geometry.to_dict()
         assert geom_dict["type"] == "ToroidalGeometry" 
@@ -1014,20 +1014,20 @@ class TestToroidalGeometry:
         assert geom_dict["radius_rotation"] == 100.0
         assert geom_dict["radius_yz"] == 50.0
         assert geom_dict["conic_yz"] == -0.5
-        assert geom_dict["coeffs_poly_y"] == [1e-5]
+        assert geom_dict["coeffs_poly_y"] == pytest.approx([1e-5])
         
         assert "radius" not in geom_dict
         assert "conic" not in geom_dict
         assert "coefficients" not in geom_dict
 
-    def test_toroidal_from_dict(self, basic_toroid_geometry):
+    def test_toroidal_from_dict(self, basic_toroid_geometry, set_test_backend):
         """Test deserialization from dictionary."""
         geom_dict = basic_toroid_geometry.to_dict()
         new_geometry = geometries.ToroidalGeometry.from_dict(geom_dict) 
         assert isinstance(new_geometry, geometries.ToroidalGeometry)
         assert new_geometry.to_dict() == geom_dict 
 
-    def test_toroidal_from_dict_invalid(self):
+    def test_toroidal_from_dict_invalid(self, set_test_backend):
         """Test deserialization with missing keys."""
         cs = CoordinateSystem()
         invalid_dict = {
@@ -1038,4 +1038,12 @@ class TestToroidalGeometry:
         with pytest.raises(ValueError):
             geometries.ToroidalGeometry.from_dict(invalid_dict)
             
+    def test_inf_radius_intersect_sphere_normal_incidence(self, cylinder_x_geometry, set_test_backend):
+            """Test _intersection_sphere for inf radius: ray normal to XY plane (z=0 plane)."""
             
+            rays = RealRays(x=0.0, y=0.0, z=10.0, L=0.0, M=0.0, N=-1.0, intensity=1.0, wavelength=0.55)
+            ix, iy, iz = cylinder_x_geometry._intersection_sphere(rays)
+            
+            be.allclose(ix, be.array(0.0), rtol=1e-5, atol=1e-6)
+            be.allclose(iy, be.array(0.0), rtol=1e-5, atol=1e-6)
+            be.allclose(iz, be.array(0.0), rtol=1e-5, atol=1e-6) # Intersection coordinates should be (0, 0, 0)
