@@ -142,7 +142,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             # rays parallel to XY plane (N == 0) AND on the plane (z == 0) -> t = 0
             mask_N_zero_and_z_zero = (~mask_N_nonzero) & (be.abs(rays.z) < self.tol)
             t = be.where(mask_N_zero_and_z_zero, 0.0, t)
-            # rf N is zero and z is not zero, t remains NaN
+            # if N is zero and z is not zero, t remains NaN
             # (no intersection with z=0 plane)
         else:
             a = rays.L**2 + rays.M**2 + rays.N**2
