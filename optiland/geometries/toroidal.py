@@ -47,18 +47,17 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
-        # convert scalar parameters to backend arrays at initialization
-        _radius_rotation_be = be.array(radius_rotation)
-        _radius_yz_be = be.array(radius_yz)
-        _k_yz_be = be.array(conic)
+        radius_rotation = be.array(radius_rotation)
+        radius_yz = be.array(radius_yz)
+        conic = be.array(conic)
 
         super().__init__(
-            coordinate_system, _radius_rotation_be, 0.0, tol, max_iter
+            coordinate_system, radius_rotation, 0.0, tol, max_iter
         )  # Pass 0 for base conic
 
-        self.R_rot = _radius_rotation_be
-        self.R_yz = _radius_yz_be
-        self.k_yz = _k_yz_be
+        self.R_rot = radius_rotation
+        self.R_yz = radius_yz
+        self.k_yz = conic
 
         self.coeffs_poly_y = be.asarray([] if coeffs_poly_y is None else coeffs_poly_y)
 

@@ -829,6 +829,32 @@ def cylinder_y_geometry(set_test_backend):
         conic=conic
     )
 
+@pytest.fixture
+def toroid_no_x_curvature_coeffs(set_test_backend):
+    """Toroidal surface with no curvature in x, conic_yz = -1.1, and coeffs."""
+    cs = CoordinateSystem(x=0, y=0, z=0)
+    return geometries.ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=be.inf, 
+        radius_yz=50.0,
+        conic=-1.1,
+        coeffs_poly_y=[1e-5, -2e-6]
+    )
+
+@pytest.fixture
+def toroid_no_y_curvature_coeffs(set_test_backend):
+    """Toroidal surface with no curvature in y, conic_yz = -0.9, and coeffs.
+    This a trick test to check if the conic is not used when R_yz = inf.
+    """
+    cs = CoordinateSystem(x=0, y=0, z=0)
+    return geometries.ToroidalGeometry(
+        coordinate_system=cs,
+        radius_rotation=100.0,
+        radius_yz=be.inf, # No curvature in Y (base YZ curve is flat before polynomials)
+        conic=-0.9, # This k_yz will not be used if R_yz is inf for conic part
+        coeffs_poly_y=[1e-5, -2e-6]
+    )
+
 class TestToroidalGeometry:
     
     def test_toroidal_str(self, set_test_backend):
@@ -912,6 +938,28 @@ class TestToroidalGeometry:
         expected_z = be.array([0.12507822, 0.12507822, 0.0]) 
         calculated_z = cylinder_y_geometry.sag(x, y)
         assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-6)
+    
+    def test_toroid_no_x_curvature_sag(self, toroid_no_x_curvature_coeffs, set_test_backend):
+        """Test sag for toroid with R_rot = inf and YZ coeffs."""
+        
+        geom = toroid_no_x_curvature_coeffs
+        x = be.array([0.0, 10.0, -5.0]) 
+        y = be.array([0.0, 1.0, 2.0])
+
+        expected_z = be.array([0.0, 0.010007900001, 0.0400064001])
+        calculated_z = geom.sag(x, y)
+        assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-7)
+
+    def test_toroid_no_y_curvature_sag(self, toroid_no_y_curvature_coeffs, set_test_backend):
+        """Test sag for toroid with R_yz = inf and YZ coeffs. Sag comes from X-rotation of YZ poly."""
+        
+        geom = toroid_no_y_curvature_coeffs
+        x = be.array([0.0, 10.0, 5.0])
+        y = be.array([0.0, 1.0, 2.0]) 
+
+        expected_z = be.array([0.0, 0.501264335, 0.12508686])
+        calculated_z = geom.sag(x, y)
+        assert_allclose(calculated_z, expected_z, rtol=1e-5, atol=1e-7)
     
     def test_toroidal_sag_vs_zemax(self, basic_toroid_geometry, set_test_backend):
         """
@@ -1004,7 +1052,34 @@ class TestToroidalGeometry:
         assert be.allclose(rays_out_yfan.M, zemax_M_out_yfan, rtol=1e-5, atol=1e-6)
         assert be.allclose(rays_out_yfan.N, zemax_N_out_yfan, rtol=1e-5, atol=1e-6)
 
-        
+         # --- Sagittal (X) Fan Test ---
+        x_coords = be.linspace(-5.0, 5.0, num_rays) 
+        x_in_xfan = x_coords
+        y_in_xfan = be.zeros(num_rays)
+        z_in_xfan = be.array([z_start] * num_rays)
+        L_in_xfan = be.zeros(num_rays) 
+        M_in_xfan = be.zeros(num_rays) 
+        N_in_xfan = be.ones(num_rays)  
+        intensity_xfan = be.ones(num_rays)
+        rays_in_xfan = RealRays(x=x_in_xfan, y=y_in_xfan, z=z_in_xfan,
+                                L=L_in_xfan, M=M_in_xfan, N=N_in_xfan,
+                                wavelength=wavelength, intensity=intensity_xfan)
+
+        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+
+        zemax_x_out_xfan = be.array([-4.668385225648558E+000, -2.333547899735358E+000, 0.0, 2.333547899735358E+000, 4.668385225648558E+000]) 
+        zemax_y_out_xfan = be.array([0.0] * num_rays)             
+        zemax_z_out_xfan = be.array([15.0] * num_rays)             
+        zemax_L_out_xfan = be.array([2.502086086422164E-002, 1.250260502601134E-002, 0.0, -1.250260502601134E-002, -2.502086086422164E-002]) 
+        zemax_M_out_xfan = be.array([0.0] * num_rays)             
+        zemax_N_out_xfan = be.array([9.996869292541608E-001, 9.999218393792406E-001, 1.0, 9.999218393792406E-001, 9.996869292541608E-001]) 
+
+        assert be.allclose(rays_out_xfan.x, zemax_x_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.y, zemax_y_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.z, zemax_z_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.L, zemax_L_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.M, zemax_M_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.N, zemax_N_out_xfan, rtol=1e-5, atol=1e-6)
 
     def test_toroidal_to_dict(self, basic_toroid_geometry, set_test_backend):
         """Test serialization to dictionary."""
