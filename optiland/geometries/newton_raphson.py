@@ -118,34 +118,61 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             tuple: The intersection points (x, y, z).
 
         """
-        a = rays.L**2 + rays.M**2 + rays.N**2
-        b = (
-            2 * rays.L * rays.x
-            + 2 * rays.M * rays.y
-            - 2 * rays.N * self.radius
-            + 2 * rays.N * rays.z
-        )
-        c = rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z
+        inf_radius = False
 
-        # discriminant
-        d = b**2 - 4 * a * c
+        if hasattr(self.radius, "item"):
+            try:
+                inf_radius = bool(be.isinf(self.radius).item())
+            except TypeError:
+                inf_radius = bool(be.all(be.isinf(self.radius)))
+        elif hasattr(self.radius, "size") and self.radius.size > 1:
+            inf_radius = bool(be.isinf(self.radius[0]).item())
+        else:
+            inf_radius = bool(be.isinf(self.radius))
 
-        # two solutions for distance to sphere
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            t1 = (-b + be.sqrt(d)) / (2 * a)
-            t2 = (-b - be.sqrt(d)) / (2 * a)
+        if inf_radius:
+            # handle infinite radius: intersection with plane z=0
+            # t = -P0.z / V.z
+            t = be.full_like(rays.z, be.nan)
 
-        # find intersection points in z
-        z1 = rays.z + t1 * rays.N
-        z2 = rays.z + t2 * rays.N
+            # rays not parallel to the XY plane (N != 0)
+            mask_N_nonzero = be.abs(rays.N) > self.tol
+            t = be.where(mask_N_nonzero, -rays.z / rays.N, t)
 
-        # take intersection closest to z = 0 (i.e., vertex of geometry)
-        t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
+            # rays parallel to XY plane (N == 0) AND on the plane (z == 0) -> t = 0
+            mask_N_zero_and_z_zero = (~mask_N_nonzero) & (be.abs(rays.z) < self.tol)
+            t = be.where(mask_N_zero_and_z_zero, 0.0, t)
+            # rf N is zero and z is not zero, t remains NaN
+            # (no intersection with z=0 plane)
+        else:
+            a = rays.L**2 + rays.M**2 + rays.N**2
+            b = (
+                2 * rays.L * rays.x
+                + 2 * rays.M * rays.y
+                - 2 * rays.N * self.radius
+                + 2 * rays.N * rays.z
+            )
+            c = rays.x**2 + rays.y**2 + rays.z**2 - 2 * self.radius * rays.z
 
-        # handle case when a = 0
-        cond = a == 0
-        t[cond] = -c[cond] / b[cond]
+            # discriminant
+            d = b**2 - 4 * a * c
+
+            # two solutions for distance to sphere
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                t1 = (-b + be.sqrt(d)) / (2 * a)
+                t2 = (-b - be.sqrt(d)) / (2 * a)
+
+            # find intersection points in z
+            z1 = rays.z + t1 * rays.N
+            z2 = rays.z + t2 * rays.N
+
+            # take intersection closest to z = 0 (i.e., vertex of geometry)
+            t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
+
+            # handle case when a = 0
+            cond = a == 0
+            t[cond] = -c[cond] / b[cond]
 
         x = rays.x + rays.L * t
         y = rays.y + rays.M * t
