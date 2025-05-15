@@ -1117,7 +1117,7 @@ class TestToroidalGeometry:
             """Test _intersection_sphere for inf radius: ray normal to XY plane (z=0 plane)."""
             
             rays = RealRays(x=0.0, y=0.0, z=10.0, L=0.0, M=0.0, N=-1.0, intensity=1.0, wavelength=0.55)
-            ix, iy, iz = cylinder_x_geometry._intersection_sphere(rays)
+            ix, iy, iz = cylinder_x_geometry._intersection(rays)
             
             be.allclose(ix, be.array(0.0), rtol=1e-5, atol=1e-6)
             be.allclose(iy, be.array(0.0), rtol=1e-5, atol=1e-6)
