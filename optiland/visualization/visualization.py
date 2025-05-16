@@ -17,6 +17,7 @@ import vtk
 
 import optiland.backend as be
 from optiland import materials
+from optiland.physical_apertures import RadialAperture
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
@@ -284,10 +285,13 @@ class LensInfoViewer:
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""
-        return [
-            be.to_numpy(surf.semi_aperture)
-            for surf in self.optic.surface_group.surfaces
-        ]
+        semi_apertures = []
+        for surf in self.optic.surface_group.surfaces:
+            if isinstance(surf.aperture, RadialAperture):
+                semi_apertures.append(be.to_numpy(surf.aperture.r_max))
+            else:
+                semi_apertures.append(be.to_numpy(surf.semi_aperture))
+        return semi_apertures
 
     def _get_materials(self):
         """Determines the material for each surface."""
