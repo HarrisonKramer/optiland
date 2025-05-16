@@ -6,21 +6,23 @@ aperture that clips rays based on their distance from the origin.
 Kramer Harrison, 2025
 """
 
-import optiland.backend as be
+from numbers import Number
+
 from optiland.physical_apertures.base import BaseAperture
 
 
 def configure_aperture(aperture):
     if aperture is None:
         return None
-    elif be.isscalar(aperture):
+    elif isinstance(aperture, Number):
         radius = aperture / 2
         return RadialAperture(r_max=radius)
     elif isinstance(aperture, BaseAperture):
         return aperture
     else:
         raise ValueError(
-            "Invalid `aperture` provided. Must be scalar or of type `BaseAperture`."
+            f"Invalid `aperture` provided: {aperture}. Must be scalar "
+            f"or of type `BaseAperture`."
         )
 
 
