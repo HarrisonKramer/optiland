@@ -2,7 +2,9 @@
 
 This module provides a class for representing apertures in lens systems.
 Aperture options include entrance pupil diameter (EPD), image space F-number
-(imageFNO), and object space numerical aperture (objectNA).
+(imageFNO), and object space numerical aperture (objectNA), or float by
+stop size (float_by_stop_size). If the `float_by_stop_size` is chosen,
+the input provided is the diameter of the stop surface.
 
 Kramer Harrison, 2024
 """
@@ -26,8 +28,11 @@ class Aperture:
     """
 
     def __init__(self, aperture_type, value, object_space_telecentric=False):
-        if aperture_type not in ["EPD", "imageFNO", "objectNA"]:
-            raise ValueError('Aperture type must be "EPD", "imageFNO", "objectNA"')
+        if aperture_type not in ["EPD", "imageFNO", "objectNA", "float_by_stop_size"]:
+            raise ValueError(
+                'Aperture type must be "EPD", "imageFNO", '
+                '"objectNA", "float_by_stop_size"'
+            )
 
         if aperture_type in ["EPD", "imageFNO"] and object_space_telecentric:
             raise ValueError(

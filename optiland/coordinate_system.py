@@ -69,12 +69,12 @@ class CoordinateSystem:
             self.reference_cs.localize(rays)
 
         rays.translate(-self.x, -self.y, -self.z)
-        if self.rx:
-            rays.rotate_x(-self.rx)
-        if self.ry:
-            rays.rotate_y(-self.ry)
         if self.rz:
             rays.rotate_z(-self.rz)
+        if self.ry:
+            rays.rotate_y(-self.ry)
+        if self.rx:
+            rays.rotate_x(-self.rx)
 
     def globalize(self, rays):
         """Globalizes the rays from the coordinate system.
@@ -83,12 +83,12 @@ class CoordinateSystem:
             rays: The rays to be globalized.
 
         """
-        if self.rz:
-            rays.rotate_z(self.rz)
-        if self.ry:
-            rays.rotate_y(self.ry)
         if self.rx:
             rays.rotate_x(self.rx)
+        if self.ry:
+            rays.rotate_y(self.ry)
+        if self.rz:
+            rays.rotate_z(self.rz)
         rays.translate(self.x, self.y, self.z)
 
         if self.reference_cs:

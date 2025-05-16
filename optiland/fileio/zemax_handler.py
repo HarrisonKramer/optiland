@@ -340,9 +340,17 @@ class ZemaxFileReader:
 
         Args:
             data (list): List of data values extracted from the Zemax file.
+            Example for mirror: ['GLAS', 'MIRROR', '0', '0', '1.5', '40', ...]
 
         """
         material = data[1]
+
+        # for now we consider that there are no glasses directly
+        # after a mirror. This is not always true. Later we have
+        # to account for it too.
+        if material.upper() == "MIRROR":
+            self._current_surf_data["material"] = "mirror"
+            return
         self._current_surf_data["material"] = material
         self._current_surf_data["index"] = float(data[4].replace(",", "."))
         self._current_surf_data["abbe"] = float(data[5].replace(",", "."))
@@ -419,6 +427,7 @@ class ZemaxFileReader:
             "STANDARD": "standard",
             "EVENASPH": "even_asphere",
             "ODDASPHE": "odd_asphere",
+            "COORDBRK": "coordinate_break",
         }
         try:
             self._current_surf_data["type"] = type_map[data[1]]

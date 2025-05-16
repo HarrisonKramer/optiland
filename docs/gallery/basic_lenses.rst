@@ -21,3 +21,4 @@ These lenses demonstrate how simple lens systems can be built using Optiland.
    basic_lenses/heliar
    basic_lenses/tessar
    basic_lenses/aspheric_singlet
+   basic_lenses/cylindrical_lens
