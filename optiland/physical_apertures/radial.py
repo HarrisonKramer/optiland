@@ -14,7 +14,8 @@ def configure_aperture(aperture):
     if aperture is None:
         return None
     elif be.isscalar(aperture):
-        return RadialAperture(aperture)
+        radius = aperture / 2
+        return RadialAperture(r_max=radius)
     elif isinstance(aperture, BaseAperture):
         return aperture
     else:
