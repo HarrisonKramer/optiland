@@ -47,7 +47,10 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
-        # Pass radius_rotation as the base 'radius' for NewtonRaphsonGeometry.
+        radius_rotation = be.array(radius_rotation)
+        radius_yz = be.array(radius_yz)
+        conic = be.array(conic)
+
         super().__init__(
             coordinate_system, radius_rotation, 0.0, tol, max_iter
         )  # Pass 0 for base conic
@@ -65,7 +68,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         )
         self.eps = 1e-14  # safe div
 
-    def _calculate_zy(self, y: be.ndarray) -> be.ndarray:
+    def _calculate_zy(self, y):
         """Calculates the sag of the base Y-Z curve."""
         y2 = y**2
         z_y = be.zeros_like(y)
@@ -97,7 +100,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return z_y
 
-    def _calculate_zy_derivative(self, y: be.ndarray) -> be.ndarray:
+    def _calculate_zy_derivative(self, y):
         """Calculates the derivative dz_y/dy of the base Y-Z curve."""
         y2 = y**2
         dz_dy = be.zeros_like(y)
@@ -127,7 +130,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return dz_dy
 
-    def sag(self, x: be.ndarray, y: be.ndarray) -> be.ndarray:
+    def sag(self, x, y):
         """Calculate the sag z(x, y) of the toroidal surface."""
         x2 = x**2
         z_y = self._calculate_zy(y)
@@ -143,9 +146,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return z
 
-    def _surface_normal(
-        self, x: be.ndarray, y: be.ndarray
-    ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
+    def _surface_normal(self, x, y):
         """Calculate the surface normal vector (nx, ny, nz)
         using Optiland convention."""
         z_y = self._calculate_zy(y)

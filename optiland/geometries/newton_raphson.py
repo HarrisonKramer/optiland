@@ -15,6 +15,31 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.standard import StandardGeometry
 
 
+# -- utility functions --
+def _is_radius_infinite(radius):
+    """Checks if the given radius represents an infinite radius (a plane).
+
+    Args:
+        radius (float or be.ndarray): The radius value to check.
+
+    Returns:
+        bool: True if the radius is infinite, False otherwise.
+    """
+    if hasattr(radius, "item"):
+        try:
+            # Handles scalar tensor or numpy array with a single element
+            return bool(be.isinf(radius).item())
+        except TypeError:
+            # Handles tensor/array where .item() is not applicable directly on isinf
+            # result (e.g. multi-element)
+            # This case implies we want to check if ALL elements are infinite
+            # if it's an array/tensor
+            return bool(be.all(be.isinf(radius)))
+    else:
+        # Handles standard float or single-element non-item-having objects
+        return bool(be.isinf(radius))
+
+
 class NewtonRaphsonGeometry(StandardGeometry, ABC):
     """Represents a geometry that uses the Newton-Raphson method for ray tracing.
 
@@ -93,7 +118,7 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             numpy.ndarray: The distances between the geometry and the rays.
 
         """
-        x, y, z = self._intersection_sphere(rays)
+        x, y, z = self._intersection(rays)
         intersections = be.column_stack((x, y, z))
         ray_directions = be.column_stack((rays.L, rays.M, rays.N))
 
@@ -107,6 +132,32 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
 
         position = be.column_stack((rays.x, rays.y, rays.z))
         return be.linalg.norm(intersections - position, axis=1)
+
+    def _intersection_plane(self, rays):
+        """Calculates the intersection points of the rays with a plane (z=0).
+
+        Args:
+            rays (Rays): The rays to calculate the intersection points for.
+
+        Returns:
+            tuple: The intersection points (x, y, z).
+        """
+        # handle infinite radius: intersection with plane z=0
+        t = be.full_like(rays.z, be.nan)
+
+        # rays not parallel to the XY plane (N != 0)
+        mask_N_nonzero = be.abs(rays.N) > self.tol
+
+        t = be.where(mask_N_nonzero, -rays.z / rays.N, t)
+
+        mask_N_zero_and_z_zero = (~mask_N_nonzero) & (be.abs(rays.z) < self.tol)
+        t = be.where(mask_N_zero_and_z_zero, 0.0, t)
+
+        x = rays.x + rays.L * t
+        y = rays.y + rays.M * t
+        z = rays.z + rays.N * t
+
+        return x, y, z
 
     def _intersection_sphere(self, rays):
         """Calculates the intersection points of the rays with the geometry.
@@ -152,6 +203,21 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         z = rays.z + rays.N * t
 
         return x, y, z
+
+    def _intersection(self, rays):
+        """Calculates the initial intersection points of the rays with the base
+        geometry (sphere or plane) before Newton-Raphson iteration.
+
+        Args:
+            rays (Rays): The rays to calculate the intersection points for.
+
+        Returns:
+            tuple: The intersection points (x, y, z).
+        """
+        if _is_radius_infinite(self.radius):
+            return self._intersection_plane(rays)
+        else:
+            return self._intersection_sphere(rays)
 
     def to_dict(self):
         """Converts the geometry to a dictionary.
