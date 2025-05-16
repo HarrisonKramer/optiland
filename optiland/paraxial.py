@@ -3,6 +3,14 @@
 This module provides various functionalities for the computation of paraxial
 properties of lens systems.
 
+Note that object-space coordinates are defined relative to the first surface
+(at index 1), while image-space coordinates are defined relative to the image surface.
+This is relevant for the focal points (F1 & F2), principal planes (P1 & P2),
+anti-principal planes (P1anti & P2anti), nodal planes (N1 & N2), and anti-nodal
+planes (N1anti & N2anti). In the Optiland convention, the 1 denotes object space and
+the 2 denotes image space. For example, P1 is the object space principle plane and F2
+is the back focal point.
+
 Kramer Harrison, 2024
 """
 
@@ -66,6 +74,8 @@ class Paraxial:
     def F1(self):
         """Calculate the front focal point location
 
+        Note that this is defined relative to the first surface (at index 1).
+
         Returns:
             float: front focal point location
 
@@ -79,6 +89,8 @@ class Paraxial:
 
     def F2(self):
         """Calculate the back focal point location
+
+        Note that this is defined relative to the image surface location.
 
         Returns:
             float: back focal point location
@@ -94,6 +106,8 @@ class Paraxial:
     def P1(self):
         """Calculate the front principle plane location
 
+        Note that this is defined relative to the first surface (at index 1).
+
         Returns:
             float: front principle plane location
 
@@ -102,6 +116,8 @@ class Paraxial:
 
     def P2(self):
         """Calculate the back principle plane location
+
+        Note that this is defined relative to the image surface location.
 
         Returns:
             float: back principle plane location
@@ -112,6 +128,8 @@ class Paraxial:
     def P1anti(self):
         """Calculate the front anti-principal plane location
 
+        Note that this is defined relative to the first surface (at index 1).
+
         Returns:
             float: front anti-principal plane location
         """
@@ -120,6 +138,8 @@ class Paraxial:
     def P2anti(self):
         """Calculate the back anti-principal plane location
 
+        Note that this is defined relative to the image surface location.
+
         Returns:
             float: back anti-principal plane location
         """
@@ -127,6 +147,8 @@ class Paraxial:
 
     def N1(self):
         """Calculate the front nodal plane location
+
+        Note that this is defined relative to the first surface (at index 1).
 
         Returns:
             float: front nodal plane location
@@ -137,6 +159,8 @@ class Paraxial:
     def N2(self):
         """Calculate the back nodal plane location
 
+        Note that this is defined relative to the image surface location.
+
         Returns:
             float: back nodal plane location
 
@@ -146,6 +170,8 @@ class Paraxial:
     def N1anti(self):
         """Calculate the front anti-nodal plane location
 
+        Note that this is defined relative to the first surface (at index 1).
+
         Returns:
             float: front anti-nodal plane location
 
@@ -154,6 +180,8 @@ class Paraxial:
 
     def N2anti(self):
         """Calculate the back anti-nodal plane location
+
+        Note that this is defined relative to the image surface location.
 
         Returns:
             float: back anti-nodal plane location
