@@ -29,8 +29,9 @@ class Surface:
         material_post (BaseMaterial): The material after the surface.
         is_stop (bool, optional): Indicates if the surface is the aperture
             stop. Defaults to False.
-        aperture (BaseAperture, optional): The physical aperture of the
-            surface. Defaults to None.
+        aperture (BaseAperture, int, float, optional): The physical aperture of the
+            surface. Defaults to None. If a scalar is provided, it specifies the
+            diameter of the lens.
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
         comment (str, optional): A comment for the surface. Defaults to ''.
