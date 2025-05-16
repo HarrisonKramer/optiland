@@ -7,6 +7,7 @@ import pytest
 
 import optiland.backend as be
 from optiland.physical_apertures import (
+    BaseAperture,
     DifferenceAperture,
     EllipticalAperture,
     FileAperture,
@@ -17,6 +18,7 @@ from optiland.physical_apertures import (
     RectangularAperture,
     UnionAperture,
 )
+from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import RealRays
 from .utils import assert_allclose
 
@@ -407,3 +409,55 @@ class TestFileAperture:
 
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (0, 1, 0, 1)
+
+
+class TestConfigureAperture:
+    def test_none_input(self, set_test_backend):
+        assert configure_aperture(None) is None
+
+    @pytest.mark.parametrize("scalar_input, expected_r_max", [
+        (2, 1.0),
+        (0.0, 0.0),
+        (3.5, 1.75),
+    ])
+    def test_scalar_input(self, set_test_backend, scalar_input, expected_r_max):
+        result = configure_aperture(scalar_input)
+        assert isinstance(result, RadialAperture)
+        assert_allclose(result.r_max, expected_r_max)
+
+    def test_valid_base_aperture_instance(self, set_test_backend):
+        class DummyAperture(BaseAperture):
+            def contains(self, x, y):
+                pass
+            def extent(self):
+                pass
+            def scale(self, scale_factor):
+                pass
+        ap = DummyAperture()
+        assert configure_aperture(ap) is ap
+
+    @pytest.mark.parametrize("invalid_input", [
+        "circle",
+        [1, 2],
+        {"r": 1},
+        object(),
+        set([1.0]),
+    ])
+    def test_invalid_input_raises_value_error(self, set_test_backend, invalid_input):
+        with pytest.raises(ValueError, match="Invalid `aperture` provided"):
+            configure_aperture(invalid_input)
+
+    def test_custom_base_aperture_subclass(self, set_test_backend):
+        class CustomAperture(BaseAperture):
+            def __init__(self):
+                self.special = True
+            def contains(self, x, y):
+                pass
+            def extent(self):
+                pass
+            def scale(self, scale_factor):
+                pass
+        ap = CustomAperture()
+        result = configure_aperture(ap)
+        assert result is ap
+        assert hasattr(result, "special")

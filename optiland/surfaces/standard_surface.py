@@ -15,6 +15,7 @@ from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
+from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
 
@@ -28,8 +29,9 @@ class Surface:
         material_post (BaseMaterial): The material after the surface.
         is_stop (bool, optional): Indicates if the surface is the aperture
             stop. Defaults to False.
-        aperture (BaseAperture, optional): The physical aperture of the
-            surface. Defaults to None.
+        aperture (BaseAperture, int, float, optional): The physical aperture of the
+            surface. Defaults to None. If a scalar is provided, it specifies the
+            diameter of the lens.
         coating (BaseCoating, optional): The coating applied to the surface.
             Defaults to None.
         comment (str, optional): A comment for the surface. Defaults to ''.
@@ -55,7 +57,7 @@ class Surface:
         self.material_pre = material_pre
         self.material_post = material_post
         self.is_stop = is_stop
-        self.aperture = aperture
+        self.aperture = configure_aperture(aperture)
         self.semi_aperture = None
         self.coating = coating
         self.bsdf = bsdf

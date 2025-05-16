@@ -11,3 +11,4 @@ or unique functionality of Optiland.
     miscellaneous/combining_lenses
     miscellaneous/aperture_demo
     miscellaneous/float_by_stop_size
+    miscellaneous/custom_aperture_sizes
