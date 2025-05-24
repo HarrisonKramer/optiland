@@ -62,7 +62,7 @@ class TestWavefront:
         assert be.allclose(zc, be.array([139.454938]))
         assert be.allclose(R, be.array([39.454938]))
 
-    def test_ger_reference_sphere_error(self, set_test_backend):
+    def test_get_reference_sphere_error(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         optic.trace(Hx=0, Hy=0, wavelength=0.55)
@@ -75,7 +75,7 @@ class TestWavefront:
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
-        path_length = w._get_path_length(xc, yc, zc, R, 0.55)
+        path_length, _ = w._get_path_length(xc, yc, zc, R, 0.55)
         assert be.allclose(path_length, be.array([34.84418309]))
 
     def test_correct_tilt(self, set_test_backend):
@@ -181,9 +181,8 @@ class TestZernikeOPD:
         assert isinstance(zernike_opd.distribution, distribution.HexagonalDistribution)
         assert be.allclose(zernike_opd.x, zernike_opd.distribution.x)
         assert be.allclose(zernike_opd.y, zernike_opd.distribution.y)
-        assert be.allclose(zernike_opd.z, zernike_opd.data[0][0][0])
+        assert be.allclose(zernike_opd.z, zernike_opd.data[((0, 1), 0.55)].opd)
         assert zernike_opd.zernike_type == "fringe"
-        
         assert zernike_opd.num_terms == 37
 
     @patch("matplotlib.pyplot.show")
