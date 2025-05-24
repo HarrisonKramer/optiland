@@ -319,5 +319,7 @@ class RayOperand:
             num_rays,
             distribution,
         )
-        delta = (wf.data[0][0][0] - be.mean(wf.data[0][0][0])) * weights
+        wavefront_data = wf.get_data((Hx, Hy), wavelength)
+        opd = wavefront_data.opd
+        delta = (opd - be.mean(opd)) * weights
         return be.mean(be.abs(delta))
