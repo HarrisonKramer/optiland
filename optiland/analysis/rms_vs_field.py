@@ -141,12 +141,13 @@ class RmsWavefrontErrorVsField(Wavefront):
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""
         rows = []
-        for i in range(self.num_fields):
+        for field in self.fields:
             cols = []
-            for j in range(len(self.wavelengths)):
-                rms_ij = be.sqrt(be.mean(self.data[i][j][0] ** 2))
+            for wl in self.wavelengths:
+                wavefront_data = self.get_data(field, wl)
+                rms_ij = be.sqrt(be.mean(wavefront_data.opd**2))
                 cols.append(rms_ij)
             # turn this row into a backend array/tensor
             rows.append(be.stack(cols, axis=0))
-        # stack all rows into the final 2‑D result
+        # stack all rows into the final 2D result
         return be.stack(rows, axis=0)
