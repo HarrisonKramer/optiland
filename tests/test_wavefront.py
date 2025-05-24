@@ -38,13 +38,13 @@ class TestWavefront:
     def test_generate_data(self, set_test_backend):
         optic = EyepieceErfle()
         w = wavefront.Wavefront(optic)
-        data = w._generate_data(w.fields, w.wavelengths)
-        assert len(data) == 3
-        assert isinstance(data, list)
-        assert isinstance(data[0], list)
-        assert isinstance(data[0][0], tuple)
-        assert isinstance(data[0][0][0], be.ndarray)
-        assert be.size(w.data[0][0][0]) == 469  # num points in the pupil
+        w._generate_data()
+        assert isinstance(w.data, dict)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)], wavefront.WavefrontData)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)].intensity, be.ndarray)
+        assert isinstance(w.data[((0.0, 0.7), 0.5876)].opd, be.ndarray)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)].pupil_x, be.ndarray)
+        assert be.size(w.data[((0.0, 1.0), 0.6563)].opd) == 469  # num points in the pupil
 
     def test_trace_chief_ray(self, set_test_backend):
         optic = DoubleGauss()
