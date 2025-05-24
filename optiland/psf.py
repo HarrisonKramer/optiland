@@ -229,13 +229,15 @@ class FFTPSF(Wavefront):
         y = y.ravel()
         R = be.sqrt(x**2 + y**2)
 
+        field = self.fields[0]  # PSF contains a single field.
         pupils = []
 
-        for k in range(len(self.wavelengths)):
+        for wl in self.wavelengths:
+            wavefront_data = self.get_data(field, wl)
             P = be.to_complex(be.zeros_like(x))
-            amplitude = self.data[0][k][1] / be.mean(self.data[0][k][1])
+            amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
             P[R <= 1] = be.to_complex(
-                amplitude * be.exp(1j * 2 * be.pi * self.data[0][k][0])
+                amplitude * be.exp(1j * 2 * be.pi * wavefront_data.opd)
             )
             P = be.reshape(P, (self.num_rays, self.num_rays))
             pupils.append(P)
