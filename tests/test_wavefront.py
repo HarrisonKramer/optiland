@@ -38,13 +38,13 @@ class TestWavefront:
     def test_generate_data(self, set_test_backend):
         optic = EyepieceErfle()
         w = wavefront.Wavefront(optic)
-        data = w._generate_data(w.fields, w.wavelengths)
-        assert len(data) == 3
-        assert isinstance(data, list)
-        assert isinstance(data[0], list)
-        assert isinstance(data[0][0], tuple)
-        assert isinstance(data[0][0][0], be.ndarray)
-        assert be.size(w.data[0][0][0]) == 469  # num points in the pupil
+        w._generate_data()
+        assert isinstance(w.data, dict)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)], wavefront.WavefrontData)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)].intensity, be.ndarray)
+        assert isinstance(w.data[((0.0, 0.7), 0.5876)].opd, be.ndarray)
+        assert isinstance(w.data[((0.0, 0.0), 0.5876)].pupil_x, be.ndarray)
+        assert be.size(w.data[((0.0, 1.0), 0.6563)].opd) == 469  # num points in the pupil
 
     def test_trace_chief_ray(self, set_test_backend):
         optic = DoubleGauss()
@@ -62,7 +62,7 @@ class TestWavefront:
         assert be.allclose(zc, be.array([139.454938]))
         assert be.allclose(R, be.array([39.454938]))
 
-    def test_ger_reference_sphere_error(self, set_test_backend):
+    def test_get_reference_sphere_error(self, set_test_backend):
         optic = DoubleGauss()
         w = wavefront.Wavefront(optic)
         optic.trace(Hx=0, Hy=0, wavelength=0.55)
@@ -75,7 +75,7 @@ class TestWavefront:
         w = wavefront.Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
         xc, yc, zc, R = w._get_reference_sphere(pupil_z=100)
-        path_length = w._get_path_length(xc, yc, zc, R, 0.55)
+        path_length, _ = w._get_path_length(xc, yc, zc, R, 0.55)
         assert be.allclose(path_length, be.array([34.84418309]))
 
     def test_correct_tilt(self, set_test_backend):
@@ -181,9 +181,8 @@ class TestZernikeOPD:
         assert isinstance(zernike_opd.distribution, distribution.HexagonalDistribution)
         assert be.allclose(zernike_opd.x, zernike_opd.distribution.x)
         assert be.allclose(zernike_opd.y, zernike_opd.distribution.y)
-        assert be.allclose(zernike_opd.z, zernike_opd.data[0][0][0])
+        assert be.allclose(zernike_opd.z, zernike_opd.data[((0, 1), 0.55)].opd)
         assert zernike_opd.zernike_type == "fringe"
-        
         assert zernike_opd.num_terms == 37
 
     @patch("matplotlib.pyplot.show")

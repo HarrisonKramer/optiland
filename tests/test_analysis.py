@@ -130,7 +130,7 @@ class TestCookeTripetSpotDiagram:
         plt.close()
 
 
-class TestTripetSpotDiagram:
+class TestTripletSpotDiagram:
     @patch("matplotlib.pyplot.show")
     def test_view_spot_diagram(self, mock_show, set_test_backend, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
