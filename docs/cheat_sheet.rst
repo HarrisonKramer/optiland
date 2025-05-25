@@ -34,7 +34,7 @@ At its heart, Optiland revolves around a few key components:
 
 * **Wavelengths** (``Wavelength``, ``WavelengthGroup``): Specify the wavelengths of light used for analysis, including a primary wavelength. All wavelengths are internally converted to microns (µm).
 
-* **Coordinate Systems** (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x,y,z) and rotation (rx, ry, rz) relative to a reference system.
+* **Coordinate Systems** (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x, y, z) and rotation (rx, ry, rz) relative to a reference system.
 
 **Numerical Backend**
 
@@ -45,7 +45,7 @@ At its heart, Optiland revolves around a few key components:
         .. code-block:: python
 
             import optiland.backend as be
-            be.set_backend('torch')
+            be.set_backend("torch")  # or "numpy"
 
 Basic Workflow: Defining an Optical System
 ------------------------------------------
@@ -56,7 +56,7 @@ Basic Workflow: Defining an Optical System
 
         from optiland import optic
         from optiland import materials # if using specific materials
-        import optiland.backend as be
+        import optiland.backend as be  # backend for numerical operations - either numpy or torch
 
 2.  **Create an** ``Optic`` **Instance:**
 
@@ -90,8 +90,9 @@ Basic Workflow: Defining an Optical System
 
     .. code-block:: python
 
-        my_lens.set_aperture(aperture_type="EPD", value=10.0) # Entrance Pupil Diameter of 10 mm
+        my_lens.set_aperture(aperture_type="EPD", value=10.0)  # Entrance Pupil Diameter of 10 mm
         # Or: my_lens.set_aperture(aperture_type="imageFNO", value=5.0)
+        # Or: my_lens.set_aperture(aperture_type="float_by_stop_size", value=7.6), specifies diameter of the stop surface
 
 5.  **Define Field of View** (``set_field_type``, ``add_field``):
 
@@ -113,7 +114,7 @@ Basic Workflow: Defining an Optical System
         my_lens.add_wavelength(value=0.5876, is_primary=True) # d-line (yellow), primary
         my_lens.add_wavelength(value=0.6563) # C-line (red)
 
-7.  **(Optional) Image Plane Solve** (``image_solve``): Adjusts the last thickness for paraxial focus.
+7.  **(Optional) Image Plane Solve** (``image_solve``): Moves the image surface to the paraxial focus.
 
     .. code-block:: python
 
@@ -146,11 +147,12 @@ Ray Tracing
 Optiland uses *normalized coordinates* for both the field and pupil to define rays in a general, system-independent way:
 
 - **Field Coordinates** (`Hx`, `Hy`): Define the ray's starting field position. `(0, 0)` corresponds to the optical axis, and `(±1, ±1)` spans the full normalized field of view.
-- **Pupil Coordinates** (`Px`, `Py`): Define the ray's position in the entrance pupil. `(0, 0)` corresponds to the chief ray, and `(±1, ±1)` defines the edge of the normalized pupil.
+- **Pupil Coordinates** (`Px`, `Py`): Define the ray's position in the entrance pupil. `(0, 0)` corresponds to the chief ray, and `(±1, ±1)` spans the full normalized entrance pupil.
 
 Optiland can trace both paraxial and real rays.
 
 * **Paraxial Rays**:
+
     * For first-order calculations. Access through ``optic.paraxial``.
     * Example:
 
@@ -159,10 +161,13 @@ Optiland can trace both paraxial and real rays.
             heights, slopes = lens.paraxial.trace(Hy, Py)
 
 * **Real Rays**:
+
     * For detailed analysis, including aberrations.
     * ``optic.trace(Hx, Hy, wavelength, num_rays, distribution)``: Traces a bundle.
     * ``optic.trace_generic(Hx, Hy, Px, Py, wavelength)``: Traces a specific ray, defined by the normalized field and pupil coordinates, H, P, respectively.
+
 * **Advanced Ray Tracing** (``RealRays``, ``surface_group.trace``): For more control, create a ``RealRays`` object and trace using ``optic.surface_group.trace(rays)``.
+
     * Example:
 
         .. code-block:: python
@@ -209,7 +214,7 @@ Optiland offers a suite of tools to evaluate performance:
 * ``FieldCurvature``, ``Distortion``: Field performance.
 * *(Many classes have a ``.view()`` method for plotting)*.
 
-See the :ref:`example_gallery` for a full list of analysis tools and their usage.
+See the :ref:`Example Gallery <example_gallery>` for a full overview of available analysis tools and their usage.
 
 Visualization
 -------------
