@@ -11,17 +11,3 @@ from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
 from .toroidal import ToroidalGeometry
 from .zernike import ZernikePolynomialGeometry
-
-__all__ = [
-    "BaseGeometry",
-    "BiconicGeometry",
-    "ChebyshevPolynomialGeometry",
-    "EvenAsphere",
-    "NewtonRaphsonGeometry",
-    "OddAsphere",
-    "Plane",
-    "PolynomialGeometry",
-    "StandardGeometry",
-    "ToroidalGeometry",
-    "ZernikePolynomialGeometry",
-]

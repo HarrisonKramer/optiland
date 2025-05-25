@@ -1,3 +1,24 @@
+"""Biconic Geometry
+
+The biconic geometry represents a surface defined by:
+
+zx = (cx * x^2) / (1 + sqrt(1 - (1 + kx) * cx^2 * x^2))
+zy = (cy * y^2) / (1 + sqrt(1 - (1 + ky) * cy^2 * y^2))
+z = zx + zy
+
+where:
+- cx = 1 / Rx (curvature in x)
+- cy = 1 / Ry (curvature in y)
+- kx is the conic constant for the x-profile
+- ky is the conic constant for the y-profile
+
+A biconic surface is a generalization of a conic surface that allows for
+independent curvature in the x and y directions. It is commonly used in
+optical systems where different curvatures are required in orthogonal planes.
+
+Kramer Harrison, 2025
+"""
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
@@ -30,12 +51,6 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
-        # The parent NewtonRaphsonGeometry expects a single radius and conic.
-        # We can pass the x-axis parameters as the "primary" ones,
-        # or handle this differently if Newton-Raphson's _intersection
-        # method needs to be overridden or adapted for biconic.
-        # For now, let's pass radius_x and conic_x.
-        # The sag and normal calculations will use both x and y parameters.
         super().__init__(coordinate_system, radius_x, conic_x, tol, max_iter)
 
         self.Rx = be.array(radius_x)
@@ -45,14 +60,24 @@ class BiconicGeometry(NewtonRaphsonGeometry):
 
         self.cx = be.where(be.isinf(self.Rx) | (self.Rx == 0), 0.0, 1.0 / self.Rx)
         self.cy = be.where(be.isinf(self.Ry) | (self.Ry == 0), 0.0, 1.0 / self.Ry)
-        
-        self.is_symmetric = False # Generally not symmetric
+
+        self.is_symmetric = False  # Generally not symmetric
 
     def sag(self, x=0, y=0):
-        """Calculate the surface sag of the geometry."""
+        """Calculate the surface sag of the geometry.
+
+        Args:
+            x (float, be.ndarray, optional): The x-coordinate(s).
+                Defaults to 0.
+            y (float, be.ndarray, optional): The y-coordinate(s).
+                Defaults to 0.
+
+        Returns:
+            float: The sag value at the given coordinates.
+        """
         x = be.asarray(x)
         y = be.asarray(y)
-        
+
         zx = be.zeros_like(x)
         zy = be.zeros_like(y)
 
@@ -60,7 +85,7 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         if not be.all(self.cx == 0):
             sqrt_term_x_val = 1.0 - (1.0 + self.kx) * self.cx**2 * x**2
             # Ensure root term is non-negative, avoid issues at exact boundary
-            sqrt_term_x = be.where(sqrt_term_x_val < 1e-14, 0.0, sqrt_term_x_val) 
+            sqrt_term_x = be.where(sqrt_term_x_val < 1e-14, 0.0, sqrt_term_x_val)
             denom_x = 1.0 + be.sqrt(sqrt_term_x)
             # Avoid division by zero if denom_x is zero (e.g. x is too large)
             safe_denom_x = be.where(be.abs(denom_x) < 1e-14, 1e-14, denom_x)
@@ -73,11 +98,20 @@ class BiconicGeometry(NewtonRaphsonGeometry):
             denom_y = 1.0 + be.sqrt(sqrt_term_y)
             safe_denom_y = be.where(be.abs(denom_y) < 1e-14, 1e-14, denom_y)
             zy = (self.cy * y**2) / safe_denom_y
-            
+
         return zx + zy
 
     def _surface_normal(self, x, y):
-        """Calculate the surface normal of the geometry at the given x and y position."""
+        """Calculate the surface normal of the geometry at the given x and y position.
+
+        Args:
+            x (be.ndarray): The x values to use for calculation.
+            y (be.ndarray): The y values to use for calculation.
+
+        Returns:
+            tuple: The surface normal components (nx, ny, nz).
+
+        """
         x = be.asarray(x)
         y = be.asarray(y)
 
@@ -90,9 +124,11 @@ class BiconicGeometry(NewtonRaphsonGeometry):
             sqrt_term_x = be.where(sqrt_term_x_val < 1e-14, 1e-14, sqrt_term_x_val)
             denom_sqrt_x = be.sqrt(sqrt_term_x)
             # Avoid division by zero if denom_sqrt_x is zero
-            safe_denom_sqrt_x = be.where(be.abs(denom_sqrt_x) < 1e-14, 1e-14, denom_sqrt_x)
+            safe_denom_sqrt_x = be.where(
+                be.abs(denom_sqrt_x) < 1e-14, 1e-14, denom_sqrt_x
+            )
             dfdx = (self.cx * x) / safe_denom_sqrt_x
-        
+
         # Partial derivative dz/dy
         if be.all(self.cy == 0):
             dfdy = be.zeros_like(y)
@@ -100,47 +136,63 @@ class BiconicGeometry(NewtonRaphsonGeometry):
             sqrt_term_y_val = 1.0 - (1.0 + self.ky) * self.cy**2 * y**2
             sqrt_term_y = be.where(sqrt_term_y_val < 1e-14, 1e-14, sqrt_term_y_val)
             denom_sqrt_y = be.sqrt(sqrt_term_y)
-            safe_denom_sqrt_y = be.where(be.abs(denom_sqrt_y) < 1e-14, 1e-14, denom_sqrt_y)
+            safe_denom_sqrt_y = be.where(
+                be.abs(denom_sqrt_y) < 1e-14, 1e-14, denom_sqrt_y
+            )
             dfdy = (self.cy * y) / safe_denom_sqrt_y
 
         # Normal vector components (Optiland convention: (fx, fy, -1) / mag)
         mag_sq = dfdx**2 + dfdy**2 + 1.0
         mag = be.sqrt(mag_sq)
         # Avoid division by zero if mag is zero
-        safe_mag = be.where(mag < 1e-14, 1.0, mag) # if mag is ~0, normal is (0,0,-1) approx
+        safe_mag = be.where(
+            mag < 1e-14, 1.0, mag
+        )  # if mag is ~0, normal is (0,0,-1) approx
 
         nx = dfdx / safe_mag
         ny = dfdy / safe_mag
         nz = -1.0 / safe_mag
-        
+
         return nx, ny, nz
 
     def __str__(self) -> str:
         return "Biconic"
 
     def to_dict(self) -> dict:
-        """Converts the geometry to a dictionary."""
-        geometry_dict = super().to_dict() 
+        """Converts the geometry to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the geometry.
+
+        """
+        geometry_dict = super().to_dict()
         # Remove base class radius and conic as they are ambiguous for biconic
         if "radius" in geometry_dict:
             del geometry_dict["radius"]
         if "conic" in geometry_dict:
             del geometry_dict["conic"]
-            
+
         geometry_dict.update(
             {
-                "type": self.__class__.__name__, # Ensure correct type
-                "radius_x": float(self.Rx) if hasattr(self.Rx, 'item') else self.Rx,
-                "radius_y": float(self.Ry) if hasattr(self.Ry, 'item') else self.Ry,
-                "conic_x": float(self.kx) if hasattr(self.kx, 'item') else self.kx,
-                "conic_y": float(self.ky) if hasattr(self.ky, 'item') else self.ky,
+                "type": self.__class__.__name__,  # Ensure correct type
+                "radius_x": float(self.Rx) if hasattr(self.Rx, "item") else self.Rx,
+                "radius_y": float(self.Ry) if hasattr(self.Ry, "item") else self.Ry,
+                "conic_x": float(self.kx) if hasattr(self.kx, "item") else self.kx,
+                "conic_y": float(self.ky) if hasattr(self.ky, "item") else self.ky,
             }
         )
         return geometry_dict
 
     @classmethod
     def from_dict(cls, data: dict) -> "BiconicGeometry":
-        """Creates a BiconicGeometry from a dictionary representation."""
+        """Creates a BiconicGeometry from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the asphere.
+
+        Returns:
+            BiconicGeometry: The biconic geometry.
+        """
         required_keys = {"cs", "radius_x", "radius_y"}
         if not required_keys.issubset(data):
             missing = required_keys - set(data.keys())

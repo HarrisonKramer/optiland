@@ -1138,10 +1138,6 @@ class TestBiconicGeometry:
 
     def test_sag_finite_radii(self, set_test_backend):
         cs = CoordinateSystem()
-        # Rx=10, Ry=20, kx=0, ky=0
-        # zx(1) = (0.1 * 1) / (1 + sqrt(1 - 0.01 * 1)) = 0.1 / (1 + sqrt(0.99)) = 0.05012562854249503
-        # zy(1) = (0.05 * 1) / (1 + sqrt(1 - 0.0025 * 1)) = 0.05 / (1 + sqrt(0.9975)) = 0.02501563183003138
-        # expected_sag = 0.05012562854249503 + 0.02501563183003138 = 0.07514126037252641
         geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
         assert_allclose(geom.sag(x=1, y=1), 0.07514126037252641)
 
@@ -1172,10 +1168,6 @@ class TestBiconicGeometry:
 
     def test_sag_with_conics(self, set_test_backend):
         cs = CoordinateSystem()
-        # Rx=10, kx=-1 (parabolic in x); Ry=20, ky=0.5 (elliptical in y)
-        # zx(1) for Rx=10, kx=-1: (0.1 * 1^2) / (1 + sqrt(1 - (1 + (-1)) * 0.1^2 * 1^2)) = 0.1 / (1 + sqrt(1)) = 0.1 / 2 = 0.05
-        # zy(1) for Ry=20, ky=0.5: (0.05*1^2)/(1+sqrt(1-(1+0.5)*0.05^2*1^2)) = 0.05/(1+sqrt(1-1.5*0.0025))
-        # = 0.05/(1+sqrt(1-0.00375)) = 0.05/(1+sqrt(0.99625)) = 0.05/(1+0.9981232387) = 0.02502345130203264
         geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0, conic_x=-1.0, conic_y=0.5)
         expected_sag = 0.05 + 0.02502345130203264
         assert_allclose(geom.sag(x=1, y=1), expected_sag)
@@ -1185,12 +1177,6 @@ class TestBiconicGeometry:
         geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
         x = be.array([0, 1, 2])
         y = be.array([0, 1, 1])
-        # sag(0,0) = 0
-        # sag(1,1) = 0.07514126037252641 (from test_sag_finite_radii)
-        # sag(2,1):
-        # zx(2) for Rx=10: (0.1 * 4) / (1 + sqrt(1 - 0.01 * 4)) = 0.4 / (1 + sqrt(0.96)) = 0.4 / (1+0.9797958971) = 0.2020410900760968
-        # zy(1) for Ry=20: 0.02501563183003138
-        # expected_sag_2_1 = 0.2020410900760968 + 0.02501563183003138 = 0.22705672190612818
         expected_sags = be.array([0.0, 0.07514126037252641, 0.22705672190612818])
         assert_allclose(geom.sag(x, y), expected_sags)
 
@@ -1200,24 +1186,12 @@ class TestBiconicGeometry:
         nx, ny, nz = geom._surface_normal(x=0, y=0)
         assert_allclose(nx, 0.0)
         assert_allclose(ny, 0.0)
-        assert_allclose(nz, -1.0) # Optiland convention
+        assert_allclose(nz, -1.0)
 
     def test_surface_normal_spherical_case(self, set_test_backend):
         cs = CoordinateSystem()
         R = 10.0
         geom = BiconicGeometry(cs, radius_x=R, radius_y=R, conic_x=0.0, conic_y=0.0)
-        # For biconic sum of sags:
-        # dfdx = (cx * x) / sqrt(1 - (1+kx)cx^2*x^2)
-        # dfdy = (cy * y) / sqrt(1 - (1+ky)cy^2*y^2)
-        # At x=1, y=1, Rx=10, Ry=10, kx=0, ky=0:
-        # cx = 0.1, cy = 0.1
-        # dfdx = (0.1*1) / sqrt(1 - (1+0)*0.1^2*1^2) = 0.1 / sqrt(1 - 0.01) = 0.1 / sqrt(0.99) = 0.10050378152592118
-        # dfdy = (0.1*1) / sqrt(1 - (1+0)*0.1^2*1^2) = 0.1 / sqrt(0.99) = 0.10050378152592118
-        # mag_sq = dfdx^2 + dfdy^2 + 1 = 2 * (0.10050378152592118^2) + 1 = 2 * 0.010100999999999998 + 1 = 1.0202019999999999
-        # mag = sqrt(1.0202019999999999) = 1.0100504938109406
-        # nx = dfdx / mag = 0.10050378152592118 / 1.0100504938109406 = 0.09950371902099892
-        # ny = dfdy / mag = 0.09950371902099892
-        # nz = -1 / mag = -1 / 1.0100504938109406 = -0.9900493732390136
         nx, ny, nz = geom._surface_normal(x=1, y=1)
         assert_allclose(nx, 0.09950371902099892)
         assert_allclose(ny, 0.09950371902099892)
@@ -1226,17 +1200,10 @@ class TestBiconicGeometry:
     def test_surface_normal_cylindrical_rx_inf(self, set_test_backend):
         cs = CoordinateSystem()
         geom = BiconicGeometry(cs, radius_x=be.inf, radius_y=10.0, conic_y=0.0) # Cylinder along X
-        # dfdx should be 0
-        # dfdy at y=1 for Ry=10, ky=0: (0.1*1) / sqrt(1 - (1+0)*0.1^2*1^2) = 0.1 / sqrt(0.99) = 0.10050378152592118
-        # mag_sq = 0^2 + dfdy^2 + 1 = 0.010100999999999998 + 1 = 1.0101009999999998
-        # mag = sqrt(1.0101009999999998) = 1.0050378152592118
-        # nx = 0
-        # ny = dfdy / mag = 0.10050378152592118 / 1.0050378152592118 = 0.1
-        # nz = -1 / mag = -1 / 1.0050378152592118 = -0.9950000000000001
         nx, ny, nz = geom._surface_normal(x=5, y=1) # x shouldn't matter for dfdx=0
         assert_allclose(nx, 0.0)
         assert_allclose(ny, 0.1)
-        assert_allclose(nz, -0.9950000000000001)
+        assert_allclose(nz, -0.99498743710662)
         
     def test_surface_normal_array_input(self, set_test_backend):
         cs = CoordinateSystem()
@@ -1273,7 +1240,7 @@ class TestBiconicGeometry:
         assert_allclose(geom.distance(rays), 5.0, atol=1e-9)
 
     def test_to_dict_from_dict(self, set_test_backend):
-        cs = CoordinateSystem(x=1, y=2, z=3, tilt_x=0.1, tilt_y=-0.1, tilt_z=0.05)
+        cs = CoordinateSystem(x=1, y=2, z=3, rx=0.1, ry=-0.1, rz=0.05)
         original_geom = BiconicGeometry(
             cs,
             radius_x=100.0,
@@ -1311,7 +1278,7 @@ class TestBiconicGeometry:
     def test_from_dict_missing_keys(self, set_test_backend):
         cs = CoordinateSystem()
         minimal_valid_dict = {
-            "type": "BiconicGeometry", # Added type for clarity, though from_dict might not use it directly
+            "type": "BiconicGeometry",
             "cs": cs.to_dict(),
             "radius_x": 10.0,
             "radius_y": 20.0,
