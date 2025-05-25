@@ -1,6 +1,6 @@
-"""Point Spread Function (PSF) Module
+"""FFT Point Spread Function (PSF) Module
 
-This module provides functionality for simulating and analyzing the Pointp
+This module provides functionality for simulating and analyzing the Point
 spread function (PSF) of optical systems using the Fast Fourier Transform
 (FFT). It includes capabilities for generating PSF from given wavefront
 aberrations, visualizing the PSF in both 2D and 3D projections, and
