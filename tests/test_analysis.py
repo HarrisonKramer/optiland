@@ -1192,4 +1192,155 @@ def test_cross_section_plot_helper_out_of_bounds(mock_print, mock_show, set_test
 
     # Test invalid axis type
     irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'invalid-axis', 0, (6,5), "Test", True)
-    
+
+
+class TestThroughFocusSpotDiagram:
+    def test_init(self, set_test_backend, cooke_triplet):
+        optic = cooke_triplet
+        delta_focus = 0.05
+        num_steps = 3
+        num_rings = 4
+        distribution = "random"
+        coordinates = "global"
+
+        tf_spot = analysis.ThroughFocusSpotDiagram(
+            optic,
+            delta_focus=delta_focus,
+            num_steps=num_steps,
+            num_rings=num_rings,
+            distribution=distribution,
+            coordinates=coordinates,
+            fields="all", # explicitly pass to ensure it's resolved
+            wavelengths="all" # explicitly pass to ensure it's resolved
+        )
+
+        assert tf_spot.delta_focus == delta_focus
+        assert tf_spot.num_steps == num_steps
+        assert tf_spot.num_rings == num_rings
+        assert tf_spot.distribution == distribution
+        assert tf_spot.coordinates == coordinates
+
+        # Check that fields and wavelengths are resolved
+        assert isinstance(tf_spot.fields, list)
+        assert len(tf_spot.fields) > 0
+        assert tf_spot.fields != "all"
+        assert isinstance(tf_spot.wavelengths, list)
+        assert len(tf_spot.wavelengths) > 0
+        assert tf_spot.wavelengths != "all"
+        
+        expected_results_len = 2 * num_steps + 1
+        assert len(tf_spot.results) == expected_results_len
+
+        # Check structure of one result item
+        result_item = tf_spot.results[0] # First focal step
+        assert isinstance(result_item, dict)
+        assert len(result_item.keys()) == 1
+        
+        # Key should be the delta_focus value for that step
+        focus_key = list(result_item.keys())[0]
+        expected_focus_key = -num_steps * delta_focus
+        assert_allclose(focus_key, expected_focus_key)
+
+        rms_values_list = list(result_item.values())[0]
+        assert isinstance(rms_values_list, list)
+        assert len(rms_values_list) == len(tf_spot.fields)
+        for rms_val in rms_values_list:
+            # RMS value should be a float or a backend scalar that can be converted
+            assert isinstance(be.to_numpy(rms_val).item(), float)
+
+    def test_image_surface_z_restoration(self, set_test_backend, cooke_triplet):
+        optic = cooke_triplet
+        original_z = optic.image_surface.geometry.cs.z
+        
+        # Ensure original_z is a concrete value if it's a backend tensor
+        if hasattr(original_z, 'item'):
+            original_z_val = original_z.item()
+        else:
+            original_z_val = float(original_z)
+
+        tf_spot = analysis.ThroughFocusSpotDiagram(
+            optic, delta_focus=0.05, num_steps=1
+        )
+        
+        current_z = optic.image_surface.geometry.cs.z
+        if hasattr(current_z, 'item'):
+            current_z_val = current_z.item()
+        else:
+            current_z_val = float(current_z)
+            
+        assert_allclose(current_z_val, original_z_val)
+
+    def test_analysis_results_content(self, set_test_backend, cooke_triplet):
+        optic = cooke_triplet
+        delta_focus = 0.05
+        num_steps = 1 # Results for -0.05, 0, +0.05
+
+        tf_spot = analysis.ThroughFocusSpotDiagram(
+            optic, delta_focus=delta_focus, num_steps=num_steps
+        )
+
+        assert len(tf_spot.results) == 3
+
+        # Check results for nominal focus (delta_focus = 0)
+        nominal_results_dict = None
+        for res_dict in tf_spot.results:
+            if be.isclose(list(res_dict.keys())[0], 0.0):
+                nominal_results_dict = res_dict
+                break
+        
+        assert nominal_results_dict is not None, "Nominal focus results not found."
+        rms_values_at_nominal = list(nominal_results_dict.values())[0]
+
+        # Compare with direct SpotDiagram calculation
+        spot_direct = analysis.SpotDiagram(optic) # Optic z should be at nominal here
+        rms_direct_all_wl = spot_direct.rms_spot_radius()
+        primary_wl_idx = optic.wavelengths.primary_index
+        
+        expected_rms_at_nominal = []
+        for field_idx in range(len(tf_spot.fields)):
+            expected_rms_at_nominal.append(rms_direct_all_wl[field_idx][primary_wl_idx])
+
+        for i in range(len(tf_spot.fields)):
+            assert_allclose(be.to_numpy(rms_values_at_nominal[i]), be.to_numpy(expected_rms_at_nominal[i]))
+
+        # Check other focal planes for plausibility (positive RMS)
+        for i, res_dict in enumerate(tf_spot.results):
+            # Skip nominal as it's already checked in detail
+            if be.isclose(list(res_dict.keys())[0], 0.0):
+                continue
+            
+            rms_list = list(res_dict.values())[0]
+            current_df = list(res_dict.keys())[0]
+            # print(f"Checking delta_f: {current_df}, RMS list: {rms_list}") # For debugging if needed
+            for rms_val in rms_list:
+                rms_float = be.to_numpy(rms_val).item()
+                assert rms_float >= 0.0, f"RMS value {rms_float} is negative for delta_focus {current_df}"
+                assert not be.isnan(rms_val), f"RMS value is NaN for delta_focus {current_df}"
+
+
+    @patch("builtins.print")
+    def test_view_method(self, mock_print, set_test_backend, cooke_triplet):
+        optic = cooke_triplet
+        tf_spot = analysis.ThroughFocusSpotDiagram(
+            optic, delta_focus=0.1, num_steps=2
+        )
+        tf_spot.view()
+
+        mock_print.assert_called()
+        
+        # Check for some expected output patterns
+        # Get all calls to print in a single list of strings
+        print_calls = [args[0] for args, kwargs in mock_print.call_args_list]
+        
+        assert any("Through-Focus Spot Diagram Results" in call for call in print_calls)
+        assert any("Delta Focus:" in call for call in print_calls)
+        assert any("Field (" in call for call in print_calls)
+        
+        # Check that the number of "Delta Focus:" lines matches num_steps
+        delta_focus_lines = [call for call in print_calls if "Delta Focus:" in call]
+        assert len(delta_focus_lines) == (2 * tf_spot.num_steps + 1)
+
+        # Check that the number of "Field (" lines matches num_fields * num_delta_focus_steps
+        field_lines = [call for call in print_calls if "Field (" in call]
+        expected_field_lines = len(tf_spot.fields) * (2 * tf_spot.num_steps + 1)
+        assert len(field_lines) == expected_field_lines
