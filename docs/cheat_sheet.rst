@@ -1,4 +1,5 @@
-# Optiland Cheat Sheet
+Optiland Cheat Sheet
+====================
 
 Optiland is a Python library for designing, analyzing, and optimizing optical systems. This guide covers the fundamental concepts to get you started.
 
