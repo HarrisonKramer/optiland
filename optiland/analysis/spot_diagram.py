@@ -588,7 +588,7 @@ class SpotDiagram:
         import numpy as np
 
         markers = ["o", "s", "^"]
-        for k, points in enumerate(field_data):  # points is a SpotData object
+        for k, points in enumerate(field_data):
             # x, y, intensity = points
             x = points.x
             y = points.y

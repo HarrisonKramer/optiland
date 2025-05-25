@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
-from .spot_diagram import SpotData  # Add this import
+
+from .spot_diagram import SpotData
 
 
 class EncircledEnergy(SpotDiagram):
@@ -80,10 +81,8 @@ class EncircledEnergy(SpotDiagram):
 
         """
         centroid = []
-        for (
-            field_data
-        ) in self.data:  # field_data is a list containing one SpotData object
-            spot_data_item = field_data[0]  # Access the SpotData object
+        for field_data in self.data:
+            spot_data_item = field_data[0]
             centroid_x = be.mean(spot_data_item.x)
             centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))
@@ -105,12 +104,11 @@ class EncircledEnergy(SpotDiagram):
         r_max = axis_lim * buffer
         r_step = be.linspace(0, r_max, num_points)
 
-        for points in field_data:  # points is a SpotData object
+        for points in field_data:
             x = points.x
             y = points.y
-            energy = (
-                points.intensity
-            )  # Assuming 'energy' here corresponds to 'intensity' in SpotData
+            # energy and intensity are used interchangeably here
+            energy = points.intensity
             radii = be.sqrt(x**2 + y**2)
 
             def vectorized_ee(r):

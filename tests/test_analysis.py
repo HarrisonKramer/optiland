@@ -7,7 +7,7 @@ import optiland.backend as be
 import pytest
 
 from optiland import analysis
-from optiland.analysis.spot_diagram import SpotData  # Add this import
+from optiland.analysis.spot_diagram import SpotData
 from optiland.optic import Optic
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
 from optiland.physical_apertures import RectangularAperture
