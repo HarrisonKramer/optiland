@@ -3,15 +3,14 @@ Optiland Cheat Sheet
 
 Optiland is a Python library for designing, analyzing, and optimizing optical systems. This guide covers the fundamental concepts to get you started.
 
----
-
-## Core Concepts
+Core Concepts
+-------------
 
 At its heart, Optiland revolves around a few key components:
 
-* **`Optic` Object**: This is the main container for your entire optical system. It holds all the surfaces, aperture definitions, field points, and wavelength information.
-    * Example: `my_system = optic.Optic()`
-* **SurfaceGroup (`optiland.surfaces.SurfaceGroup`)**: Manages the collection of surfaces within an `Optic` object.
+* **``Optic`` Object**: This is the main container for your entire optical system. It holds all the surfaces, aperture definitions, field points, and wavelength information.
+    * Example: ``my_system = optic.Optic()``
+* **SurfaceGroup (``optiland.surfaces.SurfaceGroup``)**: Manages the collection of surfaces within an ``Optic`` object.
 * **Surfaces (`Surface`)**: These represent the individual optical surfaces (lenses, mirrors, image planes, etc.). Each surface has a geometry, material properties on either side, and can optionally have coatings, physical apertures, or be designated as the system's aperture stop.
     * **Object Surface (`ObjectSurface`)**: The first surface in your system, representing the object being imaged. It can be at a finite distance or at infinity.
     * **Image Surface (`ImageSurface`)**: The final surface where the image is formed.
