@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
+from .spot_diagram import SpotData  # Add this import
 
 
 class EncircledEnergy(SpotDiagram):
@@ -79,9 +80,12 @@ class EncircledEnergy(SpotDiagram):
 
         """
         centroid = []
-        for field_data in self.data:
-            centroid_x = be.mean(field_data[0][0])
-            centroid_y = be.mean(field_data[0][1])
+        for (
+            field_data
+        ) in self.data:  # field_data is a list containing one SpotData object
+            spot_data_item = field_data[0]  # Access the SpotData object
+            centroid_x = be.mean(spot_data_item.x)
+            centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))
         return centroid
 
@@ -101,8 +105,12 @@ class EncircledEnergy(SpotDiagram):
         r_max = axis_lim * buffer
         r_step = be.linspace(0, r_max, num_points)
 
-        for points in field_data:
-            x, y, energy = points
+        for points in field_data:  # points is a SpotData object
+            x = points.x
+            y = points.y
+            energy = (
+                points.intensity
+            )  # Assuming 'energy' here corresponds to 'intensity' in SpotData
             radii = be.sqrt(x**2 + y**2)
 
             def vectorized_ee(r):
@@ -135,11 +143,11 @@ class EncircledEnergy(SpotDiagram):
             coordinates (str): Coordinate system choice (ignored).
 
         Returns:
-            list: List of field data, including x, y and energy points.
+            SpotData: SpotData object containing x, y, and intensity arrays.
 
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
         x = self.optic.surface_group.x[-1, :]
         y = self.optic.surface_group.y[-1, :]
         intensity = self.optic.surface_group.intensity[-1, :]
-        return [x, y, intensity]
+        return SpotData(x=x, y=y, intensity=intensity)

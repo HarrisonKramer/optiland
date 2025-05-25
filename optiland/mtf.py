@@ -126,8 +126,11 @@ class GeometricMTF(SpotDiagram):
             scale_factor = 1
 
         mtf = []  # TODO: add option for polychromatic MTF
-        for field_data in self.data:
-            xi, yi = field_data[0][0], field_data[0][1]
+        for (
+            field_data
+        ) in self.data:  # field_data is a list containing one SpotData object
+            spot_data_item = field_data[0]  # Access the SpotData object
+            xi, yi = spot_data_item.x, spot_data_item.y
             mtf.append(
                 [
                     self._compute_field_data(yi, self.freq, scale_factor),
