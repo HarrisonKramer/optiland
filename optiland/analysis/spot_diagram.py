@@ -5,6 +5,7 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from dataclasses import dataclass
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -12,6 +13,21 @@ from matplotlib import patches
 
 import optiland.backend as be
 from optiland.visualization.utils import transform
+
+
+@dataclass
+class SpotData:
+    """Stores the x, y coordinates and intensity of a spot.
+
+    Attributes:
+        x: Array of x-coordinates.
+        y: Array of y-coordinates.
+        intensity: Array of intensity values.
+    """
+
+    x: be.array
+    y: be.array
+    intensity: be.array
 
 
 class SpotDiagram:
@@ -27,9 +43,9 @@ class SpotDiagram:
         fields (tuple): fields at which data is generated
         wavelengths (tuple[float]): wavelengths at which data is generated
         num_rings (int): number of rings in pupil distribution for ray tracing
-        data (List): contains spot data in a nested list. Data is ordered as
-            field (dim 0), wavelength (dim 1), then x, y and intensity data
-            (dim 2).
+        data (List[List[SpotData]]): contains spot data in a nested list.
+            Data is ordered as field (dim 0), wavelength (dim 1), then
+            SpotData objects.
         coordinates (Literal['global', 'local']): Coordinate system for data
                                                   and plotting.
 
@@ -178,7 +194,6 @@ class SpotDiagram:
             theta_rad (float): angle in radians.
 
         """
-        # Compute the angle using arccos
         a = a / be.linalg.norm(a)
         b = b / be.linalg.norm(b)
         theta = be.arccos(be.clip(be.dot(a, b), -1, 1))
@@ -382,8 +397,9 @@ class SpotDiagram:
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
         for field_data in self.data:
-            centroid_x = be.mean(field_data[norm_index][0])
-            centroid_y = be.mean(field_data[norm_index][1])
+            spot_data_item = field_data[norm_index]
+            centroid_x = be.mean(spot_data_item.x)
+            centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))
         return centroid
 
@@ -400,7 +416,7 @@ class SpotDiagram:
         for field_data in data:
             geometric_size_field = []
             for wave_data in field_data:
-                r = be.sqrt(wave_data[0] ** 2 + wave_data[1] ** 2)
+                r = be.sqrt(wave_data.x**2 + wave_data.y**2)
                 geometric_size_field.append(be.max(r))
             geometric_size.append(geometric_size_field)
         return geometric_size
@@ -417,7 +433,7 @@ class SpotDiagram:
         for field_data in data:
             rms_field = []
             for wave_data in field_data:
-                r2 = wave_data[0] ** 2 + wave_data[1] ** 2
+                r2 = wave_data.x**2 + wave_data.y**2
                 rms_field.append(be.sqrt(be.mean(r2)))
             rms.append(rms_field)
         return rms
@@ -437,20 +453,20 @@ class SpotDiagram:
 
         # Build a true deep copy of the nested list, cloning each array via the backend
         centered = []
-        for i, field_data in enumerate(data):
-            field_copy = []
-            for x, y, intensity in field_data:
+        for i, field_data_list in enumerate(data):
+            field_copy_list = []
+            for spot_data_item in field_data_list:
                 # clone each array/tensor
-                x2 = be.copy(x)
-                y2 = be.copy(y)
-                i2 = be.copy(intensity)
+                x2 = be.copy(spot_data_item.x)
+                y2 = be.copy(spot_data_item.y)
+                i2 = be.copy(spot_data_item.intensity)
 
-                # subtract centroid
-                x2 = x2 - centroids[i][0]  # not in-place, to prevent breaking autograd
+                # subtract centroid - not in-place, to prevent breaking autograd
+                x2 = x2 - centroids[i][0]
                 y2 = y2 - centroids[i][1]
 
-                field_copy.append([x2, y2, i2])
-            centered.append(field_copy)
+                field_copy_list.append(SpotData(x=x2, y=y2, intensity=i2))
+            centered.append(field_copy_list)
         return centered
 
     def _generate_data(
@@ -509,9 +525,8 @@ class SpotDiagram:
             coordinates (str): The coordinate system ('local' or 'global').
 
         Returns:
-            list: A list containing the local x-coordinates,
-                local y-coordinates, and intensity values of the
-                generated spot data.
+            SpotData: An object containing x, y, and intensity values
+                of the generated spot data.
 
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
@@ -535,7 +550,7 @@ class SpotDiagram:
             plot_x = x_global
             plot_y = y_global
 
-        return [plot_x, plot_y, intensity]
+        return SpotData(x=plot_x, y=plot_y, intensity=intensity)
 
     def _plot_field(
         self,
@@ -574,7 +589,10 @@ class SpotDiagram:
 
         markers = ["o", "s", "^"]
         for k, points in enumerate(field_data):
-            x, y, intensity = points
+            # x, y, intensity = points
+            x = points.x
+            y = points.y
+            intensity = points.intensity
             # one‐liner conversion for BOTH backends:
             x_np = be.to_numpy(x)
             y_np = be.to_numpy(y)
