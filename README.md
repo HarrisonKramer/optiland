@@ -65,11 +65,17 @@ lens.draw3D()
 ---
 
 ## Documentation
-The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
-Explore the [Example Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) for a wide range of lens designs and analyses created with Optiland.
+Optiland's full documentation is available on [Read the Docs](https://optiland.readthedocs.io/).
 
-See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide/introduction.html) for an extensive overview of the architecture and design of Optiland and the [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) for detailed documentation of all public classes, methods, and functions.
+Whether you're just getting started or exploring advanced features, here are the best entry points:
+
+- **🔍 Quick Start**: The [Cheat Sheet](https://optiland.readthedocs.io/en/latest/cheat_sheet.html) offers a concise overview of core concepts and commands.
+- **🧪 Example Gallery**: Browse the [Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) for real-world lens designs, visualizations, and analysis workflows using Optiland.
+- **🛠️ Developer Resources**:  
+  - The [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide/introduction.html) explains the internal architecture and design of Optiland.  
+  - The [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) provides detailed documentation for all public classes, functions, and modules.
+
 
 ## Installation
 
