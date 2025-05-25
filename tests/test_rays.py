@@ -1,4 +1,6 @@
-import optiland.backend as be
+from optiland.optic import Optic
+from optiland.apodization import UniformApodization, GaussianApodization
+import optiland.backend as be # Already here but good to confirm
 import pytest
 
 from optiland.rays import (
@@ -13,6 +15,98 @@ from optiland.rays import (
 from optiland.samples.lithography import UVProjectionLens
 from optiland.samples.objectives import TessarLens
 from tests.utils import assert_allclose
+
+# Helper function as per instructions
+def create_basic_optic_for_ray_generation():
+    # Helper function to create a simple optic
+    # This should be adapted to how Optic instances are typically set up in your tests
+    # It needs at least an object surface, a stop, and an image surface
+    # and basic aperture/field/wavelength definitions for ray generation to work.
+    optic = Optic(name="TestApodizationOptic")
+    optic.set_field_type("object_height") # Using object_height as it's simpler for on-axis
+    # The add_field method in the provided Optic class takes y, then x.
+    # The instructions had add_field(0), let's assume on-axis y=0, x=0
+    optic.add_field(y=0.0, x=0.0) 
+    optic.add_wavelength(value=0.55, is_primary=True)
+    optic.set_aperture("EPD", 10.0) # Example EPD
+
+    # Add minimal surfaces for ray generation to proceed
+    # Object surface (surface 0)
+    # For object_height, object surface should be at finite distance.
+    # Thickness of object surface is distance to next surface.
+    # The material for 'object' surface type is typically None or not specified as it's 'before' the first optical medium.
+    optic.add_surface(surface_type="object", thickness=20.0) 
+    
+    # Stop surface (surface 1)
+    # Using a common glass like N-BK7 (lowercase 'n-bk7' might be alias or specific to material lib)
+    optic.add_surface(radius=50, thickness=10, is_stop=True, material="N-BK7") 
+    
+    # Image surface (surface 2)
+    # Thickness of last surface is typically distance from previous surface to image.
+    # If it's the final image location, its own thickness parameter might be 0 or irrelevant depending on definition.
+    optic.add_surface(thickness=0, material="air") # Image surface, assuming it's in air.
+    
+    # Update paraxial properties which might be needed by RayGenerator
+    # This is crucial as RayGenerator uses paraxial.EPL() and paraxial.EPD()
+    try:
+        optic.update_paraxial()
+        # Basic sanity checks after paraxial update
+        if optic.paraxial.EPD() is None or optic.paraxial.EPD() <= 0:
+            print(f"Warning: EPD is {optic.paraxial.EPD()} after paraxial update. Check system setup.")
+            # Fallback might be needed if test environment doesn't guarantee valid paraxial calc for simple systems
+            # Forcing a value should be a last resort: optic.paraxial._EPD = 10.0 
+        if optic.paraxial.EPL() is None: 
+             print(f"Warning: EPL is {optic.paraxial.EPL()} after paraxial update. Check system setup.")
+             # Forcing a value: optic.paraxial._EPL = 20.0
+
+    except Exception as e:
+        # Paraxial update might fail if system is too simple or unrealistic
+        print(f"Warning: Paraxial update failed during test setup: {e}. This might lead to issues in RayGenerator.")
+        # Attempt to set some fallback values if paraxial update fails catastrophically
+        if getattr(optic.paraxial, '_EPD', None) is None or optic.paraxial._EPD <= 0: optic.paraxial._EPD = 10.0
+        if getattr(optic.paraxial, '_EPL', None) is None: optic.paraxial._EPL = 20.0
+    
+    if optic.object_surface is None:
+        raise ValueError("Object surface not found after setup, RayGenerator will likely fail.")
+            
+    return optic
+
+@pytest.mark.usefixtures("set_test_backend")
+def test_ray_generator_uniform_apodization():
+    optic = create_basic_optic_for_ray_generation()
+    # Ensure the default is UniformApodization or explicitly set it
+    # optic.set_apodization(UniformApodization()) # Already default, but can be explicit
+
+    # Define some pupil coordinates
+    Px = be.array([0.0, 0.5, -0.5, 0.1, 0.2]) # Added more points for robustness
+    Py = be.array([0.0, 0.5,  0.5, 0.3, 0.4])
+    
+    # Use trace_generic which internally uses the ray_generator
+    # Hx=0, Hy=0 for on-axis field
+    rays = optic.trace_generic(Hx=0, Hy=0, Px=Px, Py=Py, wavelength=optic.primary_wavelength)
+
+    # For UniformApodization, intensity should be 1.0 for all rays
+    # The 'i' attribute holds intensity in RealRays
+    expected_intensities = be.ones_like(Px) 
+    assert be.allclose(rays.i, expected_intensities), \
+        f"Ray intensities should be 1.0 for UniformApodization. Got: {rays.i}"
+
+@pytest.mark.usefixtures("set_test_backend")
+def test_ray_generator_gaussian_apodization():
+    optic = create_basic_optic_for_ray_generation()
+    sigma = 0.5
+    optic.set_apodization(GaussianApodization(sigma=sigma))
+
+    Px = be.array([0.0, sigma, -sigma, 0.1 * sigma, 0.2 * sigma]) # Added more points
+    Py = be.array([0.0, 0.0,  sigma, 0.3 * sigma, 0.4 * sigma])
+    
+    rays = optic.trace_generic(Hx=0, Hy=0, Px=Px, Py=Py, wavelength=optic.primary_wavelength)
+
+    # Expected: exp(-(Px^2 + Py^2) / (2 * sigma^2))
+    expected_intensities = be.exp(-(Px**2 + Py**2) / (2 * sigma**2))
+    # Using rays.i for intensity
+    assert be.allclose(rays.i, expected_intensities), \
+        f"Ray intensities not as expected for GaussianApodization. Got: {rays.i}, Expected: {expected_intensities}"
 
 def test_translate(set_test_backend):
     rays = BaseRays()

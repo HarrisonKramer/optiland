@@ -15,6 +15,7 @@ from copy import deepcopy
 from typing import Union
 
 from optiland.aberrations import Aberrations
+from optiland.apodization import Apodization, UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
 from optiland.fields import Field, FieldGroup
 from optiland.optic.optic_updater import OpticUpdater
@@ -65,6 +66,7 @@ class Optic:
 
         self.polarization = "ignore"
 
+        self.apodization = UniformApodization()
         self.pickups = PickupManager(self)
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
@@ -268,6 +270,16 @@ class Optic:
         """
         self._updater.set_polarization(polarization)
 
+    def set_apodization(self, apodization: Apodization):
+        """Set the apodization of the optical system.
+
+        Args:
+            apodization (Apodization): The apodization object to set.
+        """
+        if not isinstance(apodization, Apodization):
+            raise ValueError("Invalid apodization type. Must be an instance of Apodization.")
+        self.apodization = apodization
+
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
 
@@ -446,6 +458,7 @@ class Optic:
             "aperture": self.aperture.to_dict() if self.aperture else None,
             "fields": self.fields.to_dict(),
             "wavelengths": self.wavelengths.to_dict(),
+            "apodization": self.apodization.to_dict() if self.apodization else None,
             "pickups": self.pickups.to_dict(),
             "solves": self.solves.to_dict(),
             "surface_group": self.surface_group.to_dict(),
@@ -472,6 +485,14 @@ class Optic:
         optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
         optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
+
+        apodization_data = data.get("apodization")
+        if apodization_data:
+            optic.apodization = Apodization.from_dict(apodization_data)
+        else:
+            # Default to UniformApodization if not present for backward compatibility
+            optic.apodization = UniformApodization()
+
         optic.pickups = PickupManager.from_dict(optic, data["pickups"])
         optic.solves = SolveManager.from_dict(optic, data["solves"])
 

@@ -12,6 +12,7 @@ properties of the optical system and provides interfaces to core functionalities
    :caption: Core Modules
 
    aberrations
+   apodization
    aperture
    coordinate_system
    distribution

@@ -1,6 +1,7 @@
 import pytest
 import optiland.backend as be
 
+from optiland.apodization import Apodization, UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
 from optiland.optic import Optic
@@ -199,6 +200,18 @@ class TestOptic:
         self.optic.set_polarization("ignore")
         assert self.optic.polarization == "ignore"
 
+    def test_optic_default_apodization(self, set_test_backend):
+        assert isinstance(self.optic.apodization, UniformApodization), "Default apodization should be UniformApodization"
+
+    def test_optic_set_apodization(self, set_test_backend):
+        gaussian_apod = GaussianApodization(sigma=0.5)
+        self.optic.set_apodization(gaussian_apod)
+        assert self.optic.apodization == gaussian_apod, "Apodization not set correctly"
+
+        # Test setting with a non-Apodization type
+        with pytest.raises(ValueError):
+            self.optic.set_apodization("not_an_apodization_object")
+
     def test_set_invalid_polarization(self, set_test_backend):
         with pytest.raises(ValueError):
             self.optic.set_polarization("invalid")
@@ -375,16 +388,73 @@ class TestOptic:
             _ = lens.polarization_state
 
     def test_to_dict(self, set_test_backend):
+        # Test with default apodization (UniformApodization)
+        optic_dict_uniform = self.optic.to_dict()
+        assert "apodization" in optic_dict_uniform
+        assert optic_dict_uniform["apodization"]["type"] == "UniformApodization"
+
+        # Test with GaussianApodization
+        gaussian_apod = GaussianApodization(sigma=0.7)
+        self.optic.set_apodization(gaussian_apod)
+        optic_dict_gaussian = self.optic.to_dict()
+        assert "apodization" in optic_dict_gaussian
+        assert optic_dict_gaussian["apodization"]["type"] == "GaussianApodization"
+        assert optic_dict_gaussian["apodization"]["sigma"] == 0.7
+
+        # Test with a more complex lens (HeliarLens)
         lens = HeliarLens()
         lens_dict = lens.to_dict()
         assert lens_dict is not None
+        assert "apodization" in lens_dict
+        # HeliarLens will have default UniformApodization unless set otherwise
+        assert lens_dict["apodization"]["type"] == "UniformApodization"
+
 
     def test_from_dict(self, set_test_backend):
+        # Test with default (UniformApodization)
+        self.optic.reset() # Ensure clean state
+        basic_dict = self.optic.to_dict()
+        new_optic_uniform = Optic.from_dict(basic_dict)
+        assert isinstance(new_optic_uniform.apodization, UniformApodization)
+
+        # Test with GaussianApodization
+        self.optic.reset() # Ensure clean state
+        self.optic.set_apodization(GaussianApodization(sigma=0.8))
+        gaussian_dict = self.optic.to_dict()
+        new_optic_gaussian = Optic.from_dict(gaussian_dict)
+        assert isinstance(new_optic_gaussian.apodization, GaussianApodization)
+        assert new_optic_gaussian.apodization.sigma == 0.8
+
+        # Test backward compatibility (when apodization key is missing)
+        minimal_dict = {
+            "version": 1.0,
+            "aperture": None,
+            "fields": {"field_type": "angle", "fields": [], "object_space_telecentric": False},
+            "wavelengths": {"primary_wavelength_value": 0.55, "wavelength_values": [0.55], "weights": [1.0], "unit": "um", "polarization": "ignore"},
+            "pickups": {"pickups": []},
+            "solves": {"solves": []},
+            "surface_group": {"surfaces": []}
+            # "apodization" key is missing
+        }
+        optic_from_minimal = Optic.from_dict(minimal_dict)
+        assert isinstance(optic_from_minimal.apodization, UniformApodization), \
+            "Should default to UniformApodization if key is missing"
+
+        # Test with a more complex lens (HeliarLens)
         lens = HeliarLens()
-        lens_dict = lens.to_dict()
-        new_lens = HeliarLens.from_dict(lens_dict)
+        lens_dict = lens.to_dict() # HeliarLens will have default UniformApodization
+        new_lens = Optic.from_dict(lens_dict)
         assert new_lens is not None
         assert new_lens.total_track == lens.total_track
+        assert isinstance(new_lens.apodization, UniformApodization)
+
+        # Test HeliarLens with Gaussian apodization
+        lens.set_apodization(GaussianApodization(sigma=0.6))
+        lens_dict_gauss = lens.to_dict()
+        new_lens_gauss = Optic.from_dict(lens_dict_gauss)
+        assert isinstance(new_lens_gauss.apodization, GaussianApodization)
+        assert new_lens_gauss.apodization.sigma == 0.6
+
 
     def test_invalid_field_type(self, set_test_backend):
         with pytest.raises(ValueError):
