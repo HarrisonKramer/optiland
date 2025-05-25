@@ -8,22 +8,33 @@ Core Concepts
 
 At its heart, Optiland revolves around a few key components:
 
-* ``Optic`` Object: This is the main container for your entire optical system. It holds all the surfaces, aperture definitions, field points, and wavelength information.
-    * Example: ``my_system = optic.Optic()``
+* **Optic** Object: This is the main container for your entire optical system. It holds all the surfaces, aperture definitions, field points, and wavelength information.
+  
+  * Example: ``my_system = optic.Optic()``
+
 * **SurfaceGroup** (``optiland.surfaces.SurfaceGroup``): Manages the collection of surfaces within an ``Optic`` object.
-* Surfaces (``Surface``): These represent the individual optical surfaces (lenses, mirrors, image planes, etc.). Each surface has a geometry, material properties on either side, and can optionally have coatings, physical apertures, or be designated as the system's aperture stop.
-    * **Object Surface** (``ObjectSurface``): The first surface in your system, representing the object being imaged. It can be at a finite distance or at infinity.
-    * **Image Surface** (``ImageSurface``): The final surface where the image is formed.
-    * **Standard Surface** (``StandardGeometry``): Spherical or conic surfaces.
-    * **Aspheric & Freeform Surfaces**: Optiland supports various complex geometries like ``EvenAsphere``, ``OddAsphere``, ``PolynomialGeometry``, ``ChebyshevPolynomialGeometry``, ``ZernikePolynomialGeometry``, and more...
-    * **Paraxial Surface** (``ParaxialSurface``): A thin lens approximation defined by its focal length, useful for initial layouts.
-* Materials (``Material``): Define the optical properties of the media between surfaces, primarily the refractive index (``n``) and optionally the extinction coefficient (``k``) as a function of wavelength.
-    * Optiland can use data from the `refractiveindex.info <https://refractiveindex.info>`_ database (``MaterialFile``) or allow you to define ideal materials (``IdealMaterial``) or materials based on nd and Vd (``AbbeMaterial``).
-* Geometries (``BaseGeometry``): These define the mathematical shape of a surface (e.g., plane, sphere, asphere).
-* Aperture (``Aperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
-* Fields (``Field``, ``FieldGroup``): Define the points in the object plane that are being imaged. Can be specified by angle or object height. Vignetting can also be applied.
-* Wavelengths (``Wavelength``, ``WavelengthGroup``): Specify the wavelengths of light used for analysis, including a primary wavelength. All wavelengths are internally converted to microns (µm).
-* Coordinate Systems (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x,y,z) and rotation (rx, ry, rz) relative to a reference system.
+
+* **Surfaces** (``Surface``): These represent the individual optical surfaces (lenses, mirrors, image planes, etc.). Each surface has a geometry, material properties on either side, and can optionally have coatings, physical apertures, or be designated as the system's aperture stop.
+  
+  * **Object Surface** (``ObjectSurface``): The first surface in your system, representing the object being imaged. It can be at a finite distance or at infinity.
+  * **Image Surface** (``ImageSurface``): The final surface where the image is formed.
+  * **Standard Surface** (``StandardGeometry``): Spherical or conic surfaces.
+  * **Aspheric & Freeform Surfaces**: Optiland supports various complex geometries like ``EvenAsphere``, ``OddAsphere``, ``PolynomialGeometry``, ``ChebyshevPolynomialGeometry``, ``ZernikePolynomialGeometry``, and more...
+  * **Paraxial Surface** (``ParaxialSurface``): A thin lens approximation defined by its focal length, useful for initial layouts.
+
+* **Materials** (``Material``): Define the optical properties of the media between surfaces, primarily the refractive index (``n``) and optionally the extinction coefficient (``k``) as a function of wavelength.
+  
+  * Optiland can use data from the `refractiveindex.info <https://refractiveindex.info>`_ database (``MaterialFile``) or allow you to define ideal materials (``IdealMaterial``) or materials based on index (nd) and Abbe number (Vd) (``AbbeMaterial``).
+
+* **Geometries** (``BaseGeometry``): These define the mathematical shape of a surface (e.g., plane, sphere, asphere).
+
+* **Aperture** (``Aperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
+
+* **Fields** (``Field``, ``FieldGroup``): Define the points in the object plane that are being imaged. Can be specified by angle or object height. Vignetting can also be applied.
+
+* **Wavelengths** (``Wavelength``, ``WavelengthGroup``): Specify the wavelengths of light used for analysis, including a primary wavelength. All wavelengths are internally converted to microns (µm).
+
+* **Coordinate Systems** (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x,y,z) and rotation (rx, ry, rz) relative to a reference system.
 
 **Numerical Backend**
 
@@ -47,13 +58,13 @@ Basic Workflow: Defining an Optical System
         from optiland import materials # if using specific materials
         import optiland.backend as be
 
-2.  **Create an ``Optic`` Instance:**
+2.  **Create an** ``Optic`` **Instance:**
 
     .. code-block:: python
 
         my_lens = optic.Optic(name="My Cooke Triplet")
 
-3.  **Add Surfaces (``add_surface``)**: Surfaces are added sequentially.
+3.  **Add Surfaces** (``add_surface``): Surfaces are added sequentially.
     * The **first surface (index 0)** is typically the object surface.
 
         .. code-block:: python
@@ -75,14 +86,14 @@ Basic Workflow: Defining an Optical System
 
             my_lens.add_surface(index=N) # N is the index after the last optical surface
 
-4.  **Set System Aperture (``set_aperture``)**:
+4.  **Set System Aperture** (``set_aperture``):
 
     .. code-block:: python
 
         my_lens.set_aperture(aperture_type="EPD", value=10.0) # Entrance Pupil Diameter of 10 mm
         # Or: my_lens.set_aperture(aperture_type="imageFNO", value=5.0)
 
-5.  **Define Field of View (``set_field_type``, ``add_field``)**:
+5.  **Define Field of View** (``set_field_type``, ``add_field``):
 
     .. code-block:: python
 
@@ -94,7 +105,7 @@ Basic Workflow: Defining an Optical System
         # my_lens.set_field_type(field_type="object_height")
         # my_lens.add_field(y=10.0) # Object height of 10 mm
 
-6.  **Define Wavelengths (``add_wavelength``)**:
+6.  **Define Wavelengths** (``add_wavelength``):
 
     .. code-block:: python
 
@@ -102,7 +113,7 @@ Basic Workflow: Defining an Optical System
         my_lens.add_wavelength(value=0.5876, is_primary=True) # d-line (yellow), primary
         my_lens.add_wavelength(value=0.6563) # C-line (red)
 
-7.  **(Optional) Image Plane Solve (``image_solve``)**: Adjusts the last thickness for paraxial focus.
+7.  **(Optional) Image Plane Solve** (``image_solve``): Adjusts the last thickness for paraxial focus.
 
     .. code-block:: python
 
@@ -132,6 +143,11 @@ Understanding Optiland's coordinate system and sign conventions is crucial:
 Ray Tracing
 -----------
 
+Optiland uses *normalized coordinates* for both the field and pupil to define rays in a general, system-independent way:
+
+- **Field Coordinates** (`Hx`, `Hy`): Define the ray's starting field position. `(0, 0)` corresponds to the optical axis, and `(±1, ±1)` spans the full normalized field of view.
+- **Pupil Coordinates** (`Px`, `Py`): Define the ray's position in the entrance pupil. `(0, 0)` corresponds to the chief ray, and `(±1, ±1)` defines the edge of the normalized pupil.
+
 Optiland can trace both paraxial and real rays.
 
 * **Paraxial Rays**:
@@ -146,7 +162,7 @@ Optiland can trace both paraxial and real rays.
     * For detailed analysis, including aberrations.
     * ``optic.trace(Hx, Hy, wavelength, num_rays, distribution)``: Traces a bundle.
     * ``optic.trace_generic(Hx, Hy, Px, Py, wavelength)``: Traces a specific ray, defined by the normalized field and pupil coordinates, H, P, respectively.
-* **Advanced Ray Tracing (``RealRays``, ``surface_group.trace``)**: For more control, create a ``RealRays`` object and trace using ``optic.surface_group.trace(rays)``.
+* **Advanced Ray Tracing** (``RealRays``, ``surface_group.trace``): For more control, create a ``RealRays`` object and trace using ``optic.surface_group.trace(rays)``.
     * Example:
 
         .. code-block:: python
@@ -177,21 +193,23 @@ Optiland can trace both paraxial and real rays.
             x_image = my_lens.surface_group.x[-1,:]
             y_image = my_lens.surface_group.y[-1,:]
 
-* **Ray Distributions (``distribution.py``)**: Specify pupil distribution (e.g., ``'hexapolar'``, ``'uniform'``, ``'random'``).
+* **Ray Distributions** (``distribution.py``): Specify pupil distribution (e.g., ``'hexapolar'``, ``'uniform'``, ``'random'``).
 
 Analysis Tools
 --------------
 
 Optiland offers a suite of tools to evaluate performance:
 
-* **``Aberrations``**: Seidel & chromatic. (``my_lens.aberrations.seidels()``)
-* **``SpotDiagram``**: Geometric ray spread.
-* **``RayFan``**: Transverse ray aberrations.
-* **``OPD``**: Wavefront errors.
-* **``MTF``**: Image contrast vs. frequency.
-* **``PSF``**: Point source image.
-* **``FieldCurvature``**, **``Distortion``**: Field performance.
+* ``Aberrations``: Seidel & chromatic. (``my_lens.aberrations.seidels()``)
+* ``SpotDiagram``: Geometric ray spread.
+* ``RayFan``: Transverse ray aberrations.
+* ``OPD``: Wavefront errors.
+* ``MTF``: Image contrast vs. frequency.
+* ``PSF``: Point source image.
+* ``FieldCurvature``, ``Distortion``: Field performance.
 * *(Many classes have a ``.view()`` method for plotting)*.
+
+See the :ref:`example_gallery` for a full list of analysis tools and their usage.
 
 Visualization
 -------------
@@ -213,11 +231,11 @@ Visualization
 Advanced Features (Brief Overview)
 ----------------------------------
 
-* **Coatings (``coatings.py``)**: Model anti-reflection or reflective coatings (``SimpleCoating``, ``FresnelCoating``).
-* **Polarization (``polarized_rays.py``, ``jones.py``)**: Trace polarized light and apply Jones calculus for polarizing elements.
-* **Pickups (``pickup.py``)**: Link a parameter of one surface to another (e.g., make radius of S2 = -radius of S1).
-* **Solves (``solves.py``)**: Automatically adjust parameters to meet certain conditions (e.g., ``QuickFocusSolve`` adjusts image plane for best focus).
-* **Optimization (``optimization/*``)**: Define merit functions with operands and variables to optimize system designs.
-* **Tolerancing (``tolerancing/*``)**: Analyze the impact of manufacturing errors using sensitivity analysis and Monte Carlo simulations.
+* **Coatings** (``coatings.py``): Model anti-reflection or reflective coatings (``SimpleCoating``, ``FresnelCoating``).
+* **Polarization** (``polarized_rays.py``, ``jones.py``): Trace polarized light and apply Jones calculus for polarizing elements.
+* **Pickups** (``pickup.py``): Link a parameter of one surface to another (e.g., make radius of S2 = -radius of S1).
+* **Solves** (``solves.py``): Automatically adjust parameters to meet certain conditions (e.g., ``QuickFocusSolve`` adjusts image plane for best focus).
+* **Optimization** (``optimization/*``): Define merit functions with operands and variables to optimize system designs.
+* **Tolerancing** (``tolerancing/*``): Analyze the impact of manufacturing errors using sensitivity analysis and Monte Carlo simulations.
 
 This cheat sheet should provide a solid starting point. Happy designing! ✨
