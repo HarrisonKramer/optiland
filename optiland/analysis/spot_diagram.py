@@ -5,8 +5,8 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from dataclasses import dataclass
 from typing import Literal
-from dataclasses import dataclass  # Add this import
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
@@ -194,7 +194,6 @@ class SpotDiagram:
             theta_rad (float): angle in radians.
 
         """
-        # Compute the angle using arccos
         a = a / be.linalg.norm(a)
         b = b / be.linalg.norm(b)
         theta = be.arccos(be.clip(be.dot(a, b), -1, 1))
@@ -398,7 +397,7 @@ class SpotDiagram:
         norm_index = self.optic.wavelengths.primary_index
         centroid = []
         for field_data in self.data:
-            spot_data_item = field_data[norm_index]  # This is a SpotData object
+            spot_data_item = field_data[norm_index]
             centroid_x = be.mean(spot_data_item.x)
             centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))
@@ -416,7 +415,7 @@ class SpotDiagram:
         geometric_size = []
         for field_data in data:
             geometric_size_field = []
-            for wave_data in field_data:  # wave_data is a SpotData object
+            for wave_data in field_data:
                 r = be.sqrt(wave_data.x**2 + wave_data.y**2)
                 geometric_size_field.append(be.max(r))
             geometric_size.append(geometric_size_field)
@@ -433,7 +432,7 @@ class SpotDiagram:
         rms = []
         for field_data in data:
             rms_field = []
-            for wave_data in field_data:  # wave_data is a SpotData object
+            for wave_data in field_data:
                 r2 = wave_data.x**2 + wave_data.y**2
                 rms_field.append(be.sqrt(be.mean(r2)))
             rms.append(rms_field)
@@ -454,20 +453,15 @@ class SpotDiagram:
 
         # Build a true deep copy of the nested list, cloning each array via the backend
         centered = []
-        for i, field_data_list in enumerate(
-            data
-        ):  # field_data_list is a list of SpotData objects
+        for i, field_data_list in enumerate(data):
             field_copy_list = []
-            for (
-                spot_data_item
-            ) in field_data_list:  # spot_data_item is a SpotData object
+            for spot_data_item in field_data_list:
                 # clone each array/tensor
                 x2 = be.copy(spot_data_item.x)
                 y2 = be.copy(spot_data_item.y)
                 i2 = be.copy(spot_data_item.intensity)
 
-                # subtract centroid
-                # not in-place, to prevent breaking autograd
+                # subtract centroid - not in-place, to prevent breaking autograd
                 x2 = x2 - centroids[i][0]
                 y2 = y2 - centroids[i][1]
 
