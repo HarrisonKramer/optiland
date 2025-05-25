@@ -6,7 +6,6 @@ Kramer Harrison, 2024
 """
 
 from abc import ABC, abstractmethod
-# import optiland.backend as be # Not used in this file
 
 
 class ThroughFocusAnalysis(ABC):
@@ -36,7 +35,7 @@ class ThroughFocusAnalysis(ABC):
 
     def __init__(
         self,
-        optic, # optiland.optic.Optic
+        optic,
         delta_focus: float = 0.1,
         num_steps: int = 5,
         fields="all",
@@ -99,9 +98,7 @@ class ThroughFocusAnalysis(ABC):
                 # Update the optic to ensure changes are propagated.
                 self.optic.update()
 
-                analysis_result = self._perform_analysis_at_focus(
-                    current_delta
-                )
+                analysis_result = self._perform_analysis_at_focus(current_delta)
                 self.results.append(analysis_result)
         finally:
             # Restore the original image surface z position.
