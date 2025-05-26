@@ -1,5 +1,5 @@
 import pytest
-import numpy as np # Using numpy for test utilities like unique, isclose
+import numpy as np
 
 from optiland import backend as be
 from optiland.distribution import (
@@ -12,6 +12,7 @@ from optiland.distribution import (
     LineYDistribution,
     GaussianQuadrature
 )
+
 
 # Helper function to count unique points
 def count_unique_points(x_coords, y_coords, tol=1e-9):
@@ -30,6 +31,7 @@ def count_unique_points(x_coords, y_coords, tol=1e-9):
     points = np.stack((np.round(x_coords_writable, decimals), np.round(y_coords_writable, decimals)), axis=-1)
     unique_points = np.unique(points, axis=0)
     return unique_points.shape[0]
+
 
 @pytest.mark.parametrize("backend", ["numpy", "torch"])
 class TestDistributionPoints:
