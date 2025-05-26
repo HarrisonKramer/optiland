@@ -1,17 +1,17 @@
-import optiland.backend as be
 import pytest
 
-from optiland.optimization import operand
-from optiland.samples.telescopes import HubbleTelescope
-from .utils import assert_allclose
-
-from optiland.optic import Optic
-from optiland.surfaces import StandardSurface
+import optiland.backend as be
+from optiland.fields import Fields
 from optiland.geometries import Plane
 from optiland.materials import IdealMaterial
+from optiland.optic import Optic
+from optiland.optimization import operand
+from optiland.optimization.operand import RayOperand
+from optiland.samples.telescopes import HubbleTelescope
+from optiland.surfaces import StandardSurface
 from optiland.wavelength import Wavelengths
-from optiland.fields import Fields
-from optiland.optimization.operand import RayOperand # Direct import for clarity
+
+from .utils import assert_allclose
 
 
 @pytest.fixture
@@ -321,50 +321,49 @@ class TestRayOperand:
         assert_allclose(operand.RayOperand.OPD_difference(**data), 0.2211995620762635)
 
     def create_test_optic(self):
-        optic = Optic()
-        optic.wavelengths = Wavelengths([0.55])
-        # Set a known entrance pupil diameter for predictable Px,Py to angle conversion if needed.
-        # However, for this test, field coords (Hx,Hy) are more direct for yB positions.
-        # And for Line A, Px,Py will be used to generate mA, nA whose exact values are taken from trace.
-        optic.EPD = 20.0 # Example EPD, helps interpret Px,Py if they were used for position.
-                        # Actual angles M, N are taken from trace, so EPD value is not critical for test logic.
+        lens = Optic(name="TMA")
+        lens.set_aperture(aperture_type="EPD", value=10)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_field(y=+1.5)
+        lens.add_field(y=-1.5)
+        lens.add_wavelength(value=0.55, is_primary=True)
 
-        optic.fields = Fields()
-        # Add a default field for tracing, Optic requires at least one.
-        # Max field of 1.0 means Hx=1 or Hy=1 corresponds to an angle of 1 radian here.
-        # This is a simplification for test predictions. Actual system might use degrees.
-        optic.fields.add_field(angle_x=0, angle_y=0, weight=1, max_angle_x=1.0, max_angle_y=1.0)
-
-
-        # Object surface (idx 0)
-        s0 = StandardSurface(geometry=Plane(), material=IdealMaterial(1.0))
-        optic.surface_group.add_surface(s0) # Object surface is at z=0
-        # Surface 1 (idx 1) - Line A ray data taken AFTER this surface
-        s1 = StandardSurface(geometry=Plane(), material=IdealMaterial(1.0))
-        s1.thickness = 10.0 # s1 is at z=10
-        optic.surface_group.add_surface(s1)
-        # Surface 2 (idx 2) - Point B ray data taken AT this surface
-        s2 = StandardSurface(geometry=Plane(), material=IdealMaterial(1.0))
-        s2.thickness = 10.0 # s2 is at z=20
-        optic.surface_group.add_surface(s2)
-        # Image surface (idx 3)
-        s3 = StandardSurface(geometry=Plane(), is_image_surface=True) # Image surface is at z=20
-        optic.surface_group.add_surface(s3)
-        optic.update()
-        return optic
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(
+            index=1,
+            radius=-100,
+            thickness=-20,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-15.0),
+            is_stop=True,
+        )
+        lens.add_surface(
+            index=2,
+            radius=-100,
+            thickness=+20,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-10.0),
+            dy=-11.5,
+        )
+        lens.add_surface(
+            index=3,
+            radius=-100,
+            thickness=-19,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-1.0),
+            dy=-15,
+        )
+        lens.add_surface(index=4, dy=-19.3)
+        return lens
 
     def test_clearance(self, set_test_backend):
         set_test_backend()
         optic = self.create_test_optic()
         wavelength = 0.55
-
-        # Test Case 1: Point B on +Y side of Line A (nA > 0)
-        # Line A: from surface 1, on-axis ray (Hx=0,Hy=0; Px=0,Py=0).
-        # This ray travels along Z. yA=0, zA=10 (global for surface 1), mA=0, nA=1.
-        # Point B: at surface 2, ray starting at Hx=0, Hy=0.1 (field y-angle = 0.1 rad).
-        # This ray will hit surface 2 at yB = 0.1 * (z_s2 - z_obj) = 0.1 * 20 = 2.0.
-        # optic.trace_generic(0.0, 0.1, 0.0, 0.0, wavelength)
-        # yB_expected_case1 = optic.surface_group.y[2, 0] # Should be 2.0
 
         dist1 = RayOperand.clearance(
             optic=optic,
@@ -372,31 +371,26 @@ class TestRayOperand:
             line_ray_field_coords=(0.0, 0.0),
             line_ray_pupil_coords=(0.0, 0.0),
             point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, 0.1), # Hy = 0.1 rad
+            point_ray_field_coords=(0.0, 0.1),  # Hy = 0.1 rad
             point_ray_pupil_coords=(0.0, 0.0),
-            wavelength=wavelength
+            wavelength=wavelength,
         )
-        # Expected: Line A (yA=0, zA=10, mA=0, nA=1). Point B (yB=2.0, zB=20).
-        # dist = (1 * (2.0 - 0) - 0 * (20 - 10)) / 1 = 2.0
-        assert be.isclose(dist1, 2.0, atol=1e-7), f"Test Case 1 Failed: Expected 2.0, Got {dist1}"
 
-        # Test Case 2: Point B on -Y side of Line A (nA > 0)
-        # Point B: at surface 2, ray Hx=0, Hy=-0.1. yB = -0.1 * 20 = -2.0.
+        assert be.isclose(dist1, 2.0, atol=1e-7)
+
         dist2 = RayOperand.clearance(
             optic=optic,
             line_ray_surface_idx=1,
             line_ray_field_coords=(0.0, 0.0),
             line_ray_pupil_coords=(0.0, 0.0),
             point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, -0.1), # Hy = -0.1 rad
+            point_ray_field_coords=(0.0, -0.1),  # Hy = -0.1 rad
             point_ray_pupil_coords=(0.0, 0.0),
-            wavelength=wavelength
+            wavelength=wavelength,
         )
-        # Expected: yB = -2.0. dist = -2.0
-        assert be.isclose(dist2, -2.0, atol=1e-7), f"Test Case 2 Failed: Expected -2.0, Got {dist2}"
 
-        # Test Case 3: Point B on Line A (nA > 0)
-        # Point B: at surface 2, ray Hx=0, Hy=0. yB = 0.
+        assert be.isclose(dist2, -2.0, atol=1e-7)
+
         dist3 = RayOperand.clearance(
             optic=optic,
             line_ray_surface_idx=1,
@@ -405,37 +399,19 @@ class TestRayOperand:
             point_ray_surface_idx=2,
             point_ray_field_coords=(0.0, 0.0),
             point_ray_pupil_coords=(0.0, 0.0),
-            wavelength=wavelength
+            wavelength=wavelength,
         )
-        # Expected: yB = 0.0. dist = 0.0
-        assert be.isclose(dist3, 0.0, atol=1e-7), f"Test Case 3 Failed: Expected 0.0, Got {dist3}"
 
-        # Test Case 4: Line A with non-zero mA (tilted line, nA > 0)
-        # Line A: from surf 1. Field (Hx,Hy)=(0,0). Pupil (Px,Py)=(0,0.1).
-        # This means on-axis object point, ray aimed at y_EP = 0.1 * EPD/2 on Entrance Pupil.
-        # EPD = 20, so y_EP = 0.1 * 10 = 1.0.
-        # Ray from (0,0,0) to (0,1,z_EP). If EP at object (z_EP=0), slope M_obj = 1/sqrt(0^2+1^2+0^2) is not how M is defined.
-        # M is dy/ds. If ray goes from (0,0,0) to (0,1,0) this is not a propagating ray.
-        # For a ray starting at object (0,0,0) and passing through y_EP=1 at z_EP=0 (if EP is at object):
-        # The initial direction cosines M, N before hitting surf 1:
-        # optic.trace_generic will trace this.
-        # M_before_s1 = Py (if object at inf and Py is angle)
-        # M_before_s1 = y_EP / distance_to_first_surface (approx if EP far from object)
-        # Let's get traced values for Line A after surface 1:
+        assert be.isclose(dist3, 0.0, atol=1e-7)
+
         optic.trace_generic(Hx=0.0, Hy=0.0, Px=0.0, Py=0.1, wavelength=wavelength)
-        yA_t4 = optic.surface_group.y[1, 0] # y-coordinate on surface 1 after propagation from object
-        zA_t4 = optic.surface_group.z[1, 0] # z-coordinate of surface 1 (10.0)
-        mA_t4 = optic.surface_group.M[1, 0] # M direction cosine after surface 1
-        nA_t4 = optic.surface_group.N[1, 0] # N direction cosine after surface 1
-        # With EPD=20, Py=0.1: ray goes from (0,0,0) through (0,1,0) effectively (if EP at obj).
-        # Slope y/z = 1/10 to surface 1. So yA_t4 = 1.0.
-        # True M = (yA_t4-0)/sqrt(yA_t4^2 + (zA_t4-0)^2) = 1/sqrt(1+100) = 1/sqrt(101) approx 0.0995
-        # True N = zA_t4/sqrt(101) = 10/sqrt(101) approx 0.995
-        # The values from trace_generic are direction cosines after refraction, which is just pass-through for plane+IdealMaterial.
-        # So, yA_t4 = 1.0, zA_t4 = 10.0. mA_t4 approx 0.0995, nA_t4 approx 0.995.
+        yA_t4 = optic.surface_group.y[
+            1, 0
+        ]  # y-coordinate on surface 1 after propagation from object
+        zA_t4 = optic.surface_group.z[1, 0]  # z-coordinate of surface 1 (10.0)
+        mA_t4 = optic.surface_group.M[1, 0]  # M direction cosine after surface 1
+        nA_t4 = optic.surface_group.N[1, 0]  # N direction cosine after surface 1
 
-        # Point B: at surface 2, field (0,0), pupil (0,0) (chief ray for on-axis field)
-        # yB_t4 = 0.0, zB_t4 = 20.0
         yB_val_case4 = 0.0
         zB_val_case4 = 20.0
 
@@ -447,42 +423,13 @@ class TestRayOperand:
             point_ray_surface_idx=2,
             point_ray_field_coords=(0.0, 0.0),
             point_ray_pupil_coords=(0.0, 0.0),
-            wavelength=wavelength
+            wavelength=wavelength,
         )
 
-        expected_dist4_num = nA_t4 * (yB_val_case4 - yA_t4) - mA_t4 * (zB_val_case4 - zA_t4)
-        expected_dist4_den = be.sqrt(mA_t4**2 + nA_t4**2)
-        # Denominator should be close to 1 if L,M,N are normalized (L^2+M^2+N^2=1 and L=0 here)
-        # So expected_dist4_den = sqrt(M^2+N^2). If L is non-zero, then it's sqrt(M^2+N^2) from formula, not sqrt(1-L^2).
-        # The formula for d uses mA, nA which are M, N of Line A in YZ plane.
-        # This is correct.
-        
-        # Using traced values:
-        # yA_t4 = 1.0, zA_t4 = 10.0
-        # mA_t4 = 0.09950371902099892, nA_t4 = 0.9950371902099892 (from EPD=20 setup)
-        # yB_val_case4 = 0.0, zB_val_case4 = 20.0
-        # num = 0.99503719 * (0.0 - 1.0) - 0.099503719 * (20.0 - 10.0)
-        #     = -0.99503719 - 0.099503719 * 10
-        #     = -0.99503719 - 0.99503719 = -1.99007438
-        # den = be.sqrt(0.099503719**2 + 0.99503719**2) = be.sqrt(0.00990099 + 0.990099) = be.sqrt(1.0) = 1.0
-        # (This is because L_t4 from this trace is essentially 0)
-        # expected_dist4 = -1.99007438 / 1.0 = -1.99007438
-        expected_dist4 = (nA_t4 * (yB_val_case4 - yA_t4) - mA_t4 * (zB_val_case4 - zA_t4)) / be.sqrt(mA_t4**2 + nA_t4**2)
-        assert be.isclose(dist4, expected_dist4, atol=1e-7), f"Test Case 4 Failed: Expected {expected_dist4}, Got {dist4}"
-
-        # Test Case 5: Sign convention with nA < 0
-        # This is difficult to set up with the current simple forward-propagating optic
-        # without specific surfaces (like mirrors) or direct mocking of ray data.
-        # The formula includes `if nA < 0: d = -d`, which handles the sign flip.
-
-        # Test Case 6: Denominator is zero (mA=0, nA=0)
-        # This implies the line ray has no propagation component in the YZ plane (i.e., it's purely along X).
-        # This is very hard to achieve reliably via standard tracing in this simple system.
-        # The clearance function has a built-in check: `if be.abs(denominator) < epsilon: d = 0.0`
-        # This handles division by zero. A direct test of this condition would require mocking
-        # mA and nA values to be zero, or a specialized optical system.
-        # For now, we rely on this internal safeguard.
-        pass
+        expected_dist4 = (
+            nA_t4 * (yB_val_case4 - yA_t4) - mA_t4 * (zB_val_case4 - zA_t4)
+        ) / be.sqrt(mA_t4**2 + nA_t4**2)
+        assert be.isclose(dist4, expected_dist4, atol=1e-7)
 
 
 class TestOperand:

@@ -744,7 +744,6 @@ def test_spotdiagram_invalid_coordinates(cooke_triplet):
 
 
 def test_generate_field_data_local(set_test_backend, cooke_triplet):
-
     spot = analysis.SpotDiagram(cooke_triplet, coordinates="local")
 
     # Pick the first field and wavelength
@@ -769,7 +768,6 @@ def test_generate_field_data_local(set_test_backend, cooke_triplet):
 
 
 def test_generate_field_data_global(set_test_backend, cooke_triplet):
-
     spot = analysis.SpotDiagram(cooke_triplet, coordinates="global")
 
     # Pick the first field and wavelength
@@ -1168,13 +1166,13 @@ class TestIncoherentIrradiance:
         # Invalid slice index for cross-x
         irr.view(cross_section=("cross-x", res_val[0] + 5))  # Index out of bounds
         mock_print.assert_any_call(
-            f"[IncoherentIrradiance] Warning: X-slice index {res_val[0]+5} is out of bounds for map shape {(res_val[0],res_val[1])}. Skipping plot."
+            f"[IncoherentIrradiance] Warning: X-slice index {res_val[0] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
         )
 
         # Invalid slice index for cross-y
         irr.view(cross_section=("cross-y", res_val[1] + 5))  # Index out of bounds
         mock_print.assert_any_call(
-            f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1]+5} is out of bounds for map shape {(res_val[0],res_val[1])}. Skipping plot."
+            f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
         )
 
         # Invalid cross_section_info format (not tuple)

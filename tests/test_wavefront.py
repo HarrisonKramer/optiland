@@ -44,7 +44,9 @@ class TestWavefront:
         assert isinstance(w.data[((0.0, 0.0), 0.5876)].intensity, be.ndarray)
         assert isinstance(w.data[((0.0, 0.7), 0.5876)].opd, be.ndarray)
         assert isinstance(w.data[((0.0, 0.0), 0.5876)].pupil_x, be.ndarray)
-        assert be.size(w.data[((0.0, 1.0), 0.6563)].opd) == 469  # num points in the pupil
+        assert (
+            be.size(w.data[((0.0, 1.0), 0.6563)].opd) == 469
+        )  # num points in the pupil
 
     def test_trace_chief_ray(self, set_test_backend):
         optic = DoubleGauss()
@@ -170,6 +172,7 @@ class TestOPD:
         opd = wavefront.OPD(optic, (0, 1), 0.55)
         rms = opd.rms()
         assert_allclose(rms, 0.9709788038168692)
+
 
 class TestZernikeOPD:
     def test_zernike_opd_initialization(self, set_test_backend):
