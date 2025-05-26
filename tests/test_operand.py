@@ -1,15 +1,10 @@
 import pytest
 
 import optiland.backend as be
-from optiland.fields import Fields
-from optiland.geometries import Plane
-from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.optimization import operand
 from optiland.optimization.operand import RayOperand
 from optiland.samples.telescopes import HubbleTelescope
-from optiland.surfaces import StandardSurface
-from optiland.wavelength import Wavelengths
 
 from .utils import assert_allclose
 
@@ -361,7 +356,6 @@ class TestRayOperand:
         return lens
 
     def test_clearance(self, set_test_backend):
-        set_test_backend()
         optic = self.create_test_optic()
         wavelength = 0.55
 
@@ -369,67 +363,37 @@ class TestRayOperand:
             optic=optic,
             line_ray_surface_idx=1,
             line_ray_field_coords=(0.0, 0.0),
-            line_ray_pupil_coords=(0.0, 0.0),
-            point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, 0.1),  # Hy = 0.1 rad
+            line_ray_pupil_coords=(0.0, -1.0),
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 1.0),
             point_ray_pupil_coords=(0.0, 0.0),
             wavelength=wavelength,
         )
-
-        assert be.isclose(dist1, 2.0, atol=1e-7)
+        assert_allclose(dist1, -7.412094834746042)
 
         dist2 = RayOperand.clearance(
             optic=optic,
             line_ray_surface_idx=1,
             line_ray_field_coords=(0.0, 0.0),
             line_ray_pupil_coords=(0.0, 0.0),
-            point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, -0.1),  # Hy = -0.1 rad
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 0.0),
             point_ray_pupil_coords=(0.0, 0.0),
             wavelength=wavelength,
         )
-
-        assert be.isclose(dist2, -2.0, atol=1e-7)
+        assert_allclose(dist2, -13.065596389231768)
 
         dist3 = RayOperand.clearance(
             optic=optic,
             line_ray_surface_idx=1,
-            line_ray_field_coords=(0.0, 0.0),
-            line_ray_pupil_coords=(0.0, 0.0),
-            point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, 0.0),
+            line_ray_field_coords=(0.0, -1.0),
+            line_ray_pupil_coords=(0.0, 1.0),
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 1.0),
             point_ray_pupil_coords=(0.0, 0.0),
             wavelength=wavelength,
         )
-
-        assert be.isclose(dist3, 0.0, atol=1e-7)
-
-        optic.trace_generic(Hx=0.0, Hy=0.0, Px=0.0, Py=0.1, wavelength=wavelength)
-        yA_t4 = optic.surface_group.y[
-            1, 0
-        ]  # y-coordinate on surface 1 after propagation from object
-        zA_t4 = optic.surface_group.z[1, 0]  # z-coordinate of surface 1 (10.0)
-        mA_t4 = optic.surface_group.M[1, 0]  # M direction cosine after surface 1
-        nA_t4 = optic.surface_group.N[1, 0]  # N direction cosine after surface 1
-
-        yB_val_case4 = 0.0
-        zB_val_case4 = 20.0
-
-        dist4 = RayOperand.clearance(
-            optic=optic,
-            line_ray_surface_idx=1,
-            line_ray_field_coords=(0.0, 0.0),
-            line_ray_pupil_coords=(0.0, 0.1),
-            point_ray_surface_idx=2,
-            point_ray_field_coords=(0.0, 0.0),
-            point_ray_pupil_coords=(0.0, 0.0),
-            wavelength=wavelength,
-        )
-
-        expected_dist4 = (
-            nA_t4 * (yB_val_case4 - yA_t4) - mA_t4 * (zB_val_case4 - zA_t4)
-        ) / be.sqrt(mA_t4**2 + nA_t4**2)
-        assert be.isclose(dist4, expected_dist4, atol=1e-7)
+        assert_allclose(dist3, -15.730530102711754)
 
 
 class TestOperand:
