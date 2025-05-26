@@ -253,8 +253,11 @@ class SurfaceGroup:
         if new_surface.is_stop:
             for surface in self.surfaces:
                 surface.is_stop = False
-
-        self.surfaces.insert(index, new_surface)
+        
+        if index is None:
+            self.surfaces.append(new_surface)
+        else:
+            self.surfaces.insert(index, new_surface)
 
         self.surface_factory.last_thickness = kwargs.get("thickness", 0)
 
