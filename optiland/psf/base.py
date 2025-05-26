@@ -146,7 +146,7 @@ class BasePSF(Wavefront):
             image = replace_nonpositive(image)
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
-        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent, origin="lower")
+        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent)
 
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)

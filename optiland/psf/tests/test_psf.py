@@ -392,5 +392,3 @@ def test_fftpsf_view_execution(set_backend_fixture, simple_optic_fixture, projec
         pytest.fail(f"FFTPSF.view(projection='{projection_type}') raised an exception: {e}")
     finally:
         plt.close('all')
-
-```
