@@ -323,3 +323,77 @@ class RayOperand:
         opd = wavefront_data.opd
         delta = (opd - be.mean(opd)) * weights
         return be.mean(be.abs(delta))
+
+    @staticmethod
+    def clearance(
+        optic,
+        line_ray_surface_idx,
+        line_ray_field_coords,
+        line_ray_pupil_coords,
+        point_ray_surface_idx,
+        point_ray_field_coords,
+        point_ray_pupil_coords,
+        wavelength,
+    ):
+        """Computes the signed perpendicular distance in the YZ plane from a
+        reference line (Line A) to a reference point (Point B).
+
+        Line A is defined by a ray (RA) traced at field FA, after it leaves
+        surface SA. Point B is the intersection of a ray (RB) traced at
+        field FB with surface SB.
+
+        This operand is useful for creating clearance or interference constraints,
+        particularly in off-axis reflective systems.
+
+        The sign convention is such that for Line A propagating generally in the
+        +Z direction (N direction cosine > 0), the signed distance is positive
+        if Point B is on the +Y side of Line A. If Line A propagates generally
+        in the -Z direction (N direction cosine < 0), this sign is flipped.
+
+        Args:
+            optic: The optical system model.
+            line_ray_surface_idx: The index of the surface (SA) from which
+                Line A originates (i.e., ray data is taken *after* this
+                surface).
+            line_ray_field_coords: A tuple (Hx, Hy) representing the
+                normalized field coordinates for the ray defining Line A (FA).
+            line_ray_pupil_coords: A tuple (Px, Py) representing the
+                normalized pupil coordinates for the ray defining Line A (FA).
+            point_ray_surface_idx: The index of the surface (SB) with which
+                the ray defining Point B intersects.
+            point_ray_field_coords: A tuple (Hx, Hy) representing the
+                normalized field coordinates for the ray defining Point B (FB).
+            point_ray_pupil_coords: A tuple (Px, Py) representing the
+                normalized pupil coordinates for the ray defining Point B (FB).
+            wavelength: The wavelength at which to trace the rays.
+
+        Returns:
+            float: The signed perpendicular distance in the YZ plane from
+                   Line A to Point B. Returns 0.0 if Line A has zero length
+                   in the YZ plane (i.e., mA and nA are both zero).
+        """
+        FA_Hx, FA_Hy = line_ray_field_coords
+        FA_Px, FA_Py = line_ray_pupil_coords
+        optic.trace_generic(FA_Hx, FA_Hy, FA_Px, FA_Py, wavelength)
+        yA = optic.surface_group.y[line_ray_surface_idx, 0]
+        zA = optic.surface_group.z[line_ray_surface_idx, 0]
+        mA = optic.surface_group.M[line_ray_surface_idx, 0]
+        nA = optic.surface_group.N[line_ray_surface_idx, 0]
+
+        FB_Hx, FB_Hy = point_ray_field_coords
+        FB_Px, FB_Py = point_ray_pupil_coords
+        optic.trace_generic(FB_Hx, FB_Hy, FB_Px, FB_Py, wavelength)
+        yB = optic.surface_group.y[point_ray_surface_idx, 0]
+        zB = optic.surface_group.z[point_ray_surface_idx, 0]
+
+        denominator = be.sqrt(mA**2 + nA**2)
+        epsilon = 1e-9
+
+        if be.abs(denominator) < epsilon:
+            d = 0.0
+        else:
+            numerator = nA * (yB - yA) - mA * (zB - zA)
+            d = numerator / denominator
+            if nA < 0:
+                d = -d
+        return d

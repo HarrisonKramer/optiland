@@ -62,8 +62,16 @@ class TestDoubleGaussAberrations:
 
     def test_seidels(self, set_test_backend, double_gauss):
         S = double_gauss.aberrations.seidels()
-        assert_allclose(S, [-0.003929457875534847, 0.0003954597633218682, 0.0034239055031729947, 
-                            -0.016264753735226404, -0.046484107476755930])
+        assert_allclose(
+            S,
+            [
+                -0.003929457875534847,
+                0.0003954597633218682,
+                0.0034239055031729947,
+                -0.016264753735226404,
+                -0.046484107476755930,
+            ],
+        )
 
     def test_third_order(self, set_test_backend, double_gauss):
         data = double_gauss.aberrations.third_order()

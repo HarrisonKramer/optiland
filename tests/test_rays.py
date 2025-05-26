@@ -14,6 +14,7 @@ from optiland.samples.lithography import UVProjectionLens
 from optiland.samples.objectives import TessarLens
 from tests.utils import assert_allclose
 
+
 def test_translate(set_test_backend):
     rays = BaseRays()
     rays.x = 1.0
@@ -165,7 +166,7 @@ def test_rotate_x(set_test_backend):
     assert_allclose(rays.N[0], -1.0, rtol=0, atol=1e-10)
 
     rays.rotate_x(0.0)
-    
+
     assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
     assert_allclose(rays.y[0], -2.0, rtol=0, atol=1e-10)
     assert_allclose(rays.z[0], -3.0, rtol=0, atol=1e-10)
@@ -588,7 +589,9 @@ class TestPolarizedRays:
         expected_jones_matrix = be.array(
             [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]],
         )
-        assert_allclose(rays.p, expected_jones_matrix, atol=1e-8) # Reduced tolerance slightly for potential backend differences
+        assert_allclose(
+            rays.p, expected_jones_matrix, atol=1e-8
+        )  # Reduced tolerance slightly for potential backend differences
 
         # test case when jones = None
         rays.L0 = be.array([0.0])
@@ -640,6 +643,7 @@ class TestPolarizedRays:
 
         with pytest.raises(ValueError):
             rays._get_3d_electric_field(state)
+
 
 @pytest.mark.usefixtures("set_test_backend")
 class TestRayGenerator:

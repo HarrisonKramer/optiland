@@ -70,14 +70,18 @@ class TestMarginalRayHeightSolve:
 class TestQuickfocusSolve:
     def test_quick_focus_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+            -1
+        ].geometry.cs.z - be.array(10)
         solve = solves.QuickFocusSolve(optic)
 
         assert solve.optic == optic
 
     def test_quick_focus_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+            -1
+        ].geometry.cs.z - be.array(10)
         thickness = 42.21812063592369
         solve = solves.QuickFocusSolve(optic)
         solve.apply()
