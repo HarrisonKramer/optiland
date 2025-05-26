@@ -24,7 +24,6 @@ def replace_nonpositive(image, min_value=1e-9):
 
     Args:
         image: Array (backend or numpy) to process.
-        backend: Backend module (default: be).
         min_value: Value to use if no positive values exist (default: 1e-9).
 
     Returns:
