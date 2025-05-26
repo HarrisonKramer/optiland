@@ -81,35 +81,18 @@ class HuygensPSF(BasePSF):
             pupil_phase = k_um * data.opd  # OPD is path diff in um
 
         # Pupil normals calculation
-        # A more robust solution would be for Wavefront.get_data() to provide
-        # global normals,
-        # or to compute them based on the exit pupil sphere's center and radius.
-        # This simplified version assumes pupil coordinates are relative to EPP center,
-        # and that this center is at the origin of the coordinate system in which these
-        # points are given.
-        if (
-            hasattr(data, "pupil_nx") and data.pupil_nx is not None
-        ):  # Prefer direct normals if available
-            pupil_normal_x_g = data.pupil_nx
-            pupil_normal_y_g = data.pupil_ny
-            pupil_normal_z_g = data.pupil_nz
-        else:  # Fallback simplified normal calculation
-            Rp_pupil = data.radius  # Radius of the exit pupil sphere
-            if Rp_pupil == 0:
-                Rp_pupil = 1e-9  # avoid div by zero
+        Rp_pupil = data.radius  # Radius of the exit pupil sphere
 
-            temp_norm_x = pupil_x_g / Rp_pupil
-            temp_norm_y = pupil_y_g / Rp_pupil
-            temp_norm_z = pupil_z_g / Rp_pupil
+        temp_norm_x = pupil_x_g / Rp_pupil
+        temp_norm_y = pupil_y_g / Rp_pupil
+        temp_norm_z = pupil_z_g / Rp_pupil
 
-            norm_lengths = be.sqrt(temp_norm_x**2 + temp_norm_y**2 + temp_norm_z**2)
-            norm_lengths = be.where(
-                norm_lengths == 0, 1.0, norm_lengths
-            )  # Avoid div by zero
+        norm_lengths = be.sqrt(temp_norm_x**2 + temp_norm_y**2 + temp_norm_z**2)
+        norm_lengths = be.where(norm_lengths == 0, 1.0, norm_lengths)
 
-            pupil_normal_x_g = temp_norm_x / norm_lengths
-            pupil_normal_y_g = temp_norm_y / norm_lengths
-            pupil_normal_z_g = temp_norm_z / norm_lengths
+        pupil_normal_x_g = temp_norm_x / norm_lengths
+        pupil_normal_y_g = temp_norm_y / norm_lengths
+        pupil_normal_z_g = temp_norm_z / norm_lengths
 
         return (
             pupil_x_g,
