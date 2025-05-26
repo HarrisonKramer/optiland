@@ -5,6 +5,8 @@ This module provides a base class for Point Spread Function (PSF) calculations.
 Kramer Harrison, 2025
 """
 
+from abc import abstractmethod
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -13,6 +15,25 @@ from scipy.ndimage import zoom
 
 import optiland.backend as be
 from optiland.wavefront import Wavefront
+
+
+def replace_nonpositive(image, min_value=1e-9):
+    """
+    Replace values <= 0 in the image with the smallest positive value in the image.
+    If no positive value exists, use min_value.
+
+    Args:
+        image: Array (backend or numpy) to process.
+        backend: Backend module (default: be).
+        min_value: Value to use if no positive values exist (default: 1e-9).
+
+    Returns:
+        Array with non-positive values replaced.
+    """
+    if be.any(image <= 0):
+        min_positive = be.min(image[image > 0]) if be.any(image > 0) else min_value
+        return be.where(image <= 0, min_positive, image)
+    return image
 
 
 class BasePSF(Wavefront):
@@ -40,10 +61,10 @@ class BasePSF(Wavefront):
     def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
         super().__init__(
             optic=optic,
-            fields=[field],  # PSF is usually for a single field point
-            wavelengths=[wavelength],  # And single wavelength
+            fields=[field],
+            wavelengths=[wavelength],
             num_rays=num_rays,
-            distribution="uniform",  # Uniform distribution for pupil sampling
+            distribution="uniform",
         )
         self.grid_size = grid_size
         self.psf = None  # Subclasses must compute and set this
@@ -123,8 +144,7 @@ class BasePSF(Wavefront):
 
         # Replace values <= 0 with smallest non-zero value in image for log scale
         if log and be.any(image <= 0):
-            min_positive = be.min(image[image > 0]) if be.any(image > 0) else 1e-9
-            image = be.where(image <= 0, min_positive, image)
+            image = replace_nonpositive(image)
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent, origin="lower")
@@ -154,16 +174,13 @@ class BasePSF(Wavefront):
 
         x_np = be.to_numpy(be.linspace(-x_extent / 2, x_extent / 2, image.shape[1]))
         y_np = be.to_numpy(be.linspace(-y_extent / 2, y_extent / 2, image.shape[0]))
-        X_np, Y_np = np.meshgrid(x_np, y_np)  # meshgrid is fine with numpy for plotting
-
-        image_np = be.to_numpy(image)
+        X_np, Y_np = np.meshgrid(x_np, y_np)
 
         # Replace values <= 0 with smallest non-zero value in image for log scale
-        if log and np.any(image_np <= 0):
-            min_positive = (
-                np.min(image_np[image_np > 0]) if np.any(image_np > 0) else 1e-9
-            )
-            image_np[image_np <= 0] = min_positive
+        if log and be.any(image <= 0):
+            image = replace_nonpositive(image)
+
+        image_np = be.to_numpy(image)
 
         log_formatter = None
         if log:
@@ -228,67 +245,47 @@ class BasePSF(Wavefront):
         return be.array(interpolated_np)
 
     @staticmethod
-    def _find_bounds(psf_np, threshold=0.25):
-        """Finds bounding box for non-zero elements in the PSF matrix.
-
-        Operates on NumPy arrays as it uses np.argwhere and np.min/max.
+    def _find_bounds(psf, threshold=0.25):
+        """Finds the bounding box coordinates for the non-zero elements in the
+        PSF matrix.
 
         Args:
-            psf_np (numpy.ndarray): The PSF matrix (NumPy array).
-            threshold (float): Threshold for determining non-zero elements.
-                Defaults to 0.25.
+            psf (numpy.ndarray): The PSF matrix.
+            threshold (float): The threshold value for determining non-zero
+                elements in the PSF matrix. Default is 0.25.
 
         Returns:
-            tuple: Min/max x and y coordinates of the bounding box.
-        """
-        if not isinstance(psf_np, np.ndarray):
-            raise TypeError("_find_bounds expects a NumPy array.")
+            tuple: A tuple containing the minimum and maximum x and y
+                coordinates of the bounding box.
 
-        thresholded_psf = psf_np > threshold * be.max(psf_np)
+        """
+        thresholded_psf = psf > threshold
         non_zero_indices = np.argwhere(thresholded_psf)
 
-        if non_zero_indices.size == 0:  # Handle case with no points above threshold
+        try:
+            min_x, min_y = np.min(non_zero_indices, axis=0)
+            max_x, max_y = np.max(non_zero_indices, axis=0)
+        except ValueError:
             min_x, min_y = 0, 0
-            max_x, max_y = psf_np.shape[0], psf_np.shape[1]
-            return int(min_x), int(min_y), int(max_x), int(max_y)
+            max_x, max_y = psf.shape
 
-        min_x_idx, min_y_idx = np.min(non_zero_indices, axis=0)
-        max_x_idx, max_y_idx = np.max(non_zero_indices, axis=0)
+        size = max(max_x - min_x, max_y - min_y)
 
-        # Ensure a certain size around the peak if the thresholded area is too small
-        # This helps to get a consistent view centered around the PSF core
-        size = max(
-            max_x_idx - min_x_idx, max_y_idx - min_y_idx, psf_np.shape[0] // 10
-        )  # Ensure min size
+        peak_x, peak_y = psf.shape[0] // 2, psf.shape[1] // 2
 
-        # Center the bounds around the actual peak of the PSF,
-        # not the center of thresholded area
-        peak_coord = np.unravel_index(np.argmax(psf_np), psf_np.shape)
+        min_x = peak_x - size / 2
+        max_x = peak_x + size / 2
+        min_y = peak_y - size / 2
+        max_y = peak_y + size / 2
 
-        center_x, center_y = peak_coord[0], peak_coord[1]
+        min_x = max(0, min_x)
+        min_y = max(0, min_y)
+        max_x = min(psf.shape[0], max_x)
+        max_y = min(psf.shape[1], max_y)
 
-        min_x = center_x - size / 2
-        max_x = center_x + size / 2
-        min_y = center_y - size / 2
-        max_y = center_y + size / 2
+        return int(min_x), int(min_y), int(max_x), int(max_y)
 
-        # Clip to array bounds
-        min_x = max(0, int(min_x))
-        min_y = max(0, int(min_y))
-        max_x = min(psf_np.shape[0], int(max_x))
-        max_y = min(psf_np.shape[1], int(max_y))
-
-        # Ensure max_x > min_x and max_y > min_y
-        if max_x <= min_x:
-            max_x = min_x + 1
-        if max_y <= min_y:
-            max_y = min_y + 1
-        max_x = min(psf_np.shape[0], max_x)  # re-clip
-        max_y = min(psf_np.shape[1], max_y)  # re-clip
-
-        return min_x, min_y, max_x, max_y
-
-    # Abstract method placeholder for subclasses to implement
+    @abstractmethod
     def _compute_psf(self):
         """Computes the PSF.
 
@@ -310,35 +307,8 @@ class BasePSF(Wavefront):
 
         Raises:
             RuntimeError: If the PSF has not been computed.
-            NotImplementedError: If the subclass does not define how grid_size
-                                 relates to the PSF's center peak.
         """
         if self.psf is None:
             raise RuntimeError("PSF has not been computed.")
 
-        # This default implementation assumes a grid where the peak is at grid_size // 2
-        # Subclasses like FFTPSF use this. HuygensPSF might need to override if its
-        # PSF grid center is different or if normalization is handled differently.
-        if not hasattr(self, "grid_size") or self.grid_size is None:
-            # Find peak dynamically if grid_size is not a reliable indicator
-            peak_intensity = be.max(self.psf)
-            # This assumes the PSF is already normalized to a diffraction-limited peak
-            # of 100 This might not be true for all PSF computation methods.
-            # Consider requiring subclasses to provide their diffraction-limited peak.
-            return peak_intensity / 100.0  # Or handle normalization within _compute_psf
-
-        # Default for FFTPSF-like grids
-        center_idx = self.grid_size // 2
-
-        # Ensure PSF is 2D and large enough
-        if (
-            len(self.psf.shape) < 2
-            or center_idx >= self.psf.shape[0]
-            or center_idx >= self.psf.shape[1]
-        ):
-            # Fallback to max if center index is out of bounds (e.g. HuygensPSF)
-            # This still assumes normalization to 100 for diffraction-limited peak.
-            peak_intensity = be.max(self.psf)
-            return peak_intensity / 100.0
-
-        return self.psf[center_idx, center_idx] / 100.0
+        return self.psf[self.grid_size // 2, self.grid_size // 2] / 100
