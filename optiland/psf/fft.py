@@ -11,8 +11,6 @@ Kramer Harrison, 2023
 
 import optiland.backend as be
 from optiland.psf.base import BasePSF
-# No direct numpy, matplotlib, or scipy.ndimage imports needed here anymore.
-# BasePSF handles visualization imports.
 
 
 class FFTPSF(BasePSF):
@@ -57,14 +55,14 @@ class FFTPSF(BasePSF):
         super().__init__(
             optic=optic,
             field=field,
-            wavelength=wavelength, # Passed to BasePSF -> Wavefront
-            num_rays=num_rays,     # Passed to BasePSF -> Wavefront
-            grid_size=grid_size,   # Stored in BasePSF, used here
+            wavelength=wavelength,  # Passed to BasePSF -> Wavefront
+            num_rays=num_rays,  # Passed to BasePSF -> Wavefront
+            grid_size=grid_size,  # Stored in BasePSF, used here
         )
         # self.num_rays is inherited from Wavefront via BasePSF
         # self.grid_size is stored by BasePSF constructor
         self.pupils = self._generate_pupils()
-        self.psf = self._compute_psf() # Computes and sets self.psf
+        self.psf = self._compute_psf()  # Computes and sets self.psf
 
     def _generate_pupils(self):
         """Generates complex pupil functions for each wavelength.
@@ -85,20 +83,20 @@ class FFTPSF(BasePSF):
         """
         # Create a spatial grid for the pupil plane. `self.num_rays` (from Wavefront)
         # defines the resolution of this pupil grid.
-        coords = be.linspace(-1, 1, self.num_rays) # Normalized coordinates
+        coords = be.linspace(-1, 1, self.num_rays)  # Normalized coordinates
         x_grid, y_grid = be.meshgrid(coords, coords)
-        
+
         # Flatten grid for easier indexing based on radial distance
         x_flat = be.ravel(x_grid)
         y_flat = be.ravel(y_grid)
-        # R_flat is the radial coordinate, used to filter points outside unit circle (pupil edge)
+        # R_flat is the radial coordinate, used to filter points outside unit circle
         R_flat = be.sqrt(x_flat**2 + y_flat**2)
 
         field_point = self.fields[0]  # PSF is for a single field point from BasePSF
         generated_pupils = []
 
-        for wl_micrometers in self.wavelengths: # self.wavelengths from Wavefront (in µm)
-            wavefront_data = self.get_data(field_point, wl_micrometers) # From Wavefront
+        for wl_micrometers in self.wavelengths:
+            wavefront_data = self.get_data(field_point, wl_micrometers)
 
             # Initialize a complex array for the pupil function values
             P_flat = be.zeros_like(x_flat, dtype=be.complex128)
@@ -106,23 +104,24 @@ class FFTPSF(BasePSF):
             # OPD is in micrometers. Phase = 2 * pi * OPD / wavelength.
             # wavefront_data.opd is already path length difference.
             phase = (2 * be.pi / wl_micrometers) * wavefront_data.opd
-            
+
             # Amplitude from intensity. Ensure it's normalized if necessary.
             # Current Wavefront seems to provide raw intensity.
             # Normalizing by mean intensity helps stabilize if ray densities vary.
-            amplitude = be.sqrt(wavefront_data.intensity) # E-field amplitude is sqrt(Intensity)
-            if be.mean(amplitude) > 1e-9: # Avoid division by zero for dark pupils
-                amplitude = amplitude / be.mean(amplitude) # Normalize mean amplitude
+            amplitude = be.sqrt(
+                wavefront_data.intensity
+            )  # E-field amplitude is sqrt(Intensity)
+            if be.mean(amplitude) > 1e-9:  # Avoid division by zero for dark pupils
+                amplitude = amplitude / be.mean(amplitude)  # Normalize mean amplitude
             else:
                 amplitude = be.zeros_like(amplitude)
 
-
-            # Assign complex values P = amplitude * exp(j * phase) only to points within the unit circle
-            # Indices where R_flat <= 1 are inside the pupil
+            # Assign complex values P = amplitude * exp(j * phase) only to points
+            # within the unit circle. Indices where R_flat <= 1 are inside the pupil
             valid_indices_mask = R_flat <= 1
-            
+
             complex_pupil_values = amplitude * be.exp(1j * phase)
-            
+
             # Apply mask: only fill where valid_indices_mask is true
             P_flat = be.where(valid_indices_mask, complex_pupil_values, P_flat)
 
@@ -150,25 +149,30 @@ class FFTPSF(BasePSF):
         Returns:
             be.ndarray: The computed 2D PSF (shape: `grid_size` x `grid_size`),
             normalized so that a diffraction-limited system's peak is 100.
-        
+
         Raises:
             ValueError: If pupil functions have not been generated.
         """
         if not self.pupils:
-            raise ValueError("Pupil functions have not been generated prior to _compute_psf call.")
+            raise ValueError(
+                "Pupil functions have not been generated prior to _compute_psf call."
+            )
 
         padded_pupils = self._pad_pupils()
         norm_factor = self._get_normalization()
 
         psf_list_for_summation = []
         for pupil_padded in padded_pupils:
-            # The centered Fourier Transform of the pupil function gives the complex amplitude spread function
+            # The centered Fourier Transform of the pupil function gives the complex
+            # amplitude spread function
             amplitude_spread_function = be.fft.fftshift(be.fft.fft2(pupil_padded))
-            
+
             # Intensity PSF is the squared magnitude of the amplitude spread function
-            intensity_psf = be.real(amplitude_spread_function * be.conj(amplitude_spread_function))
+            intensity_psf = be.real(
+                amplitude_spread_function * be.conj(amplitude_spread_function)
+            )
             psf_list_for_summation.append(intensity_psf)
-        
+
         # Stack PSFs from different wavelengths (if any) along a new axis (axis 0)
         stacked_psfs = be.stack(psf_list_for_summation, axis=0)
 
@@ -176,10 +180,11 @@ class FFTPSF(BasePSF):
         summed_psf = be.sum(stacked_psfs, axis=0)
 
         if norm_factor == 0:
-            # Avoid division by zero if norm_factor is zero (e.g., fully vignetted or zero-amplitude pupil)
+            # Avoid division by zero if norm_factor is zero (e.g., fully vignetted or
+            # zero-amplitude pupil)
             # Return a zero PSF of the correct shape and type.
             return be.zeros((self.grid_size, self.grid_size), dtype=be.float_dtype())
-        
+
         # Normalize so diffraction-limited peak is 100%
         final_psf = (summed_psf / norm_factor) * 100.0
         return final_psf
@@ -194,27 +199,30 @@ class FFTPSF(BasePSF):
         Returns:
             list[be.ndarray]: A list of padded pupil functions (shape:
             `grid_size` x `grid_size`).
-        
+
         Raises:
             ValueError: If any pupil's dimension (`num_rays`) is larger
                         than `grid_size`.
         """
         padded_pupils_list = []
         for pupil_unpadded in self.pupils:
-            if pupil_unpadded.shape[0] > self.grid_size or pupil_unpadded.shape[1] > self.grid_size:
+            if (
+                pupil_unpadded.shape[0] > self.grid_size
+                or pupil_unpadded.shape[1] > self.grid_size
+            ):
                 raise ValueError(
                     f"Pupil size ({pupil_unpadded.shape}) cannot be larger than "
-                    f"grid_size ({self.grid_size}). `num_rays` should be <= `grid_size`."
+                    f"grid_size ({self.grid_size}). `num_rays` should be <= `grid_size`"
                 )
 
             # Calculate padding amounts for rows (axis 0) and columns (axis 1)
-            # This centers the smaller pupil_unpadded array within the larger grid_size array
+            # Centers the smaller pupil_unpadded array within the larger grid_size array
             pad_before_rows = (self.grid_size - pupil_unpadded.shape[0]) // 2
             pad_after_rows = self.grid_size - pupil_unpadded.shape[0] - pad_before_rows
-            
+
             pad_before_cols = (self.grid_size - pupil_unpadded.shape[1]) // 2
             pad_after_cols = self.grid_size - pupil_unpadded.shape[1] - pad_before_cols
-            
+
             padding_config = (
                 (pad_before_rows, pad_after_rows),
                 (pad_before_cols, pad_after_cols),
@@ -225,7 +233,7 @@ class FFTPSF(BasePSF):
                 pupil_unpadded,
                 padding_config,
                 mode="constant",
-                constant_values=(0+0j), 
+                constant_values=(0 + 0j),
             )
             padded_pupils_list.append(padded_pupil)
         return padded_pupils_list
@@ -248,20 +256,20 @@ class FFTPSF(BasePSF):
                    or if the template pupil is entirely zero (e.g. fully vignetted).
         """
         if not self.pupils:
-            return 0.0 
+            return 0.0
 
         # Use the first pupil in the list as a template for the aperture shape.
         # This assumes all pupils define the same aperture extent, which is typical.
         template_pupil_shape = self.pupils[0].shape
-        template_pupil_dtype = self.pupils[0].dtype # Should be complex
+        template_pupil_dtype = self.pupils[0].dtype  # Should be complex
 
-        # Create an ideal, unaberrated pupil: amplitude is 1.0 within the aperture, 0.0 outside. Phase is zero.
+        # Create an ideal, unaberrated pupil: amplitude is 1.0 within the aperture, 0.0
+        # outside. Phase is zero.
         # An easy way to define "within the aperture" is to use locations where the
         # actual first pupil `self.pupils[0]` is non-zero.
         # P_ideal has 1.0+0j where self.pupils[0] is transmitting, 0.0+0j otherwise.
-        P_ideal_unpadded = be.where(self.pupils[0] != (0+0j), 1.0+0j, 0.0+0j)
+        P_ideal_unpadded = be.where(self.pupils[0] != (0 + 0j), 1.0 + 0j, 0.0 + 0j)
         P_ideal_unpadded = be.astype(P_ideal_unpadded, dtype=template_pupil_dtype)
-
 
         # Pad this ideal pupil exactly as the actual pupils are padded.
         pad_before_rows = (self.grid_size - template_pupil_shape[0]) // 2
@@ -276,23 +284,25 @@ class FFTPSF(BasePSF):
             P_ideal_unpadded,
             padding_config,
             mode="constant",
-            constant_values=(0+0j),
+            constant_values=(0 + 0j),
         )
 
         # Compute the PSF of this ideal, padded pupil.
         amplitude_spread_function_ideal = be.fft.fftshift(be.fft.fft2(P_ideal_padded))
-        psf_ideal_intensity = be.real(amplitude_spread_function_ideal * be.conj(amplitude_spread_function_ideal))
-        
+        psf_ideal_intensity = be.real(
+            amplitude_spread_function_ideal * be.conj(amplitude_spread_function_ideal)
+        )
+
         peak_ideal_psf = be.max(psf_ideal_intensity)
 
-        if peak_ideal_psf == 0: # Handle cases like fully vignetted pupil
+        if peak_ideal_psf == 0:  # Handle cases like fully vignetted pupil
             return 0.0
 
         # If multiple wavelengths are summed incoherently in _compute_psf,
         # the normalization factor should reflect the sum of their ideal peaks.
-        # Assuming each wavelength contributes equally to an "ideal" polychromatic PSF peak.
+        # Assuming each wavelength contributes equally to an "ideal" polychromatic
+        # PSF peak.
         return peak_ideal_psf * len(self.wavelengths)
-
 
     def _get_psf_units(self, image_data_for_shape):
         """Calculates the physical extent (units) of the PSF image for plotting.
@@ -327,29 +337,33 @@ class FFTPSF(BasePSF):
         if not self.optic.object_surface.is_infinite:
             exit_pupil_diameter = self.optic.paraxial.XPD()
             entrance_pupil_diameter = self.optic.paraxial.EPD()
-            
-            if entrance_pupil_diameter == 0: # Avoid division by zero
-                 # Default to pupil magnification of 1 if EPD is zero (e.g. afocal)
-                 # Or consider raising an error or specific handling.
-                 pupil_magnification = 1.0
+
+            if entrance_pupil_diameter == 0:  # Avoid division by zero
+                # Default to pupil magnification of 1 if EPD is zero (e.g. afocal)
+                # Or consider raising an error or specific handling.
+                pupil_magnification = 1.0
             else:
                 pupil_magnification = exit_pupil_diameter / entrance_pupil_diameter
-            
+
             magnification = self.optic.paraxial.magnification()
             # Effective F-number formula for finite conjugates
-            fno_effective = fno_paraxial * (1 + be.abs(magnification) / pupil_magnification)
+            fno_effective = fno_paraxial * (
+                1 + be.abs(magnification) / pupil_magnification
+            )
 
         # Q factor: ratio of FFT grid size to pupil sampling resolution.
         # A larger Q means finer sampling of the PSF (more pixels per Airy disk).
-        if self.num_rays == 0: # Avoid division by zero if num_rays is invalid
-            q_factor = 1.0 # Default or raise error
+        if self.num_rays == 0:  # Avoid division by zero if num_rays is invalid
+            q_factor = 1.0  # Default or raise error
         else:
-            q_factor = self.grid_size / self.num_rays # Both are int, ensure float division if needed by backend
+            q_factor = (
+                self.grid_size / self.num_rays
+            )  # Both are int, ensure float division if needed by backend
             q_factor = be.astype(q_factor, be.float_dtype())
-        
+
         # Pixel size (delta_x_psf) in the PSF image plane, in micrometers.
         # self.wavelengths[0] is in micrometers.
-        if q_factor == 0: # Avoid division by zero
+        if q_factor == 0:  # Avoid division by zero
             pixel_size_um = be.array(0.0, dtype=be.float_dtype())
         else:
             pixel_size_um = self.wavelengths[0] * fno_effective / q_factor
@@ -358,7 +372,7 @@ class FFTPSF(BasePSF):
         # image_data_for_shape is the (potentially zoomed) PSF data passed from view().
         num_cols = image_data_for_shape.shape[1]
         num_rows = image_data_for_shape.shape[0]
-        
+
         x_extent_total_um = num_cols * pixel_size_um
         y_extent_total_um = num_rows * pixel_size_um
 
@@ -375,6 +389,7 @@ class FFTPSF(BasePSF):
     # 2. The FFT process with fftshift centers the PSF, so the peak for an
     #    on-axis field point is at grid_size // 2.
     # No override is needed here.
+
 
 # Removed methods that are now in BasePSF:
 # - view

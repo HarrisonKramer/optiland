@@ -253,7 +253,7 @@ class SurfaceGroup:
         if new_surface.is_stop:
             for surface in self.surfaces:
                 surface.is_stop = False
-        
+
         if index is None:
             self.surfaces.append(new_surface)
         else:
