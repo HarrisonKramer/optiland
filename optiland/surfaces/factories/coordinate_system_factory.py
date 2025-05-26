@@ -49,6 +49,10 @@ class CoordinateSystemFactory:
         if "z" in kwargs:
             if "thickness" in kwargs:
                 raise ValueError('Cannot define both "thickness" and "z".')
+            if "dx" in kwargs or "dy" in kwargs:
+                raise ValueError(
+                    'Cannot define "dx" or "dy" when using absolute "x", "y", "z".',
+                )
 
             x = kwargs.get("x", 0)
             y = kwargs.get("y", 0)
