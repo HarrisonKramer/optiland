@@ -236,8 +236,8 @@ class CrossDistribution(BaseDistribution):
         if num_points % 2 == 1:
             mid_idx = num_points // 2
             # Remove the middle element which corresponds to (0,0) for the x_line
-            x_line_x = be.concatenate((x_line_x[:mid_idx], x_line_x[mid_idx+1:]))
-            x_line_y = be.concatenate((x_line_y[:mid_idx], x_line_y[mid_idx+1:]))
+            x_line_x = be.concatenate((x_line_x[:mid_idx], x_line_x[mid_idx + 1 :]))
+            x_line_y = be.concatenate((x_line_y[:mid_idx], x_line_y[mid_idx + 1 :]))
 
         self.x = be.concatenate((y_line_x, x_line_x))
         self.y = be.concatenate((y_line_y, x_line_y))
