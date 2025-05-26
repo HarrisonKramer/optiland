@@ -106,9 +106,7 @@ class FFTPSF(BasePSF):
         3. For each (padded) pupil:
            a. Performing a 2D FFT and applying `fftshift` to center it.
            b. Calculating the squared magnitude (intensity) of the result.
-        4. If multiple wavelengths are used, their individual PSFs are summed
-           incoherently (sum of intensities).
-        5. Normalizing the final PSF using the pre-calculated factor.
+        4. Normalizing the final PSF using the pre-calculated factor.
 
         Returns:
             be.ndarray: The computed 2D PSF (shape: `grid_size` x `grid_size`),
