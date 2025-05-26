@@ -14,6 +14,7 @@ from typing import Any
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
+    BiconicGeometry,
     ChebyshevPolynomialGeometry,
     EvenAsphere,
     OddAsphere,
@@ -39,8 +40,12 @@ class GeometryConfig:
         norm_x (float): normalization factor in x. Defaults to 1.0.
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
-        radius_y (float): toroidal YZ radius. Defaults to be.inf.
-        coefficients_poly_y (list): toroidal YZ polynomial coefficients.
+        radius_x (float): radius of curvature in x for biconic. Defaults to be.inf.
+        radius_y (float): radius of curvature in y for biconic or YZ radius for
+            toroidal. Defaults to be.inf.
+        conic_x (float): conic constant in x for biconic. Defaults to 0.0.
+        conic_y (float): conic constant in y for biconic. Defaults to 0.0.
+        toroidal_coeffs_poly_y (list): toroidal YZ polynomial coefficients.
                                     Defaults to empty list.
     """
 
@@ -52,7 +57,11 @@ class GeometryConfig:
     norm_x: float = 1.0
     norm_y: float = 1.0
     norm_radius: float = 1.0
-    radius_y: float = be.inf
+    # Biconic and Toroidal parameters
+    radius_x: float = be.inf  # Used by Biconic
+    radius_y: float = be.inf  # Used by Biconic and Toroidal (as radius_yz)
+    conic_x: float = 0.0  # Used by Biconic
+    conic_y: float = 0.0  # Used by Biconic
     toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
 
 
@@ -195,6 +204,36 @@ def _create_zernike(cs: CoordinateSystem, config: GeometryConfig):
     )
 
 
+def _create_biconic(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a biconic geometry
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        BiconicGeometry
+    """
+    if (
+        be.isinf(config.radius_x)
+        and be.isinf(config.radius_y)
+        and config.conic_x == 0.0
+        and config.conic_y == 0.0
+    ):
+        # If all radii are infinite and conics are zero, it's a plane
+        return Plane(cs)
+    return BiconicGeometry(
+        coordinate_system=cs,
+        radius_x=config.radius_x,
+        radius_y=config.radius_y,
+        conic_x=config.conic_x,
+        conic_y=config.conic_y,
+        tol=config.tol,
+        max_iter=config.max_iter,
+    )
+
+
 def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a Toroidal geometry
@@ -209,8 +248,8 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
 
     return ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=config.radius,
-        radius_yz=config.radius_y,
+        radius_rotation=config.radius,  # Toroidal uses the main 'radius' for rotation
+        radius_yz=config.radius_y,  # Toroidal uses 'radius_y' for its YZ radius
         conic=config.conic,
         coeffs_poly_y=config.toroidal_coeffs_poly_y,
         tol=config.tol,
@@ -233,14 +272,15 @@ def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
 
 
 geometry_mapper = {
-    "standard": _create_standard,
+    "biconic": _create_biconic,
+    "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
     "odd_asphere": _create_odd_asphere,
-    "polynomial": _create_polynomial,
-    "chebyshev": _create_chebyshev,
-    "zernike": _create_zernike,
-    "toroidal": _create_toroidal,
     "paraxial": _create_paraxial,
+    "polynomial": _create_polynomial,
+    "standard": _create_standard,
+    "toroidal": _create_toroidal,
+    "zernike": _create_zernike,
 }
 
 

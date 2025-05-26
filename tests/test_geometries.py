@@ -4,6 +4,7 @@ import numpy as np
 from optiland.optic import Optic
 from optiland.materials import Material, IdealMaterial
 from optiland import geometries
+from optiland.geometries import BiconicGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
 from .utils import assert_allclose
@@ -1122,3 +1123,198 @@ class TestToroidalGeometry:
             be.allclose(ix, be.array(0.0), rtol=1e-5, atol=1e-6)
             be.allclose(iy, be.array(0.0), rtol=1e-5, atol=1e-6)
             be.allclose(iz, be.array(0.0), rtol=1e-5, atol=1e-6) # Intersection coordinates should be (0, 0, 0)
+
+
+class TestBiconicGeometry:
+    def test_str(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
+        assert str(geom) == "Biconic"
+
+    def test_sag_vertex(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0, conic_x=0.5, conic_y=-0.5)
+        assert_allclose(geom.sag(0, 0), 0.0)
+
+    def test_sag_finite_radii(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
+        assert_allclose(geom.sag(x=1, y=1), 0.07514126037252641)
+
+    def test_sag_rx_infinite(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=be.inf, radius_y=20.0) # Cylindrical along X
+        # Sag should only depend on y. zx(any) = 0
+        # zy(1) for Ry=20 is 0.02501563183003138
+        assert_allclose(geom.sag(x=10, y=1), 0.02501563183003138)
+        assert_allclose(geom.sag(x=-5, y=1), 0.02501563183003138)
+
+    def test_sag_ry_infinite(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=be.inf) # Cylindrical along Y
+        # Sag should only depend on x. zy(any) = 0
+        # zx(1) for Rx=10 is 0.05012562854249503
+        assert_allclose(geom.sag(x=1, y=10), 0.05012562854249503)
+        assert_allclose(geom.sag(x=1, y=-5), 0.05012562854249503)
+
+    def test_sag_both_infinite_plane(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=be.inf, radius_y=be.inf)
+        assert_allclose(geom.sag(x=10, y=20), 0.0)
+        # Also test with conics, should still be zero
+        geom_conic = BiconicGeometry(cs, radius_x=be.inf, radius_y=be.inf, conic_x=0.5, conic_y=-1.0)
+        assert_allclose(geom_conic.sag(x=10, y=20), 0.0)
+
+
+    def test_sag_with_conics(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0, conic_x=-1.0, conic_y=0.5)
+        expected_sag = 0.05 + 0.02502345130203264
+        assert_allclose(geom.sag(x=1, y=1), expected_sag)
+
+    def test_sag_array_input(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
+        x = be.array([0, 1, 2])
+        y = be.array([0, 1, 1])
+        expected_sags = be.array([0.0, 0.07514126037252641, 0.22705672190612818])
+        assert_allclose(geom.sag(x, y), expected_sags)
+
+    def test_surface_normal_vertex(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0, conic_x=0.5, conic_y=-0.5)
+        nx, ny, nz = geom._surface_normal(x=0, y=0)
+        assert_allclose(nx, 0.0)
+        assert_allclose(ny, 0.0)
+        assert_allclose(nz, -1.0)
+
+    def test_surface_normal_spherical_case(self, set_test_backend):
+        cs = CoordinateSystem()
+        R = 10.0
+        geom = BiconicGeometry(cs, radius_x=R, radius_y=R, conic_x=0.0, conic_y=0.0)
+        nx, ny, nz = geom._surface_normal(x=1, y=1)
+        assert_allclose(nx, 0.09950371902099892)
+        assert_allclose(ny, 0.09950371902099892)
+        assert_allclose(nz, -0.9900493732390136)
+
+    def test_surface_normal_cylindrical_rx_inf(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=be.inf, radius_y=10.0, conic_y=0.0) # Cylinder along X
+        nx, ny, nz = geom._surface_normal(x=5, y=1) # x shouldn't matter for dfdx=0
+        assert_allclose(nx, 0.0)
+        assert_allclose(ny, 0.1)
+        assert_allclose(nz, -0.99498743710662)
+        
+    def test_surface_normal_array_input(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=10.0, conic_x=0.0, conic_y=0.0) # Spherical R=10
+        x = be.array([0, 1])
+        y = be.array([0, 1])
+        
+        # Point (0,0): nx=0, ny=0, nz=-1
+        # Point (1,1): nx=0.099503719, ny=0.099503719, nz=-0.990049373 (from spherical test)
+        expected_nx = be.array([0.0, 0.09950371902099892])
+        expected_ny = be.array([0.0, 0.09950371902099892])
+        expected_nz = be.array([-1.0, -0.9900493732390136])
+        
+        nx_calc, ny_calc, nz_calc = geom._surface_normal(x, y)
+        assert_allclose(nx_calc, expected_nx)
+        assert_allclose(ny_calc, expected_ny)
+        assert_allclose(nz_calc, expected_nz)
+
+
+    def test_distance_simple(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=10.0, radius_y=20.0)
+        rays = RealRays(x=0.0, y=0.0, z=-5.0, L=0.0, M=0.0, N=1.0, wavelength=0.55, intensity=1.0)
+        # Sag at (0,0) is 0, so distance to surface at (0,0) should be 5.0
+        assert_allclose(geom.distance(rays), 5.0, atol=1e-9) # Newton-Raphson tolerance
+
+    def test_distance_planar_biconic(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom = BiconicGeometry(cs, radius_x=be.inf, radius_y=be.inf, conic_x=0.0, conic_y=0.0) # Planar
+        rays = RealRays(x=1.0, y=1.0, z=-5.0, L=0.0, M=0.0, N=1.0, wavelength=0.55, intensity=1.0)
+        # Distance to plane z=0 should be 5.0
+        # The parent NewtonRaphsonGeometry's _intersection calls _intersection_plane if self.radius is inf.
+        # In Biconic.__init__, self.radius is set to radius_x. So this path is tested.
+        assert_allclose(geom.distance(rays), 5.0, atol=1e-9)
+
+    def test_to_dict_from_dict(self, set_test_backend):
+        cs = CoordinateSystem(x=1, y=2, z=3, rx=0.1, ry=-0.1, rz=0.05)
+        original_geom = BiconicGeometry(
+            cs,
+            radius_x=100.0,
+            radius_y=-150.0,
+            conic_x=-0.5,
+            conic_y=0.2,
+            tol=1e-9,
+            max_iter=50,
+        )
+        geom_dict = original_geom.to_dict()
+
+        assert geom_dict["type"] == "BiconicGeometry"
+        assert geom_dict["radius_x"] == 100.0
+        assert geom_dict["radius_y"] == -150.0
+        assert geom_dict["conic_x"] == -0.5
+        assert geom_dict["conic_y"] == 0.2
+        assert geom_dict["tol"] == 1e-9
+        assert geom_dict["max_iter"] == 50
+        assert "radius" not in geom_dict 
+        assert "conic" not in geom_dict
+
+        reconstructed_geom = BiconicGeometry.from_dict(geom_dict)
+        assert isinstance(reconstructed_geom, BiconicGeometry)
+        assert_allclose(reconstructed_geom.Rx, original_geom.Rx)
+        assert_allclose(reconstructed_geom.Ry, original_geom.Ry)
+        assert_allclose(reconstructed_geom.kx, original_geom.kx)
+        assert_allclose(reconstructed_geom.ky, original_geom.ky)
+        assert reconstructed_geom.tol == original_geom.tol
+        assert reconstructed_geom.max_iter == original_geom.max_iter
+        assert reconstructed_geom.cs.to_dict() == original_geom.cs.to_dict()
+        
+        # Check if the reconstructed dict is identical (it should be)
+        assert reconstructed_geom.to_dict() == geom_dict
+
+    def test_from_dict_missing_keys(self, set_test_backend):
+        cs = CoordinateSystem()
+        minimal_valid_dict = {
+            "type": "BiconicGeometry",
+            "cs": cs.to_dict(),
+            "radius_x": 10.0,
+            "radius_y": 20.0,
+            # conic_x, conic_y, tol, max_iter will use defaults
+        }
+        
+        # Test missing radius_x
+        invalid_dict_rx = minimal_valid_dict.copy()
+        del invalid_dict_rx["radius_x"]
+        with pytest.raises(ValueError, match="Missing required BiconicGeometry keys: {'radius_x'}"):
+            BiconicGeometry.from_dict(invalid_dict_rx)
+
+        # Test missing radius_y
+        invalid_dict_ry = minimal_valid_dict.copy()
+        del invalid_dict_ry["radius_y"]
+        with pytest.raises(ValueError, match="Missing required BiconicGeometry keys: {'radius_y'}"):
+            BiconicGeometry.from_dict(invalid_dict_ry)
+            
+        # Test missing cs
+        invalid_dict_cs = minimal_valid_dict.copy()
+        del invalid_dict_cs["cs"]
+        with pytest.raises(ValueError, match="Missing required BiconicGeometry keys: {'cs'}"):
+            BiconicGeometry.from_dict(invalid_dict_cs)
+
+    def test_from_dict_default_conics_tol_max_iter(self, set_test_backend):
+        cs = CoordinateSystem()
+        geom_data = {
+            "type": "BiconicGeometry",
+            "cs": cs.to_dict(),
+            "radius_x": 10.0,
+            "radius_y": 20.0,
+        }
+        geom = BiconicGeometry.from_dict(geom_data)
+        assert geom.Rx == 10.0
+        assert geom.Ry == 20.0
+        assert geom.kx == 0.0  # Default
+        assert geom.ky == 0.0  # Default
+        assert geom.tol == 1e-10  # Default from NewtonRaphsonGeometry via BiconicGeometry
+        assert geom.max_iter == 100 # Default from NewtonRaphsonGeometry via BiconicGeometry
