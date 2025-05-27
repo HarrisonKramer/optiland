@@ -7,6 +7,10 @@ analysis, calculating the spot diagram at various focal planes.
 
 from typing import Literal
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
 from optiland.analysis.through_focus import ThroughFocusAnalysis
 
@@ -77,6 +81,12 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                 system for spot data generation in `SpotDiagram`.
                 Defaults to "local".
         """
+        self.num_rings = num_rings
+        self.distribution = distribution
+        if coordinates not in ["global", "local"]:
+            raise ValueError("Coordinates must be 'global' or 'local'.")
+        self.coordinates = coordinates
+
         super().__init__(
             optic,
             delta_focus=delta_focus,
@@ -84,11 +94,6 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             fields=fields,
             wavelengths=wavelengths,
         )
-        self.num_rings = num_rings
-        self.distribution = distribution
-        if coordinates not in ["global", "local"]:
-            raise ValueError("Coordinates must be 'global' or 'local'.")
-        self.coordinates = coordinates
 
     def _perform_analysis_at_focus(self):
         """Calculates RMS spot radii at the current focal plane.
@@ -118,10 +123,195 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         )
         return spot_diagram_at_focus.data
 
-    def view(self):
-        """Prints the through-focus RMS spot radius results to the console.
+    def view(self, figsize_per_plot=(3, 3), buffer=1.05):
+        """Visualizes the through-focus spot diagrams.
 
-        Outputs the calculated RMS spot radius for each field (at the primary
-        wavelength) at each evaluated focal plane.
+        Generates a grid of plots where rows represent fields and columns
+        represent defocus positions. Each plot shows the spot diagram for all
+        wavelengths, centered by its primary wavelength centroid.
+
+        Args:
+            figsize_per_plot (tuple, optional): Approximate (width, height)
+                in inches for each individual subplot. Defaults to (3,3).
+            buffer (float, optional): Buffer factor to extend the axis limits
+                beyond the maximum spot extent. Default is 1.05.
         """
-        pass
+        if not self.results:
+            print("No data to display. Run analysis first.")
+            return
+
+        num_fields = len(self.fields)
+        num_defocus_steps = self.num_steps
+
+        if num_fields == 0 or num_defocus_steps == 0 or not self.wavelengths:
+            print("No fields, defocus steps, or wavelengths to plot.")
+            return
+
+        # Calculate global axis limit based on max geometric radius after centering
+        max_r_sq_numpy = 0.0
+        for j_defocus_idx in range(num_defocus_steps):
+            data_this_defocus = self.results[j_defocus_idx]
+            for i_field_idx in range(num_fields):
+                if not data_this_defocus[i_field_idx]:
+                    continue  # Skip if no wavelength data for this field
+
+                primary_wl_idx = self.optic.wavelengths.primary_index
+                # Ensure primary_wl_idx is valid for the current field's wavelength data
+                if primary_wl_idx >= len(data_this_defocus[i_field_idx]):
+                    current_field_wl_data = data_this_defocus[i_field_idx][0]
+                else:
+                    current_field_wl_data = data_this_defocus[i_field_idx][
+                        primary_wl_idx
+                    ]
+
+                if be.any(current_field_wl_data.intensity == 0) and be.all(
+                    current_field_wl_data.intensity == 0
+                ):
+                    # skip if all intensities are zero, avoids nan in mean
+                    plot_centroid_x_val, plot_centroid_y_val = 0.0, 0.0
+                else:
+                    plot_centroid_x = be.mean(
+                        current_field_wl_data.x[current_field_wl_data.intensity != 0]
+                    )
+                    plot_centroid_y = be.mean(
+                        current_field_wl_data.y[current_field_wl_data.intensity != 0]
+                    )
+                    plot_centroid_x_val = be.to_numpy(plot_centroid_x).item()
+                    plot_centroid_y_val = be.to_numpy(plot_centroid_y).item()
+
+                for k_wl_idx in range(len(self.wavelengths)):
+                    spot_data_item = data_this_defocus[i_field_idx][k_wl_idx]
+
+                    x_centered = spot_data_item.x - plot_centroid_x_val
+                    y_centered = spot_data_item.y - plot_centroid_y_val
+
+                    # Consider only valid rays (intensity != 0) for radius calculation
+                    valid_rays_mask = spot_data_item.intensity != 0
+                    if be.any(valid_rays_mask):
+                        r_sq_values = (
+                            x_centered[valid_rays_mask] ** 2
+                            + y_centered[valid_rays_mask] ** 2
+                        )
+                        current_max_r_sq = be.max(r_sq_values)
+                        max_r_sq_numpy = max(
+                            max_r_sq_numpy, be.to_numpy(current_max_r_sq).item()
+                        )
+
+        global_axis_lim = (
+            np.sqrt(max_r_sq_numpy) if max_r_sq_numpy > 0 else 0.01
+        )  # Default small limit
+
+        fig, axs = plt.subplots(
+            num_fields,
+            num_defocus_steps,
+            figsize=(
+                num_defocus_steps * figsize_per_plot[0],
+                num_fields * figsize_per_plot[1],
+            ),
+            sharex=True,
+            sharey=True,
+            squeeze=False,  # Ensures axs is always 2D
+        )
+
+        markers = ["o", "s", "^"]
+        legend_handles = []
+        legend_labels = []
+
+        # Determine X/Y labels based on image surface orientation (once)
+        cs = self.optic.image_surface.geometry.cs
+        effective_orientation = np.abs(be.to_numpy(cs.get_effective_rotation_euler()))
+        tol = 0.01
+        if effective_orientation[0] > tol or effective_orientation[1] > tol:
+            x_plot_label, y_plot_label = "U (mm)", "V (mm)"
+        else:
+            x_plot_label, y_plot_label = "X (mm)", "Y (mm)"
+
+        for i_field_idx in range(num_fields):
+            for j_defocus_idx in range(num_defocus_steps):
+                ax = axs[i_field_idx, j_defocus_idx]
+                field_coord = self.fields[i_field_idx]
+
+                # nominal_focus and positions[j] are numpy arrays from backend
+                # Convert to float for subtraction if they are 0-d arrays
+                nominal_focus_val = be.to_numpy(self.nominal_focus).item()
+                position_val = float(self.positions[j_defocus_idx])
+                defocus_val = position_val - nominal_focus_val
+
+                data_for_this_plot = self.results[j_defocus_idx][i_field_idx]
+
+                primary_wl_idx = self.optic.wavelengths.primary_index
+
+                if primary_wl_idx >= len(data_for_this_plot):
+                    spot_data_primary_wl_plot = data_for_this_plot[0]  # Fallback
+                else:
+                    spot_data_primary_wl_plot = data_for_this_plot[primary_wl_idx]
+
+                if be.any(spot_data_primary_wl_plot.intensity == 0) and be.all(
+                    spot_data_primary_wl_plot.intensity == 0
+                ):
+                    plot_centroid_x_val, plot_centroid_y_val = 0.0, 0.0
+                else:
+                    plot_centroid_x = be.mean(
+                        spot_data_primary_wl_plot.x[
+                            spot_data_primary_wl_plot.intensity != 0
+                        ]
+                    )
+                    plot_centroid_y = be.mean(
+                        spot_data_primary_wl_plot.y[
+                            spot_data_primary_wl_plot.intensity != 0
+                        ]
+                    )
+                    plot_centroid_x_val = be.to_numpy(plot_centroid_x).item()
+                    plot_centroid_y_val = be.to_numpy(plot_centroid_y).item()
+
+                for k_wl_idx, spot_data_item in enumerate(data_for_this_plot):
+                    x_centered_plot = spot_data_item.x - plot_centroid_x_val
+                    y_centered_plot = spot_data_item.y - plot_centroid_y_val
+
+                    x_np = be.to_numpy(x_centered_plot)
+                    y_np = be.to_numpy(y_centered_plot)
+                    i_np = be.to_numpy(spot_data_item.intensity)
+                    mask = i_np != 0
+
+                    if be.any(mask):  # Only plot if there are any valid rays
+                        scatter_plot = ax.scatter(
+                            x_np[mask],
+                            y_np[mask],
+                            s=10,
+                            marker=markers[k_wl_idx % len(markers)],
+                            alpha=0.7,
+                        )
+                        if i_field_idx == 0 and j_defocus_idx == 0:
+                            wl_value = self.wavelengths[k_wl_idx]
+                            legend_handles.append(scatter_plot)
+                            legend_labels.append(f"{wl_value:.4f} µm")
+
+                ax.axis("square")
+                ax.grid(alpha=0.25)
+
+                # Titles and labels
+                title_str = f"Field: ({field_coord[0]:.2f},{field_coord[1]:.2f})"
+                if i_field_idx == 0:  # Add defocus to title for top row
+                    title_str = f"Defocus: {defocus_val:+.3f} mm\n{title_str}"
+                ax.set_title(title_str, fontsize=10)
+
+                if i_field_idx == num_fields - 1:
+                    ax.set_xlabel(x_plot_label)
+                if j_defocus_idx == 0:
+                    ax.set_ylabel(y_plot_label)
+
+                current_lim = global_axis_lim * buffer
+                ax.set_xlim((-current_lim, current_lim))
+                ax.set_ylim((-current_lim, current_lim))
+
+        if legend_handles:
+            fig.legend(
+                legend_handles,
+                legend_labels,
+                loc="lower center",
+                ncol=min(len(legend_labels), 5),  # Max 5 columns for legend
+                bbox_to_anchor=(0.5, -0.02 / (figsize_per_plot[1] * num_fields / 4)),
+            )
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust rect for legend and titles
+        plt.show()
