@@ -59,7 +59,7 @@ class GeometricPSF(BasePSF):
             optic=optic,
             fields=[field],  # SpotDiagram expects a list of fields
             wavelengths=[wavelength],  # and a list of wavelengths
-            num_rays=num_rays,
+            num_rings=num_rays,
             distribution=distribution,
         )
         # SpotDiagram stores data in a list of lists (fields, then wavelengths)
