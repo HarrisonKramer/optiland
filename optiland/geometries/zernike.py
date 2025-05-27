@@ -22,7 +22,7 @@ cross-coupling between terms, making them ideal for optimizing optical systems.
 In freeform optics, they enable precise control of surface shape,
 improving performance beyond traditional spherical and aspheric designs.
 
-drpaprika, 2025
+Kramer Harrison, 2024
 """
 
 import optiland.backend as be
@@ -48,54 +48,56 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     coefficient for Z_i.
 
     Args:
-        coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of curvature of the geometry.
-        conic (float, optional): The conic constant of the geometry.
+        coordinate_system (CoordinateSystem): The coordinate system of the geometry.
+        radius (float): The radius of curvature of the base sphere.
+        conic (float, optional): The conic constant of the base sphere.
             Defaults to 0.0.
-        tol (float, optional): The tolerance value used in calculations.
+        tol (float, optional): Tolerance for Newton-Raphson iteration.
             Defaults to 1e-10.
-        max_iter (int, optional): The maximum number of iterations used in
-            calculations. Defaults to 100.
-        coefficients (list or be.ndarray, optional): The coefficients of the
-            Zernike polynomial surface. Defaults to an empty list, indicating
-            no Zernike polynomial coefficients are used.
-        norm_x (int, optional): The normalization factor for the x-coordinate.
-            Defaults to 1.
-        norm_y (int, optional): The normalization factor for the y-coordinate.
-            Defaults to 1.
+        max_iter (int, optional): Maximum iterations for Newton-Raphson.
+            Defaults to 100.
+        coefficients (list[float] or be.ndarray, optional): A 1D array or list
+            of Fringe Zernike coefficients c_i. `coefficients[i]` is the
+            coefficient for Z_(i+1). Defaults to an empty list.
+        norm_radius (float, optional): Normalization radius for rho.
+            Defaults to 1.0.
+
+    Attributes:
+        c (be.ndarray): 1D array of Fringe Zernike coefficients.
+        norm_radius (float): Normalization radius.
 
     """
 
     def __init__(
         self,
-        coordinate_system: str,
+        coordinate_system: CoordinateSystem, # Corrected type
         radius: float,
         conic: float = 0.0,
         tol: float = 1e-10,
         max_iter: int = 100,
-        coefficients: be.ndarray = None,
-        norm_radius: float = 1,
+        coefficients: list[float] or be.ndarray = None, # Allow list or be.ndarray
+        norm_radius: float = 1.0, # Default to float
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         if coefficients is None:
             coefficients = []
-        self.c = be.atleast_1d(coefficients)
-        self.norm_radius = norm_radius
-        self.is_symmetric = False
+        self.c = be.atleast_1d(be.asarray(coefficients)) # Ensure it's a backend array
+        self.norm_radius = float(norm_radius) # Ensure norm_radius is float
+        self.is_symmetric = False # Zernikes can be non-symmetric
 
     def __str__(self) -> str:
         return "Zernike Polynomial"
 
-    def sag(self, x: be.ndarray, y: be.ndarray) -> be.ndarray:
+    def sag(self, x: float or be.ndarray, y: float or be.ndarray) -> float or be.ndarray:
         """Calculate the sag of the Zernike polynomial surface at the given
         coordinates.
 
         Args:
-            x (float, be.ndarray): The Cartesian x-coordinate(s).
-            y (float, be.ndarray): The Cartesian y-coordinate(s).
+            x (float or be.ndarray): The Cartesian x-coordinate(s).
+            y (float or be.ndarray): The Cartesian y-coordinate(s).
 
         Returns:
-            be.ndarray: The sag value at the given Cartesian coordinates.
+            be.ndarray or float: The sag value at the given Cartesian coordinates.
 
         """
         x_norm = x / self.norm_radius
@@ -125,12 +127,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         """Calculate the i-th Fringe Zernike polynomial at the given rho, theta.
 
         Args:
-            i (int): The degree of the Zernike polynomial.
-            rho (be.ndarray): Radial coordinate.
-            theta (be.ndarray): Azimuthal coordinate.
+            i (int): Fringe Zernike index (1-based).
+            rho (be.ndarray or float): Radial coordinate (normalized).
+            theta (be.ndarray or float): Azimuthal coordinate (radians).
 
         Returns:
-            float or be.ndarray: Z_i(rho, theta).
+            be.ndarray or float: Z_i(rho, theta) value(s).
 
         """
         n, m = self._fringezernike_order_to_zernike_order(i)
@@ -153,12 +155,13 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         We'll use them in chain rule for partial derivatives w.r.t x,y.
 
         Args:
-            i (int): Fringe Zernike index
-            rho (float or be.ndarray): radial coordinate
-            theta (float or be.ndarray): azimuthal coordinate
+            i (int): Fringe Zernike index (1-based).
+            rho (be.ndarray or float): Radial coordinate (normalized).
+            theta (be.ndarray or float): Azimuthal coordinate (radians).
 
-        Return:
-            (dZdrho, dZdtheta) as floats or ndarrays
+        Returns:
+            tuple[be.ndarray or float, be.ndarray or float]: Partial derivatives
+            (dZ/drho, dZ/dtheta).
 
         """
         n, m = self._fringezernike_order_to_zernike_order(i)
@@ -189,12 +192,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
                      [k! ((n+m)/2 - k)! ((n-m)/2 - k)!] * rho^(n - 2k)
 
         Args:
-            n (int): Zernike n
-            m (int): Zernike m (assumed >= 0)
-            rho (float or be.ndarray): Radial coordinate.
+            n (int): Radial Zernike order (n >= 0).
+            m (int): Azimuthal Zernike order (m >= 0, |m| <= n, n-m is even).
+            rho (be.ndarray or float): Radial coordinate (normalized).
 
         Returns:
-            float or be.ndarray: The radial polynomial evaluated at rho.
+            be.ndarray or float: The radial polynomial R_n^m(rho) value(s).
 
         """
         val = 0.0
@@ -214,12 +217,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         d/d(rho) R_n^m(rho) = sum_{k=0} (...) (n-2k) * rho^(n-2k-1)
 
         Args:
-            n (int): Zernike n.
-            m (int): Zernike m (assumed >= 0).
-            rho (float or be.ndarray): radial coordinate.
+            n (int): Radial Zernike order.
+            m (int): Azimuthal Zernike order (m >= 0).
+            rho (be.ndarray or float): Radial coordinate (normalized).
 
         Returns:
-            float or be.ndarray: d/d rho of R_n^m(rho).
+            be.ndarray or float: Derivative d(R_n^m)/d(rho) value(s).
 
         """
         val = 0.0
@@ -246,11 +249,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         in Cartesian coordinates at (x, y).
 
         Args:
-            x (float or be.ndarray): x-coordinate(s).
-            y (float or be.ndarray): y-coordinate(s).
+            x (be.ndarray): x-coordinate(s) on the surface.
+            y (be.ndarray): y-coordinate(s) on the surface.
 
         Returns:
-            (nx, ny, nz): Normal vector components in Cartesian coords.
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Normal vector components
+            (nx, ny, nz) in Cartesian coordinates.
 
         """
         # Conic partial derivatives:
@@ -314,16 +318,21 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         https://wp.optics.arizona.edu/visualopticslab/wp-content/
         uploads/sites/52/2021/10/Zernike-Fit.pdf
+        Note: k is 0-indexed in the paper, but 1-indexed for Fringe Zernikes (Z_1, Z_2...).
+        The formula here assumes k is the 1-based Fringe index.
         """
-        n = be.ceil((-3 + be.sqrt(9 + 8 * k)) / 2)
-        m = 2 * k - n * (n + 2)
+        # Adjust k to be 0-indexed for the formula if it's passed as 1-indexed Fringe
+        k_zero_indexed = k - 1
+        n = be.ceil((-3 + be.sqrt(9 + 8 * k_zero_indexed)) / 2)
+        m = 2 * k_zero_indexed - n * (n + 2)
         return (n.astype(int), m.astype(int))
 
-    def _validate_inputs(self, x_norm: float, y_norm: float) -> None:
+    def _validate_inputs(self, x_norm: be.ndarray or float, y_norm: be.ndarray or float) -> None:
         """Validate the input coordinates for the Zernike polynomial surface.
 
         Args:
-            x_norm (be.ndarray): The normalized x values.
+            x_norm (be.ndarray or float): The normalized x-coordinate(s).
+            y_norm (be.ndarray or float): The normalized y-coordinate(s).
 
         """
         if be.any(be.abs(x_norm) > 1) or be.any(be.abs(y_norm) > 1):
@@ -337,7 +346,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         """Convert the Zernike polynomial geometry to a dictionary.
 
         Returns:
-            dict: The Zernike polynomial geometry as a dictionary.
+            dict: A dictionary representation of the Zernike polynomial geometry.
 
         """
         geometry_dict = super().to_dict()
@@ -376,10 +385,23 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             data.get("tol", 1e-10),
             data.get("max_iter", 100),
             data.get("coefficients", []),
-            data.get("norm_x", 1),
-            data.get("norm_y", 1),
+            data.get("coefficients", []),
+            data.get("norm_radius", 1.0), # Corrected from norm_x, norm_y
         )
 
 
-def factorial(n):
-    return be.prod(range(1, n + 1))
+def factorial(n: int) -> int or float: # Type hint for n
+    """Computes factorial of n.
+    
+    Args:
+        n (int): Non-negative integer.
+        
+    Returns:
+        int or float: n!
+    """
+    if n < 0:
+        raise ValueError("Factorial is not defined for negative numbers.")
+    if n == 0:
+        return 1
+    # Use be.prod for backend compatibility, be.arange needs to be cast if not float
+    return be.prod(be.arange(1, n + 1, dtype=be.int32))

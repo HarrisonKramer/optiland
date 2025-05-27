@@ -62,7 +62,7 @@ class CoordinateSystem:
         """Localizes the rays in the coordinate system.
 
         Args:
-            rays: The rays to be localized.
+            rays (RealRays): The rays to be localized.
 
         """
         if self.reference_cs:
@@ -80,7 +80,7 @@ class CoordinateSystem:
         """Globalizes the rays from the coordinate system.
 
         Args:
-            rays: The rays to be globalized.
+            rays (RealRays): The rays to be globalized.
 
         """
         if self.rx:
@@ -156,10 +156,14 @@ class CoordinateSystem:
         return eff_translation, eff_rot_mat
 
     def get_effective_rotation_euler(self):
-        """Get the effective rotation in Euler angles
+        """Get the effective rotation in Euler angles.
+
+        The Euler angles are returned in 'xyz' order.
 
         Returns:
-            be.ndarray: The effective rotation in Euler angles
+            np.ndarray: A NumPy array containing the effective rotation as Euler
+                angles (rx, ry, rz). Note: This returns a NumPy array due to
+                the use of SciPy for the conversion.
 
         """
         _, eff_rot_mat = self.get_effective_transform()

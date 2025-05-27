@@ -29,7 +29,7 @@ class Aberrations:
         Compute all third-order aberrations and first-order color terms.
 
         Returns:
-            tuple: A tuple containing the following numpy arrays:
+            tuple: A tuple containing the following `be.ndarray` instances:
                 - TSC: Third-order transverse spherical aberration.
                 - SC: Third-order longitudinal spherical aberration.
                 - CC: Third-order sagittal coma.
@@ -85,7 +85,7 @@ class Aberrations:
         Compute the Seidel aberration coefficients.
 
         Returns:
-            numpy.ndarray: Array of Seidel aberration coefficients.
+            be.ndarray: Array of Seidel aberration coefficients.
         """
         self._precalculations()
         TSC = self._compute_over_surfaces(self._TSC_term)
@@ -101,7 +101,7 @@ class Aberrations:
         Compute third-order transverse spherical aberration.
 
         Returns:
-            numpy.ndarray: Third-order transverse spherical aberration.
+            be.ndarray: Third-order transverse spherical aberration.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TSC_term).flatten()
@@ -111,7 +111,7 @@ class Aberrations:
         Compute third-order longitudinal spherical aberration.
 
         Returns:
-            numpy.ndarray: Third-order longitudinal spherical aberration.
+            be.ndarray: Third-order longitudinal spherical aberration.
         """
         self._precalculations()
         TSC = self._compute_over_surfaces(self._TSC_term)
@@ -123,7 +123,7 @@ class Aberrations:
         Compute third-order sagittal coma.
 
         Returns:
-            numpy.ndarray: Third-order sagittal coma.
+            be.ndarray: Third-order sagittal coma.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._CC_term).flatten()
@@ -133,7 +133,7 @@ class Aberrations:
         Compute third-order tangential coma.
 
         Returns:
-            numpy.ndarray: Third-order tangential coma.
+            be.ndarray: Third-order tangential coma.
         """
         return (self.CC() * 3).flatten()
 
@@ -142,7 +142,7 @@ class Aberrations:
         Compute third-order transverse astigmatism.
 
         Returns:
-            numpy.ndarray: Third-order transverse astigmatism.
+            be.ndarray: Third-order transverse astigmatism.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TAC_term).flatten()
@@ -152,7 +152,7 @@ class Aberrations:
         Compute third-order longitudinal astigmatism.
 
         Returns:
-            numpy.ndarray: Third-order longitudinal astigmatism.
+            be.ndarray: Third-order longitudinal astigmatism.
         """
         self._precalculations()
         TAC = self._compute_over_surfaces(self._TAC_term)
@@ -164,7 +164,7 @@ class Aberrations:
         Compute third-order transverse Petzval sum.
 
         Returns:
-            numpy.ndarray: Third-order transverse Petzval sum.
+            be.ndarray: Third-order transverse Petzval sum.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TPC_term).flatten()
@@ -174,7 +174,7 @@ class Aberrations:
         Compute third-order longitudinal Petzval sum.
 
         Returns:
-            numpy.ndarray: Third-order longitudinal Petzval sum.
+            be.ndarray: Third-order longitudinal Petzval sum.
         """
         self._precalculations()
         TPC = self._compute_over_surfaces(self._TPC_term)
@@ -186,7 +186,7 @@ class Aberrations:
         Compute third-order distortion.
 
         Returns:
-            numpy.ndarray: Third-order distortion.
+            be.ndarray: Third-order distortion.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._DC_term).flatten()
@@ -196,7 +196,7 @@ class Aberrations:
         Compute first-order transverse axial color.
 
         Returns:
-            numpy.ndarray: First-order transverse axial color.
+            be.ndarray: First-order transverse axial color.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TAchC_term).flatten()
@@ -206,7 +206,7 @@ class Aberrations:
         Compute first-order longitudinal axial color.
 
         Returns:
-            numpy.ndarray: First-order longitudinal axial color.
+            be.ndarray: First-order longitudinal axial color.
         """
         self._precalculations()
         TAchC = self._compute_over_surfaces(self._TAchC_term)
@@ -218,7 +218,7 @@ class Aberrations:
         Compute first-order lateral color.
 
         Returns:
-            numpy.ndarray: First-order lateral color.
+            be.ndarray: First-order lateral color.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TchC_term).flatten()
@@ -232,7 +232,7 @@ class Aberrations:
                 surface index.
 
         Returns:
-            numpy.ndarray: Array of computed term values over surfaces 1 to N-2.
+            be.ndarray: Array of computed term values over surfaces 1 to N-2.
         """
         terms = [term_func(k) for k in range(1, self._N - 1)]
         return be.array(terms)
@@ -399,14 +399,14 @@ class Aberrations:
         Sum the Seidel aberration coefficients from the individual terms.
 
         Args:
-            TSC (numpy.ndarray): Transverse spherical aberration terms.
-            CC (numpy.ndarray): Sagittal coma terms.
-            TAC (numpy.ndarray): Transverse astigmatism terms.
-            TPC (numpy.ndarray): Transverse Petzval sum terms.
-            DC (numpy.ndarray): Distortion terms.
+            TSC (be.ndarray): Transverse spherical aberration terms.
+            CC (be.ndarray): Sagittal coma terms.
+            TAC (be.ndarray): Transverse astigmatism terms.
+            TPC (be.ndarray): Transverse Petzval sum terms.
+            DC (be.ndarray): Distortion terms.
 
         Returns:
-            numpy.ndarray: Array of Seidel aberration coefficients.
+            be.ndarray: Array of Seidel aberration coefficients.
         """
         factor = self._n[-1] * self._ua[-1] * 2
         return be.array(

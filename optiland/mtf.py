@@ -40,9 +40,10 @@ class GeometricMTF(SpotDiagram):
         num_points (int): The number of points to sample in the MTF curve.
         scale (bool): Whether to scale the MTF curve.
         max_freq (float): The maximum frequency to consider in the MTF curve.
-        freq (ndarray): The frequency values for the MTF curve.
-        mtf (list): The MTF data for each field point.
-        diff_limited_mtf (ndarray): The diffraction-limited MTF curve.
+        freq (be.ndarray): The frequency values for the MTF curve.
+        mtf (list): The MTF data for each field point. Each element is a list
+            containing tangential and sagittal MTF data (`be.ndarray`) for a field.
+        diff_limited_mtf (be.ndarray): The diffraction-limited MTF curve.
 
     Methods:
         view(figsize=(12, 4), add_reference=False): Plots the MTF curve.
@@ -141,12 +142,12 @@ class GeometricMTF(SpotDiagram):
         """Computes the MTF data for a given field point.
 
         Args:
-            xi (ndarray): The coordinate values (x or y) of the field point.
-            v (ndarray): The frequency values for the MTF curve.
-            scale_factor (float): The scale factor for the MTF curve.
+            xi (be.ndarray): The coordinate values (x or y) of the field point.
+            v (be.ndarray): The frequency values for the MTF curve.
+            scale_factor (float or be.ndarray): The scale factor for the MTF curve.
 
         Returns:
-            ndarray: The MTF data for the field point.
+            be.ndarray: The MTF data for the field point.
 
         """
         A, edges = be.histogram(xi, bins=self.num_points + 1)
@@ -166,9 +167,10 @@ class GeometricMTF(SpotDiagram):
         """Plots the MTF data for a given field point.
 
         Args:
-            ax (Axes): The matplotlib axes object.
-            mtf_data (ndarray): The MTF data for the field point.
-            field (tuple): The field point coordinates.
+            ax (matplotlib.axes.Axes): The matplotlib axes object.
+            mtf_data (list[be.ndarray]): The MTF data for the field point,
+                containing tangential and sagittal MTF arrays.
+            field (tuple[float, float]): The field point coordinates (Hx, Hy).
             color (str): The color of the plotted lines.
 
         """

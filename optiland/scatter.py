@@ -139,8 +139,8 @@ class BaseBSDF(ABC):  # noqa: B024
         scattering_function: The scattering function associated with the BSDF.
 
     Methods:
-        scatter(rays, nx=None, ny=None, nz=None): scatter rays according to
-            the BSDF.
+        scatter(rays: RealRays, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray):
+            Scatters rays according to the BSDF.
 
     """
 
@@ -151,25 +151,25 @@ class BaseBSDF(ABC):  # noqa: B024
         super().__init_subclass__(**kwargs)
         BaseBSDF._registry[cls.__name__] = cls
 
-    def scatter(self, rays: RealRays, nx: np.ndarray, ny: np.ndarray, nz: np.ndarray):
+    def scatter(self, rays: RealRays, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray):
         """Scatter rays according to the BSDF.
 
         Args:
             rays (RealRays): The rays to be scattered.
-            nx (np.ndarray): The x-component of the surface normal vector.
-            ny (np.ndarray): The y-component of the surface normal vector.
-            nz (np.ndarray): The z-component of the surface normal vector.
+            nx (be.ndarray): The x-component of the surface normal vector.
+            ny (be.ndarray): The y-component of the surface normal vector.
+            nz (be.ndarray): The z-component of the surface normal vector.
 
         Returns:
             RealRays: The updated rays after scattering is applied.
 
         """
-        if np.isscalar(nx):
-            nx = np.full_like(rays.L, nx)
-        if np.isscalar(ny):
-            ny = np.full_like(rays.L, ny)
-        if np.isscalar(nz):
-            nz = np.full_like(rays.L, nz)
+        if be.isscalar(nx):
+            nx = be.full_like(rays.L, nx)
+        if be.isscalar(ny):
+            ny = be.full_like(rays.M, ny) # Corrected rays.L to rays.M for consistency if ny corresponds to M
+        if be.isscalar(nz):
+            nz = be.full_like(rays.N, nz) # Corrected rays.L to rays.N for consistency if nz corresponds to N
 
         scattered_vec = scatter_parallel(
             rays.L,

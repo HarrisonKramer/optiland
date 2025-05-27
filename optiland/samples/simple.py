@@ -1,16 +1,19 @@
-import numpy as np
-
+# Defines simple sample optical systems.
+import optiland.backend as be
 from optiland import optic
 
 
 class Edmund_49_847(optic.Optic):
-    """Edmund optics 49-847"""
+    """Edmund Optics 49-847.
+
+    A specific lens from Edmund Optics.
+    """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             thickness=7,
@@ -39,13 +42,13 @@ class Edmund_49_847(optic.Optic):
 
 
 class SingletStopSurf2(optic.Optic):
-    """A simple singlet with the stop on surface 2"""
+    """A simple singlet lens with the stop on surface 2."""
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, thickness=10.0, radius=63.73364157, material="LAC9")
         self.add_surface(
             index=2,
@@ -73,12 +76,15 @@ class SingletStopSurf2(optic.Optic):
 
 
 class TelescopeDoublet(optic.Optic):
-    """Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 44"""
+    """A telescope doublet lens.
+
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 44.
+    """
 
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=29.32908,
@@ -112,16 +118,16 @@ class TelescopeDoublet(optic.Optic):
 
 
 class CementedAchromat(optic.Optic):
-    """Cemented Achromatic Doublet
+    """A cemented achromatic doublet lens.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 45
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 45.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=12.38401,
@@ -157,13 +163,13 @@ class CementedAchromat(optic.Optic):
 
 
 class AsphericSinglet(optic.Optic):
-    """Aspheric singlet"""
+    """An aspheric singlet lens."""
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             thickness=7,
