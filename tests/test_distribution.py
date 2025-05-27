@@ -85,15 +85,19 @@ def test_cross(set_test_backend, num_points):
     x_line_x_expected_full = be.linspace(-1, 1, num_points)
     x_line_y_expected_full = be.zeros(num_points)
 
-    if num_points % 2 == 1: # Odd number of points
+    if num_points % 2 == 1:  # Odd number of points
         # Remove the middle element from the x-axis line as it's the duplicated origin
         mid_idx = num_points // 2
-        x_line_x_to_concat = be.concatenate((x_line_x_expected_full[:mid_idx], x_line_x_expected_full[mid_idx+1:]))
-        x_line_y_to_concat = be.concatenate((x_line_y_expected_full[:mid_idx], x_line_y_expected_full[mid_idx+1:]))
-    else: # Even number of points (origin is not in the middle of linspace for an odd-length array)
+        x_line_x_to_concat = be.concatenate(
+            (x_line_x_expected_full[:mid_idx], x_line_x_expected_full[mid_idx + 1 :])
+        )
+        x_line_y_to_concat = be.concatenate(
+            (x_line_y_expected_full[:mid_idx], x_line_y_expected_full[mid_idx + 1 :])
+        )
+    else:  # Even number of points (origin is not in the middle of linspace for an odd-length array)
         x_line_x_to_concat = x_line_x_expected_full
         x_line_y_to_concat = x_line_y_expected_full
-    
+
     # Concatenate in the same order as in the implementation
     expected_x = be.concatenate((y_line_x_expected, x_line_x_to_concat))
     expected_y = be.concatenate((y_line_y_expected, x_line_y_to_concat))

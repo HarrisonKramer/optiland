@@ -48,7 +48,7 @@ def test_run(monte_carlo):
         "0: f1",
         "1: f2",
         "Radius of Curvature, Surface 1",
-        "C0: Thickness, Surface 2"
+        "C0: Thickness, Surface 2",
     }
     assert set(monte_carlo._results.columns) == res
 

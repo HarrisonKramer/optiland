@@ -423,4 +423,6 @@ class TestOptic:
     def test_invalid_coordinate_system(self, set_test_backend):
         with pytest.raises(ValueError):
             self.optic.add_surface(index=0, radius=be.inf, z=-100)
-            self.optic.add_surface(index=1, radius=be.inf, z=0, dx=15)  # cannot use dx or dy with abs. z
+            self.optic.add_surface(
+                index=1, radius=be.inf, z=0, dx=15
+            )  # cannot use dx or dy with abs. z
