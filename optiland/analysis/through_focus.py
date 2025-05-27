@@ -2,10 +2,12 @@
 
 This module provides a base class for performing through-focus analysis.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from abc import ABC, abstractmethod
+
+import optiland.backend as be
 
 
 class ThroughFocusAnalysis(ABC):
@@ -16,17 +18,22 @@ class ThroughFocusAnalysis(ABC):
     different focal positions and delegates the specific analysis at each
     position to subclasses.
 
+    Args:
+        optic (optiland.optic.Optic): The optical system to analyze.
+        delta_focus (float, optional): The increment of focal shift in mm.
+            Defaults to 0.1.
+        num_steps (int, optional): The number of focal planes to analyze
+            before and after the nominal focus. Defaults to 5.
+        fields (list[tuple[float, float]] | str, optional): Fields for
+            analysis. If "all", uses all fields from `optic.fields`.
+            Otherwise, expects a list of field coordinates.
+            Defaults to "all".
+        wavelengths (list[float] | str, optional): Wavelengths for
+            analysis. If "all", uses all wavelengths from
+            `optic.wavelengths`. Otherwise, expects a list of
+            wavelength values. Defaults to "all".
+
     Attributes:
-        optic (optic.Optic): The optical system to analyze.
-        delta_focus (float): The increment of focal shift in mm.
-        num_steps (int): The number of focal planes to analyze before and
-            after the nominal focus. For example, if `num_steps` is 5,
-            analysis will be done at focal shifts from -5*`delta_focus` to
-            +5*`delta_focus`, including the nominal focus (0).
-        fields (list): List of resolved field coordinates (e.g., [(0,0), (0,1)])
-            at which data is generated.
-        wavelengths (list): List of resolved wavelength values (e.g., [0.55, 0.48])
-            at which data is generated.
         results (list): A list to store the results from the analysis performed
             at each focal plane. The structure of each item in the list is
             determined by the `_perform_analysis_at_focus` method of the
@@ -41,89 +48,56 @@ class ThroughFocusAnalysis(ABC):
         fields="all",
         wavelengths="all",
     ):
-        """Initializes the ThroughFocusAnalysis class.
-
-        Args:
-            optic (optiland.optic.Optic): The optical system to analyze.
-            delta_focus (float, optional): The increment of focal shift in mm.
-                Defaults to 0.1.
-            num_steps (int, optional): The number of focal planes to analyze
-                before and after the nominal focus. Defaults to 5.
-            fields (list[tuple[float, float]] | str, optional): Fields for
-                analysis. If "all", uses all fields from `optic.fields`.
-                Otherwise, expects a list of field coordinates.
-                Defaults to "all".
-            wavelengths (list[float] | str, optional): Wavelengths for
-                analysis. If "all", uses all wavelengths from
-                `optic.wavelengths`. Otherwise, expects a list of
-                wavelength values. Defaults to "all".
-        """
         self.optic = optic
         self.delta_focus = delta_focus
+        self._validate_num_steps(num_steps)
         self.num_steps = num_steps
+        self.fields = self._resolve_fields(fields)
+        self.wavelengths = self._resolve_wavelengths(wavelengths)
+        self.positions = self._generate_focus_positions()
 
-        if fields == "all":
-            self.fields = self.optic.fields.get_field_coords()
-        else:
-            # Assuming 'fields' is already a list of coordinate tuples
-            # if not "all". Add type checking/conversion if necessary for robustness.
-            self.fields = fields
-
-        if wavelengths == "all":
-            self.wavelengths = self.optic.wavelengths.get_wavelengths()
-        else:
-            # Assuming 'wavelengths' is already a list of floats
-            # if not "all". Add type checking/conversion if necessary for robustness.
-            self.wavelengths = wavelengths
+        self.nominal_focus = be.copy(self.optic.image_surface.geometry.cs.z)
 
         self.results = []
         self._calculate_through_focus()
 
-    def _calculate_through_focus(self):
-        """Iterates through focal planes and performs analysis.
+    def _validate_num_steps(self, num_steps):
+        if not isinstance(num_steps, int) or num_steps < 1:
+            raise ValueError("'num_steps' must be a positive integer.")
+        if num_steps % 2 == 0:
+            raise ValueError("'num_steps' must be an odd integer.")
+        if num_steps > 7:
+            raise ValueError(
+                "'num_steps' must be less than or equal to 7 for performance reasons."
+            )
 
-        This method systematically shifts the image surface position of the
-        optic, calls the `_perform_analysis_at_focus` method for that focal
-        position, stores the returned result, and ensures the original image
-        surface position is restored after all steps.
-        """
-        original_focus_z = self.optic.image_surface.geometry.cs.z
+    def _resolve_fields(self, fields):
+        return self.optic.fields if fields == "all" else fields
 
-        try:
-            for i in range(-self.num_steps, self.num_steps + 1):
-                current_delta = i * self.delta_focus
-                self.optic.image_surface.geometry.cs.z = (
-                    original_focus_z + current_delta
-                )
-                # Update the optic to ensure changes are propagated.
-                self.optic.update()
+    def _resolve_wavelengths(self, wavelengths):
+        return self.optic.wavelengths if wavelengths == "all" else wavelengths
 
-                analysis_result = self._perform_analysis_at_focus(current_delta)
-                self.results.append(analysis_result)
-        finally:
-            # Restore the original image surface z position.
-            self.optic.image_surface.geometry.cs.z = original_focus_z
-            # Update the optic to ensure restoration is propagated.
-            self.optic.update()
+    def _generate_focus_positions(self):
+        """Generates a list of focal positions based on the delta focus and number of
+        steps."""
+        nominal_focus = self.optic.image_surface.geometry.cs.z
+        positions = [
+            nominal_focus + (i - self.num_steps // 2) * self.delta_focus
+            for i in range(self.num_steps)
+        ]
+        return positions
 
-    @abstractmethod
-    def _perform_analysis_at_focus(self, current_delta_focus: float):
-        """Performs the specific analysis at the current focal plane.
-
-        This abstract method must be implemented by subclasses. It defines
-        the core analysis logic to be executed at each focal plane defined by
-        `current_delta_focus`.
+    def _defocus_image_plane(self, z_position):
+        """Applies defocus to the image plane of the optical system.
 
         Args:
-            current_delta_focus (float): The current focal shift from the
-                nominal focus, in mm.
-
-        Returns:
-            Any: The result of the analysis at the specified focal plane.
-                 The type and structure of this result are determined by the
-                 implementing subclass.
+            z_position (float): The new z-coordinate for the image surface
         """
-        pass
+        self.optic.image_surface.geometry.cs.z = z_position
+
+    def _reset_focus(self):
+        """Resets the image surface to its nominal focus position."""
+        self._defocus_image_plane(self.nominal_focus)
 
     @abstractmethod
     def view(self):
@@ -134,4 +108,31 @@ class ThroughFocusAnalysis(ABC):
         focal planes) should be presented to the user, for example, by
         plotting graphs or printing a formatted table.
         """
-        pass
+        pass  # pragma: no cover
+
+    @abstractmethod
+    def _perform_analysis_at_focus(self):
+        """Performs the specific analysis at the current focal position.
+
+        This abstract method must be implemented by subclasses. It defines
+        the analysis to be performed at each focal position after applying
+        the defocus. The results of this analysis should be returned and will
+        be stored in `self.results`.
+
+        Returns:
+            Any: The result of the analysis at the current focal position.
+        """
+        pass  # pragma: no cover
+
+    def _calculate_through_focus(self):
+        """Performs the through-focus analysis by iterating over the focal positions.
+
+        This method iterates through each focal position, applies the defocus
+        to the optical system, and performs the specific analysis defined in
+        `_perform_analysis_at_focus`. The results are stored in `self.results`.
+        """
+        for position in self.positions:
+            self._defocus_image_plane(position)
+            result = self._perform_analysis_at_focus()
+            self.results.append(result)
+        self._reset_focus()
