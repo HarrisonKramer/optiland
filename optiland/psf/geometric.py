@@ -99,6 +99,7 @@ class GeometricPSF(BasePSF):
             bins=self.grid_size,
             range=[[min_x, max_x], [min_y, max_y]],
             weights=self.ray_intensities,
+            density=False,
         )
 
         # Normalize PSF
