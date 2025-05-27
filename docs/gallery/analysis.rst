@@ -17,3 +17,4 @@ This section constains examples of typical analysis tasks that can be performed 
     analysis/rms_wavefront_error_vs_field
     analysis/pupil_aberration
     analysis/irradiance
+    analysis/through_focus_spot_diagram

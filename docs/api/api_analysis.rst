@@ -19,4 +19,6 @@ encircled energy, field curvature, distortion, etc.
    analysis.ray_fan
    analysis.rms_vs_field
    analysis.spot_diagram
+   analysis.through_focus
+   analysis.through_focus_spot_diagram
    analysis.y_ybar

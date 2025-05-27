@@ -10,3 +10,4 @@ from .field_curvature import FieldCurvature
 from .rms_vs_field import RmsSpotSizeVsField, RmsWavefrontErrorVsField
 from .pupil_aberration import PupilAberration
 from .irradiance import IncoherentIrradiance
+from .through_focus_spot_diagram import ThroughFocusSpotDiagram
