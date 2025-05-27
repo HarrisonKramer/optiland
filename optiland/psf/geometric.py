@@ -3,12 +3,12 @@
 This module provides functionality for simulating the Point Spread Function (PSF)
 of optical systems based on geometric ray tracing (spot diagrams).
 
-Kramer Harrison, 2025 (Assumed author based on other files)
+Kramer Harrison, 2025
 """
 
 import optiland.backend as be
+from optiland.analysis import SpotDiagram
 from optiland.psf.base import BasePSF
-from optiland.analysis import SpotDiagram # SpotDiagram is used to get ray data
 
 
 class GeometricPSF(BasePSF):
@@ -41,25 +41,32 @@ class GeometricPSF(BasePSF):
         y_edges (be.ndarray): The bin edges for the y-axis of the histogram.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=10000, grid_size=256, distribution="uniform"):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=256,
+        grid_size=256,
+        distribution="uniform",
+    ):
         super().__init__(
             optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
         )
         self.grid_size = grid_size
 
-        # We need to get the ray data first using SpotDiagram
-        # SpotDiagram takes a list of wavelengths.
         self.spot_data = SpotDiagram(
             optic=optic,
-            fields=[field], # SpotDiagram expects a list of fields
-            wavelengths=[wavelength],
+            fields=[field],  # SpotDiagram expects a list of fields
+            wavelengths=[wavelength],  # and a list of wavelengths
             num_rays=num_rays,
-            distribution=distribution
+            distribution=distribution,
         )
         # SpotDiagram stores data in a list of lists (fields, then wavelengths)
         # For GeometricPSF, we have one field and one wavelength.
         self.ray_intersections_x = self.spot_data.data[0][0].x
         self.ray_intersections_y = self.spot_data.data[0][0].y
+        self.ray_intensities = self.spot_data.data[0][0].intensity
 
         self.psf, self.x_edges, self.y_edges = self._compute_psf()
 
@@ -80,8 +87,7 @@ class GeometricPSF(BasePSF):
         if self.ray_intersections_x is None or self.ray_intersections_y is None:
             raise RuntimeError("Ray intersection data has not been generated.")
 
-        # Determine bounds for the histogram dynamically if not specified
-        # This ensures the main concentration of spots is captured.
+        # Determine bounds for the histogram dynamically
         min_x = be.min(self.ray_intersections_x)
         max_x = be.max(self.ray_intersections_x)
         min_y = be.min(self.ray_intersections_y)
@@ -90,38 +96,28 @@ class GeometricPSF(BasePSF):
         # Handle cases where all rays land at the same point (e.g. perfect lens on axis)
         if min_x == max_x:
             # Add a small delta if min and max are the same
-            # Use a small fixed physical size, e.g. 1 micron, if units are mm
-            delta_x = 0.001 # 1 micrometer in mm
+            # Use a small fixed physical size, e.g. 0.001 mm
+            delta_x = 0.001
             min_x -= delta_x / 2
             max_x += delta_x / 2
         if min_y == max_y:
-            delta_y = 0.001 # 1 micrometer in mm
+            delta_y = 0.001
             min_y -= delta_y / 2
             max_y += delta_y / 2
-            
-        # Create the 2D histogram
-        try:
-            psf_image, x_edges, y_edges = be.histogram2d(
-                self.ray_intersections_x,
-                self.ray_intersections_y,
-                bins=self.grid_size,
-                range=[[min_x, max_x], [min_y, max_y]]
-            )
-        except AttributeError:
-            # Fallback to numpy if backend doesn't support histogram2d
-            np_psf_image, np_x_edges, np_y_edges = be.np.histogram2d(
-                be.to_numpy(self.ray_intersections_x),
-                be.to_numpy(self.ray_intersections_y),
-                bins=self.grid_size,
-                range=[[be.to_numpy(min_x), be.to_numpy(max_x)], [be.to_numpy(min_y), be.to_numpy(max_y)]]
-            )
-            psf_image = be.array(np_psf_image)
-            x_edges = be.array(np_x_edges)
-            y_edges = be.array(np_y_edges)
 
-        # Normalize PSF so that peak is 100
-        if be.max(psf_image) > 0:
-            psf_image = (psf_image / be.max(psf_image)) * 100
+        # Create the 2D histogram
+        psf_image, x_edges, y_edges = be.histogram2d(
+            self.ray_intersections_x,
+            self.ray_intersections_y,
+            bins=self.grid_size,
+            range=[[min_x, max_x], [min_y, max_y]],
+            weights=self.ray_intensities,
+        )
+
+        # Normalize PSF
+        intensity_sum = be.sum(self.ray_intensities)
+        if intensity_sum > 0:
+            psf_image = (psf_image / intensity_sum) * 100
         else:
             # Handle case with no rays or all rays outside bounds (empty psf_image)
             psf_image = be.zeros_like(psf_image)
@@ -144,35 +140,11 @@ class GeometricPSF(BasePSF):
             tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the physical
             total width and total height of the PSF image area, in micrometers.
         """
-        # x_edges and y_edges are the bin edges from the histogram.
-        # The total extent is the difference between the last and first edge.
-        # SpotDiagram data is in mm, convert to µm for display.
-        
-        if self.x_edges is None or self.y_edges is None:
-            # This case should ideally not be reached if __init__ completes successfully.
-            # Defaulting to pixel size if edges are not set, though this is not ideal.
-            return be.to_numpy(image.shape[1]), be.to_numpy(image.shape[0])
-
-        physical_width_mm = be.to_numpy(self.x_edges[-1] - self.x_edges[0])
-        physical_height_mm = be.to_numpy(self.y_edges[-1] - self.y_edges[0])
+        width_mm = be.to_numpy(self.x_edges[-1] - self.x_edges[0])
+        height_mm = be.to_numpy(self.y_edges[-1] - self.y_edges[0])
 
         # Convert mm to µm
-        physical_width_um = physical_width_mm * 1000
-        physical_height_um = physical_height_mm * 1000
-        
-        return physical_width_um, physical_height_um
+        width_um = width_mm * 1000
+        height_um = height_mm * 1000
 
-    def strehl_ratio(self):
-        """Computes the Strehl ratio of the PSF.
-
-        For a geometric PSF, the Strehl ratio is not typically defined in the
-        same way as for diffraction-based PSFs. This method returns the peak
-        value of the normalized geometric PSF (which is 1.0 by construction, 
-        as it's normalized to 100 and then divided by 100 by BasePSF's strehl_ratio).
-
-        Returns:
-            float: The Strehl ratio.
-        """
-        return super().strehl_ratio()
-
-```
+        return width_um, height_um
