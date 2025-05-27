@@ -3,15 +3,16 @@ from unittest.mock import patch
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import optiland.backend as be
 import pytest
 
+import optiland.backend as be
 from optiland import analysis
-from optiland.analysis.spot_diagram import SpotData
+from optiland.analysis import ThroughFocusSpotDiagram
 from optiland.optic import Optic
-from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
 from optiland.physical_apertures import RectangularAperture
 from optiland.rays import RealRays
+from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
+
 from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
@@ -1535,3 +1536,79 @@ class TestThroughFocusSpotDiagram:
         field_lines = [call for call in print_calls if "Field (" in call]
         expected_field_lines = len(tf_spot.fields) * (2 * tf_spot.num_steps + 1)
         assert len(field_lines) == expected_field_lines
+
+
+class TestThroughFocusSpotDiagram:
+    @pytest.fixture
+    def tf_spot(self, set_test_backend):
+        """Creates a ThroughFocusSpotDiagram instance after setting backend."""
+        optic = CookeTriplet()  # Construct after backend is set
+        return ThroughFocusSpotDiagram(
+            optic,
+            delta_focus=0.05,
+            num_steps=3,
+            num_rings=3,
+            fields="all",
+            wavelengths="all",
+            coordinates="local"
+        )
+
+    def test_init_valid(self, set_test_backend):
+        optic = CookeTriplet()
+        tf = ThroughFocusSpotDiagram(optic)
+        assert tf.coordinates == "local"
+        assert tf.distribution == "hexapolar"
+
+    def test_init_invalid_coordinates(self, set_test_backend):
+        optic = CookeTriplet()
+        with pytest.raises(ValueError, match="Coordinates must be 'global' or 'local'"):
+            ThroughFocusSpotDiagram(optic, coordinates="invalid")
+
+    def test_perform_analysis_at_focus_returns_data(self, tf_spot):
+        data = tf_spot._perform_analysis_at_focus()
+        assert isinstance(data, list)
+        assert all(isinstance(item, list) for item in data)
+        assert all(hasattr(spot, "x") for field in data for spot in field)
+
+    def test_validate_view_prerequisites_failure_empty_results(self, tf_spot):
+        tf_spot.results = []
+        assert not tf_spot._validate_view_prerequisites()
+
+    def test_validate_view_prerequisites_failure_empty_fields(self, tf_spot):
+        tf_spot.results = [[[]]]
+        tf_spot.fields = []
+        assert not tf_spot._validate_view_prerequisites()
+
+    def test_validate_view_prerequisites_success(self, tf_spot):
+        assert tf_spot._validate_view_prerequisites()
+
+    def test_get_plot_axis_labels_orientation_0(self, tf_spot):
+        x_label, y_label = tf_spot._get_plot_axis_labels()
+        assert x_label in ("X (mm)", "U (mm)")
+        assert y_label in ("Y (mm)", "V (mm)")
+
+    def test_get_spot_centroid_and_axis_limit(self, tf_spot):
+        data = tf_spot.results[0][0]
+        cx, cy = tf_spot._get_spot_centroid(data)
+        assert isinstance(cx, float)
+        assert isinstance(cy, float)
+        limit = tf_spot._compute_global_axis_limit(buffer=1.05)
+        assert isinstance(limit, float)
+        assert limit > 0
+
+    @patch("matplotlib.pyplot.show")
+    def test_view_full(self, mock_show, tf_spot):
+        tf_spot.view()
+        mock_show.assert_called_once()
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_view_with_all_zero_intensities(self, mock_show, tf_spot):
+        # Zero all intensities manually
+        for defocus_data in tf_spot.results:
+            for field_data in defocus_data:
+                for spot in field_data:
+                    spot.intensity = spot.intensity * 0
+        tf_spot.view()
+        mock_show.assert_called_once()
+        plt.close()
