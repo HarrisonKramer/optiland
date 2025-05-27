@@ -5,8 +5,8 @@ the Fast Fourier Transform of the Point Spread Function (PSF).
 """
 
 import optiland.backend as be
-from optiland.psf import FFTPSF
 from optiland.mtf.base import BaseMTF
+from optiland.psf import FFTPSF
 
 
 class FFTMTF(BaseMTF):
@@ -43,9 +43,9 @@ class FFTMTF(BaseMTF):
         optic,
         fields,
         wavelength,
-        num_rays=128,   # Consistent with BaseMTF default
-        grid_size=1024, # Consistent with BaseMTF default
-        num_points=256, # Consistent with BaseMTF default
+        num_rays=128,  # Consistent with BaseMTF default
+        grid_size=1024,  # Consistent with BaseMTF default
+        num_points=256,  # Consistent with BaseMTF default
         max_freq="cutoff",
     ):
         super().__init__(
@@ -55,13 +55,13 @@ class FFTMTF(BaseMTF):
             max_freq=max_freq,
             num_points=num_points,
             num_rays=num_rays,
-            grid_size=grid_size
+            grid_size=grid_size,
         )
         # self.num_rays and self.grid_size are stored by BaseMTF and used here.
         # self.wavelength is the single float value from BaseMTF.
         # self.fields is the list of field tuples from BaseMTF.
 
-        self.psf_cache = {} # Initialize PSF cache
+        self.psf_cache = {}  # Initialize PSF cache
 
         # Compute MTF data upon initialization
         self.mtf_data = self._generate_mtf_data()
@@ -104,7 +104,7 @@ class FFTMTF(BaseMTF):
         # The OTF is the FFT of the PSF.
         otf_complex = be.fft.fftshift(be.fft.fft2(psf_data))
         return otf_complex
-        
+
     def _extract_mtf_profiles(self, otf_complex):
         """Extracts Tangential and Sagittal MTF profiles from the OTF.
 
@@ -123,45 +123,54 @@ class FFTMTF(BaseMTF):
         # Determine center of the 2D MTF array
         center_x = mtf_2d.shape[1] // 2
         center_y = mtf_2d.shape[0] // 2
-        
+
         raw_tangential = mtf_2d[center_y:, center_x]
         raw_sagittal = mtf_2d[center_y, center_x:]
 
         dc_value = mtf_2d[center_y, center_x]
-        if dc_value == 0: 
-            return be.zeros_like(self.freq), be.zeros_like(self.freq) # Return MTF of 0 for target freqs
+        if dc_value == 0:
+            return be.zeros_like(self.freq), be.zeros_like(
+                self.freq
+            )  # Return MTF of 0 for target freqs
 
         norm_tangential = raw_tangential / dc_value
         norm_sagittal = raw_sagittal / dc_value
-        
-        wavelength_mm = self.wavelength * 1e-3 # Convert self.wavelength (µm) to mm
-        
+
+        wavelength_mm = self.wavelength * 1e-3  # Convert self.wavelength (µm) to mm
+
         # Calculate frequency step for the raw OTF data
         # df_otf = 1 / (num_rays_pupil * wavelength_mm * FNO)
         # num_rays_pupil is self.num_rays (stored by BaseMTF, used by FFTPSF)
         # FNO is self.FNO (calculated by BaseMTF)
         if wavelength_mm == 0 or self.FNO == 0 or self.num_rays == 0:
-            f_step_otf = 0 
+            f_step_otf = 0
         else:
             f_step_otf = 1.0 / (self.num_rays * wavelength_mm * self.FNO)
-            
-        # If grid_size is used in FFTPSF, it affects PSF pixel size, thus OTF frequency step.
-        # The derivation: df_otf = 1 / (num_rays_pupil * wavelength_mm * FNO) is correct.
-        # num_rays_pupil determines the spatial extent of the PSF that is sampled by grid_size pixels.
+
+        # If grid_size is used in FFTPSF, it affects PSF pixel size, thus OTF
+        #  frequency step.
+        # The derivation: df_otf = 1 / (num_rays_pupil * wavelength_mm * FNO)
+        # is correct.
+        # num_rays_pupil determines the spatial extent of the PSF that is sampled by
+        # grid_size pixels.
         # FFTPSF's Q factor: Q = grid_size_fft / num_rays_pupil_sampling
         # PSF pixel size: dx_psf = wavelength * FNO / Q
-        # Total PSF width for FFT: W_psf = grid_size_fft * dx_psf = grid_size_fft * (wavelength * FNO / (grid_size_fft / num_rays_pupil))
+        # Total PSF width for FFT: W_psf = grid_size_fft * dx_psf = grid_size_fft *
+        # (wavelength * FNO / (grid_size_fft / num_rays_pupil))
         # W_psf = num_rays_pupil * wavelength * FNO.
         # OTF frequency step: df_otf = 1 / W_psf. This matches.
 
         # Generate the frequency axis for the raw MTF profiles
-        # Assuming raw_tangential and raw_sagittal have same length originating from square PSF/OTF
-        num_raw_points = len(raw_sagittal) # Number of points from DC to Nyquist in raw OTF
+        # Assuming raw_tangential and raw_sagittal have same length originating from
+        # square PSF/OTF
+        num_raw_points = len(
+            raw_sagittal
+        )  # Number of points from DC to Nyquist in raw OTF
         raw_freq_axis = be.arange(num_raw_points) * f_step_otf
 
-        np_freq_target = be.to_numpy(self.freq) # Target frequencies from BaseMTF
+        np_freq_target = be.to_numpy(self.freq)  # Target frequencies from BaseMTF
         np_raw_freq_axis = be.to_numpy(raw_freq_axis)
-        
+
         if len(np_raw_freq_axis) == 0 or f_step_otf == 0:
             # Handle cases where raw data is empty or frequency step is zero
             interp_tangential = be.zeros_like(self.freq)
@@ -171,15 +180,19 @@ class FFTMTF(BaseMTF):
             np_norm_sagittal = be.to_numpy(norm_sagittal)
 
             # Interpolate onto the target frequency axis self.freq
-            # Points in np_freq_target outside range of np_raw_freq_axis will get value of right=0.0
-            interp_t_np = be.np.interp(np_freq_target, np_raw_freq_axis, np_norm_tangential, right=0.0)
-            interp_s_np = be.np.interp(np_freq_target, np_raw_freq_axis, np_norm_sagittal, right=0.0)
+            # Points in np_freq_target outside range of np_raw_freq_axis will get value
+            #  of right=0.0
+            interp_t_np = be.np.interp(
+                np_freq_target, np_raw_freq_axis, np_norm_tangential, right=0.0
+            )
+            interp_s_np = be.np.interp(
+                np_freq_target, np_raw_freq_axis, np_norm_sagittal, right=0.0
+            )
 
             interp_tangential = be.array(interp_t_np)
             interp_sagittal = be.array(interp_s_np)
 
         return interp_tangential, interp_sagittal
-
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point using FFT of PSF.
@@ -195,18 +208,16 @@ class FFTMTF(BaseMTF):
             list: A list of [tangential_mtf, sagittal_mtf] pairs for each field.
         """
         calculated_mtfs = []
-        for field_coords in self.fields: # self.fields is list of (Hx,Hy) from BaseMTF
+        for field_coords in self.fields:  # self.fields is list of (Hx,Hy) from BaseMTF
             psf = self._get_psf_for_field(field_coords)
-            
-            if psf is None or be.sum(psf) == 0: # Handle empty or zero PSF
+
+            if psf is None or be.sum(psf) == 0:  # Handle empty or zero PSF
                 # If PSF is invalid, MTF is zero
                 mtf_t = be.zeros_like(self.freq)
                 mtf_s = be.zeros_like(self.freq)
             else:
                 otf = self._calculate_otf_from_psf(psf)
                 mtf_t, mtf_s = self._extract_mtf_profiles(otf)
-            
+
             calculated_mtfs.append([mtf_t, mtf_s])
         return calculated_mtfs
-
-```
