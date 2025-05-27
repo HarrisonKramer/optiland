@@ -2,3 +2,4 @@
 
 from .fft import FFTPSF
 from .huygens_fresnel import HuygensPSF
+from .geometric import GeometricPSF
