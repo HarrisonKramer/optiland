@@ -2,7 +2,7 @@
 
 This module provides functionality for simulating and analyzing the Point
 Spread Function (PSF) of optical systems using the Huygens-Fresnel principle.
-It includes capabilities for generating PSF from given wavefront aberrations.
+It includes capabilities for generating PSF for a given optical system.
 Visualization and Strehl ratio calculation are primarily handled by the base
 class. The PSF is normalized against the peak of an ideal diffraction-limited
 system calculated using the same Huygens-Fresnel principle.
@@ -29,10 +29,21 @@ class HuygensPSF(BasePSF):
 
     Inherits from `BasePSF` for common initialization (Wavefront setup) and
     visualization methods.
+
+    Args:
+        optic (Optic): The optical system object, containing properties like
+            paraxial data and surface information.
+        field (tuple): The field point (e.g., (Hx, Hy) in normalized field
+            coordinates) at which to compute the PSF.
+        wavelength (float): The wavelength of light in micrometers.
+        num_rays (int, optional): The number of rays used to sample the pupil
+            plane along one dimension. The pupil will be a grid of
+            `num_rays` x `num_rays`. Defaults to 128.
+        image_size (int, optional): The size of the image grid for PSF
+            calculation. Defaults to 128.
     """
 
     def __init__(self, optic, field, wavelength, num_rays=128, image_size=128):
-        """Initializes the HuygensPSF object."""
         super().__init__(
             optic=optic,
             field=field,
@@ -46,12 +57,20 @@ class HuygensPSF(BasePSF):
 
         self.cx = None  # center of the image plane
         self.cy = None
+        self.pixel_pitch = None  # pixel pitch of image plane in m
 
         self.image_size = image_size
         self.psf = self._compute_psf()
 
     def _get_image_extent(self):
-        """Calculate the extent of the image plane based on the optic's parameters."""
+        """Calculate the extent of the image plane based on the optic's parameters.
+
+        This method computes the extent of the image plane based on the geometric
+        spot size, as well as a scaled ideal Airy disk at a given wavelength. The
+        extent is defined as the maximum of the geometric extent and the ideal
+        extent, ensuring that the PSF covers the area where the light is expected
+        to be distributed.
+        """
         Hx, Hy = self.fields[0]  # single field point
         rays = self.optic.trace(
             Hx=Hx,
@@ -66,16 +85,19 @@ class HuygensPSF(BasePSF):
         self.cx = be.mean(rx)
         self.cy = be.mean(ry)
 
-        extent_scale = 5.0  # how many Airy disk radii to include in half-extent
+        num_Airy_disks = 5.0  # how many Airy disk radii to include in half-extent
         extent_geometric = be.max(be.hypot(rx - self.cx, ry - self.cy))
         extent_ideal = (
-            extent_scale
-            * self.optic.paraxial.FNO()
+            num_Airy_disks
+            * self._get_effective_FNO()  # effective F-number
             * 1.22
-            * (self.wavelengths[0] * 1e-3)
+            * (self.wavelengths[0] * 1e-3)  # um --> mm
         )
 
         extent = max(extent_geometric, extent_ideal)
+
+        # Calculate pixel pitch
+        self.pixel_pitch = 2 * extent / self.image_size
 
         xmin = -extent + self.cx
         xmax = extent + self.cx
@@ -85,7 +107,13 @@ class HuygensPSF(BasePSF):
         return xmin, xmax, ymin, ymax
 
     def _get_image_coordinates(self):
-        """Generate image coordinates for the PSF calculation."""
+        """Generate image coordinates for the PSF calculation.
+
+        This method computes the coordinates of the image plane based on
+        the extent of the image surface. It creates a grid of points in the
+        image plane, which will be used to evaluate the PSF using the
+        Huygens-Fresnel principle.
+        """
         xmin, xmax, ymin, ymax = self._get_image_extent()
         image_x = be.linspace(xmin, xmax, self.image_size)
         image_y = be.linspace(ymin, ymax, self.image_size)
@@ -130,9 +158,8 @@ class HuygensPSF(BasePSF):
             pupil_x, pupil_y, pupil_z (np.ndarray): 1D arrays of pupil plane coords.
             pupil_amp (np.ndarray): 1D array of pupil plane amplitudes.
             pupil_opd (np.ndarray): 1D array of optical path difference in mm.
-            z_img (float): Image plane distance from the pupil plane.
             wavelength (float): Wavelength of the light in mm.
-            Rp (float): Radius of the pupil plane.
+            Rp (float): Radius of the exit pupil reference sphere in mm.
 
         Returns:
             np.ndarray: 2D array of the point spread function.
@@ -188,6 +215,21 @@ class HuygensPSF(BasePSF):
         return psf
 
     def _get_normalization(self):
+        """Calculates the normalization factor for the PSF.
+
+        This factor ensures that an ideal, diffraction-limited system (no
+        aberrations, uniform unit amplitude transmission across the pupil)
+        would have a peak PSF intensity corresponding to a Strehl ratio of 1.0
+        (or 100% when scaled by `_compute_psf`).
+
+        The normalization is based on the peak intensity of a PSF computed
+        from an idealized pupil: one with uniform amplitude (1.0) and zero
+        phase within the aperture defined by the actual system's first pupil,
+        and zero outside.
+
+        Returns:
+            float: The normalization factor.
+        """
         if self.fields[0] == (0, 0):
             data = self.get_data((0, 0), self.wavelengths[0])
         else:
@@ -259,5 +301,25 @@ class HuygensPSF(BasePSF):
         return psf
 
     def _get_psf_units(self, image):
-        """Return the units of the PSF."""
-        return 1, 1  # placeholder
+        """Calculates the physical extent (units) of the PSF image for plotting.
+
+        This method is called by `BasePSF.view()` to determine axis labels.
+        It computes the total spatial width and height (in micrometers) of the
+        provided PSF image data.
+
+        Args:
+            image (be.ndarray): The PSF image data (often a
+                zoomed/cropped version from `BasePSF.view`). Its shape is used
+                to determine the total extent for labeling.
+
+        Returns:
+            tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the physical
+            total width and total height of the PSF image area, in micrometers.
+            These are returned as NumPy arrays as `BasePSF.view` expects them
+            for Matplotlib's `extent` argument.
+        """
+        num_x, num_y = image.shape
+        dx = self.pixel_pitch
+        x = be.to_numpy(num_x * dx) * 1e3  # mm --> um
+        y = be.to_numpy(num_y * dx) * 1e3  # mm --> um
+        return x, y

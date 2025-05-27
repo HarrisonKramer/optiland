@@ -172,8 +172,7 @@ class FFTPSF(BasePSF):
         and zero outside.
 
         Returns:
-            float: The normalization factor. Returns 0.0 if `self.pupils` is empty
-                   or if the template pupil is entirely zero (e.g. fully vignetted).
+            float: The normalization factor.
         """
         P_nom = be.copy(self.pupils[0])
         P_nom[P_nom != 0] = 1
@@ -207,13 +206,7 @@ class FFTPSF(BasePSF):
             These are returned as NumPy arrays as `BasePSF.view` expects them
             for Matplotlib's `extent` argument.
         """
-        FNO = self.optic.paraxial.FNO()
-
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
+        FNO = self._get_effective_FNO()
 
         Q = self.grid_size / self.num_rays
         dx = self.wavelengths[0] * FNO / Q

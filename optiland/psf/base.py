@@ -313,3 +313,19 @@ class BasePSF(Wavefront):
         center_x = self.psf.shape[0] // 2
         center_y = self.psf.shape[1] // 2
         return self.psf[center_x, center_y] / 100
+
+    def _get_effective_FNO(self):
+        """Calculates the effective F-number of the optical system.
+
+        Returns:
+            float: The effective F-number.
+        """
+        FNO = self.optic.paraxial.FNO()
+
+        if not self.optic.object_surface.is_infinite:
+            D = self.optic.paraxial.XPD()
+            p = D / self.optic.paraxial.EPD()
+            m = self.optic.paraxial.magnification()
+            FNO = FNO * (1 + be.abs(m) / p)
+
+        return FNO
