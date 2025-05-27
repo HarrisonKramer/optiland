@@ -1,10 +1,14 @@
 import numpy as np
 import pytest
 from unittest.mock import patch
+import matplotlib
+import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.psf.huygens_fresnel import HuygensPSF
 from optiland.samples.objectives import CookeTriplet, DoubleGauss, ReverseTelephoto
+
+matplotlib.use("Agg")  # use non-interactive backend for testing
 
 # Ensure the backend is set to numpy for all tests in this module
 be.set_backend("numpy")
@@ -362,11 +366,12 @@ class TestHuygensPSF:
             "Calculated Y extent is incorrect"
         )
 
+    @patch("matplotlib.pyplot.show")
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
-    @pytest.mark.parametrize("projection", ["2d", "3d"])  #
-    @pytest.mark.parametrize("log_scale", [True, False])  #
+    @pytest.mark.parametrize("projection", ["2d", "3d"])
+    @pytest.mark.parametrize("log_scale", [True, False])
     def test_view_runs_without_error(
-        self, optic_fixture_name, projection, log_scale, request, mocker
+        self, mock_show, optic_fixture_name, projection, log_scale, request
     ):
         """
         Tests that the `view` method (inherited from BasePSF) runs without raising 
@@ -381,19 +386,6 @@ class TestHuygensPSF:
             image_size=self.IMAGE_SIZE_LOW,
         )
 
-        mock_plt_show = mocker.patch("matplotlib.pyplot.show")
-
-        # Ensure PSF has some non-zero values for log plot if possible, or rely on 
-        # replace_nonpositive
-        if log_scale and np.all(psf_instance.psf <= 0):
-            # If PSF is all zero (e.g. vignetted), log scale might have issues without 
-            # replace_nonpositive
-            # replace_nonpositive handles this
-            print(
-                f"Warning: Testing log scale view with potentially all-zero "
-                f"PSF for {optic_fixture_name}"
-            )
-
         try:
             psf_instance.view(
                 projection=projection, log=log_scale, num_points=32
@@ -401,7 +393,8 @@ class TestHuygensPSF:
         except Exception as e:
             pytest.fail(f"view() raised an exception: {e}")
 
-        mock_plt_show.assert_called_once()
+        mock_show.assert_called_once()
+        plt.close()
 
     def test_view_invalid_projection(self, cooke_triplet_optic):
         """
