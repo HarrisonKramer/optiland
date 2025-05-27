@@ -150,7 +150,7 @@ class BasePSF(Wavefront):
 
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
-        ax.set_title(f"{self.__class__.__name__}")
+        ax.set_title(f"{self.__class__.__name__.replace('PSF', ' PSF')}")
 
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
@@ -205,7 +205,7 @@ class BasePSF(Wavefront):
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_zlabel("Relative Intensity (%)")
-        ax.set_title(f"{self.__class__.__name__}")
+        ax.set_title(f"{self.__class__.__name__.replace('PSF', ' PSF')}")
 
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15, format=log_formatter)
         fig.tight_layout()
@@ -310,4 +310,6 @@ class BasePSF(Wavefront):
         if self.psf is None:
             raise RuntimeError("PSF has not been computed.")
 
-        return self.psf[self.grid_size // 2, self.grid_size // 2] / 100
+        center_x = self.psf.shape[0] // 2
+        center_y = self.psf.shape[1] // 2
+        return self.psf[center_x, center_y] / 100

@@ -258,6 +258,6 @@ class HuygensPSF(BasePSF):
 
         return psf
 
-    def _get_psf_units(self):
+    def _get_psf_units(self, image):
         """Return the units of the PSF."""
         return 1, 1  # placeholder
