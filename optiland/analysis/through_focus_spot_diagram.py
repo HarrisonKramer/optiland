@@ -1,4 +1,4 @@
-"""Through Focus Spot Diagram Analysis Module.
+"""Through Focus Spot Diagram Analysis
 
 This module provides a class for performing through-focus spot diagram
 analysis, calculating the spot diagram at various focal planes.

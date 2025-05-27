@@ -1,4 +1,4 @@
-"""Through-focus analysis base class.
+"""Through-focus analysis base class
 
 This module provides a base class for performing through-focus analysis.
 

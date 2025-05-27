@@ -75,7 +75,7 @@ Performance
 -----------
 
 - **High-Speed Ray Tracing**:
-  Optiland achieves real-time performance on modern hardware, with ray tracing speeds of:
+  Optiland achieves real-time performance on modern hardware, with ray tracing speeds of (approx.):
   
   - **150–200 million ray surfaces per second** or more using the PyTorch backend on GPU.
   - **5–10 million ray surfaces per second** on CPU with the NumPy backend.
