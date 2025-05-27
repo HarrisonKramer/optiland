@@ -44,16 +44,12 @@ class HuygensPSF(BasePSF):
     """
 
     def __init__(self, optic, field, wavelength, num_rays=128, image_size=128):
-        super().__init__(
-            optic=optic,
-            field=field,
-            wavelength=wavelength,
-            num_rays=num_rays,
-            grid_size=1024,  # grid_size is not used in HuygensPSF
-        )
-
         if be.get_backend() != "numpy":
             raise ValueError("HuygensPSF only supports numpy backend.")
+
+        super().__init__(
+            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
+        )
 
         self.cx = None  # center of the image plane
         self.cy = None

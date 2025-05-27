@@ -48,12 +48,9 @@ class FFTPSF(BasePSF):
 
     def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
         super().__init__(
-            optic=optic,
-            field=field,
-            wavelength=wavelength,
-            num_rays=num_rays,
-            grid_size=grid_size,
+            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
         )
+        self.grid_size = grid_size
         self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
 

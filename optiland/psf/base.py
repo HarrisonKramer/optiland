@@ -44,12 +44,8 @@ class BasePSF(Wavefront):
         wavelength (float): The wavelength of light.
         num_rays (int, optional): The number of rays used for wavefront
             computation. Defaults to 128.
-        grid_size (int, optional): The size of the grid used for internal
-            PSF computations. Defaults to 1024. Not all subclasses may use
-            this directly.
 
     Attributes:
-        grid_size (int): The size of the grid.
         psf (ndarray): The computed PSF. This should be set by subclasses.
 
     Methods:
@@ -57,7 +53,7 @@ class BasePSF(Wavefront):
             num_points=128): Visualizes the PSF.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
+    def __init__(self, optic, field, wavelength, num_rays=128):
         super().__init__(
             optic=optic,
             fields=[field],
@@ -65,7 +61,6 @@ class BasePSF(Wavefront):
             num_rays=num_rays,
             distribution="uniform",
         )
-        self.grid_size = grid_size
         self.psf = None  # Subclasses must compute and set this
 
     def view(
