@@ -18,7 +18,7 @@ Optiland includes several built-in analysis tools, each tailored to a specific a
 - **Pupil Aberration**: Assess difference between the paraxial and real ray intersection point at the aperture stop.
 - **RMS vs. Field**: Plot the root mean square (RMS) wavefront error or RMS spot size as a function of field position.
 - **Y Y-bar**: Compare the chief and marginal ray heights at each surface.
-- **PSF**: Compute the point spread function (PSF) of the optical system.
+- **PSF**: Compute the point spread function (PSF) of the optical system using either the FFT or direct integration (Huygens-Fresnel) method.
 - **MTF**: Calculate the modulation transfer function (MTF) of the optical system via both geometric and diffraction (FFT) methods.
 - **Wavefront**: Compute the wavefront error across the field of view and pupil.
 - **Zernike Polynomials**: Decompose the wavefront error into Zernike polynomials.

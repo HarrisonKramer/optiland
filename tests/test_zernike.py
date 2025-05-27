@@ -720,7 +720,7 @@ class TestZernikeFit:
         plt.close()
 
     @patch("matplotlib.pyplot.show")
-    def test_view_residual_standard(self, mock_show,set_test_backend):
+    def test_view_residual_standard(self, mock_show, set_test_backend):
         zernike_fit_standard = zernike.ZernikeFit(
             self.x,
             self.y,

@@ -38,6 +38,7 @@ Python code to generate this 3D visualization:
 
    installation
    quickstart
+   cheat_sheet
 
 
 .. toctree::

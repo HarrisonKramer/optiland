@@ -25,6 +25,7 @@ def make_fftpsf(set_test_backend):
         if tweak_optic:
             tweak_optic(optic)
         return FFTPSF(optic, field, wavelength, num_rays, grid_size)
+
     return _factory
 
 
@@ -41,12 +42,15 @@ def test_strehl_ratio(make_fftpsf):
     assert 0 <= strehl_ratio <= 1
 
 
-@pytest.mark.parametrize("projection, log", [
-    ("2d", False),
-    ("3d", False),
-    ("2d", True),
-    ("3d", True),
-])
+@pytest.mark.parametrize(
+    "projection, log",
+    [
+        ("2d", False),
+        ("3d", False),
+        ("2d", True),
+        ("3d", True),
+    ],
+)
 @patch("matplotlib.pyplot.show")
 def test_view(mock_show, projection, log, make_fftpsf, set_test_backend):
     # Skip for torch since view isn't implemented there

@@ -78,15 +78,32 @@ def test_cross(set_test_backend, num_points):
     d = distribution.create_distribution("cross")
     d.generate_points(num_points=num_points)
 
-    x1 = be.zeros(num_points)
-    x2 = be.linspace(-1, 1, num_points)
-    y1 = be.linspace(-1, 1, num_points)
-    y2 = be.zeros(num_points)
-    x = be.concatenate((x1, x2))
-    y = be.concatenate((y1, y2))
+    # Expected points construction based on the new logic in CrossDistribution
+    y_line_x_expected = be.zeros(num_points)
+    y_line_y_expected = be.linspace(-1, 1, num_points)
 
-    assert_allclose(d.x, x)
-    assert_allclose(d.y, y)
+    x_line_x_expected_full = be.linspace(-1, 1, num_points)
+    x_line_y_expected_full = be.zeros(num_points)
+
+    if num_points % 2 == 1:  # Odd number of points
+        # Remove the middle element from the x-axis line as it's the duplicated origin
+        mid_idx = num_points // 2
+        x_line_x_to_concat = be.concatenate(
+            (x_line_x_expected_full[:mid_idx], x_line_x_expected_full[mid_idx + 1 :])
+        )
+        x_line_y_to_concat = be.concatenate(
+            (x_line_y_expected_full[:mid_idx], x_line_y_expected_full[mid_idx + 1 :])
+        )
+    else:  # Even number of points (origin is not in the middle of linspace for an odd-length array)
+        x_line_x_to_concat = x_line_x_expected_full
+        x_line_y_to_concat = x_line_y_expected_full
+
+    # Concatenate in the same order as in the implementation
+    expected_x = be.concatenate((y_line_x_expected, x_line_x_to_concat))
+    expected_y = be.concatenate((y_line_y_expected, x_line_y_to_concat))
+
+    assert_allclose(d.x, expected_x)
+    assert_allclose(d.y, expected_y)
 
 
 @patch("matplotlib.pyplot.show")

@@ -7,6 +7,7 @@ from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import Perturbation, ScalarSampler
 from tests.utils import assert_allclose
 
+
 @pytest.fixture
 def setup_tolerancing():
     optic = Edmund_49_847()
@@ -51,7 +52,7 @@ def test_add_operand_no_target(setup_tolerancing, set_test_backend):
     operand_type = "f2"
     input_data = {"optic": optic}
     weight = 2.0
-    target = optic.paraxial.f2() # Calculate target based on current state
+    target = optic.paraxial.f2()  # Calculate target based on current state
 
     # Ensure original optic data is not modified before adding operand
     original_f2 = optic.paraxial.f2()
@@ -79,17 +80,20 @@ def test_add_perturbation(setup_tolerancing, set_test_backend):
     surface_number = 1
 
     # Ensure original optic data is not modified before adding perturbation
-    original_radius = optic.surface_group.surfaces[surface_number].geometry.radius  
-    
-    tolerancing.add_perturbation(variable_type, perturbation, surface_number=surface_number)
+    original_radius = optic.surface_group.surfaces[surface_number].geometry.radius
+
+    tolerancing.add_perturbation(
+        variable_type, perturbation, surface_number=surface_number
+    )
     assert len(tolerancing.perturbations) == 1
     added_perturbation = tolerancing.perturbations[0]
     assert isinstance(added_perturbation, Perturbation)
     assert added_perturbation.optic == optic
     assert added_perturbation.type == variable_type
     # Check that adding the perturbation definition doesn't apply it yet
-    assert_allclose(optic.surface_group.surfaces[surface_number].geometry.radius, original_radius)
-
+    assert_allclose(
+        optic.surface_group.surfaces[surface_number].geometry.radius, original_radius
+    )
 
 
 def test_add_compensator(setup_tolerancing, set_test_backend):
