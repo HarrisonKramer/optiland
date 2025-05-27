@@ -195,6 +195,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 4b - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_4b_PSF_&_MTF_Calculation.ipynb)
         - Geometric MTF
         - FFT-based PSF/MTF
+        - Huygens PSF
     - [Tutorial 4c - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_4c_Zernike_Decomposition.ipynb)
         - Decomposing wavefront using Zernike polynomials
         - Coefficient types: Zernike standard, Zernike fringe, Zernike Noll
@@ -269,7 +270,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
-- [ ] **Huygens PSF & MTF**
+- [ ] **Huygens MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
