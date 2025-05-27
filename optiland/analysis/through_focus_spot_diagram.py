@@ -136,182 +136,233 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             buffer (float, optional): Buffer factor to extend the axis limits
                 beyond the maximum spot extent. Default is 1.05.
         """
-        if not self.results:
-            print("No data to display. Run analysis first.")
+        if not self._validate_view_prerequisites():
             return
 
         num_fields = len(self.fields)
-        num_defocus_steps = self.num_steps
+        num_steps = self.num_steps
 
-        if num_fields == 0 or num_defocus_steps == 0 or not self.wavelengths:
+        global_axis_limit = self._compute_global_axis_limit(buffer)
+        fig, axs = self._create_subplot_grid(num_fields, num_steps, figsize_per_plot)
+        x_label, y_label = self._get_plot_axis_labels()
+
+        legend_handles, legend_labels = [], []
+
+        for i, field_coord in enumerate(self.fields):
+            for j, position in enumerate(self.positions):
+                ax = axs[i, j]
+                data = self.results[j][i]
+                defocus = float(position) - be.to_numpy(self.nominal_focus).item()
+
+                centroid_x, centroid_y = self._get_spot_centroid(data)
+                self._plot_wavelengths(
+                    ax,
+                    data,
+                    centroid_x,
+                    centroid_y,
+                    i,
+                    j,
+                    legend_handles,
+                    legend_labels,
+                )
+
+                self._configure_subplot(
+                    ax,
+                    field_coord,
+                    defocus,
+                    i,
+                    j,
+                    num_fields,
+                    x_label,
+                    y_label,
+                    global_axis_limit,
+                )
+
+        self._add_legend(
+            fig, legend_handles, legend_labels, num_fields, figsize_per_plot
+        )
+        plt.tight_layout(rect=[0, 0.03, 1, 0.97])
+        plt.show()
+
+    def _validate_view_prerequisites(self):
+        """Validates prerequisites before plotting.
+
+        Checks whether results, fields, and wavelengths are present
+        and non-empty.
+
+        Returns:
+            bool: True if plotting can proceed, False otherwise.
+        """
+        if not self.results:
+            print("No data to display. Run analysis first.")
+            return False
+        if not self.fields or not self.wavelengths or self.num_steps == 0:
             print("No fields, defocus steps, or wavelengths to plot.")
-            return
+            return False
+        return True
 
-        # Calculate global axis limit based on max geometric radius after centering
-        max_r_sq_numpy = 0.0
-        for j_defocus_idx in range(num_defocus_steps):
-            data_this_defocus = self.results[j_defocus_idx]
-            for i_field_idx in range(num_fields):
-                if not data_this_defocus[i_field_idx]:
-                    continue  # Skip if no wavelength data for this field
+    def _create_subplot_grid(self, num_fields, num_steps, figsize_per_plot):
+        """Creates a 2D grid of subplots.
 
-                primary_wl_idx = self.optic.wavelengths.primary_index
-                # Ensure primary_wl_idx is valid for the current field's wavelength data
-                if primary_wl_idx >= len(data_this_defocus[i_field_idx]):
-                    current_field_wl_data = data_this_defocus[i_field_idx][0]
-                else:
-                    current_field_wl_data = data_this_defocus[i_field_idx][
-                        primary_wl_idx
-                    ]
+        Args:
+            num_fields (int): Number of rows (fields).
+            num_steps (int): Number of columns (defocus steps).
+            figsize_per_plot (tuple): Size per subplot in inches.
 
-                if be.any(current_field_wl_data.intensity == 0) and be.all(
-                    current_field_wl_data.intensity == 0
-                ):
-                    # skip if all intensities are zero, avoids nan in mean
-                    plot_centroid_x_val, plot_centroid_y_val = 0.0, 0.0
-                else:
-                    plot_centroid_x = be.mean(
-                        current_field_wl_data.x[current_field_wl_data.intensity != 0]
-                    )
-                    plot_centroid_y = be.mean(
-                        current_field_wl_data.y[current_field_wl_data.intensity != 0]
-                    )
-                    plot_centroid_x_val = be.to_numpy(plot_centroid_x).item()
-                    plot_centroid_y_val = be.to_numpy(plot_centroid_y).item()
-
-                for k_wl_idx in range(len(self.wavelengths)):
-                    spot_data_item = data_this_defocus[i_field_idx][k_wl_idx]
-
-                    x_centered = spot_data_item.x - plot_centroid_x_val
-                    y_centered = spot_data_item.y - plot_centroid_y_val
-
-                    # Consider only valid rays (intensity != 0) for radius calculation
-                    valid_rays_mask = spot_data_item.intensity != 0
-                    if be.any(valid_rays_mask):
-                        r_sq_values = (
-                            x_centered[valid_rays_mask] ** 2
-                            + y_centered[valid_rays_mask] ** 2
-                        )
-                        current_max_r_sq = be.max(r_sq_values)
-                        max_r_sq_numpy = max(
-                            max_r_sq_numpy, be.to_numpy(current_max_r_sq).item()
-                        )
-
-        global_axis_lim = (
-            np.sqrt(max_r_sq_numpy) if max_r_sq_numpy > 0 else 0.01
-        )  # Default small limit
-
+        Returns:
+            tuple: (matplotlib.figure.Figure, ndarray of Axes).
+        """
         fig, axs = plt.subplots(
             num_fields,
-            num_defocus_steps,
-            figsize=(
-                num_defocus_steps * figsize_per_plot[0],
-                num_fields * figsize_per_plot[1],
-            ),
+            num_steps,
+            figsize=(num_steps * figsize_per_plot[0], num_fields * figsize_per_plot[1]),
             sharex=True,
             sharey=True,
-            squeeze=False,  # Ensures axs is always 2D
+            squeeze=False,
         )
+        return fig, axs
 
-        markers = ["o", "s", "^"]
-        legend_handles = []
-        legend_labels = []
+    def _get_plot_axis_labels(self):
+        """Determines axis labels based on image surface orientation.
 
-        # Determine X/Y labels based on image surface orientation (once)
+        Returns:
+            tuple[str, str]: Labels for the X and Y axes.
+        """
         cs = self.optic.image_surface.geometry.cs
-        effective_orientation = np.abs(be.to_numpy(cs.get_effective_rotation_euler()))
+        orientation = np.abs(be.to_numpy(cs.get_effective_rotation_euler()))
         tol = 0.01
-        if effective_orientation[0] > tol or effective_orientation[1] > tol:
-            x_plot_label, y_plot_label = "U (mm)", "V (mm)"
+        if orientation[0] > tol or orientation[1] > tol:
+            return "U (mm)", "V (mm)"
+        return "X (mm)", "Y (mm)"
+
+    def _compute_global_axis_limit(self, buffer):
+        """Computes a global axis limit for consistent plot scaling.
+
+        Considers the maximum geometric radius of spot positions
+        (centered by centroid) across all defocus steps and fields.
+
+        Args:
+            buffer (float): Scaling buffer applied to max radius.
+
+        Returns:
+            float: Global axis limit after applying buffer.
+        """
+        max_r_sq = 0.0
+        for data_at_step in self.results:
+            for field_data in data_at_step:
+                centroid_x, centroid_y = self._get_spot_centroid(field_data)
+                for spot_data in field_data:
+                    valid = spot_data.intensity != 0
+                    if be.any(valid):
+                        dx = spot_data.x - centroid_x
+                        dy = spot_data.y - centroid_y
+                        r_sq = dx[valid] ** 2 + dy[valid] ** 2
+                        max_r_sq = max(max_r_sq, be.to_numpy(be.max(r_sq)).item())
+        return np.sqrt(max_r_sq) * buffer if max_r_sq > 0 else 0.01
+
+    def _get_spot_centroid(self, field_data):
+        """Computes the centroid of spot data for the primary wavelength.
+
+        Uses intensity-weighted centroid unless all rays have zero intensity,
+        in which case returns (0.0, 0.0).
+
+        Args:
+            field_data (list): List of spot data items across wavelengths.
+
+        Returns:
+            tuple[float, float]: (x, y) centroid in mm.
+        """
+        idx = self.optic.wavelengths.primary_index
+        idx = min(idx, len(field_data) - 1)
+        spot = field_data[idx]
+
+        nonzero = spot.intensity != 0
+        if be.any(nonzero):
+            cx = be.to_numpy(be.mean(spot.x[nonzero])).item()
+            cy = be.to_numpy(be.mean(spot.y[nonzero])).item()
         else:
-            x_plot_label, y_plot_label = "X (mm)", "Y (mm)"
+            cx = cy = 0.0
+        return cx, cy
 
-        for i_field_idx in range(num_fields):
-            for j_defocus_idx in range(num_defocus_steps):
-                ax = axs[i_field_idx, j_defocus_idx]
-                field_coord = self.fields[i_field_idx]
+    def _plot_wavelengths(self, ax, field_data, cx, cy, i, j, handles, labels):
+        """Plots rays for all wavelengths, centered at the primary centroid.
 
-                # nominal_focus and positions[j] are numpy arrays from backend
-                # Convert to float for subtraction if they are 0-d arrays
-                nominal_focus_val = be.to_numpy(self.nominal_focus).item()
-                position_val = float(self.positions[j_defocus_idx])
-                defocus_val = position_val - nominal_focus_val
+        Args:
+            ax (matplotlib.axes.Axes): Axis object to draw on.
+            field_data (list): List of spot data for one field at one defocus step.
+            cx (float): Centroid x-coordinate.
+            cy (float): Centroid y-coordinate.
+            i (int): Field index (row).
+            j (int): Defocus step index (column).
+            handles (list): List to store legend handle objects.
+            labels (list): List to store corresponding legend labels.
+        """
+        markers = ["o", "s", "^"]
+        for k, spot in enumerate(field_data):
+            x = be.to_numpy(spot.x - cx)
+            y = be.to_numpy(spot.y - cy)
+            i_mask = be.to_numpy(spot.intensity) != 0
 
-                data_for_this_plot = self.results[j_defocus_idx][i_field_idx]
+            if np.any(i_mask):
+                scatter = ax.scatter(
+                    x[i_mask],
+                    y[i_mask],
+                    s=10,
+                    marker=markers[k % len(markers)],
+                    alpha=0.7,
+                )
+                if i == 0 and j == 0:
+                    wl = self.wavelengths[k]
+                    handles.append(scatter)
+                    labels.append(f"{wl:.4f} µm")
 
-                primary_wl_idx = self.optic.wavelengths.primary_index
+    def _configure_subplot(
+        self, ax, field, defocus, i, j, num_fields, x_label, y_label, limit
+    ):
+        """Applies titles, labels, and axis limits to a subplot.
 
-                if primary_wl_idx >= len(data_for_this_plot):
-                    spot_data_primary_wl_plot = data_for_this_plot[0]  # Fallback
-                else:
-                    spot_data_primary_wl_plot = data_for_this_plot[primary_wl_idx]
+        Args:
+            ax (matplotlib.axes.Axes): Axis to configure.
+            field (tuple): Field coordinates (x, y).
+            defocus (float): Defocus amount in mm.
+            i (int): Field index.
+            j (int): Defocus step index.
+            num_fields (int): Total number of fields.
+            x_label (str): Label for x-axis.
+            y_label (str): Label for y-axis.
+            limit (float): Axis limit for both x and y.
+        """
+        ax.axis("square")
+        ax.grid(alpha=0.25)
 
-                if be.any(spot_data_primary_wl_plot.intensity == 0) and be.all(
-                    spot_data_primary_wl_plot.intensity == 0
-                ):
-                    plot_centroid_x_val, plot_centroid_y_val = 0.0, 0.0
-                else:
-                    plot_centroid_x = be.mean(
-                        spot_data_primary_wl_plot.x[
-                            spot_data_primary_wl_plot.intensity != 0
-                        ]
-                    )
-                    plot_centroid_y = be.mean(
-                        spot_data_primary_wl_plot.y[
-                            spot_data_primary_wl_plot.intensity != 0
-                        ]
-                    )
-                    plot_centroid_x_val = be.to_numpy(plot_centroid_x).item()
-                    plot_centroid_y_val = be.to_numpy(plot_centroid_y).item()
+        title = f"Field: ({field[0]:.2f},{field[1]:.2f})"
+        if i == 0:
+            title = f"Defocus: {defocus:+.3f} mm\n{title}"
+        ax.set_title(title, fontsize=10)
 
-                for k_wl_idx, spot_data_item in enumerate(data_for_this_plot):
-                    x_centered_plot = spot_data_item.x - plot_centroid_x_val
-                    y_centered_plot = spot_data_item.y - plot_centroid_y_val
+        if i == num_fields - 1:
+            ax.set_xlabel(x_label)
+        if j == 0:
+            ax.set_ylabel(y_label)
 
-                    x_np = be.to_numpy(x_centered_plot)
-                    y_np = be.to_numpy(y_centered_plot)
-                    i_np = be.to_numpy(spot_data_item.intensity)
-                    mask = i_np != 0
+        ax.set_xlim(-limit, limit)
+        ax.set_ylim(-limit, limit)
 
-                    if be.any(mask):  # Only plot if there are any valid rays
-                        scatter_plot = ax.scatter(
-                            x_np[mask],
-                            y_np[mask],
-                            s=10,
-                            marker=markers[k_wl_idx % len(markers)],
-                            alpha=0.7,
-                        )
-                        if i_field_idx == 0 and j_defocus_idx == 0:
-                            wl_value = self.wavelengths[k_wl_idx]
-                            legend_handles.append(scatter_plot)
-                            legend_labels.append(f"{wl_value:.4f} µm")
+    def _add_legend(self, fig, handles, labels, num_fields, figsize_per_plot):
+        """Adds a wavelength legend below the plot grid.
 
-                ax.axis("square")
-                ax.grid(alpha=0.25)
-
-                # Titles and labels
-                title_str = f"Field: ({field_coord[0]:.2f},{field_coord[1]:.2f})"
-                if i_field_idx == 0:  # Add defocus to title for top row
-                    title_str = f"Defocus: {defocus_val:+.3f} mm\n{title_str}"
-                ax.set_title(title_str, fontsize=10)
-
-                if i_field_idx == num_fields - 1:
-                    ax.set_xlabel(x_plot_label)
-                if j_defocus_idx == 0:
-                    ax.set_ylabel(y_plot_label)
-
-                current_lim = global_axis_lim * buffer
-                ax.set_xlim((-current_lim, current_lim))
-                ax.set_ylim((-current_lim, current_lim))
-
-        if legend_handles:
+        Args:
+            fig (matplotlib.figure.Figure): Figure object.
+            handles (list): Legend handles for plotted wavelengths.
+            labels (list): Corresponding labels.
+            num_fields (int): Number of fields (rows).
+            figsize_per_plot (tuple): Subplot size in inches.
+        """
+        if handles:
             fig.legend(
-                legend_handles,
-                legend_labels,
+                handles,
+                labels,
                 loc="lower center",
-                ncol=min(len(legend_labels), 5),  # Max 5 columns for legend
+                ncol=min(5, len(labels)),
                 bbox_to_anchor=(0.5, -0.02 / (figsize_per_plot[1] * num_fields / 4)),
             )
-
-        plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust rect for legend and titles
-        plt.show()
