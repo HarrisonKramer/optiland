@@ -25,12 +25,13 @@ class GeometricPSF(BasePSF):
         field (tuple): The field point (e.g., (Hx, Hy) in normalized field
             coordinates) at which to compute the PSF.
         wavelength (float): The wavelength of light in micrometers.
+        image_extent (float, optional): The physical extent of the image plane
+            in millimeters. If not provided, the extent is determined dynamically based
+            on ray intersection data.
         num_rays (int, optional): The number of rays to trace for generating
-            the spot diagram. Defaults to 10000.
+            the spot diagram in each axis. Defaults to 256.
         grid_size (int, optional): The number of bins on each side of the 2D
             histogram used to represent the PSF. Defaults to 256.
-        distribution (str, optional): The distribution of rays for SpotDiagram.
-            Defaults to 'uniform'.
 
     Attributes:
         psf (be.ndarray): The computed Geometric PSF. This is a 2D array
@@ -46,13 +47,14 @@ class GeometricPSF(BasePSF):
         optic,
         field,
         wavelength,
+        image_extent=None,
         num_rays=256,
         grid_size=256,
-        distribution="uniform",
     ):
         super().__init__(
             optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
         )
+        self.image_extent = image_extent
         self.grid_size = grid_size
 
         self.spot_data = SpotDiagram(
@@ -60,7 +62,7 @@ class GeometricPSF(BasePSF):
             fields=[field],  # SpotDiagram expects a list of fields
             wavelengths=[wavelength],  # and a list of wavelengths
             num_rings=num_rays,
-            distribution=distribution,
+            distribution="uniform",
         )
         # SpotDiagram stores data in a list of lists (fields, then wavelengths)
         # For GeometricPSF, we have one field and one wavelength.
@@ -87,23 +89,8 @@ class GeometricPSF(BasePSF):
         if self.ray_intersections_x is None or self.ray_intersections_y is None:
             raise RuntimeError("Ray intersection data has not been generated.")
 
-        # Determine bounds for the histogram dynamically
-        min_x = be.min(self.ray_intersections_x)
-        max_x = be.max(self.ray_intersections_x)
-        min_y = be.min(self.ray_intersections_y)
-        max_y = be.max(self.ray_intersections_y)
-
-        # Handle cases where all rays land at the same point (e.g. perfect lens on axis)
-        if min_x == max_x:
-            # Add a small delta if min and max are the same
-            # Use a small fixed physical size, e.g. 0.001 mm
-            delta_x = 0.001
-            min_x -= delta_x / 2
-            max_x += delta_x / 2
-        if min_y == max_y:
-            delta_y = 0.001
-            min_y -= delta_y / 2
-            max_y += delta_y / 2
+        # Determine the bounds for the histogram
+        min_x, max_x, min_y, max_y = self._get_image_extent()
 
         # Create the 2D histogram
         psf_image, x_edges, y_edges = be.histogram2d(
@@ -123,6 +110,39 @@ class GeometricPSF(BasePSF):
             psf_image = be.zeros_like(psf_image)
 
         return psf_image, x_edges, y_edges
+
+    def _get_image_extent(self):
+        """Determines the integration limits for the PSF image."""
+        if self.image_extent is None:
+            # Determine bounds for the histogram dynamically
+            min_x = be.min(self.ray_intersections_x)
+            max_x = be.max(self.ray_intersections_x)
+            min_y = be.min(self.ray_intersections_y)
+            max_y = be.max(self.ray_intersections_y)
+
+            # Case where all rays land at the same point (e.g. perfect lens on axis)
+            if min_x == max_x:
+                # Add a small delta if min and max are the same
+                # Use a small fixed physical size, e.g. 0.001 mm
+                delta_x = 0.001
+                min_x -= delta_x / 2
+                max_x += delta_x / 2
+            if min_y == max_y:
+                delta_y = 0.001
+                min_y -= delta_y / 2
+                max_y += delta_y / 2
+        else:
+            cx = be.mean(self.ray_intersections_x)
+            cy = be.mean(self.ray_intersections_y)
+
+            # Use the image_extent to define the bounds
+            delta = self.image_extent / 2
+            min_x = cx - delta
+            max_x = cx + delta
+            min_y = cy - delta
+            max_y = cy + delta
+
+        return min_x, max_x, min_y, max_y
 
     def _get_psf_units(self, image):
         """Calculates the physical extent (units) of the PSF image for plotting.
