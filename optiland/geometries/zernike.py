@@ -70,25 +70,27 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
     def __init__(
         self,
-        coordinate_system: CoordinateSystem, # Corrected type
+        coordinate_system: CoordinateSystem,  # Corrected type
         radius: float,
         conic: float = 0.0,
         tol: float = 1e-10,
         max_iter: int = 100,
-        coefficients: list[float] or be.ndarray = None, # Allow list or be.ndarray
-        norm_radius: float = 1.0, # Default to float
+        coefficients: list[float] or be.ndarray = None,  # Allow list or be.ndarray
+        norm_radius: float = 1.0,  # Default to float
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         if coefficients is None:
             coefficients = []
-        self.c = be.atleast_1d(be.asarray(coefficients)) # Ensure it's a backend array
-        self.norm_radius = float(norm_radius) # Ensure norm_radius is float
-        self.is_symmetric = False # Zernikes can be non-symmetric
+        self.c = be.atleast_1d(be.asarray(coefficients))  # Ensure it's a backend array
+        self.norm_radius = float(norm_radius)  # Ensure norm_radius is float
+        self.is_symmetric = False  # Zernikes can be non-symmetric
 
     def __str__(self) -> str:
         return "Zernike Polynomial"
 
-    def sag(self, x: float or be.ndarray, y: float or be.ndarray) -> float or be.ndarray:
+    def sag(
+        self, x: float or be.ndarray, y: float or be.ndarray
+    ) -> float or be.ndarray:
         """Calculate the sag of the Zernike polynomial surface at the given
         coordinates.
 
@@ -318,7 +320,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         https://wp.optics.arizona.edu/visualopticslab/wp-content/
         uploads/sites/52/2021/10/Zernike-Fit.pdf
-        Note: k is 0-indexed in the paper, but 1-indexed for Fringe Zernikes (Z_1, Z_2...).
+        Note: k is 0-indexed in the paper, but 1-indexed for Fringe Zernikes.
         The formula here assumes k is the 1-based Fringe index.
         """
         # Adjust k to be 0-indexed for the formula if it's passed as 1-indexed Fringe
@@ -327,7 +329,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         m = 2 * k_zero_indexed - n * (n + 2)
         return (n.astype(int), m.astype(int))
 
-    def _validate_inputs(self, x_norm: be.ndarray or float, y_norm: be.ndarray or float) -> None:
+    def _validate_inputs(
+        self, x_norm: be.ndarray or float, y_norm: be.ndarray or float
+    ) -> None:
         """Validate the input coordinates for the Zernike polynomial surface.
 
         Args:
@@ -386,16 +390,16 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             data.get("max_iter", 100),
             data.get("coefficients", []),
             data.get("coefficients", []),
-            data.get("norm_radius", 1.0), # Corrected from norm_x, norm_y
+            data.get("norm_radius", 1.0),  # Corrected from norm_x, norm_y
         )
 
 
-def factorial(n: int) -> int or float: # Type hint for n
+def factorial(n: int) -> int or float:  # Type hint for n
     """Computes factorial of n.
-    
+
     Args:
         n (int): Non-negative integer.
-        
+
     Returns:
         int or float: n!
     """

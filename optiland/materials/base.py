@@ -44,7 +44,7 @@ class BaseMaterial(ABC):
         BaseMaterial._registry[cls.__name__] = cls
 
     @abstractmethod
-    def n(self, wavelength: float) -> float: # Subclasses will handle be.ndarray
+    def n(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
         """Calculates the refractive index at a given wavelength.
 
         Args:
@@ -56,7 +56,7 @@ class BaseMaterial(ABC):
         pass  # pragma: no cover
 
     @abstractmethod
-    def k(self, wavelength: float) -> float: # Subclasses will handle be.ndarray
+    def k(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
         """Calculates the extinction coefficient at a given wavelength.
 
         Args:

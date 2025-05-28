@@ -306,8 +306,10 @@ class MaterialFile(BaseMaterial):
         """
         try:
             return be.interp(w, self._n_wavelength, self._n)
-        except ValueError as err: # Typically if _n_wavelength or _n is None or empty
-            raise ValueError("No tabular refractive index data found or data is invalid.") from err
+        except ValueError as err:  # Typically if _n_wavelength or _n is None or empty
+            raise ValueError(
+                "No tabular refractive index data found or data is invalid."
+            ) from err
 
     def _read_file(self) -> dict:
         """Read the material YAML file.
@@ -344,10 +346,9 @@ class MaterialFile(BaseMaterial):
                 # Use np.loadtxt and then convert to backend array
                 numpy_arr = np.loadtxt(data_file)
                 arr = be.asarray(numpy_arr)
-                # Ensure arr is at least 2D for consistent indexing, even if only one row
+                # Ensure arr is at least 2D for consistent indexing
                 if arr.ndim == 1:
-                    arr = be.reshape(arr, (1, -1) if arr.shape[0] > 0 else (0,0) )
-
+                    arr = be.reshape(arr, (1, -1) if arr.shape[0] > 0 else (0, 0))
 
                 if sub_data_type == "tabulated n":
                     self._n_wavelength = arr[:, 0]

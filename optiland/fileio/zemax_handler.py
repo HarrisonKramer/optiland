@@ -304,10 +304,10 @@ class ZemaxFileReader:
             self.data["surfaces"][self._current_surf] = self._current_surf_data
 
         self._current_surf_data = {}
-        self._current_surf_data["type"] = "standard" # Default type
+        self._current_surf_data["type"] = "standard"  # Default type
         self._current_surf_data["is_stop"] = False
         self._current_surf_data["conic"] = 0.0
-        self._current_surf_data["material"] = "air" # Default material
+        self._current_surf_data["material"] = "air"  # Default material
         self._current_surf += 1
 
     def _read_radius(self, data: list[str]):
@@ -320,7 +320,7 @@ class ZemaxFileReader:
         try:
             self._current_surf_data["radius"] = 1 / float(data[1])
         except ZeroDivisionError:
-            self._current_surf_data["radius"] = be.inf # Use backend.inf
+            self._current_surf_data["radius"] = be.inf  # Use backend.inf
 
     def _read_thickness(self, data: list[str]):
         """Extracts the surface thickness data.
@@ -330,7 +330,7 @@ class ZemaxFileReader:
 
         """
         if data[1] == "INFINITY":
-            self._current_surf_data["thickness"] = be.inf # Use backend.inf
+            self._current_surf_data["thickness"] = be.inf  # Use backend.inf
         else:
             self._current_surf_data["thickness"] = float(data[1])
 
@@ -451,7 +451,7 @@ class ZemaxFileReader:
             data (list[str]): List of string data values from the Zemax file line.
 
         """
-        key = f"param_{int(data[1]) - 1}" # Zemax PARM is 1-indexed
+        key = f"param_{int(data[1]) - 1}"  # Zemax PARM is 1-indexed
         self._current_surf_data[key] = float(data[2])
 
     def _read_field_weights(self, data: list[str]):

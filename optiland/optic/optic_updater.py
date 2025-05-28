@@ -167,7 +167,7 @@ class OpticUpdater:
             surface.set_semi_aperture(r_max=ya[k] + yb[k])
             self.update_normalization(surface)
 
-    def update_normalization(self, surface: 'Surface') -> None:
+    def update_normalization(self, surface) -> None:
         """Update the normalization radius/factors of a given non-spherical surface.
 
         The normalization factors (`norm_x`, `norm_y`, or `norm_radius`) are

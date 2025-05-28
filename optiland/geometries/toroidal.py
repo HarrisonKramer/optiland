@@ -155,7 +155,9 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return dz_dy
 
-    def sag(self, x: float or be.ndarray, y: float or be.ndarray) -> float or be.ndarray:
+    def sag(
+        self, x: float or be.ndarray, y: float or be.ndarray
+    ) -> float or be.ndarray:
         """Calculate the sag z(x, y) of the toroidal surface.
 
         Args:

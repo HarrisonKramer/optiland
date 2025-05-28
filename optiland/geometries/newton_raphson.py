@@ -31,7 +31,11 @@ def _is_radius_infinite(radius):
         # If it's a multi-element array, check if all are infinite
         return bool(be.all(is_inf_tensor))
     # For scalars or single-element arrays that can be converted by .item()
-    return bool(is_inf_tensor.item()) if hasattr(is_inf_tensor, "item") else bool(is_inf_tensor)
+    return (
+        bool(is_inf_tensor.item())
+        if hasattr(is_inf_tensor, "item")
+        else bool(is_inf_tensor)
+    )
 
 
 class NewtonRaphsonGeometry(StandardGeometry, ABC):

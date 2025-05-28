@@ -68,7 +68,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
             Defaults to 1.0.
         norm_y (float, optional): Normalization radius for the y-coordinate.
             Defaults to 1.0.
-    
+
     Attributes:
         c (be.ndarray): 2D array of Chebyshev coefficients.
         norm_x (be.ndarray): Normalization factor for x.
@@ -193,8 +193,8 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         Returns:
             be.ndarray or float: The derivative of the Chebyshev polynomial T_n(x)
-            with respect to x, scaled by 1/norm_factor if applicable (handled by caller).
-            Returns 0 for n=0.
+            with respect to x, scaled by 1/norm_factor if applicable
+            (handled by caller). Returns 0 for n=0.
 
         """
         return n * be.sin(n * be.arccos(x)) / be.sqrt(1 - x**2)

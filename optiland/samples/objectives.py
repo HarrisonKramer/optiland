@@ -5,6 +5,7 @@ from optiland import optic
 
 class TripletTelescopeObjective(optic.Optic):
     """A triplet telescope objective lens design."""
+
     def __init__(self):
         super().__init__()
 
@@ -42,6 +43,7 @@ class TripletTelescopeObjective(optic.Optic):
 
 class CookeTriplet(optic.Optic):
     """A Cooke triplet lens design."""
+
     def __init__(self):
         super().__init__()
 
@@ -73,6 +75,7 @@ class CookeTriplet(optic.Optic):
 
 class DoubleGauss(optic.Optic):
     """A Double Gauss lens design."""
+
     def __init__(self):
         super().__init__()
 
@@ -114,6 +117,7 @@ class DoubleGauss(optic.Optic):
 
 class ReverseTelephoto(optic.Optic):
     """A reverse telephoto lens design."""
+
     def __init__(self):
         super().__init__()
 
@@ -174,6 +178,7 @@ class ReverseTelephoto(optic.Optic):
 
 class ObjectiveUS008879901(optic.Optic):
     """An objective lens design based on U.S. Patent 8,879,901."""
+
     def __init__(self):
         super().__init__()
 

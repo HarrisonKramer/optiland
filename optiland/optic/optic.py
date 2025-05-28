@@ -388,7 +388,7 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength: Union[float, str] = "primary") -> 'be.ndarray':
+    def n(self, wavelength: Union[float, str] = "primary"):
         """Get the refractive indices of the materials for each space between
         surfaces at a given wavelength.
 

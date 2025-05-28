@@ -14,7 +14,7 @@ Kramer Harrison, 2024
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
-import numpy as np # Kept for np.nan, np.atleast_2d, and scipy/matplotlib interaction
+import numpy as np  # Kept for np.nan, np.atleast_2d, and scipy/matplotlib interaction
 from scipy.interpolate import griddata
 
 import optiland.backend as be
@@ -418,7 +418,9 @@ class OPD(Wavefront):
 
         """
         _, ax = plt.subplots(figsize=figsize)
-        im = ax.imshow(np.flipud(data["z"]), extent=[-1, 1, -1, 1]) # np.flipud is fine here as data['z'] is already numpy
+        im = ax.imshow(
+            np.flipud(data["z"]), extent=[-1, 1, -1, 1]
+        )  # np.flipud is fine here as data['z'] is already numpy
 
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
