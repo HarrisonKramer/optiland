@@ -14,7 +14,7 @@ Kramer Harrison, 2024
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
-import numpy as np  # Kept for np.nan, np.atleast_2d, and scipy/matplotlib interaction
+import numpy as np
 from scipy.interpolate import griddata
 
 import optiland.backend as be
