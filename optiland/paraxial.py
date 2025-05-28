@@ -58,7 +58,7 @@ class Paraxial:
         return f1[0]
 
     def f2(self):
-        """Calculate the back focal length (f2), also known as effective focal length (EFL).
+        """Calculate the back focal length (f2), also known as effective focal length.
 
         Returns:
             float: Back focal length.

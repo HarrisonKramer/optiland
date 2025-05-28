@@ -30,7 +30,8 @@ class IdealMaterial(BaseMaterial):
 
         Args:
             wavelength (float or be.ndarray): The wavelength(s) of light in microns.
-                This argument is not used by this material model as the index is constant.
+                This argument is not used by this material model as the index is
+                constant.
 
         Returns:
             float or be.ndarray: The refractive index of the material. Returns a
@@ -46,7 +47,8 @@ class IdealMaterial(BaseMaterial):
 
         Args:
             wavelength (float or be.ndarray): The wavelength(s) of light in microns.
-                This argument is not used by this material model as the value is constant.
+                This argument is not used by this material model as the value is
+                constant.
 
         Returns:
             float or be.ndarray: The extinction coefficient of the material. Returns a

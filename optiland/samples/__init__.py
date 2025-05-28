@@ -1,12 +1,5 @@
 """This package provides a collection of predefined sample optical systems."""
 
-from .simple import (
-    Edmund_49_847,
-    SingletStopSurf2,
-    TelescopeDoublet,
-    CementedAchromat,
-    AsphericSinglet,
-)
 from .eyepieces import EyepieceErfle
 from .infrared import (
     InfraredTriplet,
@@ -14,22 +7,29 @@ from .infrared import (
 )
 from .lithography import UVProjectionLens
 from .microscopes import (
-    Objective60x,
     Microscope20x,
+    Objective60x,
     UVReflectingMicroscope,
 )
 from .objectives import (
-    TripletTelescopeObjective,
     CookeTriplet,
     DoubleGauss,
-    ReverseTelephoto,
-    ObjectiveUS008879901,
-    TelescopeObjective48Inch,
     HeliarLens,
-    TessarLens,
     LensWithFieldCorrector,
+    ObjectiveUS008879901,
     PetzvalLens,
+    ReverseTelephoto,
     Telephoto,
+    TelescopeObjective48Inch,
+    TessarLens,
+    TripletTelescopeObjective,
+)
+from .simple import (
+    AsphericSinglet,
+    CementedAchromat,
+    Edmund_49_847,
+    SingletStopSurf2,
+    TelescopeDoublet,
 )
 from .telescopes import HubbleTelescope
 

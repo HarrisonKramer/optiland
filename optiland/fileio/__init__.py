@@ -5,11 +5,11 @@ importing Zemax (.zmx) files."""
 from .converters import ZemaxToOpticConverter
 from .optiland_handler import (
     load_obj_from_json,
-    save_obj_to_json,
     load_optiland_file,
+    save_obj_to_json,
     save_optiland_file,
 )
-from .zemax_handler import load_zemax_file, ZemaxFileReader
+from .zemax_handler import ZemaxFileReader, load_zemax_file
 
 __all__ = [
     # From converters.py

@@ -63,9 +63,12 @@ class BaseCoating(ABC):
 
         Args:
             rays (RealRays): The incident rays.
-            nx (be.ndarray): The x-component of the surface normal vectors at each ray's intersection point.
-            ny (be.ndarray): The y-component of the surface normal vectors at each ray's intersection point.
-            nz (be.ndarray): The z-component of the surface normal vectors at each ray's intersection point.
+            nx (be.ndarray): The x-component of the surface normal vectors at each ray's
+                intersection point.
+            ny (be.ndarray): The y-component of the surface normal vectors at each ray's
+                intersection point.
+            nz (be.ndarray): The z-component of the surface normal vectors at each ray's
+                intersection point.
 
         Returns:
             be.ndarray: The angle of incidence for each ray.
@@ -161,10 +164,12 @@ class SimpleCoating(BaseCoating):
             as 1 - reflectance - transmittance.
 
     Methods:
-        reflect(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None, nz: be.ndarray = None) -> RealRays:
-            Reflects the rays based on the reflectance of the coating.
-        transmit(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None, nz: be.ndarray = None) -> RealRays:
-            Transmits the rays based on the transmittance of the coating.
+        reflect(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None,
+            nz: be.ndarray = None) -> RealRays: Reflects the rays based on the
+            reflectance of the coating.
+        transmit(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None,
+            nz: be.ndarray = None) -> RealRays: Transmits the rays based on the
+            transmittance of the coating.
 
     """
 
