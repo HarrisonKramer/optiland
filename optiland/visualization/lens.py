@@ -10,7 +10,9 @@ import vtk
 from matplotlib.patches import Polygon
 
 import optiland.backend as be
+from optiland.physical_apertures import RadialAperture # Added import
 from optiland.visualization.utils import revolve_contour, transform, transform_3d
+from .surface import Surface3D # Added import
 
 
 class Lens2D:
@@ -163,66 +165,83 @@ class Lens3D(Lens2D):
     """
 
     def __init__(self, surfaces):
-        super().__init__(surfaces)
+        super().__init__(surfaces)  # This stores the original surfaces in self.surfaces
+
+        self.plotting_surfaces_3d = []
+        for surface_obj in self.surfaces: # self.surfaces are original optiland.surface.Surface
+            s_extent = None
+            if hasattr(surface_obj, 'aperture') and surface_obj.aperture is not None:
+                if isinstance(surface_obj.aperture, RadialAperture):
+                    s_extent = surface_obj.aperture.r_max
+                elif hasattr(surface_obj.aperture, 'extent'): # For other aperture types like Rectangular
+                    # Assuming aperture.extent gives (x_min, x_max, y_min, y_max)
+                    x_min, x_max, y_min, y_max = surface_obj.aperture.extent
+                    # Take the max absolute value as the radial equivalent for Surface3D's scalar extent
+                    s_extent = be.max(be.abs(be.array([x_min, x_max, y_min, y_max])))
+            
+            if s_extent is None and hasattr(surface_obj, 'semi_aperture') and surface_obj.semi_aperture is not None:
+                # Fallback to the surface's own semi_aperture if it's a simple scalar
+                if isinstance(surface_obj.semi_aperture, (float, int)) or \
+                   (hasattr(surface_obj.semi_aperture, 'shape') and not surface_obj.semi_aperture.shape): # Check for scalar array
+                    s_extent = surface_obj.semi_aperture
+
+            if s_extent is None:
+                # If no specific extent can be found for this surface,
+                # we might need a default or a lens-system-wide max.
+                # For now, let's use a default. This should be logged or improved later
+                # if surfaces without clear extents are common.
+                s_extent = 10.0 # Default extent if none found
+                # Consider adding: print(f"Warning: Using default extent for surface {surface_obj}")
+
+            self.plotting_surfaces_3d.append(Surface3D(surface_obj, s_extent))
 
     @property
     def is_symmetric(self):
-        """Check if all surfaces in the lens are symmetric.
+        """Check if all surfaces in the lens are rotationally symmetric.
 
-        This method iterates through each surface in the lens and checks if the
-        geometry of the surface is symmetric. A surface is considered symmetric
-        if its geometry's `is_symmetric` attribute is True and both `rx` and
-        `ry` attributes of its coordinate system (`cs`) are zero.
+        This method iterates through each underlying optical surface in the lens
+        and checks if its geometry is intrinsically symmetric and if its
+        coordinate system is aligned (no rotations or decenters relative to
+        the optical axis).
 
         Returns:
-            bool: True if all surfaces are symmetric, False otherwise.
-
+            bool: True if all surfaces are symmetric and aligned, False otherwise.
         """
-        for surf in self.surfaces:
-            geometry = surf.surf.geometry
+        for surf in self.surfaces: # These are optiland.surface.Surface instances
+            geometry = surf.geometry # Corrected access to the geometry object
             if not geometry.is_symmetric:
                 return False
+            # Check coordinate system properties for tilts and decenters
             if (
-                geometry.cs.rx != 0
+                hasattr(geometry, 'cs') and # Ensure cs attribute exists
+                (geometry.cs.rx != 0
                 or geometry.cs.ry != 0
                 or geometry.cs.x != 0
-                or geometry.cs.y != 0
+                or geometry.cs.y != 0)
             ):
                 return False
         return True
 
     def plot(self, renderer):
-        """Plots the lens or surfaces using the provided renderer.
+        """Plots the lens surfaces using the provided VTK renderer.
+
+        This method iterates through the `Surface3D` representations of each
+        surface in the lens, allowing each surface to determine its own
+        symmetric or asymmetric rendering. It then plots the edges connecting
+        these surfaces.
 
         Args:
-            renderer: The rendering engine used to plot the lens or surfaces.
-
+            renderer (vtkRenderer): The VTK renderer where the lens will be
+                plotted.
         """
-        if self.is_symmetric:
-            sags = self._compute_sag()
-            self._plot_lenses(renderer, sags)
-        else:
-            self._plot_surfaces(renderer)
-            self._plot_surface_edges(renderer)
+        # Both symmetric and asymmetric lenses are plotted by iterating
+        # through their Surface3D representations.
+        for surface_3d_obj in self.plotting_surfaces_3d:
+            actor = surface_3d_obj.get_surface() # Surface3D.get_surface decides symm/asymm
+            renderer.AddActor(actor)
 
-    def _plot_single_lens(self, renderer, x, y, z):
-        """Plots a single lens by revolving a contour and configuring its
-        material.
-
-        Args:
-            renderer (vtkRenderer): The renderer to which the lens actor will
-                be added.
-            x (list of float): The x-coordinates of the contour points.
-            y (list of float): The y-coordinates of the contour points.
-            z (list of float): The z-coordinates of the contour points.
-
-        """
-        x = be.to_numpy(x)
-        y = be.to_numpy(y)
-        z = be.to_numpy(z)
-        actor = revolve_contour(x, y, z)
-        actor = self._configure_material(actor)
-        renderer.AddActor(actor)
+        # Plot the edges that connect these surfaces.
+        self._plot_surface_edges(renderer)
 
     def _configure_material(self, actor):
         """Configures the material properties of a given VTK actor.
@@ -245,29 +264,25 @@ class Lens3D(Lens2D):
         return actor
 
     def _plot_surfaces(self, renderer):
-        """Plots the surfaces of the lens in the given renderer.
-
-        This method computes the sag values for each surface, creates a 3D
-        actor for each surface by revolving the contour, applies the necessary
-        transformations, configures the material properties, and adds the
-        actor to the renderer.
-
-        Args:
-            renderer (vtkRenderer): The VTK renderer where the surfaces will
-                be added.
-
+        """Plots the asymmetric surfaces of the lens in the given renderer
+        using Surface3D objects.
         """
-        sags = self._compute_sag(apply_transform=False)
-        for k, (x, y, z) in enumerate(sags):
-            x = be.to_numpy(x)
-            y = be.to_numpy(y)
-            z = be.to_numpy(z)
+        for surface_3d_obj in self.plotting_surfaces_3d:
+            # Surface3D.get_surface() chooses between symmetric and asymmetric.
+            # The Lens3D.plot() method already checks Lens3D.is_symmetric.
+            # If is_symmetric is False, it calls _plot_surfaces.
+            # So, inside _plot_surfaces, we are dealing with a lens deemed asymmetric overall.
+            # Each individual surface within it could still be symmetric in its own definition.
+            # Using surface_3d_obj.get_surface() is the most robust approach.
 
-            surface = self.surfaces[k].surf
-            actor = revolve_contour(x, y, z)
-            actor = transform_3d(actor, surface)
-            actor = self._configure_material(actor)
+            actor = surface_3d_obj.get_surface() # This will internally choose symmetric/asymmetric plotting for the surface
             renderer.AddActor(actor)
+
+        # Note: The original _plot_surfaces configured material using self._configure_material.
+        # Surface3D._get_asymmetric_surface and _get_symmetric_surface use their own
+        # _configure_material method (Surface3D._configure_material).
+        # This means the material properties might change slightly if the colors/opacity differ.
+        # This is acceptable as per the refactoring to use Surface3D's methods.
 
     def _get_edge_surface(self, circle1, circle2):
         """Generates a VTK actor representing the surface between two circles.
