@@ -32,7 +32,9 @@ class BaseSolve(ABC):
         BaseSolve._registry[cls.__name__] = cls
 
     @abstractmethod
+    @abstractmethod
     def apply(self):
+        """Applies the solve operation to the optic."""
         pass  # pragma: no cover
 
     def to_dict(self):
@@ -152,8 +154,8 @@ class QuickFocusSolve(BaseSolve):
             distribution (str): The distribution of rays to trace.
 
         Returns:
-            t_opt : The propagation distance from the image plane that
-                minimizes the RMS spot size.
+            float: The optimal axial position (z-coordinate) of the image plane
+                that minimizes the RMS spot size.
 
         """
         # Trace rays to the image plane
@@ -176,7 +178,11 @@ class QuickFocusSolve(BaseSolve):
         return z_focus
 
     def apply(self):
-        """Applies QuickFocusSolve to the optic"""
+        """Applies the QuickFocusSolve to the optic.
+
+        This method calculates the optimal focus distance and sets the
+        z-position of the last surface (image plane) accordingly.
+        """
         z_focus = self.optimal_focus_distance(
             wavelength=self.optic.wavelengths.primary_wavelength.value,
         )
@@ -206,11 +212,15 @@ class SolveFactory:
         """Creates a solve instance based on the given solve type.
 
         Args:
-            optic (Optic): The optic object.
-            solve_type (str): The type of solve to create.
-            surface_idx (int): The index of the surface.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
+            optic (Optic): The optic object to which the solve will be applied.
+            solve_type (str): The type of solve to create (e.g.,
+                'marginal_ray_height', 'quick_focus').
+            surface_idx (int): The index of the surface relevant to the solve.
+                May not be used by all solve types (e.g., 'quick_focus').
+            *args: Variable length argument list to be passed to the solve's
+                constructor.
+            **kwargs: Arbitrary keyword arguments to be passed to the solve's
+                constructor.
 
         Returns:
             solve_instance: An instance of the solve class corresponding to

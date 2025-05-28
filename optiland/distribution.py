@@ -20,8 +20,8 @@ class BaseDistribution(ABC):
         visualizing the distribution.
 
     Attributes:
-        x (ndarray): The x-coordinates of the generated points.
-        y (ndarray): The y-coordinates of the generated points.
+        x (be.ndarray): The x-coordinates of the generated points.
+        y (be.ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -59,6 +59,8 @@ class LineXDistribution(BaseDistribution):
     Attributes:
         positive_only (bool): Flag indicating whether the distribution should
             be limited to positive values only.
+        x (be.ndarray): The x-coordinates of the generated points.
+        y (be.ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -87,6 +89,8 @@ class LineYDistribution(BaseDistribution):
     Attributes:
         positive_only (bool): Flag indicating whether the distribution should
             be positive-only.
+        x (be.ndarray): The x-coordinates of the generated points.
+        y (be.ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -113,9 +117,9 @@ class RandomDistribution(BaseDistribution):
     Generates `num_points` random points within the unit disk.
 
     Attributes:
-        rng (numpy.random.Generator): The random number generator.
-        x (numpy.ndarray): The x-coordinates of the generated points.
-        y (numpy.ndarray): The y-coordinates of the generated points.
+        rng (be.Generator): The random number generator from the backend.
+        x (be.ndarray): The x-coordinates of the generated points.
+        y (be.ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -145,8 +149,8 @@ class UniformDistribution(BaseDistribution):
     approximately `num_points^2 * pi / 4`.
 
     Attributes:
-        x (ndarray): The x-coordinates of the generated points.
-        y (ndarray): The y-coordinates of the generated points.
+        x (be.ndarray): The x-coordinates of the generated points.
+        y (be.ndarray): The y-coordinates of the generated points.
 
     """
 
@@ -171,8 +175,8 @@ class HexagonalDistribution(BaseDistribution):
     `1 + 3 * num_rings * (num_rings + 1)`, including the center point.
 
     Attributes:
-        x (ndarray): Array of x-coordinates of the generated points.
-        y (ndarray): Array of y-coordinates of the generated points.
+        x (be.ndarray): Array of x-coordinates of the generated points.
+        y (be.ndarray): Array of y-coordinates of the generated points.
 
     """
 
@@ -210,8 +214,8 @@ class CrossDistribution(BaseDistribution):
     generated.
 
     Attributes:
-        x (ndarray): Array of x-coordinates of the generated points.
-        y (ndarray): Array of y-coordinates of the generated points.
+        x (be.ndarray): Array of x-coordinates of the generated points.
+        y (be.ndarray): Array of y-coordinates of the generated points.
 
     """
 
@@ -313,7 +317,7 @@ class GaussianQuadrature(BaseDistribution):
             num_rings (int): Number of rings for Gaussian quadrature.
 
         Returns:
-            numpy.ndarray: Array of weights.
+            be.ndarray: Array of weights.
 
         """
         weights_dict = {

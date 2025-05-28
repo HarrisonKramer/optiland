@@ -1,21 +1,21 @@
-import numpy as np
-
+# Defines sample telescope optical systems.
+import optiland.backend as be
 from optiland import optic, physical_apertures
 
 
 class HubbleTelescope(optic.Optic):
-    """Hubble Space Telescope
+    """Hubble Space Telescope optical design.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 200
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 200.
     """
 
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, thickness=4910.01016)
 
-        obscuration = physical_apertures.RadialAperture(r_max=np.inf, r_min=177.80035)
+        obscuration = physical_apertures.RadialAperture(r_max=be.inf, r_min=177.80035)
 
         self.add_surface(
             index=2,
@@ -42,5 +42,3 @@ class HubbleTelescope(optic.Optic):
         self.add_field(y=0.15)
 
         self.add_wavelength(value=0.55, is_primary=True)
-
-        self.update_paraxial()

@@ -1,12 +1,12 @@
-import numpy as np
-
+# Defines sample infrared optical systems.
+import optiland.backend as be
 from optiland import materials, optic
 
 
 class InfraredTriplet(optic.Optic):
-    """Infrared Air-Spaced Triplet
+    """An infrared air-spaced triplet lens.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 54
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 54.
     """
 
     def __init__(self):
@@ -17,7 +17,7 @@ class InfraredTriplet(optic.Optic):
         # https://www.spectral-systems.com/technical-data-sheet/znse-zinc-selenide
         ZnSe = materials.IdealMaterial(n=2.4028)
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=10.4578,
@@ -41,13 +41,11 @@ class InfraredTriplet(optic.Optic):
 
         self.add_wavelength(value=10.6, is_primary=True)
 
-        self.update_paraxial()
-
 
 class InfraredTripletF4(optic.Optic):
-    """4-in. IR Triplet, f/4
+    """A 4-inch infrared triplet lens with f/4.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 57
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 57.
     """
 
     def __init__(self):
@@ -57,7 +55,7 @@ class InfraredTripletF4(optic.Optic):
         germanium = materials.IdealMaterial(n=4.002)
         silicon = materials.IdealMaterial(n=3.4222)
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=2.0721, thickness=0.1340, material=silicon)
         self.add_surface(index=2, radius=3.5488, thickness=0.2392)
         self.add_surface(index=3, thickness=0.6105, is_stop=True)
@@ -75,5 +73,3 @@ class InfraredTripletF4(optic.Optic):
         self.add_field(y=3.5)
 
         self.add_wavelength(value=4.2, is_primary=True)
-
-        self.update_paraxial()

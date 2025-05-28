@@ -45,10 +45,10 @@ class Paraxial:
         return self.optic.surface_group
 
     def f1(self):
-        """Calculate the front focal length
+        """Calculate the front focal length (f1).
 
         Returns:
-            float: front focal length
+            float: Front focal length.
 
         """
         z_start = -1
@@ -58,10 +58,10 @@ class Paraxial:
         return f1[0]
 
     def f2(self):
-        """Calculate the focal length
+        """Calculate the back focal length (f2), also known as effective focal length.
 
         Returns:
-            float: back focal length
+            float: Back focal length.
 
         """
         # start tracing 1 lens unit before first surface
@@ -72,12 +72,12 @@ class Paraxial:
         return be.abs(f2[0])
 
     def F1(self):
-        """Calculate the front focal point location
+        """Calculate the front focal point (F1) location.
 
         Note that this is defined relative to the first surface (at index 1).
 
         Returns:
-            float: front focal point location
+            float: Front focal point location.
 
         """
         # start tracing 1 lens unit before first surface
@@ -88,12 +88,12 @@ class Paraxial:
         return F1[0]
 
     def F2(self):
-        """Calculate the back focal point location
+        """Calculate the back focal point (F2) location.
 
         Note that this is defined relative to the image surface location.
 
         Returns:
-            float: back focal point location
+            float: Back focal point location.
 
         """
         # start tracing 1 lens unit before first surface
@@ -104,97 +104,97 @@ class Paraxial:
         return F2[0]
 
     def P1(self):
-        """Calculate the front principle plane location
+        """Calculate the front principal plane (P1) location.
 
         Note that this is defined relative to the first surface (at index 1).
 
         Returns:
-            float: front principle plane location
+            float: Front principal plane location.
 
         """
         return self.F1() - self.f1()
 
     def P2(self):
-        """Calculate the back principle plane location
+        """Calculate the back principal plane (P2) location.
 
         Note that this is defined relative to the image surface location.
 
         Returns:
-            float: back principle plane location
+            float: Back principal plane location.
 
         """
         return self.F2() - self.f2()
 
     def P1anti(self):
-        """Calculate the front anti-principal plane location
+        """Calculate the front anti-principal plane (P1anti) location.
 
         Note that this is defined relative to the first surface (at index 1).
 
         Returns:
-            float: front anti-principal plane location
+            float: Front anti-principal plane location.
         """
         return self.F1() + self.f1()
 
     def P2anti(self):
-        """Calculate the back anti-principal plane location
+        """Calculate the back anti-principal plane (P2anti) location.
 
         Note that this is defined relative to the image surface location.
 
         Returns:
-            float: back anti-principal plane location
+            float: Back anti-principal plane location.
         """
         return self.F2() + self.f2()
 
     def N1(self):
-        """Calculate the front nodal plane location
+        """Calculate the front nodal plane (N1) location.
 
         Note that this is defined relative to the first surface (at index 1).
 
         Returns:
-            float: front nodal plane location
+            float: Front nodal plane location.
 
         """
         return self.F1() + self.f2()
 
     def N2(self):
-        """Calculate the back nodal plane location
+        """Calculate the back nodal plane (N2) location.
 
         Note that this is defined relative to the image surface location.
 
         Returns:
-            float: back nodal plane location
+            float: Back nodal plane location.
 
         """
         return self.F2() + self.f1()
 
     def N1anti(self):
-        """Calculate the front anti-nodal plane location
+        """Calculate the front anti-nodal plane (N1anti) location.
 
         Note that this is defined relative to the first surface (at index 1).
 
         Returns:
-            float: front anti-nodal plane location
+            float: Front anti-nodal plane location.
 
         """
         return self.F1() - self.f2()
 
     def N2anti(self):
-        """Calculate the back anti-nodal plane location
+        """Calculate the back anti-nodal plane (N2anti) location.
 
         Note that this is defined relative to the image surface location.
 
         Returns:
-            float: back anti-nodal plane location
+            float: Back anti-nodal plane location.
 
         """
         return self.F2() - self.f1()
 
     def EPL(self):
-        """Calculate the entrance pupil location in global coordinates
+        """Calculate the entrance pupil location (EPL) in global coordinates.
 
         Returns:
-            float: entrance pupil position relative to first surface, which
-                lies at z=0 by definition.
+            float: Entrance pupil position relative to the first surface
+                (which lies at z=0 by definition in its local coordinate system).
 
         """
         stop_index = self.surfaces.stop_index
@@ -215,10 +215,10 @@ class Paraxial:
         return loc_relative[0]
 
     def EPD(self):
-        """Caculate the entrance pupil diameter
+        """Calculate the entrance pupil diameter (EPD).
 
         Returns:
-            float: entrance pupil diameter
+            float: Entrance pupil diameter.
 
         """
         ap_type = self.optic.aperture.ap_type
@@ -252,10 +252,10 @@ class Paraxial:
                 return u0 * (EPL - obj_z)
 
     def XPL(self):
-        """Calculate the exit pupil location
+        """Calculate the exit pupil location (XPL).
 
         Returns:
-            float: exit pupil location relative to the image surface
+            float: Exit pupil location relative to the image surface.
 
         """
         stop_index = self.surfaces.stop_index
@@ -266,10 +266,10 @@ class Paraxial:
         return loc_relative[0]
 
     def XPD(self):
-        """Calculate the exit pupil diameter
+        """Calculate the exit pupil diameter (XPD).
 
         Returns:
-            float: exit pupil diameter
+            float: Exit pupil diameter.
 
         """
         # find marginal ray height at image surface
@@ -285,10 +285,10 @@ class Paraxial:
         return 2 * yxp[0]
 
     def FNO(self):
-        """Calculate the image-space F-number
+        """Calculate the image-space F-number (FNO).
 
         Returns:
-            float: image-space F-number
+            float: Image-space F-number.
 
         """
         ap_type = self.optic.aperture.ap_type
@@ -297,10 +297,10 @@ class Paraxial:
         return self.f2() / self.EPD()
 
     def magnification(self):
-        """Calculate the magnification
+        """Calculate the transverse magnification.
 
         Returns:
-            float: the system magnification
+            float: The system's transverse magnification.
 
         """
         _, ua = self.marginal_ray()
@@ -309,10 +309,10 @@ class Paraxial:
         return mag[0]
 
     def invariant(self):
-        """Calculate the Lagrange invariant
+        """Calculate the Lagrange invariant.
 
         Returns:
-            float: the Lagrange invariant
+            float: The Lagrange invariant of the system.
 
         """
         ya, ua = self.marginal_ray()
@@ -322,10 +322,15 @@ class Paraxial:
         return inv[0]
 
     def marginal_ray(self):
-        """Find the marginal ray heights and angles
+        """Calculates the marginal ray heights and angles at each surface.
+
+        The marginal ray originates from the center of the object and passes
+        through the edge of the aperture stop.
 
         Returns:
-            tuple: marginal ray heights and angles as type be.ndarray
+            tuple[be.ndarray, be.ndarray]: A tuple containing two arrays:
+                - y_marginal: Heights of the marginal ray at each surface.
+                - u_marginal: Slopes of the marginal ray after each surface.
 
         """
         EPD = self.EPD()
@@ -343,10 +348,15 @@ class Paraxial:
         return self._trace_generic(ya, ua, obj_z, wavelength)
 
     def chief_ray(self):
-        """Find the chief ray heights and angles
+        """Calculates the chief ray heights and angles at each surface.
+
+        The chief ray originates from the edge of the field of view and passes
+        through the center of the aperture stop.
 
         Returns:
-            tuple: chief ray heights and angles as type be.ndarray
+            tuple[be.ndarray, be.ndarray]: A tuple containing two arrays:
+                - y_chief: Heights of the chief ray at each surface.
+                - u_chief: Slopes of the chief ray after each surface.
 
         """
         stop_index = self.optic.surface_group.stop_index
@@ -380,29 +390,35 @@ class Paraxial:
         and pupil coordinates.
 
         Args:
-            Hy (float): Normalized field coordinate.
-            Py (float): Normalized pupil coordinate.
-            wavelength (float): Wavelength of the light.
+            Hy (float): Normalized field coordinate (typically in y).
+            Py (float): Normalized pupil coordinate (typically in y).
+            wavelength (float): Wavelength of the light in micrometers.
 
+        Returns:
+            tuple[be.ndarray, be.ndarray]: A tuple containing two arrays:
+                - y_ray: Heights of the traced ray at each surface.
+                - u_ray: Slopes of the traced ray after each surface.
         """
-        self._ray_tracer.trace(Hy, Py, wavelength)
+        return self._ray_tracer.trace(Hy, Py, wavelength)
 
     def _trace_generic(self, y, u, z, wavelength, reverse=False, skip=0):
         """Trace generically-defined paraxial rays through the optical system.
 
         Args:
-            y (float or array-like): The initial height(s) of the rays.
-            u (float or array-like): The initial slope(s) of the rays.
-            z (float or array-like): The initial axial position(s) of the rays.
-            wavelength (float): The wavelength of the rays.
+            y (float or be.ndarray): The initial height(s) of the rays.
+            u (float or be.ndarray): The initial slope(s) of the rays.
+            z (float or be.ndarray): The initial axial position(s) of the rays,
+                relative to the first surface if tracing forward, or relative
+                to the last surface if tracing in reverse (before internal reversal).
+            wavelength (float): The wavelength of the rays in micrometers.
             reverse (bool, optional): If True, trace the rays in reverse
-                direction. Defaults to False.
-            skip (int, optional): The number of surfaces to skip during
-                tracing. Defaults to 0.
+                direction (from image to object space). Defaults to False.
+            skip (int, optional): The number of surfaces to skip from the
+                beginning of the trace (or end if reverse). Defaults to 0.
 
         Returns:
-            tuple: A tuple containing the final height(s) and slope(s) of the
-                rays after tracing.
+            tuple[be.ndarray, be.ndarray]: A tuple containing the height(s)
+                and slope(s) of the rays at each surface interface after tracing.
 
         """
         return self._ray_tracer.trace_generic(y, u, z, wavelength, reverse, skip)

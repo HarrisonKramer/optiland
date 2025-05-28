@@ -35,11 +35,12 @@ class BaseGeometry(ABC):
         """Calculate the surface sag of the geometry.
 
         Args:
-            x (float or np.ndarray, optional): The x-coordinate. Defaults to 0.
-            y (float or np.ndarray, optional): The y-coordinate. Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            Union[float, np.ndarray]: The surface sag of the geometry.
+            float or be.ndarray: The surface sag of the geometry at the given
+            coordinates.
 
         """
         # pragma: no cover
@@ -49,10 +50,12 @@ class BaseGeometry(ABC):
         """Find the propagation distance to the geometry.
 
         Args:
-            rays (RealRays): The rays to calculate the distance for.
+            rays (RealRays): The rays for which to calculate the distance to
+                the geometry.
 
         Returns:
-            np.ndarray: The propagation distance to the geometry.
+            be.ndarray: An array of propagation distances from each ray's
+            current position to the geometry surface along the ray's direction.
 
         """
         # pragma: no cover
@@ -62,12 +65,13 @@ class BaseGeometry(ABC):
         """Find the surface normal of the geometry at the given ray positions.
 
         Args:
-            rays (RealRays): The rays position at which to calculate the
-                surface normal.
+            rays (RealRays): The rays, positioned at the surface, for which to
+                calculate the surface normal.
 
         Returns:
-            np.ndarray: The surface normals of the geometry at the given
-                ray positions.
+            tuple[be.ndarray, be.ndarray, be.ndarray]: A tuple containing three
+            arrays (nx, ny, nz) representing the x, y, and z components of the
+            surface normals at each ray's intersection point.
 
         """
         # pragma: no cover
@@ -106,10 +110,12 @@ class BaseGeometry(ABC):
         """Create a geometry from a dictionary.
 
         Args:
-            data (dict): The dictionary representation of the geometry.
+            data (dict): A dictionary containing the geometry data, including
+                its 'type' and coordinate system 'cs'.
 
         Returns:
-            BaseGeometry: The geometry.
+            BaseGeometry: An instance of a specific geometry subclass created
+            from the dictionary data.
 
         """
         geometry_type = data.get("type")

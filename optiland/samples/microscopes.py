@@ -1,15 +1,15 @@
-import numpy as np
-
+# Defines sample microscope objective optical systems.
+import optiland.backend as be
 from optiland import materials, optic, physical_apertures
 
 
 class Objective60x(optic.Optic):
-    """define a microscopescope objective"""
+    """A 60x microscope objective lens."""
 
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, thickness=np.inf, radius=np.inf)
+        self.add_surface(index=0, thickness=be.inf, radius=be.inf)
         self.add_surface(index=1, thickness=64.9, radius=553.260, material="N-FK51")
         self.add_surface(index=2, thickness=4.4, radius=-247.644)
         self.add_surface(index=3, thickness=59.4, radius=115.162, material="J-LLF2")
@@ -58,8 +58,6 @@ class Objective60x(optic.Optic):
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
 
-        self.update_paraxial()
-
 
 class Microscope20x(optic.Optic):
     """20x Microscope Objective
@@ -71,7 +69,7 @@ class Microscope20x(optic.Optic):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=-0.2352, thickness=0.0941, material="N-SK16")
         self.add_surface(
             index=2,
@@ -82,7 +80,7 @@ class Microscope20x(optic.Optic):
         self.add_surface(index=3, radius=-0.3251, thickness=0.01)
         self.add_surface(index=4, radius=0.5837, thickness=0.1115, material="N-SK16")
         self.add_surface(index=5, radius=-0.9401, thickness=0.01)
-        self.add_surface(index=6, radius=np.inf, thickness=0.2236, is_stop=True)
+        self.add_surface(index=6, radius=be.inf, thickness=0.2236, is_stop=True)
         self.add_surface(index=7, radius=0.2077, thickness=0.2, material="N-SK16")
         self.add_surface(
             index=8,
@@ -91,7 +89,7 @@ class Microscope20x(optic.Optic):
             material=("SF4", "schott"),
         )
         self.add_surface(index=9, radius=0.4108, thickness=0.0965)
-        self.add_surface(index=10, radius=np.inf, thickness=0.007, material="N-K5")
+        self.add_surface(index=10, radius=be.inf, thickness=0.007, material="N-K5")
         self.add_surface(index=11)
 
         # add aperture
@@ -127,7 +125,7 @@ class UVReflectingMicroscope(optic.Optic):
         silica = materials.IdealMaterial(n=1.4980)
         CaF2 = materials.IdealMaterial(n=1.4610)
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=1.72300, thickness=0.0350, material=silica)
         self.add_surface(index=2, radius=2.90631, thickness=0.9731)
         self.add_surface(
@@ -138,7 +136,7 @@ class UVReflectingMicroscope(optic.Optic):
             is_stop=True,
         )
 
-        obscuration = physical_apertures.RadialAperture(r_max=np.inf, r_min=0.15)
+        obscuration = physical_apertures.RadialAperture(r_max=be.inf, r_min=0.15)
         self.add_surface(
             index=4,
             radius=0.72913,

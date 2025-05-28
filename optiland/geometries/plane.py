@@ -34,14 +34,14 @@ class Plane(BaseGeometry):
         """Calculate the surface sag of the plane geometry.
 
         Args:
-            x (float or be.ndarray, optional): The x-coordinate of the point
+            x (float or be.ndarray, optional): The x-coordinate(s) of the point(s)
                 on the plane. Defaults to 0.
-            y (float or be.ndarray, optional): The y-coordinate of the point
+            y (float or be.ndarray, optional): The y-coordinate(s) of the point(s)
                 on the plane. Defaults to 0.
 
         Returns:
-            Union[float, be.ndarray]: The surface sag of the plane at the
-                given point.
+            be.ndarray or float: The surface sag of the plane at the given
+            point(s), which is always 0.
 
         """
         if be.is_array_like(y):
@@ -52,11 +52,12 @@ class Plane(BaseGeometry):
         """Find the propagation distance to the plane geometry.
 
         Args:
-            rays (RealRays): The rays used to calculate the distance.
+            rays (RealRays): The rays for which to calculate the distance to
+                the plane.
 
         Returns:
-            be.ndarray: The propagation distance to the plane geometry for
-                each ray.
+            be.ndarray: An array of propagation distances from each ray's
+            current position to the plane along the ray's direction.
 
         """
         with warnings.catch_warnings():
@@ -69,14 +70,22 @@ class Plane(BaseGeometry):
         """Find the surface normal of the plane geometry at the given points.
 
         Args:
-            rays (RealRays): The rays used to calculate the surface normal.
+            rays (RealRays): The rays, positioned at the surface, for which to
+                calculate the surface normal. This argument is used to determine
+                the shape of the output arrays.
 
         Returns:
-            Tuple[float, float, float]: The surface normal of the plane
-                geometry at each point.
+            tuple[be.ndarray, be.ndarray, be.ndarray]: A tuple containing three
+            arrays (nx, ny, nz) representing the x, y, and z components of the
+            surface normals. For a plane z=0 in local coordinates, this will be
+            (0, 0, 1) for all points, broadcast to the shape of the input rays.
 
         """
-        return 0, 0, 1
+        # The normal is always (0, 0, 1) in the local coordinate system of the plane.
+        # We return arrays of the same shape as ray coordinates for consistency.
+        zero_comp = be.zeros_like(rays.x)
+        one_comp = be.ones_like(rays.x)
+        return zero_comp, zero_comp, one_comp
 
     def to_dict(self):
         """Convert the plane geometry to a dictionary.
@@ -101,7 +110,7 @@ class Plane(BaseGeometry):
             data (dict): The dictionary representation of the plane geometry.
 
         Returns:
-            Plane: The plane geometry.
+            Plane: An instance of the Plane geometry.
 
         """
         cs = CoordinateSystem.from_dict(data["cs"])
