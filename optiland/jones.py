@@ -304,9 +304,9 @@ class JonesLinearDiattenuator(BaseJones):
     """Represents a linear diattenuator in Jones calculus.
 
     Attributes:
-        t_min (float): Minimum amplitude transmission coefficient.
-        t_max (float): Maximum amplitude transmission coefficient.
-        theta (float): Angle of the diattenuator.
+        t_min (be.ndarray): Minimum amplitude transmission coefficient.
+        t_max (be.ndarray): Maximum amplitude transmission coefficient.
+        theta (be.ndarray): Angle of the diattenuator, in radians.
 
     Note:
         The intensity transmission is given by the square of the amplitude
@@ -363,10 +363,11 @@ class JonesLinearRetarder(BaseJones):
     """Represents a linear retarder in Jones calculus.
 
     Attributes:
-        retardance (float): Retardance of the retarder, or the absolute value
+        retardance (be.ndarray): Retardance of the retarder, or the absolute value
             of the phase difference between the two components of the electric
-            field.
-        theta (float): Angle of the retarder, i.e., the fast axis orientation.
+            field, in radians.
+        theta (be.ndarray): Angle of the retarder, i.e., the fast axis orientation,
+            in radians.
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.
@@ -416,8 +417,10 @@ class JonesQuarterWaveRetarder(JonesLinearRetarder):
     """Represents a quarter-wave retarder in Jones calculus.
 
     Attributes:
-        theta (float): Angle of the retarder, i.e., the fast axis orientation.
-            Defaults to 0.
+        theta (be.ndarray): Angle of the retarder, i.e., the fast axis orientation,
+            in radians. Defaults to 0.
+        theta (be.ndarray): Angle of the retarder, i.e., the fast axis orientation,
+            in radians. Defaults to 0.
 
     Methods:
         calculate_matrix: Calculate the Jones matrix for the given rays.

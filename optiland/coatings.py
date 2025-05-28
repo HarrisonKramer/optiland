@@ -19,9 +19,9 @@ class BaseCoating(ABC):
     This class defines the basic structure and behavior of a coating.
 
     Methods:
-        interact: Performs an interaction based on the given parameters.
-        reflect: Abstract method to handle reflection interaction.
-        transmit: Abstract method to handle transmission interaction.
+        interact: Performs an interaction with the coating.
+        reflect: Abstract method to handle reflection interaction with the coating.
+        transmit: Abstract method to handle transmission interaction with the coating.
 
     """
 
@@ -40,12 +40,15 @@ class BaseCoating(ABC):
         ny: be.ndarray = None,
         nz: be.ndarray = None,
     ):
-        """Performs an interaction based on the given parameters.
+        """Performs an interaction with the coating.
 
         Args:
-            params (InteractionParams): The parameters for the interaction.
+            rays (RealRays): The rays incident on the coating.
             reflect (bool, optional): Flag indicating whether to perform
-                reflection. Defaults to False.
+                reflection (True) or transmission (False). Defaults to False.
+            nx (be.ndarray, optional): The x-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
             rays (RealRays): The rays after the interaction.
@@ -59,10 +62,13 @@ class BaseCoating(ABC):
         """Computes the angle of incidence for the given rays and surface normals.
 
         Args:
-            rays: The rays.
-            nx: The x-component of the surface normals.
-            ny: The y-component of the surface normals.
-            nz: The z-component of the surface normals.
+            rays (RealRays): The incident rays.
+            nx (be.ndarray): The x-component of the surface normal vectors at each ray's
+                intersection point.
+            ny (be.ndarray): The y-component of the surface normal vectors at each ray's
+                intersection point.
+            nz (be.ndarray): The z-component of the surface normal vectors at each ray's
+                intersection point.
 
         Returns:
             be.ndarray: The angle of incidence for each ray.
@@ -83,10 +89,13 @@ class BaseCoating(ABC):
         """Abstract method to handle reflection interaction.
 
         Args:
-            params (InteractionParams): The parameters for the interaction.
+            rays (RealRays): The rays incident on the coating.
+            nx (be.ndarray, optional): The x-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
-            rays (RealRays): The rays after the interaction.
+            RealRays: The rays after reflection.
 
         """
         # pragma: no cover
@@ -102,10 +111,13 @@ class BaseCoating(ABC):
         """Abstract method to handle transmission interaction.
 
         Args:
-            params (InteractionParams): The parameters for the interaction.
+            rays (RealRays): The rays incident on the coating.
+            nx (be.ndarray, optional): The x-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
-            rays (RealRays): The rays after the interaction.
+            RealRays: The rays after transmission.
 
         """
         # pragma: no cover
@@ -152,10 +164,12 @@ class SimpleCoating(BaseCoating):
             as 1 - reflectance - transmittance.
 
     Methods:
-        reflect(params: InteractionParams) -> Rays:
-            Reflects the rays based on the reflectance of the coating.
-        transmit(params: InteractionParams) -> Rays:
-            Transmits the rays based on the transmittance of the coating.
+        reflect(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None,
+            nz: be.ndarray = None) -> RealRays: Reflects the rays based on the
+            reflectance of the coating.
+        transmit(rays: RealRays, nx: be.ndarray = None, ny: be.ndarray = None,
+            nz: be.ndarray = None) -> RealRays: Transmits the rays based on the
+            transmittance of the coating.
 
     """
 
@@ -174,10 +188,13 @@ class SimpleCoating(BaseCoating):
         """Reflects the rays based on the reflectance of the coating.
 
         Args:
-            params (InteractionParams): The parameters for the interaction.
+            rays (RealRays): The rays incident on the coating.
+            nx (be.ndarray, optional): The x-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
-            rays (RealRays): The rays after reflection.
+            RealRays: The rays after reflection.
 
         """
         rays.i = rays.i * self.reflectance
@@ -194,10 +211,13 @@ class SimpleCoating(BaseCoating):
         with the transmittance.
 
         Args:
-            params (InteractionParams): The parameters for the interaction.
+            rays (RealRays): The rays incident on the coating.
+            nx (be.ndarray, optional): The x-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
-            rays (RealRays): The rays after transmission.
+            RealRays: The rays after transmission.
 
         """
         rays.i = rays.i * self.transmittance
@@ -253,9 +273,9 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Args:
             rays (RealRays): The rays to be reflected.
-            nx (be.ndarray): The x-component of the surface normal vector.
-            ny (be.ndarray): The y-component of the surface normal vector.
-            nz (be.ndarray): The z-component of the surface normal vector.
+            nx (be.ndarray, optional): The x-component of the surface normal vector.
+            ny (be.ndarray, optional): The y-component of the surface normal vector.
+            nz (be.ndarray, optional): The z-component of the surface normal vector.
 
         Returns:
             RealRays: The updated rays after reflection.
@@ -277,9 +297,9 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Args:
             rays (RealRays): The rays to be transmitted.
-            nx (be.ndarray): The x-component of the surface normal vector.
-            ny (be.ndarray): The y-component of the surface normal vector.
-            nz (be.ndarray): The z-component of the surface normal vector.
+            nx (be.ndarray, optional): The x-component of the surface normal vector.
+            ny (be.ndarray, optional): The y-component of the surface normal vector.
+            nz (be.ndarray, optional): The z-component of the surface normal vector.
 
         Returns:
             RealRays: The updated rays after transmission through a surface.

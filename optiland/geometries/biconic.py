@@ -51,6 +51,7 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
+        # Pass radius_x as the primary radius for NewtonRaphsonGeometry
         super().__init__(coordinate_system, radius_x, conic_x, tol, max_iter)
 
         self.Rx = be.array(radius_x)
@@ -67,13 +68,11 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         """Calculate the surface sag of the geometry.
 
         Args:
-            x (float, be.ndarray, optional): The x-coordinate(s).
-                Defaults to 0.
-            y (float, be.ndarray, optional): The y-coordinate(s).
-                Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            float: The sag value at the given coordinates.
+            be.ndarray or float: The sag value(s) at the given coordinates.
         """
         x = be.asarray(x)
         y = be.asarray(y)
@@ -105,11 +104,12 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         """Calculate the surface normal of the geometry at the given x and y position.
 
         Args:
-            x (be.ndarray): The x values to use for calculation.
-            y (be.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x-coordinate(s) at which to calculate the normal.
+            y (be.ndarray): The y-coordinate(s) at which to calculate the normal.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The surface normal
+            components (nx, ny, nz).
 
         """
         x = be.asarray(x)
@@ -188,10 +188,12 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         """Creates a BiconicGeometry from a dictionary representation.
 
         Args:
-            data (dict): The dictionary representation of the asphere.
+            data (dict): The dictionary representation of the biconic surface,
+                containing keys like 'cs', 'radius_x', 'radius_y', 'conic_x',
+                'conic_y'.
 
         Returns:
-            BiconicGeometry: The biconic geometry.
+            BiconicGeometry: An instance of BiconicGeometry.
         """
         required_keys = {"cs", "radius_x", "radius_y"}
         if not required_keys.issubset(data):

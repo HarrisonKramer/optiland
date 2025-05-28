@@ -1,16 +1,19 @@
-import numpy as np
-
+# Defines sample eyepiece optical systems.
+import optiland.backend as be
 from optiland import optic
 
 
 class EyepieceErfle(optic.Optic):
-    """Based on USP1479229, Erfle, Heinrich"""
+    """An Erfle eyepiece design.
+
+    Based on U.S. Patent 1,479,229 by Heinrich Erfle.
+    """
 
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
-        self.add_surface(index=1, radius=np.inf, thickness=15.224, is_stop=True)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        self.add_surface(index=1, radius=be.inf, thickness=15.224, is_stop=True)
         self.add_surface(index=2, radius=269.0, thickness=25.1, material="L-BSL7")
         self.add_surface(index=3, radius=-125.9, thickness=36.5)
         self.add_surface(index=4, radius=93.6, thickness=18.5, material="N-BAK2")
@@ -31,5 +34,3 @@ class EyepieceErfle(optic.Optic):
         self.add_wavelength(value=0.4861)
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
-
-        self.update_paraxial()

@@ -22,10 +22,11 @@ def load_zemax_file(source):
     """Loads a Zemax file and returns an Optic object.
 
     Args:
-        source (str): The source of the .zmx file, either a filename or a URL.
+        source (str): The path to a local .zmx file or a URL pointing to a
+            .zmx file.
 
     Returns:
-        Optic: An Optic object based on the Zemax data.
+        Optic: An `Optic` object created from the Zemax file data.
 
     """
     reader = ZemaxFileReader(source)
@@ -36,20 +37,22 @@ class ZemaxFileReader:
     """A class for reading Zemax files and extracting optical data.
 
     Args:
-        source (str): The source of the .zmx file, either a filename or a URL.
+        source (str): The path to a local .zmx file or a URL pointing to a
+            .zmx file.
 
     Attributes:
-        filename (str): The path to the Zemax file.
-        data (dict): A dictionary to store the extracted optical data.
-            - 'aperture' (dict): Dictionary to store aperture data.
-            - 'fields' (dict): Dictionary to store field data.
-            - 'wavelengths' (dict): Dictionary to store wavelength data.
-                - 'data' (list): List to store wavelength values.
-            - 'surfaces' (dict): Dictionary to store surface data.
-        _current_surf_data (dict): Temporary storage for current surface data.
-        _operand_table (dict): Dictionary mapping operand codes to
-            corresponding methods.
-        _current_surf (int): Index of the current surface being read.
+        source (str): The original source string (filepath or URL).
+        filename (str): The local path to the Zemax file (this might be a
+            temporary file if the source was a URL).
+        data (dict): A nested dictionary storing the extracted optical data,
+            organized into keys like 'aperture', 'fields', 'wavelengths',
+            and 'surfaces'.
+        _current_surf_data (dict): Temporary storage for data of the surface
+            currently being processed.
+        _operand_table (dict): A mapping from Zemax operand codes (e.g.,
+            "CURV", "DISZ") to their corresponding parsing methods in this class.
+        _current_surf (int): The index of the surface currently being processed
+            from the Zemax file.
 
     Methods:
         generate_lens(): Converts the extracted data into an Optiland optic
@@ -102,12 +105,16 @@ class ZemaxFileReader:
         self._read_file()
 
     def generate_lens(self):
-        """Converts the extracted optical data into an Optiland optic instance."""
+        """Converts the extracted optical data into an Optiland `Optic` instance.
+
+        Returns:
+            Optic: The generated `Optic` object.
+        """
         converter = ZemaxToOpticConverter(self.data)
         return converter.convert()
 
-    def _is_url(self, source):
-        """Check if the source is a URL.
+    def _is_url(self, source: str) -> bool:
+        """Check if the source string is a URL.
 
         Args:
             source (str): The source to check.
@@ -181,7 +188,7 @@ class ZemaxFileReader:
         """Extracts the FNO (F-number) data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         if int(data[2]) == 0:
@@ -189,20 +196,20 @@ class ZemaxFileReader:
         elif int(data[2]) == 1:
             self.data["aperture"]["paraxialImageFNO"] = float(data[1])
 
-    def _read_epd(self, data):
-        """Extracts the EPD (entrance pupil diameter) data.
+    def _read_epd(self, data: list[str]):
+        """Extracts the EPD (Entrance Pupil Diameter) data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self.data["aperture"]["EPD"] = float(data[1])
 
-    def _read_object_na(self, data):
-        """Extracts the object-space numerical aperture.
+    def _read_object_na(self, data: list[str]):
+        """Extracts the object-space numerical aperture (NA).
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         if int(data[2]) == 0:
@@ -210,20 +217,21 @@ class ZemaxFileReader:
         elif int(data[2]) == 1:
             self.data["aperture"]["object_cone_angle"] = float(data[1])
 
-    def _read_floating_stop(self, data):
-        """Extracts the floating stop data.
+    def _read_floating_stop(self, data: list[str]):
+        """Marks the aperture definition as 'floating_stop'.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self.data["aperture"]["floating_stop"] = True
 
-    def _read_config_data(self, data):
-        """Extracts field, wavelength, and other configuration data.
+    def _read_config_data(self, data: list[str]):
+        """Extracts general configuration data like field type, number of
+        wavelengths, etc.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self.data["fields"]["num_fields"] = int(data[3])
@@ -257,27 +265,27 @@ class ZemaxFileReader:
         """Extracts the x-field data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
         self.data["fields"]["x"] = [float(value) for value in data[1 : num_fields + 1]]
 
-    def _read_y_fields(self, data):
-        """Extracts the y-field data.
+    def _read_y_fields(self, data: list[str]):
+        """Extracts the Y-field data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
         self.data["fields"]["y"] = [float(value) for value in data[1 : num_fields + 1]]
 
-    def _read_wavelength(self, data):
-        """Extracts the wavelength data.
+    def _read_wavelength(self, data: list[str]):
+        """Extracts wavelength data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         value = float(data[2])
@@ -285,62 +293,62 @@ class ZemaxFileReader:
         if len(self.data["wavelengths"]["data"]) < num_wavelengths:
             self.data["wavelengths"]["data"].append(value)
 
-    def _read_surface(self, data):
-        """Extracts the surface data.
+    def _read_surface(self, data: list[str]):
+        """Initializes data storage for a new surface.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         if self._current_surf >= 0:
             self.data["surfaces"][self._current_surf] = self._current_surf_data
 
         self._current_surf_data = {}
-        self._current_surf_data["type"] = "standard"
+        self._current_surf_data["type"] = "standard"  # Default type
         self._current_surf_data["is_stop"] = False
         self._current_surf_data["conic"] = 0.0
-        self._current_surf_data["material"] = "air"
+        self._current_surf_data["material"] = "air"  # Default material
         self._current_surf += 1
 
-    def _read_radius(self, data):
-        """Extracts the radius data.
+    def _read_radius(self, data: list[str]):
+        """Extracts the surface radius data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         try:
             self._current_surf_data["radius"] = 1 / float(data[1])
         except ZeroDivisionError:
-            self._current_surf_data["radius"] = be.inf
+            self._current_surf_data["radius"] = be.inf  # Use backend.inf
 
-    def _read_thickness(self, data):
-        """Extracts the thickness data.
+    def _read_thickness(self, data: list[str]):
+        """Extracts the surface thickness data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         if data[1] == "INFINITY":
-            self._current_surf_data["thickness"] = be.inf
+            self._current_surf_data["thickness"] = be.inf  # Use backend.inf
         else:
             self._current_surf_data["thickness"] = float(data[1])
 
-    def _read_conic(self, data):
-        """Extracts the conic constant data.
+    def _read_conic(self, data: list[str]):
+        """Extracts the surface conic constant data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self._current_surf_data["conic"] = float(data[1])
 
-    def _read_glass(self, data):
-        """Extracts the glass data.
+    def _read_glass(self, data: list[str]):
+        """Extracts the surface material (glass) data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
-            Example for mirror: ['GLAS', 'MIRROR', '0', '0', '1.5', '40', ...]
+            data (list[str]): List of string data values from the Zemax file line.
+                Example for mirror: `['GLAS', 'MIRROR', '0', '0', '1.5', '40', ...]`
 
         """
         material = data[1]
@@ -383,44 +391,46 @@ class ZemaxFileReader:
         """Extracts the stop data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self._current_surf_data["is_stop"] = True
 
-    def _read_primary_wave(self, data):
-        """Extracts the primary wavelength data.
+    def _read_primary_wave(self, data: list[str]):
+        """Extracts the primary wavelength index.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self.data["wavelengths"]["primary_index"] = int(data[1]) - 1
 
-    def _read_mode(self, data):
-        """Extracts the mode data.
+    def _read_mode(self, data: list[str]):
+        """Extracts the ray tracing mode (sequential or non-sequential).
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
+        Raises:
+            ValueError: If the mode is not sequential.
         """
         if data[1] != "SEQ":
             raise ValueError("Only sequential mode is supported.")
 
-    def _read_glass_catalog(self, data):
-        """Extracts the glass catalog data.
+    def _read_glass_catalog(self, data: list[str]):
+        """Extracts the list of used glass catalogs.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         self.data["glass_catalogs"] = data[1:]
 
-    def _read_surf_type(self, data):
-        """Extracts the surface type data.
+    def _read_surf_type(self, data: list[str]):
+        """Extracts the surface type (e.g., Standard, Even Asphere).
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         type_map = {
@@ -438,17 +448,17 @@ class ZemaxFileReader:
         """Extracts the surface parameter data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
-        key = f"param_{int(data[1]) - 1}"
+        key = f"param_{int(data[1]) - 1}"  # Zemax PARM is 1-indexed
         self._current_surf_data[key] = float(data[2])
 
-    def _read_field_weights(self, data):
+    def _read_field_weights(self, data: list[str]):
         """Extracts the field weights data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
@@ -456,11 +466,11 @@ class ZemaxFileReader:
             float(value) for value in data[1 : num_fields + 1]
         ]
 
-    def _read_vignette_decenter_x(self, data):
-        """Extracts the vignette decenter x data.
+    def _read_vignette_decenter_x(self, data: list[str]):
+        """Extracts the vignette decenter X data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
@@ -468,11 +478,11 @@ class ZemaxFileReader:
             float(value) for value in data[1 : num_fields + 1]
         ]
 
-    def _read_vignette_decenter_y(self, data):
-        """Extracts the vignette decenter y data.
+    def _read_vignette_decenter_y(self, data: list[str]):
+        """Extracts the vignette decenter Y data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
@@ -480,11 +490,11 @@ class ZemaxFileReader:
             float(value) for value in data[1 : num_fields + 1]
         ]
 
-    def _read_vignette_compress_x(self, data):
-        """Extracts the vignette compress x data.
+    def _read_vignette_compress_x(self, data: list[str]):
+        """Extracts the vignette compress X data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
@@ -492,11 +502,11 @@ class ZemaxFileReader:
             float(value) for value in data[1 : num_fields + 1]
         ]
 
-    def _read_vignette_compress_y(self, data):
-        """Extracts the vignette compress y data.
+    def _read_vignette_compress_y(self, data: list[str]):
+        """Extracts the vignette compress Y data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]
@@ -504,11 +514,11 @@ class ZemaxFileReader:
             float(value) for value in data[1 : num_fields + 1]
         ]
 
-    def _read_vignette_tangent_angle(self, data):
+    def _read_vignette_tangent_angle(self, data: list[str]):
         """Extracts the vignette tangent angle data.
 
         Args:
-            data (list): List of data values extracted from the Zemax file.
+            data (list[str]): List of string data values from the Zemax file line.
 
         """
         num_fields = self.data["fields"]["num_fields"]

@@ -4,7 +4,7 @@ This module contains the OpticModifier class, which is responsible for updating 
 optical system properties, such as the surface radii of curvature, thicknesses,
 materials, conic constants, polarization, etc.
 
-Kramer Harrison, 2025
+Kramer Harrison, 2024
 """
 
 from typing import Union
@@ -33,8 +33,8 @@ class OpticUpdater:
         """Set the radius of curvature of a surface.
 
         Args:
-            value (float): The value of the radius.
-            surface_number (int): The index of the surface.
+            value (float): The new radius of curvature.
+            surface_number (int): The index of the surface to modify.
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
@@ -51,8 +51,8 @@ class OpticUpdater:
         """Set the conic constant of a surface.
 
         Args:
-            value (float): The value of the conic constant.
-            surface_number (int): The index of the surface.
+            value (float): The new conic constant.
+            surface_number (int): The index of the surface to modify.
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
@@ -62,8 +62,10 @@ class OpticUpdater:
         """Set the thickness of a surface.
 
         Args:
-            value (float): The value of the thickness.
-            surface_number (int): The index of the surface.
+            value (float): The new thickness value to set for the space
+                following the specified surface.
+            surface_number (int): The index of the surface *before* the
+                thickness to be modified.
 
         """
         positions = self.optic.surface_group.positions
@@ -78,8 +80,10 @@ class OpticUpdater:
         """Set the index of refraction of a surface.
 
         Args:
-            value (float): The value of the index of refraction.
-            surface_number (int): The index of the surface.
+            value (float): The new refractive index value.
+            surface_number (int): The index of the surface whose *post-material*
+                (material after the surface) will be updated. This also updates
+                the *pre-material* of the subsequent surface.
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
@@ -93,10 +97,10 @@ class OpticUpdater:
         """Set the asphere coefficient on a surface
 
         Args:
-            value (float): The value of aspheric coefficient
-            surface_number (int): The index of the surface.
-            aspher_coeff_idx (int): index of the aspheric coefficient on the
-                surface
+            value (float): The new value for the aspheric coefficient.
+            surface_number (int): The index of the surface to modify.
+            aspher_coeff_idx (int): The index of the aspheric coefficient
+                within the surface's coefficient list to set.
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
@@ -106,8 +110,8 @@ class OpticUpdater:
         """Set the polarization state of the optic.
 
         Args:
-            polarization (Union[PolarizationState, str]): The polarization
-                state to set. It can be either a `PolarizationState` object or
+            polarization (PolarizationState or str): The polarization
+                state to set. Can be a `PolarizationState` object or the string
                 'ignore'.
 
         """
@@ -122,7 +126,8 @@ class OpticUpdater:
         """Scales the optical system by a given scale factor.
 
         Args:
-            scale_factor (float): The factor by which to scale the system.
+            scale_factor (float): The factor by which to scale all relevant
+                system dimensions (radii, thicknesses, EPD, physical apertures).
 
         """
         num_surfaces = self.optic.surface_group.num_surfaces
@@ -150,8 +155,9 @@ class OpticUpdater:
                 surface.aperture.scale(scale_factor)
 
     def update_paraxial(self):
-        """Update the semi-aperture of the surfaces based on the paraxial
-        analysis.
+        """Update the semi-aperture of all surfaces based on paraxial marginal
+        and chief ray heights. Also updates normalization radii for relevant
+        surface types.
         """
         ya, _ = self.optic.paraxial.marginal_ray()
         yb, _ = self.optic.paraxial.chief_ray()
@@ -162,7 +168,15 @@ class OpticUpdater:
             self.update_normalization(surface)
 
     def update_normalization(self, surface) -> None:
-        """Update the normalization radius of non-spherical surfaces."""
+        """Update the normalization radius/factors of a given non-spherical surface.
+
+        The normalization factors (`norm_x`, `norm_y`, or `norm_radius`) are
+        typically set to 1.1 times the surface's current semi-aperture.
+
+        Args:
+            surface (Surface): The surface whose normalization factors are to be
+                updated.
+        """
         if surface.surface_type in [
             "even_asphere",
             "odd_asphere",
@@ -175,7 +189,10 @@ class OpticUpdater:
             surface.geometry.norm_radius = surface.semi_aperture * 1.1
 
     def update(self) -> None:
-        """Update the surface properties (pickups, solves, paraxial properties)."""
+        """Update the optical system by applying all defined pickups and solves.
+        If certain surface types requiring paraxial updates are present,
+        `update_paraxial()` is also called.
+        """
         self.optic.pickups.apply()
         self.optic.solves.apply()
 
@@ -186,8 +203,9 @@ class OpticUpdater:
             self.update_paraxial()
 
     def image_solve(self):
-        """Update the image position such that the marginal ray crosses the
-        optical axis at the image location.
+        """Adjusts the position of the image surface (last surface) such that
+        the paraxial marginal ray crosses the optical axis at this new location.
+        This effectively sets the paraxial focus.
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])

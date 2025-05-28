@@ -15,8 +15,8 @@ class ZemaxToOpticConverter:
     """Converts Zemax data into an Optic object.
 
     Args:
-        zemax_data (dict): The Zemax data to be converted. This is the data
-            extracted by the ZemaxFileReader.
+        zemax_data (dict): The Zemax data to be converted. This is typically
+            the data extracted by `ZemaxFileReader`.
 
     Attributes:
         data (dict): The Zemax data to be converted.
@@ -31,7 +31,7 @@ class ZemaxToOpticConverter:
 
     """
 
-    def __init__(self, zemax_data):
+    def __init__(self, zemax_data: dict):
         self.data = zemax_data
         self.optic = None
         self.current_cs = CoordinateSystem()
@@ -40,7 +40,7 @@ class ZemaxToOpticConverter:
         """Converts the configuration of the file handler into an Optic object.
 
         Returns:
-            Optic: The Optic object based on the Zemax data.
+            Optic: The configured `Optic` object.
 
         """
         self.optic = Optic()
@@ -154,8 +154,13 @@ class ZemaxToOpticConverter:
             rz=rz_,
         )
 
-    def _configure_surface(self, index, data):
-        """Configures a surface for the optic."""
+    def _configure_surface(self, index: int, data: dict):
+        """Configures a single surface for the optic.
+
+        Args:
+            index (int): The index of the surface to configure.
+            data (dict): The data for the surface.
+        """
         coefficients = self._configure_surface_coefficients(data)
         extra_params = {}
         if data["type"] == "coordinate_break":
@@ -179,9 +184,19 @@ class ZemaxToOpticConverter:
             **extra_params,
         )
 
-    def _configure_surface_coefficients(self, data):
-        """Configures the coefficients for the surface. This is None for standard
-        surfaces.
+    def _configure_surface_coefficients(self, data: dict):
+        """Configures the aspheric coefficients for a surface.
+
+        Returns None for standard or coordinate_break surfaces.
+
+        Args:
+            data (dict): The surface data dictionary.
+
+        Returns:
+            list[float] or None: A list of coefficient values, or None.
+
+        Raises:
+            ValueError: If the surface type is unsupported for coefficients.
         """
         surf_type = data["type"]
         if surf_type == "standard" or surf_type == "coordinate_break":

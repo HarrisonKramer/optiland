@@ -35,10 +35,11 @@ class AbbeMaterial(BaseMaterial):
         """Returns the refractive index of the material.
 
         Args:
-            wavelength (float): The wavelength of light in microns.
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float: The refractive index of the material.
+            be.ndarray: The refractive index of the material at the given
+            wavelength(s).
 
         """
         wavelength = be.array(wavelength)
@@ -50,19 +51,24 @@ class AbbeMaterial(BaseMaterial):
         """Returns the extinction coefficient of the material.
 
         Args:
-            wavelength (float): The wavelength of light in microns.
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float: The extinction coefficient of the material.
+            float or be.ndarray: The extinction coefficient of the material, which
+            is always 0 for this model. Returns a scalar 0 if wavelength is scalar,
+            otherwise an array of zeros.
 
         """
         return 0
 
     def _get_coefficients(self):
-        """Returns the polynomial coefficients for the refractive index.
+        """Returns the polynomial coefficients for the refractive index model.
+
+        These coefficients are used in `be.polyval` to calculate the refractive
+        index at a given wavelength.
 
         Returns:
-            numpy.ndarray: The polynomial coefficients.
+            be.ndarray: A 1D array of polynomial coefficients.
 
         """
         # Polynomial fit to the refractive index data

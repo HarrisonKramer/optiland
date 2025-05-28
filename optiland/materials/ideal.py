@@ -29,25 +29,35 @@ class IdealMaterial(BaseMaterial):
         """Returns the refractive index of the material.
 
         Args:
-            wavelength (float): The wavelength of light in microns.
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+                This argument is not used by this material model as the index is
+                constant.
 
         Returns:
-            float: The refractive index of the material.
-
+            float or be.ndarray: The refractive index of the material. Returns a
+            scalar if wavelength is scalar, otherwise an array of the same shape
+            as wavelength, filled with the constant refractive index.
         """
-        return self.index
+        if be.is_array_like(wavelength) and be.size(wavelength) > 1:
+            return be.full_like(wavelength, self.index[0])
+        return self.index[0]
 
     def k(self, wavelength):
         """Returns the extinction coefficient of the material.
 
         Args:
-            wavelength (float): The wavelength of light in microns.
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+                This argument is not used by this material model as the value is
+                constant.
 
         Returns:
-            float: The extinction coefficient of the material.
-
+            float or be.ndarray: The extinction coefficient of the material. Returns a
+            scalar if wavelength is scalar, otherwise an array of the same shape
+            as wavelength, filled with the constant extinction coefficient.
         """
-        return self.absorp
+        if be.is_array_like(wavelength) and be.size(wavelength) > 1:
+            return be.full_like(wavelength, self.absorp[0])
+        return self.absorp[0]
 
     def to_dict(self):
         """Returns a dictionary representation of the material.
@@ -68,7 +78,7 @@ class IdealMaterial(BaseMaterial):
             data (dict): The dictionary representation of the material.
 
         Returns:
-            Material: The material.
+            IdealMaterial: The material.
 
         """
         return cls(data["index"], data.get("absorp", 0))

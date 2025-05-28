@@ -388,15 +388,18 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength="primary"):
-        """Get the refractive indices of the surfaces.
+    def n(self, wavelength: Union[float, str] = "primary"):
+        """Get the refractive indices of the materials for each space between
+        surfaces at a given wavelength.
 
         Args:
-            wavelength (float or str, optional): The wavelength for which to
-                calculate the refractive indices. Defaults to 'primary'.
+            wavelength (float or str, optional): The wavelength in microns for
+                which to calculate the refractive indices. Can be a float value
+                or the string 'primary' to use the system's primary wavelength.
+                Defaults to 'primary'.
 
         Returns:
-            numpy.ndarray: The refractive indices of the surfaces.
+            be.ndarray: An array of refractive indices for each space.
 
         """
         if wavelength == "primary":
@@ -407,13 +410,15 @@ class Optic:
         """Trace a distribution of rays through the optical system.
 
         Args:
-            Hx (float or numpy.ndarray): The normalized x field coordinate.
-            Hy (float or numpy.ndarray): The normalized y field coordinate.
-            wavelength (float): The wavelength of the rays.
-            num_rays (int, optional): The number of rays to be traced. Defaults
-                to 100.
-            distribution (str or Distribution, optional): The distribution of
-                the rays. Defaults to 'hexapolar'.
+            Hx (float or be.ndarray): The normalized x field coordinate(s).
+            Hy (float or be.ndarray): The normalized y field coordinate(s).
+            wavelength (float): The wavelength of the rays in microns.
+            num_rays (int, optional): The number of rays to be traced.
+                Defaults to 100.
+            distribution (str or optiland.distribution.BaseDistribution, optional):
+                The distribution of the rays. Can be a string identifier (e.g.,
+                'hexapolar', 'uniform') or a Distribution object.
+                Defaults to 'hexapolar'.
 
         Returns:
             RealRays: The RealRays object containing the traced rays.
@@ -425,11 +430,11 @@ class Optic:
         """Trace generic rays through the optical system.
 
         Args:
-            Hx (float or numpy.ndarray): The normalized x field coordinate.
-            Hy (float or numpy.ndarray): The normalized y field coordinate.
-            Px (float or numpy.ndarray): The normalized x pupil coordinate.
-            Py (float or numpy.ndarray): The normalized y pupil coordinate
-            wavelength (float): The wavelength of the rays.
+            Hx (float or be.ndarray): The normalized x field coordinate(s).
+            Hy (float or be.ndarray): The normalized y field coordinate(s).
+            Px (float or be.ndarray): The normalized x pupil coordinate(s).
+            Py (float or be.ndarray): The normalized y pupil coordinate(s).
+            wavelength (float): The wavelength of the rays in microns.
 
         """
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)

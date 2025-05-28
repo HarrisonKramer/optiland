@@ -1,13 +1,15 @@
-import numpy as np
-
+# Defines various sample objective lens optical systems.
+import optiland.backend as be
 from optiland import optic
 
 
 class TripletTelescopeObjective(optic.Optic):
+    """A triplet telescope objective lens design."""
+
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=50.098,
@@ -40,10 +42,12 @@ class TripletTelescopeObjective(optic.Optic):
 
 
 class CookeTriplet(optic.Optic):
+    """A Cooke triplet lens design."""
+
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
         self.add_surface(index=2, radius=-435.76044, thickness=6.00755)
         self.add_surface(
@@ -70,28 +74,30 @@ class CookeTriplet(optic.Optic):
 
 
 class DoubleGauss(optic.Optic):
+    """A Double Gauss lens design."""
+
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=56.20238, thickness=8.75, material="N-SSK2")
         self.add_surface(index=2, radius=152.28580, thickness=0.5)
         self.add_surface(index=3, radius=37.68262, thickness=12.5, material="N-SK2")
         self.add_surface(
             index=4,
-            radius=np.inf,
+            radius=be.inf,
             thickness=3.8,
             material=("F5", "schott"),
         )
         self.add_surface(index=5, radius=24.23130, thickness=16.369445)
-        self.add_surface(index=6, radius=np.inf, thickness=13.747957, is_stop=True)
+        self.add_surface(index=6, radius=be.inf, thickness=13.747957, is_stop=True)
         self.add_surface(
             index=7,
             radius=-28.37731,
             thickness=3.8,
             material=("F5", "schott"),
         )
-        self.add_surface(index=8, radius=np.inf, thickness=11, material="N-SK16")
+        self.add_surface(index=8, radius=be.inf, thickness=11, material="N-SK16")
         self.add_surface(index=9, radius=-37.92546, thickness=0.5)
         self.add_surface(index=10, radius=177.41176, thickness=7, material="N-SK16")
         self.add_surface(index=11, radius=-79.41143, thickness=61.487536)
@@ -110,12 +116,14 @@ class DoubleGauss(optic.Optic):
 
 
 class ReverseTelephoto(optic.Optic):
+    """A reverse telephoto lens design."""
+
     def __init__(self):
         super().__init__()
 
         self.surface_group.surfaces = []
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=1.69111096,
@@ -139,7 +147,7 @@ class ReverseTelephoto(optic.Optic):
         self.add_surface(index=6, radius=-3.86177348, thickness=0.1)
         self.add_surface(index=7, radius=1.05627661, thickness=0.2, material="FK3")
         self.add_surface(index=8, radius=-4.06933311, thickness=0.2001384)
-        self.add_surface(index=9, radius=np.inf, thickness=0.06688, is_stop=True)
+        self.add_surface(index=9, radius=be.inf, thickness=0.06688, is_stop=True)
         self.add_surface(
             index=10,
             radius=-2.61246583,
@@ -169,12 +177,14 @@ class ReverseTelephoto(optic.Optic):
 
 
 class ObjectiveUS008879901(optic.Optic):
+    """An objective lens design based on U.S. Patent 8,879,901."""
+
     def __init__(self):
         super().__init__()
 
         self.surface_group.surfaces = []
 
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
             radius=47.07125235,
@@ -196,7 +206,7 @@ class ObjectiveUS008879901(optic.Optic):
             material="E-SF1",
         )
         self.add_surface(index=6, radius=17.72638376, thickness=9.9)
-        self.add_surface(index=7, radius=np.inf, thickness=8.7, is_stop=True)
+        self.add_surface(index=7, radius=be.inf, thickness=8.7, is_stop=True)
         self.add_surface(
             index=8,
             radius=-17.49862241,
@@ -251,9 +261,9 @@ class ObjectiveUS008879901(optic.Optic):
             thickness=3.22444231,
             material="H-LAK52",
         )
-        self.add_surface(index=22, radius=np.inf, thickness=8.0)
-        self.add_surface(index=23, radius=np.inf, thickness=4.0, material="H-LAK52")
-        self.add_surface(index=24, radius=np.inf, thickness=3.15317838)
+        self.add_surface(index=22, radius=be.inf, thickness=8.0)
+        self.add_surface(index=23, radius=be.inf, thickness=4.0, material="H-LAK52")
+        self.add_surface(index=24, radius=be.inf, thickness=3.15317838)
         self.add_surface(index=25)
 
         self.set_aperture(aperture_type="imageFNO", value=2.0)
@@ -271,14 +281,14 @@ class ObjectiveUS008879901(optic.Optic):
 class TelescopeObjective48Inch(optic.Optic):
     """48-in. Telescope Objective
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 48
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 48.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=-12.7172, thickness=0.8, material="N-PSK3")
         self.add_surface(index=2, radius=-18.5430, thickness=0.0148)
         self.add_surface(index=3, thickness=0.0150, is_stop=True)
@@ -313,20 +323,20 @@ class TelescopeObjective48Inch(optic.Optic):
 class HeliarLens(optic.Optic):
     """Heliar Lens f/5
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=4.2103, thickness=0.9004, material="N-SK16")
         self.add_surface(index=2, radius=-3.6208, thickness=0.2999, material="E-LLF6")
         self.add_surface(index=3, radius=29.1869, thickness=0.7587)
         self.add_surface(index=4, radius=-3.1715, thickness=0.2, material="E-LLF6")
         self.add_surface(index=5, radius=3.2083, thickness=0.1264)
-        self.add_surface(index=6, radius=np.inf, thickness=0.2629, is_stop=True)
+        self.add_surface(index=6, radius=be.inf, thickness=0.2629, is_stop=True)
         self.add_surface(index=7, radius=43.0710, thickness=0.25, material="E-LLF6")
         self.add_surface(index=8, radius=2.4494, thickness=0.8308, material="N-SK16")
         self.add_surface(index=9, radius=-3.2576, thickness=8.5066)
@@ -350,14 +360,14 @@ class HeliarLens(optic.Optic):
 class TessarLens(optic.Optic):
     """Tessar Lens f/4.5
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 63.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=1.3329, thickness=0.2791, material="N-SK15")
         self.add_surface(index=2, radius=-9.9754, thickness=0.2054)
         self.add_surface(
@@ -367,7 +377,7 @@ class TessarLens(optic.Optic):
             material=("F2", "schott"),
         )
         self.add_surface(index=4, radius=1.2123, thickness=0.0709)
-        self.add_surface(index=5, radius=np.inf, thickness=0.1534, is_stop=True)
+        self.add_surface(index=5, radius=be.inf, thickness=0.1534, is_stop=True)
         self.add_surface(index=6, radius=-7.5205, thickness=0.09, material="K10")
         self.add_surface(index=7, radius=1.3010, thickness=0.3389, material="N-SK15")
         self.add_surface(index=8, radius=-1.5218, thickness=3.4025)
@@ -389,19 +399,19 @@ class TessarLens(optic.Optic):
 
 
 class LensWithFieldCorrector(optic.Optic):
-    """5-in. Focal Length, f/3.5 Lens with Field Corrector
+    """5-in. Focal Length, f/3.5 Lens with Field Corrector.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 66
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 66.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=1.9863, thickness=0.5, material="N-SK16")
         self.add_surface(index=2, radius=6.2901, thickness=0.4878)
-        self.add_surface(index=3, radius=np.inf, thickness=0.1016, is_stop=True)
+        self.add_surface(index=3, radius=be.inf, thickness=0.1016, is_stop=True)
         self.add_surface(
             index=4,
             radius=-2.5971,
@@ -436,16 +446,16 @@ class LensWithFieldCorrector(optic.Optic):
 
 
 class PetzvalLens(optic.Optic):
-    """Petzval lens f/1.4
+    """Petzval lens f/1.4.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 75
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 75.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=1.3265, thickness=0.4, material="N-LAK12")
         self.add_surface(index=2, radius=-2.6919, thickness=0.06)
         self.add_surface(
@@ -455,7 +465,7 @@ class PetzvalLens(optic.Optic):
             material=("SF4", "schott"),
         )
         self.add_surface(index=4, radius=5.4499, thickness=0.1)
-        self.add_surface(index=5, radius=np.inf, thickness=0.8999, is_stop=True)
+        self.add_surface(index=5, radius=be.inf, thickness=0.8999, is_stop=True)
         self.add_surface(index=6, radius=1.1724, thickness=0.3, material="N-LAK12")
         self.add_surface(index=7, radius=-2.4602, thickness=0.2221)
         self.add_surface(
@@ -486,20 +496,20 @@ class PetzvalLens(optic.Optic):
 
 
 class Telephoto(optic.Optic):
-    """Telephot lens f/5.6
+    """Telephoto lens f/5.6.
 
-    Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 91
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 91.
     """
 
     def __init__(self):
         super().__init__()
 
         # add surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=np.inf)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(index=1, radius=0.8589, thickness=0.2391, material="N-BK7")
         self.add_surface(index=2, radius=-2.6902, thickness=0.09, material="N-BASF2")
         self.add_surface(index=3, radius=3.0318, thickness=0.0481)
-        self.add_surface(index=4, radius=np.inf, thickness=1.0347, is_stop=True)
+        self.add_surface(index=4, radius=be.inf, thickness=1.0347, is_stop=True)
         self.add_surface(index=5, radius=-0.5715, thickness=0.09, material="N-ZK7")
         self.add_surface(index=6, radius=-0.7423, thickness=0.1005, material="N-LAF33")
         self.add_surface(index=7, radius=-1.1433, thickness=0.0156)
