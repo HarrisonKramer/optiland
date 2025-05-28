@@ -42,5 +42,3 @@ class HubbleTelescope(optic.Optic):
         self.add_field(y=0.15)
 
         self.add_wavelength(value=0.55, is_primary=True)
-
-        self.update_paraxial()

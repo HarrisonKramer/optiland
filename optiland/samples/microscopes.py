@@ -58,8 +58,6 @@ class Objective60x(optic.Optic):
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
 
-        self.update_paraxial()
-
 
 class Microscope20x(optic.Optic):
     """20x Microscope Objective

@@ -41,8 +41,6 @@ class InfraredTriplet(optic.Optic):
 
         self.add_wavelength(value=10.6, is_primary=True)
 
-        self.update_paraxial()
-
 
 class InfraredTripletF4(optic.Optic):
     """A 4-inch infrared triplet lens with f/4.
@@ -75,5 +73,3 @@ class InfraredTripletF4(optic.Optic):
         self.add_field(y=3.5)
 
         self.add_wavelength(value=4.2, is_primary=True)
-
-        self.update_paraxial()

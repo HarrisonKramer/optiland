@@ -38,8 +38,6 @@ class Edmund_49_847(optic.Optic):
         self.add_wavelength(value=0.58756180, is_primary=True)
         self.add_wavelength(value=0.65627250)
 
-        self.update_paraxial()
-
 
 class SingletStopSurf2(optic.Optic):
     """A simple singlet lens with the stop on surface 2."""
@@ -71,8 +69,6 @@ class SingletStopSurf2(optic.Optic):
         self.add_wavelength(value=0.48613270)
         self.add_wavelength(value=0.58756180, is_primary=True)
         self.add_wavelength(value=0.65627250)
-
-        self.update_paraxial()
 
 
 class TelescopeDoublet(optic.Optic):
@@ -113,7 +109,6 @@ class TelescopeDoublet(optic.Optic):
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
 
-        self.update_paraxial()
         self.image_solve()
 
 
@@ -158,7 +153,6 @@ class CementedAchromat(optic.Optic):
         self.add_wavelength(value=0.58756180, is_primary=True)
         self.add_wavelength(value=0.65627250)
 
-        self.update_paraxial()
         self.image_solve()
 
 
@@ -192,5 +186,3 @@ class AsphericSinglet(optic.Optic):
 
         # add wavelength
         self.add_wavelength(value=0.587, is_primary=True)
-
-        self.update_paraxial()

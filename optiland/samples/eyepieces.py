@@ -34,5 +34,3 @@ class EyepieceErfle(optic.Optic):
         self.add_wavelength(value=0.4861)
         self.add_wavelength(value=0.5876, is_primary=True)
         self.add_wavelength(value=0.6563)
-
-        self.update_paraxial()
