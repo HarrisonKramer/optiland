@@ -284,25 +284,8 @@ class Lens3D(Lens2D):
         using Surface3D objects.
         """
         for surface_3d_obj in self.plotting_surfaces_3d:
-            # Surface3D.get_surface() chooses between symmetric and asymmetric.
-            # The Lens3D.plot() method already checks Lens3D.is_symmetric.
-            # If is_symmetric is False, it calls _plot_surfaces.
-            # So, inside _plot_surfaces, we are dealing with a lens deemed asymmetric
-            # overall.
-            # Each individual surface within it could still be symmetric in its own
-            # definition.
-            # Using surface_3d_obj.get_surface() is the most robust approach.
-
             actor = surface_3d_obj.get_surface()
             renderer.AddActor(actor)
-
-        # Note: The original _plot_surfaces configured material using
-        # self._configure_material.
-        # Surface3D._get_asymmetric_surface and _get_symmetric_surface use their own
-        # _configure_material method (Surface3D._configure_material).
-        # This means the material properties might change slightly if the
-        # colors/opacity differ.
-        # This is acceptable as per the refactoring to use Surface3D's methods.
 
     def _get_edge_surface(self, circle1, circle2):
         """Generates a VTK actor representing the surface between two circles.
