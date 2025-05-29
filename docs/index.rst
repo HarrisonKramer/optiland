@@ -62,6 +62,7 @@ Python code to generate this 3D visualization:
    gallery/tolerancing
    gallery/freeforms
    gallery/differentiable_ray_tracing
+   gallery/real_world_projects
    gallery/miscellaneous
 
 
