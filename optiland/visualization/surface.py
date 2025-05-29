@@ -5,6 +5,7 @@ This module contains classes for visualizing optical surfaces in 2D and 3D.
 Kramer Harrison, 2024
 """
 
+import numpy as np
 import vtk
 
 import optiland.backend as be
@@ -166,20 +167,23 @@ class Surface3D(Surface2D):
 
         """
         x, y, z = self._compute_sag_3d()
+        x = be.to_numpy(x)
+        y = be.to_numpy(y)
+        z = be.to_numpy(z)
 
         # Apply aperture filtering to the grid of points
         if self.surf.aperture is not None:
             mask = self.surf.aperture.contains(x, y)
         else:
-            r = be.hypot(x, y)
-            mask = r <= self.extent
+            r = np.hypot(x, y)
+            mask = r <= be.to_numpy(self.extent)
 
         # Create VTK points.
         points = vtk.vtkPoints()
         num_rows, num_cols = x.shape
 
         # Map grid indices to point IDs
-        point_ids = -be.ones((num_rows, num_cols), dtype=int)
+        point_ids = -np.ones((num_rows, num_cols), dtype=int)
         for i in range(num_rows):
             for j in range(num_cols):
                 point_ids[i, j] = points.InsertNextPoint(x[i, j], y[i, j], z[i, j])
