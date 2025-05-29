@@ -134,6 +134,7 @@ class Surface3D(Surface2D):
             actor = self._get_symmetric_surface()
         else:
             actor = self._get_asymmetric_surface()
+        actor = self._configure_material(actor)
         return actor
 
     def _get_symmetric_surface(self):
@@ -149,7 +150,6 @@ class Surface3D(Surface2D):
         x, y, z = self._compute_sag()
         actor = revolve_contour(x, y, z)
         actor = transform_3d(actor, self.surf)
-        actor = self._configure_material(actor)
         return actor
 
     def _get_asymmetric_surface(self):
@@ -212,7 +212,6 @@ class Surface3D(Surface2D):
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor = self._configure_material(actor)
 
         # Convert to global coordinates
         actor = transform_3d(actor, self.surf)
