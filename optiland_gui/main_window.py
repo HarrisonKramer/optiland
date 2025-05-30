@@ -1,9 +1,12 @@
 # optiland_gui/main_window.py
-import sys
-from PySide6.QtWidgets import (QMainWindow, QApplication, QDockWidget, QMenuBar, QToolBar,
-                               QFileDialog, QMessageBox)
-from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+)
 
 from .lens_editor import LensEditor
 from .viewer_panel import ViewerPanel
@@ -42,7 +45,9 @@ class MainWindow(QMainWindow):
 
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.analysisPanelDock)
+        self.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.analysisPanelDock
+        )
 
         self.optimizationPanelDock = QDockWidget("Optimization", self)
         self.optimizationPanelDock.setWidget(self.optimizationPanel)
@@ -70,9 +75,11 @@ class MainWindow(QMainWindow):
         self.toggleSystemPropertiesAction.setText("Toggle System &Properties")
         self.toggleAnalysisPanelAction = self.analysisPanelDock.toggleViewAction()
         self.toggleAnalysisPanelAction.setText("Toggle &Analysis Panel")
-        self.toggleOptimizationPanelAction = self.optimizationPanelDock.toggleViewAction()
+        self.toggleOptimizationPanelAction = (
+            self.optimizationPanelDock.toggleViewAction()
+        )
         self.toggleOptimizationPanelAction.setText("Toggle &Optimization Panel")
-        
+
         # Help actions
         self.aboutAction = QAction("&About Optiland GUI", self, triggered=self.about_action) # Renamed slot
 
@@ -106,7 +113,7 @@ class MainWindow(QMainWindow):
 
     def load_stylesheet(self, filepath):
         try:
-            with open(filepath, "r") as f:
+            with open(filepath) as f:
                 self.setStyleSheet(f.read())
         except FileNotFoundError:
             print(f"Stylesheet not found: {filepath}")

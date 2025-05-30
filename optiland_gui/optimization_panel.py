@@ -1,6 +1,15 @@
 # optiland_gui/optimization_panel.py
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QListWidget, QLineEdit
+from PySide6.QtWidgets import (
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
 from .optiland_connector import OptilandConnector
+
 
 class OptimizationPanel(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -11,7 +20,7 @@ class OptimizationPanel(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.layout.addWidget(QLabel("Optimization Variables:"))
-        self.variablesList = QListWidget() # Placeholder for variable selection
+        self.variablesList = QListWidget()  # Placeholder for variable selection
         self.variablesList.addItems(["Radius S2", "Thickness S1", "Conic S3"])
         self.layout.addWidget(self.variablesList)
 
@@ -30,5 +39,7 @@ class OptimizationPanel(QWidget):
 
     def start_optimization(self):
         # Placeholder: Trigger Optiland optimization routines
-        self.resultsArea.setText("Starting optimization...\n(Placeholder - connect to Optiland backend)")
+        self.resultsArea.setText(
+            "Starting optimization...\n(Placeholder - connect to Optiland backend)"
+        )
         print("Optimization Panel: Starting optimization")

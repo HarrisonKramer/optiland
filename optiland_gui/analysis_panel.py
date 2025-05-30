@@ -1,6 +1,7 @@
 # optiland_gui/analysis_panel.py
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QPushButton, 
-                               QComboBox, QTextEdit, QMessageBox) # Added QTextEdit, QMessageBox
+from PySide6.QtWidgets import (QComboBox, QLabel, QPushButton, 
+                               QVBoxLayout, QWidget
+, QTextEdit, QMessageBox) # Added QTextEdit, QMessageBox
 from PySide6.QtCore import Slot
 from .optiland_connector import OptilandConnector
 
@@ -11,6 +12,7 @@ from optiland.analysis import (SpotDiagram, EncircledEnergy, RayFan, YYbar,
                                PupilAberration, IncoherentIrradiance, ThroughFocusSpotDiagram)
 # For MTF, we have GeometricMTF and FFTMTF from optiland.mtf
 from optiland.mtf import GeometricMTF, FFTMTF
+
 
 
 class AnalysisPanel(QWidget):

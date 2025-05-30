@@ -31,6 +31,7 @@ class SpecialFloatEncoder(json.JSONEncoder):
             if hasattr(obj, 'tolist'): return obj.tolist()
             return str(obj)
 
+
 class OptilandConnector(QObject):
     opticLoaded = Signal()
     opticChanged = Signal()
@@ -149,6 +150,7 @@ class OptilandConnector(QObject):
                             elif v == "-Infinity": dct[k] = float('-inf')
                             elif v == "NaN": dct[k] = float('nan')
                     return dct
+
                 data = json.load(f, object_hook=json_inf_nan_hook)
 
             self._optic = Optic.from_dict(data) 
@@ -190,7 +192,7 @@ class OptilandConnector(QObject):
 
 
             data = self._optic.to_dict()
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(data, f, indent=4, cls=SpecialFloatEncoder)
             self._current_filepath = filepath
             print(f"OpticConnector: Optic saved to {filepath}")
@@ -202,11 +204,20 @@ class OptilandConnector(QObject):
         return self._current_filepath
 
     def get_surface_count(self):
-        if not self._optic or not self._optic.surface_group: return 0
+        if not self._optic or not self._optic.surface_group:
+            return 0
         return self._optic.surface_group.num_surfaces
 
     def get_column_headers(self):
-        return ["Type", "Comment", "Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]
+        return [
+            "Type",
+            "Comment",
+            "Radius",
+            "Thickness",
+            "Material",
+            "Conic",
+            "Semi-Diameter",
+        ]
 
     def get_surface_data(self, row, col_idx):
         # This method should be the same as the one that fixed the TypeError
@@ -244,14 +255,14 @@ class OptilandConnector(QObject):
                 return relevant_material.name
             return "Unknown" 
         elif col_idx == self.COL_CONIC:
-            k_val = surface.geometry.k if hasattr(surface.geometry, 'k') else 0.0
+            k_val = surface.geometry.k if hasattr(surface.geometry, "k") else 0.0
             return f"{float(k_val):.4f}"
         elif col_idx == self.COL_SEMI_DIAMETER:
             ap = surface.aperture
             if isinstance(ap, RadialAperture):
                 return f"{float(ap.r_max):.4f}"
             if surface.semi_aperture is not None:
-                 return f"{float(surface.semi_aperture):.4f}"
+                return f"{float(surface.semi_aperture):.4f}"
             return "Auto"
         return None
 
@@ -267,7 +278,9 @@ class OptilandConnector(QObject):
             if col_idx == self.COL_COMMENT:
                 surface.comment = value_str
             elif col_idx == self.COL_RADIUS:
-                new_radius = float('inf') if value_str.lower() == 'inf' else float(value_str)
+                new_radius = (
+                    float("inf") if value_str.lower() == "inf" else float(value_str)
+                )
                 updater.set_radius(new_radius, row)
             elif col_idx == self.COL_THICKNESS:
                 if row < self.get_surface_count() - 1:
@@ -290,8 +303,8 @@ class OptilandConnector(QObject):
                 if row + 1 < self.get_surface_count():
                     self._optic.surface_group.surfaces[row + 1].material_pre = surface.material_post
             elif col_idx == self.COL_CONIC:
-                if hasattr(surface.geometry, 'k'):
-                     updater.set_conic(float(value_str), row)
+                if hasattr(surface.geometry, "k"):
+                    updater.set_conic(float(value_str), row)
             elif col_idx == self.COL_SEMI_DIAMETER:
                 try:
                     semi_diam = float(value_str)
@@ -328,7 +341,7 @@ class OptilandConnector(QObject):
         if 0 < optic_surface_index < self.get_surface_count() - 1:
             self._optic.surface_group.remove_surface(optic_surface_index)
             self._optic.update()
-            self.surfaceRemoved.emit(lde_row_index) 
+            self.surfaceRemoved.emit(lde_row_index)
             self.surfaceCountChanged.emit()
             self.opticChanged.emit()
         else:
