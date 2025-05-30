@@ -272,69 +272,127 @@ class OptimizerGeneric:
 
 
 class LeastSquares(OptimizerGeneric):
-    """LeastSquares optimizer class for solving optimization problems using the
-    least squares method.
-
-    Args:
-        problem (OptimizationProblem): The optimization problem to be solved.
-
-    Attributes:
-        problem (OptimizationProblem): The optimization problem to be solved.
-
-    Methods:
-        optimize(maxiter=None, disp=False, tol=1e-3): Optimize the problem
-            using the least squares method.
-
-    """
-
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
 
-    def optimize(self, maxiter=None, disp=False, tol=1e-3):
-        """Optimize the problem using the least squares method.
+    def _compute_residuals_vector(self, x_numpy_variables_from_scipy):
+        """
+        Internal function to update variables and compute the vector of residuals.
+        'x_numpy_variables_from_scipy' contains the current values of the optimization
+        variables as provided by the SciPy optimizer. These are typically scaled values
+        if variable scaling is active.
+        """
 
-        Note:
-            The least squares method uses the Trust Region Reflective method.
+        for i, optiland_var_wrapper in enumerate(self.problem.variables):
+            optiland_var_wrapper.update(x_numpy_variables_from_scipy[i])
+
+        self.problem.update_optics()
+
+        try:
+            residuals_backend_array = be.array(
+                [op.fun() for op in self.problem.operands]
+            )
+
+            # Handle cases where ray tracing might fail and produce NaNs
+            if be.any(be.isnan(residuals_backend_array)):
+                num_operands = len(self.problem.operands)
+                # Return a vector of large constant values to penalize this region
+                # The magnitude should be large enough to indicate a poor solution.
+                error_value = be.sqrt(1e10 / num_operands if num_operands > 0 else 1e10)
+                return be.to_numpy(be.full(num_operands, error_value))
+
+            return be.to_numpy(
+                residuals_backend_array
+            )  # Convert to NumPy array for SciPy
+
+        except Exception:
+            # Catch any other exceptions during optical calculation
+            # (e.g., critical ray failure)
+            # This is a general fallback; more specific error handling
+            # might be beneficial.
+            num_operands = len(self.problem.operands)
+            error_value = be.sqrt(1e10 / num_operands if num_operands > 0 else 1e10)
+            # Return a vector of large constant values
+            return be.to_numpy(be.full(num_operands, error_value))
+
+    def optimize(
+        self, max_nfev=None, disp=False, tol=1e-3, method_choice="lm"
+    ):  # Default to 'lm' for DLS
+        """
+        Optimize the problem using a SciPy least squares method.
 
         Args:
-            maxiter (int, optional): Maximum number of iterations.
-                Defaults to None.
+            max_nfev (int, optional): Maximum number of function evaluations (NFEV).
+                                      SciPy's least_squares uses max_nfev.
             disp (bool, optional): Whether to display optimization progress.
-                Defaults to False.
-            tol (float, optional): Tolerance for termination. Defaults to 1e-3.
-
-        Returns:
-            result: The optimization result.
-
+            tol (float, optional): Tolerance for termination (ftol - tolerance for the
+                                   change in the sum of squares). Defaults to 1e-3.
+            method_choice (str, optional): Method for scipy.optimize.least_squares.
+                                         'lm': Levenberg-Marquardt (DLS,
+                                         does not support bounds).
+                                         'trf': Trust Region Reflective
+                                         (supports bounds).
+                                         'dogbox': Dogleg algorithm
+                                         (supports bounds).
+                                         Defaults to 'lm'.
         """
-        # Get initial values in backend format
-        x0_backend = [var.value for var in self.problem.variables]
-        self._x.append(x0_backend)  # Store backend values
-        # --- Convert x0 to NumPy for SciPy ---
-        x0_numpy = be.to_numpy(x0_backend)
 
-        lower = [
-            var.bounds[0] if var.bounds[0] is not None else -be.inf
-            for var in self.problem.variables
-        ]
-        upper = [
-            var.bounds[1] if var.bounds[1] is not None else be.inf
-            for var in self.problem.variables
-        ]
-        bounds = (lower, upper)
+        x0_scaled_values = [var.value for var in self.problem.variables]
+        self._x.append(list(x0_scaled_values))
+        x0_numpy = be.to_numpy(x0_scaled_values)
 
-        verbose = 2 if disp else 0
+        current_bounds_scaled = tuple([var.bounds for var in self.problem.variables])
+
+        actual_bounds_for_scipy = (-be.inf, be.inf)
+
+        if method_choice == "lm":
+            if any(
+                b_item is not None
+                for b_pair in current_bounds_scaled
+                for b_item in b_pair
+            ):
+                print(
+                    f"Warning: Method '{method_choice}' (Levenberg-Marquardt) chosen, "
+                    "but variable bounds are set. "
+                    "SciPy's 'lm' method does not support bounds; bounds will "
+                    "be ignored."
+                )
+        elif method_choice in ["trf", "dogbox"]:
+            lower_bounds = [
+                b[0] if b[0] is not None else -be.inf for b in current_bounds_scaled
+            ]
+            upper_bounds = [
+                b[1] if b[1] is not None else be.inf for b in current_bounds_scaled
+            ]
+            actual_bounds_for_scipy = (
+                be.to_numpy(lower_bounds),
+                be.to_numpy(upper_bounds),
+            )
+        else:
+            print(
+                f"Warning: Unknown method_choice '{method_choice}'. Defaulting to "
+                "SciPy's choice, which might ignore bounds if not 'trf' or 'dogbox'."
+            )
+
+        scipy_verbose_level = 1 if disp else 0
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             result = optimize.least_squares(
-                self._fun,
+                self._compute_residuals_vector,  # Objective function returning vector
+                # of residuals
                 x0_numpy,
-                bounds=bounds,
-                max_nfev=maxiter,
-                verbose=verbose,
+                method=method_choice,
+                bounds=actual_bounds_for_scipy,
+                max_nfev=max_nfev,
+                verbose=scipy_verbose_level,
                 ftol=tol,
             )
+
+        for i, optiland_var_wrapper in enumerate(self.problem.variables):
+            optiland_var_wrapper.update(result.x[i])
+        self.problem.update_optics()  # Final update to the optical system
+
         return result
 
 
