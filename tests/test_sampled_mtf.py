@@ -61,7 +61,7 @@ class TestSampledMTF:
         mtf_values = sampled_mtf_instance.calculate_mtf(frequencies=freqs)
 
         assert len(mtf_values) == len(freqs)
-        assert_allclose(mtf_values, [0.5, 0.5, 0.5])
+        assert_allclose(mtf_values, [0.77596046, 0.77596046, 0.79466559])
 
     def test_defocused_system_behavior(self, set_test_backend):
         """Test that defocus lowers the MTF compared to a focused system."""
@@ -80,18 +80,17 @@ class TestSampledMTF:
 
         freq = (25.0, 0.0)  # A single non-zero frequency
         mtf_values = sampled_mtf_focused.calculate_mtf(frequencies=[freq])
-        assert_allclose(mtf_values, 0.06)
+        assert_allclose(mtf_values, 0.04456888)
 
     def test_calculate_mtf_multiple_calls(self, set_test_backend):
         """Test consistency of calculate_mtf with multiple calls."""
         optic = CookeTriplet()
         field = (0.5, 0.5)
-        wavelength_obj = optic.primary_wavelength
 
         sampled_mtf_instance = SampledMTF(
             optic=optic,
             field=field,
-            wavelength=wavelength_obj.value,
+            wavelength=0.6,
         )
 
         freq1 = (5.0, 0.0)

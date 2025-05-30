@@ -501,7 +501,7 @@ class SampledMTF:
             3. For each frequency pair (fx, fy):
                 a. Calculating physical shifts in the pupil based on wavelength and
                    frequency.
-                b. Normalizing these shifts using the XPD radius.
+                b. Normalizing these shifts using the XPD radius & exit pupil position.
                 c. Determining the shifted normalized coordinates for pupil evaluation.
                 d. Evaluating the Optical Path Difference (OPD) at these shifted
                    coordinates using the Zernike polynomial fit of the wavefront.
@@ -516,7 +516,7 @@ class SampledMTF:
                 i. Normalizing the OTF value by otf_at_zero (the OTF at zero frequency).
                 j. The MTF is the absolute value of this normalized OTF.
         """
-        xpd_is_zero = be.isclose(self.xpd, 0.0, atol=1e-9)
+        xpd_is_zero = self.xpd == 0.0
 
         # Retrieve necessary attributes from instance
         wl_um = self.wavelength  # Wavelength in micrometers
@@ -532,7 +532,7 @@ class SampledMTF:
 
         for fx, fy in frequencies:
             if xpd_is_zero:
-                if be.isclose(fx, 0.0) and be.isclose(fy, 0.0):
+                if fx == 0.0 and fy == 0.0:
                     mtf_results.append(1.0)
                 else:
                     mtf_results.append(0.0)
