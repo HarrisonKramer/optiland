@@ -388,6 +388,10 @@ class SampledMTF:
     data. It utilizes Zernike polynomial fitting to represent the wavefront
     aberrations.
 
+    Note:
+        This class assumes that amplitude variations between the pupil and a
+        shifted version of the pupil can be ignored.
+
     Args:
         optic (Optic): The optical system.
         field (tuple): The field point (Hx, Hy) at which to calculate the MTF.
