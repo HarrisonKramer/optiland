@@ -342,16 +342,16 @@ class LeastSquares(OptimizerGeneric):
         x0_numpy = be.to_numpy(x0_scaled_values)
 
         current_bounds_scaled = tuple([var.bounds for var in self.problem.variables])
-        lower_bounds_np = be.to_numpy([
-            b[0] if b[0] is not None else -be.inf for b in current_bounds_scaled
-        ])
-        upper_bounds_np = be.to_numpy([
-            b[1] if b[1] is not None else be.inf for b in current_bounds_scaled
-        ])
+        lower_bounds_np = be.to_numpy(
+            [b[0] if b[0] is not None else -be.inf for b in current_bounds_scaled]
+        )
+        upper_bounds_np = be.to_numpy(
+            [b[1] if b[1] is not None else be.inf for b in current_bounds_scaled]
+        )
 
         num_residuals = len(self.problem.operands)
         num_variables = len(x0_numpy)
-        original_method_choice = method_choice # Store for warning message
+        original_method_choice = method_choice  # Store for warning message
 
         # Validate and adjust method_choice
         if method_choice == "lm":
@@ -363,25 +363,32 @@ class LeastSquares(OptimizerGeneric):
                     "This is not supported by 'lm'. Switching to 'trf' method."
                 )
                 method_choice = "trf"
-            elif be.any(lower_bounds_np != -be.inf) or be.any(upper_bounds_np != be.inf):
+            elif be.any(lower_bounds_np != -be.inf) or be.any(
+                upper_bounds_np != be.inf
+            ):
                 # This warning is for 'lm' when bounds are present but m >= n
                 print(
-                    f"Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
+                    "Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
                     "but variable bounds are set. "
                     "SciPy's 'lm' method does not support bounds; bounds will "
                     "be ignored."
                 )
         elif method_choice not in ["trf", "dogbox"]:
             print(
-                f"Warning: Unknown method_choice '{original_method_choice}'. Defaulting to "
-                "'trf' method."
+                f"Warning: Unknown method_choice '{original_method_choice}'. "
+                "Defaulting to 'trf' method."
             )
             method_choice = "trf"
 
-        # Determine actual_bounds_for_scipy and adjust x0 if needed based on the *final* method_choice
-        if method_choice == "lm": # 'lm' was originally chosen and conditions for switching were not met
+        # Determine actual_bounds_for_scipy and adjust x0 if needed based on
+        # the *final* method_choice
+        if (
+            method_choice == "lm"
+        ):  # 'lm' was originally chosen and conditions for switching were not met
             actual_bounds_for_scipy = (-be.inf, be.inf)
-        else:  # method_choice is 'trf' or 'dogbox' (either originally or after adjustment)
+        else:
+            # method_choice is 'trf' or 'dogbox' (either originally or
+            # after adjustment)
             actual_bounds_for_scipy = (lower_bounds_np, upper_bounds_np)
             # Ensure x0 is strictly within bounds
             eps = be.finfo(be.float64).eps
@@ -390,7 +397,8 @@ class LeastSquares(OptimizerGeneric):
                     x0_numpy[i] = lower_bounds_np[i] + eps
                 if upper_bounds_np[i] != be.inf and x0_numpy[i] >= upper_bounds_np[i]:
                     x0_numpy[i] = upper_bounds_np[i] - eps
-                # Clip if adjustment pushed it out of the other bound (e.g. narrow bound range)
+                # Clip if adjustment pushed it out of the other bound
+                # (e.g. narrow bound range)
                 if x0_numpy[i] > upper_bounds_np[i] and upper_bounds_np[i] != be.inf:
                     x0_numpy[i] = upper_bounds_np[i]
                 if x0_numpy[i] < lower_bounds_np[i] and lower_bounds_np[i] != -be.inf:
