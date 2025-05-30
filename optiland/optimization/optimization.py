@@ -342,45 +342,66 @@ class LeastSquares(OptimizerGeneric):
         x0_numpy = be.to_numpy(x0_scaled_values)
 
         current_bounds_scaled = tuple([var.bounds for var in self.problem.variables])
+        lower_bounds_np = be.to_numpy([
+            b[0] if b[0] is not None else -be.inf for b in current_bounds_scaled
+        ])
+        upper_bounds_np = be.to_numpy([
+            b[1] if b[1] is not None else be.inf for b in current_bounds_scaled
+        ])
 
-        actual_bounds_for_scipy = (-be.inf, be.inf)
+        num_residuals = len(self.problem.operands)
+        num_variables = len(x0_numpy)
+        original_method_choice = method_choice # Store for warning message
 
+        # Validate and adjust method_choice
         if method_choice == "lm":
-            if any(
-                b_item is not None
-                for b_pair in current_bounds_scaled
-                for b_item in b_pair
-            ):
+            if num_residuals < num_variables:
                 print(
-                    f"Warning: Method '{method_choice}' (Levenberg-Marquardt) chosen, "
+                    f"Warning: Method 'lm' (Levenberg-Marquardt) "
+                    f"chosen, but number of residuals ({num_residuals}) is less "
+                    f"than number of variables ({num_variables}). "
+                    "This is not supported by 'lm'. Switching to 'trf' method."
+                )
+                method_choice = "trf"
+            elif be.any(lower_bounds_np != -be.inf) or be.any(upper_bounds_np != be.inf):
+                # This warning is for 'lm' when bounds are present but m >= n
+                print(
+                    f"Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
                     "but variable bounds are set. "
                     "SciPy's 'lm' method does not support bounds; bounds will "
                     "be ignored."
                 )
-        elif method_choice in ["trf", "dogbox"]:
-            lower_bounds = [
-                b[0] if b[0] is not None else -be.inf for b in current_bounds_scaled
-            ]
-            upper_bounds = [
-                b[1] if b[1] is not None else be.inf for b in current_bounds_scaled
-            ]
-            actual_bounds_for_scipy = (
-                be.to_numpy(lower_bounds),
-                be.to_numpy(upper_bounds),
-            )
-        else:
+        elif method_choice not in ["trf", "dogbox"]:
             print(
-                f"Warning: Unknown method_choice '{method_choice}'. Defaulting to "
-                "SciPy's choice, which might ignore bounds if not 'trf' or 'dogbox'."
+                f"Warning: Unknown method_choice '{original_method_choice}'. Defaulting to "
+                "'trf' method."
             )
+            method_choice = "trf"
+
+        # Determine actual_bounds_for_scipy and adjust x0 if needed based on the *final* method_choice
+        if method_choice == "lm": # 'lm' was originally chosen and conditions for switching were not met
+            actual_bounds_for_scipy = (-be.inf, be.inf)
+        else:  # method_choice is 'trf' or 'dogbox' (either originally or after adjustment)
+            actual_bounds_for_scipy = (lower_bounds_np, upper_bounds_np)
+            # Ensure x0 is strictly within bounds
+            eps = be.finfo(be.float64).eps
+            for i in range(x0_numpy.shape[0]):
+                if lower_bounds_np[i] != -be.inf and x0_numpy[i] <= lower_bounds_np[i]:
+                    x0_numpy[i] = lower_bounds_np[i] + eps
+                if upper_bounds_np[i] != be.inf and x0_numpy[i] >= upper_bounds_np[i]:
+                    x0_numpy[i] = upper_bounds_np[i] - eps
+                # Clip if adjustment pushed it out of the other bound (e.g. narrow bound range)
+                if x0_numpy[i] > upper_bounds_np[i] and upper_bounds_np[i] != be.inf:
+                    x0_numpy[i] = upper_bounds_np[i]
+                if x0_numpy[i] < lower_bounds_np[i] and lower_bounds_np[i] != -be.inf:
+                    x0_numpy[i] = lower_bounds_np[i]
 
         scipy_verbose_level = 1 if disp else 0
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
             result = optimize.least_squares(
-                self._compute_residuals_vector,  # Objective function returning vector
-                # of residuals
+                self._compute_residuals_vector,
                 x0_numpy,
                 method=method_choice,
                 bounds=actual_bounds_for_scipy,
