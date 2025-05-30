@@ -1,6 +1,8 @@
 # optiland_gui/analysis_panel.py
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QComboBox
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QVBoxLayout, QWidget
+
 from .optiland_connector import OptilandConnector
+
 
 class AnalysisPanel(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -12,9 +14,9 @@ class AnalysisPanel(QWidget):
 
         self.layout.addWidget(QLabel("Analysis Type:"))
         self.analysisTypeCombo = QComboBox()
-        self.analysisTypeCombo.addItems([
-            "Spot Diagram", "MTF", "Field Curvature", "Distortion"
-        ])
+        self.analysisTypeCombo.addItems(
+            ["Spot Diagram", "MTF", "Field Curvature", "Distortion"]
+        )
         self.layout.addWidget(self.analysisTypeCombo)
 
         self.btnRunAnalysis = QPushButton("Run Analysis")
@@ -22,7 +24,7 @@ class AnalysisPanel(QWidget):
 
         self.resultsArea = QLabel("Analysis results will appear here.")
         self.resultsArea.setWordWrap(True)
-        self.layout.addWidget(self.resultsArea, 1) # Add stretch factor
+        self.layout.addWidget(self.resultsArea, 1)  # Add stretch factor
 
         self.btnRunAnalysis.clicked.connect(self.run_analysis)
 
@@ -30,5 +32,7 @@ class AnalysisPanel(QWidget):
         analysis_type = self.analysisTypeCombo.currentText()
         # Placeholder: In a real app, this would trigger Optiland analysis
         # and display results (e.g., a Matplotlib plot or text)
-        self.resultsArea.setText(f"Running {analysis_type}...\n(Placeholder - connect to Optiland backend)")
+        self.resultsArea.setText(
+            f"Running {analysis_type}...\n(Placeholder - connect to Optiland backend)"
+        )
         print(f"Analysis Panel: Running {analysis_type}")

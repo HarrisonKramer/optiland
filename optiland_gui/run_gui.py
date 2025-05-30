@@ -1,6 +1,8 @@
 # optiland_gui/run_gui.py
 import sys
+
 from PySide6.QtWidgets import QApplication
+
 # Use a relative import here because run_gui.py is part of the optiland_gui package
 from .main_window import MainWindow
 

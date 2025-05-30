@@ -1,13 +1,22 @@
 # optiland_gui/lens_editor.py
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
-                               QPushButton, QHBoxLayout, QAbstractItemView, QHeaderView,
-                               QItemDelegate, QLineEdit)
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QHBoxLayout,
+    QHeaderView,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
 from .optiland_connector import OptilandConnector
 
 # No changes needed here if OptilandConnector handles headers and data correctly.
 # The existing LensEditor should adapt if OptilandConnector is correctly updated.
 # Make sure signals are correctly connected and handled for refresh.
+
 
 class LensEditor(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -27,8 +36,8 @@ class LensEditor(QWidget):
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
 
-        self.setup_table() # Setup is now dynamic based on connector
-        self.load_data()   # Initial data load
+        self.setup_table()  # Setup is now dynamic based on connector
+        self.load_data()  # Initial data load
 
         # Connect signals
         self.btnAddSurface.clicked.connect(self.add_surface_handler)
@@ -41,21 +50,25 @@ class LensEditor(QWidget):
         # surfaceAdded and surfaceRemoved will trigger surfaceCountChanged
         self.connector.surfaceCountChanged.connect(self.full_refresh_from_optic)
 
-
     def setup_table(self):
         self.tableWidget.blockSignals(True)
         headers = self.connector.get_column_headers()
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
-        self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        # self.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tableWidget.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        self.tableWidget.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
+        # self.tableWidget.verticalHeader().
+        # setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableWidget.blockSignals(False)
 
     @Slot()
     def full_refresh_from_optic(self):
         print("LensEditor: Full refresh from optic signal received.")
-        self.setup_table() # Re-setup in case columns changed (though unlikely here)
+        self.setup_table()  # Re-setup in case columns changed (though unlikely here)
         self.load_data()
 
     @Slot()
@@ -64,33 +77,45 @@ class LensEditor(QWidget):
         self.tableWidget.setRowCount(0)
         num_surfaces = self.connector.get_surface_count()
         self.tableWidget.setRowCount(num_surfaces)
-        
-        headers = self.connector.get_column_headers() # Ensure we use current headers for column count
+
+        headers = (
+            self.connector.get_column_headers()
+        )  # Ensure we use current headers for column count
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
-
 
         for r in range(num_surfaces):
             for c_idx in range(len(headers)):
                 item_data = self.connector.get_surface_data(r, c_idx)
                 item = QTableWidgetItem(str(item_data) if item_data is not None else "")
                 # Make Object/Image surface types non-editable for certain fields
-                is_obj_or_img = (r == 0 or r == num_surfaces - 1)
-                if is_obj_or_img and headers[c_idx] in ["Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]:
-                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                if r == num_surfaces -1 and headers[c_idx] == "Thickness": # Last surface thickness
-                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                is_obj_or_img = r == 0 or r == num_surfaces - 1
+                if is_obj_or_img and headers[c_idx] in [
+                    "Radius",
+                    "Thickness",
+                    "Material",
+                    "Conic",
+                    "Semi-Diameter",
+                ]:
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                if (
+                    r == num_surfaces - 1 and headers[c_idx] == "Thickness"
+                ):  # Last surface thickness
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 
                 self.tableWidget.setItem(r, c_idx, item)
         self.tableWidget.blockSignals(False)
 
     @Slot(QTableWidgetItem)
     def on_item_changed_handler(self, item: QTableWidgetItem):
-        if not self.tableWidget.signalsBlocked(): # Check if change is user-initiated
+        if not self.tableWidget.signalsBlocked():  # Check if change is user-initiated
             row = item.row()
             col = item.column()
             new_value_str = item.text()
-            print(f"LensEditor: Item changed by user at ({row},{col}) to '{new_value_str}'")
+            print(
+                f"LensEditor: Item changed by user at "
+                f"({row},{col}) to '{new_value_str}'"
+            )
             self.connector.set_surface_data(row, col, new_value_str)
             # Data will be re-fetched and reformatted by update_cell_from_connector
             # or full_refresh_from_optic if opticChanged is broad.
@@ -99,23 +124,26 @@ class LensEditor(QWidget):
     def update_cell_from_connector(self, row, col, new_value_display_text):
         self.tableWidget.blockSignals(True)
         # Ensure row and col are valid before trying to access item
-        if 0 <= row < self.tableWidget.rowCount() and 0 <= col < self.tableWidget.columnCount():
+        if (
+            0 <= row < self.tableWidget.rowCount()
+            and 0 <= col < self.tableWidget.columnCount()
+        ):
             item = self.tableWidget.item(row, col)
             if item:
                 item.setText(str(new_value_display_text))
-            else: # Should not happen if table is synced
+            else:  # Should not happen if table is synced
                 new_item = QTableWidgetItem(str(new_value_display_text))
                 self.tableWidget.setItem(row, col, new_item)
         self.tableWidget.blockSignals(False)
 
-
     @Slot()
     def add_surface_handler(self):
         current_row = self.tableWidget.currentRow()
-        insert_pos_lde = current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
+        insert_pos_lde = (
+            current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
+        )
         # Let OptilandConnector handle the logic of where to insert in the Optic object
         self.connector.add_surface(index=insert_pos_lde)
-
 
     @Slot()
     def remove_surface_handler(self):
