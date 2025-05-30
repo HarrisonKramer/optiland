@@ -316,7 +316,7 @@ class LeastSquares(OptimizerGeneric):
             return be.to_numpy(be.full(num_operands, error_value))
 
     def optimize(
-        self, max_nfev=None, disp=False, tol=1e-3, method_choice="lm"
+        self, maxiter=None, disp=False, tol=1e-3, method_choice="lm"
     ):  # Default to 'lm' for DLS
         """
         Optimize the problem using a SciPy least squares method.
@@ -384,7 +384,7 @@ class LeastSquares(OptimizerGeneric):
                 x0_numpy,
                 method=method_choice,
                 bounds=actual_bounds_for_scipy,
-                max_nfev=max_nfev,
+                max_nfev=maxiter,
                 verbose=scipy_verbose_level,
                 ftol=tol,
             )
