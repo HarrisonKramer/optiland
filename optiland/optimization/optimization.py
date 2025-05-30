@@ -441,12 +441,12 @@ class DualAnnealing(OptimizerGeneric):
                 x0=x0_numpy,
                 callback=callback,
             )
-            
-        for idvar, var in enumerate(self.problem.variables):
-            var.update(result.x[idvar]) 
 
-        self.problem.update_optics()    
-            
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+
+        self.problem.update_optics()
+
         return result
 
 
@@ -514,12 +514,12 @@ class DifferentialEvolution(OptimizerGeneric):
                 workers=workers,
                 callback=callback,
             )
-            
-        for idvar, var in enumerate(self.problem.variables):
-            var.update(result.x[idvar]) 
 
-        self.problem.update_optics() 
-            
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+
+        self.problem.update_optics()
+
         return result
 
 
@@ -578,12 +578,12 @@ class SHGO(OptimizerGeneric):
                 callback=callback,
                 **kwargs,
             )
-            
-        for idvar, var in enumerate(self.problem.variables):
-            var.update(result.x[idvar]) 
 
-        self.problem.update_optics()  
-            
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+
+        self.problem.update_optics()
+
         return result
 
 
@@ -646,10 +646,10 @@ class BasinHopping(OptimizerGeneric):
                 callback=callback,
                 **kwargs,
             )
-            
-        for idvar, var in enumerate(self.problem.variables):
-            var.update(result.x[idvar]) 
 
-        self.problem.update_optics() 
-            
+        for idvar, var in enumerate(self.problem.variables):
+            var.update(result.x[idvar])
+
+        self.problem.update_optics()
+
         return result
