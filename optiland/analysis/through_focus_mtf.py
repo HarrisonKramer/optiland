@@ -215,6 +215,7 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
 
         ax.set_xlabel("Defocus (mm)")
         ax.set_ylabel("MTF")
+        ax.set_xlim([np.min(defocus_values_np), np.max(defocus_values_np)])
         ax.set_ylim([0, 1.05])
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.grid(True, linestyle=":", alpha=0.5)
