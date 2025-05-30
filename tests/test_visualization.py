@@ -4,13 +4,14 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import optiland.backend as be
 import pytest
 
+import optiland.backend as be
 from optiland import fields
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BaseGeometry, EvenAsphere
 from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, MaterialFile
+from optiland.optic import Optic
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
@@ -206,12 +207,36 @@ class TestOpticViewer3D:
         c = viewer.system.components[0]
         assert not c.is_symmetric
 
-        lens = ReverseTelephoto()
-        lens.surface_group.surfaces[1].geometry.cs.rx = 0.1
-        viewer = OpticViewer3D(lens)
-        viewer.system._identify_components()
-        c = viewer.system.components[0]
-        assert not c.is_symmetric
+    def test_view_toroidal(self, set_test_backend):
+        cylindrical_lens = Optic()
+        cylindrical_lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        cylindrical_lens.add_surface(
+            index=1,
+            thickness=7,
+            radius=20,  # <- radius: x radius of rotation.
+            radius_y=25,
+            is_stop=True,
+            material="N-BK7",
+            surface_type="toroidal",
+            conic=0.0,
+            coefficients=[],
+        )
+        cylindrical_lens.add_surface(index=2, thickness=65)
+        cylindrical_lens.add_surface(index=3)
+        cylindrical_lens.set_aperture(aperture_type="EPD", value=20.0)
+        cylindrical_lens.set_field_type(field_type="angle")
+        cylindrical_lens.add_field(y=0)
+        cylindrical_lens.add_wavelength(value=0.587, is_primary=True)
+
+        viewer = OpticViewer3D(cylindrical_lens)
+
+        with (
+            patch.object(viewer.iren, "Start") as mock_start,
+            patch.object(viewer.ren_win, "Render") as mock_render,
+        ):
+            viewer.view()
+            mock_start.assert_called_once()
+            mock_render.assert_called()
 
     def test_view_non_symmetric(self, set_test_backend):
         lens = ReverseTelephoto()

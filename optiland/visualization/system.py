@@ -100,9 +100,9 @@ class OpticalSystem:
 
                 lens_surfaces = []
 
-            # add final lens, if any
-            if lens_surfaces:
-                self._add_component("lens", lens_surfaces)
+        # add final lens, if any
+        if lens_surfaces:
+            self._add_component("lens", lens_surfaces)
 
     def _add_component(self, component_name, *args):
         """Adds a component to the list of components."""
