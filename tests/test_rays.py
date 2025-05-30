@@ -404,11 +404,12 @@ def test_reflect(set_test_backend):
     assert_allclose(rays.M[0], -1.0, atol=1e-10)
     assert_allclose(rays.N[0], 0.0, atol=1e-10)
 
+
 def test_real_rays_str(set_test_backend):
     """Tests the __str__ method of the RealRays class."""
 
     rays_empty = RealRays([], [], [], [], [], [], [], [])
-    rays_empty.x = [] 
+    rays_empty.x = []
     assert str(rays_empty) == "RealRays object (No rays)"
 
     x = be.array([1.0, 1.1])
@@ -452,6 +453,7 @@ def test_real_rays_str(set_test_backend):
     f = "Showing 3 of 5 rays.\n"
     expected_many = h + s + r0 + r2 + r4 + s + f
     assert str(rays_many) == expected_many
+
 
 class TestPolarizationState:
     def test_constructor(self, set_test_backend):

@@ -474,8 +474,6 @@ class SampledMTF:
 
         self.P1 = be.sqrt(self.intensity) * be.exp(1j * 2 * be.pi * self.opd_waves)
         self.otf_at_zero = be.sum(self.intensity)
-        if be.isclose(self.otf_at_zero, 0.0):
-            self.otf_at_zero = 1e-18
 
     def calculate_mtf(self, frequencies):
         """Calculates the Modulation Transfer Function (MTF) for given spatial
