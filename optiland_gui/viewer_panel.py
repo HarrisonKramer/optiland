@@ -2,11 +2,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel
 from PySide6.QtCore import Slot
 
-# Matplotlib integration
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 
-# VTK integration (optional, ensure VTK is installed)
 try:
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
     import vtk
@@ -15,6 +13,12 @@ except ImportError:
     VTK_AVAILABLE = False
 
 from .optiland_connector import OptilandConnector
+# Import Optiland's visualization classes
+from optiland.visualization import OpticViewer as Optiland2DViewer
+from optiland.visualization import OpticViewer3D as Optiland3DViewer
+from optiland.visualization.rays import Rays2D, Rays3D # For direct use with system
+from optiland.visualization.system import OpticalSystem as OptilandOpticalSystemPlotter
+
 
 class ViewerPanel(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -26,21 +30,21 @@ class ViewerPanel(QWidget):
         self.tabWidget = QTabWidget()
         self.layout.addWidget(self.tabWidget)
 
-        # 2D Viewer (Matplotlib)
         self.viewer2D = MatplotlibViewer(self.connector, self)
         self.tabWidget.addTab(self.viewer2D, "2D View")
 
-        # 3D Viewer (VTK)
         self.viewer3D = VTKViewer(self.connector, self) if VTK_AVAILABLE else QLabel("VTK not available or not installed.")
         self.tabWidget.addTab(self.viewer3D, "3D View")
 
-        self.connector.opticChanged.connect(self.update_viewers)
+        self.connector.opticLoaded.connect(self.update_viewers) # Full update on new load
+        self.connector.opticChanged.connect(self.update_viewers) # Update on any change
 
     @Slot()
     def update_viewers(self):
-        self.viewer2D.plot()
+        print("ViewerPanel: Updating viewers due to optic change.")
+        self.viewer2D.plot_optic()
         if VTK_AVAILABLE:
-            self.viewer3D.update_scene()
+            self.viewer3D.render_optic()
 
 class MatplotlibViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -50,34 +54,44 @@ class MatplotlibViewer(QWidget):
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
         self.layout.addWidget(self.canvas)
-        self.ax = None
-        self.plot() # Initial plot
+        self.ax = self.figure.add_subplot(111)
+        # self.plot_optic() # Initial plot done by connector signals
 
-    def plot(self):
-        if self.ax:
-            self.ax.clear()
+    def plot_optic(self):
+        self.ax.clear()
+        optic = self.connector.get_optic()
+        if optic and optic.surface_group.num_surfaces > 0:
+            try:
+                # Use Optiland's lower-level plotting components
+                # OpticViewer.draw() creates its own figure, so we can't use it directly.
+                # We need to use its sub-components or replicate its logic.
+                
+                # Simplified approach: Create Optiland's internal plotters
+                # These expect to be initialized with an optic
+                rays2d_plotter = Rays2D(optic)
+                system_plotter = OptilandOpticalSystemPlotter(optic, rays2d_plotter, projection="2d")
+
+                # Plot rays first (this also calculates extents needed by system_plotter)
+                # Default parameters for plotting rays
+                rays2d_plotter.plot(self.ax, fields="all", wavelengths="primary", num_rays=3, distribution="line_y")
+                
+                # Then plot the system
+                system_plotter.plot(self.ax)
+
+                self.ax.set_title(f"System: {optic.name} (2D)")
+                self.ax.set_xlabel("Z-axis (mm)")
+                self.ax.set_ylabel("Y-axis (mm)")
+                self.ax.axis('equal') # Ensure correct aspect ratio for optical drawings
+                self.ax.grid(True, linestyle='--', alpha=0.7)
+
+            except Exception as e:
+                self.ax.text(0.5, 0.5, f"Error plotting Optiland 2D view:\n{e}", ha='center', va='center', transform=self.ax.transAxes)
+                print(f"MatplotlibViewer Error: {e}")
         else:
-            self.ax = self.figure.add_subplot(111)
-
-        # Placeholder plot - Replace with Optiland's 2D drawing
-        # optic = self.connector.get_optic()
-        # if optic and hasattr(optic, 'draw'): # Check if Optiland's Optic has a draw method
-        #     try:
-        #         # Assuming optic.draw() can take an axes argument or OptilandViewer needs to be used
-        #         # For now, a simple plot based on surface count
-        #         num_surfaces = self.connector.get_surface_count()
-        #         self.ax.plot(range(num_surfaces), [i**0.5 for i in range(num_surfaces)], 'ro-')
-        #         self.ax.set_title(f"Optiland System: {optic.name} (2D Placeholder)")
-        #     except Exception as e:
-        #         self.ax.text(0.5, 0.5, f"Error plotting Optiland 2D view:\n{e}", ha='center', va='center')
-        # else:
-        self.ax.text(0.5, 0.5, "2D Viewer (Matplotlib)\nConnect to Optiland data",
-                     ha='center', va='center', transform=self.ax.transAxes)
-
-        self.ax.set_xlabel("Z-axis (mm)")
-        self.ax.set_ylabel("Y-axis (mm)")
-        self.ax.grid(True)
+            self.ax.text(0.5, 0.5, "2D Viewer (Matplotlib)\nNo Optic data or empty system.",
+                         ha='center', va='center', transform=self.ax.transAxes)
         self.canvas.draw()
+
 
 class VTKViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -95,37 +109,71 @@ class VTKViewer(QWidget):
         self.renderer = vtk.vtkRenderer()
         self.vtkWidget.GetRenderWindow().AddRenderer(self.renderer)
         self.iren = self.vtkWidget.GetRenderWindow().GetInteractor()
-
-        self.setup_scene()
+        # self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera()) # Already default
+        self.setup_default_camera()
+        # self.render_optic() # Initial render done by connector signals
         self.iren.Initialize()
 
-    def setup_scene(self):
-        # Placeholder VTK scene - Replace with Optiland's 3D drawing
-        self.renderer.Clear() # Clear previous actors
 
-        # Example: Add a simple sphere
-        sphereSource = vtk.vtkSphereSource()
-        sphereSource.SetCenter(0.0, 0.0, 0.0)
-        sphereSource.SetRadius(1.0)
-        sphereSource.Update()
+    def setup_default_camera(self):
+        self.renderer.SetBackground(0.1, 0.2, 0.4)
+        camera = self.renderer.GetActiveCamera()
+        if camera: # camera might not be initialized if GetRenderWindow isn't fully ready
+            camera.SetPosition(1, 1, 1) # Adjust for better default view
+            camera.SetFocalPoint(0, 0, 0)
+            camera.SetViewUp(0, 1, 0)
+            self.renderer.ResetCamera()
 
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(sphereSource.GetOutputPort())
 
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetColor(0.8, 0.1, 0.1) # Reddish
-
-        self.renderer.AddActor(actor)
-        self.renderer.SetBackground(0.1, 0.2, 0.4) # Dark blue background
-        self.renderer.ResetCamera()
-
-    @Slot()
-    def update_scene(self):
+    def render_optic(self):
         if not VTK_AVAILABLE:
             return
-        # This method should be called when the Optic object changes
-        # It would typically clear the renderer and add new actors based on the Optic data
-        print("VTK Viewer: Updating scene (placeholder)")
-        self.setup_scene() # Re-run setup for now
+
+        self.renderer.RemoveAllViewProps() # Clear previous actors
+        optic = self.connector.get_optic()
+
+        if optic and optic.surface_group.num_surfaces > 0:
+            try:
+                # Similar to 2D, use Optiland's lower-level 3D plotters
+                # OpticViewer3D.view() is blocking and manages its own window.
+                rays3d_plotter = Rays3D(optic)
+                system_plotter = OptilandOpticalSystemPlotter(optic, rays3d_plotter, projection="3d")
+                
+                # Plot rays (this also calculates extents for system_plotter)
+                # Default parameters
+                rays3d_plotter.plot(self.renderer, fields="all", wavelengths="primary", num_rays=5, distribution="ring")
+                
+                # Plot system components
+                system_plotter.plot(self.renderer)
+                
+                # Set a nice default view if camera is available
+                if not self.renderer.GetActiveCamera(): # if camera was not set up before
+                    self.setup_default_camera()
+                else:
+                    self.renderer.ResetCameraClippingRange()
+                    self.renderer.ResetCamera()
+
+
+            except Exception as e:
+                print(f"VTKViewer Error: {e}")
+                # Optionally display error in the VTK window itself
+                textActor = vtk.vtkTextActor()
+                textActor.SetInput(f"Error rendering 3D view:\n{e}")
+                textActor.GetTextProperty().SetColor(1,0,0)
+                self.renderer.AddActor2D(textActor)
+        else:
+            # Placeholder if no optic data
+            sphereSource = vtk.vtkSphereSource()
+            sphereSource.SetRadius(0.1) # Small sphere for empty
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(sphereSource.GetOutputPort())
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            self.renderer.AddActor(actor)
+            if not self.renderer.GetActiveCamera():
+                self.setup_default_camera()
+            else:
+                self.renderer.ResetCamera()
+
+
         self.vtkWidget.GetRenderWindow().Render()

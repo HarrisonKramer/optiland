@@ -1,8 +1,13 @@
 # optiland_gui/lens_editor.py
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
-                               QPushButton, QHBoxLayout, QAbstractItemView, QHeaderView)
-from PySide6.QtCore import Qt
+                               QPushButton, QHBoxLayout, QAbstractItemView, QHeaderView,
+                               QItemDelegate, QLineEdit)
+from PySide6.QtCore import Qt, Signal, Slot
 from .optiland_connector import OptilandConnector
+
+# No changes needed here if OptilandConnector handles headers and data correctly.
+# The existing LensEditor should adapt if OptilandConnector is correctly updated.
+# Make sure signals are correctly connected and handled for refresh.
 
 class LensEditor(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -12,11 +17,9 @@ class LensEditor(QWidget):
 
         self.layout = QVBoxLayout(self)
 
-        # Table for lens data
         self.tableWidget = QTableWidget()
         self.layout.addWidget(self.tableWidget)
 
-        # Buttons for table manipulation
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
         self.btnRemoveSurface = QPushButton("Remove Surface")
@@ -24,69 +27,99 @@ class LensEditor(QWidget):
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
 
-        self.setup_table()
-        self.load_data()
+        self.setup_table() # Setup is now dynamic based on connector
+        self.load_data()   # Initial data load
 
         # Connect signals
-        self.btnAddSurface.clicked.connect(self.add_surface)
-        self.btnRemoveSurface.clicked.connect(self.remove_surface)
-        self.tableWidget.itemChanged.connect(self.on_item_changed)
+        self.btnAddSurface.clicked.connect(self.add_surface_handler)
+        self.btnRemoveSurface.clicked.connect(self.remove_surface_handler)
+        self.tableWidget.itemChanged.connect(self.on_item_changed_handler)
 
-        self.connector.surfaceAdded.connect(self.handle_surface_added)
-        self.connector.surfaceRemoved.connect(self.handle_surface_removed)
-        self.connector.surfaceDataChanged.connect(self.handle_surface_data_changed)
-        self.connector.surfaceCountChanged.connect(self.load_data) # Reload all on count change
-        self.connector.opticChanged.connect(self.load_data) # Full reload if optic itself changes
+        # Connector signals for table updates
+        self.connector.opticLoaded.connect(self.full_refresh_from_optic)
+        self.connector.surfaceDataChanged.connect(self.update_cell_from_connector)
+        # surfaceAdded and surfaceRemoved will trigger surfaceCountChanged
+        self.connector.surfaceCountChanged.connect(self.full_refresh_from_optic)
+
 
     def setup_table(self):
+        self.tableWidget.blockSignals(True)
         headers = self.connector.get_column_headers()
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
         self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) # Stretch columns
-
-    def load_data(self):
-        self.tableWidget.blockSignals(True) # Block signals during data loading
-        self.tableWidget.setRowCount(0) # Clear existing rows
-        num_surfaces = self.connector.get_surface_count()
-        self.tableWidget.setRowCount(num_surfaces)
-
-        for r in range(num_surfaces):
-            for c in range(self.tableWidget.columnCount()):
-                item_data = self.connector.get_surface_data(r, c)
-                item = QTableWidgetItem(str(item_data) if item_data is not None else "")
-                self.tableWidget.setItem(r, c, item)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        # self.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableWidget.blockSignals(False)
 
-    def on_item_changed(self, item: QTableWidgetItem):
-        row = item.row()
-        col = item.column()
-        new_value = item.text()
-        self.connector.set_surface_data(row, col, new_value)
+    @Slot()
+    def full_refresh_from_optic(self):
+        print("LensEditor: Full refresh from optic signal received.")
+        self.setup_table() # Re-setup in case columns changed (though unlikely here)
+        self.load_data()
 
-    def add_surface(self):
+    @Slot()
+    def load_data(self):
+        self.tableWidget.blockSignals(True)
+        self.tableWidget.setRowCount(0)
+        num_surfaces = self.connector.get_surface_count()
+        self.tableWidget.setRowCount(num_surfaces)
+        
+        headers = self.connector.get_column_headers() # Ensure we use current headers for column count
+        self.tableWidget.setColumnCount(len(headers))
+        self.tableWidget.setHorizontalHeaderLabels(headers)
+
+
+        for r in range(num_surfaces):
+            for c_idx in range(len(headers)):
+                item_data = self.connector.get_surface_data(r, c_idx)
+                item = QTableWidgetItem(str(item_data) if item_data is not None else "")
+                # Make Object/Image surface types non-editable for certain fields
+                is_obj_or_img = (r == 0 or r == num_surfaces - 1)
+                if is_obj_or_img and headers[c_idx] in ["Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]:
+                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                if r == num_surfaces -1 and headers[c_idx] == "Thickness": # Last surface thickness
+                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+                self.tableWidget.setItem(r, c_idx, item)
+        self.tableWidget.blockSignals(False)
+
+    @Slot(QTableWidgetItem)
+    def on_item_changed_handler(self, item: QTableWidgetItem):
+        if not self.tableWidget.signalsBlocked(): # Check if change is user-initiated
+            row = item.row()
+            col = item.column()
+            new_value_str = item.text()
+            print(f"LensEditor: Item changed by user at ({row},{col}) to '{new_value_str}'")
+            self.connector.set_surface_data(row, col, new_value_str)
+            # Data will be re-fetched and reformatted by update_cell_from_connector
+            # or full_refresh_from_optic if opticChanged is broad.
+
+    @Slot(int, int, object)
+    def update_cell_from_connector(self, row, col, new_value_display_text):
+        self.tableWidget.blockSignals(True)
+        # Ensure row and col are valid before trying to access item
+        if 0 <= row < self.tableWidget.rowCount() and 0 <= col < self.tableWidget.columnCount():
+            item = self.tableWidget.item(row, col)
+            if item:
+                item.setText(str(new_value_display_text))
+            else: # Should not happen if table is synced
+                new_item = QTableWidgetItem(str(new_value_display_text))
+                self.tableWidget.setItem(row, col, new_item)
+        self.tableWidget.blockSignals(False)
+
+
+    @Slot()
+    def add_surface_handler(self):
         current_row = self.tableWidget.currentRow()
-        # Add after current selection, or at the end if no selection or last row is selected
-        insert_pos = current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
-        self.connector.add_surface(index=insert_pos) # Connector will emit signal to update table
+        insert_pos_lde = current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
+        # Let OptilandConnector handle the logic of where to insert in the Optic object
+        self.connector.add_surface(index=insert_pos_lde)
 
-    def remove_surface(self):
+
+    @Slot()
+    def remove_surface_handler(self):
         current_row = self.tableWidget.currentRow()
         if current_row != -1:
-            self.connector.remove_surface(current_row) # Connector will emit signal
-
-    def handle_surface_added(self, index):
-        # This might be redundant if opticChanged or surfaceCountChanged also calls load_data
-        # self.load_data() # Simplest way to refresh
-        pass # Relying on surfaceCountChanged or opticChanged for now
-
-    def handle_surface_removed(self, index):
-        # self.load_data() # Simplest way to refresh
-        pass
-
-    def handle_surface_data_changed(self, row, col):
-        # self.tableWidget.blockSignals(True)
-        # item_data = self.connector.get_surface_data(row, col)
-        # self.tableWidget.item(row, col).setText(str(item_data) if item_data is not None else "")
-        # self.tableWidget.blockSignals(False)
-        pass # Item change already handled by on_item_changed, this signal is for other UI parts
+            # Add confirmation dialog here if desired
+            self.connector.remove_surface(current_row)
