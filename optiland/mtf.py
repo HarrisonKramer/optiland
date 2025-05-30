@@ -395,9 +395,9 @@ class SampledMTF:
             calculate the MTF. Can be 'primary' to use the optic's primary
             wavelength.
         num_rays (int, optional): The number of rings to trace for the
-            wavefront analysis. Defaults to 10.
+            wavefront analysis. Defaults to 128 in each axis.
         distribution (str, optional): The distribution of rays in the pupil.
-            Defaults to 'hexapolar'.
+            Defaults to 'uniform'.
         zernike_terms (int, optional): The number of Zernike terms to use for
             the wavefront fit. Defaults to 37.
         zernike_type (str, optional): The type of Zernike polynomials to use
@@ -426,8 +426,8 @@ class SampledMTF:
         optic,
         field,
         wavelength,
-        num_rays=10,
-        distribution="hexapolar",
+        num_rays=128,
+        distribution="uniform",
         zernike_terms=37,
         zernike_type="fringe",
     ):
@@ -456,6 +456,9 @@ class SampledMTF:
         self.y_norm = wf.distribution.y
         self.opd_waves = wf_data.opd
         self.intensity = wf_data.intensity
+
+        self.xpd = self.optic.paraxial.XPD()
+        self.xpl = -self.optic.paraxial.XPL()
 
         self.zernike_fit = ZernikeFit(
             self.x_norm,
@@ -511,8 +514,7 @@ class SampledMTF:
                 i. Normalizing the OTF value by otf_at_zero (the OTF at zero frequency).
                 j. The MTF is the absolute value of this normalized OTF.
         """
-        xpd = self.optic.paraxial.XPD()
-        xpd_is_zero = be.isclose(xpd, 0.0, atol=1e-9)
+        xpd_is_zero = be.isclose(self.xpd, 0.0, atol=1e-9)
 
         # Retrieve necessary attributes from instance
         wl_um = self.wavelength  # Wavelength in micrometers
@@ -537,8 +539,8 @@ class SampledMTF:
             delta_x_phys = wl_mm * fx
             delta_y_phys = wl_mm * fy
 
-            delta_x_norm = delta_x_phys / (xpd / 2)
-            delta_y_norm = delta_y_phys / (xpd / 2)
+            delta_x_norm = self.xpl * delta_x_phys / (self.xpd / 2)
+            delta_y_norm = self.xpl * delta_y_phys / (self.xpd / 2)
 
             eval_x_shifted_norm = x_norm - delta_x_norm
             eval_y_shifted_norm = y_norm - delta_y_norm
