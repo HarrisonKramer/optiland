@@ -40,23 +40,25 @@ class Surface2D:
         else:
             self.extent = ray_extent
 
-    def plot(self, ax):
+    def plot(self, ax, plotter):
         """Plots the surface on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 surface will be plotted.
-
+            plotter: The Plotter instance for styling.
         """
         x, y, z = self._compute_sag()
 
         # convert to global coordinates and return
         _, y, z = transform(x, y, z, self.surf, is_global=False)
 
-        y = be.to_numpy(y)
-        z = be.to_numpy(z)
+        # Ensure y and z are numpy arrays for plotting
+        y_np = be.to_numpy(y)
+        z_np = be.to_numpy(z)
 
-        ax.plot(z, y, "gray")
+        color = plotter.config.get_style("specific_line_colors.surface")
+        ax.plot(z_np, y_np, color=color, linewidth=1)
 
     def _compute_sag(self):
         """Computes the sag of the surface in local coordinates and handles

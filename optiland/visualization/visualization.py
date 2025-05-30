@@ -11,13 +11,13 @@ Kramer Harrison, 2024
 
 import os
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import vtk
 
 import optiland.backend as be
 from optiland import materials
 from optiland.physical_apertures import RadialAperture
+from optiland.plotting.core import Plotter
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem
 
@@ -77,34 +77,34 @@ class OpticViewer:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        _, ax = plt.subplots(figsize=figsize)
+        plotter = Plotter() # Uses default "light" theme
+        fig, ax = plotter.create_figure_and_axes(figsize=figsize)
 
         self.rays.plot(
             ax,
+            plotter, # Pass plotter to rays.plot
             fields=fields,
             wavelengths=wavelengths,
             num_rays=num_rays,
             distribution=distribution,
             reference=reference,
         )
-        self.system.plot(ax)
+        # Update self.system.plot call to include plotter
+        self.system.plot(ax, plotter)
 
-        plt.gca().set_facecolor("#f8f9fa")  # off-white background
-        plt.axis("image")
-
-        ax.set_xlabel("Z [mm]")
-        ax.set_ylabel("Y [mm]")
+        plotter.set_aspect_equal(ax)
+        plotter.set_labels(ax, xlabel="Z [mm]", ylabel="Y [mm]")
 
         if title:
-            ax.set_title(title)
+            plotter.set_title(ax, title)
         if xlim:
-            ax.set_xlim(xlim)
+            plotter.set_xlim(ax, xlim)
         if ylim:
-            ax.set_ylim(ylim)
+            plotter.set_ylim(ax, ylim)
 
-        plt.grid(alpha=0.25)
+        plotter.apply_grid(ax, alpha=0.25)
 
-        plt.show()
+        plotter.show_plot()
 
 
 class OpticViewer3D:

@@ -47,6 +47,7 @@ class Rays2D:
     def plot(
         self,
         ax,
+        plotter,
         fields="all",
         wavelengths="primary",
         num_rays=3,
@@ -57,6 +58,7 @@ class Rays2D:
 
         Args:
             ax: The matplotlib axis to plot on.
+            plotter: The Plotter instance for styling.
             fields: The fields at which to trace the rays. Default is 'all'.
             wavelengths: The wavelengths at which to trace the rays.
                 Default is 'primary'.
@@ -84,12 +86,12 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx)
+                    self._plot_lines(ax, plotter, color_idx)
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, linewidth=1.5)
+                    self._plot_lines(ax, plotter, color_idx, linewidth=1.5)
 
     def _process_traced_rays(self):
         """Processes the traced rays and updates the surface extents."""
@@ -148,7 +150,7 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, linewidth=1):
+    def _plot_lines(self, ax, plotter, color_idx, linewidth=1):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -177,13 +179,14 @@ class Rays2D:
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
+            self._plot_single_line(ax, plotter, xk, yk, zk, color_idx, linewidth)
 
-    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1):
+    def _plot_single_line(self, ax, plotter, x, y, z, color_idx, linewidth=1):
         """Plots a single line on the given axes.
 
         Args:
             ax (matplotlib.axes.Axes): The axes on which to plot the line.
+            plotter: The Plotter instance for styling.
             x (array-like): The x-coordinates of the line.
             y (array-like): The y-coordinates of the line.
             z (array-like): The z-coordinates of the line.
@@ -194,8 +197,9 @@ class Rays2D:
             None
 
         """
-        color = f"C{color_idx}"
-        ax.plot(z, y, color, linewidth=linewidth)
+        line_colors = plotter.config.get_style('line_colors')
+        color = line_colors[color_idx % len(line_colors)]
+        ax.plot(z, y, color=color, linewidth=linewidth)
 
 
 class Rays3D(Rays2D):

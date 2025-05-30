@@ -52,13 +52,29 @@ class OpticalSystem:
             "surface": {"2d": Surface2D, "3d": Surface3D},
         }
 
-    def plot(self, ax):
+    def plot(self, ax, plotter=None):
         """Plots the components of the optical system on the given
         axis (or renderer for 3D plotting).
+
+        Args:
+            ax: The matplotlib axis or VTK renderer.
+            plotter (Plotter, optional): The plotter instance for 2D plots.
+                                         Required if projection is "2d".
         """
+        if self.projection == "2d" and plotter is None:
+            raise ValueError("Plotter instance is required for 2D projection.")
+
         self._identify_components()
         for component in self.components:
-            component.plot(ax)
+            if self.projection == "2d":
+                if isinstance(component, Lens2D):
+                    component.plot(ax, plotter)
+                elif isinstance(component, Surface2D): # Surface2D now accepts plotter
+                    component.plot(ax, plotter)
+                else: # Fallback for other potential 2D components
+                    component.plot(ax)
+            else:  # 3D
+                component.plot(ax) # 'ax' is a vtkRenderer here
 
     def _identify_components(self):
         """Identifies the components of the optical system and adds them to the

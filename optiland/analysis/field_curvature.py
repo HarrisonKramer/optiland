@@ -5,10 +5,10 @@ This module provides a field curvature analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
+from optiland.plotting.core import Plotter
 
 
 class FieldCurvature:
@@ -49,17 +49,23 @@ class FieldCurvature:
                 Defaults to (8, 5.5).
 
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        plotter = Plotter()
+        fig, ax = plotter.create_figure_and_axes(figsize=figsize)
 
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
+        line_colors = plotter.config.get_style('line_colors')
+
         for k, wavelength in enumerate(self.wavelengths):
+            color_k = line_colors[k % len(line_colors)]
+
             dk_np_tan = be.to_numpy(self.data[k][0])
             ax.plot(
                 dk_np_tan,
                 field_np,
-                f"C{k}",
+                color=color_k,
+                linestyle='-',
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Tangential",
             )
@@ -67,22 +73,30 @@ class FieldCurvature:
             ax.plot(
                 dk_np_sag,
                 field_np,
-                f"C{k}--",
+                color=color_k,
+                linestyle='--',
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Sagittal",
             )
 
-        ax.set_xlabel("Image Plane Delta (mm)")
-        ax.set_ylabel("Field")
+        plotter.set_labels(ax, xlabel="Image Plane Delta (mm)", ylabel="Field")
+        plotter.set_title(ax, title="Field Curvature")
 
-        ax.set_ylim([0, self.optic.fields.max_field])
-        current_xlim = plt.xlim()
-        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
-        ax.set_title("Field Curvature")
-        plt.axvline(x=0, color="k", linewidth=0.5)
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        fig.tight_layout()
-        plt.show()
+        plotter.set_ylim(ax, [0, self.optic.fields.max_field])
+
+        current_xlim = ax.get_xlim()
+        # Ensure current_xlim has two values before trying to unpack or take abs
+        if isinstance(current_xlim, tuple) and len(current_xlim) == 2:
+            max_abs_xlim = np.max(np.abs(current_xlim))
+            if max_abs_xlim > 0: # Avoid setting xlim to [-0, 0]
+                plotter.set_xlim(ax, [-max_abs_xlim, max_abs_xlim])
+
+        vline_color = plotter.config.get_style("axis_color")
+        ax.axvline(x=0, color=vline_color, linewidth=0.5)
+
+        plotter.add_legend(ax, bbox_to_anchor=(1.05, 0.5), loc="center left")
+        plotter.tight_layout(fig)
+        plotter.show_plot()
 
     def _generate_data(self):
         """Generates field curvature data for each wavelength by calculating the

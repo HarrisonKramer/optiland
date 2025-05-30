@@ -7,7 +7,6 @@ Kramer Harrison, 2024
 
 import numpy as np
 import vtk
-from matplotlib.patches import Polygon
 
 import optiland.backend as be
 from optiland.visualization.utils import revolve_contour, transform, transform_3d
@@ -32,16 +31,17 @@ class Lens2D:
         # TODO: raise warning when lens surfaces overlap
         self.surfaces = surfaces
 
-    def plot(self, ax):
+    def plot(self, ax, plotter):
         """Plots the lens on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 lens will be plotted.
+            plotter: The Plotter instance for styling.
 
         """
         sags = self._compute_sag()
-        self._plot_lenses(ax, sags)
+        self._plot_lenses(ax, plotter, sags)
 
     def _compute_sag(self, apply_transform=True):
         """Computes the sag of the lens in local coordinates and handles
@@ -103,32 +103,28 @@ class Lens2D:
 
         return x, y, z
 
-    def _plot_single_lens(self, ax, x, y, z):
+    def _plot_single_lens(self, ax, plotter, x, y, z):
         """Plot a single lens on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 lens will be plotted.
+            plotter: The Plotter instance for styling.
             x (numpy.ndarray): The x coordinates of the lens.
             y (numpy.ndarray): The y coordinates of the lens.
             z (numpy.ndarray): The z coordinates of the lens.
 
         """
         vertices = be.to_numpy(be.column_stack((z, y)))
-        polygon = Polygon(
-            vertices,
-            closed=True,
-            facecolor=(0.8, 0.8, 0.8, 0.6),
-            edgecolor=(0.5, 0.5, 0.5),
-        )
-        ax.add_patch(polygon)
+        plotter.add_polygon(ax, vertices, style_key="patch_colors.lens", closed=True)
 
-    def _plot_lenses(self, ax, sags):
+    def _plot_lenses(self, ax, plotter, sags):
         """Plot the lenses on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 lenses will be plotted.
+            plotter: The Plotter instance for styling.
             sags (list): A list of tuples containing arrays of x, y, and z
                 coordinates for each surface.
 
@@ -142,7 +138,7 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            self._plot_single_lens(ax, x, y, z)
+            self._plot_single_lens(ax, plotter, x, y, z)
 
 
 class Lens3D(Lens2D):

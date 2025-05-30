@@ -5,10 +5,9 @@ This module provides an encircled energy analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
-
 import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
+from optiland.plotting.core import Plotter
 
 from .spot_diagram import SpotData
 
@@ -55,22 +54,27 @@ class EncircledEnergy(SpotDiagram):
                 Defaults to (7, 4.5).
 
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        plotter = Plotter()
+        fig, ax = plotter.create_figure_and_axes(figsize=figsize)
 
         data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
         axis_lim = be.max(geometric_size)
         for k, field_data in enumerate(data):
-            self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
+            # Pass plotter and color index k to _plot_field
+            self._plot_field(ax, plotter, k, field_data, self.fields[k], axis_lim, self.num_points)
 
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        ax.set_xlabel("Radius (mm)")
-        ax.set_ylabel("Encircled Energy (-)")
-        ax.set_title(f"Wavelength: {self.wavelengths[0]:.4f} µm")
-        ax.set_xlim((0, None))
-        ax.set_ylim((0, None))
-        fig.tight_layout()
-        plt.show()
+        plotter.add_legend(ax, bbox_to_anchor=(1.05, 0.5), loc="center left")
+        plotter.set_labels(ax, xlabel="Radius (mm)", ylabel="Encircled Energy (-)")
+        plotter.set_title(ax, title=f"Wavelength: {self.wavelengths[0]:.4f} µm")
+
+        # Get current y_max before setting xlim, as xlim might affect auto-scaled y_max in some backends
+        current_y_max = ax.get_ylim()[1]
+        plotter.set_xlim(ax, (0, axis_lim * 1.2)) # Use calculated axis_lim for xlim
+        plotter.set_ylim(ax, (0, current_y_max)) # Set ylim from 0 to current auto-scaled max or a bit more
+
+        plotter.tight_layout(fig)
+        plotter.show_plot()
 
     def centroid(self):
         """Calculate the centroid of the Encircled Energy.
@@ -88,11 +92,13 @@ class EncircledEnergy(SpotDiagram):
             centroid.append((centroid_x, centroid_y))
         return centroid
 
-    def _plot_field(self, ax, field_data, field, axis_lim, num_points, buffer=1.2):
+    def _plot_field(self, ax, plotter, color_idx, field_data, field, axis_lim, num_points, buffer=1.2):
         """Plot the Encircled Energy curve for a specific field.
 
         Args:
             ax (matplotlib.axes.Axes): The axes on which to plot the curve.
+            plotter: The Plotter instance for styling.
+            color_idx (int): Index for selecting line color.
             field_data (list): List of field data.
             field (tuple): Tuple representing the normalized field coordinates.
             axis_lim (float): Maximum axis limit.
@@ -104,7 +110,11 @@ class EncircledEnergy(SpotDiagram):
         r_max = axis_lim * buffer
         r_step = be.linspace(0, r_max, num_points)
 
-        for points in field_data:
+            line_colors = plotter.config.get_style('line_colors')
+            # Use color_idx for consistency, it represents the field index k from the view method
+            line_color = line_colors[color_idx % len(line_colors)]
+
+            for points in field_data: # This loop is over wavelengths, but EncircledEnergy is monochromatic by default from init
             x = points.x
             y = points.y
             # energy and intensity are used interchangeably here
@@ -120,7 +130,7 @@ class EncircledEnergy(SpotDiagram):
             # convert both to plain numpy for plotting
             r_np = be.to_numpy(r_step)
             ee_np = be.to_numpy(ee)
-            ax.plot(r_np, ee_np, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+                ax.plot(r_np, ee_np, color=line_color, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
     def _generate_field_data(
         self,
