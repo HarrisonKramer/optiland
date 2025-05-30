@@ -394,8 +394,8 @@ class SampledMTF:
         wavelength (str or float): The wavelength (in mm) at which to
             calculate the MTF. Can be 'primary' to use the optic's primary
             wavelength.
-        num_rays (int, optional): The number of rays to trace for the
-            wavefront analysis. Defaults to 32.
+        num_rays (int, optional): The number of rings to trace for the
+            wavefront analysis. Defaults to 10.
         distribution (str, optional): The distribution of rays in the pupil.
             Defaults to 'hexapolar'.
         zernike_terms (int, optional): The number of Zernike terms to use for
@@ -426,7 +426,7 @@ class SampledMTF:
         optic,
         field,
         wavelength,
-        num_rays=32,
+        num_rays=10,
         distribution="hexapolar",
         zernike_terms=37,
         zernike_type="fringe",
@@ -465,15 +465,14 @@ class SampledMTF:
             self.zernike_terms,
         )
 
-        self.P1 = be.sqrt(self.intensity) * be.exp(
-            1j * 2 * be.pi * self.opd_waves
-        )
+        self.P1 = be.sqrt(self.intensity) * be.exp(1j * 2 * be.pi * self.opd_waves)
         self.otf_at_zero = be.sum(self.intensity)
         if be.isclose(self.otf_at_zero, 0.0):
             self.otf_at_zero = 1e-18
 
     def calculate_mtf(self, frequencies):
-        """Calculates the Modulation Transfer Function (MTF) for given spatial frequencies.
+        """Calculates the Modulation Transfer Function (MTF) for given spatial
+        frequencies.
 
         The method computes the MTF by determining the Optical Transfer Function (OTF)
         from the overlap integral of the pupil function with a shifted version of
@@ -491,13 +490,13 @@ class SampledMTF:
 
         Notes:
             The calculation involves:
-            1. Retrieving the exit pupil diameter (EPD). If EPD is near zero,
+            1. Retrieving the exit pupil diameter (XPD). If XPD is near zero,
                MTF is 0 for non-zero frequencies and 1 for zero frequency.
             2. Converting the wavelength to mm.
             3. For each frequency pair (fx, fy):
                 a. Calculating physical shifts in the pupil based on wavelength and
                    frequency.
-                b. Normalizing these shifts using the EPD radius.
+                b. Normalizing these shifts using the XPD radius.
                 c. Determining the shifted normalized coordinates for pupil evaluation.
                 d. Evaluating the Optical Path Difference (OPD) at these shifted
                    coordinates using the Zernike polynomial fit of the wavefront.
@@ -509,11 +508,11 @@ class SampledMTF:
                    pupil function (P1) and P2_conj.
                 h. Summing the OTF elements over all pupil sample points to get the
                    total OTF value for the given frequency.
-                i. Normalizing the OTF value by `otf_at_zero` (the OTF at zero frequency).
+                i. Normalizing the OTF value by otf_at_zero (the OTF at zero frequency).
                 j. The MTF is the absolute value of this normalized OTF.
         """
-        epd = self.optic.paraxial.XPD()
-        epd_is_zero = be.isclose(epd, 0.0, atol=1e-9)
+        xpd = self.optic.paraxial.XPD()
+        xpd_is_zero = be.isclose(xpd, 0.0, atol=1e-9)
 
         # Retrieve necessary attributes from instance
         wl_um = self.wavelength  # Wavelength in micrometers
@@ -522,34 +521,24 @@ class SampledMTF:
         intensity = self.intensity
         P1 = self.P1
         zernike_fit = self.zernike_fit
-        otf_at_zero = self.otf_at_zero
 
         wl_mm = wl_um * 1e-3  # Convert wavelength to mm
 
         mtf_results = []
 
         for fx, fy in frequencies:
-            if epd_is_zero:
+            if xpd_is_zero:
                 if be.isclose(fx, 0.0) and be.isclose(fy, 0.0):
                     mtf_results.append(1.0)
                 else:
                     mtf_results.append(0.0)
                 continue
-
-            epd_radius = epd / 2.0
-            if be.isclose(epd_radius, 0.0): # Should be caught by epd_is_zero, but as safeguard
-                if be.isclose(fx, 0.0) and be.isclose(fy, 0.0):
-                    mtf_results.append(1.0)
-                else:
-                    mtf_results.append(0.0)
-                continue
-
 
             delta_x_phys = wl_mm * fx
             delta_y_phys = wl_mm * fy
 
-            delta_x_norm = delta_x_phys / epd_radius
-            delta_y_norm = delta_y_phys / epd_radius
+            delta_x_norm = delta_x_phys / (xpd / 2)
+            delta_y_norm = delta_y_phys / (xpd / 2)
 
             eval_x_shifted_norm = x_norm - delta_x_norm
             eval_y_shifted_norm = y_norm - delta_y_norm
@@ -557,20 +546,23 @@ class SampledMTF:
             r_shifted_norm = be.sqrt(eval_x_shifted_norm**2 + eval_y_shifted_norm**2)
             phi_shifted_norm = be.arctan2(eval_y_shifted_norm, eval_x_shifted_norm)
 
-            opd_shifted_waves = zernike_fit.zernike.poly(r_shifted_norm, phi_shifted_norm)
+            opd_shifted_waves = zernike_fit.zernike.poly(
+                r_shifted_norm, phi_shifted_norm
+            )
 
             mask_outside_pupil = r_shifted_norm > 1.0
 
             # Complex conjugate of the shifted pupil function P2
-            # Intensity is assumed to be the same for P2 as for P1 at corresponding original points
+            # Intensity is assumed to be the same for P2 as for P1 at corresponding
+            # original points
             P2_conj = be.sqrt(intensity) * be.exp(-1j * 2 * be.pi * opd_shifted_waves)
             P2_conj = be.where(mask_outside_pupil, 0.0 + 0.0j, P2_conj)
 
             otf_element = P1 * P2_conj
             otf_value = be.sum(otf_element)
 
-            normalized_otf = otf_value / otf_at_zero
+            normalized_otf = otf_value / self.otf_at_zero
             mtf = be.abs(normalized_otf)
-            mtf_results.append(be.to_numpy(mtf) if hasattr(mtf, 'numpy') else mtf)
+            mtf_results.append(mtf)
 
         return mtf_results
