@@ -1,0 +1,246 @@
+/* Optiland Dark Theme */
+
+/* Global Colors */
+:root {
+    --background-color: #202020;
+    --surface-color: #2E2E2E;
+    --primary-color: #007ACC; /* Blue accent */
+    --secondary-color: #3C3C3C; /* Slightly lighter surface for elements like inactive tabs */
+    --text-color: #E0E0E0;
+    --border-color: #4A4A4A;
+    --hover-color: #5A5A5A;
+    --pressed-color: #6A6A6A;
+}
+
+QMainWindow {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+QDockWidget {
+    titlebar-close-icon: none;
+    titlebar-normal-icon: none;
+}
+
+QDockWidget::title {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 6px 10px; /* Adjusted padding */
+    border: 1px solid var(--border-color);
+    border-bottom: none; /* Title is part of the top */
+}
+
+QTabWidget::pane {
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+}
+
+QTabBar::tab {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 8px 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border: 1px solid var(--border-color);
+    border-bottom: none; /* No bottom border for tabs */
+    margin-right: 2px; /* Spacing between tabs */
+}
+
+QTabBar::tab:selected {
+    background-color: var(--surface-color); /* Match pane for selected tab */
+    border: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--surface-color); /* Blend with pane */
+}
+
+QTabBar::tab:!selected:hover {
+    background-color: var(--hover-color);
+}
+
+QLabel, QCheckBox, QRadioButton {
+    color: var(--text-color);
+    background-color: transparent; /* Ensure no other background is picked up */
+    padding: 2px; /* Add some padding for better spacing */
+}
+
+QPushButton {
+    background-color: var(--primary-color);
+    color: white; /* Text on primary buttons usually white or very light */
+    border: none; /* Flat design - remove border */
+    padding: 8px 15px; /* Increased padding */
+    border-radius: 4px; /* Slightly more rounded */
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #1095F5; /* Brighter hover */
+}
+
+QPushButton:pressed {
+    background-color: #005090; /* Slightly deeper press */
+}
+
+/* Style for non-accented buttons, if needed (e.g., secondary actions) */
+QPushButton.secondary {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+QPushButton.secondary:hover {
+    background-color: var(--hover-color);
+}
+
+QPushButton.secondary:pressed {
+    background-color: var(--pressed-color);
+}
+
+
+QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 5px; /* Consistent padding */
+    border-radius: 3px;
+}
+
+QLineEdit:focus, QTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid var(--primary-color); /* Accent border on focus */
+}
+
+QComboBox::drop-down {
+    border: none;
+    background-color: transparent;
+    width: 20px;
+}
+
+QComboBox::down-arrow {
+    /* For a cleaner look, consider using an SVG icon or a font icon if possible.
+       For now, let's try to make it a simple character or remove if it looks bad. */
+    image: none; /* Remove default arrow, can be replaced with a custom one */
+}
+/* A simple triangle character as an arrow (works on some platforms) */
+QComboBox::down-arrow {
+     /* symbol: ▼; For a more robust solution, an SVG icon is better. */
+}
+
+
+QTableWidget {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    gridline-color: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+QHeaderView::section {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    font-weight: bold;
+}
+
+QTableWidget::item {
+    padding: 5px;
+    border-bottom: 1px solid var(--border-color); /* Separator for rows */
+}
+
+QTableWidget::item:selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QScrollBar:vertical {
+    background: var(--surface-color);
+    width: 12px;
+    margin: 0px 0px 0px 0px;
+    border-left: 1px solid var(--border-color); /* Border for scrollbar track */
+}
+QScrollBar::handle:vertical {
+    background: var(--hover-color);
+    min-height: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical:hover {
+    background: var(--primary-color);
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+
+QScrollBar:horizontal {
+    background: var(--surface-color);
+    height: 12px;
+    margin: 0px 0px 0px 0px;
+    border-top: 1px solid var(--border-color); /* Border for scrollbar track */
+}
+QScrollBar::handle:horizontal {
+    background: var(--hover-color);
+    min-width: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: var(--primary-color);
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: none;
+}
+
+QMenu {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 5px 20px 5px 20px;
+}
+
+QMenu::item:selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+QMenuBar {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+QMenuBar::item:selected { /* When menu is open */
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QMenuBar::item:pressed { /* When menu title is clicked */
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Tooltip style */
+QToolTip {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 4px;
+    border-radius: 3px;
+}
+
+/* Specific widget styling if needed */
+QWidget#matplotlib_viewer_widget {
+    background-color: var(--background-color);
+}

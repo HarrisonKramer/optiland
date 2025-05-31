@@ -1,0 +1,235 @@
+/* Optiland Light Theme */
+
+/* Global Colors */
+:root {
+    --background-color: #F5F5F5;
+    --surface-color: #FFFFFF;
+    --primary-color: #007ACC; /* Blue accent */
+    --secondary-color: #E0E0E0; /* Slightly darker surface for elements like inactive tabs */
+    --text-color: #202020;
+    --border-color: #D0D0D0;
+    --hover-color: #E8E8E8;
+    --pressed-color: #D8D8D8;
+}
+
+QMainWindow {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+QDockWidget {
+    titlebar-close-icon: none;
+    titlebar-normal-icon: none;
+}
+
+QDockWidget::title {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+QTabWidget::pane {
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+}
+
+QTabBar::tab {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 8px 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--surface-color);
+}
+
+QTabBar::tab:!selected:hover {
+    background-color: var(--hover-color);
+}
+
+QLabel, QCheckBox, QRadioButton {
+    color: var(--text-color);
+    background-color: transparent;
+    padding: 2px;
+}
+
+QPushButton {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #1095F5; /* Brighter hover */
+}
+
+QPushButton:pressed {
+    background-color: #005090; /* Slightly deeper press */
+}
+
+QPushButton.secondary {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+QPushButton.secondary:hover {
+    background-color: var(--hover-color);
+}
+
+QPushButton.secondary:pressed {
+    background-color: var(--pressed-color);
+}
+
+QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background-color: var(--surface-color); /* Inputs on light theme often match surface */
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 5px;
+    border-radius: 3px;
+}
+
+QLineEdit:focus, QTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid var(--primary-color);
+}
+
+QComboBox::drop-down {
+    border: none;
+    background-color: transparent;
+    width: 20px;
+}
+
+QComboBox::down-arrow {
+    image: none;
+}
+
+QTableWidget {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    gridline-color: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+QHeaderView::section {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    font-weight: bold;
+}
+
+QTableWidget::item {
+    padding: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+QTableWidget::item:selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QScrollBar:vertical {
+    background: var(--surface-color);
+    width: 12px;
+    margin: 0px 0px 0px 0px;
+    border-left: 1px solid var(--border-color);
+}
+QScrollBar::handle:vertical {
+    background: var(--pressed-color); /* Darker handle for light theme */
+    min-height: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical:hover {
+    background: var(--primary-color);
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+
+QScrollBar:horizontal {
+    background: var(--surface-color);
+    height: 12px;
+    margin: 0px 0px 0px 0px;
+    border-top: 1px solid var(--border-color);
+}
+QScrollBar::handle:horizontal {
+    background: var(--pressed-color);
+    min-width: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: var(--primary-color);
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: none;
+}
+
+QMenu {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 5px 20px 5px 20px;
+}
+
+QMenu::item:selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+QMenuBar {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+QMenuBar::item:selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QMenuBar::item:pressed {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+QToolTip {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 4px;
+    border-radius: 3px;
+}
+
+QWidget#matplotlib_viewer_widget {
+    background-color: var(--background-color);
+}
