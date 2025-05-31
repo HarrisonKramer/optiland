@@ -153,10 +153,12 @@ class VTKViewer(QWidget):
         if (
             camera
         ):  # camera might not be initialized if GetRenderWindow isn't fully ready
-            camera.SetPosition(1, 1, 1)  # Adjust for better default view
+            camera.SetPosition(0.2, 0, 0)
             camera.SetFocalPoint(0, 0, 0)
             camera.SetViewUp(0, 1, 0)
             self.renderer.ResetCamera()
+            camera.Elevation(0)
+            camera.Azimuth(150)
 
     def render_optic(self):
         if not VTK_AVAILABLE:
@@ -180,7 +182,7 @@ class VTKViewer(QWidget):
                     self.renderer,
                     fields="all",
                     wavelengths="primary",
-                    num_rays=5,
+                    num_rays=24,
                     distribution="ring",
                 )
 
