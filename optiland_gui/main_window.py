@@ -418,7 +418,7 @@ class MainWindow(QMainWindow):
         about_text = QLabel(
             "<p><b>Optiland GUI</b></p>"
             "<p>A modern interface for the Optiland optical simulation package.</p>"
-            "<p>Version: 0.1.4 (Animated About Dialog)</p>"
+            "<p>Version: 0.1.0 (Alpha)</p>"
             "<p>Built with PySide6.</p>"
         )
         about_text.setTextFormat(Qt.TextFormat.RichText)  # Ensure HTML is rendered
