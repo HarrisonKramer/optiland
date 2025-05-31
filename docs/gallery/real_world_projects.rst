@@ -12,3 +12,4 @@ aid for teaching, prototyping, and experimentation.
 .. nbgallery::
 
     real_world_projects/Cooke_Triplet_with_Stock_Lenses
+    real_world_projects/Scan_Lens_System_for_UV
