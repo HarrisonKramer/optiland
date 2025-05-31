@@ -34,6 +34,9 @@ class InvalidGeometry(BaseGeometry):
     def surface_normal(self, rays):
         return 0
 
+    def flip(self):
+        pass
+
 
 class InvalidMaterial(BaseMaterial):
     def __init__(self):

@@ -236,7 +236,7 @@ class Wavefront:
         d = b**2 - 4 * a * c
         t = (-b - be.sqrt(d)) / (2 * a)
         mask = t < 0
-        t[mask] = (-b[mask] + be.sqrt(d[mask])) / (2 * a[mask])
+        t = be.where(mask, (-b + be.sqrt(d)) / (2 * a), t)
         n = self.optic.image_surface.material_post.n(wavelength)
         return n * t
 
