@@ -172,7 +172,8 @@ class FFTPSF(BasePSF):
             float: The normalization factor.
         """
         P_nom = be.copy(self.pupils[0])
-        P_nom[P_nom != 0] = 1
+        # Create a binary mask: 1 where P_nom is non-zero, 0 otherwise.
+        P_nom = be.where(P_nom != 0, be.ones_like(P_nom), P_nom)
 
         amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
         psf_norm = amp_norm * be.conj(amp_norm)
