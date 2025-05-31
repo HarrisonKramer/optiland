@@ -342,6 +342,7 @@ class MainWindow(QMainWindow):
         try:
             with open(filepath) as f:
                 style_str = f.read()
+                self.setStyleSheet("")  # Clear previous stylesheet
                 self.setStyleSheet(style_str)
                 self.current_theme_path = filepath
                 if hasattr(self, "darkThemeAction") and hasattr(
@@ -418,7 +419,7 @@ class MainWindow(QMainWindow):
         about_text = QLabel(
             "<p><b>Optiland GUI</b></p>"
             "<p>A modern interface for the Optiland optical simulation package.</p>"
-            "<p>Version: 0.1.0 (Alpha)</p>"
+            "<p>Version: 0.1.4 (Animated About Dialog)</p>"
             "<p>Built with PySide6.</p>"
         )
         about_text.setTextFormat(Qt.TextFormat.RichText)  # Ensure HTML is rendered
