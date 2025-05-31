@@ -297,6 +297,17 @@ class Optic:
         """
         self._updater.image_solve()
 
+    def flip(self):
+        """Flips the optical system.
+
+        This reverses the order of surfaces (excluding object and image planes),
+        their geometries, and materials. Pickups and solves referencing surface
+        indices are updated accordingly. The coordinate system is adjusted such
+        that the new first optical surface (originally the last one in the
+        flipped segment) is placed at z=0.0.
+        """
+        self._updater.flip()
+
     def draw(
         self,
         fields="all",
