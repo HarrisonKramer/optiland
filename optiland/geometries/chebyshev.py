@@ -98,14 +98,6 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     def __str__(self):
         return "Chebyshev Polynomial"
 
-    def flip(self):
-        """Flip the geometry.
-
-        Changes the sign of the base radius of curvature.
-        The conic constant and Chebyshev coefficients remain unchanged.
-        """
-        self.radius = -self.radius
-
     def sag(self, x=0, y=0):
         """Calculates the sag of the Chebyshev polynomial surface at the given
         coordinates.

@@ -86,14 +86,6 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     def __str__(self) -> str:
         return "Zernike Polynomial"
 
-    def flip(self):
-        """Flip the geometry.
-
-        Changes the sign of the base radius of curvature.
-        The conic constant and Zernike coefficients remain unchanged.
-        """
-        self.radius = -self.radius
-
     def sag(self, x: be.ndarray, y: be.ndarray) -> be.ndarray:
         """Calculate the sag of the Zernike polynomial surface at the given
         coordinates.

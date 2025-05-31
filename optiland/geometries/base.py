@@ -85,8 +85,7 @@ class BaseGeometry(ABC):
         change sign. Conic constants and polynomial coefficients should not
         change. The coordinate system of the geometry should not be modified.
         """
-        # pragma: no cover
-        raise NotImplementedError
+        pass  # pragma: no cover
 
     def localize(self, rays):
         """Convert rays from the global coordinate system to the local
