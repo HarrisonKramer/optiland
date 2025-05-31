@@ -234,6 +234,41 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return nx, ny, nz
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of rotation (R_rot) and the base Y-Z radius (R_yz).
+        Updates the Y-Z curvature (c_yz) accordingly.
+        The Y-Z conic constant (k_yz) and polynomial coefficients (coeffs_poly_y)
+        remain unchanged.
+        """
+        self.R_rot = -self.R_rot
+        self.R_yz = -self.R_yz
+
+        # Update c_yz, handling potential division by zero if R_yz is zero
+        self.c_yz = (
+            1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
+        )
+
+        # The base class (NewtonRaphsonGeometry/StandardGeometry) also has a 'radius' attribute.
+        # In ToroidalGeometry's __init__, this is set to radius_rotation (self.R_rot).
+        # We need to ensure this base 'radius' is also flipped.
+        # NewtonRaphsonGeometry inherits flip from BaseGeometry (NotImplementedError)
+        # or StandardGeometry if it were in its MRO and StandardGeometry had flip.
+        # StandardGeometry is not a direct parent. NewtonRaphsonGeometry inherits from BaseGeometry.
+        # The 'radius' attribute in NewtonRaphsonGeometry (and its parent BaseGeometry if it had one)
+        # is what needs to be flipped. Since R_rot is passed as 'radius' to NewtonRaphsonGeometry's
+        # __init__, flipping self.radius in the parent context will flip R_rot.
+        # We've already flipped self.R_rot directly. To ensure consistency if the parent's
+        # flip method had other side effects or if self.radius was used internally by parent methods
+        # in a way that expects it to be flipped by its own flip method, we should call super().flip().
+        # However, BaseGeometry.flip raises NotImplementedError.
+        # We need to ensure self.radius (which is R_rot in the parent context) is flipped.
+        # Since we've already done self.R_rot = -self.R_rot, and self.radius was initialized
+        # with the original R_rot, we must also update self.radius here.
+        self.radius = -self.radius
+
+
     def __str__(self) -> str:
         return "Toroidal"
 

@@ -77,6 +77,14 @@ class EvenAsphere(NewtonRaphsonGeometry):
     def __str__(self):
         return "Even Asphere"
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the base radius of curvature.
+        The conic constant and aspheric coefficients remain unchanged.
+        """
+        self.radius = -self.radius
+
     def sag(self, x=0, y=0):
         """Calculates the sag of the asphere at the given coordinates.
 
