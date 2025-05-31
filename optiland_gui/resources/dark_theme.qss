@@ -31,7 +31,8 @@ QDockWidget::title {
 
 QDockWidget::title:focus { /* Added for focused dock title */
     background-color: #2E2E2E; /* var(--surface-color) */
-    border-top: 1px solid #007ACC; /* var(--primary-color) */
+    border-top: 2px solid #007ACC; /* var(--primary-color), made consistent with light theme focus */
+    padding-top: 5px; /* Adjust padding for thicker border */
 }
 
 
