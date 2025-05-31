@@ -1,31 +1,33 @@
 # optiland_gui/system_properties_panel.py
+from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QGroupBox,
+    QAbstractItemView,
     QComboBox,
-    QLineEdit,
     QDoubleSpinBox,
+    QFormLayout,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
     QPushButton,
+    QScrollArea,
+    QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
-    QAbstractItemView,
-    QHeaderView,
     QTreeWidget,
     QTreeWidgetItem,
-    QStackedWidget,
-    QScrollArea,
-    QFrame,
-    QLabel,
-    QMessageBox,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import Qt, Slot, QSize
-from .optiland_connector import OptilandConnector
+
 from optiland.aperture import Aperture
 from optiland.fields import Field
 from optiland.wavelength import Wavelength
+
+from .optiland_connector import OptilandConnector
 
 
 class SystemPropertiesPanel(QWidget):

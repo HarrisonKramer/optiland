@@ -1,12 +1,14 @@
 import json
+
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QMessageBox  # For showing errors to user
 
-from optiland.optic import Optic
-from optiland.surfaces import Surface, ObjectSurface, ImageSurface
-from optiland.physical_apertures.radial import RadialAperture, configure_aperture
-from optiland.materials import IdealMaterial, Material as OptilandMaterial
 import optiland.backend as be
+from optiland.materials import IdealMaterial
+from optiland.materials import Material as OptilandMaterial
+from optiland.optic import Optic
+from optiland.physical_apertures.radial import RadialAperture, configure_aperture
+from optiland.surfaces import ImageSurface, ObjectSurface, Surface
 
 
 class SpecialFloatEncoder(json.JSONEncoder):
