@@ -18,6 +18,12 @@ QMainWindow {
     color: #202020; /* Replaced var(--text-color) */
 }
 
+QDialog {
+    background-color: #F5F5F5; /* Light background (main window background) */
+    color: #202020;           /* Dark text for labels within the dialog */
+    border: 1px solid #BEBEBE; /* Use refined border, consistent with other elements like QTableWidget */
+}
+
 QDockWidget {
     titlebar-close-icon: none;
     titlebar-normal-icon: none;
@@ -133,6 +139,20 @@ QTableWidget {
     border: 1px solid #BEBEBE; /* Refined border color for widget itself */
     border-radius: 3px;
     alternate-background-color: #F0F0F0; /* Light alternating row color */
+}
+
+/* Styling for QHeaderView itself, especially for the top-left corner button area */
+QHeaderView {
+    background-color: #E0E0E0; /* Match section background or use a neutral light color */
+    border: none; /* Usually, borders are handled by sections or the table widget itself */
+}
+
+QTableCornerButton::section { /* Specific styling for the corner button in QTableWidget */
+    background-color: #E0E0E0; /* Match header background */
+    border: 1px solid #BEBEBE; /* Match header section border */
+    /* Adjust individual borders if needed to perfectly align with header sections */
+    /* border-right: 1px solid #BEBEBE; */
+    /* border-bottom: 1px solid #BEBEBE; */
 }
 
 QHeaderView::section {
@@ -273,6 +293,45 @@ QToolTip {
     padding: 4px;
     border-radius: 3px;
 }
+
+/* QToolBar and QToolButton Styling */
+QToolBar {
+    background-color: #F5F5F5; /* Main window background color */
+    border-bottom: 1px solid #D0D0D0; /* Separator line */
+    padding: 3px; /* Spacing around toolbar content */
+    spacing: 4px; /* Spacing between tool buttons */
+}
+
+QToolButton {
+    color: #202020; /* Dark text */
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 5px; /* Adequate padding for click target */
+    margin: 1px; /* Small margin around buttons */
+    border-radius: 3px; /* Consistent with other elements */
+}
+
+QToolButton:hover {
+    background-color: #E8E8E8; /* Light hover state (original --hover-color) */
+    border: 1px solid #D0D0D0; /* Subtle border on hover (original --border-color) */
+}
+
+QToolButton:pressed {
+    background-color: #D8D8D8; /* Light pressed state (original --pressed-color) */
+    border: 1px solid #BEBEBE; /* Slightly darker border on press */
+}
+
+QToolButton:checked { /* For toggle buttons if any */
+    background-color: #D0D0D0; /* Slightly different background when checked (original --border-color) */
+    border: 1px solid #BEBEBE; /* Slightly darker border for checked state */
+    color: #000000; /* Ensure text is still dark and prominent */
+}
+
+QToolButton:disabled {
+    color: #A0A0A0; /* Grayed out text for disabled state */
+    background-color: #F0F0F0; /* Slightly off-white background for disabled */
+}
+
 
 QWidget#matplotlib_viewer_widget {
     background-color: #FFFFFF; /* Surface color for content areas */
