@@ -1,4 +1,5 @@
 # optiland_gui/analysis_panel.py
+import inspect # Added inspect module
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QComboBox,
@@ -104,40 +105,61 @@ class AnalysisPanel(QWidget):
                 f"Running {selected_analysis_name}...\nPlots will appear in external windows."
             )
             try:
-                # Most analysis classes take optic, fields, wavelengths.
-                # Using "all" for fields and "primary" or "all" for wavelengths as default.
-                # Some might need specific parameters (e.g., num_rays, distribution).
-                # For simplicity, using common defaults. More UI controls can be added later.
-
-                # Default parameters for most analyses
-                fields_arg = "all"
-                # Use primary wavelength if available, else all, else default from connector
                 primary_wl_val = self.connector._get_safe_primary_wavelength_value()
-                wavelengths_arg = [primary_wl_val] if primary_wl_val else "all"
 
-                if selected_analysis_name == "Geometric MTF":
-                    # GeometricMTF(optic, fields, wavelength, num_rays, distribution, num_points, max_freq, scale)
-                    analysis_instance = analysis_class(
-                        optic, wavelengths=primary_wl_val
-                    )  # Uses primary_wavelength string internally
-                elif selected_analysis_name == "FFT MTF":
-                    # FFTMTF(optic, fields, wavelength, num_rays, grid_size, max_freq)
-                    analysis_instance = analysis_class(
-                        optic, wavelengths=primary_wl_val
-                    )
-                elif selected_analysis_name == "Spot Diagram":
-                    analysis_instance = analysis_class(
-                        optic, fields=fields_arg, wavelengths="all"
-                    )  # SpotDiagram often uses all wavelengths
-                else:
-                    # Generic instantiation for others
-                    analysis_instance = analysis_class(
-                        optic, fields=fields_arg, wavelengths=wavelengths_arg
-                    )
+                sig = inspect.signature(analysis_class.__init__)
+                constructor_args = {}
 
+                for param in sig.parameters.values():
+                    if param.name == "self":
+                        continue
+                    if param.name in ["optic", "optical_system"]:
+                        constructor_args[param.name] = optic
+                    elif param.name == "fields":
+                        constructor_args[param.name] = "all"
+                    elif param.name == "wavelengths": # Expects a list or "all" or "primary"
+                        if primary_wl_val is not None:
+                            constructor_args[param.name] = [primary_wl_val]
+                        elif param.default != inspect.Parameter.empty:
+                             constructor_args[param.name] = param.default # Use class default if any
+                        else:
+                            constructor_args[param.name] = "all" # Fallback
+                    elif param.name == "wavelength": # Expects a single value or "primary"
+                        if primary_wl_val is not None:
+                            constructor_args[param.name] = primary_wl_val
+                        elif param.default != inspect.Parameter.empty:
+                            constructor_args[param.name] = param.default
+                        else:
+                            constructor_args[param.name] = "primary" # Fallback for single wavelength
+                    elif param.name == "num_rays":
+                        # SpotDiagram, GeometricMTF, FFTMTF might use this
+                        if selected_analysis_name == "Ray Fan":
+                             constructor_args[param.name] = 7
+                        else: # SpotDiagram, MTF
+                             constructor_args[param.name] = 24
+                    elif param.name == "distribution":
+                        if selected_analysis_name == "Ray Fan":
+                            constructor_args[param.name] = "line_y"
+                        else: # SpotDiagram, MTF
+                            constructor_args[param.name] = "grid"
+                    elif param.name == "num_points": # For MTF
+                        constructor_args[param.name] = 50
+                    elif param.name == "max_freq": # For MTF
+                        constructor_args[param.name] = 100
+                    elif param.name == "grid_size": # For FFT MTF
+                        constructor_args[param.name] = 10
+                    elif param.name == "scale": # For some plots like MTF
+                        constructor_args[param.name] = "linear"
+                    elif param.name == "pupil_points": # For PupilAberration
+                        constructor_args[param.name] = 32
+                    # Add other common parameters if needed, or rely on their defaults in the class
+                    # If a parameter is mandatory and not covered, an error will still occur at instantiation
+
+                self.resultsArea.append(f"Using arguments: {constructor_args}")
+                analysis_instance = analysis_class(**constructor_args)
                 analysis_instance.view()  # This will call plt.show() internally
                 self.resultsArea.append(f"{selected_analysis_name} completed.")
-                print(f"Analysis Panel: Ran {selected_analysis_name}")
+                print(f"Analysis Panel: Ran {selected_analysis_name} with args: {constructor_args}")
 
             except Exception as e:
                 self.resultsArea.append(f"Error running {selected_analysis_name}: {e}")

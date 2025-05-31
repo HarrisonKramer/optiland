@@ -127,11 +127,12 @@ QComboBox::down-arrow {
 }
 
 QTableWidget {
-    background-color: #FFFFFF; /* Replaced var(--surface-color) */
-    color: #202020; /* Replaced var(--text-color) */
-    gridline-color: #D0D0D0; /* Replaced var(--border-color) */
-    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
+    background-color: #FFFFFF; /* Surface color */
+    color: #202020;            /* Text color */
+    gridline-color: #D0D0D0;   /* Standard border color for grid */
+    border: 1px solid #BEBEBE; /* Refined border color for widget itself */
     border-radius: 3px;
+    alternate-background-color: #F0F0F0; /* Light alternating row color */
 }
 
 QHeaderView::section {
@@ -146,12 +147,42 @@ QHeaderView::section {
 
 QTableWidget::item {
     padding: 5px;
-    border-bottom: 1px solid #D0D0D0; /* Replaced var(--border-color) */
+    border-bottom: 1px solid #D0D0D0; /* Separator for rows, light border */
+    color: #202020; /* Ensure item text is dark */
+    background-color: transparent; /* Let alternate-background-color show through */
 }
 
 QTableWidget::item:selected {
-    background-color: #007ACC; /* Replaced var(--primary-color) */
+    background-color: #007ACC; /* Primary accent */
     color: white;
+}
+
+/* QListWidget and QTreeView/QTreeWidget Styling */
+QListWidget, QTreeView, QTreeWidget {
+    background-color: #FFFFFF; /* Surface color */
+    color: #202020;            /* Text color */
+    border: 1px solid #BEBEBE; /* Refined border color */
+    border-radius: 3px;
+    alternate-background-color: #F0F0F0; /* Light alternating row color */
+}
+
+QListWidget::item, QTreeView::item, QTreeWidget::item {
+    padding: 4px 5px; /* Consistent padding */
+    color: #202020; /* Ensure item text is dark */
+    background-color: transparent; /* Let alternate-background-color show through */
+}
+
+QListWidget::item:selected, QTreeView::item:selected, QTreeWidget::item:selected {
+    background-color: #007ACC; /* Primary accent */
+    color: white;
+    /* For TreeView, selected item text might need to be white even if the branch is also styled */
+}
+
+QTreeView::branch {
+    /* Basic styling for branches, if default is not sufficient.
+       Could use small SVG arrows for open/close states.
+       For now, rely on default and ensure background doesn't hide them. */
+    background-color: transparent;
 }
 
 QScrollBar:vertical {
