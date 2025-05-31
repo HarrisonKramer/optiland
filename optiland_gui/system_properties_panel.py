@@ -1,9 +1,26 @@
 # optiland_gui/system_properties_panel.py
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox,
-                               QComboBox, QLineEdit, QDoubleSpinBox, QPushButton,
-                               QTableWidget, QTableWidgetItem, QAbstractItemView, 
-                               QHeaderView, QTreeWidget, QTreeWidgetItem, QStackedWidget,
-                               QScrollArea, QFrame, QLabel, QMessageBox)
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFormLayout,
+    QGroupBox,
+    QComboBox,
+    QLineEdit,
+    QDoubleSpinBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QAbstractItemView,
+    QHeaderView,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QStackedWidget,
+    QScrollArea,
+    QFrame,
+    QLabel,
+    QMessageBox,
+)
 from PySide6.QtCore import Qt, Slot, QSize
 from .optiland_connector import OptilandConnector
 from optiland.aperture import Aperture
@@ -18,12 +35,12 @@ class SystemPropertiesPanel(QWidget):
         self.setWindowTitle("System Properties")
 
         main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
         # Navigation Tree (like System Explorer)
         self.navTree = QTreeWidget()
         self.navTree.setHeaderHidden(True)
-        self.navTree.setFixedWidth(200) # Adjust as needed
+        self.navTree.setFixedWidth(200)  # Adjust as needed
         main_layout.addWidget(self.navTree)
 
         # StackedWidget to hold different property editors
@@ -39,32 +56,42 @@ class SystemPropertiesPanel(QWidget):
         self.add_nav_item("Aperture", self.apertureEditor)
         self.add_nav_item("Fields", self.fieldsEditor)
         self.add_nav_item("Wavelengths", self.wavelengthsEditor)
-        
+
         # Placeholder for other categories from screenshot
-        for placeholder_name in ["Environment", "Polarization", "Advanced", 
-                                 "Ray Aiming", "Material Catalogs", "Title/Notes", 
-                                 "Files", "Units", "Cost Estimator"]:
+        for placeholder_name in [
+            "Environment",
+            "Polarization",
+            "Advanced",
+            "Ray Aiming",
+            "Material Catalogs",
+            "Title/Notes",
+            "Files",
+            "Units",
+            "Cost Estimator",
+        ]:
             placeholder_widget = QWidget()
             placeholder_layout = QVBoxLayout(placeholder_widget)
-            placeholder_layout.addWidget(QLabel(f"{placeholder_name} Properties (Placeholder)"))
+            placeholder_layout.addWidget(
+                QLabel(f"{placeholder_name} Properties (Placeholder)")
+            )
             placeholder_layout.addStretch()
             self.add_nav_item(placeholder_name, placeholder_widget)
 
-
         self.navTree.itemClicked.connect(self.on_nav_item_clicked)
         self.navTree.expandAll()
-        if self.navTree.topLevelItemCount() > 0: # Select first item by default
+        if self.navTree.topLevelItemCount() > 0:  # Select first item by default
             self.navTree.setCurrentItem(self.navTree.topLevelItem(0))
             self.stackedWidget.setCurrentIndex(0)
 
-
         self.connector.opticLoaded.connect(self.load_properties)
-        self.connector.opticChanged.connect(self.load_properties) # General refresh
+        self.connector.opticChanged.connect(self.load_properties)  # General refresh
 
     def add_nav_item(self, name, widget):
         item = QTreeWidgetItem(self.navTree, [name])
         self.stackedWidget.addWidget(widget)
-        item.setData(0, Qt.ItemDataRole.UserRole, self.stackedWidget.count() - 1) # Store index
+        item.setData(
+            0, Qt.ItemDataRole.UserRole, self.stackedWidget.count() - 1
+        )  # Store index
 
     @Slot(QTreeWidgetItem, int)
     def on_nav_item_clicked(self, item, column):
@@ -87,19 +114,21 @@ class ApertureEditor(QWidget):
         self.is_loading = False
 
         layout = QFormLayout(self)
-        layout.setContentsMargins(10,10,10,10)
+        layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(10)
 
         self.cmbApertureType = QComboBox()
-        self.cmbApertureType.addItems(["EPD", "imageFNO", "objectNA", "float_by_stop_size"])
+        self.cmbApertureType.addItems(
+            ["EPD", "imageFNO", "objectNA", "float_by_stop_size"]
+        )
         layout.addRow("Aperture Type:", self.cmbApertureType)
 
         self.spnApertureValue = QDoubleSpinBox()
         self.spnApertureValue.setDecimals(4)
-        self.spnApertureValue.setRange(-1e9, 1e9) # Wide range
+        self.spnApertureValue.setRange(-1e9, 1e9)  # Wide range
         self.spnApertureValue.setSingleStep(0.1)
         layout.addRow("Value:", self.spnApertureValue)
-        
+
         # Apply button
         self.btnApplyAperture = QPushButton("Apply Aperture Changes")
         layout.addRow(self.btnApplyAperture)
@@ -108,7 +137,6 @@ class ApertureEditor(QWidget):
         self.spnApertureValue.valueChanged.connect(self.on_aperture_changed)
         self.btnApplyAperture.clicked.connect(self.apply_aperture_changes)
 
-
     @Slot()
     def load_data(self):
         self.is_loading = True
@@ -116,9 +144,9 @@ class ApertureEditor(QWidget):
         if optic and optic.aperture:
             self.cmbApertureType.setCurrentText(optic.aperture.ap_type)
             self.spnApertureValue.setValue(optic.aperture.value)
-        else: # Default or if no aperture set
-            self.cmbApertureType.setCurrentIndex(0) # EPD
-            self.spnApertureValue.setValue(10.0) # Default EPD value
+        else:  # Default or if no aperture set
+            self.cmbApertureType.setCurrentIndex(0)  # EPD
+            self.spnApertureValue.setValue(10.0)  # Default EPD value
         self.is_loading = False
 
     @Slot()
@@ -138,12 +166,14 @@ class ApertureEditor(QWidget):
             try:
                 # Assuming Optic.set_aperture exists and handles Optic.aperture creation/update
                 optic.set_aperture(ap_type, ap_value)
-                self.connector.opticChanged.emit() # Notify that optic has changed
+                self.connector.opticChanged.emit()  # Notify that optic has changed
                 print(f"Aperture updated: {ap_type}, {ap_value}")
-            except ValueError as e: # Catch errors from Optic.set_aperture (e.g. telecentric conflict)
+            except (
+                ValueError
+            ) as e:  # Catch errors from Optic.set_aperture (e.g. telecentric conflict)
                 # QMessageBox.warning(self, "Aperture Error", str(e))
                 print(f"Aperture Error: {e}")
-                self.load_data() # Revert UI to current optic state
+                self.load_data()  # Revert UI to current optic state
 
 
 class FieldsEditor(QWidget):
@@ -153,7 +183,7 @@ class FieldsEditor(QWidget):
         self.is_loading = False
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10,10,10,10)
+        main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
         # Field Type
@@ -166,25 +196,30 @@ class FieldsEditor(QWidget):
         # Fields Table
         self.tableFields = QTableWidget()
         self.tableFields.setColumnCount(4)
-        self.tableFields.setHorizontalHeaderLabels(["X-Field", "Y-Field", "Vignette X", "Vignette Y"])
-        self.tableFields.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.tableFields.setHorizontalHeaderLabels(
+            ["X-Field", "Y-Field", "Vignette X", "Vignette Y"]
+        )
+        self.tableFields.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         main_layout.addWidget(self.tableFields)
 
         # Buttons
         button_layout = QHBoxLayout()
         self.btnAddField = QPushButton("Add Field")
         self.btnRemoveField = QPushButton("Remove Field")
-        self.btnApplyFields = QPushButton("Apply Field Changes") # For table edits
+        self.btnApplyFields = QPushButton("Apply Field Changes")  # For table edits
         button_layout.addWidget(self.btnAddField)
         button_layout.addWidget(self.btnRemoveField)
         button_layout.addWidget(self.btnApplyFields)
         main_layout.addLayout(button_layout)
 
-        self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change) # Apply immediately
+        self.cmbFieldType.currentTextChanged.connect(
+            self.apply_field_type_change
+        )  # Apply immediately
         self.btnAddField.clicked.connect(self.add_field)
         self.btnRemoveField.clicked.connect(self.remove_field)
         self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
-
 
     @Slot()
     def load_data(self):
@@ -192,8 +227,8 @@ class FieldsEditor(QWidget):
         optic = self.connector.get_optic()
         if optic and optic.field_type:
             self.cmbFieldType.setCurrentText(optic.field_type)
-        
-        self.tableFields.setRowCount(0) # Clear table
+
+        self.tableFields.setRowCount(0)  # Clear table
         if optic and optic.fields:
             num_fields = optic.fields.num_fields
             self.tableFields.setRowCount(num_fields)
@@ -206,7 +241,8 @@ class FieldsEditor(QWidget):
 
     @Slot()
     def apply_field_type_change(self):
-        if self.is_loading: return
+        if self.is_loading:
+            return
         optic = self.connector.get_optic()
         if optic:
             new_type = self.cmbFieldType.currentText()
@@ -220,20 +256,24 @@ class FieldsEditor(QWidget):
                 # Revert combo box if change is invalid
                 self.cmbFieldType.setCurrentText(optic.field_type)
 
-
     @Slot()
     def add_field(self):
         optic = self.connector.get_optic()
         if optic:
             # Add a default field, e.g., (0, max_y_field * 0.5) or just (0,0)
-            y_val = optic.fields.max_y_field * 0.5 if optic.fields.num_fields > 0 and optic.fields.max_y_field > 0 else 0.0
-            if optic.fields.num_fields == 0 : y_val = 1.0 # Default if no fields yet
+            y_val = (
+                optic.fields.max_y_field * 0.5
+                if optic.fields.num_fields > 0 and optic.fields.max_y_field > 0
+                else 0.0
+            )
+            if optic.fields.num_fields == 0:
+                y_val = 1.0  # Default if no fields yet
 
-            optic.add_field(y=y_val) # Optiland's default for x, vx, vy will be used
-            self.load_data() # Refresh table
+            optic.add_field(y=y_val)  # Optiland's default for x, vx, vy will be used
+            self.load_data()  # Refresh table
             self.connector.opticChanged.emit()
             print("Field added.")
-    
+
     @Slot()
     def remove_field(self):
         optic = self.connector.get_optic()
@@ -241,7 +281,7 @@ class FieldsEditor(QWidget):
         if optic and current_row != -1 and optic.fields.num_fields > current_row:
             # Optic.fields is a FieldGroup, its `fields` attribute is a list
             del optic.fields.fields[current_row]
-            self.load_data() # Refresh table
+            self.load_data()  # Refresh table
             self.connector.opticChanged.emit()
             print(f"Field at row {current_row} removed.")
 
@@ -257,21 +297,32 @@ class FieldsEditor(QWidget):
                         y = float(self.tableFields.item(i, 1).text())
                         vx = float(self.tableFields.item(i, 2).text())
                         vy = float(self.tableFields.item(i, 3).text())
-                        
+
                         field_obj = optic.fields.fields[i]
-                        if field_obj.x != x or field_obj.y != y or field_obj.vx != vx or field_obj.vy != vy:
-                            field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = x, y, vx, vy
+                        if (
+                            field_obj.x != x
+                            or field_obj.y != y
+                            or field_obj.vx != vx
+                            or field_obj.vy != vy
+                        ):
+                            field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = (
+                                x,
+                                y,
+                                vx,
+                                vy,
+                            )
                             changed = True
                     except ValueError:
                         print(f"Invalid data in fields table row {i}")
                         # QMessageBox.warning(self, "Input Error", f"Invalid numeric data in Fields table row {i+1}.")
-                        self.load_data() # Revert to original
+                        self.load_data()  # Revert to original
                         return
                 if changed:
                     self.connector.opticChanged.emit()
                     print("Field table changes applied.")
-            else: # Row count mismatch, full reload
+            else:  # Row count mismatch, full reload
                 self.load_data()
+
 
 class WavelengthsEditor(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -280,17 +331,25 @@ class WavelengthsEditor(QWidget):
         self.is_loading = False
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10,10,10,10)
+        main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
-        
+
         self.tableWavelengths = QTableWidget()
-        self.tableWavelengths.setColumnCount(3) 
-        self.tableWavelengths.setHorizontalHeaderLabels(["Value (µm)", "Unit", "Primary"])
-        self.tableWavelengths.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        
+        self.tableWavelengths.setColumnCount(3)
+        self.tableWavelengths.setHorizontalHeaderLabels(
+            ["Value (µm)", "Unit", "Primary"]
+        )
+        self.tableWavelengths.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
+
         # Corrected Line:
-        self.tableWavelengths.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows) # Keep row selection
-        self.tableWavelengths.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection) # Ensure only one row can be selected
+        self.tableWavelengths.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )  # Keep row selection
+        self.tableWavelengths.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )  # Ensure only one row can be selected
 
         main_layout.addWidget(self.tableWavelengths)
 
@@ -326,13 +385,21 @@ class WavelengthsEditor(QWidget):
             for i, wl_obj in enumerate(optic.wavelengths.wavelengths):
                 # Optiland stores Wavelength.value in um after conversion.
                 # The original value and unit are in Wavelength._value, Wavelength._unit
-                self.tableWavelengths.setItem(i, 0, QTableWidgetItem(f"{wl_obj.value:.4f}")) # Display value in um
-                item_unit = QTableWidgetItem(wl_obj._unit if hasattr(wl_obj, '_unit') else "um") # Original unit
-                item_unit.setFlags(item_unit.flags() & ~Qt.ItemFlag.ItemIsEditable) # Unit not directly editable here
+                self.tableWavelengths.setItem(
+                    i, 0, QTableWidgetItem(f"{wl_obj.value:.4f}")
+                )  # Display value in um
+                item_unit = QTableWidgetItem(
+                    wl_obj._unit if hasattr(wl_obj, "_unit") else "um"
+                )  # Original unit
+                item_unit.setFlags(
+                    item_unit.flags() & ~Qt.ItemFlag.ItemIsEditable
+                )  # Unit not directly editable here
                 self.tableWavelengths.setItem(i, 1, item_unit)
-                
+
                 primary_item = QTableWidgetItem("Yes" if wl_obj.is_primary else "No")
-                primary_item.setFlags(primary_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                primary_item.setFlags(
+                    primary_item.flags() & ~Qt.ItemFlag.ItemIsEditable
+                )
                 self.tableWavelengths.setItem(i, 2, primary_item)
         self.is_loading = False
 
@@ -352,7 +419,11 @@ class WavelengthsEditor(QWidget):
     def remove_wavelength(self):
         optic = self.connector.get_optic()
         current_row = self.tableWavelengths.currentRow()
-        if optic and current_row != -1 and optic.wavelengths.num_wavelengths > current_row:
+        if (
+            optic
+            and current_row != -1
+            and optic.wavelengths.num_wavelengths > current_row
+        ):
             if optic.wavelengths.num_wavelengths == 1:
                 # QMessageBox.warning(self, "Cannot Remove", "Cannot remove the last wavelength. Add another first or change this one.")
                 print("Cannot remove the last wavelength.")
@@ -360,11 +431,11 @@ class WavelengthsEditor(QWidget):
 
             was_primary = optic.wavelengths.wavelengths[current_row].is_primary
             del optic.wavelengths.wavelengths[current_row]
-            
+
             if was_primary and optic.wavelengths.num_wavelengths > 0:
                 # If the removed was primary, make the new first one primary
                 optic.wavelengths.wavelengths[0].is_primary = True
-            
+
             self.load_data()
             self.connector.opticChanged.emit()
             print(f"Wavelength at row {current_row} removed.")
@@ -373,17 +444,22 @@ class WavelengthsEditor(QWidget):
     def set_primary_wavelength(self):
         optic = self.connector.get_optic()
         current_row = self.tableWavelengths.currentRow()
-        if optic and current_row != -1 and optic.wavelengths.num_wavelengths > current_row:
+        if (
+            optic
+            and current_row != -1
+            and optic.wavelengths.num_wavelengths > current_row
+        ):
             for i, wl_obj in enumerate(optic.wavelengths.wavelengths):
-                wl_obj.is_primary = (i == current_row)
+                wl_obj.is_primary = i == current_row
             self.load_data()
             self.connector.opticChanged.emit()
             print(f"Wavelength at row {current_row} set as primary.")
-            
+
     @Slot()
     def apply_table_wavelength_changes(self):
         optic = self.connector.get_optic()
-        if self.is_loading or not optic or not optic.wavelengths: return
+        if self.is_loading or not optic or not optic.wavelengths:
+            return
 
         changed = False
         if self.tableWavelengths.rowCount() == optic.wavelengths.num_wavelengths:
@@ -401,17 +477,21 @@ class WavelengthsEditor(QWidget):
                     # For simplicity, if table shows µm, we modify it assuming µm.
                     # This means original unit info might get less relevant if edited this way.
                     # A better way would be to edit _value and _unit, then re-calculate .value
-                    if wl_obj.value != new_val_um: # .value is always in um
-                        wl_obj._value = new_val_um # Assume new value is directly in um for now
-                        wl_obj._unit = "um"      # Mark it as um
-                        wl_obj._value_in_um = new_val_um # Recalculate (or set directly)
+                    if wl_obj.value != new_val_um:  # .value is always in um
+                        wl_obj._value = (
+                            new_val_um  # Assume new value is directly in um for now
+                        )
+                        wl_obj._unit = "um"  # Mark it as um
+                        wl_obj._value_in_um = (
+                            new_val_um  # Recalculate (or set directly)
+                        )
                         changed = True
                 except ValueError:
-                    print(f"Invalid numeric data in Wavelengths table row {i+1}.")
-                    self.load_data() # Revert
+                    print(f"Invalid numeric data in Wavelengths table row {i + 1}.")
+                    self.load_data()  # Revert
                     return
             if changed:
                 self.connector.opticChanged.emit()
                 print("Wavelength table changes applied.")
         else:
-            self.load_data() # Row count mismatch
+            self.load_data()  # Row count mismatch

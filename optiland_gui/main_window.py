@@ -26,8 +26,8 @@ class MainWindow(QMainWindow):
 
         # --- Create Panels ---
         self.lensEditor = LensEditor(self.connector)
-        self.viewerPanel = ViewerPanel(self.connector) 
-        self.analysisPanel = AnalysisPanel(self.connector) 
+        self.viewerPanel = ViewerPanel(self.connector)
+        self.analysisPanel = AnalysisPanel(self.connector)
         self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
 
@@ -38,10 +38,10 @@ class MainWindow(QMainWindow):
         self.lensEditorDock.setWidget(self.lensEditor)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.lensEditorDock)
 
-        self.systemPropertiesDock = QDockWidget("System Properties", self) 
+        self.systemPropertiesDock = QDockWidget("System Properties", self)
         self.systemPropertiesDock.setWidget(self.systemPropertiesPanel)
         self.tabifyDockWidget(self.lensEditorDock, self.systemPropertiesDock)
-        self.lensEditorDock.raise_() 
+        self.lensEditorDock.raise_()
 
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
@@ -56,22 +56,44 @@ class MainWindow(QMainWindow):
 
         self._create_actions()
         self._create_menu_bar()
-        self._create_tool_bars() 
+        self._create_tool_bars()
 
         # self.load_stylesheet("resources/styles.qss")
 
     def _create_actions(self):
         # File actions
-        self.newAction = QAction("&New System", self, shortcut=QKeySequence.New, triggered=self.new_system_action) # Renamed slot
-        self.openAction = QAction("&Open System...", self, shortcut=QKeySequence.Open, triggered=self.open_system_action) # Renamed slot
-        self.saveAction = QAction("&Save System", self, shortcut=QKeySequence.Save, triggered=self.save_system_action) # Renamed slot
-        self.saveAsAction = QAction("Save System &As...", self, shortcut=QKeySequence.SaveAs, triggered=self.save_system_as_action) # Renamed slot
-        self.exitAction = QAction("E&xit", self, shortcut=QKeySequence.Quit, triggered=self.close)
+        self.newAction = QAction(
+            "&New System",
+            self,
+            shortcut=QKeySequence.New,
+            triggered=self.new_system_action,
+        )  # Renamed slot
+        self.openAction = QAction(
+            "&Open System...",
+            self,
+            shortcut=QKeySequence.Open,
+            triggered=self.open_system_action,
+        )  # Renamed slot
+        self.saveAction = QAction(
+            "&Save System",
+            self,
+            shortcut=QKeySequence.Save,
+            triggered=self.save_system_action,
+        )  # Renamed slot
+        self.saveAsAction = QAction(
+            "Save System &As...",
+            self,
+            shortcut=QKeySequence.SaveAs,
+            triggered=self.save_system_as_action,
+        )  # Renamed slot
+        self.exitAction = QAction(
+            "E&xit", self, shortcut=QKeySequence.Quit, triggered=self.close
+        )
 
         # View actions for toggling docks
         self.toggleLensEditorAction = self.lensEditorDock.toggleViewAction()
         self.toggleLensEditorAction.setText("Toggle Lens &Editor")
-        self.toggleSystemPropertiesAction = self.systemPropertiesDock.toggleViewAction() 
+        self.toggleSystemPropertiesAction = self.systemPropertiesDock.toggleViewAction()
         self.toggleSystemPropertiesAction.setText("Toggle System &Properties")
         self.toggleAnalysisPanelAction = self.analysisPanelDock.toggleViewAction()
         self.toggleAnalysisPanelAction.setText("Toggle &Analysis Panel")
@@ -81,7 +103,9 @@ class MainWindow(QMainWindow):
         self.toggleOptimizationPanelAction.setText("Toggle &Optimization Panel")
 
         # Help actions
-        self.aboutAction = QAction("&About Optiland GUI", self, triggered=self.about_action) # Renamed slot
+        self.aboutAction = QAction(
+            "&About Optiland GUI", self, triggered=self.about_action
+        )  # Renamed slot
 
     def _create_menu_bar(self):
         menuBar = self.menuBar()
@@ -96,10 +120,10 @@ class MainWindow(QMainWindow):
 
         viewMenu = menuBar.addMenu("&View")
         viewMenu.addAction(self.toggleLensEditorAction)
-        viewMenu.addAction(self.toggleSystemPropertiesAction) 
+        viewMenu.addAction(self.toggleSystemPropertiesAction)
         viewMenu.addAction(self.toggleAnalysisPanelAction)
         viewMenu.addAction(self.toggleOptimizationPanelAction)
-        
+
         runMenu = menuBar.addMenu("&Run")
 
         helpMenu = menuBar.addMenu("&Help")
@@ -121,45 +145,60 @@ class MainWindow(QMainWindow):
             print(f"Error loading stylesheet: {e}")
 
     @Slot()
-    def new_system_action(self): # Renamed to avoid conflict with any potential internal 'new_system'
-        self.connector.new_system() # Calls the connector's method
+    def new_system_action(
+        self,
+    ):  # Renamed to avoid conflict with any potential internal 'new_system'
+        self.connector.new_system()  # Calls the connector's method
         print("Main Window: New System action triggered")
 
     @Slot()
-    def open_system_action(self): # Renamed
-        filepath, _ = QFileDialog.getOpenFileName(self, "Open Optiland System", "", "Optiland JSON Files (*.json);;All Files (*)")
+    def open_system_action(self):  # Renamed
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open Optiland System",
+            "",
+            "Optiland JSON Files (*.json);;All Files (*)",
+        )
         if filepath:
             self.connector.load_optic_from_file(filepath)
             print(f"Main Window: Open System action triggered - {filepath}")
 
     @Slot()
-    def save_system_action(self): # Renamed
+    def save_system_action(self):  # Renamed
         current_path = self.connector.get_current_filepath()
         if current_path:
             self.connector.save_optic_to_file(current_path)
             print(f"Main Window: Save System action triggered - {current_path}")
         else:
-            self.save_system_as_action() # If no current path, behave like Save As
+            self.save_system_as_action()  # If no current path, behave like Save As
 
     @Slot()
-    def save_system_as_action(self): # Renamed
-        filepath, _ = QFileDialog.getSaveFileName(self, "Save Optiland System As...", "", "Optiland JSON Files (*.json);;All Files (*)")
+    def save_system_as_action(self):  # Renamed
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Optiland System As...",
+            "",
+            "Optiland JSON Files (*.json);;All Files (*)",
+        )
         if filepath:
             # Ensure the filepath ends with .json if the filter selected it
-            if not filepath.lower().endswith(".json") and "(*.json)" in _.split(";;")[0] :
-                 filepath += ".json"
+            if (
+                not filepath.lower().endswith(".json")
+                and "(*.json)" in _.split(";;")[0]
+            ):
+                filepath += ".json"
             self.connector.save_optic_to_file(filepath)
             print(f"Main Window: Save System As action triggered - {filepath}")
 
     @Slot()
-    def about_action(self): # Renamed
+    def about_action(self):  # Renamed
         QMessageBox.about(
             self,
             "About Optiland GUI",
             "<p><b>Optiland GUI</b></p>"
             "<p>A modern interface for the Optiland optical simulation package.</p>"
-            "<p>Version: 0.1.1 (Alpha)</p>" # Slightly incremented version example
-            "<p>Built with PySide6.</p>"
+            "<p>Version: 0.1.1 (Alpha)</p>"  # Slightly incremented version example
+            "<p>Built with PySide6.</p>",
         )
 
     def closeEvent(self, event):
