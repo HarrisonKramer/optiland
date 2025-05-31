@@ -1,20 +1,21 @@
 /* Optiland Light Theme */
 
-/* Global Colors */
+/* Global Colors (commented out for testing)
 :root {
     --background-color: #F5F5F5;
     --surface-color: #FFFFFF;
-    --primary-color: #007ACC; /* Blue accent */
-    --secondary-color: #E0E0E0; /* Slightly darker surface for elements like inactive tabs */
+    --primary-color: #007ACC;
+    --secondary-color: #E0E0E0;
     --text-color: #202020;
     --border-color: #D0D0D0;
     --hover-color: #E8E8E8;
     --pressed-color: #D8D8D8;
 }
+*/
 
 QMainWindow {
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: #F5F5F5; /* Replaced var(--background-color) */
+    color: #202020; /* Replaced var(--text-color) */
 }
 
 QDockWidget {
@@ -23,47 +24,55 @@ QDockWidget {
 }
 
 QDockWidget::title {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
+    background-color: #E0E0E0; /* Replaced var(--secondary-color) */
+    color: #202020; /* Replaced var(--text-color) */
     padding: 6px 10px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #BEBEBE; /* Darker border for better separation */
     border-bottom: none;
 }
 
+QDockWidget::title:focus { /* Added for focused dock title */
+    background-color: #FFFFFF; /* Surface */
+    border-top: 2px solid #007ACC; /* Primary Accent */
+    padding-top: 4px; /* Adjust padding for border */
+}
+
 QTabWidget::pane {
-    border: 1px solid var(--border-color);
-    background-color: var(--surface-color);
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */
 }
 
 QTabBar::tab {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
+    background-color: #E0E0E0; /* Replaced var(--secondary-color) */
+    color: #202020; /* Replaced var(--text-color) */
     padding: 8px 15px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
     border-bottom: none;
     margin-right: 2px;
 }
 
 QTabBar::tab:selected {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--surface-color);
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
+    border-bottom: 1px solid #FFFFFF; /* Replaced var(--surface-color) */
+    border-top: 2px solid #007ACC; /* Primary Accent - Added emphasis */
+    padding-top: 6px; /* Adjust padding to accommodate border */
 }
 
 QTabBar::tab:!selected:hover {
-    background-color: var(--hover-color);
+    background-color: #E8E8E8; /* Replaced var(--hover-color) */
 }
 
 QLabel, QCheckBox, QRadioButton {
-    color: var(--text-color);
+    color: #202020; /* Replaced var(--text-color) */
     background-color: transparent;
     padding: 2px;
 }
 
 QPushButton {
-    background-color: var(--primary-color);
+    background-color: #007ACC; /* Replaced var(--primary-color) */
     color: white;
     border: none;
     padding: 8px 15px;
@@ -80,29 +89,31 @@ QPushButton:pressed {
 }
 
 QPushButton.secondary {
-    background-color: var(--surface-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background-color: #E0E0E0; /* Secondary Control Background */
+    color: #202020; /* Text */
+    border: 1px solid #D0D0D0; /* Border */
 }
 
 QPushButton.secondary:hover {
-    background-color: var(--hover-color);
+    background-color: #E8E8E8; /* Hover */
+    border-color: #BEBEBE; /* Slightly darker border for hover */
 }
 
 QPushButton.secondary:pressed {
-    background-color: var(--pressed-color);
+    background-color: #D8D8D8; /* Pressed */
 }
 
 QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
-    background-color: var(--surface-color); /* Inputs on light theme often match surface */
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */ /* Inputs on light theme often match surface */
+    color: #202020; /* Replaced var(--text-color) */
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
     padding: 5px;
     border-radius: 3px;
 }
 
 QLineEdit:focus, QTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
-    border: 1px solid var(--primary-color);
+    border: 1px solid #007ACC; /* Replaced var(--primary-color) */
+    background-color: #FFFFFF; /* Ensure background remains surface on focus */
 }
 
 QComboBox::drop-down {
@@ -116,44 +127,46 @@ QComboBox::down-arrow {
 }
 
 QTableWidget {
-    background-color: var(--surface-color);
-    color: var(--text-color);
-    gridline-color: var(--border-color);
-    border: 1px solid var(--border-color);
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */
+    color: #202020; /* Replaced var(--text-color) */
+    gridline-color: #D0D0D0; /* Replaced var(--border-color) */
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
     border-radius: 3px;
 }
 
 QHeaderView::section {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
+    background-color: #E0E0E0; /* Replaced var(--secondary-color) */
+    color: #202020; /* Replaced var(--text-color) */
     padding: 6px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #BEBEBE; /* Darker border for better separation */
+    border-bottom: 2px solid #BEBEBE; /* Darker border, Stronger separation */
+    padding-bottom: 4px; /* Adjust padding for border */
     font-weight: bold;
 }
 
 QTableWidget::item {
     padding: 5px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #D0D0D0; /* Replaced var(--border-color) */
 }
 
 QTableWidget::item:selected {
-    background-color: var(--primary-color);
+    background-color: #007ACC; /* Replaced var(--primary-color) */
     color: white;
 }
 
 QScrollBar:vertical {
-    background: var(--surface-color);
+    background: #FFFFFF; /* Replaced var(--surface-color) */
     width: 12px;
     margin: 0px 0px 0px 0px;
-    border-left: 1px solid var(--border-color);
+    border-left: 1px solid #D0D0D0; /* Replaced var(--border-color) */
 }
 QScrollBar::handle:vertical {
-    background: var(--pressed-color); /* Darker handle for light theme */
+    background: #D8D8D8; /* Replaced var(--pressed-color) */ /* Darker handle for light theme */
     min-height: 25px;
     border-radius: 6px;
 }
 QScrollBar::handle:vertical:hover {
-    background: var(--primary-color);
+    background: #007ACC; /* Replaced var(--primary-color) */
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
@@ -161,18 +174,18 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 QScrollBar:horizontal {
-    background: var(--surface-color);
+    background: #FFFFFF; /* Replaced var(--surface-color) */
     height: 12px;
     margin: 0px 0px 0px 0px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid #D0D0D0; /* Replaced var(--border-color) */
 }
 QScrollBar::handle:horizontal {
-    background: var(--pressed-color);
+    background: #D8D8D8; /* Replaced var(--pressed-color) */
     min-width: 25px;
     border-radius: 6px;
 }
 QScrollBar::handle:horizontal:hover {
-    background: var(--primary-color);
+    background: #007ACC; /* Replaced var(--primary-color) */
 }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     width: 0px;
@@ -180,9 +193,9 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 }
 
 QMenu {
-    background-color: var(--surface-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */
+    color: #202020; /* Replaced var(--text-color) */
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
     padding: 5px;
 }
 
@@ -191,20 +204,20 @@ QMenu::item {
 }
 
 QMenu::item:selected {
-    background-color: var(--primary-color);
+    background-color: #007ACC; /* Replaced var(--primary-color) */
     color: white;
 }
 
 QMenu::separator {
     height: 1px;
-    background-color: var(--border-color);
+    background-color: #D0D0D0; /* Replaced var(--border-color) */
     margin-left: 10px;
     margin-right: 5px;
 }
 
 QMenuBar {
-    background-color: var(--surface-color);
-    color: var(--text-color);
+    background-color: #FFFFFF; /* Replaced var(--surface-color) */
+    color: #202020; /* Replaced var(--text-color) */
 }
 
 QMenuBar::item {
@@ -213,23 +226,23 @@ QMenuBar::item {
 }
 
 QMenuBar::item:selected {
-    background-color: var(--primary-color);
+    background-color: #007ACC; /* Replaced var(--primary-color) */
     color: white;
 }
 
 QMenuBar::item:pressed {
-    background-color: var(--primary-color);
+    background-color: #007ACC; /* Replaced var(--primary-color) */
     color: white;
 }
 
 QToolTip {
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background-color: #E0E0E0; /* Replaced var(--secondary-color) */
+    color: #202020; /* Replaced var(--text-color) */
+    border: 1px solid #D0D0D0; /* Replaced var(--border-color) */
     padding: 4px;
     border-radius: 3px;
 }
 
 QWidget#matplotlib_viewer_widget {
-    background-color: var(--background-color);
+    background-color: #FFFFFF; /* Surface color for content areas */
 }

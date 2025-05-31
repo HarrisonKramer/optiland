@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTabWidget,
     QVBoxLayout,
+    QWidget, # Added QWidget
 )
 
 from .analysis_panel import AnalysisPanel
@@ -52,51 +53,68 @@ class MainWindow(QMainWindow):
         self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
 
-        self.setCentralWidget(self.viewerPanel)
+        # Step 1: Ensure ViewerPanel is in a QDockWidget
+        self.viewerDock = QDockWidget("Plotting Window", self)
+        self.viewerDock.setWidget(self.viewerPanel)
 
-        # --- Dock Widgets ---
+        # Step 2: Set a Placeholder Central Widget
+        self.setCentralWidget(QWidget(self)) # Placeholder central widget
+
+        # --- Dock Widgets (Restructured) ---
+        # Step 3: Clear/Adjust Existing Dock Setup (Done by not adding old calls)
+
+        # Define all dock widgets first
         self.lensEditorDock = QDockWidget("Lens Data Editor", self)
         self.lensEditorDock.setWidget(self.lensEditor)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.lensEditorDock)
-        # Store initial desired width (can be refined)
-        self.dock_original_sizes[self.lensEditorDock] = (
-            self.lensEditorDock.sizeHint().width()
-            if self.lensEditorDock.sizeHint().width() > 0
-            else 300
-        )
 
         self.systemPropertiesDock = QDockWidget("System Properties", self)
         self.systemPropertiesDock.setWidget(self.systemPropertiesPanel)
-        self.tabifyDockWidget(self.lensEditorDock, self.systemPropertiesDock)
-        self.lensEditorDock.raise_()
-        self.dock_original_sizes[self.systemPropertiesDock] = (
-            self.systemPropertiesDock.sizeHint().width()
-            if self.systemPropertiesDock.sizeHint().width() > 0
-            else 300
-        )
 
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
-        self.addDockWidget(
-            Qt.DockWidgetArea.RightDockWidgetArea, self.analysisPanelDock
-        )
-        self.dock_original_sizes[self.analysisPanelDock] = (
-            self.analysisPanelDock.sizeHint().width()
-            if self.analysisPanelDock.sizeHint().width() > 0
-            else 300
-        )
 
         self.optimizationPanelDock = QDockWidget("Optimization", self)
         self.optimizationPanelDock.setWidget(self.optimizationPanel)
-        self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)
-        self.analysisPanelDock.raise_()
-        self.dock_original_sizes[self.optimizationPanelDock] = (
-            self.optimizationPanelDock.sizeHint().width()
-            if self.optimizationPanelDock.sizeHint().width() > 0
-            else 300
-        )
 
-        self._create_actions()
+        # Store initial desired sizes (optional, but good for animations)
+        self.dock_original_sizes[self.lensEditorDock] = self.lensEditorDock.sizeHint().width() if self.lensEditorDock.sizeHint().width() > 0 else 300
+        self.dock_original_sizes[self.systemPropertiesDock] = self.systemPropertiesDock.sizeHint().width() if self.systemPropertiesDock.sizeHint().width() > 0 else 300
+        self.dock_original_sizes[self.viewerDock] = self.viewerDock.sizeHint().width() if self.viewerDock.sizeHint().width() > 0 else 600 # Viewer might be larger
+        self.dock_original_sizes[self.analysisPanelDock] = self.analysisPanelDock.sizeHint().width() if self.analysisPanelDock.sizeHint().width() > 0 else 300
+        self.dock_original_sizes[self.optimizationPanelDock] = self.optimizationPanelDock.sizeHint().width() if self.optimizationPanelDock.sizeHint().width() > 0 else 300
+
+        # Step 4: Implement the New Layout
+
+        # Step 4.1: Left Column (System Properties and Viewer)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.systemPropertiesDock)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.viewerDock) # Add to the same area
+        self.splitDockWidget(self.systemPropertiesDock, self.viewerDock, Qt.Orientation.Vertical)
+
+        # Step 4.2: Right Column (Lens Editor and Analysis)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.lensEditorDock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.analysisPanelDock) # Add to the same area
+        self.splitDockWidget(self.lensEditorDock, self.analysisPanelDock, Qt.Orientation.Vertical)
+
+        # Step 4.3: Split Left and Right Columns Horizontally
+        # This might require splitting one of the top docks with one of the top docks from the other column.
+        # For example, split systemPropertiesDock (top-left) with lensEditorDock (top-right).
+        self.splitDockWidget(self.systemPropertiesDock, self.lensEditorDock, Qt.Orientation.Horizontal)
+
+        # Step 4.4: Tabify Optimization Panel
+        # Add optimizationPanelDock to an area, then tabify.
+        # Adding to RightDockWidgetArea, then tabifying with analysisPanelDock.
+        # It might already be in the right area conceptually after the splits,
+        # but addDockWidget ensures it's managed.
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.optimizationPanelDock)
+        self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)
+        self.analysisPanelDock.raise_() # Make analysis panel the default visible tab
+
+        # Step 5: Review QMainWindow Dock Options (Defaults are usually fine)
+        # self.setDockNestingEnabled(True) # Default is True
+        # self.setAnimated(True) # Default is True for DockOptions
+        # AllowNestedDocks and AllowTabbedDocks are part of AnimatedDocks option or default
+
+        self._create_actions() # Actions need docks to be defined
         self._create_menu_bar()
         self._create_tool_bars()
 
@@ -269,6 +287,9 @@ class MainWindow(QMainWindow):
         self.toggleSystemPropertiesAction = self.systemPropertiesDock.toggleViewAction()
         self.toggleSystemPropertiesAction.setText("Toggle System &Properties")
 
+        self.toggleViewerPanelAction = self.viewerDock.toggleViewAction() # New toggle action for viewer
+        self.toggleViewerPanelAction.setText("Toggle &Plotting Window")
+
         self.toggleAnalysisPanelAction = self.analysisPanelDock.toggleViewAction()
         self.toggleAnalysisPanelAction.setText("Toggle &Analysis Panel")
 
@@ -324,6 +345,7 @@ class MainWindow(QMainWindow):
         # Add the original toggle actions to the menu
         viewMenu.addAction(self.lensEditorDock.toggleViewAction())
         viewMenu.addAction(self.systemPropertiesDock.toggleViewAction())
+        viewMenu.addAction(self.viewerDock.toggleViewAction()) # Add new toggle to menu
         viewMenu.addAction(self.analysisPanelDock.toggleViewAction())
         viewMenu.addAction(self.optimizationPanelDock.toggleViewAction())
 
