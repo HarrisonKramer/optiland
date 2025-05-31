@@ -160,6 +160,30 @@ def linspace(start, stop, num=50):
     )
 
 
+def arange(*args, step=1):
+    if len(args) == 1:
+        start = 0
+        end = args[0]
+    elif len(args) == 2:
+        start, end = args
+
+    if isinstance(start, torch.Tensor):
+        start = start.item()
+    if isinstance(end, torch.Tensor):
+        end = end.item()
+    if isinstance(step, torch.Tensor):
+        step = step.item()
+
+    return torch.arange(
+        start,
+        end,
+        step,
+        device=get_device(),
+        dtype=get_precision(),
+        requires_grad=grad_mode.requires_grad,
+    )
+
+
 def zeros_like(x):
     return torch.zeros_like(
         array(x),
@@ -311,6 +335,14 @@ def cos(x):
 
 def exp(x):
     return torch.exp(array(x))
+
+
+def log2(x):
+    return torch.log2(array(x))
+
+
+def abs(x):
+    return torch.abs(array(x))
 
 
 def radians(x):
@@ -574,6 +606,7 @@ __all__ = [
     "ones",
     "full",
     "linspace",
+    "arange",
     "zeros_like",
     "ones_like",
     "full_like",
@@ -603,6 +636,8 @@ __all__ = [
     "sin",
     "cos",
     "exp",
+    "log2",
+    "abs",
     "radians",
     "deg2rad",
     "max",
