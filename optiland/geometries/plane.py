@@ -30,6 +30,14 @@ class Plane(BaseGeometry):
     def __str__(self):
         return "Planar"
 
+    def flip(self):
+        """Flip the geometry.
+
+        For a plane, this operation does nothing as its geometry is unchanged
+        by flipping.
+        """
+        pass
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
 

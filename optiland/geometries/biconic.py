@@ -155,6 +155,20 @@ class BiconicGeometry(NewtonRaphsonGeometry):
 
         return nx, ny, nz
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radii of curvature Rx and Ry.
+        Updates the curvature attributes cx and cy accordingly.
+        The conic constants kx and ky remain unchanged.
+        """
+        self.Rx = -self.Rx
+        self.Ry = -self.Ry
+
+        # Update curvatures, handling potential division by zero if radius is zero
+        self.cx = be.where(be.isinf(self.Rx) | (self.Rx == 0), 0.0, 1.0 / self.Rx)
+        self.cy = be.where(be.isinf(self.Ry) | (self.Ry == 0), 0.0, 1.0 / self.Ry)
+
     def __str__(self) -> str:
         return "Biconic"
 

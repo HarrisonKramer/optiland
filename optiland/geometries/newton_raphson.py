@@ -61,6 +61,14 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
     def __str__(self):
         return "Newton Raphson"  # pragma: no cover
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of curvature.
+        The conic constant remains unchanged.
+        """
+        self.radius = -self.radius
+
     @abstractmethod
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry.
