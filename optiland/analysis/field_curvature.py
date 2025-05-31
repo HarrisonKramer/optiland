@@ -55,7 +55,7 @@ class FieldCurvature:
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
-        line_colors = plotter.config.get_style('line_colors')
+        line_colors = plotter.config.get_style("line_colors")
 
         for k, wavelength in enumerate(self.wavelengths):
             color_k = line_colors[k % len(line_colors)]
@@ -65,7 +65,7 @@ class FieldCurvature:
                 dk_np_tan,
                 field_np,
                 color=color_k,
-                linestyle='-',
+                linestyle="-",
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Tangential",
             )
@@ -74,7 +74,7 @@ class FieldCurvature:
                 dk_np_sag,
                 field_np,
                 color=color_k,
-                linestyle='--',
+                linestyle="--",
                 zorder=10,
                 label=f"{wavelength:.4f} µm, Sagittal",
             )
@@ -88,7 +88,7 @@ class FieldCurvature:
         # Ensure current_xlim has two values before trying to unpack or take abs
         if isinstance(current_xlim, tuple) and len(current_xlim) == 2:
             max_abs_xlim = np.max(np.abs(current_xlim))
-            if max_abs_xlim > 0: # Avoid setting xlim to [-0, 0]
+            if max_abs_xlim > 0:  # Avoid setting xlim to [-0, 0]
                 plotter.set_xlim(ax, [-max_abs_xlim, max_abs_xlim])
 
         vline_color = plotter.config.get_style("axis_color")

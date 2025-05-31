@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import numpy as np # For example usage
+import numpy as np  # For example usage
 
 try:
     from .config import PlotConfig
@@ -10,6 +10,7 @@ except ImportError:
     # This allows the script to be run directly for testing,
     # assuming config.py is in the same directory.
     from config import PlotConfig
+
 
 class Plotter:
     """
@@ -44,15 +45,17 @@ class Plotter:
         ax.set_facecolor(self.config.get_style("background_color"))
 
         axis_color = self.config.get_style("axis_color")
-        for spine in ['top', 'bottom', 'left', 'right']:
+        for spine in ["top", "bottom", "left", "right"]:
             ax.spines[spine].set_color(axis_color)
 
-        ax.tick_params(axis='x', colors=axis_color)
-        ax.tick_params(axis='y', colors=axis_color)
+        ax.tick_params(axis="x", colors=axis_color)
+        ax.tick_params(axis="y", colors=axis_color)
 
         return fig, ax
 
-    def plot_lines(self, ax, z_coords, y_coords_list, style_key_prefix="line_colors", linewidth=1):
+    def plot_lines(
+        self, ax, z_coords, y_coords_list, style_key_prefix="line_colors", linewidth=1
+    ):
         """
         Plots multiple lines on the given axes.
 
@@ -69,9 +72,17 @@ class Plotter:
         num_colors = len(self.config.get_style(style_key_prefix))
         for i, y_data in enumerate(y_coords_list):
             line_color = self.config.get_style(f"{style_key_prefix}.{i % num_colors}")
-            ax.plot(z_coords, y_data, color=line_color, linewidth=linewidth, label=f'Line {i+1}')
+            ax.plot(
+                z_coords,
+                y_data,
+                color=line_color,
+                linewidth=linewidth,
+                label=f"Line {i + 1}",
+            )
 
-    def add_polygon(self, ax, vertices, style_key="patch_colors.default", closed=True, **kwargs):
+    def add_polygon(
+        self, ax, vertices, style_key="patch_colors.default", closed=True, **kwargs
+    ):
         """
         Adds a styled polygon to the axes.
 
@@ -86,8 +97,9 @@ class Plotter:
         facecolor = self.config.get_style(f"{style_key}.facecolor")
         edgecolor = self.config.get_style(f"{style_key}.edgecolor")
 
-        polygon = patches.Polygon(vertices, closed=closed,
-                                  facecolor=facecolor, edgecolor=edgecolor, **kwargs)
+        polygon = patches.Polygon(
+            vertices, closed=closed, facecolor=facecolor, edgecolor=edgecolor, **kwargs
+        )
         ax.add_patch(polygon)
         return polygon
 
@@ -156,7 +168,7 @@ class Plotter:
         Args:
             ax (matplotlib.axes.Axes): The axes to set the aspect ratio for.
         """
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
 
     def show_plot(self):
         """Displays the current plot."""
@@ -185,14 +197,15 @@ class Plotter:
             **kwargs: Additional keyword arguments to pass to `ax.legend()`.
         """
         legend = ax.legend(**kwargs)
-        if legend: # legend can be None if no labeled artists are present
+        if legend:  # legend can be None if no labeled artists are present
             text_color = self.config.get_style("text_color")
             for text in legend.get_texts():
                 text.set_color(text_color)
             if legend.get_frame():
-                legend.get_frame().set_facecolor(self.config.get_style("background_color"))
+                legend.get_frame().set_facecolor(
+                    self.config.get_style("background_color")
+                )
                 legend.get_frame().set_edgecolor(self.config.get_style("axis_color"))
-
 
     def add_colorbar(self, fig, mappable, label="", **kwargs):
         """
@@ -223,7 +236,8 @@ class Plotter:
         """Applies fig.tight_layout()."""
         fig.tight_layout(**kwargs)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Example Usage:
 
     # Create a Plotter instance (uses "light" theme by default)
@@ -244,8 +258,9 @@ if __name__ == '__main__':
     plotter.add_polygon(ax, poly_vertices, style_key="patch_colors.lens", alpha=0.5)
 
     default_poly_verts = [(5, -0.8), (7, -0.2), (6, -0.1)]
-    plotter.add_polygon(ax, default_poly_verts, style_key="patch_colors.default", alpha=0.7)
-
+    plotter.add_polygon(
+        ax, default_poly_verts, style_key="patch_colors.default", alpha=0.7
+    )
 
     # Configure chart
     plotter.set_labels(ax, xlabel="X-axis (units)", ylabel="Y-axis (units)")
@@ -254,12 +269,12 @@ if __name__ == '__main__':
     plotter.set_ylim(ax, (-1.5, 1.5))
     plotter.apply_grid(ax)
     # plotter.set_aspect_equal(ax) # Uncomment to test aspect ratio
-    plotter.add_legend(ax, loc='upper right')
+    plotter.add_legend(ax, loc="upper right")
 
     # Save the light theme plot
     # plotter.save_figure(fig, "light_theme_example.png")
     # plotter.show_plot() # Show plot if not saving, or if you want to see before saving
-    plt.close(fig) # Close the figure to free memory before the next plot
+    plt.close(fig)  # Close the figure to free memory before the next plot
 
     print("Light theme example generated.")
 
@@ -267,33 +282,41 @@ if __name__ == '__main__':
     dark_config = PlotConfig(initial_theme="dark")
     plotter_dark = Plotter(config=dark_config)
 
-    fig_dark, ax_dark = plotter_dark.create_figure_and_axes(figsize=(12,5))
+    fig_dark, ax_dark = plotter_dark.create_figure_and_axes(figsize=(12, 5))
 
-    plotter_dark.plot_lines(ax_dark, z_coords, [y_coords1 * 0.8, y_coords2 * 0.8, y_coords3 * 0.8], linewidth=1.5)
+    plotter_dark.plot_lines(
+        ax_dark,
+        z_coords,
+        [y_coords1 * 0.8, y_coords2 * 0.8, y_coords3 * 0.8],
+        linewidth=1.5,
+    )
 
     poly_vertices_dark = [(7, 0.0), (9, 1.0), (8, 1.2)]
-    plotter_dark.add_polygon(ax_dark, poly_vertices_dark, style_key="patch_colors.lens", alpha=0.6)
+    plotter_dark.add_polygon(
+        ax_dark, poly_vertices_dark, style_key="patch_colors.lens", alpha=0.6
+    )
 
     default_poly_verts_dark = [(1, 0.2), (3, 0.8), (2, 0.9)]
-    plotter_dark.add_polygon(ax_dark, default_poly_verts_dark, style_key="patch_colors.default", alpha=0.7)
+    plotter_dark.add_polygon(
+        ax_dark, default_poly_verts_dark, style_key="patch_colors.default", alpha=0.7
+    )
 
     plotter_dark.set_labels(ax_dark, xlabel="X Data", ylabel="Y Data")
     plotter_dark.set_title(ax_dark, "Dark Theme Example Plot")
     plotter_dark.set_xlim(ax_dark, (0, 10))
     plotter_dark.set_ylim(ax_dark, (-1.5, 1.5))
-    plotter_dark.apply_grid(ax_dark, alpha=0.2, linestyle=':')
-    plotter_dark.add_legend(ax_dark, loc='lower left')
+    plotter_dark.apply_grid(ax_dark, alpha=0.2, linestyle=":")
+    plotter_dark.add_legend(ax_dark, loc="lower left")
 
     # Test colorbar
     try:
         # Create a dummy mappable for colorbar
-        data = np.random.rand(10,10)
-        mappable = ax_dark.imshow(data, cmap='viridis') # Viridis is just an example
+        data = np.random.rand(10, 10)
+        mappable = ax_dark.imshow(data, cmap="viridis")  # Viridis is just an example
         cb = plotter_dark.add_colorbar(fig_dark, mappable, label="Intensity")
         # print(f"Colorbar added. Label color: {cb.label.get_color()}") # Requires access to internal matplotlib state
     except Exception as e:
         print(f"Error adding colorbar in example: {e}")
-
 
     # Save the dark theme plot
     # plotter_dark.save_figure(fig_dark, "dark_theme_example.png")
@@ -301,12 +324,14 @@ if __name__ == '__main__':
     plt.close(fig_dark)
     print("Dark theme example generated.")
 
-    print("\nExample usage complete. If running in a non-interactive environment, plots might not display.")
+    print(
+        "\nExample usage complete. If running in a non-interactive environment, plots might not display."
+    )
     print("Uncomment save_figure lines to save plots to files.")
 
     # Test error case for get_style in Plotter, indirectly
     faulty_config = PlotConfig()
-    faulty_config.themes["light"].pop("background_color") # Damage the config
+    faulty_config.themes["light"].pop("background_color")  # Damage the config
     plotter_faulty = Plotter(config=faulty_config)
     try:
         fig_faulty, ax_faulty = plotter_faulty.create_figure_and_axes()

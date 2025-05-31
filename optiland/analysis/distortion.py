@@ -60,17 +60,21 @@ class Distortion:
         plotter = Plotter()
         fig, ax = plotter.create_figure_and_axes(figsize=figsize)
 
-        ax_vline_color = plotter.config.get_style("axis_color") # Using axis_color for the vline
+        ax_vline_color = plotter.config.get_style(
+            "axis_color"
+        )  # Using axis_color for the vline
         ax.axvline(x=0, color=ax_vline_color, linewidth=1, linestyle="--")
 
         field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
-        line_colors = plotter.config.get_style('line_colors') # Get the list of line colors
+        line_colors = plotter.config.get_style(
+            "line_colors"
+        )  # Get the list of line colors
 
         for k, wavelength in enumerate(self.wavelengths):
             dist_k = be.to_numpy(self.data[k])
-            color = line_colors[k % len(line_colors)] # Cycle through line colors
+            color = line_colors[k % len(line_colors)]  # Cycle through line colors
             ax.plot(dist_k, field_np, color=color, label=f"{wavelength:.4f} µm")
 
         plotter.set_labels(ax, xlabel="Distortion (%)", ylabel="Field")
@@ -78,9 +82,11 @@ class Distortion:
         current_xlim = ax.get_xlim()
         # Ensure current_xlim has two values before trying to unpack or take abs
         if isinstance(current_xlim, tuple) and len(current_xlim) == 2:
-             max_abs_xlim = np.max(np.abs(current_xlim))
-             if max_abs_xlim > 0: # Avoid setting xlim to [-0, 0] if all distortions are zero
-                 plotter.set_xlim(ax, [-max_abs_xlim, max_abs_xlim])
+            max_abs_xlim = np.max(np.abs(current_xlim))
+            if (
+                max_abs_xlim > 0
+            ):  # Avoid setting xlim to [-0, 0] if all distortions are zero
+                plotter.set_xlim(ax, [-max_abs_xlim, max_abs_xlim])
 
         # Set ylim from 0 to current max, or let plotter.set_ylim handle None for auto-scaling max
         current_ylim_max = ax.get_ylim()[1]

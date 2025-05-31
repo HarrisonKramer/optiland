@@ -197,7 +197,7 @@ class Rays2D:
             None
 
         """
-        line_colors = plotter.config.get_style('line_colors')
+        line_colors = plotter.config.get_style("line_colors")
         color = line_colors[color_idx % len(line_colors)]
         ax.plot(z, y, color=color, linewidth=linewidth)
 

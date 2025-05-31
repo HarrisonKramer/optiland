@@ -77,12 +77,12 @@ class OpticViewer:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        plotter = Plotter() # Uses default "light" theme
+        plotter = Plotter()  # Uses default "light" theme
         fig, ax = plotter.create_figure_and_axes(figsize=figsize)
 
         self.rays.plot(
             ax,
-            plotter, # Pass plotter to rays.plot
+            plotter,  # Pass plotter to rays.plot
             fields=fields,
             wavelengths=wavelengths,
             num_rays=num_rays,
