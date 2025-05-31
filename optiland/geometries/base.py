@@ -76,6 +76,17 @@ class BaseGeometry(ABC):
         """
         # pragma: no cover
 
+    @abstractmethod
+    def flip(self):
+        """Flip the geometry.
+
+        This method should modify the geometry parameters such that the
+        curvature is inverted. For example, the radius of curvature should
+        change sign. Conic constants and polynomial coefficients should not
+        change. The coordinate system of the geometry should not be modified.
+        """
+        pass  # pragma: no cover
+
     def localize(self, rays):
         """Convert rays from the global coordinate system to the local
         coordinate system.
