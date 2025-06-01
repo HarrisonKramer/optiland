@@ -64,7 +64,7 @@ class SurfaceFactory:
             ValueError: If the index is greater than the number of surfaces.
         """
         if index > self._surface_group.num_surfaces:
-            raise ValueError("Surface index cannot be greater than number of surfaces.")
+            raise IndexError("Surface index cannot be greater than number of surfaces.")
 
         # Build coordinate system
         coordinate_system = self._coordinate_factory.create(
