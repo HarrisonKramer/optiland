@@ -109,6 +109,8 @@ class SurfaceFactory:
             if surface_type == "paraxial":
                 raise ValueError("Paraxial surface cannot be the object surface.")
             surface_obj = ObjectSurface(geometry, material_post, comment)
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
 
         # Create the appropriate surface type
         if surface_type == "paraxial":
@@ -123,18 +125,19 @@ class SurfaceFactory:
                 surface_type=surface_type,
                 aperture=kwargs.get("aperture"),
             )
-        else:  # standard surface
-            surface_obj = Surface(
-                geometry,
-                material_pre,
-                material_post,
-                is_stop,
-                is_reflective=is_reflective,
-                coating=coating,
-                surface_type=surface_type,
-                comment=comment,
-                aperture=kwargs.get("aperture"),
-            )
+
+        # Standard surface - `surface_type` indicates geometrical shape of surface
+        surface_obj = Surface(
+            geometry,
+            material_pre,
+            material_post,
+            is_stop,
+            is_reflective=is_reflective,
+            coating=coating,
+            surface_type=surface_type,
+            comment=comment,
+            aperture=kwargs.get("aperture"),
+        )
 
         # Add the thickness as an attribute to the surface
         surface_obj.thickness = kwargs.get("thickness", 0.0)
