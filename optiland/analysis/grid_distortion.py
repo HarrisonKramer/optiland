@@ -12,8 +12,10 @@ import numpy as np
 
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class GridDistortion:
+
+class GridDistortion(BaseAnalysis):
     """Represents a grid distortion analysis for an optical system.
 
     Args:
@@ -44,13 +46,19 @@ class GridDistortion:
         num_points=10,
         distortion_type="f-tan",
     ):
-        self.optic = optic
-        if wavelength == "primary":
-            wavelength = optic.primary_wavelength
-        self.wavelength = wavelength
+        if isinstance(wavelength, str) and wavelength == "primary":
+            processed_wavelength = "primary"
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = float(wavelength)
+        else:
+            raise TypeError(
+                f"Unsupported wavelength type: {type(wavelength)} for GridDistortion. "
+                f"Expected 'primary', float, or int"
+            )
+
         self.num_points = num_points
         self.distortion_type = distortion_type
-        self.data = self._generate_data()
+        super().__init__(optic, wavelengths=processed_wavelength)
 
     def view(self, figsize=(7, 5.5)):
         """Visualizes the grid distortion analysis.
@@ -101,7 +109,11 @@ class GridDistortion:
 
         """
         # trace single reference ray
-        self.optic.trace_generic(Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=self.wavelength)
+        # Use self.wavelengths[0] as GridDistortion operates on a single wavelength
+        current_wavelength = self.wavelengths[0]
+        self.optic.trace_generic(
+            Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=current_wavelength
+        )
 
         max_field = np.sqrt(2) / 2
         extent = be.linspace(-max_field, max_field, self.num_points)
@@ -130,7 +142,7 @@ class GridDistortion:
             Hy=Hy.flatten(),
             Px=0,
             Py=0,
-            wavelength=self.wavelength,
+            wavelength=current_wavelength,  # Use the fetched wavelength
         )
 
         data = {}
