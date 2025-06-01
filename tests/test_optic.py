@@ -6,7 +6,7 @@ from optiland.fields import FieldGroup
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
-from optiland.surfaces import SurfaceGroup
+from optiland.surfaces import SurfaceGroup, ObjectSurface, StandardSurface
 from optiland.wavelength import WavelengthGroup
 
 
@@ -422,7 +422,75 @@ class TestOptic:
 
     def test_invalid_coordinate_system(self, set_test_backend):
         with pytest.raises(ValueError):
-            self.optic.add_surface(index=0, radius=be.inf, z=-100)
+            self.optic.add_surface(index=0, radius=be.inf, z=-100, surface_type="ObjectSurface") # ObjectSurface needed at index 0
             self.optic.add_surface(
-                index=1, radius=be.inf, z=0, dx=15
+                index=1, radius=be.inf, z=0, dx=15, surface_type="StandardSurface"
             )  # cannot use dx or dy with abs. z
+
+    # Inside TestOptic class in tests/test_optic.py
+    # Add at the top of the file: from optiland.surfaces import ObjectSurface, StandardSurface
+
+    def test_add_surface_out_of_order_optic(self, set_test_backend):
+        optic = Optic(name="OutOfOrderTest")
+        # 0: Object, thickness 10 (to S1) -> Obj at z=-10
+        optic.add_surface(surface_type="ObjectSurface", index=0, thickness=10, radius=be.inf, comment="Obj")
+        # Add S2 (intended index 2, becomes list index 1 for now), thickness 7, radius 60. Prev is Obj.
+        # Obj (z=-10) + Obj.thickness (10) = S2 at z=0
+        optic.add_surface(surface_type="StandardSurface", index=1, thickness=7, radius=60, comment="S2")
+
+        # Insert S1 (at list index 1, pushing S2 to index 2), thickness 5, radius 50. Prev is Obj.
+        # Obj (z=-10) + Obj.thickness (10) = S1 at z=0
+        optic.add_surface(surface_type="StandardSurface", index=1, thickness=5, radius=50, comment="S1")
+
+        sg = optic.surface_group
+        assert len(sg.surfaces) == 3
+        s_obj, s_s1, s_s2 = sg.surfaces[0], sg.surfaces[1], sg.surfaces[2]
+
+        assert isinstance(s_obj, ObjectSurface)
+        assert isinstance(s_s1, StandardSurface)
+        assert isinstance(s_s2, StandardSurface)
+
+        assert s_obj.comment == "Obj"
+        assert s_s1.comment == "S1"
+        assert s_s2.comment == "S2"
+
+        # Check thicknesses (surface_X.thickness is distance to surface_X+1)
+        assert be.isclose(s_obj.thickness, 10.0) # To S1
+        assert be.isclose(s_s1.thickness, 5.0)  # To S2
+        assert be.isclose(s_s2.thickness, 7.0)  # To Image or next
+
+        # Check z-positions
+        assert be.isclose(s_obj.geometry.cs.z, -10.0)
+        assert be.isclose(s_s1.geometry.cs.z, 0.0)  # (-10.0 + 10.0)
+        assert be.isclose(s_s2.geometry.cs.z, 5.0)   # (0.0 + 5.0)
+
+    def test_add_object_surface_replace_optic(self, set_test_backend):
+        optic = Optic(name="ReplaceObjTest")
+        optic.add_surface(surface_type="ObjectSurface", index=0, thickness=10, comment="Obj1", radius=be.inf)
+        assert optic.surface_group.surfaces[0].comment == "Obj1"
+        assert optic.surface_group.surfaces[0].thickness == 10
+
+        optic.add_surface(surface_type="ObjectSurface", index=0, thickness=20, comment="Obj2", radius=be.inf)
+        assert len(optic.surface_group.surfaces) == 1
+        assert optic.surface_group.surfaces[0].comment == "Obj2"
+        assert optic.surface_group.surfaces[0].thickness == 20
+
+    def test_fail_add_standard_surface_at_index_0_optic(self, set_test_backend):
+        optic = Optic(name="FailStdAtIndex0")
+        with pytest.raises(ValueError, match="Surface at index 0 must be an ObjectSurface"):
+            optic.add_surface(surface_type="StandardSurface", index=0, thickness=5.0, radius=100.0)
+
+    def test_optic_add_surface_index_validation(self, set_test_backend):
+        optic = Optic(name="IndexValidationTest")
+        # Negative index
+        with pytest.raises(ValueError, match="Surface index cannot be negative"):
+            optic.add_surface(surface_type="StandardSurface", index=-1, thickness=1)
+
+        # Non-integer index
+        with pytest.raises(TypeError, match="Surface index must be an integer"):
+            optic.add_surface(surface_type="StandardSurface", index="1", thickness=1)
+
+        # Gap index (requires an object surface first for this test to be robust)
+        optic.add_surface(surface_type="ObjectSurface", index=0, thickness=10, radius=be.inf)
+        with pytest.raises(ValueError, match="Surface index 2 is out of bounds"):
+            optic.add_surface(surface_type="StandardSurface", index=2, thickness=1)

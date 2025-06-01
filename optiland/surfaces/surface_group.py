@@ -12,6 +12,7 @@ import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.object_surface import ObjectSurface
 
 
 class SurfaceGroup:
@@ -215,51 +216,62 @@ class SurfaceGroup:
         material="air",
         **kwargs,
     ):
-        """Adds a new surface to the list of surfaces.
+        surface_to_add = None
 
-        Args:
-            new_surface (Surface, optional): The new surface to add. If not
-                provided, a new surface will be created based on the other
-                arguments.
-            surface_type (str, optional): The type of surface to create.
-            comment (str, optional): A comment for the surface. Defaults to ''.
-            index (int, optional): The index at which to insert the new
-                surface. If not provided, the surface will be appended to the
-                end of the list.
-            is_stop (bool, optional): Indicates if the surface is the aperture.
-            material (str, optional): The material of the surface.
-                Default is 'air'.
-            **kwargs: Additional keyword arguments for surface-specific
-                parameters such as radius, conic, dx, dy, rx, ry, rz, aperture,
-                bsdf, x, y, z.
-
-        Raises:
-            ValueError: If index is not provided when defining a new surface.
-
-        """
-        if new_surface is None:
+        if new_surface is not None:
+            surface_to_add = new_surface
+            # Apply explicit parameters from add_surface call to the provided surface object
+            surface_to_add.is_stop = is_stop
+            surface_to_add.comment = comment # Overwrite comment if provided in args
+        else:
             if index is None:
-                raise ValueError("Must define index when defining surface.")
+                 raise ValueError("Must define index when creating a new surface from type (when 'new_surface' is not provided).")
 
-            new_surface = self.surface_factory.create_surface(
-                surface_type,
-                comment,
-                index,
-                is_stop,
-                material,
+            surface_to_add = self.surface_factory.create_surface(
+                surface_type=surface_type,
+                comment=comment,
+                index=index,
+                is_stop=is_stop,
+                material=material,
                 **kwargs,
             )
 
-        if new_surface.is_stop:
-            for surface in self.surfaces:
-                surface.is_stop = False
+        if surface_to_add.is_stop:
+            for srf in self.surfaces:
+                srf.is_stop = False
+
+        # *** NEW VALIDATION CHECKS START HERE ***
+        if index is not None:
+            if not isinstance(index, int):
+                raise TypeError(f"Surface index must be an integer, got {type(index).__name__}.")
+            if index < 0:
+                raise ValueError(f"Surface index cannot be negative, got {index}.")
+            # Allow index == len(self.surfaces) for inserting at the very end.
+            # Disallow index > len(self.surfaces) as it would create a gap.
+            if index > len(self.surfaces):
+                raise ValueError(
+                    f"Surface index {index} is out of bounds. With {len(self.surfaces)} surfaces, "
+                    f"the maximum allowed index for insertion is {len(self.surfaces)} (to append). "
+                    f"Cannot create gaps."
+                )
+        # *** NEW VALIDATION CHECKS END HERE ***
+
+        if index == 0:
+            if not isinstance(surface_to_add, ObjectSurface):
+                raise ValueError(
+                    f"Surface at index 0 must be an ObjectSurface, got {type(surface_to_add).__name__}."
+                )
+
+            if self.surfaces:
+                self.surfaces[0] = surface_to_add
+            else:
+                self.surfaces.insert(0, surface_to_add)
+            return
 
         if index is None:
-            self.surfaces.append(new_surface)
+            self.surfaces.append(surface_to_add)
         else:
-            self.surfaces.insert(index, new_surface)
-
-        self.surface_factory.last_thickness = kwargs.get("thickness", 0)
+            self.surfaces.insert(index, surface_to_add)
 
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.

@@ -52,6 +52,7 @@ class Surface:
         is_reflective: bool = False,
         surface_type: str = None,
         comment: str = "",
+        thickness: float = 0.0,
     ):
         self.geometry = geometry
         self.material_pre = material_pre
@@ -64,6 +65,7 @@ class Surface:
         self.is_reflective = is_reflective
         self.surface_type = surface_type
         self.comment = comment
+        self.thickness = thickness
 
         self.reset()
 
@@ -275,6 +277,7 @@ class Surface:
             "coating": self.coating.to_dict() if self.coating else None,
             "bsdf": self.bsdf.to_dict() if self.bsdf else None,
             "is_reflective": self.is_reflective,
+            "thickness": self.thickness,
         }
 
     @classmethod
@@ -318,6 +321,9 @@ class Surface:
 
         surface_class = cls._registry.get(surface_type, cls)
 
+        # For backward compatibility, initialize with a default if 'thickness' is not present.
+        thickness = data.get("thickness", 0.0)
+
         return surface_class(
             geometry,
             material_pre,
@@ -327,4 +333,5 @@ class Surface:
             coating,
             bsdf,
             data["is_reflective"],
+            thickness=thickness, # Pass thickness to constructor
         )

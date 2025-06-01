@@ -29,7 +29,7 @@ class ObjectSurface(Surface):
 
     """
 
-    def __init__(self, geometry, material_post, comment=""):
+    def __init__(self, geometry, material_post, comment="", thickness: float = 0.0):
         super().__init__(
             geometry=geometry,
             material_pre=material_post,
@@ -37,6 +37,7 @@ class ObjectSurface(Surface):
             is_stop=False,
             aperture=None,
             comment=comment,
+            thickness=thickness,
         )
 
     @property
@@ -95,11 +96,24 @@ class ObjectSurface(Surface):
 
     def to_dict(self):
         """Returns a dictionary representation of the surface."""
-        return {
-            "type": self.__class__.__name__,
-            "geometry": self.geometry.to_dict(),
-            "material_post": self.material_post.to_dict(),
+        data = super().to_dict()
+        # Keep only relevant fields for ObjectSurface, remove fields from parent that are not needed
+        # or are fixed.
+        data_obj = {
+            "type": self.__class__.__name__, # Keep this to identify as ObjectSurface
+            "geometry": data["geometry"],
+            "material_post": data["material_post"],
+            # Thickness is inherited and should be preserved if set.
+            "thickness": data["thickness"],
+            # comment could be here if needed, but it's part of **kwargs in constructor
+            # and handled by superclass to_dict if we make it so.
+            # For now, let's assume comment is not part of the minimal dict for ObjectSurface
+            # unless explicitly added to its own __init__ and stored.
         }
+        # Filter out None thickness if it's the default, to keep dict clean
+        if data_obj["thickness"] == 0.0: # or some other default indicator
+            del data_obj["thickness"]
+        return data_obj
 
     @classmethod
     def _from_dict(cls, data):
@@ -114,4 +128,6 @@ class ObjectSurface(Surface):
         """
         geometry = BaseGeometry.from_dict(data["geometry"])
         material_post = BaseMaterial.from_dict(data["material_post"])
-        return cls(geometry, material_post)
+        # Pass thickness to constructor, defaulting if not present
+        thickness = data.get("thickness", 0.0)
+        return cls(geometry, material_post, thickness=thickness)

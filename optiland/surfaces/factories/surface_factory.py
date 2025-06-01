@@ -44,7 +44,8 @@ class SurfaceFactory:
         self._material_factory = MaterialFactory()
         self._coating_factory = CoatingFactory()
 
-        self.use_absolute_cs = False
+        # self.use_absolute_cs is removed as its logic should be self-contained
+        # or managed by CoordinateSystemFactory based on kwargs.
 
     def create_surface(self, surface_type, comment, index, is_stop, material, **kwargs):
         """Creates a surface object based on the given parameters.
@@ -104,11 +105,14 @@ class SurfaceFactory:
             surface_type, coordinate_system, geometry_config
         )
 
+        # Retrieve thickness for the current surface. This thickness is for the *next* surface.
+        current_surface_thickness = kwargs.get("thickness", 0.0)
+
         # Special case: object surface
         if index == 0:
             if surface_type == "paraxial":
                 raise ValueError("Paraxial surface cannot be the object surface.")
-            return ObjectSurface(geometry, material_post, comment)
+            return ObjectSurface(geometry, material_post, comment, thickness=current_surface_thickness)
 
         common_params = {"aperture": kwargs.get("aperture")}
 
@@ -123,6 +127,7 @@ class SurfaceFactory:
                 is_reflective=is_reflective,
                 coating=coating,
                 surface_type=surface_type,
+                thickness=current_surface_thickness,
                 **common_params,
             )
 
@@ -135,5 +140,6 @@ class SurfaceFactory:
             coating=coating,
             surface_type=surface_type,
             comment=comment,
+            thickness=current_surface_thickness,
             **common_params,
         )

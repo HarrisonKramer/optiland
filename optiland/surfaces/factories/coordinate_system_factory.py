@@ -20,7 +20,7 @@ class CoordinateSystemFactory:
 
     def __init__(self, surface_factory):
         self.surface_factory = surface_factory
-        self.last_thickness = 0
+        # self.last_thickness is removed as it's no longer needed.
 
     def create(self, index, surface_group, **kwargs):
         """Creates and returns a CoordinateSystem instance.
@@ -56,34 +56,33 @@ class CoordinateSystemFactory:
 
             x = kwargs.get("x", 0)
             y = kwargs.get("y", 0)
-            z = kwargs["z"]
-            self.surface_factory.use_absolute_cs = True
+            z_coord = kwargs["z"]
+            # Absolute positioning is determined by presence of 'z' in kwargs.
+            # No need for self.surface_factory.use_absolute_cs
         else:
-            if self.surface_factory.use_absolute_cs:
-                raise ValueError(
-                    'Cannot pass "thickness" after defining '
-                    '"x", "y", "z" position for a previous '
-                    "surface.",
-                )
+            # Relative positioning logic
+            dx_rel = kwargs.get("dx", 0)
+            dy_rel = kwargs.get("dy", 0)
 
-            thickness = kwargs.get("thickness", 0)
-            x = kwargs.get("dx", 0)
-            y = kwargs.get("dy", 0)
+            # This thickness is stored on the current surface for the *next* one.
+            # The actual z positioning uses the *previous* surface's thickness.
+            current_surface_thickness_for_next_surface = kwargs.get("thickness", 0.0)
 
-            if index == 0:  # object surface
-                z = -thickness
-            elif index == 1:
-                z = 0  # first surface, always at zero
-            else:
-                z = (
-                    float(surface_group.positions[index - 1].item())
-                    + self.surface_factory.last_thickness
-                )
+            if index == 0:  # Object surface
+                # The "thickness" of the object surface can be thought of as the distance
+                # from the origin to the object surface itself, or space before the first optical element.
+                # If it's positive, it means the object surface is to the left of the origin.
+                z_coord = -current_surface_thickness_for_next_surface
+            else: # Subsequent surfaces
+                previous_surface = surface_group.surfaces[index - 1]
+                thickness_from_previous_to_current = previous_surface.thickness
+                z_coord = previous_surface.geometry.cs.z + thickness_from_previous_to_current
 
-                self.last_thickness = thickness
+            x = dx_rel
+            y = dy_rel
 
         rx = kwargs.get("rx", 0)
         ry = kwargs.get("ry", 0)
         rz = kwargs.get("rz", 0)
 
-        return CoordinateSystem(x=x, y=y, z=z, rx=rx, ry=ry, rz=rz)
+        return CoordinateSystem(x=x, y=y, z=z_coord, rx=rx, ry=ry, rz=rz)
