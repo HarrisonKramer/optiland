@@ -4,9 +4,9 @@ import os
 from PySide6.QtCore import (
     QEasingCurve,
     QPropertyAnimation,
-    QRect,
+    # QRect,
     Qt,
-    QTimer,
+    # QTimer,
     Slot,
 )  # Added QRect
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         self.load_stylesheet(self.current_theme_path)
 
         # Connect toggle actions for animation
-        self.lensEditorDock.toggleViewAction().triggered.disconnect()  # Disconnect default
+        self.lensEditorDock.toggleViewAction().triggered.disconnect()
         self.lensEditorDock.toggleViewAction().triggered.connect(
             lambda checked, dock=self.lensEditorDock: self.animate_dock_toggle(
                 dock, checked
@@ -117,9 +117,9 @@ class MainWindow(QMainWindow):
             )
         )
         # For tabified docks, the logic might need to be smarter,
-        # as only one toggle action (for the currently visible tab's dock) might be relevant,
-        # or we animate the parent QTabBar/QDockWidget if that's the visual container.
-        # For now, let's connect them all and see.
+        # as only one toggle action (for the currently visible tab's dock) might be
+        # relevant, or we animate the parent QTabBar/QDockWidget if that's the visual
+        # container. For now, let's connect them all and see.
         self.analysisPanelDock.toggleViewAction().triggered.disconnect()
         self.analysisPanelDock.toggleViewAction().triggered.connect(
             lambda checked, dock=self.analysisPanelDock: self.animate_dock_toggle(
@@ -140,9 +140,9 @@ class MainWindow(QMainWindow):
         # QDockWidget.isVisible() might be false even if its toggle action is checked.
         # We care about the state *after* the toggle action has conceptually occurred.
 
-        is_currently_visible = (
-            not dock_widget.isHidden()
-        )  # More reliable for animation start
+        # is_currently_visible = (
+        #     not dock_widget.isHidden()
+        # )  # More reliable for animation start
 
         # If the action wants to show it, and it's currently hidden -> animate in
         # If the action wants to hide it, and it's currently visible -> animate out
@@ -198,7 +198,8 @@ class MainWindow(QMainWindow):
                 animation.start(QPropertyAnimation.DeleteWhenStopped)
                 self.dock_animations[dock_widget] = animation
             else:
-                # If it's already visible (e.g. another tab in its group was visible), just ensure it's raised
+                # If it's already visible (e.g. another tab in its group was visible),
+                # just ensure it's raised
                 dock_widget.raise_()
 
         else:  # Animate OUT
@@ -219,7 +220,8 @@ class MainWindow(QMainWindow):
                 animation.setDuration(animation_duration)
                 animation.setEasingCurve(easing_curve)
                 animation.finished.connect(dock_widget.hide)  # Hide when done
-                # Restore maximumWidth/Height after hiding to allow normal resize if shown again without animation
+                # Restore maximumWidth/Height after hiding to allow normal resize if
+                # shown again without animation
                 animation.finished.connect(
                     lambda: dock_widget.setMaximumWidth(original_width)
                     if self.dockWidgetArea(dock_widget)
@@ -262,7 +264,8 @@ class MainWindow(QMainWindow):
             "E&xit", self, shortcut=QKeySequence.Quit, triggered=self.close
         )
 
-        # View actions for toggling docks - text is set here, actual toggle connection in __init__
+        # View actions for toggling docks - text is set here, actual toggle connection
+        # in __init__
         self.toggleLensEditorAction = self.lensEditorDock.toggleViewAction()
         self.toggleLensEditorAction.setText("Toggle Lens &Editor")
 
@@ -352,7 +355,7 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(self.analysisPanelDock.toggleViewAction())
         viewMenu.addAction(self.optimizationPanelDock.toggleViewAction())
 
-        runMenu = menuBar.addMenu("&Run")
+        runMenu = menuBar.addMenu("&Run")  # noqa: F841
 
         helpMenu = menuBar.addMenu("&Help")
         helpMenu.addAction(self.aboutAction)
@@ -460,10 +463,11 @@ class MainWindow(QMainWindow):
 
         # Fade-in animation
         about_dialog.setWindowOpacity(0.0)
-        # Store animation on the dialog itself or on main window to prevent premature garbage collection if needed
-        # For a short-lived dialog, direct storage might be okay if exec_ blocks until it's done.
-        # However, if the animation object is collected, it stops.
-        # Assigning to self.about_dialog_animation ensures it lives as long as MainWindow or until replaced.
+        # Store animation on the dialog itself or on main window to prevent premature
+        # garbage collection if needed. For a short-lived dialog, direct storage might
+        # be okay if exec_ blocks until it's done. However, if the animation object is
+        # collected, it stops. Assigning to self.about_dialog_animation ensures it
+        # lives as long as MainWindow or until replaced.
         self.about_dialog_animation = QPropertyAnimation(about_dialog, b"windowOpacity")
         self.about_dialog_animation.setDuration(300)  # ms
         self.about_dialog_animation.setStartValue(0.0)
@@ -473,10 +477,10 @@ class MainWindow(QMainWindow):
         # Make sure the dialog is deleted after closing to free resources
         about_dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
-        # The animation should ideally be started just before or as the dialog becomes visible.
-        # QDialog.exec_() is blocking. We can show it modelessly, animate, then make it modal,
-        # or rely on Qt to handle the animation started just before exec_().
-        # Starting animation then calling exec_()
+        # The animation should ideally be started just before or as the dialog becomes
+        # visible. QDialog.exec_() is blocking. We can show it modelessly, animate,
+        # then make it modal, or rely on Qt to handle the animation started just before
+        # exec_(). Starting animation then calling exec_()
         self.about_dialog_animation.start(
             QPropertyAnimation.DeletionPolicy.DeleteWhenStopped
         )

@@ -13,10 +13,6 @@ from PySide6.QtWidgets import (
 
 from .optiland_connector import OptilandConnector
 
-# No changes needed here if OptilandConnector handles headers and data correctly.
-# The existing LensEditor should adapt if OptilandConnector is correctly updated.
-# Make sure signals are correctly connected and handled for refresh.
-
 
 class LensEditor(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):

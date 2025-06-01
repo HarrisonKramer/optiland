@@ -1,5 +1,6 @@
 # optiland_gui/analysis_panel.py
 import inspect  # Added inspect module
+
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QComboBox,
@@ -69,7 +70,8 @@ class AnalysisPanel(QWidget):
         self.resultsArea = QTextEdit()  # Changed to QTextEdit for more info
         self.resultsArea.setReadOnly(True)
         self.resultsArea.setPlaceholderText(
-            "Select an analysis and click 'Run Analysis'. Plots will appear in separate windows."
+            "Select an analysis and click 'Run Analysis'. "
+            "Plots will appear in separate windows."
         )
         self.layout.addWidget(self.resultsArea, 1)
 
@@ -102,7 +104,8 @@ class AnalysisPanel(QWidget):
 
         if analysis_class:
             self.resultsArea.setText(
-                f"Running {selected_analysis_name}...\nPlots will appear in external windows."
+                f"Running {selected_analysis_name}...\nPlots will appear "
+                f"in external windows."
             )
             try:
                 primary_wl_val = self.connector._get_safe_primary_wavelength_value()
@@ -160,15 +163,17 @@ class AnalysisPanel(QWidget):
                         constructor_args[param.name] = "linear"
                     elif param.name == "pupil_points":  # For PupilAberration
                         constructor_args[param.name] = 32
-                    # Add other common parameters if needed, or rely on their defaults in the class
-                    # If a parameter is mandatory and not covered, an error will still occur at instantiation
+                    # Add other common parameters if needed, or rely on their defaults
+                    # in the class. If a parameter is mandatory and not covered, an
+                    # error will still occur at instantiation
 
                 self.resultsArea.append(f"Using arguments: {constructor_args}")
                 analysis_instance = analysis_class(**constructor_args)
                 analysis_instance.view()  # This will call plt.show() internally
                 self.resultsArea.append(f"{selected_analysis_name} completed.")
                 print(
-                    f"Analysis Panel: Ran {selected_analysis_name} with args: {constructor_args}"
+                    f"Analysis Panel: Ran {selected_analysis_name} with "
+                    f"args: {constructor_args}"
                 )
 
             except Exception as e:

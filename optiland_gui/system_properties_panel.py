@@ -1,19 +1,14 @@
 # optiland_gui/system_properties_panel.py
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
-    QFrame,
-    QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
-    QLineEdit,
-    QMessageBox,
     QPushButton,
-    QScrollArea,
     QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
@@ -22,10 +17,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-from optiland.aperture import Aperture
-from optiland.fields import Field
-from optiland.wavelength import Wavelength
 
 from .optiland_connector import OptilandConnector
 
@@ -166,7 +157,8 @@ class ApertureEditor(QWidget):
             ap_type = self.cmbApertureType.currentText()
             ap_value = self.spnApertureValue.value()
             try:
-                # Assuming Optic.set_aperture exists and handles Optic.aperture creation/update
+                # Assuming Optic.set_aperture exists and handles Optic.aperture
+                # creation/update
                 optic.set_aperture(ap_type, ap_value)
                 self.connector.opticChanged.emit()  # Notify that optic has changed
                 print(f"Aperture updated: {ap_type}, {ap_value}")
@@ -316,7 +308,6 @@ class FieldsEditor(QWidget):
                             changed = True
                     except ValueError:
                         print(f"Invalid data in fields table row {i}")
-                        # QMessageBox.warning(self, "Input Error", f"Invalid numeric data in Fields table row {i+1}.")
                         self.load_data()  # Revert to original
                         return
                 if changed:
@@ -427,7 +418,6 @@ class WavelengthsEditor(QWidget):
             and optic.wavelengths.num_wavelengths > current_row
         ):
             if optic.wavelengths.num_wavelengths == 1:
-                # QMessageBox.warning(self, "Cannot Remove", "Cannot remove the last wavelength. Add another first or change this one.")
                 print("Cannot remove the last wavelength.")
                 return
 
@@ -477,8 +467,9 @@ class WavelengthsEditor(QWidget):
                     # wl_obj._value = new_val_converted_back_to_original_unit
                     # wl_obj._value_in_um = wl_obj._convert_to_um()
                     # For simplicity, if table shows µm, we modify it assuming µm.
-                    # This means original unit info might get less relevant if edited this way.
-                    # A better way would be to edit _value and _unit, then re-calculate .value
+                    # This means original unit info might get less relevant if edited
+                    # this way. A better way would be to edit _value and _unit, then
+                    # re-calculate .value
                     if wl_obj.value != new_val_um:  # .value is always in um
                         wl_obj._value = (
                             new_val_um  # Assume new value is directly in um for now

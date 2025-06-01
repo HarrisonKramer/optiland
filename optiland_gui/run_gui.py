@@ -9,17 +9,6 @@ from .main_window import MainWindow
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # Optional: Apply a stylesheet (e.g., from qt-material or qdarkstyle)
-    # from qt_material import apply_stylesheet
-    # apply_stylesheet(app, theme='dark_teal.xml')
-
-    # Or load a custom QSS file:
-    # try:
-    #     with open("resources/styles.qss", "r") as f:
-    #         app.setStyleSheet(f.read())
-    # except FileNotFoundError:
-    #     print("resources/styles.qss not found. Using default style.")
-
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

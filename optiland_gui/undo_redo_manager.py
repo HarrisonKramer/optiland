@@ -22,14 +22,16 @@ class UndoRedoManager(QObject):
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
         print(
-            f"UndoRedoManager: State added. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+            f"UndoRedoManager: State added. Undo stack size: {len(self._undo_stack)}, "
+            f"Redo stack size: {len(self._redo_stack)}"
         )
 
     def undo(self, current_state_for_redo):
         """
         Performs an undo operation.
         Returns the state to restore.
-        'current_state_for_redo' is the state *after* the original action was performed (i.e., the state *before* undoing).
+        'current_state_for_redo' is the state *after* the original action was
+        performed (i.e., the state *before* undoing).
         """
         if not self.can_undo():
             return None
@@ -40,7 +42,8 @@ class UndoRedoManager(QObject):
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
         print(
-            f"UndoRedoManager: Undo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+            f"UndoRedoManager: Undo. Undo stack size: {len(self._undo_stack)}, "
+            f"Redo stack size: {len(self._redo_stack)}"
         )
         return restored_state
 
@@ -48,20 +51,23 @@ class UndoRedoManager(QObject):
         """
         Performs a redo operation.
         Returns the state to restore.
-        'current_state_for_undo' is the state *after* the undo operation was performed (i.e., the state *before* redoing).
+        'current_state_for_undo' is the state *after* the undo operation was
+        performed (i.e., the state *before* redoing).
         """
         if not self.can_redo():
             return None
 
         restored_state = self._redo_stack.pop()
-        # The 'current_state_for_undo' is the state that resulted from the 'undo' operation.
-        # This state (which is about to be replaced by 'restored_state') is what should go onto the undo stack.
+        # The 'current_state_for_undo' is the state that resulted from the 'undo'
+        # operation. This state (which is about to be replaced by 'restored_state') is
+        # what should go onto the undo stack.
         self._undo_stack.append(current_state_for_undo)
 
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
         print(
-            f"UndoRedoManager: Redo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+            f"UndoRedoManager: Redo. Undo stack size: {len(self._undo_stack)}, "
+            f"Redo stack size: {len(self._redo_stack)}"
         )
         return restored_state
 

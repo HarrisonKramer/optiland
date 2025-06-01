@@ -1,6 +1,6 @@
 import json
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox  # For showing errors to user
 
 import optiland.backend as be
@@ -9,7 +9,6 @@ from optiland.materials import Material as OptilandMaterial
 from optiland.optic import Optic
 from optiland.physical_apertures.radial import RadialAperture, configure_aperture
 from optiland_gui.undo_redo_manager import UndoRedoManager
-from optiland.surfaces import ImageSurface, ObjectSurface, Surface
 
 
 class SpecialFloatEncoder(json.JSONEncoder):
@@ -39,7 +38,7 @@ class SpecialFloatEncoder(json.JSONEncoder):
             try:
                 if be.isinf(obj):  # Check if be.isinf is the function
                     return "Infinity" if obj > 0 else "-Infinity"
-            except:
+            except:  # noqa: E722
                 pass
         try:
             return super().default(obj)
@@ -85,7 +84,7 @@ class OptilandConnector(QObject):
             self.redoStackAvailabilityChanged
         )
         self.opticLoaded.emit()
-        self._undo_redo_manager.clear_stacks()  # Ensure stacks are empty and signals emitted
+        self._undo_redo_manager.clear_stacks()
 
     def _initialize_optic_structure(
         self, optic_instance: Optic, is_specific_new_system: bool = False
@@ -93,15 +92,17 @@ class OptilandConnector(QObject):
         """
         Initializes or ensures basic integrity of an Optic instance.
         If is_specific_new_system is True, it creates the defined dummy system.
-        Otherwise, it ensures a loaded/existing system has minimal structure and valid wavelengths.
+        Otherwise, it ensures a loaded/existing system has minimal structure and valid
+        wavelengths.
         """
         if is_specific_new_system:
             print("Connector: Creating specific new dummy system.")
             optic_instance.surface_group.surfaces.clear()
             optic_instance.wavelengths.wavelengths.clear()  # Clear before adding new
 
-            # Object Surface: Optiland's add_surface index 0 is object. Material is for space *after* it.
-            # Thickness for object is distance to first optical surface.
+            # Object Surface: Optiland's add_surface index 0 is object. Material is for
+            # space *after* it. Thickness for object is distance to first optical
+            # surface.
             optic_instance.add_surface(
                 surface_type="standard",
                 radius=float("inf"),
@@ -135,10 +136,11 @@ class OptilandConnector(QObject):
                 optic_instance.surface_group.num_surfaces < 2
             ):  # Must have at least Obj and Img
                 print(
-                    "Connector (Integrity): Optic has < 2 surfaces. Resetting to minimal Object/Image."
+                    "Connector (Integrity): Optic has < 2 surfaces. "
+                    "Resetting to minimal Object/Image."
                 )
                 optic_instance.surface_group.surfaces.clear()
-                optic_instance.wavelengths.wavelengths.clear()  # Also clear WLs if resetting surfaces
+                optic_instance.wavelengths.wavelengths.clear()
                 optic_instance.add_surface(
                     surface_type="standard",
                     radius=float("inf"),
@@ -164,18 +166,18 @@ class OptilandConnector(QObject):
             # Wavelength integrity for already populated (but potentially flawed) optic
             if optic_instance.wavelengths.num_wavelengths == 0:
                 print(
-                    f"Connector (Integrity): Optic has no wavelengths. Adding default primary: {self.DEFAULT_WAVELENGTH_UM} um."
+                    f"Connector (Integrity): Optic has no wavelengths. "
+                    f"Adding default primary: {self.DEFAULT_WAVELENGTH_UM} um."
                 )
                 optic_instance.add_wavelength(
                     self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
                 )
             elif optic_instance.wavelengths.primary_index is None:
                 print(
-                    "Connector (Integrity): Optic has wavelengths but no primary. Setting first as primary."
+                    "Connector (Integrity): Optic has wavelengths but no primary. "
+                    "Setting first as primary."
                 )
-                if (
-                    optic_instance.wavelengths.num_wavelengths > 0
-                ):  # Should be true if primary_index is None but num_wavelengths isn't 0
+                if optic_instance.wavelengths.num_wavelengths > 0:
                     optic_instance.wavelengths.wavelengths[0].is_primary = True
                     for i in range(1, optic_instance.wavelengths.num_wavelengths):
                         optic_instance.wavelengths.wavelengths[i].is_primary = False
@@ -190,14 +192,16 @@ class OptilandConnector(QObject):
                     return self._optic.wavelengths.wavelengths[primary_idx].value
                 except IndexError:
                     print(
-                        "Warning: Primary wavelength index out of bounds. Attempting recovery."
+                        "Warning: Primary wavelength index out of bounds. "
+                        "Attempting recovery."
                     )
             # If no primary_idx or IndexError, try to fix and use the first one
             if (
                 self._optic.wavelengths.num_wavelengths > 0
             ):  # Check again in case list became empty
                 print(
-                    "Warning: Primary wavelength index issue or recovery needed. Using first wavelength."
+                    "Warning: Primary wavelength index issue or recovery needed. "
+                    "Using first wavelength."
                 )
                 self._optic.wavelengths.wavelengths[0].is_primary = True
                 for i in range(1, self._optic.wavelengths.num_wavelengths):
@@ -205,7 +209,8 @@ class OptilandConnector(QObject):
                 return self._optic.wavelengths.wavelengths[0].value
 
         print(
-            f"Critical Warning: No valid wavelengths in optic. Falling back to default {self.DEFAULT_WAVELENGTH_UM} um."
+            f"Critical Warning: No valid wavelengths in optic. "
+            f"Falling back to default {self.DEFAULT_WAVELENGTH_UM} um."
         )
         # Ensure a default wavelength exists if we fall back here
         if self._optic.wavelengths.num_wavelengths == 0:
@@ -238,7 +243,8 @@ class OptilandConnector(QObject):
     def _restore_optic_state(self, state_data):
         """Helper to restore optic state from a dictionary."""
         self._optic = Optic.from_dict(state_data)
-        # After loading, ensure basic integrity but do NOT force the dummy system structure
+        # After loading, ensure basic integrity but do NOT force the dummy system
+        # structure
         # This also handles wavelength integrity and updates the optic
         self._initialize_optic_structure(self._optic, is_specific_new_system=False)
         self.opticLoaded.emit()  # Signal that the entire optic might have changed
@@ -257,7 +263,7 @@ class OptilandConnector(QObject):
 
     def load_optic_from_file(self, filepath):
         try:
-            with open(filepath, "r") as f:
+            with open(filepath) as f:
 
                 def json_inf_nan_hook(dct):
                     for k, v in dct.items():
@@ -272,28 +278,32 @@ class OptilandConnector(QObject):
 
                 data = json.load(f, object_hook=json_inf_nan_hook)
 
-            self._undo_redo_manager.clear_stacks()  # Clear history for newly loaded file
+            self._undo_redo_manager.clear_stacks()  # Clear history for loaded file
             self._optic = Optic.from_dict(data)
             self._current_filepath = filepath
             print(f"OpticConnector: Optic loaded from {filepath}. Checking integrity.")
 
-            # After loading, ensure basic integrity but do NOT force the dummy system structure
+            # After loading, ensure basic integrity but do NOT force the dummy system
+            # structure
             self._initialize_optic_structure(self._optic, is_specific_new_system=False)
 
             # Diagnostic check for stop surface after load and integrity check
             try:
                 stop_idx_after_update = self._optic.surface_group.stop_index
                 print(
-                    f"DEBUG: Stop index after load & integrity check is: {stop_idx_after_update}"
+                    f"DEBUG: Stop index after load & integrity "
+                    f"check is: {stop_idx_after_update}"
                 )
             except ValueError as e_stop:
                 print(
-                    f"DEBUG ALERT: Error getting stop_index after load & integrity check: {e_stop}"
+                    f"DEBUG ALERT: Error getting stop_index after "
+                    f"load & integrity check: {e_stop}"
                 )
                 QMessageBox.warning(
                     None,
                     "Load Warning",
-                    f"Loaded system from {filepath} may be missing a designated stop surface or has other structural issues:\n{e_stop}",
+                    f"Loaded system from {filepath} may be missing a designated "
+                    f"stop surface or has other structural issues:\n{e_stop}",
                 )
 
             self.opticLoaded.emit()
@@ -485,7 +495,8 @@ class OptilandConnector(QObject):
             self.opticChanged.emit()
         except Exception as e:
             print(
-                f"OpticConnector: Error setting data at ({row},{col_idx}) to '{value_str}': {e}"
+                f"OpticConnector: Error setting data "
+                f"at ({row},{col_idx}) to '{value_str}': {e}"
             )
 
     def add_surface(self, index=-1):
@@ -525,7 +536,8 @@ class OptilandConnector(QObject):
             self.opticChanged.emit()
         else:
             print(
-                "OpticConnector: Cannot remove Object or Image surface via this LDE action."
+                "OpticConnector: Cannot remove Object or Image surface "
+                "via this LDE action."
             )
 
     def undo(self):
@@ -542,7 +554,8 @@ class OptilandConnector(QObject):
 
     def redo(self):
         if self._undo_redo_manager.can_redo():
-            # The state *before* redoing (which is the current state) needs to be pushed to undo stack
+            # The state *before* redoing (which is the current state) needs to be
+            # pushed to undo stack
             current_state_for_undo = self._capture_optic_state()
             restored_state_data = self._undo_redo_manager.redo(current_state_for_undo)
             if restored_state_data:
