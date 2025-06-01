@@ -47,29 +47,18 @@ class GridDistortion(BaseAnalysis):
         distortion_type="f-tan",
     ):
         if isinstance(wavelength, str) and wavelength == "primary":
-            super_wavelengths_arg = "primary"
-        elif isinstance(
-            wavelength, (float, int, be.Tensor)
-        ):  # Allow backend tensor for wavelength value
-            if hasattr(wavelength, "item"):  # typical for scalar tensor
-                super_wavelengths_arg = [float(wavelength.item())]
-            else:
-                super_wavelengths_arg = [float(wavelength)]
-        elif hasattr(
-            wavelength, "value"
-        ):  # Check if it's a Wavelength object (e.g. from optic.primary_wavelength)
-            super_wavelengths_arg = [float(wavelength.value)]
+            processed_wavelength = "primary"
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = float(wavelength)
         else:
             raise TypeError(
-                f"Unsupported wavelength type: {type(wavelength)} for GridDistortion. Expected 'primary', float, int, Tensor, or object with .value."
+                f"Unsupported wavelength type: {type(wavelength)} for GridDistortion. "
+                f"Expected 'primary', float, or int"
             )
 
-        super().__init__(optic, wavelengths=super_wavelengths_arg)
         self.num_points = num_points
         self.distortion_type = distortion_type
-        # self.data is set by super().__init__() which calls _generate_data()
-        # self.wavelength (singular) is no longer set here.
-        # _generate_data will use self.wavelengths[0]
+        super().__init__(optic, wavelengths=processed_wavelength)
 
     def view(self, figsize=(7, 5.5)):
         """Visualizes the grid distortion analysis.

@@ -47,9 +47,7 @@ class PupilAberration(BaseAnalysis):
         else:
             self.num_points = num_points
 
-        # wavelengths argument is passed directly to BaseAnalysis
         super().__init__(optic, wavelengths)
-        # self.optic, self.wavelengths, self.data are set by super()
 
     def view(self, figsize=(10, 3.33)):
         """Displays the pupil aberration plot.

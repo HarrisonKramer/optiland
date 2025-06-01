@@ -1,3 +1,11 @@
+"""Analysis Base Module
+
+This module contains the abstract base class for all analysis
+classes in the Optiland package.
+
+Kramer Harrison, 2025
+"""
+
 import abc
 
 
@@ -24,21 +32,7 @@ class BaseAnalysis(abc.ABC):
             if wavelengths == "all":
                 self.wavelengths = self.optic.wavelengths.get_wavelengths()
             elif wavelengths == "primary":
-                # Assuming primary_wavelength might be an object with a .value attribute
-                # or just a value itself. If it's an object, .value is common.
-                # If get_wavelengths() returns a list of objects, this needs adjustment too.
-                # For now, let's assume primary_wavelength is directly the value or has .value
-                # and get_wavelengths() returns values.
-                if hasattr(self.optic, "primary_wavelength"):
-                    if hasattr(self.optic.primary_wavelength, "value"):
-                        self.wavelengths = [self.optic.primary_wavelength.value]
-                    else:
-                        self.wavelengths = [self.optic.primary_wavelength]
-                else:
-                    # Fallback if primary_wavelength attribute doesn't exist,
-                    # though Optic class should define it.
-                    # This case might indicate an issue with Optic class or assumptions.
-                    raise AttributeError("Optic has no primary_wavelength defined.")
+                self.wavelengths = [self.optic.primary_wavelength]
             else:
                 raise ValueError(
                     "Invalid wavelength string. Must be 'all' or 'primary'."
@@ -49,18 +43,6 @@ class BaseAnalysis(abc.ABC):
             raise TypeError(
                 "Wavelengths must be a string ('all', 'primary') or a list."
             )
-
-        # Ensure all wavelengths are floats if they are not already (e.g. Wavelength objects)
-        # This step depends on what get_wavelengths() and primary_wavelength.value return.
-        # Assuming they return float values directly based on typical usage.
-        # If they return Wavelength objects, we would need to extract .value from each.
-        # For now, this check is a placeholder for potential future refinement if types are complex.
-        if self.wavelengths and not all(isinstance(w, float) for w in self.wavelengths):
-            # This is a simplified check. If Wavelength objects are used,
-            # they should be converted to their float .value during the
-            # 'all' or 'primary' processing or when a list is passed.
-            # For now, assuming float values are correctly populated.
-            pass  # print("Warning: Wavelengths list might not contain all floats.")
 
         self.data = self._generate_data()
 

@@ -71,7 +71,7 @@ class IncoherentIrradiance(BaseAnalysis):
         detector_surface: int = -1,
         *,
         fields="all",
-        wavelengths="all",  # Passed to BaseAnalysis
+        wavelengths="all",
         distribution: str = "random",
         user_initial_rays=None,
     ):
@@ -90,9 +90,6 @@ class IncoherentIrradiance(BaseAnalysis):
         self.user_initial_rays = user_initial_rays
         self.distribution = distribution
 
-        super().__init__(optic, wavelengths)
-        # BaseAnalysis sets self.optic, self.wavelengths (as list), and self.data via self._generate_data()
-
         # The detector surface must have a physical aperture
         surf = self.optic.surface_group.surfaces[self.detector_surface]
         if surf.aperture is None:
@@ -100,7 +97,8 @@ class IncoherentIrradiance(BaseAnalysis):
                 "Detector surface has no physical aperture - set one "
                 "(e.g. RectangularAperture) so that the detector size is defined."
             )
-        # Note: self.irr_data is now self.data. All uses must be updated.
+
+        super().__init__(optic, wavelengths)
 
     def view(
         self,

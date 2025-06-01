@@ -84,12 +84,8 @@ class SpotDiagram(BaseAnalysis):
                 for data generation and plotting. Defaults to "local".
 
         """
-        # Attributes needed by _generate_data must be set before super().__init__
-        # calls _generate_data.
-        self.optic = optic  # Temporarily set, BaseAnalysis will also set it.
-
         if fields == "all":
-            self.fields = self.optic.fields.get_field_coords()
+            self.fields = optic.fields.get_field_coords()
         else:
             self.fields = fields
 
@@ -100,11 +96,6 @@ class SpotDiagram(BaseAnalysis):
         self.num_rings = num_rings
         self.distribution = distribution
 
-        # Now call super().__init__
-        # BaseAnalysis's __init__ will:
-        # 1. Set self.optic = optic (overwriting the temporary one)
-        # 2. Process wavelengths and set self.wavelengths
-        # 3. Call self.data = self._generate_data()
         super().__init__(optic, wavelengths)
 
     def view(self, figsize=(12, 4), add_airy_disk=False):

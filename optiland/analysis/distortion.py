@@ -47,7 +47,6 @@ class Distortion(BaseAnalysis):
         super().__init__(optic, wavelengths)
         self.num_points = num_points
         self.distortion_type = distortion_type
-        # self.data is now set by super().__init__()
 
     def view(self, figsize=(7, 5.5)):
         """Visualize the distortion analysis.

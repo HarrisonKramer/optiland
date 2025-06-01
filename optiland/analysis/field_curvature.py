@@ -36,9 +36,8 @@ class FieldCurvature(BaseAnalysis):
     """
 
     def __init__(self, optic, wavelengths="all", num_points=128):
-        super().__init__(optic, wavelengths)
         self.num_points = num_points
-        # self.data is now set by super().__init__()
+        super().__init__(optic, wavelengths)
 
     def view(self, figsize=(8, 5.5)):
         """Displays a plot of the field curvature analysis.

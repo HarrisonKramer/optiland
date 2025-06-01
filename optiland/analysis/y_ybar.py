@@ -29,30 +29,19 @@ class YYbar(BaseAnalysis):
 
     def __init__(self, optic, wavelength="primary"):
         if isinstance(wavelength, str) and wavelength == "primary":
-            super_wavelengths_arg = "primary"
-        elif isinstance(wavelength, (float, int, be.Tensor)):
-            if hasattr(wavelength, "item"):  # scalar tensor
-                super_wavelengths_arg = [float(wavelength.item())]
-            else:
-                super_wavelengths_arg = [float(wavelength)]
-        elif hasattr(wavelength, "value"):  # Wavelength object
-            super_wavelengths_arg = [float(wavelength.value)]
+            processed_wavelength = "primary"
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = wavelength
         else:
             raise TypeError(
                 f"Unsupported wavelength type for YYbar: {type(wavelength)}"
             )
 
-        super().__init__(optic, wavelengths=super_wavelengths_arg)
-        # self.optic and self.wavelengths are set by BaseAnalysis.
-        # self.data will be set by super()'s call to self._generate_data().
+        super().__init__(optic, wavelengths=processed_wavelength)
 
     def _generate_data(self):
-        # Use the first (and only expected) wavelength from the list.
-        current_wavelength = self.wavelengths[0]
-
-        # Assuming paraxial.marginal_ray and chief_ray can take a wavelength argument.
-        ya, _ = self.optic.paraxial.marginal_ray(wavelength_value=current_wavelength)
-        yb, _ = self.optic.paraxial.chief_ray(wavelength_value=current_wavelength)
+        ya, _ = self.optic.paraxial.marginal_ray()
+        yb, _ = self.optic.paraxial.chief_ray()
 
         return {"ya": ya.flatten(), "yb": yb.flatten()}
 
