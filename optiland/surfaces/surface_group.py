@@ -259,8 +259,6 @@ class SurfaceGroup:
         else:
             self.surfaces.insert(index, new_surface)
 
-        self.surface_factory.last_thickness = kwargs.get("thickness", 0)
-
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.
 
