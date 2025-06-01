@@ -125,6 +125,8 @@ class SurfaceFactory:
                 surface_type=surface_type,
                 aperture=kwargs.get("aperture"),
             )
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
@@ -141,5 +143,4 @@ class SurfaceFactory:
 
         # Add the thickness as an attribute to the surface
         surface_obj.thickness = kwargs.get("thickness", 0.0)
-
         return surface_obj
