@@ -8,9 +8,8 @@ Kramer Harrison, 2024
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
-from optiland.analysis.spot_diagram import SpotDiagram
 
-from .spot_diagram import SpotData
+from .spot_diagram import SpotData, SpotDiagram
 
 
 class EncircledEnergy(SpotDiagram):
@@ -41,11 +40,41 @@ class EncircledEnergy(SpotDiagram):
         distribution="random",
         num_points=256,
     ):
-        self.num_points = num_points
-        if wavelength == "primary":
-            wavelength = optic.primary_wavelength
+        self.num_points = num_points  # For plotting, specific to EncircledEnergy
 
-        super().__init__(optic, fields, [wavelength], num_rays, distribution)
+        # Prepare wavelengths argument for SpotDiagram's __init__ (which passes to BaseAnalysis)
+        # BaseAnalysis expects "all", "primary", or a list of wavelength values.
+        processed_wavelengths = []
+        if isinstance(wavelength, str):
+            if wavelength == "primary":
+                processed_wavelengths = "primary"  # Pass the string directly
+            else:
+                # Assuming if it's a string, it must be "primary" as per old logic.
+                raise ValueError(
+                    "Invalid wavelength string for EncircledEnergy, only 'primary' is supported as a string."
+                )
+        elif isinstance(
+            wavelength, (float, int)
+        ):  # If a single wavelength value is given
+            processed_wavelengths = [float(wavelength)]
+        elif isinstance(wavelength, list):
+            processed_wavelengths = wavelength  # Assume it's already a list of values
+        else:
+            raise TypeError(
+                "wavelength argument must be 'primary', a number, or a list of numbers."
+            )
+
+        # `SpotDiagram`'s `num_rings` parameter corresponds to `num_rays` here for ray count.
+        # `SpotDiagram`'s `distribution` parameter is `distribution` here.
+        super().__init__(
+            optic,
+            fields=fields,
+            wavelengths=processed_wavelengths,  # Pass the processed list or "primary" string
+            num_rings=num_rays,  # Map num_rays to num_rings
+            distribution=distribution,
+        )
+        # Note: self.wavelengths in EncircledEnergy will be correctly populated by BaseAnalysis,
+        # which will be a list. The view method uses self.wavelengths[0].
 
     def view(self, figsize=(7, 4.5)):
         """Plot the Encircled Energy curve.

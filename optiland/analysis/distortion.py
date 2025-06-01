@@ -10,8 +10,10 @@ import numpy as np
 
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class Distortion:
+
+class Distortion(BaseAnalysis):
     """Represents a distortion analysis for an optic.
 
     Args:
@@ -42,13 +44,10 @@ class Distortion:
         num_points=128,
         distortion_type="f-tan",
     ):
-        self.optic = optic
-        if wavelengths == "all":
-            wavelengths = self.optic.wavelengths.get_wavelengths()
-        self.wavelengths = wavelengths
+        super().__init__(optic, wavelengths)
         self.num_points = num_points
         self.distortion_type = distortion_type
-        self.data = self._generate_data()
+        # self.data is now set by super().__init__()
 
     def view(self, figsize=(7, 5.5)):
         """Visualize the distortion analysis.
