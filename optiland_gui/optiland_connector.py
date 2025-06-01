@@ -8,6 +8,7 @@ from optiland.materials import IdealMaterial
 from optiland.materials import Material as OptilandMaterial
 from optiland.optic import Optic
 from optiland.physical_apertures.radial import RadialAperture, configure_aperture
+from optiland_gui.undo_redo_manager import UndoRedoManager
 from optiland.surfaces import ImageSurface, ObjectSurface, Surface
 
 
@@ -55,6 +56,8 @@ class OptilandConnector(QObject):
     surfaceAdded = Signal(int)
     surfaceRemoved = Signal(int)
     surfaceCountChanged = Signal()
+    undoStackAvailabilityChanged = Signal(bool) # Relayed from UndoRedoManager
+    redoStackAvailabilityChanged = Signal(bool) # Relayed from UndoRedoManager
 
     COL_TYPE = 0
     COL_COMMENT = 1
@@ -69,10 +72,16 @@ class OptilandConnector(QObject):
     def __init__(self):
         super().__init__()
         self._optic = Optic("Default System")
+        self._undo_redo_manager = UndoRedoManager(self)
         # For the very first launch, create the specific dummy system
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
+
+        # Relay signals from UndoRedoManager
+        self._undo_redo_manager.undoStackAvailabilityChanged.connect(self.undoStackAvailabilityChanged)
+        self._undo_redo_manager.redoStackAvailabilityChanged.connect(self.redoStackAvailabilityChanged)
         self.opticLoaded.emit()
+        self._undo_redo_manager.clear_stacks() # Ensure stacks are empty and signals emitted
 
     def _initialize_optic_structure(
         self, optic_instance: Optic, is_specific_new_system: bool = False
@@ -206,13 +215,41 @@ class OptilandConnector(QObject):
     def get_optic(self):
         return self._optic
 
+    def _capture_optic_state(self):
+        """Helper to capture the current optic state for undo/redo."""
+        # Ensure primary WL exists before capturing state, as it's needed for to_dict
+        if self._optic.wavelengths.num_wavelengths == 0:
+            self._optic.add_wavelength(
+                self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
+            )
+            self._optic.update() # Optic needs update after WL change
+        elif (
+            self._optic.wavelengths.primary_index is None
+            and self._optic.wavelengths.num_wavelengths > 0
+        ):
+            self._optic.wavelengths.wavelengths[0].is_primary = True
+            self._optic.update() # Optic needs update after WL change
+        return self._optic.to_dict()
+
+    def _restore_optic_state(self, state_data):
+        """Helper to restore optic state from a dictionary."""
+        self._optic = Optic.from_dict(state_data)
+        # After loading, ensure basic integrity but do NOT force the dummy system structure
+        # This also handles wavelength integrity and updates the optic
+        self._initialize_optic_structure(self._optic, is_specific_new_system=False)
+        self.opticLoaded.emit() # Signal that the entire optic might have changed
+        # self.opticChanged.emit() # opticLoaded should cover this
+
     def new_system(self):
+        # No undo for new_system itself, but it should clear existing undo/redo history
+        self._undo_redo_manager.clear_stacks()
         self._optic = Optic("New Untitled System")
         # Call the initializer with the flag to create the specific dummy system
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
         print("OpticConnector: New specific dummy system created.")
         self.opticLoaded.emit()  # This will trigger LDE and viewer updates
+        # No state to push after new, as it's a reset
 
     def load_optic_from_file(self, filepath):
         try:
@@ -231,6 +268,7 @@ class OptilandConnector(QObject):
 
                 data = json.load(f, object_hook=json_inf_nan_hook)
 
+            self._undo_redo_manager.clear_stacks() # Clear history for newly loaded file
             self._optic = Optic.from_dict(data)
             self._current_filepath = filepath
             print(f"OpticConnector: Optic loaded from {filepath}. Checking integrity.")
@@ -268,6 +306,7 @@ class OptilandConnector(QObject):
             print(f"OpticConnector: General error: {error_message}")
             QMessageBox.critical(None, "Load Error", error_message)
             self.new_system()  # Revert to a new default system
+            # new_system already clears stacks
 
     def save_optic_to_file(self, filepath):
         try:
@@ -292,6 +331,7 @@ class OptilandConnector(QObject):
             QMessageBox.critical(
                 None, "Save Error", f"Could not save system to {filepath}:\n{e}"
             )
+        # Saving does not affect the undo/redo stack for content changes
 
     def get_current_filepath(self):
         return self._current_filepath
@@ -383,6 +423,7 @@ class OptilandConnector(QObject):
         if not (0 <= row < self.get_surface_count()):
             return
         try:
+            old_state = self._capture_optic_state() # Capture state before change
             surface = self._optic.surface_group.surfaces[row]
             updater = self._optic._updater
             # ... (implementation from the version that fixed the TypeError)
@@ -431,6 +472,7 @@ class OptilandConnector(QObject):
                 except ValueError:
                     surface.aperture = None
             self._optic.update()
+            self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
             self.surfaceDataChanged.emit(
                 row, col_idx, self.get_surface_data(row, col_idx)
             )
@@ -441,6 +483,7 @@ class OptilandConnector(QObject):
             )
 
     def add_surface(self, index=-1):
+        old_state = self._capture_optic_state() # Capture state before change
         num_lde_rows = self.get_surface_count()
         optic_insert_idx = num_lde_rows - 1
         if optic_insert_idx < 1:
@@ -457,15 +500,18 @@ class OptilandConnector(QObject):
         }
         self._optic.add_surface(**params)
         self._optic.update()
+        self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
         self.surfaceAdded.emit(optic_insert_idx)
         self.surfaceCountChanged.emit()
         self.opticChanged.emit()
 
     def remove_surface(self, lde_row_index):
+        old_state = self._capture_optic_state() # Capture state before change
         optic_surface_index = lde_row_index
         if 0 < optic_surface_index < self.get_surface_count() - 1:
             self._optic.surface_group.remove_surface(optic_surface_index)
             self._optic.update()
+            self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
             self.surfaceRemoved.emit(lde_row_index)
             self.surfaceCountChanged.emit()
             self.opticChanged.emit()
@@ -473,3 +519,28 @@ class OptilandConnector(QObject):
             print(
                 "OpticConnector: Cannot remove Object or Image surface via this LDE action."
             )
+
+    def undo(self):
+        if self._undo_redo_manager.can_undo():
+            current_state_for_redo = self._capture_optic_state()
+            restored_state_data = self._undo_redo_manager.undo(current_state_for_redo)
+            if restored_state_data:
+                self._restore_optic_state(restored_state_data)
+                print("OpticConnector: Undo successful.")
+            else:
+                print("OpticConnector: Undo operation failed to return state data.")
+        else:
+            print("OpticConnector: Cannot undo.")
+
+    def redo(self):
+        if self._undo_redo_manager.can_redo():
+            # The state *before* redoing (which is the current state) needs to be pushed to undo stack
+            current_state_for_undo = self._capture_optic_state()
+            restored_state_data = self._undo_redo_manager.redo(current_state_for_undo)
+            if restored_state_data:
+                self._restore_optic_state(restored_state_data)
+                print("OpticConnector: Redo successful.")
+            else:
+                print("OpticConnector: Redo operation failed to return state data.")
+        else:
+            print("OpticConnector: Cannot redo.")

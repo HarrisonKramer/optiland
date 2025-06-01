@@ -305,6 +305,27 @@ class MainWindow(QMainWindow):
             "&About Optiland GUI", self, triggered=self.about_action
         )
 
+        # Edit actions
+        self.undoAction = QAction(
+            "&Undo",
+            self,
+            shortcut=QKeySequence.Undo,
+            triggered=self.connector.undo, # Connect to connector's undo
+        )
+        self.undoAction.setEnabled(False) # Initially disabled
+
+        self.redoAction = QAction(
+            "&Redo",
+            self,
+            shortcut=QKeySequence.Redo,
+            triggered=self.connector.redo, # Connect to connector's redo
+        )
+        self.redoAction.setEnabled(False) # Initially disabled
+
+        # Connect to OptilandConnector signals for enabling/disabling undo/redo actions
+        self.connector.undoStackAvailabilityChanged.connect(self.undoAction.setEnabled)
+        self.connector.redoStackAvailabilityChanged.connect(self.redoAction.setEnabled)
+
     def _create_menu_bar(self):
         menuBar = self.menuBar()
 
@@ -315,6 +336,10 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(self.saveAsAction)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAction)
+
+        editMenu = menuBar.addMenu("&Edit")
+        editMenu.addAction(self.undoAction)
+        editMenu.addAction(self.redoAction)
 
         viewMenu = menuBar.addMenu("&View")
         themeMenu = viewMenu.addMenu("&Theme")
