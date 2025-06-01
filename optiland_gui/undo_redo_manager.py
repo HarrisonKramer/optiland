@@ -1,6 +1,7 @@
 # optiland_gui/undo_redo_manager.py
 from PySide6.QtCore import QObject, Signal
 
+
 class UndoRedoManager(QObject):
     undoStackAvailabilityChanged = Signal(bool)
     redoStackAvailabilityChanged = Signal(bool)
@@ -20,7 +21,9 @@ class UndoRedoManager(QObject):
         self._redo_stack.clear()  # Clear redo stack whenever a new action is performed
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
-        print(f"UndoRedoManager: State added. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}")
+        print(
+            f"UndoRedoManager: State added. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+        )
 
     def undo(self, current_state_for_redo):
         """
@@ -36,7 +39,9 @@ class UndoRedoManager(QObject):
 
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
-        print(f"UndoRedoManager: Undo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}")
+        print(
+            f"UndoRedoManager: Undo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+        )
         return restored_state
 
     def redo(self, current_state_for_undo):
@@ -55,7 +60,9 @@ class UndoRedoManager(QObject):
 
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
-        print(f"UndoRedoManager: Redo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}")
+        print(
+            f"UndoRedoManager: Redo. Undo stack size: {len(self._undo_stack)}, Redo stack size: {len(self._redo_stack)}"
+        )
         return restored_state
 
     def can_undo(self):

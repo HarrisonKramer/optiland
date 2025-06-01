@@ -1,5 +1,5 @@
 # optiland_gui/analysis_panel.py
-import inspect # Added inspect module
+import inspect  # Added inspect module
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QComboBox,
@@ -117,40 +117,48 @@ class AnalysisPanel(QWidget):
                         constructor_args[param.name] = optic
                     elif param.name == "fields":
                         constructor_args[param.name] = "all"
-                    elif param.name == "wavelengths": # Expects a list or "all" or "primary"
+                    elif (
+                        param.name == "wavelengths"
+                    ):  # Expects a list or "all" or "primary"
                         if primary_wl_val is not None:
                             constructor_args[param.name] = [primary_wl_val]
                         elif param.default != inspect.Parameter.empty:
-                             constructor_args[param.name] = param.default # Use class default if any
+                            constructor_args[param.name] = (
+                                param.default
+                            )  # Use class default if any
                         else:
-                            constructor_args[param.name] = "all" # Fallback
-                    elif param.name == "wavelength": # Expects a single value or "primary"
+                            constructor_args[param.name] = "all"  # Fallback
+                    elif (
+                        param.name == "wavelength"
+                    ):  # Expects a single value or "primary"
                         if primary_wl_val is not None:
                             constructor_args[param.name] = primary_wl_val
                         elif param.default != inspect.Parameter.empty:
                             constructor_args[param.name] = param.default
                         else:
-                            constructor_args[param.name] = "primary" # Fallback for single wavelength
+                            constructor_args[param.name] = (
+                                "primary"  # Fallback for single wavelength
+                            )
                     elif param.name == "num_rays":
                         # SpotDiagram, GeometricMTF, FFTMTF might use this
                         if selected_analysis_name == "Ray Fan":
-                             constructor_args[param.name] = 7
-                        else: # SpotDiagram, MTF
-                             constructor_args[param.name] = 24
+                            constructor_args[param.name] = 7
+                        else:  # SpotDiagram, MTF
+                            constructor_args[param.name] = 24
                     elif param.name == "distribution":
                         if selected_analysis_name == "Ray Fan":
                             constructor_args[param.name] = "line_y"
-                        else: # SpotDiagram, MTF
+                        else:  # SpotDiagram, MTF
                             constructor_args[param.name] = "grid"
-                    elif param.name == "num_points": # For MTF
+                    elif param.name == "num_points":  # For MTF
                         constructor_args[param.name] = 50
-                    elif param.name == "max_freq": # For MTF
+                    elif param.name == "max_freq":  # For MTF
                         constructor_args[param.name] = 100
-                    elif param.name == "grid_size": # For FFT MTF
+                    elif param.name == "grid_size":  # For FFT MTF
                         constructor_args[param.name] = 10
-                    elif param.name == "scale": # For some plots like MTF
+                    elif param.name == "scale":  # For some plots like MTF
                         constructor_args[param.name] = "linear"
-                    elif param.name == "pupil_points": # For PupilAberration
+                    elif param.name == "pupil_points":  # For PupilAberration
                         constructor_args[param.name] = 32
                     # Add other common parameters if needed, or rely on their defaults in the class
                     # If a parameter is mandatory and not covered, an error will still occur at instantiation
@@ -159,7 +167,9 @@ class AnalysisPanel(QWidget):
                 analysis_instance = analysis_class(**constructor_args)
                 analysis_instance.view()  # This will call plt.show() internally
                 self.resultsArea.append(f"{selected_analysis_name} completed.")
-                print(f"Analysis Panel: Ran {selected_analysis_name} with args: {constructor_args}")
+                print(
+                    f"Analysis Panel: Ran {selected_analysis_name} with args: {constructor_args}"
+                )
 
             except Exception as e:
                 self.resultsArea.append(f"Error running {selected_analysis_name}: {e}")

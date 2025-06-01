@@ -56,8 +56,8 @@ class OptilandConnector(QObject):
     surfaceAdded = Signal(int)
     surfaceRemoved = Signal(int)
     surfaceCountChanged = Signal()
-    undoStackAvailabilityChanged = Signal(bool) # Relayed from UndoRedoManager
-    redoStackAvailabilityChanged = Signal(bool) # Relayed from UndoRedoManager
+    undoStackAvailabilityChanged = Signal(bool)  # Relayed from UndoRedoManager
+    redoStackAvailabilityChanged = Signal(bool)  # Relayed from UndoRedoManager
 
     COL_TYPE = 0
     COL_COMMENT = 1
@@ -78,10 +78,14 @@ class OptilandConnector(QObject):
         self._current_filepath = None
 
         # Relay signals from UndoRedoManager
-        self._undo_redo_manager.undoStackAvailabilityChanged.connect(self.undoStackAvailabilityChanged)
-        self._undo_redo_manager.redoStackAvailabilityChanged.connect(self.redoStackAvailabilityChanged)
+        self._undo_redo_manager.undoStackAvailabilityChanged.connect(
+            self.undoStackAvailabilityChanged
+        )
+        self._undo_redo_manager.redoStackAvailabilityChanged.connect(
+            self.redoStackAvailabilityChanged
+        )
         self.opticLoaded.emit()
-        self._undo_redo_manager.clear_stacks() # Ensure stacks are empty and signals emitted
+        self._undo_redo_manager.clear_stacks()  # Ensure stacks are empty and signals emitted
 
     def _initialize_optic_structure(
         self, optic_instance: Optic, is_specific_new_system: bool = False
@@ -222,13 +226,13 @@ class OptilandConnector(QObject):
             self._optic.add_wavelength(
                 self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
             )
-            self._optic.update() # Optic needs update after WL change
+            self._optic.update()  # Optic needs update after WL change
         elif (
             self._optic.wavelengths.primary_index is None
             and self._optic.wavelengths.num_wavelengths > 0
         ):
             self._optic.wavelengths.wavelengths[0].is_primary = True
-            self._optic.update() # Optic needs update after WL change
+            self._optic.update()  # Optic needs update after WL change
         return self._optic.to_dict()
 
     def _restore_optic_state(self, state_data):
@@ -237,7 +241,7 @@ class OptilandConnector(QObject):
         # After loading, ensure basic integrity but do NOT force the dummy system structure
         # This also handles wavelength integrity and updates the optic
         self._initialize_optic_structure(self._optic, is_specific_new_system=False)
-        self.opticLoaded.emit() # Signal that the entire optic might have changed
+        self.opticLoaded.emit()  # Signal that the entire optic might have changed
         # self.opticChanged.emit() # opticLoaded should cover this
 
     def new_system(self):
@@ -268,7 +272,7 @@ class OptilandConnector(QObject):
 
                 data = json.load(f, object_hook=json_inf_nan_hook)
 
-            self._undo_redo_manager.clear_stacks() # Clear history for newly loaded file
+            self._undo_redo_manager.clear_stacks()  # Clear history for newly loaded file
             self._optic = Optic.from_dict(data)
             self._current_filepath = filepath
             print(f"OpticConnector: Optic loaded from {filepath}. Checking integrity.")
@@ -423,7 +427,7 @@ class OptilandConnector(QObject):
         if not (0 <= row < self.get_surface_count()):
             return
         try:
-            old_state = self._capture_optic_state() # Capture state before change
+            old_state = self._capture_optic_state()  # Capture state before change
             surface = self._optic.surface_group.surfaces[row]
             updater = self._optic._updater
             # ... (implementation from the version that fixed the TypeError)
@@ -472,7 +476,9 @@ class OptilandConnector(QObject):
                 except ValueError:
                     surface.aperture = None
             self._optic.update()
-            self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
+            self._undo_redo_manager.add_state(
+                old_state
+            )  # Add previous state to undo stack
             self.surfaceDataChanged.emit(
                 row, col_idx, self.get_surface_data(row, col_idx)
             )
@@ -483,7 +489,7 @@ class OptilandConnector(QObject):
             )
 
     def add_surface(self, index=-1):
-        old_state = self._capture_optic_state() # Capture state before change
+        old_state = self._capture_optic_state()  # Capture state before change
         num_lde_rows = self.get_surface_count()
         optic_insert_idx = num_lde_rows - 1
         if optic_insert_idx < 1:
@@ -500,18 +506,20 @@ class OptilandConnector(QObject):
         }
         self._optic.add_surface(**params)
         self._optic.update()
-        self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
+        self._undo_redo_manager.add_state(old_state)  # Add previous state to undo stack
         self.surfaceAdded.emit(optic_insert_idx)
         self.surfaceCountChanged.emit()
         self.opticChanged.emit()
 
     def remove_surface(self, lde_row_index):
-        old_state = self._capture_optic_state() # Capture state before change
+        old_state = self._capture_optic_state()  # Capture state before change
         optic_surface_index = lde_row_index
         if 0 < optic_surface_index < self.get_surface_count() - 1:
             self._optic.surface_group.remove_surface(optic_surface_index)
             self._optic.update()
-            self._undo_redo_manager.add_state(old_state) # Add previous state to undo stack
+            self._undo_redo_manager.add_state(
+                old_state
+            )  # Add previous state to undo stack
             self.surfaceRemoved.emit(lde_row_index)
             self.surfaceCountChanged.emit()
             self.opticChanged.emit()

@@ -310,17 +310,17 @@ class MainWindow(QMainWindow):
             "&Undo",
             self,
             shortcut=QKeySequence.Undo,
-            triggered=self.connector.undo, # Connect to connector's undo
+            triggered=self.connector.undo,  # Connect to connector's undo
         )
-        self.undoAction.setEnabled(False) # Initially disabled
+        self.undoAction.setEnabled(False)  # Initially disabled
 
         self.redoAction = QAction(
             "&Redo",
             self,
             shortcut=QKeySequence.Redo,
-            triggered=self.connector.redo, # Connect to connector's redo
+            triggered=self.connector.redo,  # Connect to connector's redo
         )
-        self.redoAction.setEnabled(False) # Initially disabled
+        self.redoAction.setEnabled(False)  # Initially disabled
 
         # Connect to OptilandConnector signals for enabling/disabling undo/redo actions
         self.connector.undoStackAvailabilityChanged.connect(self.undoAction.setEnabled)
