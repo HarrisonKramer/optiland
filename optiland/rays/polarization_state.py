@@ -78,6 +78,37 @@ class PolarizationState:
         """
         return self.__str__()
 
+    def to_dict(self):
+        """Returns a dictionary representation of the polarization state.
+
+        Returns:
+            dict: A dictionary containing the polarization state attributes.
+        """
+        return {
+            "is_polarized": self.is_polarized,
+            "Ex": self.Ex.item() if self.Ex is not None else None, # Convert be.array to scalar
+            "Ey": self.Ey.item() if self.Ey is not None else None, # Convert be.array to scalar
+            "phase_x": self.phase_x.item() if self.phase_x is not None else None, # Convert be.array to scalar
+            "phase_y": self.phase_y.item() if self.phase_y is not None else None, # Convert be.array to scalar
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Creates a PolarizationState instance from a dictionary.
+
+        Args:
+            data (dict): A dictionary containing the polarization state attributes.
+
+        Returns:
+            PolarizationState: An instance of PolarizationState.
+        """
+        return cls(
+            is_polarized=data.get("is_polarized", False),
+            Ex=data.get("Ex"),
+            Ey=data.get("Ey"),
+            phase_x=data.get("phase_x"),
+            phase_y=data.get("phase_y"),
+        )
 
 def create_polarization(pol_type: str):
     """Create a polarization state based on the given polarization type.

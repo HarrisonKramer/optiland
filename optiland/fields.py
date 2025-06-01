@@ -6,7 +6,13 @@ system.
 Kramer Harrison, 2023
 """
 
+from enum import Enum
 import optiland.backend as be
+
+
+class FieldType(Enum):
+    ANGLE = "angle"
+    OBJECT_HEIGHT = "object_height"
 
 
 class Field:
@@ -21,15 +27,42 @@ class Field:
 
     """
 
+from typing import Union # Add Union for type hinting
+
+class FieldType(Enum):
+    ANGLE = "angle"
+    OBJECT_HEIGHT = "object_height"
+
+
+class Field:
+    """Represents a field with specific properties.
+
+    Attributes:
+        field_type (FieldType): The type of the field.
+        x (int): The x-coordinate of the field.
+        y (int): The y-coordinate of the field.
+        vx (float): The vignette factor in the x-direction.
+        vy (float): The vignette factor in the y-direction.
+
+    """
+
     def __init__(
         self,
-        field_type,
-        x=0,
-        y=0,
-        vignette_factor_x=0.0,
-        vignette_factor_y=0.0,
+        field_type_input: Union[str, FieldType],
+        x: int = 0,
+        y: int = 0,
+        vignette_factor_x: float = 0.0,
+        vignette_factor_y: float = 0.0,
     ):
-        self.field_type = field_type
+        if isinstance(field_type_input, str):
+            try:
+                self.field_type = FieldType(field_type_input.lower())
+            except ValueError:
+                raise ValueError(f"Invalid field_type string: '{field_type_input}'. Must be 'angle' or 'object_height'.")
+        elif isinstance(field_type_input, FieldType):
+            self.field_type = field_type_input
+        else:
+            raise TypeError(f"field_type_input must be a string or FieldType enum, not {type(field_type_input)}")
         self.x = x
         self.y = y
         self.vx = vignette_factor_x
@@ -43,7 +76,7 @@ class Field:
 
         """
         return {
-            "field_type": self.field_type,
+            "field_type": self.field_type.value, # Store the string value
             "x": self.x,
             "y": self.y,
             "vx": self.vx,
@@ -61,11 +94,12 @@ class Field:
             Field: A field object created from the dictionary.
 
         """
-        if "field_type" not in field_dict:
-            raise ValueError("Missing required keys: field_type")
+        if "field_type" not in field_dict or field_dict["field_type"] is None:
+            raise ValueError("Missing or null required key: field_type")
 
+        # Field.from_dict now expects FieldType enum or string
         return cls(
-            field_dict["field_type"],
+            FieldType(field_dict["field_type"]), # Will convert string to Enum
             field_dict.get("x", 0),
             field_dict.get("y", 0),
             field_dict.get("vx", 0.0),

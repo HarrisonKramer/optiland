@@ -14,18 +14,27 @@ Kramer Harrison, 2024
 from copy import deepcopy
 from typing import Union
 
-from optiland.aberrations import Aberrations
-from optiland.aperture import Aperture
-from optiland.fields import Field, FieldGroup
+from optiland.aberrations import Aberrations # Used in _initialize_attributes
+# Aperture will be used by OpticConfigurator
+from optiland.fields import FieldGroup, FieldType # Field moved to OpticConfigurator, FieldType still used
 from optiland.optic.optic_updater import OpticUpdater
-from optiland.paraxial import Paraxial
-from optiland.pickup import PickupManager
-from optiland.rays import PolarizationState, RayGenerator
-from optiland.raytrace.real_ray_tracer import RealRayTracer
-from optiland.solves import SolveManager
-from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
-from optiland.wavelength import WavelengthGroup
+from optiland.optic.optic_serializer import OpticSerializer
+from optiland.paraxial import Paraxial # Used in _initialize_attributes
+# PickupManager, SolveManager, are no longer directly instantiated or called in from_dict here.
+# OpticSerializer handles their from_dict. OpticUpdater initializes them.
+from optiland.rays import PolarizationState, RayGenerator, PolarizationType # Added PolarizationType, RayGenerator used by RealRayTracer
+from optiland.raytrace.real_ray_tracer import RealRayTracer # Used in _initialize_attributes
+# SolveManager is used by _initialize_attributes via OpticUpdater which might need it. Or pickups/solves are set there.
+# Let's check _initialize_attributes: self.pickups = PickupManager(self), self.solves = SolveManager(self)
+# So PickupManager and SolveManager are needed for _initialize_attributes.
+from optiland.pickup import PickupManager # Needed for _initialize_attributes
+from optiland.solves import SolveManager # Needed for _initialize_attributes
+from optiland.surfaces import ObjectSurface, SurfaceGroup # SurfaceGroup used in _initialize_attributes, add_surface, type hints
+from optiland.optic.optic_configurator import OpticConfigurator # Added
+# Visualization imports moved to OpticVisualizer
+from optiland.optic.optic_visualization import OpticVisualizer # Added import
+from optiland.optic.optic_raytracer import OpticRayTracer # Added import
+from optiland.wavelength import WavelengthGroup # WavelengthGroup used in _initialize_attributes, add_wavelength, type hints
 
 
 class Optic:
@@ -33,7 +42,7 @@ class Optic:
 
     Attributes:
         aperture (Aperture): The aperture of the optical system.
-        field_type (str): The type of field used in the optical system.
+        field_type (FieldType): The type of field used in the optical system.
         surface_group (SurfaceGroup): The group of surfaces in the optical
             system.
         fields (FieldGroup): The group of fields in the optical system.
@@ -53,7 +62,7 @@ class Optic:
     def _initialize_attributes(self):
         """Reset the optical system to its initial state."""
         self.aperture = None
-        self.field_type = None
+        self.field_type: FieldType = None # Explicitly None, to be set by set_field_type
 
         self.surface_group = SurfaceGroup()
         self.fields = FieldGroup()
@@ -63,12 +72,16 @@ class Optic:
         self.aberrations = Aberrations(self)
         self.ray_tracer = RealRayTracer(self)
 
-        self.polarization = "ignore"
+        self.polarization: Union[PolarizationType, PolarizationState] = PolarizationType.IGNORE # Default to Enum
 
-        self.pickups = PickupManager(self)
-        self.solves = SolveManager(self)
+        self.pickups = PickupManager(self) # Initialized here
+        self.solves = SolveManager(self)   # Initialized here
         self.obj_space_telecentric = False
         self._updater = OpticUpdater(self)
+        self._serializer = OpticSerializer(self) # Added serializer
+        self._visualizer = OpticVisualizer(self) # Added visualizer
+        self._raytracer_facade = OpticRayTracer(self) # Added raytracer facade
+        self._configurator = OpticConfigurator(self) # Added configurator
 
     def __add__(self, other):
         """Add two Optic objects together."""
@@ -101,15 +114,40 @@ class Optic:
 
     @property
     def polarization_state(self):
-        """PolarizationState: the polarization state of the optic"""
-        if self.polarization == "ignore":
+        """PolarizationState: the polarization state of the optic, or None if polarization is ignored."""
+        if self.polarization == PolarizationType.IGNORE:
             return None
         elif isinstance(self.polarization, PolarizationState):
             return self.polarization
+        # Add handling for other PolarizationType members if they don't directly map to a PolarizationState object
+        # For now, if it's another Enum member (e.g. JONES_VECTOR that isn't a full PolarizationState object yet)
+        # it might also mean no specific state object is available, or a default one should be returned.
+        # Based on current structure, only PolarizationState objects or IGNORE are primary states.
+        # If self.polarization is an Enum member like JONES_VECTOR but not a full PolarizationState object,
+        # this implies that a PolarizationState object needs to be constructed or is not fully defined.
+        # For now, we assume if it's not IGNORE and not a PolarizationState object, it's an invalid state for this property.
+        # However, the setter now ensures self.polarization is either PolarizationType.IGNORE or a PolarizationState object,
+        # or another PolarizationType member.
+        elif isinstance(self.polarization, PolarizationType) and self.polarization != PolarizationType.IGNORE:
+            # This case needs clarification: if self.polarization is e.g. PolarizationType.JONES_VECTOR,
+            # what should this property return? A default PolarizationState? For now, returning None.
+            # This implies that to have a specific state, a PolarizationState object must be set.
+            # Or, this property could raise an error if it's an enum type that's not IGNORE and not a state obj.
+            # Given current logic, if it's not IGNORE, it should be a PolarizationState obj for this property to make sense.
+            # The OpticUpdater.set_polarization ensures this.
+            # The only enum types stored directly on self.optic.polarization by updater are PolarizationType.IGNORE
+            # or other PolarizationType members if they were passed as such.
+            # Let's assume if it's a PolarizationType enum member other than IGNORE, it means a specific state object is implied
+            # but not yet fully represented as a PolarizationState object. For this property, it might be an error or None.
+            # Given the original code, it only returned a PolarizationState or None.
+            # The current set_polarization in OpticUpdater allows self.optic.polarization to be PolarizationType.JONES_VECTOR.
+            # What should polarization_state return then?
+            # For safety and consistency with original behavior (returns PolarizationState or None):
+            return None # Or raise an error for unexpected enum members here.
         else:
+            # This case should ideally not be reached if set_polarization works as expected.
             raise ValueError(
-                "Invalid polarization state. Must be either "
-                'PolarizationState or "ignore".',
+                f"Invalid internal polarization state: {self.polarization}. Expected PolarizationType.IGNORE or PolarizationState instance."
             )
 
     def reset(self):
@@ -146,7 +184,7 @@ class Optic:
             ValueError: If index is not provided when defining a new surface.
 
         """
-        self.surface_group.add_surface(
+        return self._configurator.add_surface(
             new_surface=new_surface,
             surface_type=surface_type,
             comment=comment,
@@ -169,8 +207,7 @@ class Optic:
                 factor. Defaults to 0.0.
 
         """
-        new_field = Field(self.field_type, x, y, vx, vy)
-        self.fields.add_field(new_field)
+        return self._configurator.add_field(y, x=x, vx=vx, vy=vy)
 
     def add_wavelength(self, value, is_primary=False, unit="um"):
         """Add a wavelength to the optical system.
@@ -182,7 +219,7 @@ class Optic:
             unit (str, optional): The unit of the wavelength. Defaults to 'um'.
 
         """
-        self.wavelengths.add_wavelength(value, is_primary, unit)
+        return self._configurator.add_wavelength(value, is_primary=is_primary, unit=unit)
 
     def set_aperture(self, aperture_type, value):
         """Set the aperture of the optical system.
@@ -192,18 +229,15 @@ class Optic:
             value (float): The value of the aperture.
 
         """
-        self.aperture = Aperture(aperture_type, value)
+        return self._configurator.set_aperture(aperture_type, value)
 
-    def set_field_type(self, field_type):
+    def set_field_type(self, field_type_input: Union[str, FieldType]):
         """Set the type of field used in the optical system.
 
         Args:
-            field_type (str): The type of field.
-
+            field_type_input (Union[str, FieldType]): The type of field.
         """
-        if field_type not in ["angle", "object_height"]:
-            raise ValueError('Invalid field type. Must be "angle" or "object_height".')
-        self.field_type = field_type
+        return self._configurator.set_field_type(field_type_input)
 
     def set_radius(self, value, surface_number):
         """Set the radius of curvature of a surface.
@@ -257,16 +291,15 @@ class Optic:
         """
         self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization_input: Union[PolarizationState, str, PolarizationType]):
         """Set the polarization state of the optic.
 
         Args:
-            polarization (Union[PolarizationState, str]): The polarization
-                state to set. It can be either a `PolarizationState` object or
-                'ignore'.
-
+            polarization_input (Union[PolarizationState, str, PolarizationType]):
+                The polarization state to set. It can be a `PolarizationState` object,
+                a string (e.g., "ignore"), or a `PolarizationType` enum member.
         """
-        self._updater.set_polarization(polarization)
+        self._updater.set_polarization(polarization_input)
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
@@ -330,11 +363,10 @@ class Optic:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        viewer = OpticViewer(self)
-        viewer.view(
-            fields,
-            wavelengths,
-            num_rays,
+        self._visualizer.draw(
+            fields=fields,
+            wavelengths=wavelengths,
+            num_rays=num_rays,
             distribution=distribution,
             figsize=figsize,
             xlim=xlim,
@@ -372,11 +404,10 @@ class Optic:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        viewer = OpticViewer3D(self)
-        viewer.view(
-            fields,
-            wavelengths,
-            num_rays,
+        self._visualizer.draw3D(
+            fields=fields,
+            wavelengths=wavelengths,
+            num_rays=num_rays,
             distribution=distribution,
             figsize=figsize,
             dark_mode=dark_mode,
@@ -385,8 +416,7 @@ class Optic:
 
     def info(self):
         """Display the optical system information."""
-        viewer = LensInfoViewer(self)
-        viewer.view()
+        self._visualizer.info()
 
     def n(self, wavelength: Union[float, str] = "primary"):
         """Get the refractive indices of the materials for each space between
@@ -424,7 +454,7 @@ class Optic:
             RealRays: The RealRays object containing the traced rays.
 
         """
-        return self.ray_tracer.trace(Hx, Hy, wavelength, num_rays, distribution)
+        return self._raytracer_facade.trace(Hx, Hy, wavelength, num_rays, distribution)
 
     def trace_generic(self, Hx, Hy, Px, Py, wavelength):
         """Trace generic rays through the optical system.
@@ -435,9 +465,8 @@ class Optic:
             Px (float or be.ndarray): The normalized x pupil coordinate(s).
             Py (float or be.ndarray): The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
-
         """
-        return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
+        return self._raytracer_facade.trace_generic(Hx, Hy, Px, Py, wavelength)
 
     def to_dict(self):
         """Convert the optical system to a dictionary.
@@ -446,20 +475,7 @@ class Optic:
             dict: The dictionary representation of the optical system.
 
         """
-        data = {
-            "version": 1.0,
-            "aperture": self.aperture.to_dict() if self.aperture else None,
-            "fields": self.fields.to_dict(),
-            "wavelengths": self.wavelengths.to_dict(),
-            "pickups": self.pickups.to_dict(),
-            "solves": self.solves.to_dict(),
-            "surface_group": self.surface_group.to_dict(),
-        }
-
-        data["wavelengths"]["polarization"] = self.polarization
-        data["fields"]["field_type"] = self.field_type
-        data["fields"]["object_space_telecentric"] = self.obj_space_telecentric
-        return data
+        return self._serializer.to_dict()
 
     @classmethod
     def from_dict(cls, data):
@@ -472,20 +488,4 @@ class Optic:
             Optic: The optical system.
 
         """
-        optic = cls()
-        optic.aperture = Aperture.from_dict(data["aperture"])
-        optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
-        optic.fields = FieldGroup.from_dict(data["fields"])
-        optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
-        optic.pickups = PickupManager.from_dict(optic, data["pickups"])
-        optic.solves = SolveManager.from_dict(optic, data["solves"])
-
-        optic.polarization = data["wavelengths"]["polarization"]
-        optic.field_type = data["fields"]["field_type"]
-        optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
-
-        optic.paraxial = Paraxial(optic)
-        optic.aberrations = Aberrations(optic)
-        optic.ray_generator = RayGenerator(optic)
-
-        return optic
+        return OpticSerializer.from_dict(data, cls=cls)

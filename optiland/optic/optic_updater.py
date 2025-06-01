@@ -12,7 +12,7 @@ from typing import Union
 import optiland.backend as be
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.rays import PolarizationState
+from optiland.rays import PolarizationState, PolarizationType # Added PolarizationType
 
 
 class OpticUpdater:
@@ -110,17 +110,32 @@ class OpticUpdater:
         """Set the polarization state of the optic.
 
         Args:
-            polarization (PolarizationState or str): The polarization
-                state to set. Can be a `PolarizationState` object or the string
-                'ignore'.
-
+            polarization (Union[PolarizationState, str, PolarizationType]): The polarization
+                state to set. Can be a `PolarizationState` object, the string
+                'ignore', or a PolarizationType enum member.
         """
-        if isinstance(polarization, str) and polarization != "ignore":
-            raise ValueError(
-                "Invalid polarization state. Must be either "
-                'PolarizationState or "ignore".',
+        if isinstance(polarization, str):
+            if polarization.lower() == "ignore":
+                self.optic.polarization = PolarizationType.IGNORE
+            else:
+                try:
+                    # Attempt to convert other strings to PolarizationType
+                    self.optic.polarization = PolarizationType(polarization.lower())
+                except ValueError:
+                    # If string is not "ignore" and not a valid PolarizationType member string
+                    raise ValueError(
+                        "Invalid polarization string. Must be 'ignore' or a "
+                        f"mappable PolarizationType value, not '{polarization}'."
+                    )
+        elif isinstance(polarization, PolarizationType):
+            self.optic.polarization = polarization
+        elif isinstance(polarization, PolarizationState):
+            self.optic.polarization = polarization  # Store the actual PolarizationState object
+        else:
+            raise TypeError(
+                "Invalid polarization state type. Must be PolarizationState, "
+                f"PolarizationType, or string, not {type(polarization)}."
             )
-        self.optic.polarization = polarization
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
