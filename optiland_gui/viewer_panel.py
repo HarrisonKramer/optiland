@@ -59,6 +59,7 @@ class MatplotlibViewer(QWidget):
         self.layout = QVBoxLayout(self)
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
+        self.canvas.setObjectName("matplotlib_viewer_widget") # Set object name for QSS styling
         self.layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
         # self.plot_optic() # Initial plot done by connector signals

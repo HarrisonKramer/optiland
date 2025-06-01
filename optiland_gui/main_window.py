@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
         try:
             with open(filepath) as f:
                 style_str = f.read()
+                self.setStyleSheet("")  # Clear previous stylesheet
                 self.setStyleSheet(style_str)
                 self.current_theme_path = filepath
                 if hasattr(self, "darkThemeAction") and hasattr(
