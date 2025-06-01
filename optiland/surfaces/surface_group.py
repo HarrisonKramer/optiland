@@ -237,8 +237,6 @@ class SurfaceGroup:
             ValueError: If index is not provided when defining a new surface.
 
         """
-        update_start_index = -1
-
         if new_surface is None:
             if index is None:
                 raise ValueError("Must define index when defining surface.")
@@ -257,17 +255,10 @@ class SurfaceGroup:
                 surface.is_stop = False
 
         if index is None:
-            # This case means new_surface was provided directly, and no index was given.
-            # This implies appending the surface.
             self.surfaces.append(new_surface)
-            # When appending, the new surface is last. No update to subsequent surfaces is needed
-            # as there are none. Its own CS is assumed correct or absolute by the caller.
         else:
-            # An index was provided (either for surface creation or for a given new_surface).
             if index < 0:
                 raise IndexError(f"Index {index} cannot be negative.")
-            # Check against current length *before* insertion for valid insertion points.
-            # index == len(self.surfaces) means append.
             if index > len(self.surfaces):
                 raise IndexError(
                     f"Index {index} is out of bounds for insertion. "
@@ -276,13 +267,7 @@ class SurfaceGroup:
 
             self.surfaces.insert(index, new_surface)
 
-            # After insertion, if not using absolute_cs, and the inserted surface
-            # is NOT the new last surface, then update coordinate systems
-            # starting from the inserted surface's index.
-            # _update_coordinate_systems will correctly handle its own CS based on the
-            # preceding surface (if index > 0) or set it to 0 (if index == 1 and it's the first optical surface),
-            # and then update all subsequent surfaces.
-            # If the inserted surface IS the new object surface (index == 0), its CS is not modified by _update_coordinate_systems.
+            # Update coordinate systems if surface was inserted
             if not self.surface_factory.use_absolute_cs and index < (
                 len(self.surfaces) - 1
             ):

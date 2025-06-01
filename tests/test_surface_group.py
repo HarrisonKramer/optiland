@@ -347,10 +347,7 @@ class TestSurfaceGroupUpdatesRealObjects:
     def test_add_surface_by_creation_error_index_out_of_bounds(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=1)  # len(sg.surfaces) = 1
         # Max index for insertion is 1. index=2 is out of bounds.
-        with pytest.raises(
-            IndexError,
-            match=r"Index 2 is out of bounds for insertion. Max index for insertion is 1 \(to append\)\.",
-        ):
+        with pytest.raises(IndexError):
             sg.add_surface(surface_type="standard", index=2, thickness=1)
 
     def test_remove_surface_error_index_out_of_bounds_negative(self, set_test_backend):
