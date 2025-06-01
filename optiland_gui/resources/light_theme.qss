@@ -18,6 +18,24 @@ QMainWindow {
     color: #202020; /* Replaced var(--text-color) */
 }
 
+QMainWindow::separator {
+    /* This styles the draggable separator between dock widgets. */
+    /* Making it slightly wider and giving it a border makes it more visible. */
+    width: 2px;  /* Adjust width as needed */
+    height: 2px; /* Adjust height as needed */
+    background-color: #dddddd; /* A neutral light color, adjust to your theme */
+    border: 1px solid #b0b0b0;   /* A border to define the separator's edges */
+
+    /* Keep any other existing QMainWindow::separator properties. */
+}
+
+QMainWindow::separator:hover {
+    /* Optional: Highlight the separator on hover. */
+    background-color: #0078d7; /* Example blue accent, choose your theme's accent color */
+    
+    /* Keep any other existing QMainWindow::separator:hover properties. */
+}
+
 QDialog {
     background-color: #F5F5F5; /* Light background (main window background) */
     color: #202020;           /* Dark text for labels within the dialog */
@@ -27,6 +45,7 @@ QDialog {
 QDockWidget {
     titlebar-close-icon: none;
     titlebar-normal-icon: none;
+    border: 1px solid #c0c0c0;
 }
 
 QDockWidget::title {

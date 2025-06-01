@@ -16,9 +16,26 @@ QMainWindow {
     color: #E0E0E0; /* var(--text-color) */
 }
 
+QMainWindow::separator {
+    /* This styles the draggable separator between dock widgets. */
+    /* Making it slightly wider and giving it a border makes it more visible. */
+    width: 2px;  /* Adjust width as needed */
+    height: 2px; /* Adjust height as needed */
+    background-color: #2E2E2E; /* A neutral dark color, adjust to your theme */
+    border: 1px solid #2E2E2E;   /* A border to define the separator's edges */
+    
+    /* Keep any other existing QMainWindow::separator properties. */
+}
+
+QMainWindow::separator:hover {
+    /* Optional: Highlight the separator on hover. */
+    background-color: #007ACC; 
+}
+
 QDockWidget {
     titlebar-close-icon: none;
     titlebar-normal-icon: none;
+    border: 25px solid rgb(212, 181, 26); /* Example: A slightly lighter gray than typical dark backgrounds */
 }
 
 QDockWidget::title {
@@ -26,7 +43,7 @@ QDockWidget::title {
     color: #E0E0E0; /* var(--text-color) */
     padding: 6px 10px;
     border: 1px solid #4A4A4A; /* var(--border-color) */
-    border-bottom: none;
+    border-bottom: none; 
 }
 
 QDockWidget::title:focus { /* Added for focused dock title */

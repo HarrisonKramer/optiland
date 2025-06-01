@@ -33,7 +33,7 @@ class SystemPropertiesPanel(QWidget):
         # Navigation Tree (like System Explorer)
         self.navTree = QTreeWidget()
         self.navTree.setHeaderHidden(True)
-        self.navTree.setFixedWidth(200)  # Adjust as needed
+        self.navTree.setFixedWidth(150)  # Adjust as needed
         main_layout.addWidget(self.navTree)
 
         # StackedWidget to hold different property editors
@@ -175,7 +175,7 @@ class FieldsEditor(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
-
+        
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
