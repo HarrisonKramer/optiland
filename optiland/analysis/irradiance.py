@@ -75,9 +75,8 @@ class IncoherentIrradiance(BaseAnalysis):
         distribution: str = "random",
         user_initial_rays=None,
     ):
-        _optic_ref = optic
         if fields == "all":
-            self.fields = _optic_ref.fields.get_field_coords()
+            self.fields = optic.fields.get_field_coords()
         else:
             self.fields = tuple(fields)
 
@@ -91,7 +90,7 @@ class IncoherentIrradiance(BaseAnalysis):
         self.distribution = distribution
 
         # The detector surface must have a physical aperture
-        surf = self.optic.surface_group.surfaces[self.detector_surface]
+        surf = optic.surface_group.surfaces[self.detector_surface]
         if surf.aperture is None:
             raise ValueError(
                 "Detector surface has no physical aperture - set one "

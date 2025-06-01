@@ -44,9 +44,9 @@ class Distortion(BaseAnalysis):
         num_points=128,
         distortion_type="f-tan",
     ):
-        super().__init__(optic, wavelengths)
         self.num_points = num_points
         self.distortion_type = distortion_type
+        super().__init__(optic, wavelengths)
 
     def view(self, figsize=(7, 5.5)):
         """Visualize the distortion analysis.

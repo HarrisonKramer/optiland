@@ -490,7 +490,7 @@ class SpotDiagram(BaseAnalysis):
         self,
         field,
         wavelength,
-        num_rings,  # Renamed from num_rays to match __init__
+        num_rays,
         distribution,
         coordinates,
     ):
@@ -510,7 +510,7 @@ class SpotDiagram(BaseAnalysis):
                 of the generated spot data.
 
         """
-        self.optic.trace(*field, wavelength, num_rings, distribution)
+        self.optic.trace(*field, wavelength, num_rays, distribution)
 
         # Extract the global intersection coordinates from the image
         # surface (i.e. final surface)
