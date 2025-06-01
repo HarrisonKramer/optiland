@@ -257,31 +257,36 @@ class SurfaceGroup:
                 surface.is_stop = False
 
         if index is None:
-            # This case is only reachable if new_surface was provided
+            # This case means new_surface was provided directly, and no index was given.
+            # This implies appending the surface.
             self.surfaces.append(new_surface)
-            update_start_index = self.num_surfaces - 1
+            # When appending, the new surface is last. No update to subsequent surfaces is needed
+            # as there are none. Its own CS is assumed correct or absolute by the caller.
         else:
+            # An index was provided (either for surface creation or for a given new_surface).
             if index < 0:
                 raise IndexError(f"Index {index} cannot be negative.")
-            if index < len(self.surfaces):  # Overwrite existing surface
-                self.surfaces[index] = new_surface
-                update_start_index = index
-            elif index == len(self.surfaces):  # Append to the list
-                self.surfaces.append(new_surface)
-                update_start_index = index
-            else:  # Index is out of bounds
+            # Check against current length *before* insertion for valid insertion points.
+            # index == len(self.surfaces) means append.
+            if index > len(self.surfaces):
                 raise IndexError(
-                    f"Index {index} is out of bounds in surface addition for "
-                    f"list of size {len(self.surfaces)}."
+                    f"Index {index} is out of bounds for insertion. "
+                    f"Max index for insertion is {len(self.surfaces)} (to append)."
                 )
 
-        is_last_surface = update_start_index == len(self.surfaces) - 1
-        if (
-            not self.surface_factory.use_absolute_cs
-            and update_start_index != -1
-            and not is_last_surface
-        ):
-            self._update_coordinate_systems(start_index=update_start_index)
+            self.surfaces.insert(index, new_surface)
+
+            # After insertion, if not using absolute_cs, and the inserted surface
+            # is NOT the new last surface, then update coordinate systems
+            # starting from the inserted surface's index.
+            # _update_coordinate_systems will correctly handle its own CS based on the
+            # preceding surface (if index > 0) or set it to 0 (if index == 1 and it's the first optical surface),
+            # and then update all subsequent surfaces.
+            # If the inserted surface IS the new object surface (index == 0), its CS is not modified by _update_coordinate_systems.
+            if not self.surface_factory.use_absolute_cs and index < (
+                len(self.surfaces) - 1
+            ):
+                self._update_coordinate_systems(start_index=index)
 
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.

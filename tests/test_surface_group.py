@@ -6,7 +6,6 @@ from optiland.geometries import StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces.surface_group import SurfaceGroup
-
 from tests.utils import assert_allclose
 
 
@@ -152,29 +151,39 @@ class TestSurfaceGroupUpdatesRealObjects:
             initial_zs=[-100.0, 0.0],
         )
         # After setup: S0(z=-100, t=10), S1_orig(z=0, t=20)
-        s1_orig_name = sg.surfaces[1].name
+        s0_orig = sg.surfaces[0]
+        s1_orig = sg.surfaces[1]
 
-        s_new = create_real_surface(
-            name="S_new", thickness_val=5.0, initial_z=123.0
-        )  # initial_z overridden
-        sg.add_surface(new_surface=s_new, index=1)
+        s_new = create_real_surface(name="S_new", thickness_val=5.0, initial_z=123.0)
+        sg.add_surface(new_surface=s_new, index=1)  # Insert s_new at index 1
 
-        assert len(sg.surfaces) == 2
+        # Expected: [s0_orig, s_new, s1_orig]
+        assert len(sg.surfaces) == 3
+        assert sg.surfaces[0] is s0_orig
         assert sg.surfaces[1] is s_new
+        assert sg.surfaces[2] is s1_orig
         assert sg.surfaces[0].name == "s0"
+        assert sg.surfaces[1].name == "S_new"
+        assert sg.surfaces[2].name == "s1"
 
+        # Coordinate checks for relative CS update
         assert_allclose(
             sg.surfaces[0].geometry.cs.z, be.array(-100.0)
         )  # S0 z unchanged
+        # s_new (at index 1) z should be updated to 0.0 by _update_coordinate_systems
+        assert_allclose(sg.surfaces[1].geometry.cs.z, be.array(0.0))
+        # s1_orig (now at index 2) z should be s_new.thickness
         assert_allclose(
-            sg.surfaces[1].geometry.cs.z, be.array(123.0)
+            sg.surfaces[2].geometry.cs.z,
+            be.array(s_new.thickness),  # 5.0
         )
 
     def test_add_surface_new_object_is_stop_propagation(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=2, use_absolute_cs=False)
         sg.surfaces[0].is_stop = True  # Set S0 as stop
         new_surf = create_real_surface(name="new_stop", is_stop=True)
-        sg.add_surface(new_surface=new_surf, index=2)  # Append
+        # Append by providing index = len(sg.surfaces)
+        sg.add_surface(new_surface=new_surf, index=len(sg.surfaces))
 
         assert len(sg.surfaces) == 3
         assert not sg.surfaces[0].is_stop  # Old stop is cleared
@@ -190,36 +199,58 @@ class TestSurfaceGroupUpdatesRealObjects:
             initial_zs=[-100.0],
         )
 
-        # Add S1 by creation
+        # Add S1_created at index 1. sg: [s0 (z=-100, t=10), S1_created (z=0, t=5.0)]
         # The 'thickness' kwarg should be handled by the actual SurfaceFactory
         sg.add_surface(
             surface_type="standard",
             comment="S1_created",
-            index=1,
+            index=1,  # Insert at index 1
             material="air",
             thickness=5.0,
-        )  # 'air' is just a placeholder for material name
+        )
 
         assert len(sg.surfaces) == 2
-        created_s1 = sg.surfaces[1]
-        assert created_s1.comment == "S1_created"
-        assert created_s1.thickness == 5.0  # Assuming factory sets this
+        s0 = sg.surfaces[0]
+        s1_created = sg.surfaces[1]
+        assert s1_created.comment == "S1_created"
+        assert s1_created.thickness == 5.0
+        assert_allclose(s0.geometry.cs.z, be.array(-100.0))
+        assert_allclose(
+            s1_created.geometry.cs.z, be.array(0.0)
+        )  # Updated by _update_coordinate_systems
 
-        # Add S1 by creation
+        # Add S2_inserted at index 1.
+        # sg: [s0 (z=-100, t=10), S2_inserted (z=0, t=12.0), S1_created (z=12.0, t=5.0)]
         sg.add_surface(
             surface_type="standard",
             comment="S2_inserted",
-            index=1,
+            index=1,  # Insert S2_inserted at index 1, shifting S1_created
             material="glass",
             thickness=12.0,
         )
-        # Surfaces: S0, S2_inserted
 
-        assert len(sg.surfaces) == 2
-        s1_created_now_s2 = sg.surfaces[1]
+        assert len(sg.surfaces) == 3
+        s0_after_second_add = sg.surfaces[0]
+        s2_inserted = sg.surfaces[1]
+        s1_created_shifted = sg.surfaces[2]
 
-        assert s1_created_now_s2.comment == "S2_inserted"
-        assert s1_created_now_s2.thickness == 12.0
+        assert s0_after_second_add is s0  # s0 object should be the same
+        assert s2_inserted.comment == "S2_inserted"
+        assert s2_inserted.thickness == 12.0
+        assert (
+            s1_created_shifted is s1_created
+        )  # s1_created object should be the same, just shifted
+        assert s1_created_shifted.comment == "S1_created"  # Verify it's the original S1
+        assert s1_created_shifted.thickness == 5.0
+
+        # Coordinate checks
+        assert_allclose(s0_after_second_add.geometry.cs.z, be.array(-100.0))
+        # S2_inserted is at index 1, so its z is updated to 0.0
+        assert_allclose(s2_inserted.geometry.cs.z, be.array(0.0))
+        # S1_created_shifted is at index 2, its z is S2_inserted.thickness
+        assert_allclose(
+            s1_created_shifted.geometry.cs.z, be.array(s2_inserted.thickness)
+        )  # 12.0
 
     def test_add_surface_by_creation_error_no_index(self, set_test_backend):
         sg = self._setup_surface_group(use_absolute_cs=False)
@@ -245,9 +276,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         assert sg.surfaces[0].comment == "s0"
         assert sg.surfaces[1].comment == s2_original_comment  # Old S2 is now S1
 
-        assert_allclose(
-            sg.surfaces[0].geometry.cs.z, be.array(-100.0)
-        )  # S0 unchanged
+        assert_allclose(sg.surfaces[0].geometry.cs.z, be.array(-100.0))  # S0 unchanged
         # Old S2 (now new S1) z should be 0.0 because it's now the surface at index 1 and update was called
         assert_allclose(sg.surfaces[1].geometry.cs.z, be.array(0.0))
 
@@ -299,8 +328,13 @@ class TestSurfaceGroupUpdatesRealObjects:
 
     def test_add_surface_new_object_error_index_out_of_bounds(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=1)  # surfaces[0] exists
-        # Valid indices for insertion/overwrite: 0, 1 (append)
-        with pytest.raises(IndexError, match="Index 2 is out of bounds"):
+        # Valid indices for insertion: 0, 1 (append). len(sg.surfaces) = 1.
+        # Max index for insertion is len(sg.surfaces) = 1.
+        # index=2 is out of bounds.
+        with pytest.raises(
+            IndexError,
+            match=r"Index 2 is out of bounds for insertion. Max index for insertion is 1 \(to append\)\.",
+        ):
             sg.add_surface(new_surface=create_real_surface(), index=2)
 
     def test_add_surface_by_creation_error_negative_index(self, set_test_backend):
@@ -311,8 +345,12 @@ class TestSurfaceGroupUpdatesRealObjects:
             )  # Assuming factory handles thickness
 
     def test_add_surface_by_creation_error_index_out_of_bounds(self, set_test_backend):
-        sg = self._setup_surface_group(num_initial_surfaces=1)
-        with pytest.raises(IndexError):
+        sg = self._setup_surface_group(num_initial_surfaces=1)  # len(sg.surfaces) = 1
+        # Max index for insertion is 1. index=2 is out of bounds.
+        with pytest.raises(
+            IndexError,
+            match=r"Index 2 is out of bounds for insertion. Max index for insertion is 1 \(to append\)\.",
+        ):
             sg.add_surface(surface_type="standard", index=2, thickness=1)
 
     def test_remove_surface_error_index_out_of_bounds_negative(self, set_test_backend):
