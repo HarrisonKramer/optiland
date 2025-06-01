@@ -108,13 +108,13 @@ class SurfaceFactory:
         if index == 0:
             if surface_type == "paraxial":
                 raise ValueError("Paraxial surface cannot be the object surface.")
-            return ObjectSurface(geometry, material_post, comment)
+            surface_obj = ObjectSurface(geometry, material_post, comment)
 
         common_params = {"aperture": kwargs.get("aperture")}
 
         # Create the appropriate surface type
         if surface_type == "paraxial":
-            return ParaxialSurface(
+            surface_obj = ParaxialSurface(
                 kwargs["f"],
                 geometry,
                 material_pre,
@@ -126,7 +126,7 @@ class SurfaceFactory:
                 **common_params,
             )
 
-        return Surface(
+        surface_obj = Surface(
             geometry,
             material_pre,
             material_post,
@@ -137,3 +137,8 @@ class SurfaceFactory:
             comment=comment,
             **common_params,
         )
+
+        # Add the thickness as an attribute to the surface
+        surface_obj.thickness = kwargs.get("thickness", 0.0)
+
+        return surface_obj
