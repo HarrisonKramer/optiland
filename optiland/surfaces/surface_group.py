@@ -384,21 +384,25 @@ class SurfaceGroup:
             return
 
         for i in range(effective_start_index, len(self.surfaces)):
-            if i == 0:
-                continue
-
             current_surface = self.surfaces[i]
-            prev_surface = self.surfaces[i - 1]
-            thickness = prev_surface.thickness
 
-            if hasattr(thickness, "item"):
-                thickness = thickness.item()
+            if i == 0:  # no update to object surface
+                continue
+            elif i == 1:  # first surface lies at z=0.0 by definition
+                new_z = 0.0
+            else:
+                prev_surface = self.surfaces[i - 1]
+                thickness = prev_surface.thickness
 
-            if be.isinf(thickness):
-                raise ValueError(
-                    f"Coordinate system update failed due to infinite "
-                    f"thickness at surface {start_index - 1}"
-                )
+                if hasattr(thickness, "item"):
+                    thickness = thickness.item()
 
-            new_z = prev_surface.geometry.cs.z + thickness
+                if be.isinf(thickness):
+                    raise ValueError(
+                        f"Coordinate system update failed due to infinite "
+                        f"thickness at surface {start_index - 1}"
+                    )
+
+                new_z = prev_surface.geometry.cs.z + thickness
+
             current_surface.geometry.cs.z = be.array(new_z)
