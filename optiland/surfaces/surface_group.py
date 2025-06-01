@@ -267,6 +267,12 @@ class SurfaceGroup:
 
             self.surfaces.insert(index, new_surface)
 
+            # If a surface was inserted (not appended) and there's a surface after it
+            if index < len(self.surfaces) - 1:
+                surface_after_inserted = self.surfaces[index + 1]
+                new_surface = self.surfaces[index]
+                surface_after_inserted.material_pre = new_surface.material_post
+
             # Update coordinate systems if surface was inserted
             if not self.surface_factory.use_absolute_cs and index < (
                 len(self.surfaces) - 1

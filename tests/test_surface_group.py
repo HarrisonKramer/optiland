@@ -1,6 +1,7 @@
 import pytest
 
 import optiland.backend as be
+from optiland import optic
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import StandardGeometry
 from optiland.materials import IdealMaterial
@@ -398,3 +399,29 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         # S2.z = S1.z + S1.thickness = 0.0 + 25.0
         assert_allclose(sg.surfaces[2].geometry.cs.z, be.array(25.0))
+
+    def test_insert_all_at_index_1(self, set_test_backend):
+        lens = optic.Optic()
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(index=1)
+        lens.add_surface(index=1, radius=-18.39533, thickness=42.20778)
+        lens.add_surface(index=1, radius=79.68360, thickness=2.95208, material="SK16")
+        lens.add_surface(index=1, radius=20.29192, thickness=4.75041, is_stop=True)
+        lens.add_surface(index=1, radius=-22.21328, thickness=0.99997, material=("F2", "schott"))
+        lens.add_surface(index=1, radius=-435.76044, thickness=6.00755)
+        lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+
+        lens.set_aperture(aperture_type="EPD", value=10)
+
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_field(y=14)
+        lens.add_field(y=20)
+
+        lens.add_wavelength(value=0.48)
+        lens.add_wavelength(value=0.55, is_primary=True)
+        lens.add_wavelength(value=0.65)
+
+        rays = lens.trace(Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59)
+        assert_allclose(be.mean(rays.y), 18.13506822442731)  # mean y position for Cooke triplet defined above
