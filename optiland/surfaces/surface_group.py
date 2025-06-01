@@ -237,6 +237,8 @@ class SurfaceGroup:
             ValueError: If index is not provided when defining a new surface.
 
         """
+        update_start_index = -1
+
         if new_surface is None:
             if index is None:
                 raise ValueError("Must define index when defining surface.")
@@ -255,9 +257,26 @@ class SurfaceGroup:
                 surface.is_stop = False
 
         if index is None:
+            # This case is only reachable if new_surface was provided
             self.surfaces.append(new_surface)
+            update_start_index = self.num_surfaces - 1
         else:
-            self.surfaces.insert(index, new_surface)
+            if index < 0:
+                raise IndexError(f"Index {index} cannot be negative.")
+            if index < len(self.surfaces):  # Overwrite existing surface
+                self.surfaces[index] = new_surface
+                update_start_index = index
+            elif index == len(self.surfaces):  # Append to the list
+                self.surfaces.append(new_surface)
+                update_start_index = index
+            else:  # Index is out of bounds
+                raise IndexError(
+                    f"Index {index} is out of bounds in surface addition for "
+                    f"list of size {len(self.surfaces)}."
+                )
+
+        if not self.surface_factory.use_absolute_cs and update_start_index != -1:
+            self._update_coordinate_systems(start_index=update_start_index)
 
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.
@@ -314,3 +333,78 @@ class SurfaceGroup:
         return cls(
             [Surface.from_dict(surface_data) for surface_data in data["surfaces"]],
         )
+
+
+def _update_coordinate_systems(self, start_index):
+    """Updates the coordinate systems of surfaces from start_index.
+
+    This method is called when a surface is added, removed, or modified
+    in a way that might affect the positions of subsequent surfaces,
+    but only if absolute coordinate positioning (use_absolute_cs=True)
+    is not being used by the coordinate system factory.
+
+    It recalculates the z-coordinate of each surface based on the
+    z-coordinate and 'thickness' attribute of the preceding surface.
+
+    Args:
+        start_index (int): The index of the surface from which to start
+                           updating coordinate systems. The surface at
+                           `start_index` itself will be updated if it's
+                           not the object surface (index 0) and has a predecessor.
+                           If `start_index` is 0, updates effectively begin
+                           for surface 1 based on surface 0.
+    """
+    if not self.surfaces:
+        return
+
+    effective_loop_start_index = start_index
+    if start_index == 0:
+        effective_loop_start_index = 1
+
+    if effective_loop_start_index >= len(self.surfaces):
+        return
+
+    for i in range(effective_loop_start_index, len(self.surfaces)):
+        if i == 0:
+            continue
+
+        current_surface = self.surfaces[i]
+        prev_surface = self.surfaces[i - 1]
+
+        if not hasattr(prev_surface, "thickness"):
+            raise AttributeError(
+                f"Surface '{getattr(prev_surface, 'comment', f'at index {i - 1}')}' "
+                f"does not have a 'thickness' attribute, which is required for "
+                f"relative coordinate system updates."
+            )
+
+        thickness_val = prev_surface.thickness
+
+        if not isinstance(thickness_val, (int, float)):
+            if hasattr(thickness_val, "item"):
+                try:
+                    thickness_val = thickness_val.item()
+                except Exception as e:
+                    raise TypeError(
+                        f"Surface '{getattr(prev_surface, 'comment', f'at index {i - 1}')}' "
+                        f"has a 'thickness' of type {type(prev_surface.thickness)} "
+                        f"that could not be converted to a scalar using .item(). Error: {e}"
+                    ) from e
+            elif be.is_array(thickness_val) and be.size(thickness_val) == 1:
+                try:
+                    thickness_val = be.to_np(thickness_val).item()
+                except Exception as e:
+                    raise TypeError(
+                        f"Surface '{getattr(prev_surface, 'comment', f'at index {i - 1}')}' "
+                        f"has a 'thickness' of type {type(prev_surface.thickness)} "
+                        f"that could not be converted to a scalar using be.to_np().item(). Error: {e}"
+                    ) from e
+            else:
+                raise TypeError(
+                    f"Surface '{getattr(prev_surface, 'comment', f'at index {i - 1}')}' "
+                    f"has a 'thickness' ({thickness_val}) of type {type(prev_surface.thickness)} "
+                    f"which is not a scalar number or a recognized 1-element array."
+                )
+
+        new_z = prev_surface.geometry.cs.z + thickness_val
+        current_surface.geometry.cs.z = new_z
