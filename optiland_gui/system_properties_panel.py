@@ -1,4 +1,6 @@
 # optiland_gui/system_properties_panel.py
+# Content:
+# optiland_gui/system_properties_panel.py
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -16,6 +18,7 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
+    QSizePolicy,  # MODIFICATION: Added QSizePolicy
 )
 
 from .optiland_connector import OptilandConnector
@@ -38,6 +41,8 @@ class SystemPropertiesPanel(QWidget):
 
         # StackedWidget to hold different property editors
         self.stackedWidget = QStackedWidget()
+        # MODIFICATION: Allow stacked widget to expand
+        self.stackedWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         main_layout.addWidget(self.stackedWidget)
 
         # --- Create and add property editor pages ---
@@ -63,6 +68,7 @@ class SystemPropertiesPanel(QWidget):
             "Cost Estimator",
         ]:
             placeholder_widget = QWidget()
+            placeholder_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred) # MODIFICATION
             placeholder_layout = QVBoxLayout(placeholder_widget)
             placeholder_layout.addWidget(
                 QLabel(f"{placeholder_name} Properties (Placeholder)")
@@ -105,6 +111,9 @@ class ApertureEditor(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
+        # MODIFICATION: Allow this editor page to expand horizontally
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+
 
         layout = QFormLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -175,6 +184,8 @@ class FieldsEditor(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
+        # MODIFICATION: Allow this editor page to expand horizontally
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
@@ -322,6 +333,8 @@ class WavelengthsEditor(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
+        # MODIFICATION: Allow this editor page to expand horizontally
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)

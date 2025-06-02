@@ -1,4 +1,6 @@
 # optiland_gui/widgets/custom_title_bar.py
+# Content:
+# optiland_gui/widgets/custom_title_bar.py
 from PySide6.QtCore import Qt, QPoint, Signal, QSize
 from PySide6.QtGui import QIcon  # For icons on buttons
 from PySide6.QtWidgets import (
@@ -52,7 +54,8 @@ class CustomTitleBar(QWidget):
             self.main_menu_bar.setSizePolicy(
                 QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred
             )
-            layout.addWidget(self.main_menu_bar)
+            # MODIFICATION: Added alignment flag for vertical centering
+            layout.addWidget(self.main_menu_bar, 0, Qt.AlignmentFlag.AlignCenter)
 
         # Spacer to push project label and window controls to the right
         layout.addStretch(1)
