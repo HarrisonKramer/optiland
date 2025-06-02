@@ -1,0 +1,11 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icons">
+    <file alias="dash.svg">icons/dash.svg</file>
+    <file alias="design.svg">icons/design.svg</file>
+    <file alias="analysis.svg">icons/analysis.svg</file>
+    <file alias="optimization.svg">icons/optimization.svg</file>
+    <file alias="materials.svg">icons/materials.svg</file>
+    <file alias="tolerancing.svg">icons/tolerancing.svg</file>
+    <file alias="settings.svg">icons/settings.svg</file>
+</qresource>
+</RCC>
