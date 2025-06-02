@@ -441,3 +441,59 @@ QToolTip {
 QWidget#matplotlib_viewer_widget { /* Ensure this ID is set on the Matplotlib widget in Python */
     background-color: #2E2E2E; /* var(--surface-color), or --background-color if needs to be darker */
 }
+
+/* Styling for Pagination Buttons in AnalysisPanel ------------------------------------------------------ */
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton {
+    /* --- Explicit Box Size Control --- */
+    width: 20px;        /* Exact width of the button box */
+    height: 20px;       /* Exact height of the button box */
+    min-width: 20px;    /* Ensure minimum width */
+    max-width: 20px;    /* Ensure maximum width */
+    min-height: 20px;   /* Ensure minimum height */
+    max-height: 20px;   /* Ensure maximum height */
+
+    /* --- Text Properties --- */
+    color: #000000;     /* Example: Black text color for light theme */
+    font-size: 8pt;    /* Example: Explicitly set font size if needed */
+                         /* Adjust as necessary */
+
+    /* --- Other Appearance Properties --- */
+    background-color: #f0f0f0;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px; /* Slightly more rounded for a larger button */
+    padding: 0px;       /* Reset padding if fixed size is used,
+                           or set padding if you want space around text within the box */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:hover {
+    background-color: #5a5a5a; /* Slightly lighter on hover */
+    border: 1px solid #707070;
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:pressed {
+    background-color: #6a6a6a; /* Even lighter when pressed */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
+    color: #FFFFFF; /* White text when active/checked */
+    background-color: #0078d7; /* Blue background when active/checked (same as light theme example) */
+    /* Or a theme-appropriate highlight color for dark mode, e.g., a brighter blue or different color */
+    /* background-color: #1e90ff; */
+    border: 1px solid #005a9e;
+}
+AnalysisPanel QPushButton#ToggleSettingsButton {
+    background-color: transparent; /* Makes the background transparent */
+    border: none;                  /* Removes any border */
+    padding: 0px;                  /* Adjust padding if needed, 0px for minimal space */
+    margin: 0px;                   /* Adjust margin if needed */
+    color: #E0E0E0; 
+}
+AnalysisPanel QPushButton#ToggleSettingsButton:hover {
+    background-color: #5A5A5A; /* Subtle light semi-transparent highlight for dark theme */
+    border-radius: 3px; /* Optional: if you want the highlight to have rounded corners */
+}
+
+AnalysisPanel QPushButton#ToggleSettingsButton:checked { /* If you used checkable state styling before */
+    background-color: transparent;
+    border: none;
+}
