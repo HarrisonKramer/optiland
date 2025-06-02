@@ -52,6 +52,175 @@ QDockWidget::title:focus { /* Added for focused dock title */
     padding-top: 5px; /* Adjust padding for thicker border */
 }
 
+/* === Custom Title Bar Styles === */
+/* Main container for the custom title bar */
+#CustomTitleBar {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background for the title bar area */
+    border-bottom: 1px solid #CED4DA; /* --border-pressed-bg: Bottom border for separation */
+    /* Text color is inherited or set by specific child elements */
+}
+
+/* "Optiland" application title label */
+#TitleBarOptilandLabel {
+    color: #E0E0E0; /* --main-text */
+    font-weight: bold;
+    padding-left: 5px; /* Alignment */
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* QMenuBar embedded within the title bar */
+#TitleBarMenuBar {
+    color: #E0E0E0; /* --main-text: Text color for top-level menu bar items */
+    background-color: transparent; /* Blend with CustomTitleBar background */
+    padding: 0px;
+    margin: 0px;
+    font-size: 9pt; /* Match general font size */
+}
+
+/* Individual top-level items in the #TitleBarMenuBar (e.g., "File", "Edit") */
+#TitleBarMenuBar::item {
+    color: #E0E0E0; /* --main-text */
+    background-color: transparent;
+    padding: 6px 10px; /* Padding for spacing and vertical centering feel */
+}
+
+/* Hovered top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:selected {
+    background-color: #5A5A5A; /* --hover-bg */
+}
+
+/* Pressed top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:pressed {
+    background-color: #6A6A6A; /* --border-pressed-bg */
+}
+
+/* Project name label */
+#TitleBarProjectLabel {
+    color: #E0E0E0; /* --project-label-text: USER SPECIFIED COLOR for project label text */
+    font-size: 8pt;
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* Window control buttons: Minimize, Maximize, Close */
+#TitleBarMinimizeButton,
+#TitleBarMaximizeButton,
+#TitleBarCloseButton {
+    background-color: transparent;
+    color: #E0E0E0; /* --main-text: Icon/text color for buttons */
+    border: none;
+    font-weight: bold; /* Or use icons */
+    min-width: 30px; /* Fixed size for control buttons */
+    max-width: 30px;
+    min-height: 30px;
+    max-height: 30px;
+    padding: 0px;
+    margin: 0px; /* Remove extra margins if any */
+}
+
+/* Hover state for Minimize and Maximize buttons in TitleBar */
+#TitleBarMinimizeButton:hover,
+#TitleBarMaximizeButton:hover {
+    background-color: #4A4A4A; /* --hover-bg */
+}
+
+/* Hover state for the Close button in TitleBar */
+#TitleBarCloseButton:hover {
+    background-color: #E81123; /* --close-button-hover-bg: Standard red */
+    color: #F8F9FA;       /* --accent-text-on-dark: Light text on red background */
+}
+
+/* Pressed state for all window control buttons in TitleBar */
+#TitleBarMinimizeButton:pressed,
+#TitleBarMaximizeButton:pressed,
+#TitleBarCloseButton:pressed {
+    background-color: #4A4A4A; /* --border-pressed-bg */
+}
+/* === End of Custom Title Bar Styles === */
+
+/* Sidebar specific styling -----------------------------------------------------------------------------*/
+#SidebarWidget { /* Main sidebar container */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    border-right: 1px solid #CED4DA; /* --border-pressed-bg */
+}
+#SidebarTitleLabel { /* Title label like "|||" */
+    color: #E0E0E0;       /* --main-text */
+    font-weight: bold;
+    font-size: 11pt;
+    padding: 5px;
+    background-color: transparent; /* Ensure it inherits sidebar background */
+}
+#SidebarWidget QToolButton { /* Buttons within the sidebar */
+    color: #E0E0E0;       /* --main-text */
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 8px;
+    border-radius: 3px;
+    text-align: left; /* For expanded mode */
+    margin: 2px 0px;
+}
+#SidebarWidget QToolButton:hover {
+    background-color: #5A5A5A; /* --hover-bg */
+}
+#SidebarWidget QToolButton:checked,
+#SidebarWidget QToolButton:pressed {
+    background-color: transparent; /* Ensure background remains transparent */
+    color: #E0E0E0;               /* Text color remains the default dark (--main-text) */
+
+    /* Override the default 'border' from the base rule to set only the left border */
+    border-top: 1px solid transparent;    /* Keep other borders transparent */
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-left: 3px solid #007ACC;     /* --accent-primary: Highlight left border with a darker tone */
+
+    /* Adjust left padding to maintain visual text alignment.
+       Original padding: 8px. Original border: 1px transparent.
+       Content starts 1px + 8px = 9px from the edge.
+       New left border: 3px. To maintain 9px offset for content: 3px (border) + 6px (padding-left) = 9px.
+       So, other paddings remain 8px, left padding becomes 6px.
+    */
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 6px;
+}
+
+
+
+/* QToolBar (e.g., the "Quick Actions" toolbar, NOT the custom title bar acting as toolbar) --------------------------------*/
+QToolBar#QuickActionsToolbar { /* More specific selector if needed */
+    background-color: #2E2E2E; /* --toolbar-sidebar-bg: Background of the toolbar */
+    border: 1px solid #4A4A4A; /* --border-pressed-bg: Border around the toolbar */
+    padding: 2px; /* Padding inside the toolbar */
+    spacing: 3px; /* Spacing between toolbar items */
+}
+QToolBar#QuickActionsToolbar::handle {
+    /* image: url(:/path/to/handle_icon.png); You can style this if you use movable toolbars */
+}
+QToolBar#QuickActionsToolbar::separator {
+    height: 16px; /* Height of the separator line */
+    background-color: #4A4A4A; /* --border-pressed-bg: Color of the separator */
+    margin-left: 2px;  /* Margins around separator */
+    margin-right: 2px;
+    width: 1px; /* Thickness of separator */
+}
+/* QToolButton when placed inside the QuickActionsToolbar */
+QToolBar#QuickActionsToolbar QToolButton {
+    color: #E0E0E0;       /* --main-text: Text/icon color for toolbar buttons */
+    background-color: transparent; /* Transparent background by default */
+    border: 1px solid transparent; /* No border by default */
+    padding: 3px; /* Padding for the button content */
+}
+QToolBar#QuickActionsToolbar QToolButton:hover {
+    background-color: #4A4A4A; /* --hover-bg: Background on hover */
+    border: 1px solid #4A4A4A; /* --border-pressed-bg: Border on hover */
+}
+QToolBar#QuickActionsToolbar QToolButton:pressed {
+    background-color: #4A4A4A; /* --border-pressed-bg: Background when pressed */
+}
+QToolBar#QuickActionsToolbar QToolButton:checked { /* Style for checkable QToolButtons when checked */
+    background-color: #4A4A4A; /* --border-pressed-bg */
+    border: 1px solid #4A4A4A; /* --disabled-subtle-border: Darker border for checked state */
+}
 
 QTabWidget::pane {
     border: 1px solid #4A4A4A; /* var(--border-color) */
