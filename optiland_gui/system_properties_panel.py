@@ -42,7 +42,9 @@ class SystemPropertiesPanel(QWidget):
         # StackedWidget to hold different property editors
         self.stackedWidget = QStackedWidget()
         # MODIFICATION: Allow stacked widget to expand
-        self.stackedWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.stackedWidget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         main_layout.addWidget(self.stackedWidget)
 
         # --- Create and add property editor pages ---
@@ -68,7 +70,9 @@ class SystemPropertiesPanel(QWidget):
             "Cost Estimator",
         ]:
             placeholder_widget = QWidget()
-            placeholder_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred) # MODIFICATION
+            placeholder_widget.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )  # MODIFICATION
             placeholder_layout = QVBoxLayout(placeholder_widget)
             placeholder_layout.addWidget(
                 QLabel(f"{placeholder_name} Properties (Placeholder)")
@@ -113,7 +117,6 @@ class ApertureEditor(QWidget):
         self.is_loading = False
         # MODIFICATION: Allow this editor page to expand horizontally
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
 
         layout = QFormLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
