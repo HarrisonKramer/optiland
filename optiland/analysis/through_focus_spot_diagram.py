@@ -3,6 +3,7 @@
 This module provides a class for performing through-focus spot diagram
 analysis, calculating the spot diagram at various focal planes.
 
+Kramer Harrison, 2025
 """
 
 from typing import Literal
