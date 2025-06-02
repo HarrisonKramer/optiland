@@ -108,29 +108,27 @@ class GridDistortion(BaseAnalysis):
             ValueError: If the distortion type is not 'f-tan' or 'f-theta'.
 
         """
-        # trace single reference ray
+        # Update paraxial system to ensure effl is current
+        self.optic.update_paraxial()
+
         # Use self.wavelengths[0] as GridDistortion operates on a single wavelength
         current_wavelength = self.wavelengths[0]
-        self.optic.trace_generic(
-            Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=current_wavelength
-        )
+        # self.optic.trace_generic(
+        #     Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=current_wavelength
+        # )
 
         max_field = np.sqrt(2) / 2
         extent = be.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = be.meshgrid(extent, extent)
 
         if self.distortion_type == "f-tan":
-            const = self.optic.surface_group.y[-1, 0] / (
-                be.tan(1e-10 * be.radians(self.optic.fields.max_field))
-            )
-            xp = const * be.tan(Hx * be.radians(self.optic.fields.max_field))
-            yp = const * be.tan(Hy * be.radians(self.optic.fields.max_field))
+            effl = self.optic.paraxial_quantities.effl
+            xp = effl * be.tan(Hx * be.radians(self.optic.fields.max_field))
+            yp = effl * be.tan(Hy * be.radians(self.optic.fields.max_field))
         elif self.distortion_type == "f-theta":
-            const = self.optic.surface_group.y[-1, 0] / (
-                1e-10 * be.radians(self.optic.fields.max_field)
-            )
-            xp = const * Hx * be.radians(self.optic.fields.max_field)
-            yp = const * Hy * be.radians(self.optic.fields.max_field)
+            effl = self.optic.paraxial_quantities.effl
+            xp = effl * Hx * be.radians(self.optic.fields.max_field)
+            yp = effl * Hy * be.radians(self.optic.fields.max_field)
         else:
             raise ValueError(
                 '''Distortion type must be "f-tan" or
