@@ -175,7 +175,7 @@ class FieldsEditor(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
-        
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)

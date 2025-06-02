@@ -36,15 +36,19 @@ class SidebarWidget(QWidget):
         self._button_group.setExclusive(True)
 
         self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(5, 10, 5, 10) # Adjusted margins for visual appeal
-        self._main_layout.setSpacing(5) # Spacing between widgets
+        self._main_layout.setContentsMargins(
+            5, 10, 5, 10
+        )  # Adjusted margins for visual appeal
+        self._main_layout.setSpacing(5)  # Spacing between widgets
 
         # --- Title Label ---
         self.title_label = QLabel("|||")
         self.title_label.setObjectName("SidebarTitleLabel")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.title_label.setFixedHeight(30) # Adjusted height
-        self.title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.title_label.setFixedHeight(30)  # Adjusted height
+        self.title_label.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self._main_layout.addWidget(self.title_label)
 
         self._buttons_list = []  # To store (button, text_label)
@@ -64,18 +68,18 @@ class SidebarWidget(QWidget):
             button.setObjectName(f"sidebar-btn-{name}")
             button.setText(text)
             button.setIcon(QIcon(icon_path))
-            button.setIconSize(QSize(24, 24)) 
+            button.setIconSize(QSize(24, 24))
             button.setCheckable(True)
-            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon) 
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            button.setFixedHeight(65) 
+            button.setFixedHeight(65)
 
             self._main_layout.addWidget(button)
             self._button_group.addButton(button)
             self._buttons_list.append({"widget": button, "name": name, "text": text})
             button.clicked.connect(self._handle_button_click)
 
-        self._main_layout.addStretch(1) # Pushes settings button to the bottom
+        self._main_layout.addStretch(1)  # Pushes settings button to the bottom
 
         # --- Settings Button ---
         self.settings_button = QToolButton()
@@ -84,13 +88,19 @@ class SidebarWidget(QWidget):
         self.settings_button.setIcon(QIcon(":/icons/settings.svg"))
         self.settings_button.setIconSize(QSize(24, 24))
         self.settings_button.setCheckable(True)
-        self.settings_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        self.settings_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.settings_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+        )
+        self.settings_button.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.settings_button.setFixedHeight(35)
 
         self._main_layout.addWidget(self.settings_button)
         self._button_group.addButton(self.settings_button)
-        self._buttons_list.append({"widget": self.settings_button, "name": "settings", "text": "Settings"})
+        self._buttons_list.append(
+            {"widget": self.settings_button, "name": "settings", "text": "Settings"}
+        )
         self.settings_button.clicked.connect(self._handle_button_click)
 
         # Set "Dash" as active by default
@@ -102,11 +112,17 @@ class SidebarWidget(QWidget):
         # This will be more reliably handled by the first resizeEvent or MainWindow's logic
         # self.set_collapsed(self.width() <= COLLAPSE_THRESHOLD_WIDTH)
 
-
     def _handle_button_click(self):
         checked_button = self._button_group.checkedButton()
         if checked_button:
-            button_name = next((b["name"] for b in self._buttons_list if b["widget"] == checked_button), None)
+            button_name = next(
+                (
+                    b["name"]
+                    for b in self._buttons_list
+                    if b["widget"] == checked_button
+                ),
+                None,
+            )
             if button_name:
                 self.menuSelected.emit(button_name)
 
@@ -118,18 +134,19 @@ class SidebarWidget(QWidget):
         if collapsed:
             self.title_label.setText("|||")
             for item in self._buttons_list:
-                item["widget"].setText("") # Clear text for icon only mode
+                item["widget"].setText("")  # Clear text for icon only mode
                 item["widget"].setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
                 item["widget"].setToolTip(item["text"])
         else:
             self.title_label.setText("|||")
             for item in self._buttons_list:
                 item["widget"].setText(item["text"])
-                item["widget"].setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+                item["widget"].setToolButtonStyle(
+                    Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+                )
                 item["widget"].setToolTip("")
         # Adjust layout/spacing if necessary, but QSS should handle appearance
         self.updateGeometry()
-
 
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
