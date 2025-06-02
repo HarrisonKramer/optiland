@@ -40,7 +40,7 @@ class SidebarWidget(QWidget):
         self._main_layout.setSpacing(5) # Spacing between widgets
 
         # --- Title Label ---
-        self.title_label = QLabel("Optiland")
+        self.title_label = QLabel("|||")
         self.title_label.setObjectName("SidebarTitleLabel")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setFixedHeight(30) # Adjusted height
@@ -116,13 +116,13 @@ class SidebarWidget(QWidget):
 
         self._is_collapsed = collapsed
         if collapsed:
-            self.title_label.setText("O")
+            self.title_label.setText("|||")
             for item in self._buttons_list:
                 item["widget"].setText("") # Clear text for icon only mode
                 item["widget"].setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
                 item["widget"].setToolTip(item["text"])
         else:
-            self.title_label.setText("Optiland")
+            self.title_label.setText("|||")
             for item in self._buttons_list:
                 item["widget"].setText(item["text"])
                 item["widget"].setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
