@@ -13,17 +13,22 @@ import optiland.backend as be
 
 
 class PolarizationState:
-    """Represents the polarization state of a light ray.
+    """Represents the polarization state of a light ray or ray bundle.
+
+    This class stores information about the electric field components and their
+    phases to define various polarization states (e.g., linear, circular,
+    elliptical, or unpolarized).
 
     Attributes:
-        is_polarized (bool): Indicates whether the state is polarized.
-        Ex (Optional[float]): Electric field component in the x-direction.
-        Ey (Optional[float]): Electric field component in the y-direction.
-        phase_x (Optional[float]): Phase of the x-component of the electric
-            field.
-        phase_y (Optional[float]): Phase of the y-component of the electric
-            field.
-
+        is_polarized (bool): True if the light is polarized, False otherwise.
+        Ex (Optional[be.ndarray]): The x-component of the electric field vector.
+            Normalized if `is_polarized` is True.
+        Ey (Optional[be.ndarray]): The y-component of the electric field vector.
+            Normalized if `is_polarized` is True.
+        phase_x (Optional[be.ndarray]): The phase of the x-component of the
+            electric field, in radians.
+        phase_y (Optional[be.ndarray]): The phase of the y-component of the
+            electric field, in radians.
     """
 
     def __init__(
@@ -34,6 +39,26 @@ class PolarizationState:
         phase_x: Optional[float] = None,
         phase_y: Optional[float] = None,
     ):
+        """Initializes a PolarizationState object.
+
+        Args:
+            is_polarized (bool): Whether the light is polarized. Defaults to False
+                (unpolarized).
+            Ex (Optional[float]): The x-component of the electric field. Required
+                if `is_polarized` is True.
+            Ey (Optional[float]): The y-component of the electric field. Required
+                if `is_polarized` is True.
+            phase_x (Optional[float]): The phase of the x-component of the
+                electric field in radians. Required if `is_polarized` is True.
+            phase_y (Optional[float]): The phase of the y-component of the
+                electric field in radians. Required if `is_polarized` is True.
+
+        Raises:
+            ValueError: If `is_polarized` is True and any of Ex, Ey, phase_x,
+                or phase_y are None.
+            ValueError: If `is_polarized` is False and any of Ex, Ey, phase_x,
+                or phase_y are not None.
+        """
         if is_polarized:
             if None in [Ex, Ey, phase_x, phase_y]:
                 raise ValueError(

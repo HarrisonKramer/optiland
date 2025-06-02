@@ -9,23 +9,25 @@ import optiland.backend as be
 
 
 class BaseRays:
-    """Base class for rays in a 3D space.
+    """Base class for representing a collection of rays in a 3D space.
+
+    This class serves as a foundation for more specialized ray types, providing
+    basic attributes and methods for manipulating ray positions.
 
     Attributes:
-        x (float): x-coordinate of the ray.
-        y (float): y-coordinate of the ray.
-        z (float): z-coordinate of the ray.
-
+        x (be.Tensor): A tensor representing the x-coordinates of the rays.
+        y (be.Tensor): A tensor representing the y-coordinates of the rays.
+        z (be.Tensor): A tensor representing the z-coordinates of the rays.
+            Typically, this represents the optical axis in an optical system.
     """
 
     def translate(self, dx: float, dy: float, dz: float):
-        """Shifts the rays in the x, y, and z directions.
+        """Translates the rays by a given displacement in x, y, and z.
 
         Args:
-            dx (float): The amount to shift the rays in the x direction.
-            dy (float): The amount to shift the rays in the y direction.
-            dz (float): The amount to shift the rays in the z direction.
-
+            dx (float): The displacement in the x-direction.
+            dy (float): The displacement in the y-direction.
+            dz (float): The displacement in the z-direction.
         """
         dx = be.array(dx)
         dy = be.array(dy)
