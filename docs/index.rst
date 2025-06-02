@@ -36,8 +36,7 @@ Use the interactive shell to try Optiland in your browser!
 
 .. replite::
    :kernel: xpython
-   :toolbar: 1
-   :showBanner: 0
+   :toolbar: True
    :width: 100%
    :height: 600px
 
