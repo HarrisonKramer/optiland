@@ -108,56 +108,74 @@ class GridDistortion(BaseAnalysis):
             ValueError: If the distortion type is not 'f-tan' or 'f-theta'.
 
         """
-        # trace single reference ray
-        # Use self.wavelengths[0] as GridDistortion operates on a single wavelength
+        # Trace chief ray to retrieve central (x, y) position
         current_wavelength = self.wavelengths[0]
         self.optic.trace_generic(
-            Hx=0, Hy=1e-10, Px=0, Py=0, wavelength=current_wavelength
+            Hx=0,
+            Hy=0,
+            Px=0,
+            Py=0,
+            wavelength=current_wavelength,
         )
+        x_chief = self.optic.surface_group.x[-1, 0]
+        y_chief = self.optic.surface_group.y[-1, 0]
+
+        # Trace single reference ray
+        current_wavelength = self.wavelengths[0]
+        self.optic.trace_generic(
+            Hx=0,
+            Hy=1e-10,  # small field
+            Px=0,
+            Py=0,
+            wavelength=current_wavelength,
+        )
+        y_ref = self.optic.surface_group.y[-1, 0]
 
         max_field = np.sqrt(2) / 2
         extent = be.linspace(-max_field, max_field, self.num_points)
         Hx, Hy = be.meshgrid(extent, extent)
 
         if self.distortion_type == "f-tan":
-            const = self.optic.surface_group.y[-1, 0] / (
+            const = (y_ref - y_chief) / (
                 be.tan(1e-10 * be.radians(self.optic.fields.max_field))
             )
             xp = const * be.tan(Hx * be.radians(self.optic.fields.max_field))
             yp = const * be.tan(Hy * be.radians(self.optic.fields.max_field))
         elif self.distortion_type == "f-theta":
-            const = self.optic.surface_group.y[-1, 0] / (
+            const = (y_ref - y_chief) / (
                 1e-10 * be.radians(self.optic.fields.max_field)
             )
             xp = const * Hx * be.radians(self.optic.fields.max_field)
             yp = const * Hy * be.radians(self.optic.fields.max_field)
         else:
-            raise ValueError(
-                '''Distortion type must be "f-tan" or
-                                "f-theta"'''
-            )
+            raise ValueError('''Distortion type must be "f-tan" or"f-theta"''')
 
         self.optic.trace_generic(
             Hx=Hx.flatten(),
             Hy=Hy.flatten(),
             Px=0,
             Py=0,
-            wavelength=current_wavelength,  # Use the fetched wavelength
+            wavelength=current_wavelength,
         )
 
         data = {}
 
         # make real grid square for ease of plotting
-        data["xr"] = be.reshape(
-            self.optic.surface_group.x[-1, :],
-            (self.num_points, self.num_points),
+        data["xr"] = (
+            be.reshape(
+                self.optic.surface_group.x[-1, :],
+                (self.num_points, self.num_points),
+            )
+            - x_chief
         )
-        data["yr"] = be.reshape(
-            self.optic.surface_group.y[-1, :],
-            (self.num_points, self.num_points),
+        data["yr"] = (
+            be.reshape(
+                self.optic.surface_group.y[-1, :],
+                (self.num_points, self.num_points),
+            )
+            - y_chief
         )
 
-        # optical system flips x, so must correct this
         data["xp"] = xp
         data["yp"] = yp
 
