@@ -15,9 +15,9 @@ class BaseRays:
     basic attributes and methods for manipulating ray positions.
 
     Attributes:
-        x (be.Tensor): A tensor representing the x-coordinates of the rays.
-        y (be.Tensor): A tensor representing the y-coordinates of the rays.
-        z (be.Tensor): A tensor representing the z-coordinates of the rays.
+        x (be.ndarray): An array representing the x-coordinates of the rays.
+        y (be.ndarray): An array  representing the y-coordinates of the rays.
+        z (be.ndarray): An array  representing the z-coordinates of the rays.
             Typically, this represents the optical axis in an optical system.
     """
 

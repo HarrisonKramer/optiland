@@ -20,40 +20,40 @@ class PolarizedRays(RealRays):
     elements.
 
     Attributes:
-        x (be.Tensor): The x-coordinates of the rays.
-        y (be.Tensor): The y-coordinates of the rays.
-        z (be.Tensor): The z-coordinates of the rays.
-        L (be.Tensor): The x-components of the direction vectors of the rays.
-        M (be.Tensor): The y-components of the direction vectors of the rays.
-        N (be.Tensor): The z-components of the direction vectors of the rays.
-        i (be.Tensor): The intensity of the rays.
-        w (be.Tensor): The wavelength of the rays.
-        opd (be.Tensor): The optical path length of the rays.
-        p (be.Tensor): A stack of 3x3 polarization matrices, one for each ray.
+        x (be.ndarray): The x-coordinates of the rays.
+        y (be.ndarray): The y-coordinates of the rays.
+        z (be.ndarray): The z-coordinates of the rays.
+        L (be.ndarray): The x-components of the direction vectors of the rays.
+        M (be.ndarray): The y-components of the direction vectors of the rays.
+        N (be.ndarray): The z-components of the direction vectors of the rays.
+        i (be.ndarray): The intensity of the rays.
+        w (be.ndarray): The wavelength of the rays.
+        opd (be.ndarray): The optical path length of the rays.
+        p (be.ndarray): A stack of 3x3 polarization matrices, one for each ray.
             These matrices transform the electric field components.
-        _i0 (be.Tensor): The initial intensity of the rays, stored for reference
+        _i0 (be.ndarray): The initial intensity of the rays, stored for reference
             when calculating intensity for unpolarized light.
-        _L0 (be.Tensor): The initial x-components of the direction vectors.
-        _M0 (be.Tensor): The initial y-components of the direction vectors.
-        _N0 (be.Tensor): The initial z-components of the direction vectors.
+        _L0 (be.ndarray): The initial x-components of the direction vectors.
+        _M0 (be.ndarray): The initial y-components of the direction vectors.
+        _N0 (be.ndarray): The initial z-components of the direction vectors.
     """
 
     def __init__(self, x, y, z, L, M, N, intensity, wavelength):
         """Initializes a PolarizedRays object.
 
         Args:
-            x (float | list[float] | be.Tensor): The initial x-coordinates.
-            y (float | list[float] | be.Tensor): The initial y-coordinates.
-            z (float | list[float] | be.Tensor): The initial z-coordinates.
-            L (float | list[float] | be.Tensor): The initial x-components of the
+            x (float | list[float] | be.ndarray): The initial x-coordinates.
+            y (float | list[float] | be.ndarray): The initial y-coordinates.
+            z (float | list[float] | be.ndarray): The initial z-coordinates.
+            L (float | list[float] | be.ndarray): The initial x-components of the
                 direction vectors.
-            M (float | list[float] | be.Tensor): The initial y-components of the
+            M (float | list[float] | be.ndarray): The initial y-components of the
                 direction vectors.
-            N (float | list[float] | be.Tensor): The initial z-components of the
+            N (float | list[float] | be.ndarray): The initial z-components of the
                 direction vectors.
-            intensity (float | list[float] | be.Tensor): The initial intensity
+            intensity (float | list[float] | be.ndarray): The initial intensity
                 of the rays.
-            wavelength (float | list[float] | be.Tensor): The wavelength of each ray.
+            wavelength (float | list[float] | be.ndarray): The wavelength of each ray.
         """
         super().__init__(x, y, z, L, M, N, intensity, wavelength)
 
@@ -63,15 +63,15 @@ class PolarizedRays(RealRays):
         self._M0 = be.copy(M)
         self._N0 = be.copy(N)
 
-    def get_output_field(self, E: be.Tensor) -> be.Tensor:
+    def get_output_field(self, E: be.ndarray) -> be.ndarray:
         """Computes the output electric field after transformation by polarization matrices.
 
         Args:
-            E (be.Tensor): The input electric field vector(s). This should be a
+            E (be.ndarray): The input electric field vector(s). This should be a
                 Tensor of shape (num_rays, 3) or (3,) if applying to all rays.
 
         Returns:
-            be.Tensor: The transformed electric field vector(s) of shape (num_rays, 3).
+            be.ndarray: The transformed electric field vector(s) of shape (num_rays, 3).
         """
         return be.mult_p_E(self.p, E)
 
@@ -117,11 +117,11 @@ class PolarizedRays(RealRays):
                 / 2
             )
 
-    def update(self, jones_matrix: Optional[be.Tensor] = None):
+    def update(self, jones_matrix=None):
         """Update polarization matrices after interaction with surface.
 
         Args:
-            jones_matrix (Optional[be.Tensor]): Jones matrix representing the
+            jones_matrix (Optional[be.ndarray]): Jones matrix representing the
                 interaction with the surface. If not provided, the
                 polarization matrix is computed assuming an identity matrix.
         """
@@ -159,14 +159,14 @@ class PolarizedRays(RealRays):
         # update polarization matrices of rays
         self.p = be.matmul(p, self.p)
 
-    def _get_3d_electric_field(self, state: PolarizationState) -> be.Tensor:
+    def _get_3d_electric_field(self, state: PolarizationState) -> be.ndarray:
         """Get 3D electric fields given polarization state and initial rays.
 
         Args:
             state (PolarizationState): The polarization state of the rays.
 
         Returns:
-            be.Tensor: The 3D electric fields, a Tensor of shape (num_rays, 3).
+            be.ndarray: The 3D electric fields, a Tensor of shape (num_rays, 3).
                 The local s and p vectors defining the field are determined robustly,
                 including cases where k is parallel to the x-axis.
         """
@@ -191,10 +191,14 @@ class PolarizedRays(RealRays):
         # Ensure p_norms is not zero for division to avoid NaN/Inf.
         # Where parallel_mask is True, p_norms might be zero. Use 1.0 for these cases
         # as p_vecs_initial will be zero anyway, so p_vecs_normalized_safe becomes zero.
-        p_norms_safe_for_division = be.where(parallel_mask, be.ones_like(p_norms), p_norms)
+        p_norms_safe_for_division = be.where(
+            parallel_mask, be.ones_like(p_norms), p_norms
+        )
 
         # Normalize initial p-vectors (will be zero vector if k || x, due to p_vecs_initial being zero there)
-        p_vecs_normalized_safe = p_vecs_initial / be.expand_dims(p_norms_safe_for_division, axis=1)
+        p_vecs_normalized_safe = p_vecs_initial / be.expand_dims(
+            p_norms_safe_for_division, axis=1
+        )
 
         # For rays parallel to x-axis:
         # s-vector is chosen to be along the global y-axis.
@@ -204,9 +208,14 @@ class PolarizedRays(RealRays):
         p_for_parallel = be.cross(k, s_for_parallel)
         p_for_parallel_norms = be.linalg.norm(p_for_parallel, axis=1)
         # Avoid division by zero if, for some edge case, k is also parallel to y_direction_vecs (e.g. k is zero vector)
-        p_for_parallel_norms_safe = be.where(p_for_parallel_norms < 1e-9, be.ones_like(p_for_parallel_norms), p_for_parallel_norms)
-        p_for_parallel = p_for_parallel / be.expand_dims(p_for_parallel_norms_safe, axis=1)
-
+        p_for_parallel_norms_safe = be.where(
+            p_for_parallel_norms < 1e-9,
+            be.ones_like(p_for_parallel_norms),
+            p_for_parallel_norms,
+        )
+        p_for_parallel = p_for_parallel / be.expand_dims(
+            p_for_parallel_norms_safe, axis=1
+        )
 
         # For rays NOT parallel to x-axis:
         # p-vector is the normalized version of (k x x_axis).
@@ -215,16 +224,26 @@ class PolarizedRays(RealRays):
         s_for_non_parallel = be.cross(p_for_non_parallel, k)
         s_for_non_parallel_norms = be.linalg.norm(s_for_non_parallel, axis=1)
         # Avoid division by zero if p_for_non_parallel is somehow parallel to k (should not happen if k is not zero)
-        s_for_non_parallel_norms_safe = be.where(s_for_non_parallel_norms < 1e-9, be.ones_like(s_for_non_parallel_norms), s_for_non_parallel_norms)
-        s_for_non_parallel = s_for_non_parallel / be.expand_dims(s_for_non_parallel_norms_safe, axis=1)
+        s_for_non_parallel_norms_safe = be.where(
+            s_for_non_parallel_norms < 1e-9,
+            be.ones_like(s_for_non_parallel_norms),
+            s_for_non_parallel_norms,
+        )
+        s_for_non_parallel = s_for_non_parallel / be.expand_dims(
+            s_for_non_parallel_norms_safe, axis=1
+        )
 
         # Combine using the mask
         # Need to ensure shapes are compatible for be.where if selecting rows
         # For vector assignment, expand_dims on mask is needed
         expanded_parallel_mask = be.expand_dims(parallel_mask, axis=1)
 
-        final_p_vecs = be.where(expanded_parallel_mask, p_for_parallel, p_for_non_parallel)
-        final_s_vecs = be.where(expanded_parallel_mask, s_for_parallel, s_for_non_parallel)
+        final_p_vecs = be.where(
+            expanded_parallel_mask, p_for_parallel, p_for_non_parallel
+        )
+        final_s_vecs = be.where(
+            expanded_parallel_mask, s_for_parallel, s_for_non_parallel
+        )
 
         E = (
             state.Ex * be.exp(1j * state.phase_x) * final_s_vecs

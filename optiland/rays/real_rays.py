@@ -7,7 +7,6 @@ Kramer Harrison, 2024
 """
 
 import optiland.backend as be
-from optiland.materials import BaseMaterial
 from optiland.rays.base import BaseRays
 
 
@@ -20,21 +19,21 @@ class RealRays(BaseRays):
     refraction, and reflection.
 
     Attributes:
-        x (be.Tensor): The x-coordinates of the rays.
-        y (be.Tensor): The y-coordinates of the rays.
-        z (be.Tensor): The z-coordinates of the rays.
-        L (be.Tensor): The x-components of the direction vectors of the rays.
-        M (be.Tensor): The y-components of the direction vectors of the rays.
-        N (be.Tensor): The z-components of the direction vectors of the rays.
-        i (be.Tensor): The intensity of each ray.
-        w (be.Tensor): The wavelength of each ray (in micrometers).
-        opd (be.Tensor): The optical path difference accumulated by each ray.
-        L0 (Optional[be.Tensor]): The x-components of the direction vectors
+        x (be.ndarray): The x-coordinates of the rays.
+        y (be.ndarray): The y-coordinates of the rays.
+        z (be.ndarray): The z-coordinates of the rays.
+        L (be.ndarray): The x-components of the direction vectors of the rays.
+        M (be.ndarray): The y-components of the direction vectors of the rays.
+        N (be.ndarray): The z-components of the direction vectors of the rays.
+        i (be.ndarray): The intensity of each ray.
+        w (be.ndarray): The wavelength of each ray (in micrometers).
+        opd (be.ndarray): The optical path difference accumulated by each ray.
+        L0 (Optional[be.ndarray]): The x-components of the direction vectors
             before the last interaction (e.g., refraction/reflection). Used for
             calculations like aligning surface normals.
-        M0 (Optional[be.Tensor]): The y-components of the direction vectors
+        M0 (Optional[be.ndarray]): The y-components of the direction vectors
             before the last interaction.
-        N0 (Optional[be.Tensor]): The z-components of the direction vectors
+        N0 (Optional[be.ndarray]): The z-components of the direction vectors
             before the last interaction.
         is_normalized (bool): A flag indicating whether the direction vectors
             (L, M, N) are currently normalized. Set to False when operations
@@ -45,18 +44,18 @@ class RealRays(BaseRays):
         """Initializes a RealRays object.
 
         Args:
-            x (float | list[float] | be.Tensor): The initial x-coordinates.
-            y (float | list[float] | be.Tensor): The initial y-coordinates.
-            z (float | list[float] | be.Tensor): The initial z-coordinates.
-            L (float | list[float] | be.Tensor): The initial x-components of the
+            x (float | list[float] | be.ndarray): The initial x-coordinates.
+            y (float | list[float] | be.ndarray): The initial y-coordinates.
+            z (float | list[float] | be.ndarray): The initial z-coordinates.
+            L (float | list[float] | be.ndarray): The initial x-components of the
                 direction vectors.
-            M (float | list[float] | be.Tensor): The initial y-components of the
+            M (float | list[float] | be.ndarray): The initial y-components of the
                 direction vectors.
-            N (float | list[float] | be.Tensor): The initial z-components of the
+            N (float | list[float] | be.ndarray): The initial z-components of the
                 direction vectors.
-            intensity (float | list[float] | be.Tensor): The initial intensity
+            intensity (float | list[float] | be.ndarray): The initial intensity
                 of the rays.
-            wavelength (float | list[float] | be.Tensor): The wavelength of each
+            wavelength (float | list[float] | be.ndarray): The wavelength of each
                 ray in micrometers.
         """
         self.x = be.as_array_1d(x)
@@ -124,7 +123,7 @@ class RealRays(BaseRays):
         self.L = L
         self.M = m
 
-    def propagate(self, t: float, material: Optional[BaseMaterial] = None):
+    def propagate(self, t: float, material=None):
         """Propagates the rays a distance `t` through a medium.
 
         Updates ray positions based on their direction vectors and distance `t`.
@@ -144,7 +143,7 @@ class RealRays(BaseRays):
         self.z = self.z + t * self.N
 
         if material is not None:
-            k = material.k(self.w) # Extinction coefficient for absorption
+            k = material.k(self.w)  # Extinction coefficient for absorption
             alpha = 4 * be.pi * k / self.w  # Absorption coefficient
             # Convert t from optical system units (e.g. mm) to microns for alpha
             # This assumes self.w is in microns.
@@ -155,13 +154,13 @@ class RealRays(BaseRays):
         if not self.is_normalized:
             self.normalize()
 
-    def clip(self, condition: be.Tensor | bool):
+    def clip(self, condition):
         """Clips rays based on a boolean condition.
 
         Sets the intensity `i` of rays to zero where the condition is True.
 
         Args:
-            condition (be.Tensor | bool): A boolean tensor or scalar. Rays where
+            condition (be.ndarray | bool): A boolean tensor or scalar. Rays where
                 the condition is True will be clipped (intensity set to 0).
         """
         cond = be.array(condition)
@@ -171,14 +170,7 @@ class RealRays(BaseRays):
             cond = cond.bool()
         self.i = be.where(cond, be.zeros_like(self.i), self.i)
 
-    def refract(
-        self,
-        nx: be.Tensor,
-        ny: be.Tensor,
-        nz: be.Tensor,
-        n1: float | be.Tensor,
-        n2: float | be.Tensor,
-    ):
+    def refract(self, nx, ny, nz, n1, n2):
         """Refracts rays at an interface between two media.
 
         Updates the ray direction vectors (L, M, N) based on Snell's law.
@@ -186,12 +178,12 @@ class RealRays(BaseRays):
         to medium 2. Stores current L, M, N in L0, M0, N0.
 
         Args:
-            nx (be.Tensor): The x-component of the surface normal vectors.
-            ny (be.Tensor): The y-component of the surface normal vectors.
-            nz (be.Tensor): The z-component of the surface normal vectors.
-            n1 (float | be.Tensor): Refractive index of the medium the ray is
+            nx (be.ndarray): The x-component of the surface normal vectors.
+            ny (be.ndarray): The y-component of the surface normal vectors.
+            nz (be.ndarray): The z-component of the surface normal vectors.
+            n1 (float | be.ndarray): Refractive index of the medium the ray is
                 currently in (incident medium).
-            n2 (float | be.Tensor): Refractive index of the medium the ray is
+            n2 (float | be.ndarray): Refractive index of the medium the ray is
                 entering (transmitting/refracting medium).
         """
         # Store current direction cosines for use in calculations and by other methods
@@ -203,14 +195,16 @@ class RealRays(BaseRays):
 
         # Align surface normal with incident ray (convention for vector formula)
         # dot is cos(theta_1), where theta_1 is angle between incident ray and normal
-        nx_aligned, ny_aligned, nz_aligned, dot_incident_normal = self._align_surface_normal(nx, ny, nz)
+        nx_aligned, ny_aligned, nz_aligned, dot_incident_normal = (
+            self._align_surface_normal(nx, ny, nz)
+        )
 
         # Calculate the term under the square root for Snell's law vector form
         # This term is related to cos(theta_2)^2, where theta_2 is refracted angle.
         # If term_under_sqrt < 0, it indicates Total Internal Reflection (TIR).
         # be.sqrt will produce NaN for negative inputs if not handled by backend.
         term_under_sqrt = 1 - u**2 * (1 - dot_incident_normal**2)
-        root = be.sqrt(term_under_sqrt) # cos(theta_2) scaled by a factor
+        root = be.sqrt(term_under_sqrt)  # cos(theta_2) scaled by a factor
 
         # Vector form of Snell's Law:
         # K_transmitted = u * K_incident + (root - u * dot_incident_normal) * Normal_aligned
@@ -222,16 +216,16 @@ class RealRays(BaseRays):
         self.M = ty
         self.N = tz
 
-    def reflect(self, nx: be.Tensor, ny: be.Tensor, nz: be.Tensor):
+    def reflect(self, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray):
         """Reflects rays at a surface.
 
         Updates the ray direction vectors (L, M, N) according to the law of
         reflection. Stores current L, M, N in L0, M0, N0.
 
         Args:
-            nx (be.Tensor): The x-component of the surface normal vectors.
-            ny (be.Tensor): The y-component of the surface normal vectors.
-            nz (be.Tensor): The z-component of the surface normal vectors.
+            nx (be.ndarray): The x-component of the surface normal vectors.
+            ny (be.ndarray): The y-component of the surface normal vectors.
+            nz (be.ndarray): The z-component of the surface normal vectors.
         """
         self.L0 = be.copy(self.L)
         self.M0 = be.copy(self.M)
@@ -239,7 +233,9 @@ class RealRays(BaseRays):
 
         # Align surface normal with incident ray
         # dot is cos(theta_incident), angle between incident ray and normal
-        nx_aligned, ny_aligned, nz_aligned, dot_incident_normal = self._align_surface_normal(nx, ny, nz)
+        nx_aligned, ny_aligned, nz_aligned, dot_incident_normal = (
+            self._align_surface_normal(nx, ny, nz)
+        )
 
         # Vector form of the Law of Reflection:
         # K_reflected = K_incident - 2 * dot_incident_normal * Normal_aligned
@@ -247,7 +243,7 @@ class RealRays(BaseRays):
         self.M = self.M0 - 2 * dot_incident_normal * ny_aligned
         self.N = self.N0 - 2 * dot_incident_normal * nz_aligned
 
-    def update(self, jones_matrix: Optional[be.Tensor] = None):
+    def update(self, jones_matrix=None):
         """Update ray properties after interaction with a surface.
 
         This method is intended to be overridden by subclasses that require
@@ -255,7 +251,7 @@ class RealRays(BaseRays):
         implementation in `RealRays` does nothing.
 
         Args:
-            jones_matrix (be.Tensor, optional): An optional Jones matrix or
+            jones_matrix (be.ndarray, optional): An optional Jones matrix or
                 similar parameter that might be used by subclasses.
                 Defaults to None.
         """
@@ -270,8 +266,8 @@ class RealRays(BaseRays):
         self.is_normalized = True
 
     def _align_surface_normal(
-        self, nx: be.Tensor, ny: be.Tensor, nz: be.Tensor
-    ) -> tuple[be.Tensor, be.Tensor, be.Tensor, be.Tensor]:
+        self, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
         """Aligns the surface normal with the incident ray vectors.
 
         This convention ensures the surface normal points towards the incident
@@ -280,12 +276,12 @@ class RealRays(BaseRays):
         the incident ray.
 
         Args:
-            nx (be.Tensor): The x-component of the surface normal vector(s).
-            ny (be.Tensor): The y-component of the surface normal vector(s).
-            nz (be.Tensor): The z-component of the surface normal vector(s).
+            nx (be.ndarray): The x-component of the surface normal vector(s).
+            ny (be.ndarray): The y-component of the surface normal vector(s).
+            nz (be.ndarray): The z-component of the surface normal vector(s).
 
         Returns:
-            tuple[be.Tensor, be.Tensor, be.Tensor, be.Tensor]:
+            tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
                 - nx: The aligned x-component of the surface normal.
                 - ny: The aligned y-component of the surface normal.
                 - nz: The aligned z-component of the surface normal.

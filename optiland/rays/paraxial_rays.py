@@ -18,15 +18,15 @@ class ParaxialRays(BaseRays):
     these rays.
 
     Attributes:
-        y (be.Tensor): The y-coordinates of the rays.
-        u (be.Tensor): The slopes of the rays in the y-z plane.
-        z (be.Tensor): The z-coordinates of the rays (optical axis).
-        wavelength (be.Tensor): The wavelength of each ray.
-        x (be.Tensor): The x-coordinates of the rays (initialized to zero for
+        y (be.ndarray): The y-coordinates of the rays.
+        u (be.ndarray): The slopes of the rays in the y-z plane.
+        z (be.ndarray): The z-coordinates of the rays (optical axis).
+        wavelength (be.ndarray): The wavelength of each ray.
+        x (be.ndarray): The x-coordinates of the rays (initialized to zero for
             paraxial approximation in the y-z plane).
-        i (be.Tensor): A tensor representing the intensity of the rays,
+        i (be.ndarray): A tensor representing the intensity of the rays,
             initialized to ones.
-        w (be.Tensor): Alias for wavelength.
+        w (be.ndarray): Alias for wavelength.
 
     """
 
@@ -34,11 +34,11 @@ class ParaxialRays(BaseRays):
         """Initializes a ParaxialRays object.
 
         Args:
-            y (float | list[float] | be.Tensor): The initial y-coordinates of the rays.
-            u (float | list[float] | be.Tensor): The initial slopes of the rays
+            y (float | list[float] | be.ndarray): The initial y-coordinates of the rays.
+            u (float | list[float] | be.ndarray): The initial slopes of the rays
                 in the y-z plane.
-            z (float | list[float] | be.Tensor): The initial z-coordinates of the rays.
-            wavelength (float | list[float] | be.Tensor): The wavelength of each ray.
+            z (float | list[float] | be.ndarray): The initial z-coordinates of the rays.
+            wavelength (float | list[float] | be.ndarray): The wavelength of each ray.
         """
         self.y = be.as_array_1d(y)
         self.z = be.as_array_1d(z)
@@ -60,53 +60,13 @@ class ParaxialRays(BaseRays):
         self.z = self.z + t
 
     def rotate_x(self, rx: float):
-        """Rotates the paraxial rays about the x-axis.
-
-        This transforms the y, z coordinates and the slope u of the rays.
-        It assumes a rotation in the y-z plane.
-
-        Args:
-            rx (float): The rotation angle in radians.
-        """
-        rx = be.array(rx)
-        y_new = self.y * be.cos(rx) - self.z * be.sin(rx)
-        z_new = self.y * be.sin(rx) + self.z * be.cos(rx)
-
-        # The direction vector in the y-z plane is (self.u, 1) before rotation.
-        # After rotation, the new components M_new and N_new are:
-        M_new = self.u * be.cos(rx) - be.sin(rx) # Effectively rotating (u, 1)
-        N_new = self.u * be.sin(rx) + be.cos(rx)
-
-        self.y = y_new
-        self.z = z_new
-        self.u = M_new / N_new # New slope is M_new / N_new
+        """Rotate the rays about the x-axis."""
+        # pragma: no cover
 
     def rotate_y(self, ry: float):
-        """Rotates the rays about the y-axis by a given angle.
-
-        Args:
-            ry (float): The rotation angle in radians.
-
-        Raises:
-            NotImplementedError: This rotation is not applicable to the 1D
-                ParaxialRays model as it would introduce x-components,
-                violating the paraxial assumption in the y-z plane.
-        """
-        raise NotImplementedError(
-            "rotate_y is not applicable to the 1D ParaxialRays model as it would introduce x-components."
-        )
+        """Rotate the rays about the y-axis."""
+        # pragma: no cover
 
     def rotate_z(self, rz: float):
-        """Rotates the rays about the z-axis by a given angle.
-
-        Args:
-            rz (float): The rotation angle in radians.
-
-        Raises:
-            NotImplementedError: This rotation is not applicable to the 1D
-                ParaxialRays model as it primarily affects x-components or
-                polarization, neither of which are fully modeled here.
-        """
-        raise NotImplementedError(
-            "rotate_z is not applicable to the 1D ParaxialRays model as it would introduce x-components."
-        )
+        """Rotate the rays about the z-axis."""
+        # pragma: no cover

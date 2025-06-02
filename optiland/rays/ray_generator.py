@@ -33,14 +33,7 @@ class RayGenerator:
         """
         self.optic = optic
 
-    def generate_rays(
-        self,
-        Hx: float,
-        Hy: float,
-        Px: float | be.Tensor,
-        Py: float | be.Tensor,
-        wavelength: float,
-    ) -> RealRays | PolarizedRays:
+    def generate_rays(self, Hx, Hy, Px, Py, wavelength):
         """Generates rays for tracing based on field and pupil coordinates.
 
         This method calculates the initial positions (x0, y0, z0) and direction
@@ -52,10 +45,10 @@ class RayGenerator:
                 from -1 to 1.
             Hy (float): Normalized y-coordinate of the field point, ranging
                 from -1 to 1.
-            Px (float | be.Tensor): Normalized x-coordinate(s) in the pupil,
+            Px (float | be.ndarray): Normalized x-coordinate(s) in the pupil,
                 typically ranging from -1 to 1. Can be a scalar or a tensor
                 for multiple rays.
-            Py (float | be.Tensor): Normalized y-coordinate(s) in the pupil,
+            Py (float | be.ndarray): Normalized y-coordinate(s) in the pupil,
                 typically ranging from -1 to 1. Can be a scalar or a tensor
                 for multiple rays.
             wavelength (float): The wavelength of the rays in micrometers.
@@ -98,15 +91,7 @@ class RayGenerator:
             return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
         return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
 
-    def _get_ray_origins(
-        self,
-        Hx: float,
-        Hy: float,
-        Px: float | be.Tensor,
-        Py: float | be.Tensor,
-        vx: float | be.Tensor,
-        vy: float | be.Tensor,
-    ) -> tuple[be.Tensor, be.Tensor, be.Tensor]:
+    def _get_ray_origins(self, Hx, Hy, Px, Py, vx, vy):
         """Calculates the initial positions (origins) for rays.
 
         This method determines the (x0, y0, z0) coordinates where rays start,
@@ -116,15 +101,15 @@ class RayGenerator:
         Args:
             Hx (float): Normalized x-coordinate of the field point.
             Hy (float): Normalized y-coordinate of the field point.
-            Px (float | be.Tensor): Normalized x-coordinate(s) in the pupil.
-            Py (float | be.Tensor): Normalized y-coordinate(s) in the pupil.
-            vx (float | be.Tensor): Vignetting factor in the x-direction.
+            Px (float | be.ndarray): Normalized x-coordinate(s) in the pupil.
+            Py (float | be.ndarray): Normalized y-coordinate(s) in the pupil.
+            vx (float | be.ndarray): Vignetting factor in the x-direction.
                 Applied to pupil coordinates for object at infinity.
-            vy (float | be.Tensor): Vignetting factor in the y-direction.
+            vy (float | be.ndarray): Vignetting factor in the y-direction.
                 Applied to pupil coordinates for object at infinity.
 
         Returns:
-            tuple[be.Tensor, be.Tensor, be.Tensor]: A tuple (x0, y0, z0)
+            tuple[be.ndarray, be.ndarray, be.ndarray]: A tuple (x0, y0, z0)
             containing the tensor coordinates of the ray origins.
 
         Raises:
@@ -148,32 +133,23 @@ class RayGenerator:
 
         return x0, y0, z0
 
-    def _calculate_initial_target_points(
-        self,
-        Px: float | be.Tensor,
-        Py: float | be.Tensor,
-        x0: be.Tensor,
-        y0: be.Tensor,
-        z0: be.Tensor,
-        vx: be.Tensor,
-        vy: be.Tensor,
-    ) -> tuple[be.Tensor, be.Tensor, be.Tensor]:
+    def _calculate_initial_target_points(self, Px, Py, x0, y0, z0, vx, vy):
         """Calculates initial target points (x1, y1, z1) for rays.
 
         These points are typically on the entrance pupil or a similar reference
         plane, depending on whether the object space is telecentric.
 
         Args:
-            Px (float | be.Tensor): Normalized x-coordinate(s) in the pupil.
-            Py (float | be.Tensor): Normalized y-coordinate(s) in the pupil.
-            x0 (be.Tensor): X-coordinates of the ray origins.
-            y0 (be.Tensor): Y-coordinates of the ray origins.
-            z0 (be.Tensor): Z-coordinates of the ray origins.
-            vx (be.Tensor): Vignetting factor in the x-direction.
-            vy (be.Tensor): Vignetting factor in the y-direction.
+            Px (float | be.ndarray): Normalized x-coordinate(s) in the pupil.
+            Py (float | be.ndarray): Normalized y-coordinate(s) in the pupil.
+            x0 (be.ndarray): X-coordinates of the ray origins.
+            y0 (be.ndarray): Y-coordinates of the ray origins.
+            z0 (be.ndarray): Z-coordinates of the ray origins.
+            vx (be.ndarray): Vignetting factor in the x-direction.
+            vy (be.ndarray): Vignetting factor in the y-direction.
 
         Returns:
-            tuple[be.Tensor, be.Tensor, be.Tensor]: Target coordinates (x1, y1, z1).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Target coordinates (x1, y1, z1).
 
         Raises:
             ValueError: If telecentric conditions are not met.
@@ -208,27 +184,19 @@ class RayGenerator:
             z1 = be.full_like(Px, EPL)
         return x1, y1, z1
 
-    def _get_ray_origins_infinite_object(
-        self,
-        field_x: float,
-        field_y: float,
-        Px: float | be.Tensor,
-        Py: float | be.Tensor,
-        vx: be.Tensor,
-        vy: be.Tensor,
-    ) -> tuple[be.Tensor, be.Tensor, be.Tensor]:
+    def _get_ray_origins_infinite_object(self, field_x, field_y, Px, Py, vx, vy):
         """Calculates ray origins for an object at infinity.
 
         Args:
             field_x (float): Actual field coordinate in x (e.g., angle in degrees).
             field_y (float): Actual field coordinate in y (e.g., angle in degrees).
-            Px (float | be.Tensor): Normalized x-coordinate(s) in the pupil.
-            Py (float | be.Tensor): Normalized y-coordinate(s) in the pupil.
-            vx (be.Tensor): Vignetting factor in the x-direction.
-            vy (be.Tensor): Vignetting factor in the y-direction.
+            Px (float | be.ndarray): Normalized x-coordinate(s) in the pupil.
+            Py (float | be.ndarray): Normalized y-coordinate(s) in the pupil.
+            vx (be.ndarray): Vignetting factor in the x-direction.
+            vy (be.ndarray): Vignetting factor in the y-direction.
 
         Returns:
-            tuple[be.Tensor, be.Tensor, be.Tensor]: Ray origin coordinates (x0, y0, z0).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Ray origin coordinates (x0, y0, z0).
 
         Raises:
             ValueError: If conditions for infinite object are not met.
@@ -256,19 +224,17 @@ class RayGenerator:
         z0 = be.full_like(Px, z)
         return x0, y0, z0
 
-    def _get_ray_origins_finite_object(
-        self, field_x: float, field_y: float, Px: float | be.Tensor, Py: float | be.Tensor
-    ) -> tuple[be.Tensor, be.Tensor, be.Tensor]:
+    def _get_ray_origins_finite_object(self, field_x, field_y, Px, Py):
         """Calculates ray origins for a finite object.
 
         Args:
             field_x (float): Actual field coordinate in x (e.g., object height).
             field_y (float): Actual field coordinate in y (e.g., object height).
-            Px (float | be.Tensor): Normalized x-coordinate(s) in the pupil.
-            Py (float | be.Tensor): Normalized y-coordinate(s) in the pupil.
+            Px (float | be.ndarray): Normalized x-coordinate(s) in the pupil.
+            Py (float | be.ndarray): Normalized y-coordinate(s) in the pupil.
                                    (Px, Py are used for be.full_like to match shape)
         Returns:
-            tuple[be.Tensor, be.Tensor, be.Tensor]: Ray origin coordinates (x0, y0, z0).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Ray origin coordinates (x0, y0, z0).
         """
         obj = self.optic.object_surface
         if self.optic.field_type == "object_height":
@@ -300,16 +266,7 @@ class RayGenerator:
             float: The z-coordinate offset relative to the first surface.
 
         """
-        # Ensure z is an array, even if only one relevant position.
-        # This handles cases where surface_group.positions might be short.
         relevant_positions = self.optic.surface_group.positions[1:-1]
-        if not relevant_positions.any(): # Check if the slice is empty
-             # If no intermediate surfaces, offset is relative to the first surface's EPD.
-             # Or, handle as an error or specific default if this case isn't expected.
-             # For now, let's assume EPD itself is a sensible offset if no internal surfaces.
-            min_z = 0.0 # Or some other appropriate default for an empty list
-        else:
-            min_z = be.min(relevant_positions)
-
+        min_z = be.min(relevant_positions)
         offset = self.optic.paraxial.EPD()
         return offset - min_z
