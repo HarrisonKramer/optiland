@@ -76,7 +76,29 @@ def test_view_invalid_projection(make_fftpsf):
     with pytest.raises(ValueError):
         fftpsf.view(projection="invalid", log=True)
 
+@pytest.mark.parametrize(
+    "projection",
+    [ "2d", "3d",],
+)
+@patch("matplotlib.figure.Figure.text")
+def test_view_annotate_sampling(mock_text, projection, make_fftpsf):
+    fftpsf = make_fftpsf(field=(0, 1))
+    fftpsf.view(projection=projection, num_points=32)
 
+    mock_text.assert_called_once()
+
+    plt.close("all")
+
+@pytest.mark.parametrize(
+    "projection",
+    [ "2d", "3d",],
+)
+def test_view_oversampling(projection, make_fftpsf):
+    fftpsf = make_fftpsf(field=(0, 1))
+
+    with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
+        fftpsf.view(projection=projection, log=False, num_points=128)
+    
 def test_get_units_finite_obj(make_fftpsf):
     def tweak(optic):
         optic.surface_group.surfaces[0].geometry.cs.z = be.array(1e6)
