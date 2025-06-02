@@ -29,6 +29,24 @@ Python code to generate this 3D visualization:
    lens = ReverseTelephoto()
    lens.draw3D()
 
+Try it Now
+----------
+
+Use the interactive shell to try Optiland in your browser!
+
+.. replite::
+   :kernel: xpython
+   :width: 100%
+   :height: 600px
+
+   from optiland.samples.objectives import CookeTriplet
+
+   lens = CookeTriplet()
+   lens.draw()
+
+.. note::
+
+   3D plotting does not work in the interactive shell, but you can run the code in your local Python environment to try the 3D visualizations.
 
 .. _getting_started:
 

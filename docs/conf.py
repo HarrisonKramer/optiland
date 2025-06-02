@@ -12,6 +12,7 @@ author = "Kramer Harrison"
 release = "0.4.1"
 
 extensions = [
+    "jupyterlite_sphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
@@ -58,3 +59,6 @@ autodoc_default_options = {
     "special-members": False,
     "inherited-members": True,
 }
+
+# Jupyterlite configuration
+jupyterlite_bind_ipynb_suffix = False
