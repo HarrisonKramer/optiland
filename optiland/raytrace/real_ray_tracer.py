@@ -10,6 +10,7 @@ Kramer Harrison, 2025
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
+from optiland.optic import SurfaceSequence
 
 
 class RealRayTracer:
@@ -129,3 +130,27 @@ class RealRayTracer:
             )
             for value in arrays
         ]
+
+    def trace_sequence(self, Hx, Hy, wavelength, surface_sequence: SurfaceSequence, num_rays=100, distribution="hexapolar"):
+        """Trace a distribution of rays through a custom surface sequence.
+
+        Args:
+            Hx (float or be.ndarray): The normalized x field coordinate.
+            Hy (float or be.ndarray): The normalized y field coordinate.
+            wavelength (float): The wavelength of the rays.
+            surface_sequence (SurfaceSequence): The custom sequence of surfaces
+                                                through which to trace.
+            num_rays (int, optional): The number of rays to be traced.
+                                      Defaults to 100.
+            distribution (str or optiland.distribution.BaseDistribution, optional):
+                The distribution of the rays. Defaults to 'hexapolar'.
+
+        Returns:
+            RealRays: The RealRays object containing the traced rays.
+
+        Raises:
+            NotImplementedError: This method is not yet implemented.
+        """
+        raise NotImplementedError(
+            "RealRayTracer.trace_sequence() is not yet implemented."
+        )
