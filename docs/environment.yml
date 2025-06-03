@@ -13,4 +13,4 @@ dependencies:
   - pip:
     - ./jupyterlite/mock_libraries/numba
     - ./jupyterlite/mock_libraries/vtk
-    - optiland
+    - ..

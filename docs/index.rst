@@ -33,6 +33,7 @@ Try it Now
 ----------
 
 Use the interactive shell to try Optiland in your browser!
+Note that loading the interactive shell may take a few seconds.
 
 .. replite::
    :kernel: xpython
