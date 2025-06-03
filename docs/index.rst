@@ -121,6 +121,7 @@ Python code to generate this 3D visualization:
    api/api_physical_apertures
    api/api_rays
    api/api_raytrace
+   api/api_solves
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
