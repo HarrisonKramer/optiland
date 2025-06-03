@@ -1,4 +1,4 @@
-"""Defines the chief ray height solve.
+"""Chief Ray Height Solve Module
 
 This module provides the `ChiefRayHeightSolve` class, which is used to
 adjust an optical system to achieve a target chief ray height on a
