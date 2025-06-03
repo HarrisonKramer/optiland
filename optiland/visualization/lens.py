@@ -174,15 +174,23 @@ class Lens3D(Lens2D):
 
         This method iterates through each surface in the lens and checks if the
         geometry of the surface is symmetric. A surface is considered symmetric
-        if its geometry's `is_symmetric` attribute is True.
+        if its geometry's `is_symmetric` attribute is True and both `rx` and
+        `ry` attributes of its coordinate system (`cs`) are zero.
 
         Returns:
             bool: True if all surfaces are symmetric, False otherwise.
 
         """
-        for surface_obj in self.surfaces:  # Assuming surface_obj has a .surf attribute
-            geometry = surface_obj.surf.geometry
+        for surf in self.surfaces:
+            geometry = surf.surf.geometry
             if not geometry.is_symmetric:
+                return False
+            if (
+                geometry.cs.rx != 0
+                or geometry.cs.ry != 0
+                or geometry.cs.x != 0
+                or geometry.cs.y != 0
+            ):
                 return False
         return True
 
