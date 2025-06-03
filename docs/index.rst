@@ -47,8 +47,15 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
 
 .. code-block:: python
 
-    rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
     # Trace 1024 random rays for the on-axis field point, then use rays.x, rays.y for intersection points
+    rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
+
+.. code-block:: python
+
+    # Run a spot diagram analysis
+    from optiland.analysis import SpotDiagram
+    spot = SpotDiagram(lens)
+    spot.view()
 
 .. replite::
    :kernel: xpython
@@ -64,16 +71,6 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
 .. note::
 
    3D plotting does not work in the interactive shell, but you can run the code in your local Python environment to try the 3D visualizations.
-
-For more advanced analysis, such as a spot diagram, try:
-
-.. dropdown:: 📊 View the Spot Diagram
-
-    .. code-block:: python
-
-        from optiland.analysis import SpotDiagram
-        spot = SpotDiagram(lens)
-        spot.view()
 
 .. _getting_started:
 
