@@ -1,9 +1,14 @@
-"""Defines the marginal ray height solve."""
+"""Marginal Ray Height Solve Module
 
-from optiland.solves.ray_height_base import _RayHeightSolveBase
+Defines the marginal ray height solve.
+
+Kramer Harrison, 2025
+"""
+
+from optiland.solves.ray_height_base import RayHeightSolveBase
 
 
-class MarginalRayHeightSolve(_RayHeightSolveBase):
+class MarginalRayHeightSolve(RayHeightSolveBase):
     """Solves for a target marginal ray height on a specific surface.
 
     This class adjusts the z-position of the specified surface and all

@@ -1,8 +1,11 @@
-"""Defines the base class for solve operations."""
+"""Base Solve Module
+
+Defines the base class for solve operations.
+
+Kramer Harrison, 2025
+"""
 
 from abc import ABC, abstractmethod
-
-import optiland.backend as be
 
 
 class BaseSolve(ABC):

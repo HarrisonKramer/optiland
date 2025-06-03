@@ -1,16 +1,19 @@
-"""Base class for ray height solves.
+"""Ray Height Base Module
 
-This module defines `_RayHeightSolveBase`, an abstract base class for solves
+This module defines `RayHeightSolveBase`, an abstract base class for solves
 that adjust surface positions to achieve a target ray height on a specific
 surface.
+
+Kramer Harrison, 2025
 """
+
 from abc import ABC, abstractmethod
 
 import optiland.backend as be
 from optiland.solves.base import BaseSolve
 
 
-class _RayHeightSolveBase(BaseSolve, ABC):
+class RayHeightSolveBase(BaseSolve, ABC):
     """Abstract base class for ray height solves.
 
     This class provides the common structure for solves that aim to achieve a
@@ -66,7 +69,7 @@ class _RayHeightSolveBase(BaseSolve, ABC):
                 f"surface_idx {self.surface_idx} is out of bounds for ray data arrays "
                 f"of length {len(y)}."
             )
-        
+
         if u[self.surface_idx] == 0:
             # Handle case where ray is parallel to optical axis at the surface
             # Or provide a more specific error/warning
@@ -92,7 +95,7 @@ class _RayHeightSolveBase(BaseSolve, ABC):
             surface = self.optic.surface_group.surfaces[i]
             # Perform read, compute, and write separately to avoid potential += issues
             current_z = surface.geometry.cs.z
-            new_z = current_z + offset # offset should be a scalar here
+            new_z = current_z + offset  # offset should be a scalar here
             surface.geometry.cs.z = new_z
 
     def to_dict(self):
@@ -126,8 +129,9 @@ class _RayHeightSolveBase(BaseSolve, ABC):
         Returns:
             _RayHeightSolveBase: An instance of the specific ray height solve subclass.
         """
-        if cls is _RayHeightSolveBase:
+        if cls is RayHeightSolveBase:
             raise TypeError(
-                "_RayHeightSolveBase is an abstract class and cannot be instantiated directly."
+                "RayHeightSolveBase is an abstract class and cannot be "
+                "instantiated directly."
             )
         return cls(optic, data["surface_idx"], data["height"])

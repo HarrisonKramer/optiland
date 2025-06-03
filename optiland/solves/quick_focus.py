@@ -1,4 +1,9 @@
-"""Defines the quick focus solve."""
+"""Quick Focus Solve Module
+
+Defines the quick focus solve.
+
+Seçkin Berkay Öztürk, 2025
+"""
 
 import optiland.backend as be
 from optiland.solves.base import BaseSolve
@@ -45,9 +50,6 @@ class QuickFocusSolve(BaseSolve):
                 that minimizes the RMS spot size.
 
         """
-        # Trace rays to the image plane
-        # Trace rays to the image plane
-
         rays = self.optic.trace(
             Hx=Hx,
             Hy=Hy,

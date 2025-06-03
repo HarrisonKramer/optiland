@@ -1,4 +1,9 @@
-"""Manages the application of solves to an optic."""
+"""Solve Manager Module
+
+Manages the application of solves to an optic.
+
+Kramer Harrison, 2025
+"""
 
 from optiland.solves.base import BaseSolve
 from optiland.solves.factory import SolveFactory
