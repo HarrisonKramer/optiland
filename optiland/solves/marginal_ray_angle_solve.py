@@ -1,10 +1,5 @@
 from optiland.solves.curvature_solve_base import CurvatureSolveBase
-# Assuming Optic and ParaxialData types are available or handled via annotations
-# For example, from typing import TYPE_CHECKING
-# if TYPE_CHECKING:
-#     from optiland.optic.optic import Optic
 
-import optiland.backend as be # For potential logging or array operations
 
 class MarginalRayAngleSolve(CurvatureSolveBase):
     """Adjusts surface curvature to achieve a target marginal ray angle.
@@ -45,22 +40,29 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
                             in the optic object.
         """
         if self.optic.paraxial is None:
-            raise AttributeError("Paraxial analysis data is not available in the optic system.")
+            raise AttributeError(
+                "Paraxial analysis data is not available in the optic system."
+            )
         if self.optic.surface_group is None or not self.optic.surface_group.surfaces:
-            raise AttributeError("Surface group is not available or is empty in the optic system.")
+            raise AttributeError(
+                "Surface group is not available or is empty in the optic system."
+            )
 
         # Fetch paraxial marginal ray data (heights y and slopes u)
         # y_values are at the surfaces, u_values are before refraction at surfaces
         y_values, u_values = self.optic.paraxial.marginal_ray()
 
-        if not (0 <= self.surface_idx < len(y_values) and 0 <= self.surface_idx < len(u_values)):
+        if not (
+            0 <= self.surface_idx < len(y_values)
+            and 0 <= self.surface_idx < len(u_values)
+        ):
             raise IndexError(
                 f"MarginalRayAngleSolve: surface_idx {self.surface_idx} is out of bounds "
                 f"for marginal ray data arrays (length y: {len(y_values)}, u: {len(u_values)})."
             )
 
         y_k = y_values[self.surface_idx]
-        u_k = u_values[self.surface_idx] # This is u_k (slope *before* refraction)
+        u_k = u_values[self.surface_idx]  # This is u_k (slope *before* refraction)
 
         # Obtain refractive indices n_k and n_prime_k for self.surface_idx
         # This assumes a method like get_refractive_indices_at_surface(idx, wavelength_idx)
@@ -78,7 +80,7 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
         # This is more complex as it requires knowing how materials are linked and evaluated.
         # For example:
         if not (0 <= self.surface_idx < len(self.optic.surface_group.surfaces)):
-             raise IndexError(
+            raise IndexError(
                 f"MarginalRayAngleSolve: surface_idx {self.surface_idx} is out of bounds "
                 f"for surface group (length {len(self.optic.surface_group.surfaces)})."
             )
@@ -91,10 +93,13 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
             # Let's assume paraxial setup handles this, or there's a convention.
             # A common approach is that paraxial.marginal_ray() itself is computed using these indices.
             # If self.optic.paraxial.indices exists and stores n and n' for each surface:
-            if hasattr(self.optic.paraxial, 'indices_n') and \
-               hasattr(self.optic.paraxial, 'indices_n_prime'):
-                if not (0 <= self.surface_idx < len(self.optic.paraxial.indices_n) and \
-                        0 <= self.surface_idx < len(self.optic.paraxial.indices_n_prime)):
+            if hasattr(self.optic.paraxial, "indices_n") and hasattr(
+                self.optic.paraxial, "indices_n_prime"
+            ):
+                if not (
+                    0 <= self.surface_idx < len(self.optic.paraxial.indices_n)
+                    and 0 <= self.surface_idx < len(self.optic.paraxial.indices_n_prime)
+                ):
                     raise IndexError(
                         f"MarginalRayAngleSolve: surface_idx {self.surface_idx} is out of bounds "
                         f"for paraxial refractive index arrays."
@@ -112,7 +117,9 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
                 # if the structure isn't clear.
                 # Based on typical structure, the paraxial ray trace itself would have used/stored these.
                 # Let's try to access them from the surfaces, assuming primary wavelength.
-                primary_wl = self.optic.wavelengths.primary_wavelength_value # Or similar
+                primary_wl = (
+                    self.optic.wavelengths.primary_wavelength_value
+                )  # Or similar
 
                 current_surface = self.optic.surface_group.surfaces[self.surface_idx]
 
@@ -120,22 +127,28 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
                     # Object space refractive index
                     # Assuming object surface material is None or special, and object space index is handled
                     # by paraxial setup or a default (e.g. 1.0 for air if optic.object_medium is None)
-                    object_material = self.optic.surface_group.surfaces[0].material_before
+                    object_material = self.optic.surface_group.surfaces[
+                        0
+                    ].material_before
                     if object_material:
                         n_k = object_material.get_index(primary_wl)
-                    elif self.optic.object_space_material: # A common pattern
+                    elif self.optic.object_space_material:  # A common pattern
                         n_k = self.optic.object_space_material.get_index(primary_wl)
-                    else: # Default to vacuum/air
+                    else:  # Default to vacuum/air
                         n_k = 1.0
                 else:
-                    prev_surface = self.optic.surface_group.surfaces[self.surface_idx - 1]
+                    prev_surface = self.optic.surface_group.surfaces[
+                        self.surface_idx - 1
+                    ]
                     if prev_surface.material_after:
                         n_k = prev_surface.material_after.get_index(primary_wl)
                     else:
                         # This case should ideally not happen in a well-defined system
                         # or means it's a mirror in air etc.
                         # Fallback or error needed here. For now, assume it's defined.
-                        raise ValueError(f"Material after surface {self.surface_idx-1} is not defined.")
+                        raise ValueError(
+                            f"Material after surface {self.surface_idx - 1} is not defined."
+                        )
 
                 if current_surface.material_after:
                     n_prime_k = current_surface.material_after.get_index(primary_wl)
@@ -174,5 +187,3 @@ class MarginalRayAngleSolve(CurvatureSolveBase):
                 "Data for MarginalRayAngleSolve must include 'surface_idx' and 'angle'."
             )
         return cls(optic, data["surface_idx"], data["angle"])
-
-```

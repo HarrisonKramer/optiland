@@ -1,6 +1,8 @@
 import abc
-from optiland.solves.base import BaseSolve # Ensure this is the correct BaseSolve
-import optiland.backend as be # For logging
+
+import optiland.backend as be
+from optiland.solves.base import BaseSolve
+
 
 class CurvatureSolveBase(BaseSolve, abc.ABC):
     """Abstract base class for solves that modify surface curvature.
@@ -26,7 +28,7 @@ class CurvatureSolveBase(BaseSolve, abc.ABC):
             angle: Float, the target ray slope after refraction at
                    surface_idx.
         """
-        super().__init__() # Call BaseSolve's __init__
+        super().__init__()  # Call BaseSolve's __init__
         self.optic = optic
         self.surface_idx = surface_idx
         self.angle = angle
@@ -140,8 +142,9 @@ class CurvatureSolveBase(BaseSolve, abc.ABC):
             )
 
         if "surface_idx" not in data or "angle" not in data:
-            raise ValueError("Data for CurvatureSolveBase subclass must include 'surface_idx' and 'angle'.")
+            raise ValueError(
+                "Data for CurvatureSolveBase subclass must include "
+                "'surface_idx' and 'angle'."
+            )
 
         return cls(optic, data["surface_idx"], data["angle"])
-
-```

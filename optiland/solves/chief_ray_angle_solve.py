@@ -1,8 +1,6 @@
 from optiland.solves.curvature_solve_base import CurvatureSolveBase
-# from typing import TYPE_CHECKING
-# if TYPE_CHECKING:
-#     from optiland.optic.optic import Optic
 import optiland.backend as be
+
 
 class ChiefRayAngleSolve(CurvatureSolveBase):
     """Adjusts surface curvature to achieve a target chief ray angle.
@@ -43,30 +41,42 @@ class ChiefRayAngleSolve(CurvatureSolveBase):
                             in the optic object.
         """
         if self.optic.paraxial is None:
-            raise AttributeError("Paraxial analysis data is not available in the optic system.")
+            raise AttributeError(
+                "Paraxial analysis data is not available in the optic system."
+            )
         if self.optic.surface_group is None or not self.optic.surface_group.surfaces:
-            raise AttributeError("Surface group is not available or is empty in the optic system.")
+            raise AttributeError(
+                "Surface group is not available or is empty in the optic system."
+            )
 
         # Fetch paraxial chief ray data (heights y_bar and slopes u_bar)
         # y_bar_values are at the surfaces, u_bar_values are before refraction at surfaces
         y_bar_values, u_bar_values = self.optic.paraxial.chief_ray()
 
-        if not (0 <= self.surface_idx < len(y_bar_values) and 0 <= self.surface_idx < len(u_bar_values)):
+        if not (
+            0 <= self.surface_idx < len(y_bar_values)
+            and 0 <= self.surface_idx < len(u_bar_values)
+        ):
             raise IndexError(
                 f"ChiefRayAngleSolve: surface_idx {self.surface_idx} is out of bounds "
                 f"for chief ray data arrays (length y_bar: {len(y_bar_values)}, u_bar: {len(u_bar_values)})."
             )
 
         y_bar_k = y_bar_values[self.surface_idx]
-        u_bar_k = u_bar_values[self.surface_idx] # This is u_bar_k (slope *before* refraction)
+        u_bar_k = u_bar_values[
+            self.surface_idx
+        ]  # This is u_bar_k (slope *before* refraction)
 
         # Obtain refractive indices n_k and n_prime_k
         # Assuming the same logic as in MarginalRayAngleSolve for fetching indices,
         # i.e., relying on self.optic.paraxial.indices_n and self.optic.paraxial.indices_n_prime
-        if hasattr(self.optic.paraxial, 'indices_n') and \
-           hasattr(self.optic.paraxial, 'indices_n_prime'):
-            if not (0 <= self.surface_idx < len(self.optic.paraxial.indices_n) and \
-                    0 <= self.surface_idx < len(self.optic.paraxial.indices_n_prime)):
+        if hasattr(self.optic.paraxial, "indices_n") and hasattr(
+            self.optic.paraxial, "indices_n_prime"
+        ):
+            if not (
+                0 <= self.surface_idx < len(self.optic.paraxial.indices_n)
+                and 0 <= self.surface_idx < len(self.optic.paraxial.indices_n_prime)
+            ):
                 raise IndexError(
                     f"ChiefRayAngleSolve: surface_idx {self.surface_idx} is out of bounds "
                     f"for paraxial refractive index arrays."
@@ -96,7 +106,9 @@ class ChiefRayAngleSolve(CurvatureSolveBase):
                 if prev_surface.material_after:
                     n_k = prev_surface.material_after.get_index(primary_wl)
                 else:
-                    raise ValueError(f"Material after surface {self.surface_idx-1} is not defined for chief ray.")
+                    raise ValueError(
+                        f"Material after surface {self.surface_idx - 1} is not defined for chief ray."
+                    )
 
             if current_surface.material_after:
                 n_prime_k = current_surface.material_after.get_index(primary_wl)
@@ -129,5 +141,3 @@ class ChiefRayAngleSolve(CurvatureSolveBase):
                 "Data for ChiefRayAngleSolve must include 'surface_idx' and 'angle'."
             )
         return cls(optic, data["surface_idx"], data["angle"])
-
-```
