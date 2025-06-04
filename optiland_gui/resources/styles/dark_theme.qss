@@ -497,3 +497,70 @@ AnalysisPanel QPushButton#ToggleSettingsButton:checked { /* If you used checkabl
     background-color: transparent;
     border: none;
 }
+
+AnalysisPanel > QFrame#MainSeparatorLine {
+    /* styles */
+}
+
+/* Plot Area Title Bar (containing title, toolbar, settings toggle) */
+/* You might not need to style plot_area_title_bar_layout directly unless for spacing */
+
+/* Separator line below the plot title/toolbar row */
+AnalysisPanel QFrame#PlotDisplayFrame QFrame#TitlePlotSeparatorLine {
+    max-height: 1px;
+    border: none; 
+    border-top: 1px solid #555555; /* Dark theme example */
+    /* border-top: 1px solid #cccccc; */ /* Light theme example */
+    margin-top: 3px; 
+    margin-bottom: 3px; 
+}
+
+/* Matplotlib Toolbar Container (now inside the title bar layout) */
+AnalysisPanel QFrame#PlotDisplayFrame QWidget#MPLToolbarInTitlebarContainer {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin-left: 5px; /* Add some space between title and toolbar */
+    margin-right: 5px; /* Add some space between toolbar and stretch/settings_toggle */
+}
+
+/* Matplotlib Navigation Toolbar (QToolBar) */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle { /* New object name if you change it */
+    background-color: transparent;
+    border: none;
+    padding: 0px; /* Minimal padding for the toolbar itself */
+    margin: 0px;
+    min-height: 20px;  /* Attempt to make it thinner */
+    max-height: 20px;
+}
+
+/* Buttons within the Matplotlib Toolbar */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton {
+    padding: 0px 1px;   /* Minimal padding: top/bottom 0, left/right 1 */
+    margin: 0px 0px;    /* No margin between buttons for tighter packing */
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+}
+/* ... (hover, pressed, checked states for QToolButton as before) ... */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:hover {
+    background-color: rgba(100, 100, 100, 0.15); 
+    /* background-color: rgba(0, 0, 0, 0.1); */ 
+    border: 1px solid rgba(120, 120, 120, 0.5);
+}
+
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:pressed,
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:checked {
+    background-color: rgba(0, 120, 215, 0.2); 
+    border: 1px solid rgba(0, 120, 215, 0.7);
+}
+
+/* Cursor Coordinate Label (child of PlotContainerWidget) */
+AnalysisPanel QWidget#PlotContainerWidget > QLabel#CursorCoordLabel { 
+    color: white; /* For dark theme */
+    /* color: black; */ /* For light theme */
+    background-color: rgba(30, 30, 30, 0.75); /* Darker, more opaque background */
+    padding: 2px 5px;
+    border-radius: 3px;
+    /* Positioned by .move() in Python, so margin here is less critical */
+}
