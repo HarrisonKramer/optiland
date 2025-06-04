@@ -17,6 +17,7 @@ from typing import Union
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.fields import Field, FieldGroup
+from optiland.optic import serialization
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
@@ -444,22 +445,8 @@ class Optic:
 
         Returns:
             dict: The dictionary representation of the optical system.
-
         """
-        data = {
-            "version": 1.0,
-            "aperture": self.aperture.to_dict() if self.aperture else None,
-            "fields": self.fields.to_dict(),
-            "wavelengths": self.wavelengths.to_dict(),
-            "pickups": self.pickups.to_dict(),
-            "solves": self.solves.to_dict(),
-            "surface_group": self.surface_group.to_dict(),
-        }
-
-        data["wavelengths"]["polarization"] = self.polarization
-        data["fields"]["field_type"] = self.field_type
-        data["fields"]["object_space_telecentric"] = self.obj_space_telecentric
-        return data
+        return serialization.optic_to_dict(self)
 
     @classmethod
     def from_dict(cls, data):
@@ -470,22 +457,5 @@ class Optic:
 
         Returns:
             Optic: The optical system.
-
         """
-        optic = cls()
-        optic.aperture = Aperture.from_dict(data["aperture"])
-        optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
-        optic.fields = FieldGroup.from_dict(data["fields"])
-        optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
-        optic.pickups = PickupManager.from_dict(optic, data["pickups"])
-        optic.solves = SolveManager.from_dict(optic, data["solves"])
-
-        optic.polarization = data["wavelengths"]["polarization"]
-        optic.field_type = data["fields"]["field_type"]
-        optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
-
-        optic.paraxial = Paraxial(optic)
-        optic.aberrations = Aberrations(optic)
-        optic.ray_generator = RayGenerator(optic)
-
-        return optic
+        return serialization.optic_from_dict(data)
