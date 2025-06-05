@@ -61,6 +61,16 @@ class SolveManager:
         """Clears the list of solves."""
         self.solves.clear()
 
+    def remap_surface_indices(self, remap_func):
+        """Remaps the surface indices of all relevant solves.
+
+        Args:
+            remap_func (callable): A function that takes an old surface index
+                                   and returns a new surface index.
+        """
+        for solve in self.solves:
+            solve.surface_idx = remap_func(solve.surface_idx)
+
     def to_dict(self):
         """Returns a dictionary representation of the solve manager.
 
