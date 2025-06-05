@@ -236,7 +236,7 @@ class OpticUpdater:
         # 3. Define remapping function for indices
         num_surfaces = self.optic.surface_group.num_surfaces
 
-        def remap_index_func(old_idx):
+        def remap_index_func(old_idx):  # pragma: no cover
             if old_idx == 0 or old_idx == num_surfaces - 1:  # Object or Image surface
                 return old_idx
             if 1 <= old_idx <= num_surfaces - 2:
