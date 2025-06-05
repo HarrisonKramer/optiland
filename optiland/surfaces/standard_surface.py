@@ -65,6 +65,8 @@ class Surface:
         self.surface_type = surface_type
         self.comment = comment
 
+        self.thickness = 0.0  # used for surface positioning
+
         self.reset()
 
     def flip(self):

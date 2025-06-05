@@ -10,8 +10,10 @@ import numpy as np
 
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class FieldCurvature:
+
+class FieldCurvature(BaseAnalysis):
     """Represents a class for analyzing field curvature of an optic.
 
     Args:
@@ -34,12 +36,8 @@ class FieldCurvature:
     """
 
     def __init__(self, optic, wavelengths="all", num_points=128):
-        self.optic = optic
-        if wavelengths == "all":
-            wavelengths = self.optic.wavelengths.get_wavelengths()
-        self.wavelengths = wavelengths
         self.num_points = num_points
-        self.data = self._generate_data()
+        super().__init__(optic, wavelengths)
 
     def view(self, figsize=(8, 5.5)):
         """Displays a plot of the field curvature analysis.

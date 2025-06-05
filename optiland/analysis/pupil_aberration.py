@@ -13,8 +13,10 @@ import numpy as np
 
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class PupilAberration:
+
+class PupilAberration(BaseAnalysis):
     """Represents the pupil aberrations of an optic.
 
     The pupil abberration is defined as the difference between the paraxial
@@ -34,20 +36,18 @@ class PupilAberration:
     """
 
     def __init__(self, optic, fields="all", wavelengths="all", num_points=256):
-        self.optic = optic
-        self.fields = fields
-        self.wavelengths = wavelengths
+        _optic_ref = optic
+        if fields == "all":
+            self.fields = _optic_ref.fields.get_field_coords()
+        else:
+            self.fields = fields
+
         if num_points % 2 == 0:
-            num_points = num_points + 1  # force to be odd so a point lies at P=0
-        self.num_points = num_points
+            self.num_points = num_points + 1  # force to be odd so a point lies at P=0
+        else:
+            self.num_points = num_points
 
-        if self.fields == "all":
-            self.fields = self.optic.fields.get_field_coords()
-
-        if self.wavelengths == "all":
-            self.wavelengths = self.optic.wavelengths.get_wavelengths()
-
-        self.data = self._generate_data()
+        super().__init__(optic, wavelengths)
 
     def view(self, figsize=(10, 3.33)):
         """Displays the pupil aberration plot.

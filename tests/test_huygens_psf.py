@@ -395,6 +395,41 @@ class TestHuygensPSF:
         with pytest.raises(ValueError, match='Projection must be "2d" or "3d".'):  #
             psf_instance.view(projection="invalid_projection_type")
 
+    @pytest.mark.parametrize(
+        "projection",
+        [ "2d", "3d",],
+    )
+    @patch("matplotlib.figure.Figure.text")
+    def test_view_annotate_sampling(self, mock_text, projection, cooke_triplet_optic):
+        psf_instance = HuygensPSF(
+            optic=cooke_triplet_optic,
+            field=(0, 1),
+            wavelength=self.WAVELENGTH_GREEN,
+            num_rays=self.NUM_RAYS_LOW,
+            image_size=self.IMAGE_SIZE_LOW,
+        )
+        psf_instance.view(projection=projection, num_points=32)
+
+        mock_text.assert_called_once()
+
+        plt.close("all")
+
+    @pytest.mark.parametrize(
+        "projection",
+        [ "2d", "3d",],
+    )
+    def test_view_oversampling(self, projection, cooke_triplet_optic):
+        psf_instance = HuygensPSF(
+            optic=cooke_triplet_optic,
+            field=(0, 1),
+            wavelength=self.WAVELENGTH_GREEN,
+            num_rays=self.NUM_RAYS_LOW,
+            image_size=self.IMAGE_SIZE_LOW,
+        )
+
+        with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
+            psf_instance.view(projection=projection, log=False, num_points=128)
+
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
     def test_get_normalization_value_positive(self, optic_fixture_name, request):
         """

@@ -324,7 +324,7 @@ class OPDFan(Wavefront):
 
                 axs[i, 1].plot(
                     be.to_numpy(self.pupil_coord),
-                    be.to_numpy(wy),
+                    be.to_numpy(wx),
                     zorder=3,
                     label=f"{wavelength:.4f} µm",
                 )
