@@ -8,6 +8,7 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+from tests.utils import assert_allclose
 
 
 def singlet_infinite_object():
@@ -426,3 +427,15 @@ class TestOptic:
             self.optic.add_surface(
                 index=1, radius=be.inf, z=0, dx=15
             )  # cannot use dx or dy with abs. z
+
+    def test_flip_optic(self, set_test_backend):
+        lens = HeliarLens()
+        radii_orig = be.copy(lens.surface_group.radii)
+        radii_orig = radii_orig[~be.isinf(radii_orig)]  # ignore inf
+        n_orig = be.copy(lens.n(0.55))
+        lens.flip()
+        radii_flipped = be.copy(lens.surface_group.radii)
+        radii_flipped = radii_flipped[~be.isinf(radii_flipped)]  # ignore inf
+        n_flipped = be.copy(lens.n(0.55))
+        assert_allclose(radii_orig, -be.flip(radii_flipped))
+        assert_allclose(n_orig[:-1], be.flip(n_flipped[:-1]))
