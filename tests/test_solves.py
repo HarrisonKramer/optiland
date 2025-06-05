@@ -88,6 +88,14 @@ class TestChiefRayHeightSolve:
         assert solve.surface_idx == surface_idx
         assert solve.height == height
 
+    def test_invalid_surface_idx(self, set_test_backend):
+        with pytest.raises(ValueError):
+            optic = CookeTriplet()
+            surface_idx = None
+            height = 0.2
+
+            solve = ChiefRayHeightSolve(optic, surface_idx, height)
+
     def test_chief_ray_height_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
