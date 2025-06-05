@@ -35,7 +35,9 @@ class RayHeightSolveBase(BaseSolve, ABC):
             surface_idx (int): The index of the surface.
             height (float): The target height of the ray.
         """
-        super().__init__()  # Ensure BaseSolve's __init__ is called if it has one
+        if surface_idx is None:
+            raise ValueError("'surface_idx' argument must be provided.")
+        super().__init__()
         self.optic = optic
         self.surface_idx = surface_idx
         self.height = height

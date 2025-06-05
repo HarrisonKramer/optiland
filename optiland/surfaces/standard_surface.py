@@ -69,6 +69,18 @@ class Surface:
 
         self.reset()
 
+    def flip(self):
+        """Flips the surface, swapping materials and reversing geometry."""
+        self.material_pre, self.material_post = self.material_post, self.material_pre
+        self.geometry.flip()
+
+        if isinstance(self.coating, FresnelCoating):
+            self.set_fresnel_coating()
+        elif self.coating is not None and hasattr(self.coating, "flip"):
+            self.coating.flip()
+
+        self.reset()
+
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
         super().__init_subclass__(**kwargs)
