@@ -317,7 +317,12 @@ class SurfaceGroup:
             [Surface.from_dict(surface_data) for surface_data in data["surfaces"]],
         )
 
-    def flip(self, original_vertex_gcs_z_coords: list[float], start_index: int = 1, end_index: int = -1):
+    def flip(
+        self,
+        original_vertex_gcs_z_coords: list[float],
+        start_index: int = 1,
+        end_index: int = -1,
+    ):
         """Flips a segment of the surfaces in the group.
 
         Args:
@@ -336,24 +341,17 @@ class SurfaceGroup:
             start_index = n_surfaces_total + start_index
 
         if end_index < 0:
-            # Python slice notation: if end_index is -1, it means up to len-1
-            # The problem implies end_index = -1 means "element before last one"
-            # So, for [s0,s1,s2,s3,s4], start=1, end=-1 flips s1,s2,s3.
-            # Slice self.surfaces[1:-1] correctly gets s1,s2,s3.
-            # So, actual_end_slice_index for slicing should be n_surfaces_total + end_index if end_index is negative.
-            # However, if end_index = 0, it means slice up to index 0 (empty).
-            # Let's ensure end_index for slicing is handled as Python expects.
-            actual_slice_end_index = n_surfaces_total + end_index if end_index != 0 else 0
+            actual_slice_end_index = (
+                n_surfaces_total + end_index if end_index != 0 else 0
+            )
         else:
             actual_slice_end_index = end_index
 
-        if start_index >= actual_slice_end_index :
+        if start_index >= actual_slice_end_index:
             # No surfaces to flip or invalid range
             self.reset()
             return
 
-        # Store original indices of the surfaces that are part of the segment to be flipped
-        # These indices refer to their positions in the *original* self.surfaces list
         original_indices_in_segment = list(range(start_index, actual_slice_end_index))
 
         if not original_indices_in_segment:
@@ -370,9 +368,7 @@ class SurfaceGroup:
             surface_index_in_group = start_index + i
             self.surfaces[surface_index_in_group].flip()
 
-        # Recalculate global Z-positions for the flipped segment
-        # The new first surface in the segment is placed at z=0.0
-        if segment_to_reverse: # Check if the segment is not empty
+        if segment_to_reverse:  # Check if the segment is not empty
             self.surfaces[start_index].geometry.cs.z = 0.0
 
             # Iterate for thicknesses within the segment
@@ -381,18 +377,21 @@ class SurfaceGroup:
                 current_surf_in_new_order = self.surfaces[start_index + k]
                 next_surf_in_new_order = self.surfaces[start_index + k + 1]
 
-                # Original indices corresponding to these surfaces before segment reversal
-                # segment_to_reverse[k] was originally at original_indices_in_segment[len(segment_to_reverse) - 1 - k]
-                # segment_to_reverse[k+1] was originally at original_indices_in_segment[len(segment_to_reverse) - 1 - (k+1)]
-
-                original_idx_of_new_k = original_indices_in_segment[len(segment_to_reverse) - 1 - k]
-                original_idx_of_new_k_plus_1 = original_indices_in_segment[len(segment_to_reverse) - 1 - (k + 1)]
+                original_idx_of_new_k = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - k
+                ]
+                original_idx_of_new_k_plus_1 = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - (k + 1)
+                ]
 
                 # The thickness is between these two original surfaces
-                # The order for subtraction matters for direction, but thickness is absolute.
-                thickness = abs(original_vertex_gcs_z_coords[original_idx_of_new_k] -
-                                original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1])
+                thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_new_k]
+                    - original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1]
+                )
 
-                next_surf_in_new_order.geometry.cs.z = current_surf_in_new_order.geometry.cs.z + thickness
+                next_surf_in_new_order.geometry.cs.z = (
+                    current_surf_in_new_order.geometry.cs.z + thickness
+                )
 
         self.reset()

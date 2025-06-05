@@ -9,7 +9,6 @@ absorption based on the surface properties and materials involved.
 
 Kramer Harrison, 2023
 """
-import warnings
 
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
@@ -75,14 +74,8 @@ class Surface:
 
         if isinstance(self.coating, FresnelCoating):
             self.set_fresnel_coating()
-        elif self.coating is not None:
-            if hasattr(self.coating, "flip"):
-                self.coating.flip()
-            else:
-                warnings.warn(
-                    f"Coating type {type(self.coating).__name__} does not have a flip() method "
-                    f"and may not be valid after flipping."
-                )
+        elif self.coating is not None and hasattr(self.coating, "flip"):
+            self.coating.flip()
 
         self.reset()
 

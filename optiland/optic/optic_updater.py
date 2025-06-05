@@ -6,7 +6,7 @@ materials, conic constants, polarization, etc.
 
 Kramer Harrison, 2024
 """
-import warnings
+
 from typing import Union
 
 import optiland.backend as be
@@ -219,87 +219,42 @@ class OpticUpdater:
         solves referencing surface indices are updated accordingly.
         The new first optical surface (originally the last) is placed at z=0.0.
         """
-        if not self.optic.surface_group or self.optic.surface_group.num_surfaces < 3:
-            warnings.warn("Optic flip requires at least 3 surfaces (obj, element, img). No action taken.")
-            return
+        if self.optic.surface_group.num_surfaces < 3:
+            raise ValueError(
+                "Optic flip requires at least 3 surfaces (obj, element, img)"
+            )
 
         # 1. Capture original global Z-coordinates
-        # Ensure conversion to standard Python floats, be.to_numpy handles scalar arrays
         original_z_coords = [
-            float(be.to_numpy(surf.geometry.cs.z)) for surf in self.optic.surface_group.surfaces
+            float(be.to_numpy(surf.geometry.cs.z))
+            for surf in self.optic.surface_group.surfaces
         ]
 
         # 2. Call SurfaceGroup.flip()
-        # This uses default start_index=1, end_index=-1 (flips elements between obj/img)
         self.optic.surface_group.flip(original_vertex_gcs_z_coords=original_z_coords)
 
         # 3. Define remapping function for indices
-        # This remap function assumes 0-based indexing for all surface lists
-        # and that the object (idx 0) and image (idx N-1) surfaces themselves
-        # are not part of the re-ordering by SurfaceGroup.flip's default args,
-        # but their properties (like material_post for obj, material_pre for img)
-        # might be affected by their new neighbors' individual flips.
-        # The indices for pickups/solves usually refer to the full list.
-        # If SurfaceGroup.flip reorders surfaces s_1, ..., s_{N-2}
-        # into s'_{N-2}, ..., s'_1 in place, then an original index k (1 <= k <= N-2)
-        # now corresponds to a new physical surface.
-        # The surface originally at index `old_idx` is now at `new_idx_in_list`.
-        # Example: [S0, S1, S2, S3, S4] (N=5)
-        # Flipped part: S1, S2, S3 -> S3', S2', S1'
-        # New list: [S0, S3', S2', S1', S4]
-        # Original S1 (idx 1) is now S1' at new_idx_in_list = 3. (N-1-1)
-        # Original S2 (idx 2) is now S2' at new_idx_in_list = 2. (N-1-2)
-        # Original S3 (idx 3) is now S3' at new_idx_in_list = 1. (N-1-3)
-        # This is for the elements *within* the flipped segment.
-        # Object (0) and Image (N-1) are not re-indexed in terms of list position.
-
         num_surfaces = self.optic.surface_group.num_surfaces
 
-        # Default segment flipped is from index 1 to num_surfaces-2 (inclusive)
-        # Let start_flip_idx = 1, end_flip_idx = num_surfaces - 2
-        # An old_idx in this range [start_flip_idx, end_flip_idx]
-        # new_idx_in_list = start_flip_idx + (end_flip_idx - old_idx)
-        # new_idx_in_list = 1 + (num_surfaces - 2 - old_idx)
-
         def remap_index_func(old_idx):
-            if old_idx == 0 or old_idx == num_surfaces - 1: # Object or Image surface
+            if old_idx == 0 or old_idx == num_surfaces - 1:  # Object or Image surface
                 return old_idx
-            # For surfaces within the flipped segment (default 1 to N-2)
-            # old_idx is 1-based for user, but 0-based in list. Assume 0-based here.
-            # segment is from index 1 to num_surfaces-2
             if 1 <= old_idx <= num_surfaces - 2:
-                # Relative index within the flipped part: old_idx - 1
-                # New relative index after reversal: (num_surfaces - 2 - 1) - (old_idx - 1)
-                # New absolute index: (num_surfaces - 3 - old_idx + 1) + 1 = num_surfaces - 1 - old_idx
                 return num_surfaces - 1 - old_idx
-            return old_idx # Should not happen if indices are valid
+            return old_idx  # Should not happen if indices are valid
 
         # 4. Handle Pickups
-        if hasattr(self.optic, 'pickups') and self.optic.pickups and \
-           hasattr(self.optic.pickups, 'pickups') and len(self.optic.pickups.pickups) > 0:
-            if hasattr(self.optic.pickups, 'remap_surface_indices'):
-                self.optic.pickups.remap_surface_indices(remap_index_func)
-            else:
-                warnings.warn(
-                    "PickupManager does not have remap_surface_indices method. Pickups may be incorrect."
-                )
+        if self.optic.pickups and len(self.optic.pickups.pickups) > 0:
+            self.optic.pickups.remap_surface_indices(remap_index_func)
 
         # 5. Handle Solves
-        if hasattr(self.optic, 'solves') and self.optic.solves and \
-           hasattr(self.optic.solves, 'solves') and len(self.optic.solves.solves) > 0:
-            if hasattr(self.optic.solves, 'remap_surface_indices'):
-                self.optic.solves.remap_surface_indices(remap_index_func)
-            else:
-                warnings.warn(
-                    "SolveManager does not have remap_surface_indices method. Solves may be incorrect."
-                )
+        if (
+            hasattr(self.optic, "solves")
+            and self.optic.solves
+            and hasattr(self.optic.solves, "solves")
+            and len(self.optic.solves.solves) > 0
+        ):
+            self.optic.solves.remap_surface_indices(remap_index_func)
 
-        # 6. Call self.optic.update()
-        if hasattr(self.optic, 'update') and callable(self.optic.update):
-            self.optic.update()
-        elif hasattr(self, 'update') and callable(self.update): # OpticUpdater.update()
-             self.update()
-
-
-        # 7. Print confirmation
-        print("Optical system has been flipped.")
+        # 6. Update Optic instance
+        self.update()

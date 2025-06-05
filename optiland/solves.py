@@ -296,8 +296,7 @@ class SolveManager:
                                    and returns a new surface index.
         """
         for solve in self.solves:
-            if hasattr(solve, 'surface_idx'):
-                solve.surface_idx = remap_func(solve.surface_idx)
+            solve.surface_idx = remap_func(solve.surface_idx)
 
     def to_dict(self):
         """Returns a dictionary representation of the solve manager.
