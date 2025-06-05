@@ -35,7 +35,7 @@ from optiland.analysis import ( # [cite: uploaded:analysis_panel.py]
     RayFan, # [cite: uploaded:analysis_panel.py]
     RmsSpotSizeVsField, # [cite: uploaded:analysis_panel.py]
     RmsWavefrontErrorVsField, # [cite: uploaded:analysis_panel.py]
-    SpotDiagram, # [cite: uploaded:analysis_panel.py]
+    # SpotDiagram, # Now imported separately if available
 )
 from optiland.mtf import FFTMTF, GeometricMTF # [cite: uploaded:analysis_panel.py]
 
@@ -45,12 +45,19 @@ except ImportError as e:
     print(f"Could not import YYbar from optiland.analysis.y_ybar: {e}. Y-Ybar analysis will not be available.") # [cite: uploaded:analysis_panel.py]
     YYbar = None # [cite: uploaded:analysis_panel.py]
 
+try:
+    from optiland.analysis.spot_diagram import SpotDiagram # Corrected import path
+except ImportError as e:
+    print(f"Could not import SpotDiagram from optiland.analysis.spot_diagram: {e}. Spot Diagram analysis will not be available.")
+    SpotDiagram = None
+
+
 from .optiland_connector import OptilandConnector # [cite: uploaded:analysis_panel.py]
 
 
 class AnalysisPanel(QWidget):
     ANALYSIS_MAP = { # [cite: uploaded:analysis_panel.py]
-        "Spot Diagram": SpotDiagram, # [cite: uploaded:analysis_panel.py]
+        # "Spot Diagram": SpotDiagram, # Will be added conditionally
         "Encircled Energy": EncircledEnergy, # [cite: uploaded:analysis_panel.py]
         "Ray Fan": RayFan, # [cite: uploaded:analysis_panel.py]
         "Distortion Plot": Distortion, # [cite: uploaded:analysis_panel.py]
@@ -64,8 +71,11 @@ class AnalysisPanel(QWidget):
     }
     if YYbar is not None: # [cite: uploaded:analysis_panel.py]
         ANALYSIS_MAP["Y-Ybar Diagram"] = YYbar # [cite: uploaded:analysis_panel.py]
+    if SpotDiagram is not None:
+        ANALYSIS_MAP["Spot Diagram"] = SpotDiagram
     else: # [cite: uploaded:analysis_panel.py]
-        print("Note: YYbar class was not imported (from optiland.analysis.y_ybar), so 'Y-Ybar Diagram' will not be added to analysis options.") # [cite: uploaded:analysis_panel.py]
+        print("Note: YYbar or SpotDiagram class was not imported, so it will not be added to analysis options.") # [cite: uploaded:analysis_panel.py]
+
 
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
@@ -125,7 +135,7 @@ class AnalysisPanel(QWidget):
         plot_display_frame_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
 
         # Plot Area Title Bar (Title + MPL Toolbar Placeholder + Settings Toggle)
-        self.plot_area_title_bar_layout = QHBoxLayout() # Made instance member # [cite: uploaded:analysis_panel.py]
+        self.plot_area_title_bar_layout = QHBoxLayout() # [cite: uploaded:analysis_panel.py]
         self.plotTitleLabel = QLabel("No Analysis Run") # [cite: uploaded:analysis_panel.py]
         self.plotTitleLabel.setObjectName("PlotTitleLabel") # [cite: uploaded:analysis_panel.py]
         self.plot_area_title_bar_layout.addWidget(self.plotTitleLabel) # [cite: uploaded:analysis_panel.py]
@@ -134,7 +144,7 @@ class AnalysisPanel(QWidget):
         self.mpl_toolbar_in_titlebar_container.setObjectName("MPLToolbarInTitlebarContainer") # [cite: uploaded:analysis_panel.py]
         self.mpl_toolbar_in_titlebar_layout = QHBoxLayout(self.mpl_toolbar_in_titlebar_container) # [cite: uploaded:analysis_panel.py]
         self.mpl_toolbar_in_titlebar_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_layout.setSpacing(1) # Reduced spacing for toolbar items # [cite: uploaded:analysis_panel.py]
+        self.mpl_toolbar_in_titlebar_layout.setSpacing(1) # [cite: uploaded:analysis_panel.py]
         self.plot_area_title_bar_layout.addWidget(self.mpl_toolbar_in_titlebar_container) # [cite: uploaded:analysis_panel.py]
         self.mpl_toolbar_in_titlebar_container.setVisible(False) # [cite: uploaded:analysis_panel.py]
 
@@ -158,19 +168,16 @@ class AnalysisPanel(QWidget):
         plot_content_and_pages_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
         plot_content_and_pages_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
 
-        plot_and_info_widget = QWidget() # [cite: uploaded:analysis_panel.py] # Container for plot_container and dataInfoLabel
+        plot_and_info_widget = QWidget() # [cite: uploaded:analysis_panel.py]
         plot_and_info_layout = QVBoxLayout(plot_and_info_widget) # [cite: uploaded:analysis_panel.py]
         plot_and_info_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
         plot_and_info_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
 
-        # This widget is the main area for the plot itself and any overlays like coordinates
         self.plot_container_widget = QWidget() # [cite: uploaded:analysis_panel.py]
         self.plot_container_widget.setObjectName("PlotContainerWidget") # [cite: uploaded:analysis_panel.py]
         self.plot_container_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) # [cite: uploaded:analysis_panel.py]
-        # A QVBoxLayout will be set for plot_container_widget in display_plot_page to hold the canvas/placeholders
         plot_and_info_layout.addWidget(self.plot_container_widget, 1) # [cite: uploaded:analysis_panel.py]
 
-        # Cursor Coordinate Label - parented to plot_container_widget for overlay
         self.cursor_coord_label = QLabel("", self.plot_container_widget) # [cite: uploaded:analysis_panel.py]
         self.cursor_coord_label.setObjectName("CursorCoordLabel") # [cite: uploaded:analysis_panel.py]
         self.cursor_coord_label.setStyleSheet( # [cite: uploaded:analysis_panel.py]
@@ -262,7 +269,7 @@ class AnalysisPanel(QWidget):
                         if hasattr(widget, '_motion_notify_cid') and widget._motion_notify_cid is not None: # [cite: uploaded:analysis_panel.py]
                             try: # [cite: uploaded:analysis_panel.py]
                                 widget.mpl_disconnect(widget._motion_notify_cid) # [cite: uploaded:analysis_panel.py]
-                            except TypeError: # [cite: uploaded:analysis_panel.py]
+                            except TypeError: # [cite: uploaded:analysis_panel.py] 
                                 pass # [cite: uploaded:analysis_panel.py]
                             widget._motion_notify_cid = None # [cite: uploaded:analysis_panel.py]
                         plt.close(widget.figure) # [cite: uploaded:analysis_panel.py]
@@ -420,8 +427,16 @@ class AnalysisPanel(QWidget):
                     elif param.name == "fields": constructor_args[param.name] = "all" # [cite: uploaded:analysis_panel.py]
                     elif param.name == "wavelengths": constructor_args[param.name] = [primary_wl_val] if primary_wl_val is not None else "all" # [cite: uploaded:analysis_panel.py]
                     elif param.name == "wavelength": constructor_args[param.name] = primary_wl_val if primary_wl_val is not None else "primary" # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "num_rays": constructor_args[param.name] = 7 if selected_analysis_name == "Ray Fan" else 24 # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "distribution": constructor_args[param.name] = "line_y" if selected_analysis_name == "Ray Fan" else "grid" # [cite: uploaded:analysis_panel.py]
+                    elif param.name == "num_rays": # This will be used by SpotDiagram if it takes num_rays
+                        if selected_analysis_name == "Ray Fan": constructor_args[param.name] = 7
+                        elif selected_analysis_name == "Spot Diagram": constructor_args[param.name] = 6 # num_rings for SpotDiagram
+                        else: constructor_args[param.name] = 24
+                    elif param.name == "num_rings": # Specifically for SpotDiagram if its constructor uses num_rings
+                         if selected_analysis_name == "Spot Diagram": constructor_args[param.name] = 6
+                    elif param.name == "distribution": 
+                        if selected_analysis_name == "Ray Fan": constructor_args[param.name] = "line_y"
+                        elif selected_analysis_name == "Spot Diagram": constructor_args[param.name] = "hexapolar"
+                        else: constructor_args[param.name] = "grid"
                     elif param.name == "num_points": constructor_args[param.name] = 50 # [cite: uploaded:analysis_panel.py]
                     elif param.name == "max_freq": constructor_args[param.name] = 100 # [cite: uploaded:analysis_panel.py]
                     elif param.name == "grid_size": constructor_args[param.name] = 10 # [cite: uploaded:analysis_panel.py]
@@ -438,11 +453,14 @@ class AnalysisPanel(QWidget):
                     new_page_data["plot_content"] = canvas # [cite: uploaded:analysis_panel.py]
                     new_page_data["result_summary"] = "Y-Ybar Diagram plotted in GUI." # [cite: uploaded:analysis_panel.py]
                     self.logArea.append(f"{selected_analysis_name} plotted in GUI.") # [cite: uploaded:analysis_panel.py]
-                elif selected_analysis_name == "Spot Diagram": # [cite: uploaded:analysis_panel.py]
-                    analysis_instance.view() # [cite: uploaded:analysis_panel.py]
-                    new_page_data["plot_content"] = "spot_diagram_placeholders" # [cite: uploaded:analysis_panel.py]
-                    new_page_data["result_summary"] = "Spot Diagram (external window)." # [cite: uploaded:analysis_panel.py]
-                    self.logArea.append(f"{selected_analysis_name} shown in external window.") # [cite: uploaded:analysis_panel.py]
+                elif selected_analysis_name == "Spot Diagram" and SpotDiagram is not None:
+                    fig = Figure(figsize=(12, 4), dpi=100) # Spot diagram default figsize
+                    canvas = FigureCanvas(fig)
+                    # SpotDiagram specific arguments like add_airy_disk can be passed here from settings
+                    analysis_instance.view(fig_to_plot_on=fig, add_airy_disk=False) # Example: add_airy_disk=False
+                    new_page_data["plot_content"] = canvas
+                    new_page_data["result_summary"] = "Spot Diagram plotted in GUI."
+                    self.logArea.append(f"{selected_analysis_name} plotted in GUI.")
                 else: # [cite: uploaded:analysis_panel.py]
                     analysis_instance.view() # [cite: uploaded:analysis_panel.py]
                     new_page_data["plot_content"] = None # [cite: uploaded:analysis_panel.py]
