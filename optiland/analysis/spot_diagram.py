@@ -10,14 +10,14 @@ from typing import Literal
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
-import numpy as np # Ensure numpy is imported if used directly (e.g. np.abs)
+import numpy as np
 
-import optiland.backend as be # [cite: uploaded:spot_diagram.py]
-from optiland.visualization.utils import transform # [cite: uploaded:spot_diagram.py]
+import optiland.backend as be
+from optiland.visualization.utils import transform
 
 
 @dataclass
-class SpotData: # [cite: uploaded:spot_diagram.py]
+class SpotData:
     """Stores the x, y coordinates and intensity of a spot.
 
     Attributes:
@@ -26,12 +26,12 @@ class SpotData: # [cite: uploaded:spot_diagram.py]
         intensity: Array of intensity values.
     """
 
-    x: be.array # [cite: uploaded:spot_diagram.py]
-    y: be.array # [cite: uploaded:spot_diagram.py]
-    intensity: be.array # [cite: uploaded:spot_diagram.py]
+    x: be.array
+    y: be.array
+    intensity: be.array
 
 
-class SpotDiagram: # [cite: uploaded:spot_diagram.py]
+class SpotDiagram:
     """Spot diagram class
 
     This class generates data and plots real ray intersection locations
@@ -52,43 +52,62 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
 
     """
 
-    def __init__( # [cite: uploaded:spot_diagram.py]
+    def __init__(
         self,
         optic,
         fields="all",
         wavelengths="all",
-        num_rings=6, # Default in Optiland's SpotDiagram was num_rays, but it's used as num_rings for trace
+        num_rings=6,
         distribution="hexapolar",
         coordinates: Literal["global", "local"] = "local",
     ):
-        self.optic = optic # [cite: uploaded:spot_diagram.py]
-        self.fields = fields # [cite: uploaded:spot_diagram.py]
+        """Create an instance of SpotDiagram
 
-        if coordinates not in ["global", "local"]: # [cite: uploaded:spot_diagram.py]
-            raise ValueError("Coordinates must be 'global' or 'local'.") # [cite: uploaded:spot_diagram.py]
-        self.coordinates = coordinates # [cite: uploaded:spot_diagram.py]
+        Note:
+            The constructor also generates all data that may later be used for
+            plotting
 
-        self.wavelengths = wavelengths # [cite: uploaded:spot_diagram.py]
-        if self.fields == "all": # [cite: uploaded:spot_diagram.py]
-            self.fields = self.optic.fields.get_field_coords() # [cite: uploaded:spot_diagram.py]
+        Args:
+            optic (optic.Optic): instance of the optic object to be assessed
+            fields (tuple or str): fields at which data is generated.
+                If 'all' is passed, then all field points are considered.
+                Default is 'all'.
+            wavelengths (str or tuple[float]): wavelengths at which data is
+                generated. If 'all' is passed, then all wavelengths are
+                considered. Default is 'all'.
+            num_rings (int): number of rings in pupil distribution for ray
+                tracing. Default is 6.
+            distribution (str): pupil distribution type for ray tracing.
+                Default is 'hexapolar'.
+            coordinates (Literal['global', 'local'], optional): Coordinate system
+                for data generation and plotting. Defaults to "local".
 
-        if self.wavelengths == "all": # [cite: uploaded:spot_diagram.py]
-            self.wavelengths = self.optic.wavelengths.get_wavelengths() # [cite: uploaded:spot_diagram.py]
-        
-        # Ensure self.wavelengths is a list of float values if it was 'all' or 'primary'
-        if isinstance(self.wavelengths, str): # Should have been resolved to list by get_wavelengths
-             print(f"Warning (SpotDiagram init): Wavelengths is still '{self.wavelengths}', attempting to use primary.")
-             self.wavelengths = [self.optic.wavelengths.primary_wavelength.value] if self.optic.wavelengths.primary_wavelength else [0.550]
+        Returns:
+            None
 
+        """
+        self.optic = optic
+        self.fields = fields
 
-        self.data = self._generate_data( # [cite: uploaded:spot_diagram.py]
+        if coordinates not in ["global", "local"]:
+            raise ValueError("Coordinates must be 'global' or 'local'.")
+        self.coordinates = coordinates
+
+        self.wavelengths = wavelengths
+        if self.fields == "all":
+            self.fields = self.optic.fields.get_field_coords()
+
+        if self.wavelengths == "all":
+            self.wavelengths = self.optic.wavelengths.get_wavelengths()
+
+        self.data = self._generate_data(
             self.fields,
             self.wavelengths,
-            num_rings, # Optiland's trace uses num_rays, SpotDiagram used num_rings for this
+            num_rings,
             distribution,
             self.coordinates,
         )
-
+        
     def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False): # [cite: uploaded:spot_diagram.py]
         """View the spot diagram
 
@@ -230,8 +249,7 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
             if hasattr(current_fig, 'canvas') and current_fig.canvas is not None:
                 current_fig.canvas.draw_idle()
 
-    # ... (angle_from_cosine, f_number, airy_radius, generate_marginal_rays, etc. methods remain the same as in uploaded:spot_diagram.py)
-    def angle_from_cosine(self, a, b): # [cite: uploaded:spot_diagram.py]
+    def angle_from_cosine(self, a, b):
         """Calculate the angle (in radians) between two vectors given their
         direction cosine values.
 
@@ -239,31 +257,31 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
             theta_rad (float): angle in radians.
 
         """
-        a = a / be.linalg.norm(a) # [cite: uploaded:spot_diagram.py]
-        b = b / be.linalg.norm(b) # [cite: uploaded:spot_diagram.py]
-        theta = be.arccos(be.clip(be.dot(a, b), -1, 1)) # [cite: uploaded:spot_diagram.py]
+        a = a / be.linalg.norm(a)
+        b = b / be.linalg.norm(b)
+        theta = be.arccos(be.clip(be.dot(a, b), -1, 1))
 
-        return theta # [cite: uploaded:spot_diagram.py]
+        return theta
 
-    def f_number(self, n, theta): # [cite: uploaded:spot_diagram.py]
+    def f_number(self, n, theta):
         """Calculates the F#
 
         Returns:
             N_w (float): Physical F number.
 
         """
-        N_w = 1 / (2 * n * be.sin(theta)) # [cite: uploaded:spot_diagram.py]
-        return N_w # [cite: uploaded:spot_diagram.py]
+        N_w = 1 / (2 * n * be.sin(theta))
+        return N_w
 
-    def airy_radius(self, n_w, wavelength): # [cite: uploaded:spot_diagram.py]
+    def airy_radius(self, n_w, wavelength):
         """Calculates the airy radius
         Returns:
             r (float): Airy radius.
         """
-        r = 1.22 * n_w * wavelength # [cite: uploaded:spot_diagram.py]
-        return r # [cite: uploaded:spot_diagram.py]
+        r = 1.22 * n_w * wavelength
+        return r
 
-    def generate_marginal_rays(self, H_x, H_y, wavelength): # [cite: uploaded:spot_diagram.py]
+    def generate_marginal_rays(self, H_x, H_y, wavelength):
         """Generates marginal rays at the stop at each pupil max,
         Px = (-1, +1), Py = (-1, +1)
 
@@ -273,40 +291,40 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 east (Px=1), west (Px=-1)directions.
 
         """
-        ray_north = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-            Hx=H_x, # [cite: uploaded:spot_diagram.py]
-            Hy=H_y, # [cite: uploaded:spot_diagram.py]
-            Px=0, # [cite: uploaded:spot_diagram.py]
-            Py=1, # [cite: uploaded:spot_diagram.py]
-            wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+        ray_north = self.optic.trace_generic(
+            Hx=H_x,
+            Hy=H_y,
+            Px=0,
+            Py=1,
+            wavelength=wavelength,
         )
-        ray_south = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-            Hx=H_x, # [cite: uploaded:spot_diagram.py]
-            Hy=H_y, # [cite: uploaded:spot_diagram.py]
-            Px=0, # [cite: uploaded:spot_diagram.py]
-            Py=-1, # [cite: uploaded:spot_diagram.py]
-            wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+        ray_south = self.optic.trace_generic(
+            Hx=H_x,
+            Hy=H_y,
+            Px=0,
+            Py=-1,
+            wavelength=wavelength,
         )
-        ray_east = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-            Hx=H_x, # [cite: uploaded:spot_diagram.py]
-            Hy=H_y, # [cite: uploaded:spot_diagram.py]
-            Px=1, # [cite: uploaded:spot_diagram.py]
-            Py=0, # [cite: uploaded:spot_diagram.py]
-            wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+        ray_east = self.optic.trace_generic(
+            Hx=H_x,
+            Hy=H_y,
+            Px=1,
+            Py=0,
+            wavelength=wavelength,
         )
-        ray_west = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-            Hx=H_x, # [cite: uploaded:spot_diagram.py]
-            Hy=H_y, # [cite: uploaded:spot_diagram.py]
-            Px=-1, # [cite: uploaded:spot_diagram.py]
-            Py=0, # [cite: uploaded:spot_diagram.py]
-            wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+        ray_west = self.optic.trace_generic(
+            Hx=H_x,
+            Hy=H_y,
+            Px=-1,
+            Py=0,
+            wavelength=wavelength,
         )
 
-        ray_tuple = ray_north, ray_south, ray_east, ray_west # [cite: uploaded:spot_diagram.py]
+        ray_tuple = ray_north, ray_south, ray_east, ray_west
 
-        return ray_tuple # [cite: uploaded:spot_diagram.py]
+        return ray_tuple
 
-    def generate_marginal_rays_cosines(self, H_x, H_y, wavelength): # [cite: uploaded:spot_diagram.py]
+    def generate_marginal_rays_cosines(self, H_x, H_y, wavelength):
         """Generates directional cosines for each marginal ray. Calculates one
         field at a time (one height at a time).
 
@@ -315,21 +333,21 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 each rays.
 
         """
-        ray_north, ray_south, ray_east, ray_west = self.generate_marginal_rays( # [cite: uploaded:spot_diagram.py]
-            H_x, # [cite: uploaded:spot_diagram.py]
-            H_y, # [cite: uploaded:spot_diagram.py]
-            wavelength, # [cite: uploaded:spot_diagram.py]
+        ray_north, ray_south, ray_east, ray_west = self.generate_marginal_rays(
+            H_x,
+            H_y,
+            wavelength,
         )
 
-        north_cosines = be.array([ray_north.L, ray_north.M, ray_north.N]).ravel() # [cite: uploaded:spot_diagram.py]
-        south_cosines = be.array([ray_south.L, ray_south.M, ray_south.N]).ravel() # [cite: uploaded:spot_diagram.py]
-        east_cosines = be.array([ray_east.L, ray_east.M, ray_east.N]).ravel() # [cite: uploaded:spot_diagram.py]
-        west_cosines = be.array([ray_west.L, ray_west.M, ray_west.N]).ravel() # [cite: uploaded:spot_diagram.py]
+        north_cosines = be.array([ray_north.L, ray_north.M, ray_north.N]).ravel()
+        south_cosines = be.array([ray_south.L, ray_south.M, ray_south.N]).ravel()
+        east_cosines = be.array([ray_east.L, ray_east.M, ray_east.N]).ravel()
+        west_cosines = be.array([ray_west.L, ray_west.M, ray_west.N]).ravel()
 
-        cosines_tuple = (north_cosines, south_cosines, east_cosines, west_cosines) # [cite: uploaded:spot_diagram.py]
-        return cosines_tuple # [cite: uploaded:spot_diagram.py]
+        cosines_tuple = (north_cosines, south_cosines, east_cosines, west_cosines)
+        return cosines_tuple
 
-    def generate_chief_rays_cosines(self, wavelength): # [cite: uploaded:spot_diagram.py]
+    def generate_chief_rays_cosines(self, wavelength):
         """Generates directional cosines for all chief rays of each field.
 
         Returns:
@@ -345,24 +363,24 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
             ]
 
         """
-        coords = self.fields # [cite: uploaded:spot_diagram.py]
-        chief_ray_cosines_list = [] # [cite: uploaded:spot_diagram.py]
-        for H_x, H_y in coords: # [cite: uploaded:spot_diagram.py]
+        coords = self.fields
+        chief_ray_cosines_list = []
+        for H_x, H_y in coords:
             # Always pass the field values—even for 'angle' type.
-            ray_chief = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-                Hx=H_x, # [cite: uploaded:spot_diagram.py]
-                Hy=H_y, # [cite: uploaded:spot_diagram.py]
-                Px=0, # [cite: uploaded:spot_diagram.py]
-                Py=0, # [cite: uploaded:spot_diagram.py]
-                wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+            ray_chief = self.optic.trace_generic(
+                Hx=H_x,
+                Hy=H_y,
+                Px=0,
+                Py=0,
+                wavelength=wavelength,
             )
-            chief_ray_cosines_list.append( # [cite: uploaded:spot_diagram.py]
-                be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(), # [cite: uploaded:spot_diagram.py]
+            chief_ray_cosines_list.append(
+                be.array([ray_chief.L, ray_chief.M, ray_chief.N]).ravel(),
             )
-        chief_ray_cosines_list = be.stack(chief_ray_cosines_list, axis=0) # [cite: uploaded:spot_diagram.py]
-        return chief_ray_cosines_list # [cite: uploaded:spot_diagram.py]
+        chief_ray_cosines_list = be.stack(chief_ray_cosines_list, axis=0)
+        return chief_ray_cosines_list
 
-    def generate_chief_rays_centers(self, wavelength): # [cite: uploaded:spot_diagram.py]
+    def generate_chief_rays_centers(self, wavelength):
         """Generates the position of each chief ray. It is used to find
         centers of the airy discs in the function _plot_field.
 
@@ -371,24 +389,24 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 chief ray centers for each field.
 
         """
-        coords = self.fields # [cite: uploaded:spot_diagram.py]
-        chief_ray_centers = [] # [cite: uploaded:spot_diagram.py]
-        for H_x, H_y in coords: # [cite: uploaded:spot_diagram.py]
+        coords = self.fields
+        chief_ray_centers = []
+        for H_x, H_y in coords:
             # Always pass the field values—even for 'angle' type.
-            ray_chief = self.optic.trace_generic( # [cite: uploaded:spot_diagram.py]
-                Hx=H_x, # [cite: uploaded:spot_diagram.py]
-                Hy=H_y, # [cite: uploaded:spot_diagram.py]
-                Px=0, # [cite: uploaded:spot_diagram.py]
-                Py=0, # [cite: uploaded:spot_diagram.py]
-                wavelength=wavelength, # [cite: uploaded:spot_diagram.py]
+            ray_chief = self.optic.trace_generic(
+                Hx=H_x,
+                Hy=H_y,
+                Px=0,
+                Py=0,
+                wavelength=wavelength,
             )
-            x, y = ray_chief.x, ray_chief.y # [cite: uploaded:spot_diagram.py]
-            chief_ray_centers.append([x, y]) # [cite: uploaded:spot_diagram.py]
+            x, y = ray_chief.x, ray_chief.y
+            chief_ray_centers.append([x, y])
 
-        chief_ray_centers = be.stack(chief_ray_centers, axis=0) # [cite: uploaded:spot_diagram.py]
-        return chief_ray_centers # [cite: uploaded:spot_diagram.py]
+        chief_ray_centers = be.stack(chief_ray_centers, axis=0)
+        return chief_ray_centers
 
-    def airy_disc_x_y(self, wavelength): # [cite: uploaded:spot_diagram.py]
+    def airy_disc_x_y(self, wavelength):
         """Generates the airy radius for each x-y axes, for each field.
 
         Returns:
@@ -396,68 +414,59 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 axis centers (ndarray).
 
         """
-        chief_ray_cosines_list = self.generate_chief_rays_cosines(wavelength) # [cite: uploaded:spot_diagram.py]
+        chief_ray_cosines_list = self.generate_chief_rays_cosines(wavelength)
 
-        airy_rad_x_list = [] # [cite: uploaded:spot_diagram.py]
-        airy_rad_y_list = [] # [cite: uploaded:spot_diagram.py]
+        airy_rad_x_list = []
+        airy_rad_y_list = []
 
-        for idx, (H_x, H_y) in enumerate(self.fields): # [cite: uploaded:spot_diagram.py]
+        for idx, (H_x, H_y) in enumerate(self.fields):
             # Get marginal rays for the current field
-            north_cos, south_cos, east_cos, west_cos = ( # [cite: uploaded:spot_diagram.py]
-                self.generate_marginal_rays_cosines(H_x, H_y, wavelength) # [cite: uploaded:spot_diagram.py]
+            north_cos, south_cos, east_cos, west_cos = (
+                self.generate_marginal_rays_cosines(H_x, H_y, wavelength)
             )
 
-            chief_cos = chief_ray_cosines_list[idx] # [cite: uploaded:spot_diagram.py]
+            chief_cos = chief_ray_cosines_list[idx]
 
             # Compute relative angles along x and y axes
-            rel_angle_north = self.angle_from_cosine(chief_cos, north_cos) # [cite: uploaded:spot_diagram.py]
-            rel_angle_south = self.angle_from_cosine(chief_cos, south_cos) # [cite: uploaded:spot_diagram.py]
-            rel_angle_east = self.angle_from_cosine(chief_cos, east_cos) # [cite: uploaded:spot_diagram.py]
-            rel_angle_west = self.angle_from_cosine(chief_cos, west_cos) # [cite: uploaded:spot_diagram.py]
+            rel_angle_north = self.angle_from_cosine(chief_cos, north_cos)
+            rel_angle_south = self.angle_from_cosine(chief_cos, south_cos)
+            rel_angle_east = self.angle_from_cosine(chief_cos, east_cos)
+            rel_angle_west = self.angle_from_cosine(chief_cos, west_cos)
 
-            avg_angle_x = (rel_angle_north + rel_angle_south) / 2 # [cite: uploaded:spot_diagram.py]
-            avg_angle_y = (rel_angle_east + rel_angle_west) / 2 # [cite: uploaded:spot_diagram.py]
+            avg_angle_x = (rel_angle_north + rel_angle_south) / 2
+            avg_angle_y = (rel_angle_east + rel_angle_west) / 2
 
-            N_w_x = self.f_number(n=1, theta=avg_angle_x) # [cite: uploaded:spot_diagram.py]
-            N_w_y = self.f_number(n=1, theta=avg_angle_y) # [cite: uploaded:spot_diagram.py]
+            N_w_x = self.f_number(n=1, theta=avg_angle_x)
+            N_w_y = self.f_number(n=1, theta=avg_angle_y)
 
-            airy_rad_x = self.airy_radius(N_w_x, wavelength) # [cite: uploaded:spot_diagram.py]
-            airy_rad_y = self.airy_radius(N_w_y, wavelength) # [cite: uploaded:spot_diagram.py]
+            airy_rad_x = self.airy_radius(N_w_x, wavelength)
+            airy_rad_y = self.airy_radius(N_w_y, wavelength)
 
             # convert to um
-            airy_rad_x_list.append(airy_rad_x * 1e-3) # [cite: uploaded:spot_diagram.py]
-            airy_rad_y_list.append(airy_rad_y * 1e-3) # [cite: uploaded:spot_diagram.py]
+            airy_rad_x_list.append(airy_rad_x * 1e-3)
+            airy_rad_y_list.append(airy_rad_y * 1e-3)
 
-        airy_rad_tuple = (airy_rad_x_list, airy_rad_y_list) # [cite: uploaded:spot_diagram.py]
+        airy_rad_tuple = (airy_rad_x_list, airy_rad_y_list)
 
-        return airy_rad_tuple # [cite: uploaded:spot_diagram.py]
+        return airy_rad_tuple
 
-    def centroid(self): # [cite: uploaded:spot_diagram.py]
+    def centroid(self):
         """Centroid of each spot
 
         Returns:
             centroid (List): centroid for each field in the data.
 
         """
-        norm_index = self.optic.wavelengths.primary_index # [cite: uploaded:spot_diagram.py]
-        if norm_index is None and self.optic.wavelengths.num_wavelengths > 0: # Fallback if no primary
-            norm_index = 0
-        elif norm_index is None: # No wavelengths at all
-             return []
+        norm_index = self.optic.wavelengths.primary_index
+        centroid = []
+        for field_data in self.data:
+            spot_data_item = field_data[norm_index]
+            centroid_x = be.mean(spot_data_item.x)
+            centroid_y = be.mean(spot_data_item.y)
+            centroid.append((centroid_x, centroid_y))
+        return centroid
 
-
-        centroid = [] # [cite: uploaded:spot_diagram.py]
-        for field_data in self.data: # [cite: uploaded:spot_diagram.py]
-            if not field_data or norm_index >= len(field_data): # Check if field_data is empty or norm_index is out of bounds
-                centroid.append((0.0, 0.0)) # Default centroid or handle error
-                continue
-            spot_data_item = field_data[norm_index] # [cite: uploaded:spot_diagram.py]
-            centroid_x = be.mean(spot_data_item.x) # [cite: uploaded:spot_diagram.py]
-            centroid_y = be.mean(spot_data_item.y) # [cite: uploaded:spot_diagram.py]
-            centroid.append((centroid_x, centroid_y)) # [cite: uploaded:spot_diagram.py]
-        return centroid # [cite: uploaded:spot_diagram.py]
-
-    def geometric_spot_radius(self): # [cite: uploaded:spot_diagram.py]
+    def geometric_spot_radius(self):
         """Geometric spot radius of each spot
 
         Returns:
@@ -465,34 +474,34 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 wavelength
 
         """
-        data = self._center_spots(self.data) # [cite: uploaded:spot_diagram.py]
-        geometric_size = [] # [cite: uploaded:spot_diagram.py]
-        for field_data in data: # [cite: uploaded:spot_diagram.py]
-            geometric_size_field = [] # [cite: uploaded:spot_diagram.py]
-            for wave_data in field_data: # [cite: uploaded:spot_diagram.py]
-                r = be.sqrt(wave_data.x**2 + wave_data.y**2) # [cite: uploaded:spot_diagram.py]
-                geometric_size_field.append(be.max(r)) # [cite: uploaded:spot_diagram.py]
-            geometric_size.append(geometric_size_field) # [cite: uploaded:spot_diagram.py]
-        return geometric_size # [cite: uploaded:spot_diagram.py]
+        data = self._center_spots(self.data)
+        geometric_size = []
+        for field_data in data:
+            geometric_size_field = []
+            for wave_data in field_data:
+                r = be.sqrt(wave_data.x**2 + wave_data.y**2)
+                geometric_size_field.append(be.max(r))
+            geometric_size.append(geometric_size_field)
+        return geometric_size
 
-    def rms_spot_radius(self): # [cite: uploaded:spot_diagram.py]
+    def rms_spot_radius(self):
         """Root mean square (RMS) spot radius of each spot
 
         Returns:
             rms (List): RMS spot radius for each field and wavelength.
 
         """
-        data = self._center_spots(self.data) # [cite: uploaded:spot_diagram.py]
-        rms = [] # [cite: uploaded:spot_diagram.py]
-        for field_data in data: # [cite: uploaded:spot_diagram.py]
-            rms_field = [] # [cite: uploaded:spot_diagram.py]
-            for wave_data in field_data: # [cite: uploaded:spot_diagram.py]
-                r2 = wave_data.x**2 + wave_data.y**2 # [cite: uploaded:spot_diagram.py]
-                rms_field.append(be.sqrt(be.mean(r2))) # [cite: uploaded:spot_diagram.py]
-            rms.append(rms_field) # [cite: uploaded:spot_diagram.py]
-        return rms # [cite: uploaded:spot_diagram.py]
+        data = self._center_spots(self.data)
+        rms = []
+        for field_data in data:
+            rms_field = []
+            for wave_data in field_data:
+                r2 = wave_data.x**2 + wave_data.y**2
+                rms_field.append(be.sqrt(be.mean(r2)))
+            rms.append(rms_field)
+        return rms
 
-    def _center_spots(self, data): # [cite: uploaded:spot_diagram.py]
+    def _center_spots(self, data):
         """Centers the spots in the given data around their respective centroids.
 
         Args:
@@ -503,33 +512,31 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 centroids.
 
         """
-        centroids = self.centroid() # [cite: uploaded:spot_diagram.py]
-        if not centroids: # Handle case where centroids could not be calculated
-            return data 
+        centroids = self.centroid()
 
-        centered = [] # [cite: uploaded:spot_diagram.py]
-        for i, field_data_list in enumerate(data): # [cite: uploaded:spot_diagram.py]
-            if i >= len(centroids): # Safety check
-                centered.append(field_data_list) # Append original if no corresponding centroid
-                continue
-            field_copy_list = [] # [cite: uploaded:spot_diagram.py]
-            for spot_data_item in field_data_list: # [cite: uploaded:spot_diagram.py]
-                x2 = be.copy(spot_data_item.x) # [cite: uploaded:spot_diagram.py]
-                y2 = be.copy(spot_data_item.y) # [cite: uploaded:spot_diagram.py]
-                i2 = be.copy(spot_data_item.intensity) # [cite: uploaded:spot_diagram.py]
+        # Build a true deep copy of the nested list, cloning each array via the backend
+        centered = []
+        for i, field_data_list in enumerate(data):
+            field_copy_list = []
+            for spot_data_item in field_data_list:
+                # clone each array/tensor
+                x2 = be.copy(spot_data_item.x)
+                y2 = be.copy(spot_data_item.y)
+                i2 = be.copy(spot_data_item.intensity)
 
-                x2 = x2 - centroids[i][0] # [cite: uploaded:spot_diagram.py]
-                y2 = y2 - centroids[i][1] # [cite: uploaded:spot_diagram.py]
+                # subtract centroid - not in-place, to prevent breaking autograd
+                x2 = x2 - centroids[i][0]
+                y2 = y2 - centroids[i][1]
 
-                field_copy_list.append(SpotData(x=x2, y=y2, intensity=i2)) # [cite: uploaded:spot_diagram.py]
-            centered.append(field_copy_list) # [cite: uploaded:spot_diagram.py]
-        return centered # [cite: uploaded:spot_diagram.py]
+                field_copy_list.append(SpotData(x=x2, y=y2, intensity=i2))
+            centered.append(field_copy_list)
+        return centered
 
-    def _generate_data( # [cite: uploaded:spot_diagram.py]
+    def _generate_data(
         self,
         fields,
         wavelengths,
-        num_rays=100, # Renamed from num_rings to match trace_generic, though it's effectively number of rings for hexapolar
+        num_rays=100,
         distribution="hexapolar",
         coordinates="local",
     ):
@@ -538,7 +545,7 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
         Args:
             fields (List): A list of fields.
             wavelengths (List): A list of wavelengths.
-            num_rays (int, optional): The number of rays to generate (used as num_rings for hexapolar).
+            num_rays (int, optional): The number of rays to generate.
                 Defaults to 100.
             distribution (str, optional): The distribution type.
                 Defaults to 'hexapolar'.
@@ -549,19 +556,19 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 field and wavelength.
 
         """
-        data = [] # [cite: uploaded:spot_diagram.py]
-        for field in fields: # [cite: uploaded:spot_diagram.py]
-            field_data = [] # [cite: uploaded:spot_diagram.py]
-            for wavelength in wavelengths: # [cite: uploaded:spot_diagram.py]
-                field_data.append( # [cite: uploaded:spot_diagram.py]
-                    self._generate_field_data( # [cite: uploaded:spot_diagram.py]
+        data = []
+        for field in fields:
+            field_data = []
+            for wavelength in wavelengths:
+                field_data.append(
+                    self._generate_field_data(
                         field, wavelength, num_rays, distribution, coordinates
                     ),
                 )
-            data.append(field_data) # [cite: uploaded:spot_diagram.py]
-        return data # [cite: uploaded:spot_diagram.py]
+            data.append(field_data)
+        return data
 
-    def _generate_field_data( # [cite: uploaded:spot_diagram.py]
+    def _generate_field_data(
         self,
         field,
         wavelength,
@@ -585,25 +592,30 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
                 of the generated spot data.
 
         """
-        # Optiland's trace takes num_rays, which for hexapolar effectively means num_rings
-        self.optic.trace(*field, wavelength, num_rays, distribution) # [cite: uploaded:spot_diagram.py]
+        self.optic.trace(*field, wavelength, num_rays, distribution)
 
-        x_global = self.optic.surface_group.x[-1, :] # [cite: uploaded:spot_diagram.py]
-        y_global = self.optic.surface_group.y[-1, :] # [cite: uploaded:spot_diagram.py]
-        z_global = self.optic.surface_group.z[-1, :] # [cite: uploaded:spot_diagram.py]
-        intensity = self.optic.surface_group.intensity[-1, :] # [cite: uploaded:spot_diagram.py]
+        # Extract the global intersection coordinates from the image
+        # surface (i.e. final surface)
 
-        if coordinates == "local": # [cite: uploaded:spot_diagram.py]
-            plot_x, plot_y, _ = transform( # [cite: uploaded:spot_diagram.py]
-                x_global, y_global, z_global, self.optic.image_surface, is_global=True # [cite: uploaded:spot_diagram.py]
+        x_global = self.optic.surface_group.x[-1, :]
+        y_global = self.optic.surface_group.y[-1, :]
+        z_global = self.optic.surface_group.z[-1, :]
+        intensity = self.optic.surface_group.intensity[-1, :]
+
+        if coordinates == "local":
+            # Now, convert the global coordinates to the image's local
+            # coordinate system.
+            # Do the transformation
+            plot_x, plot_y, _ = transform(
+                x_global, y_global, z_global, self.optic.image_surface, is_global=True
             )
-        else:  # coordinates == "global" # [cite: uploaded:spot_diagram.py]
-            plot_x = x_global # [cite: uploaded:spot_diagram.py]
-            plot_y = y_global # [cite: uploaded:spot_diagram.py]
+        else:  # coordinates == "global"
+            plot_x = x_global
+            plot_y = y_global
 
-        return SpotData(x=plot_x, y=plot_y, intensity=intensity) # [cite: uploaded:spot_diagram.py]
+        return SpotData(x=plot_x, y=plot_y, intensity=intensity)
 
-    def _plot_field( # [cite: uploaded:spot_diagram.py]
+    def _plot_field(
         self,
         ax,
         field_data,
@@ -619,67 +631,93 @@ class SpotDiagram: # [cite: uploaded:spot_diagram.py]
         real_centroid_y=None,
     ):
         """Plot the field data on the given axis.
-        (Code from uploaded spot_diagram.py, with be.to_numpy ensured)
+
+        Args:
+            ax (matplotlib.axes.Axes): The axis to plot the field data on.
+            field_data (list): List of tuples containing x, y, and intensity
+                data points.
+            field (tuple): Tuple containing the Hx and Hy field values.
+            axis_lim (float): Limit of the x and y axis.
+            wavelengths (list): List of wavelengths corresponding to the
+                field data.
+            buffer (float, optional): Buffer factor to extend the axis limits.
+                Default is 1.05.
+
+        Returns:
+            None
+
         """
-        markers = ["o", "s", "^"] # [cite: uploaded:spot_diagram.py]
-        for k, points in enumerate(field_data): # [cite: uploaded:spot_diagram.py]
-            x = points.x # [cite: uploaded:spot_diagram.py]
-            y = points.y # [cite: uploaded:spot_diagram.py]
-            intensity = points.intensity # [cite: uploaded:spot_diagram.py]
-            x_np = be.to_numpy(x) # [cite: uploaded:spot_diagram.py]
-            y_np = be.to_numpy(y) # [cite: uploaded:spot_diagram.py]
-            i_np = be.to_numpy(intensity) # [cite: uploaded:spot_diagram.py]
-            mask = i_np != 0 # [cite: uploaded:spot_diagram.py]
-            ax.scatter( # [cite: uploaded:spot_diagram.py]
-                x_np[mask], # [cite: uploaded:spot_diagram.py]
-                y_np[mask], # [cite: uploaded:spot_diagram.py]
-                s=10, # [cite: uploaded:spot_diagram.py]
-                label=f"{wavelengths[k]:.4f} µm" if k < len(wavelengths) else "Unknown λ", # [cite: uploaded:spot_diagram.py]
-                marker=markers[k % 3], # [cite: uploaded:spot_diagram.py]
-                alpha=0.7, # [cite: uploaded:spot_diagram.py]
+
+        import numpy as np
+
+        markers = ["o", "s", "^"]
+        for k, points in enumerate(field_data):
+            # x, y, intensity = points
+            x = points.x
+            y = points.y
+            intensity = points.intensity
+            # one‐liner conversion for BOTH backends:
+            x_np = be.to_numpy(x)
+            y_np = be.to_numpy(y)
+            i_np = be.to_numpy(intensity)
+            mask = i_np != 0
+            ax.scatter(
+                x_np[mask],
+                y_np[mask],
+                s=10,
+                label=f"{wavelengths[k]:.4f} µm",
+                marker=markers[k % 3],
+                alpha=0.7,
             )
 
-        if add_airy_disk and field_index is not None and airy_rad_x is not None and airy_rad_y is not None and real_centroid_x is not None and real_centroid_y is not None: # [cite: uploaded:spot_diagram.py]
-            real_centroid_x_np = be.to_numpy(real_centroid_x) # [cite: uploaded:spot_diagram.py]
-            real_centroid_y_np = be.to_numpy(real_centroid_y) # [cite: uploaded:spot_diagram.py]
-            airy_rad_x_np = be.to_numpy(airy_rad_x) # [cite: uploaded:spot_diagram.py]
-            airy_rad_y_np = be.to_numpy(airy_rad_y) # [cite: uploaded:spot_diagram.py]
-            if field_index < len(airy_rad_x_np) and field_index < len(airy_rad_y_np):
-                ellipse = patches.Ellipse( # [cite: uploaded:spot_diagram.py]
-                    (real_centroid_x_np, real_centroid_y_np), # [cite: uploaded:spot_diagram.py]
-                    width=2 * airy_rad_y_np[field_index],  # diameter, not radius # [cite: uploaded:spot_diagram.py]
-                    height=2 * airy_rad_x_np[field_index], # [cite: uploaded:spot_diagram.py]
-                    linestyle="--", # [cite: uploaded:spot_diagram.py]
-                    edgecolor="black", # [cite: uploaded:spot_diagram.py]
-                    fill=False, # [cite: uploaded:spot_diagram.py]
-                    linewidth=2, # [cite: uploaded:spot_diagram.py]
-                )
-                ax.add_patch(ellipse) # [cite: uploaded:spot_diagram.py]
+        if add_airy_disk and field_index is not None:
+            real_centroid_x_np = be.to_numpy(real_centroid_x)
+            real_centroid_y_np = be.to_numpy(real_centroid_y)
+            airy_rad_x_np = be.to_numpy(airy_rad_x)
+            airy_rad_y_np = be.to_numpy(airy_rad_y)
+            # Draw ellipse ONLY for the current field_index
+            ellipse = patches.Ellipse(
+                (real_centroid_x_np, real_centroid_y_np),
+                width=2 * airy_rad_y_np[field_index],  # diameter, not radius
+                height=2 * airy_rad_x_np[field_index],
+                linestyle="--",
+                edgecolor="black",
+                fill=False,
+                linewidth=2,
+            )
+            ax.add_patch(ellipse)
 
-                offset = abs(max(be.to_numpy(real_centroid_x), be.to_numpy(real_centroid_y))) # [cite: uploaded:spot_diagram.py] # Corrected to use be.to_numpy
-                max_airy_x_val = max(airy_rad_x_np) if len(airy_rad_x_np) > 0 else 0 # [cite: uploaded:spot_diagram.py]
-                max_airy_y_val = max(airy_rad_y_np) if len(airy_rad_y_np) > 0 else 0 # [cite: uploaded:spot_diagram.py]
-                max_extent = max(axis_lim, max_airy_x_val, max_airy_y_val) # [cite: uploaded:spot_diagram.py]
-                adjusted_axis_lim = (offset + max_extent) * buffer # [cite: uploaded:spot_diagram.py]
-            else:
-                 adjusted_axis_lim = axis_lim * buffer # [cite: uploaded:spot_diagram.py]
-        else: # [cite: uploaded:spot_diagram.py]
-            adjusted_axis_lim = axis_lim * buffer # [cite: uploaded:spot_diagram.py]
+            offset = abs(max(real_centroid_x_np, real_centroid_x_np))
 
-        cs = self.optic.image_surface.geometry.cs # [cite: uploaded:spot_diagram.py]
-        effective_orientation = np.abs(cs.get_effective_rotation_euler()) # [cite: uploaded:spot_diagram.py]
-        tol = 0.01  # [cite: uploaded:spot_diagram.py]
-        if effective_orientation[0] > tol or effective_orientation[1] > tol: # [cite: uploaded:spot_diagram.py]
-            x_label, y_label = "U (mm)", "V (mm)" # [cite: uploaded:spot_diagram.py]
-        else: # [cite: uploaded:spot_diagram.py]
-            x_label, y_label = "X (mm)", "Y (mm)" # [cite: uploaded:spot_diagram.py]
+            # Find the maximum extent among the geometric spot radius and the
+            # airy disk radii.
+            max_airy_x = max(airy_rad_x_np)
+            max_airy_y = max(airy_rad_y_np)
+            max_extent = max(axis_lim, max_airy_x, max_airy_y)
 
-        ax.axis("square") # [cite: uploaded:spot_diagram.py]
-        ax.set_xlabel(x_label) # [cite: uploaded:spot_diagram.py]
-        ax.set_ylabel(y_label) # [cite: uploaded:spot_diagram.py]
-        if adjusted_axis_lim > 1e-9: # Avoid setting tiny limits if axis_lim was near zero
-            ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim)) # [cite: uploaded:spot_diagram.py]
-            ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim)) # [cite: uploaded:spot_diagram.py]
-        ax.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}") # [cite: uploaded:spot_diagram.py]
-        ax.grid(alpha=0.25) # [cite: uploaded:spot_diagram.py]
+            # Apply a buffer to ensure the data fits nicely in the plot.
+            adjusted_axis_lim = (offset + max_extent) * buffer
+        else:
+            # Without the airy disk, just use the geometric spot radius
+            # with a buffer.
+            adjusted_axis_lim = axis_lim * buffer
+
+        # Determining the labels for the x and y axes based on the image
+        # surface effective orientation.
+        cs = self.optic.image_surface.geometry.cs
+        effective_orientation = np.abs(cs.get_effective_rotation_euler())
+        # Define a small tolerance to apply the new label
+        tol = 0.01  # adjust it, if necessary
+        if effective_orientation[0] > tol or effective_orientation[1] > tol:
+            x_label, y_label = "U (mm)", "V (mm)"
+        else:
+            x_label, y_label = "X (mm)", "Y (mm)"
+
+        ax.axis("square")
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
+        ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
+        ax.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+        ax.grid(alpha=0.25)
 

@@ -41,48 +41,43 @@ class FieldCurvature:
         self.num_points = num_points
         self.data = self._generate_data()
 
-    def view(self, figsize=(8, 5.5)):
-        """Displays a plot of the field curvature analysis.
+    def view(self, fig_to_plot_on=None, figsize=(8, 5.5)):
+        """Displays a plot of the field curvature analysis."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (8, 5.5).
-
-        """
-        fig, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
         for k, wavelength in enumerate(self.wavelengths):
             dk_np_tan = be.to_numpy(self.data[k][0])
-            ax.plot(
-                dk_np_tan,
-                field_np,
-                f"C{k}",
-                zorder=10,
-                label=f"{wavelength:.4f} µm, Tangential",
-            )
+            ax.plot(dk_np_tan, field_np, f"C{k}", zorder=10, label=f"{wavelength:.4f} µm, Tangential")
             dk_np_sag = be.to_numpy(self.data[k][1])
-            ax.plot(
-                dk_np_sag,
-                field_np,
-                f"C{k}--",
-                zorder=10,
-                label=f"{wavelength:.4f} µm, Sagittal",
-            )
+            ax.plot(dk_np_sag, field_np, f"C{k}--", zorder=10, label=f"{wavelength:.4f} µm, Sagittal")
 
         ax.set_xlabel("Image Plane Delta (mm)")
         ax.set_ylabel("Field")
-
         ax.set_ylim([0, self.optic.fields.max_field])
-        current_xlim = plt.xlim()
-        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
+        current_xlim = ax.get_xlim()
+        max_abs_lim = max(np.abs(current_xlim))
+        if max_abs_lim > 1e-9:
+             ax.set_xlim([-max_abs_lim, max_abs_lim])
         ax.set_title("Field Curvature")
-        plt.axvline(x=0, color="k", linewidth=0.5)
+        ax.axvline(x=0, color="k", linewidth=0.5)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        fig.tight_layout()
-        plt.show()
+        ax.grid(True)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_data(self):
         """Generates field curvature data for each wavelength by calculating the

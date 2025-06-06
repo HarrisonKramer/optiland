@@ -1,5 +1,6 @@
-# optiland_gui/analysis_panel.py
+
 import inspect
+import numpy as np 
 
 from PySide6.QtCore import Slot, Qt, QSize
 from PySide6.QtWidgets import (
@@ -16,477 +17,537 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QGridLayout,
     QScrollArea,
-    QFormLayout
+    QFormLayout,
+    QCheckBox,
+    QSpinBox,
+    QDoubleSpinBox,
+    QLineEdit,
 )
 
-# Matplotlib Qt backend
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt # For plt.close when cleaning up
+import matplotlib.pyplot as plt
+import matplotlib 
 
-# Import Optiland analysis modules
-from optiland.analysis import ( # [cite: uploaded:analysis_panel.py]
-    Distortion, # [cite: uploaded:analysis_panel.py]
-    EncircledEnergy, # [cite: uploaded:analysis_panel.py]
-    FieldCurvature, # [cite: uploaded:analysis_panel.py]
-    GridDistortion, # [cite: uploaded:analysis_panel.py]
-    PupilAberration, # [cite: uploaded:analysis_panel.py]
-    RayFan, # [cite: uploaded:analysis_panel.py]
-    RmsSpotSizeVsField, # [cite: uploaded:analysis_panel.py]
-    RmsWavefrontErrorVsField, # [cite: uploaded:analysis_panel.py]
-    # SpotDiagram, # Now imported separately if available
-)
-from optiland.mtf import FFTMTF, GeometricMTF # [cite: uploaded:analysis_panel.py]
+from optiland.analysis import PupilAberration, RmsSpotSizeVsField, RmsWavefrontErrorVsField, ThroughFocusSpotDiagram, SpotDiagram, RayFan, YYbar, Distortion, GridDistortion, FieldCurvature, IncoherentIrradiance, EncircledEnergy
+from optiland.mtf import FFTMTF, GeometricMTF
 
-try:
-    from optiland.analysis.y_ybar import YYbar # [cite: uploaded:analysis_panel.py]
-except ImportError as e:
-    print(f"Could not import YYbar from optiland.analysis.y_ybar: {e}. Y-Ybar analysis will not be available.") # [cite: uploaded:analysis_panel.py]
-    YYbar = None # [cite: uploaded:analysis_panel.py]
-
-try:
-    from optiland.analysis.spot_diagram import SpotDiagram # Corrected import path
-except ImportError as e:
-    print(f"Could not import SpotDiagram from optiland.analysis.spot_diagram: {e}. Spot Diagram analysis will not be available.")
-    SpotDiagram = None
-
-
-from .optiland_connector import OptilandConnector # [cite: uploaded:analysis_panel.py]
+from .optiland_connector import OptilandConnector
+from . import gui_plot_utils
 
 
 class AnalysisPanel(QWidget):
-    ANALYSIS_MAP = { # [cite: uploaded:analysis_panel.py]
-        # "Spot Diagram": SpotDiagram, # Will be added conditionally
-        "Encircled Energy": EncircledEnergy, # [cite: uploaded:analysis_panel.py]
-        "Ray Fan": RayFan, # [cite: uploaded:analysis_panel.py]
-        "Distortion Plot": Distortion, # [cite: uploaded:analysis_panel.py]
-        "Grid Distortion": GridDistortion, # [cite: uploaded:analysis_panel.py]
-        "Field Curvature": FieldCurvature, # [cite: uploaded:analysis_panel.py]
-        "RMS Spot Size vs Field": RmsSpotSizeVsField, # [cite: uploaded:analysis_panel.py]
-        "RMS Wavefront Error vs Field": RmsWavefrontErrorVsField, # [cite: uploaded:analysis_panel.py]
-        "Pupil Aberration": PupilAberration, # [cite: uploaded:analysis_panel.py]
-        "Geometric MTF": GeometricMTF, # [cite: uploaded:analysis_panel.py]
-        "FFT MTF": FFTMTF, # [cite: uploaded:analysis_panel.py]
+    """
+    A comprehensive panel for running and displaying various optical analyses.
+    It features a selection of analysis types, a main display area for plots,
+    and a collapsible settings panel to configure each analysis.
+    """
+    ANALYSIS_MAP = {
+        "Spot Diagram": SpotDiagram,
+        "Ray Fan": RayFan,
+        "Distortion Plot": Distortion,
+        "Grid Distortion": GridDistortion,
+        "Field Curvature": FieldCurvature,
+        "Encircled Energy": EncircledEnergy,
+        "RMS Spot Size vs Field": RmsSpotSizeVsField,
+        "RMS Wavefront Error vs Field": RmsWavefrontErrorVsField,
+        "Through-Focus Spot Diagram": ThroughFocusSpotDiagram,
+        #"Incoherent Irradiance": IncoherentIrradiance,
+        "Pupil Aberration": PupilAberration,
+        "Geometric MTF": GeometricMTF,
+        "FFT MTF": FFTMTF,
+        "YYbar": YYbar,
     }
-    if YYbar is not None: # [cite: uploaded:analysis_panel.py]
-        ANALYSIS_MAP["Y-Ybar Diagram"] = YYbar # [cite: uploaded:analysis_panel.py]
-    if SpotDiagram is not None:
-        ANALYSIS_MAP["Spot Diagram"] = SpotDiagram
-    else: # [cite: uploaded:analysis_panel.py]
-        print("Note: YYbar or SpotDiagram class was not imported, so it will not be added to analysis options.") # [cite: uploaded:analysis_panel.py]
-
+    if not ANALYSIS_MAP:
+        print("Warning: No analysis modules were successfully imported for AnalysisPanel.")
 
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
-        self.connector = connector # [cite: uploaded:analysis_panel.py]
+        self.connector = connector
         self.setWindowTitle("Analysis")
-
         self.setObjectName("AnalysisPanel")
+
+        gui_plot_utils.apply_gui_matplotlib_styles()
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
-        self.analysis_results_pages = [] # [cite: uploaded:analysis_panel.py]
-        self.current_plot_page_index = -1 # [cite: uploaded:analysis_panel.py]
-        self.active_mpl_canvas = None # [cite: uploaded:analysis_panel.py]
-        self.active_mpl_toolbar = None # [cite: uploaded:analysis_panel.py]
-        self.motion_notify_cid = None # [cite: uploaded:analysis_panel.py]
+        self.analysis_results_pages = []
+        self.current_plot_page_index = -1
+        self.active_mpl_canvas_widget = None
+        self.active_mpl_toolbar_widget = None
+        self.motion_notify_cid = None
+        self.current_settings_widgets = {}
 
-        # --- Top Bar ---
-        top_bar_layout = QHBoxLayout() # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addWidget(QLabel("Analysis Type:")) # [cite: uploaded:analysis_panel.py]
-        self.analysisTypeCombo = QComboBox() # [cite: uploaded:analysis_panel.py]
-        self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys())) # [cite: uploaded:analysis_panel.py]
-        self.analysisTypeCombo.setObjectName("AnalysisTypeCombo") # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addWidget(self.analysisTypeCombo) # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addSpacerItem( # [cite: uploaded:analysis_panel.py]
+        # --- Top Bar for Analysis Selection and Control ---
+        top_bar_layout = QHBoxLayout()
+        top_bar_layout.addWidget(QLabel("Analysis Type:"))
+        self.analysisTypeCombo = QComboBox()
+        if self.ANALYSIS_MAP:
+            self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys()))
+        self.analysisTypeCombo.setObjectName("AnalysisTypeCombo")
+        top_bar_layout.addWidget(self.analysisTypeCombo)
+        top_bar_layout.addSpacerItem(
             QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         )
-        self.btnRun = QPushButton("Run") # [cite: uploaded:analysis_panel.py]
-        self.btnRun.setObjectName("RunAnalysisButton") # [cite: uploaded:analysis_panel.py]
-        self.btnRunAll = QPushButton("Run All") # [cite: uploaded:analysis_panel.py]
-        self.btnRunAll.setObjectName("RunAllAnalysisButton") # [cite: uploaded:analysis_panel.py]
-        self.btnStop = QPushButton("Stop") # [cite: uploaded:analysis_panel.py]
-        self.btnStop.setObjectName("StopAnalysisButton") # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addWidget(self.btnRun) # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addWidget(self.btnRunAll) # [cite: uploaded:analysis_panel.py]
-        top_bar_layout.addWidget(self.btnStop) # [cite: uploaded:analysis_panel.py]
-        main_layout.addLayout(top_bar_layout) # [cite: uploaded:analysis_panel.py]
+        self.btnRun = QPushButton("Run")
+        self.btnRun.setObjectName("RunAnalysisButton")
+        self.btnRunAll = QPushButton("Run All")
+        self.btnRunAll.setObjectName("RunAllAnalysisButton")
+        self.btnStop = QPushButton("Stop")
+        self.btnStop.setObjectName("StopAnalysisButton")
+        top_bar_layout.addWidget(self.btnRun)
+        top_bar_layout.addWidget(self.btnRunAll)
+        top_bar_layout.addWidget(self.btnStop)
+        main_layout.addLayout(top_bar_layout)
 
-        # --- Main Horizontal Separator ---
-        main_separator_line = QFrame() # [cite: uploaded:analysis_panel.py]
-        main_separator_line.setObjectName("MainSeparatorLine") # [cite: uploaded:analysis_panel.py]
-        main_separator_line.setFrameShape(QFrame.Shape.HLine) # [cite: uploaded:analysis_panel.py]
-        main_separator_line.setFrameShadow(QFrame.Shadow.Sunken) # [cite: uploaded:analysis_panel.py]
-        main_layout.addWidget(main_separator_line) # [cite: uploaded:analysis_panel.py]
+        # --- Main Content Area ---
+        main_separator_line = QFrame()
+        main_separator_line.setObjectName("MainSeparatorLine")
+        main_separator_line.setFrameShape(QFrame.Shape.HLine)
+        main_separator_line.setFrameShadow(QFrame.Shadow.Sunken)
+        main_layout.addWidget(main_separator_line)
 
-        # --- Main Content Area (Plot Display Frame + Settings Panel) ---
-        main_content_layout = QHBoxLayout() # [cite: uploaded:analysis_panel.py]
-        main_content_layout.setSpacing(10) # [cite: uploaded:analysis_panel.py]
+        main_content_layout = QHBoxLayout()
+        main_content_layout.setSpacing(10)
 
-        # Left/Central Area (Plot Display Frame)
-        self.plot_display_frame = QFrame() # [cite: uploaded:analysis_panel.py]
-        self.plot_display_frame.setObjectName("PlotDisplayFrame") # [cite: uploaded:analysis_panel.py]
-        self.plot_display_frame.setFrameShape(QFrame.Shape.StyledPanel) # [cite: uploaded:analysis_panel.py]
-        self.plot_display_frame.setFrameShadow(QFrame.Shadow.Plain) # [cite: uploaded:analysis_panel.py]
-        plot_display_frame_layout = QVBoxLayout(self.plot_display_frame) # [cite: uploaded:analysis_panel.py]
-        plot_display_frame_layout.setContentsMargins(5, 5, 5, 5) # [cite: uploaded:analysis_panel.py]
-        plot_display_frame_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
+        # --- Plot Display Frame (Left/Center) ---
+        self.plot_display_frame = QFrame()
+        self.plot_display_frame.setObjectName("PlotDisplayFrame")
+        plot_display_frame_layout = QVBoxLayout(self.plot_display_frame)
+        plot_display_frame_layout.setContentsMargins(5, 5, 5, 5)
 
-        # Plot Area Title Bar (Title + MPL Toolbar Placeholder + Settings Toggle)
-        self.plot_area_title_bar_layout = QHBoxLayout() # [cite: uploaded:analysis_panel.py]
-        self.plotTitleLabel = QLabel("No Analysis Run") # [cite: uploaded:analysis_panel.py]
-        self.plotTitleLabel.setObjectName("PlotTitleLabel") # [cite: uploaded:analysis_panel.py]
-        self.plot_area_title_bar_layout.addWidget(self.plotTitleLabel) # [cite: uploaded:analysis_panel.py]
+        # Title bar for the plot area
+        self.plot_area_title_bar_layout = QHBoxLayout()
+        self.plotTitleLabel = QLabel("No Analysis Run")
+        self.plotTitleLabel.setObjectName("PlotTitleLabel")
+        self.plot_area_title_bar_layout.addWidget(self.plotTitleLabel)
+        self.mpl_toolbar_in_titlebar_container = QWidget()
+        self.mpl_toolbar_in_titlebar_container.setObjectName("MPLToolbarInTitlebarContainer")
+        self.mpl_toolbar_in_titlebar_layout = QHBoxLayout(self.mpl_toolbar_in_titlebar_container)
+        self.mpl_toolbar_in_titlebar_layout.setContentsMargins(0,0,0,0)
+        self.plot_area_title_bar_layout.addWidget(self.mpl_toolbar_in_titlebar_container)
+        self.mpl_toolbar_in_titlebar_container.setVisible(False)
+        self.plot_area_title_bar_layout.addStretch()
+        self.btnRefreshPlot = QPushButton("Refresh")
+        self.btnRefreshPlot.setObjectName("RefreshPlotButton")
+        self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
+        self.toggleSettingsButton = QPushButton(">")
+        self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
+        self.toggleSettingsButton.setFixedSize(25, 25)
+        self.plot_area_title_bar_layout.addWidget(self.toggleSettingsButton)
+        plot_display_frame_layout.addLayout(self.plot_area_title_bar_layout)
         
-        self.mpl_toolbar_in_titlebar_container = QWidget() # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_container.setObjectName("MPLToolbarInTitlebarContainer") # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_layout = QHBoxLayout(self.mpl_toolbar_in_titlebar_container) # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_layout.setSpacing(1) # [cite: uploaded:analysis_panel.py]
-        self.plot_area_title_bar_layout.addWidget(self.mpl_toolbar_in_titlebar_container) # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_container.setVisible(False) # [cite: uploaded:analysis_panel.py]
+        # Separator line
+        title_plot_separator_line = QFrame()
+        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine)
+        plot_display_frame_layout.addWidget(title_plot_separator_line)
 
-        self.plot_area_title_bar_layout.addStretch() # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton = QPushButton(">") # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton.setObjectName("ToggleSettingsButton") # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton.setFixedSize(25, 25) # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton.setToolTip("Toggle Settings Panel") # [cite: uploaded:analysis_panel.py]
-        self.plot_area_title_bar_layout.addWidget(self.toggleSettingsButton) # [cite: uploaded:analysis_panel.py]
-        plot_display_frame_layout.addLayout(self.plot_area_title_bar_layout) # [cite: uploaded:analysis_panel.py]
+        # Plot content and pagination
+        plot_content_and_pages_layout = QHBoxLayout()
+        plot_content_and_pages_layout.setContentsMargins(0,0,0,0)
+        plot_and_info_widget = QWidget()
+        plot_and_info_layout = QVBoxLayout(plot_and_info_widget)
+        plot_and_info_layout.setContentsMargins(0,0,0,0)
+        self.plot_container_widget = QWidget()
+        self.plot_container_widget.setObjectName("PlotContainerWidget")
+        self.plot_container_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        plot_and_info_layout.addWidget(self.plot_container_widget, 1)
+        self.cursor_coord_label = QLabel("", self.plot_container_widget)
+        self.cursor_coord_label.setObjectName("CursorCoordLabel")
+        self.cursor_coord_label.setStyleSheet("background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;border-radius:3px;")
+        self.cursor_coord_label.setVisible(False)
+        self.cursor_coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.dataInfoLabel = QLabel("Data Analysis info will appear here.")
+        self.dataInfoLabel.setObjectName("DataInfoLabel")
+        plot_and_info_layout.addWidget(self.dataInfoLabel)
+        plot_content_and_pages_layout.addWidget(plot_and_info_widget, 1)
+        self.page_buttons_scroll_area = QScrollArea()
+        self.page_buttons_scroll_area.setObjectName("PageButtonsScrollArea")
+        self.page_buttons_scroll_area.setWidgetResizable(True)
+        self.page_buttons_scroll_area.setFixedWidth(30)
+        page_buttons_container_widget = QWidget()
+        self.vertical_page_buttons_layout = QVBoxLayout(page_buttons_container_widget)
+        self.vertical_page_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.page_buttons_scroll_area.setWidget(page_buttons_container_widget)
+        plot_content_and_pages_layout.addWidget(self.page_buttons_scroll_area)
+        plot_display_frame_layout.addLayout(plot_content_and_pages_layout, 1)
+        main_content_layout.addWidget(self.plot_display_frame, 3)
 
-        # Separator line below the plot title/toolbar row
-        title_plot_separator_line = QFrame() # [cite: uploaded:analysis_panel.py]
-        title_plot_separator_line.setObjectName("PlotTitleSeparatorLine") # [cite: uploaded:analysis_panel.py]
-        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine) # [cite: uploaded:analysis_panel.py]
-        title_plot_separator_line.setFrameShadow(QFrame.Shadow.Sunken) # [cite: uploaded:analysis_panel.py]
-        plot_display_frame_layout.addWidget(title_plot_separator_line) # [cite: uploaded:analysis_panel.py]
+        # --- Settings Panel (Right) ---
+        self.settings_area_widget = QWidget()
+        self.settings_area_widget.setObjectName("SettingsArea")
+        self.settings_area_widget.setFixedWidth(250)
+        settings_layout = QVBoxLayout(self.settings_area_widget)
+        settings_layout.setContentsMargins(5,5,5,5)
+        settings_layout.addWidget(QLabel("Analysis Settings"))
+        self.settings_scroll_area = QScrollArea()
+        self.settings_scroll_area.setWidgetResizable(True)
+        self.settingsContentWidget = QWidget()
+        self.settings_form_layout = QFormLayout(self.settingsContentWidget)
+        self.settings_scroll_area.setWidget(self.settingsContentWidget)
+        settings_layout.addWidget(self.settings_scroll_area, 1)
+        self.btnApplySettingsAndRerun = QPushButton("Apply Settings & Rerun")
+        self.btnApplySettingsAndRerun.setObjectName("ApplySettingsAndRerunButton")
+        settings_layout.addWidget(self.btnApplySettingsAndRerun)
+        self.btnApplySettingsAndRerun.setVisible(False)
+        main_content_layout.addWidget(self.settings_area_widget, 1)
+        main_layout.addLayout(main_content_layout, 1)
 
-        # Main content (plot canvas/placeholders and page buttons)
-        plot_content_and_pages_layout = QHBoxLayout() # [cite: uploaded:analysis_panel.py]
-        plot_content_and_pages_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
-        plot_content_and_pages_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
+        # --- Log Area (Bottom) ---
+        self.logArea = QTextEdit()
+        self.logArea.setObjectName("LogArea")
+        self.logArea.setReadOnly(True)
+        self.logArea.setFixedHeight(60)
+        main_layout.addWidget(self.logArea)
 
-        plot_and_info_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-        plot_and_info_layout = QVBoxLayout(plot_and_info_widget) # [cite: uploaded:analysis_panel.py]
-        plot_and_info_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
-        plot_and_info_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
+        # --- Connections ---
+        self.btnRun.clicked.connect(self.run_analysis_slot)
+        self.btnRunAll.clicked.connect(self.run_all_analysis_slot)
+        self.btnStop.clicked.connect(self.stop_analysis_slot)
+        self.analysisTypeCombo.currentTextChanged.connect(self.on_analysis_type_changed)
+        self.toggleSettingsButton.clicked.connect(self.toggle_settings_panel_slot)
+        self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
+        self.btnApplySettingsAndRerun.clicked.connect(self._apply_settings_and_rerun_analysis_slot)
 
-        self.plot_container_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-        self.plot_container_widget.setObjectName("PlotContainerWidget") # [cite: uploaded:analysis_panel.py]
-        self.plot_container_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding) # [cite: uploaded:analysis_panel.py]
-        plot_and_info_layout.addWidget(self.plot_container_widget, 1) # [cite: uploaded:analysis_panel.py]
+        # --- Initial State ---
+        self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
+        self.update_pagination_ui()
+        self.display_plot_page(self.current_plot_page_index)
+        self.settings_area_widget.setVisible(False)
+        self.toggleSettingsButton.setText(">")
 
-        self.cursor_coord_label = QLabel("", self.plot_container_widget) # [cite: uploaded:analysis_panel.py]
-        self.cursor_coord_label.setObjectName("CursorCoordLabel") # [cite: uploaded:analysis_panel.py]
-        self.cursor_coord_label.setStyleSheet( # [cite: uploaded:analysis_panel.py]
-            "background-color: rgba(0,0,0,0.65); color: white; padding: 2px 4px; border-radius: 3px;"
-        ) 
-        self.cursor_coord_label.setVisible(False) # [cite: uploaded:analysis_panel.py]
-        self.cursor_coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents) # [cite: uploaded:analysis_panel.py]
+    def _clear_layout(self, layout_to_clear):
+        if layout_to_clear is not None:
+            while layout_to_clear.count():
+                item = layout_to_clear.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    if isinstance(widget, FigureCanvas):
+                        if hasattr(widget, '_motion_notify_cid') and widget._motion_notify_cid is not None:
+                            try: widget.mpl_disconnect(widget._motion_notify_cid)
+                            except TypeError: pass
+                            widget._motion_notify_cid = None
+                        plt.close(widget.figure)
+                    widget.setParent(None); widget.deleteLater()
+                else:
+                    sub_layout = item.layout()
+                    if sub_layout is not None: self._clear_layout(sub_layout)
 
-        self.dataInfoLabel = QLabel("Data Analysis info will appear here.") # [cite: uploaded:analysis_panel.py]
-        self.dataInfoLabel.setObjectName("DataInfoLabel") # [cite: uploaded:analysis_panel.py]
-        plot_and_info_layout.addWidget(self.dataInfoLabel) # [cite: uploaded:analysis_panel.py]
-        plot_content_and_pages_layout.addWidget(plot_and_info_widget, 1) # [cite: uploaded:analysis_panel.py]
+    def _add_setting_widget(self, param_name, param_info, default_value_override=None):
+        """Helper to add a settings widget based on param_info."""
+        label_text = param_name.replace("_", " ").title() + ":"
+        default_value = param_info.get("default") if default_value_override is None else default_value_override
+        annotation = param_info.get("annotation")
+        widget = None
 
-        self.page_buttons_scroll_area = QScrollArea() # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setObjectName("PageButtonsScrollArea") # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setWidgetResizable(True) # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setFixedWidth(30) # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded) # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # [cite: uploaded:analysis_panel.py]
-        page_buttons_container_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-        self.vertical_page_buttons_layout = QVBoxLayout(page_buttons_container_widget) # [cite: uploaded:analysis_panel.py]
-        self.vertical_page_buttons_layout.setContentsMargins(2, 2, 2, 2) # [cite: uploaded:analysis_panel.py]
-        self.vertical_page_buttons_layout.setSpacing(5) # [cite: uploaded:analysis_panel.py]
-        self.vertical_page_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignTop) # [cite: uploaded:analysis_panel.py]
-        self.page_buttons_scroll_area.setWidget(page_buttons_container_widget) # [cite: uploaded:analysis_panel.py]
-        plot_content_and_pages_layout.addWidget(self.page_buttons_scroll_area) # [cite: uploaded:analysis_panel.py]
+        if annotation is inspect.Parameter.empty or annotation is None:
+            if isinstance(default_value, bool): annotation = bool
+            elif isinstance(default_value, int): annotation = int
+            elif isinstance(default_value, float): annotation = float
+            elif isinstance(default_value, str): annotation = str
 
-        plot_display_frame_layout.addLayout(plot_content_and_pages_layout, 1) # [cite: uploaded:analysis_panel.py]
-        main_content_layout.addWidget(self.plot_display_frame, 3) # [cite: uploaded:analysis_panel.py]
+        if annotation == int:
+            widget = QSpinBox()
+            min_v, max_v, step_v = -1000000, 1000000, 1
+            if param_name in ["num_rays", "num_points"]: min_v, max_v = 1, 10000000
+            elif param_name in ["num_rings", "num_fields"]: min_v, max_v = 1, 1024
+            elif param_name == "num_steps": min_v, max_v = 1, 51
+            elif param_name == "detector_surface": min_v, max_v = -100, 100
+            widget.setRange(min_v, max_v)
+            widget.setSingleStep(step_v)
+            if param_name == "num_steps" and default_value and default_value % 2 == 0: default_value += 1 # Ensure odd
+            widget.setValue(int(default_value) if default_value is not None else 0)
 
-        # Right Settings Area
-        self.settings_area_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-        self.settings_area_widget.setObjectName("SettingsArea") # [cite: uploaded:analysis_panel.py]
-        self.settings_area_widget.setFixedWidth(250) # [cite: uploaded:analysis_panel.py]
-        settings_layout = QVBoxLayout(self.settings_area_widget) # [cite: uploaded:analysis_panel.py]
-        settings_layout.setContentsMargins(5,5,5,5) # [cite: uploaded:analysis_panel.py]
-        settings_title_label = QLabel("Settings here") # [cite: uploaded:analysis_panel.py]
-        settings_title_label.setObjectName("SettingsTitleLabel") # [cite: uploaded:analysis_panel.py]
-        settings_layout.addWidget(settings_title_label) # [cite: uploaded:analysis_panel.py]
-        scroll_area_settings = QScrollArea() # [cite: uploaded:analysis_panel.py]
-        scroll_area_settings.setObjectName("SettingsScrollArea") # [cite: uploaded:analysis_panel.py]
-        scroll_area_settings.setWidgetResizable(True) # [cite: uploaded:analysis_panel.py]
-        scroll_area_settings.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff) # [cite: uploaded:analysis_panel.py]
-        self.settingsContentWidget = QWidget() # [cite: uploaded:analysis_panel.py]
-        self.settingsContentWidget.setObjectName("SettingsContentWidget") # [cite: uploaded:analysis_panel.py]
-        settings_form_layout = QFormLayout(self.settingsContentWidget) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.setContentsMargins(10,10,10,10) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.setSpacing(8) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Setting Option A:", QLabel("Value")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Setting Option B:", QLabel("Another Value")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow(QLabel("More settings can go here,\nand this area will scroll if needed.")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Parameter X:", QLabel("True")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Parameter Y:", QLabel("123.45")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Wavelength:", QLabel("0.550 µm")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Number of Rays:", QLabel("1000")) # [cite: uploaded:analysis_panel.py]
-        settings_form_layout.addRow("Show Airy Disk:", QLabel("Yes")) # [cite: uploaded:analysis_panel.py]
-        scroll_area_settings.setWidget(self.settingsContentWidget) # [cite: uploaded:analysis_panel.py]
-        settings_layout.addWidget(scroll_area_settings, 1) # [cite: uploaded:analysis_panel.py]
-        main_content_layout.addWidget(self.settings_area_widget, 1) # [cite: uploaded:analysis_panel.py]
-        main_layout.addLayout(main_content_layout, 1) # [cite: uploaded:analysis_panel.py]
+        elif annotation == float:
+            widget = QDoubleSpinBox()
+            widget.setDecimals(4)
+            widget.setRange(-1e9, 1e9)
+            widget.setSingleStep(0.01 if "delta_focus" in param_name else 0.1)
+            widget.setValue(float(default_value) if default_value is not None else 0.0)
 
-        # --- Bottom Log Area ---
-        self.logArea = QTextEdit() # [cite: uploaded:analysis_panel.py]
-        self.logArea.setObjectName("LogArea") # [cite: uploaded:analysis_panel.py]
-        self.logArea.setReadOnly(True) # [cite: uploaded:analysis_panel.py]
-        self.logArea.setPlaceholderText("Select an analysis and click 'Run'.") # [cite: uploaded:analysis_panel.py]
-        self.logArea.setFixedHeight(60) # [cite: uploaded:analysis_panel.py]
-        main_layout.addWidget(self.logArea) # [cite: uploaded:analysis_panel.py]
+        elif annotation == bool:
+            widget = QCheckBox(param_name.replace("_", " ").title())
+            widget.setChecked(bool(default_value) if default_value is not None else False)
+            label_text = ""
 
-        self.btnRun.clicked.connect(self.run_analysis_slot) # [cite: uploaded:analysis_panel.py]
-        self.btnRunAll.clicked.connect(self.run_all_analysis_slot) # [cite: uploaded:analysis_panel.py]
-        self.btnStop.clicked.connect(self.stop_analysis_slot) # [cite: uploaded:analysis_panel.py]
-        self.analysisTypeCombo.currentTextChanged.connect(self.update_ui_for_analysis_type) # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton.clicked.connect(self.toggle_settings_panel_slot) # [cite: uploaded:analysis_panel.py]
+        elif "Literal" in str(annotation):
+            from typing import get_args
+            options = get_args(annotation)
+            if options:
+                widget = QComboBox(); widget.addItems([str(opt) for opt in options])
+                if str(default_value) in [str(o) for o in options]: widget.setCurrentText(str(default_value))
 
-        self.update_ui_for_analysis_type(self.analysisTypeCombo.currentText()) # [cite: uploaded:analysis_panel.py]
-        self.update_pagination_ui() # [cite: uploaded:analysis_panel.py]
-        self.display_plot_page(self.current_plot_page_index) # [cite: uploaded:analysis_panel.py]
-        self.settings_area_widget.setVisible(False) # [cite: uploaded:analysis_panel.py]
-        self.toggleSettingsButton.setText(">") # [cite: uploaded:analysis_panel.py]
+        elif annotation == str:
+            if param_name == "distribution":
+                widget = QComboBox(); widget.addItems(["hexapolar", "grid", "random", "ring", "line_x", "line_y", "gaussian", "uniform"])
+            elif param_name in ["coordinates", "distortion_type"]:
+                widget = QComboBox(); widget.addItems(["f-tan", "f-theta"] if "distortion" in param_name else ["local", "global"])
+            elif param_name == "cmap":
+                widget = QComboBox(); widget.addItems(["inferno", "viridis", "plasma", "magma", "gray", "jet"])
+            else: # Fallback for other strings (like wavelength='primary')
+                widget = QLineEdit()
+            if isinstance(widget, QComboBox): widget.setCurrentText(str(default_value) if default_value else widget.itemText(0))
+            else: widget.setText(str(default_value) if default_value is not None else "")
 
-    def _clear_layout(self, layout_to_clear): # [cite: uploaded:analysis_panel.py]
-        if layout_to_clear is not None: # [cite: uploaded:analysis_panel.py]
-            while layout_to_clear.count(): # [cite: uploaded:analysis_panel.py]
-                item = layout_to_clear.takeAt(0) # [cite: uploaded:analysis_panel.py]
-                widget = item.widget() # [cite: uploaded:analysis_panel.py]
-                if widget is not None: # [cite: uploaded:analysis_panel.py]
-                    if isinstance(widget, FigureCanvas): # [cite: uploaded:analysis_panel.py]
-                        if hasattr(widget, '_motion_notify_cid') and widget._motion_notify_cid is not None: # [cite: uploaded:analysis_panel.py]
-                            try: # [cite: uploaded:analysis_panel.py]
-                                widget.mpl_disconnect(widget._motion_notify_cid) # [cite: uploaded:analysis_panel.py]
-                            except TypeError: # [cite: uploaded:analysis_panel.py] 
-                                pass # [cite: uploaded:analysis_panel.py]
-                            widget._motion_notify_cid = None # [cite: uploaded:analysis_panel.py]
-                        plt.close(widget.figure) # [cite: uploaded:analysis_panel.py]
-                    widget.deleteLater() # [cite: uploaded:analysis_panel.py]
-                else: # [cite: uploaded:analysis_panel.py]
-                    sub_layout = item.layout() # [cite: uploaded:analysis_panel.py]
-                    if sub_layout is not None: # [cite: uploaded:analysis_panel.py]
-                        self._clear_layout(sub_layout) # [cite: uploaded:analysis_panel.py]
+        elif annotation == tuple or isinstance(default_value, tuple):
+            widget = QLineEdit(",".join(map(str, default_value)) if default_value else "")
+            widget.setPlaceholderText("e.g., 128,128")
 
-    def update_pagination_ui(self): # [cite: uploaded:analysis_panel.py]
-        self._clear_layout(self.vertical_page_buttons_layout) # [cite: uploaded:analysis_panel.py]
-        for i, page_data in enumerate(self.analysis_results_pages): # [cite: uploaded:analysis_panel.py]
-            btn_page = QPushButton(str(i + 1)) # [cite: uploaded:analysis_panel.py]
-            btn_page.setObjectName(f"PageButton_{i+1}") # [cite: uploaded:analysis_panel.py]
-            btn_page.setCheckable(True) # [cite: uploaded:analysis_panel.py]
-            btn_page.setChecked(i == self.current_plot_page_index) # [cite: uploaded:analysis_panel.py]
-            btn_page.clicked.connect(lambda checked=False, index=i: self.switch_plot_page(index)) # [cite: uploaded:analysis_panel.py]
-            self.vertical_page_buttons_layout.addWidget(btn_page) # [cite: uploaded:analysis_panel.py]
-        self.vertical_page_buttons_layout.addStretch() # [cite: uploaded:analysis_panel.py]
+        if widget:
+            if isinstance(widget, QCheckBox): self.settings_form_layout.addRow(widget)
+            else: self.settings_form_layout.addRow(QLabel(label_text), widget)
+            self.current_settings_widgets[param_name] = widget
+        else:
+            print(f"Warning: No widget for '{param_name}' (annotation: {annotation})")
 
-    def switch_plot_page(self, page_index): # [cite: uploaded:analysis_panel.py]
-        if 0 <= page_index < len(self.analysis_results_pages): # [cite: uploaded:analysis_panel.py]
-            if self.current_plot_page_index == page_index and self.active_mpl_canvas is not None: # [cite: uploaded:analysis_panel.py]
-                return # [cite: uploaded:analysis_panel.py]
+    def _update_settings_ui(self, analysis_name: str):
+        while self.settings_form_layout.rowCount() > 0:
+            self.settings_form_layout.removeRow(0)
+        self.current_settings_widgets.clear()
 
-            self.current_plot_page_index = page_index # [cite: uploaded:analysis_panel.py]
-            self.update_pagination_ui() # [cite: uploaded:analysis_panel.py]
-            self.display_plot_page(page_index) # [cite: uploaded:analysis_panel.py]
-            self.logArea.append(f"Switched to page {page_index + 1}: {self.analysis_results_pages[page_index].get('name', 'Analysis')}") # [cite: uploaded:analysis_panel.py]
-        else: # [cite: uploaded:analysis_panel.py]
-            self.current_plot_page_index = -1 # [cite: uploaded:analysis_panel.py]
-            self.update_pagination_ui() # [cite: uploaded:analysis_panel.py]
-            self.display_plot_page(-1) # [cite: uploaded:analysis_panel.py]
+        analysis_class = self.ANALYSIS_MAP.get(analysis_name)
+        if not analysis_class:
+            self.settings_form_layout.addRow(QLabel("No settings available."))
+            return
 
-    def on_mouse_move_on_plot(self, event): # [cite: uploaded:analysis_panel.py]
-        if event.inaxes and self.active_mpl_canvas: # [cite: uploaded:analysis_panel.py]
-            x_coord = f"{event.xdata:.2f}" if event.xdata is not None else "---" # [cite: uploaded:analysis_panel.py]
-            y_coord = f"{event.ydata:.2f}" if event.ydata is not None else "---" # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.setText(f"(x, y) = ({x_coord}, {y_coord})") # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.adjustSize() # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.move(5, 5)  # Position in top-left of plot_container_widget # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.setVisible(True) # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.raise_() # [cite: uploaded:analysis_panel.py]
-        elif self.active_mpl_canvas: # [cite: uploaded:analysis_panel.py]
-            self.cursor_coord_label.setVisible(False) # [cite: uploaded:analysis_panel.py]
+        init_params = gui_plot_utils.get_analysis_parameters(analysis_class)
+        # Known view args to add controls for if not in constructor
+        view_arg_defaults = {
+            "add_airy_disk": (bool, False),
+            "cmap": (str, "inferno"),
+            "normalize": (bool, True),
+            "cross_section": (str, ""),
+        }
 
-    def display_plot_page(self, page_index): # [cite: uploaded:analysis_panel.py]
-        # Clear previous toolbar from its dedicated container (now inside title bar)
-        if self.active_mpl_toolbar: # [cite: uploaded:analysis_panel.py]
-            self.mpl_toolbar_in_titlebar_layout.removeWidget(self.active_mpl_toolbar) # [cite: uploaded:analysis_panel.py]
-            self.active_mpl_toolbar.deleteLater() # [cite: uploaded:analysis_panel.py]
-            self.active_mpl_toolbar = None # [cite: uploaded:analysis_panel.py]
-        self.mpl_toolbar_in_titlebar_container.setVisible(False) # [cite: uploaded:analysis_panel.py]
+        # Add constructor params
+        for param_name, param_info in init_params.items():
+            self._add_setting_widget(param_name, param_info)
 
-        # Disconnect previous motion_notify_event if canvas existed
-        if self.active_mpl_canvas and self.motion_notify_cid: # [cite: uploaded:analysis_panel.py]
-            try: # [cite: uploaded:analysis_panel.py]
-                self.active_mpl_canvas.mpl_disconnect(self.motion_notify_cid) # [cite: uploaded:analysis_panel.py]
-            except TypeError: pass # [cite: uploaded:analysis_panel.py]
-            self.motion_notify_cid = None # [cite: uploaded:analysis_panel.py]
-        self.cursor_coord_label.setVisible(False) # [cite: uploaded:analysis_panel.py]
+        # Add controls for known view args if the analysis class has 'view' and the arg is not already in __init__
+        if hasattr(analysis_class, 'view') and callable(analysis_class.view):
+            view_sig = inspect.signature(analysis_class.view)
+            for view_arg, (v_type, v_default) in view_arg_defaults.items():
+                if view_arg in view_sig.parameters and view_arg not in init_params:
+                     self._add_setting_widget(view_arg, {"default": v_default, "annotation": v_type})
 
-        # Clear previous plot content from plot_container_widget's layout
-        plot_content_area_layout = self.plot_container_widget.layout() # [cite: uploaded:analysis_panel.py]
-        if plot_content_area_layout is not None: # [cite: uploaded:analysis_panel.py]
-            self._clear_layout(plot_content_area_layout) # [cite: uploaded:analysis_panel.py]
-        else:  # [cite: uploaded:analysis_panel.py]
-            plot_content_area_layout = QVBoxLayout(self.plot_container_widget) # [cite: uploaded:analysis_panel.py]
-            plot_content_area_layout.setContentsMargins(0,0,0,0) # [cite: uploaded:analysis_panel.py]
-            self.plot_container_widget.setLayout(plot_content_area_layout) # [cite: uploaded:analysis_panel.py]
-        
-        self.active_mpl_canvas = None # [cite: uploaded:analysis_panel.py]
-
-        if 0 <= page_index < len(self.analysis_results_pages): # [cite: uploaded:analysis_panel.py]
-            page_data = self.analysis_results_pages[page_index] # [cite: uploaded:analysis_panel.py]
-            analysis_name = page_data.get("name", "Analysis") # [cite: uploaded:analysis_panel.py]
-            self.plotTitleLabel.setText(analysis_name) # [cite: uploaded:analysis_panel.py]
-            self.dataInfoLabel.setText(page_data.get("result_summary", f"Displaying results for {analysis_name}")) # [cite: uploaded:analysis_panel.py]
-
-            plot_content = page_data.get("plot_content") # [cite: uploaded:analysis_panel.py]
-            if isinstance(plot_content, FigureCanvas): # [cite: uploaded:analysis_panel.py]
-                self.active_mpl_canvas = plot_content # [cite: uploaded:analysis_panel.py]
-                
-                self.active_mpl_toolbar = NavigationToolbar(self.active_mpl_canvas, self.mpl_toolbar_in_titlebar_container) # [cite: uploaded:analysis_panel.py]
-                self.active_mpl_toolbar.setObjectName("AnalysisPlotToolbarTitle") # [cite: uploaded:analysis_panel.py]
-                def do_nothing_with_message(s): pass # pylint: disable=unused-argument # [cite: uploaded:analysis_panel.py]
-                self.active_mpl_toolbar.set_message = do_nothing_with_message # [cite: uploaded:analysis_panel.py]
-                self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar) # [cite: uploaded:analysis_panel.py]
-                self.mpl_toolbar_in_titlebar_container.setVisible(True) # [cite: uploaded:analysis_panel.py]
-                
-                plot_content_area_layout.addWidget(self.active_mpl_canvas) # Add canvas to its dedicated content widget # [cite: uploaded:analysis_panel.py]
-                self.motion_notify_cid = self.active_mpl_canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot) # [cite: uploaded:analysis_panel.py]
-                self.active_mpl_canvas._motion_notify_cid = self.motion_notify_cid # [cite: uploaded:analysis_panel.py]
-
-            elif plot_content == "spot_diagram_placeholders": # [cite: uploaded:analysis_panel.py]
-                grid_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-                grid_layout = QGridLayout(grid_widget) # [cite: uploaded:analysis_panel.py]
-                ph1 = QLabel(f"Page {page_index+1}\nSpot Diagram\nField 1"); ph1.setAlignment(Qt.AlignCenter); ph1.setFrameShape(QFrame.StyledPanel); ph1.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-                ph2 = QLabel(f"Page {page_index+1}\nSpot Diagram\nField 2"); ph2.setAlignment(Qt.AlignCenter); ph2.setFrameShape(QFrame.StyledPanel); ph2.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-                ph3 = QLabel(f"Page {page_index+1}\nSpot Diagram\nField 3"); ph3.setAlignment(Qt.AlignCenter); ph3.setFrameShape(QFrame.StyledPanel); ph3.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-                grid_layout.addWidget(ph1,0,0); grid_layout.addWidget(ph2,0,1); grid_layout.addWidget(ph3,0,2) # [cite: uploaded:analysis_panel.py]
-                plot_content_area_layout.addWidget(grid_widget) # [cite: uploaded:analysis_panel.py]
-            else: # [cite: uploaded:analysis_panel.py]
-                placeholder_label = QLabel(f"Content for {analysis_name} (Page {page_index + 1})\n(External window or not yet embedded)") # [cite: uploaded:analysis_panel.py]
-                placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter) # [cite: uploaded:analysis_panel.py]
-                placeholder_label.setFrameShape(QFrame.Shape.StyledPanel) # [cite: uploaded:analysis_panel.py]
-                plot_content_area_layout.addWidget(placeholder_label) # [cite: uploaded:analysis_panel.py]
-        else: # [cite: uploaded:analysis_panel.py]
-            self.plotTitleLabel.setText("No Analysis Selected") # [cite: uploaded:analysis_panel.py]
-            self.dataInfoLabel.setText("Run an analysis to see results.") # [cite: uploaded:analysis_panel.py]
-            grid_widget = QWidget() # [cite: uploaded:analysis_panel.py]
-            grid_layout = QGridLayout(grid_widget) # [cite: uploaded:analysis_panel.py]
-            ph1 = QLabel("Plot Area 1"); ph1.setAlignment(Qt.AlignCenter); ph1.setFrameShape(QFrame.StyledPanel); ph1.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-            ph2 = QLabel("Plot Area 2"); ph2.setAlignment(Qt.AlignCenter); ph2.setFrameShape(QFrame.StyledPanel); ph2.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-            ph3 = QLabel("Plot Area 3"); ph3.setAlignment(Qt.AlignCenter); ph3.setFrameShape(QFrame.StyledPanel); ph3.setMinimumSize(150,150) # [cite: uploaded:analysis_panel.py]
-            grid_layout.addWidget(ph1,0,0); grid_layout.addWidget(ph2,0,1); grid_layout.addWidget(ph3,0,2) # [cite: uploaded:analysis_panel.py]
-            plot_content_area_layout.addWidget(grid_widget) # [cite: uploaded:analysis_panel.py]
-
+        self.settings_form_layout.addItem(QSpacerItem(20, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
     @Slot(str)
-    def update_ui_for_analysis_type(self, analysis_name): # [cite: uploaded:analysis_panel.py]
-        if self.current_plot_page_index == -1 or not self.analysis_results_pages : # [cite: uploaded:analysis_panel.py]
-             self.plotTitleLabel.setText(analysis_name) # [cite: uploaded:analysis_panel.py]
+    def on_analysis_type_changed(self, analysis_name: str):
+        self._update_settings_ui(analysis_name)
+        if self.current_plot_page_index == -1 or not self.analysis_results_pages:
+             self.plotTitleLabel.setText(analysis_name)
+
+    def update_pagination_ui(self):
+        self._clear_layout(self.vertical_page_buttons_layout)
+        for i, page_data in enumerate(self.analysis_results_pages):
+            btn_page = QPushButton(str(i + 1))
+            btn_page.setObjectName(f"PageButton_{i+1}")
+            btn_page.setCheckable(True)
+            btn_page.setChecked(i == self.current_plot_page_index)
+            btn_page.clicked.connect(lambda checked=False, index=i: self.switch_plot_page(index))
+            self.vertical_page_buttons_layout.addWidget(btn_page)
+        self.vertical_page_buttons_layout.addStretch()
+
+    def switch_plot_page(self, page_index):
+        if 0 <= page_index < len(self.analysis_results_pages):
+            self.current_plot_page_index = page_index
+            self.update_pagination_ui()
+            self.display_plot_page(page_index)
+            page_data = self.analysis_results_pages[page_index]
+            self.logArea.append(f"Switched to page {page_index + 1}: {page_data.get('name', 'Analysis')}")
+        else:
+            self.current_plot_page_index = -1
+            self.update_pagination_ui()
+            self.display_plot_page(-1)
+            self._update_settings_ui(self.analysisTypeCombo.currentText())
+
+    def on_mouse_move_on_plot(self, event):
+        if event.inaxes and self.active_mpl_canvas_widget:
+            x_coord = f"{event.xdata:.2f}" if event.xdata is not None else "---"
+            y_coord = f"{event.ydata:.2f}" if event.ydata is not None else "---"
+            self.cursor_coord_label.setText(f"(x, y) = ({x_coord}, {y_coord})")
+            self.cursor_coord_label.adjustSize()
+            self.cursor_coord_label.move(5, 5)
+            self.cursor_coord_label.setVisible(True)
+            self.cursor_coord_label.raise_()
+        elif self.active_mpl_canvas_widget:
+            self.cursor_coord_label.setVisible(False)
+
+    def display_plot_page(self, page_index):
+        if self.active_mpl_toolbar_widget:
+            self.mpl_toolbar_in_titlebar_layout.removeWidget(self.active_mpl_toolbar_widget)
+            self.active_mpl_toolbar_widget.deleteLater(); self.active_mpl_toolbar_widget = None
+        self.mpl_toolbar_in_titlebar_container.setVisible(False)
+
+        if self.active_mpl_canvas_widget and self.motion_notify_cid:
+            try: self.active_mpl_canvas_widget.mpl_disconnect(self.motion_notify_cid)
+            except TypeError: pass
+            self.motion_notify_cid = None
+        self.cursor_coord_label.setVisible(False)
+
+        plot_content_area_layout = self.plot_container_widget.layout()
+        if plot_content_area_layout: self._clear_layout(plot_content_area_layout)
+        else: plot_content_area_layout = QVBoxLayout(self.plot_container_widget)
+        self.plot_container_widget.setLayout(plot_content_area_layout)
+
+        self.active_mpl_canvas_widget = None
+
+        if 0 <= page_index < len(self.analysis_results_pages):
+            page_data = self.analysis_results_pages[page_index]
+            analysis_name = page_data.get("name", "Analysis")
+            self.plotTitleLabel.setText(analysis_name)
+            self.dataInfoLabel.setText(page_data.get("result_summary", f"Results for {analysis_name}"))
+
+            self._update_settings_ui(analysis_name)
+            page_args = {**page_data.get("constructor_args_used", {}), **page_data.get("view_args", {})}
+            for param_name, widget in self.current_settings_widgets.items():
+                if param_name in page_args:
+                    val = page_args[param_name]
+                    if isinstance(widget, (QSpinBox, QDoubleSpinBox)): widget.setValue(val)
+                    elif isinstance(widget, QComboBox): widget.setCurrentText(str(val))
+                    elif isinstance(widget, QCheckBox): widget.setChecked(bool(val))
+                    elif isinstance(widget, QLineEdit): widget.setText(",".join(map(str,val)) if isinstance(val,tuple) else str(val))
+
+            analysis_instance = page_data.get("analysis_instance")
+            if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
+                fig = Figure(figsize=page_data.get("figsize", (7,5)), dpi=100)
+                canvas = FigureCanvas(fig)
+                self.active_mpl_canvas_widget = canvas
+                analysis_instance.view(fig_to_plot_on=fig, **page_data.get("view_args", {}))
+
+                self.active_mpl_toolbar_widget = NavigationToolbar(canvas, self.mpl_toolbar_in_titlebar_container)
+                self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
+                self.mpl_toolbar_in_titlebar_container.setVisible(True)
+
+                plot_content_area_layout.addWidget(canvas)
+                self.motion_notify_cid = canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
+                canvas._motion_notify_cid = self.motion_notify_cid
+            else:
+                plot_content_area_layout.addWidget(QLabel(f"Cannot embed plot for {analysis_name}"))
+        else:
+            self.plotTitleLabel.setText("No Analysis Selected")
+            self.dataInfoLabel.setText("Run an analysis to see results.")
+            plot_content_area_layout.addWidget(QLabel("Select or Run an Analysis"))
+            self._update_settings_ui(self.analysisTypeCombo.currentText())
 
     @Slot()
-    def toggle_settings_panel_slot(self): # [cite: uploaded:analysis_panel.py]
-        if self.settings_area_widget.isVisible(): # [cite: uploaded:analysis_panel.py]
-            self.settings_area_widget.setVisible(False) # [cite: uploaded:analysis_panel.py]
-            self.toggleSettingsButton.setText(">") # [cite: uploaded:analysis_panel.py]
-        else: # [cite: uploaded:analysis_panel.py]
-            self.settings_area_widget.setVisible(True) # [cite: uploaded:analysis_panel.py]
-            self.toggleSettingsButton.setText("<") # [cite: uploaded:analysis_panel.py]
+    def toggle_settings_panel_slot(self):
+        is_visible = self.settings_area_widget.isVisible()
+        self.settings_area_widget.setVisible(not is_visible)
+        self.btnApplySettingsAndRerun.setVisible(not is_visible)
+        self.toggleSettingsButton.setText("<" if not is_visible else ">")
+        if not is_visible: # if we just made it visible
+            self.display_plot_page(self.current_plot_page_index) # Re-run display logic to ensure settings are populated
+
+    def _parse_tuple_str(self, s, expected_type=float, expected_len=2):
+        if not s or not isinstance(s, str): return None
+        try:
+            parts = tuple(map(expected_type, s.split(',')))
+            return parts if len(parts) == expected_len else None
+        except (ValueError, TypeError): return None
+
+    def _collect_current_settings(self):
+        constructor_args, view_args = {}, {}
+        for param_name, widget in self.current_settings_widgets.items():
+            value = None
+            if isinstance(widget, (QSpinBox, QDoubleSpinBox)): value = widget.value()
+            elif isinstance(widget, QComboBox): value = widget.currentText()
+            elif isinstance(widget, QCheckBox): value = widget.isChecked()
+            elif isinstance(widget, QLineEdit):
+                text = widget.text().strip()
+                if param_name in ["fields", "wavelengths", "wavelength"]: value = text if text else None
+                elif param_name == "res": value = self._parse_tuple_str(text, int, 2)
+                elif param_name == "px_size": value = self._parse_tuple_str(text, float, 2)
+                elif param_name == "cross_section":
+                    if not text: value = None
+                    else:
+                        parts = [p.strip() for p in text.split(',')]
+                        if len(parts) == 2 and parts[0].lower() in ["cross-x", "cross-y"]:
+                            try: value = (parts[0].lower(), int(parts[1]))
+                            except ValueError: value = text
+                        else: value = text
+                else: value = text
+            if value is not None:
+                if param_name in ["add_airy_disk", "cmap", "normalize", "cross_section"]: view_args[param_name] = value
+                else: constructor_args[param_name] = value
+        return constructor_args, view_args
+
+    def _execute_analysis(self, analysis_class, analysis_name):
+        optic = self.connector.get_optic()
+        if not optic or optic.surface_group.num_surfaces < 2:
+            QMessageBox.warning(self, "Analysis Error", "Minimal system required.")
+            return None
+        if optic.wavelengths.num_wavelengths == 0:
+            QMessageBox.warning(self, "Analysis Error", "Optic has no wavelengths.")
+            return None
+        
+        try:
+            constructor_args, view_args = self._collect_current_settings()
+            final_args = {"optic": optic}
+            valid_init = gui_plot_utils.get_analysis_parameters(analysis_class).keys()
+            for k,v in constructor_args.items():
+                if k in valid_init: final_args[k] = v
+
+            print(f"LOG: Executing {analysis_name} with args: {final_args}")
+            instance = analysis_class(**final_args)
+            
+            can_embed = hasattr(instance, 'view') and 'fig_to_plot_on' in inspect.signature(instance.view).parameters
+            if not can_embed: instance.view(**view_args) # External view
+            
+            page_data = {
+                "name": analysis_name, "analysis_instance": instance,
+                "plot_type": "embedded_mpl" if can_embed else "external_window",
+                "view_args": view_args, "constructor_args_used": {k:v for k,v in final_args.items() if k!='optic'}
+            }
+            # Add dynamic figsize logic here if needed
+            if analysis_name == "Through-Focus Spot Diagram":
+                num_f = len(optic.fields.get_field_coords())
+                num_s = final_args.get("num_steps", 5)
+                page_data["figsize"] = (max(1,num_s) * 3, max(1,num_f) * 3)
+
+            return page_data
+        except Exception as e:
+            QMessageBox.critical(self, "Analysis Error", f"Error during {analysis_name}:\n{e}")
+            import traceback; print(f"Analysis Panel Error: {e}\n{traceback.format_exc()}")
+            return None
 
     @Slot()
-    def run_analysis_slot(self): # [cite: uploaded:analysis_panel.py]
-        selected_analysis_name = self.analysisTypeCombo.currentText() # [cite: uploaded:analysis_panel.py]
-        analysis_class = self.ANALYSIS_MAP.get(selected_analysis_name) # [cite: uploaded:analysis_panel.py]
-        optic = self.connector.get_optic() # [cite: uploaded:analysis_panel.py]
-
-        if not optic or optic.surface_group.num_surfaces <= 2: # [cite: uploaded:analysis_panel.py]
-            QMessageBox.warning(self, "Analysis Error", "Cannot run analysis on an empty or minimal system.") # [cite: uploaded:analysis_panel.py]
-            return # [cite: uploaded:analysis_panel.py]
-        if optic.wavelengths.num_wavelengths == 0: # [cite: uploaded:analysis_panel.py]
-            QMessageBox.warning(self, "Analysis Error", "Optic has no wavelengths defined.") # [cite: uploaded:analysis_panel.py]
-            return # [cite: uploaded:analysis_panel.py]
-
-        if analysis_class: # [cite: uploaded:analysis_panel.py]
-            self.logArea.setText(f"Running {selected_analysis_name}...") # [cite: uploaded:analysis_panel.py]
-            try:
-                primary_wl_val = self.connector._get_safe_primary_wavelength_value() # [cite: uploaded:analysis_panel.py]
-                constructor_args = {} # [cite: uploaded:analysis_panel.py]
-                for param in inspect.signature(analysis_class.__init__).parameters.values(): # type: ignore # [cite: uploaded:analysis_panel.py]
-                    if param.name == "self": continue # [cite: uploaded:analysis_panel.py]
-                    if param.name in ["optic", "optical_system"]: constructor_args[param.name] = optic # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "fields": constructor_args[param.name] = "all" # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "wavelengths": constructor_args[param.name] = [primary_wl_val] if primary_wl_val is not None else "all" # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "wavelength": constructor_args[param.name] = primary_wl_val if primary_wl_val is not None else "primary" # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "num_rays": # This will be used by SpotDiagram if it takes num_rays
-                        if selected_analysis_name == "Ray Fan": constructor_args[param.name] = 7
-                        elif selected_analysis_name == "Spot Diagram": constructor_args[param.name] = 6 # num_rings for SpotDiagram
-                        else: constructor_args[param.name] = 24
-                    elif param.name == "num_rings": # Specifically for SpotDiagram if its constructor uses num_rings
-                         if selected_analysis_name == "Spot Diagram": constructor_args[param.name] = 6
-                    elif param.name == "distribution": 
-                        if selected_analysis_name == "Ray Fan": constructor_args[param.name] = "line_y"
-                        elif selected_analysis_name == "Spot Diagram": constructor_args[param.name] = "hexapolar"
-                        else: constructor_args[param.name] = "grid"
-                    elif param.name == "num_points": constructor_args[param.name] = 50 # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "max_freq": constructor_args[param.name] = 100 # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "grid_size": constructor_args[param.name] = 10 # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "scale": constructor_args[param.name] = "linear" # [cite: uploaded:analysis_panel.py]
-                    elif param.name == "pupil_points": constructor_args[param.name] = 32 # [cite: uploaded:analysis_panel.py]
-
-                analysis_instance = analysis_class(**constructor_args) # [cite: uploaded:analysis_panel.py]
-                new_page_data = { "name": selected_analysis_name, "args": constructor_args } # [cite: uploaded:analysis_panel.py]
-
-                if selected_analysis_name == "Y-Ybar Diagram" and YYbar is not None: # [cite: uploaded:analysis_panel.py]
-                    fig = Figure(figsize=(5, 4), dpi=100) # [cite: uploaded:analysis_panel.py]
-                    canvas = FigureCanvas(fig) # [cite: uploaded:analysis_panel.py]
-                    analysis_instance.view(fig_to_plot_on=fig) # [cite: uploaded:analysis_panel.py]
-                    new_page_data["plot_content"] = canvas # [cite: uploaded:analysis_panel.py]
-                    new_page_data["result_summary"] = "Y-Ybar Diagram plotted in GUI." # [cite: uploaded:analysis_panel.py]
-                    self.logArea.append(f"{selected_analysis_name} plotted in GUI.") # [cite: uploaded:analysis_panel.py]
-                elif selected_analysis_name == "Spot Diagram" and SpotDiagram is not None:
-                    fig = Figure(figsize=(12, 4), dpi=100) # Spot diagram default figsize
-                    canvas = FigureCanvas(fig)
-                    # SpotDiagram specific arguments like add_airy_disk can be passed here from settings
-                    analysis_instance.view(fig_to_plot_on=fig, add_airy_disk=False) # Example: add_airy_disk=False
-                    new_page_data["plot_content"] = canvas
-                    new_page_data["result_summary"] = "Spot Diagram plotted in GUI."
-                    self.logArea.append(f"{selected_analysis_name} plotted in GUI.")
-                else: # [cite: uploaded:analysis_panel.py]
-                    analysis_instance.view() # [cite: uploaded:analysis_panel.py]
-                    new_page_data["plot_content"] = None # [cite: uploaded:analysis_panel.py]
-                    new_page_data["result_summary"] = f"{selected_analysis_name} (external window)." # [cite: uploaded:analysis_panel.py]
-                    self.logArea.append(f"{selected_analysis_name} shown in external window.") # [cite: uploaded:analysis_panel.py]
-
-                self.analysis_results_pages.append(new_page_data) # [cite: uploaded:analysis_panel.py]
-                new_page_index = len(self.analysis_results_pages) - 1 # [cite: uploaded:analysis_panel.py]
-                self.switch_plot_page(new_page_index) # [cite: uploaded:analysis_panel.py]
-                
-                print(f"Analysis Panel: Ran {selected_analysis_name}, page {new_page_index + 1} added/displayed.") # [cite: uploaded:analysis_panel.py]
-
-            except Exception as e: # [cite: uploaded:analysis_panel.py]
-                self.logArea.append(f"Error running {selected_analysis_name}: {e}") # [cite: uploaded:analysis_panel.py]
-                QMessageBox.critical(self, "Analysis Error", f"Error during {selected_analysis_name}:\n{e}") # [cite: uploaded:analysis_panel.py]
-                print(f"Analysis Panel Error: {e}") # [cite: uploaded:analysis_panel.py]
-        else: # [cite: uploaded:analysis_panel.py]
-            self.logArea.setText(f"Analysis type '{selected_analysis_name}' not yet implemented.") # [cite: uploaded:analysis_panel.py]
+    def _apply_settings_and_rerun_analysis_slot(self):
+        if not (0 <= self.current_plot_page_index < len(self.analysis_results_pages)):
+            return
+        page_data = self.analysis_results_pages[self.current_plot_page_index]
+        analysis_name = page_data.get("name")
+        self.logArea.setText(f"Rerunning {analysis_name} with new settings...")
+        new_page_data = self._execute_analysis(self.ANALYSIS_MAP[analysis_name], analysis_name)
+        if new_page_data:
+            self.analysis_results_pages[self.current_plot_page_index] = new_page_data
+            self.display_plot_page(self.current_plot_page_index)
+            self.logArea.append(f"{analysis_name} reran successfully.")
 
     @Slot()
-    def run_all_analysis_slot(self): # [cite: uploaded:analysis_panel.py]
-        self.logArea.append("Run All Analysis: Not yet implemented.") # [cite: uploaded:analysis_panel.py]
-        QMessageBox.information(self, "Not Implemented", "Run All Analysis is not yet implemented.") # [cite: uploaded:analysis_panel.py]
+    def _refresh_current_plot_page_slot(self):
+        if not (0 <= self.current_plot_page_index < len(self.analysis_results_pages)): return
+        self.logArea.setText(f"Refreshing plot...")
+        self.display_plot_page(self.current_plot_page_index)
+        self.logArea.append(f"Plot refreshed.")
 
     @Slot()
-    def stop_analysis_slot(self): # [cite: uploaded:analysis_panel.py]
-        self.logArea.append("Stop Analysis: Not yet implemented.") # [cite: uploaded:analysis_panel.py]
-        QMessageBox.information(self, "Not Implemented", "Stop Analysis is not yet implemented.") # [cite: uploaded:analysis_panel.py]
+    def run_analysis_slot(self):
+        analysis_name = self.analysisTypeCombo.currentText()
+        analysis_class = self.ANALYSIS_MAP.get(analysis_name)
+        if not analysis_class: return
+        self.logArea.setText(f"Running {analysis_name}...")
+        page_data = self._execute_analysis(analysis_class, analysis_name)
+        if page_data:
+            self.analysis_results_pages.append(page_data)
+            self.switch_plot_page(len(self.analysis_results_pages) - 1)
+            self.logArea.append(f"{analysis_name} run complete.")
 
+    @Slot()
+    def run_all_analysis_slot(self): self.logArea.append("Run All: Not yet implemented.")
+    @Slot()
+    def stop_analysis_slot(self): self.logArea.append("Stop: Not yet implemented.")

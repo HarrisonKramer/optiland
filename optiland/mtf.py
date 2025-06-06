@@ -80,37 +80,35 @@ class GeometricMTF(SpotDiagram):
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
-        """Plots the MTF curve.
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+        """Plots the MTF curve."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (12, 4).
-            add_reference (bool, optional): Whether to add the diffraction
-                limit reference curve. Defaults to False.
-
-        """
-        _, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
-            ax.plot(
-                be.to_numpy(self.freq),
-                be.to_numpy(self.diff_limited_mtf),
-                "k--",
-                label="Diffraction Limit",
-            )
+            ax.plot(be.to_numpy(self.freq), be.to_numpy(self.diff_limited_mtf), "k--", label="Diffraction Limit")
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.set_xlim([0, be.to_numpy(self.max_freq)])
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation", labelpad=10)
-        plt.tight_layout()
-        plt.grid(alpha=0.25)
-        plt.show()
+        ax.grid(True, alpha=0.25)
+        current_fig.tight_layout()
+        
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.
@@ -265,43 +263,42 @@ class FFTMTF:
 
         self.mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
-        """Visualizes the Modulation Transfer Function (MTF).
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+        """Visualizes the Modulation Transfer Function (MTF)."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (12, 4).
-            add_reference (bool, optional): Whether to add the diffraction
-                limit reference line. Defaults to False.
-
-        """
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
+        
         dx = self._get_mtf_units()
         freq = be.arange(self.grid_size // 2) * dx
-
-        _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, freq, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
             ratio = freq / self.max_freq
-            ratio = be.clip(ratio, -1, 1)  # avoid invalid value in arccos
+            ratio = be.clip(ratio, -1, 1)
             phi = be.arccos(ratio)
             diff_limited_mtf = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
-            ax.plot(
-                be.to_numpy(freq),
-                be.to_numpy(diff_limited_mtf),
-                "k--",
-                label="Diffraction Limit",
-            )
+            ax.plot(be.to_numpy(freq), be.to_numpy(diff_limited_mtf), "k--", label="Diffraction Limit")
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.set_xlim([0, be.to_numpy(self.max_freq)])
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation Transfer Function", labelpad=10)
-        plt.tight_layout()
-        plt.show()
+        ax.grid(True, alpha=0.25)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _plot_field(self, ax, freq, mtf_data, field, color):
         """Plot the MTF data for a specific field.

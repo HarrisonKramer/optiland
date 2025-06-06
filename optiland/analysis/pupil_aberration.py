@@ -49,64 +49,64 @@ class PupilAberration:
 
         self.data = self._generate_data()
 
-    def view(self, figsize=(10, 3.33)):
-        """Displays the pupil aberration plot.
-
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (10, 3.33).
-
+    def view(self, fig_to_plot_on=None, figsize=(10, 3.33)):
         """
-        _, axs = plt.subplots(
-            nrows=len(self.fields),
-            ncols=2,
-            figsize=(figsize[0], figsize[1] * len(self.fields)),
-            sharex=True,
-            sharey=True,
-        )
+        Displays the pupil aberration plot, either in a new window or on a
+        provided GUI figure.
+        """
+        is_gui_embedding = fig_to_plot_on is not None
+        num_fields = len(self.fields)
 
-        # Ensure axs is a 2D array
+        if num_fields == 0:
+            if is_gui_embedding:
+                fig_to_plot_on.text(0.5, 0.5, "No fields to plot.", ha='center', va='center')
+                if hasattr(fig_to_plot_on, 'canvas'): fig_to_plot_on.canvas.draw_idle()
+            else:
+                print("Warning (PupilAberration.view): No fields to plot.")
+            return
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            axs = current_fig.subplots(nrows=num_fields, ncols=2, sharex=True, sharey=True)
+        else:
+            current_fig, axs = plt.subplots(
+                nrows=num_fields,
+                ncols=2,
+                figsize=(figsize[0], figsize[1] * num_fields),
+                sharex=True,
+                sharey=True,
+            )
+
         axs = np.atleast_2d(axs)
-
-        Px = self.data["Px"]
-        Py = self.data["Py"]
+        Px, Py = self.data["Px"], self.data["Py"]
 
         for k, field in enumerate(self.fields):
+            ax_y, ax_x = axs[k, 0], axs[k, 1]
             for wavelength in self.wavelengths:
                 ex = self.data[f"{field}"][f"{wavelength}"]["x"]
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
+                ax_y.plot(be.to_numpy(Py), be.to_numpy(ey), zorder=3, label=f"{wavelength:.4f} µm")
+                ax_x.plot(be.to_numpy(Px), be.to_numpy(ex), zorder=3, label=f"{wavelength:.4f} µm")
 
-                axs[k, 0].plot(
-                    be.to_numpy(Py),
-                    be.to_numpy(ey),
-                    zorder=3,
-                    label=f"{wavelength:.4f} µm",
-                )
-                axs[k, 0].grid()
-                axs[k, 0].axhline(y=0, lw=1, color="gray")
-                axs[k, 0].axvline(x=0, lw=1, color="gray")
-                axs[k, 0].set_xlabel("$P_y$")
-                axs[k, 0].set_ylabel("Pupil Aberration (%)")
-                axs[k, 0].set_xlim((-1, 1))
-                axs[k, 0].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+            ax_y.grid(); ax_y.axhline(0, lw=1, c="gray"); ax_y.axvline(0, lw=1, c="gray")
+            ax_y.set_xlabel("$P_y$"); ax_y.set_ylabel("Pupil Aberration (%)")
+            ax_y.set_xlim(-1, 1); ax_y.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-                axs[k, 1].plot(
-                    be.to_numpy(Px),
-                    be.to_numpy(ex),
-                    zorder=3,
-                    label=f"{wavelength:.4f} µm",
-                )
-                axs[k, 1].grid()
-                axs[k, 1].axhline(y=0, lw=1, color="gray")
-                axs[k, 1].axvline(x=0, lw=1, color="gray")
-                axs[k, 1].set_xlabel("$P_x$")
-                axs[k, 1].set_ylabel("Pupil Aberration (%)")
-                axs[k, 0].set_xlim((-1, 1))
-                axs[k, 1].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+            ax_x.grid(); ax_x.axhline(0, lw=1, c="gray"); ax_x.axvline(0, lw=1, c="gray")
+            ax_x.set_xlabel("$P_x$"); ax_x.set_ylabel("Pupil Aberration (%)")
+            ax_x.set_xlim(-1, 1); ax_x.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-        plt.legend(loc="upper center", bbox_to_anchor=(-0.1, -0.2), ncol=3)
-        plt.subplots_adjust(top=1)
-        plt.show()
+        if num_fields > 0:
+            handles, labels = axs[0, 0].get_legend_handles_labels()
+            if handles:
+                current_fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.1 / num_fields), ncol=len(self.wavelengths))
+
+        current_fig.tight_layout()
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_data(self):
         """Generate the real pupil aberration data.

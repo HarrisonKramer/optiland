@@ -44,35 +44,34 @@ class RmsSpotSizeVsField(SpotDiagram):
         self._field = be.array(fields)
         self._spot_size = be.array(self.rms_spot_radius())
 
-    def view(self, figsize=(7, 4.5)):
-        """View the RMS spot size versus field coordinate.
+    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
+        """View the RMS spot size versus field coordinate."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple): the figure size of the output window.
-                Default is (7, 4.5).
-
-        Returns:
-            None
-
-        """
-        fig, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
         ax.plot(
             be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels
         )
-
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Spot Size (mm)")
-
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.xlim(0, 1)
-        plt.ylim(0, None)
-        plt.grid()
-        plt.tight_layout()
-        plt.show()
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, None)
+        ax.grid()
+        current_fig.tight_layout()
+        
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
 
 class RmsWavefrontErrorVsField(Wavefront):
@@ -106,18 +105,16 @@ class RmsWavefrontErrorVsField(Wavefront):
         self._field = be.array(fields)
         self._wavefront_error = be.array(self._rms_wavefront_error())
 
-    def view(self, figsize=(7, 4.5)):
-        """View the RMS wavefront error versus field coordinate.
+    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
+        """View the RMS wavefront error versus field coordinate."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple): the figure size of the output window.
-                Default is (7, 4.5).
-
-        Returns:
-            None
-
-        """
-        fig, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         wavelengths = self.optic.wavelengths.get_wavelengths()
         labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
@@ -126,17 +123,19 @@ class RmsWavefrontErrorVsField(Wavefront):
             be.to_numpy(self._wavefront_error),
             label=labels,
         )
-
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, None)
+        ax.grid()
+        current_fig.tight_layout()
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.xlim(0, 1)
-        plt.ylim(0, None)
-        plt.grid()
-        plt.tight_layout()
-        plt.show()
+        if is_gui_embedding:
+            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+        else:
+            plt.show()
+
 
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""
