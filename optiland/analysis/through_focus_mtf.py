@@ -7,13 +7,13 @@ spatial frequency, wavelength, and fields.
 Kramer Harrison, 2025
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import make_interp_spline
 
 import optiland.backend as be
 from optiland.analysis.through_focus import ThroughFocusAnalysis
 from optiland.mtf import SampledMTF
+from optiland.plotting import LegendConfig, Plotter, config, themes  # Updated imports
 
 
 class ThroughFocusMTF(ThroughFocusAnalysis):
@@ -75,59 +75,79 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
             delta_focus=delta_focus,
             num_steps=num_steps,
             fields=fields,
-            wavelengths=[self.wavelength],
+            wavelengths=[
+                self.wavelength
+            ],  # Pass as list as base class expects iterable
         )
 
     def _perform_analysis_at_focus(self):
         """
         Performs the MTF analysis at the current focal position for all fields.
-
-        This method is called by the base class for each focal step. It
-        calculates the tangential and sagittal MTF values for the specified
-        spatial frequency for each field defined in `self.fields`.
-
-        Returns:
-            list[dict[str, float]]: A list of dictionaries, where each
-            dictionary corresponds to a field and contains the tangential
-            and sagittal MTF values, e.g.,
-            [{'tangential': 0.5, 'sagittal': 0.45},  # Field 1
-             {'tangential': 0.3, 'sagittal': 0.28}]  # Field 2
+        (Code logic remains the same as original)
         """
         results_at_this_focus = []
         for field_coord in self.fields:
             sampled_mtf = SampledMTF(
                 optic=self.optic,
                 field=field_coord,
-                wavelength=self.wavelength,
+                wavelength=self.wavelength,  # self.wavelength is a single value
                 num_rays=self.num_rays,
                 distribution="uniform",
                 zernike_terms=37,
                 zernike_type="fringe",
             )
-
             freq_tan = (self.spatial_frequency, 0.0)
             freq_sag = (0.0, self.spatial_frequency)
-
             mtf_t = sampled_mtf.calculate_mtf([freq_tan])[0]
             mtf_s = sampled_mtf.calculate_mtf([freq_sag])[0]
-
             results_at_this_focus.append({"tangential": mtf_t, "sagittal": mtf_s})
         return results_at_this_focus
 
-    def view(self, figsize=(12, 4)):
+    def view(self, figsize=(12, 4), return_fig_ax: bool = False):
         """
-        Visualizes the through-focus MTF results.
+        Visualizes the through-focus MTF results using Plotter.
 
-        This method plots the tangential and sagittal MTF values against
-        defocus for each analyzed field. Spline smoothing is applied to
-        the MTF data for a smoother curve if enough data points are available.
-        The plot shows MTF at the spatial frequency defined during initialization.
+        Args:
+            figsize (tuple, optional): The figure size. Defaults to (12, 4).
+            return_fig_ax (bool, optional): If True, returns fig and ax.
+                Defaults to False.
         """
-        fig, ax = plt.subplots(figsize=(12, 4))
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
+
+        fig, ax = None, None
 
         np_positions = be.to_numpy(be.asarray(self.positions))
         np_nominal_focus = be.to_numpy(be.asarray(self.nominal_focus))
         defocus_values_np = np_positions - np_nominal_focus
+
+        # self.wavelengths is a list of values from BaseAnalysis.
+        # ThroughFocusMTF analyzes only one wavelength.
+        plot_title = (
+            f"Through-Focus MTF at {self.spatial_frequency} "
+            f"cycles/mm, λ={self.wavelengths[0]:.3f} µm"
+        )
+        xlabel = "Defocus (mm)"
+        ylabel = "MTF"
+
+        active_theme = themes.get_active_theme_dict()
+        prop_cycle = active_theme.get("axes.prop_cycle", None)
+        default_colors = [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+            "#bcbd22",
+            "#17becf",
+        ]
+        plot_colors = (
+            [item["color"] for item in prop_cycle] if prop_cycle else default_colors
+        )
 
         for i_field, field_coord in enumerate(self.fields):
             mtf_t_values = be.to_numpy(
@@ -146,79 +166,99 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
                     ]
                 )
             )
-
             num_data_points = len(defocus_values_np)
             Hx, Hy = field_coord
+            current_field_color = plot_colors[i_field % len(plot_colors)]
 
-            # Determine spline order k based on number of points
-            if num_data_points >= 4:  # Need at least k+1 points for spline of degree k
-                k = 3  # Cubic spline
-            elif num_data_points >= 2:
-                k = 1  # Linear spline
-            else:
-                k = 0  # No spline, just plot points
+            k = 3 if num_data_points >= 4 else (1 if num_data_points >= 2 else 0)
 
-            if k == 0:
-                # Plot raw data if spline conditions not met or k was initially 0
-                ax.plot(
-                    defocus_values_np,
-                    np.clip(mtf_t_values, 0, 1),
-                    linestyle="-",
-                    marker="o",
-                    markersize=4,
-                    color=f"C{i_field}",
-                    label=f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Tangential (raw)",
-                )
-                ax.plot(
-                    defocus_values_np,
-                    np.clip(mtf_s_values, 0, 1),
-                    linestyle="--",
-                    marker="x",
-                    markersize=4,
-                    color=f"C{i_field}",
-                    label=f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Sagittal (raw)",
-                )
-            else:
-                defocus_smooth = np.linspace(
+            common_plot_args = {"return_fig_ax": True, "color": current_field_color}
+
+            if k == 0:  # Plot raw data
+                label_t = f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Tangential (raw)"
+                label_s = f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Sagittal (raw)"
+                plot_data_t = np.clip(mtf_t_values, 0, 1)
+                plot_data_s = np.clip(mtf_s_values, 0, 1)
+                plot_x_data = defocus_values_np
+                marker_t, marker_s = "o", "x"
+                markersize = 4
+            else:  # Plot smoothed data
+                plot_x_data = np.linspace(
                     defocus_values_np.min(), defocus_values_np.max(), 256
                 )
-
                 spl_t = make_interp_spline(
                     defocus_values_np, mtf_t_values, k=k, check_finite=False
                 )
-                mtf_t_smooth = spl_t(defocus_smooth)
-
+                plot_data_t = np.clip(spl_t(plot_x_data), 0, 1)
                 spl_s = make_interp_spline(
                     defocus_values_np, mtf_s_values, k=k, check_finite=False
                 )
-                mtf_s_smooth = spl_s(defocus_smooth)
+                plot_data_s = np.clip(spl_s(plot_x_data), 0, 1)
+                label_t = f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Tangential"
+                label_s = f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Sagittal"
+                marker_t, marker_s = None, None  # No markers for smooth lines
+                markersize = None
 
-                ax.plot(
-                    defocus_smooth,
-                    np.clip(mtf_t_smooth, 0, 1),
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    plot_x_data,
+                    plot_data_t,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    legend_label=label_t,
                     linestyle="-",
-                    color=f"C{i_field}",
-                    label=f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Tangential",
+                    marker=marker_t,
+                    markersize=markersize,
+                    **common_plot_args,
                 )
-                ax.plot(
-                    defocus_smooth,
-                    np.clip(mtf_s_smooth, 0, 1),
-                    linestyle="--",
-                    color=f"C{i_field}",
-                    label=f"Hx: {Hx:.1f}, Hy: {Hy:.1f}, Sagittal",
+            else:
+                Plotter.plot_line(
+                    plot_x_data,
+                    plot_data_t,
+                    ax=ax,
+                    legend_label=label_t,
+                    linestyle="-",
+                    marker=marker_t,
+                    markersize=markersize,
+                    **common_plot_args,
                 )
 
-        ax.set_title(
-            f"Through-Focus MTF at {self.spatial_frequency} "
-            f"cycles/mm, λ={self.wavelength:.3f} µm"
-        )
+            Plotter.plot_line(  # Sagittal always plotted on existing ax
+                plot_x_data,
+                plot_data_s,
+                ax=ax,
+                legend_label=label_s,
+                linestyle="--",
+                marker=marker_s,
+                markersize=markersize,
+                **common_plot_args,
+            )
 
-        ax.set_xlabel("Defocus (mm)")
-        ax.set_ylabel("MTF")
-        ax.set_xlim([np.min(defocus_values_np), np.max(defocus_values_np)])
-        ax.set_ylim([0, 1.05])
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        ax.grid(True, linestyle=":", alpha=0.5)
+        if ax:
+            ax.set_xlim([np.min(defocus_values_np), np.max(defocus_values_np)])
+            ax.set_ylim([0, 1.05])
+            ax.grid(
+                True, linestyle=":", alpha=0.5
+            )  # Customize grid as Plotter's default is simpler
 
-        plt.tight_layout()
-        plt.show()
+            legend_cfg_params = LegendConfig(
+                bbox_to_anchor=(1.05, 0.5), loc="center left", show_legend=True
+            )
+            if legend_cfg_params.get("show_legend", config.get_config("legend.show")):
+                handles, _ = ax.get_legend_handles_labels()
+                if handles:
+                    ax.legend(
+                        bbox_to_anchor=legend_cfg_params.get("bbox_to_anchor"),
+                        loc=legend_cfg_params.get("loc"),
+                        frameon=config.get_config("legend.frameon"),
+                        shadow=config.get_config("legend.shadow"),
+                        fancybox=config.get_config("legend.fancybox"),
+                        ncol=config.get_config("legend.ncol"),
+                        fontsize=config.get_config("font.size_legend"),
+                    )
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)

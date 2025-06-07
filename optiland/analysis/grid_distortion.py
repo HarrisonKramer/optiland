@@ -7,10 +7,10 @@ for an optical system.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
+import numpy as np  # For max_distortion calculation if Plotter title needs it
 
 import optiland.backend as be
+from optiland.plotting import Plotter, config  # Updated imports
 
 from .base import BaseAnalysis
 
@@ -60,43 +60,118 @@ class GridDistortion(BaseAnalysis):
         self.distortion_type = distortion_type
         super().__init__(optic, wavelengths=processed_wavelength)
 
-    def view(self, figsize=(7, 5.5)):
+    def view(self, figsize=(7, 5.5), return_fig_ax: bool = False):
         """Visualizes the grid distortion analysis.
 
         Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (7, 5.5).
-
+            figsize (tuple, optional): The size of the figure. Defaults to (7, 5.5).
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
-        ax.plot(
-            be.to_numpy(self.data["xp"]),
-            be.to_numpy(self.data["yp"]),
-            "C1",
-            linewidth=1,
+        fig, ax = None, None
+
+        xp_np = be.to_numpy(self.data["xp"])
+        yp_np = be.to_numpy(self.data["yp"])
+        xr_np = be.to_numpy(self.data["xr"])
+        yr_np = be.to_numpy(self.data["yr"])
+
+        # Plotter uses its own color cycle. We'll use C1 for ideal, C0 for distorted.
+        # Need to manage this explicitly if Plotter's cycle doesn't match.
+        # For simplicity, assume Plotter's first color is like 'C0', second like 'C1'.
+        # Or, pass explicit colors. Let's try explicit for clarity.
+        # These colors could also be themed.
+        from optiland.plotting import themes
+
+        active_theme = themes.get_active_theme_dict()
+        prop_cycle = active_theme.get("axes.prop_cycle", None)
+        default_colors = ["#1f77b4", "#ff7f0e"]  # C0, C1
+        plot_colors = (
+            [item["color"] for item in prop_cycle]
+            if prop_cycle and len(prop_cycle) >= 2
+            else default_colors
         )
-        ax.plot(
-            be.to_numpy(self.data["xp"]).T,
-            be.to_numpy(self.data["yp"]).T,
-            "C1",
-            linewidth=1,
-        )
 
-        ax.plot(be.to_numpy(self.data["xr"]), be.to_numpy(self.data["yr"]), "C0P")
-        ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0P")
+        color_distorted = plot_colors[0]
+        color_ideal = plot_colors[1]
 
-        ax.set_xlabel("Image X (mm)")
-        ax.set_ylabel("Image Y (mm)")
-        ax.set_aspect("equal", adjustable="box")
+        # Plot ideal grid (xp, yp) - typically dashed or lighter
+        for i in range(xp_np.shape[1]):  # Columns
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    xp_np[:, i],
+                    yp_np[:, i],
+                    return_fig_ax=True,
+                    color=color_ideal,
+                    linestyle="--",
+                    linewidth=1,
+                )
+            else:
+                Plotter.plot_line(
+                    xp_np[:, i],
+                    yp_np[:, i],
+                    ax=ax,
+                    return_fig_ax=True,
+                    color=color_ideal,
+                    linestyle="--",
+                    linewidth=1,
+                )
+        for i in range(xp_np.shape[0]):  # Rows
+            Plotter.plot_line(
+                xp_np[i, :],
+                yp_np[i, :],
+                ax=ax,
+                return_fig_ax=True,
+                color=color_ideal,
+                linestyle="--",
+                linewidth=1,
+            )
 
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
+        # Plot distorted grid (xr, yr) - typically solid and more prominent
+        for i in range(xr_np.shape[1]):  # Columns
+            Plotter.plot_line(
+                xr_np[:, i],
+                yr_np[:, i],
+                ax=ax,
+                return_fig_ax=True,
+                color=color_distorted,
+                marker="P",
+                linewidth=1,
+            )  # Original used 'C0P'
+        for i in range(xr_np.shape[0]):  # Rows
+            Plotter.plot_line(
+                xr_np[i, :],
+                yr_np[i, :],
+                ax=ax,
+                return_fig_ax=True,
+                color=color_distorted,
+                marker="P",
+                linewidth=1,
+            )
 
-        max_distortion = self.data["max_distortion"]
-        ax.set_title(f"Max Distortion: {max_distortion:.2f}%")
-        fig.tight_layout()
-        plt.show()
+        if ax:
+            ax.set_xlabel("Image X (mm)")
+            ax.set_ylabel("Image Y (mm)")
+            ax.set_aspect("equal", adjustable="box")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            max_distortion = self.data["max_distortion"]
+            # Ensure max_distortion is a Python float for f-string if it's a tensor
+            max_distortion_val = (
+                be.to_numpy(max_distortion).item()
+                if hasattr(max_distortion, "item")
+                else float(max_distortion)
+            )
+            ax.set_title(f"Max Distortion: {max_distortion_val:.2f}%")
+            # fig.tight_layout() is usually handled by Plotter.
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     def _generate_data(self):
         """Generates the data for the grid distortion analysis.

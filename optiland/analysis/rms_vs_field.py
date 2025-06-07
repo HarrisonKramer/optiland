@@ -6,11 +6,12 @@ wavefront error versus field coordinate of an optical system.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
-
 import optiland.backend as be
-from optiland.analysis import SpotDiagram
-from optiland.wavefront import Wavefront
+from optiland.analysis import (
+    SpotDiagram,
+)  # SpotDiagram might also need Plotter updates if not done
+from optiland.plotting import LegendConfig, Plotter, config  # Updated imports
+from optiland.wavefront import Wavefront  # Wavefront might also need Plotter updates
 
 
 class RmsSpotSizeVsField(SpotDiagram):
@@ -44,35 +45,77 @@ class RmsSpotSizeVsField(SpotDiagram):
         self._field = be.array(fields)
         self._spot_size = be.array(self.rms_spot_radius())
 
-    def view(self, figsize=(7, 4.5)):
-        """View the RMS spot size versus field coordinate.
+    def view(self, figsize=(7, 4.5), return_fig_ax: bool = False):
+        """View the RMS spot size versus field coordinate using Plotter.
 
         Args:
-            figsize (tuple): the figure size of the output window.
-                Default is (7, 4.5).
-
-        Returns:
-            None
-
+            figsize (tuple): The figure size of the output window.
+                Defaults to (7, 4.5).
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
-        wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(
-            be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels
-        )
+        fig, ax = None, None
+        fields_np = be.to_numpy(self._field[:, 1])
 
-        ax.set_xlabel("Normalized Y Field Coordinate")
-        ax.set_ylabel("RMS Spot Size (mm)")
+        xlabel = "Normalized Y Field Coordinate"
+        ylabel = "RMS Spot Size (mm)"
+        plot_title = "RMS Spot Size vs Field"  # Added a title
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.xlim(0, 1)
-        plt.ylim(0, None)
-        plt.grid()
-        plt.tight_layout()
-        plt.show()
+        # Iterate over self.wavelengths (list of values from BaseAnalysis)
+        for idx, wavelength_value in enumerate(self.wavelengths):
+            # Assuming self._spot_size is (num_fields, num_wavelengths)
+            spot_size_np_wl = be.to_numpy(self._spot_size[:, idx])
+            legend_label = f"{wavelength_value:.4f} µm"  # Use the value directly
+
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    fields_np,
+                    spot_size_np_wl,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    legend_label=legend_label,
+                    return_fig_ax=True,
+                )
+            else:
+                Plotter.plot_line(
+                    fields_np,
+                    spot_size_np_wl,
+                    ax=ax,
+                    legend_label=legend_label,
+                    return_fig_ax=True,
+                )
+
+        if ax:
+            ax.set_xlim([0, 1])
+            ax.set_ylim([0, None])  # y-axis starts from 0
+
+            legend_cfg_params = LegendConfig(
+                bbox_to_anchor=(1.05, 0.5), loc="center left", show_legend=True
+            )
+            if legend_cfg_params.get("show_legend", config.get_config("legend.show")):
+                handles, _ = ax.get_legend_handles_labels()
+                if handles:
+                    ax.legend(
+                        bbox_to_anchor=legend_cfg_params.get("bbox_to_anchor"),
+                        loc=legend_cfg_params.get("loc"),
+                        frameon=config.get_config("legend.frameon"),
+                        shadow=config.get_config("legend.shadow"),
+                        fancybox=config.get_config("legend.fancybox"),
+                        ncol=config.get_config("legend.ncol"),
+                        fontsize=config.get_config("font.size_legend"),
+                    )
+            # Plotter's _apply_ax_styling handles grid.
+            # _handle_fig_ax_return_logic manages final layout.
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
 
 class RmsWavefrontErrorVsField(Wavefront):
@@ -106,37 +149,76 @@ class RmsWavefrontErrorVsField(Wavefront):
         self._field = be.array(fields)
         self._wavefront_error = be.array(self._rms_wavefront_error())
 
-    def view(self, figsize=(7, 4.5)):
-        """View the RMS wavefront error versus field coordinate.
+    def view(self, figsize=(7, 4.5), return_fig_ax: bool = False):
+        """View the RMS wavefront error versus field coordinate using Plotter.
 
         Args:
-            figsize (tuple): the figure size of the output window.
-                Default is (7, 4.5).
-
-        Returns:
-            None
-
+            figsize (tuple): The figure size of the output window.
+                Defaults to (7, 4.5).
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
-        wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(
-            be.to_numpy(self._field[:, 1]),
-            be.to_numpy(self._wavefront_error),
-            label=labels,
-        )
+        fig, ax = None, None
+        fields_np = be.to_numpy(self._field[:, 1])
 
-        ax.set_xlabel("Normalized Y Field Coordinate")
-        ax.set_ylabel("RMS Wavefront Error (waves)")
+        xlabel = "Normalized Y Field Coordinate"
+        ylabel = "RMS Wavefront Error (waves)"
+        plot_title = "RMS Wavefront Error vs Field"  # Added a title
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.xlim(0, 1)
-        plt.ylim(0, None)
-        plt.grid()
-        plt.tight_layout()
-        plt.show()
+        # Iterate over self.wavelengths (list of values from BaseAnalysis)
+        for idx, wavelength_value in enumerate(self.wavelengths):
+            # Assuming self._wavefront_error is (num_fields, num_wavelengths)
+            wfe_np_wl = be.to_numpy(self._wavefront_error[:, idx])
+            legend_label = f"{wavelength_value:.4f} µm"  # Use the value directly
+
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    fields_np,
+                    wfe_np_wl,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    legend_label=legend_label,
+                    return_fig_ax=True,
+                )
+            else:
+                Plotter.plot_line(
+                    fields_np,
+                    wfe_np_wl,
+                    ax=ax,
+                    legend_label=legend_label,
+                    return_fig_ax=True,
+                )
+
+        if ax:
+            ax.set_xlim([0, 1])
+            ax.set_ylim([0, None])  # y-axis starts from 0
+
+            legend_cfg_params = LegendConfig(
+                bbox_to_anchor=(1.05, 0.5), loc="center left", show_legend=True
+            )
+            if legend_cfg_params.get("show_legend", config.get_config("legend.show")):
+                handles, _ = ax.get_legend_handles_labels()
+                if handles:  # Ensure there's something to make a legend for
+                    ax.legend(
+                        bbox_to_anchor=legend_cfg_params.get("bbox_to_anchor"),
+                        loc=legend_cfg_params.get("loc"),
+                        frameon=config.get_config("legend.frameon"),
+                        shadow=config.get_config("legend.shadow"),
+                        fancybox=config.get_config("legend.fancybox"),
+                        ncol=config.get_config("legend.ncol"),
+                        fontsize=config.get_config("font.size_legend"),
+                    )
+            # Plotter's _apply_ax_styling handles grid.
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""

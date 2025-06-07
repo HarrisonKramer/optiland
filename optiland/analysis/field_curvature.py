@@ -5,10 +5,10 @@ This module provides a field curvature analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
+from optiland.plotting import LegendConfig, Plotter, config  # Updated imports
 
 from .base import BaseAnalysis
 
@@ -39,48 +39,132 @@ class FieldCurvature(BaseAnalysis):
         self.num_points = num_points
         super().__init__(optic, wavelengths)
 
-    def view(self, figsize=(8, 5.5)):
+    def view(self, figsize=(8, 5.5), return_fig_ax: bool = False):
         """Displays a plot of the field curvature analysis.
 
         Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (8, 5.5).
-
+            figsize (tuple, optional): The size of the figure. Defaults to (8, 5.5).
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
-        field = be.linspace(0, self.optic.fields.max_field, self.num_points)
-        field_np = be.to_numpy(field)
+        fig, ax = None, None
+        field_np = be.to_numpy(
+            be.linspace(0, self.optic.fields.max_field, self.num_points)
+        )
+
+        plot_title = "Field Curvature"
+        xlabel = "Image Plane Delta (mm)"
+        ylabel = "Field"
+
+        # Colors are cycled by Plotter. Linestyles distinguish T & S.
+        # To ensure T & S for the same wavelength use the same color base (as C{k}
+        # and C{k}-- did), we explicitly pass the color to Plotter.plot_line.
+
+        # Get theme colors for consistent color per wavelength
+        from optiland.plotting import themes
+
+        active_theme = themes.get_active_theme_dict()
+        prop_cycle = active_theme.get("axes.prop_cycle", None)
+        default_colors = [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+            "#bcbd22",
+            "#17becf",
+        ]
+        colors = (
+            [item["color"] for item in prop_cycle] if prop_cycle else default_colors
+        )
 
         for k, wavelength in enumerate(self.wavelengths):
             dk_np_tan = be.to_numpy(self.data[k][0])
-            ax.plot(
-                dk_np_tan,
-                field_np,
-                f"C{k}",
-                zorder=10,
-                label=f"{wavelength:.4f} µm, Tangential",
-            )
             dk_np_sag = be.to_numpy(self.data[k][1])
-            ax.plot(
-                dk_np_sag,
-                field_np,
-                f"C{k}--",
-                zorder=10,
-                label=f"{wavelength:.4f} µm, Sagittal",
+            current_color = colors[k % len(colors)]
+
+            if fig is None:  # First plot
+                fig, ax = Plotter.plot_line(
+                    dk_np_tan,
+                    field_np,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    legend_label=f"{wavelength:.4f} µm, Tangential",
+                    return_fig_ax=True,
+                    color=current_color,  # Explicit color
+                    linestyle="-",
+                )
+                Plotter.plot_line(  # Sagittal for the first wavelength
+                    dk_np_sag,
+                    field_np,
+                    ax=ax,
+                    legend_label=f"{wavelength:.4f} µm, Sagittal",
+                    return_fig_ax=True,
+                    color=current_color,  # Same color
+                    linestyle="--",
+                )
+            else:  # Subsequent wavelengths
+                Plotter.plot_line(
+                    dk_np_tan,
+                    field_np,
+                    ax=ax,
+                    legend_label=f"{wavelength:.4f} µm, Tangential",
+                    return_fig_ax=True,
+                    color=current_color,
+                    linestyle="-",
+                )
+                Plotter.plot_line(
+                    dk_np_sag,
+                    field_np,
+                    ax=ax,
+                    legend_label=f"{wavelength:.4f} µm, Sagittal",
+                    return_fig_ax=True,
+                    color=current_color,
+                    linestyle="--",
+                )
+
+        if ax:
+            ax.set_ylim([0, self.optic.fields.max_field])
+            current_xlim = ax.get_xlim()
+            max_abs_xlim = max(np.abs(current_xlim[0]), np.abs(current_xlim[1]))
+            ax.set_xlim([-max_abs_xlim, max_abs_xlim])
+
+            ax.axvline(x=0, color=active_theme.get("grid.color", "k"), linewidth=0.5)
+
+            legend_cfg = LegendConfig(
+                bbox_to_anchor=(1.05, 0.5), loc="center left", show_legend=True
             )
+            show_legend_param = legend_cfg.get("show_legend")
+            should_show_legend = show_legend_param if show_legend_param is not None \
+                else config.get_config("legend.show")
+            handles, _ = ax.get_legend_handles_labels() # Use _ for unused labels var
 
-        ax.set_xlabel("Image Plane Delta (mm)")
-        ax.set_ylabel("Field")
+            if should_show_legend and handles: # Check if handles is not empty
+                ax.legend(
+                    bbox_to_anchor=legend_cfg.get("bbox_to_anchor"),
+                    loc=legend_cfg.get("loc"),
+                    frameon=config.get_config("legend.frameon"),
+                    shadow=config.get_config("legend.shadow"),
+                    fancybox=config.get_config("legend.fancybox"),
+                    ncol=config.get_config("legend.ncol"),
+                    fontsize=config.get_config("font.size_legend"),
+                )
+            # fig.tight_layout() is often handled by Plotter/plt.show().
+            # For bbox_to_anchor legends, tight_layout might need rect param.
+            # Plotter's default handling is usually sufficient.
 
-        ax.set_ylim([0, self.optic.fields.max_field])
-        current_xlim = plt.xlim()
-        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
-        ax.set_title("Field Curvature")
-        plt.axvline(x=0, color="k", linewidth=0.5)
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        fig.tight_layout()
-        plt.show()
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     def _generate_data(self):
         """Generates field curvature data for each wavelength by calculating the

@@ -13,11 +13,10 @@ in W/mm^2.
 Manuel Fragata Mendes, 2025
 """
 
-import matplotlib.pyplot as plt
-import numpy as _np  # Use _np for the binning. Later extend to
+import numpy as _np  # Use _np for the binning.
 
-# other backends
 import optiland.backend as be
+from optiland.plotting import Plotter, config  # Updated imports
 
 from .base import BaseAnalysis
 
@@ -106,11 +105,12 @@ class IncoherentIrradiance(BaseAnalysis):
         cross_section=None,
         *,
         normalize: bool = True,
+        return_fig_ax: bool = False,
     ):
         """Display false-colour irradiance map or cross-section plots."""
         if not self.data:  # Changed from self.irr_data
             print("No irradiance data to display.")
-            return
+            return Plotter.finalize_plot_objects(return_fig_ax, None, None)
 
         plot_cross_section_requested = False
         valid_cross_section_request = False
@@ -141,7 +141,7 @@ class IncoherentIrradiance(BaseAnalysis):
                     "Expected tuple. Defaulting to 2D plot."
                 )
 
-        # logic for vmin_plot, vmax_plot calculation
+        # Logic for vmin_plot, vmax_plot calculation (remains the same)
 
         all_irr_values_list = []
 
@@ -169,7 +169,7 @@ class IncoherentIrradiance(BaseAnalysis):
 
         if not all_irr_values_list:
             print("No valid irradiance map data found to plot.")
-            return
+            return Plotter.finalize_plot_objects(return_fig_ax, None, None)
 
         if not normalize:
             all_irr_values = _np.concatenate(all_irr_values_list)
@@ -178,7 +178,7 @@ class IncoherentIrradiance(BaseAnalysis):
                     "No valid irradiance values to plot after concatenation "
                     "(all maps might be empty)."
                 )
-                return
+                return Plotter.finalize_plot_objects(return_fig_ax, None, None)
             vmin_plot, vmax_plot = _np.min(all_irr_values), _np.max(all_irr_values)
             if vmin_plot == vmax_plot:  # Handle case where all values are the same
                 vmin_plot -= 0.1 * abs(vmin_plot) if vmin_plot != 0 else 0.1
@@ -215,7 +215,7 @@ class IncoherentIrradiance(BaseAnalysis):
 
                 # call helper cross section
                 if plot_cross_section_requested and valid_cross_section_request:
-                    self._plot_cross_section(
+                    return self._plot_cross_section(  # Return the result
                         irr_map,
                         x_edges,
                         y_edges,
@@ -224,27 +224,51 @@ class IncoherentIrradiance(BaseAnalysis):
                         figsize,
                         title_str_base,
                         normalize,
+                        return_fig_ax=return_fig_ax,  # Pass return_fig_ax
                     )
                 else:
-                    # 2D plotting stuff
-                    plt.figure(figsize=figsize)
-                    plt.imshow(
-                        be.to_numpy(irr_map).T,
-                        aspect="auto",
-                        origin="lower",
-                        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
-                        cmap=cmap,
-                        vmin=vmin_plot,
-                        vmax=vmax_plot,
-                    )
                     cbar_lbl = (
                         "Normalized Irradiance" if normalize else "Irradiance (W/mm^2)"
+                    )  # Define cbar_lbl here
+                    # Use Plotter for 2D image display
+                    if figsize:  # Manage figsize for each plot
+                        original_figsize = config.get_config("figure.figsize")
+                        config.set_config("figure.figsize", figsize)
+
+                    imshow_kwargs = {
+                        "aspect": "auto",
+                        "origin": "lower",
+                        "extent": [x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+                        "vmin": vmin_plot,
+                        "vmax": vmax_plot,
+                    }
+                    fig, ax = Plotter.plot_image(
+                        be.to_numpy(irr_map).T,  # Plotter expects data first
+                        title=title_str_base,
+                        xlabel="X (mm)",
+                        ylabel="Y (mm)",
+                        cmap=cmap,
+                        show_colorbar=True,  # Plotter handles colorbar creation
+                        return_fig_ax=True,
+                        **imshow_kwargs,
                     )
-                    plt.colorbar(label=cbar_lbl)
-                    plt.xlabel("X (mm)")
-                    plt.ylabel("Y (mm)")
-                    plt.title(title_str_base)
-                    plt.show()
+
+                    if fig and ax:
+                        # Set colorbar label (Plotter.plot_image creates the colorbar).
+                        # Assuming colorbar is the last axes object.
+                        if len(fig.axes) > 1 and hasattr(fig.axes[-1], "set_ylabel"):
+                            fig.axes[-1].set_ylabel(cbar_lbl)
+
+                        # Plotter.plot_image doesn't set aspect on ax by default
+                        ax.set_aspect(
+                            "auto"
+                        )  # was 'auto' in original, not 'equal','box'
+
+                    if figsize:
+                        config.set_config("figure.figsize", original_figsize)
+
+                    # Finalize plot for the 2D case
+                    return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     # --- helper functions ---
 
@@ -264,6 +288,7 @@ class IncoherentIrradiance(BaseAnalysis):
         figsize: tuple,
         title_prefix: str,
         normalize: bool = True,
+        return_fig_ax: bool = False,
     ):
         """Helper method to plot a 1D cross-section of the irradiance map."""
         irr_map_np = be.to_numpy(irr_map_be)
@@ -272,8 +297,9 @@ class IncoherentIrradiance(BaseAnalysis):
         x_centers = (x_edges[:-1] + x_edges[1:]) / 2
         y_centers = (y_edges[:-1] + y_edges[1:]) / 2
 
-        plt.figure(figsize=figsize)
+        # Removed plt.figure(figsize=figsize) as Plotter handles figure creation.
         plot_title = title_prefix
+        xlabel_for_plot = ""  # Initialize
 
         if axis_type == "cross-x":  # cross section along X, data varies with Y
             if slice_idx < 0:
@@ -283,12 +309,12 @@ class IncoherentIrradiance(BaseAnalysis):
                     f"[IncoherentIrradiance] Warning: X-slice index {slice_idx} is out "
                     f"of bounds for map shape {irr_map_np.shape}. Skipping plot."
                 )
-                plt.close()
-                return
+                # plt.close() # Plotter handles this
+                return Plotter.finalize_plot_objects(return_fig_ax, None, None)
 
             data_to_plot = irr_map_np[slice_idx, :]
             coords_to_plot_against = y_centers
-            plt.xlabel("Y (mm)")
+            xlabel_for_plot = "Y (mm)"
             plot_title += f" - X-Cross-section at X ≈ {x_centers[slice_idx]:.2f} mm "
             f"(index {slice_idx})"
 
@@ -300,28 +326,46 @@ class IncoherentIrradiance(BaseAnalysis):
                     f"[IncoherentIrradiance] Warning: Y-slice index {slice_idx} is "
                     f"out of bounds for map shape {irr_map_np.shape}. Skipping plot."
                 )
-                plt.close()
-                return
+                # plt.close()
+                return Plotter.finalize_plot_objects(return_fig_ax, None, None)
 
             data_to_plot = irr_map_np[:, slice_idx]
             coords_to_plot_against = x_centers
-            plt.xlabel("X (mm)")
+            xlabel_for_plot = "X (mm)"
             plot_title += f" - Y-Cross-section at Y ≈ {y_centers[slice_idx]:.2f} "
             f"mm (index {slice_idx})"
         else:
-            plt.close()
-            return
+            # plt.close()
+            return Plotter.finalize_plot_objects(return_fig_ax, None, None)
 
         if normalize:
             peak_val = data_to_plot.max()
             if peak_val > 0:
                 data_to_plot = data_to_plot / peak_val
-        plt.plot(coords_to_plot_against, data_to_plot, linestyle="-.")
+        # Removed plt.plot(...) as Plotter.plot_line is used below
         ylbl = "Normalized Irradiance" if normalize else "Irradiance (W/mm^2)"
-        plt.ylabel(ylbl)
-        plt.title(plot_title)
-        plt.grid(True)
-        plt.show()
+
+        # Use Plotter for line plot
+        if figsize:  # Manage figsize for each plot
+            original_figsize_cs = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
+
+        fig, ax = Plotter.plot_line(
+            coords_to_plot_against,
+            data_to_plot,
+            title=plot_title,
+            xlabel=xlabel_for_plot,  # Corrected variable
+            ylabel=ylbl,
+            linestyle="-.",
+            return_fig_ax=True,  # Ensure we get fig and ax for finalize
+        )
+        # if ax:  # plot_line enables grid by default via _apply_ax_styling
+        #     pass  # ax.grid(True) is redundant if Plotter enables by default
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize_cs)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     # --- data generation functions ---
 

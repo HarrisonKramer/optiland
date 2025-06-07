@@ -5,107 +5,228 @@ for creating various types of plots. It integrates with the `config` and
 `themes` modules to allow for extensive customization of plot appearance.
 """
 
+from typing import Optional  # Added for type hints
+
 import matplotlib.pyplot as plt
 import numpy as np  # Added for examples
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from . import config, exceptions, themes
+from .plot_configs import LegendConfig
+
+# Helper functions for styling are module-level as they don't depend on
+# Plotter state and are only called by Plotter methods.
 
 
-# Helper function (previously _apply_theme_and_config_to_ax)
-def _apply_theme_and_config_to_ax_static(ax, theme_settings: dict, plot_configs: dict):
-    """Applies theme and configuration settings to a matplotlib Axes object.
-
-    This is a helper function to centralize common styling operations.
+# New static helper functions for _apply_ax_styling
+def _apply_prop_cycle(ax: Axes, theme_settings: dict):
+    """Applies the property cycler to the axes.
 
     Args:
-      ax: The matplotlib.axes.Axes object to style.
-      theme_settings: A dictionary of theme settings.
-      plot_configs: A dictionary of relevant plot configurations.
-
+        ax: The matplotlib.axes.Axes object to style.
+        theme_settings: A dictionary of theme settings.
     """
-    # Apply property cycler first
     prop_cycle = theme_settings.get("axes.prop_cycle")
     if prop_cycle:
         ax.set_prop_cycle(prop_cycle)
 
-    ax.set_facecolor(theme_settings.get("axes.facecolor", "#FFFFFF"))
-    ax.grid(
-        True,  # TODO: Make grid state configurable
-        color=theme_settings.get("grid.color", "#D0D0D0"),
-        alpha=theme_settings.get("grid.alpha", 0.8),
-    )
-    ax.spines["top"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
-    ax.spines["bottom"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
-    ax.spines["left"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
-    ax.spines["right"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
 
-    # Apply font sizes from config
+def _apply_facecolor(ax: Axes, theme_settings: dict):
+    """Applies facecolor to the axes.
+
+    Args:
+        ax: The matplotlib.axes.Axes object to style.
+        theme_settings: A dictionary of theme settings.
+    """
+    ax.set_facecolor(theme_settings.get("axes.facecolor", "#FFFFFF"))
+
+
+def _apply_grid_styling(ax: Axes, theme_settings: dict):
+    """Applies grid styling to the axes (2D and 3D).
+
+    Args:
+        ax: The matplotlib.axes.Axes object to style.
+        theme_settings: A dictionary of theme settings.
+    """
+    if hasattr(ax, "zaxis"):  # 3D specific grid
+        # For 3D axes, ax.grid() controls visibility.
+        # Color and style are often derived from axis panes or tick colors.
+        # The detailed w_xaxis._axinfo is not standard and causes errors.
+        # The grid3d_color from theme_settings is not directly applied here
+        # as Axes3D.grid() doesn't take color args like 2D.
+        # Colors are influenced by tick colors (set in _apply_3d_tick_styling)
+        # or pane colors.
+        ax.grid(True)  # TODO: Make 3D grid state (on/off) configurable
+    else:  # 2D grid
+        ax.grid(
+            True,  # TODO: Make grid state configurable
+            color=theme_settings.get("grid.color", "#D0D0D0"),
+            alpha=theme_settings.get("grid.alpha", 0.8),
+        )
+
+
+def _apply_spines_styling(ax: Axes, theme_settings: dict):
+    """Applies styling to axis spines (2D only).
+
+    Args:
+        ax: The matplotlib.axes.Axes object to style.
+        theme_settings: A dictionary of theme settings.
+    """
+    if not hasattr(ax, "zaxis"):  # Spines are typically for 2D plots
+        ax.spines["top"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
+        ax.spines["bottom"].set_edgecolor(
+            theme_settings.get("axes.edgecolor", "#333333")
+        )
+        ax.spines["left"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
+        ax.spines["right"].set_edgecolor(
+            theme_settings.get("axes.edgecolor", "#333333")
+        )
+
+
+def _apply_font_styling(ax: Axes, plot_configs: dict):
+    """Applies font styling to titles, labels, and ticks.
+
+    Args:
+        ax: The matplotlib.axes.Axes object to style.
+        plot_configs: A dictionary of relevant plot configurations.
+    """
     ax.title.set_fontsize(plot_configs.get("font.size_title", 16))
     ax.xaxis.label.set_fontsize(plot_configs.get("font.size_label", 14))
     ax.yaxis.label.set_fontsize(plot_configs.get("font.size_label", 14))
     ax.tick_params(
-        labelsize=plot_configs.get("font.size_legend", 12),
-    )  # Using legend size for 2D tick labels
-
+        labelsize=plot_configs.get(
+            "font.size_legend", 12
+        ),  # Using legend size for 2D tick labels
+    )
     if hasattr(ax, "zaxis"):  # 3D specific settings
         ax.zaxis.label.set_fontsize(plot_configs.get("font.size_label", 14))
-        # Apply pane colors for 3D plots
+
+
+def _apply_3d_pane_styling(ax: Axes, theme_settings: dict):
+    """Applies pane styling for 3D axes.
+
+    Args:
+        ax: The matplotlib.axes.Axes object (must be 3D).
+        theme_settings: A dictionary of theme settings.
+    """
+    if hasattr(ax, "zaxis"):
         pane_color = theme_settings.get(
             "axes3d.pane_color",
             theme_settings.get("axes.facecolor", "#EAEAF2"),
         )
-        ax.xaxis.set_pane_color(pane_color)
-        ax.yaxis.set_pane_color(pane_color)
-        ax.zaxis.set_pane_color(pane_color)
+        ax.xaxis.set_pane_color(pane_color)  # type: ignore
+        ax.yaxis.set_pane_color(pane_color)  # type: ignore
+        ax.zaxis.set_pane_color(pane_color)  # type: ignore
 
-        # Apply 3D grid color
-        grid3d_color = theme_settings.get(
-            "axes3d.grid_color",
-            theme_settings.get("grid.color", "#D0D0D0"),
-        )
-        ax.w_xaxis._axinfo.update(
-            {"grid": {"color": grid3d_color, "linewidth": 0.5, "linestyle": ":"}},
-        )
-        ax.w_yaxis._axinfo.update(
-            {"grid": {"color": grid3d_color, "linewidth": 0.5, "linestyle": ":"}},
-        )
-        ax.w_zaxis._axinfo.update(
-            {"grid": {"color": grid3d_color, "linewidth": 0.5, "linestyle": ":"}},
-        )
 
-        # Set face color for the 3D axes background itself
-        ax.set_facecolor(
+def _apply_3d_facecolor_styling(ax: Axes, theme_settings: dict):
+    """Applies facecolor styling for the 3D axes background.
+
+    Args:
+        ax: The matplotlib.axes.Axes object (must be 3D).
+        theme_settings: A dictionary of theme settings.
+    """
+    if hasattr(ax, "zaxis"):
+        ax.set_facecolor(  # type: ignore
             theme_settings.get(
                 "axes3d.facecolor",
                 theme_settings.get("axes.facecolor", "#FFFFFF"),
             ),
         )
 
-        # Tick label colors for 3D (already handled by tick_params if general,
-        # but can be specific)
+
+def _apply_3d_tick_styling(ax: Axes, theme_settings: dict):
+    """Applies tick color styling for 3D axes.
+
+    Args:
+        ax: The matplotlib.axes.Axes object (must be 3D).
+        theme_settings: A dictionary of theme settings.
+    """
+    if hasattr(ax, "zaxis"):
         ax.tick_params(axis="x", colors=theme_settings.get("xtick.color", "#333333"))
         ax.tick_params(axis="y", colors=theme_settings.get("ytick.color", "#333333"))
         ax.tick_params(
             axis="z",
             colors=theme_settings.get("xtick.color", "#333333"),
         )  # Assuming ztick uses similar color
-    else:  # 2D specific settings that might not apply or need adjustment for 3D
-        ax.grid(
-            True,  # TODO: Make grid state configurable
-            color=theme_settings.get("grid.color", "#D0D0D0"),
-            alpha=theme_settings.get("grid.alpha", 0.8),
-        )
-        ax.spines["top"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
-        ax.spines["bottom"].set_edgecolor(
-            theme_settings.get("axes.edgecolor", "#333333"),
-        )
-        ax.spines["left"].set_edgecolor(theme_settings.get("axes.edgecolor", "#333333"))
-        ax.spines["right"].set_edgecolor(
-            theme_settings.get("axes.edgecolor", "#333333"),
-        )
+
+
+def _apply_2d_tick_styling(ax: Axes, theme_settings: dict):
+    """Applies tick color styling for 2D axes.
+
+    Args:
+        ax: The matplotlib.axes.Axes object (must be 2D).
+        theme_settings: A dictionary of theme settings.
+    """
+    if not hasattr(ax, "zaxis"):
+        ax.tick_params(axis="x", colors=theme_settings.get("xtick.color", "#333333"))
+        ax.tick_params(axis="y", colors=theme_settings.get("ytick.color", "#333333"))
+
+
+def _apply_ax_styling(ax: Axes, theme_settings: dict, plot_configs: dict):
+    """Applies theme and configuration settings to a matplotlib Axes object.
+
+    This function centralizes common styling operations by calling smaller helpers.
+
+    Args:
+      ax: The matplotlib.axes.Axes object to style.
+      theme_settings: A dictionary of theme settings.
+      plot_configs: A dictionary of relevant plot configurations.
+    """
+    _apply_prop_cycle(ax, theme_settings)
+    _apply_facecolor(ax, theme_settings)  # General facecolor
+    _apply_grid_styling(ax, theme_settings)  # Handles 2D/3D
+    _apply_spines_styling(ax, theme_settings)  # 2D only
+    _apply_font_styling(ax, plot_configs)  # General fonts
+
+    if hasattr(ax, "zaxis"):  # 3D specific settings
+        _apply_3d_pane_styling(ax, theme_settings)
+        _apply_3d_facecolor_styling(ax, theme_settings)  # 3D specific facecolor
+        _apply_3d_tick_styling(ax, theme_settings)
+    else:  # 2D specific settings
+        _apply_2d_tick_styling(ax, theme_settings)
 
 
 class Plotter:
+    @staticmethod
+    def finalize_plot_objects(
+        return_fig_ax_param: Optional[bool], fig: Optional[Figure], axes: Optional[Axes]
+    ):
+        """Handles logic for returning (fig, ax) or showing/closing the plot.
+
+        Args:
+            return_fig_ax_param: Parameter indicating whether to return fig and ax.
+                                 If None, global config is used.
+            fig: The matplotlib Figure object. Can be None if plot creation failed.
+            axes: The matplotlib Axes object(s). Can be None.
+
+        Returns:
+            Optional[Tuple[Figure, Axes]]: Tuple of (fig, ax) or None if single axes,
+            or Optional[Tuple[Figure, np.ndarray[Axes]]] if multiple axes.
+            Returns None if not returning objects.
+        """
+        if fig is None:  # If no figure was created (e.g., error before plot)
+            if return_fig_ax_param is True:  # If user explicitly asked for fig/ax
+                return None, None
+            return None  # Otherwise, nothing to do, return None
+
+        if return_fig_ax_param is None:  # Parameter not specified, use global config
+            should_return_objects = config.get_config("plot.return_fig_ax")
+            show_plot_on_draw = config.get_config("plot.show_on_draw")
+        else:  # Parameter specified, it dictates behavior
+            should_return_objects = return_fig_ax_param
+            # If returning objects, don't show plot here. If not returning, do show.
+            show_plot_on_draw = not return_fig_ax_param
+
+        if should_return_objects:
+            return fig, axes
+        else:
+            if show_plot_on_draw:
+                plt.show()
+            plt.close(fig)  # Close the figure if not returning objects
+            return None  # Explicitly return None for the "not returning objects" case
+
     """A class to create various plots using matplotlib with custom themes and configs.
 
     The `Plotter` class simplifies the process of generating common plots
@@ -197,14 +318,7 @@ class Plotter:
         xlabel: str = None,
         ylabel: str = None,
         legend_label: str = None,
-        show_legend: bool = None,
-        legend_loc: str = None,
-        legend_title: str = None,
-        legend_frameon: bool = None,
-        legend_shadow: bool = None,
-        legend_fancybox: bool = None,
-        legend_ncol: int = None,
-        legend_bbox_to_anchor: tuple = None,
+        legend_config: Optional[LegendConfig] = None,
         return_fig_ax: bool = None,
         ax=None,  # New parameter
         **kwargs,
@@ -213,7 +327,7 @@ class Plotter:
 
         Generates a line plot with the given data, applying current theme and
         configuration settings. Legend appearance can be customized using
-        specific `legend_*` parameters or global configuration settings.
+        the `legend_config` parameter or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -222,22 +336,8 @@ class Plotter:
           xlabel: Optional label for the x-axis.
           ylabel: Optional label for the y-axis.
           legend_label: Optional label for the line, used if a legend is shown.
-          show_legend: Optional. If True, displays the legend. If None, uses
-              'legend.show' from config.
-          legend_loc: Optional. Location of the legend (e.g., 'best', 'upper right').
-              If None, uses 'legend.loc' from config.
-          legend_title: Optional. Title for the legend. If None, uses
-              'legend.title' from config.
-          legend_frameon: Optional. If True, draws a frame around the legend.
-              If None, uses 'legend.frameon' from config.
-          legend_shadow: Optional. If True, draws a shadow behind the legend.
-              If None, uses 'legend.shadow' from config.
-          legend_fancybox: Optional. If True, uses a fancy box for legend frame.
-              If None, uses 'legend.fancybox' from config.
-          legend_ncol: Optional. Number of columns in the legend. If None, uses
-              'legend.ncol' from config.
-          legend_bbox_to_anchor: Optional. Tuple for custom legend positioning.
-              If None, uses 'legend.bbox_to_anchor' from config.
+          legend_config: Optional. A `LegendConfig` dictionary to customize
+              legend appearance. Values override global configurations.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot and returns None. If None, uses the global
               'plot.return_fig_ax' and 'plot.show_on_draw' config.
@@ -308,20 +408,15 @@ class Plotter:
         """
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
-
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
+        lc = legend_config or {}
 
         if ax is None:
-            fig, ax = plt.subplots(figsize=config.get_config("figure.figsize"))
+            fig, ax_obj = plt.subplots(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
+            ax_obj = ax
+            fig = ax_obj.get_figure()
             # Note: We don't re-apply figure facecolor if ax is provided,
             # assuming fig is already styled.
 
@@ -343,7 +438,7 @@ class Plotter:
                 "font.size_label": config.get_config("font.size_label"),
                 "font.size_legend": config.get_config("font.size_legend"),
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             # Plot data
             plot_kwargs = {}
@@ -363,80 +458,50 @@ class Plotter:
             )
             plot_kwargs.update(kwargs)  # Add any remaining kwargs
 
-            ax.plot(x, y, label=legend_label, **plot_kwargs)
+            ax_obj.plot(x, y, label=legend_label, **plot_kwargs)
 
             # Set title and labels
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=config.get_config("font.size_title"),
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
 
-            # Set tick colors
-            ax.tick_params(
-                axis="x",
-                colors=theme_settings.get("xtick.color", "#333333"),
-            )
-            ax.tick_params(
-                axis="y",
-                colors=theme_settings.get("ytick.color", "#333333"),
-            )
-
             # Add legend
-            _show_legend = (
-                config.get_config("legend.show") if show_legend is None else show_legend
-            )
+            _show_legend = lc.get("show_legend", config.get_config("legend.show"))
             if _show_legend and legend_label:  # Only show legend if there's a label
-                _legend_loc = (
-                    config.get_config("legend.loc")
-                    if legend_loc is None
-                    else legend_loc
+                _legend_loc = lc.get("legend_loc", config.get_config("legend.loc"))
+                _legend_title = lc.get(
+                    "legend_title", config.get_config("legend.title")
                 )
-                _legend_title = (
-                    config.get_config("legend.title")
-                    if legend_title is None
-                    else legend_title
+                _legend_frameon = lc.get(
+                    "legend_frameon", config.get_config("legend.frameon")
                 )
-                _legend_frameon = (
-                    config.get_config("legend.frameon")
-                    if legend_frameon is None
-                    else legend_frameon
+                _legend_shadow = lc.get(
+                    "legend_shadow", config.get_config("legend.shadow")
                 )
-                _legend_shadow = (
-                    config.get_config("legend.shadow")
-                    if legend_shadow is None
-                    else legend_shadow
+                _legend_fancybox = lc.get(
+                    "legend_fancybox", config.get_config("legend.fancybox")
                 )
-                _legend_fancybox = (
-                    config.get_config("legend.fancybox")
-                    if legend_fancybox is None
-                    else legend_fancybox
-                )
-                _legend_ncol = (
-                    config.get_config("legend.ncol")
-                    if legend_ncol is None
-                    else legend_ncol
-                )
-                _legend_bbox_to_anchor = (
-                    config.get_config("legend.bbox_to_anchor")
-                    if legend_bbox_to_anchor is None
-                    else legend_bbox_to_anchor
+                _legend_ncol = lc.get("legend_ncol", config.get_config("legend.ncol"))
+                _legend_bbox_to_anchor = lc.get(
+                    "legend_bbox_to_anchor", config.get_config("legend.bbox_to_anchor")
                 )
 
-                legend = ax.legend(
+                legend = ax_obj.legend(
                     title=_legend_title,
                     loc=_legend_loc,
                     frameon=_legend_frameon,
@@ -470,21 +535,18 @@ class Plotter:
                         )  # Default if not in theme
                     )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:  # Re-raise our own plotting errors
             if (
-                fig_created_internally and "fig" in locals()
+                fig_created_internally and "fig" in locals() and fig is not None
             ):  # Check if fig was defined before trying to close
                 plt.close(fig)
             raise e
         except Exception as e:  # Wrap other unexpected errors
-            if fig_created_internally and "fig" in locals():  # Check if fig was defined
+            if (
+                fig_created_internally and "fig" in locals() and fig is not None
+            ):  # Check if fig was defined
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_line: {e}",
@@ -498,7 +560,7 @@ class Plotter:
         ylabel: str = None,
         cmap: str = None,
         show_colorbar: bool = True,
-        return_fig_ax: bool = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
@@ -558,19 +620,13 @@ class Plotter:
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
 
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
-
         if ax is None:
-            fig, ax = plt.subplots(figsize=config.get_config("figure.figsize"))
+            fig, ax_obj = plt.subplots(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
+            ax_obj = ax
+            fig = ax_obj.get_figure()
 
         try:
             # Basic data validation for image_data
@@ -590,60 +646,46 @@ class Plotter:
                     "font.size_legend",
                 ),  # Used for tick labels by _apply_theme
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             current_cmap = cmap or config.get_config("image.cmap")
-            im = ax.imshow(image_data, cmap=current_cmap, **kwargs)
+            im = ax_obj.imshow(image_data, cmap=current_cmap, **kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=config.get_config("font.size_title"),
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
 
-            ax.tick_params(
-                axis="x",
-                colors=theme_settings.get("xtick.color", "#333333"),
-            )
-            ax.tick_params(
-                axis="y",
-                colors=theme_settings.get("ytick.color", "#333333"),
-            )
-
             if show_colorbar:
-                cb = fig.colorbar(im, ax=ax)
+                cb = fig.colorbar(im, ax=ax_obj)
                 # Basic theming for colorbar ticks
                 cb.ax.tick_params(
                     colors=theme_settings.get("ytick.color", "#333333"),  # type: ignore
                     labelsize=config.get_config("font.size_legend") - 2,
                 )  # smaller font for colorbar
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_image: {e}",
@@ -657,7 +699,9 @@ class Plotter:
         sharex: bool = False,
         sharey: bool = False,
         main_title: str = None,
-        return_fig_axs: bool = None,
+        return_fig_ax: Optional[
+            bool
+        ] = None,  # Renamed from return_fig_axs for consistency
         **fig_kwargs,
     ):
         """Creates a figure with multiple subplots arranged in a grid (static method).
@@ -753,23 +797,27 @@ class Plotter:
 
         theme_settings = themes.get_active_theme_dict()
 
-        # Determine return/show behavior
-        if return_fig_axs is None:
+        # Determine return/show behavior (re-added for plot_subplots specific logic)
+        if return_fig_ax is None:
             should_return_objects = config.get_config("plot.return_fig_ax")
             show_plot_on_draw = config.get_config("plot.show_on_draw")
         else:
-            should_return_objects = return_fig_axs
-            show_plot_on_draw = not return_fig_axs
+            should_return_objects = return_fig_ax
+            show_plot_on_draw = not return_fig_ax
 
         fig = None  # Initialize fig to None for cleanup in case of early error
         try:
+            # Prioritize figsize from fig_kwargs if provided, else use global config
+            current_figsize = fig_kwargs.pop(
+                "figsize", config.get_config("figure.figsize")
+            )
             fig, axs = plt.subplots(
                 num_rows,
                 num_cols,
                 sharex=sharex,
                 sharey=sharey,
-                figsize=config.get_config("figure.figsize"),
-                **fig_kwargs,
+                figsize=current_figsize,  # Use the resolved figsize
+                **fig_kwargs,  # Pass remaining fig_kwargs
             )
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
 
@@ -793,7 +841,7 @@ class Plotter:
 
             for i, ax_subplot in enumerate(axs_flat):
                 if i < len(plot_callbacks):
-                    _apply_theme_and_config_to_ax_static(
+                    _apply_ax_styling(
                         ax_subplot,
                         theme_settings,
                         plot_configs,
@@ -816,15 +864,14 @@ class Plotter:
             if should_return_objects:
                 return fig, axs  # Return the potentially multi-dimensional array `axs`
 
-            # If not returning objects, close the figure explicitly
-            plt.close(fig)
-            return None
+            # If not returning objects, close the figure explicitly via helper
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, axs)
 
         except exceptions.PlottingError as e:
             if fig is not None:
                 plt.close(fig)
             raise e
-        except ValueError as e:
+        except ValueError as e:  # Specific argument validation errors
             if fig is not None:
                 plt.close(fig)
             raise e
@@ -845,22 +892,16 @@ class Plotter:
         ylabel: str = None,
         zlabel: str = None,
         legend_label: str = None,
-        show_legend: bool = None,
-        legend_loc: str = None,
-        legend_title: str = None,
-        legend_frameon: bool = None,
-        legend_shadow: bool = None,
-        legend_fancybox: bool = None,
-        legend_ncol: int = None,
-        legend_bbox_to_anchor: tuple = None,
-        return_fig_ax: bool = None,
+        legend_config: Optional[LegendConfig] = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
         """Plots a 3D line graph (static method).
 
         Generates a 3D line plot with the given data, applying current theme and
-        configuration settings. Legend appearance can be customized.
+        configuration settings. Legend appearance can be customized using
+        the `legend_config` parameter or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -871,16 +912,8 @@ class Plotter:
           ylabel: Optional label for the y-axis.
           zlabel: Optional label for the z-axis.
           legend_label: Optional label for the line, used if a legend is shown.
-          show_legend: Optional. If True, displays the legend. If None, uses
-              'legend.show' from config.
-          legend_loc: Optional. Location of the legend. If None, uses 'legend.loc'.
-          legend_title: Optional. Title for the legend. If None, uses 'legend.title'.
-          legend_frameon: Optional. If True, draws a frame. If None, 'legend.frameon'.
-          legend_shadow: Optional. If True, draws shadow. If None, 'legend.shadow'.
-          legend_fancybox: Optional. If True, uses fancy box. If None, 'legend.fancybox'.
-          legend_ncol: Optional. Number of columns. If None, 'legend.ncol'.
-          legend_bbox_to_anchor: Optional. Tuple for custom position. If None,
-              'legend.bbox_to_anchor'.
+          legend_config: Optional. A `LegendConfig` dictionary to customize
+              legend appearance. Values override global configurations.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot. If None, uses global 'plot.return_fig_ax' and
               'plot.show_on_draw' config.
@@ -919,22 +952,17 @@ class Plotter:
         """
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
-
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
+        lc = legend_config or {}
 
         if ax is None:
             fig = plt.figure(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
-            ax = fig.add_subplot(111, projection="3d")
+            ax_obj = fig.add_subplot(111, projection="3d")
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
-            if not hasattr(ax, "zaxis"):
+            ax_obj = ax
+            fig = ax_obj.get_figure()
+            if not hasattr(ax_obj, "zaxis"):
                 raise ValueError("Provided 'ax' for 3D plot must be a 3D Axes object.")
 
         try:
@@ -958,7 +986,7 @@ class Plotter:
                 "font.size_legend": config.get_config("font.size_legend"),
             }
             # This will now also handle 3D specific theming like pane colors
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             plot_kwargs = {}
             user_provided_color = kwargs.pop("color", None)
@@ -971,28 +999,28 @@ class Plotter:
             )
             plot_kwargs.update(kwargs)
 
-            ax.plot(x, y, z, label=legend_label, **plot_kwargs)
+            ax_obj.plot(x, y, z, label=legend_label, **plot_kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=plot_configs["font.size_title"],
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if zlabel:
-                ax.set_zlabel(
+                ax_obj.set_zlabel(
                     zlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
@@ -1000,47 +1028,27 @@ class Plotter:
 
             # Tick colors are handled by _apply_theme_and_config_to_ax_static for 3D
 
-            _show_legend = (
-                config.get_config("legend.show") if show_legend is None else show_legend
-            )
+            _show_legend = lc.get("show_legend", config.get_config("legend.show"))
             if _show_legend and legend_label:
-                _legend_loc = (
-                    config.get_config("legend.loc")
-                    if legend_loc is None
-                    else legend_loc
+                _legend_loc = lc.get("legend_loc", config.get_config("legend.loc"))
+                _legend_title = lc.get(
+                    "legend_title", config.get_config("legend.title")
                 )
-                _legend_title = (
-                    config.get_config("legend.title")
-                    if legend_title is None
-                    else legend_title
+                _legend_frameon = lc.get(
+                    "legend_frameon", config.get_config("legend.frameon")
                 )
-                _legend_frameon = (
-                    config.get_config("legend.frameon")
-                    if legend_frameon is None
-                    else legend_frameon
+                _legend_shadow = lc.get(
+                    "legend_shadow", config.get_config("legend.shadow")
                 )
-                _legend_shadow = (
-                    config.get_config("legend.shadow")
-                    if legend_shadow is None
-                    else legend_shadow
+                _legend_fancybox = lc.get(
+                    "legend_fancybox", config.get_config("legend.fancybox")
                 )
-                _legend_fancybox = (
-                    config.get_config("legend.fancybox")
-                    if legend_fancybox is None
-                    else legend_fancybox
-                )
-                _legend_ncol = (
-                    config.get_config("legend.ncol")
-                    if legend_ncol is None
-                    else legend_ncol
-                )
-                _legend_bbox_to_anchor = (
-                    config.get_config("legend.bbox_to_anchor")
-                    if legend_bbox_to_anchor is None
-                    else legend_bbox_to_anchor
+                _legend_ncol = lc.get("legend_ncol", config.get_config("legend.ncol"))
+                _legend_bbox_to_anchor = lc.get(
+                    "legend_bbox_to_anchor", config.get_config("legend.bbox_to_anchor")
                 )
 
-                legend = ax.legend(
+                legend = ax_obj.legend(
                     title=_legend_title,
                     loc=_legend_loc,
                     frameon=_legend_frameon,
@@ -1069,21 +1077,18 @@ class Plotter:
                         theme_settings.get("legend.edgecolor", "black"),
                     )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
             if (
-                fig_created_internally and "fig" in locals()
+                fig_created_internally and "fig" in locals() and fig is not None
             ):  # Check if fig was defined before trying to close
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():  # Check if fig was defined
+            if (
+                fig_created_internally and "fig" in locals() and fig is not None
+            ):  # Check if fig was defined
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_line_3d: {e}",
@@ -1100,22 +1105,16 @@ class Plotter:
         zlabel: str = None,
         # Note: legend for scatter3d can be tricky if colors/sizes vary per point
         legend_label: str = None,
-        show_legend: bool = None,
-        legend_loc: str = None,
-        legend_title: str = None,
-        legend_frameon: bool = None,
-        legend_shadow: bool = None,
-        legend_fancybox: bool = None,
-        legend_ncol: int = None,
-        legend_bbox_to_anchor: tuple = None,
-        return_fig_ax: bool = None,
+        legend_config: Optional[LegendConfig] = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
         """Plots a 3D scatter graph (static method).
 
         Generates a 3D scatter plot, applying current theme and configuration.
-        Legend appearance can be customized.
+        Legend appearance can be customized using the `legend_config` parameter
+        or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -1126,16 +1125,8 @@ class Plotter:
           ylabel: Optional label for the y-axis.
           zlabel: Optional label for the z-axis.
           legend_label: Optional label for the points, used if a legend is shown.
-          show_legend: Optional. If True, displays the legend. If None, uses
-              'legend.show' from config.
-          legend_loc: Optional. Location of the legend. If None, uses 'legend.loc'.
-          legend_title: Optional. Title for the legend. If None, uses 'legend.title'.
-          legend_frameon: Optional. If True, draws a frame. If None, 'legend.frameon'.
-          legend_shadow: Optional. If True, draws shadow. If None, 'legend.shadow'.
-          legend_fancybox: Optional. If True, uses fancy box. If None, 'legend.fancybox'.
-          legend_ncol: Optional. Number of columns. If None, 'legend.ncol'.
-          legend_bbox_to_anchor: Optional. Tuple for custom position. If None,
-              'legend.bbox_to_anchor'.
+          legend_config: Optional. A `LegendConfig` dictionary to customize
+              legend appearance. Values override global configurations.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays.
               If None, uses global config.
           ax: Optional. A matplotlib.axes.Axes3D object to plot on. If None,
@@ -1172,22 +1163,17 @@ class Plotter:
         """
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
-
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
+        lc = legend_config or {}
 
         if ax is None:
             fig = plt.figure(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
-            ax = fig.add_subplot(111, projection="3d")
+            ax_obj = fig.add_subplot(111, projection="3d")
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
-            if not hasattr(ax, "zaxis"):
+            ax_obj = ax
+            fig = ax_obj.get_figure()
+            if not hasattr(ax_obj, "zaxis"):
                 raise ValueError("Provided 'ax' for 3D plot must be a 3D Axes object.")
 
         try:
@@ -1210,7 +1196,7 @@ class Plotter:
                 "font.size_label": config.get_config("font.size_label"),
                 "font.size_legend": config.get_config("font.size_legend"),
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             # Scatter plot specific settings
             plot_kwargs = {}
@@ -1229,76 +1215,56 @@ class Plotter:
             )
             plot_kwargs.update(kwargs)
 
-            ax.scatter(x, y, z, label=legend_label, **plot_kwargs)
+            ax_obj.scatter(x, y, z, label=legend_label, **plot_kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=plot_configs["font.size_title"],
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if zlabel:
-                ax.set_zlabel(
+                ax_obj.set_zlabel(
                     zlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
 
-            _show_legend = (
-                config.get_config("legend.show") if show_legend is None else show_legend
-            )
+            _show_legend = lc.get("show_legend", config.get_config("legend.show"))
             if (
                 _show_legend and legend_label
             ):  # Legend for 3D scatter can be simple if color/size is uniform
-                _legend_loc = (
-                    config.get_config("legend.loc")
-                    if legend_loc is None
-                    else legend_loc
+                _legend_loc = lc.get("legend_loc", config.get_config("legend.loc"))
+                _legend_title = lc.get(
+                    "legend_title", config.get_config("legend.title")
                 )
-                _legend_title = (
-                    config.get_config("legend.title")
-                    if legend_title is None
-                    else legend_title
+                _legend_frameon = lc.get(
+                    "legend_frameon", config.get_config("legend.frameon")
                 )
-                _legend_frameon = (
-                    config.get_config("legend.frameon")
-                    if legend_frameon is None
-                    else legend_frameon
+                _legend_shadow = lc.get(
+                    "legend_shadow", config.get_config("legend.shadow")
                 )
-                _legend_shadow = (
-                    config.get_config("legend.shadow")
-                    if legend_shadow is None
-                    else legend_shadow
+                _legend_fancybox = lc.get(
+                    "legend_fancybox", config.get_config("legend.fancybox")
                 )
-                _legend_fancybox = (
-                    config.get_config("legend.fancybox")
-                    if legend_fancybox is None
-                    else legend_fancybox
-                )
-                _legend_ncol = (
-                    config.get_config("legend.ncol")
-                    if legend_ncol is None
-                    else legend_ncol
-                )
-                _legend_bbox_to_anchor = (
-                    config.get_config("legend.bbox_to_anchor")
-                    if legend_bbox_to_anchor is None
-                    else legend_bbox_to_anchor
+                _legend_ncol = lc.get("legend_ncol", config.get_config("legend.ncol"))
+                _legend_bbox_to_anchor = lc.get(
+                    "legend_bbox_to_anchor", config.get_config("legend.bbox_to_anchor")
                 )
 
-                legend = ax.legend(
+                legend = ax_obj.legend(
                     title=_legend_title,
                     loc=_legend_loc,
                     frameon=_legend_frameon,
@@ -1326,19 +1292,14 @@ class Plotter:
                         theme_settings.get("legend.edgecolor", "black"),
                     )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_scatter_3d: {e}",
@@ -1355,7 +1316,7 @@ class Plotter:
         zlabel: str = None,
         cmap: str = None,
         show_colorbar: bool = True,
-        return_fig_ax: bool = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
@@ -1408,21 +1369,15 @@ class Plotter:
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
 
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
-
         if ax is None:
             fig = plt.figure(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
-            ax = fig.add_subplot(111, projection="3d")
+            ax_obj = fig.add_subplot(111, projection="3d")
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
-            if not hasattr(ax, "zaxis"):
+            ax_obj = ax
+            fig = ax_obj.get_figure()
+            if not hasattr(ax_obj, "zaxis"):
                 raise ValueError("Provided 'ax' for 3D plot must be a 3D Axes object.")
 
         try:
@@ -1445,60 +1400,55 @@ class Plotter:
                 "font.size_label": config.get_config("font.size_label"),
                 "font.size_legend": config.get_config("font.size_legend"),
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             current_cmap = cmap or config.get_config("image.cmap")
             # Default edgecolor from theme if not provided in kwargs
             kwargs.setdefault("edgecolor", theme_settings.get("axes.edgecolor", "none"))
             kwargs.setdefault("linewidth", 0.5)
 
-            surf = ax.plot_surface(X, Y, Z, cmap=current_cmap, **kwargs)
+            surf = ax_obj.plot_surface(X, Y, Z, cmap=current_cmap, **kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=plot_configs["font.size_title"],
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if zlabel:
-                ax.set_zlabel(
+                ax_obj.set_zlabel(
                     zlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
 
             if show_colorbar:
-                cb = fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10, pad=0.1)
+                cb = fig.colorbar(surf, ax=ax_obj, shrink=0.6, aspect=10, pad=0.1)
                 cb.ax.tick_params(
                     colors=theme_settings.get("ytick.color", "#333333"),  # type: ignore
                     labelsize=plot_configs["font.size_legend"] - 2,
                 )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_surface: {e}",
@@ -1513,7 +1463,7 @@ class Plotter:
         xlabel: str = None,
         ylabel: str = None,
         zlabel: str = None,
-        return_fig_ax: bool = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
@@ -1569,21 +1519,15 @@ class Plotter:
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
 
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
-
         if ax is None:
             fig = plt.figure(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
-            ax = fig.add_subplot(111, projection="3d")
+            ax_obj = fig.add_subplot(111, projection="3d")
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
-            if not hasattr(ax, "zaxis"):
+            ax_obj = ax
+            fig = ax_obj.get_figure()
+            if not hasattr(ax_obj, "zaxis"):
                 raise ValueError("Provided 'ax' for 3D plot must be a 3D Axes object.")
 
         try:
@@ -1606,7 +1550,7 @@ class Plotter:
                 "font.size_label": config.get_config("font.size_label"),
                 "font.size_legend": config.get_config("font.size_legend"),
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             plot_kwargs = {}
             user_provided_color = kwargs.pop("color", None)
@@ -1623,46 +1567,41 @@ class Plotter:
             )  # Thinner for wireframes
             plot_kwargs.update(kwargs)
 
-            ax.plot_wireframe(X, Y, Z, **plot_kwargs)
+            ax_obj.plot_wireframe(X, Y, Z, **plot_kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=plot_configs["font.size_title"],
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
             if zlabel:
-                ax.set_zlabel(
+                ax_obj.set_zlabel(
                     zlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=plot_configs["font.size_label"],
                 )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_wireframe: {e}",
@@ -1677,15 +1616,8 @@ class Plotter:
         ylabel: str = None,
         # For scatter, legend is more complex if colors/sizes vary
         legend_label: str = None,
-        show_legend: bool = None,
-        legend_loc: str = None,
-        legend_title: str = None,
-        legend_frameon: bool = None,
-        legend_shadow: bool = None,
-        legend_fancybox: bool = None,
-        legend_ncol: int = None,
-        legend_bbox_to_anchor: tuple = None,
-        return_fig_ax: bool = None,
+        legend_config: Optional[LegendConfig] = None,
+        return_fig_ax: Optional[bool] = None,
         ax=None,  # New parameter
         **kwargs,
     ):
@@ -1693,7 +1625,7 @@ class Plotter:
 
         Generates a scatter plot with the given data, applying current theme and
         configuration settings. Legend appearance can be customized using
-        specific `legend_*` parameters or global configuration settings.
+        the `legend_config` parameter or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -1706,22 +1638,8 @@ class Plotter:
                         Note: For scatter plots with varying point colors/sizes,
                         legend handling can be more complex. This basic version assumes
                         a single legend entry for the main data series.
-          show_legend: Optional. If True, displays the legend. If None, uses
-              'legend.show' from config.
-          legend_loc: Optional. Location of the legend (e.g., 'best', 'upper right').
-              If None, uses 'legend.loc' from config.
-          legend_title: Optional. Title for the legend. If None, uses
-              'legend.title' from config.
-          legend_frameon: Optional. If True, draws a frame around the legend.
-              If None, uses 'legend.frameon' from config.
-          legend_shadow: Optional. If True, draws a shadow behind the legend.
-              If None, uses 'legend.shadow' from config.
-          legend_fancybox: Optional. If True, uses a fancy box for legend frame.
-              If None, uses 'legend.fancybox' from config.
-          legend_ncol: Optional. Number of columns in the legend. If None, uses
-              'legend.ncol' from config.
-          legend_bbox_to_anchor: Optional. Tuple for custom legend positioning.
-              If None, uses 'legend.bbox_to_anchor' from config.
+          legend_config: Optional. A `LegendConfig` dictionary to customize
+              legend appearance. Values override global configurations.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot and returns None. If None, uses the global
               'plot.return_fig_ax' and 'plot.show_on_draw' config.
@@ -1744,20 +1662,15 @@ class Plotter:
         """
         theme_settings = themes.get_active_theme_dict()
         fig_created_internally = False
-
-        if return_fig_ax is None:
-            should_return_objects = config.get_config("plot.return_fig_ax")
-            show_plot_on_draw = config.get_config("plot.show_on_draw")
-        else:
-            should_return_objects = return_fig_ax
-            show_plot_on_draw = not return_fig_ax
+        lc = legend_config or {}
 
         if ax is None:
-            fig, ax = plt.subplots(figsize=config.get_config("figure.figsize"))
+            fig, ax_obj = plt.subplots(figsize=config.get_config("figure.figsize"))
             fig.set_facecolor(theme_settings.get("figure.facecolor", "#FFFFFF"))
             fig_created_internally = True
         else:
-            fig = ax.get_figure()
+            ax_obj = ax
+            fig = ax_obj.get_figure()
 
         try:
             if not (
@@ -1776,7 +1689,7 @@ class Plotter:
                 "font.size_label": config.get_config("font.size_label"),
                 "font.size_legend": config.get_config("font.size_legend"),
             }
-            _apply_theme_and_config_to_ax_static(ax, theme_settings, plot_configs)
+            _apply_ax_styling(ax_obj, theme_settings, plot_configs)
 
             # Scatter plot specific settings
             plot_kwargs = {}
@@ -1795,78 +1708,49 @@ class Plotter:
             )  # markersize in config is often for line markers, scatter 's' is area.
             plot_kwargs.update(kwargs)
 
-            ax.scatter(x, y, label=legend_label, **plot_kwargs)
+            ax_obj.scatter(x, y, label=legend_label, **plot_kwargs)
 
             if title:
-                ax.set_title(
+                ax_obj.set_title(
                     title,
                     color=theme_settings.get("axes.titlecolor", "#333333"),
                     fontsize=config.get_config("font.size_title"),
                 )
             if xlabel:
-                ax.set_xlabel(
+                ax_obj.set_xlabel(
                     xlabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
             if ylabel:
-                ax.set_ylabel(
+                ax_obj.set_ylabel(
                     ylabel,
                     color=theme_settings.get("axes.labelcolor", "#333333"),
                     fontsize=config.get_config("font.size_label"),
                 )
 
-            ax.tick_params(
-                axis="x",
-                colors=theme_settings.get("xtick.color", "#333333"),
-            )
-            ax.tick_params(
-                axis="y",
-                colors=theme_settings.get("ytick.color", "#333333"),
-            )
-
             # Add legend
-            _show_legend = (
-                config.get_config("legend.show") if show_legend is None else show_legend
-            )
+            _show_legend = lc.get("show_legend", config.get_config("legend.show"))
             if _show_legend and legend_label:
-                _legend_loc = (
-                    config.get_config("legend.loc")
-                    if legend_loc is None
-                    else legend_loc
+                _legend_loc = lc.get("legend_loc", config.get_config("legend.loc"))
+                _legend_title = lc.get(
+                    "legend_title", config.get_config("legend.title")
                 )
-                _legend_title = (
-                    config.get_config("legend.title")
-                    if legend_title is None
-                    else legend_title
+                _legend_frameon = lc.get(
+                    "legend_frameon", config.get_config("legend.frameon")
                 )
-                _legend_frameon = (
-                    config.get_config("legend.frameon")
-                    if legend_frameon is None
-                    else legend_frameon
+                _legend_shadow = lc.get(
+                    "legend_shadow", config.get_config("legend.shadow")
                 )
-                _legend_shadow = (
-                    config.get_config("legend.shadow")
-                    if legend_shadow is None
-                    else legend_shadow
+                _legend_fancybox = lc.get(
+                    "legend_fancybox", config.get_config("legend.fancybox")
                 )
-                _legend_fancybox = (
-                    config.get_config("legend.fancybox")
-                    if legend_fancybox is None
-                    else legend_fancybox
-                )
-                _legend_ncol = (
-                    config.get_config("legend.ncol")
-                    if legend_ncol is None
-                    else legend_ncol
-                )
-                _legend_bbox_to_anchor = (
-                    config.get_config("legend.bbox_to_anchor")
-                    if legend_bbox_to_anchor is None
-                    else legend_bbox_to_anchor
+                _legend_ncol = lc.get("legend_ncol", config.get_config("legend.ncol"))
+                _legend_bbox_to_anchor = lc.get(
+                    "legend_bbox_to_anchor", config.get_config("legend.bbox_to_anchor")
                 )
 
-                legend = ax.legend(
+                legend = ax_obj.legend(
                     title=_legend_title,
                     loc=_legend_loc,
                     frameon=_legend_frameon,
@@ -1895,19 +1779,14 @@ class Plotter:
                         theme_settings.get("legend.edgecolor", "black"),
                     )
 
-            if show_plot_on_draw and not should_return_objects:
-                plt.show()
+            return Plotter.finalize_plot_objects(return_fig_ax, fig, ax_obj)
 
-            if should_return_objects:
-                return fig, ax
-            plt.close(fig)
-            return None
         except exceptions.PlottingError as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise e
         except Exception as e:
-            if fig_created_internally and "fig" in locals():
+            if fig_created_internally and "fig" in locals() and fig is not None:
                 plt.close(fig)
             raise exceptions.PlottingError(
                 f"An unexpected error occurred in plot_scatter: {e}",

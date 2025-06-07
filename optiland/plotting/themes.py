@@ -6,7 +6,7 @@ functionality to set, get, and manage these themes.
 """
 
 import cycler
-import matplotlib.colormaps
+import matplotlib.cm as cm # Changed import for colormaps
 
 from . import exceptions
 
@@ -36,7 +36,7 @@ THEMES = {
         "axes3d.facecolor": "#F0F0F0",  # Similar to 2D axes
         "axes3d.pane_color": "#EAEAF2",  # Slightly different for depth perception
         "axes3d.grid_color": "#C0C0C0",  # Slightly lighter than 2D grid
-        "axes.prop_cycle": cycler.cycler(color=matplotlib.colormaps["tab10"].colors),
+        "axes.prop_cycle": cycler.cycler(color=cm.get_cmap("tab10").colors),
     },
     "dark": {
         "figure.facecolor": "#1E1E1E",

@@ -106,3 +106,13 @@ def path_contains_points(vertices: np.ndarray, points: np.ndarray) -> np.ndarray
     path = Path(vertices)
     mask = path.contains_points(points)
     return np.asarray(mask, dtype=bool)
+
+
+def is_tensor(x):
+    """Check if x is a PyTorch tensor. For numpy backend, this is always False."""
+    return False
+
+
+def is_array(x):
+    """Check if x is a NumPy array."""
+    return isinstance(x, np.ndarray)

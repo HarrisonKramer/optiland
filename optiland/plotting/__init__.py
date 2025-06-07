@@ -49,12 +49,14 @@ Basic Usage Example:
 See the documentation for `Plotter`, `config`, and `themes` for more details.
 """
 from .core import Plotter
+from .plot_configs import LegendConfig # Added import
 from . import config
 from . import themes
 from . import exceptions
 
 __all__ = [
     "Plotter",
+    "LegendConfig", # Added to __all__
     "config",
     "themes",
     "exceptions"

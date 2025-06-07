@@ -7,9 +7,8 @@ for each surface in the system.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
-
 import optiland.backend as be
+from optiland.plotting import LegendConfig, Plotter, config, themes  # Updated imports
 
 from .base import BaseAnalysis
 
@@ -45,36 +44,90 @@ class YYbar(BaseAnalysis):
 
         return {"ya": ya.flatten(), "yb": yb.flatten()}
 
-    def view(self, figsize=(7, 5.5)):
-        """Visualizes the ray heights of the marginal and chief rays.
+    def view(self, figsize=(7, 5.5), return_fig_ax: bool = False):
+        """Visualizes the Y-Ybar diagram using Plotter.
 
         Args:
             figsize (tuple): The size of the figure (width, height).
-                Default is (7, 5.5).
-
+                Defaults to (7, 5.5).
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        _, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
+        fig, ax = None, None
         ya = self.data["ya"]
         yb = self.data["yb"]
 
-        for k in range(2, len(ya)):
-            label = ""
-            if k == 2:
-                label = "Surface 1"
-            elif k == len(ya) - 1:
-                label = "Image"
-            ax.plot(
-                [be.to_numpy(yb[k - 1]), be.to_numpy(yb[k])],
-                [be.to_numpy(ya[k - 1]), be.to_numpy(ya[k])],
-                ".-",
-                label=label,
-                markersize=8,
-            )
+        plot_title = "Y-Ybar Diagram"
+        xlabel = "Chief Ray Height (mm)"
+        ylabel = "Marginal Ray Height (mm)"
 
-        ax.axhline(y=0, linewidth=0.5, color="k")
-        ax.axvline(x=0, linewidth=0.5, color="k")
-        ax.set_xlabel("Chief Ray Height (mm)")
-        ax.set_ylabel("Marginal Ray Height (mm)")
-        ax.legend()
-        plt.show()
+        active_theme = themes.get_active_theme_dict()
+        axis_line_color = active_theme.get(
+            "grid.color", "k"
+        )  # Use grid color for axis lines
+
+        for k in range(2, len(ya)):
+            legend_label = None  # Plotter may show legend if global show_legend is True
+            if k == 2:
+                legend_label = "Surface 1"
+            elif k == len(ya) - 1:
+                legend_label = "Image"
+
+            x_segment = [be.to_numpy(yb[k - 1]), be.to_numpy(yb[k])]
+            y_segment = [be.to_numpy(ya[k - 1]), be.to_numpy(ya[k])]
+
+            plot_kwargs = {
+                "marker": ".",
+                "linestyle": "-",
+                "markersize": 8,
+                "legend_label": legend_label,
+                "return_fig_ax": True,
+            }
+
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    x_segment,
+                    y_segment,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    **plot_kwargs,
+                )
+            else:
+                Plotter.plot_line(x_segment, y_segment, ax=ax, **plot_kwargs)
+
+        if ax:
+            ax.axhline(y=0, linewidth=0.5, color=axis_line_color)
+            ax.axvline(x=0, linewidth=0.5, color=axis_line_color)
+
+            # Ensure legend is shown if there are labels
+            handles, labels = ax.get_legend_handles_labels()
+            if handles:  # Only show legend if there are labeled items
+                legend_cfg = LegendConfig(
+                    show_legend=True
+                )  # Minimal config to ensure it's shown
+                ax.legend(
+                    loc=legend_cfg.get("legend_loc", config.get_config("legend.loc")),
+                    frameon=legend_cfg.get(
+                        "legend_frameon", config.get_config("legend.frameon")
+                    ),
+                    shadow=legend_cfg.get(
+                        "legend_shadow", config.get_config("legend.shadow")
+                    ),
+                    fancybox=legend_cfg.get(
+                        "legend_fancybox", config.get_config("legend.fancybox")
+                    ),
+                    ncol=legend_cfg.get(
+                        "legend_ncol", config.get_config("legend.ncol")
+                    ),
+                    fontsize=config.get_config("font.size_legend"),
+                )
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)

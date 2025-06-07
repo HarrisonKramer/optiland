@@ -5,9 +5,8 @@ This module provides an encircled energy analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-import matplotlib.pyplot as plt
-
 import optiland.backend as be
+from optiland.plotting import LegendConfig, Plotter, config  # Updated imports
 
 from .spot_diagram import SpotData, SpotDiagram
 
@@ -65,30 +64,119 @@ class EncircledEnergy(SpotDiagram):
             distribution=distribution,
         )
 
-    def view(self, figsize=(7, 4.5)):
+    def view(self, figsize=(7, 4.5), return_fig_ax: bool = False):
         """Plot the Encircled Energy curve.
 
         Args:
             figsize (tuple, optional): The size of the figure.
                 Defaults to (7, 4.5).
-
+            return_fig_ax (bool, optional): If True, returns the figure and axes
+                objects. Defaults to False, which shows the plot.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        if figsize:
+            original_figsize = config.get_config("figure.figsize")
+            config.set_config("figure.figsize", figsize)
 
-        data = self._center_spots(self.data)
+        fig, ax = None, None
+        centered_data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
         axis_lim = be.max(geometric_size)
-        for k, field_data in enumerate(data):
-            self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
 
-        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        ax.set_xlabel("Radius (mm)")
-        ax.set_ylabel("Encircled Energy (-)")
-        ax.set_title(f"Wavelength: {self.wavelengths[0]:.4f} µm")
-        ax.set_xlim((0, None))
-        ax.set_ylim((0, None))
-        fig.tight_layout()
-        plt.show()
+        plot_title = f"Wavelength: {self.wavelengths[0]:.4f} µm"
+        xlabel = "Radius (mm)"
+        ylabel = "Encircled Energy (-)"
+
+        # Prepare legend configuration for the final ax.legend() call.
+        # Plotter.plot_line builds legend items from legend_label.
+        # We style the legend explicitly at the end using these parameters.
+        legend_params_for_ax = LegendConfig(
+            bbox_to_anchor=(1.05, 0.5),
+            loc="center left",
+            show_legend=True,  # Ensure legend is shown
+        )
+
+        for k, field_spot_data_list in enumerate(centered_data):
+            field_coords = self.fields[k]
+            # EncircledEnergy is for a single wavelength, so field_spot_data_list
+            # should contain one SpotData item.
+            if not field_spot_data_list:
+                continue
+
+            points = field_spot_data_list[0]  # Assuming one SpotData per field
+
+            r_max = axis_lim * 1.2  # buffer
+            r_step = be.linspace(0, r_max, self.num_points)
+
+            x_coords = points.x
+            y_coords = points.y
+            # Bind current_energy_vals and current_radii to default args for closure
+            current_energy_vals = points.intensity
+            current_radii = be.sqrt(x_coords**2 + y_coords**2)
+
+            def vectorized_ee(r_val, ev=current_energy_vals, rds=current_radii):
+                return be.nansum(ev[rds <= r_val])
+
+            ee = be.vectorize(vectorized_ee)(r_step)
+            r_np = be.to_numpy(r_step)
+            ee_np = be.to_numpy(ee)
+
+            legend_label = f"Hx: {field_coords[0]:.3f}, Hy: {field_coords[1]:.3f}"
+
+            if fig is None:
+                fig, ax = Plotter.plot_line(
+                    r_np,
+                    ee_np,
+                    title=plot_title,
+                    xlabel=xlabel,
+                    ylabel=ylabel,
+                    legend_label=legend_label,
+                    return_fig_ax=True,
+                )
+            else:
+                Plotter.plot_line(
+                    r_np, ee_np, ax=ax, legend_label=legend_label, return_fig_ax=True
+                )
+
+        if ax:  # Final styling if plot was created
+            ax.set_xlim((0, None))
+            ax.set_ylim((0, None))
+            # Apply collected legend configuration
+            # Plotter.plot_line with legend_label adds to legend items.
+            # Now, style the legend itself.
+            final_legend_kwargs = {
+                "bbox_to_anchor": legend_params_for_ax.get(
+                    "bbox_to_anchor", config.get_config("legend.bbox_to_anchor")
+                ),
+                "loc": legend_params_for_ax.get(
+                    "legend_loc", config.get_config("legend.loc")
+                ),
+                "frameon": config.get_config("legend.frameon"),  # Use global for these
+                "shadow": config.get_config("legend.shadow"),
+                "fancybox": config.get_config("legend.fancybox"),
+                "ncol": config.get_config("legend.ncol"),
+                "fontsize": config.get_config("font.size_legend"),
+            }
+
+            should_show_legend = legend_params_for_ax.get(
+                "show_legend", config.get_config("legend.show")
+            )
+            handles, labels = ax.get_legend_handles_labels()
+            if should_show_legend and handles: # Check if handles is not empty
+                ax.legend(
+                    **{
+                        k: v
+                        for k, v in final_legend_kwargs.items()
+                        if v is not None
+                    }
+                )
+
+            # fig.tight_layout() is usually handled by Plotter/plt.show().
+            # Call before _handle_fig_ax_return_logic for specific needs.
+
+        if figsize:
+            config.set_config("figure.figsize", original_figsize)
+
+        return Plotter.finalize_plot_objects(return_fig_ax, fig, ax)
 
     def centroid(self):
         """Calculate the centroid of the Encircled Energy.
@@ -106,39 +194,7 @@ class EncircledEnergy(SpotDiagram):
             centroid.append((centroid_x, centroid_y))
         return centroid
 
-    def _plot_field(self, ax, field_data, field, axis_lim, num_points, buffer=1.2):
-        """Plot the Encircled Energy curve for a specific field.
-
-        Args:
-            ax (matplotlib.axes.Axes): The axes on which to plot the curve.
-            field_data (list): List of field data.
-            field (tuple): Tuple representing the normalized field coordinates.
-            axis_lim (float): Maximum axis limit.
-            num_points (int): Number of points for plotting the curve.
-            buffer (float, optional): Buffer factor for the axis limit.
-                Defaults to 1.2.
-
-        """
-        r_max = axis_lim * buffer
-        r_step = be.linspace(0, r_max, num_points)
-
-        for points in field_data:
-            x = points.x
-            y = points.y
-            # energy and intensity are used interchangeably here
-            energy = points.intensity
-            radii = be.sqrt(x**2 + y**2)
-
-            def vectorized_ee(r):
-                return be.nansum(energy[radii <= r])  # noqa: B023
-
-            # element‑wise encircled energy (Tensor)
-            ee = be.vectorize(vectorized_ee)(r_step)
-
-            # convert both to plain numpy for plotting
-            r_np = be.to_numpy(r_step)
-            ee_np = be.to_numpy(ee)
-            ax.plot(r_np, ee_np, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+    # _plot_field method is now integrated into view()
 
     def _generate_field_data(
         self,
