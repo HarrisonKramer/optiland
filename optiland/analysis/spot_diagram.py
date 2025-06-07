@@ -5,13 +5,14 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+import functools
 from dataclasses import dataclass
 from typing import Literal
 
-import matplotlib.pyplot as plt
 from matplotlib import patches
 
 import optiland.backend as be
+from optiland.plotting import Plotter
 from optiland.visualization.utils import transform
 
 from .base import BaseAnalysis
@@ -98,84 +99,237 @@ class SpotDiagram(BaseAnalysis):
 
         super().__init__(optic, wavelengths)
 
-    def view(self, figsize=(12, 4), add_airy_disk=False):
-        """View the spot diagram
+    def _render_subplot(
+        self,
+        ax,
+        index,
+        centered_data_all_fields,
+        axis_lim_initial,
+        add_airy_disk,
+        chief_ray_centers_all_fields,
+        centroids_all_fields,
+        airy_rad_x_all_fields,
+        airy_rad_y_all_fields,
+        wavelengths_list,
+        fields_list,
+        markers,
+        scatter_kwargs: dict,
+        buffer=1.05,
+    ):
+        """Renders a single subplot for the spot diagram.
+
+        This method is designed to be used as a callback for
+        `Plotter.plot_subplots`.
 
         Args:
-            figsize (tuple): the figure size of the output window.
-                Default is (12, 4).
+            ax: The matplotlib.axes.Axes object for the subplot.
+            index: The index of the current field/subplot.
+            centered_data_all_fields: List of centered spot data for all fields.
+            axis_lim_initial: Initial axis limit based on geometric spot sizes.
+            add_airy_disk: Boolean indicating if Airy disk should be plotted.
+            chief_ray_centers_all_fields: Chief ray centers for all fields.
+            centroids_all_fields: Centroids for all fields.
+            airy_rad_x_all_fields: Airy disk radii (x) for all fields.
+            airy_rad_y_all_fields: Airy disk radii (y) for all fields.
+            wavelengths_list: List of wavelengths.
+            fields_list: List of field coordinates.
+            markers: List of markers to use for different wavelengths.
+            scatter_kwargs: Dictionary of keyword arguments for `Plotter.plot_scatter`.
+            buffer: Buffer factor for axis limits.
+        """
+        if index >= len(fields_list):
+            ax.axis("off")  # Turn off empty subplots
+            return
+
+        field_spot_data = centered_data_all_fields[index]
+        field_coords = fields_list[index]
+
+        for wave_idx, points in enumerate(field_spot_data):
+            x_np = be.to_numpy(points.x)
+            y_np = be.to_numpy(points.y)
+            i_np = be.to_numpy(points.intensity)
+            mask = i_np != 0
+
+            # Prepare scatter plot arguments
+            default_props = {"alpha": 0.7, "s": 10}
+            # User kwargs take precedence. Marker is handled carefully.
+            final_scatter_kwargs = {**default_props, **scatter_kwargs}
+
+            # Ensure wavelength-specific marker is used unless overridden by user
+            if "marker" not in scatter_kwargs:
+                final_scatter_kwargs["marker"] = markers[wave_idx % len(markers)]
+
+            Plotter.plot_scatter(
+                ax=ax,
+                x=x_np[mask],
+                y=y_np[mask],
+                legend_label=f"{wavelengths_list[wave_idx]:.4f} µm",
+                show_legend=True,  # Legends are now per-subplot
+                legend_loc="best",  # Example, can be configured
+                **final_scatter_kwargs,
+            )
+
+        current_axis_lim = axis_lim_initial
+        real_centroid_x_val, real_centroid_y_val = 0.0, 0.0
+
+        if add_airy_disk:
+            # Ensure all necessary data is available for this field index
+            if (
+                chief_ray_centers_all_fields is not None
+                and centroids_all_fields is not None
+                and airy_rad_x_all_fields is not None
+                and airy_rad_y_all_fields is not None
+                and index < len(chief_ray_centers_all_fields)
+                and index < len(centroids_all_fields)
+                and index < len(airy_rad_x_all_fields)
+                and index < len(airy_rad_y_all_fields)
+            ):
+                real_centroid_x_val = (
+                    chief_ray_centers_all_fields[index][0]
+                    - centroids_all_fields[index][0]
+                )
+                real_centroid_y_val = (
+                    chief_ray_centers_all_fields[index][1]
+                    - centroids_all_fields[index][1]
+                )
+
+                ellipse = patches.Ellipse(
+                    (be.to_numpy(real_centroid_x_val), be.to_numpy(real_centroid_y_val)),
+                    width=2 * airy_rad_y_all_fields[index],  # diameter
+                    height=2 * airy_rad_x_all_fields[index],
+                    linestyle="--",
+                    edgecolor="black", # Theme color could be used here
+                    fill=False,
+                    linewidth=1.5, # Matplotlib's default is 1.0, Plotter uses 1.5
+                )
+                ax.add_patch(ellipse)
+
+                offset = be.to_numpy(
+                    be.max(be.abs(be.array([real_centroid_x_val, real_centroid_y_val])))
+                )
+                max_airy_x = airy_rad_x_all_fields[index]
+                max_airy_y = airy_rad_y_all_fields[index]
+                max_extent = be.to_numpy(
+                    be.max(be.array([axis_lim_initial, max_airy_x, max_airy_y]))
+                )
+                current_axis_lim = (offset + max_extent)
+
+        adjusted_axis_lim = current_axis_lim * buffer
+
+        cs = self.optic.image_surface.geometry.cs
+        effective_orientation = be.to_numpy(
+            be.abs(cs.get_effective_rotation_euler())
+        )
+        tol = 0.01
+        if effective_orientation[0] > tol or effective_orientation[1] > tol:
+            x_label, y_label = "U (mm)", "V (mm)"
+        else:
+            x_label, y_label = "X (mm)", "Y (mm)"
+
+        ax.set_title(f"Hx: {field_coords[0]:.3f}, Hy: {field_coords[1]:.3f}")
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
+        ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
+        ax.set_aspect("equal", "box") # 'square' might be deprecated for 'equal' + 'box'
+        # Grid is handled by Plotter's _apply_theme_and_config_to_ax_static
+
+    def view(self, figsize=(12, 4), add_airy_disk=False, scatter_kwargs: dict = None):
+        """View the spot diagram using `Plotter.plot_subplots`.
+
+        Args:
+            figsize (tuple): The base figure size for each subplot.
+                             The total figure height will be adjusted.
             add_airy_disk (bool): Airy disc visualization controller.
+            scatter_kwargs (dict, optional): Additional keyword arguments to
+                pass to `Plotter.plot_scatter` for customizing scatter points.
+                These can override defaults like 'alpha' and 's', and even the
+                per-wavelength marker if 'marker' is provided. Defaults to None.
+
 
         Returns:
             None
-
         """
         N = len(self.fields)
-        num_rows = (N + 2) // 3
+        num_cols = 3  # Fixed number of columns
+        num_rows = (N + num_cols - 1) // num_cols
 
-        fig, axs = plt.subplots(
-            num_rows,
-            3,
-            figsize=(figsize[0], num_rows * figsize[1]),
-            sharex=True,
-            sharey=True,
-        )
-        axs = axs.flatten()
+        # Data pre-calculation
+        centered_data_all_fields = self._center_spots(self.data)
+        geometric_spot_sizes_all = self.geometric_spot_radius()
+        # Flatten list of lists of tensors/arrays for be.max()
+        if geometric_spot_sizes_all and any(geometric_spot_sizes_all):
+             # Ensure inner lists are not empty before stacking
+            gs_list_flat = [
+                item for sublist in geometric_spot_sizes_all for item in sublist if be.is_tensor(item) or be.is_array(item)
+            ]
+            if gs_list_flat:
+                axis_lim_initial = be.max(be.stack(gs_list_flat))
+            else: # Fallback if all are empty or not convertible
+                axis_lim_initial = be.array(0.01) # Default small limit
+        else: # Fallback if geometric_spot_sizes_all is empty
+            axis_lim_initial = be.array(0.01) # Default small limit
 
-        # Subtract centroid and find limits
-        data = self._center_spots(self.data)
-        geometric_size = self.geometric_spot_radius()
-        # stack into an (N_fields, N_waves) array/tensor, then reduce:
-        # first convert each row into a 1D tensor/array
-        rows = [be.stack(row, axis=0) for row in geometric_size]
-        # now stack rows into a 2D
-        gs_array = be.stack(rows, axis=0)
-        # take the global max
-        axis_lim = be.max(gs_array)
+
+        # Initialize Airy disk related variables to None
+        chief_ray_centers_all_fields = None
+        centroids_all_fields = None
+        airy_rad_x_all_fields = None
+        airy_rad_y_all_fields = None
 
         if add_airy_disk:
-            wavelength = self.optic.wavelengths.primary_wavelength.value
-            centroids = self.centroid()
-            chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
-            airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
+            wavelength_primary = self.optic.wavelengths.primary_wavelength.value
+            centroids_all_fields = self.centroid()  # List of tuples
+            chief_ray_centers_all_fields = self.generate_chief_rays_centers(
+                wavelength=wavelength_primary
+            )  # Array
+            # Ensure these are lists as expected by _render_subplot indexing
+            airy_rad_x_all_fields, airy_rad_y_all_fields = self.airy_disc_x_y(
+                wavelength=wavelength_primary
+            ) # These return lists
 
-        # Do not calculate airy disc parameters if not required.
-        else:
-            wavelength = None
-            centroids = None
-            chief_ray_centers = None
-            airy_rad_x, airy_rad_y = None, None
+        markers = ["o", "s", "^"] # Define markers
 
-        # Plot wavelengths for each field
-        for k, field_data in enumerate(data):
-            # Calculate the real centroid difference for the current field for
-            # airy disc
-            if add_airy_disk:
-                real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
-                real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
-            else:
-                real_centroid_x, real_centroid_y = None, None
-            self._plot_field(
-                axs[k],
-                field_data,
-                self.fields[k],
-                axis_lim,
-                self.wavelengths,
-                add_airy_disk=add_airy_disk,
-                field_index=k,
-                airy_rad_x=airy_rad_x,
-                airy_rad_y=airy_rad_y,
-                real_centroid_x=real_centroid_x,
-                real_centroid_y=real_centroid_y,
-            )
+        # Create partial function for the callback
+        plot_callback = functools.partial(
+            self._render_subplot,
+            centered_data_all_fields=centered_data_all_fields,
+            axis_lim_initial=axis_lim_initial,
+            add_airy_disk=add_airy_disk,
+            chief_ray_centers_all_fields=chief_ray_centers_all_fields,
+            centroids_all_fields=centroids_all_fields,
+            airy_rad_x_all_fields=airy_rad_x_all_fields,
+            airy_rad_y_all_fields=airy_rad_y_all_fields,
+            wavelengths_list=self.wavelengths,  # Pass self.wavelengths directly
+            fields_list=self.fields,  # Pass self.fields directly
+            markers=markers,
+            scatter_kwargs=scatter_kwargs if scatter_kwargs is not None else {},
+        )
 
-        # Remove empty axes
-        for k in range(N, num_rows * 3):
-            fig.delaxes(axs[k])
+        # Prepare list of callbacks for plot_subplots
+        callbacks = [plot_callback] * (num_rows * num_cols)
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.show()
+        # Use Plotter.plot_subplots
+        # Figure height is per row, width is total.
+        fig_total_height = figsize[1] * num_rows
+        Plotter.plot_subplots(
+            num_rows=num_rows,
+            num_cols=num_cols,
+            plot_callbacks=callbacks,
+            sharex=True,
+            sharey=True,
+            # Pass the total figure size, Plotter uses 'figure.figsize' from config
+            # by default, but we can override it here for this specific plot.
+            # Note: fig_kwargs in plot_subplots passes to plt.subplots.
+            # We might need to adjust Plotter or how figsize is handled if this
+            # doesn't directly translate to the desired total figure size.
+            # For now, let's assume plot_subplots' default figsize or config is fine,
+            # or we adjust it via config if needed.
+            # Let's try passing it via fig_kwargs:
+            figsize=(figsize[0], fig_total_height),
+            return_fig_axs=False # SpotDiagram.view does not return fig/axs
+        )
+        # plt.legend, plt.tight_layout, plt.show are handled by Plotter
 
     def angle_from_cosine(self, a, b):
         """Calculate the angle (in radians) between two vectors given their
@@ -532,109 +686,3 @@ class SpotDiagram(BaseAnalysis):
             plot_y = y_global
 
         return SpotData(x=plot_x, y=plot_y, intensity=intensity)
-
-    def _plot_field(
-        self,
-        ax,
-        field_data,
-        field,
-        axis_lim,
-        wavelengths,
-        buffer=1.05,
-        add_airy_disk=False,
-        field_index=None,
-        airy_rad_x=None,
-        airy_rad_y=None,
-        real_centroid_x=None,
-        real_centroid_y=None,
-    ):
-        """Plot the field data on the given axis.
-
-        Args:
-            ax (matplotlib.axes.Axes): The axis to plot the field data on.
-            field_data (list): List of tuples containing x, y, and intensity
-                data points.
-            field (tuple): Tuple containing the Hx and Hy field values.
-            axis_lim (float): Limit of the x and y axis.
-            wavelengths (list): List of wavelengths corresponding to the
-                field data.
-            buffer (float, optional): Buffer factor to extend the axis limits.
-                Default is 1.05.
-
-        Returns:
-            None
-
-        """
-
-        import numpy as np
-
-        markers = ["o", "s", "^"]
-        for k, points in enumerate(field_data):
-            # x, y, intensity = points
-            x = points.x
-            y = points.y
-            intensity = points.intensity
-            # one‐liner conversion for BOTH backends:
-            x_np = be.to_numpy(x)
-            y_np = be.to_numpy(y)
-            i_np = be.to_numpy(intensity)
-            mask = i_np != 0
-            ax.scatter(
-                x_np[mask],
-                y_np[mask],
-                s=10,
-                label=f"{wavelengths[k]:.4f} µm",
-                marker=markers[k % 3],
-                alpha=0.7,
-            )
-
-        if add_airy_disk and field_index is not None:
-            real_centroid_x_np = be.to_numpy(real_centroid_x)
-            real_centroid_y_np = be.to_numpy(real_centroid_y)
-            airy_rad_x_np = be.to_numpy(airy_rad_x)
-            airy_rad_y_np = be.to_numpy(airy_rad_y)
-            # Draw ellipse ONLY for the current field_index
-            ellipse = patches.Ellipse(
-                (real_centroid_x_np, real_centroid_y_np),
-                width=2 * airy_rad_y_np[field_index],  # diameter, not radius
-                height=2 * airy_rad_x_np[field_index],
-                linestyle="--",
-                edgecolor="black",
-                fill=False,
-                linewidth=2,
-            )
-            ax.add_patch(ellipse)
-
-            offset = abs(max(real_centroid_x_np, real_centroid_x_np))
-
-            # Find the maximum extent among the geometric spot radius and the
-            # airy disk radii.
-            max_airy_x = max(airy_rad_x_np)
-            max_airy_y = max(airy_rad_y_np)
-            max_extent = max(axis_lim, max_airy_x, max_airy_y)
-
-            # Apply a buffer to ensure the data fits nicely in the plot.
-            adjusted_axis_lim = (offset + max_extent) * buffer
-        else:
-            # Without the airy disk, just use the geometric spot radius
-            # with a buffer.
-            adjusted_axis_lim = axis_lim * buffer
-
-        # Determining the labels for the x and y axes based on the image
-        # surface effective orientation.
-        cs = self.optic.image_surface.geometry.cs
-        effective_orientation = np.abs(cs.get_effective_rotation_euler())
-        # Define a small tolerance to apply the new label
-        tol = 0.01  # adjust it, if necessary
-        if effective_orientation[0] > tol or effective_orientation[1] > tol:
-            x_label, y_label = "U (mm)", "V (mm)"
-        else:
-            x_label, y_label = "X (mm)", "Y (mm)"
-
-        ax.axis("square")
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-        ax.set_xlim((-adjusted_axis_lim, adjusted_axis_lim))
-        ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
-        ax.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
-        ax.grid(alpha=0.25)

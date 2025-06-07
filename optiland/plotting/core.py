@@ -197,6 +197,14 @@ class Plotter:
         xlabel: str = None,
         ylabel: str = None,
         legend_label: str = None,
+        show_legend: bool = None,
+        legend_loc: str = None,
+        legend_title: str = None,
+        legend_frameon: bool = None,
+        legend_shadow: bool = None,
+        legend_fancybox: bool = None,
+        legend_ncol: int = None,
+        legend_bbox_to_anchor: tuple = None,
         return_fig_ax: bool = None,
         ax=None,  # New parameter
         **kwargs,
@@ -204,7 +212,8 @@ class Plotter:
         """Plots a line graph (static method).
 
         Generates a line plot with the given data, applying current theme and
-        configuration settings.
+        configuration settings. Legend appearance can be customized using
+        specific `legend_*` parameters or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -213,6 +222,22 @@ class Plotter:
           xlabel: Optional label for the x-axis.
           ylabel: Optional label for the y-axis.
           legend_label: Optional label for the line, used if a legend is shown.
+          show_legend: Optional. If True, displays the legend. If None, uses
+              'legend.show' from config.
+          legend_loc: Optional. Location of the legend (e.g., 'best', 'upper right').
+              If None, uses 'legend.loc' from config.
+          legend_title: Optional. Title for the legend. If None, uses
+              'legend.title' from config.
+          legend_frameon: Optional. If True, draws a frame around the legend.
+              If None, uses 'legend.frameon' from config.
+          legend_shadow: Optional. If True, draws a shadow behind the legend.
+              If None, uses 'legend.shadow' from config.
+          legend_fancybox: Optional. If True, uses a fancy box for legend frame.
+              If None, uses 'legend.fancybox' from config.
+          legend_ncol: Optional. Number of columns in the legend. If None, uses
+              'legend.ncol' from config.
+          legend_bbox_to_anchor: Optional. Tuple for custom legend positioning.
+              If None, uses 'legend.bbox_to_anchor' from config.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot and returns None. If None, uses the global
               'plot.return_fig_ax' and 'plot.show_on_draw' config.
@@ -371,22 +396,78 @@ class Plotter:
             )
 
             # Add legend
-            if legend_label:
-                legend = ax.legend(fontsize=config.get_config("font.size_legend"))
-                # Set legend text color (requires iterating through texts)
-                legend_text_color = theme_settings.get(
-                    "legend.labelcolor",
-                    theme_settings.get("text.color", "#333333"),
-                )  # type: ignore
-                for text in legend.get_texts():
-                    text.set_color(legend_text_color)
-                if theme_settings.get("legend.facecolor"):
-                    legend.get_frame().set_facecolor(
-                        theme_settings.get("legend.facecolor"),
+            _show_legend = (
+                config.get_config("legend.show") if show_legend is None else show_legend
+            )
+            if _show_legend and legend_label:  # Only show legend if there's a label
+                _legend_loc = (
+                    config.get_config("legend.loc")
+                    if legend_loc is None
+                    else legend_loc
+                )
+                _legend_title = (
+                    config.get_config("legend.title")
+                    if legend_title is None
+                    else legend_title
+                )
+                _legend_frameon = (
+                    config.get_config("legend.frameon")
+                    if legend_frameon is None
+                    else legend_frameon
+                )
+                _legend_shadow = (
+                    config.get_config("legend.shadow")
+                    if legend_shadow is None
+                    else legend_shadow
+                )
+                _legend_fancybox = (
+                    config.get_config("legend.fancybox")
+                    if legend_fancybox is None
+                    else legend_fancybox
+                )
+                _legend_ncol = (
+                    config.get_config("legend.ncol")
+                    if legend_ncol is None
+                    else legend_ncol
+                )
+                _legend_bbox_to_anchor = (
+                    config.get_config("legend.bbox_to_anchor")
+                    if legend_bbox_to_anchor is None
+                    else legend_bbox_to_anchor
+                )
+
+                legend = ax.legend(
+                    title=_legend_title,
+                    loc=_legend_loc,
+                    frameon=_legend_frameon,
+                    shadow=_legend_shadow,
+                    fancybox=_legend_fancybox,
+                    ncol=_legend_ncol,
+                    bbox_to_anchor=_legend_bbox_to_anchor,
+                    fontsize=config.get_config("font.size_legend"),
+                )
+
+                # Apply theme-based styling to the legend
+                if legend:  # Ensure legend object exists
+                    legend_text_color = theme_settings.get(
+                        "legend.labelcolor",
+                        theme_settings.get("text.color", "#333333"),
                     )
-                if theme_settings.get("legend.edgecolor"):
-                    legend.get_frame().set_edgecolor(
-                        theme_settings.get("legend.edgecolor"),
+                    for text in legend.get_texts():
+                        text.set_color(legend_text_color)
+                    if legend.get_title():
+                        legend.get_title().set_color(legend_text_color)
+
+                    frame = legend.get_frame()
+                    frame.set_facecolor(
+                        theme_settings.get(
+                            "legend.facecolor", "white"
+                        )  # Default if not in theme
+                    )
+                    frame.set_edgecolor(
+                        theme_settings.get(
+                            "legend.edgecolor", "black"
+                        )  # Default if not in theme
                     )
 
             if show_plot_on_draw and not should_return_objects:
@@ -764,6 +845,14 @@ class Plotter:
         ylabel: str = None,
         zlabel: str = None,
         legend_label: str = None,
+        show_legend: bool = None,
+        legend_loc: str = None,
+        legend_title: str = None,
+        legend_frameon: bool = None,
+        legend_shadow: bool = None,
+        legend_fancybox: bool = None,
+        legend_ncol: int = None,
+        legend_bbox_to_anchor: tuple = None,
         return_fig_ax: bool = None,
         ax=None,  # New parameter
         **kwargs,
@@ -771,7 +860,7 @@ class Plotter:
         """Plots a 3D line graph (static method).
 
         Generates a 3D line plot with the given data, applying current theme and
-        configuration settings.
+        configuration settings. Legend appearance can be customized.
 
         Args:
           x: Array-like data for the x-axis.
@@ -782,6 +871,16 @@ class Plotter:
           ylabel: Optional label for the y-axis.
           zlabel: Optional label for the z-axis.
           legend_label: Optional label for the line, used if a legend is shown.
+          show_legend: Optional. If True, displays the legend. If None, uses
+              'legend.show' from config.
+          legend_loc: Optional. Location of the legend. If None, uses 'legend.loc'.
+          legend_title: Optional. Title for the legend. If None, uses 'legend.title'.
+          legend_frameon: Optional. If True, draws a frame. If None, 'legend.frameon'.
+          legend_shadow: Optional. If True, draws shadow. If None, 'legend.shadow'.
+          legend_fancybox: Optional. If True, uses fancy box. If None, 'legend.fancybox'.
+          legend_ncol: Optional. Number of columns. If None, 'legend.ncol'.
+          legend_bbox_to_anchor: Optional. Tuple for custom position. If None,
+              'legend.bbox_to_anchor'.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot. If None, uses global 'plot.return_fig_ax' and
               'plot.show_on_draw' config.
@@ -901,23 +1000,73 @@ class Plotter:
 
             # Tick colors are handled by _apply_theme_and_config_to_ax_static for 3D
 
-            if legend_label:
-                legend = ax.legend(fontsize=plot_configs["font.size_legend"])
-                legend_text_color = theme_settings.get(
-                    "legend.labelcolor",
-                    theme_settings.get("text.color", "#333333"),
-                )  # type: ignore
-                for text_obj in (
-                    legend.get_texts()
-                ):  # Matplotlib uses 'text' not 'labelcolor' for legend
-                    text_obj.set_color(legend_text_color)  # type: ignore
-                if theme_settings.get("legend.facecolor"):
-                    legend.get_frame().set_facecolor(
-                        theme_settings.get("legend.facecolor"),
+            _show_legend = (
+                config.get_config("legend.show") if show_legend is None else show_legend
+            )
+            if _show_legend and legend_label:
+                _legend_loc = (
+                    config.get_config("legend.loc")
+                    if legend_loc is None
+                    else legend_loc
+                )
+                _legend_title = (
+                    config.get_config("legend.title")
+                    if legend_title is None
+                    else legend_title
+                )
+                _legend_frameon = (
+                    config.get_config("legend.frameon")
+                    if legend_frameon is None
+                    else legend_frameon
+                )
+                _legend_shadow = (
+                    config.get_config("legend.shadow")
+                    if legend_shadow is None
+                    else legend_shadow
+                )
+                _legend_fancybox = (
+                    config.get_config("legend.fancybox")
+                    if legend_fancybox is None
+                    else legend_fancybox
+                )
+                _legend_ncol = (
+                    config.get_config("legend.ncol")
+                    if legend_ncol is None
+                    else legend_ncol
+                )
+                _legend_bbox_to_anchor = (
+                    config.get_config("legend.bbox_to_anchor")
+                    if legend_bbox_to_anchor is None
+                    else legend_bbox_to_anchor
+                )
+
+                legend = ax.legend(
+                    title=_legend_title,
+                    loc=_legend_loc,
+                    frameon=_legend_frameon,
+                    shadow=_legend_shadow,
+                    fancybox=_legend_fancybox,
+                    ncol=_legend_ncol,
+                    bbox_to_anchor=_legend_bbox_to_anchor,
+                    fontsize=plot_configs["font.size_legend"],
+                )
+
+                if legend:
+                    legend_text_color = theme_settings.get(
+                        "legend.labelcolor",
+                        theme_settings.get("text.color", "#333333"),
                     )
-                if theme_settings.get("legend.edgecolor"):
-                    legend.get_frame().set_edgecolor(
-                        theme_settings.get("legend.edgecolor"),
+                    for text_obj in legend.get_texts():
+                        text_obj.set_color(legend_text_color)
+                    if legend.get_title():
+                        legend.get_title().set_color(legend_text_color)
+
+                    frame = legend.get_frame()
+                    frame.set_facecolor(
+                        theme_settings.get("legend.facecolor", "white"),
+                    )
+                    frame.set_edgecolor(
+                        theme_settings.get("legend.edgecolor", "black"),
                     )
 
             if show_plot_on_draw and not should_return_objects:
@@ -951,6 +1100,14 @@ class Plotter:
         zlabel: str = None,
         # Note: legend for scatter3d can be tricky if colors/sizes vary per point
         legend_label: str = None,
+        show_legend: bool = None,
+        legend_loc: str = None,
+        legend_title: str = None,
+        legend_frameon: bool = None,
+        legend_shadow: bool = None,
+        legend_fancybox: bool = None,
+        legend_ncol: int = None,
+        legend_bbox_to_anchor: tuple = None,
         return_fig_ax: bool = None,
         ax=None,  # New parameter
         **kwargs,
@@ -958,6 +1115,7 @@ class Plotter:
         """Plots a 3D scatter graph (static method).
 
         Generates a 3D scatter plot, applying current theme and configuration.
+        Legend appearance can be customized.
 
         Args:
           x: Array-like data for the x-axis.
@@ -968,6 +1126,16 @@ class Plotter:
           ylabel: Optional label for the y-axis.
           zlabel: Optional label for the z-axis.
           legend_label: Optional label for the points, used if a legend is shown.
+          show_legend: Optional. If True, displays the legend. If None, uses
+              'legend.show' from config.
+          legend_loc: Optional. Location of the legend. If None, uses 'legend.loc'.
+          legend_title: Optional. Title for the legend. If None, uses 'legend.title'.
+          legend_frameon: Optional. If True, draws a frame. If None, 'legend.frameon'.
+          legend_shadow: Optional. If True, draws shadow. If None, 'legend.shadow'.
+          legend_fancybox: Optional. If True, uses fancy box. If None, 'legend.fancybox'.
+          legend_ncol: Optional. Number of columns. If None, 'legend.ncol'.
+          legend_bbox_to_anchor: Optional. Tuple for custom position. If None,
+              'legend.bbox_to_anchor'.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays.
               If None, uses global config.
           ax: Optional. A matplotlib.axes.Axes3D object to plot on. If None,
@@ -1088,23 +1256,74 @@ class Plotter:
                     fontsize=plot_configs["font.size_label"],
                 )
 
+            _show_legend = (
+                config.get_config("legend.show") if show_legend is None else show_legend
+            )
             if (
-                legend_label
+                _show_legend and legend_label
             ):  # Legend for 3D scatter can be simple if color/size is uniform
-                legend = ax.legend(fontsize=plot_configs["font.size_legend"])
-                legend_text_color = theme_settings.get(
-                    "legend.labelcolor",
-                    theme_settings.get("text.color", "#333333"),
-                )  # type: ignore
-                for text_obj in legend.get_texts():
-                    text_obj.set_color(legend_text_color)  # type: ignore
-                if theme_settings.get("legend.facecolor"):
-                    legend.get_frame().set_facecolor(
-                        theme_settings.get("legend.facecolor"),
+                _legend_loc = (
+                    config.get_config("legend.loc")
+                    if legend_loc is None
+                    else legend_loc
+                )
+                _legend_title = (
+                    config.get_config("legend.title")
+                    if legend_title is None
+                    else legend_title
+                )
+                _legend_frameon = (
+                    config.get_config("legend.frameon")
+                    if legend_frameon is None
+                    else legend_frameon
+                )
+                _legend_shadow = (
+                    config.get_config("legend.shadow")
+                    if legend_shadow is None
+                    else legend_shadow
+                )
+                _legend_fancybox = (
+                    config.get_config("legend.fancybox")
+                    if legend_fancybox is None
+                    else legend_fancybox
+                )
+                _legend_ncol = (
+                    config.get_config("legend.ncol")
+                    if legend_ncol is None
+                    else legend_ncol
+                )
+                _legend_bbox_to_anchor = (
+                    config.get_config("legend.bbox_to_anchor")
+                    if legend_bbox_to_anchor is None
+                    else legend_bbox_to_anchor
+                )
+
+                legend = ax.legend(
+                    title=_legend_title,
+                    loc=_legend_loc,
+                    frameon=_legend_frameon,
+                    shadow=_legend_shadow,
+                    fancybox=_legend_fancybox,
+                    ncol=_legend_ncol,
+                    bbox_to_anchor=_legend_bbox_to_anchor,
+                    fontsize=plot_configs["font.size_legend"],
+                )
+                if legend:
+                    legend_text_color = theme_settings.get(
+                        "legend.labelcolor",
+                        theme_settings.get("text.color", "#333333"),
                     )
-                if theme_settings.get("legend.edgecolor"):
-                    legend.get_frame().set_edgecolor(
-                        theme_settings.get("legend.edgecolor"),
+                    for text_obj in legend.get_texts():
+                        text_obj.set_color(legend_text_color)
+                    if legend.get_title():
+                        legend.get_title().set_color(legend_text_color)
+
+                    frame = legend.get_frame()
+                    frame.set_facecolor(
+                        theme_settings.get("legend.facecolor", "white"),
+                    )
+                    frame.set_edgecolor(
+                        theme_settings.get("legend.edgecolor", "black"),
                     )
 
             if show_plot_on_draw and not should_return_objects:
@@ -1458,6 +1677,14 @@ class Plotter:
         ylabel: str = None,
         # For scatter, legend is more complex if colors/sizes vary
         legend_label: str = None,
+        show_legend: bool = None,
+        legend_loc: str = None,
+        legend_title: str = None,
+        legend_frameon: bool = None,
+        legend_shadow: bool = None,
+        legend_fancybox: bool = None,
+        legend_ncol: int = None,
+        legend_bbox_to_anchor: tuple = None,
         return_fig_ax: bool = None,
         ax=None,  # New parameter
         **kwargs,
@@ -1465,7 +1692,8 @@ class Plotter:
         """Plots a scatter graph (static method).
 
         Generates a scatter plot with the given data, applying current theme and
-        configuration settings.
+        configuration settings. Legend appearance can be customized using
+        specific `legend_*` parameters or global configuration settings.
 
         Args:
           x: Array-like data for the x-axis.
@@ -1478,6 +1706,22 @@ class Plotter:
                         Note: For scatter plots with varying point colors/sizes,
                         legend handling can be more complex. This basic version assumes
                         a single legend entry for the main data series.
+          show_legend: Optional. If True, displays the legend. If None, uses
+              'legend.show' from config.
+          legend_loc: Optional. Location of the legend (e.g., 'best', 'upper right').
+              If None, uses 'legend.loc' from config.
+          legend_title: Optional. Title for the legend. If None, uses
+              'legend.title' from config.
+          legend_frameon: Optional. If True, draws a frame around the legend.
+              If None, uses 'legend.frameon' from config.
+          legend_shadow: Optional. If True, draws a shadow behind the legend.
+              If None, uses 'legend.shadow' from config.
+          legend_fancybox: Optional. If True, uses a fancy box for legend frame.
+              If None, uses 'legend.fancybox' from config.
+          legend_ncol: Optional. Number of columns in the legend. If None, uses
+              'legend.ncol' from config.
+          legend_bbox_to_anchor: Optional. Tuple for custom legend positioning.
+              If None, uses 'legend.bbox_to_anchor' from config.
           return_fig_ax: Optional. If True, returns (fig, ax). If False, displays
               the plot and returns None. If None, uses the global
               'plot.return_fig_ax' and 'plot.show_on_draw' config.
@@ -1581,21 +1825,74 @@ class Plotter:
                 colors=theme_settings.get("ytick.color", "#333333"),
             )
 
-            if legend_label:
-                legend = ax.legend(fontsize=config.get_config("font.size_legend"))
-                legend_text_color = theme_settings.get(
-                    "legend.labelcolor",
-                    theme_settings.get("text.color", "#333333"),
-                )  # type: ignore
-                for text in legend.get_texts():
-                    text.set_color(legend_text_color)  # type: ignore
-                if theme_settings.get("legend.facecolor"):
-                    legend.get_frame().set_facecolor(
-                        theme_settings.get("legend.facecolor"),
+            # Add legend
+            _show_legend = (
+                config.get_config("legend.show") if show_legend is None else show_legend
+            )
+            if _show_legend and legend_label:
+                _legend_loc = (
+                    config.get_config("legend.loc")
+                    if legend_loc is None
+                    else legend_loc
+                )
+                _legend_title = (
+                    config.get_config("legend.title")
+                    if legend_title is None
+                    else legend_title
+                )
+                _legend_frameon = (
+                    config.get_config("legend.frameon")
+                    if legend_frameon is None
+                    else legend_frameon
+                )
+                _legend_shadow = (
+                    config.get_config("legend.shadow")
+                    if legend_shadow is None
+                    else legend_shadow
+                )
+                _legend_fancybox = (
+                    config.get_config("legend.fancybox")
+                    if legend_fancybox is None
+                    else legend_fancybox
+                )
+                _legend_ncol = (
+                    config.get_config("legend.ncol")
+                    if legend_ncol is None
+                    else legend_ncol
+                )
+                _legend_bbox_to_anchor = (
+                    config.get_config("legend.bbox_to_anchor")
+                    if legend_bbox_to_anchor is None
+                    else legend_bbox_to_anchor
+                )
+
+                legend = ax.legend(
+                    title=_legend_title,
+                    loc=_legend_loc,
+                    frameon=_legend_frameon,
+                    shadow=_legend_shadow,
+                    fancybox=_legend_fancybox,
+                    ncol=_legend_ncol,
+                    bbox_to_anchor=_legend_bbox_to_anchor,
+                    fontsize=config.get_config("font.size_legend"),
+                )
+
+                if legend:
+                    legend_text_color = theme_settings.get(
+                        "legend.labelcolor",
+                        theme_settings.get("text.color", "#333333"),
                     )
-                if theme_settings.get("legend.edgecolor"):
-                    legend.get_frame().set_edgecolor(
-                        theme_settings.get("legend.edgecolor"),
+                    for text in legend.get_texts():
+                        text.set_color(legend_text_color)
+                    if legend.get_title():
+                        legend.get_title().set_color(legend_text_color)
+
+                    frame = legend.get_frame()
+                    frame.set_facecolor(
+                        theme_settings.get("legend.facecolor", "white"),
+                    )
+                    frame.set_edgecolor(
+                        theme_settings.get("legend.edgecolor", "black"),
                     )
 
             if show_plot_on_draw and not should_return_objects:

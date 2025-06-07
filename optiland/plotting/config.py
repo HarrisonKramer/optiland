@@ -22,6 +22,15 @@ _DEFAULT_CONFIG = {
     "image.cmap": "viridis",
     "plot.show_on_draw": True,
     "plot.return_fig_ax": False,
+    # Legend configurations
+    "legend.show": True,
+    "legend.loc": "best",
+    "legend.title": None,  # Can be None or an empty string for no title
+    "legend.frameon": True,
+    "legend.shadow": False,
+    "legend.fancybox": True,
+    "legend.ncol": 1,
+    "legend.bbox_to_anchor": None,  # Tuple (x, y) or None
 }
 
 _current_config = copy.deepcopy(_DEFAULT_CONFIG)
@@ -33,6 +42,15 @@ def get_config(key: str):
     Args:
       key: A dot-separated string representing the configuration key
           (e.g., 'figure.figsize', 'font.size_title').
+          New legend keys include:
+          - 'legend.show': bool, whether to display the legend.
+          - 'legend.loc': str, the location of the legend (e.g., 'best', 'upper right').
+          - 'legend.title': str or None, the title of the legend.
+          - 'legend.frameon': bool, whether to draw a frame around the legend.
+          - 'legend.shadow': bool, whether to draw a shadow behind the legend.
+          - 'legend.fancybox': bool, whether to use a fancy box for the legend frame.
+          - 'legend.ncol': int, the number of columns in the legend.
+          - 'legend.bbox_to_anchor': tuple or None, for custom legend positioning.
 
     Returns:
       The value associated with the given key.
@@ -70,33 +88,28 @@ def set_config(key: str, value):
         )
 
     default_value = _DEFAULT_CONFIG[key]
-    if not isinstance(value, type(default_value)):
-        # Special handling for tuples like figure.figsize where elements can be int or float
-        if (
-            key == "figure.figsize"
-            and isinstance(default_value, tuple)
-            and isinstance(value, tuple)
-        ):
-            if not (
-                len(value) == len(default_value)
-                and all(isinstance(v, (int, float)) for v in value)
-                and all(isinstance(dv, (int, float)) for dv in default_value)
-            ):  # Ensure default is also numbers
-                raise exceptions.ConfigurationError(
-                    f"Invalid type for configuration key '{key}'. Expected a tuple of "
-                    f"{len(default_value)} numbers (int or float), but got {type(value)} with value {value}.",
-                )
-        # Special handling for float values that can also accept integers
-        elif isinstance(default_value, float) and isinstance(value, int):
-            value = float(value)  # Convert int to float
+    if default_value is None and value is not None:
+        # Allows setting a config that defaults to None to a specific type,
+        # e.g. legend.title (None to str) or legend.bbox_to_anchor (None to tuple)
+        # Type validation for these will be handled by specific checks below.
+        pass
+    elif default_value is not None and not isinstance(value, type(default_value)):
+        # Handle cases where the provided type doesn't match the default value's type.
+        if isinstance(default_value, float) and isinstance(value, int):
+            value = float(value)  # Convert int to float for float configs
+        elif key == "figure.figsize" and isinstance(value, tuple):
+            # Already handled by specific validation for figure.figsize structure
+            pass
         else:
+            # General type mismatch
+            expected_type_name = type(default_value).__name__
             raise exceptions.ConfigurationError(
                 f"Invalid type for configuration key '{key}'. Expected type "
-                f"'{type(default_value).__name__}', but got type "
+                f"'{expected_type_name}', but got type "
                 f"'{type(value).__name__}' for value '{value}'.",
             )
 
-    # Further validation for specific complex types if needed, e.g. tuple contents
+    # Specific validations for key structures and value constraints
     if key == "figure.figsize":
         if not (
             isinstance(value, tuple)
@@ -105,6 +118,42 @@ def set_config(key: str, value):
         ):
             raise exceptions.ConfigurationError(
                 f"'{key}' must be a tuple of two positive numbers (int or float).",
+            )
+    elif key == "legend.loc":
+        if not isinstance(value, str):
+            raise exceptions.ConfigurationError(
+                f"Invalid type for '{key}'. Expected str, got {type(value).__name__}.",
+            )
+    elif key == "legend.title":
+        if not (value is None or isinstance(value, str)):
+            raise exceptions.ConfigurationError(
+                f"Invalid type for '{key}'. Expected str or None, got {type(value).__name__}.",
+            )
+    elif key == "legend.ncol":
+        if not isinstance(value, int):
+            raise exceptions.ConfigurationError(
+                f"Invalid type for '{key}'. Expected int, got {type(value).__name__}.",
+            )
+    elif key == "legend.bbox_to_anchor":
+        if not (
+            value is None
+            or (
+                isinstance(value, tuple)
+                and all(isinstance(v, (int, float)) for v in value)
+            )
+        ):
+            raise exceptions.ConfigurationError(
+                f"'{key}' must be a tuple of numbers (int or float), or None. Got {value}",
+            )
+    elif key in [
+        "legend.show",
+        "legend.frameon",
+        "legend.shadow",
+        "legend.fancybox",
+    ]:
+        if not isinstance(value, bool):
+            raise exceptions.ConfigurationError(
+                f"Invalid type for '{key}'. Expected bool, got {type(value).__name__}.",
             )
 
     _current_config[key] = value

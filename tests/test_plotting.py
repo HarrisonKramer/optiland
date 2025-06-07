@@ -1109,3 +1109,211 @@ def test_color_cycle_override(plot_method_name, theme_name, mock_plt_show):
         decimal=4,
         err_msg="Third plot (cycler after override) color mismatch.",
     )
+
+
+# --- Tests for Legend Configuration ---
+
+
+def test_legend_defaults_plot_line(plotter_instance):
+    """Test default legend properties for plot_line."""
+    config.set_config("plot.return_fig_ax", True)
+    x, y = get_sample_data_2d()
+    _, ax = Plotter.plot_line(x, y, legend_label="Test Line")
+
+    assert ax.legend_ is not None, "Legend should be displayed by default."
+    assert ax.legend_.get_visible() is True
+
+    # Check against config defaults
+    assert ax.legend_.get_loc() == config.get_config("legend.loc")
+    expected_title = config.get_config("legend.title")
+    # Matplotlib legend title is an empty string if None, so handle this
+    assert (ax.legend_.get_title().get_text() == expected_title) or \
+           (expected_title is None and ax.legend_.get_title().get_text() == "")
+    assert ax.legend_.get_frame().get_visible() == config.get_config("legend.frameon")
+    assert ax.legend_.shadow == config.get_config("legend.shadow")
+    assert ax.legend_.fancybox == config.get_config("legend.fancybox")
+    # _ncol is internal, but often used. Let's assume it's stable for testing.
+    assert ax.legend_._ncol == config.get_config("legend.ncol")
+    # bbox_to_anchor needs careful comparison as it can be a Bbox object
+    assert ax.legend_.get_bbox_to_anchor() is None  # Default is None
+
+
+def test_legend_defaults_plot_scatter(plotter_instance):
+    """Test default legend properties for plot_scatter."""
+    config.set_config("plot.return_fig_ax", True)
+    x, y = get_sample_data_2d()
+    _, ax = Plotter.plot_scatter(x, y, legend_label="Test Scatter")
+
+    assert ax.legend_ is not None, "Legend should be displayed by default."
+    assert ax.legend_.get_visible() is True
+    assert ax.legend_.get_loc() == config.get_config("legend.loc")
+    expected_title = config.get_config("legend.title")
+    assert (ax.legend_.get_title().get_text() == expected_title) or \
+           (expected_title is None and ax.legend_.get_title().get_text() == "")
+    assert ax.legend_.get_frame().get_visible() == config.get_config("legend.frameon")
+
+
+@pytest.mark.parametrize(
+    "plot_method_name", ["plot_line", "plot_scatter"]
+)
+def test_legend_override_parameters(plotter_instance, plot_method_name):
+    """Test overriding legend parameters for 2D plots."""
+    config.set_config("plot.return_fig_ax", True)
+    plot_method = getattr(Plotter, plot_method_name)
+    x, y = get_sample_data_2d()
+
+    # Test show_legend = False
+    _, ax_no_legend = plot_method(x, y, legend_label="No Show", show_legend=False)
+    assert ax_no_legend.legend_ is None or not ax_no_legend.legend_.get_visible(), \
+        "Legend should not be visible when show_legend=False."
+
+    # Test other parameters
+    test_title = "My Custom Legend"
+    test_loc = "upper left"
+    test_ncol = 2
+    test_bbox = (0.5, 0.5)
+
+    _, ax = plot_method(
+        x,
+        y,
+        legend_label="Override Test",
+        show_legend=True,
+        legend_loc=test_loc,
+        legend_title=test_title,
+        legend_frameon=False,
+        legend_shadow=True,
+        legend_fancybox=False,
+        legend_ncol=test_ncol,
+        legend_bbox_to_anchor=test_bbox,
+    )
+
+    assert ax.legend_ is not None, "Legend should be visible."
+    assert ax.legend_.get_loc() == test_loc
+    assert ax.legend_.get_title().get_text() == test_title
+    assert ax.legend_.get_frame().get_visible() is False
+    assert ax.legend_.shadow is True
+    assert ax.legend_.fancybox is False
+    assert ax.legend_._ncol == test_ncol
+    # Check bbox_to_anchor more carefully
+    bbox_obj = ax.legend_.get_bbox_to_anchor()
+    assert bbox_obj is not None
+    # Depending on matplotlib version, it might be a Bbox instance or tuple
+    if hasattr(bbox_obj, "x0"): # Bbox object
+        assert bbox_obj.x0 == test_bbox[0]
+        assert bbox_obj.y0 == test_bbox[1]
+    else: # Tuple
+        assert bbox_obj == test_bbox
+
+
+def test_legend_global_config_interaction(plotter_instance):
+    """Test that legend parameters use global config if not specified."""
+    config.set_config("plot.return_fig_ax", True)
+    original_loc = config.get_config("legend.loc")
+    original_title = config.get_config("legend.title")
+
+    try:
+        config.set_config("legend.loc", "center")
+        config.set_config("legend.title", "Global Title")
+        x, y = get_sample_data_2d()
+        _, ax = Plotter.plot_line(x, y, legend_label="Global Config Test")
+
+        assert ax.legend_ is not None
+        assert ax.legend_.get_loc() == "center"
+        assert ax.legend_.get_title().get_text() == "Global Title"
+    finally:
+        # Test fixture reset_plotting_defaults will handle this,
+        # but explicit reset is also fine for clarity.
+        config.set_config("legend.loc", original_loc)
+        config.set_config("legend.title", original_title)
+
+
+def test_legend_theme_influence(plotter_instance):
+    """Test theme's influence on legend text and frame colors."""
+    config.set_config("plot.return_fig_ax", True)
+    themes.set_active_theme("dark")  # Dark theme has distinct colors
+    dark_theme_settings = themes.get_active_theme_dict()
+
+    x, y = get_sample_data_2d()
+    _, ax = Plotter.plot_line(x, y, legend_label="Theme Test")
+
+    assert ax.legend_ is not None
+    legend_text = ax.legend_.get_texts()[0]
+    expected_text_color = dark_theme_settings.get(
+        "legend.labelcolor", dark_theme_settings.get("text.color")
+    )
+    assert plt.colors.to_rgba(legend_text.get_color()) == plt.colors.to_rgba(
+        expected_text_color,
+    )
+
+    legend_frame = ax.legend_.get_frame()
+    expected_face_color = dark_theme_settings.get("legend.facecolor", "white")
+    expected_edge_color = dark_theme_settings.get("legend.edgecolor", "black")
+
+    assert plt.colors.to_rgba(
+        legend_frame.get_facecolor(),
+    ) == plt.colors.to_rgba(expected_face_color)
+    assert plt.colors.to_rgba(
+        legend_frame.get_edgecolor(),
+    ) == plt.colors.to_rgba(expected_edge_color)
+
+
+def test_legend_in_plot_subplots_callback(plotter_instance):
+    """Test legend configuration within a plot_subplots callback."""
+    config.set_config("plot.return_fig_ax", True) # For plot_subplots
+
+    def subplot_with_legend_callback(ax, index):
+        x, y = get_sample_data_2d(5)
+        Plotter.plot_line(
+            x,
+            y,
+            ax=ax,
+            legend_label=f"Subplot {index} Line",
+            legend_title=f"Legend for {index}",
+            legend_loc="upper right",
+            show_legend=True,
+        )
+        ax.set_title(f"Subplot {index}") # Plotter does not set title if ax is given
+
+    _, axs = Plotter.plot_subplots(
+        1, 1, [subplot_with_legend_callback], return_fig_axs=True
+    )
+    ax_sub = axs[0] if isinstance(axs, np.ndarray) else axs
+
+
+    assert ax_sub.legend_ is not None, "Legend should be present in subplot."
+    assert ax_sub.legend_.get_title().get_text() == "Legend for 0"
+    assert ax_sub.legend_.get_loc() == "upper right"
+    assert len(ax_sub.legend_.get_texts()) == 1
+    assert ax_sub.legend_.get_texts()[0].get_text() == "Subplot 0 Line"
+
+
+def test_legend_edge_cases(plotter_instance):
+    """Test edge cases for legend display."""
+    config.set_config("plot.return_fig_ax", True)
+    x, y = get_sample_data_2d()
+
+    # Case 1: legend_label=None, show_legend=True (explicitly)
+    _, ax1 = Plotter.plot_line(x, y, legend_label=None, show_legend=True)
+    # Behavior: legend might be created but have no elements, or not created.
+    # Matplotlib typically doesn't show a legend if there are no labeled artists.
+    assert ax1.legend_ is None or not ax1.legend_.get_texts(), \
+        "Legend should not appear or be empty if legend_label is None."
+
+    # Case 2: legend_label=None, show_legend=None (config default is True)
+    config.set_config("legend.show", True)
+    _, ax2 = Plotter.plot_line(x, y, legend_label=None)
+    assert ax2.legend_ is None or not ax2.legend_.get_texts(), \
+        "Legend should not appear or be empty if label is None, even if config says show."
+
+    # Case 3: No data points, but legend_label is provided
+    # Plotter methods might raise InvalidPlotDataError before legend logic
+    with pytest.raises(InvalidPlotDataError):
+        Plotter.plot_line(np.array([]), np.array([]), legend_label="Empty Data")
+
+    # Case 4: Multiple plots on same axes, one with legend_label, one without
+    fig, ax3 = plt.subplots()
+    Plotter.plot_line(x, y, ax=ax3, legend_label="Series A")
+    Plotter.plot_line(x, 0.5 * y, ax=ax3, legend_label=None) # No label for this one
+    assert ax3.legend_ is not None
+    assert len(ax3.legend_.get_texts()) == 1 # Only "Series A" should be in legend
+    assert ax3.legend_.get_texts()[0].get_text() == "Series A"
