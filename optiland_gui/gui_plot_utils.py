@@ -2,25 +2,43 @@
 import matplotlib
 import inspect
 
-def apply_gui_matplotlib_styles():
+def apply_gui_matplotlib_styles(theme='light'):
     """
-    Applies a set of Matplotlib rcParams suitable for GUI embedding,
-    focusing on smaller font sizes for better integration.
+    Applies Matplotlib rcParams for GUI embedding, with theme awareness.
     """
-    style_params = {
-        'font.size': 8,  # General base font size
-        'axes.titlesize': 10, # Fontsize of the axes title (individual subplots)
-        'axes.labelsize': 8,  # Fontsize of the x and y labels
-        'xtick.labelsize': 7, # Fontsize of the x tick labels
-        'ytick.labelsize': 7, # Fontsize of the y tick labels
-        'legend.fontsize': 7, # Fontsize of the legend
-        'figure.titlesize': 12, # Fontsize of the figure suptitle (if used)
-        # Reduce padding around titles and labels if elements are still too large
-        'axes.titlepad': 4.0, # Default is 6.0
-        'axes.labelpad': 3.0, # Default is 4.0
+    base_style = {
+        'font.size': 8,
+        'axes.titlesize': 10,
+        'axes.labelsize': 8,
+        'xtick.labelsize': 7,
+        'ytick.labelsize': 7,
+        'legend.fontsize': 7,
+        'figure.titlesize': 12,
+        'axes.titlepad': 4.0,
+        'axes.labelpad': 3.0,
+        'figure.autolayout': True, # Helps prevent labels from overlapping
     }
-    matplotlib.rcParams.update(style_params)
-    print("Applied GUI-specific Matplotlib styles.")
+    
+    if theme == 'dark':
+        dark_style = {
+            'figure.facecolor': '#2a2a2a',
+            'axes.facecolor': '#2a2a2a',
+            'axes.edgecolor': '#bbbbbb',
+            'axes.labelcolor': '#bbbbbb',
+            'xtick.color': '#bbbbbb',
+            'ytick.color': '#bbbbbb',
+            'grid.color': '#555555',
+            'text.color': '#bbbbbb',
+            'legend.facecolor': '#3c3c3c',
+            'legend.edgecolor': '#555555'
+        }
+        base_style.update(dark_style)
+    else: # Light theme defaults
+        # Reset to matplotlib defaults then apply our base style
+        matplotlib.rcdefaults()
+
+    matplotlib.rcParams.update(base_style)
+    print(f"Applied {theme}-specific Matplotlib styles.")
 
 def get_analysis_parameters(analysis_class):
     """

@@ -565,3 +565,19 @@ class OptilandConnector(QObject):
                 print("OpticConnector: Redo operation failed to return state data.")
         else:
             print("OpticConnector: Cannot redo.")
+            
+    def get_wavelength_options(self) -> list[tuple[str, str]]:
+        """Returns list of (display_text, value_string) for wavelength dropdown."""
+        options = [("primary", "primary")]
+        if self._optic and self._optic.wavelengths:
+            for wl in self._optic.wavelengths.wavelengths:
+                options.append((f"{wl.value:.4f} µm", str(wl.value)))
+        return options
+
+    def get_field_options(self) -> list[tuple[str, str]]:
+        """Returns list of (display_text, value_string) for field dropdown."""
+        options = [("all", "all")]
+        if self._optic and self._optic.fields:
+            for i, field in enumerate(self._optic.fields.fields):
+                options.append((f"Field {i} ({field.x:.2f}, {field.y:.2f})", str(i)))
+        return options

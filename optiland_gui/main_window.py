@@ -43,6 +43,8 @@ from .widgets.sidebar import (
     COLLAPSE_THRESHOLD_WIDTH,
 )
 from .widgets.custom_title_bar import CustomTitleBar
+from . import gui_plot_utils
+
 
 try:
     from .resources import resources_rc  #
@@ -516,6 +518,9 @@ class MainWindow(QMainWindow):
 
         self.setStyleSheet(style_str)  #
 
+        theme_name = "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
+        gui_plot_utils.apply_gui_matplotlib_styles(theme=theme_name)
+
         # Apply the consolidated stylesheet to the custom title bar as well,
         # as it might not inherit all styles perfectly if it's complex.
         if hasattr(self, "custom_title_bar_widget"):  #
@@ -657,6 +662,8 @@ class MainWindow(QMainWindow):
                 self.analysisPanel.update_theme_icons(theme_name)
             if hasattr(self, "custom_title_bar_widget"):
                 self.custom_title_bar_widget.update_theme_icons(theme_name)
+            if hasattr(self, "viewerPanel"):
+                self.viewerPanel.update_theme(theme_name)
 
     @Slot()
     def new_system_action(self):  #

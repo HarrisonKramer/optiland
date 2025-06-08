@@ -1,8 +1,10 @@
 # optiland_gui/viewer_panel.py
+import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
+from . import gui_plot_utils
 
 try:
     import vtk
@@ -44,6 +46,10 @@ class ViewerPanel(QWidget):
         )  # Full update on new load
         self.connector.opticChanged.connect(self.update_viewers)  # Update on any change
 
+    def update_theme(self, theme="dark"):
+        """Propagates theme changes to child viewers."""
+        self.viewer2D.update_theme(theme)
+
     @Slot()
     def update_viewers(self):
         print("ViewerPanel: Updating viewers due to optic change.")
@@ -56,74 +62,51 @@ class MatplotlibViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
         self.connector = connector
+        self.current_theme = "dark"
         self.layout = QVBoxLayout(self)
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setObjectName(
-            "matplotlib_viewer_widget"
-        )  # Set object name for QSS styling
+        self.canvas.setObjectName("matplotlib_viewer_widget")
         self.layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
-        # self.plot_optic() # Initial plot done by connector signals
+        self.plot_optic()
+
+    def update_theme(self, theme="dark"):
+        """Updates the plot's theme and replots."""
+        if self.current_theme != theme:
+            self.current_theme = theme
+            self.plot_optic()
 
     def plot_optic(self):
+        """Applies theme styles and completely redraws the optic."""
+        # ** FIX: This is the crucial part **
+        # Apply the current theme's styles every time we draw
+        gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+
         self.ax.clear()
+        # Explicitly set the background color on the axes and figure
+        face_color = matplotlib.rcParams['figure.facecolor']
+        self.figure.set_facecolor(face_color)
+        self.ax.set_facecolor(face_color)
+
         optic = self.connector.get_optic()
         if optic and optic.surface_group.num_surfaces > 0:
             try:
-                # Use Optiland's lower-level plotting components
-                # OpticViewer.draw() creates its own figure, so we can't use it
-                # directly.
-                # We need to use its sub-components or replicate its logic.
-
-                # Simplified approach: Create Optiland's internal plotters
-                # These expect to be initialized with an optic
                 rays2d_plotter = Rays2D(optic)
-                system_plotter = OptilandOpticalSystemPlotter(
-                    optic, rays2d_plotter, projection="2d"
-                )
-
-                # Plot rays first (this also calculates extents needed by
-                # system_plotter)
-                # Default parameters for plotting rays
-                rays2d_plotter.plot(
-                    self.ax,
-                    fields="all",
-                    wavelengths="primary",
-                    num_rays=3,
-                    distribution="line_y",
-                )
-
-                # Then plot the system
+                system_plotter = OptilandOpticalSystemPlotter(optic, rays2d_plotter, projection="2d")
+                rays2d_plotter.plot(self.ax, fields="all", wavelengths="primary", num_rays=3, distribution="line_y")
                 system_plotter.plot(self.ax)
-
-                self.ax.set_title(f"System: {optic.name} (2D)")
+                self.ax.set_title(f"System: {optic.name} (2D)", color=matplotlib.rcParams['text.color'])
                 self.ax.set_xlabel("Z-axis (mm)")
                 self.ax.set_ylabel("Y-axis (mm)")
-                self.ax.axis(
-                    "equal"
-                )  # Ensure correct aspect ratio for optical drawings
+                self.ax.axis("equal")
                 self.ax.grid(True, linestyle="--", alpha=0.7)
-
             except Exception as e:
-                self.ax.text(
-                    0.5,
-                    0.5,
-                    f"Error plotting Optiland 2D view:\n{e}",
-                    ha="center",
-                    va="center",
-                    transform=self.ax.transAxes,
-                )
+                self.ax.text(0.5, 0.5, f"Error plotting Optiland 2D view:\n{e}", ha="center", va="center", transform=self.ax.transAxes, color='red')
                 print(f"MatplotlibViewer Error: {e}")
         else:
-            self.ax.text(
-                0.5,
-                0.5,
-                "2D Viewer (Matplotlib)\nNo Optic data or empty system.",
-                ha="center",
-                va="center",
-                transform=self.ax.transAxes,
-            )
+            self.ax.text(0.5, 0.5, "2D Viewer (Matplotlib)\nNo Optic data or empty system.", ha="center", va="center", transform=self.ax.transAxes)
+
         self.canvas.draw()
 
 

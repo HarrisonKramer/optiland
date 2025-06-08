@@ -1,12 +1,14 @@
 
 import inspect
 import numpy as np 
+import json
 
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import Slot, Qt, QSize
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
+    QFileDialog,
     QMessageBox,
     QPushButton,
     QTextEdit,
@@ -216,10 +218,25 @@ class AnalysisPanel(QWidget):
         self.settings_form_layout = QFormLayout(self.settingsContentWidget)
         self.settings_scroll_area.setWidget(self.settingsContentWidget)
         settings_layout.addWidget(self.settings_scroll_area, 1)
-        self.btnApplySettingsAndRerun = QPushButton("Apply Settings & Rerun")
-        self.btnApplySettingsAndRerun.setObjectName("ApplySettingsAndRerunButton")
-        settings_layout.addWidget(self.btnApplySettingsAndRerun)
-        self.btnApplySettingsAndRerun.setVisible(False)
+        settings_button_layout = QHBoxLayout()
+        # --- Apply Button
+        self.btnApplySettings = QPushButton()
+        self.btnApplySettings.setObjectName("ApplySettingsButton") # Give it an ID for styling
+        self.btnApplySettings.setToolTip("Apply current settings and rerun analysis")
+        settings_button_layout.addWidget(self.btnApplySettings)
+        # --- Save Button
+        self.btnSaveSettings = QPushButton()
+        self.btnSaveSettings.setObjectName("SaveSettingsButton") # Give it an ID
+        self.btnSaveSettings.setToolTip("Save current analysis settings to a file")
+        settings_button_layout.addWidget(self.btnSaveSettings)
+        # --- Load Button
+        self.btnLoadSettings = QPushButton()
+        self.btnLoadSettings.setObjectName("LoadSettingsButton") # Give it an ID
+        self.btnLoadSettings.setToolTip("Load analysis settings from a file")
+        settings_button_layout.addWidget(self.btnLoadSettings)
+        # Add the new button layout and remove the old button
+        settings_layout.addLayout(settings_button_layout)
+        
         main_content_layout.addWidget(self.settings_area_widget, 1)
         main_layout.addLayout(main_content_layout, 1)
 
@@ -237,7 +254,9 @@ class AnalysisPanel(QWidget):
         self.analysisTypeCombo.currentTextChanged.connect(self.on_analysis_type_changed)
         self.toggleSettingsButton.clicked.connect(self.toggle_settings_panel_slot)
         self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
-        self.btnApplySettingsAndRerun.clicked.connect(self._apply_settings_and_rerun_analysis_slot)
+        self.btnApplySettings.clicked.connect(self._apply_settings_and_rerun_analysis_slot)
+        self.btnSaveSettings.clicked.connect(self._save_analysis_settings_slot)
+        self.btnLoadSettings.clicked.connect(self._load_analysis_settings_slot)
 
         # --- Initial State ---
         self.update_theme_icons()
@@ -378,6 +397,9 @@ class AnalysisPanel(QWidget):
         self.btnRun.setIcon(QIcon(f":/icons/{theme}/run.svg"))
         self.btnStop.setIcon(QIcon(f":/icons/{theme}/stop.svg"))
         self.btnRunAll.setIcon(QIcon(f":/icons/{theme}/run_all.svg"))
+        self.btnApplySettings.setIcon(QIcon(f":/icons/{theme}/check_apply.svg")) 
+        self.btnSaveSettings.setIcon(QIcon(f":/icons/{theme}/save_settings.svg"))
+        self.btnLoadSettings.setIcon(QIcon(f":/icons/{theme}/load_settings.svg"))
 
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
@@ -477,7 +499,6 @@ class AnalysisPanel(QWidget):
     def toggle_settings_panel_slot(self):
         is_visible = self.settings_area_widget.isVisible()
         self.settings_area_widget.setVisible(not is_visible)
-        self.btnApplySettingsAndRerun.setVisible(not is_visible)
         if not is_visible: # if we just made it visible
             self.display_plot_page(self.current_plot_page_index) # Re-run display logic to ensure settings are populated
 
@@ -589,3 +610,72 @@ class AnalysisPanel(QWidget):
     def run_all_analysis_slot(self): self.logArea.append("Run All: Not yet implemented.")
     @Slot()
     def stop_analysis_slot(self): self.logArea.append("Stop: Not yet implemented.")
+    @Slot()
+    def _save_analysis_settings_slot(self):
+        """Saves the current settings for the active analysis to a JSON file."""
+        current_analysis_name = self.analysisTypeCombo.currentText()
+        if not current_analysis_name:
+            return
+
+        constructor_args, view_args = self._collect_current_settings()
+        settings_to_save = {
+            "analysis_name": current_analysis_name,
+            "constructor_args": constructor_args,
+            "view_args": view_args
+        }
+
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            f"Save {current_analysis_name} Settings",
+            f"{current_analysis_name}_settings.json",
+            "JSON Files (*.json);;All Files (*)"
+        )
+
+        if filepath:
+            try:
+                with open(filepath, 'w') as f:
+                    json.dump(settings_to_save, f, indent=4)
+                self.logArea.append(f"Settings for {current_analysis_name} saved to {filepath}")
+            except Exception as e:
+                QMessageBox.critical(self, "Save Error", f"Could not save settings:\n{e}")
+
+    @Slot()
+    def _load_analysis_settings_slot(self):
+        """Loads and applies settings for an analysis from a JSON file."""
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Load Analysis Settings",
+            "",
+            "JSON Files (*.json);;All Files (*)"
+        )
+
+        if filepath:
+            try:
+                with open(filepath, 'r') as f:
+                    loaded_settings = json.load(f)
+                
+                # Set the analysis type dropdown to match the loaded file
+                analysis_name = loaded_settings.get("analysis_name")
+                self.analysisTypeCombo.setCurrentText(analysis_name)
+                
+                # Apply the loaded settings to the UI widgets
+                self.on_analysis_type_changed(analysis_name) # Rebuilds the settings UI
+                
+                all_args = {**loaded_settings.get("constructor_args", {}), **loaded_settings.get("view_args", {})}
+                for param_name, value in all_args.items():
+                    if param_name in self.current_settings_widgets:
+                        widget = self.current_settings_widgets[param_name]
+                        if isinstance(widget, QComboBox):
+                            index = widget.findData(str(value))
+                            if index != -1: widget.setCurrentIndex(index)
+                        elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+                            widget.setValue(value)
+                        elif isinstance(widget, QCheckBox):
+                            widget.setChecked(value)
+                        elif isinstance(widget, QLineEdit):
+                            widget.setText(str(value))
+
+                self.logArea.append(f"Settings loaded from {filepath}. Click 'Apply' or 'Run' to see results.")
+
+            except Exception as e:
+                QMessageBox.critical(self, "Load Error", f"Could not load or apply settings:\n{e}")

@@ -55,7 +55,7 @@ class LensEditor(QWidget):
             QAbstractItemView.SelectionBehavior.SelectRows
         )
         self.tableWidget.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
+            QHeaderView.ResizeMode.Interactive
         )
         # self.tableWidget.verticalHeader().
         # setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)

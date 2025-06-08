@@ -628,43 +628,22 @@ AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
     color: #005a9e; /* A darker blue for the icon when checked */
 }
 
-/* Style for when any button is pressed */
-#MPLToolbarInTitlebarContainer QToolButton:pressed,
-#RefreshPlotButton:pressed {
-    background-color: rgba(0, 0, 0, 0.15);
-    color: #000000;
-}
-
-#ToggleSettingsButton {
-    background-color: transparent;
-    border: 1px solid transparent;
-    color:rgb(0, 0, 0); /* Ensures the '>' text is white */
-}
-
-#ToggleSettingsButton:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-#ToggleSettingsButton:pressed {
-    background-color: rgba(255, 255, 255, 0.1);
-}
 
 #RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
-#RunAnalysisButton {
+#RunAnalysisButton, #ToggleSettingsButton {
     background-color: transparent;
     border: 1px solid transparent;
     padding: 1px;
     border-radius: 2px;
 }
 
-#RefreshPlotButton:hover,  #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,
+#RefreshPlotButton:hover,  #ToggleSettingsButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,
 #RunAnalysisButton:hover {
-    background-color: rgba(255, 0, 0, 0.2);
+    background-color: #ADB5BD;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 #RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed, 
-#RunAnalysisButton:pressed {
+#RunAnalysisButton:pressed, #ToggleSettingsButton:pressed {
     background-color: rgba(255, 255, 255, 0.1);
 }
