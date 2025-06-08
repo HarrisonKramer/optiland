@@ -647,3 +647,31 @@ AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
 #RunAnalysisButton:pressed, #ToggleSettingsButton:pressed {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+#ViewerToolbarContainer,
+#ViewerToolbarContainer QToolBar {
+    background: transparent;
+    border: none;
+}
+
+/* Style all buttons on the 2D Viewer toolbar */
+#ViewerToolbarContainer QToolButton {
+    background-color: #6C757D;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+/* Style for when the mouse is over the buttons */
+#ViewerToolbarContainer QToolButton:hover {
+    background-color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #000000;
+}
+
+/* Style for when a toggleable button (like Pan or Zoom) is active */
+#ViewerToolbarContainer QToolButton:checked {
+    background-color: #cce7ff; /* A light blue to indicate selection */
+    border: 1px solid #007ACC;
+    color: #005a9e; /* A darker blue for the icon when checked */
+}

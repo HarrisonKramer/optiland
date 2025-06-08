@@ -2,9 +2,10 @@
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import Slot, Qt
+from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout
 from . import gui_plot_utils
+from .analysis_panel import CustomMatplotlibToolbar
 
 try:
     import vtk
@@ -63,13 +64,62 @@ class MatplotlibViewer(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.current_theme = "dark"
+        
+        # --- Main Layout ---
         self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(2)
+
+        # --- Toolbar Header ---
+        self.toolbar_container = QWidget()
+        self.toolbar_container.setObjectName("ViewerToolbarContainer")
+        toolbar_layout = QHBoxLayout(self.toolbar_container)
+        toolbar_layout.setContentsMargins(5, 0, 5, 0)
+        self.layout.addWidget(self.toolbar_container)
+
+        # --- Plot Canvas ---
+        plot_container = QWidget()
+        plot_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        plot_layout = QVBoxLayout(plot_container)
+        plot_layout.setContentsMargins(0,0,0,0)
+        self.layout.addWidget(plot_container, 1)
+
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setObjectName("matplotlib_viewer_widget")
-        self.layout.addWidget(self.canvas)
+        plot_layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
+
+        # --- Add Toolbar ---
+        # Using CustomMatplotlibToolbar from analysis_panel to disable coordinates in the bar
+        self.toolbar = CustomMatplotlibToolbar(self.canvas, self.toolbar_container)
+        toolbar_layout.addWidget(self.toolbar)
+        
+        # --- Cursor Coordinates Label ---
+        self.cursor_coord_label = QLabel("", self.canvas)
+        self.cursor_coord_label.setObjectName("CursorCoordLabel")
+        self.cursor_coord_label.setStyleSheet("background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;border-radius:3px;")
+        self.cursor_coord_label.setVisible(False)
+        self.cursor_coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+        # --- Connections ---
+        self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
+
+        # Initial plot
         self.plot_optic()
+        
+    def on_mouse_move_on_plot(self, event):
+        """Handle mouse movement over the plot to display coordinates."""
+        if event.inaxes:
+            x_coord = f"{event.xdata:.3f}"
+            y_coord = f"{event.ydata:.3f}"
+            self.cursor_coord_label.setText(f"(Z, Y) = ({x_coord}, {y_coord})")
+            self.cursor_coord_label.adjustSize()
+            # Position at top-left corner with a small margin
+            self.cursor_coord_label.move(5, 5)
+            self.cursor_coord_label.setVisible(True)
+            self.cursor_coord_label.raise_()
+        else:
+            self.cursor_coord_label.setVisible(False)
 
     def update_theme(self, theme="dark"):
         """Updates the plot's theme and replots."""
