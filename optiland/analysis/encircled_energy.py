@@ -161,13 +161,9 @@ class EncircledEnergy(SpotDiagram):
                 "show_legend", config.get_config("legend.show")
             )
             handles, labels = ax.get_legend_handles_labels()
-            if should_show_legend and handles: # Check if handles is not empty
+            if should_show_legend and handles:  # Check if handles is not empty
                 ax.legend(
-                    **{
-                        k: v
-                        for k, v in final_legend_kwargs.items()
-                        if v is not None
-                    }
+                    **{k: v for k, v in final_legend_kwargs.items() if v is not None}
                 )
 
             # fig.tight_layout() is usually handled by Plotter/plt.show().

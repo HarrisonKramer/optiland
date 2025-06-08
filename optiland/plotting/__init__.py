@@ -44,22 +44,22 @@ Basic Usage Example:
   >>> if fig and ax:
   ...     ax.axvline(x=3, color='red', linestyle='--') # Add a vertical line
   ...     # import matplotlib.pyplot as plt # Required if plt.show() is needed
-  ...     # plt.show() # Manually show if 'plot.show_on_draw' is False or if 'return_fig_ax' was True
+  ...     # Manually show if 'plot.show_on_draw' is False or if 'return_fig_ax' was True
+  ...     # plt.show()
 
 See the documentation for `Plotter`, `config`, and `themes` for more details.
 """
+
+from . import config, exceptions, themes
 from .core import Plotter
-from .plot_configs import LegendConfig # Added import
-from . import config
-from . import themes
-from . import exceptions
+from .plot_configs import LegendConfig  # Added import
 
 __all__ = [
     "Plotter",
-    "LegendConfig", # Added to __all__
+    "LegendConfig",  # Added to __all__
     "config",
     "themes",
-    "exceptions"
+    "exceptions",
 ]
 
 # Initialize default theme to ensure matplotlib settings are applied early

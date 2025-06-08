@@ -6,7 +6,7 @@ functionality to set, get, and manage these themes.
 """
 
 import cycler
-import matplotlib.cm as cm # Changed import for colormaps
+import matplotlib.cm as cm  # Changed import for colormaps
 
 from . import exceptions
 

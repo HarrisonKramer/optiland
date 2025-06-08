@@ -143,11 +143,14 @@ class FieldCurvature(BaseAnalysis):
                 bbox_to_anchor=(1.05, 0.5), loc="center left", show_legend=True
             )
             show_legend_param = legend_cfg.get("show_legend")
-            should_show_legend = show_legend_param if show_legend_param is not None \
+            should_show_legend = (
+                show_legend_param
+                if show_legend_param is not None
                 else config.get_config("legend.show")
-            handles, _ = ax.get_legend_handles_labels() # Use _ for unused labels var
+            )
+            handles, _ = ax.get_legend_handles_labels()  # Use _ for unused labels var
 
-            if should_show_legend and handles: # Check if handles is not empty
+            if should_show_legend and handles:  # Check if handles is not empty
                 ax.legend(
                     bbox_to_anchor=legend_cfg.get("bbox_to_anchor"),
                     loc=legend_cfg.get("loc"),

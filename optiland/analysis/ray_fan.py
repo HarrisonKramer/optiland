@@ -168,7 +168,7 @@ class RayFan(BaseAnalysis):
             sharey=True,
             # main_title="Ray Fan Plot", # Optional: original did not have one
             return_fig_ax=True,  # Get fig and axs back
-            figsize=calculated_figsize # Pass figsize directly
+            figsize=calculated_figsize,  # Pass figsize directly
         )
 
         if fig is not None and axs is not None:  # Ensure fig and axs were returned
