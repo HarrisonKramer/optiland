@@ -13,7 +13,7 @@ from . import exceptions
 THEMES = {
     "light": {
         "figure.facecolor": "#FFFFFF",
-        "axes.facecolor": "#F0F0F0",
+        "axes.facecolor": "#f8f9fa",
         "axes.edgecolor": "#333333",
         "axes.labelcolor": "#333333",
         "axes.titlecolor": "#333333",
