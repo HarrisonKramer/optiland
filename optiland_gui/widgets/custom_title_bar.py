@@ -27,6 +27,7 @@ class CustomTitleBar(QWidget):
 
     def __init__(self, main_menu_bar_instance: QMenuBar, parent=None):
         super().__init__(parent)
+        self.current_theme = "dark"
         self.setObjectName("CustomTitleBar")
         # Adjust height to fit all elements comfortably, e.g., 35-45px
         self.setFixedHeight(40)
@@ -88,28 +89,34 @@ class CustomTitleBar(QWidget):
         self.minimize_button.clicked.connect(self.minimize_requested.emit)
         layout.addWidget(self.minimize_button)
 
-        self.maximize_button = QPushButton(
-            "[]"
-        )  # Placeholder for maximize/restore icon
+        self.maximize_button = QPushButton()
         self.maximize_button.setObjectName("TitleBarMaximizeButton")
         self.maximize_button.setFixedSize(btn_size)
-        self.maximize_button.setCheckable(True)  # To reflect maximized state
+        self.maximize_button.setCheckable(True)
         self.maximize_button.setToolTip("Maximize")
         self.maximize_button.clicked.connect(self.maximize_restore_requested.emit)
         layout.addWidget(self.maximize_button)
 
-        self.close_button = QPushButton("X")
+        self.close_button = QPushButton()
         self.close_button.setObjectName("TitleBarCloseButton")
         self.close_button.setFixedSize(btn_size)
         self.close_button.setToolTip("Close")
         self.close_button.clicked.connect(self.close_requested.emit)
         layout.addWidget(self.close_button)
+        
+        self.update_theme_icons()
 
         # For window dragging
         self._mouse_press_pos = None
         self._mouse_move_offset = (
             None  # Store offset from window top-left to click point
         )
+
+    def update_theme_icons(self, theme="dark"):
+        """Updates the icons on the title bar to match the theme."""
+        self.current_theme = theme
+        self.close_button.setIcon(QIcon(f":/icons/{theme}/close.svg"))
+        self.maximize_button.setIcon(QIcon(f":/icons/{theme}/maximize_restore.svg"))
 
     def set_project_name(self, name: str):
         """Updates the project name label."""
@@ -120,8 +127,6 @@ class CustomTitleBar(QWidget):
     def update_maximize_button_state(self, is_maximized: bool):
         """Updates the appearance of the maximize/restore button."""
         self.maximize_button.setChecked(is_maximized)
-        # Ideally, you'd switch icons here. For text:
-        self.maximize_button.setText("[-]" if is_maximized else "[]")
         self.maximize_button.setToolTip("Restore" if is_maximized else "Maximize")
 
     # --- Mouse events for dragging the frameless window ---

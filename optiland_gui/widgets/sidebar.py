@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QSizePolicy,
     QButtonGroup,
+    QMessageBox,
 )
 
 COLLAPSE_THRESHOLD_WIDTH = 80
@@ -27,6 +28,8 @@ class SidebarWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._wip_buttons = ["dash", "analysis", "optimization", "materials", "tolerancing"]
+        self._last_checked_button = None
         self.setObjectName("SidebarWidget")
         self.setMinimumWidth(SIDEBAR_MIN_WIDTH)
         self.setMaximumWidth(SIDEBAR_MAX_WIDTH)
@@ -68,7 +71,6 @@ class SidebarWidget(QWidget):
             button = QToolButton()
             button.setObjectName(f"sidebar-btn-{name}")
             button.setText(text)
-            # Icon will be set in update_icons
             button.setIconSize(QSize(24, 24))
             button.setCheckable(True)
             button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
@@ -98,28 +100,37 @@ class SidebarWidget(QWidget):
 
         self.update_icons()
 
-        # Set "Dash" as active by default
-        if self._buttons_list:
-            self._buttons_list[0]["widget"].setChecked(True)
-            # self.menuSelected.emit(self._buttons_list[0]["name"]) # Optionally emit signal on init
-
-        # Initial check for collapse (e.g. if starting very narrow)
-        # This will be more reliably handled by the first resizeEvent or MainWindow's logic
-        # self.set_collapsed(self.width() <= COLLAPSE_THRESHOLD_WIDTH)
+        # Set "Design" as active by default
+        design_button_item = next((item for item in self._buttons_list if item["name"] == "design"), None)
+        if design_button_item:
+            design_button_item["widget"].setChecked(True)
+            self._last_checked_button = design_button_item["widget"]
 
     def _handle_button_click(self):
         checked_button = self._button_group.checkedButton()
-        if checked_button:
-            button_name = next(
-                (
-                    b["name"]
-                    for b in self._buttons_list
-                    if b["widget"] == checked_button
-                ),
-                None,
+        if not checked_button:
+            return
+
+        button_name = next(
+            (b["name"] for b in self._buttons_list if b["widget"] == checked_button),
+            None,
+        )
+
+        if button_name in self._wip_buttons:
+            QMessageBox.information(
+                self,
+                "Work in Progress",
+                "This feature is currently under development.\nStay tuned for updates to the GUI!",
             )
-            if button_name:
-                self.menuSelected.emit(button_name)
+            # Prevent navigation by unchecking the WIP button and re-checking the last valid one
+            checked_button.setChecked(False)
+            if self._last_checked_button:
+                self._last_checked_button.setChecked(True)
+            return
+
+        if button_name:
+            self.menuSelected.emit(button_name)
+            self._last_checked_button = checked_button
 
     def set_collapsed(self, collapsed: bool):
         if self._is_collapsed == collapsed:

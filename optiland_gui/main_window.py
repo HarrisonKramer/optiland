@@ -655,6 +655,8 @@ class MainWindow(QMainWindow):
                 self.sidebar_content_widget.update_icons(theme_name)
             if hasattr(self, "analysisPanel"):
                 self.analysisPanel.update_theme_icons(theme_name)
+            if hasattr(self, "custom_title_bar_widget"):
+                self.custom_title_bar_widget.update_theme_icons(theme_name)
 
     @Slot()
     def new_system_action(self):  #

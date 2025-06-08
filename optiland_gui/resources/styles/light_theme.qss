@@ -650,16 +650,21 @@ AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-#RefreshPlotButton {
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton {
     background-color: transparent;
     border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 2px;
 }
 
-#RefreshPlotButton:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+#RefreshPlotButton:hover,  #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,
+#RunAnalysisButton:hover {
+    background-color: rgba(255, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-#RefreshPlotButton:pressed {
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed, 
+#RunAnalysisButton:pressed {
     background-color: rgba(255, 255, 255, 0.1);
 }

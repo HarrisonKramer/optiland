@@ -561,7 +561,6 @@ AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolBut
 #ToggleSettingsButton {
     background-color: transparent;
     border: 1px solid transparent;
-    color: #FFFFFF; /* Ensures the '>' text is white */
 }
 
 #ToggleSettingsButton:hover {
@@ -576,18 +575,21 @@ AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolBut
 /* Analysis Panel - Fix for Refresh Button Background (Dark Theme)            */
 /* -------------------------------------------------------------------------- */
 
-#RefreshPlotButton {
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton {
     background-color: transparent;
     border: 1px solid transparent;
-    padding: 3px;
-    border-radius: 2px;
+    padding: 1px;
+    border-radius: 4px;
 }
 
-#RefreshPlotButton:hover {
+#RefreshPlotButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,  
+#RunAnalysisButton:hover{
     background-color: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-#RefreshPlotButton:pressed {
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed,
+#RunAnalysisButton:pressed  {
     background-color: rgba(255, 255, 255, 0.1);
 }

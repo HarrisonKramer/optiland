@@ -84,6 +84,7 @@ class AnalysisPanel(QWidget):
 
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
+        self.current_theme = "dark"
         self.connector = connector
         self.setWindowTitle("Analysis")
         self.setObjectName("AnalysisPanel")
@@ -112,12 +113,17 @@ class AnalysisPanel(QWidget):
         top_bar_layout.addSpacerItem(
             QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         )
-        self.btnRun = QPushButton("Run")
+        self.btnRun = QPushButton()
         self.btnRun.setObjectName("RunAnalysisButton")
-        self.btnRunAll = QPushButton("Run All")
+        self.btnRun.setToolTip("Run Selected Analysis")
+        self.btnRun.setFixedSize(25, 25)
+        self.btnRunAll = QPushButton()
         self.btnRunAll.setObjectName("RunAllAnalysisButton")
-        self.btnStop = QPushButton("Stop")
+        self.btnRunAll.setFixedSize(25, 25)
+        self.btnStop = QPushButton()
         self.btnStop.setObjectName("StopAnalysisButton")
+        self.btnStop.setToolTip("Stop Analysis")
+        self.btnStop.setFixedSize(25, 25)
         top_bar_layout.addWidget(self.btnRun)
         top_bar_layout.addWidget(self.btnRunAll)
         top_bar_layout.addWidget(self.btnStop)
@@ -153,6 +159,7 @@ class AnalysisPanel(QWidget):
         self.plot_area_title_bar_layout.addStretch()
         self.btnRefreshPlot = QPushButton()
         self.btnRefreshPlot.setObjectName("RefreshPlotButton")
+        self.btnRefreshPlot.setFixedSize(25, 25)
         self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
         self.toggleSettingsButton = QPushButton() # Remove the ">" text
         self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
@@ -232,7 +239,6 @@ class AnalysisPanel(QWidget):
         self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
         self.btnApplySettingsAndRerun.clicked.connect(self._apply_settings_and_rerun_analysis_slot)
 
-        # --- Initial State ---
         # --- Initial State ---
         self.update_theme_icons()
         self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
@@ -369,6 +375,9 @@ class AnalysisPanel(QWidget):
         self.btnRefreshPlot.setIcon(QIcon(refresh_icon_path))
         settings_icon_path = f":/icons/{self.current_theme}/settings.svg"
         self.toggleSettingsButton.setIcon(QIcon(settings_icon_path))
+        self.btnRun.setIcon(QIcon(f":/icons/{theme}/run.svg"))
+        self.btnStop.setIcon(QIcon(f":/icons/{theme}/stop.svg"))
+        self.btnRunAll.setIcon(QIcon(f":/icons/{theme}/run_all.svg"))
 
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
