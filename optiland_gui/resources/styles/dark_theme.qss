@@ -32,12 +32,6 @@ QMainWindow::separator:hover {
     background-color: #007ACC; 
 }
 
-QDockWidget {
-    titlebar-close-icon: none;
-    titlebar-normal-icon: none;
-    border: 25px solid rgb(212, 181, 26); /* Example: A slightly lighter gray than typical dark backgrounds */
-}
-
 QDockWidget::title {
     background-color: #3C3C3C; /* var(--secondary-color) */
     color: #E0E0E0; /* var(--text-color) */
@@ -50,6 +44,11 @@ QDockWidget::title:focus { /* Added for focused dock title */
     background-color: #2E2E2E; /* var(--surface-color) */
     border-top: 2px solid #007ACC; /* var(--primary-color), made consistent with light theme focus */
     padding-top: 5px; /* Adjust padding for thicker border */
+}
+
+QDockWidget::float-button, QDockWidget::close-button {
+    background-color: #5A5A5A;
+    border-radius: 2px;
 }
 
 /* === Custom Title Bar Styles === */
@@ -555,12 +554,40 @@ AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolBut
     border: 1px solid rgba(0, 120, 215, 0.7);
 }
 
-/* Cursor Coordinate Label (child of PlotContainerWidget) */
-AnalysisPanel QWidget#PlotContainerWidget > QLabel#CursorCoordLabel { 
-    color: white; /* For dark theme */
-    /* color: black; */ /* For light theme */
-    background-color: rgba(30, 30, 30, 0.75); /* Darker, more opaque background */
-    padding: 2px 5px;
-    border-radius: 3px;
-    /* Positioned by .move() in Python, so margin here is less critical */
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Settings Button Background (Dark Theme)           */
+/* -------------------------------------------------------------------------- */
+
+#ToggleSettingsButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: #FFFFFF; /* Ensures the '>' text is white */
+}
+
+#ToggleSettingsButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#ToggleSettingsButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Refresh Button Background (Dark Theme)            */
+/* -------------------------------------------------------------------------- */
+
+#RefreshPlotButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 3px;
+    border-radius: 2px;
+}
+
+#RefreshPlotButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#RefreshPlotButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
 }

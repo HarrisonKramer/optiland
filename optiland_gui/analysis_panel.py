@@ -2,6 +2,7 @@
 import inspect
 import numpy as np 
 
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Slot, Qt, QSize
 from PySide6.QtWidgets import (
     QComboBox,
@@ -36,6 +37,25 @@ from optiland.mtf import FFTMTF, GeometricMTF
 from .optiland_connector import OptilandConnector
 from . import gui_plot_utils
 
+class CustomMatplotlibToolbar(NavigationToolbar):
+    """
+    A custom toolbar that assigns unique object names to its buttons
+    so they can be styled individually via QSS.
+    """
+    def __init__(self, canvas, parent=None):
+        super().__init__(canvas, parent, coordinates=False)
+
+        # Assign unique object names to each tool button
+        for action in self.actions():
+            # The tooltip is a reliable way to identify the action
+            tooltip = action.toolTip()
+            if tooltip:
+                # Sanitize the tooltip to create a valid CSS ID
+                # e.g., "Save the figure" -> "MPLSaveButton"
+                action_id = tooltip.split(' ')[0].replace('(', '').replace(')','')
+                button_widget = self.widgetForAction(action)
+                if button_widget:
+                    button_widget.setObjectName(f"MPL{action_id}Button")
 
 class AnalysisPanel(QWidget):
     """
@@ -131,10 +151,10 @@ class AnalysisPanel(QWidget):
         self.plot_area_title_bar_layout.addWidget(self.mpl_toolbar_in_titlebar_container)
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
         self.plot_area_title_bar_layout.addStretch()
-        self.btnRefreshPlot = QPushButton("Refresh")
+        self.btnRefreshPlot = QPushButton()
         self.btnRefreshPlot.setObjectName("RefreshPlotButton")
         self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
-        self.toggleSettingsButton = QPushButton(">")
+        self.toggleSettingsButton = QPushButton() # Remove the ">" text
         self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
         self.toggleSettingsButton.setFixedSize(25, 25)
         self.plot_area_title_bar_layout.addWidget(self.toggleSettingsButton)
@@ -213,11 +233,12 @@ class AnalysisPanel(QWidget):
         self.btnApplySettingsAndRerun.clicked.connect(self._apply_settings_and_rerun_analysis_slot)
 
         # --- Initial State ---
+        # --- Initial State ---
+        self.update_theme_icons()
         self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
         self.update_pagination_ui()
         self.display_plot_page(self.current_plot_page_index)
         self.settings_area_widget.setVisible(False)
-        self.toggleSettingsButton.setText(">")
 
     def _clear_layout(self, layout_to_clear):
         if layout_to_clear is not None:
@@ -341,6 +362,14 @@ class AnalysisPanel(QWidget):
         if self.current_plot_page_index == -1 or not self.analysis_results_pages:
              self.plotTitleLabel.setText(analysis_name)
 
+    def update_theme_icons(self, theme="dark"):
+        """Updates icons within this panel to match the current theme."""
+        self.current_theme = theme
+        refresh_icon_path = f":/icons/{self.current_theme}/refresh.svg"
+        self.btnRefreshPlot.setIcon(QIcon(refresh_icon_path))
+        settings_icon_path = f":/icons/{self.current_theme}/settings.svg"
+        self.toggleSettingsButton.setIcon(QIcon(settings_icon_path))
+
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
         for i, page_data in enumerate(self.analysis_results_pages):
@@ -418,8 +447,9 @@ class AnalysisPanel(QWidget):
                 canvas = FigureCanvas(fig)
                 self.active_mpl_canvas_widget = canvas
                 analysis_instance.view(fig_to_plot_on=fig, **page_data.get("view_args", {}))
-
-                self.active_mpl_toolbar_widget = NavigationToolbar(canvas, self.mpl_toolbar_in_titlebar_container)
+                fig.tight_layout()
+                
+                self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(canvas, self.mpl_toolbar_in_titlebar_container)
                 self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
                 self.mpl_toolbar_in_titlebar_container.setVisible(True)
 
@@ -439,7 +469,6 @@ class AnalysisPanel(QWidget):
         is_visible = self.settings_area_widget.isVisible()
         self.settings_area_widget.setVisible(not is_visible)
         self.btnApplySettingsAndRerun.setVisible(not is_visible)
-        self.toggleSettingsButton.setText("<" if not is_visible else ">")
         if not is_visible: # if we just made it visible
             self.display_plot_page(self.current_plot_page_index) # Re-run display logic to ensure settings are populated
 

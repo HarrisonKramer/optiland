@@ -650,7 +650,11 @@ class MainWindow(QMainWindow):
             self.current_theme_path = theme_path
             self.load_stylesheets()
             theme_name = "dark" if "dark" in theme_path else "light"
-            self.sidebar_content_widget.update_icons(theme_name)
+            # Update icons in the sidebar
+            if hasattr(self, "sidebar_content_widget"):
+                self.sidebar_content_widget.update_icons(theme_name)
+            if hasattr(self, "analysisPanel"):
+                self.analysisPanel.update_theme_icons(theme_name)
 
     @Slot()
     def new_system_action(self):  #
