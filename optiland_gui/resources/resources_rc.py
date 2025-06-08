@@ -6,2398 +6,754 @@
 from PySide6 import QtCore
 
 qt_resource_data = b"\
-\x00\x00IJ\
+\x00\x00\x01\x9c\
 <\
-svg width=\x22430\x22 \
-height=\x22430\x22 xml\
-ns=\x22http://www.w\
-3.org/2000/svg\x22 \
-xmlns:xlink=\x22htt\
-p://www.w3.org/1\
-999/xlink\x22 xml:s\
-pace=\x22preserve\x22 \
-overflow=\x22hidden\
-\x22><defs><clipPat\
-h id=\x22clip0\x22><re\
-ct x=\x22425\x22 y=\x2214\
-5\x22 width=\x22430\x22 h\
-eight=\x22430\x22/></c\
-lipPath><clipPat\
-h id=\x22clip1\x22><re\
-ct x=\x220\x22 y=\x220\x22 w\
-idth=\x224095750\x22 h\
-eight=\x224095750\x22/\
-></clipPath><ima\
-ge width=\x22430\x22 h\
-eight=\x22430\x22 xlin\
-k:href=\x22data:ima\
-ge/png;base64,iV\
-BORw0KGgoAAAANSU\
-hEUgAAAa4AAAGuCA\
-YAAADI9eKaAAAAAX\
-NSR0IArs4c6QAAAA\
-RnQU1BAACxjwv8YQ\
-UAAAAJcEhZcwAADs\
-MAAA7DAcdvqGQAAD\
-QiSURBVHhe7d0HlG\
-VZXe/x2/RM13SoOv\
-v/L0BC84bQzLQ1XX\
-f/rw0Kw0MGJEtUns\
-+AT5IkAUWfghJ9pK\
-4egvjIWdCpQdIQlA\
-wSJQsMSpCsMGQkj8\
-S3dlXNY/z1dJ9TN9\
-9zv5+1fmuxdPp/79\
-3n3P+ue8I+nQ4AAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAYK65H1\
-jat+/wpXd7vmJVrV\
-51n/d+tqpyLHn++Z\
-RWr1uy+b8jb/7/Vq\
-9a/tvybzrLpy9qPQ\
-AAGjM7XJnlMyqPG6\
-YUv5k8ft8sHpY8nm\
-IWLzTP/2AW/2Kev+\
-TLvZ8MM6WmWf7nrd\
-d4YfJ48tZr36e8l6\
-rq3qC8t/Ie9X0DAF\
-pqcbF7mlncPKW4h1\
-l+hFl+jnm8zjw+Yh\
-7f1slkWmMe39p4z5\
-Zfu/EZLB5u1ru7Wd\
-xscTGurp8bADADqq\
-rbqzzf0Sz+0jzePE\
-sT06DZmtjeZJYfX3\
-m+QzlMqeMDAJigck\
-5p8xdH7xnm8R5t5G\
-Qz5vHu5PnpZvluTG\
-YAMCaLiweXK8+3te\
-X8yI1fFR7f0QZNmq\
-X8CjWPN5axrJbzbc\
-rY6ngDALZtZV9KcW\
-vzeEI5r6PNlww35v\
-Hhcng1pe4tOp3uXt\
-0aAIBj7TTL13GPhy\
-SPt5rHD7S5kvHEPL\
-5fzg8mjwctevcXyr\
-bRjQUAc6lc7ZeW8+\
-+Z5/PM4hvaQMl0xD\
-y+bhYvKucTl5bOuJ\
-puRwBoNbPuoXKfkn\
-l8VBskmY2Ue9rKL2\
-MuwQfQWqXBlUa30f\
-AuoRGS2U3yOD95fi\
-C/xADMvNLISkNLHh\
-/UZkfaGfP4p+Txp1\
-WVr6z7AwBMpc2lkz\
-ZWcninNjUyX0kebz\
-eLu7AuI4CptLHGn+\
-dztHnNaszju+bxZf\
-P49NY6gu/aWEtQUg\
-6T6b+tS/k3Wmcr79\
-p8rfj01mt/V//tLM\
-Y8vmcezytrLup+Aw\
-BjVVY7N+v9n+TxGW\
-1Ws5CtK+XesbXm3/\
-3LjbhlFfdOp3OSft\
-bjSal7S61bl837pB\
-o7aWNl+XLjtcX9t9\
-7rO8zjP7TuLMQ8Pm\
-WWH5pS71T9oAAwMm\
-bdm5rH67UpTWtKs0\
-wer0yeH10OY6bU+8\
-U9e1Yup5+rH2US0t\
-eryzYnruPas+fg5a\
-sqn7XxmTw/2j1eVX\
-6t6etNazYXCu7eVD\
-8XAAzNxioWU3ruam\
-sJo/cmz39Tbpo1y7\
-+W0qFup7OySz/HMI\
-3hF1cfVnaVz74xBh\
-4PLmNSxmZaFxsuvy\
-DLOOqnAIB+Xcosfm\
-Pargw0jwvLrz6zfL\
-+qWv25TqezQ9/4OE\
-znxHVcO6pq9fDGIc\
-cydh4X6nubZMzjA2\
-bd/1n2OX3jANDESe\
-5xZ/P4V20wk0qZPJ\
-PHYzYPL+3frW94Em\
-Zs4hL7d5exLGPaz0\
-Umo0q5Mb08lmY75x\
-oBzLVTT9l48q7HZ7\
-WhjDvm8XnzeG5K3d\
-/ety8uo+90Gsz2xP\
-Vf7d3bvWwZ63IFoH\
-lcoO973CkX/ZTlwM\
-o+qe8VADrlXputQ0\
-hf1AYyrpTHlJSLKM\
-x6f5jS6qq+xWnUpo\
-lLlW1QtsXWRR8Tuz\
-TfPL5glv+YFesBbK\
-iqnMol7eXScG0Y44\
-h5/KhcXZZSvv0s/m\
-Xd5onrv9q/u2wj83\
-hd2Wb6mcYR8/haWT\
-as7LP67gDMgb17D/\
-3MxvmiCV1pVs5jJM\
-8PGNZl6ZMyPxPXT+\
-1e7l2hbDvz/DH9bO\
-OIeXwreaxN6+FjAE\
-O3smuz6Yz/0E+5aT\
-Z5PM0sztR3Navmce\
-K6uPL8tOT56ZN4JM\
-3GLRCW78dFHECLVV\
-W+vnl8XBvAKLN5KD\
-BeXS6p73QOLOh7mn\
-XzPnH91KmnpBS/aZ\
-ZfM+5DieXp2CmtXl\
-ffEYAZVg7tmOUX6B\
-d+lNl6DPz9Z/1QYB\
-0mrmOVbV5WiC8Tin\
-72USZ5rLd9fwPmwU\
-nlaqxyTkC/5KNIuc\
-AjeTzZffVa+kbaio\
-nrxMx6104eTxnX2o\
-rm8U33fN9Op7NT3w\
-uAKVcOnYzrL16z+P\
-fNZjEdNwWPExNXU/\
-t3l33EPD6n4zGKbK\
-yyb71r67sAMIU2D9\
-Pkv9Ev8ihiHp8wy3\
-frdA6frO9jXjBxbd\
-fhk8s+Yx6f1HEZRW\
-y591dcfQhMr53J4/\
-fHcXVX+Wt2874rDs\
-cwcfVt58Z9YRb/ou\
-Mz7Gwcwt5YgYM1EI\
-GpsbQc1yyTiX5hhx\
-3zeE/l3V+Z1IK204\
-iJa2A7yj5VVq/XcR\
-p2yiK+5buibwDAGC\
-0uHlw2i2ebx4/1Sz\
-rMmMebeW7SJWPiGp\
-6tBX/fquM1zJTvSr\
-nvrHx39PUBjNjGAw\
-Q9vqxfzKHG41XzdI\
-VgP5i4hq886LPc+6\
-fjNsyU7075DulrAx\
-iNci5rbVS/skpds3\
-hxVXV7+sI4FhPX6J\
-R90DxeMsJ9vdwc/3\
-DO1QIjVK4YNIt/1C\
-/gsFLOMzBhbQ8T1+\
-htnMMd4Tmw8p3ixm\
-VgBJY8brSxOvYlfP\
-EGjXl8dfOydi662C\
-4mrrHZkVLcY4Tfga\
-+V75i+KIC+bNz38h\
-f6RRtGOFE9OCau8d\
-q6IOmZozh8uPV9OJ\
-tFe4EBpNQ71bz3fv\
-2CDSMcFhwOJq7J2D\
-p8+AEd22Gk3Pbhvr\
-pfXxNAjZTi1qNYY7\
-AcEimHXDgsOBxMXB\
-N1qZTinqN4CGpZW9\
-Esbq4vCOASHVhInp\
-+kX6RBs3m1YO8ZHB\
-YcLiauyStLOpnFs0\
-Zy+NDy4+d5STOg1t\
-JS78AoDg2axz+xYs\
-BolL/Kdbzrwl/yo1\
-HuORzV96equlfR1w\
-Pmnnv8D/P4jn5pBs\
-nWYcF7skbb6OxbPn\
-RQx70ui4vd07QOhu\
-ZSyfO9hv0YlXLYvh\
-y+1xcD5tSpp5RDeP\
-pFGSRbNxE/i8OCY7\
-HDPL6v2+B4MY/vag\
-EM3+bhw/ycYR8+LM\
-+ba+OTvIHGqmrVym\
-EI/XIMEpayGT9bzo\
-/U7XC8mOU/13+P0S\
-nrH5b7FHU7DBKzeK\
-fZ4UpfC2i93Z6vaB\
-4f1y/FICkrAOzd27\
-2svhZGrizD9UHdHp\
-pyCwJXc47f7uXeFZ\
-Lnt+n2GCTm8WFW28\
-BcKec4zOMC/TL0m8\
-1Dg/kRrLk2OVWV04\
-kWhk0eryj/jf47jE\
-354+LIMA8dJo/PLi\
-2dcTV9IaB1ljz//D\
-Af9lgODS55vrG+Di\
-bDLN/VPF5mnr9kHp\
-/f+N+W76r/HSZj2I\
-cOS62qWj2srwO0Rr\
-Xc+yXz+J7u/P2GQ4\
-PA9g370KF5fJvzym\
-ilyuN25vFD3en7CY\
-9jAAa2M3nvUcM6dF\
-iuLK0831ZfBJhZZr\
-27647eb7hqEBiera\
-MgQzl0uHUbyl30NY\
-CZU/6q0x283ySPt3\
-BoEBiuoR865JYHzL\
-ByY+pf607dT7YODT\
-6MFTCAkdlZ7scb1q\
-HD5PE0fQFgyq3sSt\
-77e92Z+wmHBoHxGe\
-qhQ4sX8WwvzIiVfc\
-nj7boT95Nyg3K5UV\
-lfAcDobD4HLz6l38\
-d+Yh5v6HQO79HXAK\
-bGvn2HL508PqQ7bz\
-/ZXJF61fQ1AIzexl\
-qHHu/T72U/KXWWll\
-ZcXwOYuI1Hint8VH\
-fafmKWX9vpdPfqaw\
-AYo+XTF8svJv1+9h\
-Pz+AiLXmPK7N89rO\
-cAmefzOC4OTI2Tyr\
-kq/Z72k/LLi8OGmB\
-Y7zeONupP2E7N4ph\
-YHMHnlKkH9vvYT83\
-g9Cwdg0naYxQt15+\
-wnyePBWhzA9Cj3Z+\
-n3tq94/K3WBsbGLJ\
-59zE65zZT7RirPd9\
-TaAKZPWRljGPd6mc\
-cTtDYwcuUXku6M24\
-15XJhS71ZaG8D0Km\
-sSbuep18dL8vwArQ\
-2MTPL4Hd0Jtxvz+K\
-b76rW0NoDpVxYFKK\
-vC6/d6u6m8eyetDQ\
-xdSvmXyxJMugNuJ+\
-VZTe6xorUBzI6qym\
-EeX9Hv93ZSeklK3V\
-tqbWBozHrXNo//1J\
-1vOzGPT5ut/DetDW\
-D2lCcglych6/d8Oy\
-k9xSxfR2sDA9v66+\
-qbutNtJ2UZmT17Vi\
-6ntQHMrj17Dl5+0C\
-WiylPRU1pd1dpA36\
-qqexXz+KLubNtJOa\
-RQ6mhtALOvqlavOo\
-TDhl8wO+NKWhvYtr\
-Jm2RAOBXwnpUNdrQ\
-2gPbaOygx0wUZZWJ\
-t1DTGgjZXeB1o01z\
-x+kFJcTysDaJ+qyt\
-cv33ntA9sJS0NhAI\
-dPHvSpqOWKocq7v6\
-KVAbRX5XG7QW9SZm\
-ko9CV5frruTNtNud\
-9L6wJov5TintoPtp\
-vk+UlaFzgu9/gfuh\
-NtN2VdM60LYH6Yxc\
-O1L2w31XK+jdYFjr\
-H19NPv6A60nZQ1DL\
-UugPlj1nuG9oftpN\
-yCU3qS1gUu7qRBn6\
-tlHi8vq8ZrYQBzaY\
-d5vFT7xHZSnoZezr\
-lrYWBDWbFZd5rtpF\
-zMwQ4G4L8qF3rFW7\
-RfbCdm8TitCpRDhL\
-fSnWU7Kb/UyuXzWh\
-cAtm6tOV/7xnZiFj\
-fTqphjW+e1+l7OyT\
-w+wU2DAE5k797uZZ\
-PHZ7R/NI15fH235y\
-tqXcynnYOc19pYCs\
-pX92tRAFCDLg1lFu\
-/k/i6US1YfqztH05\
-Q75JeWetfQmgBwPG\
-Ul+EEejZQ8jmhNzB\
-Gz7k10p9hOzPL9tC\
-YA1EmeH6j9pGnKqh\
-xV1b2B1sQc2L3cu0\
-I5Zqw7RdOYxxu0Jg\
-A0ZR6v077SNObx5b\
-17D/2M1kS77TTP79\
-KdoWnK4we4GAPAIB\
-YXDy6XCUj7S9OUS+\
-y5Z3SOJO89SneCpi\
-nHps3iTK0JANtVDv\
-kNsiAvS8vNiarKZw\
-2yoySPB2lNAOiXWe\
-//aJ9pmtLLysUeWh\
-Otcuop5nGBbvym4b\
-wWgBHYMcjKGuVBt5\
-3O/t1aFC2RPB6jG7\
-1pyr0XnNcCMArlQo\
-vBznf1HqU10QKLi9\
-3TzOOHusGbZPPy03\
-yW1gSAYRnkfJd5fH\
-9xcfV0rYkZN8jTjM\
-3iYVoPAIat3Fys/a\
-dpksdbtR5mWPL4X7\
-qRm2ZrZ+CSUwDjsL\
-Ms66R9qGnM4je0IG\
-bSyr5+jx2X81plYU\
-ytCACjUhbS7XdxBP\
-P4PE+paIFBnrHFeS\
-0Ak1AeYaL9qGl4dt\
-eMM+se6vdkZ/J4mt\
-YDgHExi2drX2qSch\
-EaF2rMMPN4t27UJi\
-k/080OV1oPAMZla0\
-movg4ZcqHGjDLLv6\
-sbs2nM4i5aDwDGLa\
-W4h/anpqk830HrYY\
-qVX0v9/qVSfqVpPQ\
-CYFPP4gPapJikXpX\
-HkaIYkz0/Xjdgkm+\
-t+dQ9pPQCYlPKw2v\
-7P1ecnaT1MoapaPa\
-wbr2nM4i+1HgBMWv\
-J4ivarJikTXkqrq1\
-oPUyZ5fFA3XpOUn9\
-Xc/wBgGm2d/ujzft\
-T8Lq2HKZI830s3Wt\
-OklG+v9QBgWlSe76\
-h9q2nM8t20HqbCxi\
-NL+rogo6xjqNUAYN\
-r0++R28/yl0iO1Hi\
-bMrPeHurGaZPNmve\
-5pWg8Apk05X9XvUy\
-6S9+6t9TBRh0/u9/\
-hv8jiq1QBgWpnlv9\
-A+1iTm8bmyiK/Ww4\
-SY9e6uG6lJytOQ+f\
-kMYLZsLBz+ee1nje\
-JxZ62GydhpHp8+Zg\
-M1SOVxOy0GANOuPL\
-5E+1mTmMeneEzTFO\
-j3WVvm8QatBQCzoq\
-xHqH2tSXhm1xQwzx\
-/TDdMoHitaCwBmRb\
-+LLSSP87UWxqgc6t\
-ON0iTm8TKtBQCzJn\
-m8Uvtbk6QUt9ZaGJ\
-Pk8SHdIE1SVd2e1g\
-KAWWMWZ2p/axIWE5\
-8Qs7i5bowmMcuv1V\
-oAMKvM403a55qk8r\
-ih1sKIldUudEM0SV\
-Xls7QWAMyqJY8baZ\
-9rEvN4o9bCCKUU19\
-ON0CQs7QSgjfp+2r\
-vFmVoLI2KWX6MboE\
-nM4mZaCwBmXbnYQv\
-tdkyTPf6e1MALlwg\
-od/CYpF3JoLQBoi3\
-KZu/a9JjHLZ2gtDJ\
-l5Pk8Hvkkq7/2q1g\
-KAtjDr/br2vSYxyy\
-/QWhiictNwP4+wLj\
-cpay0AaJkd5vFR7X\
-91KT11cTGursUwJL\
-bc+ysd9CZJKf+W1g\
-KAtqk830H7X5OYxb\
-O1FoZh+fRF8/iBDn\
-hdygK8LCoJYE6URc\
-c/p32wLuZxofuBJS\
-2GAVWe/0AHu0nM8u\
-9qLQBoq7Scf0/7YJ\
-Mkj/toLQzIPP5VB7\
-ou5Zk15SGTWgsA2q\
-s8WDd/SfthXcr5Ma\
-2EAfS7Hlfy+H2tBQ\
-BtZxb/W/thkyx69x\
-e0FvpUThzqANfFPL\
-7W6ezfrbUAoP327y\
-49UPtiXZLnp2sl9G\
-VjA1yoA1yX5PlJWg\
-kA5kXyeLL2xbqYx7\
-c7ncN7tBa2KaW4hw\
-5uo/jqtbQWAMwLs9\
-61j+mLDcIFbUPQzz\
-O3zOOTWgcA5o15fE\
-L7Y13M87u0DrYhpd\
-VVHdQmSZ4fqLUAYN\
-4kjwdrf2ySpaXeAa\
-2Fhszi4TqgdSnLl+\
-zZc/DyWgsA5s1uz1\
-fUHtkoHg/RWmiov3\
-u38j9oHQCYV+bxZu\
-2TdWF91z5V1erP6W\
-A2SeXdO2ktAJhX5W\
-IL7ZNNUk7VaC3USB\
-5rOpB1MY/vcSknAF\
-xcd695fF/7ZV3KqR\
-qthBrJ47M6kHVJns\
-/ROgAw75LH87Vf1i\
-V5fEbr4ATKsiM6iE\
-1i1r2p1gKAeZdS9x\
-baL5uknLLRWjgOs3\
-isDmBdyqKSPL4EAC\
-7Rpczji9o361JO2W\
-ghHId5fEEHsC7J4z\
-FaBwCwySz/hfbNun\
-C4sKGl5bimDl6TpB\
-RZawEANlXV6mHtm0\
-1SVTm0FkTyeJAOXF\
-3M48NaB5iEk885cs\
-auc9buu7B+9JyS8r\
-93Pf/sFf3vgEkwy/\
-+s/bMuZnF/rQORPN\
-6uA1cXs/gjrQOM1f\
-Mev7Rr/ciTF9bXfn\
-TKuUd/cvGU/9uu9b\
-UnlP9G/xkwTmb5ft\
-o/62Ieb9I6uBj3A0\
-tlySYduBPFPH60b9\
-/hS2stYGx+8pMdC+\
-tr79EJS7Owvvau8t\
-/qPwfGpSwB1UeP/S\
-H3x56AWf41HbS6JM\
-9v0zrAOO1aP/IAna\
-SOl13ra/fTfw+MU1\
-n9XftoXSrPt9U62N\
-LXk465uxsTtrC+9h\
-86QR0vC+trX9B/D4\
-xTP6sSJY+naR1sMY\
-8v64DVpVru/ZLWAc\
-Zm/dFX0smpLp2/PX\
-o5LQOMS1moQftoXc\
-zi37QONp90nHWw6m\
-IeP+h0VnZpLWBcFs\
-49chOdmOqycM6RG2\
-kdYHw21i78gfbT2n\
-hwdawql1weM1A14W\
-oXTNquc8++pU5Mdd\
-m1vnYLrQOMU39Xb/\
-f+UOvMPbN4tQ5UXc\
-zyQ7UOME5MXJhFZv\
-kR2k/rkjxeoXXm3Q\
-7z+KYOVF1S6v2iFg\
-LGiYkLs6jyuKH207\
-qYxTe0zlwrDyzTQa\
-qLeVzY6XR2ai1gnJ\
-i4MJsOLPRznmvf8q\
-GDWmlumfXurgNUF/\
-N4ndYBxo2JC7OqXC\
-OgfbU2HnfWOnPLPJ\
-57zADVJHl+gNYBxo\
-2JC7OqXCOgfbUuZv\
-FMrTO3zOPjOkB1MY\
-sztQ4wbkxcmFUpxf\
-W0r9aFBc23LC2tuA\
-5OXTi/hWnBxIUZtt\
-M8vqf9tS6d5dMXtd\
-DcKWtg6cDUxuNVWg\
-eYBCYuzDLzeP0x/b\
-UmKXXZf5Pns3Vg6m\
-KW/0TrAJPAxIVZVq\
-4V0P5aF1vOj9Q6c8\
-c83qgDU5fylGStA0\
-wCExdmWblWQPtrXc\
-zya7TO3DGPr+vAnC\
-jm8W2tAUwKExdm3L\
-bPc5nHBVpkruzZc/\
-DyOih1MY+Xax1gUp\
-i4MOvKNQPaZ+tSVa\
-umdebGkucb64DUhf\
-UJMU2YuDDr+lm3sK\
-ry9bXO3DCLP9IBqU\
-tK8ZtaB5gUJi7Muu\
-TxO9pn65I87qN15o\
-Yt9/5KB6QuS0u9a2\
-gdYFKYuDDr+rtAo/\
-cMrTM3zON9OiB1KQ\
-9B0zrApDBxYdbt23\
-f40tpn62IW79Q686\
-I8yuT7OiAninl8UY\
-sAk8TEhTYojyzRfn\
-uizO3V3WV5fB2Mui\
-SPt2odYJKYuNAG5R\
-eU9tu6LC2dcTWt03\
-opxa11IOpiFs/SOs\
-AkMXGhDczjedpv62\
-IWN9M6rVeuStGBqE\
-vy+FOtA0wSExfaIH\
-k8WPttXVKKe2id1j\
-OLx+pA1KXy3q9qHW\
-CSmLjQBma9X9d+W5\
-fksaZ1Ws8sXqQDUZ\
-eUDnW1DjBJTFxog6\
-paPaz9ti7J41yt03\
-rm8V4diLp0Oiu7tA\
-4wSUxcaIXl0xe139\
-bFLN6hZVrPPL6iA3\
-GiJI/Pag1g0pi40B\
-Zl8VztuyfKHC62e+\
-opOgh1KQ880yrApD\
-FxoS3M483ad08U8/\
-jxXD2J3qx7SAehLs\
-njyVoHmDQmLrRFWc\
-ZJ+25dFhe7p2md1k\
-op/7IOQF3Men+odY\
-BJY+JCW5jl+2nfrU\
-t5wofWaS2zuIsOQF\
-1S6vJlx9Rh4kJbVJ\
-5vq323LmVlea3TWm\
-Zxfx2Auiwurp6udY\
-BJY+JCW/RzCqc8mk\
-rrtFbyfLYOQG38wJ\
-LWASaNiQttsbh4cP\
-mYvlsTW86P1DqtVd\
-Yc1AGoS1lNXusAk8\
-bEhfY4sKB9ty7J46\
-lapbXM46U6ACeKeX\
-xXawDTgIkLbWIeP9\
-L+e6KYxQu1Rmslz2\
-/TAThRzPOXtAYwDZ\
-i40Cbm8XXtvyeKef\
-4HrdFa5vERHYATxT\
-w+qTWAacDEhTYxi3\
-/T/nuiJI/ztUZrmc\
-eXdQBOlOTxQa0BTA\
-MmLrSJeXxY+++JYh\
-6f1xqtVZYK0QE4UZ\
-LH27UGMA2YuNAm5v\
-Fu7b8nSjknpjVaaW\
-lpxfXD18Usv0brAN\
-OAiQttYh5v1P5bl0\
-5nZZ/WaR2zlf+mH7\
-wuZvFirQNMAyYutI\
-l5vFz7b1327Dl4ea\
-3TOktLvQP6wetiHs\
-/VOsA0YOJCmySPde\
-2/dUmpd6rWaR33WN\
-EPXpdy31dV5bPGkZ\
-R6v1gOZ+r7xpg99+\
-y9J60fOXNh/eyzpj\
-m7zj3ypzox1aX8G6\
-0zbTnp3KPX6fztE9\
-p/CGjKlV5UepL2qV\
-ElebxC+29dlpbOuJ\
-q+79ZJ6VBXP/g0xj\
-w+7R4P0feP0VpYP3\
-LnhfW1D2qzJ5PJwv\
-ra+QvnHr2bbieMll\
-k8LHl8RvvSVMZjRd\
-9/6ywtxzWP+eBTnD\
-KBscDvGJy3trhwzt\
-rbtHGS6cjC+to7Oi\
-95XNLNhuHat3zo4M\
-YfzZfQi6Y1VZVDP0\
-frmOXr6Aef9pj33s\
-9aiaN1yrlrz9ZmSa\
-YrC+tHz9HthqHaaR\
-4f0P4z7Vny/PP6QV\
-qnqvL19YPPQpLnB+\
-pnwXAsrB+9sTZJMp\
-3ZtX701rr9MBxm+c\
-+178xCzLr/XT9L65\
-h1b6IffBZiHh/Xz4\
-LhWFg/8hJtkGQ6s3\
-Du0Zfr9sNwJI/Pat\
-+ZhZQfI/pZWqc8yV\
-g/+CzEPL6mnwXDsW\
-v9yBu0QZLpzMI5R9\
-+s2w/DYR7f1r4zCy\
-k/RvSztI5Z3Fw/+C\
-ykXOGjnwXDwS+u2c\
-mu9bVX6fbDcMzqLy\
-6z7k31s7RO5XFD/e\
-CzEPN4iX4WDMcp5x\
-59iDZIMp1ZWF+bny\
-fejpl5vEz7ziykqr\
-o30M/SOuVmOv3gs5\
-C52DiTsv7oKy2sr3\
-1fmySZrpRttPD8s6\
-+imw/DUS3n22jfmY\
-XMxcUZ7qvX0g8+7S\
-l3k+vnwHAtnHPkiD\
-ZKMl1ZOGftbN1uGC\
-7zeJP2n2lPuTdXP0\
-frVFW3px98mmMeF1\
-TV6lX1c2DIXvaQPQ\
-vra+/RZkmmIwvra+\
-8vN4nrZsNwLS52Ty\
-s9R/vQNKeshqSfo3\
-XMuof0g09ryi+tqs\
-qsFjAuT33qyQvrRx\
-+rTZNMNrvWjzyx8/\
-ePX9DNhdEoPccsXq\
-39aFpTVvvQz9A6i4\
-txdf3gdUme/04Xgx\
-xVUorrlbW3mLAm6P\
-mP2b1r/dGnnbS+dl\
-1d/HXa0tpFdtfXrl\
-u2QdkWunkwHlW1am\
-b5jNKTtE+NKu7xKu\
-2/damqbvvPe1ZVvr\
-J+8Lokj3O1DjANeK\
-wJ2sQsv0D7b218db\
-/WaZ3dy70rHPPBa1\
-J+cWkdYBowcaFN+v\
-nFtW9fXEbrtI77gS\
-X94HUpV9poHWAaMH\
-GhTZLHW7X/1qXT2T\
-8fh5PN40f64U8U83\
-iv1gCmARMX2mS7q9\
-Obx39qjdYyjy/qAJ\
-wo5vljWgOYBkxcaB\
-Pz+IT23xPFLP5da7\
-SWWfyLDsCJYh6f1x\
-rANGDiQpuY5y9p/z\
-1Ryi80rdFa2z2Oah\
-7f0hrANGDiQpuYx/\
-e0/54o5vFGrdFa5v\
-FSHYC6aA1gGjBxoU\
-V2aN+ti1m8UIu0ll\
-k8WwegLp1Od6/WAS\
-aNiQttURZd0L5bl+\
-TxNK3TWsnzo3UA6r\
-Jnz8rltA4waUxcaI\
-tyI7H23bok7z1K67\
-RW8vgzHYC6lMV5tQ\
-4waUxcaIslzz+vfb\
-cuZvmPtU5rmeW76Q\
-DUxSz/mtYBJo2JC2\
-2RUv4t7bt1qbx7J6\
-3TWin1bqUDUJfk+Y\
-FaB5g0Ji60hVn+c+\
-27dTGLm2md1kppdV\
-UHoC7m8VytA0waEx\
-faInk+R/tuXfZ572\
-e1ToudeooOQF3M4h\
-+1CjBpTFxoC/N4j/\
-bdunQ6K7u0TquZx1\
-d1EE4Us/iG1gAmjY\
-kLbVEWetC+e6KYxx\
-e0RuuVhXN1IOqytL\
-TiWgeYJCYutMHevY\
-d+RvttXcziHVqn9c\
-ziRToQtfHVa2kdYJ\
-KYuNAGKa1e95h+W5\
-O5fMBvPzchJ4//pX\
-WASWLiQhuUy9q139\
-Zlrm4+vkjyfC8diL\
-qYxcO0DjBJTFxog+\
-RxRPttXcr9uFqn9V\
-Lq3kIHoi7J4/laB5\
-gkJi60gVm8WPttXc\
-y6N9E6rbe4GFfXga\
-iLebxP6wCTxMSFNk\
-ge52u/rUtV5Strnb\
-lQHvusg3GimMeFWg\
-OYJCYutEHprdpvTx\
-Tz+I7WmBvm8W4dkL\
-rsXu5dQesAk8LEhV\
-mXUu9U7bN1SR5v1z\
-pzwyyepQNSl5Tiel\
-oHmBQmLsy6yuOG2m\
-frkjyeqnXmhnu+rw\
-5IXczy72odYFKYuD\
-DrUop7ap+tS7kqXO\
-vMjT5n+qNaB5gUJi\
-7MOrN4nPbZusz1ka\
-++lhnxfJ7WASaFiQ\
-uzLnn+O+2zdTE7XG\
-mdubLtxXY9LtAawK\
-QwcWHWmcfXtc+eKO\
-bxOa0xd8zjdTowdV\
-lc7J6mdYBJYOLCLD\
-PLZ2h/rUvyeKXWmT\
-vJY00Hpi5mvbtrHW\
-ASmLgwy5L37q39tS\
-5m8XCtM3dS6t1KB6\
-YuZvkFWgeYBCYuzL\
-JyzYD217qYxc21zt\
-xZXDy4rANTl3JeTO\
-sAk8DEhVlmHt/W/l\
-qXTmdln9aZS+b5Yz\
-o4dUkpstYBxo2JC7\
-Nqaal3De2rdTHL/6\
-x15pZZfo4OUG0831\
-frAOPGxIVZZZb/5J\
-i+WpPk+elaZ26V1T\
-B0gOqSPF6hdYBxY+\
-LCrHKPV2lfrUvl+Y\
-5aZ271c0mmeXyr0+\
-ns0FrAODFxYUbt3O\
-6K8CXciiTM4hs6SL\
-Xx1WtpHWCcmLgwi1\
-Jave4x/bQm5vEVrT\
-P3yk1tOlB1SR5/pn\
-WAcWLiwixyj4doP6\
-2LebxM68w9s/zHOl\
-B1KatuaB1gnJi4MI\
-vM403aT+tSef4DrT\
-P3Ulpd1YGqi3l8r9\
-M5sKC1gHFZWD96Y5\
-2Y6rJwzpEbaR1gfF\
-Z2mccPtJ/WZd/yoY\
-NaCZv3c31JB6suVZ\
-Wvr3WAsXnRkf06Md\
-Wlc84aT/HGxCx5vr\
-H20bqwsO4JmMUzdc\
-DqYhYP0zrAOC2sr3\
-1dJ6fjZWF97Yv674\
-FxSh5HtI/WJXk8Re\
-tgS+VxOx2wuiTPb9\
-M6wDjtWj/yIJ2gjp\
-dd60fvr/8eGCfz/C\
-7to3VJKW6tdbDF/c\
-CSefxYB+1EMY8f7t\
-sXl9FawNj85Cc7Ft\
-bX3q+TlGZhfe095b\
-/Vfw6My549By/fT4\
-/tdPbv1lq4mOTxVh\
-24upjFH2kdYKxe8r\
-i069y1V+tkdbFJ6x\
-Xlv9F/BoyTWdxf+2\
-ddzOONWgcieX6gDl\
-xdWPgR02Lh3LW77D\
-r36FPLRLVw7tGXb/\
-zvc9fuov8dMAnm8W\
-Htn3Uxy/fTOhD9rF\
-hcwmrxAHB8/ffWQ1\
-2thUtgHhfo4NUleT\
-xG6wAANpnlx2vfrE\
-vy+KzWwXGYxWN1AO\
-tiHuUy40tpLQBAZ4\
-d5fF37Zl2Sx5oWwn\
-EsevcXdACbxKx7U6\
-0FAPMupe4ttV82SV\
-Wt/pzWwgkkj8/oIN\
-YleT5H6wDAvDPLL9\
-B+WRcOE/YheRzVga\
-zL5tqF3b1aCwDmld\
-nhyjy+r/2yLmb5EV\
-oLNapq9bAOZJNU3r\
-2T1gKAeWWW76p9sk\
-m4mrBP/Rwu5GY5AP\
-ipvhZ18PhXrYOGbD\
-k/Uge0LmU5k92er6\
-i1AGDeVFW+svbIJj\
-HLf6610FBV5dABbZ\
-Lk+QFaCwDmjVl+qP\
-bHJllaOuNqWgvbkD\
-w+qINaF/P4hNYBgH\
-ljHp/U/lgX83iv1s\
-E2Je/dWwe2Scq9YF\
-oLAOaFWfe/a19sEr\
-Pe3bUWtmnrUScX6u\
-DWxTw/UWsBwLxIHk\
-/VvliX0mt5hMmQmM\
-dzdYDrYh5fZQMAmE\
-/7d5vHf2hfrEt5Cr\
-1WQp9SWr2uDnCTJI\
-/7aC0AaLvK8x9oP2\
-wUX72W1sIAzOOjxw\
-xyTczjc51OZ6fWAo\
-D2OnyyeXxe+2FduH\
-drBMpTjnWgm8QseI\
-gfgLnR90oZHKEavs\
-XFg8t9rbfl8amypL\
-/WA4AWKo8v+bT2wb\
-psXJSxfPqiFsMQmM\
-fzdMCbxCx+Q2sBQN\
-uklG+v/a9JzPJztB\
-aGxCyfUZZ00kGvSz\
-k/prUAoG3M88e0/9\
-Wl9NSlpd4BrYUhMs\
-/n6cA3SbWcb6O1AK\
-AtKu/9qva9JjGLF2\
-stDFm/jzsxj3drLQ\
-Boi+TxIe17TVJV3Z\
-7WwgiY5dfo4DfJku\
-cbay0AmHVmcTPtd4\
-3i8SqthRFJKa53zA\
-ZoEPN4k9YCgFmXPL\
-9N+12TmPWurbUwQv\
-08HG1zQ8WZWgsAZl\
-VV5bO0zzUJf8hPQL\
-8/jZPHK7UWAMwqs/\
-xa7XNNwqmTCUke5+\
-vGaJJyWb3WAoBZUy\
-6s0P7WJDxza4IGuP\
-zzRVoLAGaNebxM+1\
-uTcHvQhPW5+O6PFx\
-fj6loLAGaFe6z0sy\
-BDuWxea2HMUur+tm\
-6YJkme/05rAcCsMI\
-83aF9rEpbAmw47y0\
-K6unGaJKW4tRYDgG\
-lXedxO+1mTlAV4WX\
-R8Spjlu+kGapLk8V\
-mekgxgtpx6inlcoP\
-2sUTzurNUwMRsPTv\
-vcMRupQZL3HqXVAG\
-BaJc+P1j7WJOXhkj\
-xYd8q45/vqhmqS8o\
-yvxcXV07UeAEybxc\
-XuaebxQ+1jTZK8d2\
-+th4nb+Pn8Nd1YTV\
-JW4dBqADBt+l7aye\
-PL5ciU1sMUSMv593\
-SDNU1K+be0HgBMi8\
-rzHbRvNY1ZvqvWwx\
-Qxjw/oRmuSzb9IVv\
-ZpPQCYNLPDVelR2r\
-eahEc6zYClpd41+r\
-kpb2MDW/xfrQcAk5\
-Y8nqL9qklKLzTrHt\
-J6mEKDbOSUVle1Hg\
-BMSnl4Ln+Mz4HBfl\
-bnd2k9AJiU5PFB7V\
-NNwumPGVR5vqNuyK\
-YpNzRrPQAYt+T5Xt\
-qfmialfHuthxlQfj\
-3pxmwS8/j64uLBZa\
-0HAONSepB5fFP7U5\
-OUy+a1HmZEOV/V78\
-16ZvFsrQcA42Ief6\
-19qUk2F1Xonqb1ME\
-PM4nG6YZumPGVZ6w\
-HAqKXUu5X2o6ZJHk\
-e1HmbOyr6yRpdu3C\
-Yphwx3e76iVgSAUU\
-mpd2q/hwjL4rtlFS\
-GtiRlk1vt13cBNYx\
-bvZGFKAGNyknnv/d\
-qHmqby7q9oQcww83\
-idbuSmKasxaz0AGD\
-az/HjtP01THiyp9T\
-Djqqp7lXLSUjd203\
-C+C8AoDXJeyzwuLD\
-1Oa6IFzPIjdIM3De\
-e7AIzKIOe1NvqT5Y\
-dqTbTGyq7y1GPd6E\
-3D+S4AIzDQeS3z+E\
-TpbVoULWKWr2MeP9\
-KN3zSc7wIwTAOe1/\
-pBWVhca6KFkseDdA\
-fYTjjfBWAYBjmvtd\
-WL7q810WKDXGXI+S\
-4Agxr4vBZXEc6frX\
-XALtCdoWk43wVgAI\
-Oe1/rC0tKKa1HMgS\
-Gc7zpbawJAHbP8F9\
-pPmqb0LLM4U2tijp\
-TLSHXH2E443wVgOw\
-Y9r5U8/kxrYv7sSB\
-5v0Z2jacoxarN8hh\
-YFAFVVOczj29pHmo\
-bzWvj/9u499DP9Pj\
-F5a2f6gtkZV9K6AH\
-CR0iPM4yvaP5qG81\
-o4RlV1b2AeP9adpW\
-nM4+PsVAAuSekNpU\
-do32gazmvhuMziYb\
-rDbCfm8b5O5/AerQ\
-tgnh3eU3qD9ovtpN\
-x7qlWBiwx0vqvEPF\
-7f6XQupYUBzKWdpS\
-don9hOOK+FWoOe79\
-ra0Z6ndQHMH/f4W+\
-0P2wnntdDYoOe7Sn\
-h8NjDfzOMJ2he2k9\
-KDOK+FbbHl/Ejdkb\
-ablOKeWhdA+5nlP9\
-F+sN3wqBL0Y4d5vF\
-R3pu2k/MVUedxOCw\
-Nor5Tyb2kv2G5K7y\
-k9SGsDDRw+eQgXa/\
-ygqvL1tTKA9jHr3s\
-Q8fqh9YDspPaf0Hq\
-0NbMPKvuRxvu5c20\
-m5U77cMa+VAbTH0n\
-Jc0zy+p9//7aT0mt\
-JztDawbXv3di9rHp\
-/TnWw7KXfMV9XqVb\
-U2gNlXvtvlcUf6vd\
-9OksdnSq/R2kDfFh\
-fj6ubxVd3ZthPz+N\
-SePSuX09oAZteePQ\
-cvbxb/pt/37aTcgr\
-O01DugtYGBDelQwG\
-eXls64mtYGMHs2fm\
-kNPmlxKgGjNYyTr5\
-uHDdlRgVmWUuQhHI\
-Xh4i2Mx5Audy1/ZZ\
-2ltQFMv5R6v2ge39\
-Hv9XbC7TIYu6HcYO\
-jx/crzbbU2gOlVJp\
-vy3dXv83bDAgWYiE\
-GXdCkpf3Wl5fx7Wh\
-vA9DHr3V2/w/0kea\
-xpbWBsBl1E86KUR6\
-pobQDTI3kc0e9tP2\
-ERbkyDgR9bcFHM8n\
-NY5gWYOmX5t7/W72\
-s/SR6v5LFHmBKDPy\
-juopjHyzudlV36Cg\
-Am4cBC8t7f6/e0n5\
-jFO0s9fQVgYvbtO3\
-xp8/io7qz9ZGN9RD\
-+wpK8BYHzMDlfJ89\
-v0+9lPSm/guVqYSm\
-XHHNYvr+TxwX374j\
-L6GgBGb+uBsh/R72\
-U/MY9/qqpV09cAps\
-jGYcM36M7bT8oSUa\
-yyAYzXMFbDuCjm+R\
-86nf279TWAaXSSWb\
-xId+J+Yh7/Yda9qb\
-4AgOEzi5uX75x+D/\
-uJeT6v9AJ9DWCqJY\
-+n6c7cb5LnR/MlAE\
-bl8Mlm+fH6ves3yf\
-OT9BWAmZE8HqQ7db\
-8pVyWZnXElfQ0A/X\
-Nf3W/ee79+3/pN8v\
-xAfQ1g5pjFXczjR7\
-qD9xMOHQLDM9xDg/\
-GjlOI39TWAmZVS/m\
-XzuFB39n7DoUNgEO\
-XQYPylfq/6Tflu8w\
-clWskszjSPb+pO32\
-84dAhs37APDW58p3\
-31Wvo6QGuU53CZ5y\
-/pzt9vzOIbKXVvqa\
-+DySgLJpvHS83j81\
-t5aUpxD/3vMBnVcr\
-5N+c7o96jfmMcXUl\
-pd1dcBWqequlcxj0\
-/ql2CQJI/H6OtgfM\
-ofJMnjQ7pdLrZ9zu\
-fhoZM1zKsGS8zj41\
-WVr6yvA7RWWRWjrI\
-6hX4ZBwqHDyaiqnJ\
-r8ijaPz3WWT1/Uf4\
-/RSql36jAPDZawGg\
-bm2Mq+Ya2ycVHKFV\
-IcOhyv5LGu2+F44Z\
-EW47V11eC3dDsMEl\
-bDADZX2XisfjkGTX\
-kMA2sdjsHy6Ys69n\
-XpdE49RctguPbsWb\
-lc8jhXx36QbDz01f\
-PZXM0LbCm/koZ1P8\
-lF2fj15b178/yf0V\
-la6l1Dx70uKUXWOh\
-iane75vsO8erfEPL\
-625HEjfTFg7pXzU2\
-bxDv3SDJqN4/tcrj\
-sS5f48He+6lMNXWg\
-eDK7eblItgdLwHTX\
-m0yW7PV9TXA/BTJy\
-WPo+WwhH6BBsnmYY\
-54WrmQQF8Q/Su/lH\
-Ws65JS9xZaB/1bXD\
-y4bBbPGtF35kj5Fa\
-evCeASlLvwzeOr+m\
-UaNObxFfe4c3kcub\
-4mto+Ja6J2mPXuXg\
-7j6RgPGvP4clXls/\
-QFAdTYvdy7wrCewK\
-opl85z4+TgmLgmo+\
-y75vFeHdthxCz+ce\
-/e7mX1NQE0t9OW8y\
-OHfRikxDx+uHFTph\
-9Y0hdFM0xc41X2Vf\
-P8xGEtWn3xlJpm8X\
-AODQJDUi33fmkUhw\
-5LzOMCVrXuDxPX+C\
-SP3zGPL+p4DiMcGg\
-RGZJSHDkvM402Li9\
-3T9HVxfExco7fPez\
-87yv0+ebyFQ4PAaO\
-00i4eN4lBJiXn8wD\
-yeu7i4erq+MI7FxD\
-U67rGSPP9NOaStYz\
-iMbB4azA/lPkdgTD\
-YPHdavj9dvyjk1s3\
-hRVXV7+tr4KSau4S\
-s3dZvn80ZxXveilF\
-XdzfJ19LUBjFi5fy\
-V5fvoov+AlZvHqlO\
-J6+vpg4hqmrfO4r9\
-PxGmY2nlLs8RTuZw\
-QmbGk5rjmqS4Mvnn\
-KeoawUoa8/z5i4Bp\
-dS71ajWDFGU74jHE\
-EApssOs3y3UV15eP\
-GUJaTM8q9xboCJaw\
-CXKleyDvvRPpeUct\
-O9Wb4rN90DU2pchw\
-9LzPPHKu/eaZ5Xy2\
-bi2q7DJ5dJpDyEUc\
-dl2Nk6LPhUDgsCM2\
-Jchw9Lksdnk8d95v\
-FxHUxcTe3fvbFqu8\
-W/63iMIhwWBGbXyN\
-Zyu6RsPkYlnjZPV2\
-sxcZ3QjpR6v7h1BG\
-Coj+w5XjgsCLTE5u\
-rZvWeM4/DhRTGPT5\
-Z7ZKqqexV9P23CxH\
-Wsss237jX8pH72UW\
-XrsCBPPwDaZuvw4Q\
-f0Sz/qlKsRNy4csc\
-OVvqdZx8S1qapWLa\
-W4Z1mgVj/vqMNhQa\
-D9ytVc9xjX4cOLxz\
-z+0yxeWC5/Lifp9Y\
-3NovmeuA6fXHm+rV\
-m8uGxb/ZyjTrmCtv\
-xBxGFBYE6UXz/J48\
-HjuHz+krJ5LiL+b/\
-kVqO9tlszjxGXWu3\
-by/KRJ7jvJ40Ft/A\
-UPoJHuXrP8x2UJHG\
-0Q44p5fCR5/JnZGV\
-fSdzft5mXiKttmY7\
-Lw/DH9PONKeYqBWf\
-zvcoWivj8Ac+nUU5\
-L37m0W/6YNY1zZel\
-T6+eUZYdVyvs0snG\
-hv68S1tLTilXd/pf\
-wqTh4f0s8wzmzebp\
-Hv1ekcWND3CQBbN4\
-jGXczjE9pAxp2N1b\
-s93pc8HrOx1NTy6Y\
-v6bietNRPX8umL5b\
-OYxWPN45/GeQXq8V\
-JuUi774jzf4A5gey\
-6VUr69WfyLNpRJZf\
-OJzfHO5HHErHuTTu\
-fwHn3T4za7E1c5RB\
-w3Sx5HzePdo3p0SD\
-8xy/9c9j2WFAPQrx\
-2V9361/BWuDWbSMY\
-/vJ4+3lnuGqqp7g0\
-ms3DE7E9f+3ZXHDc\
-3yI5LH28tz1/R9TT\
-rl13XlcTuuEgQwNO\
-Vw3STu02marYdgfs\
-Q8Xpo81irPdyxXwL\
-kfWNLPMizTNnGVK+\
-3M4syyhuTWr6mXmc\
-dHp3Giuihln+KpAw\
-BGqvy6Mcuv1QY0zT\
-GPL5vHmzeWH7L4o3\
-KYbGmpd0A/23aVSU\
-hfqy7DmLgWF+Pq5T\
-OUq+y2VkV5c7lMXF\
-9rmlP2oc1fygAwJl\
-W1etXkvUdN8lL6QW\
-MeF25dyfgCs3h4Ob\
-dSnsDb9PzZaH9xdf\
-eW+9xS6v52OcS3cf\
-O2x4cmcbPvsFIuaS\
-/nKMu+o58WAMaqXD\
-qdvPf32qhmPeUm2+\
-TxmXLBQLkwxDxev3\
-koMv9NWRsvebxC/0\
-1dyr/Z/Lf5nFJro2\
-apXS5KKK81oRt7R5\
-myb5R9RPcbAJi43Z\
-6v6B4PKQ1YmxeZr5\
-jHp8vqLGWf0P0EAK\
-bRjpTieptLA+UvaV\
-Mj7Yx5fNE8P7E8zo\
-SrAwHMsp1LHjcyi2\
-dOYnFfMtpsLnbbe0\
-bZxmVb68YHgBl3+O\
-RycYJ5PM88vqlNkM\
-xGzOIb5vHcrcvYWd\
-kCwLxY2VVuii1LOp\
-nHh7U5kunK1sUjjy\
-nbrC2PpQGAgaTUO9\
-Wsd/etK+2+rY2TjD\
-fm8S3zfN7GNpnBlf\
-sBYMwOn1wt934peX\
-50+UtfmyoZTcp9Ys\
-nz2Zs3BvOrCgD6tn\
-dv97LlabtlKaetVS\
-K+q02XbC/m8R3zeF\
-O5ibw8RmbfvriMjj\
-sAYHh2VtXqz6UU99\
-y60ONftTGT/5ryEM\
-jNCyrinmXsuAIQAC\
-asLKa76N1fqDzfYe\
-PRJ5vnyj6qDbzt2V\
-xUN59ny/mRyeN3yp\
-hM47PMAAAn4B4rKf\
-VutbEorecnuserZv\
-lX2sZ73/gM+YnlM2\
-2smeixop8bANBCVZ\
-WvXC4EMct3Lc/2Ku\
-sImsdLksdbth6TMr\
-ZV18trldfceG2LF2\
-+8F4uHlfdW3mN5r/\
-r+AQC4ROUCkc1fbq\
-vXrap81jBSapWaXB\
-gBAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAP\
-Pn/wEjMj3cccdQPA\
-AAAABJRU5ErkJggg\
-==\x22 preserveAspe\
-ctRatio=\x22none\x22 i\
-d=\x22img2\x22></image\
-><clipPath id=\x22c\
-lip3\x22><rect x=\x22-\
-0.25\x22 y=\x22-0.125\x22\
- width=\x224095750\x22\
- height=\x224095750\
-\x22/></clipPath></\
-defs><g clip-pat\
-h=\x22url(#clip0)\x22 \
-transform=\x22trans\
-late(-425 -145)\x22\
-><g clip-path=\x22u\
-rl(#clip1)\x22 tran\
-sform=\x22matrix(0.\
-000104987 0 0 0.\
-000104987 425 14\
-5)\x22><g clip-path\
-=\x22url(#clip3)\x22><\
-use width=\x22100%\x22\
- height=\x22100%\x22 x\
-link:href=\x22#img2\
-\x22 transform=\x22mat\
-rix(9525 0 0 952\
-5 -0.25 -0.125)\x22\
-></use></g></g><\
-/g></svg>\
-\x00\x00\x0e\xff\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22non\
+e\x22  stroke=\x22#343\
+A40\x22  stroke-wid\
+th=\x222\x22  stroke-l\
+inecap=\x22round\x22  \
+stroke-linejoin=\
+\x22round\x22  class=\x22\
+icon icon-tabler\
+ icons-tabler-ou\
+tline icon-table\
+r-refresh\x22><path\
+ stroke=\x22none\x22 d\
+=\x22M0 0h24v24H0z\x22\
+ fill=\x22none\x22/><p\
+ath d=\x22M20 11a8.\
+1 8.1 0 0 0 -15.\
+5 -2m-.5 -4v4h4\x22\
+ /><path d=\x22M4 1\
+3a8.1 8.1 0 0 0 \
+15.5 2m.5 4v-4h-\
+4\x22 /></svg>\
+\x00\x00\x02V\
 <\
-svg width=\x2258\x22 h\
-eight=\x2259\x22 xmlns\
-=\x22http://www.w3.\
-org/2000/svg\x22 xm\
-lns:xlink=\x22http:\
-//www.w3.org/199\
-9/xlink\x22 xml:spa\
-ce=\x22preserve\x22 ov\
-erflow=\x22hidden\x22>\
-<defs><clipPath \
-id=\x22clip0\x22><rect\
- x=\x22158\x22 y=\x22319\x22\
- width=\x2258\x22 heig\
-ht=\x2259\x22/></clipP\
-ath><image width\
-=\x2264\x22 height=\x2264\
-\x22 xlink:href=\x22da\
-ta:image/png;bas\
-e64,iVBORw0KGgoA\
-AAANSUhEUgAAAEAA\
-AABACAMAAACdt4Hs\
-AAAAAXNSR0IArs4c\
-6QAAAARnQU1BAACx\
-jwv8YQUAAAJ2UExU\
-RQAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAKY4OXEA\
-AADSdFJOUwAfqO//\
-/uWKCxrmwASXWd7s\
-mZ38oAyk1Mw3eKn1\
-AgNao2oHYk1+IxOE\
-vrRmCbYulSFTZEjn\
-ugq7920BEnXT8yjY\
-fRUIkLz9+vLF0u77\
-vSvQ7UUWVAaORkLw\
-BXR3Dw1x6WvLFIAR\
-28aLrY0vQ2MZ5CW/\
-k7jKuZwdSvkwYNmU\
-lmfR9hd8eeHXbB7W\
-425/IGEyMehEGFbJ\
-LTM9ew70puqI+FDd\
-noleV285ZaKSx7Vw\
-PJHrP9ql1RyaRyw1\
-QTpAduBzELKGJ06v\
-oT5cWM2z8VKwG4fC\
-m/MipkAAAAAJcEhZ\
-cwAADs4AAA7OAc5f\
-xfcAAAVKSURBVFhH\
-lVf5X1RVFL/il9xA\
-ZhgJG7aQitiiXAaE\
-QmKTQGMCMlAIQkzD\
-JRAiClAyRELSjCRZ\
-QiuXAoQUylyyxSyz\
-/T/qc+7y5t2ZB0zf\
-X+ae7/eeM/fdd+49\
-5zE2JxYFLAYh8IEl\
-S701f7BsOXfnWBHk\
-rfqBYI8/sNJb9QMh\
-gM1OCHUAq7zVhREW\
-CDwohuHAam95YTwE\
-wCmGEUBklLduheiY\
-hyNi10gjDsAjYvgo\
-gMckHf94QmLSHFua\
-nELbFf6EsFIBPCmG\
-TwFYK4br1tOcDS6P\
-lweuNLHh6RszWObT\
-zwDIkuveRHT2szks\
-Ny9QzEmwiODKB1Cw\
-meTEJYV82nNSCsri\
-ZmRqEf0UbwGw1SeC\
-aysAR8zzJeIvCO4X\
-lBgnUpIjsbTMKkI5\
-rd8Rw9iaF8UqC0O3\
-qe0k+SV7Bafp+RiP\
-sKHS7M+2k79It23L\
-AfeOKk1mjFW/XGPs\
-MI9Qq8mvGP6M1e10\
-1muiRHVtbLIcUoR8\
-TdwFhJRrzLyIdwOv\
-akwEgN0aMy/2AHhN\
-Yxo2AwV7NWoe7KN3\
-tF/nnAAOxOvcXHid\
-8qLMi4xqBLBH5zJX\
-Nh1sbm5pitEDVzYD\
-eEOjCK3FAN40EQ0B\
-bSp52iLeMglvA2gP\
-MxESqwAkGZarw+HJ\
-PqCg03MtHgJgNywD\
-dZGA23j/rTztgZrD\
-JTViFL5IaWHrga53\
-DEeFIwDeVUZrN/kc\
-7TnGjdpest4zIvQB\
-OK4MA9lAllqAi/6/\
-qydaaVGxkbQG9RRL\
-i4FdGUrkyOh/H6ab\
-s4kWf8I84eQHADqV\
-1QFg56kPpRU9EPqR\
-OP/rJHPaAXQNqtkC\
-JyOBAvUuPhbbYltx\
-ZkheBBzDuVIfAdBn\
-cuaIBRAhx9Gjyqe9\
-lH2ixmMbpVw/BrQb\
-z68Q1Qu0qYw6e07e\
-bfiUHQACQxI/+3zQ\
-uGLOA7jg8VSoBRBj\
-WFUXL+WlZQE2Fgh8\
-oU1keQD6dYrQCqBJ\
-p2izmW9ep1BcC9QA\
-LTrzpXWAcSBcZwRK\
-gGad+Z8BDvsbYAJw\
-64xADXBQZ+YIQJso\
-i5oZx3w3kTKSVQA1\
-9r69ptM1AGDSPE+g\
-R+szMi8fmsofBkb5\
-dUqYzv9KavXpwBWf\
-Ahx9FGjLlEYZP60E\
-O+unY8JhU6XoqtUS\
-aAEBclzpVj4z8YzN\
-ft0t8/IbqV9zAOnf\
-mpwZYye6AEeDNK6L\
-+aONTnmzVd1Isps3\
-c4oeSYswSPdSh7Jo\
-svNmjnkCb4QKVUFM\
-phqdPmkcqOi+LgBF\
-6rRUV1hlyi0At5Qx\
-+x0t8cokf5v9F9rJ\
-6m5V6m0AO5RhIDML\
-mP5eWbOyT3CHh8sN\
-KzL8h0aBLPU+TNjt\
-acvoKaa0a93R5Gko\
-6FxPGZaBjB8A/Ggi\
-rl1NV+5jI6dNAlXG\
-Xp8Wh8e1LdOo+oG8\
-ifHxlLzzertQvhpA\
-sEbR/9E+n/VmrfHT\
-MIA7OldOlcCiXlkj\
-ibJITwOisv3/KvjZ\
-a794+ju0SjI/6hYD\
-CRpzFwg0WoZffq3W\
-RImh2LWqjbrnABI1\
-ka7yLSLC0F1g9PaQ\
-JlNNpjbvt018fI/a\
-vDhNjrqvIlw8x1/9\
-7/brpk6y8mawaFYj\
-Dyn/Ca/Sk9vCIwQd\
-J1HAbTzTHzaDxJ91\
-3L9F1UEDIsIMzbGF\
-0osGupUWws3hJq4W\
-U477+ssIhPy/WLyT\
-9xTyxFTRuNcZz1yd\
-8uqx8mcsl39wtG0X\
-XwnUsVwWwg0AR8Tw\
-Dq/LE5b+jAVNjreP\
-yA8WdgoA7Rhj7BIA\
-1YSW/t14f59P6bbC\
-fs+hpULh21QtCLfR\
-kKcB096qH/gHGO5M\
-TU1N7RwGGr1VP3BG\
-vhQOz1XlP4ayPf4z\
-Fp3twsj5d1q4j9rn\
-aeP/AyM9CJFpN78y\
-AAAAAElFTkSuQmCC\
-\x22 preserveAspect\
-Ratio=\x22none\x22 id=\
-\x22img1\x22></image><\
-clipPath id=\x22cli\
-p2\x22><rect x=\x220\x22 \
-y=\x220\x22 width=\x22550\
-923\x22 height=\x22550\
-923\x22/></clipPath\
-></defs><g clip-\
-path=\x22url(#clip0\
-)\x22 transform=\x22tr\
-anslate(-158 -31\
-9)\x22><g transform\
-=\x22matrix(0.00010\
-5278 0 0 0.00010\
-5278 158 319)\x22><\
-g clip-path=\x22url\
-(#clip2)\x22 transf\
-orm=\x22matrix(1 0 \
-0 1.01724 -0.020\
-263 -0.158041)\x22>\
-<use width=\x22100%\
-\x22 height=\x22100%\x22 \
-xlink:href=\x22#img\
-1\x22 transform=\x22sc\
-ale(8608.17 8608\
-.17)\x22></use></g>\
-</g></g></svg>\
-\x00\x00\x0d\xe9\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-c\
+urrent-location\x22\
+><path stroke=\x22n\
+one\x22 d=\x22M0 0h24v\
+24H0z\x22 fill=\x22non\
+e\x22/><path d=\x22M12\
+ 1a1 1 0 0 1 1 1\
+v1.055a9.004 9.0\
+04 0 0 1 7.946 7\
+.945h1.054a1 1 0\
+ 0 1 0 2h-1.055a\
+9.004 9.004 0 0 \
+1 -7.944 7.945l-\
+.001 1.055a1 1 0\
+ 0 1 -2 0v-1.055\
+a9.004 9.004 0 0\
+ 1 -7.945 -7.944\
+l-1.055 -.001a1 \
+1 0 0 1 0 -2h1.0\
+55a9.004 9.004 0\
+ 0 1 7.945 -7.94\
+5v-1.055a1 1 0 0\
+ 1 1 -1m0 4a7 7 \
+0 1 0 0 14a7 7 0\
+ 0 0 0 -14m0 3a4\
+ 4 0 1 1 -4 4l.0\
+05 -.2a4 4 0 0 1\
+ 3.995 -3.8\x22 /><\
+/svg>\
+\x00\x00\x03}\
 <\
-svg width=\x2299\x22 h\
-eight=\x2299\x22 xmlns\
-=\x22http://www.w3.\
-org/2000/svg\x22 xm\
-lns:xlink=\x22http:\
-//www.w3.org/199\
-9/xlink\x22 xml:spa\
-ce=\x22preserve\x22 ov\
-erflow=\x22hidden\x22>\
-<defs><clipPath \
-id=\x22clip0\x22><rect\
- x=\x22496\x22 y=\x22193\x22\
- width=\x2299\x22 heig\
-ht=\x2299\x22/></clipP\
-ath><image width\
-=\x22128\x22 height=\x221\
-28\x22 xlink:href=\x22\
-data:image/png;b\
-ase64,iVBORw0KGg\
-oAAAANSUhEUgAAAI\
-AAAACACAMAAAD04J\
-H5AAAAAXNSR0IArs\
-4c6QAAAARnQU1BAA\
-Cxjwv8YQUAAAIEUE\
-xURQAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAN5etLsAAACsdF\
-JOUwAEQIS53/b989\
-mvcSAciOj//rU0EY\
-/4B07mwQ8DjcOxkg\
-EJusA3FIzwNgqa9Z\
-inKRW2vbviQiG8CM\
-Lvt4quO9gSs/EMtC\
-9qfSaj5QI93vcb7g\
-awUZG/Cw3sEGiigh\
-dloIEWqBgk09H8nL\
-4duHDrabJXLmLg3W\
-1d59R4Um/ty4NH8o\
-4zI/qrLKH5Vdc1lk\
-rOGsQ/iy2ADgV1dH\
-9gE2yVa1/WVnaezz\
-zV5HJ+lB/ZXhx8AA\
-AACXBIWXMAABk0AA\
-AZNAEvFeEKAAAE9U\
-lEQVR4Xu2b+3cTRR\
-SAb0po1QpsKrDabd\
-UUbGtsNVi0USm0FS\
-pUSo0KVERBRYsiPh\
-BREAQVFER8oIKg+H\
-77T3p27szOzJ1Nwm\
-52Np7jfr80uXfOfH\
-c3O7OzyRQgRXJtC/\
-IL2zuuufa6zutpLg\
-UWLV7iBBS6bqB5yy\
-xdtlzqfTqWubSNTW\
-68Sdf7dHu0lTV6eq\
-mccXNa58C9hao5t9\
-KWyVAs6u/7VghhYW\
-Xnbf1uf9vAIL7vuF\
-1vmQilO4aGhvuUQO\
-Av3HmXiJW7MLRKaZ\
-cQpbv9jkdkBYF/9T\
-1KsxxWULhXiSUC+h\
-1ntMQDFeG/r6w1LN\
-/Pop1asHlKo1wnKq\
-jk+fsH1E/FZw0Lj5\
-Fok0i/44z6xr7AX6\
-Ft17L4OhpuCtXPKq\
-jjB48lBmm4GcTnLx\
-gZr+MHYJnlNNoEgX\
-9igr+YrOd/EJvQcH\
-yC87/eddfzl3X8sI\
-HlkrsGFD+AVkG4H6\
-ZYcoKG46L5tQpq+G\
-GEZR+i4ZgE/gl+g/\
-NwnnGcwaW0LbKxg6\
-XX0ng8DH8w/vh8YL\
-KJJacfpvFYGP5g/m\
-MViFlZZXOB5RbQeC\
-zk+Avza3cmwfgMy2\
-yZpYk4kOtP8T/C/6\
-6gFbi85F4Sj4Vx/u\
-X86/G7Pq2g+iiGl4\
-xr4XgYfnn/q4AbWo\
-HwO48pwbjU9UNoBY\
-H/cdlNbGpff3z+MS\
-uoihXqqpzsJy4Njt\
-+HVhD4t4aNzohchZ\
-9WIP3bZD9xuSq/Xk\
-Er/GoFXkv8SgViZk\
-rZr1SApO4nFbTAr1\
-VgxV9v/Y1sn+MtJp\
-+gqegY/kbHr4x/x9\
-lBc5FpOP+aKH7nSZ\
-qMinH8jc+/6nd20m\
-xEmvH730usfoqmo2\
-Gef/H83di/1Xt61+\
-5naDoaxvFH+PytjL\
-//mR+ebbH/OXyaaJ\
-kf9rTYD8XnVX+E8Z\
-+QH2DjC8783uj+F5\
-PyA8BL4mk7/fOvk/\
-kzf+b/D/j3tdifp9\
-/7CDJ/5s/8mT/zZ/\
-7kyfyZP/Nn/szfYr\
-/zMk1xpD+B398MpN\
-8pTNEkI63jr1VBiv\
-7QClLyd+/nFbxCWt\
-j1F8UOmH19G8IrqL\
-7KWyT5/ZvkNd57vg\
-IQVKB+Cnavf8it43\
-42/l83K7B7/gEOqP\
-6QCmz73TdY7weD7z\
-9IBZbPP8Cb2P0hGd\
-EqsH38sO0t1v3bPU\
-pMqcC6Hw5j/0e0YF\
-DBO9b93lHW/zGyNV\
-lUILDmh3dRcJzG9Q\
-rs+csnmKCbxvUK7P\
-nhPTRspnGtAov+RV\
-uYIXTDdxV3QNob/z\
-7DzFB4n8bTGP8+H5\
-xkilM0npaf77KcD/\
-bgS9Lxf4jbTD+i8b\
-T8MMYcp40d/8UzH6\
-fiP4s/DH9C4+c+5X\
-rLfsCFYPtnerTtc6\
-G37f8CLee14FlleW\
-zZD3ikk/1K6Msx/n\
-O9T96y/xxqvpKRPZ\
-twVDBmDiWzBbomRb\
-zS5r4WgdlhnJUY01\
-MX9ObJcwZNF/nbci\
-/eFRhz39R6Pk6OHh\
-zp02jyduJdmXHiUn\
-BWLHIZZWzdWzqMqy\
-LG0JpvaVsbVBcy20\
-wVwP0OV6WMk1fIrG\
-CL79H3A+QO4FMBY3\
-6XMStbooT/jPjjhZ\
-/EpO+vCk6F3BUt8T\
-Mqf/lV6p2usFWJJT\
-yx2VLS/RttZJPdVH\
-/MWJVbpV8Z9D6/Hy\
-FPJbYZ0PQHbU/6Br\
-Ptiv6PHdYnfYMrUr\
-//T/uTvkkwBAb/2k\
-5zqcCfuIYWpzLph3\
-De15/+O6VJP4TqwN\
-HJvf/QaHr8C5tXlY\
-glIuuSAAAAAElFTk\
-SuQmCC\x22 preserve\
-AspectRatio=\x22non\
-e\x22 id=\x22img1\x22></i\
-mage><clipPath i\
-d=\x22clip2\x22><path \
-d=\x22M0.101562 0.0\
-210826 552387 0.\
-0210826 552387 5\
-52387 0.125 5523\
-87Z\x22 fill-rule=\x22\
-evenodd\x22 clip-ru\
-le=\x22evenodd\x22/></\
-clipPath></defs>\
-<g clip-path=\x22ur\
-l(#clip0)\x22 trans\
-form=\x22translate(\
--496 -193)\x22><g t\
-ransform=\x22matrix\
-(0.000179222 0 0\
- 0.000179222 496\
- 193)\x22><g clip-p\
-ath=\x22url(#clip2)\
-\x22><use width=\x2210\
-0%\x22 height=\x22100%\
-\x22 xlink:href=\x22#i\
-mg1\x22 transform=\x22\
-matrix(4315.52 0\
- 0 4315.52 0.101\
-562 0.0210826)\x22>\
-</use></g></g></\
-g></svg>\
-\x00\x00\x09\xab\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22non\
+e\x22  stroke=\x22#343\
+A40\x22  stroke-wid\
+th=\x222\x22  stroke-l\
+inecap=\x22round\x22  \
+stroke-linejoin=\
+\x22round\x22  class=\x22\
+icon icon-tabler\
+ icons-tabler-ou\
+tline icon-table\
+r-settings\x22><pat\
+h stroke=\x22none\x22 \
+d=\x22M0 0h24v24H0z\
+\x22 fill=\x22none\x22/><\
+path d=\x22M10.325 \
+4.317c.426 -1.75\
+6 2.924 -1.756 3\
+.35 0a1.724 1.72\
+4 0 0 0 2.573 1.\
+066c1.543 -.94 3\
+.31 .826 2.37 2.\
+37a1.724 1.724 0\
+ 0 0 1.065 2.572\
+c1.756 .426 1.75\
+6 2.924 0 3.35a1\
+.724 1.724 0 0 0\
+ -1.066 2.573c.9\
+4 1.543 -.826 3.\
+31 -2.37 2.37a1.\
+724 1.724 0 0 0 \
+-2.572 1.065c-.4\
+26 1.756 -2.924 \
+1.756 -3.35 0a1.\
+724 1.724 0 0 0 \
+-2.573 -1.066c-1\
+.543 .94 -3.31 -\
+.826 -2.37 -2.37\
+a1.724 1.724 0 0\
+ 0 -1.065 -2.572\
+c-1.756 -.426 -1\
+.756 -2.924 0 -3\
+.35a1.724 1.724 \
+0 0 0 1.066 -2.5\
+73c-.94 -1.543 .\
+826 -3.31 2.37 -\
+2.37c1 .608 2.29\
+6 .07 2.572 -1.0\
+65z\x22 /><path d=\x22\
+M9 12a3 3 0 1 0 \
+6 0a3 3 0 0 0 -6\
+ 0\x22 /></svg>\
+\x00\x00\x03\xa4\
 <\
-svg width=\x2278\x22 h\
-eight=\x2278\x22 xmlns\
-=\x22http://www.w3.\
-org/2000/svg\x22 xm\
-lns:xlink=\x22http:\
-//www.w3.org/199\
-9/xlink\x22 xml:spa\
-ce=\x22preserve\x22 ov\
-erflow=\x22hidden\x22>\
-<defs><image wid\
-th=\x22100\x22 height=\
-\x22100\x22 xlink:href\
-=\x22data:image/png\
-;base64,iVBORw0K\
-GgoAAAANSUhEUgAA\
-AGQAAABkCAMAAABH\
-PGVmAAAAAXNSR0IA\
-rs4c6QAAAARnQU1B\
-AACxjwv8YQUAAAF6\
-UExURQAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAJAO\
-BAIAAAB+dFJOUwAE\
-MVNmcnd4dGtbPw4Y\
-l+//+7k8Pbrulhcy\
-6v1z6ef+VBaU4wXk\
-kkdK7YSHL1Wpqmi8\
-vsXHb3bIy8l1ysa9\
-ZUvwBuVY6HD85ja0\
-jhQPMMFjtZ4JHiAc\
-FQMhCGKy2Js+2S7b\
-DGknJMLaot76ZAcf\
-ARodoLhhbcxXYHHE\
-p4aPZyql15wAAAAJ\
-cEhZcwAADsMAAA7D\
-AcdvqGQAAAMPSURB\
-VGhD7ZlpUxNBEIYn\
-m4OEoCYoIZFAEKLi\
-ARohKKACKpch3ooH\
-XnjfF9763y2wwnS/\
-u5mZzJRVftjnaz/T\
-b5FNZmcaIUJCQkJC\
-TIl40Vg80SZJptrT\
-HWht0JFuTyWJmIjH\
-ol4ErQC2bd+RCSDb\
-uRPNXV1ZtDbIdefR\
-RAq7cVGDnjg3iz1o\
-NOj1uInk+3CFpBSl\
-Zn8J65K+PdT0MYA+\
-ZbAsxfJerFL20Z5I\
-OfB5bLFfmkNYYxxQ\
-Pf0C2pyD0jyENc5h\
-2hUYRpkzIs0jWOP0\
-067AUZQ5FWkewxon\
-RrsCcZQ5o9Icwxqn\
-SrsC4yhzjkvzBNY4\
-RdoV0IRMSFMTkqRd\
-gUmUOVPSnMIaZ5J2\
-BcxDJrDGUX1c5iEn\
-scZRPXjzkFNY45ym\
-XQHzEM2Pke2lgHmI\
-ZltRbfbmIdNYY8yQ\
-/dqHecjsGSxSBmhT\
-xDxEnMUi4ZzypdVC\
-iJibx3KDBdUTaS1E\
-LC4FHyTO15jmo6UQ\
-IZYDjkR11UtxkxZD\
-7AhDWuJ/CCFvRgeS\
-2JYzhr4VVWzLuYC+\
-FRexLecS+laoN/DM\
-ZfTFlfzVa4TrN1bQ\
-8HMT23L4GeTW7Tv+\
-i0Z29e49ZgVwHxcx\
-HlDVe4jlBiNr1PPz\
-CBdQyFFYiMc5LEsq\
-6g9tpYILJLkn1HyK\
-ZUqKmn7Wmh5DntWp\
-V8cyY5WqQaSfv3iJ\
-i0q9na9eMyuBCucN\
-kwN5u/yOfjHf1/yH\
-jw/YljOEvhUfsS3n\
-E/pWjGJbzjr6Vmiu\
-DjBYsOQztuWorg7m\
-aP4S1SXInDCkJVxD\
-It6X9SI5fLaNV7/6\
-JnduIYaTO6cQ08md\
-S4jx5M4lxHhy5xBi\
-PrlzCDGf3DmEmE/u\
-HELMJ3cOIeaTO4cQ\
-zVCNTO7+XQi5nziE\
-aC5B5KblEKK5BJGP\
-y2Fy9w1lzndpOkzu\
-NF/hLmk6TO40P8Yf\
-0mx6ZP6LanKn2VZ+\
-StNhcleeQZtBTrjq\
-i59ycie6UacMzkrR\
-YXIn8k1fjJlMZpia\
-9pM7IQoLuKLB/Bw3\
-rSd3Qojar8DLYHZp\
-EU3byd0mES/62+yf\
-mXaTu5CQkJCQLf4A\
-2Q8rvRM//J8AAAAA\
-SUVORK5CYII=\x22 pr\
-eserveAspectRati\
-o=\x22none\x22 id=\x22img\
-0\x22></image><clip\
-Path id=\x22clip1\x22>\
-<rect x=\x220\x22 y=\x220\
-\x22 width=\x22742950\x22\
- height=\x22742950\x22\
-/></clipPath></d\
-efs><g transform\
-=\x22translate(-148\
- -103)\x22><g trans\
-form=\x22matrix(0.0\
-00104987 0 0 0.0\
-00104987 148 103\
-)\x22><g clip-path=\
-\x22url(#clip1)\x22><u\
-se width=\x22100%\x22 \
-height=\x22100%\x22 xl\
-ink:href=\x22#img0\x22\
- transform=\x22scal\
-e(7429.5 7429.5)\
-\x22></use></g></g>\
-</g></svg>\
-\x00\x00\x07\x8f\
-<\
-svg width=\x2242\x22 h\
-eight=\x2243\x22 xmlns\
-=\x22http://www.w3.\
-org/2000/svg\x22 xm\
-lns:xlink=\x22http:\
-//www.w3.org/199\
-9/xlink\x22 xml:spa\
-ce=\x22preserve\x22 ov\
-erflow=\x22hidden\x22>\
-<defs><clipPath \
-id=\x22clip0\x22><rect\
- x=\x2224\x22 y=\x22358\x22 \
-width=\x2242\x22 heigh\
-t=\x2243\x22/></clipPa\
-th><image width=\
-\x2264\x22 height=\x2264\x22\
- xlink:href=\x22dat\
-a:image/png;base\
-64,iVBORw0KGgoAA\
-AANSUhEUgAAAEAAA\
-ABACAMAAACdt4HsA\
-AAAAXNSR0IArs4c6\
-QAAAARnQU1BAACxj\
-wv8YQUAAADhUExUR\
-QAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAAAAAA\
-AAAAAAAAAAAADO2F\
-78AAABLdFJOUwAnT\
-lPV/1QBkHD8o2AS8\
-/VAZnaf/RoEBaiq1\
-DBSSwPXkgqR1jf37\
-rZD6hN/0YGA+Os4t\
-Z7ypGGPLHxNEf6p0\
-wsQGFWhT9sM2hcro\
-vitdQkAAAAJcEhZc\
-wAADsMAAA7DAcdvq\
-GQAAAGzSURBVFhH7\
-ZXZUsJAEEWHhMsqk\
-VUTFCMoq7iLBokig\
-rj8/wdZYQiExuAwK\
-at8yHma6Vs3SfdMd\
-xgLCfmnRBQlQmNbo\
-EYBIBqjcUHiCcfuk\
-IhTTYgkkErv7KRTQ\
-JJqImQ07GadRXYXW\
-oaqAuSAPF/lgRxVN\
-1Mo8txLfFtya/Ezx\
-QL1M20u7fHtPnFQN\
-Opnqm4YRhk44NsDo\
-Gz4ox9SP6cC6HylA\
-xWqCnBkAsdVxqo14\
-OSIqiKc1oFGs9kA6\
-qdUE6PV5kVqt6giS\
-uesW693zzs0HpjOR\
-ffyMsCD3dSuJFO7d\
-op7cyNdXOd4a/PjN\
-WWOV+SCza6yH2tXX\
-Fepf9FMfpAmW2+m2\
-3k7+7Ha5sVb6t9Mk\
-EEzwzvq7mRG3WzY9\
-u7ve7LDlsUf3FpIj\
-vvFD2f9+Hyx+ul03\
-/IEIsrjFr+8gW47b\
-7SfpErGWObZzbk8o\
-JoQT4CpDIeKuWiC7\
-bAA88VZvJiwvXXYw\
-Cj2umQMKDw8AcYew\
-SU2on725iY9Z8jDU\
-xJ2eaf+4A8YqZ4v/\
-DUF9YP6V7FsTxE/q\
-SqCDpiT6XQie4xsE\
-PQiLa+ypH/WTF9fK\
-80UEhLyp3wDajw9M\
-5i4e58AAAAASUVOR\
-K5CYII=\x22 preserv\
-eAspectRatio=\x22no\
-ne\x22 id=\x22img1\x22></\
-image><clipPath \
-id=\x22clip2\x22><rect\
- x=\x220\x22 y=\x220\x22 wid\
-th=\x22400106\x22 heig\
-ht=\x22400106\x22/></c\
-lipPath></defs><\
-g clip-path=\x22url\
-(#clip0)\x22 transf\
-orm=\x22translate(-\
-24 -358)\x22><g tra\
-nsform=\x22matrix(6\
-.42769e-21 0.000\
-104972 -0.000104\
-972 6.42769e-21 \
-66 358)\x22><g clip\
--path=\x22url(#clip\
-2)\x22 transform=\x22m\
-atrix(1.02381 -4\
-.92762e-24 3.010\
-81e-24 1 0.06835\
-94 -0.0114236)\x22>\
-<use width=\x22100%\
-\x22 height=\x22100%\x22 \
-xlink:href=\x22#img\
-1\x22 transform=\x22sc\
-ale(6251.66 6251\
-.66)\x22></use></g>\
-</g></g></svg>\
-\x00\x00\x1d4\
-<\
-svg width=\x2266\x22 h\
-eight=\x2265\x22 xmlns\
-=\x22http://www.w3.\
-org/2000/svg\x22 xm\
-lns:xlink=\x22http:\
-//www.w3.org/199\
-9/xlink\x22 xml:spa\
-ce=\x22preserve\x22 ov\
-erflow=\x22hidden\x22>\
-<defs><image wid\
-th=\x2280\x22 height=\x22\
-80\x22 xlink:href=\x22\
-data:image/png;b\
-ase64,iVBORw0KGg\
-oAAAANSUhEUgAAAF\
-AAAABQCAYAAACOEf\
-KtAAAAAXNSR0IArs\
-4c6QAAAARnQU1BAA\
-Cxjwv8YQUAAAAJcE\
-hZcwAADsMAAA7DAc\
-dvqGQAABOvSURBVH\
-he5VxbkBxXeZZC7I\
-DtIJnIGGNpumcvkr\
-xBu3NOd89evPKCLY\
-EgIk5sLUVcxhcMih\
-27LOu2M90zZEGxIu\
-1M96wMSVF+CRUIxi\
-6cECrJix/ywEvykC\
-ouBVTKETi4wDEYV+\
-KYkES3TX1nzj8680\
-+fnp71JjhyV7XmV/\
-fp8/X39f+f29+969\
-bpbXFx8Zdy2uu5rX\
-87tnGNaafVZbNTMV\
-ZWVl53GGrbs2fPr1\
-Alc3Nzb6YCOD4/P/\
-8m2PPz85d7nneZLv\
-PL+L8+/iZ9vaoY1+\
-tq12tbiWvYlwyGqt\
-N8AlNTU28hIFQGAO\
-xTU1PX+74/VC6XN0\
-9PC0dKOQzb87zC1N\
-TUCGzf97fAxi/2yc\
-nJUfziHI6jLOyZmZ\
-lhIYSjrxmanJx0YZ\
-fL5eLrCUNKeR3E2r\
-t37xUkHvShh2I+IL\
-Vx8TzPm5VSftnzvH\
-/1PG9FSrmCX25fyr\
-sQ4udCiGeklHshJA\
-lmaqU2qEkHYAshYi\
-HEOV7hG3i/IKX8Er\
-QxtVKC4h+zrYB45G\
-FSyuc8z6sIIfZ4nv\
-dueKXv+3PlsrwZth\
-DipiAIbtHeuhO2EO\
-LDBCyl/BjO4TjOwy\
-6XyzcHgbhJX3Mz6o\
-Ot6+9geJ53n0EAdg\
-dDl++qtxcjUBi+73\
-9QyrYzSCmjvDxQTk\
-r5oBDiWwafr46NjV\
-GbeXlXCFPYGp73Vz\
-MzM7+KNpAaVygP9y\
-X1ta3ah3379ilbCI\
-G2SAEKIXzziVG7Sj\
-dADXgahpRyB9Xj+/\
-67TIy09siGMT09/X\
-YhxFld12/l5UEYqE\
-9K+Rm6l1KpdJeJoT\
-Y6oNs85XmDiGc2tC\
-Cr6wDgrI1YlniwTQ\
-GFEOO2xpy33RxjYm\
-JiIwmItiwvDxNj9+\
-7dV3qe9zVdx7fp3t\
-WQB4VQKYCpw0DYcm\
-LUrXNQ/sSCINhqeE\
-5gI5YmnokRBIFP9c\
-BOI9ZPPNie520yPP\
-DWvDw4Bq41eG3Zv3\
-//ZYStNgxVjCe+x0\
-asHygPYRuxLPFQl+\
-mBsDmxrLA1MSYnJ6\
-8lAYMg+O28PDgGhk\
-CGgLsIQ234D8ZHxv\
-Dk3TZi/UCDIPh1A2\
-jGRixLPNTJBbQRyx\
-IP53gI5+XBMYIgeA\
-fdTxDI97WVW9cOYY\
-zM9YCSBFRtlwbKLR\
-5APc/bbtRTthEj8W\
-wYPIRtxLLEgx0Ewa\
-+RgL7v/2ZeHhwDTY\
-HhGLtwjMqggnUYmR\
-sF5mzEbA0tbFTIQ9\
-hGLEs8YKDjoHp0CO\
-dq8zjG3NzcOwwBb8\
-vLg2NgZmI80E4Tpz\
-YUwrSGQhjjozRiti\
-dmgpbL5THjQcxkEO\
-sJWxODenMS0Easj3\
-hv5iGclwfHmJmZea\
-cpYFs5HcIowEPYRo\
-yDcnc3Q7hcllM2Yl\
-niYZ+cnPSMG4Ynpx\
-LLEg82BJRSviiE+K\
-mU8n15eXAMHsIaQ5\
-VRIYwJNRXAyNxGrB\
-8oD2EbsSzxcNwMYd\
-g2Ylni9cPI4sEx0J\
-vT/eBBEIbacLFeza\
-AnfstqQU0PlFJOmc\
-Q0mVzEzBCGbSPGxR\
-sEI4sHxzCHeb7vv7\
-+tXHtbjwt5COP4oA\
-2tbgo6bWAQBNP6uJ\
-WYDcMMYdg2YlniFe\
-Kq58bRF91m9bSThM\
-+6rdrnRo4dEnl4cA\
-wewuvWrVMTECUg/s\
-Ho2vCcnbYn1g+Uh/\
-BqQgp2uVyeoHpg24\
-iReByjkIR3FuLamW\
-Icrritmtq1/XO3Fd\
-3ajwfHYCH83q4Q1q\
-CpITyou/u+v80Amu\
-TE+olHGDyEbcTSxB\
-tOFkcgVIp4K+5yfc\
-VpVF4ZObmwOYsHx2\
-AR+gFyPGxqmdr0QC\
-HEH0spj3ieV5VSHt\
-V2Bbu2F8j2fR/nQ9\
-h6TwwgVY8u1ymjba\
-o3FcOsB7aJweqKtP\
-1IuVx+K/i4SXTiom\
-Dd4hmiLkAgLJqk8U\
-jBWDQeKEJ4vXImev\
-KmgP8fdynlf46NjV\
-2lBGws/E2v53UL6T\
-bCJ+BlZts2wL7biK\
-a2FyK/QAWEEC9JKX\
-+I3fO8H9lsz/N6bC\
-HEiwapn9BxXc5m92\
-CY9WjbxOtcT7YQ4v\
-Tc3NxV6JScOHqqWz\
-DmhUm44sbhZ0EcbZ\
-uFUxeGEOIFup9yWf\
-5GZgijE8GJQRta3n\
-Z5nndjvzbPhhEEQY\
-nq8X0fy0PWNo9jFJ\
-LafXbxIrU7y/Xbsn\
-hwjFKpdI1xPwhhVY\
-5CeD0fxuTpMNJAS6\
-WS6clqHc8mXhaGlF\
-KaAtqIcfGwTxy4e2\
-OhFX2jxwu1eLCHG5\
-W7snhwDC6gLnPRC3\
-kvbCPWD9RsCrCguh\
-rxsKf0wqnEuHiE4b\
-Zq7+We58bRBSeJXl\
-UeGFfPOkn9wzYeHM\
-OMUIQw8VAbLjKnch\
-TCacR0eesAdnp6uk\
-N8crI9IB9UPNjlcq\
-lrHGhi9BMP5YqNyl\
-faHUn0o+LJalhsVA\
-85STQ1dOzoqBtXT6\
-vhTDM6M7x09CNpPD\
-gG90C6xhrCNmJZ4u\
-m2oieETWKw+4mHY3\
-wmkkbMNosZefTglB\
-tH5yDSUGNhgWO4zZ\
-rjJtXTyhNb4dliI7\
-yD8+AYfCYCJ+jyQm\
-TzjSd+MwclYv3cnQ\
-u4GvFwjocwJ2bzPN\
-iFOPxLFbaNygtDlf\
-0bCMPzPGUD44ZjD4\
-+6rfA0vNRphGec5d\
-rvZGGYDoYQJh5qgx\
-B4FYIKIKdqI6aPp4\
-rXJnNxKZ6WxQgjr3\
-iw+WqMjZgpHjCGly\
-LptsLzqsNohgcJQ0\
-p5B2YQJsboiepQca\
-nyfXQqTtwJ51QMpE\
-cNXruJu/oHOw9hG7\
-Es8QA6Pj7ek5UbVD\
-yUNZf0dQinEuMPyG\
-nVnm73tuG/bE4SeP\
-zlk5OT40KIV5AX5j\
-yGTlUKbhKeRoeDcI\
-Yn7ttnOkQbwwzhUq\
-mkkkpdIYykEhXAGw\
-M2Yra2gojxxYTViI\
-d6V5NYd5P6hNsMz7\
-XHebVDqF/ndL+p60\
-pNrG+rH9jWFc5JeA\
-fHMJezyJNJO0UMbz\
-AZNzxnI0agpnhmYz\
-49Pb3dGNmXVyMe7N\
-Uk1p248mW3Pc57YU\
-f1gauBwZf0bTycEx\
-VXhTNEbIVnEc4mBl\
-+NwfGuxDoPYU4sK2\
-z7EcsrnonBs3L9MI\
-ZPHMba3zm0Z0NxWC\
-UMhJ6U+RLrEBGeqM\
-I5rqmOhTD0g1Cvva\
-AX7kmsm4lj5IVtxD\
-hoGrHVhC3H4Hnhfh\
-huHP6FGtvF4Y/hfY\
-QxaGJdhXMSnlYdSy\
-M8gyEOYQghPgoRsS\
-JNPNSG/5ht4GoT60\
-4cbi82q3/qxtFz7n\
-L9h+5S9a/dRlW5+y\
-DioU4uYJZ4o40jJX\
-c5Uj2v26geMTF4CO\
-fhgY7lYjhHKpzJCS\
-BiEAisl2Jbu8T6lj\
-jc7TQqr3ZNnVR7FJ\
-13GwsLNvFsGDyEbe\
-KhPieuPQW8QjN68Z\
-o/WrzKxFhtYh1DHB\
-XO6JCakQpncgL90N\
-cuse4sL250mpWf9I\
-pXU79OUj1bTKJyXv\
-EGSawXk/oO1A+cQh\
-Id5RivJbGuBtsUzu\
-DQqNypBe5gqA0HkF\
-g3PPBznufV9f4p05\
-ZSfkIIAfuTGHzj+q\
-Glo/f3ildXv+3Vjz\
-rW3/4EoHhBEavQvF\
-6OIaX8tCHgp31fLu\
-pV4To8iUKq0AyfVN\
-6X1F5E2wcMNPJGXY\
-9KKc/rer5gYmj7k2\
-QThhDiIL3ep6Z9cX\
-vaV0hqZyCiIV56Yn\
-2Ad6DVslcxrj1mrr\
-X1iAe7Uf07IGI6hd\
-XjlLoG2bFIsW702E\
-E17lNLVY1qTXslZl\
-XPp1wz0C6l/HM8bG\
-gz/IcHR9xW/bSKpi\
-amfVGJwritIkusY2\
-UWK7ye5/0TftNsvd\
-+Iipzl2rFifNHz0r\
-zQadWe0WH7Ninld2\
-z1ki2E+AHdD2wpJc\
-59T0r5JO4XxNxm+L\
-TqeZPwpbGD971N85\
-jH9bo8fr9PDqFXlX\
-t4oF78EoZhx+Rtoy\
-ceGSo2w++1oyla28\
-T68PGj70kTr8sj43\
-DB1ualYfDFBGrzSL\
-zRR4+U0EMqjJPV0O\
-DRhbFjx46r+bsxNh\
-4cg3d87VWc8PTQyY\
-W1TawXG9V5N6mdU8\
-KlideqrQwtVX4f9X\
-DxbBh8OYsTc5PwCe\
-XZcfjjkccW35omHu\
-qcne0WMIsHx4DNO6\
-Xtiw9udZbrN3QS6/\
-RpE8+JpHlFGmjxZL\
-ivkNT+S/WCzeorNB\
-5ri1dDz/jvamU4qV\
-0oJuHhfp5HGN2J9V\
-JXYr3QDMd0z46mAb\
-OO1LEk9p07d15n9M\
-K323j0Ew/167Spwu\
-gKYQ2aGsJZ7l5sVG\
-4vxG3xnKT6/NCp+m\
-jx+JHxYmPhgUISPe\
-Q2KzdNRL97vduK/g\
-FeWIwr591WeCBLPM\
-LgIWwSc5Pwz9DmOq\
-3opR0nqlfbxAPG7O\
-wsD+EeHv3EQ1lEqJ\
-TyaVxrYKitJytHIZ\
-xGrEu8VvTfyvMa1e\
-c3J9URDkrEtsaHNh\
-Wbla+rcWEcXSieXD\
-iUJR5sJJKMiJBEbO\
-T44bGi6nnrK24zrG\
-eJh1/9eltHQM4jj3\
-i4hpaz8K3IyMgIzm\
-Um1mdtxDphqz2vkF\
-Sfv/5UfZRAMX7yff\
-9O3/c/ilkAERs5Hl\
-7jxrWvtxM94Xknrj\
-2QhWEKiBQnESs2F5\
-5sd0q1n77r4fuuzR\
-Kv7RyBOZC+fVDxdL\
-3rzJwI1gN7vNDMpi\
-GEbW1FV5sXRz8wxU\
-MZ8zMHLGeZxMYq+w\
-uFpPZNCmenGd2fho\
-H6jBC+gDQBjo0eq0\
-xgMKs6pZMLn0gTj3\
-dKGDYZAn5wNeIBgy\
-/pd4nHQ9iWWDfFcy\
-xh2y+xXjwVXus2w2\
-+rmUtSO4dZDBcPNi\
-XWhRB/i7k6zjmt2h\
-fai57Vl4Yer2zg4q\
-W1q3wxIa94vGkYOC\
-vHQ6qrw2h0h60Jyp\
-NKacS2LB19p5tE31\
-XhHEfnnDi6hxOjxD\
-qiAefc5fo2rNHhmk\
-JSq+cRTz+Irrnwas\
-RDnVxAXeaiF/JeuF\
-u8KHeHkTexvm3xgO\
-vG4Xd1Z3BuqFm91y\
-SGpkAI8RXCcOLw8+\
-32M3rZWTywMY94uC\
-e2GqNCeFDxsA+SWD\
-9PjXYnbKnDsHie2V\
-YMkljfnETXO3H1WT\
-WeW47OupbXLdylo9\
-uwuKmnUYt5xQMGD+\
-Es8UweHIN7IF3DQ/\
-i8lPKBLvGow8ghnm\
-4rjM6of2J96x8cLj\
-pJ9KxqGrDuloQ9r1\
-u4S9Uvtmc04cvykY\
-9fR8R4h5GGQV9rYj\
-6MFelBxcudWMeSfp\
-p4yjtU2C5aw5a1FR\
-0BS6VSYCOGeqg9Gl\
-48OGK+bjF0cuFhZz\
-lqOnH0NaziUM9bPL\
-nwqX6exzH4x4Y4no\
-cHx+C9MGGoDRUQGS\
-Ue2ry4LZ7N82ygq0\
-2sq4ROM3rOnD+rNs\
-+wnSRCTsMqXhoGD+\
-G8PDhG38R6l3hdHU\
-Y+zyPQ15JYLx4/ul\
-MNbzrisbdMW+HLN9\
-R+D4u4ucSDPTs7ew\
-2FcFpi3caDY/AQxn\
-13hXAnbFOGKkhOSy\
-k/JIRQMwz8ptm+73\
-9ESnmYgLDSGwTBPV\
-LKu1EGv1LKe2B7nn\
-eX7/v36lcurgC+u1\
-yvpItneGSrtgBiu3\
-bt2oAZD+rqg/EgrU\
-h7nndK32vPvXMe2r\
-4Xdei6HjI8sDexvv\
-3RR64z2zwm3ueNi9\
-d0h3cgPHAfeDWXhy\
-0TD/nap+AV5gyD7w\
-OsqK9qT02sjzy2uJ\
-l3GLhRKeVnPU/+zP\
-O8V6WUr3qe17H1/0\
-37Z0KI/yAg/NkQfk\
-2Kja/kN+AeikvVL3\
-V5Xk8I11bcxsITOq\
-Q2eJ73byZ2BgbdD1\
-IJKWV6eZjleD2pif\
-WttYeKtCRltHnrx8\
-fHr5ybm9uox4pXYH\
-kINsSFrb1B2Tg/MT\
-HR+eC6VCrNgChe/s\
-Y1WE/Drjutq/Q51Y\
-Hht5DUPs4F43Yhjj\
-6G+wWmvjfclxXjxh\
-u9AnlqEMgP5eWhr9\
-9IGOyL9d7E+tDh+9\
-8+aIfBG1qUey1frI\
-83D19ZbFb/Mc3z2n\
-b0nc3JwbegfFqHkY\
-bBe+G8PDhG3y/WCR\
-RtHkBxsQbKLZ5+uu\
-bHhpM2YiQex9jSqA\
-3jBfGL4rU/jik0o2\
-8UWtUhTixLPNirTa\
-xzDP56G45RGVTQEQ\
-8dxqCJdZSDjQr562\
-02YmniUb3e/PwGpx\
-ne5rRqjaHGQgvjP+\
-/xxy8jjLziae9edW\
-LdxOj7xToq1Inn18\
-UX61kYA4j3xv1i/Z\
-ZbVOipP9+EIYuNWJ\
-Z4WhTkoTurMXl5cI\
-yUgTQwVBkVwsZqDE\
-LvkvlinYXw7Xl5cA\
-x6wRJjzP+zL9bL5f\
-Iv/Iv1tUqsvyG/WE\
-eda5VY5yG8Zol1Ds\
-pDmIdUP88jjKzEep\
-p4Noy1Sqzzd6S7Ql\
-iDpoawSSyPu78evl\
-g3MdYysU73k/rFuj\
-nO0a/4phLrB8pnIj\
-ZiWeLBtiXWObEs8f\
-C7Vol1Ux8p5XtQt6\
-rHvHlM/nWBB23E+o\
-HyELYRyxIP9dgS6y\
-YxXa9VPOxrmFjHS5\
-vqfrDmaeCpjV6rfU\
-YT/xZVMmhbkZVYt3\
-UYaRg8hG3EuHgcY6\
-0S68gQauf6ZyxSdI\
-mnwwBvxu/FmwC64G\
-cwtePE+oH2S6znEQ\
-/2a/li3cTgM5G8PE\
-wM/EEK0gWvJ5N4Zg\
-h3nh7+Wq0hAP7s5a\
-1YytGrEZvQFuhpzS\
-b0THp8pGzd0Jbper\
-g90oHo4XVacBPK6P\
-zCJlyre7dNqNPEwO\
-dmVI/+Y7EmxibUBx\
-u/WRgYVtEHMkEQ3J\
-2XB87j/rXnKfGEEH\
-9Pzka/ygXNJ6YbzK\
-8aIv7C9/+tFeZB/j\
-Y2xMMD4hGkNohmNu\
-Z4uRp/rRZ/cJVX9E\
-bb0eYhbMnjTPF4CP\
-e0R2gfEBoYeWMRES\
-6NlQjssDEnxLQG5z\
-G4xPhIf2KwG7lT2N\
-i5jfO63AdwnT73fm\
-C0sdoYul6FofH6Yq\
-AcYeieU2HAJgyThw\
-0DQxX0tkaH0TNq6P\
-FCEg/CUUOr1/4zG1\
-pMa4w2QQHRQ+Hefa\
-lhqA3/oZP4JRvTPK\
-Ngl003Rtcz+2IvZd\
-iXGgaO/Q851IYt8U\
-knqAAAAABJRU5Erk\
-Jggg==\x22 preserve\
-AspectRatio=\x22non\
-e\x22 id=\x22img0\x22></i\
-mage><clipPath i\
-d=\x22clip1\x22><rect \
-x=\x220\x22 y=\x220\x22 widt\
-h=\x22619125\x22 heigh\
-t=\x22619125\x22/></cl\
-ipPath></defs><g\
- transform=\x22tran\
-slate(-413 -113)\
-\x22><g transform=\x22\
-matrix(0.0001049\
-87 0 0 0.0001049\
-87 413 113)\x22><g \
-clip-path=\x22url(#\
-clip1)\x22 transfor\
-m=\x22scale(1.01538\
- 1)\x22><use width=\
-\x22100%\x22 height=\x221\
-00%\x22 xlink:href=\
-\x22#img0\x22 transfor\
-m=\x22scale(7739.06\
- 7739.06)\x22></use\
-></g></g></g></s\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-b\
+ulb\x22><path strok\
+e=\x22none\x22 d=\x22M0 0\
+h24v24H0z\x22 fill=\
+\x22none\x22/><path d=\
+\x22M4 11a1 1 0 0 1\
+ .117 1.993l-.11\
+7 .007h-1a1 1 0 \
+0 1 -.117 -1.993\
+l.117 -.007h1z\x22 \
+/><path d=\x22M12 2\
+a1 1 0 0 1 .993 \
+.883l.007 .117v1\
+a1 1 0 0 1 -1.99\
+3 .117l-.007 -.1\
+17v-1a1 1 0 0 1 \
+1 -1z\x22 /><path d\
+=\x22M21 11a1 1 0 0\
+ 1 .117 1.993l-.\
+117 .007h-1a1 1 \
+0 0 1 -.117 -1.9\
+93l.117 -.007h1z\
+\x22 /><path d=\x22M4.\
+893 4.893a1 1 0 \
+0 1 1.32 -.083l.\
+094 .083l.7 .7a1\
+ 1 0 0 1 -1.32 1\
+.497l-.094 -.083\
+l-.7 -.7a1 1 0 0\
+ 1 0 -1.414z\x22 />\
+<path d=\x22M17.693\
+ 4.893a1 1 0 0 1\
+ 1.497 1.32l-.08\
+3 .094l-.7 .7a1 \
+1 0 0 1 -1.497 -\
+1.32l.083 -.094l\
+.7 -.7z\x22 /><path\
+ d=\x22M14 18a1 1 0\
+ 0 1 1 1a3 3 0 0\
+ 1 -6 0a1 1 0 0 \
+1 .883 -.993l.11\
+7 -.007h4z\x22 /><p\
+ath d=\x22M12 6a6 6\
+ 0 0 1 3.6 10.8a\
+1 1 0 0 1 -.471 \
+.192l-.129 .008h\
+-6a1 1 0 0 1 -.6\
+ -.2a6 6 0 0 1 3\
+.6 -10.8z\x22 /></s\
 vg>\
+\x00\x00\x02 \
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-l\
+ayout-dashboard\x22\
+><path stroke=\x22n\
+one\x22 d=\x22M0 0h24v\
+24H0z\x22 fill=\x22non\
+e\x22/><path d=\x22M9 \
+3a2 2 0 0 1 2 2v\
+6a2 2 0 0 1 -2 2\
+h-4a2 2 0 0 1 -2\
+ -2v-6a2 2 0 0 1\
+ 2 -2zm0 12a2 2 \
+0 0 1 2 2v2a2 2 \
+0 0 1 -2 2h-4a2 \
+2 0 0 1 -2 -2v-2\
+a2 2 0 0 1 2 -2z\
+m10 -4a2 2 0 0 1\
+ 2 2v6a2 2 0 0 1\
+ -2 2h-4a2 2 0 0\
+ 1 -2 -2v-6a2 2 \
+0 0 1 2 -2zm0 -8\
+a2 2 0 0 1 2 2v2\
+a2 2 0 0 1 -2 2h\
+-4a2 2 0 0 1 -2 \
+-2v-2a2 2 0 0 1 \
+2 -2z\x22 /></svg>\
+\x00\x00\x02\x81\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-s\
+tack\x22><path stro\
+ke=\x22none\x22 d=\x22M0 \
+0h24v24H0z\x22 fill\
+=\x22none\x22/><path d\
+=\x22M20.894 13.553\
+a1 1 0 0 1 -.447\
+ 1.341l-8 4a1 1 \
+0 0 1 -.894 0l-8\
+ -4a1 1 0 0 1 .8\
+94 -1.788l7.553 \
+3.774l7.554 -3.7\
+75a1 1 0 0 1 1.3\
+41 .447m-8.887 -\
+8.552q .056 0 .1\
+11 .007l.111 .02\
+l.086 .024l.012 \
+.006l.012 .002l.\
+029 .014l.05 .01\
+9l.016 .009l.012\
+ .005l8 4a1 1 0 \
+0 1 0 1.788l-8 4\
+a1 1 0 0 1 -.894\
+ 0l-8 -4a1 1 0 0\
+ 1 0 -1.788l8 -4\
+l.011 -.005l.018\
+ -.01l.078 -.032\
+l.011 -.002l.013\
+ -.006l.086 -.02\
+4l.11 -.02l.056 \
+-.005z\x22 /></svg>\
+\
+\x00\x00\x03\xa3\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-a\
+djustments\x22><pat\
+h stroke=\x22none\x22 \
+d=\x22M0 0h24v24H0z\
+\x22 fill=\x22none\x22/><\
+path d=\x22M6 3a1 1\
+ 0 0 1 .993 .883\
+l.007 .117v3.171\
+a3.001 3.001 0 0\
+ 1 0 5.658v7.171\
+a1 1 0 0 1 -1.99\
+3 .117l-.007 -.1\
+17v-7.17a3.002 3\
+.002 0 0 1 -1.99\
+5 -2.654l-.005 -\
+.176l.005 -.176a\
+3.002 3.002 0 0 \
+1 1.995 -2.654v-\
+3.17a1 1 0 0 1 1\
+ -1z\x22 /><path d=\
+\x22M12 3a1 1 0 0 1\
+ .993 .883l.007 \
+.117v9.171a3.001\
+ 3.001 0 0 1 0 5\
+.658v1.171a1 1 0\
+ 0 1 -1.993 .117\
+l-.007 -.117v-1.\
+17a3.002 3.002 0\
+ 0 1 -1.995 -2.6\
+54l-.005 -.176l.\
+005 -.176a3.002 \
+3.002 0 0 1 1.99\
+5 -2.654v-9.17a1\
+ 1 0 0 1 1 -1z\x22 \
+/><path d=\x22M18 3\
+a1 1 0 0 1 .993 \
+.883l.007 .117v.\
+171a3.001 3.001 \
+0 0 1 0 5.658v10\
+.171a1 1 0 0 1 -\
+1.993 .117l-.007\
+ -.117v-10.17a3.\
+002 3.002 0 0 1 \
+-1.995 -2.654l-.\
+005 -.176l.005 -\
+.176a3.002 3.002\
+ 0 0 1 1.995 -2.\
+654v-.17a1 1 0 0\
+ 1 1 -1z\x22 /></sv\
+g>\
+\x00\x00\x02\xce\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#34\
+3A40\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-c\
+hart-dots-2\x22><pa\
+th stroke=\x22none\x22\
+ d=\x22M0 0h24v24H0\
+z\x22 fill=\x22none\x22/>\
+<path d=\x22M3 2a1 \
+1 0 0 1 1 1v17h1\
+7a1 1 0 0 1 .993\
+ .883l.007 .117a\
+1 1 0 0 1 -1 1h-\
+18a1 1 0 0 1 -1 \
+-1v-18a1 1 0 0 1\
+ 1 -1m18.97 .757\
+a1 1 0 0 1 -.727\
+ 1.213l-5.256 1.\
+314a3 3 0 0 1 -.\
+55 1.465l1.768 2\
+.358a3.003 3.003\
+ 0 0 1 3.795 2.8\
+93a3 3 0 0 1 -5.\
+436 1.751l-3.57 \
+1.428a3 3 0 0 1 \
+-5.994 -.179l.00\
+5 -.176a3 3 0 0 \
+1 5.43 -1.576l3.\
+57 -1.428l.015 -\
+.17c.06 -.518 .2\
+53 -.996 .542 -1\
+.4l-1.767 -2.357\
+a3.003 3.003 0 0\
+ 1 -3.795 -2.893\
+l.005 -.176a3 3 \
+0 0 1 5.497 -1.4\
+8l5.255 -1.314a1\
+ 1 0 0 1 1.213 .\
+727\x22 /></svg>\
+\x00\x00\x01\x9c\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22non\
+e\x22  stroke=\x22#E0E\
+0E0\x22  stroke-wid\
+th=\x222\x22  stroke-l\
+inecap=\x22round\x22  \
+stroke-linejoin=\
+\x22round\x22  class=\x22\
+icon icon-tabler\
+ icons-tabler-ou\
+tline icon-table\
+r-refresh\x22><path\
+ stroke=\x22none\x22 d\
+=\x22M0 0h24v24H0z\x22\
+ fill=\x22none\x22/><p\
+ath d=\x22M20 11a8.\
+1 8.1 0 0 0 -15.\
+5 -2m-.5 -4v4h4\x22\
+ /><path d=\x22M4 1\
+3a8.1 8.1 0 0 0 \
+15.5 2m.5 4v-4h-\
+4\x22 /></svg>\
+\x00\x00\x02V\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-c\
+urrent-location\x22\
+><path stroke=\x22n\
+one\x22 d=\x22M0 0h24v\
+24H0z\x22 fill=\x22non\
+e\x22/><path d=\x22M12\
+ 1a1 1 0 0 1 1 1\
+v1.055a9.004 9.0\
+04 0 0 1 7.946 7\
+.945h1.054a1 1 0\
+ 0 1 0 2h-1.055a\
+9.004 9.004 0 0 \
+1 -7.944 7.945l-\
+.001 1.055a1 1 0\
+ 0 1 -2 0v-1.055\
+a9.004 9.004 0 0\
+ 1 -7.945 -7.944\
+l-1.055 -.001a1 \
+1 0 0 1 0 -2h1.0\
+55a9.004 9.004 0\
+ 0 1 7.945 -7.94\
+5v-1.055a1 1 0 0\
+ 1 1 -1m0 4a7 7 \
+0 1 0 0 14a7 7 0\
+ 0 0 0 -14m0 3a4\
+ 4 0 1 1 -4 4l.0\
+05 -.2a4 4 0 0 1\
+ 3.995 -3.8\x22 /><\
+/svg>\
+\x00\x00\x03}\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22non\
+e\x22  stroke=\x22#E0E\
+0E0\x22  stroke-wid\
+th=\x222\x22  stroke-l\
+inecap=\x22round\x22  \
+stroke-linejoin=\
+\x22round\x22  class=\x22\
+icon icon-tabler\
+ icons-tabler-ou\
+tline icon-table\
+r-settings\x22><pat\
+h stroke=\x22none\x22 \
+d=\x22M0 0h24v24H0z\
+\x22 fill=\x22none\x22/><\
+path d=\x22M10.325 \
+4.317c.426 -1.75\
+6 2.924 -1.756 3\
+.35 0a1.724 1.72\
+4 0 0 0 2.573 1.\
+066c1.543 -.94 3\
+.31 .826 2.37 2.\
+37a1.724 1.724 0\
+ 0 0 1.065 2.572\
+c1.756 .426 1.75\
+6 2.924 0 3.35a1\
+.724 1.724 0 0 0\
+ -1.066 2.573c.9\
+4 1.543 -.826 3.\
+31 -2.37 2.37a1.\
+724 1.724 0 0 0 \
+-2.572 1.065c-.4\
+26 1.756 -2.924 \
+1.756 -3.35 0a1.\
+724 1.724 0 0 0 \
+-2.573 -1.066c-1\
+.543 .94 -3.31 -\
+.826 -2.37 -2.37\
+a1.724 1.724 0 0\
+ 0 -1.065 -2.572\
+c-1.756 -.426 -1\
+.756 -2.924 0 -3\
+.35a1.724 1.724 \
+0 0 0 1.066 -2.5\
+73c-.94 -1.543 .\
+826 -3.31 2.37 -\
+2.37c1 .608 2.29\
+6 .07 2.572 -1.0\
+65z\x22 /><path d=\x22\
+M9 12a3 3 0 1 0 \
+6 0a3 3 0 0 0 -6\
+ 0\x22 /></svg>\
+\x00\x00\x03\xa4\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-b\
+ulb\x22><path strok\
+e=\x22none\x22 d=\x22M0 0\
+h24v24H0z\x22 fill=\
+\x22none\x22/><path d=\
+\x22M4 11a1 1 0 0 1\
+ .117 1.993l-.11\
+7 .007h-1a1 1 0 \
+0 1 -.117 -1.993\
+l.117 -.007h1z\x22 \
+/><path d=\x22M12 2\
+a1 1 0 0 1 .993 \
+.883l.007 .117v1\
+a1 1 0 0 1 -1.99\
+3 .117l-.007 -.1\
+17v-1a1 1 0 0 1 \
+1 -1z\x22 /><path d\
+=\x22M21 11a1 1 0 0\
+ 1 .117 1.993l-.\
+117 .007h-1a1 1 \
+0 0 1 -.117 -1.9\
+93l.117 -.007h1z\
+\x22 /><path d=\x22M4.\
+893 4.893a1 1 0 \
+0 1 1.32 -.083l.\
+094 .083l.7 .7a1\
+ 1 0 0 1 -1.32 1\
+.497l-.094 -.083\
+l-.7 -.7a1 1 0 0\
+ 1 0 -1.414z\x22 />\
+<path d=\x22M17.693\
+ 4.893a1 1 0 0 1\
+ 1.497 1.32l-.08\
+3 .094l-.7 .7a1 \
+1 0 0 1 -1.497 -\
+1.32l.083 -.094l\
+.7 -.7z\x22 /><path\
+ d=\x22M14 18a1 1 0\
+ 0 1 1 1a3 3 0 0\
+ 1 -6 0a1 1 0 0 \
+1 .883 -.993l.11\
+7 -.007h4z\x22 /><p\
+ath d=\x22M12 6a6 6\
+ 0 0 1 3.6 10.8a\
+1 1 0 0 1 -.471 \
+.192l-.129 .008h\
+-6a1 1 0 0 1 -.6\
+ -.2a6 6 0 0 1 3\
+.6 -10.8z\x22 /></s\
+vg>\
+\x00\x00\x02 \
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-l\
+ayout-dashboard\x22\
+><path stroke=\x22n\
+one\x22 d=\x22M0 0h24v\
+24H0z\x22 fill=\x22non\
+e\x22/><path d=\x22M9 \
+3a2 2 0 0 1 2 2v\
+6a2 2 0 0 1 -2 2\
+h-4a2 2 0 0 1 -2\
+ -2v-6a2 2 0 0 1\
+ 2 -2zm0 12a2 2 \
+0 0 1 2 2v2a2 2 \
+0 0 1 -2 2h-4a2 \
+2 0 0 1 -2 -2v-2\
+a2 2 0 0 1 2 -2z\
+m10 -4a2 2 0 0 1\
+ 2 2v6a2 2 0 0 1\
+ -2 2h-4a2 2 0 0\
+ 1 -2 -2v-6a2 2 \
+0 0 1 2 -2zm0 -8\
+a2 2 0 0 1 2 2v2\
+a2 2 0 0 1 -2 2h\
+-4a2 2 0 0 1 -2 \
+-2v-2a2 2 0 0 1 \
+2 -2z\x22 /></svg>\
+\x00\x00\x02\x81\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-s\
+tack\x22><path stro\
+ke=\x22none\x22 d=\x22M0 \
+0h24v24H0z\x22 fill\
+=\x22none\x22/><path d\
+=\x22M20.894 13.553\
+a1 1 0 0 1 -.447\
+ 1.341l-8 4a1 1 \
+0 0 1 -.894 0l-8\
+ -4a1 1 0 0 1 .8\
+94 -1.788l7.553 \
+3.774l7.554 -3.7\
+75a1 1 0 0 1 1.3\
+41 .447m-8.887 -\
+8.552q .056 0 .1\
+11 .007l.111 .02\
+l.086 .024l.012 \
+.006l.012 .002l.\
+029 .014l.05 .01\
+9l.016 .009l.012\
+ .005l8 4a1 1 0 \
+0 1 0 1.788l-8 4\
+a1 1 0 0 1 -.894\
+ 0l-8 -4a1 1 0 0\
+ 1 0 -1.788l8 -4\
+l.011 -.005l.018\
+ -.01l.078 -.032\
+l.011 -.002l.013\
+ -.006l.086 -.02\
+4l.11 -.02l.056 \
+-.005z\x22 /></svg>\
+\
+\x00\x00\x03\xa3\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-a\
+djustments\x22><pat\
+h stroke=\x22none\x22 \
+d=\x22M0 0h24v24H0z\
+\x22 fill=\x22none\x22/><\
+path d=\x22M6 3a1 1\
+ 0 0 1 .993 .883\
+l.007 .117v3.171\
+a3.001 3.001 0 0\
+ 1 0 5.658v7.171\
+a1 1 0 0 1 -1.99\
+3 .117l-.007 -.1\
+17v-7.17a3.002 3\
+.002 0 0 1 -1.99\
+5 -2.654l-.005 -\
+.176l.005 -.176a\
+3.002 3.002 0 0 \
+1 1.995 -2.654v-\
+3.17a1 1 0 0 1 1\
+ -1z\x22 /><path d=\
+\x22M12 3a1 1 0 0 1\
+ .993 .883l.007 \
+.117v9.171a3.001\
+ 3.001 0 0 1 0 5\
+.658v1.171a1 1 0\
+ 0 1 -1.993 .117\
+l-.007 -.117v-1.\
+17a3.002 3.002 0\
+ 0 1 -1.995 -2.6\
+54l-.005 -.176l.\
+005 -.176a3.002 \
+3.002 0 0 1 1.99\
+5 -2.654v-9.17a1\
+ 1 0 0 1 1 -1z\x22 \
+/><path d=\x22M18 3\
+a1 1 0 0 1 .993 \
+.883l.007 .117v.\
+171a3.001 3.001 \
+0 0 1 0 5.658v10\
+.171a1 1 0 0 1 -\
+1.993 .117l-.007\
+ -.117v-10.17a3.\
+002 3.002 0 0 1 \
+-1.995 -2.654l-.\
+005 -.176l.005 -\
+.176a3.002 3.002\
+ 0 0 1 1.995 -2.\
+654v-.17a1 1 0 0\
+ 1 1 -1z\x22 /></sv\
+g>\
+\x00\x00\x02\xce\
+<\
+svg  xmlns=\x22http\
+://www.w3.org/20\
+00/svg\x22  width=\x22\
+24\x22  height=\x2224\x22\
+  viewBox=\x220 0 2\
+4 24\x22  fill=\x22#E0\
+E0E0\x22  class=\x22ic\
+on icon-tabler i\
+cons-tabler-fill\
+ed icon-tabler-c\
+hart-dots-2\x22><pa\
+th stroke=\x22none\x22\
+ d=\x22M0 0h24v24H0\
+z\x22 fill=\x22none\x22/>\
+<path d=\x22M3 2a1 \
+1 0 0 1 1 1v17h1\
+7a1 1 0 0 1 .993\
+ .883l.007 .117a\
+1 1 0 0 1 -1 1h-\
+18a1 1 0 0 1 -1 \
+-1v-18a1 1 0 0 1\
+ 1 -1m18.97 .757\
+a1 1 0 0 1 -.727\
+ 1.213l-5.256 1.\
+314a3 3 0 0 1 -.\
+55 1.465l1.768 2\
+.358a3.003 3.003\
+ 0 0 1 3.795 2.8\
+93a3 3 0 0 1 -5.\
+436 1.751l-3.57 \
+1.428a3 3 0 0 1 \
+-5.994 -.179l.00\
+5 -.176a3 3 0 0 \
+1 5.43 -1.576l3.\
+57 -1.428l.015 -\
+.17c.06 -.518 .2\
+53 -.996 .542 -1\
+.4l-1.767 -2.357\
+a3.003 3.003 0 0\
+ 1 -3.795 -2.893\
+l.005 -.176a3 3 \
+0 0 1 5.497 -1.4\
+8l5.255 -1.314a1\
+ 1 0 0 1 1.213 .\
+727\x22 /></svg>\
 "
 
 qt_resource_name = b"\
@@ -2405,6 +761,18 @@ qt_resource_name = b"\
 \x00o\xa6S\
 \x00i\
 \x00c\x00o\x00n\x00s\
+\x00\x04\
+\x00\x06\xa8\x8b\
+\x00d\
+\x00a\x00r\x00k\
+\x00\x05\
+\x00r\xfd\xf4\
+\x00l\
+\x00i\x00g\x00h\x00t\
+\x00\x0b\
+\x0cj!\xc7\
+\x00r\
+\x00e\x00f\x00r\x00e\x00s\x00h\x00.\x00s\x00v\x00g\
 \x00\x0f\
 \x0d\xdb>g\
 \x00t\
@@ -2438,35 +806,50 @@ qt_resource_name = b"\
 qt_resource_struct = b"\
 \x00\x00\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x01\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\x00\x00\x02\x00\x00\x00\x07\x00\x00\x00\x02\
+\x00\x00\x00\x00\x00\x02\x00\x00\x00\x02\x00\x00\x00\x02\
 \x00\x00\x00\x00\x00\x00\x00\x00\
-\x00\x00\x00\xa2\x00\x00\x00\x00\x00\x01\x00\x00o\xed\
-\x00\x00\x01\x97-!Z\xed\
-\x00\x00\x00\x82\x00\x00\x00\x00\x00\x01\x00\x00IN\
-\x00\x00\x01\x97-$S\xb2\
-\x00\x00\x00\xc8\x00\x00\x00\x00\x00\x01\x00\x00w\x80\
-\x00\x00\x01\x97-!!\x10\
-\x00\x00\x00l\x00\x00\x00\x00\x00\x01\x00\x00f>\
-\x00\x00\x01\x97- \xd7l\
-\x00\x00\x004\x00\x00\x00\x00\x00\x01\x00\x00IN\
-\x00\x00\x01\x97-$ \xd6\
-\x00\x00\x00\x10\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\x97-#\x96<\
-\x00\x00\x00R\x00\x00\x00\x00\x00\x01\x00\x00XQ\
-\x00\x00\x01\x97-!\x02\xbd\
+\x00\x00\x00\x10\x00\x02\x00\x00\x00\x08\x00\x00\x00\x0c\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00\x1e\x00\x02\x00\x00\x00\x08\x00\x00\x00\x04\
+\x00\x00\x00\x00\x00\x00\x00\x00\
+\x00\x00\x00\xdc\x00\x00\x00\x00\x00\x01\x00\x00\x0f\xcc\
+\x00\x00\x01\x97O0-\xa5\
+\x00\x00\x00\xbc\x00\x00\x00\x00\x00\x01\x00\x00\x0dG\
+\x00\x00\x01\x97O4v \
+\x00\x00\x01\x02\x00\x00\x00\x00\x00\x01\x00\x00\x13s\
+\x00\x00\x01\x97O6\x80\x0b\
+\x00\x00\x00\xa6\x00\x00\x00\x00\x00\x01\x00\x00\x0b#\
+\x00\x00\x01\x97O-\xf3\xce\
+\x00\x00\x00n\x00\x00\x00\x00\x00\x01\x00\x00\x03\xfa\
+\x00\x00\x01\x97O0\xca\xfa\
+\x00\x00\x00.\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
+\x00\x00\x01\x97O-6\x9e\
+\x00\x00\x00J\x00\x00\x00\x00\x00\x01\x00\x00\x01\xa0\
+\x00\x00\x01\x97O8<j\
+\x00\x00\x00\x8c\x00\x00\x00\x00\x00\x01\x00\x00\x07{\
+\x00\x00\x01\x97O@|\x9f\
+\x00\x00\x00\xdc\x00\x00\x00\x00\x00\x01\x00\x00&\x11\
+\x00\x00\x01\x97O/\xd2\x9e\
+\x00\x00\x00\xbc\x00\x00\x00\x00\x00\x01\x00\x00#\x8c\
+\x00\x00\x01\x97O4\x02\xf3\
+\x00\x00\x01\x02\x00\x00\x00\x00\x00\x01\x00\x00)\xb8\
+\x00\x00\x01\x97O6\xde\x1b\
+\x00\x00\x00\xa6\x00\x00\x00\x00\x00\x01\x00\x00!h\
+\x00\x00\x01\x97O.L;\
+\x00\x00\x00n\x00\x00\x00\x00\x00\x01\x00\x00\x1a?\
+\x00\x00\x01\x97O1\x22\x84\
+\x00\x00\x00.\x00\x00\x00\x00\x00\x01\x00\x00\x16E\
+\x00\x00\x01\x97O,3\x99\
+\x00\x00\x00J\x00\x00\x00\x00\x00\x01\x00\x00\x17\xe5\
+\x00\x00\x01\x97O7\xee\xe6\
+\x00\x00\x00\x8c\x00\x00\x00\x00\x00\x01\x00\x00\x1d\xc0\
+\x00\x00\x01\x97O@\xda\x9b\
 "
 
-
 def qInitResources():
-    QtCore.qRegisterResourceData(
-        0x03, qt_resource_struct, qt_resource_name, qt_resource_data
-    )
-
+    QtCore.qRegisterResourceData(0x03, qt_resource_struct, qt_resource_name, qt_resource_data)
 
 def qCleanupResources():
-    QtCore.qUnregisterResourceData(
-        0x03, qt_resource_struct, qt_resource_name, qt_resource_data
-    )
-
+    QtCore.qUnregisterResourceData(0x03, qt_resource_struct, qt_resource_name, qt_resource_data)
 
 qInitResources()

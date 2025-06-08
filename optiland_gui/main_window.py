@@ -645,10 +645,12 @@ class MainWindow(QMainWindow):
                 self.dock_animations[dock_widget] = animation  #
 
     @Slot(str)
-    def switch_theme(self, theme_path):  #
-        if theme_path != self.current_theme_path:  #
-            self.current_theme_path = theme_path  #
-            self.load_stylesheets()  #
+    def switch_theme(self, theme_path):
+        if theme_path != self.current_theme_path:
+            self.current_theme_path = theme_path
+            self.load_stylesheets()
+            theme_name = "dark" if "dark" in theme_path else "light"
+            self.sidebar_content_widget.update_icons(theme_name)
 
     @Slot()
     def new_system_action(self):  #

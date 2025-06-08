@@ -52,22 +52,23 @@ class SidebarWidget(QWidget):
         self._main_layout.addWidget(self.title_label)
 
         self._buttons_list = []  # To store (button, text_label)
+        self.current_theme = "dark"
 
         # --- Menu Buttons ---
         button_definitions = [
-            ("dash", "Dash", ":/icons/dash.svg"),
-            ("design", "Design", ":/icons/design.svg"),
-            ("analysis", "Analysis", ":/icons/analysis.svg"),
-            ("optimization", "Optimization", ":/icons/optimization.svg"),
-            ("materials", "Materials", ":/icons/materials.svg"),
-            ("tolerancing", "Tolerancing", ":/icons/tolerancing.svg"),
+            ("dash", "Dash", "dash.svg"),
+            ("design", "Design", "design.svg"),
+            ("analysis", "Analysis", "analysis.svg"),
+            ("optimization", "Optimization", "optimization.svg"),
+            ("materials", "Materials", "materials.svg"),
+            ("tolerancing", "Tolerancing", "tolerancing.svg"),
         ]
 
-        for name, text, icon_path in button_definitions:
+        for name, text, icon_filename in button_definitions:
             button = QToolButton()
             button.setObjectName(f"sidebar-btn-{name}")
             button.setText(text)
-            button.setIcon(QIcon(icon_path))
+            # Icon will be set in update_icons
             button.setIconSize(QSize(24, 24))
             button.setCheckable(True)
             button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
@@ -76,7 +77,7 @@ class SidebarWidget(QWidget):
 
             self._main_layout.addWidget(button)
             self._button_group.addButton(button)
-            self._buttons_list.append({"widget": button, "name": name, "text": text})
+            self._buttons_list.append({"widget": button, "name": name, "text": text, "icon_filename": icon_filename})
             button.clicked.connect(self._handle_button_click)
 
         self._main_layout.addStretch(1)  # Pushes settings button to the bottom
@@ -85,23 +86,17 @@ class SidebarWidget(QWidget):
         self.settings_button = QToolButton()
         self.settings_button.setObjectName("sidebar-btn-settings")
         self.settings_button.setText("Settings")
-        self.settings_button.setIcon(QIcon(":/icons/settings.svg"))
         self.settings_button.setIconSize(QSize(24, 24))
         self.settings_button.setCheckable(True)
-        self.settings_button.setToolButtonStyle(
-            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
-        )
-        self.settings_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
+        self.settings_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        self.settings_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.settings_button.setFixedHeight(35)
-
         self._main_layout.addWidget(self.settings_button)
         self._button_group.addButton(self.settings_button)
-        self._buttons_list.append(
-            {"widget": self.settings_button, "name": "settings", "text": "Settings"}
-        )
+        self._buttons_list.append({"widget": self.settings_button, "name": "settings", "text": "Settings", "icon_filename": "settings.svg"})
         self.settings_button.clicked.connect(self._handle_button_click)
+
+        self.update_icons()
 
         # Set "Dash" as active by default
         if self._buttons_list:
@@ -162,3 +157,9 @@ class SidebarWidget(QWidget):
     def force_set_collapse_state(self, collapse: bool):
         """Public method to forcefully set the collapse state, bypassing width check once."""
         self.set_collapsed(collapse)
+
+    def update_icons(self, theme="dark"):
+        self.current_theme = theme
+        for item in self._buttons_list:
+            icon_path = f":/icons/{self.current_theme}/{item['icon_filename']}"
+            item['widget'].setIcon(QIcon(icon_path))

@@ -1,11 +1,21 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icons">
-    <file alias="dash.svg">icons/dash.svg</file>
-    <file alias="design.svg">icons/design.svg</file>
-    <file alias="analysis.svg">icons/analysis.svg</file>
-    <file alias="optimization.svg">icons/optimization.svg</file>
-    <file alias="materials.svg">icons/materials.svg</file>
-    <file alias="tolerancing.svg">icons/tolerancing.svg</file>
-    <file alias="settings.svg">icons/settings.svg</file>
+    <file alias="dark/dash.svg">icons/dark/dash.svg</file>
+    <file alias="dark/design.svg">icons/dark/design.svg</file>
+    <file alias="dark/analysis.svg">icons/dark/analysis.svg</file>
+    <file alias="dark/optimization.svg">icons/dark/optimization.svg</file>
+    <file alias="dark/materials.svg">icons/dark/materials.svg</file>
+    <file alias="dark/tolerancing.svg">icons/dark/tolerancing.svg</file>
+    <file alias="dark/settings.svg">icons/dark/settings.svg</file>
+    <file alias="dark/refresh.svg">icons/dark/refresh.svg</file>
+
+    <file alias="light/dash.svg">icons/light/dash.svg</file>
+    <file alias="light/design.svg">icons/light/design.svg</file>
+    <file alias="light/analysis.svg">icons/light/analysis.svg</file>
+    <file alias="light/optimization.svg">icons/light/optimization.svg</file>
+    <file alias="light/materials.svg">icons/light/materials.svg</file>
+    <file alias="light/tolerancing.svg">icons/light/tolerancing.svg</file>
+    <file alias="light/settings.svg">icons/light/settings.svg</file>
+    <file alias="light/refresh.svg">icons/light/refresh.svg</file>
 </qresource>
 </RCC>
