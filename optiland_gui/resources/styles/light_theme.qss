@@ -229,9 +229,7 @@ QToolBar#QuickActionsToolbar QToolButton:checked { /* Style for checkable QToolB
 
 
 /* QDockWidget styling */
-QDockWidget {
-    /* border: 1px solid #CED4DA; */ /* --border-pressed-bg: Border for the entire dock widget (can be noisy) */
-}
+
 QDockWidget::title { /* Title bar of the QDockWidget */
     text-align: left;
     background-color: #DEE2E6; /* --hover-bg: Background of the dock title bar */
@@ -562,4 +560,118 @@ QSplitter::handle:vertical {
 }
 QSplitter::handle:pressed {
     background-color: #6C757D; /* --accent-primary: Color when the handle is pressed/dragged */
+}
+
+/* Styling for Pagination Buttons in AnalysisPanel ------------------------------------------------ */
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton {
+    color: #000000; /* Black text for light theme */
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #c0c0c0;
+    border-radius: 3px; /* Optional: rounded corners */
+
+    /* --- Size Control via QSS (only if setFixedSize is removed from Python) --- */
+    min-width: 10px;
+    max-width: 10px;
+    min-height: 10px;
+    max-height: 10px;
+    /* If you prefer padding-based sizing (remove min/max width/height then):
+    padding: 8px;
+    */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+    border: 1px solid #b0b0b0;
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:pressed {
+    background-color: #d0d0d0; /* Even darker when pressed */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
+    color: #FFFFFF; /* White text when active/checked */
+    background-color: #0078d7; /* Blue background when active/checked */
+    border: 1px solid #005a9e;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - MPL Toolbar & Refresh Button (Light Theme)                */
+/* -------------------------------------------------------------------------- */
+
+/* Make the toolbar container transparent */
+#MPLToolbarInTitlebarContainer,
+#MPLToolbarInTitlebarContainer QToolBar {
+    background: transparent;
+    border: none;
+}
+
+/* Style all buttons on the MPL toolbar and the refresh button */
+#MPLToolbarInTitlebarContainer QToolButton {
+    background-color: #6C757D;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+/* Style for when the mouse is over the buttons */
+#MPLToolbarInTitlebarContainer QToolButton:hover,
+#RefreshPlotButton:hover {
+    background-color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #000000; /* Make icon slightly darker on hover */
+}
+
+/* Style for when a toggleable button (like Pan or Zoom) is active */
+#MPLToolbarInTitlebarContainer QToolButton:checked {
+    background-color: #cce7ff; /* A light blue to indicate selection */
+    border: 1px solid #007ACC;
+    color: #005a9e; /* A darker blue for the icon when checked */
+}
+
+
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton, #ToggleSettingsButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 2px;
+}
+
+#RefreshPlotButton:hover,  #ToggleSettingsButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,
+#RunAnalysisButton:hover {
+    background-color: #ADB5BD;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed, 
+#RunAnalysisButton:pressed, #ToggleSettingsButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#ViewerToolbarContainer,
+#ViewerToolbarContainer QToolBar {
+    background: transparent;
+    border: none;
+}
+
+/* Style all buttons on the 2D Viewer toolbar */
+#ViewerToolbarContainer QToolButton {
+    background-color: #6C757D;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+/* Style for when the mouse is over the buttons */
+#ViewerToolbarContainer QToolButton:hover {
+    background-color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #000000;
+}
+
+/* Style for when a toggleable button (like Pan or Zoom) is active */
+#ViewerToolbarContainer QToolButton:checked {
+    background-color: #cce7ff; /* A light blue to indicate selection */
+    border: 1px solid #007ACC;
+    color: #005a9e; /* A darker blue for the icon when checked */
 }

@@ -32,12 +32,6 @@ QMainWindow::separator:hover {
     background-color: #007ACC; 
 }
 
-QDockWidget {
-    titlebar-close-icon: none;
-    titlebar-normal-icon: none;
-    border: 25px solid rgb(212, 181, 26); /* Example: A slightly lighter gray than typical dark backgrounds */
-}
-
 QDockWidget::title {
     background-color: #3C3C3C; /* var(--secondary-color) */
     color: #E0E0E0; /* var(--text-color) */
@@ -50,6 +44,11 @@ QDockWidget::title:focus { /* Added for focused dock title */
     background-color: #2E2E2E; /* var(--surface-color) */
     border-top: 2px solid #007ACC; /* var(--primary-color), made consistent with light theme focus */
     padding-top: 5px; /* Adjust padding for thicker border */
+}
+
+QDockWidget::float-button, QDockWidget::close-button {
+    background-color: #5A5A5A;
+    border-radius: 2px;
 }
 
 /* === Custom Title Bar Styles === */
@@ -440,4 +439,157 @@ QToolTip {
 /* Specific widget styling if needed */
 QWidget#matplotlib_viewer_widget { /* Ensure this ID is set on the Matplotlib widget in Python */
     background-color: #2E2E2E; /* var(--surface-color), or --background-color if needs to be darker */
+}
+
+/* Styling for Pagination Buttons in AnalysisPanel ------------------------------------------------------ */
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton {
+    /* --- Explicit Box Size Control --- */
+    width: 20px;        /* Exact width of the button box */
+    height: 20px;       /* Exact height of the button box */
+    min-width: 20px;    /* Ensure minimum width */
+    max-width: 20px;    /* Ensure maximum width */
+    min-height: 20px;   /* Ensure minimum height */
+    max-height: 20px;   /* Ensure maximum height */
+
+    /* --- Text Properties --- */
+    color: #000000;     /* Example: Black text color for light theme */
+    font-size: 8pt;    /* Example: Explicitly set font size if needed */
+                         /* Adjust as necessary */
+
+    /* --- Other Appearance Properties --- */
+    background-color: #f0f0f0;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px; /* Slightly more rounded for a larger button */
+    padding: 0px;       /* Reset padding if fixed size is used,
+                           or set padding if you want space around text within the box */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:hover {
+    background-color: #5a5a5a; /* Slightly lighter on hover */
+    border: 1px solid #707070;
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:pressed {
+    background-color: #6a6a6a; /* Even lighter when pressed */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
+    color: #FFFFFF; /* White text when active/checked */
+    background-color: #0078d7; /* Blue background when active/checked (same as light theme example) */
+    /* Or a theme-appropriate highlight color for dark mode, e.g., a brighter blue or different color */
+    /* background-color: #1e90ff; */
+    border: 1px solid #005a9e;
+}
+AnalysisPanel QPushButton#ToggleSettingsButton {
+    background-color: transparent; /* Makes the background transparent */
+    border: none;                  /* Removes any border */
+    padding: 0px;                  /* Adjust padding if needed, 0px for minimal space */
+    margin: 0px;                   /* Adjust margin if needed */
+    color: #E0E0E0; 
+}
+AnalysisPanel QPushButton#ToggleSettingsButton:hover {
+    background-color: #5A5A5A; /* Subtle light semi-transparent highlight for dark theme */
+    border-radius: 3px; /* Optional: if you want the highlight to have rounded corners */
+}
+
+AnalysisPanel QPushButton#ToggleSettingsButton:checked { /* If you used checkable state styling before */
+    background-color: transparent;
+    border: none;
+}
+
+AnalysisPanel > QFrame#MainSeparatorLine {
+    /* styles */
+}
+
+/* Plot Area Title Bar (containing title, toolbar, settings toggle) */
+/* You might not need to style plot_area_title_bar_layout directly unless for spacing */
+
+/* Separator line below the plot title/toolbar row */
+AnalysisPanel QFrame#PlotDisplayFrame QFrame#TitlePlotSeparatorLine {
+    max-height: 1px;
+    border: none; 
+    border-top: 1px solid #555555; /* Dark theme example */
+    /* border-top: 1px solid #cccccc; */ /* Light theme example */
+    margin-top: 3px; 
+    margin-bottom: 3px; 
+}
+
+/* Matplotlib Toolbar Container (now inside the title bar layout) */
+AnalysisPanel QFrame#PlotDisplayFrame QWidget#MPLToolbarInTitlebarContainer {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin-left: 5px; /* Add some space between title and toolbar */
+    margin-right: 5px; /* Add some space between toolbar and stretch/settings_toggle */
+}
+
+/* Matplotlib Navigation Toolbar (QToolBar) */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle { /* New object name if you change it */
+    background-color: transparent;
+    border: none;
+    padding: 0px; /* Minimal padding for the toolbar itself */
+    margin: 0px;
+    min-height: 20px;  /* Attempt to make it thinner */
+    max-height: 20px;
+}
+
+/* Buttons within the Matplotlib Toolbar */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton {
+    padding: 0px 1px;   /* Minimal padding: top/bottom 0, left/right 1 */
+    margin: 0px 0px;    /* No margin between buttons for tighter packing */
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+}
+/* ... (hover, pressed, checked states for QToolButton as before) ... */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:hover {
+    background-color: rgba(100, 100, 100, 0.15); 
+    /* background-color: rgba(0, 0, 0, 0.1); */ 
+    border: 1px solid rgba(120, 120, 120, 0.5);
+}
+
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:pressed,
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:checked {
+    background-color: rgba(0, 120, 215, 0.2); 
+    border: 1px solid rgba(0, 120, 215, 0.7);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Settings Button Background (Dark Theme)           */
+/* -------------------------------------------------------------------------- */
+
+#ToggleSettingsButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+#ToggleSettingsButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#ToggleSettingsButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Refresh Button Background (Dark Theme)            */
+/* -------------------------------------------------------------------------- */
+
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+#RefreshPlotButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,  
+#RunAnalysisButton:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed,
+#RunAnalysisButton:pressed  {
+    background-color: rgba(255, 255, 255, 0.1);
 }

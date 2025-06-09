@@ -1,8 +1,24 @@
-# optiland_gui/viewer_panel.py
+import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QComboBox,
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSizePolicy,
+    QSpinBox,
+    QTabWidget,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+from . import gui_plot_utils
+from .analysis_panel import CustomMatplotlibToolbar
 
 try:
     import vtk
@@ -12,8 +28,7 @@ try:
 except ImportError:
     VTK_AVAILABLE = False
 
-# Import Optiland's visualization classes
-from optiland.visualization.rays import Rays2D, Rays3D  # For direct use with system
+from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem as OptilandOpticalSystemPlotter
 
 from .optiland_connector import OptilandConnector
@@ -39,10 +54,13 @@ class ViewerPanel(QWidget):
         )
         self.tabWidget.addTab(self.viewer3D, "3D View")
 
-        self.connector.opticLoaded.connect(
-            self.update_viewers
-        )  # Full update on new load
-        self.connector.opticChanged.connect(self.update_viewers)  # Update on any change
+        self.connector.opticLoaded.connect(self.update_viewers)
+        self.connector.opticChanged.connect(self.update_viewers)
+
+    def update_theme(self, theme="dark"):
+        self.viewer2D.update_theme(theme)
+        if VTK_AVAILABLE:
+            self.viewer3D.update_theme(theme)
 
     @Slot()
     def update_viewers(self):
@@ -56,55 +74,163 @@ class MatplotlibViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
         self.connector = connector
-        self.layout = QVBoxLayout(self)
+        self.current_theme = "dark"
+
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(5)
+
+        viewer_widget = QWidget()
+        self.layout = QVBoxLayout(viewer_widget)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(2)
+        main_layout.addWidget(viewer_widget, 1)
+
+        self.toolbar_container = QWidget()
+        self.toolbar_container.setObjectName("ViewerToolbarContainer")
+        toolbar_layout = QHBoxLayout(self.toolbar_container)
+        toolbar_layout.setContentsMargins(5, 0, 5, 0)
+        self.layout.addWidget(self.toolbar_container)
+
+        plot_container = QWidget()
+        plot_container.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        plot_layout = QVBoxLayout(plot_container)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(plot_container, 1)
+
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setObjectName(
-            "matplotlib_viewer_widget"
-        )  # Set object name for QSS styling
-        self.layout.addWidget(self.canvas)
+        plot_layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
-        # self.plot_optic() # Initial plot done by connector signals
+
+        self.toolbar = CustomMatplotlibToolbar(self.canvas, self.toolbar_container)
+        toolbar_layout.addWidget(self.toolbar)
+        toolbar_layout.addStretch()
+
+        self.settings_area = QWidget()
+        self.settings_area.setObjectName("ViewerSettingsArea")
+        self.settings_area.setFixedWidth(200)
+        self.settings_area.setVisible(False)
+        settings_layout = QVBoxLayout(self.settings_area)
+        self.settings_form_layout = QFormLayout()
+
+        self.num_rays_spinbox = QSpinBox()
+        self.num_rays_spinbox.setRange(1, 100)
+        self.num_rays_spinbox.setValue(3)
+        self.settings_form_layout.addRow("Num Rays:", self.num_rays_spinbox)
+
+        self.dist_combo = QComboBox()
+        self.dist_combo.addItems(["line_y", "line_x", "hexapolar", "random"])
+        self.settings_form_layout.addRow("Distribution:", self.dist_combo)
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.plot_optic)
+
+        settings_layout.addLayout(self.settings_form_layout)
+        settings_layout.addStretch()
+        settings_layout.addWidget(apply_button)
+        main_layout.addWidget(self.settings_area)
+
+        self.settings_toggle_btn = QToolButton()
+        self.settings_toggle_btn.setToolTip("Toggle Viewer Settings")
+        self.settings_toggle_btn.setCheckable(True)
+        self.settings_toggle_btn.toggled.connect(self.settings_area.setVisible)
+        self.toolbar.addWidget(self.settings_toggle_btn)
+
+        self.cursor_coord_label = QLabel("", self.canvas)
+        self.cursor_coord_label.setObjectName("CursorCoordLabel")
+        self.cursor_coord_label.setStyleSheet(
+            "background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;"
+            "border-radius:3px;"
+        )
+        self.cursor_coord_label.setVisible(False)
+        self.cursor_coord_label.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents
+        )
+
+        self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot)
+        self.canvas.mpl_connect("scroll_event", self.on_scroll_zoom)
+
+        self.plot_optic()
+        self.update_theme()
+
+    def on_mouse_move_on_plot(self, event):
+        if event.inaxes:
+            x_coord = f"{event.xdata:.3f}"
+            y_coord = f"{event.ydata:.3f}"
+            self.cursor_coord_label.setText(f"(Z, Y) = ({x_coord}, {y_coord})")
+            self.cursor_coord_label.adjustSize()
+            self.cursor_coord_label.move(5, 5)
+            self.cursor_coord_label.setVisible(True)
+            self.cursor_coord_label.raise_()
+        else:
+            self.cursor_coord_label.setVisible(False)
+
+    def on_scroll_zoom(self, event):
+        if not event.inaxes:
+            return
+
+        ax = event.inaxes
+        scale_factor = 1.1 if event.step < 0 else 1 / 1.1
+
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+
+        xdata = event.xdata
+        ydata = event.ydata
+
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+        rel_x = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rel_y = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+
+        ax.set_xlim([xdata - new_width * (1 - rel_x), xdata + new_width * rel_x])
+        ax.set_ylim([ydata - new_height * (1 - rel_y), ydata + new_height * rel_y])
+        ax.figure.canvas.draw_idle()
+
+    def update_theme(self, theme="dark"):
+        if self.current_theme != theme:
+            self.current_theme = theme
+            gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+            self.plot_optic()
+        self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
 
     def plot_optic(self):
+        gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+
         self.ax.clear()
+        face_color = matplotlib.rcParams["figure.facecolor"]
+        self.figure.set_facecolor(face_color)
+        self.ax.set_facecolor(face_color)
+
         optic = self.connector.get_optic()
+        num_rays = self.num_rays_spinbox.value()
+        distribution = self.dist_combo.currentText()
         if optic and optic.surface_group.num_surfaces > 0:
             try:
-                # Use Optiland's lower-level plotting components
-                # OpticViewer.draw() creates its own figure, so we can't use it
-                # directly.
-                # We need to use its sub-components or replicate its logic.
-
-                # Simplified approach: Create Optiland's internal plotters
-                # These expect to be initialized with an optic
                 rays2d_plotter = Rays2D(optic)
                 system_plotter = OptilandOpticalSystemPlotter(
                     optic, rays2d_plotter, projection="2d"
                 )
-
-                # Plot rays first (this also calculates extents needed by
-                # system_plotter)
-                # Default parameters for plotting rays
                 rays2d_plotter.plot(
                     self.ax,
                     fields="all",
                     wavelengths="primary",
-                    num_rays=3,
-                    distribution="line_y",
+                    num_rays=num_rays,
+                    distribution=distribution,
                 )
-
-                # Then plot the system
                 system_plotter.plot(self.ax)
-
-                self.ax.set_title(f"System: {optic.name} (2D)")
+                self.ax.set_title(
+                    f"System: {optic.name} (2D)",
+                    color=matplotlib.rcParams["text.color"],
+                )
                 self.ax.set_xlabel("Z-axis (mm)")
                 self.ax.set_ylabel("Y-axis (mm)")
-                self.ax.axis(
-                    "equal"
-                )  # Ensure correct aspect ratio for optical drawings
+                self.ax.axis("equal")
                 self.ax.grid(True, linestyle="--", alpha=0.7)
-
             except Exception as e:
                 self.ax.text(
                     0.5,
@@ -113,6 +239,7 @@ class MatplotlibViewer(QWidget):
                     ha="center",
                     va="center",
                     transform=self.ax.transAxes,
+                    color="red",
                 )
                 print(f"MatplotlibViewer Error: {e}")
         else:
@@ -124,12 +251,14 @@ class MatplotlibViewer(QWidget):
                 va="center",
                 transform=self.ax.transAxes,
             )
+
         self.canvas.draw()
 
 
 class VTKViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
+
         self.connector = connector
         if not VTK_AVAILABLE:
             self.layout = QVBoxLayout(self)
@@ -143,19 +272,14 @@ class VTKViewer(QWidget):
         self.renderer = vtk.vtkRenderer()
         self.vtkWidget.GetRenderWindow().AddRenderer(self.renderer)
         self.iren = self.vtkWidget.GetRenderWindow().GetInteractor()
-        self.iren.SetInteractorStyle(
-            vtk.vtkInteractorStyleTrackballCamera()
-        )  # Already default
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.setup_default_camera()
-        # self.render_optic() # Initial render done by connector signals
         self.iren.Initialize()
 
     def setup_default_camera(self):
         self.renderer.SetBackground(0.1, 0.2, 0.4)
         camera = self.renderer.GetActiveCamera()
-        if (
-            camera
-        ):  # camera might not be initialized if GetRenderWindow isn't fully ready
+        if camera:
             camera.SetPosition(0.2, 0, 0)
             camera.SetFocalPoint(0, 0, 0)
             camera.SetViewUp(0, 1, 0)
@@ -163,24 +287,27 @@ class VTKViewer(QWidget):
             camera.Elevation(0)
             camera.Azimuth(150)
 
+    def update_theme(self, theme="dark"):
+        if theme == "dark":
+            self.renderer.SetBackground(0.1, 0.2, 0.4)
+        else:
+            self.renderer.SetBackground(0.8, 0.8, 0.8)
+        self.vtkWidget.GetRenderWindow().Render()
+
     def render_optic(self):
         if not VTK_AVAILABLE:
             return
 
-        self.renderer.RemoveAllViewProps()  # Clear previous actors
+        self.renderer.RemoveAllViewProps()
         optic = self.connector.get_optic()
 
         if optic and optic.surface_group.num_surfaces > 0:
             try:
-                # Similar to 2D, use Optiland's lower-level 3D plotters
-                # OpticViewer3D.view() is blocking and manages its own window.
                 rays3d_plotter = Rays3D(optic)
                 system_plotter = OptilandOpticalSystemPlotter(
                     optic, rays3d_plotter, projection="3d"
                 )
 
-                # Plot rays (this also calculates extents for system_plotter)
-                # Default parameters
                 rays3d_plotter.plot(
                     self.renderer,
                     fields="all",
@@ -189,13 +316,9 @@ class VTKViewer(QWidget):
                     distribution="ring",
                 )
 
-                # Plot system components
                 system_plotter.plot(self.renderer)
 
-                # Set a nice default view if camera is available
-                if (
-                    not self.renderer.GetActiveCamera()
-                ):  # if camera was not set up before
+                if not self.renderer.GetActiveCamera():
                     self.setup_default_camera()
                 else:
                     self.renderer.ResetCameraClippingRange()
@@ -203,15 +326,13 @@ class VTKViewer(QWidget):
 
             except Exception as e:
                 print(f"VTKViewer Error: {e}")
-                # Optionally display error in the VTK window itself
                 textActor = vtk.vtkTextActor()
                 textActor.SetInput(f"Error rendering 3D view:\n{e}")
                 textActor.GetTextProperty().SetColor(1, 0, 0)
                 self.renderer.AddActor2D(textActor)
         else:
-            # Placeholder if no optic data
             sphereSource = vtk.vtkSphereSource()
-            sphereSource.SetRadius(0.1)  # Small sphere for empty
+            sphereSource.SetRadius(0.1)
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(sphereSource.GetOutputPort())
             actor = vtk.vtkActor()

@@ -20,7 +20,7 @@ class OptimizationPanel(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.layout.addWidget(QLabel("Optimization Variables:"))
-        self.variablesList = QListWidget()  # Placeholder for variable selection
+        self.variablesList = QListWidget()
         self.variablesList.addItems(["Radius S2", "Thickness S1", "Conic S3"])
         self.layout.addWidget(self.variablesList)
 
@@ -38,7 +38,6 @@ class OptimizationPanel(QWidget):
         self.btnStartOptimization.clicked.connect(self.start_optimization)
 
     def start_optimization(self):
-        # Placeholder: Trigger Optiland optimization routines
         self.resultsArea.setText(
             "Starting optimization...\n(Placeholder - connect to Optiland backend)"
         )
