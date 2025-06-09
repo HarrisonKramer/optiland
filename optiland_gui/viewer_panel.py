@@ -3,7 +3,8 @@ import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PySide6.QtCore import Slot, Qt
-from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget, QSizePolicy, QHBoxLayout, QMenu, QToolButton, QComboBox, QSpinBox, QPushButton, QFormLayout
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar
 
@@ -66,9 +67,16 @@ class MatplotlibViewer(QWidget):
         self.current_theme = "dark"
         
         # --- Main Layout ---
-        self.layout = QVBoxLayout(self)
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(5)
+
+        # --- Viewer and Toolbar (Left Side) ---
+        viewer_widget = QWidget()
+        self.layout = QVBoxLayout(viewer_widget)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(2)
+        main_layout.addWidget(viewer_widget, 1)
 
         # --- Toolbar Header ---
         self.toolbar_container = QWidget()
@@ -81,7 +89,7 @@ class MatplotlibViewer(QWidget):
         plot_container = QWidget()
         plot_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         plot_layout = QVBoxLayout(plot_container)
-        plot_layout.setContentsMargins(0,0,0,0)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(plot_container, 1)
 
         self.figure = Figure(figsize=(5, 4), dpi=100)
@@ -89,11 +97,51 @@ class MatplotlibViewer(QWidget):
         plot_layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
 
-        # --- Add Toolbar ---
-        # Using CustomMatplotlibToolbar from analysis_panel to disable coordinates in the bar
+        # --- FIX: Create the toolbar object FIRST ---
         self.toolbar = CustomMatplotlibToolbar(self.canvas, self.toolbar_container)
         toolbar_layout.addWidget(self.toolbar)
-        
+        toolbar_layout.addStretch()
+
+        # --- FIX: CREATE THE SETTINGS BUTTON AND ADD IT TO THE TOOLBAR ---
+        self.settings_toggle_btn = QToolButton()
+        self.settings_toggle_btn.setToolTip("Toggle Viewer Settings")
+        self.settings_toggle_btn.setCheckable(True)
+        # The icon will be set in update_theme()
+        self.toolbar.addWidget(self.settings_toggle_btn)            
+
+        # --- Settings Panel (Right Side) ---
+        self.settings_area = QWidget()
+        self.settings_area.setObjectName("ViewerSettingsArea")
+        self.settings_area.setFixedWidth(200)
+        self.settings_area.setVisible(False)
+        settings_layout = QVBoxLayout(self.settings_area)
+        self.settings_form_layout = QFormLayout()
+
+        self.num_rays_spinbox = QSpinBox()
+        self.num_rays_spinbox.setRange(1, 100)
+        self.num_rays_spinbox.setValue(3)
+        self.settings_form_layout.addRow("Num Rays:", self.num_rays_spinbox)
+
+        self.dist_combo = QComboBox()
+        self.dist_combo.addItems(["line_y", "line_x", "hexapolar", "random"])
+        self.settings_form_layout.addRow("Distribution:", self.dist_combo)
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.plot_optic)
+
+        settings_layout.addLayout(self.settings_form_layout)
+        settings_layout.addStretch()
+        settings_layout.addWidget(apply_button)
+        main_layout.addWidget(self.settings_area)
+
+        # --- FIX: Now that self.toolbar exists, add the settings button to it ---
+        self.settings_toggle_btn = QToolButton()
+        self.settings_toggle_btn.setToolTip("Toggle Viewer Settings")
+        self.settings_toggle_btn.setCheckable(True)
+        self.settings_toggle_btn.toggled.connect(self.settings_area.setVisible)
+        self.toolbar.addWidget(self.settings_toggle_btn)
+        self.settings_toggle_btn.toggled.connect(self.settings_area.setVisible)
+
         # --- Cursor Coordinates Label ---
         self.cursor_coord_label = QLabel("", self.canvas)
         self.cursor_coord_label.setObjectName("CursorCoordLabel")
@@ -103,9 +151,11 @@ class MatplotlibViewer(QWidget):
 
         # --- Connections ---
         self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
+        self.canvas.mpl_connect('scroll_event', self.on_scroll_zoom)
 
-        # Initial plot
+        # --- Initial State ---
         self.plot_optic()
+        self.update_theme()
         
     def on_mouse_move_on_plot(self, event):
         """Handle mouse movement over the plot to display coordinates."""
@@ -121,11 +171,36 @@ class MatplotlibViewer(QWidget):
         else:
             self.cursor_coord_label.setVisible(False)
 
+    def on_scroll_zoom(self, event):
+        """Handle mouse wheel scrolling for zooming."""
+        if not event.inaxes:
+            return
+            
+        ax = event.inaxes
+        scale_factor = 1.1 if event.step < 0 else 1 / 1.1
+        
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        
+        xdata = event.xdata
+        ydata = event.ydata
+        
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        
+        rel_x = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rel_y = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+        
+        ax.set_xlim([xdata - new_width * (1 - rel_x), xdata + new_width * rel_x])
+        ax.set_ylim([ydata - new_height * (1 - rel_y), ydata + new_height * rel_y])
+        ax.figure.canvas.draw_idle()
+
     def update_theme(self, theme="dark"):
         """Updates the plot's theme and replots."""
         if self.current_theme != theme:
             self.current_theme = theme
             self.plot_optic()
+        self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
 
     def plot_optic(self):
         """Applies theme styles and completely redraws the optic."""
@@ -140,11 +215,13 @@ class MatplotlibViewer(QWidget):
         self.ax.set_facecolor(face_color)
 
         optic = self.connector.get_optic()
+        num_rays = self.num_rays_spinbox.value()
+        distribution = self.dist_combo.currentText()
         if optic and optic.surface_group.num_surfaces > 0:
             try:
                 rays2d_plotter = Rays2D(optic)
                 system_plotter = OptilandOpticalSystemPlotter(optic, rays2d_plotter, projection="2d")
-                rays2d_plotter.plot(self.ax, fields="all", wavelengths="primary", num_rays=3, distribution="line_y")
+                rays2d_plotter.plot(self.ax, fields="all", wavelengths="primary", num_rays=num_rays, distribution=distribution)
                 system_plotter.plot(self.ax)
                 self.ax.set_title(f"System: {optic.name} (2D)", color=matplotlib.rcParams['text.color'])
                 self.ax.set_xlabel("Z-axis (mm)")
@@ -163,6 +240,7 @@ class MatplotlibViewer(QWidget):
 class VTKViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
+        
         self.connector = connector
         if not VTK_AVAILABLE:
             self.layout = QVBoxLayout(self)

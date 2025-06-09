@@ -16,6 +16,10 @@
     <file alias="dark/check_apply.svg">icons/dark/check_apply.svg</file>
     <file alias="dark/load_settings.svg">icons/dark/load_settings.svg</file>
     <file alias="dark/save_settings.svg">icons/dark/save_settings.svg</file>
+    <file alias="dark/terminal.svg">icons/dark/terminal.svg</file>
+    <file alias="dark/brand_github.svg">icons/dark/brand_github.svg</file>
+    <file alias="dark/help.svg">icons/dark/help.svg</file>
+
 
     <file alias="light/dash.svg">icons/light/dash.svg</file>
     <file alias="light/design.svg">icons/light/design.svg</file>
@@ -33,6 +37,11 @@
     <file alias="light/check_apply.svg">icons/light/check_apply.svg</file>
     <file alias="light/load_settings.svg">icons/light/load_settings.svg</file>
     <file alias="light/save_settings.svg">icons/light/save_settings.svg</file>
+    <file alias="light/terminal.svg">icons/light/terminal.svg</file>
+    <file alias="light/brand_github.svg">icons/light/brand_github.svg</file>
+    <file alias="light/help.svg">icons/light/help.svg</file>
+
+
 
 </qresource>
 </RCC>

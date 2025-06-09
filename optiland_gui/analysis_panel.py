@@ -2,9 +2,10 @@
 import inspect
 import numpy as np 
 import json
+import copy
 
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Slot, Qt, QSize
+from PySide6.QtCore import Slot, Qt, QSize, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
@@ -25,6 +26,7 @@ from PySide6.QtWidgets import (
     QSpinBox,
     QDoubleSpinBox,
     QLineEdit,
+    QMenu
 )
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -140,6 +142,11 @@ class AnalysisPanel(QWidget):
 
         main_content_layout = QHBoxLayout()
         main_content_layout.setSpacing(10)
+        
+        self.resize_timer = QTimer(self)
+        self.resize_timer.setSingleShot(True)
+        self.resize_timer.setInterval(150) # Cooldown period in ms
+        self.resize_timer.timeout.connect(self.handle_resize_finished)
 
         # --- Plot Display Frame (Left/Center) ---
         self.plot_display_frame = QFrame()
@@ -162,6 +169,7 @@ class AnalysisPanel(QWidget):
         self.btnRefreshPlot = QPushButton()
         self.btnRefreshPlot.setObjectName("RefreshPlotButton")
         self.btnRefreshPlot.setFixedSize(25, 25)
+        self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
         self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
         self.toggleSettingsButton = QPushButton() # Remove the ">" text
         self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
@@ -197,6 +205,7 @@ class AnalysisPanel(QWidget):
         self.page_buttons_scroll_area.setObjectName("PageButtonsScrollArea")
         self.page_buttons_scroll_area.setWidgetResizable(True)
         self.page_buttons_scroll_area.setFixedWidth(30)
+        self.page_buttons_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         page_buttons_container_widget = QWidget()
         self.vertical_page_buttons_layout = QVBoxLayout(page_buttons_container_widget)
         self.vertical_page_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -264,6 +273,7 @@ class AnalysisPanel(QWidget):
         self.update_pagination_ui()
         self.display_plot_page(self.current_plot_page_index)
         self.settings_area_widget.setVisible(False)
+       
 
     def _clear_layout(self, layout_to_clear):
         if layout_to_clear is not None:
@@ -409,8 +419,71 @@ class AnalysisPanel(QWidget):
             btn_page.setCheckable(True)
             btn_page.setChecked(i == self.current_plot_page_index)
             btn_page.clicked.connect(lambda checked=False, index=i: self.switch_plot_page(index))
+            btn_page.setContextMenuPolicy(Qt.CustomContextMenu)
+            btn_page.customContextMenuRequested.connect(
+                lambda pos, index=i: self._show_page_button_context_menu(pos, btn_page, index)
+            )
             self.vertical_page_buttons_layout.addWidget(btn_page)
         self.vertical_page_buttons_layout.addStretch()
+
+    def _show_page_button_context_menu(self, position, button, page_index):
+        """Creates and shows the right-click menu for a page button."""
+        menu = QMenu()
+        clone_action = menu.addAction("Clone Analysis")
+        undock_action = menu.addAction("Undock (WIP)") # Mark as Work in Progress
+        undock_action.setEnabled(False) # Disable for now
+
+        action = menu.exec(button.mapToGlobal(position))
+
+        if action == clone_action:
+            self._clone_analysis_page(page_index)
+
+    def _clone_analysis_page(self, page_index):
+        """Clones an existing analysis page."""
+        if not (0 <= page_index < len(self.analysis_results_pages)):
+            return
+
+        original_page_data = self.analysis_results_pages[page_index]
+        # Use deepcopy to ensure settings are independent
+        cloned_page_data = copy.deepcopy(original_page_data)
+        
+        analysis_class = self.ANALYSIS_MAP.get(cloned_page_data['name'])
+        if analysis_class:
+            constructor_args = cloned_page_data.get("constructor_args_used", {})
+            view_args = cloned_page_data.get("view_args", {})
+            
+            self.logArea.setText(f"Cloning {cloned_page_data['name']}...")
+            
+            # --- FIX: Call the overloaded method with the correct arguments ---
+            new_page_data = self._execute_analysis(
+                analysis_class, 
+                cloned_page_data['name'], 
+                constructor_args=constructor_args, 
+                view_args=view_args
+            )
+            
+            if new_page_data:
+                self.analysis_results_pages.append(new_page_data)
+                self.update_pagination_ui()
+                self.switch_plot_page(len(self.analysis_results_pages) - 1)
+                self.logArea.append("Analysis cloned successfully.")
+
+    def resizeEvent(self, event):
+        """Restarts a timer every time the window is resized."""
+        super().resizeEvent(event)
+        self.resize_timer.start()
+
+    def handle_resize_finished(self):
+        """
+        Called after the user has finished resizing the window.
+        Applies tight_layout to the current plot.
+        """
+        if self.active_mpl_canvas_widget:
+            try:
+                self.active_mpl_canvas_widget.figure.tight_layout()
+                self.active_mpl_canvas_widget.draw_idle()
+            except Exception as e:
+                print(f"Error applying tight_layout on resize: {e}")
 
     def switch_plot_page(self, page_index):
         if 0 <= page_index < len(self.analysis_results_pages):
@@ -438,20 +511,28 @@ class AnalysisPanel(QWidget):
             self.cursor_coord_label.setVisible(False)
 
     def display_plot_page(self, page_index):
+        # Disconnect any previously connected event handlers first
+        if self.active_mpl_canvas_widget:
+            if hasattr(self.active_mpl_canvas_widget, '_motion_notify_cid'):
+                try: self.active_mpl_canvas_widget.mpl_disconnect(self.active_mpl_canvas_widget._motion_notify_cid)
+                except (TypeError, RuntimeError): pass
+            if hasattr(self.active_mpl_canvas_widget, '_double_click_cid'):
+                try: self.active_mpl_canvas_widget.mpl_disconnect(self.active_mpl_canvas_widget._double_click_cid)
+                except (TypeError, RuntimeError): pass
+
+        # Clean up old UI widgets
         if self.active_mpl_toolbar_widget:
             self.mpl_toolbar_in_titlebar_layout.removeWidget(self.active_mpl_toolbar_widget)
-            self.active_mpl_toolbar_widget.deleteLater(); self.active_mpl_toolbar_widget = None
+            self.active_mpl_toolbar_widget.deleteLater()
+            self.active_mpl_toolbar_widget = None
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
-
-        if self.active_mpl_canvas_widget and self.motion_notify_cid:
-            try: self.active_mpl_canvas_widget.mpl_disconnect(self.motion_notify_cid)
-            except TypeError: pass
-            self.motion_notify_cid = None
         self.cursor_coord_label.setVisible(False)
-
+        
         plot_content_area_layout = self.plot_container_widget.layout()
-        if plot_content_area_layout: self._clear_layout(plot_content_area_layout)
-        else: plot_content_area_layout = QVBoxLayout(self.plot_container_widget)
+        if plot_content_area_layout:
+            self._clear_layout(plot_content_area_layout)
+        else:
+            plot_content_area_layout = QVBoxLayout(self.plot_container_widget)
         self.plot_container_widget.setLayout(plot_content_area_layout)
 
         self.active_mpl_canvas_widget = None
@@ -461,8 +542,8 @@ class AnalysisPanel(QWidget):
             analysis_name = page_data.get("name", "Analysis")
             self.plotTitleLabel.setText(analysis_name)
             self.dataInfoLabel.setText(page_data.get("result_summary", f"Results for {analysis_name}"))
-
             self._update_settings_ui(analysis_name)
+            
             page_args = {**page_data.get("constructor_args_used", {}), **page_data.get("view_args", {})}
             for param_name, widget in self.current_settings_widgets.items():
                 if param_name in page_args:
@@ -476,17 +557,61 @@ class AnalysisPanel(QWidget):
             if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
                 fig = Figure(figsize=page_data.get("figsize", (7,5)), dpi=100)
                 canvas = FigureCanvas(fig)
+                canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus)
+                canvas.setFocus()
+
+                # --- FIX: ASSIGN to the instance variable BEFORE using it ---
                 self.active_mpl_canvas_widget = canvas
-                analysis_instance.view(fig_to_plot_on=fig, **page_data.get("view_args", {}))
-                fig.tight_layout()
+                # --- CONNECT ALL MOUSE EVENTS ---
+                cids = []
+                cids.append(self.active_mpl_canvas_widget.mpl_connect('scroll_event', self.on_scroll_zoom))
                 
-                self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(canvas, self.mpl_toolbar_in_titlebar_container)
+                # Also connect the existing handlers
+                cids.append(self.active_mpl_canvas_widget.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot))
+                cids.append(self.active_mpl_canvas_widget.mpl_connect('button_press_event', self.on_plot_double_click))
+                
+                self.active_mpl_canvas_widget._event_cids = cids
+                # Now connect the events to the newly assigned canvas
+                double_click_cid = self.active_mpl_canvas_widget.mpl_connect(
+                    'button_press_event', self.on_plot_double_click
+                )
+                self.active_mpl_canvas_widget._double_click_cid = double_click_cid
+                
+                self.motion_notify_cid = self.active_mpl_canvas_widget.mpl_connect(
+                    'motion_notify_event', self.on_mouse_move_on_plot
+                )
+                self.active_mpl_canvas_widget._motion_notify_cid = self.motion_notify_cid
+
+                # Render the plot and get the summary text
+                axs = analysis_instance.view(fig_to_plot_on=fig, **page_data.get("view_args", {}))
+
+                if hasattr(analysis_instance, 'get_summary_text'):
+                    summary_text = analysis_instance.get_summary_text()
+                    ax_to_use = None
+                    if isinstance(axs, np.ndarray):
+                        ax_to_use = axs.flatten()[-1] # Use the last subplot
+                    elif isinstance(axs, plt.Axes):
+                        ax_to_use = axs
+                    
+                    if ax_to_use:
+                        props = dict(boxstyle='round,pad=0.4', facecolor='black', alpha=0.6)
+                        ax_to_use.text(0.97, 0.03, summary_text,
+                                     transform=ax_to_use.transAxes,
+                                     fontsize=7,
+                                     verticalalignment='bottom',
+                                     horizontalalignment='right',
+                                     bbox=props,
+                                     color='white')
+
+                fig.tight_layout(rect=[0, 0.05, 1, 1])
+                
+                # Setup Toolbar
+                self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(self.active_mpl_canvas_widget, self.mpl_toolbar_in_titlebar_container)
                 self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
                 self.mpl_toolbar_in_titlebar_container.setVisible(True)
 
-                plot_content_area_layout.addWidget(canvas)
-                self.motion_notify_cid = canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
-                canvas._motion_notify_cid = self.motion_notify_cid
+                plot_content_area_layout.addWidget(self.active_mpl_canvas_widget)
+
             else:
                 plot_content_area_layout.addWidget(QLabel(f"Cannot embed plot for {analysis_name}"))
         else:
@@ -494,6 +619,12 @@ class AnalysisPanel(QWidget):
             self.dataInfoLabel.setText("Run an analysis to see results.")
             plot_content_area_layout.addWidget(QLabel("Select or Run an Analysis"))
             self._update_settings_ui(self.analysisTypeCombo.currentText())
+
+    def on_plot_double_click(self, event):
+        """Handler for mouse events on the plot canvas."""
+        if event.dblclick:
+            print("Plot double-clicked, refreshing.")
+            self._refresh_current_plot_page_slot()
 
     @Slot()
     def toggle_settings_panel_slot(self):
@@ -535,7 +666,11 @@ class AnalysisPanel(QWidget):
                 else: constructor_args[param_name] = value
         return constructor_args, view_args
 
-    def _execute_analysis(self, analysis_class, analysis_name):
+    def _execute_analysis(self, analysis_class, analysis_name, constructor_args=None, view_args=None):
+        """
+        Executes an analysis. If constructor_args are provided, it uses them (for cloning).
+        Otherwise, it collects them from the current UI settings.
+        """
         optic = self.connector.get_optic()
         if not optic or optic.surface_group.num_surfaces < 2:
             QMessageBox.warning(self, "Analysis Error", "Minimal system required.")
@@ -545,22 +680,31 @@ class AnalysisPanel(QWidget):
             return None
         
         try:
-            constructor_args, view_args = self._collect_current_settings()
-            final_args = {"optic": optic}
-            valid_init = gui_plot_utils.get_analysis_parameters(analysis_class).keys()
-            for k,v in constructor_args.items():
-                if k in valid_init: final_args[k] = v
+            # If no args are passed, get them from the UI (normal "Run" or "Apply")
+            if constructor_args is None and view_args is None:
+                constructor_args, view_args = self._collect_current_settings()
 
-            print(f"LOG: Executing {analysis_name} with args: {final_args}")
-            instance = analysis_class(**final_args)
+            # The final arguments to be passed to the analysis class constructor
+            final_args = {"optic": optic, **constructor_args}
+
+            valid_init_params = inspect.signature(analysis_class.__init__).parameters
+            # Filter out any args that the constructor doesn't actually accept
+            filtered_args = {k: v for k, v in final_args.items() if k in valid_init_params}
+
+            print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
+            instance = analysis_class(**filtered_args)
             
             can_embed = hasattr(instance, 'view') and 'fig_to_plot_on' in inspect.signature(instance.view).parameters
-            if not can_embed: instance.view(**view_args) # External view
+            if not can_embed:
+                # For external windows, we can still try to pass the view_args
+                instance.view(**view_args)
             
             page_data = {
-                "name": analysis_name, "analysis_instance": instance,
+                "name": analysis_name, 
+                "analysis_instance": instance,
                 "plot_type": "embedded_mpl" if can_embed else "external_window",
-                "view_args": view_args, "constructor_args_used": {k:v for k,v in final_args.items() if k!='optic'}
+                "view_args": view_args, 
+                "constructor_args_used": constructor_args
             }
             # Add dynamic figsize logic here if needed
             if analysis_name == "Through-Focus Spot Diagram":
@@ -571,7 +715,8 @@ class AnalysisPanel(QWidget):
             return page_data
         except Exception as e:
             QMessageBox.critical(self, "Analysis Error", f"Error during {analysis_name}:\n{e}")
-            import traceback; print(f"Analysis Panel Error: {e}\n{traceback.format_exc()}")
+            import traceback
+            print(f"Analysis Panel Error: {e}\n{traceback.format_exc()}")
             return None
 
     @Slot()
@@ -589,10 +734,15 @@ class AnalysisPanel(QWidget):
 
     @Slot()
     def _refresh_current_plot_page_slot(self):
-        if not (0 <= self.current_plot_page_index < len(self.analysis_results_pages)): return
-        self.logArea.setText(f"Refreshing plot...")
-        self.display_plot_page(self.current_plot_page_index)
-        self.logArea.append(f"Plot refreshed.")
+        """Refreshes the currently displayed analysis plot."""
+        if not (0 <= self.current_plot_page_index < len(self.analysis_results_pages)):
+            self.logArea.append("No analysis page selected to refresh.")
+            return
+
+        self.logArea.setText("Refreshing current analysis...")
+        # We reuse the existing _apply_settings_and_rerun_analysis_slot
+        # as it already contains the logic to rerun the analysis with current settings.
+        self._apply_settings_and_rerun_analysis_slot()
 
     @Slot()
     def run_analysis_slot(self):
@@ -638,6 +788,30 @@ class AnalysisPanel(QWidget):
                 self.logArea.append(f"Settings for {current_analysis_name} saved to {filepath}")
             except Exception as e:
                 QMessageBox.critical(self, "Save Error", f"Could not save settings:\n{e}")
+
+    def on_scroll_zoom(self, event):
+        """Handle mouse wheel scrolling for zooming."""
+        if not event.inaxes:
+            return
+            
+        ax = event.inaxes
+        scale_factor = 1.1 if event.step < 0 else 1 / 1.1 # Zoom in or out
+        
+        cur_xlim = ax.get_xlim()
+        cur_ylim = ax.get_ylim()
+        
+        xdata = event.xdata
+        ydata = event.ydata
+        
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        
+        rel_x = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rel_y = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+        
+        ax.set_xlim([xdata - new_width * (1 - rel_x), xdata + new_width * rel_x])
+        ax.set_ylim([ydata - new_height * (1 - rel_y), ydata + new_height * rel_y])
+        ax.figure.canvas.draw_idle()
 
     @Slot()
     def _load_analysis_settings_slot(self):

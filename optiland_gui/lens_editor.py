@@ -1,5 +1,5 @@
 # optiland_gui/lens_editor.py
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -23,6 +23,7 @@ class LensEditor(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.tableWidget = QTableWidget()
+        self.tableWidget.installEventFilter(self)
         self.layout.addWidget(self.tableWidget)
 
         self.buttonLayout = QHBoxLayout()
@@ -43,8 +44,10 @@ class LensEditor(QWidget):
         # Connector signals for table updates
         self.connector.opticLoaded.connect(self.full_refresh_from_optic)
         self.connector.surfaceDataChanged.connect(self.update_cell_from_connector)
-        # surfaceAdded and surfaceRemoved will trigger surfaceCountChanged
         self.connector.surfaceCountChanged.connect(self.full_refresh_from_optic)
+        
+        # --- ENSURE THIS LINE IS PRESENT ---
+        self.connector.opticChanged.connect(self.full_refresh_from_optic)
 
     def setup_table(self):
         self.tableWidget.blockSignals(True)
@@ -60,6 +63,21 @@ class LensEditor(QWidget):
         # self.tableWidget.verticalHeader().
         # setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableWidget.blockSignals(False)
+
+    def eventFilter(self, source, event):
+        """
+        Intercepts key presses on the table widget to handle Insert and Delete.
+        """
+        if source is self.tableWidget and event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Insert:
+                self.add_surface_handler()
+                return True # Event was handled
+            elif event.key() == Qt.Key_Delete:
+                self.remove_surface_handler()
+                return True # Event was handled
+        
+        # For all other events, pass them on
+        return super().eventFilter(source, event)
 
     @Slot()
     def full_refresh_from_optic(self):

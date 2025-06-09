@@ -36,6 +36,7 @@ from .optiland_connector import OptilandConnector
 from .optimization_panel import OptimizationPanel
 from .system_properties_panel import SystemPropertiesPanel
 from .viewer_panel import ViewerPanel
+from .widgets.python_terminal import PythonTerminalWidget
 from .widgets.sidebar import (
     SidebarWidget,
     SIDEBAR_MIN_WIDTH,
@@ -72,6 +73,7 @@ APPLICATION_NAME = "OptilandGUI"  #
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.current_theme_path = THEME_DARK_PATH 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)  #
         self.setWindowTitle("Optiland GUI")  #
         self.setGeometry(100, 100, 1600, 900)  #
@@ -90,6 +92,10 @@ class MainWindow(QMainWindow):
         self.analysisPanel = AnalysisPanel(self.connector)  #
         self.optimizationPanel = OptimizationPanel(self.connector)  #
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)  #
+        initial_theme_name = "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
+        self.pythonTerminal = PythonTerminalWidget(self, custom_variables={'connector': self.connector}, theme=initial_theme_name)
+        self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
+        
 
         # --- Create QDockWidget wrappers (including one for the sidebar) ---
         self._setup_all_dock_widgets()  #
@@ -146,8 +152,7 @@ class MainWindow(QMainWindow):
         self.setDockNestingEnabled(True)  # Important for complex dock layouts #
         self._apply_revised_default_dock_layout()  #
 
-        # --- Load Stylesheets & Final Setup ---
-        self.current_theme_path = THEME_DARK_PATH  #
+        # --- Load Stylesheets & Final Setup --- #
         self.load_stylesheets()  #
         if hasattr(self, "darkThemeAction"):  #
             self.darkThemeAction.setChecked(
@@ -165,6 +170,7 @@ class MainWindow(QMainWindow):
         """Initializes all QDockWidget instances, including the sidebar as a dock."""
         # Sidebar Dock
         self.sidebar_content_widget = SidebarWidget(self)  #
+        self.sidebar_content_widget.menuSelected.connect(self.on_sidebar_menu_selected)
         self.sidebarDock = QDockWidget("NavigationSidebar", self)  #
         self.sidebarDock.setWidget(self.sidebar_content_widget)  #
         self.sidebarDock.setObjectName("SidebarDockWidget")  #
@@ -222,6 +228,15 @@ class MainWindow(QMainWindow):
             | QDockWidget.DockWidgetFloatable
         )  #
 
+        self.terminalDock = QDockWidget("Scripts Terminal", self)
+        self.terminalDock.setWidget(self.pythonTerminal)
+        self.terminalDock.setObjectName("TerminalDock")
+        self.terminalDock.setFeatures(
+            QDockWidget.DockWidgetClosable
+            | QDockWidget.DockWidgetMovable
+            | QDockWidget.DockWidgetFloatable
+        )
+
         self.all_managed_docks = [
             self.sidebarDock,
             self.viewerDock,
@@ -256,6 +271,9 @@ class MainWindow(QMainWindow):
         self.splitDockWidget(
             self.systemPropertiesDock, self.analysisPanelDock, Qt.Vertical
         )  #
+        
+        self.addDockWidget(Qt.RightDockWidgetArea, self.terminalDock)
+        self.tabifyDockWidget(self.analysisPanelDock, self.terminalDock)
 
         self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)  #
 
@@ -339,6 +357,10 @@ class MainWindow(QMainWindow):
         themeMenu.addAction(self.darkThemeAction)  #
         themeMenu.addAction(self.lightThemeAction)  #
         viewMenu.addSeparator()  #
+        
+        if hasattr(self, "terminalDock") and self.terminalDock:
+            self.terminalDock.toggleViewAction().setText("Toggle Scripts Terminal")
+            viewMenu.addAction(self.terminalDock.toggleViewAction())
 
         if hasattr(self, "sidebarDock") and self.sidebarDock:  #
             action = self.sidebarDock.toggleViewAction()  #
@@ -664,6 +686,17 @@ class MainWindow(QMainWindow):
                 self.custom_title_bar_widget.update_theme_icons(theme_name)
             if hasattr(self, "viewerPanel"):
                 self.viewerPanel.update_theme(theme_name)
+            if hasattr(self, "pythonTerminal"):
+                self.pythonTerminal.set_theme(theme_name)
+
+    @Slot()
+    def refresh_all_gui_panels(self):
+        """
+        This slot is triggered after a terminal command runs.
+        It emits the main signal that all panels listen to.
+        """
+        print("Terminal command executed, refreshing GUI...")
+        self.connector.opticChanged.emit()
 
     @Slot()
     def new_system_action(self):  #
@@ -840,6 +873,24 @@ class MainWindow(QMainWindow):
         print("Loading layout from slot 2...")
         self._load_layout_from_slot(2)  #
 
+    @Slot(str)
+    def on_sidebar_menu_selected(self, button_name):
+        """Handles clicks from the sidebar."""
+        # Hide all other central "page" widgets here if you have them
+        
+        if button_name == "analysis":
+            self.analysisPanelDock.show()
+            self.analysisPanelDock.raise_()
+        elif button_name == "scripts":
+            self.terminalDock.show()
+            self.terminalDock.raise_()
+        # Add other cases for design, etc.
+        # For example, if 'Design' should show the Lens Editor:
+        elif button_name == "design":
+            self.lensEditorDock.show()
+            self.lensEditorDock.raise_()
+
     def closeEvent(self, event: QEvent):  #
         print("Main Window: Closing application.")
+        self.pythonTerminal.shutdown_kernel()
         event.accept()  #
