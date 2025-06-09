@@ -39,39 +39,39 @@ THEMES = {
         "axes.prop_cycle": cycler.cycler(color=cm.get_cmap("tab10").colors),
     },
     "dark": {
-        "figure.facecolor": "#1E1E1E",
-        "axes.facecolor": "#2D2D2D",
+        "figure.facecolor": "#12151C",  # Subtle dark navy tint
+        "axes.facecolor": "#1A1E26",  # Slight blue tint for contrast
         "axes.edgecolor": "#CCCCCC",
-        "axes.labelcolor": "#E0E0E0",  # Brighter than pure CCCCC
-        "axes.titlecolor": "#FFFFFF",  # Pure white for titles
+        "axes.labelcolor": "#E0E0E0",
+        "axes.titlecolor": "#FFFFFF",
         "text.color": "#E0E0E0",
-        "xtick.color": "#CCCCCC",
-        "ytick.color": "#CCCCCC",
-        "grid.color": "#555555",
-        "grid.alpha": 0.7,
-        "lines.color": "#00A0FF",  # Bright blue for dark theme
+        "xtick.color": "#BBBBBB",
+        "ytick.color": "#BBBBBB",
+        "grid.color": "#444C56",  # Cooler grid lines
+        "grid.alpha": 0.6,
+        "lines.color": "#00BFFF",  # Deep Sky Blue (ignored if using prop_cycle)
         "lines.linewidth": 1.5,
         "patch.edgecolor": "#CCCCCC",
-        "legend.facecolor": "#2D2D2D",
-        "legend.edgecolor": "#555555",
-        "legend.labelcolor": "#E0E0E0",  # Matching general text color
+        "legend.facecolor": "#1A1E26",
+        "legend.edgecolor": "#444C56",
+        "legend.labelcolor": "#E0E0E0",
         # 3D specific
-        "axes3d.facecolor": "#2D2D2D",  # Similar to 2D axes
-        "axes3d.pane_color": "#252525",  # Slightly different for depth perception
-        "axes3d.grid_color": "#484848",  # Slightly lighter than 2D grid
+        "axes3d.facecolor": "#1A1E26",
+        "axes3d.pane_color": "#20242C",
+        "axes3d.grid_color": "#3A3F4B",
         "axes.prop_cycle": cycler.cycler(
             color=[
-                "#80B1D3",
-                "#FFED6F",
-                "#B3DE69",
-                "#FCCDE5",
-                "#BC80BD",
-                "#CCEBC5",
-                "#FFB347",
-                "#FDB462",
-                "#BEBADA",
-                "#FB8072",
-            ],
+                "#FF6E54",  # bright orange-red
+                "#6BFFB5",  # mint green
+                "#FFD700",  # vivid gold
+                "#56B4E9",  # high-contrast sky blue
+                "#C77CFF",  # light violet
+                "#00FA9A",  # medium spring green
+                "#FF69B4",  # hot pink
+                "#8BE9FD",  # soft neon cyan
+                "#F08080",  # light coral
+                "#A6CEE3",  # pastel blue (fallback)
+            ]
         ),
     },
 }
