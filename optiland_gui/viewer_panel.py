@@ -1,4 +1,3 @@
-# optiland_gui/viewer_panel.py
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -100,14 +99,7 @@ class MatplotlibViewer(QWidget):
         # --- FIX: Create the toolbar object FIRST ---
         self.toolbar = CustomMatplotlibToolbar(self.canvas, self.toolbar_container)
         toolbar_layout.addWidget(self.toolbar)
-        toolbar_layout.addStretch()
-
-        # --- FIX: CREATE THE SETTINGS BUTTON AND ADD IT TO THE TOOLBAR ---
-        self.settings_toggle_btn = QToolButton()
-        self.settings_toggle_btn.setToolTip("Toggle Viewer Settings")
-        self.settings_toggle_btn.setCheckable(True)
-        # The icon will be set in update_theme()
-        self.toolbar.addWidget(self.settings_toggle_btn)            
+        toolbar_layout.addStretch()      
 
         # --- Settings Panel (Right Side) ---
         self.settings_area = QWidget()
@@ -201,6 +193,8 @@ class MatplotlibViewer(QWidget):
             self.current_theme = theme
             self.plot_optic()
         self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
+        if hasattr(self.toolbar, 'update_theme'):
+             self.toolbar.update_theme(theme)
 
     def plot_optic(self):
         """Applies theme styles and completely redraws the optic."""

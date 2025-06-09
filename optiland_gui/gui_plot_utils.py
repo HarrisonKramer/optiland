@@ -1,4 +1,3 @@
-# optiland_gui/gui_plot_utils.py
 import matplotlib
 import inspect
 
@@ -16,7 +15,7 @@ def apply_gui_matplotlib_styles(theme='light'):
         'figure.titlesize': 12,
         'axes.titlepad': 4.0,
         'axes.labelpad': 3.0,
-        'figure.autolayout': True, # Helps prevent labels from overlapping
+        'figure.autolayout': True, 
     }
     
     if theme == 'dark':
@@ -33,8 +32,7 @@ def apply_gui_matplotlib_styles(theme='light'):
             'legend.edgecolor': '#555555'
         }
         base_style.update(dark_style)
-    else: # Light theme defaults
-        # Reset to matplotlib defaults then apply our base style
+    else: 
         matplotlib.rcdefaults()
 
     matplotlib.rcParams.update(base_style)
@@ -58,7 +56,6 @@ def get_analysis_parameters(analysis_class):
             params[param_name] = {
                 "default": param_obj.default if param_obj.default is not inspect.Parameter.empty else None,
                 "annotation": param_obj.annotation if param_obj.annotation is not inspect.Parameter.empty else None,
-                # Add more info if needed, e.g., from type hints or docstrings
             }
     except (ValueError, TypeError) as e:
         print(f"Warning: Could not inspect parameters for {analysis_class.__name__}: {e}")

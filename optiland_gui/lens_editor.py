@@ -1,4 +1,3 @@
-# optiland_gui/lens_editor.py
 from PySide6.QtCore import Qt, Slot, QEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,

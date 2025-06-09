@@ -1,4 +1,3 @@
-# optiland_gui/widgets/python_terminal.py
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
