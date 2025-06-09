@@ -38,7 +38,7 @@ class PythonTerminalWidget(QWidget):
 
     def inject_variables(self):
         def refresh_gui():
-            print("GUI refresh requested from terminal...")
+            print("GUI refresh requested from terminal.")
             if "connector" in self.injected_variables:
                 self.injected_variables["connector"].opticChanged.emit()
                 print("opticChanged signal emitted.")
