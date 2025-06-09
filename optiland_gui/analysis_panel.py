@@ -1,5 +1,5 @@
 import inspect
-import numpy as np 
+import numpy as np
 import json
 import copy
 
@@ -32,7 +32,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-import matplotlib 
+import matplotlib
 
 from optiland.analysis import PupilAberration, RmsSpotSizeVsField, RmsWavefrontErrorVsField, ThroughFocusSpotDiagram, SpotDiagram, RayFan, YYbar, Distortion, GridDistortion, FieldCurvature, IncoherentIrradiance, EncircledEnergy
 from optiland.mtf import FFTMTF, GeometricMTF
@@ -82,8 +82,6 @@ class AnalysisPanel(QWidget):
         "FFT MTF": FFTMTF,
         "YYbar": YYbar,
     }
-    if not ANALYSIS_MAP:
-        print("Warning: No analysis modules were successfully imported for AnalysisPanel.")
 
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
@@ -109,8 +107,7 @@ class AnalysisPanel(QWidget):
         top_bar_layout = QHBoxLayout()
         top_bar_layout.addWidget(QLabel("Analysis Type:"))
         self.analysisTypeCombo = QComboBox()
-        if self.ANALYSIS_MAP:
-            self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys()))
+        self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys()))
         self.analysisTypeCombo.setObjectName("AnalysisTypeCombo")
         top_bar_layout.addWidget(self.analysisTypeCombo)
         top_bar_layout.addSpacerItem(
@@ -306,11 +303,17 @@ class AnalysisPanel(QWidget):
 
         if annotation == int:
             widget = QSpinBox()
-            min_v, max_v, step_v = -1000000, 1000000, 1
-            if param_name in ["num_rays", "num_points"]: min_v, max_v = 1, 10000000
-            elif param_name in ["num_rings", "num_fields"]: min_v, max_v = 1, 1024
-            elif param_name == "num_steps": min_v, max_v = 1, 51
-            elif param_name == "detector_surface": min_v, max_v = -100, 100
+            # Define ranges in a more structured way
+            ranges = {
+                "num_rays": (1, 10000000),
+                "num_points": (1, 10000000),
+                "num_rings": (1, 1024),
+                "num_fields": (1, 1024),
+                "num_steps": (1, 51),
+                "detector_surface": (-100, 100),
+            }
+            min_v, max_v = ranges.get(param_name, (-1000000, 1000000))
+            step_v = 1
             widget.setRange(min_v, max_v)
             widget.setSingleStep(step_v)
             if param_name == "num_steps" and default_value and default_value % 2 == 0: default_value += 1 # Ensure odd
@@ -336,12 +339,16 @@ class AnalysisPanel(QWidget):
                 if str(default_value) in [str(o) for o in options]: widget.setCurrentText(str(default_value))
 
         elif annotation == str:
-            if param_name == "distribution":
-                widget = QComboBox(); widget.addItems(["hexapolar", "grid", "random", "ring", "line_x", "line_y", "gaussian", "uniform"])
-            elif param_name in ["coordinates", "distortion_type"]:
-                widget = QComboBox(); widget.addItems(["f-tan", "f-theta"] if "distortion" in param_name else ["local", "global"])
-            elif param_name == "cmap":
-                widget = QComboBox(); widget.addItems(["inferno", "viridis", "plasma", "magma", "gray", "jet"])
+            # Consolidate string-based combo boxes
+            combo_options = {
+                "distribution": ["hexapolar", "grid", "random", "ring", "line_x", "line_y", "gaussian", "uniform"],
+                "coordinates": ["local", "global"],
+                "distortion_type": ["f-tan", "f-theta"],
+                "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
+            }
+            if param_name in combo_options:
+                widget = QComboBox()
+                widget.addItems(combo_options[param_name])
             else: # Fallback for other strings (like wavelength='primary')
                 widget = QLineEdit()
             if isinstance(widget, QComboBox): widget.setCurrentText(str(default_value) if default_value else widget.itemText(0))
@@ -406,7 +413,7 @@ class AnalysisPanel(QWidget):
         self.btnRun.setIcon(QIcon(f":/icons/{theme}/run.svg"))
         self.btnStop.setIcon(QIcon(f":/icons/{theme}/stop.svg"))
         self.btnRunAll.setIcon(QIcon(f":/icons/{theme}/run_all.svg"))
-        self.btnApplySettings.setIcon(QIcon(f":/icons/{theme}/check_apply.svg")) 
+        self.btnApplySettings.setIcon(QIcon(f":/icons/{theme}/check_apply.svg"))
         self.btnSaveSettings.setIcon(QIcon(f":/icons/{theme}/save_settings.svg"))
         self.btnLoadSettings.setIcon(QIcon(f":/icons/{theme}/load_settings.svg"))
 
@@ -443,29 +450,19 @@ class AnalysisPanel(QWidget):
             return
 
         original_page_data = self.analysis_results_pages[page_index]
-        # Use deepcopy to ensure settings are independent
-        cloned_page_data = copy.deepcopy(original_page_data)
+        cloned_page_data = {
+            "name": original_page_data["name"],
+            "analysis_instance": copy.deepcopy(original_page_data["analysis_instance"]),
+            "plot_type": original_page_data["plot_type"],
+            "view_args": copy.deepcopy(original_page_data["view_args"]),
+            "constructor_args_used": copy.deepcopy(original_page_data["constructor_args_used"]),
+            "figsize": original_page_data.get("figsize")
+        }
         
-        analysis_class = self.ANALYSIS_MAP.get(cloned_page_data['name'])
-        if analysis_class:
-            constructor_args = cloned_page_data.get("constructor_args_used", {})
-            view_args = cloned_page_data.get("view_args", {})
-            
-            self.logArea.setText(f"Cloning {cloned_page_data['name']}...")
-            
-            # --- FIX: Call the overloaded method with the correct arguments ---
-            new_page_data = self._execute_analysis(
-                analysis_class, 
-                cloned_page_data['name'], 
-                constructor_args=constructor_args, 
-                view_args=view_args
-            )
-            
-            if new_page_data:
-                self.analysis_results_pages.append(new_page_data)
-                self.update_pagination_ui()
-                self.switch_plot_page(len(self.analysis_results_pages) - 1)
-                self.logArea.append("Analysis cloned successfully.")
+        self.analysis_results_pages.append(cloned_page_data)
+        self.update_pagination_ui()
+        self.switch_plot_page(len(self.analysis_results_pages) - 1)
+        self.logArea.append("Analysis cloned successfully.")
 
     def resizeEvent(self, event):
         """Restarts a timer every time the window is resized."""
@@ -559,29 +556,17 @@ class AnalysisPanel(QWidget):
                 canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus)
                 canvas.setFocus()
 
-                # --- FIX: ASSIGN to the instance variable BEFORE using it ---
                 self.active_mpl_canvas_widget = canvas
-                # --- CONNECT ALL MOUSE EVENTS ---
                 cids = []
                 cids.append(self.active_mpl_canvas_widget.mpl_connect('scroll_event', self.on_scroll_zoom))
-                
-                # Also connect the existing handlers
                 cids.append(self.active_mpl_canvas_widget.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot))
                 cids.append(self.active_mpl_canvas_widget.mpl_connect('button_press_event', self.on_plot_double_click))
-                
                 self.active_mpl_canvas_widget._event_cids = cids
-                # Now connect the events to the newly assigned canvas
-                double_click_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    'button_press_event', self.on_plot_double_click
-                )
+                double_click_cid = self.active_mpl_canvas_widget.mpl_connect('button_press_event', self.on_plot_double_click)
                 self.active_mpl_canvas_widget._double_click_cid = double_click_cid
-                
-                self.motion_notify_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    'motion_notify_event', self.on_mouse_move_on_plot
-                )
+                self.motion_notify_cid = self.active_mpl_canvas_widget.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
                 self.active_mpl_canvas_widget._motion_notify_cid = self.motion_notify_cid
 
-                # Render the plot and get the summary text
                 axs = analysis_instance.view(fig_to_plot_on=fig, **page_data.get("view_args", {}))
 
                 if hasattr(analysis_instance, 'get_summary_text'):
@@ -604,7 +589,6 @@ class AnalysisPanel(QWidget):
 
                 fig.tight_layout(rect=[0, 0.05, 1, 1])
                 
-                # Setup Toolbar
                 self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(self.active_mpl_canvas_widget, self.mpl_toolbar_in_titlebar_container)
                 self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
                 self.mpl_toolbar_in_titlebar_container.setVisible(True)
@@ -739,8 +723,6 @@ class AnalysisPanel(QWidget):
             return
 
         self.logArea.setText("Refreshing current analysis...")
-        # We reuse the existing _apply_settings_and_rerun_analysis_slot
-        # as it already contains the logic to rerun the analysis with current settings.
         self._apply_settings_and_rerun_analysis_slot()
 
     @Slot()

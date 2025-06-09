@@ -1,3 +1,4 @@
+# optiland_gui/lens_editor.py
 from PySide6.QtCore import Qt, Slot, QEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -32,20 +33,16 @@ class LensEditor(QWidget):
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
 
-        self.setup_table()  # Setup is now dynamic based on connector
-        self.load_data()  # Initial data load
+        self.setup_table()
+        self.load_data()
 
-        # Connect signals
         self.btnAddSurface.clicked.connect(self.add_surface_handler)
         self.btnRemoveSurface.clicked.connect(self.remove_surface_handler)
         self.tableWidget.itemChanged.connect(self.on_item_changed_handler)
 
-        # Connector signals for table updates
         self.connector.opticLoaded.connect(self.full_refresh_from_optic)
         self.connector.surfaceDataChanged.connect(self.update_cell_from_connector)
         self.connector.surfaceCountChanged.connect(self.full_refresh_from_optic)
-        
-        # --- ENSURE THIS LINE IS PRESENT ---
         self.connector.opticChanged.connect(self.full_refresh_from_optic)
 
     def setup_table(self):
@@ -59,8 +56,6 @@ class LensEditor(QWidget):
         self.tableWidget.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Interactive
         )
-        # self.tableWidget.verticalHeader().
-        # setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.tableWidget.blockSignals(False)
 
     def eventFilter(self, source, event):
@@ -70,18 +65,17 @@ class LensEditor(QWidget):
         if source is self.tableWidget and event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Insert:
                 self.add_surface_handler()
-                return True # Event was handled
+                return True
             elif event.key() == Qt.Key_Delete:
                 self.remove_surface_handler()
-                return True # Event was handled
+                return True
         
-        # For all other events, pass them on
         return super().eventFilter(source, event)
 
     @Slot()
     def full_refresh_from_optic(self):
         print("LensEditor: Full refresh from optic signal received.")
-        self.setup_table()  # Re-setup in case columns changed (though unlikely here)
+        self.setup_table()
         self.load_data()
 
     @Slot()
@@ -91,19 +85,16 @@ class LensEditor(QWidget):
         num_surfaces = self.connector.get_surface_count()
         self.tableWidget.setRowCount(num_surfaces)
 
-        headers = (
-            self.connector.get_column_headers()
-        )  # Ensure we use current headers for column count
+        headers = self.connector.get_column_headers()
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
 
         for r in range(num_surfaces):
-            for c_idx in range(len(headers)):
+            for c_idx, header in enumerate(headers):
                 item_data = self.connector.get_surface_data(r, c_idx)
                 item = QTableWidgetItem(str(item_data) if item_data is not None else "")
-                # Make Object/Image surface types non-editable for certain fields
                 is_obj_or_img = r == 0 or r == num_surfaces - 1
-                if is_obj_or_img and headers[c_idx] in [
+                if is_obj_or_img and header in [
                     "Radius",
                     "Thickness",
                     "Material",
@@ -111,9 +102,7 @@ class LensEditor(QWidget):
                     "Semi-Diameter",
                 ]:
                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                if (
-                    r == num_surfaces - 1 and headers[c_idx] == "Thickness"
-                ):  # Last surface thickness
+                if r == num_surfaces - 1 and header == "Thickness":
                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 
                 self.tableWidget.setItem(r, c_idx, item)
@@ -121,7 +110,7 @@ class LensEditor(QWidget):
 
     @Slot(QTableWidgetItem)
     def on_item_changed_handler(self, item: QTableWidgetItem):
-        if not self.tableWidget.signalsBlocked():  # Check if change is user-initiated
+        if not self.tableWidget.signalsBlocked():
             row = item.row()
             col = item.column()
             new_value_str = item.text()
@@ -130,13 +119,10 @@ class LensEditor(QWidget):
                 f"({row},{col}) to '{new_value_str}'"
             )
             self.connector.set_surface_data(row, col, new_value_str)
-            # Data will be re-fetched and reformatted by update_cell_from_connector
-            # or full_refresh_from_optic if opticChanged is broad.
 
     @Slot(int, int, object)
     def update_cell_from_connector(self, row, col, new_value_display_text):
         self.tableWidget.blockSignals(True)
-        # Ensure row and col are valid before trying to access item
         if (
             0 <= row < self.tableWidget.rowCount()
             and 0 <= col < self.tableWidget.columnCount()
@@ -144,7 +130,7 @@ class LensEditor(QWidget):
             item = self.tableWidget.item(row, col)
             if item:
                 item.setText(str(new_value_display_text))
-            else:  # Should not happen if table is synced
+            else:
                 new_item = QTableWidgetItem(str(new_value_display_text))
                 self.tableWidget.setItem(row, col, new_item)
         self.tableWidget.blockSignals(False)
@@ -155,12 +141,10 @@ class LensEditor(QWidget):
         insert_pos_lde = (
             current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
         )
-        # Let OptilandConnector handle the logic of where to insert in the Optic object
         self.connector.add_surface(index=insert_pos_lde)
 
     @Slot()
     def remove_surface_handler(self):
         current_row = self.tableWidget.currentRow()
         if current_row != -1:
-            # Add confirmation dialog here if desired
             self.connector.remove_surface(current_row)

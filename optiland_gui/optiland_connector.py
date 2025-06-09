@@ -1,7 +1,7 @@
 import json
 
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QMessageBox  # For showing errors to user
+from PySide6.QtWidgets import QMessageBox
 
 import optiland.backend as be
 from optiland.materials import IdealMaterial
@@ -28,18 +28,6 @@ class SpecialFloatEncoder(json.JSONEncoder):
                 return "-Infinity"
             if val != val:
                 return "NaN"
-        if (
-            hasattr(be, "isinf")
-            and callable(be.isinf)
-            and not isinstance(
-                obj, (bool, int, float, str, list, dict, tuple, type(None))
-            )
-        ):
-            try:
-                if be.isinf(obj):  # Check if be.isinf is the function
-                    return "Infinity" if obj > 0 else "-Infinity"
-            except:  # noqa: E722
-                pass
         try:
             return super().default(obj)
         except TypeError:
@@ -55,8 +43,8 @@ class OptilandConnector(QObject):
     surfaceAdded = Signal(int)
     surfaceRemoved = Signal(int)
     surfaceCountChanged = Signal()
-    undoStackAvailabilityChanged = Signal(bool)  # Relayed from UndoRedoManager
-    redoStackAvailabilityChanged = Signal(bool)  # Relayed from UndoRedoManager
+    undoStackAvailabilityChanged = Signal(bool)
+    redoStackAvailabilityChanged = Signal(bool)
 
     COL_TYPE = 0
     COL_COMMENT = 1
@@ -72,11 +60,9 @@ class OptilandConnector(QObject):
         super().__init__()
         self._optic = Optic("Default System")
         self._undo_redo_manager = UndoRedoManager(self)
-        # For the very first launch, create the specific dummy system
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
 
-        # Relay signals from UndoRedoManager
         self._undo_redo_manager.undoStackAvailabilityChanged.connect(
             self.undoStackAvailabilityChanged
         )
@@ -89,20 +75,11 @@ class OptilandConnector(QObject):
     def _initialize_optic_structure(
         self, optic_instance: Optic, is_specific_new_system: bool = False
     ):
-        """
-        Initializes or ensures basic integrity of an Optic instance.
-        If is_specific_new_system is True, it creates the defined dummy system.
-        Otherwise, it ensures a loaded/existing system has minimal structure and valid
-        wavelengths.
-        """
         if is_specific_new_system:
             print("Connector: Creating specific new dummy system.")
             optic_instance.surface_group.surfaces.clear()
-            optic_instance.wavelengths.wavelengths.clear()  # Clear before adding new
+            optic_instance.wavelengths.wavelengths.clear()
 
-            # Object Surface: Optiland's add_surface index 0 is object. Material is for
-            # space *after* it. Thickness for object is distance to first optical
-            # surface.
             optic_instance.add_surface(
                 surface_type="standard",
                 radius=float("inf"),
@@ -111,7 +88,6 @@ class OptilandConnector(QObject):
                 index=0,
                 material="Air",
             )
-            # Stop Surface (Standard, Plane)
             optic_instance.add_surface(
                 surface_type="standard",
                 radius=float("inf"),
@@ -121,7 +97,6 @@ class OptilandConnector(QObject):
                 material="Air",
                 is_stop=True,
             )
-            # Image Surface
             optic_instance.add_surface(
                 surface_type="standard",
                 radius=float("inf"),
@@ -131,10 +106,10 @@ class OptilandConnector(QObject):
                 material="Air",
             )
             optic_instance.add_wavelength(0.550, is_primary=True, unit="um")
-        else:  # For loaded systems or general integrity checks
+        else:
             if (
                 optic_instance.surface_group.num_surfaces < 2
-            ):  # Must have at least Obj and Img
+            ):
                 print(
                     "Connector (Integrity): Optic has < 2 surfaces. "
                     "Resetting to minimal Object/Image."
@@ -157,13 +132,11 @@ class OptilandConnector(QObject):
                     index=1,
                     material="Air",
                 )
-                # Ensure wavelength for this minimal system
                 if optic_instance.wavelengths.num_wavelengths == 0:
                     optic_instance.add_wavelength(
                         self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
                     )
 
-            # Wavelength integrity for already populated (but potentially flawed) optic
             if optic_instance.wavelengths.num_wavelengths == 0:
                 print(
                     f"Connector (Integrity): Optic has no wavelengths. "
@@ -182,7 +155,7 @@ class OptilandConnector(QObject):
                     for i in range(1, optic_instance.wavelengths.num_wavelengths):
                         optic_instance.wavelengths.wavelengths[i].is_primary = False
 
-        optic_instance.update()  # Recalculate paraxial, etc.
+        optic_instance.update()
 
     def _get_safe_primary_wavelength_value(self) -> float:
         if self._optic.wavelengths.num_wavelengths > 0:
@@ -195,10 +168,9 @@ class OptilandConnector(QObject):
                         "Warning: Primary wavelength index out of bounds. "
                         "Attempting recovery."
                     )
-            # If no primary_idx or IndexError, try to fix and use the first one
             if (
                 self._optic.wavelengths.num_wavelengths > 0
-            ):  # Check again in case list became empty
+            ):
                 print(
                     "Warning: Primary wavelength index issue or recovery needed. "
                     "Using first wavelength."
@@ -212,12 +184,11 @@ class OptilandConnector(QObject):
             f"Critical Warning: No valid wavelengths in optic. "
             f"Falling back to default {self.DEFAULT_WAVELENGTH_UM} um."
         )
-        # Ensure a default wavelength exists if we fall back here
         if self._optic.wavelengths.num_wavelengths == 0:
             self._optic.add_wavelength(
                 self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
             )
-            self._optic.update()  # Update optic state
+            self._optic.update()
             return self.DEFAULT_WAVELENGTH_UM
         return self.DEFAULT_WAVELENGTH_UM
 
@@ -225,41 +196,31 @@ class OptilandConnector(QObject):
         return self._optic
 
     def _capture_optic_state(self):
-        """Helper to capture the current optic state for undo/redo."""
-        # Ensure primary WL exists before capturing state, as it's needed for to_dict
         if self._optic.wavelengths.num_wavelengths == 0:
             self._optic.add_wavelength(
                 self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
             )
-            self._optic.update()  # Optic needs update after WL change
+            self._optic.update()
         elif (
             self._optic.wavelengths.primary_index is None
             and self._optic.wavelengths.num_wavelengths > 0
         ):
             self._optic.wavelengths.wavelengths[0].is_primary = True
-            self._optic.update()  # Optic needs update after WL change
+            self._optic.update()
         return self._optic.to_dict()
 
     def _restore_optic_state(self, state_data):
-        """Helper to restore optic state from a dictionary."""
         self._optic = Optic.from_dict(state_data)
-        # After loading, ensure basic integrity but do NOT force the dummy system
-        # structure
-        # This also handles wavelength integrity and updates the optic
         self._initialize_optic_structure(self._optic, is_specific_new_system=False)
-        self.opticLoaded.emit()  # Signal that the entire optic might have changed
-        # self.opticChanged.emit() # opticLoaded should cover this
+        self.opticLoaded.emit()
 
     def new_system(self):
-        # No undo for new_system itself, but it should clear existing undo/redo history
         self._undo_redo_manager.clear_stacks()
         self._optic = Optic("New Untitled System")
-        # Call the initializer with the flag to create the specific dummy system
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
         print("OpticConnector: New specific dummy system created.")
-        self.opticLoaded.emit()  # This will trigger LDE and viewer updates
-        # No state to push after new, as it's a reset
+        self.opticLoaded.emit()
 
     def load_optic_from_file(self, filepath):
         try:
@@ -278,16 +239,13 @@ class OptilandConnector(QObject):
 
                 data = json.load(f, object_hook=json_inf_nan_hook)
 
-            self._undo_redo_manager.clear_stacks()  # Clear history for loaded file
+            self._undo_redo_manager.clear_stacks()
             self._optic = Optic.from_dict(data)
             self._current_filepath = filepath
             print(f"OpticConnector: Optic loaded from {filepath}. Checking integrity.")
 
-            # After loading, ensure basic integrity but do NOT force the dummy system
-            # structure
             self._initialize_optic_structure(self._optic, is_specific_new_system=False)
 
-            # Diagnostic check for stop surface after load and integrity check
             try:
                 stop_idx_after_update = self._optic.surface_group.stop_index
                 print(
@@ -308,23 +266,21 @@ class OptilandConnector(QObject):
 
             self.opticLoaded.emit()
 
-        except ValueError as ve:
-            error_message = f"Failed to process system from {filepath}:\n{ve}"
-            print(f"OpticConnector: ValueError: {error_message}")
+        except (ValueError, json.JSONDecodeError) as e:
+            error_message = f"Failed to process system from {filepath}:\n{e}"
+            print(f"OpticConnector: Error: {error_message}")
             QMessageBox.critical(None, "Load Error", error_message)
-            self.new_system()  # Revert to a new default system on critical error
+            self.new_system()
         except Exception as e:
             error_message = (
                 f"An unexpected error occurred while loading {filepath}:\n{e}"
             )
             print(f"OpticConnector: General error: {error_message}")
             QMessageBox.critical(None, "Load Error", error_message)
-            self.new_system()  # Revert to a new default system
-            # new_system already clears stacks
+            self.new_system()
 
     def save_optic_to_file(self, filepath):
         try:
-            # Ensure primary WL exists before saving
             if self._optic.wavelengths.num_wavelengths == 0:
                 self._optic.add_wavelength(
                     self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
@@ -345,7 +301,6 @@ class OptilandConnector(QObject):
             QMessageBox.critical(
                 None, "Save Error", f"Could not save system to {filepath}:\n{e}"
             )
-        # Saving does not affect the undo/redo stack for content changes
 
     def get_current_filepath(self):
         return self._current_filepath
@@ -367,11 +322,10 @@ class OptilandConnector(QObject):
         ]
 
     def get_surface_data(self, row, col_idx):
-        # This method should be the same as the one that fixed the TypeError
         if not (0 <= row < self.get_surface_count()):
             return None
         surface = self._optic.surface_group.surfaces[row]
-        # ... (implementation from the version that fixed the TypeError)
+        
         if col_idx == self.COL_TYPE:
             base_type = (
                 "Object"
@@ -409,10 +363,6 @@ class OptilandConnector(QObject):
             if surface.is_reflective:
                 return "Mirror"
             relevant_material = surface.material_post
-            if row == self.get_surface_count() - 1 and row > 0:
-                relevant_material = self._optic.surface_group.surfaces[
-                    row - 1
-                ].material_post
             if isinstance(relevant_material, IdealMaterial):
                 wl_value = self._get_safe_primary_wavelength_value()
                 n_val = relevant_material.n(wl_value)
@@ -433,14 +383,13 @@ class OptilandConnector(QObject):
         return None
 
     def set_surface_data(self, row, col_idx, value_str):
-        # This method should be the same as the one that fixed the TypeError
         if not (0 <= row < self.get_surface_count()):
             return
         try:
-            old_state = self._capture_optic_state()  # Capture state before change
+            old_state = self._capture_optic_state()
             surface = self._optic.surface_group.surfaces[row]
             updater = self._optic._updater
-            # ... (implementation from the version that fixed the TypeError)
+
             if col_idx == self.COL_COMMENT:
                 surface.comment = value_str
             elif col_idx == self.COL_RADIUS:
@@ -486,9 +435,7 @@ class OptilandConnector(QObject):
                 except ValueError:
                     surface.aperture = None
             self._optic.update()
-            self._undo_redo_manager.add_state(
-                old_state
-            )  # Add previous state to undo stack
+            self._undo_redo_manager.add_state(old_state)
             self.surfaceDataChanged.emit(
                 row, col_idx, self.get_surface_data(row, col_idx)
             )
@@ -500,12 +447,10 @@ class OptilandConnector(QObject):
             )
 
     def add_surface(self, index=-1):
-        old_state = self._capture_optic_state()  # Capture state before change
+        old_state = self._capture_optic_state()
         num_lde_rows = self.get_surface_count()
-        optic_insert_idx = num_lde_rows - 1
-        if optic_insert_idx < 1:
-            optic_insert_idx = 1
-        if index != -1 and 0 < index < num_lde_rows - 1:
+        optic_insert_idx = num_lde_rows - 1 if num_lde_rows > 1 else 1
+        if index != -1 and 0 < index < num_lde_rows:
             optic_insert_idx = index
         params = {
             "surface_type": "standard",
@@ -517,20 +462,18 @@ class OptilandConnector(QObject):
         }
         self._optic.add_surface(**params)
         self._optic.update()
-        self._undo_redo_manager.add_state(old_state)  # Add previous state to undo stack
+        self._undo_redo_manager.add_state(old_state)
         self.surfaceAdded.emit(optic_insert_idx)
         self.surfaceCountChanged.emit()
         self.opticChanged.emit()
 
     def remove_surface(self, lde_row_index):
-        old_state = self._capture_optic_state()  # Capture state before change
+        old_state = self._capture_optic_state()
         optic_surface_index = lde_row_index
         if 0 < optic_surface_index < self.get_surface_count() - 1:
             self._optic.surface_group.remove_surface(optic_surface_index)
             self._optic.update()
-            self._undo_redo_manager.add_state(
-                old_state
-            )  # Add previous state to undo stack
+            self._undo_redo_manager.add_state(old_state)
             self.surfaceRemoved.emit(lde_row_index)
             self.surfaceCountChanged.emit()
             self.opticChanged.emit()
@@ -554,8 +497,6 @@ class OptilandConnector(QObject):
 
     def redo(self):
         if self._undo_redo_manager.can_redo():
-            # The state *before* redoing (which is the current state) needs to be
-            # pushed to undo stack
             current_state_for_undo = self._capture_optic_state()
             restored_state_data = self._undo_redo_manager.redo(current_state_for_undo)
             if restored_state_data:
@@ -567,7 +508,6 @@ class OptilandConnector(QObject):
             print("OpticConnector: Cannot redo.")
             
     def get_wavelength_options(self) -> list[tuple[str, str]]:
-        """Returns list of (display_text, value_string) for wavelength dropdown."""
         options = [("primary", "primary")]
         if self._optic and self._optic.wavelengths:
             for wl in self._optic.wavelengths.wavelengths:
@@ -575,7 +515,6 @@ class OptilandConnector(QObject):
         return options
 
     def get_field_options(self) -> list[tuple[str, str]]:
-        """Returns list of (display_text, value_string) for field dropdown."""
         options = [("all", "all")]
         if self._optic and self._optic.fields:
             for i, field in enumerate(self._optic.fields.fields):
