@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import Literal
 
 import matplotlib.pyplot as plt
-from matplotlib import patches
 import numpy as np
+from matplotlib import patches
 
 import optiland.backend as be
 from optiland.visualization.utils import transform
@@ -107,8 +107,8 @@ class SpotDiagram:
             distribution,
             self.coordinates,
         )
-        
-    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False): # [cite: uploaded:spot_diagram.py]
+
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
 
         Args:
@@ -123,97 +123,138 @@ class SpotDiagram:
 
         """
         is_gui_embedding = fig_to_plot_on is not None
-        
-        N = len(self.fields) # [cite: uploaded:spot_diagram.py]
+
+        N = len(self.fields)
         if N == 0:
             print("Warning (SpotDiagram.view): No fields to plot.")
-            if is_gui_embedding and hasattr(fig_to_plot_on, 'canvas') and fig_to_plot_on.canvas is not None:
-                fig_to_plot_on.text(0.5,0.5, "No fields to plot Spot Diagram", ha='center', va='center')
+            if (
+                is_gui_embedding
+                and hasattr(fig_to_plot_on, "canvas")
+                and fig_to_plot_on.canvas is not None
+            ):
+                fig_to_plot_on.text(
+                    0.5, 0.5, "No fields to plot Spot Diagram", ha="center", va="center"
+                )
                 fig_to_plot_on.canvas.draw_idle()
             return
 
-        num_cols = 3 # As per original SpotDiagram
-        num_rows = (N + num_cols - 1) // num_cols # Calculate rows needed
+        num_cols = 3  # As per original SpotDiagram
+        num_rows = (N + num_cols - 1) // num_cols  # Calculate rows needed
 
         if not is_gui_embedding:
-            current_fig = plt.figure(figsize=(figsize[0], num_rows * figsize[1])) # [cite: uploaded:spot_diagram.py]
+            current_fig = plt.figure(figsize=(figsize[0], num_rows * figsize[1]))
         else:
             current_fig = fig_to_plot_on
-            current_fig.clear() # Clear the figure for new subplots
+            current_fig.clear()  # Clear the figure for new subplots
 
         # Create subplots on the current_fig
         # Note: fig.subplots() returns a Figure and an array of Axes.
         # If num_rows or num_cols is 1, it might return a single Axes or a 1D array.
         # We use sharex=True, sharey=True as in the original.
         try:
-            # fig, axs = current_fig.subplots(num_rows, num_cols, sharex=True, sharey=True)
-            # Using add_subplot is safer if num_rows=1 for axs.flatten() later
             axs_list = []
             for i in range(num_rows * num_cols):
-                ax = current_fig.add_subplot(num_rows, num_cols, i + 1, sharex=axs_list[0] if i>0 and num_cols==1 else None, sharey=axs_list[0] if i>0 and num_cols==1 else None)
-                if i > 0 and num_cols > 1 : # Manual sharing for grid
-                    if (i % num_cols) != 0: # Share Y with left neighbor
+                ax = current_fig.add_subplot(
+                    num_rows,
+                    num_cols,
+                    i + 1,
+                    sharex=axs_list[0] if i > 0 and num_cols == 1 else None,
+                    sharey=axs_list[0] if i > 0 and num_cols == 1 else None,
+                )
+                if i > 0 and num_cols > 1:  # Manual sharing for grid
+                    if (i % num_cols) != 0:  # Share Y with left neighbor
                         ax.sharey(axs_list[-1])
-                    if i >= num_cols: # Share X with top neighbor
-                        ax.sharex(axs_list[i-num_cols])
+                    if i >= num_cols:  # Share X with top neighbor
+                        ax.sharex(axs_list[i - num_cols])
                 axs_list.append(ax)
             axs = np.array(axs_list).flatten()
 
         except Exception as e:
             print(f"Error creating subplots for Spot Diagram: {e}")
-            if is_gui_embedding and hasattr(current_fig, 'canvas') and current_fig.canvas is not None:
-                current_fig.text(0.5,0.5, f"Error creating subplots:\n{e}", ha='center', va='center', color='red')
+            if (
+                is_gui_embedding
+                and hasattr(current_fig, "canvas")
+                and current_fig.canvas is not None
+            ):
+                current_fig.text(
+                    0.5,
+                    0.5,
+                    f"Error creating subplots:\n{e}",
+                    ha="center",
+                    va="center",
+                    color="red",
+                )
                 current_fig.canvas.draw_idle()
             return
 
-
         # Subtract centroid and find limits
-        data = self._center_spots(self.data) # [cite: uploaded:spot_diagram.py]
-        geometric_size = self.geometric_spot_radius() # [cite: uploaded:spot_diagram.py]
-        
-        axis_lim = 0.01 # Default small limit
-        if geometric_size and any(any(s is not None for s in row) for row in geometric_size):
+        data = self._center_spots(self.data)
+        geometric_size = self.geometric_spot_radius()
+
+        axis_lim = 0.01  # Default small limit
+        if geometric_size and any(
+            any(s is not None for s in row) for row in geometric_size
+        ):
             try:
                 # Filter out None before stacking/max
                 valid_rows = []
                 for row in geometric_size:
                     valid_elements = [s for s in row if s is not None]
                     if valid_elements:
-                         valid_rows.append(be.stack(valid_elements, axis=0))
-                
+                        valid_rows.append(be.stack(valid_elements, axis=0))
+
                 if valid_rows:
-                    gs_array = be.stack(valid_rows, axis=0) # [cite: uploaded:spot_diagram.py]
-                    axis_lim = be.max(gs_array) # [cite: uploaded:spot_diagram.py]
+                    gs_array = be.stack(valid_rows, axis=0)
+                    axis_lim = be.max(gs_array)
                 else:
                     print("Warning (SpotDiagram.view): All geometric sizes are None.")
             except Exception as e_gs:
-                print(f"Warning (SpotDiagram.view): Could not determine axis_lim from geometric_size: {e_gs}")
+                print(
+                    f"Warning (SpotDiagram.view): Could not determine axis_lim from geometric_size: {e_gs}"
+                )
 
-
-        if add_airy_disk: # [cite: uploaded:spot_diagram.py]
+        if add_airy_disk:
             # Ensure primary wavelength is a float value
             primary_wl_obj = self.optic.wavelengths.primary_wavelength
-            wavelength_val_for_airy = primary_wl_obj.value if primary_wl_obj else (self.wavelengths[0] if self.wavelengths else 0.550)
+            wavelength_val_for_airy = (
+                primary_wl_obj.value
+                if primary_wl_obj
+                else (self.wavelengths[0] if self.wavelengths else 0.550)
+            )
 
-            centroids = self.centroid() # [cite: uploaded:spot_diagram.py]
-            chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength_val_for_airy) # [cite: uploaded:spot_diagram.py]
-            airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength_val_for_airy) # [cite: uploaded:spot_diagram.py]
-        else: # [cite: uploaded:spot_diagram.py]
-            wavelength_val_for_airy = None # [cite: uploaded:spot_diagram.py]
-            centroids = None # [cite: uploaded:spot_diagram.py]
-            chief_ray_centers = None # [cite: uploaded:spot_diagram.py]
-            airy_rad_x, airy_rad_y = None, None # [cite: uploaded:spot_diagram.py]
+            centroids = self.centroid()
+            chief_ray_centers = self.generate_chief_rays_centers(
+                wavelength=wavelength_val_for_airy
+            )
+            airy_rad_x, airy_rad_y = self.airy_disc_x_y(
+                wavelength=wavelength_val_for_airy
+            )
+        else:
+            wavelength_val_for_airy = None
+            centroids = None
+            chief_ray_centers = None
+            airy_rad_x, airy_rad_y = None, None
 
         # Plot wavelengths for each field
-        for k, field_data in enumerate(data): # [cite: uploaded:spot_diagram.py]
-            if k >= len(axs): break # Should not happen if num_rows, num_cols are correct
-            
-            real_centroid_x, real_centroid_y = None, None # [cite: uploaded:spot_diagram.py]
-            if add_airy_disk and centroids and chief_ray_centers is not None and k < len(centroids) and k < len(chief_ray_centers): # [cite: uploaded:spot_diagram.py]
-                real_centroid_x = chief_ray_centers[k][0] - centroids[k][0] # [cite: uploaded:spot_diagram.py]
-                real_centroid_y = chief_ray_centers[k][1] - centroids[k][1] # [cite: uploaded:spot_diagram.py]
-            
-            self._plot_field( # [cite: uploaded:spot_diagram.py]
+        for k, field_data in enumerate(data):
+            if k >= len(axs):
+                break  # Should not happen if num_rows, num_cols are correct
+
+            real_centroid_x, real_centroid_y = (
+                None,
+                None,
+            )
+            if (
+                add_airy_disk
+                and centroids
+                and chief_ray_centers is not None
+                and k < len(centroids)
+                and k < len(chief_ray_centers)
+            ):
+                real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
+                real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
+
+            self._plot_field(
                 axs[k],
                 field_data,
                 self.fields[k],
@@ -228,25 +269,32 @@ class SpotDiagram:
             )
 
         # Remove empty axes
-        for k_ax in range(N, len(axs)): # [cite: uploaded:spot_diagram.py]
-            current_fig.delaxes(axs[k_ax]) # [cite: uploaded:spot_diagram.py]
+        for k_ax in range(N, len(axs)):
+            current_fig.delaxes(axs[k_ax])
 
         # Attempt to create a single legend for the whole figure if multiple axes
         if N > 0 and len(axs) > 0:
             handles, labels = axs[0].get_legend_handles_labels()
-            if handles: # If the first subplot has legend items
-                 # Place legend outside, to the right of the subplots
-                 # Adjust bbox_to_anchor and loc as needed. This is tricky with dynamic rows.
-                 # For a fixed 3-column layout, this might work if placed carefully.
-                 current_fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 0.05), ncol=len(self.wavelengths))
+            if handles:  # If the first subplot has legend items
+                # Place legend outside, to the right of the subplots
+                # Adjust bbox_to_anchor and loc as needed. This is tricky with dynamic rows.
+                # For a fixed 3-column layout, this might work if placed carefully.
+                current_fig.legend(
+                    handles,
+                    labels,
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, 0.05),
+                    ncol=len(self.wavelengths),
+                )
 
-
-        current_fig.tight_layout(rect=[0, 0.05, 1, 1]) # Adjust rect to make space for figure-level legend if used
+        current_fig.tight_layout(
+            rect=[0, 0.05, 1, 1]
+        )  # Adjust rect to make space for figure-level legend if used
 
         if not is_gui_embedding:
-            plt.show() # [cite: uploaded:spot_diagram.py]
+            plt.show()
         else:
-            if hasattr(current_fig, 'canvas') and current_fig.canvas is not None:
+            if hasattr(current_fig, "canvas") and current_fig.canvas is not None:
                 current_fig.canvas.draw_idle()
 
     def angle_from_cosine(self, a, b):
@@ -720,4 +768,3 @@ class SpotDiagram:
         ax.set_ylim((-adjusted_axis_lim, adjusted_axis_lim))
         ax.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
         ax.grid(alpha=0.25)
-

@@ -52,7 +52,7 @@ class GridDistortion:
         self.distortion_type = distortion_type
         self.data = self._generate_data()
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 7)): # Adjusted for squareness
+    def view(self, fig_to_plot_on=None, figsize=(7, 7)):  # Adjusted for squareness
         """Visualizes the grid distortion analysis."""
         is_gui_embedding = fig_to_plot_on is not None
 
@@ -63,9 +63,25 @@ class GridDistortion:
         else:
             current_fig, ax = plt.subplots(figsize=figsize)
 
-        ax.plot(be.to_numpy(self.data["xp"]), be.to_numpy(self.data["yp"]), "C1", linewidth=1, label="Ideal Grid")
-        ax.plot(be.to_numpy(self.data["xp"]).T, be.to_numpy(self.data["yp"]).T, "C1", linewidth=1)
-        ax.plot(be.to_numpy(self.data["xr"]), be.to_numpy(self.data["yr"]), "C0--", label="Distorted Grid")
+        ax.plot(
+            be.to_numpy(self.data["xp"]),
+            be.to_numpy(self.data["yp"]),
+            "C1",
+            linewidth=1,
+            label="Ideal Grid",
+        )
+        ax.plot(
+            be.to_numpy(self.data["xp"]).T,
+            be.to_numpy(self.data["yp"]).T,
+            "C1",
+            linewidth=1,
+        )
+        ax.plot(
+            be.to_numpy(self.data["xr"]),
+            be.to_numpy(self.data["yr"]),
+            "C0--",
+            label="Distorted Grid",
+        )
         ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0--")
 
         ax.set_xlabel("Image X (mm)")
@@ -74,14 +90,15 @@ class GridDistortion:
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
         ax.legend()
-        ax.grid(True, linestyle=':', alpha=0.6)
+        ax.grid(True, linestyle=":", alpha=0.6)
 
         max_distortion = self.data["max_distortion"]
         ax.set_title(f"Grid Distortion (Max: {max_distortion:.2f}%)")
         current_fig.tight_layout()
 
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 

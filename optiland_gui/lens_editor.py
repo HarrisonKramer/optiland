@@ -1,5 +1,5 @@
 # optiland_gui/lens_editor.py
-from PySide6.QtCore import Qt, Slot, QEvent
+from PySide6.QtCore import QEvent, Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -69,7 +69,7 @@ class LensEditor(QWidget):
             elif event.key() == Qt.Key_Delete:
                 self.remove_surface_handler()
                 return True
-        
+
         return super().eventFilter(source, event)
 
     @Slot()

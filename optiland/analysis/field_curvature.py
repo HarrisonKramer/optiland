@@ -57,9 +57,21 @@ class FieldCurvature:
 
         for k, wavelength in enumerate(self.wavelengths):
             dk_np_tan = be.to_numpy(self.data[k][0])
-            ax.plot(dk_np_tan, field_np, f"C{k}", zorder=10, label=f"{wavelength:.4f} µm, Tangential")
+            ax.plot(
+                dk_np_tan,
+                field_np,
+                f"C{k}",
+                zorder=10,
+                label=f"{wavelength:.4f} µm, Tangential",
+            )
             dk_np_sag = be.to_numpy(self.data[k][1])
-            ax.plot(dk_np_sag, field_np, f"C{k}--", zorder=10, label=f"{wavelength:.4f} µm, Sagittal")
+            ax.plot(
+                dk_np_sag,
+                field_np,
+                f"C{k}--",
+                zorder=10,
+                label=f"{wavelength:.4f} µm, Sagittal",
+            )
 
         ax.set_xlabel("Image Plane Delta (mm)")
         ax.set_ylabel("Field")
@@ -67,7 +79,7 @@ class FieldCurvature:
         current_xlim = ax.get_xlim()
         max_abs_lim = max(np.abs(current_xlim))
         if max_abs_lim > 1e-9:
-             ax.set_xlim([-max_abs_lim, max_abs_lim])
+            ax.set_xlim([-max_abs_lim, max_abs_lim])
         ax.set_title("Field Curvature")
         ax.axvline(x=0, color="k", linewidth=0.5)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
@@ -75,7 +87,8 @@ class FieldCurvature:
         current_fig.tight_layout()
 
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 

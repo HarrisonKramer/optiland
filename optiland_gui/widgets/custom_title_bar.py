@@ -1,14 +1,14 @@
 # optiland_gui/widgets/custom_title_bar.py
-from PySide6.QtCore import Qt, QPoint, Signal, QSize
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QWidget,
     QHBoxLayout,
     QLabel,
     QMenuBar,
     QPushButton,
     QSizePolicy,
     QSpacerItem,
+    QWidget,
 )
 
 
@@ -45,9 +45,7 @@ class CustomTitleBar(QWidget):
 
         layout.addStretch(1)
 
-        self.project_label = QLabel(
-            "Current Project: UnnamedProject.opds"
-        )
+        self.project_label = QLabel("Current Project: UnnamedProject.opds")
         self.project_label.setObjectName("TitleBarProjectLabel")
         self.project_label.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred
@@ -81,7 +79,7 @@ class CustomTitleBar(QWidget):
         self.close_button.setToolTip("Close")
         self.close_button.clicked.connect(self.close_requested.emit)
         layout.addWidget(self.close_button)
-        
+
         self.update_theme_icons()
 
         self._mouse_press_pos = None

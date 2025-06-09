@@ -1,14 +1,15 @@
 import webbrowser
-from PySide6.QtCore import Qt, Signal, QSize
+
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QResizeEvent
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QToolButton,
-    QSizePolicy,
     QButtonGroup,
+    QLabel,
     QMessageBox,
+    QSizePolicy,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 COLLAPSE_THRESHOLD_WIDTH = 80
@@ -21,7 +22,13 @@ class SidebarWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._wip_buttons = ["dash", "analysis", "optimization", "materials", "tolerancing"]
+        self._wip_buttons = [
+            "dash",
+            "analysis",
+            "optimization",
+            "materials",
+            "tolerancing",
+        ]
         self._last_checked_button = None
         self.setObjectName("SidebarWidget")
         self.setMinimumWidth(SIDEBAR_MIN_WIDTH)
@@ -69,7 +76,14 @@ class SidebarWidget(QWidget):
 
             self._main_layout.addWidget(button)
             self._button_group.addButton(button)
-            self._buttons_list.append({"widget": button, "name": name, "text": text, "icon_filename": icon_filename})
+            self._buttons_list.append(
+                {
+                    "widget": button,
+                    "name": name,
+                    "text": text,
+                    "icon_filename": icon_filename,
+                }
+            )
             button.clicked.connect(self._handle_button_click)
 
         self._main_layout.addStretch(1)
@@ -79,25 +93,47 @@ class SidebarWidget(QWidget):
         self.settings_button.setText("Settings")
         self.settings_button.setIconSize(QSize(24, 24))
         self.settings_button.setCheckable(True)
-        self.settings_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        self.settings_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.settings_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+        )
+        self.settings_button.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.settings_button.setFixedHeight(35)
         self._main_layout.addWidget(self.settings_button)
         self._button_group.addButton(self.settings_button)
-        self._buttons_list.append({"widget": self.settings_button, "name": "settings", "text": "Settings", "icon_filename": "settings.svg"})
+        self._buttons_list.append(
+            {
+                "widget": self.settings_button,
+                "name": "settings",
+                "text": "Settings",
+                "icon_filename": "settings.svg",
+            }
+        )
         self.settings_button.clicked.connect(self._handle_button_click)
-        
+
         self.github_button = QToolButton()
         self.github_button.setObjectName("sidebar-btn-github")
         self.github_button.setText("Optiland-GUI")
         self.github_button.setToolTip("Open the Optiland-GUI GitHub page")
-        self.github_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        self.github_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+        )
         self.github_button.clicked.connect(self._open_github_url)
-        self.github_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.github_button.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.github_button.setFixedHeight(35)
         self.github_button.setIconSize(QSize(24, 24))
         self._main_layout.addWidget(self.github_button)
-        self._buttons_list.append({"widget": self.github_button, "name": "github", "text": "Optiland-GUI", "icon_filename": "brand_github.svg"})
+        self._buttons_list.append(
+            {
+                "widget": self.github_button,
+                "name": "github",
+                "text": "Optiland-GUI",
+                "icon_filename": "brand_github.svg",
+            }
+        )
 
         self.help_button = QToolButton()
         self.help_button.setObjectName("sidebar-btn-help")
@@ -105,15 +141,26 @@ class SidebarWidget(QWidget):
         self.help_button.setToolTip("Open the documentation")
         self.help_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.help_button.clicked.connect(self._open_help_url)
-        self.help_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.help_button.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.help_button.setFixedHeight(35)
         self.help_button.setIconSize(QSize(24, 24))
         self._main_layout.addWidget(self.help_button)
-        self._buttons_list.append({"widget": self.help_button, "name": "help", "text": "Help", "icon_filename": "help.svg"})
+        self._buttons_list.append(
+            {
+                "widget": self.help_button,
+                "name": "help",
+                "text": "Help",
+                "icon_filename": "help.svg",
+            }
+        )
 
         self.update_icons()
 
-        design_button_item = next((item for item in self._buttons_list if item["name"] == "design"), None)
+        design_button_item = next(
+            (item for item in self._buttons_list if item["name"] == "design"), None
+        )
         if design_button_item:
             design_button_item["widget"].setChecked(True)
             self._last_checked_button = design_button_item["widget"]
@@ -125,7 +172,7 @@ class SidebarWidget(QWidget):
     def _open_help_url(self):
         url = "https://optiland.readthedocs.io/en/latest/index.html"
         webbrowser.open(url)
-    
+
     def _handle_button_click(self):
         checked_button = self._button_group.checkedButton()
         if not checked_button:
@@ -140,7 +187,8 @@ class SidebarWidget(QWidget):
             QMessageBox.information(
                 self,
                 "Work in Progress",
-                "This feature is currently under development.\nStay tuned for updates to the GUI!",
+                "This feature is currently under development.\nStay tuned for "
+                "updates to the GUI!",
             )
             checked_button.setChecked(False)
             if self._last_checked_button:
@@ -188,4 +236,4 @@ class SidebarWidget(QWidget):
         self.current_theme = theme
         for item in self._buttons_list:
             icon_path = f":/icons/{self.current_theme}/{item['icon_filename']}"
-            item['widget'].setIcon(QIcon(icon_path))
+            item["widget"].setIcon(QIcon(icon_path))

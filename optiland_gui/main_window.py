@@ -1,14 +1,13 @@
 import os
+
 from PySide6.QtCore import (
+    QByteArray,
     QEasingCurve,
+    QEvent,
     QPropertyAnimation,
+    QSettings,
     Qt,
     Slot,
-    Signal,
-    QTimer,
-    QSettings,
-    QByteArray,
-    QEvent,
 )
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QResizeEvent
 from PySide6.QtWidgets import (
@@ -17,31 +16,28 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
     QMainWindow,
+    QMenuBar,
     QMessageBox,
     QPushButton,
-    QTabWidget,
+    QToolBar,
     QVBoxLayout,
     QWidget,
-    QMenuBar,
-    QToolBar,
 )
 
+from . import gui_plot_utils
 from .analysis_panel import AnalysisPanel
 from .lens_editor import LensEditor
 from .optiland_connector import OptilandConnector
 from .optimization_panel import OptimizationPanel
 from .system_properties_panel import SystemPropertiesPanel
 from .viewer_panel import ViewerPanel
+from .widgets.custom_title_bar import CustomTitleBar
 from .widgets.python_terminal import PythonTerminalWidget
 from .widgets.sidebar import (
-    SidebarWidget,
-    SIDEBAR_MIN_WIDTH,
     SIDEBAR_MAX_WIDTH,
-    COLLAPSE_THRESHOLD_WIDTH,
+    SIDEBAR_MIN_WIDTH,
+    SidebarWidget,
 )
-from .widgets.custom_title_bar import CustomTitleBar
-from . import gui_plot_utils
-
 
 try:
     from .resources import resources_rc
@@ -83,8 +79,14 @@ class MainWindow(QMainWindow):
         self.analysisPanel = AnalysisPanel(self.connector)
         self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
-        initial_theme_name = "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
-        self.pythonTerminal = PythonTerminalWidget(self, custom_variables={'connector': self.connector}, theme=initial_theme_name)
+        initial_theme_name = (
+            "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
+        )
+        self.pythonTerminal = PythonTerminalWidget(
+            self,
+            custom_variables={"connector": self.connector},
+            theme=initial_theme_name,
+        )
         self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
 
         self._setup_all_dock_widgets()
@@ -108,26 +110,18 @@ class MainWindow(QMainWindow):
         self.title_bar_as_toolbar.setObjectName("CustomTitleBarToolbar")
         self.title_bar_as_toolbar.setMovable(False)
         self.title_bar_as_toolbar.setFloatable(False)
-        self.title_bar_as_toolbar.addWidget(
-            self.custom_title_bar_widget
-        )
+        self.title_bar_as_toolbar.addWidget(self.custom_title_bar_widget)
         self.addToolBar(Qt.TopToolBarArea, self.title_bar_as_toolbar)
 
         self.quick_actions_toolbar = QToolBar("QuickActionsToolbar")
         self.quick_actions_toolbar.setObjectName("QuickActionsToolbar")
-        self.quick_actions_toolbar.setMovable(
-            True
-        )
+        self.quick_actions_toolbar.setMovable(True)
         self._populate_quick_actions_toolbar(self.quick_actions_toolbar)
-        self.addToolBarBreak(
-            Qt.TopToolBarArea
-        )
+        self.addToolBarBreak(Qt.TopToolBarArea)
         self.addToolBar(Qt.TopToolBarArea, self.quick_actions_toolbar)
 
         self.main_docking_area_placeholder = QWidget()
-        self.main_docking_area_placeholder.setObjectName(
-            "MainDockingAreaPlaceholder"
-        )
+        self.main_docking_area_placeholder.setObjectName("MainDockingAreaPlaceholder")
         self.setCentralWidget(self.main_docking_area_placeholder)
 
         self.setDockNestingEnabled(True)
@@ -135,12 +129,8 @@ class MainWindow(QMainWindow):
 
         self.load_stylesheets()
         if hasattr(self, "darkThemeAction"):
-            self.darkThemeAction.setChecked(
-                self.current_theme_path == THEME_DARK_PATH
-            )
-            self.lightThemeAction.setChecked(
-                self.current_theme_path != THEME_DARK_PATH
-            )
+            self.darkThemeAction.setChecked(self.current_theme_path == THEME_DARK_PATH)
+            self.lightThemeAction.setChecked(self.current_theme_path != THEME_DARK_PATH)
 
         self._connect_dock_animations()
         self._initial_narrow_check_done = False
@@ -157,9 +147,7 @@ class MainWindow(QMainWindow):
             QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
         )
         self.sidebarDock.setTitleBarWidget(QWidget())
-        self.sidebarDock.setAllowedAreas(
-            Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea
-        )
+        self.sidebarDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
         self.viewerDock = QDockWidget("System Viewer", self)
         self.viewerDock.setWidget(self.viewerPanel)
@@ -245,7 +233,7 @@ class MainWindow(QMainWindow):
         self.splitDockWidget(
             self.systemPropertiesDock, self.analysisPanelDock, Qt.Vertical
         )
-        
+
         self.addDockWidget(Qt.RightDockWidgetArea, self.terminalDock)
         self.tabifyDockWidget(self.analysisPanelDock, self.terminalDock)
         self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)
@@ -268,14 +256,10 @@ class MainWindow(QMainWindow):
     def showEvent(self, event: QResizeEvent):
         super().showEvent(event)
         if not self._initial_narrow_check_done:
-            if (
-                hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget
-            ):
+            if hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget:
                 if self.width() < (SIDEBAR_MAX_WIDTH + 300):
                     self.sidebar_content_widget.force_set_collapse_state(True)
-                    if (
-                        self.sidebarDock.width() > SIDEBAR_MIN_WIDTH
-                    ):
+                    if self.sidebarDock.width() > SIDEBAR_MIN_WIDTH:
                         self.resizeDocks(
                             [self.sidebarDock], [SIDEBAR_MIN_WIDTH], Qt.Horizontal
                         )
@@ -328,7 +312,7 @@ class MainWindow(QMainWindow):
         themeMenu.addAction(self.darkThemeAction)
         themeMenu.addAction(self.lightThemeAction)
         viewMenu.addSeparator()
-        
+
         if hasattr(self, "terminalDock") and self.terminalDock:
             self.terminalDock.toggleViewAction().setText("Toggle Scripts Terminal")
             viewMenu.addAction(self.terminalDock.toggleViewAction())
@@ -383,13 +367,9 @@ class MainWindow(QMainWindow):
             "E&xit", self, shortcut="Ctrl+Q", triggered=self.close
         )
 
-        self.loadLayout1Action = QAction(
-            "1", self, triggered=self.load_layout_1_slot
-        )
+        self.loadLayout1Action = QAction("1", self, triggered=self.load_layout_1_slot)
         self.loadLayout1Action.setToolTip("Load Layout from Slot 1")
-        self.loadLayout2Action = QAction(
-            "2", self, triggered=self.load_layout_2_slot
-        )
+        self.loadLayout2Action = QAction("2", self, triggered=self.load_layout_2_slot)
         self.loadLayout2Action.setToolTip("Load Layout from Slot 2")
         self.saveLayoutAction = QAction(
             "Save Current Layout", self, triggered=self.save_layout_slot
@@ -435,12 +415,8 @@ class MainWindow(QMainWindow):
             "&Redo", self, shortcut=QKeySequence.Redo, triggered=self.connector.redo
         )
         self.redoAction.setEnabled(False)
-        self.connector.undoStackAvailabilityChanged.connect(
-            self.undoAction.setEnabled
-        )
-        self.connector.redoStackAvailabilityChanged.connect(
-            self.redoAction.setEnabled
-        )
+        self.connector.undoStackAvailabilityChanged.connect(self.undoAction.setEnabled)
+        self.connector.redoStackAvailabilityChanged.connect(self.redoAction.setEnabled)
 
     def _handle_maximize_restore(self):
         if self.isMaximized():
@@ -462,7 +438,7 @@ class MainWindow(QMainWindow):
     def load_stylesheets(self):
         style_str = ""
         try:
-            with open(self.current_theme_path, "r") as f_theme:
+            with open(self.current_theme_path) as f_theme:
                 style_str += f_theme.read()
             print(f"Main theme loaded: {self.current_theme_path}")
         except Exception as e:
@@ -470,7 +446,7 @@ class MainWindow(QMainWindow):
 
         if os.path.exists(SIDEBAR_QSS_PATH):
             try:
-                with open(SIDEBAR_QSS_PATH, "r") as f_sidebar:
+                with open(SIDEBAR_QSS_PATH) as f_sidebar:
                     style_str += "\n" + f_sidebar.read()
                 print(f"Sidebar stylesheet loaded: {SIDEBAR_QSS_PATH}")
             except Exception as e:
@@ -518,10 +494,7 @@ class MainWindow(QMainWindow):
 
         original_dimension = 0
         if dock_widget == self.sidebarDock:
-            if (
-                hasattr(self, "sidebar_content_widget")
-                and self.sidebar_content_widget
-            ):
+            if hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget:
                 original_dimension = (
                     self.sidebar_content_widget.maximumWidth()
                     if not self.sidebar_content_widget._is_collapsed
@@ -542,8 +515,7 @@ class MainWindow(QMainWindow):
 
         if (
             dock_widget in self.dock_animations
-            and self.dock_animations[dock_widget].state()
-            == QPropertyAnimation.Running
+            and self.dock_animations[dock_widget].state() == QPropertyAnimation.Running
         ):
             self.dock_animations[dock_widget].stop()
         current_visibility = not dock_widget.isHidden()
@@ -717,7 +689,8 @@ class MainWindow(QMainWindow):
     @Slot()
     def reset_windows_action(self):
         print(
-            "Main Window: Reset Windows action triggered - resetting to revised default layout."
+            "Main Window: Reset Windows action triggered - resetting to "
+            "revised default layout."
         )
         self._apply_revised_default_dock_layout()
         for dock in self.all_managed_docks:
@@ -729,12 +702,8 @@ class MainWindow(QMainWindow):
         target_slot = self.next_save_slot_index
         window_geometry = self.saveGeometry()
         dock_toolbar_state = self.saveState()
-        self.settings.setValue(
-            f"Layouts/Config{target_slot}Geometry", window_geometry
-        )
-        self.settings.setValue(
-            f"Layouts/Config{target_slot}State", dock_toolbar_state
-        )
+        self.settings.setValue(f"Layouts/Config{target_slot}Geometry", window_geometry)
+        self.settings.setValue(f"Layouts/Config{target_slot}State", dock_toolbar_state)
         QMessageBox.information(
             self,
             "Layout Saved",
@@ -749,15 +718,14 @@ class MainWindow(QMainWindow):
             self.settings.contains("Layouts/Config2Geometry")
         )
         print(
-            f"Layout saved to slot {target_slot}. Next save will be to slot {self.next_save_slot_index}."
+            f"Layout saved to slot {target_slot}. Next save will be to slot "
+            "{self.next_save_slot_index}."
         )
 
     def _load_layout_from_slot(self, slot_number):
         geometry_key = f"Layouts/Config{slot_number}Geometry"
         state_key = f"Layouts/Config{slot_number}State"
-        if self.settings.contains(geometry_key) and self.settings.contains(
-            state_key
-        ):
+        if self.settings.contains(geometry_key) and self.settings.contains(state_key):
             window_geometry = self.settings.value(geometry_key)
             dock_toolbar_state = self.settings.value(state_key)
             if isinstance(window_geometry, QByteArray) and isinstance(
@@ -765,11 +733,13 @@ class MainWindow(QMainWindow):
             ):
                 if not self.restoreGeometry(window_geometry):
                     print(
-                        f"Warning: Failed to restore window geometry from slot {slot_number}."
+                        "Warning: Failed to restore window geometry from "
+                        "slot {slot_number}."
                     )
                 if not self.restoreState(dock_toolbar_state):
                     print(
-                        f"Warning: Failed to restore dock/toolbar state from slot {slot_number}."
+                        "Warning: Failed to restore dock/toolbar state from "
+                        "slot {slot_number}."
                     )
                 QMessageBox.information(
                     self,

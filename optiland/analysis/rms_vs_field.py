@@ -67,9 +67,10 @@ class RmsSpotSizeVsField(SpotDiagram):
         ax.set_ylim(0, None)
         ax.grid()
         current_fig.tight_layout()
-        
+
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 
@@ -132,10 +133,10 @@ class RmsWavefrontErrorVsField(Wavefront):
         current_fig.tight_layout()
 
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
-
 
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""

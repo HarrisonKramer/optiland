@@ -68,10 +68,10 @@ class Distortion:
         for k, wavelength in enumerate(self.wavelengths):
             dist_k_np = be.to_numpy(self.data[k])
             ax.plot(dist_k_np, field_np, label=f"{wavelength:.4f} µm")
-        
+
         ax.set_xlabel("Distortion (%)")
         ax.set_ylabel("Field")
-        
+
         xlims = ax.get_xlim()
         max_abs_lim = max(np.abs(xlims))
         ax.set_xlim(-max_abs_lim, max_abs_lim)
@@ -79,9 +79,10 @@ class Distortion:
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.grid(True)
         current_fig.tight_layout()
-        
+
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 

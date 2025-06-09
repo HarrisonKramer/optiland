@@ -131,8 +131,11 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         is_gui_embedding = fig_to_plot_on is not None
         if not self._validate_view_prerequisites():
             if is_gui_embedding:
-                fig_to_plot_on.text(0.5, 0.5, "No data to display.", ha='center', va='center')
-                if hasattr(fig_to_plot_on, 'canvas'): fig_to_plot_on.canvas.draw_idle()
+                fig_to_plot_on.text(
+                    0.5, 0.5, "No data to display.", ha="center", va="center"
+                )
+                if hasattr(fig_to_plot_on, "canvas"):
+                    fig_to_plot_on.canvas.draw_idle()
             return
 
         num_fields = len(self.fields)
@@ -142,9 +145,16 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             current_fig = fig_to_plot_on
             current_fig.clear()
         else:
-            current_fig = plt.figure(figsize=(num_steps * figsize_per_plot[0], num_fields * figsize_per_plot[1]))
-        
-        axs = current_fig.subplots(num_fields, num_steps, sharex=True, sharey=True, squeeze=False)
+            current_fig = plt.figure(
+                figsize=(
+                    num_steps * figsize_per_plot[0],
+                    num_fields * figsize_per_plot[1],
+                )
+            )
+
+        axs = current_fig.subplots(
+            num_fields, num_steps, sharex=True, sharey=True, squeeze=False
+        )
 
         global_axis_limit = self._compute_global_axis_limit(buffer)
         x_label, y_label = self._get_plot_axis_labels()
@@ -156,14 +166,36 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                 data = self.results[j][i]
                 defocus = float(position) - be.to_numpy(self.nominal_focus).item()
                 centroid_x, centroid_y = self._get_spot_centroid(data)
-                self._plot_wavelengths(ax, data, centroid_x, centroid_y, i, j, legend_handles, legend_labels)
-                self._configure_subplot(ax, field_coord, defocus, i, j, num_fields, x_label, y_label, global_axis_limit)
+                self._plot_wavelengths(
+                    ax,
+                    data,
+                    centroid_x,
+                    centroid_y,
+                    i,
+                    j,
+                    legend_handles,
+                    legend_labels,
+                )
+                self._configure_subplot(
+                    ax,
+                    field_coord,
+                    defocus,
+                    i,
+                    j,
+                    num_fields,
+                    x_label,
+                    y_label,
+                    global_axis_limit,
+                )
 
-        self._add_legend(current_fig, legend_handles, legend_labels, num_fields, figsize_per_plot)
+        self._add_legend(
+            current_fig, legend_handles, legend_labels, num_fields, figsize_per_plot
+        )
         current_fig.tight_layout(rect=[0, 0.03, 1, 0.97])
-        
+
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 

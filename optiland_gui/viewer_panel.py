@@ -1,21 +1,22 @@
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QComboBox,
+    QFormLayout,
+    QHBoxLayout,
     QLabel,
+    QPushButton,
+    QSizePolicy,
+    QSpinBox,
     QTabWidget,
+    QToolButton,
     QVBoxLayout,
     QWidget,
-    QSizePolicy,
-    QHBoxLayout,
-    QToolButton,
-    QComboBox,
-    QSpinBox,
-    QPushButton,
-    QFormLayout,
 )
+
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar
 
@@ -74,7 +75,7 @@ class MatplotlibViewer(QWidget):
         super().__init__(parent)
         self.connector = connector
         self.current_theme = "dark"
-        
+
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(5)
@@ -92,7 +93,9 @@ class MatplotlibViewer(QWidget):
         self.layout.addWidget(self.toolbar_container)
 
         plot_container = QWidget()
-        plot_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        plot_container.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         plot_layout = QVBoxLayout(plot_container)
         plot_layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(plot_container, 1)
@@ -138,16 +141,21 @@ class MatplotlibViewer(QWidget):
 
         self.cursor_coord_label = QLabel("", self.canvas)
         self.cursor_coord_label.setObjectName("CursorCoordLabel")
-        self.cursor_coord_label.setStyleSheet("background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;border-radius:3px;")
+        self.cursor_coord_label.setStyleSheet(
+            "background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;"
+            "border-radius:3px;"
+        )
         self.cursor_coord_label.setVisible(False)
-        self.cursor_coord_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.cursor_coord_label.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents
+        )
 
-        self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move_on_plot)
-        self.canvas.mpl_connect('scroll_event', self.on_scroll_zoom)
+        self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot)
+        self.canvas.mpl_connect("scroll_event", self.on_scroll_zoom)
 
         self.plot_optic()
         self.update_theme()
-        
+
     def on_mouse_move_on_plot(self, event):
         if event.inaxes:
             x_coord = f"{event.xdata:.3f}"
@@ -163,22 +171,22 @@ class MatplotlibViewer(QWidget):
     def on_scroll_zoom(self, event):
         if not event.inaxes:
             return
-            
+
         ax = event.inaxes
         scale_factor = 1.1 if event.step < 0 else 1 / 1.1
-        
+
         cur_xlim = ax.get_xlim()
         cur_ylim = ax.get_ylim()
-        
+
         xdata = event.xdata
         ydata = event.ydata
-        
+
         new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
         new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
-        
+
         rel_x = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
         rel_y = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
-        
+
         ax.set_xlim([xdata - new_width * (1 - rel_x), xdata + new_width * rel_x])
         ax.set_ylim([ydata - new_height * (1 - rel_y), ydata + new_height * rel_y])
         ax.figure.canvas.draw_idle()
@@ -194,7 +202,7 @@ class MatplotlibViewer(QWidget):
         gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
 
         self.ax.clear()
-        face_color = matplotlib.rcParams['figure.facecolor']
+        face_color = matplotlib.rcParams["figure.facecolor"]
         self.figure.set_facecolor(face_color)
         self.ax.set_facecolor(face_color)
 
@@ -204,19 +212,45 @@ class MatplotlibViewer(QWidget):
         if optic and optic.surface_group.num_surfaces > 0:
             try:
                 rays2d_plotter = Rays2D(optic)
-                system_plotter = OptilandOpticalSystemPlotter(optic, rays2d_plotter, projection="2d")
-                rays2d_plotter.plot(self.ax, fields="all", wavelengths="primary", num_rays=num_rays, distribution=distribution)
+                system_plotter = OptilandOpticalSystemPlotter(
+                    optic, rays2d_plotter, projection="2d"
+                )
+                rays2d_plotter.plot(
+                    self.ax,
+                    fields="all",
+                    wavelengths="primary",
+                    num_rays=num_rays,
+                    distribution=distribution,
+                )
                 system_plotter.plot(self.ax)
-                self.ax.set_title(f"System: {optic.name} (2D)", color=matplotlib.rcParams['text.color'])
+                self.ax.set_title(
+                    f"System: {optic.name} (2D)",
+                    color=matplotlib.rcParams["text.color"],
+                )
                 self.ax.set_xlabel("Z-axis (mm)")
                 self.ax.set_ylabel("Y-axis (mm)")
                 self.ax.axis("equal")
                 self.ax.grid(True, linestyle="--", alpha=0.7)
             except Exception as e:
-                self.ax.text(0.5, 0.5, f"Error plotting Optiland 2D view:\n{e}", ha="center", va="center", transform=self.ax.transAxes, color='red')
+                self.ax.text(
+                    0.5,
+                    0.5,
+                    f"Error plotting Optiland 2D view:\n{e}",
+                    ha="center",
+                    va="center",
+                    transform=self.ax.transAxes,
+                    color="red",
+                )
                 print(f"MatplotlibViewer Error: {e}")
         else:
-            self.ax.text(0.5, 0.5, "2D Viewer (Matplotlib)\nNo Optic data or empty system.", ha="center", va="center", transform=self.ax.transAxes)
+            self.ax.text(
+                0.5,
+                0.5,
+                "2D Viewer (Matplotlib)\nNo Optic data or empty system.",
+                ha="center",
+                va="center",
+                transform=self.ax.transAxes,
+            )
 
         self.canvas.draw()
 
@@ -224,7 +258,7 @@ class MatplotlibViewer(QWidget):
 class VTKViewer(QWidget):
     def __init__(self, connector: OptilandConnector, parent=None):
         super().__init__(parent)
-        
+
         self.connector = connector
         if not VTK_AVAILABLE:
             self.layout = QVBoxLayout(self)
@@ -238,9 +272,7 @@ class VTKViewer(QWidget):
         self.renderer = vtk.vtkRenderer()
         self.vtkWidget.GetRenderWindow().AddRenderer(self.renderer)
         self.iren = self.vtkWidget.GetRenderWindow().GetInteractor()
-        self.iren.SetInteractorStyle(
-            vtk.vtkInteractorStyleTrackballCamera()
-        )
+        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.setup_default_camera()
         self.iren.Initialize()
 
@@ -286,9 +318,7 @@ class VTKViewer(QWidget):
 
                 system_plotter.plot(self.renderer)
 
-                if (
-                    not self.renderer.GetActiveCamera()
-                ):
+                if not self.renderer.GetActiveCamera():
                     self.setup_default_camera()
                 else:
                     self.renderer.ResetCameraClippingRange()

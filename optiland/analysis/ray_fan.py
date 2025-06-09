@@ -57,11 +57,14 @@ class RayFan:
         """
         is_gui_embedding = fig_to_plot_on is not None
         num_fields = len(self.fields)
-        
+
         if num_fields == 0:
             if is_gui_embedding:
-                fig_to_plot_on.text(0.5, 0.5, "No fields to plot.", ha='center', va='center')
-                if hasattr(fig_to_plot_on, 'canvas'): fig_to_plot_on.canvas.draw_idle()
+                fig_to_plot_on.text(
+                    0.5, 0.5, "No fields to plot.", ha="center", va="center"
+                )
+                if hasattr(fig_to_plot_on, "canvas"):
+                    fig_to_plot_on.canvas.draw_idle()
             else:
                 print("Warning (RayFan.view): No fields to plot.")
             return
@@ -69,7 +72,9 @@ class RayFan:
         if is_gui_embedding:
             current_fig = fig_to_plot_on
             current_fig.clear()
-            axs = current_fig.subplots(nrows=num_fields, ncols=2, sharex=True, sharey=True)
+            axs = current_fig.subplots(
+                nrows=num_fields, ncols=2, sharex=True, sharey=True
+            )
         else:
             current_fig, axs = plt.subplots(
                 nrows=num_fields,
@@ -91,25 +96,50 @@ class RayFan:
                 i_y = self.data[f"{field}"][f"{wavelength}"]["intensity_y"]
                 ex[i_x == 0], ey[i_y == 0] = be.nan, be.nan
 
-                ax_y.plot(be.to_numpy(Py), be.to_numpy(ey), zorder=3, label=f"{wavelength:.4f} µm")
-                ax_x.plot(be.to_numpy(Px), be.to_numpy(ex), zorder=3, label=f"{wavelength:.4f} µm")
+                ax_y.plot(
+                    be.to_numpy(Py),
+                    be.to_numpy(ey),
+                    zorder=3,
+                    label=f"{wavelength:.4f} µm",
+                )
+                ax_x.plot(
+                    be.to_numpy(Px),
+                    be.to_numpy(ex),
+                    zorder=3,
+                    label=f"{wavelength:.4f} µm",
+                )
 
-            ax_y.grid(); ax_y.axhline(0, lw=1, c="gray"); ax_y.axvline(0, lw=1, c="gray")
-            ax_y.set_xlabel("$P_y$"); ax_y.set_ylabel("$\\epsilon_y$ (mm)")
-            ax_y.set_xlim(-1, 1); ax_y.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+            ax_y.grid()
+            ax_y.axhline(0, lw=1, c="gray")
+            ax_y.axvline(0, lw=1, c="gray")
+            ax_y.set_xlabel("$P_y$")
+            ax_y.set_ylabel("$\\epsilon_y$ (mm)")
+            ax_y.set_xlim(-1, 1)
+            ax_y.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-            ax_x.grid(); ax_x.axhline(0, lw=1, c="gray"); ax_x.axvline(0, lw=1, c="gray")
-            ax_x.set_xlabel("$P_x$"); ax_x.set_ylabel("$\\epsilon_x$ (mm)")
-            ax_x.set_xlim(-1, 1); ax_x.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+            ax_x.grid()
+            ax_x.axhline(0, lw=1, c="gray")
+            ax_x.axvline(0, lw=1, c="gray")
+            ax_x.set_xlabel("$P_x$")
+            ax_x.set_ylabel("$\\epsilon_x$ (mm)")
+            ax_x.set_xlim(-1, 1)
+            ax_x.set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
         if num_fields > 0:
             handles, labels = axs[0, 0].get_legend_handles_labels()
             if handles:
-                current_fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05 / num_fields), ncol=len(self.wavelengths))
+                current_fig.legend(
+                    handles,
+                    labels,
+                    loc="lower center",
+                    bbox_to_anchor=(0.5, -0.05 / num_fields),
+                    ncol=len(self.wavelengths),
+                )
 
         current_fig.tight_layout()
         if is_gui_embedding:
-            if hasattr(current_fig, 'canvas'): current_fig.canvas.draw_idle()
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
         else:
             plt.show()
 

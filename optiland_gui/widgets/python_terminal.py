@@ -1,29 +1,33 @@
 # optiland_gui/widgets/python_terminal.py
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from qtconsole.inprocess import QtInProcessKernelManager
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+
 
 class PythonTerminalWidget(QWidget):
     commandExecuted = Signal()
-    def __init__(self, parent=None, custom_variables=None, theme='dark'):
+
+    def __init__(self, parent=None, custom_variables=None, theme="dark"):
         super().__init__(parent)
         self.setObjectName("PythonTerminalWidget")
 
         self.kernel_manager = QtInProcessKernelManager()
         self.kernel_manager.start_kernel()
-        
+
         kernel_client = self.kernel_manager.client()
         kernel_client.start_channels()
-        
+
         shell = self.kernel_manager.kernel.shell
-        shell.events.register('post_execute', self.on_command_executed)
+        shell.events.register("post_execute", self.on_command_executed)
 
         self.jupyter_widget = RichJupyterWidget()
         self.jupyter_widget.kernel_manager = self.kernel_manager
         self.jupyter_widget.kernel_client = kernel_client
-        
-        self.injected_variables = custom_variables if custom_variables is not None else {}
+
+        self.injected_variables = (
+            custom_variables if custom_variables is not None else {}
+        )
         self.set_theme(theme)
 
         layout = QVBoxLayout(self)
@@ -35,23 +39,23 @@ class PythonTerminalWidget(QWidget):
     def inject_variables(self):
         def refresh_gui():
             print("GUI refresh requested from terminal...")
-            if 'connector' in self.injected_variables:
-                self.injected_variables['connector'].opticChanged.emit()
+            if "connector" in self.injected_variables:
+                self.injected_variables["connector"].opticChanged.emit()
                 print("opticChanged signal emitted.")
             else:
                 print("Error: 'connector' not found.")
 
-        self.injected_variables['refresh_gui'] = refresh_gui
-        
+        self.injected_variables["refresh_gui"] = refresh_gui
+
         if self.injected_variables:
             self.kernel_manager.kernel.shell.push(self.injected_variables)
 
     def on_command_executed(self):
         self.commandExecuted.emit()
 
-    def set_theme(self, theme='dark'):
-        if theme == 'dark':
-            self.jupyter_widget.syntax_style = 'monokai'
+    def set_theme(self, theme="dark"):
+        if theme == "dark":
+            self.jupyter_widget.syntax_style = "monokai"
             self.jupyter_widget.style_sheet = """
                 RichJupyterWidget {
                     background-color: #2B2B2B;
@@ -60,7 +64,7 @@ class PythonTerminalWidget(QWidget):
                 }
             """
         else:
-            self.jupyter_widget.syntax_style = 'default'
+            self.jupyter_widget.syntax_style = "default"
             self.jupyter_widget.style_sheet = """
                 RichJupyterWidget {
                     background-color: #FFFFFF;

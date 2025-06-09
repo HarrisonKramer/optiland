@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
@@ -16,7 +17,6 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
-    QSizePolicy,
 )
 
 from .optiland_connector import OptilandConnector
@@ -201,9 +201,7 @@ class FieldsEditor(PropertyEditorBase):
         button_layout.addWidget(self.btnApplyFields)
         main_layout.addLayout(button_layout)
 
-        self.cmbFieldType.currentTextChanged.connect(
-            self.apply_field_type_change
-        )
+        self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change)
         self.btnAddField.clicked.connect(self.add_field)
         self.btnRemoveField.clicked.connect(self.remove_field)
         self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
@@ -248,7 +246,9 @@ class FieldsEditor(PropertyEditorBase):
             y_val = (
                 optic.fields.max_y_field * 0.5
                 if optic.fields.num_fields > 0 and optic.fields.max_y_field > 0
-                else 1.0 if optic.fields.num_fields == 0 else 0.0
+                else 1.0
+                if optic.fields.num_fields == 0
+                else 0.0
             )
 
             optic.add_field(y=y_val)
@@ -358,9 +358,7 @@ class WavelengthsEditor(PropertyEditorBase):
                 item_unit = QTableWidgetItem(
                     wl_obj._unit if hasattr(wl_obj, "_unit") else "um"
                 )
-                item_unit.setFlags(
-                    item_unit.flags() & ~Qt.ItemFlag.ItemIsEditable
-                )
+                item_unit.setFlags(item_unit.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.tableWavelengths.setItem(i, 1, item_unit)
 
                 primary_item = QTableWidgetItem("Yes" if wl_obj.is_primary else "No")

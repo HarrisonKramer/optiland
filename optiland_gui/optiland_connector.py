@@ -3,7 +3,6 @@ import json
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox
 
-import optiland.backend as be
 from optiland.materials import IdealMaterial
 from optiland.materials import Material as OptilandMaterial
 from optiland.optic import Optic
@@ -107,9 +106,7 @@ class OptilandConnector(QObject):
             )
             optic_instance.add_wavelength(0.550, is_primary=True, unit="um")
         else:
-            if (
-                optic_instance.surface_group.num_surfaces < 2
-            ):
+            if optic_instance.surface_group.num_surfaces < 2:
                 print(
                     "Connector (Integrity): Optic has < 2 surfaces. "
                     "Resetting to minimal Object/Image."
@@ -168,9 +165,7 @@ class OptilandConnector(QObject):
                         "Warning: Primary wavelength index out of bounds. "
                         "Attempting recovery."
                     )
-            if (
-                self._optic.wavelengths.num_wavelengths > 0
-            ):
+            if self._optic.wavelengths.num_wavelengths > 0:
                 print(
                     "Warning: Primary wavelength index issue or recovery needed. "
                     "Using first wavelength."
@@ -325,7 +320,7 @@ class OptilandConnector(QObject):
         if not (0 <= row < self.get_surface_count()):
             return None
         surface = self._optic.surface_group.surfaces[row]
-        
+
         if col_idx == self.COL_TYPE:
             base_type = (
                 "Object"
@@ -506,7 +501,7 @@ class OptilandConnector(QObject):
                 print("OpticConnector: Redo operation failed to return state data.")
         else:
             print("OpticConnector: Cannot redo.")
-            
+
     def get_wavelength_options(self) -> list[tuple[str, str]]:
         options = [("primary", "primary")]
         if self._optic and self._optic.wavelengths:
