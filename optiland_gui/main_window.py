@@ -687,6 +687,10 @@ class MainWindow(QMainWindow):
                 "<p>A modern interface for the Optiland optical simulation package.</p>"
                 "<p>Version: 0.2.1 (Frameless Layout Refined)</p>"
                 "<p>Built with PySide6.</p>"
+                "<hr>"
+                "<p><b>Icon Copyright Notice:</b></p>"
+                "<p>Icons are provided under the MIT License.</p>"
+                "<p>Copyright (c) 2020-2024 Paweł Kuna</p>"
             )
             about_text.setTextFormat(Qt.TextFormat.RichText)
             about_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
