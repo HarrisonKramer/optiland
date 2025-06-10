@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import optiland.backend as be
 import pytest
 
+from contextlib import nullcontext as does_not_raise
+
 from optiland.psf import FFTPSF
 from optiland.samples.objectives import CookeTriplet
 from .utils import assert_allclose
@@ -34,6 +36,54 @@ def test_initialization(make_fftpsf):
     assert fftpsf.grid_size == 1024
     assert len(fftpsf.pupils) == 1
     assert fftpsf.psf.shape == (1024, 1024)
+
+
+@pytest.mark.parametrize(
+    "num_rays,expected_pupil_sampling",
+    [
+        (32, 32),
+        (64, 45),
+        (128, 64),
+        (256, 90),
+        (512, 128),
+        (1024, 181),
+        (2048, 256),
+        (4096, 362),
+        (8192, 512),
+    ],
+)
+def test_calculate_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
+    fftpsf = make_fftpsf()
+
+    assert fftpsf._calculate_grid_size(num_rays) == (expected_pupil_sampling, 2 * num_rays)
+
+
+@pytest.mark.parametrize(
+    "num_rays,expected_pupil_sampling",
+    [
+        (32, 32),
+        (64, 45),
+        (128, 64),
+        (256, 90),
+        (1024, 181),
+    ],
+)
+def test_num_rays_and_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
+    fftpsf = make_fftpsf(num_rays=num_rays, grid_size=None)
+
+    assert fftpsf.num_rays == expected_pupil_sampling
+    assert fftpsf.grid_size == 2 * num_rays
+
+
+@pytest.mark.parametrize("num_rays,grid_size,expectation", [
+    (32, None, does_not_raise()),
+    (64, None, does_not_raise()),
+    (12, 16, does_not_raise()),
+    (16, None, pytest.raises(ValueError, match="num_rays must be at least 32 if grid_size is not specified")),
+])
+def test_num_rays_below_32(make_fftpsf, num_rays, grid_size, expectation):
+    with expectation:
+        make_fftpsf(num_rays=num_rays, grid_size=grid_size)
 
 
 @pytest.mark.parametrize(
@@ -95,9 +145,13 @@ def test_view_invalid_projection(make_fftpsf):
     with pytest.raises(ValueError):
         fftpsf.view(projection="invalid", log=True)
 
+
 @pytest.mark.parametrize(
     "projection",
-    [ "2d", "3d",],
+    [
+        "2d",
+        "3d",
+    ],
 )
 @patch("matplotlib.figure.Figure.text")
 def test_view_annotate_sampling(mock_text, projection, make_fftpsf):
@@ -108,15 +162,21 @@ def test_view_annotate_sampling(mock_text, projection, make_fftpsf):
 
     plt.close("all")
 
+
 @pytest.mark.parametrize(
     "projection",
-    [ "2d", "3d",],
+    [
+        "2d",
+        "3d",
+    ],
 )
 def test_view_oversampling(projection, make_fftpsf):
     fftpsf = make_fftpsf(field=(0, 1))
 
     with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
         fftpsf.view(projection=projection, log=False, num_points=128)
+
+
 
 def test_get_units_finite_obj(make_fftpsf):
     def tweak(optic):
