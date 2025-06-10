@@ -52,6 +52,22 @@ def test_initialization(make_fftpsf):
         (8192, 512),
     ],
 )
+def test_calculate_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
+    fftpsf = make_fftpsf()
+
+    assert fftpsf._calculate_grid_size(num_rays) == (expected_pupil_sampling, 2 * num_rays)
+
+
+@pytest.mark.parametrize(
+    "num_rays,expected_pupil_sampling",
+    [
+        (32, 32),
+        (64, 45),
+        (128, 64),
+        (256, 90),
+        (1024, 181),
+    ],
+)
 def test_num_rays_and_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
     fftpsf = make_fftpsf(num_rays=num_rays, grid_size=None)
 
