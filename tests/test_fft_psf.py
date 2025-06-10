@@ -70,6 +70,25 @@ def test_num_rays_below_32(make_fftpsf, num_rays, grid_size, expectation):
         make_fftpsf(num_rays=num_rays, grid_size=grid_size)
 
 
+@pytest.mark.parametrize(
+    "num_rays, grid_size",
+    [
+        (64, 128),
+        (65, 256),
+        (64, 257),
+    ],
+)
+def test_grid_size(make_fftpsf, num_rays, grid_size):
+    fftpsf = make_fftpsf(num_rays=num_rays, grid_size=grid_size)
+
+    assert fftpsf.psf.shape == (grid_size, grid_size)
+
+
+def test_invalid_grid_size(make_fftpsf):
+    with pytest.raises(ValueError, match=r"Grid size \(\d+\) must be greater than or equal to the number of rays \(\d+\)"):
+        make_fftpsf(grid_size=63, num_rays=64)
+
+
 def test_strehl_ratio(make_fftpsf):
     fftpsf = make_fftpsf(grid_size=256)
     strehl_ratio = fftpsf.strehl_ratio()
@@ -140,6 +159,7 @@ def test_view_oversampling(projection, make_fftpsf):
 
     with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
         fftpsf.view(projection=projection, log=False, num_points=128)
+
 
 
 def test_get_units_finite_obj(make_fftpsf):
