@@ -41,6 +41,7 @@ def test_initialization(make_fftpsf):
     [
         (64, 128),
         (65, 256),
+        (64, 257),
     ],
 )
 def test_grid_size(make_fftpsf, num_rays, grid_size):
