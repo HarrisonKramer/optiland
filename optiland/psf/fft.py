@@ -115,7 +115,7 @@ class FFTPSF(BasePSF):
         x, y = be.meshgrid(x, x)
         x = x.ravel()
         y = y.ravel()
-        R = be.sqrt(x**2 + y**2)
+        R2 = x**2 + y**2
 
         field = self.fields[0]  # PSF contains a single field.
         pupils = []
@@ -124,7 +124,7 @@ class FFTPSF(BasePSF):
             wavefront_data = self.get_data(field, wl)
             P = be.to_complex(be.zeros_like(x))
             amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
-            P[R <= 1] = be.to_complex(
+            P[R2 <= 1] = be.to_complex(
                 amplitude * be.exp(1j * 2 * be.pi * wavefront_data.opd)
             )
             P = be.reshape(P, (self.num_rays, self.num_rays))
