@@ -47,6 +47,12 @@ class FFTPSF(BasePSF):
     """
 
     def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
+        if grid_size < num_rays:
+            raise ValueError(
+                f"Grid size ({grid_size}) must be greater than or equal to the "
+                f"number of rays ({num_rays})."
+            )
+
         super().__init__(
             optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
         )
@@ -145,14 +151,18 @@ class FFTPSF(BasePSF):
         """
         pupils_padded = []
         for pupil in self.pupils:
-            pad = (self.grid_size - pupil.shape[0]) // 2
+            pad_before = (self.grid_size - pupil.shape[0]) // 2
+            pad_after = pad_before + (self.grid_size - pupil.shape[0]) % 2
+
             pupil = be.pad(
                 pupil,
-                ((pad, pad), (pad, pad)),
+                ((pad_before, pad_after), (pad_before, pad_after)),
                 mode="constant",
                 constant_values=0,
             )
+
             pupils_padded.append(pupil)
+
         return pupils_padded
 
     def _get_normalization(self):
