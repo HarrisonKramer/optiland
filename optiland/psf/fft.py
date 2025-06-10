@@ -151,19 +151,17 @@ class FFTPSF(BasePSF):
         """
         pupils_padded = []
         for pupil in self.pupils:
-            padded = be.zeros_like(pupil, shape=(self.grid_size, self.grid_size))
-            center = self.grid_size // 2
+            pad_before = (self.grid_size - pupil.shape[0]) // 2
+            pad_after = pad_before + (self.grid_size - pupil.shape[0]) % 2
 
-            padded[
-                center - pupil.shape[0] // 2 : center
-                + pupil.shape[0] // 2
-                + pupil.shape[0] % 2,
-                center - pupil.shape[1] // 2 : center
-                + pupil.shape[1] // 2
-                + pupil.shape[1] % 2,
-            ] = pupil
+            pupil = be.pad(
+                pupil,
+                ((pad_before, pad_after), (pad_before, pad_after)),
+                mode="constant",
+                constant_values=0,
+            )
 
-            pupils_padded.append(padded)
+            pupils_padded.append(pupil)
 
         return pupils_padded
 
