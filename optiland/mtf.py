@@ -206,8 +206,9 @@ class FFTMTF:
             for the MTF calculation. Defaults to 'primary'.
         num_rays (int, optional): The number of rays to use for the MTF
             calculation. Defaults to 128.
-        grid_size (int, optional): The size of the grid used for the MTF
-            calculation. Defaults to 1024.
+        grid_size (int or None, optional): The size of the grid used for the MTF
+            calculation. If `None`, the grid size will be calculated from `num_rays`
+            as documented in optiland.psf.fft.FFTPSF. Defaults to `None`.
         max_freq (str or float, optional): The maximum frequency for the MTF
             calculation. Defaults to 'cutoff'.
 
@@ -232,7 +233,7 @@ class FFTMTF:
         fields="all",
         wavelength="primary",
         num_rays=128,
-        grid_size=1024,
+        grid_size=None,
         max_freq="cutoff",
     ):
         self.optic = optic
@@ -240,7 +241,6 @@ class FFTMTF:
         self.fields = fields
         self.wavelength = wavelength
         self.num_rays = num_rays
-        self.grid_size = grid_size
 
         self.FNO = self._get_fno()
 
@@ -260,10 +260,12 @@ class FFTMTF:
                 field,
                 self.wavelength,
                 self.num_rays,
-                self.grid_size,
+                grid_size,
             ).psf
             for field in self.fields
         ]
+
+        self.grid_size = 2 * self.num_rays if grid_size is None else grid_size
 
         self.mtf = self._generate_mtf_data()
 
