@@ -8,10 +8,12 @@ Kramer Harrison, 2025
 
 from .fft import FFTMTF
 from .geometric import GeometricMTF
+from .huygens import HuygensMTF
 from .sampled import SampledMTF
 
 __all__ = [
     "FFTMTF",
     "GeometricMTF",
     "SampledMTF",
+    "HuygensMTF",
 ]
