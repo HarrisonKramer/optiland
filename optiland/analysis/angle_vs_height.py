@@ -7,16 +7,178 @@ Original concept by BuergiR, 2025
 Implemented in Optiland by Kramer Harrison, 2025
 """
 
+import abc
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
-from optiland import distribution
 
 from .base import BaseAnalysis
 
 
-class PupilFieldAngleVsHeight(BaseAnalysis):
+class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
+    """Abstract base class for Angle vs. Height analysis routines.
+
+    This class provides the common framework for generating angle vs. height
+    data using the optic's trace_generic method, and abstract methods for
+    defining how the tracing coordinates vary.
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        surface_idx (int, optional): Index of the surface at which the angle and
+            height are measured. Defaults to -1 (last surface).
+        axis (int, optional): Specifies the axis for measurement. 0 for x-axis,
+            1 for y-axis. Defaults to 1 (y-axis).
+        wavelengths (str or list, optional): A single wavelength or a list of
+            wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
+        num_points (int, optional): The number of points used for the plot.
+            Defaults to 51.
+
+    Attributes:
+        optic (Optic): The optic object being analyzed.
+        surface_idx (int): Index of the surface for measurements.
+        axis (int): Axis for measurement (0 for x, 1 for y).
+        wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
+        num_points (int): The number of points generated for the analysis.
+        data (dict): The generated data for the analysis. Structure depends on
+            subclass.
+    """
+
+    def __init__(
+        self,
+        optic,
+        surface_idx=-1,
+        axis=1,
+        wavelengths="all",
+        num_points=51,
+    ):
+        self.surface_idx = surface_idx
+        self.axis = axis
+        self.num_points = num_points
+
+        super().__init__(optic, wavelengths=wavelengths)
+
+    @abc.abstractmethod
+    def _get_trace_coordinates(self, scan_range):
+        """Abstract method to define the Hx, Hy, Px, Py coordinates for tracing.
+
+        This method must be implemented by subclasses to specify how the rays
+        are generated for the trace_generic method.
+
+        Args:
+            scan_range (numpy.ndarray): The linearly spaced array defining
+                the range of varying coordinates.
+
+        Returns:
+            tuple: A tuple containing (Hx, Hy, Px, Py, coord_label).
+                Hx, Hy, Px, Py should be backend arrays ready for trace_generic.
+                coord_label is either "pupil" or "field" and represents which
+                coordinates are fixed during the scan.
+        """
+        pass  # pragma: no cover
+
+    def _generate_data(self):
+        """Generates the incident angle vs. image height data using trace_generic.
+
+        This method is common for all subclasses and orchestrates the ray tracing
+        based on the coordinates provided by _get_trace_coordinates.
+
+        Returns:
+            dict: A dictionary containing the generated data.
+                Keys are (fixed_param_1, fixed_param_2, wavelength_value) tuples,
+                values are dictionaries with 'height' and 'angle' numpy arrays.
+        """
+        data = {}
+        scan_range = be.linspace(start=-1, stop=1, num=self.num_points).astype(float)
+
+        Hx, Hy, Px, Py, coord_label = self._get_trace_coordinates(scan_range)
+
+        Hx = be.atleast_1d(Hx)
+        Hy = be.atleast_1d(Hy)
+        Px = be.atleast_1d(Px)
+        Py = be.atleast_1d(Py)
+
+        for wavelength in self.wavelengths:
+            wavelength_value = (
+                wavelength.value if hasattr(wavelength, "value") else wavelength
+            )
+
+            rays = self.optic.trace_generic(
+                Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength_value
+            )
+
+            if self.axis == 1:  # Y-direction measurement
+                incident_direction_cosines = rays.M[self.surface_idx, :]
+                height = rays.y[self.surface_idx, :]
+            else:  # X-direction measurement
+                incident_direction_cosines = rays.L[self.surface_idx, :]
+                height = rays.x[self.surface_idx, :]
+
+            angle_rad = be.arcsin(incident_direction_cosines)
+
+            if coord_label == "Pupil":  # means pupil is fixed and field is scanned
+                fixed_param_key = (
+                    Px[0] if be.size(Px) > 0 else 0,
+                    Py[0] if be.size(Py) > 0 else 0,
+                    wavelength_value,
+                )
+            elif coord_label == "Field":  # means field is fixed and pupil is scanned
+                fixed_param_key = (
+                    Hx[0] if be.size(Hx) > 0 else 0,
+                    Hy[0] if be.size(Hy) > 0 else 0,
+                    wavelength_value,
+                )
+            else:
+                raise ValueError("Coord. label must be 'Pupil' or 'Field'.")
+
+            data[fixed_param_key] = {
+                "height": be.to_numpy(height),
+                "angle": be.to_numpy(angle_rad),
+                "fixed_coordinates": coord_label,
+            }
+        return data
+
+    def view(self, figsize=(8, 5.5), title=None):
+        """Displays a plot of the incident angle vs. image height analysis.
+
+        Args:
+            figsize (tuple, optional): The size of the figure.
+                Defaults to (8, 5.5).
+            title (str, optional): An optional subtitle to be added to the plot.
+                If None, lens name is used.
+        """
+        plot_style = ".-" if self.num_points < 75 else "-"
+        plot_data_list = []
+
+        # Iterate through the generated data items
+        for (fixed_p1, fixed_p2, wavelength), plot_data in self.data.items():
+            label_prefix = plot_data["label_prefix"]
+            if label_prefix == "Px":
+                label_str = (
+                    f"Px={round(fixed_p1, 4)} Py={round(fixed_p2, 4)}, "
+                    f"{np.round(wavelength, 4)} μm"
+                )
+            else:  # label_prefix == 'Hx'
+                label_str = (
+                    f"Hx={round(fixed_p1, 4)} Hy={round(fixed_p2, 4)}, "
+                    f"{np.round(wavelength, 4)} μm"
+                )
+            plot_data_list.append(
+                (plot_data["height"], np.rad2deg(plot_data["angle"]), label_str)
+            )
+
+        _plot_angle_vs_height(
+            plot_data_list=plot_data_list,
+            axis=self.axis,
+            optic_name=self.optic.name,
+            plot_style=plot_style,
+            figsize=figsize,
+            title=title,
+        )
+
+
+class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all pupil coordinates (Px, Py) for a given image field point.
 
@@ -41,12 +203,11 @@ class PupilFieldAngleVsHeight(BaseAnalysis):
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
         wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
-        field_point (tuple): The relative image field point.
+        field_point (tuple): The relative image field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
-            {
-                (Hx, Hy, wavelength_value): {'height': np.ndarray, 'angle': np.ndarray}
-            }
+            {(Hx_fixed, Hy_fixed, wavelength_value):
+            {'height': np.ndarray, 'angle': np.ndarray}}
     """
 
     def __init__(
@@ -58,90 +219,49 @@ class PupilFieldAngleVsHeight(BaseAnalysis):
         field_point=(0, 0),
         num_points=51,
     ):
-        self.surface_idx = surface_idx
-        self.axis = axis
         self.field_point = field_point
-        self.num_points = num_points
+        super().__init__(optic, surface_idx, axis, wavelengths, num_points)
 
-        super().__init__(optic, wavelengths=wavelengths)
-
-    def _generate_data(self):
-        """Generates the incident angle vs. image height data by varying through
-        pupil coordinates.
-
-        Returns:
-            dict: A dictionary containing the generated data.
-                Keys are (Hx, Hy, wavelength_value) tuples, values are dictionaries
-                with 'height' and 'angle' numpy arrays.
-        """
-        data = {}
-        Hx, Hy = self.field_point
-
-        if self.axis == 1:  # Y-axis variation (Py)
-            distrib = distribution.LineYDistribution()
-        else:  # X-axis variation (Px)
-            distrib = distribution.LineXDistribution()
-        distrib.generate_points(num_points=self.num_points)
-
-        for wavelength in self.wavelengths:
-            wavelength_value = (
-                wavelength.value if hasattr(wavelength, "value") else wavelength
-            )
-
-            self.optic.trace(
-                Hx=Hx, Hy=Hy, wavelength=wavelength_value, distribution=distrib
-            )
-
-            if self.axis == 1:
-                M = self.optic.surface_group.M[self.surface_idx, :]
-                y_coords = self.optic.surface_group.y[self.surface_idx, :]
-                idx = np.argsort(y_coords)
-                height = y_coords[idx]
-                angle = np.arcsin(M[idx])
-            else:
-                L = self.optic.surface_group.L[self.surface_idx, :]
-                x_coords = self.optic.surface_group.x[self.surface_idx, :]
-                idx = np.argsort(x_coords)
-                height = x_coords[idx]
-                angle = np.arcsin(L[idx])
-
-            data[(Hx, Hy, wavelength_value)] = {
-                "height": be.to_numpy(height),
-                "angle": be.to_numpy(angle),
-            }
-        return data
-
-    def view(self, figsize=(8, 5.5), title=None):
-        """Displays a plot of the incident angle vs. image height analysis from
-        the pupil field perspective.
+    def _get_trace_coordinates(self, scan_range):
+        """Defines how pupil coordinates (Px, Py) vary while field (Hx, Hy) is fixed.
 
         Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (8, 5.5).
-            title (str, optional): An optional subtitle to be added to the plot.
-                If None, lens name is used.
-        """
-        plot_style = ".-" if self.num_points < 75 else "-"
-        plot_data_list = []
-        for (Hx, Hy, wavelength), plot_data in self.data.items():
-            label_str = (
-                f"Hx={round(Hx, 4)} Hy={round(Hy, 4)}, {np.round(wavelength, 4)} μm"
-            )
-            plot_data_list.append(
-                (plot_data["height"], np.rad2deg(plot_data["angle"]), label_str)
-            )
+            scan_range (numpy.ndarray): The linearly spaced array for varying
+                pupil coordinates.
 
-        _plot_angle_vs_height(
-            plot_data_list=plot_data_list,
-            axis=self.axis,
-            optic_name=self.optic.name,
-            plot_style=plot_style,
-            figsize=figsize,
-            title=title,
+        Returns:
+            tuple: (Hx, Hy, Px, Py, label_prefix_str) for trace_generic.
+        """
+        hx_fixed, hy_fixed = self.field_point
+        # Hx, Hy are constant for this analysis
+        Hx = (
+            be.full_like(scan_range, hx_fixed)
+            if scan_range.size > 0
+            else be.array([hx_fixed])
+        )
+        Hy = (
+            be.full_like(scan_range, hy_fixed)
+            if scan_range.size > 0
+            else be.array([hy_fixed])
+        )
+
+        if self.axis == 1:  # Vary Py, Px is fixed at 0
+            Px = be.zeros_like(scan_range)
+            Py = scan_range
+        else:  # Vary Px, Py is fixed at 0
+            Px = scan_range
+            Py = be.zeros_like(scan_range)
+
+        return (
+            Hx,
+            Hy,
+            Px,
+            Py,
+            "Field",  # field coordinates are fixed
         )
 
 
-class ImageFieldAngleVsHeight(BaseAnalysis):
+class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all image field coordinates (Hx, Hy) for a given pupil field point.
 
@@ -167,11 +287,12 @@ class ImageFieldAngleVsHeight(BaseAnalysis):
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
         wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
-        pupil_point (tuple): The pupil field point.
+        pupil_point (tuple): The pupil field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
             {
-                (Px, Py, wavelength_value): {'height': np.ndarray, 'angle': np.ndarray}
+                (Px_fixed, Py_fixed, wavelength_value):
+                {'height': np.ndarray, 'angle': np.ndarray}
             }
     """
 
@@ -184,83 +305,45 @@ class ImageFieldAngleVsHeight(BaseAnalysis):
         pupil_point=(0, 0),
         num_points=51,
     ):
-        self.surface_idx = surface_idx
-        self.axis = axis
         self.pupil_point = pupil_point
-        self.num_points = num_points
+        super().__init__(optic, surface_idx, axis, wavelengths, num_points)
 
-        super().__init__(optic, wavelengths=wavelengths)
-
-    def _generate_data(self):
-        """Generates the incident angle vs. image height data by varying through
-        image field coordinates.
-
-        Returns:
-            dict: A dictionary containing the generated data.
-                Keys are (Px, Py, wavelength_value) tuples, values are dictionaries
-                with 'height' and 'angle' numpy arrays.
-        """
-        data = {}
-        px, py = self.pupil_point
-
-        field_range = be.linspace(start=-1, stop=1, num=self.num_points).astype(float)
-        angle = be.zeros_like(field_range)
-        height = be.zeros_like(field_range)
-
-        for wavelength in self.wavelengths:
-            wavelength_value = (
-                wavelength.value if hasattr(wavelength, "value") else wavelength
-            )
-
-            for idx, field_val in enumerate(field_range):
-                if self.axis == 1:  # Y-direction variation (Hy)
-                    ray = self.optic.trace_generic(
-                        Hx=0, Hy=field_val, Px=px, Py=py, wavelength=wavelength_value
-                    )
-                    M = ray.M[self.surface_idx]
-                    angle[idx] = be.arcsin(M)
-                    height[idx] = ray.y[self.surface_idx]
-                elif self.axis == 0:  # X-direction variation (Hx)
-                    ray = self.optic.trace_generic(
-                        Hx=field_val, Hy=0, Px=px, Py=py, wavelength=wavelength_value
-                    )
-                    L = ray.L[self.surface_idx]
-                    angle[idx] = be.arcsin(L)
-                    height[idx] = ray.x[self.surface_idx]
-
-            data[(px, py, wavelength_value)] = {
-                "height": be.to_numpy(height),
-                "angle": be.to_numpy(angle),
-            }
-        return data
-
-    def view(self, figsize=(8, 5.5), title=None):
-        """Displays a plot of the incident angle vs. image height analysis from
-        the image field perspective.
+    def _get_trace_coordinates(self, scan_range):
+        """Defines how field coordinates (Hx, Hy) vary while pupil (Px, Py) is fixed.
 
         Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (8, 5.5).
-            title (str, optional): An optional subtitle to be added to the plot.
-                If None, lens name is used.
-        """
-        plot_style = ".-" if self.num_points < 75 else "-"
-        plot_data_list = []
-        for (px, py, wavelength), plot_data in self.data.items():
-            label_str = (
-                f"Px={round(px, 4)} Py={round(py, 4)}, {np.round(wavelength, 4)} μm"
-            )
-            plot_data_list.append(
-                (plot_data["height"], np.rad2deg(plot_data["angle"]), label_str)
-            )
+            scan_range (numpy.ndarray): The linearly spaced array for varying
+                field coordinates.
 
-        _plot_angle_vs_height(
-            plot_data_list=plot_data_list,
-            axis=self.axis,
-            optic_name=self.optic.name,
-            plot_style=plot_style,
-            figsize=figsize,
-            title=title,
+        Returns:
+            tuple: (Hx, Hy, Px, Py, label_prefix_str) for trace_generic.
+        """
+        px_fixed, py_fixed = self.pupil_point
+        # Px, Py are constant for this analysis
+        Px = (
+            be.full_like(scan_range, px_fixed)
+            if scan_range.size > 0
+            else be.array([px_fixed])
+        )
+        Py = (
+            be.full_like(scan_range, py_fixed)
+            if scan_range.size > 0
+            else be.array([py_fixed])
+        )
+
+        if self.axis == 1:  # Vary Hy, Hx is fixed at 0
+            Hx = be.zeros_like(scan_range)
+            Hy = scan_range
+        else:  # Vary Hx, Hy is fixed at 0
+            Hx = scan_range
+            Hy = be.zeros_like(scan_range)
+
+        return (
+            Hx,
+            Hy,
+            Px,
+            Py,
+            "Pupil",  # pupil coordinates are fixed
         )
 
 
