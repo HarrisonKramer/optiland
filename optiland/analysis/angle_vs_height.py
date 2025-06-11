@@ -104,18 +104,18 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 wavelength.value if hasattr(wavelength, "value") else wavelength
             )
 
-            rays = self.optic.trace_generic(
+            self.optic.trace_generic(
                 Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength_value
             )
 
             if self.axis == 1:  # Y-direction measurement
-                incident_direction_cosines = rays.M[self.surface_idx, :]
-                height = rays.y[self.surface_idx, :]
+                incident_dir_cosines = self.optic.surface_group.M[self.surface_idx, :]
+                height = self.optic.surface_group.y[self.surface_idx, :]
             else:  # X-direction measurement
-                incident_direction_cosines = rays.L[self.surface_idx, :]
-                height = rays.x[self.surface_idx, :]
+                incident_dir_cosines = self.optic.surface_group.L[self.surface_idx, :]
+                height = self.optic.surface_group.x[self.surface_idx, :]
 
-            angle_rad = be.arcsin(incident_direction_cosines)
+            angle_rad = be.arcsin(incident_dir_cosines)
 
             if coord_label == "Pupil":  # means pupil is fixed and field is scanned
                 fixed_param_key = (
@@ -153,13 +153,13 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
         # Iterate through the generated data items
         for (fixed_p1, fixed_p2, wavelength), plot_data in self.data.items():
-            label_prefix = plot_data["label_prefix"]
-            if label_prefix == "Px":
+            fixed_coords = plot_data["fixed_coordinates"]
+            if fixed_coords == "Pupil":
                 label_str = (
                     f"Px={round(fixed_p1, 4)} Py={round(fixed_p2, 4)}, "
                     f"{np.round(wavelength, 4)} μm"
                 )
-            else:  # label_prefix == 'Hx'
+            else:  # label_prefix == 'Field'
                 label_str = (
                     f"Hx={round(fixed_p1, 4)} Hy={round(fixed_p2, 4)}, "
                     f"{np.round(wavelength, 4)} μm"
