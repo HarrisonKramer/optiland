@@ -1,9 +1,10 @@
-"""Angle vs. Height Plot Analysis
+"""Incident Angle vs. Height Plot Analysis
 
 This module provides classes for analyzing the incident angle versus image height
 for optical systems, across both pupil and field.
 
-BuergiR & Kramer Harrison, 2025
+Original concept by BuergiR, 2025
+Implemented in Optiland by Kramer Harrison, 2025
 """
 
 import matplotlib.pyplot as plt
@@ -62,7 +63,6 @@ class PupilFieldAngleVsHeight(BaseAnalysis):
         self.field_point = field_point
         self.num_points = num_points
 
-        # Wavelengths handling is delegated to the BaseAnalysis __init__
         super().__init__(optic, wavelengths=wavelengths)
 
     def _generate_data(self):
@@ -189,7 +189,6 @@ class ImageFieldAngleVsHeight(BaseAnalysis):
         self.pupil_point = pupil_point
         self.num_points = num_points
 
-        # Wavelengths handling is delegated to the BaseAnalysis __init__
         super().__init__(optic, wavelengths=wavelengths)
 
     def _generate_data(self):
