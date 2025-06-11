@@ -1,3 +1,12 @@
+"""Base Modulation Transfer Function (FFTMTF) Module.
+
+This module contains the abstract base class for MTF calculations
+based on the PSF. This includes, e.g., the FFT-based method
+and the Huygen-Fresnel-based method.
+
+Kramer Harrison, 2025
+"""
+
 import abc
 
 import matplotlib.pyplot as plt

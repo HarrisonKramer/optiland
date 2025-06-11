@@ -65,19 +65,19 @@ class FFTMTF(BaseMTF):
         self.freq = be.arange(self.grid_size // 2) * self._get_mtf_units()
 
     def _calculate_psf(self):
-        """Calculates and stores the Point Spread Function (PSF).
+        """Calculates and stores the Point Spread Function (PSF)
 
         This method uses the resolved field points and wavelength from BaseMTF.
         """
         self.psf = [
             FFTPSF(
                 self.optic,
-                field,  # Iterate over self.resolved_fields
-                self.resolved_wavelength,  # Use self.resolved_wavelength
+                field,
+                self.resolved_wavelength,
                 self.num_rays,
                 self.grid_size,
             ).psf
-            for field in self.resolved_fields  # Iterate over self.resolved_fields
+            for field in self.resolved_fields
         ]
 
     def _plot_field_mtf(self, ax, field_index, mtf_field_data, color):
@@ -90,7 +90,6 @@ class FFTMTF(BaseMTF):
                                    MTF data (be.ndarray) for the field.
             color (str): The color to use for plotting this field.
         """
-        # self.freq is now an attribute, self.resolved_fields is from BaseMTF
         current_field_label_info = self.resolved_fields[field_index]
 
         # Plot tangential MTF
@@ -126,7 +125,6 @@ class FFTMTF(BaseMTF):
             list: A list of MTF data for each field. Each MTF data is a list
                 containing the tangential and sagittal MTF values.
         """
-        # self.psf and self.grid_size are attributes
         mtf_data = [be.abs(be.fft.fftshift(be.fft.fft2(psf))) for psf in self.psf]
         mtf = []
         for data in mtf_data:
@@ -144,7 +142,6 @@ class FFTMTF(BaseMTF):
         Returns:
             float: The effective F-number of the optical system.
         """
-        # self.optic is from BaseMTF
         FNO = self.optic.paraxial.FNO()
 
         if not self.optic.object_surface.is_infinite:
@@ -162,9 +159,6 @@ class FFTMTF(BaseMTF):
             float: The MTF units calculated based on the grid size, number
                 of rays, wavelength (from BaseMTF), and FNO.
         """
-        # self.grid_size, self.num_rays are attributes
-        # self.resolved_wavelength is from BaseMTF
-        # self.FNO is an attribute
         Q = self.grid_size / self.num_rays
         dx = Q / (self.resolved_wavelength * self.FNO)
 
