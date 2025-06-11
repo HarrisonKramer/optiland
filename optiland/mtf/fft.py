@@ -2,9 +2,9 @@
 
 This module provides the FFTMTF class for computing the MTF
 of an optical system using FFT techniques.
-"""
 
-import matplotlib.pyplot as plt
+Kramer Harrison, 2025
+"""
 
 import optiland.backend as be
 from optiland.psf import FFTPSF
@@ -50,29 +50,19 @@ class FFTMTF(BaseMTF):
         grid_size=1024,
         max_freq="cutoff",
     ):
-        # Call super() with the raw fields and wavelength from args.
-        # BaseMTF will handle resolving them into self.resolved_fields
-        # and self.resolved_wavelength.
-        super().__init__(optic, fields, wavelength)
-
-        # self.optic, self.fields (raw), self.wavelength (raw),
-        # self.resolved_fields, self.resolved_wavelength are now available.
         self.num_rays = num_rays
         self.grid_size = grid_size
 
-        self.FNO = self._get_fno()  # Uses self.optic
+        super().__init__(optic, fields, wavelength)
+
+        self.FNO = self._get_fno()
 
         if max_freq == "cutoff":
-            # Use resolved_wavelength from BaseMTF for this calculation
             self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
         else:
             self.max_freq = max_freq
 
-        # self.freq needs to be set after FNO, grid_size, num_rays, and resolved_wavelength are available.
         self.freq = be.arange(self.grid_size // 2) * self._get_mtf_units()
-
-        self._calculate_psf()  # Calculate and set self.psf
-        self.mtf = self._generate_mtf_data()
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Function (PSF).
@@ -82,23 +72,23 @@ class FFTMTF(BaseMTF):
         self.psf = [
             FFTPSF(
                 self.optic,
-                field, # Iterate over self.resolved_fields
-                self.resolved_wavelength, # Use self.resolved_wavelength
+                field,  # Iterate over self.resolved_fields
+                self.resolved_wavelength,  # Use self.resolved_wavelength
                 self.num_rays,
                 self.grid_size,
             ).psf
-            for field in self.resolved_fields # Iterate over self.resolved_fields
+            for field in self.resolved_fields  # Iterate over self.resolved_fields
         ]
 
     def _plot_field_mtf(self, ax, field_index, mtf_field_data, color):
         """Plots the MTF data for a single field for FFTMTF.
 
-       Args:
-           ax (matplotlib.axes.Axes): The matplotlib axes object.
-           field_index (int): The index of the current field in self.resolved_fields.
-           mtf_field_data (list): A list containing tangential and sagittal
-                                  MTF data (be.ndarray) for the field.
-           color (str): The color to use for plotting this field.
+        Args:
+            ax (matplotlib.axes.Axes): The matplotlib axes object.
+            field_index (int): The index of the current field in self.resolved_fields.
+            mtf_field_data (list): A list containing tangential and sagittal
+                                   MTF data (be.ndarray) for the field.
+            color (str): The color to use for plotting this field.
         """
         # self.freq is now an attribute, self.resolved_fields is from BaseMTF
         current_field_label_info = self.resolved_fields[field_index]

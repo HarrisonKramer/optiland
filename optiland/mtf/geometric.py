@@ -2,6 +2,8 @@
 
 This module provides the GeometricMTF class for computing the MTF
 of an optical system based on spot diagram data.
+
+Kramer Harrison, 2025
 """
 
 import matplotlib.pyplot as plt

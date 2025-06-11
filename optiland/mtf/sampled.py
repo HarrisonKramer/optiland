@@ -2,6 +2,8 @@
 
 This module provides the SampledMTF class for computing the MTF
 of an optical system based on sampled wavefront data.
+
+Kramer Harrison, 2025
 """
 
 import optiland.backend as be

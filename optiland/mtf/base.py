@@ -1,10 +1,12 @@
 import abc
+
 import matplotlib.pyplot as plt
+
 import optiland.backend as be
 
 
 class BaseMTF(abc.ABC):
-    """Base class for MTF computations.
+    """Base class for MTF computations based on a PSF calculation.
 
     Attributes:
         optic: The optical system.
@@ -26,8 +28,8 @@ class BaseMTF(abc.ABC):
                 wavelength value (typically in µm).
         """
         self.optic = optic
-        self.fields = fields  # Store raw input
-        self.wavelength = wavelength  # Store raw input
+        self.fields = fields
+        self.wavelength = wavelength
 
         if fields == "all":
             self.resolved_fields = optic.fields.get_field_coords()
@@ -38,6 +40,9 @@ class BaseMTF(abc.ABC):
             self.resolved_wavelength = optic.primary_wavelength
         else:
             self.resolved_wavelength = wavelength
+
+        self._calculate_psf()
+        self.mtf = self._generate_mtf_data()
 
     @abc.abstractmethod
     def _generate_mtf_data(self):
@@ -57,6 +62,11 @@ class BaseMTF(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def _calculate_psf(self):
+        """Calculates and potentially stores the Point Spread Function."""
+        pass
+
     def view(self, figsize=(12, 4), add_reference=False):
         """Visualizes the Modulation Transfer Function (MTF).
 
@@ -73,29 +83,14 @@ class BaseMTF(abc.ABC):
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference line. Defaults to False.
         """
-        if not hasattr(self, 'mtf') or not self.mtf:
-            # Consider logging a warning or raising an error instead of print
-            print("MTF data not generated. Cannot view.")
-            return
-        if not hasattr(self, 'freq'):
-            print("Frequency data (`self.freq`) not available. Cannot view.")
-            return
-        if not hasattr(self, 'max_freq'):
-            print("Maximum frequency (`self.max_freq`) not available. Cannot view.")
-            return
-
         _, ax = plt.subplots(figsize=figsize)
 
         for k, field_mtf_item in enumerate(self.mtf):
             self._plot_field_mtf(ax, k, field_mtf_item, color=f"C{k}")
 
         if add_reference:
-            # Clip ratio to avoid invalid values in arccos for frequencies
-            # slightly above max_freq due to numerical precision.
-            # Ensure domain is [0, 1] for arccos.
             ratio = be.clip(self.freq / self.max_freq, 0.0, 1.0)
             phi = be.arccos(ratio)
-            # Ensure backend's cos and sin are used.
             diff_limited_mtf = (2 / be.pi) * (phi - be.cos(phi) * be.sin(phi))
 
             ax.plot(
@@ -113,8 +108,3 @@ class BaseMTF(abc.ABC):
         plt.tight_layout()
         plt.grid(alpha=0.25)
         plt.show()
-
-    @abc.abstractmethod
-    def _calculate_psf(self):
-        """Calculates and potentially stores the Point Spread Function."""
-        pass
