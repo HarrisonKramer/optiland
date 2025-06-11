@@ -3,7 +3,7 @@
 This module provides the HuygensMTF class for computing the MTF
 of an optical system using Huygens-Fresnel PSF.
 
-Kramer Harrison, 2025 (adapted by Jules, 2024)
+Kramer Harrison, 2025
 """
 
 import optiland.backend as be
@@ -64,26 +64,14 @@ class HuygensMTF(BaseMTF):
 
         self.num_rays = num_rays
         self.image_size = image_size
-        self.psf_instances = []  # To store HuygensPSF instances
+        self.psf_instances = []
 
-        # BaseMTF.__init__ calls _calculate_psf and _generate_mtf_data
-        # So, FNO, max_freq, and freq need to be set *before* super().__init__
-        # if _calculate_psf or _generate_mtf_data depend on them.
-        # _calculate_psf uses self.resolved_wavelength, num_rays, image_size.
-        # _generate_mtf_data uses self.image_size.
-        # FNO/max_freq are for MTF plot scaling, not PSF calculation.
-
-        # Resolve wavelength and fields first, as FNO might depend on
-        # resolved_wavelength. Temporarily set for FNO calculation if needed
-        # by optic.primary_wavelength
         if wavelength == "primary":
             resolved_wavelength_temp = optic.primary_wavelength
         else:
             resolved_wavelength_temp = wavelength
 
-        self.FNO = self._get_fno(
-            optic, resolved_wavelength_temp
-        )  # Pass optic and resolved_wavelength
+        self.FNO = self._get_fno(optic)
 
         if max_freq == "cutoff":
             # wavelength in um, FNO is unitless. max_freq in cycles/mm
@@ -91,77 +79,32 @@ class HuygensMTF(BaseMTF):
         else:
             self.max_freq = max_freq
 
-        # Call super().__init__ AFTER FNO and max_freq are determined,
-        # but BEFORE freq is calculated using _get_mtf_units (needs psf_instances)
         super().__init__(optic, fields, wavelength)
-        # self.psf_data is populated by _calculate_psf called by super().__init__
 
-        # Now calculate freq, _get_mtf_units needs self.psf_instances (from
-        # _calculate_psf) and self.image_size
         self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
-        # Ensure freq does not exceed max_freq for plotting
         self.freq = self.freq[self.freq <= self.max_freq]
 
-    def _get_fno(self, optic, wavelength_value):  # Accept optic and wavelength
+    def _get_fno(self, optic):
         """Calculate the effective F-number (FNO) of the optical system.
 
         Applies a correction if the object is finite.
 
         Args:
             optic (Optic): The optical system.
-            wavelength_value (float): The specific wavelength value in µm.
 
         Returns:
             float: The effective F-number of the optical system.
         """
-        # Ensure paraxial data is updated for the specific wavelength if necessary
-        # This depends on how optic.paraxial handles wavelength changes.
-        # Assuming optic.paraxial.FNO() uses the optic's current state which should
-        # be aligned with self.resolved_wavelength after super().__init__
-        # However, we need FNO before super().__init__ for max_freq.
-        # Assume optic.paraxial.FNO() is wavelength-agnostic enough or called
-        # after primary_wavelength is set.
-        # A safer way: temporarily set optic's primary wavelength if needed.
-
-        # Using the passed optic and its current paraxial state:
-        fno_val = optic.paraxial.FNO(wavelength=wavelength_value)
+        FNO = optic.paraxial.FNO()
 
         if not optic.object_surface.is_infinite:
-            # For finite conjugates, effective FNO changes.
-            # Using image space F/# definition based on paraxial marginal ray angle.
-            # This is a simplification. A more robust way would be to use
-            # effective focal length and entrance pupil diameter,
-            # considering magnification.
-            # OpticStudio: 1 / (2 * n_image * sin(theta_marginal_image_angle)).
-            # For now, using a common approximation with magnification:
-            m = optic.paraxial.magnification(wavelength=wavelength_value)
-            # Formula Feff = Fworking / (1 + |m|) or Feff = Fobj * (1 + m) for
-            # infinite object. Or finite object: Feff = F_inf * (1 - m) if F_inf is
-            # infinite conjugate FNO.
-            # Common definition for effective FNO is |1 / (2 * NA_image)|.
-            # NA_image approx |EPD / (2 * EFL * m)| or |sin(marginal_ray_angle_image)|.
-            # Use FFTMTF's approach for consistency, assuming it's valid.
-            D = optic.paraxial.XPD(wavelength=wavelength_value)  # Exit Pupil Diameter
-            # EPD = Entrance Pupil Diameter
-            # p = D / optic.paraxial.EPD() # pupil magnification
-            # FFTMTF formula: FNO_eff = FNO_inf * (1 + abs(m)/p).
-            # This seems specific. Use a more standard definition for working F#:
-            # Fworking = F_inf * (1 - m) for system focused at finite conjugate, or
-            # Fworking = (1-m) / (2 * NA_object_space).
-            # Or simply: Fworking = image_distance / EPD_effective.
-            # Sticking to FFTMTF's approach if standard in this library,
-            # otherwise, FNO_working = FNO_inf * (1 + |m|) is often used.
-            # FFTMTF formula: FNO = FNO * (1 + be.abs(m) / p)
-            # where p = XPD / EPD (pupil magnification).
-            # This formula seems to adjust the infinite conjugate FNO.
-            # Assume self.optic.paraxial.FNO() gives working FNO if applicable,
-            # or it's infinite FNO. The provided FFTMTF code applies a correction:
-            epd = optic.paraxial.EPD(wavelength=wavelength_value)
+            m = optic.paraxial.magnification()
+            D = optic.paraxial.XPD()  # Exit Pupil Diameter
+            epd = optic.paraxial.EPD()
             p = 1.0 if epd == 0 else D / epd  # Avoid division by zero
+            FNO = FNO if p == 0 else FNO * (1 + be.abs(m) / p)
 
-            fno_val = fno_val if p == 0 else fno_val * (1 + be.abs(m) / p)
-
-        return fno_val
+        return FNO
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Functions (PSFs).
@@ -197,15 +140,8 @@ class HuygensMTF(BaseMTF):
             list: A list of MTF data for each field. Each item is a list
                   containing the normalized tangential and sagittal MTF arrays.
         """
-        if not hasattr(self, "psf_data") or not self.psf_data:
-            # This case should ideally not be reached if _calculate_psf is always
-            # called by super().__init__ before this.
-            self._calculate_psf()
-
         mtf_results = []
         for psf_array in self.psf_data:
-            # The PSF from HuygensPSF is a real-valued intensity distribution.
-            # Its FFT (the OTF) will be complex. MTF is the magnitude of OTF.
             otf = be.fft.fftshift(be.fft.fft2(psf_array))
             mtf_abs = be.abs(otf)
 
@@ -295,18 +231,6 @@ class HuygensMTF(BaseMTF):
         Returns:
             float: The frequency step for MTF calculation (cycles/mm).
         """
-        if not self.psf_instances:
-            # This might happen if called before _calculate_psf completes,
-            # which shouldn't occur with current BaseMTF structure.
-            # Fallback or raise error. For now, assume psf_instances is populated.
-            # This could indicate a logic error in initialization order.
-            # One way to handle: force PSF calculation if not done.
-            self._calculate_psf()  # Ensure psf_instances are available
-            if not self.psf_instances:  # If still not available, something is wrong
-                raise RuntimeError(
-                    "PSF instances not available for MTF unit calculation."
-                )
-
         # Use pixel_pitch from the first PSF instance (should be consistent)
         # HuygensPSF stores pixel_pitch in mm.
         pixel_pitch_mm = self.psf_instances[0].pixel_pitch
