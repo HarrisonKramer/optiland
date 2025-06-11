@@ -17,7 +17,7 @@ import optiland.backend as be
 from .base import BaseAnalysis
 
 
-class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
+class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
     """Abstract base class for Angle vs. Height analysis routines.
 
     This class provides the common framework for generating angle vs. height
@@ -178,7 +178,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         )
 
 
-class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
+class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all pupil coordinates (Px, Py) for a given image field point.
 
@@ -261,7 +261,7 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         )
 
 
-class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
+class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all image field coordinates (Hx, Hy) for a given pupil field point.
 
