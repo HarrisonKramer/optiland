@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.psf import FFTPSF
+from optiland.psf.fft import calculate_grid_size
 from optiland.wavefront import Wavefront
 from optiland.zernike import ZernikeFit
 
@@ -240,7 +241,12 @@ class FFTMTF:
         self.max_freq = max_freq
         self.fields = fields
         self.wavelength = wavelength
-        self.num_rays = num_rays
+
+        if grid_size is None:
+            self.num_rays, self.grid_size = calculate_grid_size(num_rays)
+        else:
+            self.num_rays = num_rays
+            self.grid_size = grid_size
 
         self.FNO = self._get_fno()
 
@@ -260,12 +266,10 @@ class FFTMTF:
                 field,
                 self.wavelength,
                 self.num_rays,
-                grid_size,
+                self.grid_size,
             ).psf
             for field in self.fields
         ]
-
-        self.grid_size = 2 * self.num_rays if grid_size is None else grid_size
 
         self.mtf = self._generate_mtf_data()
 
