@@ -68,26 +68,19 @@ class SampledMTF:
         """Initializes the SampledMTF instance."""
         self.optic = optic
         self.field = field
-        self.wavelength = (
-            wavelength  # Storing the potentially 'primary' string initially
-        )
+        self.wavelength = wavelength
         self.num_rays = num_rays
         self.distribution = distribution
         self.zernike_terms = zernike_terms
         self.zernike_type = zernike_type
 
-        # Resolve wavelength if 'primary'
-        resolved_wavelength = self.wavelength
-        if resolved_wavelength == "primary":
-            resolved_wavelength = optic.primary_wavelength
-
-        # Update self.wavelength to the resolved value
-        self.wavelength = resolved_wavelength
+        if wavelength == "primary":
+            self.wavelength = optic.primary_wavelength
 
         wf = Wavefront(
             optic,
-            fields=[self.field],  # Use self.field directly
-            wavelengths=[self.wavelength],  # Use resolved self.wavelength
+            fields=[self.field],
+            wavelengths=[self.wavelength],
             num_rays=self.num_rays,
             distribution=self.distribution,
         )
@@ -155,9 +148,6 @@ class SampledMTF:
         """
         xpd_is_zero = self.xpd == 0.0
 
-        # Retrieve necessary attributes from instance
-        # self.wavelength is in µm (consistent with original code)
-        # before conversion to mm for calculations.
         wl_um = self.wavelength
         x_norm = self.x_norm
         y_norm = self.y_norm
@@ -180,8 +170,6 @@ class SampledMTF:
             delta_x_phys = wl_mm * fx
             delta_y_phys = wl_mm * fy
 
-            # Extra check for self.xpd != 0, though xpd_is_zero should cover this.
-            # This is a safeguard.
             if self.xpd == 0.0:
                 mtf_results.append(0.0)
                 continue
