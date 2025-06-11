@@ -13,7 +13,7 @@ from scipy.interpolate import make_interp_spline
 
 import optiland.backend as be
 from optiland.analysis.through_focus import ThroughFocusAnalysis
-from optiland.mtf import SampledMTF
+from optiland.mtf.sampled import SampledMTF
 
 
 class ThroughFocusMTF(ThroughFocusAnalysis):
