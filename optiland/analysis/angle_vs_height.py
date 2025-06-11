@@ -33,7 +33,7 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         wavelengths (str or list, optional): A single wavelength or a list of
             wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
         num_points (int, optional): The number of points used for the plot.
-            Defaults to 51.
+            Defaults to 128.
 
     Attributes:
         optic (Optic): The optic object being analyzed.
@@ -51,7 +51,7 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         surface_idx=-1,
         axis=1,
         wavelengths="all",
-        num_points=51,
+        num_points=128,
     ):
         self.surface_idx = surface_idx
         self.axis = axis
@@ -196,7 +196,7 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         field_point (tuple, optional): A single relative image field point (Hx, Hy).
             Defaults to (0, 0).
         num_points (int, optional): The number of points used for the plot.
-            Defaults to 51.
+            Defaults to 128.
 
     Attributes:
         optic (Optic): The optic object being analyzed.
@@ -217,7 +217,7 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         axis=1,
         wavelengths="all",
         field_point=(0, 0),
-        num_points=51,
+        num_points=128,
     ):
         self.field_point = field_point
         super().__init__(optic, surface_idx, axis, wavelengths, num_points)
@@ -280,7 +280,7 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         pupil_point (tuple, optional): A single pupil field point (Px, Py).
             Defaults to (0, 0).
         num_points (int, optional): The number of points displayed on the plot.
-            Defaults to 51.
+            Defaults to 128.
 
     Attributes:
         optic (Optic): The optic object being analyzed.
@@ -303,7 +303,7 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         axis=1,
         wavelengths="all",
         pupil_point=(0, 0),
-        num_points=51,
+        num_points=128,
     ):
         self.pupil_point = pupil_point
         super().__init__(optic, surface_idx, axis, wavelengths, num_points)
