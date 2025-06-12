@@ -180,13 +180,13 @@ def test_view_oversampling(projection, make_fftpsf):
 
 def test_get_units_finite_obj(make_fftpsf):
     def tweak(optic):
-        optic.surface_group.surfaces[0].geometry.cs.z = be.array(1e6)
+        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e6)
 
     fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
     image = be.zeros((128, 128))
     x, y = fftpsf._get_psf_units(image)
-    assert_allclose(x, 352.01567006276366)
-    assert_allclose(y, 352.01567006276366)
+    assert_allclose(x, 385.84203124)
+    assert_allclose(y, 385.84203124)
 
 
 def test_psf_log_tick_formatter(make_fftpsf):
@@ -197,6 +197,17 @@ def test_psf_log_tick_formatter(make_fftpsf):
     assert fftpsf._log_tick_formatter(-1) == "$10^{-1}$"
     assert fftpsf._log_tick_formatter(-10) == "$10^{-10}$"
 
+
+@patch("matplotlib.pyplot.show")
+def test_invalid_working_FNO(mock_show, make_fftpsf):
+    def tweak(optic):
+        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e100)
+
+    fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
+    with pytest.raises(ValueError):
+        fftpsf.view()
+        plt.close("all")
+    
 
 def test_interpolate_zoom_factor_one(make_fftpsf):
     fftpsf = make_fftpsf(field=(0, 1))
