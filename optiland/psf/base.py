@@ -404,4 +404,9 @@ class BasePSF(Wavefront):
         if fno > MAX_FNUM:
             fno = MAX_FNUM
 
+        if be.isnan(fno):
+            raise ValueError(
+                "Working F/# could not be calculated due to raytrace errors."
+            )
+
         return fno
