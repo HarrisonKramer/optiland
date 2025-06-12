@@ -90,7 +90,7 @@ class TestFFTMTF:
         ],
     )
     def test_num_rays_and_grid_size(self, set_test_backend, num_rays, expected_pupil_sampling, optic):
-        m = mtf.FFTMTF(optic, num_rays=num_rays, grid_size=None)
+        m = FFTMTF(optic, num_rays=num_rays, grid_size=None)
 
         assert m.num_rays == expected_pupil_sampling
         assert m.grid_size == 2 * num_rays
