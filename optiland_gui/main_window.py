@@ -19,10 +19,10 @@ from PySide6.QtWidgets import (
     QMenuBar,
     QMessageBox,
     QPushButton,
+    QTabWidget,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QTabWidget
 )
 
 from . import gui_plot_utils
@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
         A high-level interface for controlling the Optiland GUI via scripting.
         This object is available in the Python console as 'iface'.
         """
+
         def __init__(self, main_window):
             self._win = main_window
 
@@ -97,14 +98,13 @@ class MainWindow(QMainWindow):
             # Also ensure its tab is selected
             parent_tab_widget = self._win.analysisPanelDock.parentWidget()
             if isinstance(parent_tab_widget, QTabWidget):
-                 parent_tab_widget.setCurrentWidget(self._win.analysisPanelDock)
-
+                parent_tab_widget.setCurrentWidget(self._win.analysisPanelDock)
 
         def refresh_all(self):
             """Triggers a full refresh of all GUI panels."""
             print("GUI refresh requested via iface.refresh_all()")
             self._win.connector.opticChanged.emit()
-            
+
     def __init__(self):
         super().__init__()
         self.current_theme_path = THEME_DARK_PATH
@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
         )
         self.connector = OptilandConnector()
         self.iface = self.OptilandInterface(self)
-        
+
         self.dock_animations = {}
         self.dock_original_sizes = {}
 
@@ -130,14 +130,13 @@ class MainWindow(QMainWindow):
         initial_theme_name = (
             "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
         )
-        
+
         self.pythonTerminal = PythonTerminalWidget(
             self,
             custom_variables={"connector": self.connector, "iface": self.iface},
             theme=initial_theme_name,
         )
         self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
-
 
         self._setup_all_dock_widgets()
 

@@ -1,34 +1,107 @@
-# optiland_gui/widgets/python_terminal.py
-import sys
-from io import StringIO
+import os
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QRegularExpression, QSize, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QIcon, QSyntaxHighlighter, QTextCharFormat
 from PySide6.QtWidgets import (
+    QDockWidget,
     QFileDialog,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QMainWindow,
     QPushButton,
     QSplitter,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
-
-# QScintilla is a third-party dependency.
-# Please install it using: pip install PyQt6-QScintilla
-try:
-    from Qsci import QsciLexerPython, QsciScintilla
-    QSCINTILLA_AVAILABLE = True
-except ImportError:
-    QSCINTILLA_AVAILABLE = False
-
 from qtconsole.inprocess import QtInProcessKernelManager
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+
+
+# --- Simple Python Syntax Highlighter for QTextEdit ---
+class PythonHighlighter(QSyntaxHighlighter):
+    """
+    A simple syntax highlighter for Python code in a QTextEdit widget.
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.highlighting_rules = []
+
+        # Keyword format
+        keyword_format = QTextCharFormat()
+        keyword_format.setForeground(QColor("#CF8A2E"))
+        keyword_format.setFontWeight(QFont.Bold)
+        keywords = [
+            "\\bFalse\\b",
+            "\\bNone\\b",
+            "\\bTrue\\b",
+            "\\band\\b",
+            "\\bas\\b",
+            "\\bassert\\b",
+            "\\bbreak\\b",
+            "\\bclass\\b",
+            "\\bcontinue\\b",
+            "\\bdef\\b",
+            "\\bdel\\b",
+            "\\belif\\b",
+            "\\belse\\b",
+            "\\bexcept\\b",
+            "\\bfinally\\b",
+            "\\bfor\\b",
+            "\\bfrom\\b",
+            "\\bglobal\\b",
+            "\\bif\\b",
+            "\\bimport\\b",
+            "\\bin\\b",
+            "\\bis\\b",
+            "\\blambda\\b",
+            "\\bnonlocal\\b",
+            "\\bnot\\b",
+            "\\bor\\b",
+            "\\bpass\\b",
+            "\\braise\\b",
+            "\\breturn\\b",
+            "\\btry\\b",
+            "\\bwhile\\b",
+            "\\bwith\\b",
+            "\\byield\\b",
+            "\\bself\\b",
+        ]
+        for word in keywords:
+            rule = (QRegularExpression(word), keyword_format)
+            self.highlighting_rules.append(rule)
+
+        # String format (single and double quoted)
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor("#A2E05D"))  # Green for strings
+        self.highlighting_rules.append((QRegularExpression('".*"'), string_format))
+        self.highlighting_rules.append((QRegularExpression("'.*'"), string_format))
+
+        # Comment format
+        comment_format = QTextCharFormat()
+        comment_format.setForeground(QColor("#9E9E9E"))  # Gray for comments
+        comment_format.setFontItalic(True)
+        self.highlighting_rules.append((QRegularExpression("#[^\n]*"), comment_format))
+
+        # Number format
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor("#B5CEA8"))  # Light green/blue for numbers
+        self.highlighting_rules.append(
+            (QRegularExpression("\\b[0-9]+\\.?[0-9]*\\b"), number_format)
+        )
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlighting_rules:
+            match_iterator = pattern.globalMatch(text)
+            while match_iterator.hasNext():
+                match = match_iterator.next()
+                self.setFormat(match.capturedStart(), match.capturedLength(), format)
+
 
 # --- Code Snippets ---
-# A dictionary of helpful code snippets for users.
 CODE_SNIPPETS = {
     "Add Standard Surface": "optic = connector.get_optic()\n"
     "optic.add_surface(\n"
@@ -61,230 +134,218 @@ class PythonTerminalWidget(QWidget):
     def __init__(self, parent=None, custom_variables=None, theme="dark"):
         super().__init__(parent)
         self.setObjectName("PythonTerminalWidget")
+        self.current_theme = theme
 
+        # --- Kernel Setup
         self.kernel_manager = QtInProcessKernelManager()
         self.kernel_manager.start_kernel()
+        self.kernel_client = self.kernel_manager.client()
+        self.kernel_client.start_channels()
 
-        self.kernel = self.kernel_manager.kernel
-        self.kernel.shell.events.register("post_execute", self.on_command_executed)
-
-        # Inject variables into the kernel's namespace
+        # Inject variables into the kernel
         self.injected_variables = custom_variables if custom_variables else {}
         if self.injected_variables:
-            self.kernel.shell.push(self.injected_variables)
+            self.kernel_manager.kernel.shell.push(self.injected_variables)
+
+        self.kernel_manager.kernel.shell.events.register(
+            "post_execute", self._on_kernel_execute
+        )
 
         self._setup_ui()
-        self.set_theme(theme)
-        self._print_welcome_message()
+        self.set_theme(self.current_theme)
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(5)
 
-        # --- Toolbar ---
+        self.dock_area = QMainWindow()
+        self.dock_area.setWindowFlags(Qt.Widget)
+        self.dock_area.setDockNestingEnabled(True)
+        main_layout.addWidget(self.dock_area)
+
+        # --- Create Editor Dock
+        self.editor_dock = self._create_editor_dock()
+        self.dock_area.addDockWidget(Qt.LeftDockWidgetArea, self.editor_dock)
+
+        # --- Create Console Dock
+        self.console_dock = self._create_console_dock()
+        self.dock_area.addDockWidget(Qt.RightDockWidgetArea, self.console_dock)
+
+    def _create_editor_dock(self):
+        """Creates the dock widget for the 'Script Editor'."""
+        dock = QDockWidget("Script Editor", self)
+        dock.setAllowedAreas(Qt.AllDockWidgetAreas)
+
+        editor_widget = QWidget()
+        layout = QVBoxLayout(editor_widget)
+        layout.setContentsMargins(5, 5, 5, 5)
+
+        # script actions toolbar
         toolbar_layout = QHBoxLayout()
-        self.btn_run_script = QPushButton("Run Script")
-        self.btn_save_script = QPushButton("Save Script")
-        self.btn_load_script = QPushButton("Load Script")
+        self.btn_run_script = QPushButton()
+        self.btn_run_script.setToolTip("Run Script (F5)")
+        self.btn_save_script = QPushButton()
+        self.btn_save_script.setToolTip("Save Script (Ctrl+S)")
+        self.btn_load_script = QPushButton()
+        self.btn_load_script.setToolTip("Load Script (Ctrl+O)")
+
+        for btn in [self.btn_run_script, self.btn_save_script, self.btn_load_script]:
+            btn.setIconSize(QSize(24, 24))
+            btn.setFlat(True)
+            btn.setStyleSheet("border: none; padding: 2px;")
+
         toolbar_layout.addWidget(self.btn_run_script)
         toolbar_layout.addWidget(self.btn_save_script)
         toolbar_layout.addWidget(self.btn_load_script)
         toolbar_layout.addStretch()
-        main_layout.addLayout(toolbar_layout)
+        layout.addLayout(toolbar_layout)
 
-        # --- Main Splitter ---
-        main_splitter = QSplitter(Qt.Orientation.Vertical)
-        main_layout.addWidget(main_splitter)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        layout.addWidget(splitter)
 
-        top_widget = QWidget()
-        top_layout = QHBoxLayout(top_widget)
-        top_layout.setContentsMargins(0, 0, 0, 0)
+        # The Code Editor is a simple QTextEdit
+        self.editor = QTextEdit()
+        self.editor.setFont(QFont("Courier", 10))
+        self.editor.setLineWrapMode(QTextEdit.NoWrap)
+        self.highlighter = PythonHighlighter(self.editor.document())
+        splitter.addWidget(self.editor)
 
-        # --- Code Editor ---
-        if QSCINTILLA_AVAILABLE:
-            self.editor = QsciScintilla()
-            self.editor.setUtf8(True)
-            self.editor.setFont(self.font())
-            lexer = QsciLexerPython()
-            self.editor.setLexer(lexer)
-            # Simple auto-completion based on all words in the document
-            self.editor.setAutoCompletionSource(QsciScintilla.AcsDocument)
-            self.editor.setAutoCompletionThreshold(1)
-            # Brace matching
-            self.editor.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
-            # Indentation
-            self.editor.setIndentationsUseTabs(False)
-            self.editor.setTabWidth(4)
-            self.editor.setIndentationGuides(True)
-            self.editor.setAutoIndent(True)
-        else:
-            self.editor = QTextEdit()
-            self.editor.setPlaceholderText(
-                "QScintilla not found. Please install PyQt6-QScintilla for a better experience."
-            )
-        top_layout.addWidget(self.editor, 4)  # Give editor more space initially
+        # --- Quick Actions panel
+        snippets_panel = QWidget()
+        snippets_layout = QVBoxLayout(snippets_panel)
+        snippets_layout.setContentsMargins(0, 0, 0, 0)
 
-        # --- Snippets ---
+        title_label = QLabel("Quick-Actions")
+        title_label.setStyleSheet("font-weight: bold; padding: 2px;")
+        snippets_layout.addWidget(title_label)
+
         self.snippets_list = QListWidget()
-        self.snippets_list.setMaximumWidth(200)
+        snippets_layout.addWidget(self.snippets_list)
         for name in CODE_SNIPPETS:
             self.snippets_list.addItem(QListWidgetItem(name))
-        top_layout.addWidget(self.snippets_list, 1)
 
-        bottom_widget = QWidget()
-        bottom_layout = QVBoxLayout(bottom_widget)
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        splitter.addWidget(snippets_panel)
 
-        # --- Console Output ---
-        self.console_output = QTextEdit()
-        self.console_output.setReadOnly(True)
-        bottom_layout.addWidget(self.console_output)
+        splitter.setSizes([600, 200])
 
-        # --- Console Input ---
-        self.console_input = QLineEdit()
-        self.console_input.setPlaceholderText("Type a command and press Enter...")
-        bottom_layout.addWidget(self.console_input)
+        # Set the main widget
+        dock.setWidget(editor_widget)
 
-        main_splitter.addWidget(top_widget)
-        main_splitter.addWidget(bottom_widget)
-        main_splitter.setSizes([300, 200]) # Initial sizing
+        # --- Connections
+        self.btn_run_script.clicked.connect(self._run_script_from_editor)
+        self.btn_save_script.clicked.connect(self._save_script)
+        self.btn_load_script.clicked.connect(self._load_script)
+        self.snippets_list.itemDoubleClicked.connect(self._insert_snippet)
 
-        # --- Connections ---
-        self.btn_run_script.clicked.connect(self.run_script)
-        self.btn_save_script.clicked.connect(self.save_script)
-        self.btn_load_script.clicked.connect(self.load_script)
-        self.console_input.returnPressed.connect(self.run_console_command)
-        self.snippets_list.itemDoubleClicked.connect(self.insert_snippet)
+        return dock
 
-    def _print_welcome_message(self):
-        welcome = (
+    def _create_console_dock(self):
+        """Creates the dock widget for the interactive console."""
+        dock = QDockWidget("Console", self)
+        dock.setAllowedAreas(Qt.AllDockWidgetAreas)
+
+        self.jupyter_widget = RichJupyterWidget()
+        self.jupyter_widget.kernel_manager = self.kernel_manager
+        self.jupyter_widget.kernel_client = self.kernel_client
+
+        # Set a welcome banner - to be changed later
+        banner = (
             "Welcome to the Optiland Python Console!\n\n"
-            "The following objects are available in the global namespace:\n"
+            "This is an interactive IPython console.\n"
+            "The following objects are available:\n"
             "  - 'connector': The main bridge to the optical system.\n"
-            "     Usage: `connector.add_surface(...)`\n"
             "     Try: `help(connector)`\n\n"
             "  - 'iface': The interface to control the GUI itself.\n"
-            "     Usage: `iface.show_lens_editor()`\n"
             "     Try: `help(iface)`\n\n"
-            "Double-click a snippet on the right to load it into the editor.\n"
+            "Output from the 'Script Editor' will also appear here.\n"
             "-----------------------------------------------------------\n"
         )
-        self.console_output.setText(welcome)
+        self.jupyter_widget.banner = banner
+        dock.setWidget(self.jupyter_widget)
+        return dock
 
-    def run_script(self):
-        """Executes the entire content of the editor pane."""
-        script_text = self.editor.text() if QSCINTILLA_AVAILABLE else self.editor.toPlainText()
-        if script_text:
-            self.execute_code(script_text)
-
-    def run_console_command(self):
-        """Executes the command from the console input line."""
-        command = self.console_input.text()
-        if command:
-            self.console_input.clear()
-            self.execute_code(command, is_single_line=True)
-
-    def insert_snippet(self, item):
-        """Inserts a predefined code snippet into the editor."""
-        snippet_name = item.text()
-        snippet_code = CODE_SNIPPETS.get(snippet_name, "")
-        if QSCINTILLA_AVAILABLE:
-            self.editor.setText(snippet_code)
-        else:
-            self.editor.setPlainText(snippet_code)
-
-    def execute_code(self, code, is_single_line=False):
-        """Execute code in the kernel and display the output."""
-        if is_single_line:
-            self.console_output.append(f">>> {code}")
-        else:
-            self.console_output.append(">>> Running Script...")
-
-        # Redirect stdout and stderr to capture output
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-        sys.stdout = captured_stdout = StringIO()
-        sys.stderr = captured_stderr = StringIO()
-
-        try:
-            # Execute the code in the kernel's namespace
-            self.kernel.shell.run_cell(code, store_history=True)
-
-            # Get output
-            stdout_val = captured_stdout.getvalue()
-            stderr_val = captured_stderr.getvalue()
-
-            if stdout_val:
-                self.console_output.append(stdout_val.strip())
-            if stderr_val:
-                self.console_output.setTextColor(Qt.GlobalColor.red)
-                self.console_output.append(stderr_val.strip())
-                self.console_output.setTextColor(self.default_text_color)
-
-        finally:
-            # Restore stdout and stderr
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
-
-        self.console_output.ensureCursorVisible()
-
-    def on_command_executed(self):
+    def _on_kernel_execute(self):
         """Fires after any command is executed by the kernel."""
         self.commandExecuted.emit()
 
-    def set_theme(self, theme="dark"):
-        """Applies a color theme to the terminal widgets."""
-        if theme == "dark":
-            self.default_text_color = Qt.GlobalColor.lightGray
-            bg_color = "#2B2B2B"
-            text_color = "#F8F8F2"
-            selection_bg = "#44475A"
-        else:
-            self.default_text_color = Qt.GlobalColor.black
-            bg_color = "#FFFFFF"
-            text_color = "#000000"
-            selection_bg = "#AAD5FF"
+    def _run_script_from_editor(self):
+        """Executes the script from the editor in the shared kernel."""
+        script_text = self.editor.toPlainText()
 
-        style = (
-            f"background-color: {bg_color}; "
-            f"color: {text_color}; "
-            f"selection-background-color: {selection_bg};"
-        )
-        self.console_output.setStyleSheet(style)
-        self.console_input.setStyleSheet(style)
-        if QSCINTILLA_AVAILABLE:
-            # Themes for QScintilla are more complex, this is a basic setup
-            self.editor.setPaper(Qt.GlobalColor.black if theme == "dark" else Qt.GlobalColor.white)
-            self.editor.lexer().setColor(Qt.GlobalColor.white if theme == "dark" else Qt.GlobalColor.black)
-            self.editor.lexer().setPaper(Qt.GlobalColor.black if theme == "dark" else Qt.GlobalColor.white)
-            self.editor.setCaretForegroundColor(Qt.GlobalColor.white if theme == "dark" else Qt.GlobalColor.black)
+        if script_text.strip():
+            self.kernel_client.execute(script_text, silent=False)
+            self.console_dock.raise_()  # Bring console to front to show output
 
+    def _insert_snippet(self, item):
+        """Inserts a predefined code snippet into the editor."""
+        snippet_name = item.text()
+        snippet_code = CODE_SNIPPETS.get(snippet_name, "")
+        self.editor.setPlainText(snippet_code)
+        self.editor.setFocus()
 
-    def save_script(self):
+    def _save_script(self):
         """Saves the editor content to a Python file."""
         filepath, _ = QFileDialog.getSaveFileName(
             self, "Save Script", "", "Python Files (*.py);;All Files (*)"
         )
         if filepath:
-            script_text = self.editor.text() if QSCINTILLA_AVAILABLE else self.editor.toPlainText()
-            with open(filepath, 'w') as f:
-                f.write(script_text)
+            with open(filepath, "w") as f:
+                f.write(self.editor.toPlainText())
 
-    def load_script(self):
+    def _load_script(self):
         """Loads a Python file into the editor."""
         filepath, _ = QFileDialog.getOpenFileName(
             self, "Load Script", "", "Python Files (*.py);;All Files (*)"
         )
         if filepath:
-            with open(filepath, 'r') as f:
-                script_text = f.read()
-            if QSCINTILLA_AVAILABLE:
-                self.editor.setText(script_text)
-            else:
-                self.editor.setPlainText(script_text)
+            with open(filepath) as f:
+                self.editor.setPlainText(f.read())
+
+    def _update_button_icons(self, theme_name):
+        """Updates the icons for the toolbar buttons based on the theme."""
+        base_path = os.path.join(
+            os.path.dirname(__file__), "resources", "icons", theme_name
+        )
+
+        self.btn_run_script.setIcon(QIcon(os.path.join(base_path, "script_run.svg")))
+        self.btn_save_script.setIcon(QIcon(os.path.join(base_path, "script_save.svg")))
+        self.btn_load_script.setIcon(QIcon(os.path.join(base_path, "script_load.svg")))
+
+    def set_theme(self, theme="dark"):
+        """Applies a color theme to the terminal widgets."""
+        self.current_theme = theme
+        self._update_button_icons(theme)
+
+        if theme == "dark":
+            console_bg_color = "#272822"
+
+            editor_bg_color = "#2B2B2B"
+            editor_fg_color = "#F8F8F2"
+
+            self.jupyter_widget.syntax_style = "monokai"
+            self.jupyter_widget.style_sheet = f"background-color: {console_bg_color};"
+            self.editor.setStyleSheet(
+                f"background-color: {editor_bg_color}; "
+                f"color: {editor_fg_color}; font-family: Courier;"
+            )
+        else:
+            console_bg_color = "#FFFFFF"
+
+            editor_bg_color = "#FDFDFD"
+            editor_fg_color = "#000000"
+
+            self.jupyter_widget.syntax_style = "default"
+            self.jupyter_widget.style_sheet = f"background-color: {console_bg_color};"
+            self.editor.setStyleSheet(
+                f"background-color: {editor_bg_color}; "
+                f"color: {editor_fg_color}; font-family: Courier;"
+            )
+
+        self.highlighter.rehighlight()
 
     def shutdown_kernel(self):
         """Shuts down the kernel manager cleanly."""
-        if self.kernel_manager and self.kernel_manager.is_alive():
+        if self.kernel_client:
+            self.kernel_client.stop_channels()
+        if self.kernel_manager:
             self.kernel_manager.shutdown_kernel()

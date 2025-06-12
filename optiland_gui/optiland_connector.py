@@ -42,6 +42,7 @@ class OptilandConnector(QObject):
     It manages the optical system data, file I/O, and undo/redo stack.
     An instance of this class is available in the Python console as 'connector'.
     """
+
     opticLoaded = Signal()
     opticChanged = Signal()
     surfaceDataChanged = Signal(int, int, object)
