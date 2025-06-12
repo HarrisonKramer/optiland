@@ -364,9 +364,11 @@ class BasePSF(Wavefront):
         single defined field point and given wavelength.
 
         Algorithm:
-            1. Retrieve the defined given wavelength.
+            1. Retrieve the defined given wavelength and field coordinates.
             2. Determine the image-space refractive index 'n' at the given wavelength.
-            3. Trace four marginal rays (top, bottom, left, right) at the pupil edges.
+            3. Trace four marginal rays (top, bottom, left, right) at the pupil edges,
+               as well as the chief ray.
+            4. Compute the angle between each marginal ray and the chief ray.
             4. Calculate the average of the squared numerical apertures from all traced
                marginal rays.
             5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
@@ -377,13 +379,12 @@ class BasePSF(Wavefront):
         """
         MAX_FNUM = 10000.0
 
-        Hx, Hy = 0, 0
+        Hx, Hy = self.fields[0]
         wavelength = self.wavelengths[0]
 
         n = self.optic.image_surface.material_post.n(wavelength)
         Px = be.array([0, 0, 0, 1, -1])
         Py = be.array([0, 1, -1, 0, 0])
-        numerical_apertures_squared = []
 
         rays = self.optic.trace_generic(
             Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
