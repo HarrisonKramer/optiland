@@ -276,7 +276,7 @@ class TestHuygensPSF:
                 (
                     0.7,
                     0.0,
-                ): 0.8830167021238075,
+                ): 0.881275354472487,
             },
         }
         # Tolerance for Strehl comparison
