@@ -359,18 +359,21 @@ class BasePSF(Wavefront):
         center_y = self.psf.shape[1] // 2
         return self.psf[center_x, center_y] / 100
 
-    def _get_effective_FNO(self):
-        """Calculates the effective F-number of the optical system.
+    def _get_working_FNO(self):
+        """Calculates the working F-number of the optical system.
+
+        Algorithm:
+            1. Trace real marginal ray for on-axis field point.
+            2. Determine the angle of the chief ray in angle space.
+            3. Retrieve the image-space refractive index at the primary wavelength.
+            3. Compute the working FNO as 1 / (2 * n * sin(theta))
 
         Returns:
-            float: The effective F-number.
+            float: The working F-number.
         """
-        FNO = self.optic.paraxial.FNO()
+        wavelength = self.optic.primary_wavelength
+        rays = self.optic.trace_generic(Hx=0, Hy=0, Px=0, Py=1, wavelength=wavelength)
+        sin_theta = be.abs(rays.M)
+        n = self.optic.image_surface.material_post.n(wavelength)
 
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
-
-        return FNO
+        return 1 / (2 * n * sin_theta)
