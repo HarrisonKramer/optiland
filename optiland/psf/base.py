@@ -360,20 +360,47 @@ class BasePSF(Wavefront):
         return self.psf[center_x, center_y] / 100
 
     def _get_working_FNO(self):
-        """Calculates the working F-number of the optical system.
+        """Calculates the working F-number of the optical system for the
+        single defined field point and given wavelength.
 
         Algorithm:
-            1. Trace real marginal ray for on-axis field point.
-            2. Determine the angle of the chief ray in angle space.
-            3. Retrieve the image-space refractive index at the primary wavelength.
-            3. Compute the working FNO as 1 / (2 * n * sin(theta))
+            1. Retrieve the defined given wavelength.
+            2. Determine the image-space refractive index 'n' at the given wavelength.
+            3. Trace four marginal rays (top, bottom, left, right) at the pupil edges.
+            4. Calculate the average of the squared numerical apertures from all traced
+               marginal rays.
+            5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
+            6. Cap the calculated F/# at 10,000 if it exceeds this value.
 
         Returns:
             float: The working F-number.
         """
-        wavelength = self.optic.primary_wavelength
-        rays = self.optic.trace_generic(Hx=0, Hy=0, Px=0, Py=1, wavelength=wavelength)
-        sin_theta = be.abs(rays.M)
-        n = self.optic.image_surface.material_post.n(wavelength)
+        MAX_FNUM = 10000.0
 
-        return 1 / (2 * n * sin_theta)
+        Hx, Hy = 0, 0
+        wavelength = self.wavelengths[0]
+
+        n = self.optic.image_surface.material_post.n(wavelength)
+        Px = be.array([0, 0, 0, 1, -1])
+        Py = be.array([0, 1, -1, 0, 0])
+        numerical_apertures_squared = []
+
+        rays = self.optic.trace_generic(
+            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
+        )
+
+        L0, M0, N0 = rays.L[0], rays.M[0], rays.N[0]
+        L, M, N = rays.L[1:], rays.M[1:], rays.N[1:]
+        dot = L0 * L + M0 * M + N0 * N
+        dot = be.clip(dot, -1.0, 1.0)
+        angles = be.arccos(dot)
+
+        numerical_apertures_squared = (n * be.sin(angles)) ** 2
+        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
+
+        fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
+
+        if fno > MAX_FNUM:
+            fno = MAX_FNUM
+
+        return fno
