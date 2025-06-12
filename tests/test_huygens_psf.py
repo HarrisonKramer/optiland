@@ -250,7 +250,6 @@ class TestHuygensPSF:
         User should fill in `EXPECTED_STREHL_VALUES` with known good values.
         """
         EXPECTED_STREHL_VALUES = {
-            # Optic Class Name: { field_tuple: expected_strehl_value_placeholder }
             "CookeTriplet": {
                 (0, 0): 0.3023159962682067,
                 (
