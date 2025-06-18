@@ -36,8 +36,8 @@ class MaterialFile(BaseMaterial):
             refractive index.
 
     Methods:
-        n(wavelength): Calculates the refractive index of the material at a
-            given wavelength.
+        n(wavelength,temperature,pression): Calculates the refractive index of the material at a
+            given wavelength, temperature and pression.
         k(wavelength): Retrieves the extinction coefficient of the material at
             a given wavelength.
 
@@ -47,11 +47,13 @@ class MaterialFile(BaseMaterial):
         self.filename = filename
         self._k_warning_printed = False
         self.coefficients = []
+        self.thermdispcoef = []
         self._k_wavelength = None
         self._k = None
         self._n_formula = None
         self._n_wavelength = None
         self._n = None
+        self._t0 = None
         self.reference_data = None
 
         self.formula_map = {
@@ -71,19 +73,63 @@ class MaterialFile(BaseMaterial):
         data = self._read_file()
         self._parse_file(data)
 
-    def n(self, wavelength):
+    def n(self, wavelength, temperature = None, pressure = None):
         """Calculates the refractive index of the material at given wavelengths.
 
         Args:
             wavelength (float or be.ndarray): The wavelength(s) in microns.
-
+            temperature (float): The material temperature in degrees
+            pressure (float): The relative pressure
         Returns:
             float or be.ndarray: The refractive index(s) of the material.
 
-        """
-        func = self.formula_map[self._n_formula]
-        return func(wavelength)
+        """        
 
+        func = self.formula_map[self._n_formula]
+        
+        if temperature is not None and self._t0 is not None:
+            nair0 = self._nair(wavelength, self._t0, 1.0)
+            nairS = self._nair(wavelength, temperature, pressure)
+            n = func(wavelength*(nairS/nair0))
+            n = n*nair0
+            c = self.thermdispcoef
+            dt = temperature - self._t0
+            dn = c[0]*dt + c[1]*dt*dt + c[2]*dt*dt*dt + (c[3]*dt+c[4]*dt*dt)/(wavelength*wavelength-c[5]*c[5])
+            dn = dn*(n*n-1.)/(2.*n)
+            n = n + dn
+            n = n/nairS
+
+            return n
+        else:
+            n = func(wavelength)
+            
+            return n
+
+    def _nair(self,w,T,P):
+        """Compute the refractive index of air at a given wavelength 
+
+        Args:
+        ----------
+        w : (float or be.ndarray): The wavelength(s) in microns.
+            
+        T : float The temperature of air on degrees Celsius
+        
+        P : float Pressure (if P is None it assume P = 1)
+
+        Returns
+        -------
+        nair : TYPE
+            DESCRIPTION.
+
+        """
+
+        nref = 1. + (6432.8 + (2949810*(w**2))/(146*(w**2)-1) + (25540*(w**2))/(41*(w**2)-1))*1e-8
+        if P is None:
+            nair = 1. + (nref-1)/(1.+(T-15.)*3.4785/1000)
+        else:
+            nair = 1. + (nref-1)*P/(1.+(T-15.)*3.4785/1000)
+        return nair
+    
     def k(self, wavelength):
         """Retrieves the extinction coefficient of the material at a
         given wavelength. If no exxtinction coefficient data is found, it is
@@ -365,7 +411,19 @@ class MaterialFile(BaseMaterial):
                     self._n = arr[:, 1]
                     self._k = arr[:, 2]
                     self._set_formula_type(sub_data_type)
-
+         
+        try:
+            #reference temperature 
+            self._t0 = float(data['SPECS']['temperature'].split(' ')[0])
+            #thermal dispersion coefficents
+            coeff = data['SPECS']['thermal_dispersion'][0]
+            if coeff['type'].startswith("Schott"):
+                self.thermdispcoef = be.array(
+                    [float(k) for k in coeff["coefficients"].split()]
+                )
+                self.thermdispcoef = be.reshape(self.thermdispcoef, (-1, 1))
+        except KeyError:  
+            print("Thermal dispersion data not found")    
         # Parse reference info, if available
         with contextlib.suppress(KeyError):
             self.reference_data = data["REFERENCE"]
