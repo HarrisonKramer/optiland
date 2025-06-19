@@ -7,7 +7,7 @@ Kramer Harrison, 2025
 """
 
 import optiland.backend as be
-from optiland.psf import FFTPSF
+from optiland.psf.fft import FFTPSF, calculate_grid_size
 
 from .base import BaseMTF
 
@@ -26,8 +26,9 @@ class FFTMTF(BaseMTF):
             for the MTF calculation. Defaults to 'primary'.
         num_rays (int, optional): The number of rays to use for the PSF
             calculation, which is then used for MTF. Defaults to 128.
-        grid_size (int, optional): The size of the grid used for the PSF/MTF
-            calculation. Defaults to 1024.
+        grid_size (int or None, optional): The size of the grid used for the PSF/MTF
+            calculation. If `None`, the grid size will be calculated from `num_rays`
+            as documented in `optiland.psf.fft.FFTPSF`. Defaults to `None`.
         max_freq (str or float, optional): The maximum frequency for the MTF
             calculation. Defaults to 'cutoff'.
 
@@ -47,11 +48,14 @@ class FFTMTF(BaseMTF):
         fields="all",
         wavelength="primary",
         num_rays=128,
-        grid_size=1024,
+        grid_size=None,
         max_freq="cutoff",
     ):
-        self.num_rays = num_rays
-        self.grid_size = grid_size
+        if grid_size is None:
+            self.num_rays, self.grid_size = calculate_grid_size(num_rays)
+        else:
+            self.num_rays = num_rays
+            self.grid_size = grid_size
 
         super().__init__(optic, fields, wavelength)
 
