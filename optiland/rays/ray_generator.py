@@ -134,13 +134,16 @@ class RayGenerator:
 
             elif self.optic.field_type == "angle":
                 EPL = self.optic.paraxial.EPL()
-                z = self.optic.surface_group.positions[0]
-                x = -be.tan(be.radians(field_x)) * (EPL - z)
-                y = -be.tan(be.radians(field_y)) * (EPL - z)
+                z0 = self.optic.surface_group.positions[0]
+                x0 = -be.tan(be.radians(field_x)) * (EPL - z0)
+                y0 = -be.tan(be.radians(field_y)) * (EPL - z0)
 
-            x0 = be.full_like(Px, x)
-            y0 = be.full_like(Px, y)
-            z0 = be.full_like(Px, z)
+            if be.size(x0) == 1:
+                x0 = be.full_like(Px, x0)
+            if be.size(y0) == 1:
+                y0 = be.full_like(Px, y0)
+            if be.size(z0) == 1:
+                z0 = be.full_like(Px, z0)
 
         return x0, y0, z0
 
