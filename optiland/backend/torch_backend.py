@@ -370,6 +370,8 @@ def min(x):
         return x.detach().cpu().min().item()
     return np.min(x)
 
+def maximum(a, b): 
+    return torch.maximum(array(a), array(b))
 
 def nanmax(input_tensor, axis=None, keepdim=False):
     nan_mask = torch.isnan(input_tensor)
@@ -402,6 +404,41 @@ def all(x):
 
 def factorial(n):
     return torch.lgamma(array(n + 1)).exp()
+
+def histogram2d(x, y, bins, weights=None):
+    
+    if not isinstance(bins, (list, tuple)) or len(bins) != 2:
+        raise ValueError("`bins` must be a list or tuple of two edge tensors.")
+
+    x_edges, y_edges = bins[0], bins[1]
+    nx = x_edges.numel() - 1
+    ny = y_edges.numel() - 1
+
+    # torch.searchsorted finds the index of the first edge >= the sample value
+    x_indices = torch.searchsorted(x_edges, x, right=True) - 1
+    y_indices = torch.searchsorted(y_edges, y, right=True) - 1
+
+    
+    x_indices = torch.clamp(x_indices, 0, nx - 1)
+    y_indices = torch.clamp(y_indices, 0, ny - 1)
+
+    mask = (x >= x_edges[0]) & (x <= x_edges[-1]) & \
+           (y >= y_edges[0]) & (y <= y_edges[-1])
+
+    if weights is None:
+        weights = torch.ones_like(x)
+
+    # flatten the 2D bin indices into a 1D linear index
+    linear_indices = (y_indices[mask] * nx + x_indices[mask]).long()
+
+    # create a flattened histogram tensor and accumulate the weights
+    hist_flat = torch.zeros(nx * ny, device=x.device, dtype=weights.dtype)
+    hist_flat.index_add_(0, linear_indices, weights[mask])
+
+    # reshape the flat histogram to its 2D form.
+    hist = hist_flat.reshape(ny, nx).T
+
+    return hist, x_edges, y_edges
 
 
 # --------------------------
@@ -642,8 +679,10 @@ __all__ = [
     "deg2rad",
     "max",
     "min",
+    "maximum",
     "mean",
     "all",
+    "histogram2d",
     # Linear Algebra
     "matmul",
     "batched_chain_matmul3",
