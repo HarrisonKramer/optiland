@@ -426,8 +426,6 @@ class MaterialFile(BaseMaterial):
                     self._set_formula_type(sub_data_type)
 
         try:
-            # reference temperature
-            self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
             # thermal dispersion coefficents
             coeff = data["SPECS"]["thermal_dispersion"][0]
             if coeff["type"].startswith("Schott"):
@@ -435,6 +433,8 @@ class MaterialFile(BaseMaterial):
                     [float(k) for k in coeff["coefficients"].split()]
                 )
                 self.thermdispcoef = be.reshape(self.thermdispcoef, (-1, 1))
+            # reference temperature
+            self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
         except KeyError:
             print("Thermal dispersion data not found")
         # Parse reference info, if available
