@@ -1616,3 +1616,187 @@ class TestThroughFocusSpotDiagram:
         tf_spot.view()
         mock_show.assert_called_once()
         plt.close()
+
+# ------------------------------------------------------------------------------------------
+def read_zmx_file(file_path, skip_lines, cols=(0, 1)):
+    try:
+        data = np.loadtxt(file_path, skiprows=skip_lines, usecols=cols, encoding='utf-16')
+        if data.ndim == 1 and len(cols) == 2:
+            data = data.reshape(1, -1)
+        if data.shape[0] == 0:
+            return None, None
+        return data[:, 0], data[:, 1]
+    except Exception:
+        return None, None
+
+
+class ExtendedSource:
+    """
+    It generates rays based on a Gaussian distribution defined by the source parameters.
+    """
+
+    def __init__(self, mfd=10.4, wavelength=1.55, total_power=1.0):
+        """
+        Initializes the ExtendedSource with source-specific parameters.
+
+        Args:
+            mfd (float): Mode Field Diameter in micrometers (µm).
+            wavelength (float): Wavelength of the source in micrometers (µm).
+            total_power (float): Total optical power of the source in Watts (W).
+        """
+        self.mfd = mfd
+        self.wavelength = wavelength
+        self.total_power = total_power
+
+        w0_um = self.mfd / 2.0
+        s_L_rad = self.wavelength / (be.pi * w0_um)  # 1/e^2 angular radius in L-space (radians)
+
+        # convert units for Optiland 
+        s_x_mm = (w0_um * 1e-3)
+
+        # importance sampling
+        self.sigma_spatial_mm = s_x_mm / 2.0
+        self.sigma_angular_rad = s_L_rad / 2.0
+
+    def generate_rays(self, num_rays):
+        """
+        Returns:
+            RealRays: An object containing the generated rays.
+        """
+        # generate ray coordinates and angles
+        x_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
+        y_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
+        z_start = be.zeros(num_rays)
+
+        L_initial = be.random_normal(loc=0.0, scale=self.sigma_angular_rad, size=num_rays)
+        M_initial = be.random_normal(loc=0.0, scale=self.sigma_angular_rad, size=num_rays)
+
+        # filter for possible rays 
+        valid_mask = L_initial**2 + M_initial**2 < 1.0
+        x_start, y_start, z_start = x_start[valid_mask], y_start[valid_mask], z_start[valid_mask]
+        L_initial, M_initial = L_initial[valid_mask], M_initial[valid_mask]
+
+        num_valid_rays = be.size(L_initial)
+
+        # calculate power per ray 
+        power_per_ray = self.total_power / num_valid_rays
+        intensity_power_array = be.full((num_valid_rays,), power_per_ray)
+
+        N_initial = be.sqrt(be.maximum(be.array(0.0), 1.0 - L_initial**2 - M_initial**2))
+        wavelength_array = be.full((num_valid_rays,), self.wavelength)
+
+        rays = RealRays(
+            x=x_start, y=y_start, z=z_start,
+            L=L_initial, M=M_initial, N=N_initial,
+            intensity=intensity_power_array,
+            wavelength=wavelength_array
+        )
+        return rays
+
+
+@pytest.fixture
+def extended_source():
+    """Fixture to provide an instance of ExtendedSource."""
+    return ExtendedSource(mfd=10.4, wavelength=1.55, total_power=1.0)
+
+
+@pytest.fixture
+def system_1():
+    """A simple placeholder test system for RadiantIntensity analysis."""
+    class TestSystemForIntensity(Optic):
+        def __init__(self):
+            
+            from optiland.materials import Material
+            super().__init__(name="System 1 for Intensity")
+            
+            self.set_aperture(aperture_type="objectNA", value=0.095)
+
+            self.set_field_type(field_type="angle")
+            self.add_field(y=0)
+
+            self.add_wavelength(value=1.55, is_primary=True)
+    
+            H_K3 = Material("H-K3", reference="cdgm")
+
+            apt_detector = RectangularAperture(-30, 30, -30, 30)
+            
+            self.add_surface(index=0, thickness=0)
+            self.add_surface(index=1, thickness=0.01) # test here
+            self.add_surface(index=2, thickness=129.6554)
+            self.add_surface(index=3, thickness=4, radius=131.9743, is_stop=True, material=H_K3)
+            self.add_surface(index=4, thickness=10.0, radius=-131.9743)
+            self.add_surface(index=5, aperture=apt_detector) # test here
+            
+    return TestSystemForIntensity()
+
+class TestRadiantIntensity:
+
+    @pytest.mark.parametrize("reference_surface_index, filename, max_angle",
+        [(1, r"tests/zemax_files/sph_lens_coll_intensity_free_prop.txt", 12), 
+         (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
+        ])
+    def test_intensity_output_values(
+        self, set_test_backend, system_1, extended_source, filename, reference_surface_index, max_angle
+    ):
+        
+        rays_to_trace = extended_source.generate_rays(num_rays=1_000_000)
+
+        analysis_angle_max = max_angle
+        intensity_analysis = analysis.RadiantIntensity(
+            optic=system_1,
+            user_initial_rays=rays_to_trace,
+            num_angular_bins_X=101,
+            num_angular_bins_Y=101,
+            angle_X_min=-analysis_angle_max, angle_X_max=analysis_angle_max,
+            angle_Y_min=-analysis_angle_max, angle_Y_max=analysis_angle_max,
+            reference_surface_index=reference_surface_index,
+            use_absolute_units=True,
+        )
+
+        optiland_map_be, _, _, optiland_angle_X_be, optiland_angle_Y_be = intensity_analysis.data[0][0]
+        optiland_map = be.to_numpy(optiland_map_be)
+        optiland_angles_x = be.to_numpy(optiland_angle_X_be)
+        optiland_angles_y = be.to_numpy(optiland_angle_Y_be)
+
+        central_y_idx = np.argmin(np.abs(optiland_angles_y))
+        optiland_cross_section = optiland_map[:, central_y_idx]
+
+        zemax_angles, zemax_intensity = read_zmx_file(filename, skip_lines=26, cols=(0, 1))
+
+        print(f"Zemax angles: {zemax_angles}")
+        print(f"Zemax intensity: {zemax_intensity}")
+
+        assert zemax_intensity is not None, f"Failed to load intensity data from Zemax file: {filename}"
+        assert zemax_angles is not None, f"Failed to load angle data from Zemax file: {filename}"
+
+        # compare the two datasets
+        # normalize both datasets to their peak for shape comparison
+        if np.max(optiland_cross_section) > 0:
+            optiland_cross_section /= np.max(optiland_cross_section)
+        
+        if np.max(zemax_intensity) > 0:
+            zemax_intensity /= np.max(zemax_intensity)
+            
+        # interpolate Optiland data onto the Zemax angle coordinates for direct comparison
+        interpolated_optiland_intensity = np.interp(
+            zemax_angles, optiland_angles_x, optiland_cross_section
+        )
+
+        # Assert that the interpolated Optiland data is close to the Zemax data
+        assert_allclose(interpolated_optiland_intensity, zemax_intensity, atol=0.1, rtol=0.1)
+
+
+    @patch("matplotlib.pyplot.show")
+    def test_view_intensity(self, mock_show, set_test_backend, system_1):
+        """
+        Tests the view() method of RadiantIntensity to ensure it runs without error.
+        """
+        radiant_intensity = analysis.RadiantIntensity(
+            system_1,
+            num_rays=50,
+            num_angular_bins_X=11,
+            num_angular_bins_Y=11
+        )
+        radiant_intensity.view()
+        mock_show.assert_called_once()
+        plt.close()
