@@ -94,8 +94,60 @@ def _initialize_alphas_q(cs, x, alphas, j=0):
             alphas = be.zeros(shape)
     return alphas
 
+def _clenshaw_qbfs_functional(bs, usq):
+    """
+    Pure-functional Clenshaw that returns (S, alpha0, alpha1).
+    This version is fixed to handle broadcasting correctly, resolving the stack error,
+    and returns the 3 values expected by the caller.
+    """
+    M = len(bs) - 1
+    prefix = 2 - 4 * usq
+
+    if M < 0:
+        zeros = be.zeros_like(usq)
+        return zeros, zeros, zeros
+
+    # FIX: Ensure b_curr and b_next are broadcast to the shape of usq from the start.
+    b_curr = bs[M] + usq * 0
+    b_next = be.zeros_like(b_curr)
+
+    # Loop from M-1 down to 0 for the recurrence
+    for n in range(M - 1, -1, -1):
+        b_new = bs[n] + prefix * b_curr - b_next
+        b_next, b_curr = b_curr, b_new
+
+    alpha0, alpha1 = b_curr, b_next
+    S = 2 * (alpha0 + alpha1) if M > 0 else 2 * alpha0
+    
+    # This now returns the BARE polynomial sum S, and the final alpha values
+    # The prefactor is applied by the caller
+    return S, alpha0, alpha1
 
 def clenshaw_qbfs(cs, usq, alphas=None):
+    if be.get_backend() == "torch":
+        bs = change_basis_Qbfs_to_Pn(cs)
+        # Unpacking now works because _clenshaw_qbfs_functional returns 3 values
+        S, alpha0, alpha1 = _clenshaw_qbfs_functional(bs, usq)
+        
+        # If the caller (clenshaw_qbfs_der) supplied a buffer, fill it
+        if alphas is not None:
+            M = len(bs) - 1
+            # Construct the list of tensors to stack. All elements are now guaranteed
+            # to be tensors of the correct shape, fixing the stack error.
+            if M == 0:
+                fill = [alpha0]
+            elif M > 0:
+                fill = [alpha0, alpha1] + [be.zeros_like(alpha0)] * (M - 1)
+            else: # M < 0
+                fill = []
+
+            if fill:
+                alphas[...] = be.stack(fill)
+        
+        # Apply the Forbes pre-factor here, as in the original NumPy path
+        return usq * (1 - usq) * S
+
+    # ─ NumPy backend – keep original fast in-place path ─
     x = usq
     bs = change_basis_Qbfs_to_Pn(cs)
     alphas = _initialize_alphas_q(cs, x, alphas, j=0)
@@ -108,7 +160,6 @@ def clenshaw_qbfs(cs, usq, alphas=None):
         alphas[M - 1] = bs[M - 1] + prefix * alphas[M]
     for i in range(M - 2, -1, -1):
         alphas[i] = bs[i] + prefix * alphas[i + 1] - alphas[i + 2]
-
     S = 2 * (alphas[0] + alphas[1]) if M > 0 else 2 * alphas[0]
     return (x * (1 - x)) * S
 
