@@ -163,7 +163,6 @@ class FFTMTF(BaseMTF):
             float: The MTF units calculated based on the grid size, number
                 of rays, wavelength (from BaseMTF), and FNO.
         """
-        Q = self.grid_size / self.num_rays
-        dx = Q / (self.resolved_wavelength * self.FNO)
+        dx = 1 / (self.num_rays * self.resolved_wavelength * 1e-3 * self.FNO)
 
         return dx
