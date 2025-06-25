@@ -185,7 +185,7 @@ class OpticUpdater:
         ]:
             surface.geometry.norm_x = surface.semi_aperture * 1.1
             surface.geometry.norm_y = surface.semi_aperture * 1.1
-        if surface.surface_type == "zernike":
+        if surface.surface_type in ["zernike", "forbes"]:
             surface.geometry.norm_radius = surface.semi_aperture * 1.1
 
     def update(self) -> None:
@@ -197,7 +197,7 @@ class OpticUpdater:
         self.optic.solves.apply()
 
         if any(
-            surface.surface_type in ["chebyshev", "zernike"]
+            surface.surface_type in ["chebyshev", "zernike", "forbes"]
             for surface in self.optic.surface_group.surfaces
         ):
             self.update_paraxial()

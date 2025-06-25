@@ -247,6 +247,9 @@ def newaxis():
 def array_equal(a, b):
     return torch.equal(a, b)
 
+def shape(tensor):
+    """Returns the shape of a tensor."""
+    return tensor.shape
 
 # --------------------------
 # Shape and Indexing
@@ -627,6 +630,7 @@ __all__ = [
     "roll",
     "unsqueeze_last",
     "tile",
+    "shape",
     # Random
     "default_rng",
     "random_uniform",

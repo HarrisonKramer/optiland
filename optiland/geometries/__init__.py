@@ -5,6 +5,7 @@ surfaces."""
 from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
+from .forbes import ForbesGeometry
 from .even_asphere import EvenAsphere
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
@@ -21,6 +22,8 @@ __all__ = [
     "BiconicGeometry",
     # From chebyshev.py
     "ChebyshevPolynomialGeometry",
+    # From forbes.py
+    "ForbesGeometry",
     # From even_asphere.py
     "EvenAsphere",
     # From newton_raphson.py

@@ -4,7 +4,7 @@ import numpy as np
 from optiland.optic import Optic
 from optiland.materials import Material, IdealMaterial
 from optiland import geometries
-from optiland.geometries import BiconicGeometry
+from optiland.geometries import BiconicGeometry, ForbesGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
 from .utils import assert_allclose
@@ -1026,8 +1026,7 @@ class TestToroidalGeometry:
 
         # Trace Y-Fan Rays
         rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
-        print("Y-Fan Rays:")
-        print(rays_out_yfan.y)
+    
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
             [
@@ -1399,3 +1398,161 @@ class TestBiconicGeometry:
         assert (
             geom.max_iter == 100
         )  # Default from NewtonRaphsonGeometry via BiconicGeometry
+
+def forbes_system():
+    lens = Optic()
+    lens.set_aperture(aperture_type="EPD", value=4.0)
+    lens.set_field_type(field_type="angle")
+    lens.add_field(y=0)
+    lens.add_wavelength(value=1.55, is_primary=True)
+    H_K3 = Material("H-K3", reference="cdgm")
+    H_ZLAF68C = Material("H-ZLAF68C", reference="cdgm")
+    coeffs_S2 = [1.614, 0.348, 0.150, 0.033, 0.030]
+    forbes_coeffs_n_S2 = [(n, 0) for n in range(len(coeffs_S2))]
+    norm_radius_S2 = 6.336
+    conic_S2 = -4.428
+    coeffs_S4 = [-0.270, 0.087, -0.048, 0.026, -0.012]
+    forbes_coeffs_n_S4 = [(n, 0) for n in range(len(coeffs_S4))]
+    conic_S4 = 0.038
+    norm_radius_S4 = 10.0        
+    lens.add_surface(index=0, thickness=0.055)
+    lens.add_surface(index=1, thickness=26.5)
+    lens.add_surface(index=2, thickness=4.0, radius=be.inf, material=H_K3, is_stop=True)
+    lens.add_surface(index=3, thickness=25.0, radius=22, conic=conic_S2, forbes_coeffs_n=forbes_coeffs_n_S2, forbes_coeffs_c=coeffs_S2, forbes_norm_radius=norm_radius_S2, surface_type="forbes") 
+    lens.add_surface(index=4, thickness=7.0, radius=be.inf, material=H_ZLAF68C)
+    lens.add_surface(index=5, thickness=10.0, radius=-31.0, conic=conic_S4, forbes_coeffs_n=forbes_coeffs_n_S4, forbes_coeffs_c=coeffs_S4, forbes_norm_radius=norm_radius_S4, surface_type="forbes")
+    lens.add_surface(index=6)
+    return lens
+    
+
+class TestForbesGeometry:
+    def test_str(self, set_test_backend):
+        """Test the string representation of the geometry."""
+        cs = CoordinateSystem()
+        geometry = ForbesGeometry(cs, radius=100.0)
+        assert str(geometry) == "Forbes"
+
+
+    def test_sag_vs_zemax(self, set_test_backend):
+        """
+        Tests the sag calculation for a Q-bfs surface. This test ensures the coefficient translation 
+        and sag calculations are correct.
+        """
+        
+        zemax_radius = 21.723
+        zemax_conic = -4.428
+        zemax_norm_radius = 6.336
+        # Coefficients for n=0, 1, 2 (A0, A1, A2, A3, A4)
+        zemax_coeffs = [1.614, 0.348, 0.150, 0.033, 0.030] 
+        
+        
+        y_coords = be.array([0.75, 1.0, 1.250, 1.860])
+        # Corresponding sag values from Zemax's analysis
+        zemax_sag_values = be.array([6.264589454579239E-002, 1.087513671806328E-001, 1.648670855850376E-001, 3.307314239746402E-001])
+        
+        # Translate Zemax 1D coefficients to Optiland's (n, m) format for Q-bfs (m=0)
+        forbes_coeffs_c = zemax_coeffs
+        forbes_coeffs_n = [(n, 0) for n in range(len(zemax_coeffs))]
+
+        geometry = ForbesGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=zemax_radius,
+            conic=zemax_conic,
+            coeffs_n=forbes_coeffs_n,
+            coeffs_c=forbes_coeffs_c,
+            norm_radius=zemax_norm_radius,
+        )
+
+        # Calculate sag in Optiland at the same radial coordinates
+        # Using x=r_coords and y=0 for simplicity, as sag is symmetric for Q-bfs
+        optiland_sag_values = geometry.sag(y=y_coords, x=be.zeros_like(y_coords))
+        
+        # Compare the results
+        be.allclose(optiland_sag_values, zemax_sag_values, atol=1e-9, rtol=1e-9)
+
+    def test_surface_normal_at_vertex(self, set_test_backend):
+        """
+        Tests the surface normal at the vertex (x=0, y=0).
+        It should always be [0, 0, -1] regardless of parameters.
+        """
+        geometry = ForbesGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=50.0,
+            conic=-1.0,
+            coeffs_n=[(2, 1)], # A non-symmetric term
+            coeffs_c=[1e-4],
+            norm_radius=10.0
+        )
+        
+        nx, ny, nz = geometry._surface_normal(x=0.0, y=0.0)
+        
+        assert_allclose(nx, 0.0, atol=1e-9)
+        assert_allclose(ny, 0.0, atol=1e-9)
+        assert_allclose(nz, -1.0, atol=1e-9)
+        
+    def test_tracing(self, set_test_backend):
+        system = forbes_system()
+
+        test_rays = RealRays(
+            x=be.array([0.0, 0.0, 0.0]),
+            y=be.array([-2.0, 0.0, 2.0]),
+            z=be.array([0.0, 0.0, 0.0]),
+            L=be.array([0.0, 0.0, 0.0]),
+            M=be.array([0.0, 0.0, 0.0]),
+            N=be.array([1.0, 1.0, 1.0]),
+            wavelength=be.ones(3)*1.550,
+            intensity=be.ones(3)
+        )
+
+        zmx_rays_x = be.array([0.0, 0.0, 0.0])
+        zmx_rays_y = be.array([-5.863214938651272E+000, 0.0, 5.863214938651272E+000])
+        zmx_rays_z = be.array([72.5, 72.5, 72.5])
+        zmx_rays_L = be.array([0.0, 0.0, 0.0])
+        zmx_rays_M = be.array([3.128052326230352E-002, 0.0, -3.128052326230352E-002])
+        zmx_rays_N = be.array([9.995106446979125E-001, 1.0, 9.995106446979125E-001])
+
+        rays_out = system.surface_group.trace(test_rays)
+        
+        assert be.allclose(rays_out.x, zmx_rays_x, rtol=1e-7, atol=1e-7)
+        assert be.allclose(rays_out.y, zmx_rays_y, rtol=1e-7, atol=1e-7)
+        assert be.allclose(rays_out.z, zmx_rays_z, rtol=1e-7, atol=1e-7)
+        assert be.allclose(rays_out.L, zmx_rays_L, rtol=1e-7, atol=1e-7)
+        assert be.allclose(rays_out.M, zmx_rays_M, rtol=1e-7, atol=1e-7)
+        assert be.allclose(rays_out.N, zmx_rays_N, rtol=1e-7, atol=1e-7)
+        
+        
+    def test_to_dict_from_dict(self, set_test_backend):
+        """
+        Tests the serialization and deserialization of the ForbesGeometry
+        to ensure all parameters are correctly saved and loaded.
+        """
+        cs = CoordinateSystem(x=1, y=-1, z=10, rx=0.01, ry=0.02, rz=-0.03)
+        coeffs_n = [(0, 0), (1, 1), (2, -1)]
+        coeffs_c = [1e-3, 2e-4, -5e-5]
+        
+        original_geometry = ForbesGeometry(
+            coordinate_system=cs,
+            radius=123.4,
+            conic=-0.9,
+            coeffs_n=coeffs_n,
+            coeffs_c=coeffs_c,
+            norm_radius=45.6,
+            tol=1e-12,
+            max_iter=75,
+        )
+
+        geom_dict = original_geometry.to_dict()
+
+        # Check serialization
+        assert geom_dict['type'] == 'ForbesGeometry'
+        assert geom_dict['radius'] == 123.4
+        assert geom_dict['conic'] == -0.9
+        assert geom_dict['coeffs_n'] == coeffs_n
+        assert_allclose(be.array(geom_dict['coeffs_c']), be.array(coeffs_c))
+        assert geom_dict['norm_radius'] == 45.6
+        assert geom_dict['tol'] == 1e-12
+        assert geom_dict['max_iter'] == 75
+
+        # Check deserialization
+        reconstructed_geometry = ForbesGeometry.from_dict(geom_dict)
+        assert reconstructed_geometry.to_dict() == geom_dict
