@@ -87,7 +87,11 @@ def _initialize_alphas_q(cs, x, alphas, j=0):
         shape = (len(cs), *be.shape(x)) if hasattr(x, 'shape') else (len(cs),)
         if j != 0:
             shape = (j + 1, *shape)
-        alphas = be.zeros(shape)
+        if be.get_backend() == 'torch':
+            alphas = be.zeros(shape)
+            alphas.requires_grad = False
+        else:
+            alphas = be.zeros(shape)
     return alphas
 
 
