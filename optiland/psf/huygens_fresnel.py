@@ -85,7 +85,7 @@ class HuygensPSF(BasePSF):
         extent_geometric = be.max(be.hypot(rx - self.cx, ry - self.cy))
         extent_ideal = (
             num_Airy_disks
-            * self._get_effective_FNO()  # effective F-number
+            * self._get_working_FNO()  # effective F-number
             * 1.22
             * (self.wavelengths[0] * 1e-3)  # um --> mm
         )
