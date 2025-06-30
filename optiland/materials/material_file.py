@@ -36,8 +36,8 @@ class MaterialFile(BaseMaterial):
             refractive index.
 
     Methods:
-        n(wavelength,temperature,pression): Calculates the refractive index of the material at a
-            given wavelength, temperature and pression.
+        n(wavelength, temperature, pressure): Calculates the refractive index of the
+            material at a given wavelength, temperature and pressure.
         k(wavelength): Retrieves the extinction coefficient of the material at
             a given wavelength.
 
@@ -354,7 +354,7 @@ class MaterialFile(BaseMaterial):
         n = c[0] + c[1] / (w**2 - c[2]) + c[3] * (w - c[4]) / ((w - c[4]) ** 2 + c[5])
         return be.sqrt(n)
 
-    def _tabulated_n(self, w: float or be.ndarray) -> float or be.ndarray:
+    def _tabulated_n(self, w):
         """Calculate the refractive index using tabulated data.
 
         Args:
