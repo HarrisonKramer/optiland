@@ -96,7 +96,11 @@ class MaterialFile(BaseMaterial):
         base_relative_n = self.formula_map[self._n_formula](wavelength)
 
         # Apply environmental corrections only if temperature data is available.
-        if temperature is not None and self._t0 is not None and self.thermdispcoef:
+        if (
+            temperature is not None
+            and self._t0 is not None
+            and be.any(self.thermdispcoef)
+        ):
             return self._apply_environmental_correction(
                 base_relative_n, wavelength, temperature, pressure
             )
