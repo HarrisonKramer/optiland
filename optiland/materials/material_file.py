@@ -111,21 +111,16 @@ class MaterialFile(BaseMaterial):
             return n
 
     def _nair(self, w, T, P):
-        """Compute the refractive index of air at a given wavelength
+        """
+        Compute the refractive index of air at a given wavelength.
 
         Args:
-        ----------
-        w : (float or be.ndarray): The wavelength(s) in microns.
+            w (float or be.ndarray): The wavelength(s) in microns.
+            T (float): The temperature of air in degrees Celsius.
+            P (float): Pressure. If None, assumes P = 1.
 
-        T : float The temperature of air on degrees Celsius
-
-        P : float Pressure (if P is None it assume P = 1)
-
-        Returns
-        -------
-        nair : TYPE
-            DESCRIPTION.
-
+        Returns:
+            float or be.ndarray: The refractive index of air.
         """
 
         nref = (
