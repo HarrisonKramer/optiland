@@ -39,14 +39,16 @@ class GaussianApodization(BaseApodization):
     def from_dict(cls, data):
         """Creates an instance of GaussianApodization from a dictionary.
 
+        Note:
+            The dictionary must contain the key "sigma" with a positive float value.
+            Otherwise, it defaults to 1.0.
+
         Args:
             data (dict): A dictionary representation of the apodization.
 
         Returns:
             GaussianApodization: An instance of the GaussianApodization class.
         """
-        # Provide a default for sigma if not present for backward compatibility
-        # or if a user forgets to add it, though __init__ has a default too.
         return cls(sigma=data.get("sigma", 1.0))
 
     def apply(self, Px, Py):
