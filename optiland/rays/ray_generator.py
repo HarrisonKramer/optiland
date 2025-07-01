@@ -133,8 +133,8 @@ class RayGenerator:
             z0 = be.full_like(Px, z)
         else:
             if self.optic.field_type == "object_height":
-                x0 = field_x
-                y0 = field_y
+                x0 = be.array(field_x)
+                y0 = be.array(field_y)
                 z0 = obj.geometry.sag(x0, y0) + obj.geometry.cs.z
 
             elif self.optic.field_type == "angle":
