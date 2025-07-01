@@ -2,9 +2,6 @@ import pytest
 import optiland.backend as be
 from optiland.apodization import UniformApodization, GaussianApodization, Apodization
 
-# Mock backend if necessary for testing, or use actual backend
-# For this example, we assume 'be.array' and 'be.ones_like' and 'be.exp'
-# are available and work as expected (e.g., with numpy backend).
 
 def test_uniform_apodization_get_intensity():
     apod = UniformApodization()
@@ -20,6 +17,7 @@ def test_uniform_apodization_get_intensity():
     py_array = be.array([-1.0, 0.0, 1.0])
     intensity_array = apod.get_intensity(px_array, py_array)
     assert be.all(intensity_array == be.ones_like(px_array)), "Intensity should be all ones for UniformApodization with array inputs"
+
 
 def test_gaussian_apodization_get_intensity():
     sigma = 0.5
@@ -51,16 +49,19 @@ def test_apodization_to_dict_uniform():
     data = apod.to_dict()
     assert data == {"type": "UniformApodization"}
 
+
 def test_apodization_to_dict_gaussian():
     sigma = 0.75
     apod = GaussianApodization(sigma=sigma)
     data = apod.to_dict()
     assert data == {"type": "GaussianApodization", "sigma": sigma}
 
+
 def test_apodization_from_dict_uniform():
     data = {"type": "UniformApodization"}
     apod = Apodization.from_dict(data)
     assert isinstance(apod, UniformApodization)
+
 
 def test_apodization_from_dict_gaussian():
     sigma = 0.6
@@ -69,11 +70,13 @@ def test_apodization_from_dict_gaussian():
     assert isinstance(apod, GaussianApodization)
     assert apod.sigma == sigma
 
+
 def test_apodization_from_dict_gaussian_default_sigma():
     data = {"type": "GaussianApodization"} # Missing sigma
     apod = Apodization.from_dict(data)
     assert isinstance(apod, GaussianApodization)
     assert apod.sigma == 1.0 # Default sigma
+
 
 def test_apodization_from_dict_unknown():
     data = {"type": "UnknownApodization"}

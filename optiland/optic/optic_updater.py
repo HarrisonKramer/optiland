@@ -10,6 +10,7 @@ Kramer Harrison, 2024
 from typing import Union
 
 import optiland.backend as be
+from optiland.apodization import BaseApodization
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
 from optiland.rays import PolarizationState
@@ -258,3 +259,19 @@ class OpticUpdater:
 
         # 6. Update Optic instance
         self.update()
+
+    def set_apodization(self, apodization_instance: BaseApodization = None):
+        """Sets the apodization for the optical system.
+
+        Args:
+            apodization_instance (Apodization, optional): The apodization
+                object to apply. If None, no apodization is applied.
+                Defaults to None.
+        """
+        if apodization_instance is not None or not isinstance(
+            apodization_instance, BaseApodization
+        ):
+            raise TypeError(
+                "apodization_instance must be None or of type BaseApodization."
+            )
+        self.optic.apodization = apodization_instance

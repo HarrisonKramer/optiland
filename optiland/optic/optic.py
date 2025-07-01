@@ -16,7 +16,7 @@ from typing import Union
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
-from optiland.apodization import Apodization, UniformApodization
+from optiland.apodization import BaseApodization
 from optiland.fields import Field, FieldGroup
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
@@ -66,7 +66,7 @@ class Optic:
 
         self.polarization = "ignore"
 
-        self.apodization = UniformApodization()
+        self.apodization = None
         self.pickups = PickupManager(self)
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
@@ -270,13 +270,13 @@ class Optic:
         """
         self._updater.set_polarization(polarization)
 
-    def set_apodization(self, apodization: Apodization):
+    def set_apodization(self, apodization: BaseApodization):
         """Set the apodization of the optical system.
 
         Args:
             apodization (Apodization): The apodization object to set.
         """
-        if not isinstance(apodization, Apodization):
+        if apodization is None or not isinstance(apodization, BaseApodization):
             raise ValueError(
                 "Invalid apodization type. Must be an instance of Apodization."
             )
@@ -506,9 +506,7 @@ class Optic:
 
         apodization_data = data.get("apodization")
         if apodization_data:
-            optic.apodization = Apodization.from_dict(apodization_data)
-        else:
-            optic.apodization = UniformApodization()
+            optic.apodization = BaseApodization.from_dict(apodization_data)
 
         optic.pickups = PickupManager.from_dict(optic, data["pickups"])
         optic.solves = SolveManager.from_dict(optic, data["solves"])
