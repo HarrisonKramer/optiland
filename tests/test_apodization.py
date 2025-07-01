@@ -1,6 +1,6 @@
 import pytest
 import optiland.backend as be
-from optiland.apodization import UniformApodization, GaussianApodization, Apodization
+from optiland.apodization import UniformApodization, GaussianApodization, BaseApodization
 
 
 def test_uniform_apodization_get_intensity():
@@ -59,21 +59,21 @@ def test_apodization_to_dict_gaussian():
 
 def test_apodization_from_dict_uniform():
     data = {"type": "UniformApodization"}
-    apod = Apodization.from_dict(data)
+    apod = BaseApodization.from_dict(data)
     assert isinstance(apod, UniformApodization)
 
 
 def test_apodization_from_dict_gaussian():
     sigma = 0.6
     data = {"type": "GaussianApodization", "sigma": sigma}
-    apod = Apodization.from_dict(data)
+    apod = BaseApodization.from_dict(data)
     assert isinstance(apod, GaussianApodization)
     assert apod.sigma == sigma
 
 
 def test_apodization_from_dict_gaussian_default_sigma():
     data = {"type": "GaussianApodization"} # Missing sigma
-    apod = Apodization.from_dict(data)
+    apod = BaseApodization.from_dict(data)
     assert isinstance(apod, GaussianApodization)
     assert apod.sigma == 1.0 # Default sigma
 
@@ -81,4 +81,4 @@ def test_apodization_from_dict_gaussian_default_sigma():
 def test_apodization_from_dict_unknown():
     data = {"type": "UnknownApodization"}
     with pytest.raises(ValueError):
-        Apodization.from_dict(data)
+        BaseApodization.from_dict(data)
