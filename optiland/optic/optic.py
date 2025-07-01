@@ -276,11 +276,7 @@ class Optic:
         Args:
             apodization (Apodization): The apodization object to set.
         """
-        if apodization is None or not isinstance(apodization, BaseApodization):
-            raise ValueError(
-                "Invalid apodization type. Must be an instance of Apodization."
-            )
-        self.apodization = apodization
+        self._updater.set_apodization(apodization)
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.

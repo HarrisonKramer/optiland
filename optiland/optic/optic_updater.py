@@ -268,7 +268,7 @@ class OpticUpdater:
                 object to apply. If None, no apodization is applied.
                 Defaults to None.
         """
-        if apodization_instance is not None or not isinstance(
+        if apodization_instance is not None and not isinstance(
             apodization_instance, BaseApodization
         ):
             raise TypeError(
