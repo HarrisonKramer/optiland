@@ -184,8 +184,8 @@ def test_get_units_finite_obj(make_fftpsf):
     fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
     image = be.zeros((128, 128))
     x, y = fftpsf._get_psf_units(image)
-    assert_allclose(x, 385.84203124)
-    assert_allclose(y, 385.84203124)
+    assert_allclose(x, 382.82764038)
+    assert_allclose(y, 382.82764038)
 
 
 def test_psf_log_tick_formatter(make_fftpsf):
