@@ -9,6 +9,7 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+from tests.utils import assert_allclose
 
 
 def singlet_infinite_object():
@@ -489,3 +490,53 @@ class TestOptic:
             Hx=0, Hy=0, distribution="random", num_rays=42, wavelength=0.5
         )
         assert rays is not None
+
+    def test_invalid_coordinate_system(self, set_test_backend):
+        with pytest.raises(ValueError):
+            self.optic.add_surface(index=0, radius=be.inf, z=-100)
+            self.optic.add_surface(
+                index=1, radius=be.inf, z=0, dx=15
+            )  # cannot use dx or dy with abs. z
+
+    def test_flip_optic(self, set_test_backend):
+        lens = HeliarLens()
+        lens.surface_group.set_fresnel_coatings()
+        radii_orig = be.copy(lens.surface_group.radii)
+        radii_orig = radii_orig[~be.isinf(radii_orig)]  # ignore inf
+        n_orig = be.copy(lens.n(0.55))
+        lens.flip()
+        radii_flipped = be.copy(lens.surface_group.radii)
+        radii_flipped = radii_flipped[~be.isinf(radii_flipped)]  # ignore inf
+        n_flipped = be.copy(lens.n(0.55))
+        assert_allclose(radii_orig, -be.flip(radii_flipped))
+        assert_allclose(n_orig[:-1], be.flip(n_flipped[:-1]))
+
+    def test_invalid_flip(self, set_test_backend):
+        lens = Optic()
+        with pytest.raises(ValueError):
+            lens.flip()
+
+    def test_flip_solves_pickups(self, set_test_backend):
+        lens = Optic()
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(index=1, radius=100, thickness=4, material="SK16", is_stop=True)
+        lens.add_surface(index=2, radius=-1000, thickness=20)
+        lens.add_surface(index=3)
+        lens.set_aperture(aperture_type="EPD", value=10.0)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_wavelength(value=0.5876, is_primary=True)
+
+        lens.solves.add("quick_focus")
+        lens.pickups.add(
+            source_surface_idx=1,
+            attr_type="radius",
+            target_surface_idx=2,
+            scale=-1,
+            offset=0,
+        )
+        lens.update()
+        lens.flip()
+        assert lens.pickups.pickups[0].source_surface_idx == 2
+        assert lens.pickups.pickups[0].target_surface_idx == 1

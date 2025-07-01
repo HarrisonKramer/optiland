@@ -40,17 +40,21 @@ class EvenAsphere(NewtonRaphsonGeometry):
     the optical axis.
 
     Args:
-        coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of curvature of the geometry.
-        conic (float, optional): The conic constant of the geometry.
+        coordinate_system (CoordinateSystem): The coordinate system of the geometry.
+        radius (float): The radius of curvature of the base sphere.
+        conic (float, optional): The conic constant of the base sphere.
             Defaults to 0.0.
-        tol (float, optional): The tolerance value used in calculations.
+        tol (float, optional): Tolerance for Newton-Raphson iteration.
             Defaults to 1e-10.
-        max_iter (int, optional): The maximum number of iterations used in
-            calculations. Defaults to 100.
-        coefficients (list, optional): The coefficients of the asphere.
-            Defaults to an empty list, indicating no aspheric coefficients are
-            used.
+        max_iter (int, optional): Maximum iterations for Newton-Raphson.
+            Defaults to 100.
+        coefficients (list[float], optional): A list of even aspheric
+            coefficients C_i, where the term is C_i * r^(2i).
+            The list index corresponds to i-1 (e.g., coefficients[0] is C_1 for r^2).
+            Defaults to an empty list (no aspheric contribution).
+
+    Attributes:
+        c (list[float]): List of aspheric coefficients.
 
     """
 
@@ -77,13 +81,11 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """Calculates the sag of the asphere at the given coordinates.
 
         Args:
-            x (float, be.ndarray, optional): The x-coordinate(s).
-                Defaults to 0.
-            y (float, be.ndarray, optional): The y-coordinate(s).
-                Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            float: The sag value at the given coordinates.
+            be.ndarray or float: The sag value(s) at the given coordinates.
 
         """
         r2 = x**2 + y**2
@@ -98,11 +100,12 @@ class EvenAsphere(NewtonRaphsonGeometry):
         position.
 
         Args:
-            x (be.ndarray): The x values to use for calculation.
-            y (be.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x-coordinate(s) at which to calculate the normal.
+            y (be.ndarray): The y-coordinate(s) at which to calculate the normal.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The surface normal
+            components (nx, ny, nz).
 
         """
         r2 = x**2 + y**2
@@ -143,7 +146,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
             data (dict): The dictionary representation of the asphere.
 
         Returns:
-            EvenAsphere: The asphere.
+            EvenAsphere: An instance of EvenAsphere.
 
         """
         required_keys = {"cs", "radius"}

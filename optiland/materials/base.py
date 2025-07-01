@@ -25,11 +25,14 @@ class BaseMaterial(ABC):
         None
 
     Methods:
-        n(wavelength): Abstract method to calculate the refractive index at a
-            given wavelength in microns.
-        k(wavelength): Abstract method to calculate the extinction coefficient
-            at a given wavelength in microns.
-        abbe(): Method to calculate the Abbe number of the material.
+        n(wavelength: float or be.ndarray) -> float or be.ndarray:
+            Abstract method to calculate the refractive index at a given
+            wavelength(s) in microns.
+        k(wavelength: float or be.ndarray) -> float or be.ndarray:
+            Abstract method to calculate the extinction coefficient at a given
+            wavelength(s) in microns.
+        abbe() -> float:
+            Method to calculate the Abbe number of the material.
 
     """
 
@@ -41,24 +44,40 @@ class BaseMaterial(ABC):
         BaseMaterial._registry[cls.__name__] = cls
 
     @abstractmethod
-    def n(self, wavelength):
+    def n(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+        """Calculates the refractive index at a given wavelength.
+
+        Args:
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+
+        Returns:
+            float or be.ndarray: The refractive index at the given wavelength(s).
+        """
         pass  # pragma: no cover
 
     @abstractmethod
-    def k(self, wavelength):
-        pass  # pragma: no cover
+    def k(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+        """Calculates the extinction coefficient at a given wavelength.
 
-    def abbe(self):
-        """Calculate the Abbe number of the material.
-
-        The Abbe number is a measure of the dispersion of a material, defined
-        as the difference in refractive index between the D-line
-        (wavelength = 0.5893 μm) and the F-line (wavelength = 0.4861 μm)
-        divided by the difference between the F-line and the C-line
-        (wavelength = 0.6563 μm).
+        Args:
+            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            The Abbe number of the material.
+            float or be.ndarray: The extinction coefficient at the given
+            wavelength(s).
+        """
+        pass  # pragma: no cover
+
+    def abbe(self) -> float:
+        """Calculate the Abbe number (Vd) of the material.
+
+        The Abbe number is a measure of the material's dispersion, defined as
+        Vd = (n_d - 1) / (n_F - n_C), where n_d, n_F, and n_C are the
+        refractive indices at the Fraunhofer d (587.5618 nm), F (486.1327 nm),
+        and C (656.2725 nm) spectral lines, respectively.
+
+        Returns:
+            float: The Abbe number of the material.
 
         """
         nD = self.n(0.5875618)
@@ -83,7 +102,8 @@ class BaseMaterial(ABC):
             data (dict): The dictionary representation of the material.
 
         Returns:
-            BaseMaterial: The material.
+            BaseMaterial: An instance of a specific material subclass created
+            from the dictionary data.
 
         """
         material_type = data.get("type")

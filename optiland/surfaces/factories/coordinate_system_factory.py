@@ -20,7 +20,6 @@ class CoordinateSystemFactory:
 
     def __init__(self, surface_factory):
         self.surface_factory = surface_factory
-        self.last_thickness = 0
 
     def create(self, index, surface_group, **kwargs):
         """Creates and returns a CoordinateSystem instance.
@@ -49,6 +48,10 @@ class CoordinateSystemFactory:
         if "z" in kwargs:
             if "thickness" in kwargs:
                 raise ValueError('Cannot define both "thickness" and "z".')
+            if "dx" in kwargs or "dy" in kwargs:
+                raise ValueError(
+                    'Cannot define "dx" or "dy" when using absolute "x", "y", "z".',
+                )
 
             x = kwargs.get("x", 0)
             y = kwargs.get("y", 0)
@@ -71,12 +74,10 @@ class CoordinateSystemFactory:
             elif index == 1:
                 z = 0  # first surface, always at zero
             else:
-                z = (
-                    float(surface_group.positions[index - 1].item())
-                    + self.surface_factory.last_thickness
-                )
-
-                self.last_thickness = thickness
+                prev_surface = surface_group.surfaces[index - 1]
+                z_prev_surface = prev_surface.geometry.cs.z
+                thickness_after_prev_surface = prev_surface.thickness
+                z = z_prev_surface + thickness_after_prev_surface
 
         rx = kwargs.get("rx", 0)
         ry = kwargs.get("ry", 0)

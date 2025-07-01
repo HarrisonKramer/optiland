@@ -60,15 +60,22 @@ lens.draw3D()
 1. 🌟 [Quickstart Tutorial](https://optiland.readthedocs.io/en/latest/examples/Tutorial_1a_Optiland_for_Beginners.html) – build your first lens in 5 minutes  
 2. 📚 [Full Learning Guide](https://optiland.readthedocs.io/en/latest/learning_guide.html) – in-depth guide to mastering Optiland 
 3. 🖼️ [Example Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) – visual showcase of designs and core features
+4. 📝 [Cheat Sheet](https://optiland.readthedocs.io/en/latest/cheat_sheet.html) - an up-to-date cheat sheet to get you started ASAP with your first optical system
 
 ---
 
 ## Documentation
-The full documentation for Optiland is hosted on [Read the Docs](https://optiland.readthedocs.io/).
 
-Explore the [Example Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) for a wide range of lens designs and analyses created with Optiland.
+Optiland's full documentation is available on [Read the Docs](https://optiland.readthedocs.io/).
 
-See the [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide/introduction.html) for an extensive overview of the architecture and design of Optiland and the [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) for detailed documentation of all public classes, methods, and functions.
+Whether you're just getting started or exploring advanced features, here are the best entry points:
+
+- **🔍 Quick Start**: The [Cheat Sheet](https://optiland.readthedocs.io/en/latest/cheat_sheet.html) offers a concise overview of core concepts and commands.
+- **🧪 Example Gallery**: Browse the [Gallery](https://optiland.readthedocs.io/en/latest/gallery/introduction.html) for real-world lens designs, visualizations, and analysis workflows using Optiland.
+- **🛠️ Developer Resources**:  
+  - The [Developer's Guide](https://optiland.readthedocs.io/en/latest/developers_guide/introduction.html) explains the internal architecture and design of Optiland.  
+  - The [API Reference](https://optiland.readthedocs.io/en/latest/api/api_introduction.html) provides detailed documentation for all public classes, functions, and modules.
+
 
 ## Installation
 
@@ -188,6 +195,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
     - [Tutorial 4b - PSF & MTF Calculation](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_4b_PSF_&_MTF_Calculation.ipynb)
         - Geometric MTF
         - FFT-based PSF/MTF
+        - Huygens PSF
     - [Tutorial 4c - Zernike Decomposition](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_4c_Zernike_Decomposition.ipynb)
         - Decomposing wavefront using Zernike polynomials
         - Coefficient types: Zernike standard, Zernike fringe, Zernike Noll
@@ -262,12 +270,38 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
-- [ ] **Huygens PSF & MTF**
+- [ ] **Huygens MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
 - [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
+
+
+## Currently Under Development
+
+Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, please check this table and the linked GitHub Issues before starting on a new feature. If you'd like to take on an unassigned `help wanted` task, please comment on the relevant issue first.
+
+| Feature / Topic | Contributor(s) | Status | Discussion / Issue |
+| ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
+| **Core** |                                                    |                |                                                  |
+| Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
+| Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
+| Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
+| Diffraction Gratings and DOEs| *Seeking contributor(s)* | ✨ Help Wanted | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) |
+| **Analysis & Visualization** |                                                    |                |                                                  |
+| Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
+| **GUI** |                                                    |                |                                                  |
+| GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
+
+
+**Status Key:**
+* ✨ **Help Wanted**: We are actively looking for contributors for this task!
+* 🚧 **In Progress**: Actively being worked on.
+* 🔍 **Under Review**: A pull request has been submitted and is being reviewed.
+* 🛑 **Blocked**: Progress is blocked by another issue.
+* ✅ **Done**: Completed and merged. (You can remove these after a while).
 
 
 ### Community Contributions

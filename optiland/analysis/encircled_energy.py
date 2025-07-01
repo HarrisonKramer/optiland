@@ -8,9 +8,8 @@ Kramer Harrison, 2024
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
-from optiland.analysis.spot_diagram import SpotDiagram
 
-from .spot_diagram import SpotData
+from .spot_diagram import SpotData, SpotDiagram
 
 
 class EncircledEnergy(SpotDiagram):
@@ -42,10 +41,29 @@ class EncircledEnergy(SpotDiagram):
         num_points=256,
     ):
         self.num_points = num_points
-        if wavelength == "primary":
-            wavelength = optic.primary_wavelength
 
-        super().__init__(optic, fields, [wavelength], num_rays, distribution)
+        if isinstance(wavelength, str):
+            if wavelength == "primary":
+                processed_wavelength = "primary"
+            else:
+                raise ValueError(
+                    "Invalid wavelength string for EncircledEnergy, only 'primary' "
+                    "is supported as a string."
+                )
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = float(wavelength)
+        else:
+            raise TypeError(
+                "wavelength argument must be 'primary' or a number (in microns)"
+            )
+
+        super().__init__(
+            optic,
+            fields=fields,
+            wavelengths=processed_wavelength,
+            num_rings=num_rays,  # Map num_rays to num_rings
+            distribution=distribution,
+        )
 
     def view(self, figsize=(7, 4.5)):
         """Plot the Encircled Energy curve.

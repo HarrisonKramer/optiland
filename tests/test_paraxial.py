@@ -486,162 +486,97 @@ def test_paraxial_init(set_test_backend):
     assert paraxial.surfaces == optic.surface_group
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_f1(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.f1(), values["f1"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_f2(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.f2(), values["f2"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_F1(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.F1(), values["F1"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_F2(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.F2(), values["F2"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_P1(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.P1(), values["P1"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_P2(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.P2(), values["P2"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_P1anti(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.P1anti(), values["P1anti"])
 
 
-
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_P2anti(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.P2anti(), values["P2anti"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_N1(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.N1(), values["N1"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_N2(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.N2(), values["N2"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_EPL(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.EPL(), values["EPL"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_EPD(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.EPD(), values["EPD"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_XPL(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.XPL(), values["XPL"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_XPD(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.XPD(), values["XPD"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_FNO(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.FNO(), values["FNO"])
 
 
-@pytest.mark.parametrize(
-    "optic_and_values",
-    get_optic_data(),
-    indirect=True
-)
+@pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
 def test_calculate_invariant(optic_and_values):
     optic_instance, values = optic_and_values
     assert_allclose(optic_instance.paraxial.invariant(), values["invariant"])
@@ -679,7 +614,12 @@ def test_EPD_float_by_stop_size_finite(set_test_backend):
     lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
     lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
-    lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
+    lens.add_surface(
+        index=3,
+        radius=-22.21328,
+        thickness=0.99997,
+        material=("F2", "schott"),
+    )
     lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
     lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
     lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
@@ -705,7 +645,12 @@ def test_EPD_float_by_stop_size_infinite(set_test_backend):
     lens.add_surface(index=0, radius=be.inf, thickness=10_000)
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
     lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
-    lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
+    lens.add_surface(
+        index=3,
+        radius=-22.21328,
+        thickness=0.99997,
+        material=("F2", "schott"),
+    )
     lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
     lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
     lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)

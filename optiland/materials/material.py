@@ -29,13 +29,18 @@ class Material(MaterialFile):
         filenames of the materials.
 
     Args:
-        name (str): The name of the material.
-        reference (str, optional): The reference for the material. This is
-            generally the manufacturer name, or the author name. The reference
-            must be in the filename.
-        robust_search (bool, optional): If True, the search will be robust and
-            return the first match found. If False, the search will raise an
-            error if multiple matches are found.
+        name (str): The name of the material to search for.
+        reference (str, optional): The reference for the material, typically
+            the manufacturer or author name. This helps disambiguate materials
+            with similar names. Defaults to None.
+        robust_search (bool, optional): If True, the search attempts to find the
+            closest match even if an exact match isn't found, and returns the
+            first one based on similarity scoring. If False, an error is raised
+            if multiple close matches are found. Defaults to True.
+        min_wavelength (float, optional): Minimum wavelength in microns for
+            filtering materials based on their valid range. Defaults to None.
+        max_wavelength (float, optional): Maximum wavelength in microns for
+            filtering materials based on their valid range. Defaults to None.
 
     Attributes:
         name (str): The name of the material.
@@ -112,8 +117,9 @@ class Material(MaterialFile):
             df (pandas.DataFrame): The DataFrame containing the materials.
 
         Returns:
-            pandas.DataFrame: A DataFrame containing the filtered materials
-                that match the given name and reference.
+            pandas.DataFrame: A DataFrame containing materials that match the
+            search criteria, sorted by similarity score. Returns an empty
+            DataFrame if no potential matches are found.
 
         """
         # Make input name lowercase
@@ -208,7 +214,9 @@ class Material(MaterialFile):
         """Retrieves the file path for the material based on the given criteria.
 
         Returns:
-            str: The file path for the material.
+            tuple[str, dict]: A tuple containing:
+                - The full file path to the material data file.
+                - A dictionary containing the material's metadata from the catalog.
 
         Raises:
             ValueError: If no matches are found for the material.
@@ -237,7 +245,8 @@ class Material(MaterialFile):
         """Converts the material to a dictionary.
 
         Returns:
-            dict: The material as a dictionary.
+            dict: A dictionary representation of the Material instance's
+            configuration, not the material data itself.
 
         """
         material_dict = super().to_dict()

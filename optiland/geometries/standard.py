@@ -25,9 +25,9 @@ class StandardGeometry(BaseGeometry):
     conic.
 
     Args:
-        coordinate_system (str): The coordinate system of the geometry.
-        radius (float): The radius of the geometry.
-        conic (float): The conic value of the geometry.
+        coordinate_system (CoordinateSystem): The coordinate system of the geometry.
+        radius (float): The radius of curvature of the geometry.
+        conic (float, optional): The conic constant of the geometry. Defaults to 0.0.
 
     Methods:
         sag(x=0, y=0): Calculates the surface sag of the geometry at the given
@@ -48,17 +48,23 @@ class StandardGeometry(BaseGeometry):
     def __str__(self):
         return "Standard"
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of curvature.
+        The conic constant remains unchanged.
+        """
+        self.radius = -self.radius
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.
 
         Args:
-            x (float, be.ndarray, optional): The x-coordinate(s).
-                Defaults to 0.
-            y (float, be.ndarray, optional): The y-coordinate(s).
-                Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            float: The sag value at the given coordinates.
+            be.ndarray or float: The sag value(s) at the given coordinates.
 
         """
         r2 = x**2 + y**2
@@ -70,10 +76,11 @@ class StandardGeometry(BaseGeometry):
         """Find the propagation distance to the geometry for the given rays.
 
         Args:
-            rays: The rays for which to calculate the distance.
+            rays (RealRays): The rays for which to calculate the distance.
 
         Returns:
-            ndarray: The distances to the geometry.
+            be.ndarray: An array of distances from each ray's current position
+            to its intersection point with the geometry.
 
         """
         a = self.k * rays.N**2 + rays.L**2 + rays.M**2 + rays.N**2
@@ -109,7 +116,8 @@ class StandardGeometry(BaseGeometry):
         t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
 
         # handle case when a = 0
-        t[a == 0] = -c[a == 0] / b[a == 0]
+        # Assumes b is not zero when a is zero, based on original logic.
+        t = be.where(a == 0, -c / b, t)
 
         return t
 
@@ -117,11 +125,12 @@ class StandardGeometry(BaseGeometry):
         """Calculate the surface normal of the geometry at the given points.
 
         Args:
-            rays: The ray positions at which to calculate the surface normals.
+            rays (RealRays): The rays, positioned at the surface, for which to
+                calculate the surface normals.
 
         Returns:
-            Tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
-                components of the surface normal.
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            components of the surface normal vectors.
 
         """
         r2 = rays.x**2 + rays.y**2
@@ -158,7 +167,7 @@ class StandardGeometry(BaseGeometry):
             data (dict): The dictionary representation of the geometry.
 
         Returns:
-            StandardGeometry: The geometry.
+            StandardGeometry: An instance of StandardGeometry.
 
         """
         required_keys = {"cs", "radius"}

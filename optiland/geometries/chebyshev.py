@@ -52,21 +52,27 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     symmetric systems and non-elliptical apertures.
 
     Args:
-        coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of curvature of the geometry.
-        conic (float, optional): The conic constant of the geometry.
+        coordinate_system (CoordinateSystem): The coordinate system of the geometry.
+        radius (float): The radius of curvature of the base sphere.
+        conic (float, optional): The conic constant of the base sphere.
             Defaults to 0.0.
-        tol (float, optional): The tolerance value used in calculations.
+        tol (float, optional): Tolerance for Newton-Raphson iteration.
             Defaults to 1e-10.
-        max_iter (int, optional): The maximum number of iterations used in
-            calculations. Defaults to 100.
-        coefficients (list or be.ndarray, optional): The coefficients of the
-            Chebyshev polynomial surface. Defaults to an empty list, indicating
-            no Chebyshev polynomial coefficients are used.
-        norm_x (int, optional): The normalization factor for the x-coordinate.
-            Defaults to 1.
-        norm_y (int, optional): The normalization factor for the y-coordinate.
-            Defaults to 1.
+        max_iter (int, optional): Maximum iterations for Newton-Raphson.
+            Defaults to 100.
+        coefficients (list[list[float]] or be.ndarray, optional): A 2D array or
+            list of lists representing the Chebyshev coefficients Cij.
+            `coefficients[i][j]` is the coefficient for T_i(x) * T_j(y).
+            Defaults to an empty list (no polynomial contribution).
+        norm_x (float, optional): Normalization radius for the x-coordinate.
+            Defaults to 1.0.
+        norm_y (float, optional): Normalization radius for the y-coordinate.
+            Defaults to 1.0.
+
+    Attributes:
+        c (be.ndarray): 2D array of Chebyshev coefficients.
+        norm_x (be.ndarray): Normalization factor for x.
+        norm_y (be.ndarray): Normalization factor for y.
 
     """
 
@@ -97,13 +103,11 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         coordinates.
 
         Args:
-            x (float, be.ndarray, optional): The x-coordinate(s).
-                Defaults to 0.
-            y (float, be.ndarray, optional): The y-coordinate(s).
-                Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            float: The sag value at the given coordinates.
+            be.ndarray or float: The sag value(s) at the given coordinates.
 
         """
         x_norm = x / self.norm_x
@@ -127,11 +131,12 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         the given x and y position.
 
         Args:
-            x (be.ndarray): The x values to use for calculation.
-            y (be.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x-coordinate(s) at which to calculate the normal.
+            y (be.ndarray): The y-coordinate(s) at which to calculate the normal.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The surface normal
+            components (nx, ny, nz).
 
         """
         x_norm = x / self.norm_x
@@ -170,11 +175,10 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         Args:
             n (int): The degree of the Chebyshev polynomial.
-            x (be.ndarray): The x value to use for calculation.
+            x (be.ndarray or float): The coordinate value(s) (normalized).
 
         Returns:
-            be.ndarray: The Chebyshev polynomial of the first kind of degree n
-                at the given x value.
+            be.ndarray or float: The Chebyshev polynomial T_n(x).
 
         """
         return be.cos(n * be.arccos(x))
@@ -185,11 +189,12 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
 
         Args:
             n (int): The degree of the Chebyshev polynomial.
-            x (be.ndarray): The x value to use for calculation.
+            x (be.ndarray or float): The coordinate value(s) (normalized).
 
         Returns:
-            be.ndarray: The derivative of the Chebyshev polynomial of the first
-                kind of degree n at the given x value.
+            be.ndarray or float: The derivative of the Chebyshev polynomial T_n(x)
+            with respect to x, scaled by 1/norm_factor if applicable
+            (handled by caller). Returns 0 for n=0.
 
         """
         return n * be.sin(n * be.arccos(x)) / be.sqrt(1 - x**2)
@@ -198,8 +203,8 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         """Validates the input coordinates for the Chebyshev polynomial surface.
 
         Args:
-            x_norm (be.ndarray): The normalized x values.
-            y_norm (be.ndarray): The normalized y values.
+            x_norm (be.ndarray or float): The normalized x-coordinate(s).
+            y_norm (be.ndarray or float): The normalized y-coordinate(s).
 
         """
         if be.any(be.abs(x_norm) > 1) or be.any(be.abs(y_norm) > 1):
@@ -213,7 +218,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         """Converts the Chebyshev polynomial geometry to a dictionary.
 
         Returns:
-            dict: The Chebyshev polynomial geometry as a dictionary.
+            dict: A dictionary representation of the Chebyshev polynomial geometry.
 
         """
         geometry_dict = super().to_dict()
@@ -236,7 +241,8 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
                 polynomial geometry.
 
         Returns:
-            ChebyshevPolynomialGeometry: The Chebyshev polynomial geometry.
+            ChebyshevPolynomialGeometry: An instance of
+            ChebyshevPolynomialGeometry.
 
         """
         required_keys = {"cs", "radius"}

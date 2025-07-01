@@ -1,8 +1,11 @@
-import optiland.backend as be
 import pytest
 
+import optiland.backend as be
+from optiland.optic import Optic
 from optiland.optimization import operand
+from optiland.optimization.operand import RayOperand
 from optiland.samples.telescopes import HubbleTelescope
+
 from .utils import assert_allclose
 
 
@@ -311,6 +314,86 @@ class TestRayOperand:
             "distribution": "hexapolar",
         }
         assert_allclose(operand.RayOperand.OPD_difference(**data), 0.2211995620762635)
+
+    def create_test_optic(self):
+        lens = Optic(name="TMA")
+        lens.set_aperture(aperture_type="EPD", value=10)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_field(y=+1.5)
+        lens.add_field(y=-1.5)
+        lens.add_wavelength(value=0.55, is_primary=True)
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(
+            index=1,
+            radius=-100,
+            thickness=-20,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-15.0),
+            is_stop=True,
+        )
+        lens.add_surface(
+            index=2,
+            radius=-100,
+            thickness=+20,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-10.0),
+            dy=-11.5,
+        )
+        lens.add_surface(
+            index=3,
+            radius=-100,
+            thickness=-19,
+            conic=0,
+            material="mirror",
+            rx=be.radians(-1.0),
+            dy=-15,
+        )
+        lens.add_surface(index=4, dy=-19.3)
+        return lens
+
+    def test_clearance(self, set_test_backend):
+        optic = self.create_test_optic()
+        wavelength = 0.55
+
+        dist1 = RayOperand.clearance(
+            optic=optic,
+            line_ray_surface_idx=1,
+            line_ray_field_coords=(0.0, 0.0),
+            line_ray_pupil_coords=(0.0, -1.0),
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 1.0),
+            point_ray_pupil_coords=(0.0, 0.0),
+            wavelength=wavelength,
+        )
+        assert_allclose(dist1, -7.412094834746042)
+
+        dist2 = RayOperand.clearance(
+            optic=optic,
+            line_ray_surface_idx=1,
+            line_ray_field_coords=(0.0, 0.0),
+            line_ray_pupil_coords=(0.0, 0.0),
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 0.0),
+            point_ray_pupil_coords=(0.0, 0.0),
+            wavelength=wavelength,
+        )
+        assert_allclose(dist2, -13.065596389231768)
+
+        dist3 = RayOperand.clearance(
+            optic=optic,
+            line_ray_surface_idx=1,
+            line_ray_field_coords=(0.0, -1.0),
+            line_ray_pupil_coords=(0.0, 1.0),
+            point_ray_surface_idx=3,
+            point_ray_field_coords=(0.0, 1.0),
+            point_ray_pupil_coords=(0.0, 0.0),
+            wavelength=wavelength,
+        )
+        assert_allclose(dist3, -15.730530102711754)
 
 
 class TestOperand:

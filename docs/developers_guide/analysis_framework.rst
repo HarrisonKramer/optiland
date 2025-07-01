@@ -17,8 +17,9 @@ Optiland includes several built-in analysis tools, each tailored to a specific a
 - **Encircled Energy**: Compute the integrated energy as a function of radius from the image center.
 - **Pupil Aberration**: Assess difference between the paraxial and real ray intersection point at the aperture stop.
 - **RMS vs. Field**: Plot the root mean square (RMS) wavefront error or RMS spot size as a function of field position.
+- **Through Focus**: Analyze the optical system's performance as a function of focus position, including spot diagrams.
 - **Y Y-bar**: Compare the chief and marginal ray heights at each surface.
-- **PSF**: Compute the point spread function (PSF) of the optical system.
+- **PSF**: Compute the point spread function (PSF) of the optical system using either the FFT or direct integration (Huygens-Fresnel) method.
 - **MTF**: Calculate the modulation transfer function (MTF) of the optical system via both geometric and diffraction (FFT) methods.
 - **Wavefront**: Compute the wavefront error across the field of view and pupil.
 - **Zernike Polynomials**: Decompose the wavefront error into Zernike polynomials.
