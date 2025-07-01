@@ -1,7 +1,7 @@
 import pytest
 import optiland.backend as be
 
-from optiland.apodization import Apodization, UniformApodization, GaussianApodization
+from optiland.apodization import BaseApodization, UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
 from optiland.optic import Optic
