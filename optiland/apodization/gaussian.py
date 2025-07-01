@@ -25,6 +25,30 @@ class GaussianApodization(BaseApodization):
             raise ValueError("Sigma must be positive for GaussianApodization.")
         self.sigma = sigma
 
+    def to_dict(self):
+        """Converts the Gaussian apodization to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the Gaussian apodization.
+        """
+        data = super().to_dict()
+        data["sigma"] = self.sigma
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates an instance of GaussianApodization from a dictionary.
+
+        Args:
+            data (dict): A dictionary representation of the apodization.
+
+        Returns:
+            GaussianApodization: An instance of the GaussianApodization class.
+        """
+        # Provide a default for sigma if not present for backward compatibility
+        # or if a user forgets to add it, though __init__ has a default too.
+        return cls(sigma=data.get("sigma", 1.0))
+
     def apply(self, Px, Py):
         """Applies Gaussian apodization.
 
