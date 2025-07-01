@@ -14,7 +14,7 @@ from .base import BaseApodization
 class UniformApodization(BaseApodization):
     """Uniform apodization, resulting in intensities of 1.0 for all rays."""
 
-    def apply(self, Px, Py):
+    def get_intensity(self, Px, Py):
         """Applies uniform apodization.
 
         Args:
@@ -25,3 +25,15 @@ class UniformApodization(BaseApodization):
             be.ndarray: Array of intensity scaling factors (all ones).
         """
         return be.ones_like(Px)
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates an instance of UniformApodization from a dictionary.
+
+        Args:
+            data (dict): A dictionary representation of the apodization.
+
+        Returns:
+            UniformApodization: An instance of the UniformApodization class.
+        """
+        return cls()

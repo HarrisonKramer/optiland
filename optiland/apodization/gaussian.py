@@ -51,7 +51,7 @@ class GaussianApodization(BaseApodization):
         """
         return cls(sigma=data.get("sigma", 1.0))
 
-    def apply(self, Px, Py):
+    def get_intensity(self, Px, Py):
         """Applies Gaussian apodization.
 
         Args:

@@ -20,7 +20,7 @@ class BaseApodization(abc.ABC):
         BaseApodization._registry[cls.__name__] = cls
 
     @abc.abstractmethod
-    def apply(self, Px, Py):
+    def get_intensity(self, Px, Py):
         """Applies the apodization function to the given pupil coordinates.
 
         Args:
