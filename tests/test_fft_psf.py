@@ -8,6 +8,7 @@ import pytest
 from contextlib import nullcontext as does_not_raise
 
 from optiland.psf import FFTPSF
+from optiland.psf.fft import calculate_grid_size
 from optiland.samples.objectives import CookeTriplet
 from .utils import assert_allclose
 
@@ -52,10 +53,8 @@ def test_initialization(make_fftpsf):
         (8192, 512),
     ],
 )
-def test_calculate_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
-    fftpsf = make_fftpsf()
-
-    assert fftpsf._calculate_grid_size(num_rays) == (expected_pupil_sampling, 2 * num_rays)
+def test_calculate_grid_size(num_rays, expected_pupil_sampling):
+    assert calculate_grid_size(num_rays) == (expected_pupil_sampling, 2 * num_rays)
 
 
 @pytest.mark.parametrize(

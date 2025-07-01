@@ -68,7 +68,12 @@ class RayGenerator:
         M = (y1 - y0) / mag
         N = (z1 - z0) / mag
 
-        intensity = be.ones_like(x1)
+        apodization = self.optic.apodization
+        if apodization:
+            intensity = apodization.get_intensity(Px, Py)
+        else:
+            intensity = be.ones_like(Px)
+
         wavelength = be.ones_like(x1) * wavelength
 
         if self.optic.polarization == "ignore":
