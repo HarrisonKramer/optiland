@@ -267,7 +267,6 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Diffractive Optical Elements**
 - [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
-- [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
 - [ ] **Huygens MTF**
