@@ -10,8 +10,12 @@ internally where necessary.
 
 References:
     Edlén, B. (1966). The Refractive Index of Air. Metrologia, 2(2), 71-80.
+
+Kramer Harrison, 2025
 """
+
 import math
+
 from optiland.environment.conditions import EnvironmentalConditions
 
 # Constants for Edlén (1966) dispersion formula for standard air
@@ -28,7 +32,7 @@ TORR_TO_PA = 101325.0 / 760.0
 
 # Reference temperature for gas law scaling in Edlen's formulation (0 C = 273.15 K)
 # The factor (1 + 0.003661*t) implies alpha = 0.003661 /K and T0 = 0 C.
-ALPHA_GAS = 0.003661 # /K, thermal expansion coefficient of air relative to 0 C
+ALPHA_GAS = 0.003661  # /K, thermal expansion coefficient of air relative to 0 C
 
 
 def _saturation_vapor_pressure_edlen(temperature_c):
@@ -48,7 +52,7 @@ def _saturation_vapor_pressure_edlen(temperature_c):
     # Let's use a standard Magnus formula:
     # svp in hPa = 6.112 * exp((17.67 * T_c)/(T_c + 243.5))
     svp_hpa = 6.112 * math.exp((17.67 * temperature_c) / (temperature_c + 243.5))
-    return svp_hpa * 100.0 # Convert hPa to Pa
+    return svp_hpa * 100.0  # Convert hPa to Pa
 
 
 def edlen_refractive_index(wavelength_um, conditions):
@@ -73,9 +77,9 @@ def edlen_refractive_index(wavelength_um, conditions):
 
     # 1. Refractivity of standard air (n_s - 1)
     # (15 °C, 101325 Pa (760 mmHg), dry, 300 ppm CO2)
-    n_s_minus_1_times_10_8 = EDLEN_C1 + \
-                             EDLEN_C2 / (EDLEN_C3 - sigma2) + \
-                             EDLEN_C4 / (EDLEN_C5 - sigma2)
+    n_s_minus_1_times_10_8 = (
+        EDLEN_C1 + EDLEN_C2 / (EDLEN_C3 - sigma2) + EDLEN_C4 / (EDLEN_C5 - sigma2)
+    )
     n_s_minus_1 = n_s_minus_1_times_10_8 * 1.0e-8
 
     # 2. Correction for actual temperature and pressure (for dry air)
@@ -91,16 +95,20 @@ def edlen_refractive_index(wavelength_um, conditions):
 
     # Denominator of K_pt: 720.775 * (1 + alpha * t_c)
     # Note: 720.775 is P_s_torr / (1 + alpha * t_s_C) = 760 / (1+0.003661*15)
-    # So K_pt simplifies to (P_torr/P_s_torr) * ((1+alpha*t_s_C)/(1+alpha*t_c)) * non-ideal_gas_terms
+    # So K_pt simplifies to
+    # (P_torr/P_s_torr) * ((1+alpha*t_s_C)/(1+alpha*t_c)) * non-ideal_gas_terms
     # Let's use the form from Ciddor (1996) Appendix C, Eq C2 (Edlen Dry Air):
     # N_d(t,p) = N_s * (p/760) * (1 / (1+ALPHA_GAS*t)) * (1 - p*beta_t)
     # where N_s = (n_s-1)*10^6, p is in Torr
     # beta_t = (0.0624 - 0.000680*t)*1e-6
     # This is (n_tp - 1) * 10^6
     beta_t = (0.0624 - 0.000680 * t_c) * 1.0e-6
-    n_tp_minus_1 = (n_s_minus_1 * (p_torr / 760.0) *
-                    (1.0 / (1.0 + ALPHA_GAS * t_c)) *
-                    (1.0 - p_torr * beta_t))
+    n_tp_minus_1 = (
+        n_s_minus_1
+        * (p_torr / 760.0)
+        * (1.0 / (1.0 + ALPHA_GAS * t_c))
+        * (1.0 - p_torr * beta_t)
+    )
 
     # 3. Correction for water vapor partial pressure f (in Torr)
     # This term is subtracted from n_tp, or its refractivity subtracted from
@@ -109,7 +117,7 @@ def edlen_refractive_index(wavelength_um, conditions):
     # n_final - 1 = (n_tp - 1) + Δn_w
 
     svp_pa = _saturation_vapor_pressure_edlen(t_c)
-    f_pa = conditions.relative_humidity * svp_pa # Partial pressure in Pa
+    f_pa = conditions.relative_humidity * svp_pa  # Partial pressure in Pa
     f_torr = f_pa / TORR_TO_PA
 
     delta_n_w = -f_torr * (5.722 - 0.0457 * sigma2) * 1.0e-8

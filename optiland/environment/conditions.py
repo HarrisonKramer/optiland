@@ -3,9 +3,12 @@
 This module provides a dataclass to store and manage environmental
 parameters relevant to optical modeling, such as temperature, pressure,
 humidity, and CO2 concentration.
+
+Kramer Harrison, 2025
 """
 
 from dataclasses import dataclass
+
 
 @dataclass
 class EnvironmentalConditions:
@@ -25,8 +28,9 @@ class EnvironmentalConditions:
             wavelength-specific for a particular calculation, though many
             models require it as a direct input. Defaults to None.
     """
+
     pressure: float = 101325.0  # Pascals
     temperature: float = 15.0  # Degrees Celsius
     relative_humidity: float = 0.0  # Fraction (0 to 1)
     co2_ppm: float = 400.0  # Parts per million
-    wavelength: float = None # Microns
+    wavelength: float = None  # Microns

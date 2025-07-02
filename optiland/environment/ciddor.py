@@ -8,7 +8,10 @@ and CO2 concentration.
 References:
     Ciddor, P. E. (1996). Refractive index of air: new equations for the
     visible and near infrared. Applied Optics, 35(9), 1566-1573.
+
+Kramer Harrison, 2025
 """
+
 import math
 
 from optiland.environment.conditions import EnvironmentalConditions
@@ -23,17 +26,17 @@ K3 = 167917.0  # unitless, for (n-1)*10^8
 # P_sv = exp(A*T_k^2 + B*T_k + C + D/T_k) for T_k in Kelvin, P_sv in Pa
 A_svp = 1.2378847e-5  # K^-2
 B_svp = -1.9121316e-2  # K^-1
-C_svp = 33.93711047   # unitless
+C_svp = 33.93711047  # unitless
 D_svp = -6.3431645e3  # K
 
 # Constants for water vapor refractivity term (Eq. 7, Ciddor 1996)
 # (n_w-1)*10^8 = p_v * G(t) * [AW + BW*sig^2 + CW*sig^4 + DW*sig^6]
-AW_c = 3.0173017    # Pa^-1 K (scaled, see usage)
+AW_c = 3.0173017  # Pa^-1 K (scaled, see usage)
 BW_c = 0.026993284  # Pa^-1 K um^2 (scaled)
-CW_c = -0.0003309236 # Pa^-1 K um^4 (scaled)
-DW_c = 0.000004116616# Pa^-1 K um^6 (scaled)
+CW_c = -0.0003309236  # Pa^-1 K um^4 (scaled)
+DW_c = 0.000004116616  # Pa^-1 K um^6 (scaled)
 ALPHA_E_c = 1.00e-5  # K^-1 (enhancement factor coefficient for water vapor)
-T0_WV_c = 20.0       # Celsius (reference temperature for water vapor term)
+T0_WV_c = 20.0  # Celsius (reference temperature for water vapor term)
 
 # Constants for compressibility factor Z_s/Z_a (Eq. 4, Ciddor 1996)
 # For [1 + P_s(a0 + a1*t_s + a2*t_s^2)] / [1 + P(a0 + a1*t + a2*t^2)]
@@ -111,21 +114,25 @@ def refractivity_dry_air(wavelength_um, pressure_pa, temperature_c, co2_ppm):
 
     # Apply pressure and temperature correction (Eq. 3 and 4, Ciddor 1996)
     t_k = temperature_c + 273.15  # Current temperature in Kelvin
-    t_s_k = 15.0 + 273.15         # Standard temperature (15 C) in Kelvin
-    p_s_pa = 101325.0             # Standard pressure in Pascals
+    t_s_k = 15.0 + 273.15  # Standard temperature (15 C) in Kelvin
+    p_s_pa = 101325.0  # Standard pressure in Pascals
 
     # Compressibility factor ratio Z_s/Z_a from Eq. 4
     term_s_comp = 1 + p_s_pa * (A0_comp + A1_comp * 15.0 + A2_comp * 15.0**2)
-    term_actual_comp = 1 + pressure_pa * \
-        (A0_comp + A1_comp * temperature_c + A2_comp * temperature_c**2)
+    term_actual_comp = 1 + pressure_pa * (
+        A0_comp + A1_comp * temperature_c + A2_comp * temperature_c**2
+    )
     compressibility_ratio = term_s_comp / term_actual_comp
 
     # (n_a - 1) for actual P, T, xc (Eq. 3)
-    n_dry_air_minus_1 = n_s_minus_1_co2_corrected * \
-                        (pressure_pa / p_s_pa) * (t_s_k / t_k) * \
-                        compressibility_ratio
+    n_dry_air_minus_1 = (
+        n_s_minus_1_co2_corrected
+        * (pressure_pa / p_s_pa)
+        * (t_s_k / t_k)
+        * compressibility_ratio
+    )
 
-    return n_dry_air_minus_1 * 1.0e6 # Return as refractivity (n-1)*10^6
+    return n_dry_air_minus_1 * 1.0e6  # Return as refractivity (n-1)*10^6
 
 
 def refractivity_water_vapor_term(wavelength_um, temperature_c, partial_pressure_pv_pa):
@@ -142,7 +149,7 @@ def refractivity_water_vapor_term(wavelength_um, temperature_c, partial_pressure
     Returns:
         float: Refractivity term due to water vapor.
     """
-    if partial_pressure_pv_pa == 0: # No humidity, no water vapor term
+    if partial_pressure_pv_pa == 0:  # No humidity, no water vapor term
         return 0.0
 
     sigma = 1.0 / wavelength_um
@@ -184,26 +191,22 @@ def ciddor_refractive_index(wavelength_um, conditions):
     # No explicit error/warning here, but users should be aware.
 
     pv_pa = partial_pressure_water_vapor(
-        conditions.temperature,
-        conditions.relative_humidity,
-        conditions.pressure
+        conditions.temperature, conditions.relative_humidity, conditions.pressure
     )
 
     # Refractivity of the dry air component at total pressure P
     # (n_a(P,T,x_c) - 1) * 10^6
     n_a_refractivity = refractivity_dry_air(
         wavelength_um,
-        conditions.pressure, # Total pressure
+        conditions.pressure,  # Total pressure
         conditions.temperature,
-        conditions.co2_ppm
+        conditions.co2_ppm,
     )
 
     # Refractivity term due to water vapor
     # (n_wp(sigma, T, p_v) - 1) * 10^6
     n_wp_refractivity_term = refractivity_water_vapor_term(
-        wavelength_um,
-        conditions.temperature,
-        pv_pa
+        wavelength_um, conditions.temperature, pv_pa
     )
 
     # Total refractivity of moist air (Eq. 1, Ciddor 1996)

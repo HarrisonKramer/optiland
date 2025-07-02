@@ -13,9 +13,10 @@ A common form for dry air at 0°C and 101325 Pa is:
   (n_0 - 1) * 10^6 = A + B / lambda^2
 And then scaled for actual temperature and pressure:
   (n - 1) = (n_0 - 1) * (P / P_0) * (T_0 / T)
+
+Kramer Harrison, 2025
 """
 
-import math
 from optiland.environment.conditions import EnvironmentalConditions
 
 # Constants for a simplified Cauchy-like dispersion formula for dry air
@@ -24,10 +25,10 @@ from optiland.environment.conditions import EnvironmentalConditions
 # These values are approximate and can vary in different summaries of
 # older models. These are chosen to be representative.
 A_K = 287.5  # Dimensionless, for (n0-1)*10^6
-B_K = 5.0    # um^2, for (n0-1)*10^6 (if lambda is in um)
+B_K = 5.0  # um^2, for (n0-1)*10^6 (if lambda is in um)
 
 T0_KELVIN = 273.15  # 0 degrees Celsius in Kelvin
-P0_PASCAL = 101325.0 # Standard pressure in Pascals
+P0_PASCAL = 101325.0  # Standard pressure in Pascals
 
 
 def kohlrausch_refractive_index(wavelength_um, conditions):
@@ -69,9 +70,7 @@ def kohlrausch_refractive_index(wavelength_um, conditions):
 
     # Scale refractivity for actual temperature and pressure
     # (n - 1) = (n0 - 1) * (P_actual / P0) * (T0 / T_actual)
-    n_minus_1_actual = n0_minus_1 * \
-                       (p_actual_pa / P0_PASCAL) * \
-                       (T0_KELVIN / t_k_actual)
+    n_minus_1_actual = n0_minus_1 * (p_actual_pa / P0_PASCAL) * (T0_KELVIN / t_k_actual)
 
     n = 1.0 + n_minus_1_actual
     return n
