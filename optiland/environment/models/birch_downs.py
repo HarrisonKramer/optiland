@@ -111,7 +111,7 @@ def _calculate_water_vapor_partial_pressure(
     return conditions.relative_humidity * f_w * saturation_pressure
 
 
-def refractive_index(
+def birch_downs_refractive_index(
     wavelength_um: float, conditions: EnvironmentalConditions
 ) -> float:
     """Calculates the refractive index of air using the Birch & Downs 1994 model.
