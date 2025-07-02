@@ -130,7 +130,7 @@ def birch_downs_refractive_index(
     """
     if not isinstance(conditions, EnvironmentalConditions):
         raise TypeError("conditions must be an EnvironmentalConditions object.")
-    if not wavelength_um > 0:
+    if not np.all(wavelength_um > 0):
         raise ValueError("Wavelength must be positive.")
 
     # 1. Calculate vacuum wavenumber (σ) in μm⁻¹.

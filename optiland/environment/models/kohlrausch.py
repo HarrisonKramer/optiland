@@ -38,7 +38,7 @@ P_STD_PA = 101325.0  # Standard atmospheric pressure in Pascals.
 ALPHA_T = 3.4785e-3  # In °C⁻¹
 
 
-def kohlrausch_air_refractive_index(
+def kohlrausch_refractive_index(
     wavelength_um: float, conditions: EnvironmentalConditions
 ) -> float:
     """Calculates air refractive index using the Kohlrausch formula.
