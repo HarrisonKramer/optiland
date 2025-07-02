@@ -1,4 +1,4 @@
-"""Optiland subpackage for modeling environmental effects on light propagation.
+"""Environmental Modeling Package
 
 This package provides tools for calculating environmental parameters
 relevant to optics, such as the refractive index of air under various
@@ -22,12 +22,12 @@ Key exports:
     birch_downs_refractive_index: Direct access to Birch & Downs model.
 """
 
-from .conditions import EnvironmentalConditions
 from .air_index import refractive_index_air
-from .ciddor import ciddor_refractive_index
-from .kohlrausch import kohlrausch_refractive_index
-from .edlen import edlen_refractive_index
-from .birch_downs import birch_downs_refractive_index
+from .conditions import EnvironmentalConditions
+from .models.birch_downs import birch_downs_refractive_index
+from .models.ciddor import ciddor_refractive_index
+from .models.edlen import edlen_refractive_index
+from .models.kohlrausch import kohlrausch_refractive_index
 
 __all__ = [
     "EnvironmentalConditions",

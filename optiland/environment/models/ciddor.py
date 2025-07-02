@@ -1,4 +1,4 @@
-"""Implementation of the Ciddor (1996) model for the refractive index of air.
+"""Ciddor (1996) Air Refractive Index Model
 
 This module provides functions to calculate the refractive index of air
 based on the Ciddor (1996) formulation, which is an update to the Edlén

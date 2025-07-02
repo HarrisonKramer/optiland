@@ -8,11 +8,11 @@ and a simplified Kohlrausch model.
 Kramer Harrison, 2025
 """
 
-from .birch_downs import birch_downs_refractive_index
-from .ciddor import ciddor_refractive_index
 from .conditions import EnvironmentalConditions
-from .edlen import edlen_refractive_index
-from .kohlrausch import kohlrausch_refractive_index
+from .models.birch_downs import birch_downs_refractive_index
+from .models.ciddor import ciddor_refractive_index
+from .models.edlen import edlen_refractive_index
+from .models.kohlrausch import kohlrausch_refractive_index
 
 
 def refractive_index_air(wavelength_um, conditions, model="ciddor"):
