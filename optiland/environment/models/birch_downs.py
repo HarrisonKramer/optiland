@@ -62,7 +62,7 @@ WATER_VAPOR_B = 0.0401  # In (μm⁻¹)^-2 or μm².
 # concentrations, a correction is needed. This multiplicative factor is derived
 # from Ciddor (1996), which is a common and accepted practice.
 # (n_adj - 1) = (n_450ppm - 1) * (1 + CO2_K * (x_ppm - 450))
-CO2_CORRECTION_FACTOR = 0.532e-6  # In ppm⁻¹.
+CO2_CORRECTION_FACTOR = 0.534e-6  # In ppm⁻¹.
 
 
 def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
