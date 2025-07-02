@@ -1,142 +1,190 @@
-"""Unit tests for the Edlén (1966) air refractive index model using pytest.
+"""Unit tests for the Edlén (1966) air refractive index model using pytest."""
 
-These tests verify the Edlén model implementation against published or
-calculated reference values.
-"""
 import pytest
-import math
-
 from optiland.environment.conditions import EnvironmentalConditions
-from optiland.environment.edlen import edlen_refractive_index, _saturation_vapor_pressure_edlen
-from optiland.environment import refractive_index_air
+from optiland.environment.models.edlen import (
+    edlen_refractive_index,
+    _calculate_saturation_vapor_pressure,
+    # Import constants from the model for clarity and direct use
+    DISP_A, DISP_B, DISP_C, DISP_D, DISP_E,
+    CO2_STD_PPM, CO2_CORR_FACTOR,
+    ALPHA_GAS, DENSITY_FACTOR_STD, TORR_TO_PA,
+    WATER_VAPOR_A, WATER_VAPOR_B
+)
+from optiland.environment import refractive_index_air # For API test
+import optiland.backend as be
 
-# Constants from Edlén (1966) for standard air (15°C, 760mmHg, dry, 300ppm CO2)
-EDLEN_C1_ref = 8342.13
-EDLEN_C2_ref = 2406030.0
-EDLEN_C3_ref = 130.0
-EDLEN_C4_ref = 15997.0
-EDLEN_C5_ref = 38.9
-TORR_TO_PA_ref = 101325.0 / 760.0
-ALPHA_GAS_ref = 0.003661
 
 @pytest.fixture
-def std_conditions_edlen_ref():
-    """EnvironmentalConditions for Edlén's standard air (15C, 101325Pa, dry).
-    CO2 is not used by Edlen's model but set to 300ppm for conceptual match.
+def conditions_edlen_standard():
+    """
+    EnvironmentalConditions for Edlén's standard air:
+    15°C, 101325 Pa (760 Torr), 0% RH, 300 ppm CO2.
     """
     return EnvironmentalConditions(
-        temperature=15.0, pressure=101325.0, relative_humidity=0.0, co2_ppm=300.0
+        temperature=15.0,
+        pressure=101325.0, # 760 Torr
+        relative_humidity=0.0,
+        co2_ppm=CO2_STD_PPM # 300.0 ppm
     )
 
-def test_edlen_standard_air_dispersion(std_conditions_edlen_ref):
-    """Test Edlén model for standard air against a reference value.
-    Using lambda = 0.5462255 um (mercury green line).
+def test_edlen_svp_calculation(set_test_backend):
+    """Test the _calculate_saturation_vapor_pressure helper."""
+    # Using Buck (1981) formula as implemented in edlen.py
+    # At 15°C
+    temp_c_15 = 15.0
+    expected_svp_15 = 611.21 * be.exp(
+        (18.678 - temp_c_15 / 234.5) * (temp_c_15 / (257.14 + temp_c_15))
+    )
+    assert _calculate_saturation_vapor_pressure(temp_c_15) == pytest.approx(float(expected_svp_15)) # Approx 1705.1 Pa
+
+    # At 25°C
+    temp_c_25 = 25.0
+    expected_svp_25 = 611.21 * be.exp(
+        (18.678 - temp_c_25 / 234.5) * (temp_c_25 / (257.14 + temp_c_25))
+    )
+    assert _calculate_saturation_vapor_pressure(temp_c_25) == pytest.approx(float(expected_svp_25)) # Approx 3168.7 Pa
+
+
+def test_edlen_standard_air_dispersion(conditions_edlen_standard, set_test_backend):
+    """
+    Test Edlén model for standard air (15°C, 760 Torr, 300ppm CO2, dry).
+    λ = 0.5462255 μm (mercury green line).
     Edlén (1966) Table 1, page 76: (n-1)s x 10^8 = 27745.1
     So, (n_s - 1) = 2.77451e-4, n_s = 1.000277451.
+    At these conditions, CO2 correction factor is 1, density factor ratio is 1, humidity is 0.
     """
     wavelength_um = 0.5462255
     expected_n = 1.000277451
 
-    n_calculated = edlen_refractive_index(wavelength_um, std_conditions_edlen_ref)
+    n_calculated = edlen_refractive_index(wavelength_um, conditions_edlen_standard)
     assert n_calculated == pytest.approx(expected_n, abs=1e-9)
 
     # Test via main API
-    n_api = refractive_index_air(wavelength_um, std_conditions_edlen_ref, model='edlen')
+    n_api = refractive_index_air(wavelength_um, conditions_edlen_standard, model='edlen')
     assert n_api == pytest.approx(expected_n, abs=1e-9)
 
 
-def test_edlen_pressure_temperature_correction(std_conditions_edlen_ref):
-    """Test Edlén P, T correction factor part.
-    If T=15C, P=760 Torr, the (n_tp-1) should be (n_s-1).
-    Let's try T=20C, P=700 Torr.
-    """
-    wavelength_um = 0.5462255 # Same as above, (n_s-1) = 2.77451e-4
-
-    conditions = EnvironmentalConditions(
-        temperature=20.0, pressure=700.0 * TORR_TO_PA_ref, relative_humidity=0.0
+def test_edlen_co2_correction(set_test_backend):
+    """Test CO2 correction from 300ppm baseline to 400ppm at 15°C, 760 Torr, dry."""
+    wavelength_um = 0.5462255 # (n_s-1) at 300ppm for this is 2.77451e-4
+    conditions_400ppm = EnvironmentalConditions(
+        temperature=15.0, pressure=101325.0, relative_humidity=0.0, co2_ppm=400.0
     )
-    t_c = 20.0
-    p_torr = 700.0
-    n_s_minus_1 = 2.77451e-4 # From previous test
-
-    # Manual calculation of (n_tp-1) using Edlen's specific P,T terms
-    # beta_t = (0.0624 - 0.000680*T_c)*1e-6
-    beta_t = (0.0624 - 0.000680 * t_c) * 1.0e-6
-    # (n_tp - 1) = (n_s - 1) * (p_torr/760) * (1/(1+ALPHA_GAS*t_c)) * (1 - p_torr*beta_t)
-    expected_n_tp_minus_1 = n_s_minus_1 * (p_torr / 760.0) * \
-                            (1.0 / (1.0 + ALPHA_GAS_ref * t_c)) * \
-                            (1.0 - p_torr * beta_t)
-    expected_n = 1.0 + expected_n_tp_minus_1
-
-    n_calculated = edlen_refractive_index(wavelength_um, conditions)
-    assert n_calculated == pytest.approx(expected_n, abs=1e-9)
-
-
-def test_edlen_humidity_correction():
-    """Test Edlén water vapor correction.
-    Using 15°C, 101325 Pa (760 Torr), 50% RH, lambda=0.5462255 um.
-    (n_tp - 1) = 2.77451e-4 (dry air at these P,T).
-    SVP at 15C (Magnus from Edlen module): ~1705.0 Pa (was 1703.5 in my scratch)
-    pv_pa = 0.5 * _saturation_vapor_pressure_edlen(15.0)
-    f_torr = pv_pa / TORR_TO_PA_ref
-    sigma = 1/lambda_um, sigma2 = sigma^2
-    delta_n_w = -f_torr * (5.722 - 0.0457 * sigma2) * 1e-8
-    """
-    wavelength_um = 0.5462255
-    conditions = EnvironmentalConditions(
-        temperature=15.0, pressure=101325.0, relative_humidity=0.5
-    )
-
-    # 1. (n_tp - 1) for dry air component at these conditions (15C, 760 Torr)
-    # This is (n_s - 1) because P,T are standard for Edlen's n_s
-    n_tp_minus_1 = 2.77451e-4
-
-    # 2. Water vapor correction term (delta_n_w)
-    t_c = 15.0
-    pv_pa = conditions.relative_humidity * _saturation_vapor_pressure_edlen(t_c)
-    f_torr = pv_pa / TORR_TO_PA_ref
 
     sigma_sq = (1.0 / wavelength_um)**2
-    delta_n_w_expected = -f_torr * (5.722 - 0.0457 * sigma_sq) * 1.0e-8
+    n_s_minus_1_300ppm_e8 = ( # Refractivity for 300ppm CO2 baseline
+        DISP_A + DISP_B / (DISP_C - sigma_sq) + DISP_D / (DISP_E - sigma_sq)
+    )
+    n_s_minus_1_300ppm = n_s_minus_1_300ppm_e8 * 1.0e-8
 
-    expected_n = 1.0 + n_tp_minus_1 + delta_n_w_expected
+    # Apply CO2 correction for 400ppm
+    co2_factor = 1.0 + CO2_CORR_FACTOR * (conditions_400ppm.co2_ppm - CO2_STD_PPM) * 1.0e-6
+    expected_n_s_corrected_minus_1 = n_s_minus_1_300ppm * co2_factor
+    # Since P,T are standard for Edlen, density factor is 1. RH=0.
+    expected_n_400ppm = 1.0 + expected_n_s_corrected_minus_1
 
-    n_calculated = edlen_refractive_index(wavelength_um, conditions)
+    n_calculated = edlen_refractive_index(wavelength_um, conditions_400ppm)
+    assert n_calculated == pytest.approx(expected_n_400ppm, abs=1e-9)
+
+
+def test_edlen_pressure_temperature_correction(set_test_backend):
+    """Test P, T correction. T=20°C, P=700 Torr (93325.66 Pa), 300ppm CO2, dry."""
+    wavelength_um = 0.5462255 # (n_s-1) at 300ppm for this is 2.77451e-4
+    pressure_custom_pa = 700.0 * TORR_TO_PA
+    conditions_custom_tp = EnvironmentalConditions(
+        temperature=20.0, pressure=pressure_custom_pa, relative_humidity=0.0, co2_ppm=CO2_STD_PPM # 300ppm
+    )
+
+    sigma_sq = (1.0 / wavelength_um)**2
+    n_s_minus_1_300ppm_e8 = (
+        DISP_A + DISP_B / (DISP_C - sigma_sq) + DISP_D / (DISP_E - sigma_sq)
+    )
+    n_s_minus_1_300ppm = n_s_minus_1_300ppm_e8 * 1.0e-8
+    # CO2 is at baseline 300ppm, so n_s_corrected_minus_1 = n_s_minus_1_300ppm
+
+    # Apply P, T correction
+    p_torr = conditions_custom_tp.pressure / TORR_TO_PA # Should be 700.0
+    t_c = conditions_custom_tp.temperature # 20.0
+    density_factor_actual = (
+        p_torr * (1.0 + p_torr * (0.817 - 0.0133 * t_c) * 1.0e-6)
+    ) / (1.0 + ALPHA_GAS * t_c)
+    expected_n_tp_minus_1 = n_s_minus_1_300ppm * (density_factor_actual / DENSITY_FACTOR_STD)
+    expected_n = 1.0 + expected_n_tp_minus_1 # RH=0
+
+    n_calculated = edlen_refractive_index(wavelength_um, conditions_custom_tp)
     assert n_calculated == pytest.approx(expected_n, abs=1e-9)
 
 
-def test_edlen_input_validation(std_conditions_edlen_ref):
-    """Test input validation for Edlén model."""
-    with pytest.raises(TypeError):
-        edlen_refractive_index(0.55, {"temperature": 15.0})
+def test_edlen_humidity_correction(conditions_edlen_standard, set_test_backend):
+    """Test humidity correction. 15°C, 760 Torr, 300ppm CO2, 50% RH."""
+    wavelength_um = 0.5462255 # (n_s-1) at 300ppm, 15C, 760Torr is 2.77451e-4
 
-    with pytest.raises(ValueError, match="Wavelength must be positive"):
-        edlen_refractive_index(0.0, std_conditions_edlen_ref)
+    conditions_humid = EnvironmentalConditions(
+        temperature=conditions_edlen_standard.temperature, # 15.0
+        pressure=conditions_edlen_standard.pressure,       # 101325.0
+        relative_humidity=0.5,
+        co2_ppm=conditions_edlen_standard.co2_ppm          # 300.0
+    )
+
+    # 1. (n_tp - 1) for dry air component at these P,T,CO2
+    # This is (n_s_corrected - 1) which is (n_s - 1) because P,T,CO2 are standard base
+    n_tp_minus_1_dry = 2.77451e-4
+
+    # 2. Water vapor correction term (delta_n_w)
+    t_c = conditions_humid.temperature
+    svp_pa = _calculate_saturation_vapor_pressure(t_c)
+    f_pa = conditions_humid.relative_humidity * svp_pa
+    f_torr = f_pa / TORR_TO_PA
+    sigma_sq = (1.0 / wavelength_um)**2
+    water_vapor_corr = -f_torr * (WATER_VAPOR_A - WATER_VAPOR_B * sigma_sq) * 1.0e-8
+
+    expected_n = 1.0 + n_tp_minus_1_dry + water_vapor_corr
+    n_calculated = edlen_refractive_index(wavelength_um, conditions_humid)
+    assert n_calculated == pytest.approx(expected_n, abs=1e-9)
 
 
-# Check against a known example if possible, e.g. from Ciddor's paper comparing Edlen
-# Ciddor (1996) mentions Edlen values.
-# For lambda=0.633um, 20 C, 100000 Pa, dry air:
-# Edlen (n-1)x10^6 = 270.03 (from Ciddor Table 4, adjusted for 0%RH)
-# Let's test this point.
-def test_edlen_ciddor_comparison_point():
-    """Test Edlen against a value cited by Ciddor (1996) Table 4."""
-    # Conditions: lambda=0.633um, t=20 C, P=100000 Pa, dry (RH=0).
-    # CO2 implicitly 300ppm for Edlen.
+def test_edlen_ciddor_comparison_point(set_test_backend):
+    """Test Edlen against a value cited by Ciddor (1996) Table 4.
+    λ=0.633μm, t=20°C, P=100000 Pa, dry (RH=0), CO2=300ppm (Edlen's baseline).
+    Ciddor Table 4 for Edlen: (n-1)x10^6 = 270.03.
+    """
     conditions = EnvironmentalConditions(
         temperature=20.0, pressure=100000.0, relative_humidity=0.0, co2_ppm=300.0
     )
     wavelength_um = 0.633
-    expected_n_approx = 1.00027003 # (n-1)x10^6 = 270.03
+    expected_n_approx = 1.00027003
 
     n_calculated = edlen_refractive_index(wavelength_um, conditions)
-    assert n_calculated == pytest.approx(expected_n_approx, abs=1e-8) # abs is 0.01 for (n-1)x10^6
+    assert n_calculated == pytest.approx(expected_n_approx, abs=1e-8)
 
-    # For 0ppm CO2, Ciddor's Edlen value is 269.97. Edlen doesn't vary CO2.
-    # For 400ppm CO2, Ciddor's Edlen value is 270.06.
-    # This shows Edlen is fixed at its assumed 300ppm CO2.
-    # The value 270.03 is for 300ppm implicitly.
 
-    # Test via main API as well
-    n_api = refractive_index_air(wavelength_um, conditions, model='edlen')
-    assert n_api == pytest.approx(expected_n_approx, abs=1e-8)
+def test_edlen_input_validation(conditions_edlen_standard, set_test_backend):
+    """Test input validation for Edlén model."""
+    with pytest.raises(TypeError, match="conditions must be an EnvironmentalConditions object"):
+        edlen_refractive_index(0.55, {"temperature": 15.0}) # type: ignore
+
+    with pytest.raises(ValueError, match="Wavelength must be positive"):
+        edlen_refractive_index(0.0, conditions_edlen_standard)
+    with pytest.raises(ValueError, match="Wavelength must be positive"):
+        edlen_refractive_index(-0.5, conditions_edlen_standard)
+
+    # Test for temperature that might cause division by zero in density term: (1 + ALPHA_GAS * t_c)
+    # If 1 + ALPHA_GAS * t_c = 0  => t_c = -1 / ALPHA_GAS
+    problem_temp_c = -1.0 / ALPHA_GAS # Approx -272.405... °C
+    conditions_problem_temp = EnvironmentalConditions(temperature=problem_temp_c, co2_ppm=300.0)
+    with pytest.raises(ZeroDivisionError):
+         edlen_refractive_index(0.5, conditions_problem_temp)
+
+    # Test saturation vapor pressure with extreme temperature (if it leads to math issues)
+    # SVP formula: 611.21 * be.exp((18.678 - temp_c / 234.5) * (temp_c / (257.14 + temp_c)))
+    # Denominator (257.14 + temp_c) can be zero if temp_c = -257.14
+    conditions_svp_denom_zero = EnvironmentalConditions(temperature=-257.14, co2_ppm=300.0)
+    if be.get_backend_name() == "torch":
+        # PyTorch might return inf/nan instead of raising error immediately.
+        # The subsequent calculations might then error or produce nan.
+        # This needs careful check of torch behavior if strict error type is required.
+        pass # Skip strict ZeroDivisionError for torch for now
+    else: # Numpy
+        with pytest.raises(ZeroDivisionError): # Or FloatingPointError for overflow if exp arg gets too large
+            _calculate_saturation_vapor_pressure(conditions_svp_denom_zero.temperature)

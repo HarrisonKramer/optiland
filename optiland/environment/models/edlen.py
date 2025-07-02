@@ -15,8 +15,7 @@ References:
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Edlén (1966) ---
@@ -71,7 +70,7 @@ def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
         The saturation vapor pressure in Pascals (Pa).
     """
     # Using the Buck (1981) equation for SVP over water.
-    return 611.21 * np.exp(
+    return 611.21 * be.exp(
         (18.678 - temperature_c / 234.5) * (temperature_c / (257.14 + temperature_c))
     )
 

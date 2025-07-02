@@ -28,8 +28,7 @@ References:
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from ..conditions import EnvironmentalConditions
 
 # --- Model Constants ---
@@ -83,7 +82,7 @@ def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
     B = -1.9121316e-2  # K⁻¹
     C = 33.93711047
     D = -6.3431645e3  # K
-    return np.exp(A * t_k**2 + B * t_k + C + D / t_k)
+    return be.exp(A * t_k**2 + B * t_k + C + D / t_k)
 
 
 def _calculate_water_vapor_partial_pressure(
