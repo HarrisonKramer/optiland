@@ -1,76 +1,92 @@
-"""Implementation of a simplified Kohlrausch model for the refractive index of air.
+"""Kohlrausch (1968) Refractive Index Model for Air
 
-This module provides a basic calculation for the refractive index of air based
-on principles described in older physics handbooks like Kohlrausch's
-Praktische Physik. It typically involves a dispersion formula for reference
-conditions and scaling factors for temperature and pressure.
+This module provides a function to calculate the refractive index of air
+according to the specific formula used by Zemax OpticStudio. This formula is
+attributed to F. Kohlrausch, Praktische Physik, 1968.
 
-This implementation is for dry air and does not account for humidity or CO2
-variations with the same detail as modern models like Ciddor or Edlén.
-It's provided for historical context or when a simpler approximation is needed.
+The model consists of a Sellmeier-type dispersion equation for a reference
+condition (n_ref) and a linearized scaling factor to account for variations
+in temperature and pressure. It is a model for dry air and does not
+explicitly account for humidity or CO₂ variations.
 
-A common form for dry air at 0°C and 101325 Pa is:
-  (n_0 - 1) * 10^6 = A + B / lambda^2
-And then scaled for actual temperature and pressure:
-  (n - 1) = (n_0 - 1) * (P / P_0) * (T_0 / T)
+References:
+    - Kohlrausch, F. (1968). Praktische Physik (Vol. 1, p. 408).
 
 Kramer Harrison, 2025
 """
 
-from optiland.environment.conditions import EnvironmentalConditions
+from ..conditions import EnvironmentalConditions
 
-# Constants for a simplified Cauchy-like dispersion formula for dry air
-# at T0 = 0°C (273.15 K) and P0 = 101325 Pa.
-# (n0 - 1) * 10^6 = A_k + B_k / lambda^2
-# These values are approximate and can vary in different summaries of
-# older models. These are chosen to be representative.
-A_K = 287.5  # Dimensionless, for (n0-1)*10^6
-B_K = 5.0  # um^2, for (n0-1)*10^6 (if lambda is in um)
+# --- Model Constants from the Kohlrausch Formula ---
 
-T0_KELVIN = 273.15  # 0 degrees Celsius in Kelvin
-P0_PASCAL = 101325.0  # Standard pressure in Pascals
+# Constants for the reference dispersion formula (n_ref).
+# This is a Sellmeier-2 formula written as:
+# (n_ref - 1) * 10^8 = A + B / (C - σ²) + D / (E - σ²)
+# where σ = 1/λ is the wavenumber in μm⁻¹.
+DISP_A = 6432.8
+DISP_B = 2949810.0
+DISP_C = 146.0  # In μm⁻²
+DISP_D = 25540.0
+DISP_E = 41.0  # In μm⁻²
+
+# Reference and scaling constants for the pressure/temperature correction.
+T_REF_C = 15.0  # Reference temperature in degrees Celsius.
+P_STD_PA = 101325.0  # Standard atmospheric pressure in Pascals.
+
+# Linearized thermal coefficient for air.
+# This approximates ideal gas law scaling around 15°C.
+ALPHA_T = 3.4785e-3  # In °C⁻¹
 
 
-def kohlrausch_refractive_index(wavelength_um, conditions):
-    """Calculates the refractive index of dry air using a simplified Kohlrausch model.
+def kohlrausch_air_refractive_index(
+    wavelength_um: float, conditions: EnvironmentalConditions
+) -> float:
+    """Calculates air refractive index using the Kohlrausch formula.
 
-    The model uses a basic dispersion formula for air at 0°C and 101325 Pa,
-    and then scales this value for the given temperature and pressure.
-    Humidity and CO2 concentration from the conditions object are ignored
-    by this simplified model.
+    This model ignores the humidity and CO₂ concentration from the conditions
+    object.
 
     Args:
-        wavelength_um (float): Wavelength of light in microns (μm).
-        conditions (EnvironmentalConditions): An object holding the
-            environmental parameters. Only pressure and temperature are used.
+        wavelength_um: Wavelength of light in a vacuum, in micrometers (μm).
+        conditions: An EnvironmentalConditions object. Only temperature and
+            pressure are used.
 
     Returns:
-        float: The refractive index of dry air (n).
+        The refractive index of air (n).
 
     Raises:
-        TypeError: If conditions is not an EnvironmentalConditions object.
-        ValueError: If wavelength_um is not positive.
+        ValueError: If the denominator of the scaling term becomes non-positive,
+            which can occur at extremely low temperatures.
     """
-    if not isinstance(conditions, EnvironmentalConditions):
-        raise TypeError("conditions must be an EnvironmentalConditions object.")
-    if not wavelength_um > 0:
-        raise ValueError("Wavelength must be positive.")
+    # --- 1. Calculate the reference refractivity (n_ref - 1) ---
+    # The formula uses λ directly, but we convert it to the standard Sellmeier
+    # form which uses wavenumber σ = 1/λ for clarity and robustness.
+    try:
+        sigma_sq = (1.0 / wavelength_um) ** 2
+    except ZeroDivisionError as err:
+        raise ValueError("Wavelength must be non-zero.") from err
 
-    # Calculate refractivity at reference conditions (0°C, 101325 Pa)
-    # (n0 - 1) * 10^6 = A_K + B_K / (wavelength_um^2)
-    refractivity0_times_10_6 = A_K + B_K / (wavelength_um**2)
-    n0_minus_1 = refractivity0_times_10_6 * 1.0e-6
+    # Calculate (n_ref - 1) * 10^8
+    n_ref_minus_1_e8 = (
+        DISP_A + DISP_B / (DISP_C - sigma_sq) + DISP_D / (DISP_E - sigma_sq)
+    )
+    n_ref_minus_1 = n_ref_minus_1_e8 * 1.0e-8
 
-    # Get current temperature in Kelvin and pressure in Pascals
-    t_k_actual = conditions.temperature + 273.15
-    p_actual_pa = conditions.pressure
+    # --- 2. Apply temperature and pressure scaling ---
+    t_c = conditions.temperature
+    p_pa = conditions.pressure
 
-    if t_k_actual <= 0:
-        raise ValueError("Absolute temperature must be positive.")
+    # P is relative pressure (dimensionless).
+    relative_pressure = p_pa / P_STD_PA
 
-    # Scale refractivity for actual temperature and pressure
-    # (n - 1) = (n0 - 1) * (P_actual / P0) * (T0 / T_actual)
-    n_minus_1_actual = n0_minus_1 * (p_actual_pa / P0_PASCAL) * (T0_KELVIN / t_k_actual)
+    # Denominator of the scaling term.
+    temp_scaling_denom = 1.0 + (t_c - T_REF_C) * ALPHA_T
+    if temp_scaling_denom <= 0:
+        raise ValueError(
+            f"Invalid temperature {t_c}°C results in non-positive denominator."
+        )
 
-    n = 1.0 + n_minus_1_actual
-    return n
+    # Final calculation for n_air
+    n_air = 1.0 + (n_ref_minus_1 * relative_pressure) / temp_scaling_denom
+
+    return n_air
