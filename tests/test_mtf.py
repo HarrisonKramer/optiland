@@ -222,3 +222,19 @@ class TestHuygensMTF:
         m = FFTMTF(optic)
         m._generate_mtf_data()
         assert hasattr(m, "mtf") and m.mtf is not None
+
+    @pytest.mark.parametrize(
+        "num_rays,expected_pupil_sampling",
+        [
+            (32, 32),
+            (64, 45),
+            (128, 64),
+            (256, 90),
+            (1024, 181),
+        ],
+    )
+    def test_num_rays_and_grid_size(self, set_test_backend, num_rays, expected_pupil_sampling, optic):
+        m = FFTMTF(optic, num_rays=num_rays, grid_size=None)
+
+        assert m.num_rays == expected_pupil_sampling
+        assert m.grid_size == 2 * num_rays

@@ -150,7 +150,14 @@ class FieldGroup:
                 vignetting factor.
 
         """
-        fields = be.stack((self.x_fields, self.y_fields), axis=-1)
+        max_field = self.max_field
+        if max_field == 0:
+            x_fields = self.x_fields
+            y_fields = self.y_fields
+        else:
+            x_fields = self.x_fields / max_field
+            y_fields = self.y_fields / max_field
+        fields = be.stack((x_fields, y_fields), axis=-1)
         v_data = be.stack((self.vx, self.vy), axis=-1)
         result = be.nearest_nd_interpolator(fields, v_data, Hx, Hy)
         vx_new = result[..., 0]

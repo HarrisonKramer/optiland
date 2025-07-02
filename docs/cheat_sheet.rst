@@ -36,6 +36,8 @@ At its heart, Optiland revolves around a few key components:
 
 * **Coordinate Systems** (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x, y, z) and rotation (rx, ry, rz) relative to a reference system.
 
+* **Apodization** (``BaseApodization``): Defines the intensity distribution within the pupil. This is uniform (``UniformApodization``) by default, but other options include Gaussian (``GaussianApodization``).
+
 **Numerical Backend**
 
 * Optiland can use **NumPy** (default) or **PyTorch**.
