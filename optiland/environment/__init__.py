@@ -1,3 +1,4 @@
+# flake8: noqa
 """Environmental Modeling Package
 
 This package provides tools for calculating environmental parameters
@@ -22,34 +23,9 @@ Key exports:
     birch_downs_refractive_index: Direct access to Birch & Downs model.
 """
 
-# Primarily export EnvironmentalConditions, which has no numpy dependency itself.
 from .conditions import EnvironmentalConditions
-
-__all__ = [
-    "EnvironmentalConditions",
-]
-
-# Attempt to import other components that may depend on numpy (or other backends)
-# This allows 'from optiland.environment import EnvironmentalConditions' to always work.
-try:
-    from .air_index import refractive_index_air
-    from .models.birch_downs import birch_downs_refractive_index
-    from .models.ciddor import ciddor_refractive_index
-    from .models.edlen import edlen_refractive_index
-    from .models.kohlrausch import kohlrausch_refractive_index
-
-    __all__.extend([
-        "refractive_index_air",
-        "ciddor_refractive_index",
-        "kohlrausch_refractive_index",
-        "edlen_refractive_index",
-        "birch_downs_refractive_index",
-    ])
-except ModuleNotFoundError as e:
-    # If numpy (or another core dependency for models) is missing,
-    # only EnvironmentalConditions will be reliably available from this package.
-    print(f"Warning: Could not import all environment models due to missing module: {e}. "
-          "Only EnvironmentalConditions will be available from optiland.environment.")
-except ImportError as e:
-    print(f"Warning: Could not import all environment models due to ImportError: {e}. "
-          "Only EnvironmentalConditions will be available from optiland.environment.")
+from .air_index import refractive_index_air
+from .models.birch_downs import birch_downs_refractive_index
+from .models.ciddor import ciddor_refractive_index
+from .models.edlen import edlen_refractive_index
+from .models.kohlrausch import kohlrausch_refractive_index

@@ -6,13 +6,11 @@ from optiland.environment.models.birch_downs import (
     birch_downs_refractive_index,
     _calculate_saturation_vapor_pressure,
     _calculate_water_vapor_partial_pressure,
-    # Import constants from the model to use in tests for clarity
     DISPERSION_A, DISPERSION_B, DISPERSION_C, DISPERSION_D, DISPERSION_E,
     CO2_STD_PPM, CO2_CORRECTION_FACTOR,
     WATER_VAPOR_A, WATER_VAPOR_B,
     P_STD_PA, T_STD_C
 )
-# For testing the main API via refractive_index_air
 from optiland.environment import refractive_index_air
 import optiland.backend as be
 

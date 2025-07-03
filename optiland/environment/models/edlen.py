@@ -16,6 +16,7 @@ Kramer Harrison, 2025
 """
 
 import optiland.backend as be
+
 from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Edlén (1966) ---
