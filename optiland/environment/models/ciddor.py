@@ -16,8 +16,7 @@ References:
 Kramer Harrison, 2025
 """
 
-import numpy as np
-
+import optiland.backend as be
 from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Ciddor (1996), Appendix A ---
@@ -89,7 +88,7 @@ def _calculate_molar_mass_air(co2_ppm: float) -> float:
 def _calculate_saturation_vapor_pressure(temp_k: float) -> float:
     """Calculates saturation vapor pressure of water."""
     # Source: Ciddor (1996), Appendix A [cite: 213, 214, 215]
-    return np.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k)
+    return be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k)
 
 
 def _calculate_enhancement_factor(pressure_pa: float, temp_c: float) -> float:

@@ -15,6 +15,7 @@ References:
 Kramer Harrison, 2025
 """
 
+import optiland.backend as be
 from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from the Kohlrausch Formula ---
