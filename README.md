@@ -267,7 +267,6 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Diffractive Optical Elements**
 - [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
-- [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
 - [ ] **Huygens MTF**
@@ -276,6 +275,32 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Non-sequential ray tracing**
 - [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
+
+
+## Currently Under Development
+
+Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, please check this table and the linked GitHub Issues before starting on a new feature. If you'd like to take on an unassigned `help wanted` task, please comment on the relevant issue first.
+
+| Feature / Topic | Contributor(s) | Status | Discussion / Issue |
+| ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
+| **Core** |                                                    |                |                                                  |
+| Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
+| Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
+| Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
+| Diffraction Gratings and DOEs| *Seeking contributor(s)* | ✨ Help Wanted | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) |
+| **Analysis & Visualization** |                                                    |                |                                                  |
+| Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
+| **GUI** |                                                    |                |                                                  |
+| GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
+
+
+**Status Key:**
+* ✨ **Help Wanted**: We are actively looking for contributors for this task!
+* 🚧 **In Progress**: Actively being worked on.
+* 🔍 **Under Review**: A pull request has been submitted and is being reviewed.
+* 🛑 **Blocked**: Progress is blocked by another issue.
+* ✅ **Done**: Completed and merged. (You can remove these after a while).
 
 
 ### Community Contributions

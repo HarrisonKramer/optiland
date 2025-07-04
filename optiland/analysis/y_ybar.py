@@ -11,8 +11,10 @@ import matplotlib.pyplot as plt
 
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class YYbar:
+
+class YYbar(BaseAnalysis):
     """Class representing the YYbar analysis of an optic.
 
     Args:
@@ -26,10 +28,22 @@ class YYbar:
     """
 
     def __init__(self, optic, wavelength="primary"):
-        self.optic = optic
-        if wavelength == "primary":
-            wavelength = optic.primary_wavelength
-        self.wavelength = wavelength
+        if isinstance(wavelength, str) and wavelength == "primary":
+            processed_wavelength = "primary"
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = wavelength
+        else:
+            raise TypeError(
+                f"Unsupported wavelength type for YYbar: {type(wavelength)}"
+            )
+
+        super().__init__(optic, wavelengths=processed_wavelength)
+
+    def _generate_data(self):
+        ya, _ = self.optic.paraxial.marginal_ray()
+        yb, _ = self.optic.paraxial.chief_ray()
+
+        return {"ya": ya.flatten(), "yb": yb.flatten()}
 
     def view(self, figsize=(7, 5.5)):
         """Visualizes the ray heights of the marginal and chief rays.
@@ -41,11 +55,8 @@ class YYbar:
         """
         _, ax = plt.subplots(figsize=figsize)
 
-        ya, _ = self.optic.paraxial.marginal_ray()
-        yb, _ = self.optic.paraxial.chief_ray()
-
-        ya = ya.flatten()
-        yb = yb.flatten()
+        ya = self.data["ya"]
+        yb = self.data["yb"]
 
         for k in range(2, len(ya)):
             label = ""

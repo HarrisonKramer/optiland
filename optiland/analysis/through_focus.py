@@ -40,6 +40,9 @@ class ThroughFocusAnalysis(ABC):
             subclass.
     """
 
+    MAX_STEPS = 7
+    MIN_STEPS = 1
+
     def __init__(
         self,
         optic,
@@ -62,11 +65,11 @@ class ThroughFocusAnalysis(ABC):
         self._calculate_through_focus()
 
     def _validate_num_steps(self, num_steps):
-        if not isinstance(num_steps, int) or num_steps < 1:
+        if not isinstance(num_steps, int) or num_steps < self.MIN_STEPS:
             raise ValueError("'num_steps' must be a positive integer.")
         if num_steps % 2 == 0:
             raise ValueError("'num_steps' must be an odd integer.")
-        if num_steps > 7:
+        if num_steps > self.MAX_STEPS:
             raise ValueError(
                 "'num_steps' must be less than or equal to 7 for performance reasons."
             )

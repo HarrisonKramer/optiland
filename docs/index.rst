@@ -29,6 +29,48 @@ Python code to generate this 3D visualization:
    lens = ReverseTelephoto()
    lens.draw3D()
 
+Try it Now
+----------
+
+Use the interactive shell to try Optiland in your browser!
+Note that loading the interactive shell may take a few seconds.
+
+Not sure what to type in the shell? Here are a few ideas to explore Optiland right away:
+
+.. code-block:: python
+
+    lens.draw()  # Visualize the optical layout
+
+.. code-block:: python
+
+    effl = lens.paraxial.f2()  # Retrieve the effective focal length
+
+.. code-block:: python
+
+    # Trace 1024 random rays for the on-axis field point, then use rays.x, rays.y for intersection points
+    rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
+
+.. code-block:: python
+
+    # Run a spot diagram analysis
+    from optiland.analysis import SpotDiagram
+    spot = SpotDiagram(lens)
+    spot.view()
+
+.. replite::
+   :kernel: xpython
+   :toolbar: True
+   :width: 100%
+   :height: 600px
+
+   from optiland.samples.objectives import CookeTriplet
+
+   lens = CookeTriplet()
+   lens.draw()
+
+.. note::
+
+   3D plotting does not work in the interactive shell, but you can run the code in your local Python environment to try the 3D visualizations.
 
 .. _getting_started:
 
@@ -63,6 +105,7 @@ Python code to generate this 3D visualization:
    gallery/freeforms
    gallery/differentiable_ray_tracing
    gallery/real_world_projects
+   gallery/external_tools
    gallery/miscellaneous
 
 
@@ -120,6 +163,7 @@ Python code to generate this 3D visualization:
    api/api_physical_apertures
    api/api_rays
    api/api_raytrace
+   api/api_solves
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
