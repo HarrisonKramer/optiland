@@ -14,6 +14,8 @@ from matplotlib import patches
 import optiland.backend as be
 from optiland.visualization.utils import transform
 
+from .base import BaseAnalysis
+
 
 @dataclass
 class SpotData:
@@ -30,7 +32,7 @@ class SpotData:
     intensity: be.array
 
 
-class SpotDiagram:
+class SpotDiagram(BaseAnalysis):
     """Spot diagram class
 
     This class generates data and plots real ray intersection locations
@@ -81,31 +83,20 @@ class SpotDiagram:
             coordinates (Literal['global', 'local'], optional): Coordinate system
                 for data generation and plotting. Defaults to "local".
 
-        Returns:
-            None
-
         """
-        self.optic = optic
-        self.fields = fields
+        if fields == "all":
+            self.fields = optic.fields.get_field_coords()
+        else:
+            self.fields = fields
 
         if coordinates not in ["global", "local"]:
             raise ValueError("Coordinates must be 'global' or 'local'.")
         self.coordinates = coordinates
 
-        self.wavelengths = wavelengths
-        if self.fields == "all":
-            self.fields = self.optic.fields.get_field_coords()
+        self.num_rings = num_rings
+        self.distribution = distribution
 
-        if self.wavelengths == "all":
-            self.wavelengths = self.optic.wavelengths.get_wavelengths()
-
-        self.data = self._generate_data(
-            self.fields,
-            self.wavelengths,
-            num_rings,
-            distribution,
-            self.coordinates,
-        )
+        super().__init__(optic, wavelengths)
 
     def view(self, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
@@ -469,37 +460,27 @@ class SpotDiagram:
             centered.append(field_copy_list)
         return centered
 
-    def _generate_data(
-        self,
-        fields,
-        wavelengths,
-        num_rays=100,
-        distribution="hexapolar",
-        coordinates="local",
-    ):
-        """Generate spot data for the given fields and wavelengths.
-
-        Args:
-            fields (List): A list of fields.
-            wavelengths (List): A list of wavelengths.
-            num_rays (int, optional): The number of rays to generate.
-                Defaults to 100.
-            distribution (str, optional): The distribution type.
-                Defaults to 'hexapolar'.
-            coordinates (str): The coordinate system ('local' or 'global').
+    def _generate_data(self):
+        """Generate spot data for the fields and wavelengths stored in self.
 
         Returns:
             data (List): A nested list of spot intersection data for each
                 field and wavelength.
-
         """
         data = []
-        for field in fields:
+        # Access attributes from self
+        for field in self.fields:
             field_data = []
-            for wavelength in wavelengths:
+            for (
+                wavelength
+            ) in self.wavelengths:  # self.wavelengths is set by BaseAnalysis
                 field_data.append(
                     self._generate_field_data(
-                        field, wavelength, num_rays, distribution, coordinates
+                        field,
+                        wavelength,
+                        self.num_rings,  # Use self.num_rings
+                        self.distribution,  # Use self.distribution
+                        self.coordinates,  # Use self.coordinates
                     ),
                 )
             data.append(field_data)
@@ -509,9 +490,9 @@ class SpotDiagram:
         self,
         field,
         wavelength,
-        num_rays=100,
-        distribution="hexapolar",
-        coordinates="local",
+        num_rays,
+        distribution,
+        coordinates,
     ):
         """Generates spot data for a given field and wavelength.
 
