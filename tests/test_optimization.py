@@ -3,12 +3,13 @@ import warnings
 import optiland.backend as be
 import pytest
 
-from optiland.optimization import optimization
+from optiland.optimization import optimization, glass_expert
 from optiland.samples.microscopes import (
     Microscope20x,
     Objective60x,
     UVReflectingMicroscope,
 )
+from optiland.samples.objectives import CookeTriplet
 
 
 class TestOptimizationProblem:
@@ -315,7 +316,6 @@ class TestLeastSquares:
         optimized_radius = lens.surface_group.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
 
-
     def test_method_dogbox_with_bounds(self):
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
@@ -333,7 +333,6 @@ class TestLeastSquares:
         assert result.success
         optimized_radius = lens.surface_group.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
-
 
     def test_method_lm_with_bounds_warning(self, capsys):
         lens = Microscope20x()
@@ -355,7 +354,6 @@ class TestLeastSquares:
             "support bounds; bounds will be ignored."
         )
         assert expected_warning in captured.out
-
 
     def test_unknown_method_choice_warning(self, capsys):
         lens = Microscope20x()
@@ -621,3 +619,96 @@ class TestBasinHopping:
         optimizer = optimization.BasinHopping(problem)
         with pytest.raises(ValueError):
             optimizer.optimize(niter=10)
+
+
+class TestGlassExpert:
+    def test_optimize(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "thickness",
+            surface_number=1,
+            min_val=10,
+            max_val=100,
+        )
+        problem.add_variable(
+            lens,
+            "material",
+            surface_number=1,
+            glass_selection=['N-BK7', 'N-SSK2', 'N-SK2', 'N-SK16'],
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = glass_expert.GlassExpert(problem)
+        result = optimizer.run(
+            num_neighbours=2,
+            maxiter=8, 
+            disp=False,
+            verbose=False,
+        )
+        assert result.success
+
+    def test_optimize_fail_num_neighbours(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "thickness",
+            surface_number=1,
+            min_val=10,
+            max_val=100,
+        )
+        problem.add_variable(
+            lens,
+            "material",
+            surface_number=1,
+            glass_selection=['N-BK7'],
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = glass_expert.GlassExpert(problem)
+        # Since there is a single glass in glass_selection
+        # and num_neighbours=2, this should raise:
+        # AssertionError: "Cannot keep more glasses 
+        # than available in the input dictionary".
+        with pytest.raises(AssertionError):
+            result = optimizer.run(
+                num_neighbours=2,
+                maxiter=8, 
+                disp=False,
+                verbose=False,
+            )
+            assert result.success
+
+    def test_vprint_verbose_true(self, capsys):
+        """vprint should print when verbose=True."""
+        problem = optimization.OptimizationProblem()
+        optimizer = glass_expert.GlassExpert(problem)
+        optimizer.vprint("Hello World")
+        
+        # Capture stdout
+        captured = capsys.readouterr()
+        assert "Hello World" in captured.out
+
+    def test_vprint_verbose_false(self, capsys):
+        """vprint should not print when verbose=False."""
+        problem = optimization.OptimizationProblem()
+        optimizer = glass_expert.GlassExpert(problem)
+        optimizer.verbose = False
+        optimizer.vprint("This should not appear")
+
+        # Capture stdout
+        captured = capsys.readouterr()
+        print("captured.out =", captured.out)
+        assert captured.out == ""  # Nothing should be printed
