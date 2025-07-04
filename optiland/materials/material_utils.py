@@ -122,6 +122,10 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
     glass_names = list(glass_dict.keys())
     glass_data = be.array([glass_dict[name] for name in glass_names])
 
+    # Detach if PyTorch and convert to NumPy for SciPy clustering
+    if be.get_backend() == "torch":
+        glass_data = glass_data.detach().cpu().numpy()
+
     # Perform K-Means clustering
     centroids, labels = kmeans2(
         glass_data, num_glasses_to_keep, minit="points", seed=1234
@@ -142,12 +146,32 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
 
     # Select the closest glass to each centroid
     selected_glasses = {}
+    labels = be.array(labels)
     for cluster_index in range(num_glasses_to_keep):
+        # Get indices of glasses in this cluster
         cluster_indices = be.where(labels == cluster_index)[0]
-        cluster_points = glass_data[cluster_indices]
-        centroid = centroids[cluster_index]
-        distances = be.linalg.norm(cluster_points - centroid, axis=1)
-        closest_index = cluster_indices[be.argmin(distances)]
+
+        # Extract cluster points
+        cluster_points = be.array(glass_data[cluster_indices])
+        centroid = be.array(centroids[cluster_index])
+
+        # Ensure cluster_points and centroid are 2D in torch
+        if be.get_backend() == "torch":
+            if cluster_points.ndim == 1:
+                cluster_points = cluster_points.unsqueeze(0)
+            if centroid.ndim == 1:
+                centroid = centroid.unsqueeze(0)
+            # Compute distances
+            delta = cluster_points - centroid
+            distances = be.linalg.norm(delta, dim=1 if delta.ndim > 1 else 0)
+            closest_local_idx = be.argmin(distances).item()
+        else:
+            # NumPy distances
+            distances = be.linalg.norm(cluster_points - centroid, axis=1)
+            closest_local_idx = be.argmin(distances)
+
+        # Get global index of closest point
+        closest_index = cluster_indices[closest_local_idx]
         glass_name = glass_names[closest_index]
         selected_glasses[glass_name] = glass_dict[glass_name]
 
