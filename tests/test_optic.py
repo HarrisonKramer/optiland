@@ -9,6 +9,7 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+from tests.utils import assert_allclose
 from optiland.surfaces.factories.material_factory import MaterialFactory
 
 
