@@ -217,6 +217,10 @@ class TestMaterialVariable:
         self.material_var.update_value('F5')
         assert self.material_var.get_value() == 'F5'
 
+    def test_scale(self, set_test_backend):
+        # Does not make much sense, scale() doesn't do anything
+        assert self.material_var.scale('F5') == 'F5'
+
     def test_string_representation(self, set_test_backend):
         assert str(self.material_var) == "Material, Surface 1"
 
