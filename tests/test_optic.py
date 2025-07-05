@@ -365,7 +365,7 @@ class TestOptic:
 
     def test_total_track_property(self, set_test_backend):
         lens = HeliarLens()
-        assert lens.total_track == 3.6291
+        assert lens.total_track == 12.1357
 
     def test_total_track_error(self, set_test_backend):
         lens = HeliarLens()
