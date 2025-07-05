@@ -159,7 +159,7 @@ class SurfaceGroup:
         """float: the total track length of the system"""
         if self.num_surfaces < 2:
             raise ValueError("Not enough surfaces to calculate total track.")
-        z = self.positions[1:-1]
+        z = self.positions[1:]
         return be.max(z) - be.min(z)
 
     def n(self, wavelength):
