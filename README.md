@@ -141,6 +141,8 @@ For more details, see the [installation guide](https://optiland.readthedocs.io/e
 - **Zemax File Import**  
   Convert legacy designs from Zemax files into Optiland’s internal representation for further simulation or analysis.
 
+- **Graphical User Interface (GUI)**
+  An intuitive PySide6-based GUI for interactive optical design, analysis, and system management.
 
 The code itself is in constant flux and new functionalities are always being added.
 
@@ -260,7 +262,7 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
-- [ ] **GUI (PySide6-based)**
+- [x] **GUI (PySide6-based)** - *Initial version available, ongoing enhancements.*
 - [ ] **Multi-Path Sequential Ray Tracing**
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 

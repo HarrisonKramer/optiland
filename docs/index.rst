@@ -94,6 +94,7 @@ Python code to generate this 3D visualization:
    developers_guide/tolerancing_framework
    developers_guide/visualization_framework
    developers_guide/optiland_file_format
+   developers_guide/gui
 
 
 .. toctree::
