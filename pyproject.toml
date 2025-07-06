@@ -50,7 +50,7 @@ packages = ["optiland"]  # Auto-discovers subpackages
 
 [tool.ruff]
 line-length = 88
-exclude = ["tests"]
+exclude = ["tests", "docs"]
 
 [tool.ruff.lint]
 select = [
