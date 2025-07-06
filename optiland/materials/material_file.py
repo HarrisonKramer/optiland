@@ -91,9 +91,6 @@ class MaterialFile(BaseMaterial):
         Returns:
             float or be.ndarray: The refractive index(s) of the material.
         """
-        # Calculate the baseline refractive index. This is relative to air at the
-        # reference temperature (self._t0).
-        base_relative_n = self.formula_map[self._n_formula](wavelength)
 
         # Apply environmental corrections only if temperature data is available.
         if (
@@ -101,12 +98,21 @@ class MaterialFile(BaseMaterial):
             and self._t0 is not None
             and be.any(self.thermdispcoef)
         ):
+            # Calculate the 'relative' wavelength which is input wavelength scaled 
+            # to reference temperature and pressure
+            waverel = wavelength*self._nair(wavelength, temperature, pressure)/self._nair(wavelength, self._t0, 1.0)
+            # Calculate the baseline refractive index. This is relative to air at the
+            # reference temperature (self._t0) and for 'relative' wavelength.
+            base_relative_n = self.formula_map[self._n_formula](waverel)
             return self._apply_environmental_correction(
                 base_relative_n, wavelength, temperature, pressure
             )
         else:
             # If no temperature is given or material has no thermal data,
             # return the catalog value.
+            # Calculate the baseline refractive index. This is relative to air at the
+            # reference temperature (self._t0).
+            base_relative_n = self.formula_map[self._n_formula](wavelength)
             return base_relative_n
 
     def _apply_environmental_correction(
