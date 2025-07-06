@@ -273,7 +273,6 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
-- [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
 
 
