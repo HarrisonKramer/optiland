@@ -104,13 +104,17 @@ These are the primary QDockWidget or QWidget instances that provide specific fun
 Running the GUI
 ---------------
 
-The GUI can be launched by running the `run_gui.py` script located in the `optiland_gui` directory:
+Once Optiland is installed, you can launch the GUI by simply typing the following command in your terminal or console:
+
+.. code-block:: bash
+
+   optiland
+
+This command is a convenient shortcut to the main GUI script. Alternatively, you can run the GUI module directly using Python's `-m` flag, which can be useful for development:
 
 .. code-block:: bash
 
    python -m optiland_gui.run_gui
-
-Alternatively, if you have installed Optiland, you might be able to run it using a command if a console script entry point is defined in `pyproject.toml` (check the project's setup for the exact command, e.g., `optiland-gui`).
 
 Contributing to the GUI
 -----------------------

@@ -32,6 +32,9 @@ license = { text = "MIT License" }
 [project.urls]
 Homepage = "https://github.com/HarrisonKramer/optiland"
 
+[project.scripts]
+optiland = "optiland_gui.run_gui:main"
+
 [project.optional-dependencies]
 dev = [
     "codecov>=2.1.13",

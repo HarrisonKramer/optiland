@@ -24,13 +24,17 @@ Optiland "Hello, World"
 Running the GUI
 ---------------
 
-Optiland also includes a Graphical User Interface (GUI) for interactive design and analysis. To run the GUI, you can typically use the following command in your terminal (make sure your environment with Optiland installed is active):
+Optiland includes a Graphical User Interface (GUI) for interactive design and analysis. Once the package is installed, you can launch the application from any terminal or console on your system by simply running the command:
+
+.. code-block:: bash
+
+   optiland
+
+This will start the main application window. For development or troubleshooting, you can also run the GUI module directly using Python's ``-m`` flag:
 
 .. code-block:: bash
 
    python -m optiland_gui.run_gui
-
-This will launch the main GUI window, allowing you to create, modify, and analyze optical systems interactively.
 
 Optiland for Beginners
 ----------------------
