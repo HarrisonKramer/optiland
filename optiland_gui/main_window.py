@@ -647,7 +647,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def refresh_all_gui_panels(self):
-        print("Terminal command executed, refreshing GUI...")
+        
         self.connector.opticChanged.emit()
 
     @Slot()

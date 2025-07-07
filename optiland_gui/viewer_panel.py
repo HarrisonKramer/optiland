@@ -64,7 +64,6 @@ class ViewerPanel(QWidget):
 
     @Slot()
     def update_viewers(self):
-        print("ViewerPanel: Updating viewers due to optic change.")
         self.viewer2D.plot_optic()
         if VTK_AVAILABLE:
             self.viewer3D.render_optic()

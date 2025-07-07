@@ -19,6 +19,9 @@
     <file alias="dark/terminal.svg">icons/dark/terminal.svg</file>
     <file alias="dark/brand_github.svg">icons/dark/brand_github.svg</file>
     <file alias="dark/help.svg">icons/dark/help.svg</file>
+    <file alias="dark/add.svg">icons/dark/add.svg</file>
+    <file alias="dark/flash.svg">icons/dark/flash.svg</file>
+    <file alias="dark/add_quick_action.svg">icons/dark/add_quick_action.svg</file>
 
 
     <file alias="light/dash.svg">icons/light/dash.svg</file>
@@ -40,6 +43,9 @@
     <file alias="light/terminal.svg">icons/light/terminal.svg</file>
     <file alias="light/brand_github.svg">icons/light/brand_github.svg</file>
     <file alias="light/help.svg">icons/light/help.svg</file>
+    <file alias="light/add.svg">icons/light/add.svg</file>
+    <file alias="light/flash.svg">icons/light/flash.svg</file>
+    <file alias="light/add_quick_action.svg">icons/light/add_quick_action.svg</file>
 
 
 

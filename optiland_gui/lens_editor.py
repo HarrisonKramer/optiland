@@ -74,7 +74,7 @@ class LensEditor(QWidget):
 
     @Slot()
     def full_refresh_from_optic(self):
-        print("LensEditor: Full refresh from optic signal received.")
+        
         self.setup_table()
         self.load_data()
 

@@ -38,7 +38,7 @@ def apply_gui_matplotlib_styles(theme="light"):
         matplotlib.rcdefaults()
 
     matplotlib.rcParams.update(base_style)
-    print(f"Applied {theme}-specific Matplotlib styles.")
+    
 
 
 def get_analysis_parameters(analysis_class):
