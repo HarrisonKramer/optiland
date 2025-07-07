@@ -10,8 +10,10 @@ Kramer Harrison, 2024
 from typing import Union
 
 import optiland.backend as be
+from optiland.apodization import BaseApodization
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
+from optiland.materials.base import BaseMaterial
 from optiland.rays import PolarizationState
 
 
@@ -76,7 +78,7 @@ class OpticUpdater:
         for k, surface in enumerate(self.optic.surface_group.surfaces):
             surface.geometry.cs.z = be.array(positions[k])
 
-    def set_index(self, value, surface_number):
+    def set_index(self, value: float, surface_number: int) -> None:
         """Set the index of refraction of a surface.
 
         Args:
@@ -86,12 +88,23 @@ class OpticUpdater:
                 the *pre-material* of the subsequent surface.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
         new_material = IdealMaterial(n=value, k=0)
-        surface.material_post = new_material
+        self.set_material(new_material, surface_number)
 
+    def set_material(self, material: BaseMaterial, surface_number: int) -> None:
+        """Set the material of a surface.
+
+        Args:
+            value (BaseMaterial): The new material.
+            surface_number (int): The material of the surface whose *post-material*
+                (material after the surface) will be updated. This also updates
+                the *pre-material* of the subsequent surface.
+
+        """
+        surface = self.optic.surface_group.surfaces[surface_number]
+        surface.material_post = material
         surface_post = self.optic.surface_group.surfaces[surface_number + 1]
-        surface_post.material_pre = new_material
+        surface_post.material_pre = material
 
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
@@ -212,3 +225,65 @@ class OpticUpdater:
         self.optic.surface_group.surfaces[-1].geometry.cs.z = (
             self.optic.surface_group.surfaces[-1].geometry.cs.z - offset
         )
+
+    def flip(self):
+        """Flips the optical system, reversing the order of surfaces (excluding
+        object and image planes), their geometries, and materials. Pickups and
+        solves referencing surface indices are updated accordingly.
+        The new first optical surface (originally the last) is placed at z=0.0.
+        """
+        if self.optic.surface_group.num_surfaces < 3:
+            raise ValueError(
+                "Optic flip requires at least 3 surfaces (obj, element, img)"
+            )
+
+        # 1. Capture original global Z-coordinates
+        original_z_coords = [
+            float(be.to_numpy(surf.geometry.cs.z))
+            for surf in self.optic.surface_group.surfaces
+        ]
+
+        # 2. Call SurfaceGroup.flip()
+        self.optic.surface_group.flip(original_vertex_gcs_z_coords=original_z_coords)
+
+        # 3. Define remapping function for indices
+        num_surfaces = self.optic.surface_group.num_surfaces
+
+        def remap_index_func(old_idx):  # pragma: no cover
+            if old_idx == 0 or old_idx == num_surfaces - 1:  # Object or Image surface
+                return old_idx
+            if 1 <= old_idx <= num_surfaces - 2:
+                return num_surfaces - 1 - old_idx
+            return old_idx  # Should not happen if indices are valid
+
+        # 4. Handle Pickups
+        if self.optic.pickups and len(self.optic.pickups.pickups) > 0:
+            self.optic.pickups.remap_surface_indices(remap_index_func)
+
+        # 5. Handle Solves
+        if (
+            hasattr(self.optic, "solves")
+            and self.optic.solves
+            and hasattr(self.optic.solves, "solves")
+            and len(self.optic.solves.solves) > 0
+        ):
+            self.optic.solves.remap_surface_indices(remap_index_func)
+
+        # 6. Update Optic instance
+        self.update()
+
+    def set_apodization(self, apodization_instance: BaseApodization = None):
+        """Sets the apodization for the optical system.
+
+        Args:
+            apodization_instance (Apodization, optional): The apodization
+                object to apply. If None, no apodization is applied.
+                Defaults to None.
+        """
+        if apodization_instance is not None and not isinstance(
+            apodization_instance, BaseApodization
+        ):
+            raise TypeError(
+                "apodization_instance must be None or of type BaseApodization."
+            )
+        self.optic.apodization = apodization_instance

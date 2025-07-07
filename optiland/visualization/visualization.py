@@ -77,7 +77,7 @@ class OpticViewer:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        _, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=figsize)
 
         self.rays.plot(
             ax,
@@ -104,7 +104,7 @@ class OpticViewer:
 
         plt.grid(alpha=0.25)
 
-        plt.show()
+        return fig
 
 
 class OpticViewer3D:

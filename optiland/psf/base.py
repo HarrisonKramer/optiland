@@ -6,6 +6,7 @@ Kramer Harrison, 2025
 """
 
 from abc import abstractmethod
+from warnings import warn
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -97,6 +98,15 @@ class BasePSF(Wavefront):
         min_x, min_y, max_x, max_y = self._find_bounds(psf_np, threshold)
         psf_zoomed = psf_np[min_x:max_x, min_y:max_y]
 
+        oversampling_factor = num_points / psf_zoomed.shape[0]
+
+        if oversampling_factor > 3:
+            message = (
+                f"The PSF view has a high oversampling factor "
+                f"({oversampling_factor:.2f}). Results may be inaccurate."
+            )
+            warn(message, stacklevel=2)
+
         # Subclasses should implement _get_psf_units if they want physical units
         # otherwise, pixel units are used.
         if hasattr(self, "_get_psf_units"):
@@ -112,16 +122,32 @@ class BasePSF(Wavefront):
 
         if projection == "2d":
             self._plot_2d(
-                psf_smooth, log, x_extent, y_extent, figsize, x_label, y_label
+                psf_smooth,
+                log,
+                x_extent,
+                y_extent,
+                figsize,
+                x_label,
+                y_label,
+                psf_zoomed.shape,
             )
         elif projection == "3d":
             self._plot_3d(
-                psf_smooth, log, x_extent, y_extent, figsize, x_label, y_label
+                psf_smooth,
+                log,
+                x_extent,
+                y_extent,
+                figsize,
+                x_label,
+                y_label,
+                psf_zoomed.shape,
             )
         else:
             raise ValueError('Projection must be "2d" or "3d".')
 
-    def _plot_2d(self, image, log, x_extent, y_extent, figsize, x_label, y_label):
+    def _plot_2d(
+        self, image, log, x_extent, y_extent, figsize, x_label, y_label, original_size
+    ):
         """Plots the PSF in 2D.
 
         Args:
@@ -132,8 +158,10 @@ class BasePSF(Wavefront):
             figsize (tuple): The size of the figure.
             x_label (str): Label for the x-axis.
             y_label (str): Label for the y-axis.
+            original_size (tuple): The original size of the PSF image before
+                interpolation.
         """
-        _, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=figsize)
         norm = LogNorm() if log else None
 
         # Replace values <= 0 with smallest non-zero value in image for log scale
@@ -142,6 +170,8 @@ class BasePSF(Wavefront):
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
         im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent)
+
+        self._annotate_original_size(fig, original_size)
 
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
@@ -152,7 +182,9 @@ class BasePSF(Wavefront):
         cbar.ax.set_ylabel("Relative Intensity (%)", rotation=270)
         plt.show()
 
-    def _plot_3d(self, image, log, x_extent, y_extent, figsize, x_label, y_label):
+    def _plot_3d(
+        self, image, log, x_extent, y_extent, figsize, x_label, y_label, original_size
+    ):
         """Plots the PSF in 3D.
 
         Args:
@@ -163,6 +195,8 @@ class BasePSF(Wavefront):
             figsize (tuple): The size of the figure.
             x_label (str): Label for the x-axis.
             y_label (str): Label for the y-axis.
+            original_size (tuple): The original size of the PSF image before
+                interpolation.
         """
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
@@ -197,6 +231,8 @@ class BasePSF(Wavefront):
             antialiased=False,
         )
 
+        self._annotate_original_size(fig, original_size)
+
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_zlabel("Relative Intensity (%)")
@@ -214,6 +250,20 @@ class BasePSF(Wavefront):
         """Formats tick labels for a logarithmic colorbar."""
         linear_value = 10**value
         return f"{linear_value:.1e}"
+
+    def _annotate_original_size(self, fig: plt.Figure, original_size):
+        """Annotates the original size of the zoomed PSF in the bottom right corner."""
+        text = f"Original Size: {original_size[0]}×{original_size[1]}"
+        fig.text(
+            0.99,
+            0.01,
+            text,
+            transform=fig.transFigure,
+            fontsize=10,
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
+        )
 
     def _interpolate_psf(self, image, n=128):
         """Interpolates the PSF for visualization.
@@ -309,18 +359,54 @@ class BasePSF(Wavefront):
         center_y = self.psf.shape[1] // 2
         return self.psf[center_x, center_y] / 100
 
-    def _get_effective_FNO(self):
-        """Calculates the effective F-number of the optical system.
+    def _get_working_FNO(self):
+        """Calculates the working F-number of the optical system for the
+        single defined field point and given wavelength.
+
+        Algorithm:
+            1. Retrieve the defined given wavelength and field coordinates.
+            2. Determine the image-space refractive index 'n' at the given wavelength.
+            3. Trace four marginal rays (top, bottom, left, right) at the pupil edges,
+               as well as the chief ray.
+            4. Compute the angle between each marginal ray and the chief ray.
+            4. Calculate the average of the squared numerical apertures from all traced
+               marginal rays.
+            5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
+            6. Cap the calculated F/# at 10,000 if it exceeds this value.
 
         Returns:
-            float: The effective F-number.
+            float: The working F-number.
         """
-        FNO = self.optic.paraxial.FNO()
+        MAX_FNUM = 10000.0
 
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
+        Hx, Hy = self.fields[0]
+        wavelength = self.wavelengths[0]
 
-        return FNO
+        n = self.optic.image_surface.material_post.n(wavelength)
+        Px = be.array([0, 0, 0, 1, -1])
+        Py = be.array([0, 1, -1, 0, 0])
+
+        rays = self.optic.trace_generic(
+            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
+        )
+
+        L0, M0, N0 = rays.L[0], rays.M[0], rays.N[0]
+        L, M, N = rays.L[1:], rays.M[1:], rays.N[1:]
+        dot = L0 * L + M0 * M + N0 * N
+        dot = be.clip(dot, -1.0, 1.0)
+        angles = be.arccos(dot)
+
+        numerical_apertures_squared = (n * be.sin(angles)) ** 2
+        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
+
+        fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
+
+        if fno > MAX_FNUM:
+            fno = MAX_FNUM
+
+        if be.isnan(fno):
+            raise ValueError(
+                "Working F/# could not be calculated due to raytrace errors."
+            )
+
+        return fno

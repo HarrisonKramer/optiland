@@ -347,7 +347,10 @@ class AnalysisPanel(QWidget):
                 annotation = float
             elif isinstance(default_value, str):
                 annotation = str
-
+        if param_name == "max_freq":
+            annotation = str  # Treat max_freq as a string to allow "cutoff"
+        if param_name == "grid_size":
+            annotation = int # Ensure grid_size uses a QSpinBox
         if annotation == int:
             widget = QSpinBox()
             # Define ranges in a more structured way
@@ -358,13 +361,18 @@ class AnalysisPanel(QWidget):
                 "num_fields": (1, 1024),
                 "num_steps": (1, 51),
                 "detector_surface": (-100, 100),
+                "grid_size": (32, 8192),
             }
             min_v, max_v = ranges.get(param_name, (-1000000, 1000000))
             step_v = 1
+            if param_name == "grid_size":
+                step_v = 32
             widget.setRange(min_v, max_v)
             widget.setSingleStep(step_v)
             if param_name == "num_steps" and default_value and default_value % 2 == 0:
                 default_value += 1  # Ensure odd
+            if param_name == "grid_size" and default_value_override is None:
+                default_value = 128
             widget.setValue(int(default_value) if default_value is not None else 0)
 
         elif annotation == float:

@@ -159,7 +159,7 @@ class SurfaceGroup:
         """float: the total track length of the system"""
         if self.num_surfaces < 2:
             raise ValueError("Not enough surfaces to calculate total track.")
-        z = self.positions[1:-1]
+        z = self.positions[1:]
         return be.max(z) - be.min(z)
 
     def n(self, wavelength):
@@ -257,26 +257,59 @@ class SurfaceGroup:
         if index is None:
             self.surfaces.append(new_surface)
         else:
+            if index < 0:
+                raise IndexError(f"Index {index} cannot be negative.")
+            if index > len(self.surfaces):
+                raise IndexError(
+                    f"Index {index} is out of bounds for insertion. "
+                    f"Max index for insertion is {len(self.surfaces)} (to append)."
+                )
+
             self.surfaces.insert(index, new_surface)
 
-        self.surface_factory.last_thickness = kwargs.get("thickness", 0)
+            # If a surface was inserted (not appended) and there's a surface after it
+            if index < len(self.surfaces) - 1:
+                surface_after_inserted = self.surfaces[index + 1]
+                new_surface = self.surfaces[index]
+                surface_after_inserted.material_pre = new_surface.material_post
+
+            # Update coordinate systems if surface was inserted
+            if not self.surface_factory.use_absolute_cs and index < (
+                len(self.surfaces) - 1
+            ):
+                self._update_coordinate_systems(start_index=index)
 
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.
+
+        Cannot remove the object surface (index 0).
+        If relative coordinate positioning is active (use_absolute_cs=False),
+        this may trigger an update of subsequent surface positions.
 
         Args:
             index (int): The index of the surface to remove.
 
         Raises:
-            ValueError: If the index is 0 (object surface).
-
-        Returns:
-        None
-
+            ValueError: If attempting to remove the object surface (index 0).
+            IndexError: If the index is out of bounds for the current list of surfaces.
         """
         if index == 0:
-            raise ValueError("Cannot remove object surface.")
+            raise ValueError("Cannot remove object surface (index 0).")
+
+        if not (0 < index < len(self.surfaces)):
+            raise IndexError(
+                f"Index {index} is out of bounds for removing from list of "
+                f"{len(self.surfaces)} surfaces."
+            )
+
+        num_surfaces_before_removal = len(self.surfaces)
+
         del self.surfaces[index]
+
+        if not self.surface_factory.use_absolute_cs:
+            was_not_last_surface = index < num_surfaces_before_removal - 1
+            if was_not_last_surface:
+                self._update_coordinate_systems(start_index=index)
 
     def reset(self):
         """Resets all the surfaces in the collection.
@@ -316,3 +349,135 @@ class SurfaceGroup:
         return cls(
             [Surface.from_dict(surface_data) for surface_data in data["surfaces"]],
         )
+
+    def _update_coordinate_systems(self, start_index):
+        """Updates the coordinate systems of surfaces from start_index.
+
+        This method is called when a surface is added, removed, or modified
+        in a way that might affect the positions of subsequent surfaces,
+        but only if absolute coordinate positioning (use_absolute_cs=True)
+        is not being used by the coordinate system factory.
+
+        It recalculates the z-coordinate of each surface based on the
+        z-coordinate and 'thickness' attribute of the preceding surface.
+
+        Args:
+            start_index (int): The index of the surface from which to start
+                            updating coordinate systems. The surface at
+                            `start_index` itself will be updated if it's
+                            not the object surface (index 0) and has a predecessor.
+                            If `start_index` is 0, updates effectively begin
+                            for surface 1 based on surface 0.
+        """
+        if not self.surfaces:
+            return
+
+        effective_start_index = start_index
+        if start_index == 0:
+            effective_start_index = 1
+
+        if effective_start_index >= len(self.surfaces):
+            return
+
+        for i in range(effective_start_index, len(self.surfaces)):
+            current_surface = self.surfaces[i]
+
+            if i == 0:  # no update to object surface
+                continue
+            elif i == 1:  # first surface lies at z=0.0 by definition
+                new_z = 0.0
+            else:
+                prev_surface = self.surfaces[i - 1]
+                thickness = prev_surface.thickness
+
+                if hasattr(thickness, "item"):
+                    thickness = thickness.item()
+
+                if be.isinf(thickness):
+                    raise ValueError(
+                        f"Coordinate system update failed due to infinite "
+                        f"thickness at surface {start_index - 1}"
+                    )
+
+                new_z = prev_surface.geometry.cs.z + thickness
+
+            current_surface.geometry.cs.z = be.array(new_z)
+
+    def flip(
+        self,
+        original_vertex_gcs_z_coords: list[float],
+        start_index: int = 1,
+        end_index: int = -1,
+    ):
+        """Flips a segment of the surfaces in the group.
+
+        Args:
+            original_vertex_gcs_z_coords (list[float]): List of the original
+                global Z-coordinates of all surface vertices in the group
+                before flipping.
+            start_index (int, optional): The starting index of the segment of
+                surfaces to flip. Defaults to 1 (skips object surface).
+            end_index (int, optional): The ending index (exclusive for positive,
+                inclusive for negative slice behavior) of the segment of surfaces
+                to flip. Defaults to -1 (up to, but not including, the image surface).
+        """
+        n_surfaces_total = len(self.surfaces)
+
+        if start_index < 0:
+            start_index = n_surfaces_total + start_index
+
+        if end_index < 0:
+            actual_slice_end_index = (
+                n_surfaces_total + end_index if end_index != 0 else 0
+            )
+        else:
+            actual_slice_end_index = end_index
+
+        if start_index >= actual_slice_end_index:
+            # No surfaces to flip or invalid range
+            self.reset()
+            return
+
+        original_indices_in_segment = list(range(start_index, actual_slice_end_index))
+
+        if not original_indices_in_segment:
+            self.reset()
+            return
+
+        # Extract the segment, reverse it, and place it back
+        segment_to_reverse = self.surfaces[start_index:actual_slice_end_index]
+        segment_to_reverse.reverse()
+        self.surfaces[start_index:actual_slice_end_index] = segment_to_reverse
+
+        # Call flip() on each surface within the now-reversed segment
+        for i in range(len(segment_to_reverse)):
+            surface_index_in_group = start_index + i
+            self.surfaces[surface_index_in_group].flip()
+
+        if segment_to_reverse:  # Check if the segment is not empty
+            self.surfaces[start_index].geometry.cs.z = 0.0
+
+            # Iterate for thicknesses within the segment
+            # k iterates from 0 to len(segment_to_reverse) - 2
+            for k in range(len(segment_to_reverse) - 1):
+                current_surf_in_new_order = self.surfaces[start_index + k]
+                next_surf_in_new_order = self.surfaces[start_index + k + 1]
+
+                original_idx_of_new_k = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - k
+                ]
+                original_idx_of_new_k_plus_1 = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - (k + 1)
+                ]
+
+                # The thickness is between these two original surfaces
+                thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_new_k]
+                    - original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1]
+                )
+
+                next_surf_in_new_order.geometry.cs.z = (
+                    current_surf_in_new_order.geometry.cs.z + thickness
+                )
+
+        self.reset()

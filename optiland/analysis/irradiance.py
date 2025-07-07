@@ -19,8 +19,10 @@ import numpy as _np  # Use _np for the binning. Later extend to
 # other backends
 import optiland.backend as be
 
+from .base import BaseAnalysis
 
-class IncoherentIrradiance:
+
+class IncoherentIrradiance(BaseAnalysis):
     """Compute and visualise incoherent irradiance on the detector surface.
     For simplification, we assume that the detector surface = image surface.
 
@@ -42,7 +44,7 @@ class IncoherentIrradiance:
      detector_surface : int
          Index into `optic.surface_group.surfaces` that designates the detector
          plane to analyse (default=`-1`->image surface).
-     irr_data : list[list[be.ndarray]]
+     data : list[list[be.ndarray]]
          2-D irradiance arrays for every (field,wvl) - outer index is field,
          inner index is wavelength.  Each array has shape
          (res[0],res[1]) with X as the row index so that
@@ -71,37 +73,31 @@ class IncoherentIrradiance:
         fields="all",
         wavelengths="all",
         distribution: str = "random",
-        user_initial_rays=None,  # Optional[RealRays]
+        user_initial_rays=None,
     ):
-        self.optic = optic
+        if fields == "all":
+            self.fields = optic.fields.get_field_coords()
+        else:
+            self.fields = tuple(fields)
+
         self.num_rays = num_rays
         self.npix_x, self.npix_y = res
         self.px_size = (
             None if px_size is None else (float(px_size[0]), float(px_size[1]))
-        )  # in mm
+        )
         self.detector_surface = int(detector_surface)
-
-        self.fields = (
-            optic.fields.get_field_coords() if fields == "all" else tuple(fields)
-        )
-        self.wavelengths = (
-            optic.wavelengths.get_wavelengths()
-            if wavelengths == "all"
-            else tuple(wavelengths)
-        )
-
         self.user_initial_rays = user_initial_rays
+        self.distribution = distribution
 
-        # the detector surface must have a physical aperture
-        surf = self.optic.surface_group.surfaces[self.detector_surface]
+        # The detector surface must have a physical aperture
+        surf = optic.surface_group.surfaces[self.detector_surface]
         if surf.aperture is None:
             raise ValueError(
                 "Detector surface has no physical aperture - set one "
                 "(e.g. RectangularAperture) so that the detector size is defined."
             )
 
-        # Generate irradiance for every (field, wvl) pair
-        self.irr_data = self._generate_data(distribution, self.user_initial_rays)
+        super().__init__(optic, wavelengths)
 
     def view(
         self,
@@ -112,7 +108,7 @@ class IncoherentIrradiance:
         normalize: bool = True,
     ):
         """Display false-colour irradiance map or cross-section plots."""
-        if not self.irr_data:
+        if not self.data:  # Changed from self.irr_data
             print("No irradiance data to display.")
             return
 
@@ -149,7 +145,9 @@ class IncoherentIrradiance:
 
         all_irr_values_list = []
 
-        for field_block_idx, field_block in enumerate(self.irr_data):
+        for field_block_idx, field_block in enumerate(
+            self.data
+        ):  # Changed from self.irr_data
             if not field_block:
                 print(f"Warning: Field block {field_block_idx} is empty.")
                 continue
@@ -160,7 +158,7 @@ class IncoherentIrradiance:
                         "is None."
                     )
                     continue
-                irr_map, x_edges, y_edges = entry  # irr_data stores tuples
+                irr_map, x_edges, y_edges = entry  # self.data stores tuples
                 if irr_map is None:
                     print(
                         f"Warning: Irradiance map in entry {entry_idx}, "
@@ -182,15 +180,15 @@ class IncoherentIrradiance:
                 )
                 return
             vmin_plot, vmax_plot = _np.min(all_irr_values), _np.max(all_irr_values)
-            if vmin_plot == vmax_plot:
+            if vmin_plot == vmax_plot:  # Handle case where all values are the same
                 vmin_plot -= 0.1 * abs(vmin_plot) if vmin_plot != 0 else 0.1
                 vmax_plot += 0.1 * abs(vmax_plot) if vmax_plot != 0 else 0.1
-                if vmin_plot == vmax_plot:
-                    vmin_plot, vmax_plot = 0.0, 1.0
+                if vmin_plot == vmax_plot:  # Still same (e.g. all zeros)
+                    vmin_plot, vmax_plot = 0.0, 1.0  # Default range
         else:
-            vmin_plot, vmax_plot = 0.0, 1.0
+            vmin_plot, vmax_plot = 0.0, 1.0  # Normalized range
 
-        for f_idx, field_block in enumerate(self.irr_data):
+        for f_idx, field_block in enumerate(self.data):  # Changed from self.irr_data
             for w_idx, entry_data in enumerate(field_block):  # entry_data is the tuple
                 irr_map, x_edges, y_edges = entry_data
                 if normalize:
@@ -252,7 +250,9 @@ class IncoherentIrradiance:
 
     def peak_irradiance(self):
         """Maximum pixel value for each (field,wvl) pair."""
-        return [[be.max(irr) for irr, *_ in fblock] for fblock in self.irr_data]
+        return [
+            [be.max(irr) for irr, *_ in fblock] for fblock in self.data
+        ]  # Changed from self.irr_data
 
     def _plot_cross_section(
         self,
@@ -325,21 +325,27 @@ class IncoherentIrradiance:
 
     # --- data generation functions ---
 
-    def _generate_data(self, distribution, user_initial_rays):
+    def _generate_data(self):  # Signature changed
         data = []
+        # Use self.fields, self.wavelengths, self.distribution, self.user_initial_rays
         for field in self.fields:
             f_block = []
-            for wl in self.wavelengths:
+            for (
+                wl
+            ) in self.wavelengths:  # self.wavelengths is now a list from BaseAnalysis
                 f_block.append(
                     self._generate_field_data(
-                        field, wl, distribution, user_initial_rays
+                        field, wl, self.distribution, self.user_initial_rays
                     )
                 )
             data.append(f_block)
         return data
 
-    def _generate_field_data(self, field, wavelength, distribution, user_initial_rays):
+    def _generate_field_data(
+        self, field, wavelength, distribution, user_initial_rays
+    ):  # Signature unchanged
         """Trace rays and bin their power into the pixels of the detector."""
+        # Uses self.num_rays internally
         if user_initial_rays is None:
             Hx, Hy = field
             self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)

@@ -3,12 +3,13 @@ import warnings
 import optiland.backend as be
 import pytest
 
-from optiland.optimization import optimization
+from optiland.optimization import optimization, glass_expert
 from optiland.samples.microscopes import (
     Microscope20x,
     Objective60x,
     UVReflectingMicroscope,
 )
+from optiland.samples.objectives import CookeTriplet
 
 
 class TestOptimizationProblem:
@@ -300,7 +301,9 @@ class TestLeastSquares:
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         min_b, max_b = 10, 100
-        problem.add_variable(lens, "radius", surface_number=1, min_val=min_b, max_val=max_b)
+        problem.add_variable(
+            lens, "radius", surface_number=1, min_val=min_b, max_val=max_b
+        )
         input_data = {"optic": lens}
         problem.add_operand(
             operand_type="f2",
@@ -309,18 +312,19 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        result = optimizer.optimize(method_choice='trf', maxiter=10, tol=1e-3)
+        result = optimizer.optimize(method_choice="trf", maxiter=10, tol=1e-3)
         assert result.success
         # Check if the optimized variable is within bounds (SciPy's TRF handles this)
         optimized_radius = lens.surface_group.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
 
-
     def test_method_dogbox_with_bounds(self):
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
         min_b, max_b = 10, 100
-        problem.add_variable(lens, "radius", surface_number=1, min_val=min_b, max_val=max_b)
+        problem.add_variable(
+            lens, "radius", surface_number=1, min_val=min_b, max_val=max_b
+        )
         input_data = {"optic": lens}
         problem.add_operand(
             operand_type="f2",
@@ -329,11 +333,10 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        result = optimizer.optimize(method_choice='dogbox', maxiter=10, tol=1e-3)
+        result = optimizer.optimize(method_choice="dogbox", maxiter=10, tol=1e-3)
         assert result.success
         optimized_radius = lens.surface_group.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
-
 
     def test_method_lm_with_bounds_warning(self, capsys):
         lens = Microscope20x()
@@ -347,7 +350,7 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        optimizer.optimize(method_choice='lm', maxiter=5)
+        optimizer.optimize(method_choice="lm", maxiter=5)
         captured = capsys.readouterr()
         expected_warning = (
             "Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
@@ -356,11 +359,10 @@ class TestLeastSquares:
         )
         assert expected_warning in captured.out
 
-
     def test_unknown_method_choice_warning(self, capsys):
         lens = Microscope20x()
         problem = optimization.OptimizationProblem()
-        problem.add_variable(lens, "radius", surface_number=1) # No bounds needed
+        problem.add_variable(lens, "radius", surface_number=1)  # No bounds needed
         input_data = {"optic": lens}
         problem.add_operand(
             operand_type="f2",
@@ -369,11 +371,11 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        optimizer.optimize(method_choice='unknown_method', maxiter=5)
+        optimizer.optimize(method_choice="unknown_method", maxiter=5)
         captured = capsys.readouterr()
         expected_warning = (
             "Warning: Unknown method_choice 'unknown_method'. Defaulting to "
-            "'trf' method." # Updated expected warning
+            "'trf' method."  # Updated expected warning
         )
         assert expected_warning in captured.out
 
@@ -391,7 +393,7 @@ class MockOperandNaN:
     def delta(self):
         return be.nan
 
-    def value(self): # Add a value method
+    def value(self):  # Add a value method
         return be.nan
 
 
@@ -420,8 +422,10 @@ class TestLeastSquaresErrorHandling:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
 
         mock_op = MockOperandNaN()
-        problem.initial_value = 1.0 # Set to non-zero to prevent sum_squared in OptimizerGeneric init
-        problem.operands.operands.append(mock_op) # Manually add mock operand
+        problem.initial_value = (
+            1.0  # Set to non-zero to prevent sum_squared in OptimizerGeneric init
+        )
+        problem.operands.operands.append(mock_op)  # Manually add mock operand
 
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(maxiter=5)
@@ -430,7 +434,7 @@ class TestLeastSquaresErrorHandling:
         # So cost = 0.5 * (sqrt(1e10))^2 = 0.5 * 1e10
         assert be.isclose(result.cost, 0.5 * 1e10)
         # Check that optimization completed without crashing (status might vary)
-        assert result.status is not None # General check for completion
+        assert result.status is not None  # General check for completion
 
     def test_exception_in_residual_handling(self):
         lens = Microscope20x()
@@ -438,7 +442,9 @@ class TestLeastSquaresErrorHandling:
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
 
         mock_op = MockOperandException()
-        problem.initial_value = 1.0 # Set to non-zero to prevent sum_squared in OptimizerGeneric init
+        problem.initial_value = (
+            1.0  # Set to non-zero to prevent sum_squared in OptimizerGeneric init
+        )
         problem.operands.operands.append(mock_op)
 
         optimizer = optimization.LeastSquares(problem)
@@ -621,3 +627,96 @@ class TestBasinHopping:
         optimizer = optimization.BasinHopping(problem)
         with pytest.raises(ValueError):
             optimizer.optimize(niter=10)
+
+
+class TestGlassExpert:
+    def test_optimize(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "thickness",
+            surface_number=1,
+            min_val=10,
+            max_val=100,
+        )
+        problem.add_variable(
+            lens,
+            "material",
+            surface_number=1,
+            glass_selection=['N-BK7', 'N-SSK2', 'N-SK2', 'N-SK16'],
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = glass_expert.GlassExpert(problem)
+        result = optimizer.run(
+            num_neighbours=2,
+            maxiter=8, 
+            disp=False,
+            verbose=False,
+        )
+        assert result.success
+
+    def test_optimize_fail_num_neighbours(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "thickness",
+            surface_number=1,
+            min_val=10,
+            max_val=100,
+        )
+        problem.add_variable(
+            lens,
+            "material",
+            surface_number=1,
+            glass_selection=['N-BK7'],
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=95,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = glass_expert.GlassExpert(problem)
+        # Since there is a single glass in glass_selection
+        # and num_neighbours=2, this should raise:
+        # AssertionError: "Cannot keep more glasses 
+        # than available in the input dictionary".
+        with pytest.raises(AssertionError):
+            result = optimizer.run(
+                num_neighbours=2,
+                maxiter=8, 
+                disp=False,
+                verbose=False,
+            )
+            assert result.success
+
+    def test_vprint_verbose_true(self, capsys):
+        """vprint should print when verbose=True."""
+        problem = optimization.OptimizationProblem()
+        optimizer = glass_expert.GlassExpert(problem)
+        optimizer.vprint("Hello World")
+        
+        # Capture stdout
+        captured = capsys.readouterr()
+        assert "Hello World" in captured.out
+
+    def test_vprint_verbose_false(self, capsys):
+        """vprint should not print when verbose=False."""
+        problem = optimization.OptimizationProblem()
+        optimizer = glass_expert.GlassExpert(problem)
+        optimizer.verbose = False
+        optimizer.vprint("This should not appear")
+
+        # Capture stdout
+        captured = capsys.readouterr()
+        print("captured.out =", captured.out)
+        assert captured.out == ""  # Nothing should be printed

@@ -150,7 +150,7 @@ class TestSurfaceFactory:
             )
 
     def test_invalid_surface_index(self, set_test_backend):
-        with pytest.raises(ValueError):
+        with pytest.raises(IndexError):
             self.factory.create_surface(
                 surface_type="standard",
                 comment="Invalid",

@@ -70,6 +70,17 @@ class PickupManager:
         """Clears all pickup operations in the manager."""
         self.pickups.clear()
 
+    def remap_surface_indices(self, remap_func):
+        """Remaps the source and target surface indices of all pickups.
+
+        Args:
+            remap_func (callable): A function that takes an old surface index
+                                   and returns a new surface index.
+        """
+        for pickup in self.pickups:
+            pickup.source_surface_idx = remap_func(pickup.source_surface_idx)
+            pickup.target_surface_idx = remap_func(pickup.target_surface_idx)
+
     def to_dict(self):
         """Returns a dictionary representation of the pickup manager.
 

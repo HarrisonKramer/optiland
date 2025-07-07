@@ -9,8 +9,32 @@ the base class.
 Kramer Harrison, 2023
 """
 
+import numpy as np
+
 import optiland.backend as be
 from optiland.psf.base import BasePSF
+
+
+def calculate_grid_size(num_rays) -> tuple[int, int]:
+    """Calculates the effective pupil sampling and grid size based on the number of
+    rays.
+
+    See https://ansyshelp.ansys.com/public/account/secured?returnurl=/Views/Secured/Zemax/v251/en/OpticStudio_User_Guide/OpticStudio_Help/topics/FFT_PSF.html
+    for details on OpticStudio's FFT PSF sampling behavior.
+
+    Args:
+        num_rays (int): The number of rays used to sample the pupil.
+    Returns:
+        int: The effective pupil sampling size, which is the number of rays
+            used to sample the pupil in one dimension.
+        int: The grid size used for FFT computation.
+    """
+    effective_pupil_sampling = np.floor(32 * 2 ** ((np.log2(num_rays) - 5) / 2)).astype(
+        int
+    )
+    grid_size = num_rays * 2
+
+    return effective_pupil_sampling, grid_size
 
 
 class FFTPSF(BasePSF):
@@ -19,6 +43,10 @@ class FFTPSF(BasePSF):
     This class computes the PSF of an optical system by taking the Fourier
     Transform of the pupil function. It inherits common visualization and
     initialization functionalities from `BasePSF`.
+
+    If no grid size is specified, OpticStudio's FFT PSF sampling behavior is
+    emulated by scaling down the number of rays in the pupil and using a
+    grid size of `num_rays * 2`.
 
     Args:
         optic (Optic): The optical system object, containing properties like
@@ -31,7 +59,8 @@ class FFTPSF(BasePSF):
             `num_rays` x `num_rays`. Defaults to 128.
         grid_size (int, optional): The size of the grid used for FFT
             computation (includes zero-padding). This determines the
-            resolution of the PSF. Defaults to 1024.
+            resolution of the PSF. Defaults to 1024. If not specified,
+            it is calculated based on `num_rays`.
 
     Attributes:
         pupils (list[be.ndarray]): A list of complex-valued pupil functions,
@@ -46,7 +75,19 @@ class FFTPSF(BasePSF):
                         by `Wavefront` for generating OPD/intensity data.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, grid_size=1024):
+    def __init__(self, optic, field, wavelength, num_rays=128, grid_size=None):
+        if grid_size is None:
+            if num_rays < 32:
+                raise ValueError(
+                    "num_rays must be at least 32 if grid_size is not specified."
+                )
+            num_rays, grid_size = calculate_grid_size(num_rays)
+        elif grid_size < num_rays:
+            raise ValueError(
+                f"Grid size ({grid_size}) must be greater than or equal to the "
+                f"number of rays ({num_rays})."
+            )
+
         super().__init__(
             optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
         )
@@ -75,7 +116,7 @@ class FFTPSF(BasePSF):
         x, y = be.meshgrid(x, x)
         x = x.ravel()
         y = y.ravel()
-        R = be.sqrt(x**2 + y**2)
+        R2 = x**2 + y**2
 
         field = self.fields[0]  # PSF contains a single field.
         pupils = []
@@ -84,7 +125,7 @@ class FFTPSF(BasePSF):
             wavefront_data = self.get_data(field, wl)
             P = be.to_complex(be.zeros_like(x))
             amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
-            P[R <= 1] = be.to_complex(
+            P[R2 <= 1] = be.to_complex(
                 amplitude * be.exp(1j * 2 * be.pi * wavefront_data.opd)
             )
             P = be.reshape(P, (self.num_rays, self.num_rays))
@@ -145,14 +186,18 @@ class FFTPSF(BasePSF):
         """
         pupils_padded = []
         for pupil in self.pupils:
-            pad = (self.grid_size - pupil.shape[0]) // 2
+            pad_before = (self.grid_size - pupil.shape[0]) // 2
+            pad_after = pad_before + (self.grid_size - pupil.shape[0]) % 2
+
             pupil = be.pad(
                 pupil,
-                ((pad, pad), (pad, pad)),
+                ((pad_before, pad_after), (pad_before, pad_after)),
                 mode="constant",
                 constant_values=0,
             )
+
             pupils_padded.append(pupil)
+
         return pupils_padded
 
     def _get_normalization(self):
@@ -172,7 +217,8 @@ class FFTPSF(BasePSF):
             float: The normalization factor.
         """
         P_nom = be.copy(self.pupils[0])
-        P_nom[P_nom != 0] = 1
+        # Create a binary mask: 1 where P_nom is non-zero, 0 otherwise.
+        P_nom = be.where(P_nom != 0, be.ones_like(P_nom), P_nom)
 
         amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
         psf_norm = amp_norm * be.conj(amp_norm)
@@ -203,9 +249,9 @@ class FFTPSF(BasePSF):
             These are returned as NumPy arrays as `BasePSF.view` expects them
             for Matplotlib's `extent` argument.
         """
-        FNO = self._get_effective_FNO()
+        FNO = self._get_working_FNO()
 
-        Q = self.grid_size / self.num_rays
+        Q = self.grid_size / (self.num_rays - 1)
         dx = self.wavelengths[0] * FNO / Q
 
         x = be.to_numpy(image.shape[1] * dx)

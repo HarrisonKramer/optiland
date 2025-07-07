@@ -48,6 +48,14 @@ class StandardGeometry(BaseGeometry):
     def __str__(self):
         return "Standard"
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of curvature.
+        The conic constant remains unchanged.
+        """
+        self.radius = -self.radius
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.
 
@@ -108,7 +116,8 @@ class StandardGeometry(BaseGeometry):
         t = be.where(be.abs(z1) <= be.abs(z2), t1, t2)
 
         # handle case when a = 0
-        t[a == 0] = -c[a == 0] / b[a == 0]
+        # Assumes b is not zero when a is zero, based on original logic.
+        t = be.where(a == 0, -c / b, t)
 
         return t
 

@@ -9,9 +9,10 @@ project = "Optiland"
 current_year = datetime.now().year
 copyright = f"2024-{current_year}, Kramer Harrison & contributors"
 author = "Kramer Harrison"
-release = "0.4.1"
+release = "0.5.2"
 
 extensions = [
+    "jupyterlite_sphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
@@ -58,3 +59,6 @@ autodoc_default_options = {
     "special-members": False,
     "inherited-members": True,
 }
+
+# Jupyterlite configuration
+jupyterlite_bind_ipynb_suffix = False

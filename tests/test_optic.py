@@ -1,6 +1,7 @@
 import pytest
 import optiland.backend as be
 
+from optiland.apodization import UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
 from optiland.fields import FieldGroup
 from optiland.optic import Optic
@@ -8,6 +9,8 @@ from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
+from tests.utils import assert_allclose
+from optiland.surfaces.factories.material_factory import MaterialFactory
 
 
 def singlet_infinite_object():
@@ -184,6 +187,31 @@ class TestOptic:
         self.optic.set_index(1.5, 1)
         assert self.optic.surface_group.surfaces[1].material_post.n(1) == 1.5
 
+    def test_set_material(self, set_test_backend):
+        self.optic.add_surface(
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
+        )
+        self.optic.add_surface(
+            index=1,
+            surface_type="standard",
+            material="air",
+            thickness=5,
+        )
+        self.optic.add_surface(
+            index=2,
+            surface_type="standard",
+            material="air",
+            thickness=10,
+        )
+        surface_number = 1
+        material_post = MaterialFactory._configure_post_material('N-BK7')
+        self.optic.set_material(material_post, surface_number)
+        surface = self.optic.surface_group.surfaces[surface_number]
+        assert surface.material_post == material_post
+
     def test_set_asphere_coeff(self, set_test_backend):
         self.optic.add_surface(
             index=0,
@@ -198,6 +226,18 @@ class TestOptic:
     def test_set_polarization(self, set_test_backend):
         self.optic.set_polarization("ignore")
         assert self.optic.polarization == "ignore"
+
+    def test_optic_default_apodization(self, set_test_backend):
+        assert self.optic.apodization is None
+
+    def test_optic_set_apodization(self, set_test_backend):
+        gaussian_apod = GaussianApodization(sigma=0.5)
+        self.optic.set_apodization(gaussian_apod)
+        assert self.optic.apodization == gaussian_apod, "Apodization not set correctly"
+
+        # Test setting with a non-Apodization type
+        with pytest.raises(TypeError):
+            self.optic.set_apodization("not_an_apodization_object")
 
     def test_set_invalid_polarization(self, set_test_backend):
         with pytest.raises(ValueError):
@@ -351,7 +391,7 @@ class TestOptic:
 
     def test_total_track_property(self, set_test_backend):
         lens = HeliarLens()
-        assert lens.total_track == 3.6291
+        assert lens.total_track == 12.1357
 
     def test_total_track_error(self, set_test_backend):
         lens = HeliarLens()
@@ -376,15 +416,25 @@ class TestOptic:
 
     def test_to_dict(self, set_test_backend):
         lens = HeliarLens()
+        lens.set_apodization(GaussianApodization(sigma=0.5))
         lens_dict = lens.to_dict()
-        assert lens_dict is not None
+        assert isinstance(lens_dict, dict)
+        assert "apodization" in lens_dict
+        assert lens_dict["apodization"]["type"] == "GaussianApodization"
+        assert lens_dict["apodization"]["sigma"] == 0.5
 
     def test_from_dict(self, set_test_backend):
         lens = HeliarLens()
-        lens_dict = lens.to_dict()
-        new_lens = HeliarLens.from_dict(lens_dict)
-        assert new_lens is not None
-        assert new_lens.total_track == lens.total_track
+        lens.set_apodization(GaussianApodization(sigma=0.5))
+        basic_dict = lens.to_dict()
+
+        new_optic = Optic.from_dict(basic_dict)
+        assert isinstance(new_optic, Optic)
+        assert isinstance(new_optic.apodization, GaussianApodization)
+
+        basic_dict.pop("apodization", None)
+        new_optic = Optic.from_dict(basic_dict)
+        assert new_optic.apodization is None
 
     def test_invalid_field_type(self, set_test_backend):
         with pytest.raises(ValueError):
@@ -426,3 +476,46 @@ class TestOptic:
             self.optic.add_surface(
                 index=1, radius=be.inf, z=0, dx=15
             )  # cannot use dx or dy with abs. z
+
+    def test_flip_optic(self, set_test_backend):
+        lens = HeliarLens()
+        lens.surface_group.set_fresnel_coatings()
+        radii_orig = be.copy(lens.surface_group.radii)
+        radii_orig = radii_orig[~be.isinf(radii_orig)]  # ignore inf
+        n_orig = be.copy(lens.n(0.55))
+        lens.flip()
+        radii_flipped = be.copy(lens.surface_group.radii)
+        radii_flipped = radii_flipped[~be.isinf(radii_flipped)]  # ignore inf
+        n_flipped = be.copy(lens.n(0.55))
+        assert_allclose(radii_orig, -be.flip(radii_flipped))
+        assert_allclose(n_orig[:-1], be.flip(n_flipped[:-1]))
+
+    def test_invalid_flip(self, set_test_backend):
+        lens = Optic()
+        with pytest.raises(ValueError):
+            lens.flip()
+
+    def test_flip_solves_pickups(self, set_test_backend):
+        lens = Optic()
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(index=1, radius=100, thickness=4, material="SK16", is_stop=True)
+        lens.add_surface(index=2, radius=-1000, thickness=20)
+        lens.add_surface(index=3)
+        lens.set_aperture(aperture_type="EPD", value=10.0)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_wavelength(value=0.5876, is_primary=True)
+
+        lens.solves.add("quick_focus")
+        lens.pickups.add(
+            source_surface_idx=1,
+            attr_type="radius",
+            target_surface_idx=2,
+            scale=-1,
+            offset=0,
+        )
+        lens.update()
+        lens.flip()
+        assert lens.pickups.pickups[0].source_surface_idx == 2
+        assert lens.pickups.pickups[0].target_surface_idx == 1

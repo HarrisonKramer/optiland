@@ -34,6 +34,9 @@ class InvalidGeometry(BaseGeometry):
     def surface_normal(self, rays):
         return 0
 
+    def flip(self):
+        pass
+
 
 class InvalidMaterial(BaseMaterial):
     def __init__(self):
@@ -57,32 +60,31 @@ class TestOpticViewer:
     def test_view(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
-        viewer.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig = viewer.view()
+        assert fig is not None
+        mock_show.assert_not_called()
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_from_optic(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        lens.draw()
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw()
+        assert fig is not None  # verify figure creation
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_bonded_lens(self, mock_show, set_test_backend):
         lens = TessarLens()
-        viewer = OpticViewer(lens)
-        viewer.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw()
+        assert fig is not None
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_reflective_lens(self, mock_show, set_test_backend):
         lens = HubbleTelescope()
-        viewer = OpticViewer(lens)
-        viewer.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw()
+        assert fig is not None
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_single_field(self, mock_show, set_test_backend):
@@ -90,26 +92,23 @@ class TestOpticViewer:
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type="angle")
         lens.add_field(y=0)
-        viewer = OpticViewer(lens)
-        viewer.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw()
+        assert fig is not None
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_chief_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        viewer = OpticViewer(lens)
-        viewer.view(reference="chief")
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw(reference='chief')
+        assert fig is not None
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_marginal_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        viewer = OpticViewer(lens)
-        viewer.view(reference="marginal")
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw(reference='marginal')
+        assert fig is not None
+        plt.close(fig)
 
     def test_invalid_reference(self, set_test_backend):
         lens = ReverseTelephoto()
@@ -120,18 +119,16 @@ class TestOpticViewer:
     @patch("matplotlib.pyplot.show")
     def test_reference_chief_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        viewer = OpticViewer(lens)
-        viewer.view(reference="chief", distribution=None)
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw(reference='chief', distribution=None)
+        assert fig is not None
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_marginal_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        viewer = OpticViewer(lens)
-        viewer.view(reference="marginal", distribution=None)
-        mock_show.assert_called_once()
-        plt.close()
+        fig = lens.draw(reference='marginal', distribution=None)
+        assert fig is not None
+        plt.close(fig)
 
 
 class TestOpticViewer3D:

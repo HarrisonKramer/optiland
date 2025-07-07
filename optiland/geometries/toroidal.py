@@ -234,6 +234,20 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return nx, ny, nz
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of rotation (R_rot) and the base Y-Z radius
+        (R_yz). Updates the Y-Z curvature (c_yz) accordingly.
+        """
+        self.R_rot = -self.R_rot
+        self.R_yz = -self.R_yz
+
+        self.c_yz = (
+            1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
+        )
+        self.radius = -self.radius
+
     def __str__(self) -> str:
         return "Toroidal"
 

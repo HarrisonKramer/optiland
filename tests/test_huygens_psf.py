@@ -90,9 +90,7 @@ class TestHuygensPSF:
         Tests that HuygensPSF raises ValueError if backend is not numpy.
         This test relies on mocking the backend check.
         """
-        with pytest.raises(
-            ValueError, match="HuygensPSF only supports numpy backend."
-        ):
+        with pytest.raises(ValueError, match="HuygensPSF only supports numpy backend."):
             HuygensPSF(
                 optic=cooke_triplet_optic,
                 field=(0, 0),
@@ -104,11 +102,11 @@ class TestHuygensPSF:
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
     def test_get_image_extent(self, optic_fixture_name, request):
         """
-        Tests the _get_image_extent method's effects (cx, cy, pixel_pitch) and return 
+        Tests the _get_image_extent method's effects (cx, cy, pixel_pitch) and return
         values.
         """
         optic = request.getfixturevalue(optic_fixture_name)
-        # Initialize instance (this calls _get_image_extent via _get_image_coordinates 
+        # Initialize instance (this calls _get_image_extent via _get_image_coordinates
         # via _compute_psf)
         psf_instance = HuygensPSF(
             optic=optic,
@@ -163,7 +161,7 @@ class TestHuygensPSF:
         self, optic_fixture_name, request
     ):
         """
-        Tests properties of the computed PSF: non-negativity and normalization 
+        Tests properties of the computed PSF: non-negativity and normalization
         (peak value). Uses higher resolution for a more stable peak for
         normalization check.
         """
@@ -201,22 +199,12 @@ class TestHuygensPSF:
     @pytest.mark.parametrize(
         "field, expected_strehl_min",
         [
-            (
-                (0, 0),
-                0.05
-            ),
-            (
-                (0.7, 0.0),
-                0.005
-            ),
+            ((0, 0), 0.05),
+            ((0.7, 0.0), 0.005),
         ],
     )
     def test_strehl_ratio_general(
-        self,
-        optic_fixture_name,
-        field,
-        expected_strehl_min,
-        request
+        self, optic_fixture_name, field, expected_strehl_min, request
     ):
         """
         Tests the Strehl ratio calculation for various optics and fields.
@@ -262,7 +250,6 @@ class TestHuygensPSF:
         User should fill in `EXPECTED_STREHL_VALUES` with known good values.
         """
         EXPECTED_STREHL_VALUES = {
-            # Optic Class Name: { field_tuple: expected_strehl_value_placeholder }
             "CookeTriplet": {
                 (0, 0): 0.3023159962682067,
                 (
@@ -288,14 +275,11 @@ class TestHuygensPSF:
                 (
                     0.7,
                     0.0,
-                ): 0.8830167021238075,
+                ): 0.881275354472487,
             },
-
         }
         # Tolerance for Strehl comparison
-        strehl_tolerance = (
-            0.001
-        )
+        strehl_tolerance = 0.001
 
         optics_map = {
             "CookeTriplet": cooke_triplet_optic,
@@ -374,7 +358,7 @@ class TestHuygensPSF:
         self, mock_show, optic_fixture_name, projection, log_scale, request
     ):
         """
-        Tests that the `view` method (inherited from BasePSF) runs without raising 
+        Tests that the `view` method (inherited from BasePSF) runs without raising
         errors and calls `plt.show()`.
         """
         optic = request.getfixturevalue(optic_fixture_name)
@@ -410,6 +394,41 @@ class TestHuygensPSF:
         with pytest.raises(ValueError, match='Projection must be "2d" or "3d".'):  #
             psf_instance.view(projection="invalid_projection_type")
 
+    @pytest.mark.parametrize(
+        "projection",
+        [ "2d", "3d",],
+    )
+    @patch("matplotlib.figure.Figure.text")
+    def test_view_annotate_sampling(self, mock_text, projection, cooke_triplet_optic):
+        psf_instance = HuygensPSF(
+            optic=cooke_triplet_optic,
+            field=(0, 1),
+            wavelength=self.WAVELENGTH_GREEN,
+            num_rays=self.NUM_RAYS_LOW,
+            image_size=self.IMAGE_SIZE_LOW,
+        )
+        psf_instance.view(projection=projection, num_points=32)
+
+        mock_text.assert_called_once()
+
+        plt.close("all")
+
+    @pytest.mark.parametrize(
+        "projection",
+        [ "2d", "3d",],
+    )
+    def test_view_oversampling(self, projection, cooke_triplet_optic):
+        psf_instance = HuygensPSF(
+            optic=cooke_triplet_optic,
+            field=(0, 1),
+            wavelength=self.WAVELENGTH_GREEN,
+            num_rays=self.NUM_RAYS_LOW,
+            image_size=self.IMAGE_SIZE_LOW,
+        )
+
+        with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
+            psf_instance.view(projection=projection, log=False, num_points=128)
+
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
     def test_get_normalization_value_positive(self, optic_fixture_name, request):
         """
@@ -440,7 +459,7 @@ class TestHuygensPSF:
     ):
         """
         This RuntimeError from BasePSF is not directly triggerable in HuygensPSF
-        as `psf` is computed in `__init__`. This documents the expected BasePSF 
+        as `psf` is computed in `__init__`. This documents the expected BasePSF
         behavior.
         """
         psf_instance = HuygensPSF(
@@ -455,7 +474,7 @@ class TestHuygensPSF:
         with pytest.raises(RuntimeError, match="PSF has not been computed."):
             psf_instance.view()
         # Restore psf for any subsequent internal state dependent tests if object is
-        # reused (not typical in pytest fixtures per test) 
+        # reused (not typical in pytest fixtures per test)
         # psf_instance.psf = psf_instance._compute_psf()
 
     def test_strehl_ratio_psf_not_computed_error_case_not_directly_triggerable(

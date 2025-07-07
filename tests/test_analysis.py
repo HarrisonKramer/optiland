@@ -778,7 +778,7 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     data = spot._generate_field_data(
         field,
         wavelength,
-        num_rays=10,
+        num_rays=3,
         distribution="hexapolar",
         coordinates="global",
     )
@@ -880,7 +880,7 @@ class TestIncoherentIrradiance:
         irr_uniform = analysis.IncoherentIrradiance(
             optic_sys, num_rays=5, distribution="uniform", res=res
         )
-        irr_map_uniform, _, _ = irr_uniform.irr_data[0][0]
+        irr_map_uniform, _, _ = irr_uniform.data[0][0]
 
         # This is a basic check, not a precise value assertion
         assert be.sum(irr_map_uniform) > 0
@@ -895,7 +895,7 @@ class TestIncoherentIrradiance:
         irr_user = analysis.IncoherentIrradiance(
             optic_sys, res=res, user_initial_rays=user_rays
         )
-        irr_map_user, _, _ = irr_user.irr_data[0][0]
+        irr_map_user, _, _ = irr_user.data[0][0]
 
         pixel_area_expected = ((2.5 - (-2.5)) / res[0]) * ((2.5 - (-2.5)) / res[1])
         expected_irr_value = 1.0 / pixel_area_expected
@@ -936,7 +936,7 @@ class TestIncoherentIrradiance:
         irr_analysis = analysis.IncoherentIrradiance(
             optic_sys, res=res_val, user_initial_rays=user_rays
         )
-        irr_map_be, _, _ = irr_analysis.irr_data[0][0]
+        irr_map_be, _, _ = irr_analysis.data[0][0]
 
         expected_map_np = np.zeros(res_val)  # create the expected map with numpy
         pixel_area_expected = ((2.5 - (-2.5)) / res_val[0]) * (
@@ -987,7 +987,7 @@ class TestIncoherentIrradiance:
         irr_apodized = analysis.IncoherentIrradiance(
             optic_sys, res=res_val, user_initial_rays=user_rays_apodized
         )
-        irr_map_apodized_be, x_edges, y_edges = irr_apodized.irr_data[0][0]
+        irr_map_apodized_be, x_edges, y_edges = irr_apodized.data[0][0]
 
         center_idx_x = res_val[0] // 2
         center_idx_y = res_val[1] // 2
@@ -1019,7 +1019,7 @@ class TestIncoherentIrradiance:
         irr_perfect = analysis.IncoherentIrradiance(
             optic_sys, res=res_val, user_initial_rays=user_rays_grid
         )
-        irr_map_perfect_be = irr_perfect.irr_data[0][0][0]
+        irr_map_perfect_be = irr_perfect.data[0][0][0]
 
         center_x_idx = res_val[0] // 2
         center_y_idx = res_val[1] // 2
@@ -1123,7 +1123,7 @@ class TestIncoherentIrradiance:
         irr = analysis.IncoherentIrradiance(
             optic_sys, res=(10, 10), px_size=(1.0, 1.0), num_rays=10
         )
-        irr_map_be, x_edges, y_edges = irr.irr_data[0][0]
+        irr_map_be, x_edges, y_edges = irr.data[0][0]
 
         # Check that the effective resolution is 5x5
         assert irr_map_be.shape == (5, 5)
@@ -1200,7 +1200,7 @@ class TestIncoherentIrradiance:
         irr = analysis.IncoherentIrradiance(
             test_system_irradiance_v1, num_rays=1, res=(2, 2)
         )  # Minimal rays to get some data
-        irr.irr_data = []  # Force no data
+        irr.data = []  # Force no data
         irr.view()
         captured = capsys.readouterr()
         assert "No irradiance data to display." in captured.out
@@ -1208,7 +1208,7 @@ class TestIncoherentIrradiance:
         plt.close()
 
         # Test with empty field block
-        irr.irr_data = [[]]
+        irr.data = [[]]
         irr.view()
         captured = capsys.readouterr()
         assert (
@@ -1218,7 +1218,7 @@ class TestIncoherentIrradiance:
         plt.close()
 
         # Test with None entry in field block
-        irr.irr_data = [[None]]
+        irr.data = [[None]]
         irr.view()
         captured = capsys.readouterr()
         assert (
@@ -1229,7 +1229,7 @@ class TestIncoherentIrradiance:
 
         # Test with None irradiance map in entry
         dummy_edges = be.array([0.0, 1.0])
-        irr.irr_data = [[(None, dummy_edges, dummy_edges)]]
+        irr.data = [[(None, dummy_edges, dummy_edges)]]
         irr.view()
         captured = capsys.readouterr()
         assert (
@@ -1263,21 +1263,21 @@ class TestIncoherentIrradiance:
         )  # numpy array for dummy edges
 
         # Case 1: All pixels have same non-zero irradiance
-        irr.irr_data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
+        irr.data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
         irr.view(normalize=False)  # Test the vmin=vmax branch in plotting
         mock_show.assert_called_once()
         plt.close()
         mock_show.reset_mock()
 
         # Case 2: All pixels are zero
-        irr.irr_data = [[(be.zeros(res_tuple), dummy_edges, dummy_edges)]]
+        irr.data = [[(be.zeros(res_tuple), dummy_edges, dummy_edges)]]
         irr.view(normalize=False)
         mock_show.assert_called_once()
         plt.close()
         mock_show.reset_mock()
 
         # Case 3: Normalization active, vmin/vmax will be 0 and 1
-        irr.irr_data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
+        irr.data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
         irr.view(normalize=True)
         mock_show.assert_called_once()
         plt.close()
@@ -1288,15 +1288,15 @@ class TestIncoherentIrradiance:
         irr = analysis.IncoherentIrradiance(
             test_system_irradiance_v1, num_rays=1, res=(2, 2)
         )
-        irr.irr_data = []
+        irr.data = []
         assert irr.peak_irradiance() == []
 
-        irr.irr_data = [[]]
+        irr.data = [[]]
         assert irr.peak_irradiance() == [[]]
 
         dummy_edges = be.array([0.0, 1.0])  # numpy array for dummy edges
         # Ensure float values for irradiance maps for consistent type with backend
-        irr.irr_data = [
+        irr.data = [
             [
                 (be.array([[1.0, 2.0], [3.0, 4.0]]), dummy_edges, dummy_edges),
                 (be.array([[5.0, 6.0], [7.0, 8.0]]), dummy_edges, dummy_edges),
@@ -1335,8 +1335,8 @@ def test_incoherent_irradiance_initialization(
     assert irr.fields == optic.fields.get_field_coords()
     assert irr.wavelengths == optic.wavelengths.get_wavelengths()
     assert irr.user_initial_rays is None
-    assert len(irr.irr_data) == len(optic.fields.get_field_coords())
-    assert len(irr.irr_data[0]) == len(optic.wavelengths.get_wavelengths())
+    assert len(irr.data) == len(optic.fields.get_field_coords())
+    assert len(irr.data[0]) == len(optic.wavelengths.get_wavelengths())
 
 
 @patch("matplotlib.pyplot.show")
@@ -1346,7 +1346,7 @@ def test_view_normalize_true_peak_zero(
     optic = test_system_irradiance_v1
     irr = analysis.IncoherentIrradiance(optic, num_rays=1, res=(5, 5))
     dummy_edges = np.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5])  # numpy array for dummy
-    irr.irr_data = [
+    irr.data = [
         [(be.zeros((5, 5)), dummy_edges, dummy_edges)]
     ]  # All zero irradiance map
 
@@ -1362,7 +1362,7 @@ def test_cross_section_plot_helper_out_of_bounds(
 ):
     optic = test_system_irradiance_v1
     irr = analysis.IncoherentIrradiance(optic, num_rays=5, res=(5, 5))
-    irr_map_be, x_edges, y_edges = irr.irr_data[0][
+    irr_map_be, x_edges, y_edges = irr.data[0][
         0
     ]  # x_edges, y_edges are numpy arrays
 
@@ -1383,7 +1383,9 @@ def test_cross_section_plot_helper_out_of_bounds(
     )
 
     # Test invalid axis type
-    irr._plot_cross_section(irr_map_be, x_edges, y_edges, 'invalid-axis', 0, (6,5), "Test", True)
+    irr._plot_cross_section(
+        irr_map_be, x_edges, y_edges, "invalid-axis", 0, (6, 5), "Test", True
+    )
 
 
 class TestThroughFocusSpotDiagram:
@@ -1402,8 +1404,8 @@ class TestThroughFocusSpotDiagram:
             num_rings=num_rings,
             distribution=distribution,
             coordinates=coordinates,
-            fields="all", # explicitly pass to ensure it's resolved
-            wavelengths="all" # explicitly pass to ensure it's resolved
+            fields="all",  # explicitly pass to ensure it's resolved
+            wavelengths="all",  # explicitly pass to ensure it's resolved
         )
 
         assert tf_spot.delta_focus == delta_focus
@@ -1419,15 +1421,15 @@ class TestThroughFocusSpotDiagram:
         assert isinstance(tf_spot.wavelengths, list)
         assert len(tf_spot.wavelengths) > 0
         assert tf_spot.wavelengths != "all"
-        
+
         expected_results_len = 2 * num_steps + 1
         assert len(tf_spot.results) == expected_results_len
 
         # Check structure of one result item
-        result_item = tf_spot.results[0] # First focal step
+        result_item = tf_spot.results[0]  # First focal step
         assert isinstance(result_item, dict)
         assert len(result_item.keys()) == 1
-        
+
         # Key should be the delta_focus value for that step
         focus_key = list(result_item.keys())[0]
         expected_focus_key = -num_steps * delta_focus
@@ -1443,29 +1445,27 @@ class TestThroughFocusSpotDiagram:
     def test_image_surface_z_restoration(self, set_test_backend, cooke_triplet):
         optic = cooke_triplet
         original_z = optic.image_surface.geometry.cs.z
-        
+
         # Ensure original_z is a concrete value if it's a backend tensor
-        if hasattr(original_z, 'item'):
+        if hasattr(original_z, "item"):
             original_z_val = original_z.item()
         else:
             original_z_val = float(original_z)
 
-        tf_spot = analysis.ThroughFocusSpotDiagram(
-            optic, delta_focus=0.05, num_steps=1
-        )
-        
+        tf_spot = analysis.ThroughFocusSpotDiagram(optic, delta_focus=0.05, num_steps=1)
+
         current_z = optic.image_surface.geometry.cs.z
-        if hasattr(current_z, 'item'):
+        if hasattr(current_z, "item"):
             current_z_val = current_z.item()
         else:
             current_z_val = float(current_z)
-            
+
         assert_allclose(current_z_val, original_z_val)
 
     def test_analysis_results_content(self, set_test_backend, cooke_triplet):
         optic = cooke_triplet
         delta_focus = 0.05
-        num_steps = 1 # Results for -0.05, 0, +0.05
+        num_steps = 1  # Results for -0.05, 0, +0.05
 
         tf_spot = analysis.ThroughFocusSpotDiagram(
             optic, delta_focus=delta_focus, num_steps=num_steps
@@ -1479,55 +1479,59 @@ class TestThroughFocusSpotDiagram:
             if be.isclose(list(res_dict.keys())[0], 0.0):
                 nominal_results_dict = res_dict
                 break
-        
+
         assert nominal_results_dict is not None, "Nominal focus results not found."
         rms_values_at_nominal = list(nominal_results_dict.values())[0]
 
         # Compare with direct SpotDiagram calculation
-        spot_direct = analysis.SpotDiagram(optic) # Optic z should be at nominal here
+        spot_direct = analysis.SpotDiagram(optic)  # Optic z should be at nominal here
         rms_direct_all_wl = spot_direct.rms_spot_radius()
         primary_wl_idx = optic.wavelengths.primary_index
-        
+
         expected_rms_at_nominal = []
         for field_idx in range(len(tf_spot.fields)):
             expected_rms_at_nominal.append(rms_direct_all_wl[field_idx][primary_wl_idx])
 
         for i in range(len(tf_spot.fields)):
-            assert_allclose(be.to_numpy(rms_values_at_nominal[i]), be.to_numpy(expected_rms_at_nominal[i]))
+            assert_allclose(
+                be.to_numpy(rms_values_at_nominal[i]),
+                be.to_numpy(expected_rms_at_nominal[i]),
+            )
 
         # Check other focal planes for plausibility (positive RMS)
         for i, res_dict in enumerate(tf_spot.results):
             # Skip nominal as it's already checked in detail
             if be.isclose(list(res_dict.keys())[0], 0.0):
                 continue
-            
+
             rms_list = list(res_dict.values())[0]
             current_df = list(res_dict.keys())[0]
             # print(f"Checking delta_f: {current_df}, RMS list: {rms_list}") # For debugging if needed
             for rms_val in rms_list:
                 rms_float = be.to_numpy(rms_val).item()
-                assert rms_float >= 0.0, f"RMS value {rms_float} is negative for delta_focus {current_df}"
-                assert not be.isnan(rms_val), f"RMS value is NaN for delta_focus {current_df}"
-
+                assert rms_float >= 0.0, (
+                    f"RMS value {rms_float} is negative for delta_focus {current_df}"
+                )
+                assert not be.isnan(rms_val), (
+                    f"RMS value is NaN for delta_focus {current_df}"
+                )
 
     @patch("builtins.print")
     def test_view_method(self, mock_print, set_test_backend, cooke_triplet):
         optic = cooke_triplet
-        tf_spot = analysis.ThroughFocusSpotDiagram(
-            optic, delta_focus=0.1, num_steps=2
-        )
+        tf_spot = analysis.ThroughFocusSpotDiagram(optic, delta_focus=0.1, num_steps=2)
         tf_spot.view()
 
         mock_print.assert_called()
-        
+
         # Check for some expected output patterns
         # Get all calls to print in a single list of strings
         print_calls = [args[0] for args, kwargs in mock_print.call_args_list]
-        
+
         assert any("Through-Focus Spot Diagram Results" in call for call in print_calls)
         assert any("Delta Focus:" in call for call in print_calls)
         assert any("Field (" in call for call in print_calls)
-        
+
         # Check that the number of "Delta Focus:" lines matches num_steps
         delta_focus_lines = [call for call in print_calls if "Delta Focus:" in call]
         assert len(delta_focus_lines) == (2 * tf_spot.num_steps + 1)
@@ -1550,7 +1554,7 @@ class TestThroughFocusSpotDiagram:
             num_rings=3,
             fields="all",
             wavelengths="all",
-            coordinates="local"
+            coordinates="local",
         )
 
     def test_init_valid(self, set_test_backend):

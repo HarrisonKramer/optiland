@@ -1,0 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "numba"
+description = "Numba stub for running Optiland in WASM environments"
+readme = { content-type = "text/markdown", text = "" }
+license = { text = "" }
+requires-python = ">=3.9,<3.14"
+version = "0.61.2"
