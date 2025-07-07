@@ -78,9 +78,7 @@ class EncircledEnergy(SpotDiagram):
 
         data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
-        axis_lim = (
-            be.to_numpy(be.max(be.array(geometric_size))) if geometric_size else 0.01
-        )
+        axis_lim = be.max(geometric_size)
 
         for k, field_data in enumerate(data):
             self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
