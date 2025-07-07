@@ -36,7 +36,7 @@ This will start the main application window. For development or troubleshooting,
 
    python -m optiland_gui.run_gui
 
-For a more detailed guide on using the GUI, including an overview of its components and basic operations, please see the :doc:`gui_quickstart`.
+For a more detailed guide on using the GUI, including an overview of its components and basic operations, please see the :ref:`gui_quickstart`.
 
 Optiland for Beginners
 ----------------------
