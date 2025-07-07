@@ -225,6 +225,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Designing non-standard optical systems with freeform surfaces
     - [Tutorial 7d - Three Mirror Anastigmat](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7d_Three_Mirror_Anastigmat.ipynb)
         - Off-axis reflective telescope with freeform surfaces
+    - [Tutorial 7e - Glass Expert](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7e_Glass_Expert.ipynb)
+        - Optimizing lens materials using the Glass Expert tool
 8. **Tolerancing**
     - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
@@ -267,15 +269,39 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Diffractive Optical Elements**
 - [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
-- [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
 - [ ] **Huygens MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
-- [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
+
+
+## Currently Under Development
+
+Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, please check this table and the linked GitHub Issues before starting on a new feature. If you'd like to take on an unassigned `help wanted` task, please comment on the relevant issue first.
+
+| Feature / Topic | Contributor(s) | Status | Discussion / Issue |
+| ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
+| **Core** |                                                    |                |                                                  |
+| Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
+| Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
+| Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
+| Diffraction Gratings and DOEs| *Seeking contributor(s)* | ✨ Help Wanted | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) |
+| **Analysis & Visualization** |                                                    |                |                                                  |
+| Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
+| **GUI** |                                                    |                |                                                  |
+| GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
+
+
+**Status Key:**
+* ✨ **Help Wanted**: We are actively looking for contributors for this task!
+* 🚧 **In Progress**: Actively being worked on.
+* 🔍 **Under Review**: A pull request has been submitted and is being reviewed.
+* 🛑 **Blocked**: Progress is blocked by another issue.
+* ✅ **Done**: Completed and merged. (You can remove these after a while).
 
 
 ### Community Contributions

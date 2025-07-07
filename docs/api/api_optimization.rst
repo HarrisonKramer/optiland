@@ -20,6 +20,7 @@ Core Functionalities
    :caption: Optimization Modules
 
    optimization.optimization
+   optimization.glass_expert
 
 
 Operands
