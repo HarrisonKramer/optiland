@@ -17,6 +17,33 @@ import optiland.backend as be
 from .base import BaseAnalysis
 
 
+def _plot_angle_vs_height(plot_data_list, axis, optic_name, plot_style, figsize, title):
+    """Helper function to generate a consistent angle vs. image height plot.
+
+    Args:
+        plot_data_list (list): A list of tuples, where each tuple contains
+            (height_array, angle_degrees_array, label_string).
+        axis (int): Specifies the axis for measurement (0 for x, 1 for y).
+        optic_name (str): The name of the optic, used for the plot title.
+        plot_style (str): Matplotlib plot style (e.g., '.-', '-').
+        figsize (tuple): The size of the figure.
+        title (str or None): An optional subtitle for the plot.
+    """
+    fig, ax = plt.subplots(figsize=figsize)
+
+    for height, angle_deg, label_str in plot_data_list:
+        ax.plot(height, angle_deg, plot_style, label=label_str)
+
+    fig.suptitle("Incident Angle vs Image Height" + (" (x-axis)" if axis == 0 else ""))
+    ax.set_title(title if title else optic_name, fontsize=10)
+    ax.set_xlabel("Image Height in Millimeters")
+    ax.set_ylabel("Incident Angle in Degrees")
+    ax.grid(alpha=0.25)
+    ax.legend()
+    fig.tight_layout()
+    plt.show()
+
+
 class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
     """Abstract base class for Angle vs. Height analysis routines.
 
@@ -345,32 +372,3 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
             Py,
             "Pupil",  # pupil coordinates are fixed
         )
-
-
-def _plot_angle_vs_height(plot_data_list, axis, optic_name, plot_style, figsize, title):
-    """Helper function to generate a consistent angle vs. image height plot.
-
-    Args:
-        plot_data_list (list): A list of tuples, where each tuple contains
-            (height_array, angle_degrees_array, label_string).
-        axis (int): Specifies the axis for measurement (0 for x, 1 for y).
-        optic_name (str): The name of the optic, used for the plot title.
-        plot_style (str): Matplotlib plot style (e.g., '.-', '-').
-        figsize (tuple): The size of the figure.
-        title (str or None): An optional subtitle for the plot.
-    """
-    fig, ax = plt.subplots(figsize=figsize)
-
-    for height, angle_deg, label_str in plot_data_list:
-        ax.plot(height, angle_deg, plot_style, label=label_str)
-
-    fig.suptitle("Incident Angle vs Image Height" + (" (x-axis)" if axis == 0 else ""))
-    ax.set_title(title if title else optic_name, fontsize=10)
-    ax.set_xlabel("Image Height in Millimeters")
-    ax.set_ylabel("Incident Angle in Degrees")
-    ax.minorticks_on()
-    ax.grid(visible=True, which="major", color="darkgrey", linestyle="-")
-    ax.grid(visible=True, which="minor", color="lightgrey", linestyle="--")
-    ax.legend()
-    fig.tight_layout()
-    plt.show()
