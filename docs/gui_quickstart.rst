@@ -50,7 +50,6 @@ When you first open the Optiland GUI, you'll see a main window containing severa
 .. image:: _static/gui_overview.png
    :alt: Optiland GUI Overview
    :align: center
-   :width: 600px
 
 *   **Main Window**: Contains the main menu bar (File, Edit, View, Tools, Help), toolbars for quick actions, and manages the different panels.
 *   **Lens Data Editor**: This is where you view and modify the surface-by-surface data of your optical system, such as radius, thickness, material, conic constants, and semi-diameters. Changes made here are reflected in other panels.
@@ -58,7 +57,7 @@ When you first open the Optiland GUI, you'll see a main window containing severa
     .. image:: _static/gui_lens_data_editor.png
        :alt: Viewer Panel (2D/3D)
        :align: center
-       :width: 400px
+       :width: 600px
 
 *   **Viewer Panel**: This panel provides visual representations of your optical system.
     *   **2D View**: Shows a 2D cross-section of the lens, with options to display rays.
@@ -67,16 +66,17 @@ When you first open the Optiland GUI, you'll see a main window containing severa
     .. image:: _static/gui_viewer_panel.png
        :alt: Viewer Panel (2D/3D)
        :align: center
-       :width: 400px
+       :width: 600px
 
 *   **Analysis Panel**: Allows you to select, configure, and run various optical analyses. Results are typically displayed as plots within this panel. Note that you can run several analyses, all of which are available on the right sidebar.
 
     .. image:: _static/gui_analysis_panel.png
        :alt: Analysis Panel
        :align: center
-       :width: 400px
+       :width: 600px
 
 *   **System Properties Panel**: Manage system-wide settings that are not tied to individual surfaces. This includes:
+
     *   **Aperture**: Define the system aperture (e.g., Entrance Pupil Diameter, F-number).
     *   **Fields**: Set up field points for analysis.
     *   **Wavelengths**: Define the wavelengths and their weights for calculations.
@@ -84,7 +84,7 @@ When you first open the Optiland GUI, you'll see a main window containing severa
     .. image:: _static/gui_system_properties.png
        :alt: System Properties Panel
        :align: center
-       :width: 400px
+       :width: 600px
 
 *   **Sidebar**: Located on the left, it provides quick navigation to show/hide the main panels like Lens Editor, Viewer, Analysis, etc.
 *   **Python Terminal** (View > Python Terminal): An embedded IPython terminal for advanced users who want to interact with the optical system programmatically using Optiland's Python API.
@@ -101,25 +101,27 @@ The examples above show the default dark theme. If you prefer a light theme, you
 .. image:: _static/gui_switch_theme.png
    :alt: Theme Switch
    :align: center
-   :width: 300px
+   :width: 400px
 
 Getting Started: Basic Actions
 ------------------------------
 
 Let's try a few basic operations.
 
-### 1. Opening an Existing Lens File
+1. Opening an Existing Lens File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Optiland supports loading and saving its native JSON format (`.json`). Several samples files are included with the installation and can be found in the optiland/docs/samples directory. For this quickstart, we will load the Cooke Triplet lens system:
 
-*   Go to the menu: **File > Open > Cooke Triplet*.
+*   Go to the menu: **File > Open > Cooke_triplet.json**.
 *   The Cooke Triplet lens system will load, and you should see its data in the Lens Editor and a 2D/3D representation in the Viewer Panel.
 
 .. note::
 
    YOu can also load Optiland files that were saved using the Optiland Python API.
 
-### 2. Viewing a Raytrace
+2. Viewing a Raytrace
+~~~~~~~~~~~~~~~~~~~~~
 
 With the Cooke Triplet loaded:
 
@@ -127,7 +129,8 @@ With the Cooke Triplet loaded:
 *   Experiment with the Matplotlib toolbar controls, such as zooming and panning.
 *   Switch to the **3D View** tab in the Viewer Panel to see the lens and rays in 3D. You can rotate, pan, and zoom this view.
 
-### 3. Changing a Surface Parameter
+3. Changing a Surface Parameter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's modify a surface and see the update:
 
@@ -136,7 +139,8 @@ Let's modify a surface and see the update:
 *   Change the value (e.g., from 22.0136 to 30.0) and press **Enter**.
 *   Observe how the 2D and 3D views in the **Viewer Panel** update to reflect this change. The lens is now defocused.
 
-### 4. Running an Analysis
+4. Running an Analysis
+~~~~~~~~~~~~~~~~~~~~~~
 
 *   In the **Analysis Panel**, select **RMS Spot Size vs Field** from the list of available analyses. Or, choose another analysis if you prefer.
 *   Click the triangular "Run" button to execute the analysis.

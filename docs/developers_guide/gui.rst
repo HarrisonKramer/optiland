@@ -25,7 +25,8 @@ The GUI's architecture revolves around a main window that hosts several dockable
 Key Components
 --------------
 
-### 1. Main Window (`main_window.py`)
+Main Window (`main_window.py`)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `MainWindow` class is the entry point and central hub of the GUI. Its responsibilities include:
 
@@ -36,7 +37,8 @@ The `MainWindow` class is the entry point and central hub of the GUI. Its respon
 *   **Settings Persistence**: Uses `QSettings` to save and load window geometry and layout configurations.
 *   **Dialogs**: Manages application-level dialogs like "About" and file open/save.
 
-### 2. Optiland Connector (`optiland_connector.py`)
+Optiland Connector (`optiland_connector.py`)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `OptilandConnector` is a vital QObject that acts as a bridge between the GUI and the Optiland backend.
 
@@ -46,23 +48,27 @@ The `OptilandConnector` is a vital QObject that acts as a bridge between the GUI
 *   **Undo/Redo**: Manages an `UndoRedoManager` to capture states of the `Optic` object and allow undo/redo operations.
 *   **File Operations**: Handles loading and saving of optical systems in Optiland's JSON format.
 
-### 3. Core Panels
+Core Panels
+~~~~~~~~~~~~~~
 
 These are the primary QDockWidget or QWidget instances that provide specific functionalities:
 
 *   **Lens Editor (`lens_editor.py`)**:
+
     *   Displays optical system data in a table format (similar to a lens data editor in commercial software).
     *   Allows users to view and edit surface parameters like radius, thickness, material, conic constant, and semi-diameter.
     *   Interacts with `OptilandConnector` to fetch data and commit changes, triggering updates in other relevant panels.
     *   Supports adding and removing surfaces.
 
 *   **Viewer Panel (`viewer_panel.py`)**:
+
     *   Provides visual representations of the optical system.
     *   **2D View**: Uses Matplotlib to render a 2D cross-section of the system, including lens elements and ray paths. Includes basic navigation (pan/zoom) and a settings area to control ray display.
     *   **3D View**: Uses VTK (if available) to render a 3D model of the system, allowing for interactive rotation, panning, and zooming.
     *   Both views update in response to changes in the `Optic` object via signals from `OptilandConnector`.
 
 *   **Analysis Panel (`analysis_panel.py`)**:
+
     *   A comprehensive panel for running various optical analyses.
     *   Users can select an analysis type (e.g., Spot Diagram, Ray Fan, MTF).
     *   Dynamically generates a settings UI based on the selected analysis's parameters.
@@ -72,10 +78,12 @@ These are the primary QDockWidget or QWidget instances that provide specific fun
     *   Includes features like saving/loading analysis settings.
 
 *   **Optimization Panel (`optimization_panel.py`)**:
+
     *   Currently a placeholder for future optimization functionalities.
     *   Intended to allow users to define optimization variables, objectives (merit functions), and run optimization routines from the Optiland backend.
 
 *   **System Properties Panel (`system_properties_panel.py`)**:
+
     *   Manages system-wide settings that are not tied to individual surfaces.
     *   Uses a navigation tree to switch between different property editors (Aperture, Fields, Wavelengths, etc.).
     *   **Aperture Editor**: Configures the system aperture (e.g., Entrance Pupil Diameter, F-number).
@@ -83,19 +91,23 @@ These are the primary QDockWidget or QWidget instances that provide specific fun
     *   **Wavelengths Editor**: Manages the wavelengths used for analysis and their weights, including setting the primary wavelength.
     *   Changes made here are applied to the `Optic` object through the `OptilandConnector`.
 
-### 4. Key Widgets
+Key Widgets
+~~~~~~~~~~~~~~
 
 *   **Sidebar Widget (`widgets/sidebar.py`)**:
+
     *   Provides main navigation between different functional areas of the GUI (e.g., Design, Analysis, Scripts).
     *   Can be collapsed to save space, showing only icons.
     *   Emits a `menuSelected` signal when a button is clicked, which the `MainWindow` uses to raise or show relevant panels.
 
 *   **Python Terminal (`widgets/python_terminal.py`)**:
+
     *   An embedded IPython terminal.
     *   Provides direct access to the `OptilandConnector` instance (via the `connector` variable), allowing advanced users to interact with the optical system programmatically.
     *   Commands executed in the terminal can trigger GUI updates if they modify the `Optic` object.
 
-### 5. Styling and Resources
+Styling and Resources
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 *   **Qt StyleSheets (`.qss`)**: Themes (e.g., `dark_theme.qss`, `light_theme.qss`) are defined using QSS, Qt's CSS-like styling language. These are located in `optiland_gui/resources/styles/`.
 *   **Resource Files (`resources.qrc`, `resources_rc.py`)**: Icons and other assets are managed using Qt's resource system. `resources.qrc` is an XML file defining resources, which is compiled into `resources_rc.py` using `pyside6-rcc`. This allows resources to be bundled with the application.
@@ -123,10 +135,12 @@ Developing for the Optiland GUI generally involves the following:
 
 1.  **Understanding PySide6**: Familiarity with Qt concepts like signals and slots, layouts, widgets, and the event loop is essential.
 2.  **Interacting with `OptilandConnector`**:
+
     *   When creating a new panel that needs to display or modify optical data, it should take an `OptilandConnector` instance in its constructor.
     *   Connect to relevant signals from the `OptilandConnector` (e.g., `opticChanged`, `surfaceDataChanged`) to update the panel's display when the underlying data changes.
     *   Use the connector's methods to fetch data (e.g., `get_optic()`, `get_surface_data()`) and to apply changes (e.g., `set_surface_data()`, or by directly modifying the `Optic` object obtained from `get_optic()` and then calling `connector.opticChanged.emit()` if the connector doesn't automatically detect the change for undo/redo purposes or specific signal emission).
 3.  **Designing UI**:
+
     *   Use Qt Designer (optional) or create UI elements programmatically.
     *   Employ layouts (QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout) for responsive and well-organized UIs.
     *   Follow existing patterns for styling and theming. New widgets should respect the application's theme.
@@ -142,6 +156,7 @@ Developing for the Optiland GUI generally involves the following:
 5.  Connect to signals from `OptilandConnector` to populate/update your panel.
 6.  Implement logic to handle user interactions and, if necessary, modify the `Optic` object via the connector.
 7.  In `main_window.py`:
+
     *   Instantiate your new panel.
     *   Add it as a QDockWidget or integrate it into the UI as appropriate.
     *   Optionally, add menu actions or sidebar buttons to control its visibility or interaction.
