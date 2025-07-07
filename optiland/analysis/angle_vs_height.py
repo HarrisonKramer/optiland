@@ -11,37 +11,62 @@ import abc
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.collections import LineCollection
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
 
 
-def _plot_angle_vs_height(plot_data_list, axis, optic_name, plot_style, figsize, title):
+def _plot_angle_vs_height(
+    plot_data_list, axis, optic_name, plot_style, figsize, title, color_label, cmap
+):
     """Helper function to generate a consistent angle vs. image height plot.
 
     Args:
-        plot_data_list (list): A list of tuples, where each tuple contains
-            (height_array, angle_degrees_array, label_string).
+        plot_data_list (list): A list of tuples, where each tuple contains:
+            (height, angle_deg, scan_range, legend_label).
         axis (int): Specifies the axis for measurement (0 for x, 1 for y).
         optic_name (str): The name of the optic, used for the plot title.
-        plot_style (str): Matplotlib plot style (e.g., '.-', '-').
+        plot_style (str): Matplotlib plot style for the line.
         figsize (tuple): The size of the figure.
         title (str or None): An optional subtitle for the plot.
+        color_label (str): The label for the colorbar.
+        cmap (str): The name of the colormap to use.
+
+    Returns:
+        tuple: The matplotlib figure and axes objects (fig, ax).
     """
     fig, ax = plt.subplots(figsize=figsize)
+    norm = plt.Normalize(-1, 1)
+    linewidth = 3
 
-    for height, angle_deg, label_str in plot_data_list:
-        ax.plot(height, angle_deg, plot_style, label=label_str)
+    # Create a combined title from the optic name and individual trace labels
+    full_title = (title if title else optic_name) + "\n"
+    full_title += ", ".join([p[3] for p in plot_data_list])
+
+    for height, angle_deg, scan_range, _ in plot_data_list:
+        # Create segments for the LineCollection
+        points = np.array([height, angle_deg]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        # Create a LineCollection, color it with the scan_range, and add to plot
+        lc = LineCollection(segments, cmap=cmap, norm=norm, linestyle=plot_style)
+        lc.set_array(scan_range)
+        lc.set_linewidth(linewidth)
+        line = ax.add_collection(lc)
 
     fig.suptitle("Incident Angle vs Image Height" + (" (x-axis)" if axis == 0 else ""))
-    ax.set_title(title if title else optic_name, fontsize=10)
+    ax.set_title(full_title, fontsize=10)
     ax.set_xlabel("Image Height in Millimeters")
     ax.set_ylabel("Incident Angle in Degrees")
+    cbar = fig.colorbar(line, ax=ax, label=color_label)
+    cbar.set_label(color_label, labelpad=15)
     ax.grid(alpha=0.25)
-    ax.legend()
+    ax.autoscale_view()
     fig.tight_layout()
-    plt.show()
+
+    return fig, ax
 
 
 class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
@@ -100,7 +125,7 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         Returns:
             tuple: A tuple containing (Hx, Hy, Px, Py, coord_label).
                 Hx, Hy, Px, Py should be backend arrays ready for trace_generic.
-                coord_label is either "pupil" or "field" and represents which
+                coord_label is either "Pupil" or "Field" and represents which
                 coordinates are fixed during the scan.
         """
         pass  # pragma: no cover
@@ -117,7 +142,7 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 values are dictionaries with 'height' and 'angle' numpy arrays.
         """
         data = {}
-        scan_range = be.linspace(start=-1, stop=1, num=self.num_points).astype(float)
+        scan_range = be.linspace(start=-1, stop=1, num=self.num_points)
 
         Hx, Hy, Px, Py, coord_label = self._get_trace_coordinates(scan_range)
 
@@ -163,10 +188,11 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 "height": be.to_numpy(height),
                 "angle": be.to_numpy(angle_rad),
                 "fixed_coordinates": coord_label,
+                "scan_range": be.to_numpy(scan_range),
             }
         return data
 
-    def view(self, figsize=(8, 5.5), title=None):
+    def view(self, figsize=(8, 5.5), title=None, cmap="viridis", line_style="-"):
         """Displays a plot of the incident angle vs. image height analysis.
 
         Args:
@@ -174,35 +200,66 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 Defaults to (8, 5.5).
             title (str, optional): An optional subtitle to be added to the plot.
                 If None, lens name is used.
+            cmap (str, optional): The colormap for the plot line.
+                Defaults to 'viridis'.
+            line_style (str, optional): Matplotlib plot style. Defaults to '-'.
+
+        Returns:
+            tuple: The matplotlib figure and axes objects (fig, ax).
         """
-        plot_style = ".-" if self.num_points < 75 else "-"
         plot_data_list = []
 
-        # Iterate through the generated data items
-        for (fixed_p1, fixed_p2, wavelength), plot_data in self.data.items():
-            fixed_coords = plot_data["fixed_coordinates"]
-            if fixed_coords == "Pupil":
-                label_str = (
-                    f"Px={round(fixed_p1, 4)} Py={round(fixed_p2, 4)}, "
-                    f"{np.round(wavelength, 4)} μm"
-                )
-            else:  # label_prefix == 'Field'
-                label_str = (
-                    f"Hx={round(fixed_p1, 4)} Hy={round(fixed_p2, 4)}, "
-                    f"{np.round(wavelength, 4)} μm"
-                )
-            plot_data_list.append(
-                (plot_data["height"], np.rad2deg(plot_data["angle"]), label_str)
+        # Determine the colorbar label based on what is being scanned.
+        first_item_data = next(iter(self.data.values()))
+        fixed_coords_type = first_item_data["fixed_coordinates"]
+        if fixed_coords_type == "Pupil":  # Pupil is fixed, Field is scanned
+            color_label = (
+                f"Normalized Field Coordinate ({'Hx' if self.axis == 0 else 'Hy'})"
+            )
+        else:  # Field is fixed, Pupil is scanned
+            color_label = (
+                f"Normalized Pupil Coordinate ({'Px' if self.axis == 0 else 'Py'})"
             )
 
-        _plot_angle_vs_height(
+        # Iterate through the generated data items to prepare for plotting
+        for (fixed_p1, fixed_p2, wavelength), plot_data in self.data.items():
+            fixed_p1 = be.to_numpy(fixed_p1)
+            fixed_p2 = be.to_numpy(fixed_p2)
+            wavelength = be.to_numpy(wavelength)
+
+            fixed_coords = plot_data["fixed_coordinates"]
+            if fixed_coords == "Pupil":
+                legend_label = (
+                    f"Px={np.round(fixed_p1, 4).item()} "
+                    f"Py={np.round(fixed_p2, 4).item()}, "
+                    f"{np.round(wavelength, 4).item()} μm"
+                )
+            else:  # fixed_coords == 'Field'
+                legend_label = (
+                    f"Hx={np.round(fixed_p1, 4).item()} "
+                    f"Hy={np.round(fixed_p2, 4).item()}, "
+                    f"{np.round(wavelength, 4).item()} μm"
+                )
+            plot_data_list.append(
+                (
+                    plot_data["height"],
+                    np.rad2deg(plot_data["angle"]),
+                    plot_data["scan_range"],
+                    legend_label,
+                )
+            )
+
+        _ = _plot_angle_vs_height(
             plot_data_list=plot_data_list,
             axis=self.axis,
             optic_name=self.optic.name,
-            plot_style=plot_style,
+            plot_style=line_style,
             figsize=figsize,
             title=title,
+            color_label=color_label,
+            cmap=cmap,
         )
+        plt.show()
 
 
 class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
@@ -263,21 +320,18 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         # Hx, Hy are constant for this analysis
         Hx = (
             be.full_like(scan_range, hx_fixed)
-            if scan_range.size > 0
+            if be.size(scan_range) > 0
             else be.array([hx_fixed])
         )
         Hy = (
             be.full_like(scan_range, hy_fixed)
-            if scan_range.size > 0
+            if be.size(scan_range) > 0
             else be.array([hy_fixed])
         )
 
-        if self.axis == 1:  # Vary Py, Px is fixed at 0
-            Px = be.zeros_like(scan_range)
-            Py = scan_range
-        else:  # Vary Px, Py is fixed at 0
-            Px = scan_range
-            Py = be.zeros_like(scan_range)
+        # Vary pupil coordinate along the specified axis
+        coords = (scan_range, be.zeros_like(scan_range))
+        Px, Py = coords if self.axis == 0 else coords[::-1]
 
         return (
             Hx,
@@ -349,21 +403,18 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         # Px, Py are constant for this analysis
         Px = (
             be.full_like(scan_range, px_fixed)
-            if scan_range.size > 0
+            if be.size(scan_range) > 0
             else be.array([px_fixed])
         )
         Py = (
             be.full_like(scan_range, py_fixed)
-            if scan_range.size > 0
+            if be.size(scan_range) > 0
             else be.array([py_fixed])
         )
 
-        if self.axis == 1:  # Vary Hy, Hx is fixed at 0
-            Hx = be.zeros_like(scan_range)
-            Hy = scan_range
-        else:  # Vary Hx, Hy is fixed at 0
-            Hx = scan_range
-            Hy = be.zeros_like(scan_range)
+        # Vary field coordinate along the specified axis
+        coords = (scan_range, be.zeros_like(scan_range))
+        Hx, Hy = coords if self.axis == 0 else coords[::-1]
 
         return (
             Hx,
