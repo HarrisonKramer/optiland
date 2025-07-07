@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QMenuBar,
     QMessageBox,
     QPushButton,
+    QTabWidget,
     QToolBar,
     QVBoxLayout,
     QWidget,
@@ -59,6 +60,51 @@ APPLICATION_NAME = "OptilandGUI"
 
 
 class MainWindow(QMainWindow):
+    # +++ NEW: Inner class for scripting interface +++
+    class OptilandInterface:
+        """
+        A high-level interface for controlling the Optiland GUI via scripting.
+        This object is available in the Python console as 'iface'.
+        """
+
+        def __init__(self, main_window):
+            self._win = main_window
+
+        def get_main_window(self):
+            """Returns the main application window instance."""
+            return self._win
+
+        def get_analysis_panel(self):
+            """Returns the AnalysisPanel widget instance."""
+            return self._win.analysisPanel
+
+        def get_lens_editor(self):
+            """Returns the LensEditor widget instance."""
+            return self._win.lensEditor
+
+        def get_viewer_panel(self):
+            """Returns the ViewerPanel widget instance."""
+            return self._win.viewerPanel
+
+        def show_lens_editor(self):
+            """Brings the Lens Data Editor dock to the front."""
+            self._win.lensEditorDock.show()
+            self._win.lensEditorDock.raise_()
+
+        def show_analysis_panel(self):
+            """Brings the Analysis Panel dock to the front."""
+            self._win.analysisPanelDock.show()
+            self._win.analysisPanelDock.raise_()
+            # Also ensure its tab is selected
+            parent_tab_widget = self._win.analysisPanelDock.parentWidget()
+            if isinstance(parent_tab_widget, QTabWidget):
+                parent_tab_widget.setCurrentWidget(self._win.analysisPanelDock)
+
+        def refresh_all(self):
+            """Triggers a full refresh of all GUI panels."""
+            print("GUI refresh requested via iface.refresh_all()")
+            self._win.connector.opticChanged.emit()
+
     def __init__(self):
         super().__init__()
         self.current_theme_path = THEME_DARK_PATH
@@ -71,6 +117,8 @@ class MainWindow(QMainWindow):
             "Layouts/NextSaveSlot", 1, type=int
         )
         self.connector = OptilandConnector()
+        self.iface = self.OptilandInterface(self)
+
         self.dock_animations = {}
         self.dock_original_sizes = {}
 
@@ -82,9 +130,10 @@ class MainWindow(QMainWindow):
         initial_theme_name = (
             "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
         )
+
         self.pythonTerminal = PythonTerminalWidget(
             self,
-            custom_variables={"connector": self.connector},
+            custom_variables={"connector": self.connector, "iface": self.iface},
             theme=initial_theme_name,
         )
         self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
@@ -598,7 +647,6 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def refresh_all_gui_panels(self):
-        print("Terminal command executed, refreshing GUI...")
         self.connector.opticChanged.emit()
 
     @Slot()

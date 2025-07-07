@@ -1,3 +1,4 @@
+# optiland_gui/optiland_connector.py
 import json
 
 from PySide6.QtCore import QObject, Signal
@@ -36,6 +37,12 @@ class SpecialFloatEncoder(json.JSONEncoder):
 
 
 class OptilandConnector(QObject):
+    """
+    The main bridge between the Optiland core logic and the GUI.
+    It manages the optical system data, file I/O, and undo/redo stack.
+    An instance of this class is available in the Python console as 'connector'.
+    """
+
     opticLoaded = Signal()
     opticChanged = Signal()
     surfaceDataChanged = Signal(int, int, object)
@@ -187,7 +194,11 @@ class OptilandConnector(QObject):
             return self.DEFAULT_WAVELENGTH_UM
         return self.DEFAULT_WAVELENGTH_UM
 
-    def get_optic(self):
+    def get_optic(self) -> Optic:
+        """
+        Returns the current, active Optic object.
+        This is the main object containing all system data.
+        """
         return self._optic
 
     def _capture_optic_state(self):
@@ -210,6 +221,7 @@ class OptilandConnector(QObject):
         self.opticLoaded.emit()
 
     def new_system(self):
+        """Creates a new, empty optical system, clearing the old one."""
         self._undo_redo_manager.clear_stacks()
         self._optic = Optic("New Untitled System")
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
@@ -217,7 +229,8 @@ class OptilandConnector(QObject):
         print("OpticConnector: New specific dummy system created.")
         self.opticLoaded.emit()
 
-    def load_optic_from_file(self, filepath):
+    def load_optic_from_file(self, filepath: str):
+        """Loads an optical system from a .json file."""
         try:
             with open(filepath) as f:
 
@@ -274,7 +287,8 @@ class OptilandConnector(QObject):
             QMessageBox.critical(None, "Load Error", error_message)
             self.new_system()
 
-    def save_optic_to_file(self, filepath):
+    def save_optic_to_file(self, filepath: str):
+        """Saves the current optical system to a .json file."""
         try:
             if self._optic.wavelengths.num_wavelengths == 0:
                 self._optic.add_wavelength(
@@ -297,15 +311,18 @@ class OptilandConnector(QObject):
                 None, "Save Error", f"Could not save system to {filepath}:\n{e}"
             )
 
-    def get_current_filepath(self):
+    def get_current_filepath(self) -> str | None:
+        """Returns the filepath of the currently loaded system, if any."""
         return self._current_filepath
 
-    def get_surface_count(self):
+    def get_surface_count(self) -> int:
+        """Returns the total number of surfaces in the system."""
         if not self._optic or not self._optic.surface_group:
             return 0
         return self._optic.surface_group.num_surfaces
 
-    def get_column_headers(self):
+    def get_column_headers(self) -> list[str]:
+        """Returns the column headers for the Lens Data Editor."""
         return [
             "Type",
             "Comment",
@@ -316,7 +333,8 @@ class OptilandConnector(QObject):
             "Semi-Diameter",
         ]
 
-    def get_surface_data(self, row, col_idx):
+    def get_surface_data(self, row: int, col_idx: int):
+        """Gets a specific data point from a surface for the LDE."""
         if not (0 <= row < self.get_surface_count()):
             return None
         surface = self._optic.surface_group.surfaces[row]
@@ -377,7 +395,8 @@ class OptilandConnector(QObject):
             return "Auto"
         return None
 
-    def set_surface_data(self, row, col_idx, value_str):
+    def set_surface_data(self, row: int, col_idx: int, value_str: str):
+        """Sets a specific data point for a surface from the LDE."""
         if not (0 <= row < self.get_surface_count()):
             return
         try:
@@ -441,7 +460,13 @@ class OptilandConnector(QObject):
                 f"at ({row},{col_idx}) to '{value_str}': {e}"
             )
 
-    def add_surface(self, index=-1):
+    def add_surface(self, index: int = -1):
+        """
+        Adds a new, standard surface to the optical system.
+        Args:
+            index (int): The position to insert the surface at.
+                         If -1, it is added before the image plane.
+        """
         old_state = self._capture_optic_state()
         num_lde_rows = self.get_surface_count()
         optic_insert_idx = num_lde_rows - 1 if num_lde_rows > 1 else 1
@@ -462,7 +487,11 @@ class OptilandConnector(QObject):
         self.surfaceCountChanged.emit()
         self.opticChanged.emit()
 
-    def remove_surface(self, lde_row_index):
+    def remove_surface(self, lde_row_index: int):
+        """
+        Removes a surface from the system.
+        Note: Cannot remove the Object (0) or Image surfaces.
+        """
         old_state = self._capture_optic_state()
         optic_surface_index = lde_row_index
         if 0 < optic_surface_index < self.get_surface_count() - 1:
@@ -479,6 +508,7 @@ class OptilandConnector(QObject):
             )
 
     def undo(self):
+        """Performs an undo operation, reverting to the previous system state."""
         if self._undo_redo_manager.can_undo():
             current_state_for_redo = self._capture_optic_state()
             restored_state_data = self._undo_redo_manager.undo(current_state_for_redo)
@@ -491,6 +521,7 @@ class OptilandConnector(QObject):
             print("OpticConnector: Cannot undo.")
 
     def redo(self):
+        """Performs a redo operation, reapplying an undone change."""
         if self._undo_redo_manager.can_redo():
             current_state_for_undo = self._capture_optic_state()
             restored_state_data = self._undo_redo_manager.redo(current_state_for_undo)
@@ -503,6 +534,7 @@ class OptilandConnector(QObject):
             print("OpticConnector: Cannot redo.")
 
     def get_wavelength_options(self) -> list[tuple[str, str]]:
+        """Gets a list of available wavelengths for use in UI dropdowns."""
         options = [("primary", "primary")]
         if self._optic and self._optic.wavelengths:
             for wl in self._optic.wavelengths.wavelengths:
@@ -510,6 +542,7 @@ class OptilandConnector(QObject):
         return options
 
     def get_field_options(self) -> list[tuple[str, str]]:
+        """Gets a list of available fields for use in UI dropdowns."""
         options = [("all", "all")]
         if self._optic and self._optic.fields:
             for i, field in enumerate(self._optic.fields.fields):
