@@ -74,7 +74,6 @@ class LensEditor(QWidget):
 
     @Slot()
     def full_refresh_from_optic(self):
-        
         self.setup_table()
         self.load_data()
 

@@ -39,8 +39,3 @@ __all__ = [
     "ZernikePolynomialGeometry",
     "factorial",
 ]
-
-
-
-
-
