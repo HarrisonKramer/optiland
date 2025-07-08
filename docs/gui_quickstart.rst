@@ -69,7 +69,7 @@ When you first open the Optiland GUI, you'll see a main window containing severa
        :align: center
        :width: 600px
 
-*   **Analysis Panel**: Allows you to select, configure, and run various optical analyses. Results are typically displayed as plots within this panel. Note that you can run several analyses, all of which are available on the right sidebar.
+*   **Analysis Panel**: Allows you to select, configure, and run various optical analyses. Results are typically displayed as plots within this panel. Note that you can run several analyses, each of which can be accessed using the numbered tabs on the right sidebar.
 
     .. image:: _static/gui_analysis_panel.png
        :alt: Analysis Panel
