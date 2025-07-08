@@ -60,6 +60,7 @@ When you first open the Optiland GUI, you'll see a main window containing severa
        :width: 600px
 
 *   **Viewer Panel**: This panel provides visual representations of your optical system.
+
     *   **2D View**: Shows a 2D cross-section of the lens, with options to display rays.
     *   **3D View**: Renders a 3D model of the system (if VTK is installed and working).
 
