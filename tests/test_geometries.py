@@ -4,7 +4,7 @@ import numpy as np
 from optiland.optic import Optic
 from optiland.materials import Material, IdealMaterial
 from optiland import geometries
-from optiland.geometries import BiconicGeometry, ForbesGeometry
+from optiland.geometries import BiconicGeometry, ForbesQbfsGeometry, ForbesQ2dGeometry
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
 from .utils import assert_allclose
@@ -1418,9 +1418,9 @@ def forbes_system():
     lens.add_surface(index=0, thickness=0.055)
     lens.add_surface(index=1, thickness=26.5)
     lens.add_surface(index=2, thickness=4.0, radius=be.inf, material=H_K3, is_stop=True)
-    lens.add_surface(index=3, thickness=25.0, radius=22, conic=conic_S2, forbes_coeffs_n=forbes_coeffs_n_S2, forbes_coeffs_c=coeffs_S2, forbes_norm_radius=norm_radius_S2, surface_type="forbes") 
+    lens.add_surface(index=3, thickness=25.0, radius=22, conic=conic_S2, forbes_coeffs_n=forbes_coeffs_n_S2, forbes_coeffs_c=coeffs_S2, forbes_norm_radius=norm_radius_S2, surface_type="forbes_qbfs") 
     lens.add_surface(index=4, thickness=7.0, radius=be.inf, material=H_ZLAF68C)
-    lens.add_surface(index=5, thickness=10.0, radius=-31.0, conic=conic_S4, forbes_coeffs_n=forbes_coeffs_n_S4, forbes_coeffs_c=coeffs_S4, forbes_norm_radius=norm_radius_S4, surface_type="forbes")
+    lens.add_surface(index=5, thickness=10.0, radius=-31.0, conic=conic_S4, forbes_coeffs_n=forbes_coeffs_n_S4, forbes_coeffs_c=coeffs_S4, forbes_norm_radius=norm_radius_S4, surface_type="forbes_qbfs")
     lens.add_surface(index=6)
     return lens
     
@@ -1429,8 +1429,8 @@ class TestForbesGeometry:
     def test_str(self, set_test_backend):
         """Test the string representation of the geometry."""
         cs = CoordinateSystem()
-        geometry = ForbesGeometry(cs, radius=100.0)
-        assert str(geometry) == "Forbes"
+        geometry = ForbesQbfsGeometry(cs, radius=100.0)
+        assert str(geometry) == "ForbesQbfs"
 
 
     def test_sag_vs_zemax(self, set_test_backend):
@@ -1454,7 +1454,7 @@ class TestForbesGeometry:
         forbes_coeffs_c = zemax_coeffs
         forbes_coeffs_n = [(n, 0) for n in range(len(zemax_coeffs))]
 
-        geometry = ForbesGeometry(
+        geometry = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             radius=zemax_radius,
             conic=zemax_conic,
@@ -1475,7 +1475,7 @@ class TestForbesGeometry:
         Tests the surface normal at the vertex (x=0, y=0).
         It should always be [0, 0, -1] regardless of parameters.
         """
-        geometry = ForbesGeometry(
+        geometry = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             radius=50.0,
             conic=-1.0,
@@ -1530,7 +1530,7 @@ class TestForbesGeometry:
         coeffs_n = [(0, 0), (1, 1), (2, -1)]
         coeffs_c = [1e-3, 2e-4, -5e-5]
         
-        original_geometry = ForbesGeometry(
+        original_geometry = ForbesQbfsGeometry(
             coordinate_system=cs,
             radius=123.4,
             conic=-0.9,
@@ -1544,7 +1544,7 @@ class TestForbesGeometry:
         geom_dict = original_geometry.to_dict()
 
         # Check serialization
-        assert geom_dict['type'] == 'ForbesGeometry'
+        assert geom_dict['type'] == 'ForbesQbfsGeometry'
         assert geom_dict['radius'] == 123.4
         assert geom_dict['conic'] == -0.9
         assert geom_dict['coeffs_n'] == coeffs_n
@@ -1554,5 +1554,5 @@ class TestForbesGeometry:
         assert geom_dict['max_iter'] == 75
 
         # Check deserialization
-        reconstructed_geometry = ForbesGeometry.from_dict(geom_dict)
+        reconstructed_geometry = ForbesQbfsGeometry.from_dict(geom_dict)
         assert reconstructed_geometry.to_dict() == geom_dict

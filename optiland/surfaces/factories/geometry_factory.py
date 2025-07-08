@@ -16,7 +16,8 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     BiconicGeometry,
     ChebyshevPolynomialGeometry,
-    ForbesGeometry,
+    ForbesQbfsGeometry,
+    ForbesQ2dGeometry,
     EvenAsphere,
     OddAsphere,
     Plane,
@@ -261,9 +262,24 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
         max_iter=config.max_iter,
     )
 
-def _create_forbes(cs: CoordinateSystem, config: GeometryConfig):
-    """Create a Forbes geometry."""
-    return ForbesGeometry(
+def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
+    """Create a Forbes (Q-BFS) Geometry."""
+
+    return ForbesQbfsGeometry(
+        cs,
+        config.radius,
+        config.conic,
+        config.forbes_coeffs_n,
+        config.forbes_coeffs_c,
+        config.forbes_norm_radius,
+        config.tol,
+        config.max_iter,
+    )
+
+def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
+    """Create a Forbes (Q-2D) geometry."""
+    
+    return ForbesQ2dGeometry(
         cs,
         config.radius,
         config.conic,
@@ -292,13 +308,14 @@ geometry_mapper = {
     "biconic": _create_biconic,
     "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
-    "forbes": _create_forbes,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
     "polynomial": _create_polynomial,
     "standard": _create_standard,
     "toroidal": _create_toroidal,
     "zernike": _create_zernike,
+    "forbes_qbfs": _create_forbes_qbfs,
+    "forbes_q2d": _create_forbes_q2d,
 }
 
 

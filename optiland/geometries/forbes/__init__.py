@@ -2,14 +2,15 @@
 for the Optiland backend.
 """
 
-from .geometry import ForbesGeometry
+from .geometry import ForbesQ2dGeometry, ForbesQbfsGeometry
 from .qpoly import (
     compute_z_zprime_Q2d,
     Q2d_nm_c_to_a_b,
 )
 
 __all__ = [
-    "ForbesGeometry",
+    "ForbesQ2dGeometry",
+    "ForbesQbfsGeometry",
     "compute_z_zprime_Q2d",
     "Q2d_nm_c_to_a_b",
 ]

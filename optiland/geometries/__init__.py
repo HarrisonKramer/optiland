@@ -5,7 +5,6 @@ surfaces."""
 from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
-from .forbes import ForbesGeometry
 from .even_asphere import EvenAsphere
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
@@ -14,6 +13,7 @@ from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
 from .toroidal import ToroidalGeometry
 from .zernike import ZernikePolynomialGeometry, factorial
+from .forbes import ForbesQ2dGeometry, ForbesQbfsGeometry
 
 __all__ = [
     # From base.py
@@ -41,4 +41,7 @@ __all__ = [
     # From zernike.py
     "ZernikePolynomialGeometry",
     "factorial",
+    # From forbes subpackage
+    "ForbesQ2dGeometry",
+    "ForbesQbfsGeometry",
 ]
