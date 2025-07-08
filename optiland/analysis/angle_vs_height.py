@@ -128,7 +128,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                     "'primary' is supported as a string."
                 )
         elif isinstance(wavelength, (float, int)):
-            processed_wavelength = float(wavelength)
+            processed_wavelength = [float(wavelength)]
         else:
             raise TypeError(
                 "wavelength argument must be 'primary' or a number (in microns)"
@@ -193,15 +193,15 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
         if coord_label == "Pupil":  # means pupil is fixed and field is scanned
             fixed_param_key = (
-                Px[0] if be.size(Px) > 0 else 0,
-                Py[0] if be.size(Py) > 0 else 0,
-                wavelength_value,
+                Px[0].item() if be.size(Px) > 0 else 0,
+                Py[0].item() if be.size(Py) > 0 else 0,
+                float(wavelength_value),
             )
         elif coord_label == "Field":  # means field is fixed and pupil is scanned
             fixed_param_key = (
-                Hx[0] if be.size(Hx) > 0 else 0,
-                Hy[0] if be.size(Hy) > 0 else 0,
-                wavelength_value,
+                Hx[0].item() if be.size(Hx) > 0 else 0,
+                Hy[0].item() if be.size(Hy) > 0 else 0,
+                float(wavelength_value),
             )
         else:
             raise ValueError("Coord. label must be 'Pupil' or 'Field'.")
@@ -322,12 +322,12 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx=-1,
         axis=1,
-        wavelengths="primary",
+        wavelength="primary",
         field=(0, 0),
         num_points=128,
     ):
         self.field = field
-        super().__init__(optic, surface_idx, axis, wavelengths, num_points)
+        super().__init__(optic, surface_idx, axis, wavelength, num_points)
 
     def _get_trace_coordinates(self, scan_range):
         """Defines how pupil coordinates (Px, Py) vary while field (Hx, Hy) is fixed.
@@ -381,7 +381,7 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
             1 for y-axis. Defaults to 1 (y-axis).
         wavelength (str or float, optional): A single wavelength in microns.
             Defaults to 'primary'.
-        pupil_point (tuple, optional): A single pupil field point (Px, Py).
+        pupil (tuple, optional): A single pupil field point (Px, Py).
             Defaults to (0, 0).
         num_points (int, optional): The number of points displayed on the plot.
             Defaults to 128.
@@ -391,7 +391,7 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
         wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
-        pupil_point (tuple): The pupil field point (fixed for tracing).
+        pupil (tuple): The pupil field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
             {
@@ -405,12 +405,12 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx=-1,
         axis=1,
-        wavelengths="primary",
-        pupil_point=(0, 0),
+        wavelength="primary",
+        pupil=(0, 0),
         num_points=128,
     ):
-        self.pupil_point = pupil_point
-        super().__init__(optic, surface_idx, axis, wavelengths, num_points)
+        self.pupil = pupil
+        super().__init__(optic, surface_idx, axis, wavelength, num_points)
 
     def _get_trace_coordinates(self, scan_range):
         """Defines how field coordinates (Hx, Hy) vary while pupil (Px, Py) is fixed.
@@ -422,7 +422,7 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         Returns:
             tuple: (Hx, Hy, Px, Py, label_prefix_str) for trace_generic.
         """
-        px_fixed, py_fixed = self.pupil_point
+        px_fixed, py_fixed = self.pupil
         # Px, Py are constant for this analysis
         Px = (
             be.full_like(scan_range, px_fixed)
