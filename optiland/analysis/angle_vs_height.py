@@ -41,8 +41,18 @@ def _plot_angle_vs_height(
     norm = plt.Normalize(-1, 1)
     linewidth = 3
 
-    # Create a combined title from the optic name and individual trace labels
-    full_title = (title if title else optic_name) + "\n"
+    base_title = ""
+    if title and optic_name:
+        base_title = f"{title} - {optic_name}"
+    elif title:
+        base_title = str(title)
+    elif optic_name:
+        base_title = str(optic_name)
+
+    # Compose the full title
+    full_title = base_title
+    if full_title:
+        full_title += "\n"
     full_title += ", ".join([p[3] for p in plot_data_list])
 
     for height, angle_deg, scan_range, _ in plot_data_list:
@@ -69,7 +79,7 @@ def _plot_angle_vs_height(
     return fig, ax
 
 
-class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
+class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
     """Abstract base class for Angle vs. Height analysis routines.
 
     This class provides the common framework for generating angle vs. height
@@ -82,8 +92,8 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
             height are measured. Defaults to -1 (last surface).
         axis (int, optional): Specifies the axis for measurement. 0 for x-axis,
             1 for y-axis. Defaults to 1 (y-axis).
-        wavelengths (str or list, optional): A single wavelength or a list of
-            wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
+        wavelength (str or float, optional): A single wavelength in microns.
+            Defaults to 'primary'.
         num_points (int, optional): The number of points used for the plot.
             Defaults to 128.
 
@@ -102,14 +112,29 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         optic,
         surface_idx=-1,
         axis=1,
-        wavelengths="all",
+        wavelength="primary",
         num_points=128,
     ):
         self.surface_idx = surface_idx
         self.axis = axis
         self.num_points = num_points
 
-        super().__init__(optic, wavelengths=wavelengths)
+        if isinstance(wavelength, str):
+            if wavelength == "primary":
+                processed_wavelength = "primary"
+            else:
+                raise ValueError(
+                    "Invalid wavelength string for Angle vs. Height Analysis, only "
+                    "'primary' is supported as a string."
+                )
+        elif isinstance(wavelength, (float, int)):
+            processed_wavelength = float(wavelength)
+        else:
+            raise TypeError(
+                "wavelength argument must be 'primary' or a number (in microns)"
+            )
+
+        super().__init__(optic, wavelengths=processed_wavelength)
 
     @abc.abstractmethod
     def _get_trace_coordinates(self, scan_range):
@@ -151,45 +176,42 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         Px = be.atleast_1d(Px)
         Py = be.atleast_1d(Py)
 
-        for wavelength in self.wavelengths:
-            wavelength_value = (
-                wavelength.value if hasattr(wavelength, "value") else wavelength
+        wavelength_value = self.wavelengths[0]  # Use the first and only wavelength
+
+        self.optic.trace_generic(
+            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength_value
+        )
+
+        if self.axis == 1:  # Y-direction measurement
+            incident_dir_cosines = self.optic.surface_group.M[self.surface_idx, :]
+            height = self.optic.surface_group.y[self.surface_idx, :]
+        else:  # X-direction measurement
+            incident_dir_cosines = self.optic.surface_group.L[self.surface_idx, :]
+            height = self.optic.surface_group.x[self.surface_idx, :]
+
+        angle_rad = be.arcsin(incident_dir_cosines)
+
+        if coord_label == "Pupil":  # means pupil is fixed and field is scanned
+            fixed_param_key = (
+                Px[0] if be.size(Px) > 0 else 0,
+                Py[0] if be.size(Py) > 0 else 0,
+                wavelength_value,
             )
-
-            self.optic.trace_generic(
-                Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength_value
+        elif coord_label == "Field":  # means field is fixed and pupil is scanned
+            fixed_param_key = (
+                Hx[0] if be.size(Hx) > 0 else 0,
+                Hy[0] if be.size(Hy) > 0 else 0,
+                wavelength_value,
             )
+        else:
+            raise ValueError("Coord. label must be 'Pupil' or 'Field'.")
 
-            if self.axis == 1:  # Y-direction measurement
-                incident_dir_cosines = self.optic.surface_group.M[self.surface_idx, :]
-                height = self.optic.surface_group.y[self.surface_idx, :]
-            else:  # X-direction measurement
-                incident_dir_cosines = self.optic.surface_group.L[self.surface_idx, :]
-                height = self.optic.surface_group.x[self.surface_idx, :]
-
-            angle_rad = be.arcsin(incident_dir_cosines)
-
-            if coord_label == "Pupil":  # means pupil is fixed and field is scanned
-                fixed_param_key = (
-                    Px[0] if be.size(Px) > 0 else 0,
-                    Py[0] if be.size(Py) > 0 else 0,
-                    wavelength_value,
-                )
-            elif coord_label == "Field":  # means field is fixed and pupil is scanned
-                fixed_param_key = (
-                    Hx[0] if be.size(Hx) > 0 else 0,
-                    Hy[0] if be.size(Hy) > 0 else 0,
-                    wavelength_value,
-                )
-            else:
-                raise ValueError("Coord. label must be 'Pupil' or 'Field'.")
-
-            data[fixed_param_key] = {
-                "height": be.to_numpy(height),
-                "angle": be.to_numpy(angle_rad),
-                "fixed_coordinates": coord_label,
-                "scan_range": be.to_numpy(scan_range),
-            }
+        data[fixed_param_key] = {
+            "height": be.to_numpy(height),
+            "angle": be.to_numpy(angle_rad),
+            "fixed_coordinates": coord_label,
+            "scan_range": be.to_numpy(scan_range),
+        }
         return data
 
     def view(self, figsize=(8, 5.5), title=None, cmap="viridis", line_style="-"):
@@ -262,7 +284,7 @@ class _BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         plt.show()
 
 
-class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
+class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all pupil coordinates (Px, Py) for a given image field point.
 
@@ -277,7 +299,7 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
             1 for y-axis. Defaults to 1 (y-axis).
         wavelengths (str or list, optional): A single wavelength or a list of
             wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
-        field_point (tuple, optional): A single relative image field point (Hx, Hy).
+        field (tuple, optional): A single relative image field point (Hx, Hy).
             Defaults to (0, 0).
         num_points (int, optional): The number of points used for the plot.
             Defaults to 128.
@@ -286,8 +308,9 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         optic (Optic): The optic object being analyzed.
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
-        wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
-        field_point (tuple): The relative image field point (fixed for tracing).
+        wavelength (str or float, optional): A single wavelength in microns.
+            Defaults to 'primary'.
+        field (tuple): The relative image field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
             {(Hx_fixed, Hy_fixed, wavelength_value):
@@ -299,11 +322,11 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         optic,
         surface_idx=-1,
         axis=1,
-        wavelengths="all",
-        field_point=(0, 0),
+        wavelengths="primary",
+        field=(0, 0),
         num_points=128,
     ):
-        self.field_point = field_point
+        self.field = field
         super().__init__(optic, surface_idx, axis, wavelengths, num_points)
 
     def _get_trace_coordinates(self, scan_range):
@@ -316,7 +339,7 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         Returns:
             tuple: (Hx, Hy, Px, Py, label_prefix_str) for trace_generic.
         """
-        hx_fixed, hy_fixed = self.field_point
+        hx_fixed, hy_fixed = self.field
         # Hx, Hy are constant for this analysis
         Hx = (
             be.full_like(scan_range, hx_fixed)
@@ -342,7 +365,7 @@ class PupilIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         )
 
 
-class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
+class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     """Represents an analysis of incident angle vs. image height by varying
     through all image field coordinates (Hx, Hy) for a given pupil field point.
 
@@ -356,8 +379,8 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
             height are measured. Defaults to -1 (last surface).
         axis (int, optional): Specifies the axis for measurement. 0 for x-axis,
             1 for y-axis. Defaults to 1 (y-axis).
-        wavelengths (str or list, optional): A single wavelength or a list of
-            wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
+        wavelength (str or float, optional): A single wavelength in microns.
+            Defaults to 'primary'.
         pupil_point (tuple, optional): A single pupil field point (Px, Py).
             Defaults to (0, 0).
         num_points (int, optional): The number of points displayed on the plot.
@@ -382,7 +405,7 @@ class FieldIncidentAngleVsHeight(_BaseAngleVsHeightAnalysis):
         optic,
         surface_idx=-1,
         axis=1,
-        wavelengths="all",
+        wavelengths="primary",
         pupil_point=(0, 0),
         num_points=128,
     ):
