@@ -31,6 +31,7 @@ class ParaxialOperand:
         XPL(optic): Returns the exit pupil distance of the optic.
         XPD(optic): Returns the exit pupil diameter of the optic.
         magnification(optic): Returns the magnification of the optic.
+        total_track(optic): Returns the total track of the optic.
 
     """
 
@@ -85,3 +86,7 @@ class ParaxialOperand:
     @staticmethod
     def magnification(optic):
         return optic.paraxial.magnification()
+
+    @staticmethod
+    def total_track(optic):
+        return optic.total_track

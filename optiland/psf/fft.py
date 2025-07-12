@@ -15,6 +15,28 @@ import optiland.backend as be
 from optiland.psf.base import BasePSF
 
 
+def calculate_grid_size(num_rays) -> tuple[int, int]:
+    """Calculates the effective pupil sampling and grid size based on the number of
+    rays.
+
+    See https://ansyshelp.ansys.com/public/account/secured?returnurl=/Views/Secured/Zemax/v251/en/OpticStudio_User_Guide/OpticStudio_Help/topics/FFT_PSF.html
+    for details on OpticStudio's FFT PSF sampling behavior.
+
+    Args:
+        num_rays (int): The number of rays used to sample the pupil.
+    Returns:
+        int: The effective pupil sampling size, which is the number of rays
+            used to sample the pupil in one dimension.
+        int: The grid size used for FFT computation.
+    """
+    effective_pupil_sampling = np.floor(32 * 2 ** ((np.log2(num_rays) - 5) / 2)).astype(
+        int
+    )
+    grid_size = num_rays * 2
+
+    return effective_pupil_sampling, grid_size
+
+
 class FFTPSF(BasePSF):
     """Class representing the Fast Fourier Transform (FFT) PSF.
 
@@ -59,7 +81,7 @@ class FFTPSF(BasePSF):
                 raise ValueError(
                     "num_rays must be at least 32 if grid_size is not specified."
                 )
-            num_rays, grid_size = self._calculate_grid_size(num_rays)
+            num_rays, grid_size = calculate_grid_size(num_rays)
         elif grid_size < num_rays:
             raise ValueError(
                 f"Grid size ({grid_size}) must be greater than or equal to the "
@@ -72,27 +94,6 @@ class FFTPSF(BasePSF):
         self.grid_size = grid_size
         self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
-
-    def _calculate_grid_size(self, num_rays):
-        """Calculates the effective pupil sampling and grid size based on the number of
-        rays.
-
-        See https://ansyshelp.ansys.com/public/account/secured?returnurl=/Views/Secured/Zemax/v251/en/OpticStudio_User_Guide/OpticStudio_Help/topics/FFT_PSF.html
-        for details on OpticStudio's FFT PSF sampling behavior.
-
-        Args:
-            num_rays (int): The number of rays used to sample the pupil.
-        Returns:
-            int: The effective pupil sampling size, which is the number of rays
-                used to sample the pupil in one dimension.
-            int: The grid size used for FFT computation.
-        """
-        effective_pupil_sampling = np.floor(
-            32 * 2 ** ((np.log2(num_rays) - 5) / 2)
-        ).astype(int)
-        grid_size = num_rays * 2
-
-        return effective_pupil_sampling, grid_size
 
     def _generate_pupils(self):
         """Generates complex pupil functions for each wavelength.
@@ -248,9 +249,9 @@ class FFTPSF(BasePSF):
             These are returned as NumPy arrays as `BasePSF.view` expects them
             for Matplotlib's `extent` argument.
         """
-        FNO = self._get_effective_FNO()
+        FNO = self._get_working_FNO()
 
-        Q = self.grid_size / self.num_rays
+        Q = self.grid_size / (self.num_rays - 1)
         dx = self.wavelengths[0] * FNO / Q
 
         x = be.to_numpy(image.shape[1] * dx)

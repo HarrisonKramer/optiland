@@ -81,6 +81,7 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
    examples/Tutorial_7b_Surface_Roughness_&_Scattering
    examples/Tutorial_7c_Freeform_Surfaces
    examples/Tutorial_7d_Three_Mirror_Anastigmat
+   examples/Tutorial_7e_Glass_Expert
 
 
 8. Tolerancing
