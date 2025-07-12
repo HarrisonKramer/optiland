@@ -201,6 +201,30 @@ class TestIndexVariable:
         assert str(self.index_var) == "Refractive Index, Surface 1"
 
 
+class TestMaterialVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = Objective60x()
+        self.material_var = variable.MaterialVariable(
+            optic=self.optic,
+            surface_number=1,
+            glass_selection=['N-BK7', 'N-SSK2', 'N-SK2', 'N-SK16'],)
+
+    def test_get_value(self, set_test_backend):
+        assert self.material_var.get_value() == 'N-FK51'
+
+    def test_update_value(self, set_test_backend):
+        self.material_var.update_value('F5')
+        assert self.material_var.get_value() == 'F5'
+
+    def test_scale(self, set_test_backend):
+        # Does not make much sense, scale() doesn't do anything
+        assert self.material_var.scale('F5') == 'F5'
+
+    def test_string_representation(self, set_test_backend):
+        assert str(self.material_var) == "Material, Surface 1"
+
+
 class TestAsphereCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):

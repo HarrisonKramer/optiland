@@ -18,6 +18,7 @@ from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.apodization import BaseApodization
 from optiland.fields import Field, FieldGroup
+from optiland.materials.base import BaseMaterial
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
@@ -247,6 +248,16 @@ class Optic:
         """
         self._updater.set_index(value, surface_number)
 
+    def set_material(self, material: BaseMaterial, surface_number: int):
+        """Set the material of a surface.
+
+        Args:
+            material (BaseMaterial): The material.
+            surface_number (int): The index of the surface.
+
+        """
+        self._updater.set_material(material, surface_number)
+
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
 
@@ -352,7 +363,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-        viewer.view(
+        fig = viewer.view(
             fields,
             wavelengths,
             num_rays,
@@ -363,6 +374,7 @@ class Optic:
             title=title,
             reference=reference,
         )
+        return fig
 
     def draw3D(
         self,

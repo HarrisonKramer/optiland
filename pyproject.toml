@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "optiland"
-version = "0.5.1"
+version = "0.5.2"
 authors = [
   { name = "Kramer Harrison", email = "kdanielharrison@gmail.com" },
 ]
@@ -50,7 +50,7 @@ packages = ["optiland"]  # Auto-discovers subpackages
 
 [tool.ruff]
 line-length = 88
-exclude = ["tests"]
+exclude = ["tests", "docs"]
 
 [tool.ruff.lint]
 select = [
