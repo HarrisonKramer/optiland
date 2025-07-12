@@ -36,8 +36,8 @@ class MaterialFile(BaseMaterial):
             refractive index.
 
     Methods:
-        n(wavelength): Calculates the refractive index of the material at a
-            given wavelength.
+        n(wavelength, temperature, pressure): Calculates the refractive index of the
+            material at a given wavelength, temperature and pressure.
         k(wavelength): Retrieves the extinction coefficient of the material at
             a given wavelength.
 
@@ -47,11 +47,13 @@ class MaterialFile(BaseMaterial):
         self.filename = filename
         self._k_warning_printed = False
         self.coefficients = []
+        self.thermdispcoef = []
         self._k_wavelength = None
         self._k = None
         self._n_formula = None
         self._n_wavelength = None
         self._n = None
+        self._t0 = None
         self.reference_data = None
 
         self.formula_map = {
@@ -71,18 +73,141 @@ class MaterialFile(BaseMaterial):
         data = self._read_file()
         self._parse_file(data)
 
-    def n(self, wavelength):
+    def n(self, wavelength, temperature=None, pressure=None):
         """Calculates the refractive index of the material at given wavelengths.
+
+        The method first calculates the refractive index from the dispersion formula,
+        which is assumed to be relative to air at a reference temperature.
+        If system temperature and pressure are provided, it applies a
+        correction based on the material's thermal dispersion coefficients.
 
         Args:
             wavelength (float or be.ndarray): The wavelength(s) in microns.
+            temperature (float): The material temperature in Celsius. If None, no
+                thermal correction is applied.
+            pressure (float): The ambient pressure in atmospheres (atm). Defaults to
+                1.0 atm in calculations if not provided but temperature is.
 
         Returns:
             float or be.ndarray: The refractive index(s) of the material.
-
         """
-        func = self.formula_map[self._n_formula]
-        return func(wavelength)
+
+        # Apply environmental corrections only if temperature data is available.
+        if (
+            temperature is not None
+            and self._t0 is not None
+            and be.any(be.array(self.thermdispcoef))
+        ):
+            pressure = 1.0 if pressure is None else pressure
+
+            # Calculate the 'relative' wavelength which is input wavelength scaled
+            # to reference temperature and pressure
+            waverel = (
+                wavelength
+                * self._nair(wavelength, temperature, pressure)
+                / self._nair(wavelength, self._t0, 1.0)
+            )
+            # Calculate the baseline refractive index. This is relative to air at the
+            # reference temperature (self._t0) and for 'relative' wavelength.
+            base_relative_n = self.formula_map[self._n_formula](waverel)
+            return self._apply_environmental_correction(
+                base_relative_n, wavelength, temperature, pressure
+            )
+        else:
+            # If no temperature is given or material has no thermal data,
+            # return the catalog value.
+            # Calculate the baseline refractive index. This is relative to air at the
+            # reference temperature (self._t0).
+            base_relative_n = self.formula_map[self._n_formula](wavelength)
+            return base_relative_n
+
+    def _apply_environmental_correction(
+        self, base_relative_n, wavelength, temp_c, pressure_atm
+    ):
+        """Applies temperature and pressure corrections to a refractive index.
+
+        This method encapsulates the physics of converting from a relative
+        index to absolute, applying thermal changes, and converting back to the
+        new relative index.
+
+        Args:
+            base_relative_n (float or be.ndarray): The catalog refractive index
+                relative to air at reference temperature.
+            wavelength (float or be.ndarray): The wavelength(s) in microns.
+            temp_c (float): The system temperature in Celsius.
+            pressure_atm (float): The system pressure in atmospheres.
+
+        Returns:
+            float or be.ndarray: The corrected refractive index relative to the
+            ambient conditions.
+        """
+        # If pressure is not specified, assume standard atmosphere
+        if pressure_atm is None:
+            pressure_atm = 1.0
+
+        # Compute the index of air at the material's reference temperature and standard
+        # pressure (1 atm)
+        n_air_reference = self._nair(wavelength, self._t0, 1.0)
+
+        # Compute the absolute index of the material (relative to vacuum) at its
+        # reference temperature
+        n_absolute_reference = base_relative_n * n_air_reference
+
+        # Compute the change in the absolute index due to the temperature difference
+        c = self.thermdispcoef
+        delta_t = temp_c - self._t0
+
+        # This is the Schott formula for the change in absolute refractive index
+        term1 = c[0] + c[1] * delta_t + c[2] * delta_t**2
+        term2 = (c[3] + c[4] * delta_t) / (wavelength**2 - c[5] ** 2)
+        dn_abs = (
+            (n_absolute_reference**2 - 1.0)
+            / (2.0 * n_absolute_reference)
+            * (term1 + term2)
+            * delta_t
+        )
+
+        n_absolute_corrected = n_absolute_reference + dn_abs
+
+        # Compute the index of air at the new system temperature and pressure.
+        n_air_system = self._nair(wavelength, temp_c, pressure_atm)
+
+        # Compute the final index of the material relative to the ambient air at the
+        # new system conditions.
+        final_relative_n = n_absolute_corrected / n_air_system
+
+        return final_relative_n
+
+    def _nair(self, wavelength_um, temp_c, pressure_atm=1.0):
+        """Computes the refractive index of air
+
+        This formula is a variant of the Edlén equation for the dispersion of air.
+
+        Args:
+            wavelength_um (float or be.ndarray): The wavelength(s) in microns.
+            temp_c (float): The temperature of air in degrees Celsius.
+            pressure_atm (float): The relative pressure in atmospheres (atm).
+                Defaults to 1.0.
+
+        Returns:
+            float or be.ndarray: The refractive index of air.
+        """
+        AIR_REF_TEMP_C = 15.0
+        AIR_THERMAL_COEFF = 0.0034785  # Corresponds to 3.4785 / 1000
+
+        # Calculate (n-1) for air at the reference temperature (15°C)
+        # and 1 atm pressure using the dispersion formula.
+        w2 = wavelength_um**2
+        n_ref_minus_1 = (
+            6432.8 + (2949810 * w2) / (146 * w2 - 1) + (25540 * w2) / (41 * w2 - 1)
+        ) * 1e-8
+
+        # Adjust for the actual system temperature and pressure.
+        n_air = 1.0 + (n_ref_minus_1 * pressure_atm) / (
+            1.0 + (temp_c - AIR_REF_TEMP_C) * AIR_THERMAL_COEFF
+        )
+
+        return n_air
 
     def k(self, wavelength):
         """Retrieves the extinction coefficient of the material at a
@@ -295,7 +420,7 @@ class MaterialFile(BaseMaterial):
         n = c[0] + c[1] / (w**2 - c[2]) + c[3] * (w - c[4]) / ((w - c[4]) ** 2 + c[5])
         return be.sqrt(n)
 
-    def _tabulated_n(self, w: float or be.ndarray) -> float or be.ndarray:
+    def _tabulated_n(self, w):
         """Calculate the refractive index using tabulated data.
 
         Args:
@@ -366,6 +491,18 @@ class MaterialFile(BaseMaterial):
                     self._k = arr[:, 2]
                     self._set_formula_type(sub_data_type)
 
+        try:
+            # thermal dispersion coefficents
+            coeff = data["SPECS"]["thermal_dispersion"][0]
+            if coeff["type"].startswith("Schott"):
+                self.thermdispcoef = be.array(
+                    [float(k) for k in coeff["coefficients"].split()]
+                )
+                self.thermdispcoef = be.reshape(self.thermdispcoef, (-1, 1))
+            # reference temperature
+            self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
+        except KeyError:
+            print("Thermal dispersion data not found")
         # Parse reference info, if available
         with contextlib.suppress(KeyError):
             self.reference_data = data["REFERENCE"]
