@@ -96,8 +96,10 @@ class MaterialFile(BaseMaterial):
         if (
             temperature is not None
             and self._t0 is not None
-            and be.any(self.thermdispcoef)
+            and be.any(be.array(self.thermdispcoef))
         ):
+            pressure = 1.0 if pressure is None else pressure
+
             # Calculate the 'relative' wavelength which is input wavelength scaled
             # to reference temperature and pressure
             waverel = (
