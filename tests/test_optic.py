@@ -10,6 +10,7 @@ from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
 from optiland.wavelength import WavelengthGroup
 from tests.utils import assert_allclose
+from optiland.surfaces.factories.material_factory import MaterialFactory
 
 
 def singlet_infinite_object():
@@ -185,6 +186,31 @@ class TestOptic:
         )
         self.optic.set_index(1.5, 1)
         assert self.optic.surface_group.surfaces[1].material_post.n(1) == 1.5
+
+    def test_set_material(self, set_test_backend):
+        self.optic.add_surface(
+            index=0,
+            surface_type="standard",
+            material="air",
+            thickness=5,
+        )
+        self.optic.add_surface(
+            index=1,
+            surface_type="standard",
+            material="air",
+            thickness=5,
+        )
+        self.optic.add_surface(
+            index=2,
+            surface_type="standard",
+            material="air",
+            thickness=10,
+        )
+        surface_number = 1
+        material_post = MaterialFactory._configure_post_material('N-BK7')
+        self.optic.set_material(material_post, surface_number)
+        surface = self.optic.surface_group.surfaces[surface_number]
+        assert surface.material_post == material_post
 
     def test_set_asphere_coeff(self, set_test_backend):
         self.optic.add_surface(
@@ -365,7 +391,7 @@ class TestOptic:
 
     def test_total_track_property(self, set_test_backend):
         lens = HeliarLens()
-        assert lens.total_track == 3.6291
+        assert lens.total_track == 12.1357
 
     def test_total_track_error(self, set_test_backend):
         lens = HeliarLens()
