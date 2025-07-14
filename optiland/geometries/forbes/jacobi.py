@@ -1,5 +1,13 @@
-# optiland/geometries/forbes/jacobi.py
-"""High performance / recursive jacobi polynomial calculation."""
+"""
+High performance / recursive jacobi polynomial calculation.
+
+code adapted in its majority from the prysm package - (https://github.com/brandondube/prysm)
+Manuel Fragata Mendes, 2025
+
+Copyright notice:
+Copyright (c) 2017 Brandon Dube
+"""
+
 from functools import lru_cache
 
 import optiland.backend as be
@@ -30,7 +38,7 @@ def recurrence_abc(n, alpha, beta):
         Aden = 2 * (n + 1) * (n + alpha + beta + 1)
         A = Anum / Aden
 
-        Bnum = (alpha ** 2 - beta ** 2) * (2 * n + alpha + beta + 1)
+        Bnum = (alpha**2 - beta**2) * (2 * n + alpha + beta + 1)
         Bden = 2 * (n + 1) * (n + alpha + beta + 1) * (2 * n + alpha + beta)
         B = Bnum / Bden
 
@@ -91,26 +99,31 @@ def jacobi_sum_clenshaw_der(s, alpha, beta, x, j=1, alphas=None):
     M = len(s) - 1
     if M < 0:
         return alphas
-        
+
     jacobi_sum_clenshaw(s, alpha, beta, x, alphas=alphas[0])
     for jj in range(1, j + 1):
-        if M - jj < 0: continue
+        if M - jj < 0:
+            continue
         a, *_ = recurrence_abc(M - jj, alpha, beta)
         alphas[jj][M - jj] = j * a * alphas[jj - 1][M - jj + 1]
         for n in range(M - jj - 1, -1, -1):
             a, b, _ = recurrence_abc(n, alpha, beta)
             _, _, c = recurrence_abc(n + 1, alpha, beta)
-            alphas[jj][n] = jj * a * alphas[jj - 1][n + 1] + (a * x + b) * alphas[jj][n + 1] - c * alphas[jj][n + 2]
+            alphas[jj][n] = (
+                jj * a * alphas[jj - 1][n + 1]
+                + (a * x + b) * alphas[jj][n + 1]
+                - c * alphas[jj][n + 2]
+            )
 
     return alphas
 
 
 def _initialize_alphas(s, x, alphas, j=0):
     if alphas is None:
-        shape = (len(s), *be.shape(x)) if hasattr(x, 'shape') else (len(s),)
+        shape = (len(s), *be.shape(x)) if hasattr(x, "shape") else (len(s),)
         if j != 0:
             shape = (j + 1, *shape)
-        if be.__name__ == 'torch':
+        if be.__name__ == "torch":
             alphas = be.zeros(shape)
             alphas.requires_grad = False
         else:

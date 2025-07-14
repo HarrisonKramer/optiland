@@ -16,9 +16,9 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     BiconicGeometry,
     ChebyshevPolynomialGeometry,
-    ForbesQbfsGeometry,
-    ForbesQ2dGeometry,
     EvenAsphere,
+    ForbesQ2dGeometry,
+    ForbesQbfsGeometry,
     OddAsphere,
     Plane,
     PolynomialGeometry,
@@ -262,6 +262,7 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
         max_iter=config.max_iter,
     )
 
+
 def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
     """Create a Forbes (Q-BFS) Geometry."""
 
@@ -276,9 +277,10 @@ def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
         config.max_iter,
     )
 
+
 def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
     """Create a Forbes (Q-2D) geometry."""
-    
+
     return ForbesQ2dGeometry(
         cs,
         config.radius,
@@ -289,6 +291,7 @@ def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
         config.tol,
         config.max_iter,
     )
+
 
 def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
     """
