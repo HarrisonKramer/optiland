@@ -42,26 +42,24 @@ class EncircledEnergy(SpotDiagram):
     ):
         self.num_points = num_points
 
-        if isinstance(wavelength, str):
-            if wavelength == "primary":
-                processed_wavelength = "primary"
-            else:
-                raise ValueError(
-                    "Invalid wavelength string for EncircledEnergy, only 'primary' "
-                    "is supported as a string."
-                )
-        elif isinstance(wavelength, (float, int)):
-            processed_wavelength = float(wavelength)
+        if isinstance(wavelength, (float, int)):
+            # If a number is passed, wrap it in a list for the base classes.
+            processed_wavelengths = [wavelength]
+        elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
+            # If 'primary' or 'all' is passed, let the base class handle it.
+            processed_wavelengths = wavelength
         else:
+            # Catch any other invalid input.
             raise TypeError(
-                "wavelength argument must be 'primary' or a number (in microns)"
+                f"Unsupported wavelength: {wavelength}. "
+                "Expected 'primary', 'all', or a number."
             )
 
         super().__init__(
             optic,
             fields=fields,
-            wavelengths=processed_wavelength,
-            num_rings=num_rays,  # Map num_rays to num_rings
+            wavelengths=processed_wavelengths, # Pass the formatted value
+            num_rings=num_rays,
             distribution=distribution,
         )
 

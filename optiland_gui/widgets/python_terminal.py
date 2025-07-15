@@ -296,7 +296,7 @@ class PythonTerminalWidget(QWidget):
         self.untitled_script_counter += 1
 
         editor = QTextEdit()
-        editor.setFont(QFont("Courier", 10))
+        editor.setFont(QFont("Cascadia Code", 10))
         editor.setLineWrapMode(QTextEdit.NoWrap)
         editor.setPlainText(content)
 
@@ -515,7 +515,7 @@ class PythonTerminalWidget(QWidget):
             f"QWidget {{ background-color: {theme_palette['editor_bg']}; color: {theme_palette['editor_fg']}; }}"
         )
 
-        editor_style = f"QTextEdit {{ background-color: {theme_palette['editor_bg']}; color: {theme_palette['editor_fg']}; font-family: Courier; }}"
+        editor_style = f"QTextEdit {{ background-color: {theme_palette['editor_bg']}; color: {theme_palette['editor_fg']}; font-family: Cascadia Code; }}"
         for i in range(self.script_tabs.count()):
             editor = self.script_tabs.widget(i)
             if not editor:

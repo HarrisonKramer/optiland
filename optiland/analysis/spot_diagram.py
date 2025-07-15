@@ -98,6 +98,13 @@ class SpotDiagram(BaseAnalysis):
         self.distribution = distribution
 
         super().__init__(optic, wavelengths)
+        primary_wl_value = self.optic.primary_wavelength
+        if primary_wl_value in self.wavelengths:
+            # If the system's primary wavelength is part of our analysis, use it.
+            self._analysis_ref_wavelength_index = self.wavelengths.index(primary_wl_value)
+        else:
+            # Otherwise, just use the first wavelength in our analysis list as the reference.
+            self._analysis_ref_wavelength_index = 0
 
     def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
@@ -496,10 +503,10 @@ class SpotDiagram(BaseAnalysis):
             centroid (List): centroid for each field in the data.
 
         """
-        norm_index = self.optic.wavelengths.primary_index
+        ref_idx = self._analysis_ref_wavelength_index
         centroid = []
         for field_data in self.data:
-            spot_data_item = field_data[norm_index]
+            spot_data_item = field_data[ref_idx]
             centroid_x = be.mean(spot_data_item.x)
             centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))

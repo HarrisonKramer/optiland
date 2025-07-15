@@ -46,19 +46,23 @@ class GridDistortion(BaseAnalysis):
         num_points=10,
         distortion_type="f-tan",
     ):
-        if isinstance(wavelength, str) and wavelength == "primary":
-            processed_wavelength = "primary"
-        elif isinstance(wavelength, (float, int)):
-            processed_wavelength = float(wavelength)
+        # --- Start of Corrected Code ---
+        if isinstance(wavelength, (float, int)):
+            # Wrap the single wavelength number in a list for the base class.
+            processed_wavelengths = [wavelength]
+        elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
+            # Pass the allowed strings directly to the base class.
+            processed_wavelengths = wavelength
         else:
             raise TypeError(
-                f"Unsupported wavelength type: {type(wavelength)} for GridDistortion. "
-                f"Expected 'primary', float, or int"
+                f"Unsupported wavelength: {wavelength}. "
+                "Expected 'primary', 'all', or a number."
             )
 
         self.num_points = num_points
         self.distortion_type = distortion_type
-        super().__init__(optic, wavelengths=processed_wavelength)
+        # Pass the formatted list or string to the base class constructor.
+        super().__init__(optic, wavelengths=processed_wavelengths)
 
     def view(self, fig_to_plot_on=None, figsize=(7, 7)):  # Adjusted for squareness
         """Visualizes the grid distortion analysis."""

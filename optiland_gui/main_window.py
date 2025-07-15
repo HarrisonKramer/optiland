@@ -12,6 +12,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QResizeEvent
 from PySide6.QtWidgets import (
     QDialog,
+    QMenu,
     QDockWidget,
     QFileDialog,
     QLabel,
@@ -108,6 +109,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.current_theme_path = THEME_DARK_PATH
+        self.analysis_panels = []
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setWindowTitle("Optiland GUI")
         self.setGeometry(100, 100, 1600, 900)
@@ -233,6 +235,10 @@ class MainWindow(QMainWindow):
             | QDockWidget.DockWidgetMovable
             | QDockWidget.DockWidgetFloatable
         )
+        self.analysisPanelDock.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.analysisPanelDock.customContextMenuRequested.connect(
+            lambda pos: self._show_dock_context_menu(pos, self.analysisPanelDock)
+        )
 
         self.optimizationPanelDock = QDockWidget("Optimization", self)
         self.optimizationPanelDock.setWidget(self.optimizationPanel)
@@ -339,6 +345,46 @@ class MainWindow(QMainWindow):
                             dock, checked
                         )
                     )
+
+    def _clone_analysis_window(self):
+        """Creates a new, independent AnalysisPanel in a new dock widget."""
+        cloned_panel = AnalysisPanel(self.connector)
+        cloned_panel.update_theme_icons(self.current_theme_path)
+
+        # Create the new dock widget
+        new_dock = QDockWidget("Analysis-Cloned", self)
+        new_dock.setObjectName("ClonedAnalysisDock")
+        new_dock.setWidget(cloned_panel)
+
+        # Add the dock to the main window, making it float by default
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, new_dock)
+        new_dock.setFloating(True)
+        new_dock.resize(self.analysisPanelDock.size()) # Start with the same size
+        
+        # Give the new dock the same right-click cloning ability
+        new_dock.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        new_dock.customContextMenuRequested.connect(
+            lambda pos, dock=new_dock: self._show_dock_context_menu(pos, dock)
+        )
+
+    def _show_dock_context_menu(self, position, dock_widget):
+        """Creates and shows the right-click context menu for a dock widget."""
+        menu = QMenu()
+        
+        # Add the standard dock/undock actions
+        menu.addAction(dock_widget.toggleViewAction())
+        
+        # Add our custom clone action
+        menu.addSeparator()
+        clone_action = menu.addAction("Clone Window")
+        
+        # Execute the menu and see which action was triggered
+        action = menu.exec(dock_widget.mapToGlobal(position))
+        
+        if action == clone_action:
+            # For now, we only support cloning the Analysis panel
+            if isinstance(dock_widget.widget(), AnalysisPanel):
+                self._clone_analysis_window()
 
     def _populate_main_menu_bar(self, menu_bar: QMenuBar):
         fileMenu = menu_bar.addMenu("&File")

@@ -108,6 +108,14 @@ class MatplotlibViewer(QWidget):
         toolbar_layout.addWidget(self.toolbar)
         toolbar_layout.addStretch()
 
+        for action in self.toolbar.actions():
+            if action.toolTip() == "Reset original view":
+                # Disconnect the default trigger
+                action.triggered.disconnect()
+                # Connect our full plot refresh method
+                action.triggered.connect(self.plot_optic)
+                break
+
         self.settings_area = QWidget()
         self.settings_area.setObjectName("ViewerSettingsArea")
         self.settings_area.setFixedWidth(200)

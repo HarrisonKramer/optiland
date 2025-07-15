@@ -533,18 +533,44 @@ class OptilandConnector(QObject):
         else:
             print("OpticConnector: Cannot redo.")
 
-    def get_wavelength_options(self) -> list[tuple[str, str]]:
-        """Gets a list of available wavelengths for use in UI dropdowns."""
-        options = [("primary", "primary")]
-        if self._optic and self._optic.wavelengths:
-            for wl in self._optic.wavelengths.wavelengths:
-                options.append((f"{wl.value:.4f} µm", str(wl.value)))
+    def get_field_options(self):
+        """
+        Returns a list of (display_name, value_str) tuples for field settings.
+        """
+        if not self._optic or self._optic.fields.num_fields == 0:
+            return [("all", "'all'")]
+
+        options = [("all", "'all'")]
+        # This method returns a list of tuples, e.g., [(0.0, 0.0), (0.0, 0.7), ...].
+        field_coords = self._optic.fields.get_field_coords()
+        
+        for i, field_tuple in enumerate(field_coords):
+            # CORRECTED: Access tuple elements by index [0] and [1].
+            hx, hy = field_tuple[0], field_tuple[1]
+            
+            display_name = f"Field {i+1}: ({hx:.3f}, {hy:.3f})"
+            # The value is the field tuple itself, wrapped in a list.
+            value_str = f"[({hx}, {hy})]" 
+            options.append((display_name, value_str))
+            
         return options
 
-    def get_field_options(self) -> list[tuple[str, str]]:
-        """Gets a list of available fields for use in UI dropdowns."""
-        options = [("all", "all")]
-        if self._optic and self._optic.fields:
-            for i, field in enumerate(self._optic.fields.fields):
-                options.append((f"Field {i} ({field.x:.2f}, {field.y:.2f})", str(i)))
+    def get_wavelength_options(self):
+        """
+        Returns a list of (display_name, value_str) tuples for wavelength settings.
+        """
+        if not self._optic or self._optic.wavelengths.num_wavelengths == 0:
+            return [("all", "'all'"), ("primary", "'primary'")]
+            
+        options = [("all", "'all'"), ("primary", "'primary'")]
+        # This method returns a list of float values.
+        wavelength_values = self._optic.wavelengths.get_wavelengths()
+        
+        for wl_value in wavelength_values:
+            # CORRECTED: Use the float `wl_value` directly for formatting.
+            display_name = f"{wl_value:.4f} µm"
+            # The value is wrapped in a list to be iterable for the analysis classes.
+            value_str = f"[{wl_value}]"
+            options.append((display_name, value_str))
+            
         return options

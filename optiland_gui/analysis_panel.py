@@ -1,4 +1,5 @@
 import copy
+import os
 import inspect
 import json
 
@@ -339,38 +340,46 @@ class AnalysisPanel(QWidget):
         widget = None
 
         if annotation is inspect.Parameter.empty or annotation is None:
-            if isinstance(default_value, bool):
-                annotation = bool
-            elif isinstance(default_value, int):
-                annotation = int
-            elif isinstance(default_value, float):
-                annotation = float
-            elif isinstance(default_value, str):
-                annotation = str
-        if param_name == "max_freq":
-            annotation = str  # Treat max_freq as a string to allow "cutoff"
-        if param_name == "grid_size":
-            annotation = int # Ensure grid_size uses a QSpinBox
-        if annotation == int:
+            if isinstance(default_value, bool): annotation = bool
+            elif isinstance(default_value, int): annotation = int
+            elif isinstance(default_value, float): annotation = float
+            elif isinstance(default_value, str): annotation = str
+        if param_name == "max_freq": annotation = str
+        if param_name == "grid_size": annotation = int
+
+        # --- Logic for creating dropdowns for fields and wavelengths ---
+        if param_name == "fields":
+            widget = QComboBox()
+            options = self.connector.get_field_options()
+            for display_name, value_str in options:
+                widget.addItem(display_name, userData=value_str)
+            all_index = widget.findText("all")
+            if all_index != -1:
+                widget.setCurrentIndex(all_index)
+            
+        elif param_name in ["wavelengths", "wavelength"]:
+            widget = QComboBox()
+            label_text = "Wavelengths:"
+            options = self.connector.get_wavelength_options()
+            for display_name, value_str in options:
+                widget.addItem(display_name, userData=value_str)
+            default_index = widget.findText(str(default_value))
+            if default_index != -1:
+                widget.setCurrentIndex(default_index)
+                
+        elif annotation == int:
             widget = QSpinBox()
-            # Define ranges in a more structured way
             ranges = {
-                "num_rays": (1, 10000000),
-                "num_points": (1, 10000000),
-                "num_rings": (1, 1024),
-                "num_fields": (1, 1024),
-                "num_steps": (1, 51),
-                "detector_surface": (-100, 100),
+                "num_rays": (1, 10000000), "num_points": (1, 10000000), "num_rings": (1, 1024),
+                "num_fields": (1, 1024), "num_steps": (1, 51), "detector_surface": (-100, 100),
                 "grid_size": (32, 8192),
             }
             min_v, max_v = ranges.get(param_name, (-1000000, 1000000))
-            step_v = 1
-            if param_name == "grid_size":
-                step_v = 32
+            step_v = 32 if param_name == "grid_size" else 1
             widget.setRange(min_v, max_v)
             widget.setSingleStep(step_v)
             if param_name == "num_steps" and default_value and default_value % 2 == 0:
-                default_value += 1  # Ensure odd
+                default_value += 1
             if param_name == "grid_size" and default_value_override is None:
                 default_value = 128
             widget.setValue(int(default_value) if default_value is not None else 0)
@@ -384,14 +393,11 @@ class AnalysisPanel(QWidget):
 
         elif annotation == bool:
             widget = QCheckBox(param_name.replace("_", " ").title())
-            widget.setChecked(
-                bool(default_value) if default_value is not None else False
-            )
+            widget.setChecked(bool(default_value) if default_value is not None else False)
             label_text = ""
 
         elif "Literal" in str(annotation):
             from typing import get_args
-
             options = get_args(annotation)
             if options:
                 widget = QComboBox()
@@ -400,18 +406,8 @@ class AnalysisPanel(QWidget):
                     widget.setCurrentText(str(default_value))
 
         elif annotation == str:
-            # Consolidate string-based combo boxes
             combo_options = {
-                "distribution": [
-                    "hexapolar",
-                    "grid",
-                    "random",
-                    "ring",
-                    "line_x",
-                    "line_y",
-                    "gaussian",
-                    "uniform",
-                ],
+                "distribution": ["hexapolar", "grid", "random", "ring", "line_x", "line_y", "gaussian", "uniform"],
                 "coordinates": ["local", "global"],
                 "distortion_type": ["f-tan", "f-theta"],
                 "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
@@ -419,19 +415,13 @@ class AnalysisPanel(QWidget):
             if param_name in combo_options:
                 widget = QComboBox()
                 widget.addItems(combo_options[param_name])
-            else:  # Fallback for other strings (like wavelength='primary')
-                widget = QLineEdit()
-            if isinstance(widget, QComboBox):
-                widget.setCurrentText(
-                    str(default_value) if default_value else widget.itemText(0)
-                )
+                widget.setCurrentText(str(default_value) if default_value else widget.itemText(0))
             else:
+                widget = QLineEdit()
                 widget.setText(str(default_value) if default_value is not None else "")
 
         elif annotation == tuple or isinstance(default_value, tuple):
-            widget = QLineEdit(
-                ",".join(map(str, default_value)) if default_value else ""
-            )
+            widget = QLineEdit(",".join(map(str, default_value)) if default_value else "")
             widget.setPlaceholderText("e.g., 128,128")
 
         if widget:
@@ -488,17 +478,25 @@ class AnalysisPanel(QWidget):
 
     def update_theme_icons(self, theme="dark"):
         """Updates icons within this panel to match the current theme."""
-        self.current_theme = theme
+        # --- Start of Corrected Code ---
+        # Robustly determine the theme name ("dark" or "light")
+        # whether we are passed a name or a full path.
+        if "dark" in theme.lower():
+            theme_name = "dark"
+        else:
+            theme_name = "light"
+        
+        self.current_theme = theme_name # Store the simple name
         refresh_icon_path = f":/icons/{self.current_theme}/refresh.svg"
         self.btnRefreshPlot.setIcon(QIcon(refresh_icon_path))
         settings_icon_path = f":/icons/{self.current_theme}/settings.svg"
         self.toggleSettingsButton.setIcon(QIcon(settings_icon_path))
-        self.btnRun.setIcon(QIcon(f":/icons/{theme}/run.svg"))
-        self.btnStop.setIcon(QIcon(f":/icons/{theme}/stop.svg"))
-        self.btnRunAll.setIcon(QIcon(f":/icons/{theme}/run_all.svg"))
-        self.btnApplySettings.setIcon(QIcon(f":/icons/{theme}/check_apply.svg"))
-        self.btnSaveSettings.setIcon(QIcon(f":/icons/{theme}/save_settings.svg"))
-        self.btnLoadSettings.setIcon(QIcon(f":/icons/{theme}/load_settings.svg"))
+        self.btnRun.setIcon(QIcon(f":/icons/{theme_name}/run.svg"))
+        self.btnStop.setIcon(QIcon(f":/icons/{theme_name}/stop.svg"))
+        self.btnRunAll.setIcon(QIcon(f":/icons/{theme_name}/run_all.svg"))
+        self.btnApplySettings.setIcon(QIcon(f":/icons/{theme_name}/check_apply.svg"))
+        self.btnSaveSettings.setIcon(QIcon(f":/icons/{theme_name}/save_settings.svg"))
+        self.btnLoadSettings.setIcon(QIcon(f":/icons/{theme_name}/load_settings.svg"))
 
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
@@ -588,8 +586,8 @@ class AnalysisPanel(QWidget):
 
     def on_mouse_move_on_plot(self, event):
         if event.inaxes and self.active_mpl_canvas_widget:
-            x_coord = f"{event.xdata:.2f}" if event.xdata is not None else "---"
-            y_coord = f"{event.ydata:.2f}" if event.ydata is not None else "---"
+            x_coord = f"{event.xdata:.6f}" if event.xdata is not None else "---"
+            y_coord = f"{event.ydata:.6f}" if event.ydata is not None else "---"
             self.cursor_coord_label.setText(f"(x, y) = ({x_coord}, {y_coord})")
             self.cursor_coord_label.adjustSize()
             self.cursor_coord_label.move(5, 5)
@@ -653,8 +651,6 @@ class AnalysisPanel(QWidget):
                     val = page_args[param_name]
                     if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
                         widget.setValue(val)
-                    elif isinstance(widget, QComboBox):
-                        widget.setCurrentText(str(val))
                     elif isinstance(widget, QCheckBox):
                         widget.setChecked(bool(val))
                     elif isinstance(widget, QLineEdit):
@@ -663,6 +659,28 @@ class AnalysisPanel(QWidget):
                             if isinstance(val, tuple)
                             else str(val)
                         )
+                    elif isinstance(widget, QComboBox):
+                        # Correctly set the dropdown selection
+                        if param_name in ["fields", "wavelengths", "wavelength"]:
+                            # For our special dropdowns, find the item by its stored data
+                            last_used_value = val
+                            found_index = -1
+                            for i in range(widget.count()):
+                                # The itemData is a string like "'primary'" or "[0.55]"
+                                item_data_str = widget.itemData(i)
+                                try:
+                                    item_data_obj = eval(item_data_str)
+                                    if item_data_obj == last_used_value:
+                                        found_index = i
+                                        break
+                                except:
+                                    continue # Ignore items whose data can't be evaluated
+                            
+                            if found_index != -1:
+                                widget.setCurrentIndex(found_index)
+                        else:
+                            # For other standard dropdowns, setting by text is fine
+                            widget.setCurrentText(str(val))
 
             analysis_instance = page_data.get("analysis_instance")
             if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
@@ -740,7 +758,7 @@ class AnalysisPanel(QWidget):
                     self.active_mpl_toolbar_widget
                 )
                 self.mpl_toolbar_in_titlebar_container.setVisible(True)
-
+                
                 plot_content_area_layout.addWidget(self.active_mpl_canvas_widget)
 
             else:
@@ -783,15 +801,24 @@ class AnalysisPanel(QWidget):
             value = None
             if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
                 value = widget.value()
-            elif isinstance(widget, QComboBox):
-                value = widget.currentText()
             elif isinstance(widget, QCheckBox):
                 value = widget.isChecked()
+            elif isinstance(widget, QComboBox):
+                # This is the key logic for reading from the new dropdowns
+                if param_name in ["fields", "wavelengths", "wavelength"]:
+                    value_str = widget.currentData()
+                    if value_str:
+                        try:
+                            value = eval(value_str)
+                        except:
+                            value = value_str
+                    if param_name == 'wavelength' and isinstance(value, list) and len(value) == 1:
+                        value = value[0]
+                else:
+                    value = widget.currentText()
             elif isinstance(widget, QLineEdit):
                 text = widget.text().strip()
-                if param_name in ["fields", "wavelengths", "wavelength"]:
-                    value = text if text else None
-                elif param_name == "res":
+                if param_name == "res":
                     value = self._parse_tuple_str(text, int, 2)
                 elif param_name == "px_size":
                     value = self._parse_tuple_str(text, float, 2)
@@ -800,10 +827,7 @@ class AnalysisPanel(QWidget):
                         value = None
                     else:
                         parts = [p.strip() for p in text.split(",")]
-                        if len(parts) == 2 and parts[0].lower() in [
-                            "cross-x",
-                            "cross-y",
-                        ]:
+                        if len(parts) == 2 and parts[0].lower() in ["cross-x", "cross-y"]:
                             try:
                                 value = (parts[0].lower(), int(parts[1]))
                             except ValueError:
@@ -812,13 +836,9 @@ class AnalysisPanel(QWidget):
                             value = text
                 else:
                     value = text
+
             if value is not None:
-                if param_name in [
-                    "add_airy_disk",
-                    "cmap",
-                    "normalize",
-                    "cross_section",
-                ]:
+                if param_name in ["add_airy_disk", "cmap", "normalize", "cross_section"]:
                     view_args[param_name] = value
                 else:
                     constructor_args[param_name] = value

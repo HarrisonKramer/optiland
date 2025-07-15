@@ -55,11 +55,17 @@ class RmsSpotSizeVsField(SpotDiagram):
         else:
             current_fig, ax = plt.subplots(figsize=figsize)
 
-        wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(
-            be.to_numpy(self._field[:, 1]), be.to_numpy(self._spot_size), label=labels
-        )
+        analysis_wavelengths = self.wavelengths
+        spot_size_data = be.to_numpy(self._spot_size)
+
+        # Plot each wavelength's data as a separate line to handle legends correctly.
+        for i, wavelength in enumerate(analysis_wavelengths):
+            ax.plot(
+                be.to_numpy(self._field[:, 1]),
+                spot_size_data[:, i],
+                label=f"{wavelength:.4f} µm"
+            )
+        
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Spot Size (mm)")
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
@@ -117,13 +123,16 @@ class RmsWavefrontErrorVsField(Wavefront):
         else:
             current_fig, ax = plt.subplots(figsize=figsize)
 
-        wavelengths = self.optic.wavelengths.get_wavelengths()
-        labels = [f"{wavelength:.4f} µm" for wavelength in wavelengths]
-        ax.plot(
-            be.to_numpy(self._field[:, 1]),
-            be.to_numpy(self._wavefront_error),
-            label=labels,
-        )
+        analysis_wavelengths = self.wavelengths
+        wavefront_error_data = be.to_numpy(self._wavefront_error)
+
+        # Plot each wavelength's data as a separate line.
+        for i, wavelength in enumerate(analysis_wavelengths):
+            ax.plot(
+                be.to_numpy(self._field[:, 1]),
+                wavefront_error_data[:, i],
+                label=f"{wavelength:.4f} µm"
+            )
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
