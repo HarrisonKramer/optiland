@@ -81,6 +81,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    installation
    quickstart
    cheat_sheet
+   gui_quickstart
 
 
 .. toctree::

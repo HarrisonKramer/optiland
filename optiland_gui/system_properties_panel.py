@@ -53,13 +53,6 @@ class SystemPropertiesPanel(QWidget):
         for placeholder_name in [
             "Environment",
             "Polarization",
-            "Advanced",
-            "Ray Aiming",
-            "Material Catalogs",
-            "Title/Notes",
-            "Files",
-            "Units",
-            "Cost Estimator",
         ]:
             placeholder_widget = QWidget()
             placeholder_widget.setSizePolicy(
