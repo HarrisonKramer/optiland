@@ -45,6 +45,7 @@ class OptilandConnector(QObject):
 
     opticLoaded = Signal()
     opticChanged = Signal()
+    modifiedStateChanged = Signal(bool)
     surfaceDataChanged = Signal(int, int, object)
     surfaceAdded = Signal(int)
     surfaceRemoved = Signal(int)
@@ -68,6 +69,7 @@ class OptilandConnector(QObject):
         self._undo_redo_manager = UndoRedoManager(self)
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
+        self._is_modified = False
 
         self._undo_redo_manager.undoStackAvailabilityChanged.connect(
             self.undoStackAvailabilityChanged
@@ -78,11 +80,20 @@ class OptilandConnector(QObject):
         self.opticLoaded.emit()
         self._undo_redo_manager.clear_stacks()
 
+    def set_modified(self, modified: bool):
+        """Sets the modified state and emits a signal if it changes."""
+        if self._is_modified != modified:
+            self._is_modified = modified
+            self.modifiedStateChanged.emit(self._is_modified)
+
+    def is_modified(self) -> bool:
+        """Returns True if the optic has unsaved changes."""
+        return self._is_modified
+
     def _initialize_optic_structure(
         self, optic_instance: Optic, is_specific_new_system: bool = False
     ):
         if is_specific_new_system:
-            print("Connector: Creating specific new dummy system.")
             optic_instance.surface_group.surfaces.clear()
             optic_instance.wavelengths.wavelengths.clear()
 
@@ -227,6 +238,7 @@ class OptilandConnector(QObject):
         self._initialize_optic_structure(self._optic, is_specific_new_system=True)
         self._current_filepath = None
         print("OpticConnector: New specific dummy system created.")
+        self.set_modified(False)
         self.opticLoaded.emit()
 
     def load_optic_from_file(self, filepath: str):
@@ -271,7 +283,7 @@ class OptilandConnector(QObject):
                     f"Loaded system from {filepath} may be missing a designated "
                     f"stop surface or has other structural issues:\n{e_stop}",
                 )
-
+            self.set_modified(False)
             self.opticLoaded.emit()
 
         except (ValueError, json.JSONDecodeError) as e:
@@ -304,6 +316,7 @@ class OptilandConnector(QObject):
             with open(filepath, "w") as f:
                 json.dump(data, f, indent=4, cls=SpecialFloatEncoder)
             self._current_filepath = filepath
+            self.set_modified(False)
             print(f"OpticConnector: Optic saved to {filepath}")
         except Exception as e:
             print(f"OpticConnector: Error saving optic to {filepath}: {e}")
@@ -450,6 +463,7 @@ class OptilandConnector(QObject):
                     surface.aperture = None
             self._optic.update()
             self._undo_redo_manager.add_state(old_state)
+            self.set_modified(True)
             self.surfaceDataChanged.emit(
                 row, col_idx, self.get_surface_data(row, col_idx)
             )
@@ -483,6 +497,7 @@ class OptilandConnector(QObject):
         self._optic.add_surface(**params)
         self._optic.update()
         self._undo_redo_manager.add_state(old_state)
+        self.set_modified(True)
         self.surfaceAdded.emit(optic_insert_idx)
         self.surfaceCountChanged.emit()
         self.opticChanged.emit()
@@ -498,6 +513,7 @@ class OptilandConnector(QObject):
             self._optic.surface_group.remove_surface(optic_surface_index)
             self._optic.update()
             self._undo_redo_manager.add_state(old_state)
+            self.set_modified(True)
             self.surfaceRemoved.emit(lde_row_index)
             self.surfaceCountChanged.emit()
             self.opticChanged.emit()

@@ -675,3 +675,12 @@ AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
     border: 1px solid #007ACC;
     color: #005a9e; /* A darker blue for the icon when checked */
 }
+
+QTableWidget QLineEdit {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    border-radius: 0px;
+    background-color: #FFFFFF; 
+    color: #212529; 
+}

@@ -156,6 +156,7 @@ class MainWindow(QMainWindow):
         self.custom_title_bar_widget.close_requested.connect(self.close)
         self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
         self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
+        self.connector.modifiedStateChanged.connect(self._update_project_name_in_title_bar)
 
         self.title_bar_as_toolbar = QToolBar("CustomTitleBarToolbar")
         self.title_bar_as_toolbar.setObjectName("CustomTitleBarToolbar")
@@ -535,7 +536,6 @@ class MainWindow(QMainWindow):
         try:
             with open(self.current_theme_path) as f_theme:
                 style_str += f_theme.read()
-            print(f"Main theme loaded: {self.current_theme_path}")
         except Exception as e:
             print(f"Error loading main theme {self.current_theme_path}: {e}")
 
@@ -543,7 +543,7 @@ class MainWindow(QMainWindow):
             try:
                 with open(SIDEBAR_QSS_PATH) as f_sidebar:
                     style_str += "\n" + f_sidebar.read()
-                print(f"Sidebar stylesheet loaded: {SIDEBAR_QSS_PATH}")
+               
             except Exception as e:
                 print(f"Error loading sidebar stylesheet {SIDEBAR_QSS_PATH}: {e}")
 
@@ -562,20 +562,23 @@ class MainWindow(QMainWindow):
 
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
-            project_name = "UnnamedProject.opds"
-            optic = self.connector.get_optic()
-            if optic and optic.name:
-                current_file = self.connector.get_current_filepath()
-                if current_file:
-                    project_name = os.path.basename(current_file)
-                elif (
-                    optic.name != "Default System"
-                    and optic.name != "New Untitled System"
-                ):
-                    project_name = optic.name + ".opds (unsaved)"
-                else:
-                    project_name = "UnnamedProject.opds"
-            self.custom_title_bar_widget.set_project_name(project_name)
+            
+            # New logic starts here
+            display_name = "UnnamedProject.json" # Default with correct extension
+            current_file = self.connector.get_current_filepath()
+            is_modified = self.connector.is_modified()
+
+            if current_file:
+                display_name = os.path.basename(current_file)
+            
+            # An unsaved file is always considered "modified" for the purpose of the asterisk
+            if not current_file:
+                is_modified = True
+
+            if is_modified:
+                display_name += "*"
+            
+            self.custom_title_bar_widget.set_project_name(display_name)
 
     def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
         animation_duration = 300

@@ -284,7 +284,7 @@ class PythonTerminalWidget(QWidget):
         self.jupyter_widget.kernel_manager = self.kernel_manager
         self.jupyter_widget.kernel_client = self.kernel_client
         self.jupyter_widget.banner = (
-            "Welcome to Optiland!\n'connector' and 'iface' are available.\n"
+            "Welcome to Optiland!\n"
         )
         dock.setWidget(self.jupyter_widget)
         return dock

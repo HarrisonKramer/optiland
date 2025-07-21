@@ -82,4 +82,4 @@ class UndoRedoManager(QObject):
         self._redo_stack.clear()
         self.undoStackAvailabilityChanged.emit(self.can_undo())
         self.redoStackAvailabilityChanged.emit(self.can_redo())
-        print("UndoRedoManager: Stacks cleared.")
+        
