@@ -24,6 +24,7 @@
     <li><a href="#key-features">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Roadmap</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact-and-support">Contact and Support</a></li>
   </ol>
@@ -262,6 +263,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
+> If you'd like to help with any of these, please check if there's an [open issue](https://github.com/HarrisonKramer/optiland/issues), or open one to propose your approach. Leave a comment to let others know you're interested in contributing.
+
 - [ ] **GUI (PySide6-based)**
 - [ ] **Multi-Path Sequential Ray Tracing**
 - [ ] **Multiple Configurations (Zoom Lenses)**
@@ -280,7 +283,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 
 ## Currently Under Development
 
-Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, please check this table and the linked GitHub Issues before starting on a new feature. If you'd like to take on an unassigned `help wanted` task, please comment on the relevant issue first.
+Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, **please check this table and the [GitHub Issues](https://github.com/HarrisonKramer/optiland/issues)** before starting work. If you’d like to work on something, **comment on the issue to let others know.** You can find more about how to coordinate in our [contributing guide](./CONTRIBUTING.md).
 
 | Feature / Topic | Contributor(s) | Status | Discussion / Issue |
 | ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
@@ -304,8 +307,11 @@ Welcome, contributors! This section outlines the major features and tasks that a
 * ✅ **Done**: Completed and merged. (You can remove these after a while).
 
 
-### Community Contributions
-We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
+## Contributing
+
+We welcome contributions of all kinds — features, bugfixes, docs, and discussions! 🎉
+
+To get started, please check out the [contributing guide](./CONTRIBUTING.md) for best practices and coordination tips.
 
 
 ## License
