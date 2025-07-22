@@ -4,8 +4,8 @@ Provides a manager for handling undo and redo functionality.
 This module defines the `UndoRedoManager`, a class that maintains stacks of
 object states to enable undoing and redoing actions within the application.
 
-@authors: Kramer Harrison, 2025
-          Manuel Mendes,   2025
+@authors: Originally wrote by Kramer Harrison, 2025
+          Modified by Manuel Mendes,   2025
 """
 
 from PySide6.QtCore import QObject, Signal

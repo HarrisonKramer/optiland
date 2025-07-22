@@ -46,8 +46,10 @@ from optiland.analysis import (
     Distortion,
     EncircledEnergy,
     FieldCurvature,
+    FieldIncidentAngleVsHeight,
     GridDistortion,
     PupilAberration,
+    PupilIncidentAngleVsHeight,
     RayFan,
     RmsSpotSizeVsField,
     RmsWavefrontErrorVsField,
@@ -108,6 +110,8 @@ class AnalysisPanel(QWidget):
     ANALYSIS_MAP = {
         "Spot Diagram": SpotDiagram,
         "Ray Fan": RayFan,
+        "Angle vs Height (Scan Pupil)": PupilIncidentAngleVsHeight,
+        "Angle vs Height (Scan Field)": FieldIncidentAngleVsHeight,
         "Distortion Plot": Distortion,
         "Grid Distortion": GridDistortion,
         "Field Curvature": FieldCurvature,
@@ -424,6 +428,12 @@ class AnalysisPanel(QWidget):
             if default_index != -1:
                 widget.setCurrentIndex(default_index)
 
+        elif param_name == "axis":
+            widget = QComboBox()
+            widget.addItems(["Y-Axis (1)", "X-Axis (0)"])
+            if default_value is not None:
+                widget.setCurrentIndex(0 if default_value == 1 else 1)
+
         elif annotation is int:
             widget = QSpinBox()
             ranges = {
@@ -432,6 +442,7 @@ class AnalysisPanel(QWidget):
                 "num_rings": (1, 1024),
                 "num_fields": (1, 1024),
                 "num_steps": (1, 51),
+                "surface_idx": (-100, 100),
                 "detector_surface": (-100, 100),
                 "grid_size": (32, 8192),
             }
@@ -496,10 +507,17 @@ class AnalysisPanel(QWidget):
                 widget.setText(str(default_value) if default_value is not None else "")
 
         elif annotation is tuple or isinstance(default_value, tuple):
-            widget = QLineEdit(
-                ",".join(map(str, default_value)) if default_value else ""
-            )
-            widget.setPlaceholderText("e.g., 128,128")
+            if param_name in ["field", "pupil"]:
+                label_text = f"Fixed {param_name.title()} (Hx, Hy):"
+                widget = QLineEdit(
+                    ", ".join(map(str, default_value)) if default_value else "0, 0"
+                )
+                widget.setPlaceholderText("e.g., 0, 0.5")
+            else:
+                widget = QLineEdit(
+                    ",".join(map(str, default_value)) if default_value else ""
+                )
+                widget.setPlaceholderText("e.g., 128,128")
 
         if widget:
             if isinstance(widget, QCheckBox):
@@ -749,7 +767,7 @@ class AnalysisPanel(QWidget):
                         widget.setChecked(bool(val))
                     elif isinstance(widget, QLineEdit):
                         widget.setText(
-                            ",".join(map(str, val))
+                            ", ".join(map(str, val))
                             if isinstance(val, tuple)
                             else str(val)
                         )
@@ -773,6 +791,8 @@ class AnalysisPanel(QWidget):
 
                             if found_index != -1:
                                 widget.setCurrentIndex(found_index)
+                        elif param_name == "axis":
+                            widget.setCurrentIndex(0 if val == 1 else 1)
                         else:
                             widget.setCurrentText(str(val))
 
@@ -909,11 +929,15 @@ class AnalysisPanel(QWidget):
                         and len(value) == 1
                     ):
                         value = value[0]
+                elif param_name == "axis":
+                    value = 1 if "Y-Axis" in widget.currentText() else 0
                 else:
                     value = widget.currentText()
             elif isinstance(widget, QLineEdit):
                 text = widget.text().strip()
-                if param_name == "res":
+                if param_name in ["field", "pupil"]:
+                    value = self._parse_tuple_str(text, float, 2)
+                elif param_name == "res":
                     value = self._parse_tuple_str(text, int, 2)
                 elif param_name == "px_size":
                     value = self._parse_tuple_str(text, float, 2)
