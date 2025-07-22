@@ -1,3 +1,14 @@
+"""
+Provides the main sidebar navigation widget for the application.
+
+This module defines `SidebarWidget`, which is a QWidget that serves as the
+primary navigation control for the Optiland GUI. It features a series of
+tool buttons for selecting different application panels (e.g., Design, Analysis)
+and can dynamically collapse to an icon-only view when resized.
+
+@author: Manuel Fragata Mendes, 2025
+"""
+
 import webbrowser
 
 from PySide6.QtCore import QSize, Qt, Signal
@@ -18,9 +29,34 @@ SIDEBAR_MAX_WIDTH = 150
 
 
 class SidebarWidget(QWidget):
+    """
+    A collapsible sidebar widget for main navigation.
+
+    This widget displays a vertical list of tool buttons that emit a signal
+    when a menu item is selected. It automatically collapses to an icon-only
+    mode when its width is below a certain threshold and provides links to
+    external resources like GitHub and the documentation.
+
+    Signals:
+        menuSelected (str): Emitted when a navigation button is clicked,
+                            sending the name of the selected menu.
+
+    Attributes:
+        title_label (QLabel): The label at the top of the sidebar.
+        settings_button (QToolButton): The button for accessing settings.
+        github_button (QToolButton): The button for opening the GitHub page.
+        help_button (QToolButton): The button for opening the documentation.
+    """
+
     menuSelected = Signal(str)
 
     def __init__(self, parent=None):
+        """
+        Initializes the SidebarWidget.
+
+        Args:
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self._wip_buttons = [
             "dash",
@@ -166,14 +202,23 @@ class SidebarWidget(QWidget):
             self._last_checked_button = design_button_item["widget"]
 
     def _open_github_url(self):
+        """Opens the Optiland GitHub repository URL in a web browser."""
         url = "https://github.com/HarrisonKramer/optiland"
         webbrowser.open(url)
 
     def _open_help_url(self):
+        """Opens the Optiland documentation URL in a web browser."""
         url = "https://optiland.readthedocs.io/en/latest/index.html"
         webbrowser.open(url)
 
     def _handle_button_click(self):
+        """
+        Handles clicks on the navigation buttons.
+
+        It checks if a feature is a work-in-progress and shows a message if so.
+        Otherwise, it emits the `menuSelected` signal with the name of the
+        clicked button.
+        """
         checked_button = self._button_group.checkedButton()
         if not checked_button:
             return
@@ -200,6 +245,15 @@ class SidebarWidget(QWidget):
             self._last_checked_button = checked_button
 
     def set_collapsed(self, collapsed: bool):
+        """
+        Sets the collapsed state of the sidebar.
+
+        In a collapsed state, buttons show only icons. In an expanded state,
+        they show icons and text.
+
+        Args:
+            collapsed (bool): True to collapse the sidebar, False to expand it.
+        """
         if self._is_collapsed == collapsed:
             return
 
@@ -221,6 +275,12 @@ class SidebarWidget(QWidget):
         self.updateGeometry()
 
     def resizeEvent(self, event: QResizeEvent):
+        """
+        Handles the resize event to automatically collapse or expand the sidebar.
+
+        Args:
+            event (QResizeEvent): The resize event.
+        """
         super().resizeEvent(event)
         current_width = event.size().width()
 
@@ -230,9 +290,22 @@ class SidebarWidget(QWidget):
             self.set_collapsed(False)
 
     def force_set_collapse_state(self, collapse: bool):
+        """
+        Public method to forcefully set the collapse state, bypassing width checks.
+
+        Args:
+            collapse (bool): The desired collapse state.
+        """
         self.set_collapsed(collapse)
 
     def update_icons(self, theme="dark"):
+        """
+        Updates all button icons to match the specified theme.
+
+        Args:
+            theme (str, optional): The name of the theme ('dark' or 'light').
+                                   Defaults to "dark".
+        """
         self.current_theme = theme
         for item in self._buttons_list:
             icon_path = f":/icons/{self.current_theme}/{item['icon_filename']}"

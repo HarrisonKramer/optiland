@@ -1,4 +1,13 @@
-# optiland_gui/system_properties_panel.py
+"""
+Provides the GUI panel for editing system-wide optical properties.
+
+This module defines the `SystemPropertiesPanel` which contains editors for
+aperture, fields, wavelengths, and other system settings. It uses a navigation
+tree to switch between different property editors.
+
+@author: Manuel Fragata Mendes, 2025
+"""
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -23,7 +32,30 @@ from .optiland_connector import OptilandConnector
 
 
 class SystemPropertiesPanel(QWidget):
+    """
+    A widget that provides a user interface for editing system properties.
+
+    This panel uses a QTreeWidget for navigation and a QStackedWidget to display
+    the corresponding editor for each property (e.g., Aperture, Fields).
+
+    Attributes:
+        connector (OptilandConnector): The connector to the main application logic.
+        navTree (QTreeWidget): The navigation tree for selecting property editors.
+        stackedWidget (QStackedWidget): The widget that holds the different editor
+        pages.
+        apertureEditor (ApertureEditor): The editor for aperture settings.
+        fieldsEditor (FieldsEditor): The editor for field settings.
+        wavelengthsEditor (WavelengthsEditor): The editor for wavelength settings.
+    """
+
     def __init__(self, connector: OptilandConnector, parent=None):
+        """
+        Initializes the SystemPropertiesPanel.
+
+        Args:
+            connector (OptilandConnector): The connector to the main application logic.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.connector = connector
         self.setWindowTitle("System Properties")
@@ -33,7 +65,7 @@ class SystemPropertiesPanel(QWidget):
 
         self.navTree = QTreeWidget()
         self.navTree.setHeaderHidden(True)
-        self.navTree.setFixedWidth(150)
+        self.navTree.setMinimumWidth(120)
         main_layout.addWidget(self.navTree)
 
         self.stackedWidget = QStackedWidget()
@@ -75,25 +107,60 @@ class SystemPropertiesPanel(QWidget):
         self.connector.opticChanged.connect(self.load_properties)
 
     def add_nav_item(self, name, widget):
+        """
+        Adds a navigation item and its corresponding widget editor.
+
+        Args:
+            name (str): The name to display in the navigation tree.
+            widget (QWidget): The editor widget to add to the stacked layout.
+        """
         item = QTreeWidgetItem(self.navTree, [name])
         index = self.stackedWidget.addWidget(widget)
         item.setData(0, Qt.ItemDataRole.UserRole, index)
 
     @Slot(QTreeWidgetItem, int)
     def on_nav_item_clicked(self, item, column):
+        """
+        Handles clicks on navigation tree items to switch editor pages.
+
+        Args:
+            item (QTreeWidgetItem): The clicked tree widget item.
+            column (int): The column index that was clicked.
+        """
         index = item.data(0, Qt.ItemDataRole.UserRole)
         if index is not None:
             self.stackedWidget.setCurrentIndex(index)
 
     @Slot()
     def load_properties(self):
+        """Loads or reloads data into all property editors."""
         self.apertureEditor.load_data()
         self.fieldsEditor.load_data()
         self.wavelengthsEditor.load_data()
 
 
 class PropertyEditorBase(QWidget):
+    """
+    Abstract base class for property editor widgets.
+
+    Provides a common structure for editors, including an OptilandConnector,
+    a loading flag to prevent recursive updates, and abstract methods for UI
+    initialization and data loading.
+
+    Attributes:
+        connector (OptilandConnector): The connector to the main application logic.
+        is_loading (bool): A flag to indicate if data is being loaded, to prevent
+                           unwanted signal emissions.
+    """
+
     def __init__(self, connector: OptilandConnector, parent=None):
+        """
+        Initializes the PropertyEditorBase.
+
+        Args:
+            connector (OptilandConnector): The connector to the main application logic.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.connector = connector
         self.is_loading = False
@@ -103,16 +170,29 @@ class PropertyEditorBase(QWidget):
         self.connector.opticChanged.connect(self.load_data)
 
     def init_ui(self):
+        """
+        Initializes the user interface of the editor.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     def load_data(self):
+        """
+        Loads data from the optical system into the editor's widgets.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
 
 class ApertureEditor(PropertyEditorBase):
+    """A widget for editing the aperture properties of the optical system."""
+
     def init_ui(self):
+        """Initializes the UI for the aperture editor."""
         layout = QFormLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setContentsMargins(1, 1, 1, 1)
         layout.setSpacing(10)
 
         self.cmbApertureType = QComboBox()
@@ -136,6 +216,7 @@ class ApertureEditor(PropertyEditorBase):
 
     @Slot()
     def load_data(self):
+        """Loads aperture data from the current optical system into the UI."""
         self.is_loading = True
         optic = self.connector.get_optic()
         if optic and optic.aperture:
@@ -148,6 +229,7 @@ class ApertureEditor(PropertyEditorBase):
 
     @Slot()
     def apply_aperture_changes(self):
+        """Applies the UI settings to the optical system's aperture."""
         if self.is_loading:
             return
         optic = self.connector.get_optic()
@@ -164,7 +246,10 @@ class ApertureEditor(PropertyEditorBase):
 
 
 class FieldsEditor(PropertyEditorBase):
+    """A widget for editing the field points of the optical system."""
+
     def init_ui(self):
+        """Initializes the UI for the fields editor."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
@@ -201,6 +286,7 @@ class FieldsEditor(PropertyEditorBase):
 
     @Slot()
     def load_data(self):
+        """Loads field data from the current optical system into the table."""
         self.is_loading = True
         optic = self.connector.get_optic()
         if optic and optic.field_type:
@@ -219,6 +305,7 @@ class FieldsEditor(PropertyEditorBase):
 
     @Slot()
     def apply_field_type_change(self):
+        """Applies the selected field type to the optical system."""
         if self.is_loading:
             return
         optic = self.connector.get_optic()
@@ -234,6 +321,7 @@ class FieldsEditor(PropertyEditorBase):
 
     @Slot()
     def add_field(self):
+        """Adds a new field point to the optical system."""
         optic = self.connector.get_optic()
         if optic:
             y_val = (
@@ -251,6 +339,7 @@ class FieldsEditor(PropertyEditorBase):
 
     @Slot()
     def remove_field(self):
+        """Removes the selected field point from the optical system."""
         optic = self.connector.get_optic()
         current_row = self.tableFields.currentRow()
         if optic and current_row != -1 and optic.fields.num_fields > current_row:
@@ -261,6 +350,7 @@ class FieldsEditor(PropertyEditorBase):
 
     @Slot()
     def apply_table_field_changes(self):
+        """Applies changes from the fields table to the optical system."""
         optic = self.connector.get_optic()
         if optic and optic.fields:
             if self.tableFields.rowCount() == optic.fields.num_fields:
@@ -298,7 +388,10 @@ class FieldsEditor(PropertyEditorBase):
 
 
 class WavelengthsEditor(PropertyEditorBase):
+    """A widget for editing the wavelengths of the optical system."""
+
     def init_ui(self):
+        """Initializes the UI for the wavelengths editor."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
@@ -338,6 +431,7 @@ class WavelengthsEditor(PropertyEditorBase):
 
     @Slot()
     def load_data(self):
+        """Loads wavelength data from the current optical system into the table."""
         self.is_loading = True
         self.tableWavelengths.setRowCount(0)
         optic = self.connector.get_optic()
@@ -363,6 +457,7 @@ class WavelengthsEditor(PropertyEditorBase):
 
     @Slot()
     def add_wavelength(self):
+        """Adds a new wavelength to the optical system."""
         optic = self.connector.get_optic()
         if optic:
             is_new_primary = optic.wavelengths.num_wavelengths == 0
@@ -373,6 +468,7 @@ class WavelengthsEditor(PropertyEditorBase):
 
     @Slot()
     def remove_wavelength(self):
+        """Removes the selected wavelength from the optical system."""
         optic = self.connector.get_optic()
         current_row = self.tableWavelengths.currentRow()
         if (
@@ -396,6 +492,7 @@ class WavelengthsEditor(PropertyEditorBase):
 
     @Slot()
     def set_primary_wavelength(self):
+        """Sets the selected wavelength as the primary wavelength."""
         optic = self.connector.get_optic()
         current_row = self.tableWavelengths.currentRow()
         if (
@@ -411,6 +508,7 @@ class WavelengthsEditor(PropertyEditorBase):
 
     @Slot()
     def apply_table_wavelength_changes(self):
+        """Applies changes from the wavelengths table to the optical system."""
         optic = self.connector.get_optic()
         if self.is_loading or not optic or not optic.wavelengths:
             return

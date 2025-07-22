@@ -76,7 +76,7 @@ class BaseMTF(abc.ABC):
         """Calculates and potentially stores the Point Spread Function."""
         pass
 
-    def view(self, figsize=(12, 4),  fig_to_plot_on=None, add_reference=False):
+    def view(self, figsize=(12, 4), fig_to_plot_on=None, add_reference=False):
         """Visualizes the Modulation Transfer Function (MTF).
 
         This method sets up the plot and iterates through field data,
@@ -128,4 +128,3 @@ class BaseMTF(abc.ABC):
                 current_fig.canvas.draw_idle()
         else:
             plt.show()
-    

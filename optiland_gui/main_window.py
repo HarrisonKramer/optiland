@@ -1,3 +1,14 @@
+"""Defines the main window of the Optiland GUI application.
+
+This module contains the `MainWindow` class, which serves as the main entry point
+and container for all GUI elements, including the lens editor, analysis panels,
+viewers, and toolbars. It manages window layout, themes, actions, and the
+connection to the backend via the `OptilandConnector`.
+
+Author: Manuel Fragata Mendes, 2025
+"""
+
+import contextlib
 import os
 
 from PySide6.QtCore import (
@@ -12,11 +23,11 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QResizeEvent
 from PySide6.QtWidgets import (
     QDialog,
-    QMenu,
     QDockWidget,
     QFileDialog,
     QLabel,
     QMainWindow,
+    QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
@@ -30,7 +41,8 @@ from . import gui_plot_utils
 from .analysis_panel import AnalysisPanel
 from .lens_editor import LensEditor
 from .optiland_connector import OptilandConnector
-from .optimization_panel import OptimizationPanel
+
+# from .optimization_panel import OptimizationPanel # we will support this later on
 from .system_properties_panel import SystemPropertiesPanel
 from .viewer_panel import ViewerPanel
 from .widgets.custom_title_bar import CustomTitleBar
@@ -42,7 +54,7 @@ from .widgets.sidebar import (
 )
 
 try:
-    from .resources import resources_rc
+    from .resources import resources_rc  # noqa: F401
 except ImportError as e:
     print(f"Warning (main_window.py): Could not import resources_rc.py: {e}")
 
@@ -61,39 +73,74 @@ APPLICATION_NAME = "OptilandGUI"
 
 
 class MainWindow(QMainWindow):
-    # +++ NEW: Inner class for scripting interface +++
+    """The main application window for the Optiland GUI.
+
+    This class orchestrates the entire graphical user interface. It initializes
+    and manages all dockable widgets (like the Lens Editor and Analysis Panel),
+    handles user actions through menus and toolbars, manages window layout and
+    theming, and provides a scripting interface to control the application.
+
+    Attributes:
+        connector (OptilandConnector): The central connector for backend communication.
+        iface (OptilandInterface): The scripting interface exposed to the Python
+                                    console.
+        all_managed_docks (list): A list of all dock widgets managed by the main
+                                    window.
+    """
+
     class OptilandInterface:
-        """
-        A high-level interface for controlling the Optiland GUI via scripting.
-        This object is available in the Python console as 'iface'.
+        """A high-level interface for controlling the Optiland GUI via scripting.
+
+        This object is made available in the integrated Python console as 'iface',
+        allowing users to programmatically interact with the main application
+        components, such as opening panels, refreshing views, and accessing data.
+
+        Args:
+            main_window (MainWindow): A reference to the main application window.
         """
 
         def __init__(self, main_window):
             self._win = main_window
 
         def get_main_window(self):
-            """Returns the main application window instance."""
+            """Returns the main application window instance.
+
+            Returns:
+                MainWindow: The main QMainWindow instance.
+            """
             return self._win
 
         def get_analysis_panel(self):
-            """Returns the AnalysisPanel widget instance."""
+            """Returns the primary AnalysisPanel widget instance.
+
+            Returns:
+                AnalysisPanel: The main analysis panel widget.
+            """
             return self._win.analysisPanel
 
         def get_lens_editor(self):
-            """Returns the LensEditor widget instance."""
+            """Returns the LensEditor widget instance.
+
+            Returns:
+                LensEditor: The lens data editor widget.
+            """
             return self._win.lensEditor
 
         def get_viewer_panel(self):
-            """Returns the ViewerPanel widget instance."""
+            """Returns the ViewerPanel widget instance.
+
+            Returns:
+                ViewerPanel: The 2D/3D viewer panel widget.
+            """
             return self._win.viewerPanel
 
         def show_lens_editor(self):
-            """Brings the Lens Data Editor dock to the front."""
+            """Brings the Lens Data Editor dock widget to the front."""
             self._win.lensEditorDock.show()
             self._win.lensEditorDock.raise_()
 
         def show_analysis_panel(self):
-            """Brings the Analysis Panel dock to the front."""
+            """Brings the Analysis Panel dock widget to the front."""
             self._win.analysisPanelDock.show()
             self._win.analysisPanelDock.raise_()
             # Also ensure its tab is selected
@@ -102,11 +149,16 @@ class MainWindow(QMainWindow):
                 parent_tab_widget.setCurrentWidget(self._win.analysisPanelDock)
 
         def refresh_all(self):
-            """Triggers a full refresh of all GUI panels."""
+            """Triggers a full refresh of all GUI panels.
+
+            This is a convenience method that emits the `opticChanged` signal from
+            the connector, prompting all connected widgets to reload their data.
+            """
             print("GUI refresh requested via iface.refresh_all()")
             self._win.connector.opticChanged.emit()
 
     def __init__(self):
+        """Initializes the MainWindow, setting up all UI components."""
         super().__init__()
         self.current_theme_path = THEME_DARK_PATH
         self.analysis_panels = []
@@ -127,7 +179,7 @@ class MainWindow(QMainWindow):
         self.lensEditor = LensEditor(self.connector)
         self.viewerPanel = ViewerPanel(self.connector)
         self.analysisPanel = AnalysisPanel(self.connector)
-        self.optimizationPanel = OptimizationPanel(self.connector)
+        # self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
         initial_theme_name = (
             "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
@@ -156,7 +208,9 @@ class MainWindow(QMainWindow):
         self.custom_title_bar_widget.close_requested.connect(self.close)
         self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
         self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
-        self.connector.modifiedStateChanged.connect(self._update_project_name_in_title_bar)
+        self.connector.modifiedStateChanged.connect(
+            self._update_project_name_in_title_bar
+        )
 
         self.title_bar_as_toolbar = QToolBar("CustomTitleBarToolbar")
         self.title_bar_as_toolbar.setObjectName("CustomTitleBarToolbar")
@@ -190,6 +244,12 @@ class MainWindow(QMainWindow):
         self.about_dialog = None
 
     def _setup_all_dock_widgets(self):
+        """Initializes and configures all dockable widgets for the application.
+
+        This method creates instances of all the main panels (Sidebar, Viewer,
+        Lens Editor, etc.) and wraps them in `QDockWidget` containers. It sets
+        their properties, such as features and object names.
+        """
         self.sidebar_content_widget = SidebarWidget(self)
         self.sidebar_content_widget.menuSelected.connect(self.on_sidebar_menu_selected)
         self.sidebarDock = QDockWidget("NavigationSidebar", self)
@@ -236,19 +296,21 @@ class MainWindow(QMainWindow):
             | QDockWidget.DockWidgetMovable
             | QDockWidget.DockWidgetFloatable
         )
-        self.analysisPanelDock.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.analysisPanelDock.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )
         self.analysisPanelDock.customContextMenuRequested.connect(
             lambda pos: self._show_dock_context_menu(pos, self.analysisPanelDock)
         )
 
-        self.optimizationPanelDock = QDockWidget("Optimization", self)
+        """self.optimizationPanelDock = QDockWidget("Optimization", self)
         self.optimizationPanelDock.setWidget(self.optimizationPanel)
         self.optimizationPanelDock.setObjectName("OptimizationPanelDock")
         self.optimizationPanelDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
             | QDockWidget.DockWidgetFloatable
-        )
+        )"""
 
         self.terminalDock = QDockWidget("Scripts Terminal", self)
         self.terminalDock.setWidget(self.pythonTerminal)
@@ -265,34 +327,38 @@ class MainWindow(QMainWindow):
             self.lensEditorDock,
             self.systemPropertiesDock,
             self.analysisPanelDock,
-            self.optimizationPanelDock,
+            # self.optimizationPanelDock,
+            # we will support the optimiziation feature later on
             self.terminalDock,
         ]
 
     def _apply_revised_default_dock_layout(self):
+        """Applies the default docking layout to the main window.
+
+        This function arranges the dock widgets in a predefined layout, splitting
+        and tabbing them to create a functional and organized user interface.
+        This is called on first launch and when resetting the layout.
+        """
         for dock in self.all_managed_docks:
             if dock:
                 dock.setFloating(False)
                 dock.show()
 
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.sidebarDock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.lensEditorDock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.systemPropertiesDock)
+        # 1. Place the Sidebar on the far left.
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.sidebarDock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.lensEditorDock)
         self.splitDockWidget(
-            self.lensEditorDock, self.systemPropertiesDock, Qt.Horizontal
+            self.lensEditorDock, self.analysisPanelDock, Qt.Orientation.Horizontal
         )
-
-        self.addDockWidget(Qt.RightDockWidgetArea, self.viewerDock)
-        self.splitDockWidget(self.lensEditorDock, self.viewerDock, Qt.Vertical)
-
-        self.addDockWidget(Qt.RightDockWidgetArea, self.analysisPanelDock)
         self.splitDockWidget(
-            self.systemPropertiesDock, self.analysisPanelDock, Qt.Vertical
+            self.lensEditorDock, self.viewerDock, Qt.Orientation.Vertical
         )
-
-        self.addDockWidget(Qt.RightDockWidgetArea, self.terminalDock)
-        self.tabifyDockWidget(self.analysisPanelDock, self.terminalDock)
-        self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)
+        self.splitDockWidget(
+            self.analysisPanelDock, self.terminalDock, Qt.Orientation.Vertical
+        )
+        # self.tabifyDockWidget(self.analysisPanelDock, self.optimizationPanelDock)
+        # we will support this later on
+        self.tabifyDockWidget(self.analysisPanelDock, self.systemPropertiesDock)
 
         self.sidebarDock.raise_()
         self.lensEditorDock.raise_()
@@ -310,6 +376,15 @@ class MainWindow(QMainWindow):
             self.viewerPanel.viewer3D.render_optic()
 
     def showEvent(self, event: QResizeEvent):
+        """Handles the window show event.
+
+        This overridden method performs initial setup tasks the first time the
+        window is shown, such as adjusting the sidebar's collapsed state based
+        on the initial window width.
+
+        Args:
+            event: The QShowEvent.
+        """
         super().showEvent(event)
         if not self._initial_narrow_check_done:
             if hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget:
@@ -331,16 +406,20 @@ class MainWindow(QMainWindow):
             self.lightThemeAction.setChecked(not is_dark)
 
     def _connect_dock_animations(self):
+        """Connects dock widget view actions to an animation handler.
+
+        This method disconnects the default `triggered` signal from each dock's
+        toggle view action and reconnects it to a custom slot that provides a
+        fade-in/out animation for a smoother user experience.
+        """
         if not hasattr(self, "all_managed_docks"):
             return
         for dock_widget_ref in self.all_managed_docks:
             if dock_widget_ref:
                 action = dock_widget_ref.toggleViewAction()
                 if action:
-                    try:
+                    with contextlib.suppress(TypeError, RuntimeError):
                         action.triggered.disconnect()
-                    except (TypeError, RuntimeError):
-                        pass
                     action.triggered.connect(
                         lambda checked, dock=dock_widget_ref: self.animate_dock_toggle(
                             dock, checked
@@ -348,46 +427,54 @@ class MainWindow(QMainWindow):
                     )
 
     def _clone_analysis_window(self):
-        """Creates a new, independent AnalysisPanel in a new dock widget."""
+        """Creates a new, independent AnalysisPanel in a floating dock widget.
+
+        This allows the user to have multiple analysis windows open simultaneously,
+        for example, to compare results with different settings.
+        """
         cloned_panel = AnalysisPanel(self.connector)
         cloned_panel.update_theme_icons(self.current_theme_path)
 
-        # Create the new dock widget
         new_dock = QDockWidget("Analysis-Cloned", self)
         new_dock.setObjectName("ClonedAnalysisDock")
         new_dock.setWidget(cloned_panel)
 
-        # Add the dock to the main window, making it float by default
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, new_dock)
         new_dock.setFloating(True)
-        new_dock.resize(self.analysisPanelDock.size()) # Start with the same size
-        
-        # Give the new dock the same right-click cloning ability
+        new_dock.resize(self.analysisPanelDock.size())
+
         new_dock.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         new_dock.customContextMenuRequested.connect(
             lambda pos, dock=new_dock: self._show_dock_context_menu(pos, dock)
         )
 
     def _show_dock_context_menu(self, position, dock_widget):
-        """Creates and shows the right-click context menu for a dock widget."""
+        """Creates and shows a right-click context menu for a dock widget.
+
+        This menu provides standard actions like docking/undocking and custom
+        actions like cloning the window.
+
+        Args:
+            position: The position where the right-click occurred.
+            dock_widget: The QDockWidget that was right-clicked.
+        """
         menu = QMenu()
-        
-        # Add the standard dock/undock actions
+
         menu.addAction(dock_widget.toggleViewAction())
-        
-        # Add our custom clone action
         menu.addSeparator()
         clone_action = menu.addAction("Clone Window")
-        
-        # Execute the menu and see which action was triggered
+
         action = menu.exec(dock_widget.mapToGlobal(position))
-        
-        if action == clone_action:
-            # For now, we only support cloning the Analysis panel
-            if isinstance(dock_widget.widget(), AnalysisPanel):
-                self._clone_analysis_window()
+
+        if action == clone_action and isinstance(dock_widget.widget(), AnalysisPanel):
+            self._clone_analysis_window()
 
     def _populate_main_menu_bar(self, menu_bar: QMenuBar):
+        """Populates the main menu bar with actions and sub-menus.
+
+        Args:
+            menu_bar: The QMenuBar instance to populate.
+        """
         fileMenu = menu_bar.addMenu("&File")
         fileMenu.addAction(self.newAction)
         fileMenu.addAction(self.openAction)
@@ -418,11 +505,16 @@ class MainWindow(QMainWindow):
                 dock.toggleViewAction().setText(f"Toggle {dock.windowTitle()}")
                 viewMenu.addAction(dock.toggleViewAction())
 
-        runMenu = menu_bar.addMenu("&Run")
+        menu_bar.addMenu("&Run")
         helpMenu = menu_bar.addMenu("&Help")
         helpMenu.addAction(self.aboutAction)
 
     def _populate_quick_actions_toolbar(self, toolbar: QToolBar):
+        """Populates the quick actions toolbar with common actions.
+
+        Args:
+            toolbar: The QToolBar instance to populate.
+        """
         toolbar.addAction(self.newAction)
         toolbar.addAction(self.openAction)
         toolbar.addAction(self.saveAction)
@@ -435,6 +527,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(self.resetLayoutAction)
 
     def _create_actions(self):
+        """Creates all QAction objects used in menus and toolbars."""
         self.newAction = QAction(
             "&New System",
             self,
@@ -522,14 +615,12 @@ class MainWindow(QMainWindow):
 
     def changeEvent(self, event: QEvent):
         super().changeEvent(event)
-        if event.type() == QEvent.Type.WindowStateChange:
-            if (
-                hasattr(self, "custom_title_bar_widget")
-                and self.custom_title_bar_widget
-            ):
-                self.custom_title_bar_widget.update_maximize_button_state(
-                    self.isMaximized()
-                )
+        if event.type() == QEvent.Type.WindowStateChange and (
+            hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget
+        ):
+            self.custom_title_bar_widget.update_maximize_button_state(
+                self.isMaximized()
+            )
 
     def load_stylesheets(self):
         style_str = ""
@@ -543,7 +634,7 @@ class MainWindow(QMainWindow):
             try:
                 with open(SIDEBAR_QSS_PATH) as f_sidebar:
                     style_str += "\n" + f_sidebar.read()
-               
+
             except Exception as e:
                 print(f"Error loading sidebar stylesheet {SIDEBAR_QSS_PATH}: {e}")
 
@@ -562,22 +653,20 @@ class MainWindow(QMainWindow):
 
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
-            
             # New logic starts here
-            display_name = "UnnamedProject.json" # Default with correct extension
+            display_name = "UnnamedProject.json"
             current_file = self.connector.get_current_filepath()
             is_modified = self.connector.is_modified()
 
             if current_file:
                 display_name = os.path.basename(current_file)
-            
-            # An unsaved file is always considered "modified" for the purpose of the asterisk
+
             if not current_file:
                 is_modified = True
 
             if is_modified:
                 display_name += "*"
-            
+
             self.custom_title_bar_widget.set_project_name(display_name)
 
     def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
@@ -666,12 +755,14 @@ class MainWindow(QMainWindow):
                 animation.setEasingCurve(easing_curve)
                 animation.finished.connect(dock_widget.hide)
                 animation.finished.connect(
-                    lambda: dock_widget.setMaximumWidth(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                    if is_left_or_right_dock
-                    else dock_widget.setMaximumHeight(
-                        original_dimension if original_dimension > 0 else 5000
+                    lambda: (
+                        dock_widget.setMaximumWidth(
+                            original_dimension if original_dimension > 0 else 5000
+                        )
+                        if is_left_or_right_dock
+                        else dock_widget.setMaximumHeight(
+                            original_dimension if original_dimension > 0 else 5000
+                        )
                     )
                 )
                 animation.start(QPropertyAnimation.DeleteWhenStopped)

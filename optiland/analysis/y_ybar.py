@@ -9,9 +9,10 @@ Kramer Harrison, 2024
 
 import matplotlib.pyplot as plt
 
-import optiland.backend as be 
+import optiland.backend as be
 
 from .base import BaseAnalysis
+
 
 class YYbar(BaseAnalysis):
     """Class representing the YYbar analysis of an optic.
@@ -131,9 +132,7 @@ class YYbar(BaseAnalysis):
         ax.axvline(x=0, linewidth=0.5, color="k")
         ax.set_xlabel("Chief Ray Height (mm)")
         ax.set_ylabel("Marginal Ray Height (mm)")
-        ax.set_title(
-            f"Y Y-bar Diagram (λ={self.wavelength_value_for_display:.3f} µm)"
-        )
+        ax.set_title(f"Y Y-bar Diagram (λ={self.wavelength_value_for_display:.3f} µm)")
         ax.legend()
         current_fig.tight_layout()
 

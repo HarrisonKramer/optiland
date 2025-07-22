@@ -1,5 +1,15 @@
+"""Defines the main analysis panel for the Optiland GUI.
+
+This module contains the `AnalysisPanel` widget, which is the primary interface
+for performing and visualizing optical analyses such as spot diagrams, ray fans,
+and MTF plots. It handles dynamic settings generation, plot display, and user
+interactions for all supported analysis types.
+
+Author: Manuel Fragata Mendes, 2025
+"""
+
+import contextlib
 import copy
-import os
 import inspect
 import json
 
@@ -52,9 +62,15 @@ from .optiland_connector import OptilandConnector
 
 
 class CustomMatplotlibToolbar(NavigationToolbar):
-    """
-    A custom toolbar that assigns unique object names to its buttons
-    so they can be styled individually via QSS.
+    """A custom Matplotlib toolbar with styleable buttons.
+
+    This toolbar assigns unique object names to its buttons, allowing them to be
+    styled individually using Qt Style Sheets (QSS). This is useful for creating
+    a consistent look and feel that matches the application's theme.
+
+    Args:
+        canvas: The Matplotlib canvas to which this toolbar is attached.
+        parent: The parent widget.
     """
 
     def __init__(self, canvas, parent=None):
@@ -62,11 +78,8 @@ class CustomMatplotlibToolbar(NavigationToolbar):
 
         # Assign unique object names to each tool button
         for action in self.actions():
-            # The tooltip is a reliable way to identify the action
             tooltip = action.toolTip()
             if tooltip:
-                # Sanitize the tooltip to create a valid CSS ID
-                # e.g., "Save the figure" -> "MPLSaveButton"
                 action_id = tooltip.split(" ")[0].replace("(", "").replace(")", "")
                 button_widget = self.widgetForAction(action)
                 if button_widget:
@@ -74,10 +87,22 @@ class CustomMatplotlibToolbar(NavigationToolbar):
 
 
 class AnalysisPanel(QWidget):
-    """
-    A comprehensive panel for running and displaying various optical analyses.
-    It features a selection of analysis types, a main display area for plots,
-    and a collapsible settings panel to configure each analysis.
+    """A comprehensive panel for running and displaying various optical analyses.
+
+    This widget serves as the main user interface for all optical analysis tasks.
+    It features a dropdown to select the analysis type, a central area for
+    displaying plots and results, and a collapsible side panel for configuring
+    analysis-specific settings. It also includes controls for running, stopping,
+    and managing analysis results.
+
+    Attributes:
+        ANALYSIS_MAP (dict): A mapping from analysis names to their corresponding
+                             classes in the `optiland.analysis` module.
+        connector (OptilandConnector): An object that handles communication with
+                                       the main Optiland backend.
+        current_theme (str): The name of the current UI theme (e.g., "dark").
+        analysis_results_pages (list): A cache for storing generated plot pages.
+        current_plot_page_index (int): The index of the currently displayed plot page.
     """
 
     ANALYSIS_MAP = {
@@ -98,6 +123,12 @@ class AnalysisPanel(QWidget):
     }
 
     def __init__(self, connector: OptilandConnector, parent=None):
+        """Initializes the AnalysisPanel.
+
+        Args:
+            connector: The `OptilandConnector` instance for backend communication.
+            parent: The parent widget, if any.
+        """
         super().__init__(parent)
         self.current_theme = "dark"
         self.connector = connector
@@ -157,7 +188,7 @@ class AnalysisPanel(QWidget):
 
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
-        self.resize_timer.setInterval(150)  # Cooldown period in ms
+        self.resize_timer.setInterval(100)  # Cooldown period in ms
         self.resize_timer.timeout.connect(self.handle_resize_finished)
 
         # --- Plot Display Frame (Left/Center) ---
@@ -215,7 +246,8 @@ class AnalysisPanel(QWidget):
         self.cursor_coord_label = QLabel("", self.plot_container_widget)
         self.cursor_coord_label.setObjectName("CursorCoordLabel")
         self.cursor_coord_label.setStyleSheet(
-            "background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;border-radius:3px;"
+            "background-color:rgba(0,0,0,0.65);color:white;"
+            "padding:2px 4px;border-radius:3px;"
         )
         self.cursor_coord_label.setVisible(False)
         self.cursor_coord_label.setAttribute(
@@ -263,12 +295,12 @@ class AnalysisPanel(QWidget):
         settings_button_layout.addWidget(self.btnApplySettings)
         # --- Save Button
         self.btnSaveSettings = QPushButton()
-        self.btnSaveSettings.setObjectName("SaveSettingsButton")  # Give it an ID
+        self.btnSaveSettings.setObjectName("SaveSettingsButton")
         self.btnSaveSettings.setToolTip("Save current analysis settings to a file")
         settings_button_layout.addWidget(self.btnSaveSettings)
         # --- Load Button
         self.btnLoadSettings = QPushButton()
-        self.btnLoadSettings.setObjectName("LoadSettingsButton")  # Give it an ID
+        self.btnLoadSettings.setObjectName("LoadSettingsButton")
         self.btnLoadSettings.setToolTip("Load analysis settings from a file")
         settings_button_layout.addWidget(self.btnLoadSettings)
         # Add the new button layout and remove the old button
@@ -305,6 +337,15 @@ class AnalysisPanel(QWidget):
         self.settings_area_widget.setVisible(False)
 
     def _clear_layout(self, layout_to_clear):
+        """Recursively clears all widgets and sub-layouts from a given layout.
+
+        This utility function is used to safely remove all items from a layout,
+        ensuring that widgets are properly deleted and disconnected from signals
+        to prevent memory leaks.
+
+        Args:
+            layout_to_clear: The QLayout object to be cleared.
+        """
         if layout_to_clear is not None:
             while layout_to_clear.count():
                 item = layout_to_clear.takeAt(0)
@@ -315,10 +356,8 @@ class AnalysisPanel(QWidget):
                             hasattr(widget, "_motion_notify_cid")
                             and widget._motion_notify_cid is not None
                         ):
-                            try:
+                            with contextlib.suppress(TypeError):
                                 widget.mpl_disconnect(widget._motion_notify_cid)
-                            except TypeError:
-                                pass
                             widget._motion_notify_cid = None
                         plt.close(widget.figure)
                     widget.setParent(None)
@@ -329,7 +368,19 @@ class AnalysisPanel(QWidget):
                         self._clear_layout(sub_layout)
 
     def _add_setting_widget(self, param_name, param_info, default_value_override=None):
-        """Helper to add a settings widget based on param_info."""
+        """Adds a settings widget to the form layout for a given parameter.
+
+        This function dynamically creates a UI widget (e.g., QSpinBox, QComboBox)
+        based on the type annotation and default value of an analysis parameter.
+        It handles various types like int, float, bool, str, and enums (Literals).
+
+        Args:
+            param_name (str): The name of the parameter.
+            param_info (dict): A dictionary containing parameter details like
+                               'annotation' and 'default' value.
+            default_value_override: A value to use instead of the default from
+                                    `param_info`.
+        """
         label_text = param_name.replace("_", " ").title() + ":"
         default_value = (
             param_info.get("default")
@@ -340,12 +391,18 @@ class AnalysisPanel(QWidget):
         widget = None
 
         if annotation is inspect.Parameter.empty or annotation is None:
-            if isinstance(default_value, bool): annotation = bool
-            elif isinstance(default_value, int): annotation = int
-            elif isinstance(default_value, float): annotation = float
-            elif isinstance(default_value, str): annotation = str
-        if param_name == "max_freq": annotation = str
-        if param_name == "grid_size": annotation = int
+            if isinstance(default_value, bool):
+                annotation = bool
+            elif isinstance(default_value, int):
+                annotation = int
+            elif isinstance(default_value, float):
+                annotation = float
+            elif isinstance(default_value, str):
+                annotation = str
+        if param_name == "max_freq":
+            annotation = str
+        if param_name == "grid_size":
+            annotation = int
 
         # --- Logic for creating dropdowns for fields and wavelengths ---
         if param_name == "fields":
@@ -356,7 +413,7 @@ class AnalysisPanel(QWidget):
             all_index = widget.findText("all")
             if all_index != -1:
                 widget.setCurrentIndex(all_index)
-            
+
         elif param_name in ["wavelengths", "wavelength"]:
             widget = QComboBox()
             label_text = "Wavelengths:"
@@ -366,12 +423,16 @@ class AnalysisPanel(QWidget):
             default_index = widget.findText(str(default_value))
             if default_index != -1:
                 widget.setCurrentIndex(default_index)
-                
-        elif annotation == int:
+
+        elif annotation is int:
             widget = QSpinBox()
             ranges = {
-                "num_rays": (1, 10000000), "num_points": (1, 10000000), "num_rings": (1, 1024),
-                "num_fields": (1, 1024), "num_steps": (1, 51), "detector_surface": (-100, 100),
+                "num_rays": (1, 10000000),
+                "num_points": (1, 10000000),
+                "num_rings": (1, 1024),
+                "num_fields": (1, 1024),
+                "num_steps": (1, 51),
+                "detector_surface": (-100, 100),
                 "grid_size": (32, 8192),
             }
             min_v, max_v = ranges.get(param_name, (-1000000, 1000000))
@@ -384,20 +445,23 @@ class AnalysisPanel(QWidget):
                 default_value = 128
             widget.setValue(int(default_value) if default_value is not None else 0)
 
-        elif annotation == float:
+        elif annotation is float:
             widget = QDoubleSpinBox()
             widget.setDecimals(4)
             widget.setRange(-1e9, 1e9)
             widget.setSingleStep(0.01 if "delta_focus" in param_name else 0.1)
             widget.setValue(float(default_value) if default_value is not None else 0.0)
 
-        elif annotation == bool:
+        elif annotation is bool:
             widget = QCheckBox(param_name.replace("_", " ").title())
-            widget.setChecked(bool(default_value) if default_value is not None else False)
+            widget.setChecked(
+                bool(default_value) if default_value is not None else False
+            )
             label_text = ""
 
         elif "Literal" in str(annotation):
             from typing import get_args
+
             options = get_args(annotation)
             if options:
                 widget = QComboBox()
@@ -405,9 +469,18 @@ class AnalysisPanel(QWidget):
                 if str(default_value) in [str(o) for o in options]:
                     widget.setCurrentText(str(default_value))
 
-        elif annotation == str:
+        elif annotation is str:
             combo_options = {
-                "distribution": ["hexapolar", "grid", "random", "ring", "line_x", "line_y", "gaussian", "uniform"],
+                "distribution": [
+                    "hexapolar",
+                    "grid",
+                    "random",
+                    "ring",
+                    "line_x",
+                    "line_y",
+                    "gaussian",
+                    "uniform",
+                ],
                 "coordinates": ["local", "global"],
                 "distortion_type": ["f-tan", "f-theta"],
                 "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
@@ -415,13 +488,17 @@ class AnalysisPanel(QWidget):
             if param_name in combo_options:
                 widget = QComboBox()
                 widget.addItems(combo_options[param_name])
-                widget.setCurrentText(str(default_value) if default_value else widget.itemText(0))
+                widget.setCurrentText(
+                    str(default_value) if default_value else widget.itemText(0)
+                )
             else:
                 widget = QLineEdit()
                 widget.setText(str(default_value) if default_value is not None else "")
 
-        elif annotation == tuple or isinstance(default_value, tuple):
-            widget = QLineEdit(",".join(map(str, default_value)) if default_value else "")
+        elif annotation is tuple or isinstance(default_value, tuple):
+            widget = QLineEdit(
+                ",".join(map(str, default_value)) if default_value else ""
+            )
             widget.setPlaceholderText("e.g., 128,128")
 
         if widget:
@@ -434,6 +511,16 @@ class AnalysisPanel(QWidget):
             print(f"Warning: No widget for '{param_name}' (annotation: {annotation})")
 
     def _update_settings_ui(self, analysis_name: str):
+        """Updates the settings panel with widgets for the selected analysis.
+
+        This method clears the existing settings widgets and dynamically populates
+        the settings panel with new widgets appropriate for the selected analysis
+        type. It inspects the `__init__` and `view` methods of the analysis class
+        to determine which parameters need a UI control.
+
+        Args:
+            analysis_name: The name of the analysis to create a settings UI for.
+        """
         while self.settings_form_layout.rowCount() > 0:
             self.settings_form_layout.removeRow(0)
         self.current_settings_widgets.clear()
@@ -472,21 +559,33 @@ class AnalysisPanel(QWidget):
 
     @Slot(str)
     def on_analysis_type_changed(self, analysis_name: str):
+        """Handles the change of the selected analysis type.
+
+        This slot is connected to the `currentTextChanged` signal of the
+        analysis type combo box. It updates the settings UI to reflect the
+        parameters of the newly selected analysis.
+
+        Args:
+            analysis_name: The new analysis name selected in the combo box.
+        """
         self._update_settings_ui(analysis_name)
         if self.current_plot_page_index == -1 or not self.analysis_results_pages:
             self.plotTitleLabel.setText(analysis_name)
 
     def update_theme_icons(self, theme="dark"):
-        """Updates icons within this panel to match the current theme."""
-        # --- Start of Corrected Code ---
-        # Robustly determine the theme name ("dark" or "light")
-        # whether we are passed a name or a full path.
-        if "dark" in theme.lower():
-            theme_name = "dark"
-        else:
-            theme_name = "light"
-        
-        self.current_theme = theme_name # Store the simple name
+        """Updates all icons in the panel to match the specified theme.
+
+        This function ensures that the UI icons are consistent with the current
+        application theme (e.g., "dark" or "light"). It loads the appropriate
+        icon assets from the resource file.
+
+        Args:
+            theme (str): The name of the theme to apply, typically "dark" or "light".
+        """
+
+        theme_name = "dark" if "dark" in theme.lower() else "light"
+
+        self.current_theme = theme_name
         refresh_icon_path = f":/icons/{self.current_theme}/refresh.svg"
         self.btnRefreshPlot.setIcon(QIcon(refresh_icon_path))
         settings_icon_path = f":/icons/{self.current_theme}/settings.svg"
@@ -500,7 +599,7 @@ class AnalysisPanel(QWidget):
 
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
-        for i, page_data in enumerate(self.analysis_results_pages):
+        for i, _page_data in enumerate(self.analysis_results_pages):
             btn_page = QPushButton(str(i + 1))
             btn_page.setObjectName(f"PageButton_{i + 1}")
             btn_page.setCheckable(True)
@@ -510,8 +609,8 @@ class AnalysisPanel(QWidget):
             )
             btn_page.setContextMenuPolicy(Qt.CustomContextMenu)
             btn_page.customContextMenuRequested.connect(
-                lambda pos, index=i: self._show_page_button_context_menu(
-                    pos, btn_page, index
+                lambda pos, index=i, btn=btn_page: self._show_page_button_context_menu(
+                    pos, btn, index
                 )
             )
             self.vertical_page_buttons_layout.addWidget(btn_page)
@@ -521,8 +620,8 @@ class AnalysisPanel(QWidget):
         """Creates and shows the right-click menu for a page button."""
         menu = QMenu()
         clone_action = menu.addAction("Clone Analysis")
-        undock_action = menu.addAction("Undock (WIP)")  # Mark as Work in Progress
-        undock_action.setEnabled(False)  # Disable for now
+        undock_action = menu.addAction("Undock (WIP)")
+        undock_action.setEnabled(False)
 
         action = menu.exec(button.mapToGlobal(position))
 
@@ -573,7 +672,6 @@ class AnalysisPanel(QWidget):
             self.current_plot_page_index = page_index
             self.update_pagination_ui()
             self.display_plot_page(page_index)
-            page_data = self.analysis_results_pages[page_index]
             self.logArea.append(
                 f"Switched to page {page_index + 1}: "
                 "{page_data.get('name', 'Analysis')}"
@@ -600,19 +698,15 @@ class AnalysisPanel(QWidget):
         # Disconnect any previously connected event handlers first
         if self.active_mpl_canvas_widget:
             if hasattr(self.active_mpl_canvas_widget, "_motion_notify_cid"):
-                try:
+                with contextlib.suppress(TypeError, RuntimeError):
                     self.active_mpl_canvas_widget.mpl_disconnect(
                         self.active_mpl_canvas_widget._motion_notify_cid
                     )
-                except (TypeError, RuntimeError):
-                    pass
             if hasattr(self.active_mpl_canvas_widget, "_double_click_cid"):
-                try:
+                with contextlib.suppress(TypeError, RuntimeError):
                     self.active_mpl_canvas_widget.mpl_disconnect(
                         self.active_mpl_canvas_widget._double_click_cid
                     )
-                except (TypeError, RuntimeError):
-                    pass
 
         # Clean up old UI widgets
         if self.active_mpl_toolbar_widget:
@@ -662,7 +756,8 @@ class AnalysisPanel(QWidget):
                     elif isinstance(widget, QComboBox):
                         # Correctly set the dropdown selection
                         if param_name in ["fields", "wavelengths", "wavelength"]:
-                            # For our special dropdowns, find the item by its stored data
+                            # For our special dropdowns,
+                            # find the item by its stored data
                             last_used_value = val
                             found_index = -1
                             for i in range(widget.count()):
@@ -673,13 +768,12 @@ class AnalysisPanel(QWidget):
                                     if item_data_obj == last_used_value:
                                         found_index = i
                                         break
-                                except:
-                                    continue # Ignore items whose data can't be evaluated
-                            
+                                except Exception:
+                                    continue  # Ignore eval errors
+
                             if found_index != -1:
                                 widget.setCurrentIndex(found_index)
                         else:
-                            # For other standard dropdowns, setting by text is fine
                             widget.setCurrentText(str(val))
 
             analysis_instance = page_data.get("analysis_instance")
@@ -728,7 +822,7 @@ class AnalysisPanel(QWidget):
                     summary_text = analysis_instance.get_summary_text()
                     ax_to_use = None
                     if isinstance(axs, np.ndarray):
-                        ax_to_use = axs.flatten()[-1]  # Use the last subplot
+                        ax_to_use = axs.flatten()[-1]
                     elif isinstance(axs, plt.Axes):
                         ax_to_use = axs
 
@@ -758,7 +852,7 @@ class AnalysisPanel(QWidget):
                     self.active_mpl_toolbar_widget
                 )
                 self.mpl_toolbar_in_titlebar_container.setVisible(True)
-                
+
                 plot_content_area_layout.addWidget(self.active_mpl_canvas_widget)
 
             else:
@@ -781,10 +875,8 @@ class AnalysisPanel(QWidget):
     def toggle_settings_panel_slot(self):
         is_visible = self.settings_area_widget.isVisible()
         self.settings_area_widget.setVisible(not is_visible)
-        if not is_visible:  # if we just made it visible
-            self.display_plot_page(
-                self.current_plot_page_index
-            )  # Re-run display logic to ensure settings are populated
+        if not is_visible:
+            self.display_plot_page(self.current_plot_page_index)
 
     def _parse_tuple_str(self, s, expected_type=float, expected_len=2):
         if not s or not isinstance(s, str):
@@ -804,15 +896,18 @@ class AnalysisPanel(QWidget):
             elif isinstance(widget, QCheckBox):
                 value = widget.isChecked()
             elif isinstance(widget, QComboBox):
-                # This is the key logic for reading from the new dropdowns
                 if param_name in ["fields", "wavelengths", "wavelength"]:
                     value_str = widget.currentData()
                     if value_str:
                         try:
                             value = eval(value_str)
-                        except:
+                        except Exception:
                             value = value_str
-                    if param_name == 'wavelength' and isinstance(value, list) and len(value) == 1:
+                    if (
+                        param_name == "wavelength"
+                        and isinstance(value, list)
+                        and len(value) == 1
+                    ):
                         value = value[0]
                 else:
                     value = widget.currentText()
@@ -827,7 +922,10 @@ class AnalysisPanel(QWidget):
                         value = None
                     else:
                         parts = [p.strip() for p in text.split(",")]
-                        if len(parts) == 2 and parts[0].lower() in ["cross-x", "cross-y"]:
+                        if len(parts) == 2 and parts[0].lower() in [
+                            "cross-x",
+                            "cross-y",
+                        ]:
                             try:
                                 value = (parts[0].lower(), int(parts[1]))
                             except ValueError:
@@ -838,7 +936,12 @@ class AnalysisPanel(QWidget):
                     value = text
 
             if value is not None:
-                if param_name in ["add_airy_disk", "cmap", "normalize", "cross_section"]:
+                if param_name in [
+                    "add_airy_disk",
+                    "cmap",
+                    "normalize",
+                    "cross_section",
+                ]:
                     view_args[param_name] = value
                 else:
                     constructor_args[param_name] = value
@@ -865,11 +968,10 @@ class AnalysisPanel(QWidget):
             if constructor_args is None and view_args is None:
                 constructor_args, view_args = self._collect_current_settings()
 
-            # The final arguments to be passed to the analysis class constructor
             final_args = {"optic": optic, **constructor_args}
 
             valid_init_params = inspect.signature(analysis_class.__init__).parameters
-            # Filter out any args that the constructor doesn't actually accept
+
             filtered_args = {
                 k: v for k, v in final_args.items() if k in valid_init_params
             }
@@ -882,7 +984,6 @@ class AnalysisPanel(QWidget):
                 and "fig_to_plot_on" in inspect.signature(instance.view).parameters
             )
             if not can_embed:
-                # For external windows, we can still try to pass the view_args
                 instance.view(**view_args)
 
             page_data = {
@@ -892,7 +993,7 @@ class AnalysisPanel(QWidget):
                 "view_args": view_args,
                 "constructor_args_used": constructor_args,
             }
-            # Add dynamic figsize logic here if needed
+
             if analysis_name == "Through-Focus Spot Diagram":
                 num_f = len(optic.fields.get_field_coords())
                 num_s = final_args.get("num_steps", 5)
@@ -993,7 +1094,7 @@ class AnalysisPanel(QWidget):
             return
 
         ax = event.inaxes
-        scale_factor = 1.1 if event.step < 0 else 1 / 1.1  # Zoom in or out
+        scale_factor = 1.1 if event.step < 0 else 1 / 1.1
 
         cur_xlim = ax.get_xlim()
         cur_ylim = ax.get_ylim()
@@ -1023,12 +1124,11 @@ class AnalysisPanel(QWidget):
                 with open(filepath) as f:
                     loaded_settings = json.load(f)
 
-                # Set the analysis type dropdown to match the loaded file
                 analysis_name = loaded_settings.get("analysis_name")
                 self.analysisTypeCombo.setCurrentText(analysis_name)
 
                 # Apply the loaded settings to the UI widgets
-                self.on_analysis_type_changed(analysis_name)  # Rebuilds the settings UI
+                self.on_analysis_type_changed(analysis_name)
 
                 all_args = {
                     **loaded_settings.get("constructor_args", {}),

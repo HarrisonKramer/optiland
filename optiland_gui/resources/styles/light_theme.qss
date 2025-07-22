@@ -1,10 +1,4 @@
-/* optiland_gui/resources/styles/light_theme.qss */
-/* Light Theme for Optiland GUI - General Application Styles & Custom Title Bar */
-
 /*
-Color Palette (Light Theme - from image_913b16.png)
-  Variable names are illustrative for comments.
-
   Base Backgrounds:
     --main-bg: #F8F9FA;         (Windows, central areas, list dropdowns, table cells)
     --toolbar-sidebar-bg: #E9ECEF; (Toolbars, Sidebars, inactive tabs, headers, input read-only, scrollbar tracks, CustomTitleBar bg)

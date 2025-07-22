@@ -78,6 +78,7 @@ class GeometricMTF(SpotDiagram):
 
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
+
     def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
         """Plots the MTF curve.
 
@@ -88,7 +89,7 @@ class GeometricMTF(SpotDiagram):
                 limit reference curve. Defaults to False.
 
         """
-            
+
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -121,7 +122,6 @@ class GeometricMTF(SpotDiagram):
                 current_fig.canvas.draw_idle()
         else:
             plt.show()
-        
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.

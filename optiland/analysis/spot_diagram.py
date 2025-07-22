@@ -101,9 +101,12 @@ class SpotDiagram(BaseAnalysis):
         primary_wl_value = self.optic.primary_wavelength
         if primary_wl_value in self.wavelengths:
             # If the system's primary wavelength is part of our analysis, use it.
-            self._analysis_ref_wavelength_index = self.wavelengths.index(primary_wl_value)
+            self._analysis_ref_wavelength_index = self.wavelengths.index(
+                primary_wl_value
+            )
         else:
-            # Otherwise, just use the first wavelength in our analysis list as the reference.
+            # Otherwise, just use the first wavelength in our analysis list
+            # as the reference.
             self._analysis_ref_wavelength_index = 0
 
     def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False):
@@ -208,7 +211,8 @@ class SpotDiagram(BaseAnalysis):
                     print("Warning (SpotDiagram.view): All geometric sizes are None.")
             except Exception as e_gs:
                 print(
-                    f"Warning (SpotDiagram.view): Could not determine axis_lim from geometric_size: {e_gs}"
+                    "Warning (SpotDiagram.view): Could not determine axis_lim "
+                    f"from geometric_size: {e_gs}"
                 )
 
         if add_airy_disk:
@@ -275,7 +279,8 @@ class SpotDiagram(BaseAnalysis):
             handles, labels = axs[0].get_legend_handles_labels()
             if handles:  # If the first subplot has legend items
                 # Place legend outside, to the right of the subplots
-                # Adjust bbox_to_anchor and loc as needed. This is tricky with dynamic rows.
+                # Adjust bbox_to_anchor and loc as needed. This is tricky
+                # with dynamic rows.
                 # For a fixed 3-column layout, this might work if placed carefully.
                 current_fig.legend(
                     handles,

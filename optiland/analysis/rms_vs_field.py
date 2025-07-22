@@ -63,9 +63,9 @@ class RmsSpotSizeVsField(SpotDiagram):
             ax.plot(
                 be.to_numpy(self._field[:, 1]),
                 spot_size_data[:, i],
-                label=f"{wavelength:.4f} µm"
+                label=f"{wavelength:.4f} µm",
             )
-        
+
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Spot Size (mm)")
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
@@ -131,7 +131,7 @@ class RmsWavefrontErrorVsField(Wavefront):
             ax.plot(
                 be.to_numpy(self._field[:, 1]),
                 wavefront_error_data[:, i],
-                label=f"{wavelength:.4f} µm"
+                label=f"{wavelength:.4f} µm",
             )
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")

@@ -1,3 +1,13 @@
+"""
+Provides the main viewing panel for optical systems.
+
+This module defines the `ViewerPanel`, which contains tabs for 2D and 3D
+visualizations of the optical system. It includes `MatplotlibViewer` for 2D
+plots and `VTKViewer` for 3D rendering.
+
+@author: Manuel Fragata Mendes, 2025
+"""
+
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -17,9 +27,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from . import gui_plot_utils
-from .analysis_panel import CustomMatplotlibToolbar
-
 try:
     import vtk
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -31,11 +38,34 @@ except ImportError:
 from optiland.visualization.rays import Rays2D, Rays3D
 from optiland.visualization.system import OpticalSystem as OptilandOpticalSystemPlotter
 
+from . import gui_plot_utils
+from .analysis_panel import CustomMatplotlibToolbar
 from .optiland_connector import OptilandConnector
 
 
 class ViewerPanel(QWidget):
+    """
+    A widget that contains multiple viewers for the optical system.
+
+    This panel uses a QTabWidget to host different types of viewers, such as
+    a 2D plot and a 3D rendering of the system.
+
+    Attributes:
+        connector (OptilandConnector): The connector to the main application logic.
+        tabWidget (QTabWidget): The widget hosting the different viewer tabs.
+        viewer2D (MatplotlibViewer): The 2D viewer widget.
+        viewer3D (VTKViewer or QLabel): The 3D viewer widget, or a label if VTK
+                                        is unavailable.
+    """
+
     def __init__(self, connector: OptilandConnector, parent=None):
+        """
+        Initializes the ViewerPanel.
+
+        Args:
+            connector (OptilandConnector): The connector to the main application logic.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.connector = connector
         self.setWindowTitle("Viewer")
@@ -58,19 +88,48 @@ class ViewerPanel(QWidget):
         self.connector.opticChanged.connect(self.update_viewers)
 
     def update_theme(self, theme="dark"):
+        """
+        Updates the theme for all viewers in the panel.
+
+        Args:
+            theme (str, optional): The theme name ('dark' or 'light').
+                                   Defaults to "dark".
+        """
         self.viewer2D.update_theme(theme)
         if VTK_AVAILABLE:
             self.viewer3D.update_theme(theme)
 
     @Slot()
     def update_viewers(self):
+        """Updates the content of all viewers."""
         self.viewer2D.plot_optic()
         if VTK_AVAILABLE:
             self.viewer3D.render_optic()
 
 
 class MatplotlibViewer(QWidget):
+    """
+    A widget for displaying a 2D plot of the optical system using Matplotlib.
+
+    This viewer includes a Matplotlib canvas, a custom toolbar, and a settings
+    panel for controlling the plot, such as the number of rays to trace.
+
+    Attributes:
+        figure (Figure): The Matplotlib figure object.
+        canvas (FigureCanvas): The canvas widget that displays the figure.
+        ax (Axes): The Matplotlib axes object for plotting.
+        toolbar (CustomMatplotlibToolbar): The toolbar for plot navigation.
+        settings_area (QWidget): The panel for viewer-specific settings.
+    """
+
     def __init__(self, connector: OptilandConnector, parent=None):
+        """
+        Initializes the MatplotlibViewer.
+
+        Args:
+            connector (OptilandConnector): The connector to the main application logic.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.connector = connector
         self.current_theme = "dark"
@@ -164,6 +223,12 @@ class MatplotlibViewer(QWidget):
         self.update_theme()
 
     def on_mouse_move_on_plot(self, event):
+        """
+        Displays the cursor's coordinates on the plot.
+
+        Args:
+            event: The Matplotlib motion notify event.
+        """
         if event.inaxes:
             x_coord = f"{event.xdata:.3f}"
             y_coord = f"{event.ydata:.3f}"
@@ -176,6 +241,12 @@ class MatplotlibViewer(QWidget):
             self.cursor_coord_label.setVisible(False)
 
     def on_scroll_zoom(self, event):
+        """
+        Implements zoom functionality using the mouse scroll wheel.
+
+        Args:
+            event: The Matplotlib scroll event.
+        """
         if not event.inaxes:
             return
 
@@ -199,6 +270,13 @@ class MatplotlibViewer(QWidget):
         ax.figure.canvas.draw_idle()
 
     def update_theme(self, theme="dark"):
+        """
+        Updates the theme of the Matplotlib plot.
+
+        Args:
+            theme (str, optional): The theme name ('dark' or 'light').
+                                   Defaults to "dark".
+        """
         if self.current_theme != theme:
             self.current_theme = theme
             gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
@@ -206,6 +284,12 @@ class MatplotlibViewer(QWidget):
         self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
 
     def plot_optic(self):
+        """
+        Clears the current plot and redraws the optical system.
+
+        This method retrieves the current optical system from the connector and
+        uses Optiland's plotting utilities to generate a 2D layout.
+        """
         gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
 
         self.ax.clear()
@@ -263,7 +347,26 @@ class MatplotlibViewer(QWidget):
 
 
 class VTKViewer(QWidget):
+    """
+    A widget for displaying a 3D rendering of the optical system using VTK.
+
+    This viewer embeds a QVTKRenderWindowInteractor to provide an interactive
+    3D view of the optical system and traced rays.
+
+    Attributes:
+        vtkWidget (QVTKRenderWindowInteractor): The VTK render window interactor widget.
+        renderer (vtkRenderer): The VTK renderer for the scene.
+        iren (vtkRenderWindowInteractor): The interactor for camera manipulation.
+    """
+
     def __init__(self, connector: OptilandConnector, parent=None):
+        """
+        Initializes the VTKViewer.
+
+        Args:
+            connector (OptilandConnector): The connector to the main application logic.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
 
         self.connector = connector
@@ -284,6 +387,7 @@ class VTKViewer(QWidget):
         self.iren.Initialize()
 
     def setup_default_camera(self):
+        """Sets up the default camera position and orientation for the 3D view."""
         self.renderer.SetBackground(0.1, 0.2, 0.4)
         camera = self.renderer.GetActiveCamera()
         if camera:
@@ -295,6 +399,13 @@ class VTKViewer(QWidget):
             camera.Azimuth(150)
 
     def update_theme(self, theme="dark"):
+        """
+        Updates the background color of the VTK renderer based on the theme.
+
+        Args:
+            theme (str, optional): The theme name ('dark' or 'light').
+                                   Defaults to "dark".
+        """
         if theme == "dark":
             self.renderer.SetBackground(0.1, 0.2, 0.4)
         else:
@@ -302,6 +413,12 @@ class VTKViewer(QWidget):
         self.vtkWidget.GetRenderWindow().Render()
 
     def render_optic(self):
+        """
+        Clears the current scene and re-renders the optical system in 3D.
+
+        This method retrieves the current optical system and uses Optiland's
+        VTK plotting utilities to generate the 3D visualization.
+        """
         if not VTK_AVAILABLE:
             return
 

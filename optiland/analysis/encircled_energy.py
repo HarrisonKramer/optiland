@@ -58,7 +58,7 @@ class EncircledEnergy(SpotDiagram):
         super().__init__(
             optic,
             fields=fields,
-            wavelengths=processed_wavelengths, # Pass the formatted value
+            wavelengths=processed_wavelengths,  # Pass the formatted value
             num_rings=num_rays,
             distribution=distribution,
         )

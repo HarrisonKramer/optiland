@@ -1,4 +1,3 @@
-/* Create optiland_gui/resources/styles/sidebar.qss */
 /* Content: */
 #SidebarWidget {
     background-color: #1F1F1F;

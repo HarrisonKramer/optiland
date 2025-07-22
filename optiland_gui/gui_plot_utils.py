@@ -1,11 +1,26 @@
+"""Provides utility functions for GUI plotting and analysis parameter inspection.
+
+This module contains helper functions for configuring Matplotlib styles for GUI
+embedding and for dynamically inspecting the parameters of analysis classes to
+auto-generate settings interfaces.
+
+Author: Manuel Fragata Mendes, 2025
+"""
+
 import inspect
 
 import matplotlib
 
 
 def apply_gui_matplotlib_styles(theme="light"):
-    """
-    Applies Matplotlib rcParams for GUI embedding, with theme awareness.
+    """Applies Matplotlib rcParams for GUI embedding with theme awareness.
+
+    This function configures Matplotlib's runtime configuration parameters (`rcParams`)
+    to ensure that plots embedded in the GUI have a consistent and readable style.
+    It adjusts colors and sizes for either a "light" or "dark" theme.
+
+    Args:
+        theme (str): The theme to apply, either "light" or "dark". Defaults to "light".
     """
     base_style = {
         "font.size": 8,
@@ -41,10 +56,20 @@ def apply_gui_matplotlib_styles(theme="light"):
 
 
 def get_analysis_parameters(analysis_class):
-    """
-    Inspects the __init__ method of an analysis class and returns
-    a list of its parameters, excluding 'self', 'optic', 'optical_system'.
-    This can be used to dynamically generate settings UI.
+    """Inspects an analysis class's __init__ to find its configurable parameters.
+
+    This function uses Python's `inspect` module to determine the parameters of
+    the constructor of a given analysis class. It filters out standard parameters
+    like 'self' and 'optic' to return a dictionary of parameters that can be
+    configured by the user in the GUI.
+
+    Args:
+        analysis_class: The analysis class to inspect.
+
+    Returns:
+        dict: A dictionary where keys are parameter names and values are dicts
+              containing the parameter's 'default' value and 'annotation'.
+              Returns an empty dictionary if inspection fails.
     """
     if not analysis_class:
         return {}
@@ -56,12 +81,16 @@ def get_analysis_parameters(analysis_class):
             if param_name in ["self", "optic", "optical_system"]:
                 continue
             params[param_name] = {
-                "default": param_obj.default
-                if param_obj.default is not inspect.Parameter.empty
-                else None,
-                "annotation": param_obj.annotation
-                if param_obj.annotation is not inspect.Parameter.empty
-                else None,
+                "default": (
+                    param_obj.default
+                    if param_obj.default is not inspect.Parameter.empty
+                    else None
+                ),
+                "annotation": (
+                    param_obj.annotation
+                    if param_obj.annotation is not inspect.Parameter.empty
+                    else None
+                ),
             }
     except (ValueError, TypeError) as e:
         print(
