@@ -58,4 +58,5 @@ Here’s a quick overview of what you’ll find in the Developer’s Guide:
 - **Getting Started**: Explore the codebase and run your first simulation.
 - **Architecture Overview**: Learn how the Optiland codebase is structured, with a focus on its key components and design patterns.
 - **Core Frameworks**: Understand the core frameworks that power Optiland, including raytracing, surfaces, analysis, optimization, visualization and tolerancing.
+- **Graphical User Interface (GUI)**: Get an overview of the PySide6-based GUI, its components, and how it interacts with the backend.
 - **File Formats**: Understand the Optiland file format and how to read/write data to and from it.

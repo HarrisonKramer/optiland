@@ -124,29 +124,41 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         )
         return spot_diagram_at_focus.data
 
-    def view(self, figsize_per_plot=(3, 3), buffer=1.05):
-        """Visualizes the through-focus spot diagrams.
-
-        Generates a grid of plots where rows represent fields and columns
-        represent defocus positions. Each plot shows the spot diagram for all
-        wavelengths, centered by its primary wavelength centroid.
-
-        Args:
-            figsize_per_plot (tuple, optional): Approximate (width, height)
-                in inches for each individual subplot. Defaults to (3,3).
-            buffer (float, optional): Buffer factor to extend the axis limits
-                beyond the maximum spot extent. Default is 1.05.
+    def view(self, fig_to_plot_on=None, figsize_per_plot=(3, 3), buffer=1.05):
         """
+        Visualizes the through-focus spot diagrams, either in a new window or on a
+        provided GUI figure.
+        """
+        is_gui_embedding = fig_to_plot_on is not None
         if not self._validate_view_prerequisites():
+            if is_gui_embedding:
+                fig_to_plot_on.text(
+                    0.5, 0.5, "No data to display.", ha="center", va="center"
+                )
+                if hasattr(fig_to_plot_on, "canvas"):
+                    fig_to_plot_on.canvas.draw_idle()
             return
 
         num_fields = len(self.fields)
         num_steps = self.num_steps
 
-        global_axis_limit = self._compute_global_axis_limit(buffer)
-        fig, axs = self._create_subplot_grid(num_fields, num_steps, figsize_per_plot)
-        x_label, y_label = self._get_plot_axis_labels()
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+        else:
+            current_fig = plt.figure(
+                figsize=(
+                    num_steps * figsize_per_plot[0],
+                    num_fields * figsize_per_plot[1],
+                )
+            )
 
+        axs = current_fig.subplots(
+            num_fields, num_steps, sharex=True, sharey=True, squeeze=False
+        )
+
+        global_axis_limit = self._compute_global_axis_limit(buffer)
+        x_label, y_label = self._get_plot_axis_labels()
         legend_handles, legend_labels = [], []
 
         for i, field_coord in enumerate(self.fields):
@@ -154,7 +166,6 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                 ax = axs[i, j]
                 data = self.results[j][i]
                 defocus = float(position) - be.to_numpy(self.nominal_focus).item()
-
                 centroid_x, centroid_y = self._get_spot_centroid(data)
                 self._plot_wavelengths(
                     ax,
@@ -166,7 +177,6 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                     legend_handles,
                     legend_labels,
                 )
-
                 self._configure_subplot(
                     ax,
                     field_coord,
@@ -180,10 +190,15 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                 )
 
         self._add_legend(
-            fig, legend_handles, legend_labels, num_fields, figsize_per_plot
+            current_fig, legend_handles, legend_labels, num_fields, figsize_per_plot
         )
-        plt.tight_layout(rect=[0, 0.03, 1, 0.97])
-        plt.show()
+        current_fig.tight_layout(rect=[0, 0.03, 1, 0.97])
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _validate_view_prerequisites(self):
         """Validates prerequisites before plotting.

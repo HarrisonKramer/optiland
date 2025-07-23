@@ -32,18 +32,22 @@ license = { text = "MIT License" }
 [project.urls]
 Homepage = "https://github.com/HarrisonKramer/optiland"
 
+[project.scripts]
+optiland = "optiland_gui.run_gui:main"
+
 [project.optional-dependencies]
 dev = [
     "codecov>=2.1.13",
     "pytest>=8.3.5",
 ]
 torch = ["torch"]
+gui = ["PySide6", "qtconsole"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["optiland"]  # Auto-discovers subpackages
+packages = ["optiland", "optiland_gui"]  # Auto-discovers subpackages
 
 [tool.hatch.metadata.files]
 "optiland/database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]

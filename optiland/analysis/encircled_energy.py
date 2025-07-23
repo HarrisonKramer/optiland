@@ -42,42 +42,42 @@ class EncircledEnergy(SpotDiagram):
     ):
         self.num_points = num_points
 
-        if isinstance(wavelength, str):
-            if wavelength == "primary":
-                processed_wavelength = "primary"
-            else:
-                raise ValueError(
-                    "Invalid wavelength string for EncircledEnergy, only 'primary' "
-                    "is supported as a string."
-                )
-        elif isinstance(wavelength, (float, int)):
-            processed_wavelength = float(wavelength)
+        if isinstance(wavelength, (float, int)):
+            # If a number is passed, wrap it in a list for the base classes.
+            processed_wavelengths = [wavelength]
+        elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
+            # If 'primary' or 'all' is passed, let the base class handle it.
+            processed_wavelengths = wavelength
         else:
+            # Catch any other invalid input.
             raise TypeError(
-                "wavelength argument must be 'primary' or a number (in microns)"
+                f"Unsupported wavelength: {wavelength}. "
+                "Expected 'primary', 'all', or a number."
             )
 
         super().__init__(
             optic,
             fields=fields,
-            wavelengths=processed_wavelength,
-            num_rings=num_rays,  # Map num_rays to num_rings
+            wavelengths=processed_wavelengths,  # Pass the formatted value
+            num_rings=num_rays,
             distribution=distribution,
         )
 
-    def view(self, figsize=(7, 4.5)):
-        """Plot the Encircled Energy curve.
+    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
+        """Plot the Encircled Energy curve."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (7, 4.5).
-
-        """
-        fig, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
         axis_lim = be.max(geometric_size)
+
         for k, field_data in enumerate(data):
             self._plot_field(ax, field_data, self.fields[k], axis_lim, self.num_points)
 
@@ -87,8 +87,14 @@ class EncircledEnergy(SpotDiagram):
         ax.set_title(f"Wavelength: {self.wavelengths[0]:.4f} µm")
         ax.set_xlim((0, None))
         ax.set_ylim((0, None))
-        fig.tight_layout()
-        plt.show()
+        ax.grid(True)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def centroid(self):
         """Calculate the centroid of the Encircled Energy.

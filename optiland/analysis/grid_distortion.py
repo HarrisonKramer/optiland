@@ -46,35 +46,41 @@ class GridDistortion(BaseAnalysis):
         num_points=10,
         distortion_type="f-tan",
     ):
-        if isinstance(wavelength, str) and wavelength == "primary":
-            processed_wavelength = "primary"
-        elif isinstance(wavelength, (float, int)):
-            processed_wavelength = float(wavelength)
+        # --- Start of Corrected Code ---
+        if isinstance(wavelength, (float, int)):
+            # Wrap the single wavelength number in a list for the base class.
+            processed_wavelengths = [wavelength]
+        elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
+            # Pass the allowed strings directly to the base class.
+            processed_wavelengths = wavelength
         else:
             raise TypeError(
-                f"Unsupported wavelength type: {type(wavelength)} for GridDistortion. "
-                f"Expected 'primary', float, or int"
+                f"Unsupported wavelength: {wavelength}. "
+                "Expected 'primary', 'all', or a number."
             )
 
         self.num_points = num_points
         self.distortion_type = distortion_type
-        super().__init__(optic, wavelengths=processed_wavelength)
+        # Pass the formatted list or string to the base class constructor.
+        super().__init__(optic, wavelengths=processed_wavelengths)
 
-    def view(self, figsize=(7, 5.5)):
-        """Visualizes the grid distortion analysis.
+    def view(self, fig_to_plot_on=None, figsize=(7, 7)):  # Adjusted for squareness
+        """Visualizes the grid distortion analysis."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (7, 5.5).
-
-        """
-        fig, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         ax.plot(
             be.to_numpy(self.data["xp"]),
             be.to_numpy(self.data["yp"]),
             "C1",
             linewidth=1,
+            label="Ideal Grid",
         )
         ax.plot(
             be.to_numpy(self.data["xp"]).T,
@@ -82,21 +88,31 @@ class GridDistortion(BaseAnalysis):
             "C1",
             linewidth=1,
         )
-
-        ax.plot(be.to_numpy(self.data["xr"]), be.to_numpy(self.data["yr"]), "C0P")
-        ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0P")
+        ax.plot(
+            be.to_numpy(self.data["xr"]),
+            be.to_numpy(self.data["yr"]),
+            "C0--",
+            label="Distorted Grid",
+        )
+        ax.plot(be.to_numpy(self.data["xr"]).T, be.to_numpy(self.data["yr"]).T, "C0--")
 
         ax.set_xlabel("Image X (mm)")
         ax.set_ylabel("Image Y (mm)")
         ax.set_aspect("equal", adjustable="box")
-
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
+        ax.legend()
+        ax.grid(True, linestyle=":", alpha=0.6)
 
         max_distortion = self.data["max_distortion"]
-        ax.set_title(f"Max Distortion: {max_distortion:.2f}%")
-        fig.tight_layout()
-        plt.show()
+        ax.set_title(f"Grid Distortion (Max: {max_distortion:.2f}%)")
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_data(self):
         """Generates the data for the grid distortion analysis.
