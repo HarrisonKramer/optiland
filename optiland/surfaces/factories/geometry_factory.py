@@ -19,6 +19,7 @@ from optiland.geometries import (
     EvenAsphere,
     OddAsphere,
     Plane,
+    PlaneGrating,
     PolynomialGeometry,
     StandardGeometry,
     StandardGratingGeometry,
@@ -172,6 +173,9 @@ def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
     Returns:
         StandardGratingGeometry
     """
+    # Use a Plane if the radius is infinity.
+    if be.isinf(config.radius):
+        return PlaneGrating(cs,config.grating_order,config.grating_period)    
     return StandardGratingGeometry(
         cs,
         config.radius,

@@ -9,6 +9,7 @@ from .even_asphere import EvenAsphere
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
+from .plane_grating import PlaneGrating
 from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
 from .standard_grating import StandardGratingGeometry
@@ -30,6 +31,8 @@ __all__ = [
     "OddAsphere",
     # From plane.py
     "Plane",
+    # From plane_grating.py
+    "PlaneGrating",
     # From polynomial.py
     "PolynomialGeometry",
     # From standard.py
