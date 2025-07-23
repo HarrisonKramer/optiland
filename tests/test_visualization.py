@@ -132,6 +132,32 @@ class TestOpticViewer:
         assert fig is not None
         plt.close(fig)
 
+    def test_plot_content_is_generated(self, set_test_backend):
+        """Verify that rays and lens polygons are actually added to the plot."""
+        lens = TessarLens()
+        fig, ax = lens.draw(num_rays=5)
+        assert len(ax.get_lines()) > 0, "No ray lines were drawn"
+        assert len(ax.patches) > 0, "No lens patches were drawn"
+        plt.close(fig)
+        
+    def test_view_with_custom_plot_parameters(self, set_test_backend):
+        lens = ReverseTelephoto()
+        viewer = OpticViewer(lens)
+        custom_title = "Custom Test Title"
+        custom_xlim = (-10, 100)
+        custom_ylim = (-25, 25)
+
+        fig, ax = viewer.view(
+            title=custom_title,
+            xlim=custom_xlim,
+            ylim=custom_ylim
+        )
+
+        assert ax.get_title() == custom_title
+        assert ax.get_xlim() == custom_xlim
+        assert ax.get_ylim() == custom_ylim
+        plt.close(fig)
+
 
 class TestOpticViewer3D:
     def test_init(self, set_test_backend):
@@ -455,3 +481,4 @@ class TestSurfaceSagViewer:
         viewer.view(surface_index=1, y_cross_section=1.5, x_cross_section=-1.5)
         assert plt.gcf() is not None
         plt.close()
+        
