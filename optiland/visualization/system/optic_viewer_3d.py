@@ -13,8 +13,8 @@ re-worked by Manuel Fragata Mendes, june 2025
 import vtk
 
 from optiland.visualization.base import BaseViewer
-from optiland.visualization.rays import Rays3D
-from optiland.visualization.system import OpticalSystem
+from optiland.visualization.system.rays import Rays3D
+from optiland.visualization.system.system import OpticalSystem
 
 
 class OpticViewer3D(BaseViewer):

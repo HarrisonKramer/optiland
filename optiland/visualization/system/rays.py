@@ -9,7 +9,7 @@ import numpy as np
 import vtk
 
 import optiland.backend as be
-from optiland.visualization.utils import transform
+from optiland.visualization.system.utils import transform
 
 
 class Rays2D:

@@ -477,7 +477,9 @@ class Optic:
         """
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
 
-    def plot_surface_sag(self, surface_index: int, y_cross_section, x_cross_section):
+    def plot_surface_sag(
+        self, surface_index: int, y_cross_section=0, x_cross_section=0
+    ):
         """
         Analyzes and visualizes the sag of a given lens surface.
 

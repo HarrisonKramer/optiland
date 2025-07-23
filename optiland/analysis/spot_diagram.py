@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patches
 
 import optiland.backend as be
-from optiland.visualization.utils import transform
+from optiland.visualization.system.utils import transform
 
 from .base import BaseAnalysis
 

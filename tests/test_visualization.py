@@ -15,7 +15,9 @@ from optiland.optic import Optic
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.visualization.system import OpticViewer, OpticViewer3D
+from optiland.visualization.info import LensInfoViewer
+from optiland.visualization.analysis import SurfaceSagViewer
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
@@ -60,7 +62,7 @@ class TestOpticViewer:
     def test_view(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
-        fig = viewer.view()
+        fig, ax = viewer.view()
         assert fig is not None
         mock_show.assert_not_called()
         plt.close(fig)
@@ -68,21 +70,21 @@ class TestOpticViewer:
     @patch("matplotlib.pyplot.show")
     def test_view_from_optic(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        fig = lens.draw()
+        fig, ax = lens.draw()
         assert fig is not None  # verify figure creation
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_bonded_lens(self, mock_show, set_test_backend):
         lens = TessarLens()
-        fig = lens.draw()
+        fig, ax = lens.draw()
         assert fig is not None
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_view_reflective_lens(self, mock_show, set_test_backend):
         lens = HubbleTelescope()
-        fig = lens.draw()
+        fig, ax = lens.draw()
         assert fig is not None
         plt.close(fig)
 
@@ -92,21 +94,21 @@ class TestOpticViewer:
         lens.fields = fields.FieldGroup()
         lens.set_field_type(field_type="angle")
         lens.add_field(y=0)
-        fig = lens.draw()
+        fig, ax = lens.draw()
         assert fig is not None
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_chief_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        fig = lens.draw(reference='chief')
+        fig, ax = lens.draw(reference='chief')
         assert fig is not None
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_marginal_and_bundle(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        fig = lens.draw(reference='marginal')
+        fig, ax = lens.draw(reference='marginal')
         assert fig is not None
         plt.close(fig)
 
@@ -119,14 +121,14 @@ class TestOpticViewer:
     @patch("matplotlib.pyplot.show")
     def test_reference_chief_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        fig = lens.draw(reference='chief', distribution=None)
+        fig, ax = lens.draw(reference='chief', distribution=None)
         assert fig is not None
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_reference_marginal_only(self, mock_show, set_test_backend):
         lens = ReverseTelephoto()
-        fig = lens.draw(reference='marginal', distribution=None)
+        fig, ax = lens.draw(reference='marginal', distribution=None)
         assert fig is not None
         plt.close(fig)
 
@@ -422,3 +424,34 @@ class TestLensInfoViewer:
         lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60)
         viewer = LensInfoViewer(lens)
         viewer.view()
+
+
+class TestSurfaceSagViewer:
+    """Tests for the new SurfaceSagViewer."""
+
+    @patch("matplotlib.pyplot.show")
+    def test_view_with_cylindrical_lens(self, mock_show, set_test_backend):
+        """Test the sag viewer with a biconic (cylindrical) lens."""
+        lens = Optic(name="Cylindrical Test Lens")
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type='biconic', radius_y=-50, thickness=5)
+        lens.add_surface(index=2, radius=be.inf)
+
+        viewer = SurfaceSagViewer(lens)
+        viewer.view(surface_index=1)
+        # Check that a plot was created by inspecting the active figure
+        assert plt.gcf() is not None
+        plt.close()
+
+    @patch("matplotlib.pyplot.show")
+    def test_view_with_custom_cross_section(self, mock_show, set_test_backend):
+        """Test the sag viewer with non-default cross-sections."""
+        lens = Optic(name="Cylindrical Test Lens")
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type='biconic', radius_y=-50, thickness=5)
+        lens.add_surface(index=2, radius=be.inf)
+
+        viewer = SurfaceSagViewer(lens)
+        viewer.view(surface_index=1, y_cross_section=1.5, x_cross_section=-1.5)
+        assert plt.gcf() is not None
+        plt.close()

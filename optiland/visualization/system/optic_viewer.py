@@ -13,8 +13,8 @@ re-worked by Manuel Fragata Mendes, june 2025
 import matplotlib.pyplot as plt
 
 from optiland.visualization.base import BaseViewer
-from optiland.visualization.rays import Rays2D
-from optiland.visualization.system import OpticalSystem
+from optiland.visualization.system.rays import Rays2D
+from optiland.visualization.system.system import OpticalSystem
 
 
 class OpticViewer(BaseViewer):
@@ -72,7 +72,7 @@ class OpticViewer(BaseViewer):
                 include "chief" and "marginal". Defaults to None.
 
         """
-        _, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=figsize)
 
         self.rays.plot(
             ax,
@@ -82,11 +82,11 @@ class OpticViewer(BaseViewer):
             distribution=distribution,
             reference=reference,
         )
+
         self.system.plot(ax)
 
-        plt.gca().set_facecolor("#f8f9fa")  # off-white background
-        plt.axis("image")
-
+        ax.set_facecolor("#f8f9fa")  # off-white background
+        ax.axis("image")
         ax.set_xlabel("Z [mm]")
         ax.set_ylabel("Y [mm]")
 
@@ -97,6 +97,7 @@ class OpticViewer(BaseViewer):
         if ylim:
             ax.set_ylim(ylim)
 
-        plt.grid(alpha=0.25)
+        ax.grid(alpha=0.25)
 
-        plt.show()
+        # Return the figure and axes instead of showing the plot
+        return fig, ax
