@@ -21,6 +21,7 @@ from optiland.geometries import (
     Plane,
     PolynomialGeometry,
     StandardGeometry,
+    StandardGratingGeometry,
     ToroidalGeometry,
     ZernikePolynomialGeometry,
 )
@@ -51,6 +52,8 @@ class GeometryConfig:
 
     radius: float = be.inf
     conic: float = 0.0
+    grating_order: int = 0
+    grating_period: float = be.inf
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
@@ -158,6 +161,24 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         config.coefficients,
     )
 
+def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a grating geometry
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        StandardGratingGeometry
+    """
+    return StandardGratingGeometry(
+        cs,
+        config.radius,
+        config.grating_order,
+        config.grating_period,
+        config.conic,
+    )
 
 def _create_chebyshev(cs: CoordinateSystem, config: GeometryConfig):
     """
@@ -275,6 +296,7 @@ geometry_mapper = {
     "biconic": _create_biconic,
     "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
+    "grating": _create_grating,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
     "polynomial": _create_polynomial,

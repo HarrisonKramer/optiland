@@ -11,6 +11,7 @@ from .odd_asphere import OddAsphere
 from .plane import Plane
 from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
+from .standard_grating import StandardGratingGeometry
 from .toroidal import ToroidalGeometry
 from .zernike import ZernikePolynomialGeometry, factorial
 
@@ -33,6 +34,8 @@ __all__ = [
     "PolynomialGeometry",
     # From standard.py
     "StandardGeometry",
+    # From standard_grating.py
+    "StandardGratingGeometry",    
     # From toroidal.py
     "ToroidalGeometry",
     # From zernike.py

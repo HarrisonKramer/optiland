@@ -19,6 +19,7 @@ from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
+from optiland.surfaces.grating_surface import GratingSurface
 
 
 class SurfaceFactory:
@@ -95,6 +96,8 @@ class SurfaceFactory:
             norm_radius=kwargs.get("norm_radius", 1.0),
             radius_x=kwargs.get("radius_x", be.inf),
             radius_y=kwargs.get("radius_y", be.inf),
+            grating_order=kwargs.get("grating_order", 0),
+            grating_period=kwargs.get("grating_period", be.inf),            
             conic_x=kwargs.get("conic_x", 0.0),
             conic_y=kwargs.get("conic_y", 0.0),
             toroidal_coeffs_poly_y=kwargs.get("toroidal_coeffs_poly_y", []),
@@ -116,6 +119,21 @@ class SurfaceFactory:
         if surface_type == "paraxial":
             surface_obj = ParaxialSurface(
                 kwargs["f"],
+                geometry,
+                material_pre,
+                material_post,
+                is_stop,
+                is_reflective=is_reflective,
+                coating=coating,
+                surface_type=surface_type,
+                aperture=kwargs.get("aperture"),
+            )
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
+
+        # Create the appropriate surface type
+        if surface_type == "grating":
+            surface_obj = GratingSurface(
                 geometry,
                 material_pre,
                 material_post,
