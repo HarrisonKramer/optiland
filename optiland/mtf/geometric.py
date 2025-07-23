@@ -79,7 +79,7 @@ class GeometricMTF(SpotDiagram):
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
         """Plots the MTF curve.
 
         Args:
@@ -89,7 +89,15 @@ class GeometricMTF(SpotDiagram):
                 limit reference curve. Defaults to False.
 
         """
-        _, ax = plt.subplots(figsize=figsize)
+
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, data, self.fields[k], color=f"C{k}")
@@ -109,7 +117,11 @@ class GeometricMTF(SpotDiagram):
         ax.set_ylabel("Modulation", labelpad=10)
         plt.tight_layout()
         plt.grid(alpha=0.25)
-        plt.show()
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import patches
 
 import optiland.backend as be
@@ -97,11 +98,23 @@ class SpotDiagram(BaseAnalysis):
         self.distribution = distribution
 
         super().__init__(optic, wavelengths)
+        primary_wl_value = self.optic.primary_wavelength
+        if primary_wl_value in self.wavelengths:
+            # If the system's primary wavelength is part of our analysis, use it.
+            self._analysis_ref_wavelength_index = self.wavelengths.index(
+                primary_wl_value
+            )
+        else:
+            # Otherwise, just use the first wavelength in our analysis list
+            # as the reference.
+            self._analysis_ref_wavelength_index = 0
 
-    def view(self, figsize=(12, 4), add_airy_disk=False):
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False):
         """View the spot diagram
 
         Args:
+            fig_to_plot_on (matplotlib.figure.Figure, optional): The Matplotlib
+                figure object to plot on. If None, a new figure is created.
             figsize (tuple): the figure size of the output window.
                 Default is (12, 4).
             add_airy_disk (bool): Airy disc visualization controller.
@@ -110,51 +123,139 @@ class SpotDiagram(BaseAnalysis):
             None
 
         """
-        N = len(self.fields)
-        num_rows = (N + 2) // 3
+        is_gui_embedding = fig_to_plot_on is not None
 
-        fig, axs = plt.subplots(
-            num_rows,
-            3,
-            figsize=(figsize[0], num_rows * figsize[1]),
-            sharex=True,
-            sharey=True,
-        )
-        axs = axs.flatten()
+        N = len(self.fields)
+        if N == 0:
+            print("Warning (SpotDiagram.view): No fields to plot.")
+            if (
+                is_gui_embedding
+                and hasattr(fig_to_plot_on, "canvas")
+                and fig_to_plot_on.canvas is not None
+            ):
+                fig_to_plot_on.text(
+                    0.5, 0.5, "No fields to plot Spot Diagram", ha="center", va="center"
+                )
+                fig_to_plot_on.canvas.draw_idle()
+            return
+
+        num_cols = 3  # As per original SpotDiagram
+        num_rows = (N + num_cols - 1) // num_cols  # Calculate rows needed
+
+        if not is_gui_embedding:
+            current_fig = plt.figure(figsize=(figsize[0], num_rows * figsize[1]))
+        else:
+            current_fig = fig_to_plot_on
+            current_fig.clear()  # Clear the figure for new subplots
+
+        # Create subplots on the current_fig
+        # Note: fig.subplots() returns a Figure and an array of Axes.
+        # If num_rows or num_cols is 1, it might return a single Axes or a 1D array.
+        # We use sharex=True, sharey=True as in the original.
+        try:
+            axs_list = []
+            for i in range(num_rows * num_cols):
+                ax = current_fig.add_subplot(
+                    num_rows,
+                    num_cols,
+                    i + 1,
+                    sharex=axs_list[0] if i > 0 and num_cols == 1 else None,
+                    sharey=axs_list[0] if i > 0 and num_cols == 1 else None,
+                )
+                if i > 0 and num_cols > 1:  # Manual sharing for grid
+                    if (i % num_cols) != 0:  # Share Y with left neighbor
+                        ax.sharey(axs_list[-1])
+                    if i >= num_cols:  # Share X with top neighbor
+                        ax.sharex(axs_list[i - num_cols])
+                axs_list.append(ax)
+            axs = np.array(axs_list).flatten()
+
+        except Exception as e:
+            print(f"Error creating subplots for Spot Diagram: {e}")
+            if (
+                is_gui_embedding
+                and hasattr(current_fig, "canvas")
+                and current_fig.canvas is not None
+            ):
+                current_fig.text(
+                    0.5,
+                    0.5,
+                    f"Error creating subplots:\n{e}",
+                    ha="center",
+                    va="center",
+                    color="red",
+                )
+                current_fig.canvas.draw_idle()
+            return
 
         # Subtract centroid and find limits
         data = self._center_spots(self.data)
         geometric_size = self.geometric_spot_radius()
-        # stack into an (N_fields, N_waves) array/tensor, then reduce:
-        # first convert each row into a 1D tensor/array
-        rows = [be.stack(row, axis=0) for row in geometric_size]
-        # now stack rows into a 2D
-        gs_array = be.stack(rows, axis=0)
-        # take the global max
-        axis_lim = be.max(gs_array)
+
+        axis_lim = 0.01  # Default small limit
+        if geometric_size and any(
+            any(s is not None for s in row) for row in geometric_size
+        ):
+            try:
+                # Filter out None before stacking/max
+                valid_rows = []
+                for row in geometric_size:
+                    valid_elements = [s for s in row if s is not None]
+                    if valid_elements:
+                        valid_rows.append(be.stack(valid_elements, axis=0))
+
+                if valid_rows:
+                    gs_array = be.stack(valid_rows, axis=0)
+                    axis_lim = be.max(gs_array)
+                else:
+                    print("Warning (SpotDiagram.view): All geometric sizes are None.")
+            except Exception as e_gs:
+                print(
+                    "Warning (SpotDiagram.view): Could not determine axis_lim "
+                    f"from geometric_size: {e_gs}"
+                )
 
         if add_airy_disk:
-            wavelength = self.optic.wavelengths.primary_wavelength.value
-            centroids = self.centroid()
-            chief_ray_centers = self.generate_chief_rays_centers(wavelength=wavelength)
-            airy_rad_x, airy_rad_y = self.airy_disc_x_y(wavelength=wavelength)
+            # Ensure primary wavelength is a float value
+            primary_wl_obj = self.optic.wavelengths.primary_wavelength
+            wavelength_val_for_airy = (
+                primary_wl_obj.value
+                if primary_wl_obj
+                else (self.wavelengths[0] if self.wavelengths else 0.550)
+            )
 
-        # Do not calculate airy disc parameters if not required.
+            centroids = self.centroid()
+            chief_ray_centers = self.generate_chief_rays_centers(
+                wavelength=wavelength_val_for_airy
+            )
+            airy_rad_x, airy_rad_y = self.airy_disc_x_y(
+                wavelength=wavelength_val_for_airy
+            )
         else:
-            wavelength = None
+            wavelength_val_for_airy = None
             centroids = None
             chief_ray_centers = None
             airy_rad_x, airy_rad_y = None, None
 
         # Plot wavelengths for each field
         for k, field_data in enumerate(data):
-            # Calculate the real centroid difference for the current field for
-            # airy disc
-            if add_airy_disk:
+            if k >= len(axs):
+                break  # Should not happen if num_rows, num_cols are correct
+
+            real_centroid_x, real_centroid_y = (
+                None,
+                None,
+            )
+            if (
+                add_airy_disk
+                and centroids
+                and chief_ray_centers is not None
+                and k < len(centroids)
+                and k < len(chief_ray_centers)
+            ):
                 real_centroid_x = chief_ray_centers[k][0] - centroids[k][0]
                 real_centroid_y = chief_ray_centers[k][1] - centroids[k][1]
-            else:
-                real_centroid_x, real_centroid_y = None, None
+
             self._plot_field(
                 axs[k],
                 field_data,
@@ -170,12 +271,34 @@ class SpotDiagram(BaseAnalysis):
             )
 
         # Remove empty axes
-        for k in range(N, num_rows * 3):
-            fig.delaxes(axs[k])
+        for k_ax in range(N, len(axs)):
+            current_fig.delaxes(axs[k_ax])
 
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.tight_layout()
-        plt.show()
+        # Attempt to create a single legend for the whole figure if multiple axes
+        if N > 0 and len(axs) > 0:
+            handles, labels = axs[0].get_legend_handles_labels()
+            if handles:  # If the first subplot has legend items
+                # Place legend outside, to the right of the subplots
+                # Adjust bbox_to_anchor and loc as needed. This is tricky
+                # with dynamic rows.
+                # For a fixed 3-column layout, this might work if placed carefully.
+                current_fig.legend(
+                    handles,
+                    labels,
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, 0.05),
+                    ncol=len(self.wavelengths),
+                )
+
+        current_fig.tight_layout(
+            rect=[0, 0.05, 1, 1]
+        )  # Adjust rect to make space for figure-level legend if used
+
+        if not is_gui_embedding:
+            plt.show()
+        else:
+            if hasattr(current_fig, "canvas") and current_fig.canvas is not None:
+                current_fig.canvas.draw_idle()
 
     def angle_from_cosine(self, a, b):
         """Calculate the angle (in radians) between two vectors given their
@@ -385,10 +508,10 @@ class SpotDiagram(BaseAnalysis):
             centroid (List): centroid for each field in the data.
 
         """
-        norm_index = self.optic.wavelengths.primary_index
+        ref_idx = self._analysis_ref_wavelength_index
         centroid = []
         for field_data in self.data:
-            spot_data_item = field_data[norm_index]
+            spot_data_item = field_data[ref_idx]
             centroid_x = be.mean(spot_data_item.x)
             centroid_y = be.mean(spot_data_item.y)
             centroid.append((centroid_x, centroid_y))
