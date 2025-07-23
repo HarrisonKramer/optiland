@@ -82,6 +82,12 @@ Whether you're just getting started or exploring advanced features, here are the
     pip install optiland
     ```
 
+- **Core + GUI**
+
+    ```bash
+    pip install optiland[gui]
+    ```
+
 - **With CPU‑only PyTorch**
 
     ```bash
