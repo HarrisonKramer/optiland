@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from unittest.mock import patch
 
 import optiland.backend as be
-from optiland import mtf
+from optiland.mtf import GeometricMTF, FFTMTF
 from optiland.samples.objectives import CookeTriplet
 
 # Parametrize every test over the two backends
@@ -27,25 +27,25 @@ def optic():
 class TestGeometricMTF:
     @patch("matplotlib.pyplot.show")
     def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
-        m = mtf.GeometricMTF(optic)
+        m = GeometricMTF(optic)
         m.view()  # default figsize, no reference overlay
         mock_show.assert_called_once()
         plt.close("all")
 
     @patch("matplotlib.pyplot.show")
     def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
-        m = mtf.GeometricMTF(optic)
+        m = GeometricMTF(optic)
         m.view(figsize=(20, 20), add_reference=True)
         mock_show.assert_called_once()
         plt.close("all")
 
     def test_generate_data_scaled(self, set_test_backend, optic):
-        m = mtf.GeometricMTF(optic, scale=True)
+        m = GeometricMTF(optic, scale=True)
         m._generate_mtf_data()
         assert m.data is not None, "Scaled MTF data should be generated"
 
     def test_generate_data_unscaled(self, set_test_backend, optic):
-        m = mtf.GeometricMTF(optic, scale=False)
+        m = GeometricMTF(optic, scale=False)
         m._generate_mtf_data()
         assert m.data is not None, "Unscaled MTF data should be generated"
 
@@ -53,21 +53,21 @@ class TestGeometricMTF:
 class TestFFTMTF:
     @patch("matplotlib.pyplot.show")
     def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
-        m = mtf.FFTMTF(optic)
+        m = FFTMTF(optic)
         m.view()
         mock_show.assert_called_once()
         plt.close("all")
 
     @patch("matplotlib.pyplot.show")
     def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
-        m = mtf.FFTMTF(optic)
+        m = FFTMTF(optic)
         m.view(figsize=(20, 20), add_reference=True)
         mock_show.assert_called_once()
         plt.close("all")
 
     def test_generate_data_infinite_object(self, set_test_backend, optic):
         """Default (infinite object distance) should produce an MTF array."""
-        m = mtf.FFTMTF(optic)
+        m = FFTMTF(optic)
         m._generate_mtf_data()
         assert hasattr(m, "mtf") and m.mtf is not None
 
@@ -75,6 +75,22 @@ class TestFFTMTF:
         """With a finite object distance, MTF still gets generated."""
         # Push the first surface very far away to mimic a finite-object scenario
         optic.surface_group.surfaces[0].geometry.cs.z = be.array(1e6)
-        m = mtf.FFTMTF(optic)
+        m = FFTMTF(optic)
         m._generate_mtf_data()
         assert hasattr(m, "mtf") and m.mtf is not None
+
+    @pytest.mark.parametrize(
+        "num_rays,expected_pupil_sampling",
+        [
+            (32, 32),
+            (64, 45),
+            (128, 64),
+            (256, 90),
+            (1024, 181),
+        ],
+    )
+    def test_num_rays_and_grid_size(self, set_test_backend, num_rays, expected_pupil_sampling, optic):
+        m = FFTMTF(optic, num_rays=num_rays, grid_size=None)
+
+        assert m.num_rays == expected_pupil_sampling
+        assert m.grid_size == 2 * num_rays

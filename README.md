@@ -1,7 +1,7 @@
 ![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
 [![Documentation Status](https://readthedocs.org/projects/optiland/badge/?version=latest)](https://optiland.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
-[![Maintainability](https://api.codeclimate.com/v1/badges/2fa0f839a0f3dbc4d5b1/maintainability)](https://codeclimate.com/github/HarrisonKramer/optiland/maintainability)
+[![Maintainability](https://qlty.sh/gh/HarrisonKramer/projects/optiland/maintainability.svg)](https://qlty.sh/gh/HarrisonKramer/projects/optiland)
 ![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14588961.svg)](https://doi.org/10.5281/zenodo.14588961)
@@ -24,6 +24,7 @@
     <li><a href="#key-features">Functionalities</a></li>
     <li><a href="#learning-guide">Learning Guide</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Roadmap</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact-and-support">Contact and Support</a></li>
   </ol>
@@ -225,6 +226,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
         - Designing non-standard optical systems with freeform surfaces
     - [Tutorial 7d - Three Mirror Anastigmat](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7d_Three_Mirror_Anastigmat.ipynb)
         - Off-axis reflective telescope with freeform surfaces
+    - [Tutorial 7e - Glass Expert](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7e_Glass_Expert.ipynb)
+        - Optimizing lens materials using the Glass Expert tool
 8. **Tolerancing**
     - [Tutorial 8a - Introduction to Tolerancing](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_8a_Tolerancing_Sensitivity_Analysis.ipynb)
         - Sensitivity studies
@@ -260,6 +263,8 @@ This guide gives a step-by-step approach to learning how to use Optiland.
 
 Optiland is continually evolving to provide new functionalities for optical design and analysis. Below are some of the planned features and enhancements we aim to implement in future versions:
 
+> If you'd like to help with any of these, please check if there's an [open issue](https://github.com/HarrisonKramer/optiland/issues), or open one to propose your approach. Leave a comment to let others know you're interested in contributing.
+
 - [ ] **GUI (PySide6-based)**
 - [ ] **Multi-Path Sequential Ray Tracing**
 - [ ] **Multiple Configurations (Zoom Lenses)**
@@ -267,19 +272,49 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Diffractive Optical Elements**
 - [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
-- [ ] **Apodization Support** 
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
 - [ ] **Huygens MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
-- [ ] **Glass Expert**
 - [ ] **Insert your idea here...**
 
 
-### Community Contributions
-We welcome suggestions for additional features! If there's something you'd like to see in Optiland, feel free to open an issue or discussion.
+## Currently Under Development
+
+Welcome, contributors! This section outlines the major features and tasks that are currently in progress. To avoid duplicated effort, **please check this table and the [GitHub Issues](https://github.com/HarrisonKramer/optiland/issues)** before starting work. If you’d like to work on something, **comment on the issue to let others know.** You can find more about how to coordinate in our [contributing guide](./CONTRIBUTING.md).
+
+| Feature / Topic | Contributor(s) | Status | Discussion / Issue |
+| ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
+| **Core** |                                                    |                |                                                  |
+| Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
+| (extended) Sources | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | [#224](https://github.com/HarrisonKramer/optiland/issues/224) |
+| Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
+| Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
+| Diffraction Gratings and DOEs| [@Hhsoj](https://github.com/Hhsoj) | 🚧 In Progress | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) [#225](https://github.com/HarrisonKramer/optiland/issues/225) |
+| Paraxial to Thick Lens | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#221](https://github.com/HarrisonKramer/optiland/issues/221) |
+| **Analysis & Visualization** |                                                    |                |                                                  |
+| Huygens MTF | [@HarrisonKramer](https://github.com/HarrisonKramer)| 🚧 In Progress | [#222](https://github.com/HarrisonKramer/optiland/issues/222) |
+| Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
+| **GUI** |                                                    |                |                                                  |
+| GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+
+
+**Status Key:**
+* ✨ **Help Wanted**: We are actively looking for contributors for this task!
+* 🚧 **In Progress**: Actively being worked on.
+* 🔍 **Under Review**: A pull request has been submitted and is being reviewed.
+* 🛑 **Blocked**: Progress is blocked by another issue.
+* ✅ **Done**: Completed and merged. (You can remove these after a while).
+
+
+## Contributing
+
+We welcome contributions of all kinds — features, bugfixes, docs, and discussions! 🎉
+
+To get started, please check out the [contributing guide](./CONTRIBUTING.md) for best practices and coordination tips.
 
 
 ## License
