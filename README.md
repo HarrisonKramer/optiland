@@ -289,14 +289,17 @@ Welcome, contributors! This section outlines the major features and tasks that a
 | ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
 | **Core** |                                                    |                |                                                  |
 | Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
+| (extended) Sources | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | [#224](https://github.com/HarrisonKramer/optiland/issues/224) |
 | Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
 | Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
-| Diffraction Gratings and DOEs| *Seeking contributor(s)* | ✨ Help Wanted | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) |
+| Diffraction Gratings and DOEs| [@Hhsoj](https://github.com/Hhsoj) | 🚧 In Progress | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) [#225](https://github.com/HarrisonKramer/optiland/issues/225) |
+| Paraxial to Thick Lens | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#221](https://github.com/HarrisonKramer/optiland/issues/221) |
 | **Analysis & Visualization** |                                                    |                |                                                  |
+| Huygens MTF | [@HarrisonKramer](https://github.com/HarrisonKramer)| 🚧 In Progress | [#222](https://github.com/HarrisonKramer/optiland/issues/222) |
 | Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
 | **GUI** |                                                    |                |                                                  |
 | GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
-| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
+| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
 
 
 **Status Key:**
