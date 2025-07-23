@@ -25,6 +25,15 @@ If you only need the Optiland core (no PyTorch):
 
    pip install optiland
 
+Standard Install with GUI
+----------------------------
+
+If you wish to use the Optiland GUI:
+
+.. code-block:: console
+
+   pip install optiland[gui]
+
 Development Extras
 ------------------
 
