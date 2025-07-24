@@ -171,10 +171,9 @@ class GratingSurface(Surface):
         fx = fx / mag
         fy = fy / mag
         fz = fz / mag
-        
-#        pp = self.p/be.abs(nz)
-        
+                
         pp = self.geometry.grating_period
+#        pp = pp*be.abs(nz)
         m = self.geometry.grating_order
         rays.gratingdiffract(nx, ny, nz, fx, fy, fz,m, pp, n1, n2, self.is_reflective)
 
