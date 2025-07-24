@@ -10,7 +10,7 @@ where
 - R is the radius of curvature
 - k is the conic constant
 
-Kramer Harrison, 2024
+Kramer Harrison, 2024  Matteo Taccola 2025
 """
 
 import warnings
@@ -37,7 +37,8 @@ class StandardGratingGeometry(BaseGeometry):
             given rays.
         surface_normal(rays): Calculates the surface normal of the geometry at
             the given ray positions.
-        grating_vector(rays): Compute the grating vector at the given ray positions
+        grating_vector(rays): Compute the grating vector at the given ray positions. 
+    
 
     """
 
@@ -77,6 +78,16 @@ class StandardGratingGeometry(BaseGeometry):
         )
     
     def _tang(self, x=0, y=0):
+        """ Compute the unit vector that is lying on the tangent plane in (x,y,z) and tangent to the grating line 
+
+        Args:
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            components of the tangent normal vector.
+        """
 #        fprime = -x*be.sqrt(-self.k*(x**2 + y**2)/self.radius**2)/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1.0)**2) + 2*x/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1.0))
         fprime = x*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 2)/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1)**2)
         tx = 1.0/be.sqrt(1+fprime**2)
@@ -161,7 +172,7 @@ class StandardGratingGeometry(BaseGeometry):
         return nx, ny, nz
 
     def grating_vector(self, rays):
-        """Calculate the surface normal of the geometry at the given points.
+        """Calculate the grating normal vector of the geometry at the given points.
 
         Args:
             rays (RealRays): The rays, positioned at the surface, for which to
@@ -169,7 +180,7 @@ class StandardGratingGeometry(BaseGeometry):
 
         Returns:
             tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
-            components of the grating vectors.
+            components of the grating vector.
 
         """
         nx,ny,nz = self.surface_normal(rays)
