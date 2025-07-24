@@ -1,6 +1,6 @@
 # import pkg_resources
 from importlib import resources
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ from optiland.optic import Optic
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
+from optiland.visualization.base import BaseViewer
 from optiland.visualization.system import OpticViewer, OpticViewer3D
 from optiland.visualization.info import LensInfoViewer
 from optiland.visualization.analysis import SurfaceSagViewer
@@ -51,6 +52,16 @@ class InvalidMaterial(BaseMaterial):
     def k(self, wavelength):
         return -42
 
+class TestBaseViewer:
+    """Tests for the abstract BaseViewer class."""
+
+    def test_instantiating_subclass_without_view_raises_error(self, set_test_backend):
+        """Verify that a subclass of BaseViewer must implement the view method."""
+        with pytest.raises(TypeError, match="Can't instantiate abstract class"):
+            # This class is abstract because it doesn't implement 'view'
+            class IncompleteViewer(BaseViewer):
+                pass
+            IncompleteViewer(optic=None)
 
 class TestOpticViewer:
     def test_init(self):
@@ -325,6 +336,22 @@ class TestOpticViewer3D:
             viewer.view(reference="marginal", distribution=None)
             mock_start.assert_called_once()
             mock_render.assert_called()
+            
+    @pytest.mark.parametrize("dark_mode, bg1, bg2", [
+        (True, (0.13, 0.15, 0.19), (0.195, 0.21, 0.24)),
+        (False, (0.8, 0.9, 1.0), (0.4, 0.5, 0.6))
+    ])
+    @patch("optiland.visualization.system.optic_viewer_3d.vtk")
+    def test_view_sets_background_color_for_theme(self, mock_vtk, dark_mode, bg1, bg2, set_test_backend):
+        """Test that view() correctly sets the background for both themes."""
+        lens = TessarLens()
+        viewer = OpticViewer3D(lens)
+        
+        mock_renderer_instance = mock_vtk.vtkRenderer.return_value
+        viewer.view(dark_mode=dark_mode)
+
+        mock_renderer_instance.SetBackground.assert_called_with(*bg1)
+        mock_renderer_instance.SetBackground2.assert_called_with(*bg2)
 
 
 class TestLensInfoViewer:
