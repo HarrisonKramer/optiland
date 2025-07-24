@@ -17,7 +17,7 @@ lens.add_surface(index=1, radius=np.inf, thickness=10)
 lens.add_surface(
     index=2, radius=np.inf, thickness=5, material="N-BK7"
 )
-lens.add_surface(index=3, radius=100, thickness=30, surface_type="grating", grating_order = 1, grating_period = 3.0, is_stop=True)
+lens.add_surface(index=3, radius=-100, thickness=30, surface_type="grating", grating_order = 1, grating_period = 5.0, is_stop=True)
 lens.add_surface(index=4)
 
 # add aperture
