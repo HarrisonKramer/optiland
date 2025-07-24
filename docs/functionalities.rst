@@ -42,6 +42,8 @@ Optimization and Tolerancing
   Define custom merit functions using symbolic operands, easily extended with user-defined metrics.
 - **Tolerancing and Sensitivity Analysis**:
   Perform Monte Carlo simulations and parametric sweeps to assess manufacturability and robustness.
+- **Categorical Variable Optimization (Glass Expert)**:
+  Optimize lens materials (categorical variables) alongside continuous parameters using the specialized `GlassExpert` tool, which intelligently searches glass catalogs.
 - **Extensible Framework**:
   Add new optimization variables, constraints, or algorithms with minimal overhead.
 
@@ -60,6 +62,8 @@ Visualization
   Plot optical layouts, surface properties, and ray traces using matplotlib (2D) and VTK (3D).
 - **Interactive Debugging Tools**:
   Inspect and interact with optical systems for rapid prototyping and analysis.
+- **Optiland GUI**:
+  A fully functional graphical user interface (GUI) for interactive design, analysis, and visualization of optical systems. See the :ref:`gui_quickstart` for more details on using the GUI.
 
 Interoperability and Scripting
 ------------------------------

@@ -393,3 +393,31 @@ def test_abbe_out_of_bounds_wavelength(set_test_backend):
         abbe_material.n(0.3)
     with pytest.raises(ValueError):
         abbe_material.n(0.8)
+
+
+def test_glasses_selection(set_test_backend):
+    glasses = materials.glasses_selection(0.3, 2.5, catalogs=["schott"])
+    expected_glasses = [
+        'FK3', 'FK5HTi', 'K10', 'LITHOTEC-CAF2', 'N-BAK1', 
+        'N-BAK2', 'N-BK10', 'N-BK7', 'N-BK7HT', 'N-BK7HTi', 
+        'N-FK5', 'N-FK51', 'N-FK51A', 'N-FK58', 'N-LAK33B', 
+        'N-LAK34', 'N-LAK7', 'N-PK51', 'N-PK52A', 'N-PSK3', 
+        'N-SK11', 'N-SK5', 'N-ZK7', 'N-ZK7A', 'P-LAK35', 'P-SK60']
+    assert glasses == expected_glasses
+
+
+def test_get_nd_vd(set_test_backend):
+    assert materials.get_nd_vd(glass='N-BK7') == (1.5168, 64.17)
+
+
+def test_downsample_glass_map(set_test_backend):
+    glass_dict = {g: materials.get_nd_vd(g) for g in ['N-BK7', 'FK3', 'FK5HTi', 'K10']}
+    downsampled_glass_dict = materials.downsample_glass_map(
+        glass_dict, num_glasses_to_keep=3,
+    )
+    expected_downsample_glass_dict = {
+        'K10': (1.50137, 56.41), 
+        'N-BK7': (1.5168, 64.17), 
+        'FK5HTi': (1.48748, 70.47),
+    }
+    assert downsampled_glass_dict == expected_downsample_glass_dict

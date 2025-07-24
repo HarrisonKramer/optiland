@@ -19,7 +19,7 @@ class QuickFocusSolve(BaseSolve):
 
     """
 
-    def __init__(self, optic):
+    def __init__(self, optic, *args):
         self.optic = optic
         self.num_surfaces = self.optic.surface_group.num_surfaces
         if self.num_surfaces <= 2:

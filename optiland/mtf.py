@@ -11,8 +11,6 @@ import matplotlib.pyplot as plt
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.psf import FFTPSF
-from optiland.wavefront import Wavefront
-from optiland.zernike import ZernikeFit
 
 
 class GeometricMTF(SpotDiagram):
@@ -82,17 +80,16 @@ class GeometricMTF(SpotDiagram):
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
-        """Plots the MTF curve.
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+        """Plots the MTF curve."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (12, 4).
-            add_reference (bool, optional): Whether to add the diffraction
-                limit reference curve. Defaults to False.
-
-        """
-        _, ax = plt.subplots(figsize=figsize)
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, data, self.fields[k], color=f"C{k}")
@@ -110,9 +107,14 @@ class GeometricMTF(SpotDiagram):
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation", labelpad=10)
-        plt.tight_layout()
-        plt.grid(alpha=0.25)
-        plt.show()
+        ax.grid(True, alpha=0.25)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.
@@ -267,27 +269,26 @@ class FFTMTF:
 
         self.mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
-        """Visualizes the Modulation Transfer Function (MTF).
+    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+        """Visualizes the Modulation Transfer Function (MTF)."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The size of the figure.
-                Defaults to (12, 4).
-            add_reference (bool, optional): Whether to add the diffraction
-                limit reference line. Defaults to False.
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
-        """
         dx = self._get_mtf_units()
         freq = be.arange(self.grid_size // 2) * dx
-
-        _, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, freq, data, self.fields[k], color=f"C{k}")
 
         if add_reference:
             ratio = freq / self.max_freq
-            ratio = be.clip(ratio, -1, 1)  # avoid invalid value in arccos
+            ratio = be.clip(ratio, -1, 1)
             phi = be.arccos(ratio)
             diff_limited_mtf = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
             ax.plot(
@@ -302,8 +303,14 @@ class FFTMTF:
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation Transfer Function", labelpad=10)
-        plt.tight_layout()
-        plt.show()
+        ax.grid(True, alpha=0.25)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _plot_field(self, ax, freq, mtf_data, field, color):
         """Plot the MTF data for a specific field.
@@ -379,194 +386,3 @@ class FFTMTF:
         dx = Q / (self.wavelength * self.FNO)
 
         return dx
-
-
-class SampledMTF:
-    """Sampled Modulation Transfer Function (MTF) class.
-
-    This class calculates the MTF of an optical system from sampled wavefront
-    data. It utilizes Zernike polynomial fitting to represent the wavefront
-    aberrations.
-
-    Note:
-        This class assumes that amplitude variations between the pupil and a
-        shifted version of the pupil can be ignored.
-
-    Args:
-        optic (Optic): The optical system.
-        field (tuple): The field point (Hx, Hy) at which to calculate the MTF.
-        wavelength (str or float): The wavelength (in mm) at which to
-            calculate the MTF. Can be 'primary' to use the optic's primary
-            wavelength.
-        num_rays (int, optional): The number of rings to trace for the
-            wavefront analysis. Defaults to 128 in each axis.
-        distribution (str, optional): The distribution of rays in the pupil.
-            Defaults to 'uniform'.
-        zernike_terms (int, optional): The number of Zernike terms to use for
-            the wavefront fit. Defaults to 37.
-        zernike_type (str, optional): The type of Zernike polynomials to use
-            ('fringe', 'standard', etc.). Defaults to 'fringe'.
-
-    Attributes:
-        optic (Optic): The optical system.
-        field (tuple): The field point (Hx, Hy).
-        wavelength (float): The wavelength (in mm) used for calculation.
-        num_rays (int): The number of rays used for wavefront analysis.
-        distribution (str): The ray distribution in the pupil.
-        zernike_terms (int): The number of Zernike terms for the fit.
-        zernike_type (str): The type of Zernike polynomials used.
-        x_norm (be.ndarray): Normalized x-coordinates of pupil samples.
-        y_norm (be.ndarray): Normalized y-coordinates of pupil samples.
-        opd_waves (be.ndarray): Optical Path Difference (OPD) in waves.
-        intensity (be.ndarray): Intensity at each pupil sample point.
-        zernike_fit (ZernikeFit): The Zernike fit object.
-        P1 (be.ndarray): The complex pupil function.
-        otf_at_zero (float): The value of the Optical Transfer Function (OTF)
-            at zero frequency, equivalent to the sum of intensities.
-    """
-
-    def __init__(
-        self,
-        optic,
-        field,
-        wavelength,
-        num_rays=128,
-        distribution="uniform",
-        zernike_terms=37,
-        zernike_type="fringe",
-    ):
-        """Initializes the SampledMTF instance."""
-        self.optic = optic
-        self.field = field
-        self.wavelength = wavelength
-        self.num_rays = num_rays
-        self.distribution = distribution
-        self.zernike_terms = zernike_terms
-        self.zernike_type = zernike_type
-
-        if self.wavelength == "primary":
-            self.wavelength = optic.primary_wavelength
-
-        wf = Wavefront(
-            optic,
-            fields=[field],
-            wavelengths=[self.wavelength],
-            num_rays=num_rays,
-            distribution=distribution,
-        )
-        wf_data = wf.get_data(field, self.wavelength)
-
-        self.x_norm = wf.distribution.x
-        self.y_norm = wf.distribution.y
-        self.opd_waves = wf_data.opd
-        self.intensity = wf_data.intensity
-
-        self.xpd = self.optic.paraxial.XPD()
-        self.xpl = -self.optic.paraxial.XPL()
-
-        self.zernike_fit = ZernikeFit(
-            self.x_norm,
-            self.y_norm,
-            self.opd_waves,
-            self.zernike_type,
-            self.zernike_terms,
-        )
-
-        self.P1 = be.sqrt(self.intensity) * be.exp(1j * 2 * be.pi * self.opd_waves)
-        self.otf_at_zero = be.sum(self.intensity)
-
-    def calculate_mtf(self, frequencies):
-        """Calculates the Modulation Transfer Function (MTF) for given spatial
-        frequencies.
-
-        The method computes the MTF by determining the Optical Transfer Function (OTF)
-        from the overlap integral of the pupil function with a shifted version of
-        itself. The shift corresponds to the spatial frequency being evaluated.
-        The MTF is the absolute value of the normalized OTF.
-
-        Args:
-            frequencies (list[tuple[float, float]] or be.ndarray): A list or array of
-                tuples, where each tuple `(fx, fy)` represents a spatial frequency
-                pair in cycles per mm for which to calculate the MTF.
-
-        Returns:
-            list[float]: A list of MTF values corresponding to each input frequency
-            pair. The MTF values are dimensionless and range from 0 to 1.
-
-        Notes:
-            The calculation involves:
-            1. Retrieving the exit pupil diameter (XPD). If XPD is near zero,
-               MTF is 0 for non-zero frequencies and 1 for zero frequency.
-            2. Converting the wavelength to mm.
-            3. For each frequency pair (fx, fy):
-                a. Calculating physical shifts in the pupil based on wavelength and
-                   frequency.
-                b. Normalizing these shifts using the XPD radius & exit pupil position.
-                c. Determining the shifted normalized coordinates for pupil evaluation.
-                d. Evaluating the Optical Path Difference (OPD) at these shifted
-                   coordinates using the Zernike polynomial fit of the wavefront.
-                e. Masking points where the shifted evaluation falls outside the
-                   unit circle (i.e., outside the pupil).
-                f. Computing the complex conjugate of the pupil function at the
-                   shifted coordinates (P2_conj).
-                g. Calculating the OTF element as the product of the original complex
-                   pupil function (P1) and P2_conj.
-                h. Summing the OTF elements over all pupil sample points to get the
-                   total OTF value for the given frequency.
-                i. Normalizing the OTF value by otf_at_zero (the OTF at zero frequency).
-                j. The MTF is the absolute value of this normalized OTF.
-        """
-        xpd_is_zero = self.xpd == 0.0
-
-        # Retrieve necessary attributes from instance
-        wl_um = self.wavelength  # Wavelength in micrometers
-        x_norm = self.x_norm
-        y_norm = self.y_norm
-        intensity = self.intensity
-        P1 = self.P1
-        zernike_fit = self.zernike_fit
-
-        wl_mm = wl_um * 1e-3  # Convert wavelength to mm
-
-        mtf_results = []
-
-        for fx, fy in frequencies:
-            if xpd_is_zero:
-                if fx == 0.0 and fy == 0.0:
-                    mtf_results.append(1.0)
-                else:
-                    mtf_results.append(0.0)
-                continue
-
-            delta_x_phys = wl_mm * fx
-            delta_y_phys = wl_mm * fy
-
-            delta_x_norm = self.xpl * delta_x_phys / (self.xpd / 2)
-            delta_y_norm = self.xpl * delta_y_phys / (self.xpd / 2)
-
-            eval_x_shifted_norm = x_norm - delta_x_norm
-            eval_y_shifted_norm = y_norm - delta_y_norm
-
-            r_shifted_norm = be.sqrt(eval_x_shifted_norm**2 + eval_y_shifted_norm**2)
-            phi_shifted_norm = be.arctan2(eval_y_shifted_norm, eval_x_shifted_norm)
-
-            opd_shifted_waves = zernike_fit.zernike.poly(
-                r_shifted_norm, phi_shifted_norm
-            )
-
-            mask_outside_pupil = r_shifted_norm > 1.0
-
-            # Complex conjugate of the shifted pupil function P2
-            # Intensity is assumed to be the same for P2 as for P1 at corresponding
-            # original points
-            P2_conj = be.sqrt(intensity) * be.exp(-1j * 2 * be.pi * opd_shifted_waves)
-            P2_conj = be.where(mask_outside_pupil, 0.0 + 0.0j, P2_conj)
-
-            otf_element = P1 * P2_conj
-            otf_value = be.sum(otf_element)
-
-            normalized_otf = otf_value / self.otf_at_zero
-            mtf = be.abs(normalized_otf)
-            mtf_results.append(mtf)
-
-        return mtf_results

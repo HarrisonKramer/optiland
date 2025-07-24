@@ -32,7 +32,7 @@ class SolveManager:
     def __len__(self):
         return len(self.solves)
 
-    def add(self, solve_type, surface_idx, *args, **kwargs):
+    def add(self, solve_type, surface_idx=None, *args, **kwargs):
         """Adds a solve instance to the list of solves.
 
         Args:
@@ -60,6 +60,17 @@ class SolveManager:
     def clear(self):
         """Clears the list of solves."""
         self.solves.clear()
+
+    def remap_surface_indices(self, remap_func):
+        """Remaps the surface indices of all relevant solves.
+
+        Args:
+            remap_func (callable): A function that takes an old surface index
+                                   and returns a new surface index.
+        """
+        for solve in self.solves:
+            if hasattr(solve, "surface_idx"):
+                solve.surface_idx = remap_func(solve.surface_idx)
 
     def to_dict(self):
         """Returns a dictionary representation of the solve manager.

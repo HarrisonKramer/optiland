@@ -159,7 +159,7 @@ class SurfaceGroup:
         """float: the total track length of the system"""
         if self.num_surfaces < 2:
             raise ValueError("Not enough surfaces to calculate total track.")
-        z = self.positions[1:-1]
+        z = self.positions[1:]
         return be.max(z) - be.min(z)
 
     def n(self, wavelength):
@@ -249,6 +249,10 @@ class SurfaceGroup:
                 material,
                 **kwargs,
             )
+
+        # Used for surface positioning
+        new_surface.thickness = kwargs.get("thickness", 0.0)
+        self.surface_factory.material_factory.last_material = new_surface.material_post
 
         if new_surface.is_stop:
             for surface in self.surfaces:
@@ -402,3 +406,82 @@ class SurfaceGroup:
                 new_z = prev_surface.geometry.cs.z + thickness
 
             current_surface.geometry.cs.z = be.array(new_z)
+
+    def flip(
+        self,
+        original_vertex_gcs_z_coords: list[float],
+        start_index: int = 1,
+        end_index: int = -1,
+    ):
+        """Flips a segment of the surfaces in the group.
+
+        Args:
+            original_vertex_gcs_z_coords (list[float]): List of the original
+                global Z-coordinates of all surface vertices in the group
+                before flipping.
+            start_index (int, optional): The starting index of the segment of
+                surfaces to flip. Defaults to 1 (skips object surface).
+            end_index (int, optional): The ending index (exclusive for positive,
+                inclusive for negative slice behavior) of the segment of surfaces
+                to flip. Defaults to -1 (up to, but not including, the image surface).
+        """
+        n_surfaces_total = len(self.surfaces)
+
+        if start_index < 0:
+            start_index = n_surfaces_total + start_index
+
+        if end_index < 0:
+            actual_slice_end_index = (
+                n_surfaces_total + end_index if end_index != 0 else 0
+            )
+        else:
+            actual_slice_end_index = end_index
+
+        if start_index >= actual_slice_end_index:
+            # No surfaces to flip or invalid range
+            self.reset()
+            return
+
+        original_indices_in_segment = list(range(start_index, actual_slice_end_index))
+
+        if not original_indices_in_segment:
+            self.reset()
+            return
+
+        # Extract the segment, reverse it, and place it back
+        segment_to_reverse = self.surfaces[start_index:actual_slice_end_index]
+        segment_to_reverse.reverse()
+        self.surfaces[start_index:actual_slice_end_index] = segment_to_reverse
+
+        # Call flip() on each surface within the now-reversed segment
+        for i in range(len(segment_to_reverse)):
+            surface_index_in_group = start_index + i
+            self.surfaces[surface_index_in_group].flip()
+
+        if segment_to_reverse:  # Check if the segment is not empty
+            self.surfaces[start_index].geometry.cs.z = 0.0
+
+            # Iterate for thicknesses within the segment
+            # k iterates from 0 to len(segment_to_reverse) - 2
+            for k in range(len(segment_to_reverse) - 1):
+                current_surf_in_new_order = self.surfaces[start_index + k]
+                next_surf_in_new_order = self.surfaces[start_index + k + 1]
+
+                original_idx_of_new_k = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - k
+                ]
+                original_idx_of_new_k_plus_1 = original_indices_in_segment[
+                    len(segment_to_reverse) - 1 - (k + 1)
+                ]
+
+                # The thickness is between these two original surfaces
+                thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_new_k]
+                    - original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1]
+                )
+
+                next_surf_in_new_order.geometry.cs.z = (
+                    current_surf_in_new_order.geometry.cs.z + thickness
+                )
+
+        self.reset()
