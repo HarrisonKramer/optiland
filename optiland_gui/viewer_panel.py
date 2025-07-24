@@ -35,8 +35,11 @@ try:
 except ImportError:
     VTK_AVAILABLE = False
 
-from optiland.visualization.rays import Rays2D, Rays3D
-from optiland.visualization.system import OpticalSystem as OptilandOpticalSystemPlotter
+
+from optiland.visualization.system.rays import Rays2D, Rays3D
+from optiland.visualization.system.system import (
+    OpticalSystem as OptilandOpticalSystemPlotter,
+)
 
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar

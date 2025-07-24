@@ -10,7 +10,7 @@ import vtk
 from matplotlib.patches import Polygon
 
 import optiland.backend as be
-from optiland.visualization.utils import revolve_contour, transform, transform_3d
+from optiland.visualization.system.utils import revolve_contour, transform, transform_3d
 
 
 class Lens2D:
