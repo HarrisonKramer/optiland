@@ -43,10 +43,6 @@ class GratingSurface(Surface):
 
     def __init__(
         self,
-        #period,
-        #diffraction_order,
-        #grating_vector,
-        #grating_angle,
         geometry,
         material_pre,
         material_post,
@@ -57,10 +53,6 @@ class GratingSurface(Surface):
         is_reflective=False,
         surface_type="grating",
     ):
-        #self.p = be.array(period)
-        #self.m = be.array(diffraction_order)
-        #self.f = be.array(grating_vector)
-        #self.ga = be.array(grating_angle)
         super().__init__(
             geometry,
             material_pre,
@@ -174,9 +166,6 @@ class GratingSurface(Surface):
         n2 = self.material_post.n(rays.w)
         
         fx, fy, fz = self.geometry.grating_vector(rays)
-#        fx = be.sin(self.ga)*nz
-#        fy = -be.cos(self.ga)*nz
-#        fz = be.cos(self.ga)*ny - be.sin(self.ga)*nx
         
         mag = be.sqrt(fx**2 + fy**2 + fz**2)
         fx = fx / mag
