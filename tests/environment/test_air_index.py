@@ -121,5 +121,3 @@ def test_temperature_validation_passed_to_models(reference_wavelength_um, set_te
             pytest.skip(f"Skipping temperature validation test for kohlrausch due to backend loading issue: {e}")
         else:
             raise
-
-```
