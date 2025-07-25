@@ -40,6 +40,7 @@ class ParaxialSurface(Surface):
         bsdf=None,
         is_reflective=False,
         surface_type="paraxial",
+        comment="",
     ):
         self.f = be.array(focal_length)
         super().__init__(
@@ -52,6 +53,7 @@ class ParaxialSurface(Surface):
             bsdf,
             is_reflective,
             surface_type,
+            comment,
         )
 
     def _interact(self, rays):
