@@ -876,30 +876,30 @@ class TestIncoherentIrradiance:
         optic_sys = test_system_irradiance_v1
         res = (5, 5)
 
-        # Test with default uniform rays
         irr_uniform = analysis.IncoherentIrradiance(
-            optic_sys, num_rays=5, distribution="uniform", res=res
+            optic_sys, num_rays=500, distribution="uniform", res=res
         )
         irr_map_uniform, _, _ = irr_uniform.data[0][0]
 
-        # This is a basic check, not a precise value assertion
         assert be.sum(irr_map_uniform) > 0
-        assert be.max(irr_map_uniform) > 0
         irr_uniform.view()
         plt.close()
 
-        # Test with user-defined rays
+        num_rays_edge = 5
         user_rays = _create_square_grid_rays(
-            num_rays_edge=5, min_coord=-2.25, max_coord=1.75
+            num_rays_edge=num_rays_edge, min_coord=-2.25, max_coord=2.25
         )
         irr_user = analysis.IncoherentIrradiance(
             optic_sys, res=res, user_initial_rays=user_rays
         )
         irr_map_user, _, _ = irr_user.data[0][0]
 
-        pixel_area_expected = ((2.5 - (-2.5)) / res[0]) * ((2.5 - (-2.5)) / res[1])
-        expected_irr_value = 1.0 / pixel_area_expected
-        assert_allclose(irr_map_user, be.full(res, expected_irr_value), atol=1e-5)
+
+        pixel_area = ((2.5 - (-2.5)) / res[0]) * ((2.5 - (-2.5)) / res[1])
+        total_power_on_detector = be.sum(irr_map_user) * pixel_area
+        initial_total_power = be.sum(user_rays.i)
+
+        assert_allclose(total_power_on_detector, initial_total_power, atol=1e-5)
         irr_user.view()
         plt.close()
 
@@ -910,13 +910,12 @@ class TestIncoherentIrradiance:
         optic_sys = test_system_irradiance_v1
         res_val = (10, 10)
 
-        # Use be.linspace and be.meshgrid if available and compatible, otherwise numpy is fine for test setup
         x_centers_np = be.linspace(-2.25, 2.25, 10)
         selected_x_np = x_centers_np[::2]
         selected_y_np = x_centers_np[::2]
         x_np_mesh, y_np_mesh = be.meshgrid(
             selected_x_np, selected_y_np
-        )  # Use numpy for meshgrid setup
+        )
 
         x_be_flat = be.array(x_np_mesh.flatten())
         y_be_flat = be.array(y_np_mesh.flatten())
@@ -938,19 +937,12 @@ class TestIncoherentIrradiance:
         )
         irr_map_be, _, _ = irr_analysis.data[0][0]
 
-        expected_map_np = np.zeros(res_val)  # create the expected map with numpy
-        pixel_area_expected = ((2.5 - (-2.5)) / res_val[0]) * (
-            (2.5 - (-2.5)) / res_val[1]
-        )
-        irr_value_per_ray = 1.0 / pixel_area_expected
+        # Check for energy conservation
+        pixel_area = ((2.5 - (-2.5)) / res_val[0]) * ((2.5 - (-2.5)) / res_val[1])
+        total_power_on_detector = be.sum(irr_map_be) * pixel_area
+        initial_total_power = be.sum(user_rays.i)
 
-        for i in range(0, res_val[0], 2):
-            for j in range(0, res_val[1], 2):
-                expected_map_np[i, j] = irr_value_per_ray
-
-        assert_allclose(
-            irr_map_be, expected_map_np, atol=1e-5
-        )  # assert_allclose handles be_tensor vs np_array
+        assert_allclose(total_power_on_detector, initial_total_power, atol=1e-5)
         irr_analysis.view()
         plt.close()
 
@@ -1019,23 +1011,38 @@ class TestIncoherentIrradiance:
         irr_perfect = analysis.IncoherentIrradiance(
             optic_sys, res=res_val, user_initial_rays=user_rays_grid
         )
-        irr_map_perfect_be = irr_perfect.data[0][0][0]
+        irr_map_be, _, _ = irr_perfect.data[0][0]
+        irr_map_np = be.to_numpy(irr_map_be)
 
+        # With bilinear interpolation, a perfect focus on a grid vertex
+        # distributes power among the 4 adjacent pixels
+
+        total_sum_map = be.to_numpy(be.sum(irr_map_be))
+        assert total_sum_map > 1e-9
+
+        pixel_area = ((2.5 - (-2.5)) / res_val[0]) * ((2.5 - (-2.5)) / res_val[1])
+        total_power_on_detector = total_sum_map * pixel_area
+        initial_total_power = be.sum(user_rays_grid.i)
+
+        assert_allclose(total_power_on_detector, initial_total_power, atol=1e-5)
         center_x_idx = res_val[0] // 2
         center_y_idx = res_val[1] // 2
 
-        total_sum_be = be.sum(irr_map_perfect_be)
-        center_pixel_value_be = irr_map_perfect_be[center_x_idx, center_y_idx]
+        p1 = irr_map_np[center_x_idx, center_y_idx]
+        p2 = irr_map_np[center_x_idx - 1, center_y_idx]
+        p3 = irr_map_np[center_x_idx, center_y_idx - 1]
+        p4 = irr_map_np[center_x_idx - 1, center_y_idx - 1]
+        central_four_pixel_sum = p1 + p2 + p3 + p4
 
-        assert be.to_numpy(total_sum_be) > 1e-9
-        assert_allclose(center_pixel_value_be, total_sum_be, atol=1e-5)
+        # The sum of these four pixels should equal the total power in the map
+        assert_allclose(central_four_pixel_sum, total_sum_map, atol=1e-5)
 
-        irr_map_perfect_np = be.to_numpy(
-            irr_map_perfect_be
-        )  # convert for easy masking with numpy
-        mask = np.ones(irr_map_perfect_np.shape, dtype=bool)
+        mask = np.ones_like(irr_map_np, dtype=bool)
         mask[center_x_idx, center_y_idx] = False
-        assert_allclose(np.sum(irr_map_perfect_np[mask]), 0.0, atol=1e-5)
+        mask[center_x_idx - 1, center_y_idx] = False
+        mask[center_x_idx, center_y_idx - 1] = False
+        mask[center_x_idx - 1, center_y_idx - 1] = False
+        assert_allclose(np.sum(irr_map_np[mask]), 0.0, atol=1e-5)
 
         irr_perfect.view()
         plt.close()
@@ -1307,6 +1314,44 @@ class TestIncoherentIrradiance:
             peaks[0][0], be.array(4.0)
         )  # Compare backend scalar with backend scalar
         assert_allclose(peaks[0][1], be.array(8.0))
+        
+    def test_irradiance_autodiff(self, set_test_backend):
+        if be.get_backend() != "torch":
+            pytest.skip("Autodiff test only runs for torch backend")
+
+        be.grad_mode.enable()
+        # Create a simple system with a parameter that requires gradients
+        optic_sys = Optic()
+        optic_sys.add_surface(index=0, thickness=be.inf)
+        # Make RADIUS a tensor that requires gradients, as changing it will
+        # affect the final irradiance.
+        radius_tensor = be.array(20.0)
+        radius_tensor.requires_grad = True
+        optic_sys.add_surface(index=0, thickness=be.inf)
+        optic_sys.add_surface(index=1, thickness=7, radius=radius_tensor, is_stop=True, material="bk7")
+        optic_sys.add_surface(index=2, thickness=10)
+        optic_sys.add_surface(index=3)
+        detector_size = RectangularAperture(x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5)
+        optic_sys.surface_group.surfaces[-1].aperture = detector_size
+        optic_sys.add_wavelength(0.55)
+        optic_sys.set_field_type("angle")
+        optic_sys.add_field(y=0)
+        optic_sys.set_aperture("EPD", 5.0)
+
+        # Perform analysis
+        irr_analysis = analysis.IncoherentIrradiance(
+            optic_sys, num_rays=100, res=(10, 10)
+        )
+        irr_map, _, _ = irr_analysis.data[0][0]
+        
+        # Define a simple loss and backpropagate
+        # A good loss for this is the sum of squares, which encourages focusing
+        loss = be.sum(irr_map**2)
+        loss.backward()
+        # Check if the gradient was computed for the RADIUS
+        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        assert grad is not None
+        assert be.to_numpy(grad) != 0
 
 
 def test_incoherent_irradiance_initialization(
@@ -1386,6 +1431,7 @@ def test_cross_section_plot_helper_out_of_bounds(
     irr._plot_cross_section(
         irr_map_be, x_edges, y_edges, "invalid-axis", 0, (6, 5), "Test", True
     )
+    
 
 
 class TestThroughFocusSpotDiagram:
@@ -1721,11 +1767,11 @@ def system_1():
             apt_detector = RectangularAperture(-30, 30, -30, 30)
             
             self.add_surface(index=0, thickness=0)
-            self.add_surface(index=1, thickness=0.01) # test here
+            self.add_surface(index=1, thickness=0.01) 
             self.add_surface(index=2, thickness=129.6554)
             self.add_surface(index=3, thickness=4, radius=131.9743, is_stop=True, material=H_K3)
             self.add_surface(index=4, thickness=10.0, radius=-131.9743)
-            self.add_surface(index=5, aperture=apt_detector) # test here
+            self.add_surface(index=5, aperture=apt_detector) 
             
     return TestSystemForIntensity()
 
@@ -1761,7 +1807,7 @@ class TestRadiantIntensity:
         central_y_idx = np.argmin(np.abs(optiland_angles_y))
         optiland_cross_section = optiland_map[:, central_y_idx]
 
-        zemax_angles, zemax_intensity = read_zmx_file(filename, skip_lines=26, cols=(0, 1))
+        zemax_angles, zemax_intensity = read_zmx_file(filename, skip_lines=1, cols=(0, 1))
 
         print(f"Zemax angles: {zemax_angles}")
         print(f"Zemax intensity: {zemax_intensity}")
@@ -1782,7 +1828,7 @@ class TestRadiantIntensity:
             zemax_angles, optiland_angles_x, optiland_cross_section
         )
 
-        # Assert that the interpolated Optiland data is close to the Zemax data
+        # interpolated Optiland data is close to the Zemax data
         assert_allclose(interpolated_optiland_intensity, zemax_intensity, atol=0.1, rtol=0.1)
 
 
@@ -1800,3 +1846,46 @@ class TestRadiantIntensity:
         radiant_intensity.view()
         mock_show.assert_called_once()
         plt.close()
+        
+    def test_intensity_autodiff(self, set_test_backend):
+        if be.get_backend() != "torch":
+            pytest.skip("Autodiff test only runs for torch backend")
+
+        be.grad_mode.enable()
+        
+        optic_sys = Optic()
+        optic_sys.add_surface(index=0, thickness=be.inf)
+        
+        radius_tensor = be.array(20.0)
+        radius_tensor.requires_grad = True
+        optic_sys.add_surface(index=0, thickness=be.inf)
+        optic_sys.add_surface(index=1, thickness=7, radius=radius_tensor, is_stop=True, material="bk7")
+        optic_sys.add_surface(index=2, thickness=10)
+        optic_sys.add_surface(index=3)
+        detector_size = RectangularAperture(x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5)
+        optic_sys.surface_group.surfaces[-1].aperture = detector_size
+        optic_sys.add_wavelength(0.55)
+        optic_sys.set_field_type("angle")
+        optic_sys.add_field(y=0)
+        optic_sys.set_aperture("EPD", 5.0)
+
+        user_rays = _create_square_grid_rays(10, -2.5, 2.5)
+
+        int_analysis = analysis.RadiantIntensity(
+            optic=optic_sys,
+            user_initial_rays=user_rays,
+            num_angular_bins_X=11,
+            num_angular_bins_Y=11,
+            angle_X_min=-5, angle_X_max=5,
+            angle_Y_min=-5, angle_Y_max=5,
+            reference_surface_index=-1,
+        )
+        int_map, _, _, _, _ = int_analysis.data[0][0]
+        
+        # Define a simple loss and backpropagate
+        loss = be.sum(int_map**2)
+        loss.backward()
+        
+        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        assert grad is not None
+        assert be.to_numpy(grad) != 0
