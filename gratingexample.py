@@ -37,5 +37,17 @@ lens.draw(
     num_rays=5,
 )
 
-#trace marginal ray
-ray = lens.trace_generic(Hx=0, Hy=0, Px=0, Py=0, wavelength=0.587)
+#trace few rays and compare with zemax results
+ray_c0 = lens.trace_generic(Hx=0, Hy=0, Px=0, Py=0, wavelength=0.587)
+zmx_c0_l,zmx_c0_m,zmx_c0_n = 0,-0.1174,0.9930847094
+ray_c1 = lens.trace_generic(Hx=0, Hy=1, Px=0, Py=0, wavelength=0.587)
+zmx_c1_l,zmx_c1_m,zmx_c1_n = 0,0.0562738133,0.9984153734
+ray_m0 = lens.trace_generic(Hx=0, Hy=0, Px=0, Py=1, wavelength=0.587)
+zmx_m0_l,zmx_m0_m,zmx_m0_n = 0,-0.1572064475,0.9875657613
+ray_m1 = lens.trace_generic(Hx=0, Hy=1, Px=0, Py=1, wavelength=0.587)
+zmx_m1_l,zmx_m1_m,zmx_m1_n = 0,0.0183044729,0.9998324591
+
+print(ray_c0.L[0],ray_c0.M[0],ray_c0.N[0])
+print(ray_c1.L[0],ray_c1.M[0],ray_c1.N[0])
+print(ray_m0.L[0],ray_m0.M[0],ray_m0.N[0])
+print(ray_m1.L[0],ray_m1.M[0],ray_m1.N[0])

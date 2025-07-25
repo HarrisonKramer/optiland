@@ -165,15 +165,18 @@ class GratingSurface(Surface):
         n1 = self.material_pre.n(rays.w)
         n2 = self.material_post.n(rays.w)
         
+        #find grating vector
         fx, fy, fz = self.geometry.grating_vector(rays)
         
         mag = be.sqrt(fx**2 + fy**2 + fz**2)
         fx = fx / mag
         fy = fy / mag
         fz = fz / mag
-                
+        
+        #grating period        
         pp = self.geometry.grating_period
-        #pp = pp/be.abs(nz)
+        #correct grating period considering projection effect on the surface
+        pp = pp/be.abs(nz)
         m = self.geometry.grating_order
         rays.gratingdiffract(nx, ny, nz, fx, fy, fz,m, pp, n1, n2, self.is_reflective)
 
