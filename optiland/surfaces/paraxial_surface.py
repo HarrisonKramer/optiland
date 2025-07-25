@@ -163,6 +163,7 @@ class ParaxialSurface(Surface):
             "coating": self.coating.to_dict() if self.coating else None,
             "bsdf": self.bsdf.to_dict() if self.bsdf else None,
             "is_reflective": self.is_reflective,
+            "comment": self.comment,
         }
 
     @classmethod
@@ -196,4 +197,5 @@ class ParaxialSurface(Surface):
             coating,
             bsdf,
             data["is_reflective"],
+            comment=data.get("comment", ""),
         )

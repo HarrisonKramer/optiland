@@ -623,7 +623,7 @@ class OptilandConnector(QObject):
         params = {
             "surface_type": "standard",
             "radius": float("inf"),
-            "thickness": 5.0,
+            "thickness": 0.0,
             "material": "Air",
             "comment": "New Surface",
             "index": optic_insert_idx,
