@@ -163,7 +163,7 @@ class RealRays(BaseRays):
         self.M = self.M - 2 * dot * ny
         self.N = self.N - 2 * dot * nz
 
-    def gratingdiffract_o(self, nx, ny, nz, fx, fy, fz, m, d, n1, n2, is_reflective):
+    def gratingdiffract(self, nx, ny, nz, fx, fy, fz, m, d, n1, n2, is_reflective):
         """Diffract the rays on the surface.
 
         Args:
@@ -209,7 +209,7 @@ class RealRays(BaseRays):
         
         self.normalize()
 
-    def gratingdiffract(self, nx, ny, nz, fx, fy, fz, m, d, n1, n2, is_reflective):
+    def gratingdiffract_p(self, nx, ny, nz, fx, fy, fz, m, d, n1, n2, is_reflective):
         """Diffract the rays on the surface.
 
         Args:
