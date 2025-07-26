@@ -5,9 +5,9 @@ This module contains the OpticalSystem class for visualizing optical systems.
 Kramer Harrison, 2024
 """
 
-from optiland.visualization.lens import Lens2D, Lens3D
-from optiland.visualization.mirror import Mirror3D
-from optiland.visualization.surface import Surface2D, Surface3D
+from optiland.visualization.system.lens import Lens2D, Lens3D
+from optiland.visualization.system.mirror import Mirror3D
+from optiland.visualization.system.surface import Surface2D, Surface3D
 
 
 class OpticalSystem:

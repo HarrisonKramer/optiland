@@ -76,7 +76,7 @@ class BaseMTF(abc.ABC):
         """Calculates and potentially stores the Point Spread Function."""
         pass
 
-    def view(self, figsize=(12, 4), add_reference=False):
+    def view(self, figsize=(12, 4), fig_to_plot_on=None, add_reference=False):
         """Visualizes the Modulation Transfer Function (MTF).
 
         This method sets up the plot and iterates through field data,
@@ -92,7 +92,14 @@ class BaseMTF(abc.ABC):
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference line. Defaults to False.
         """
-        _, ax = plt.subplots(figsize=figsize)
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, field_mtf_item in enumerate(self.mtf):
             self._plot_field_mtf(ax, k, field_mtf_item, color=f"C{k}")
@@ -116,4 +123,8 @@ class BaseMTF(abc.ABC):
         ax.set_ylabel("Modulation", labelpad=10)
         plt.tight_layout()
         plt.grid(alpha=0.25)
-        plt.show()
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
