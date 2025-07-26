@@ -48,29 +48,41 @@ class Distortion(BaseAnalysis):
         self.distortion_type = distortion_type
         super().__init__(optic, wavelengths)
 
-    def view(self, figsize=(7, 5.5)):
-        """Visualize the distortion analysis.
+    def view(self, fig_to_plot_on=None, figsize=(7, 5.5)):
+        """Visualize the distortion analysis."""
+        is_gui_embedding = fig_to_plot_on is not None
 
-        Args:
-            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
-        """
-        _, ax = plt.subplots(figsize=figsize)
         ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
-
         field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
-        for k, wavelength in enumerate(self.wavelengths):
-            dist_k = be.to_numpy(self.data[k])
-            ax.plot(dist_k, field_np, label=f"{wavelength:.4f} µm")
-            ax.set_xlabel("Distortion (%)")
-            ax.set_ylabel("Field")
 
-        current_xlim = plt.xlim()
-        plt.xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
-        plt.ylim([0, None])
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.show()
+        for k, wavelength in enumerate(self.wavelengths):
+            dist_k_np = be.to_numpy(self.data[k])
+            ax.plot(dist_k_np, field_np, label=f"{wavelength:.4f} µm")
+
+        ax.set_xlabel("Distortion (%)")
+        ax.set_ylabel("Field")
+
+        xlims = ax.get_xlim()
+        max_abs_lim = max(np.abs(xlims))
+        ax.set_xlim(-max_abs_lim, max_abs_lim)
+        ax.set_ylim(0, None)
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
+        ax.grid(True)
+        current_fig.tight_layout()
+
+        if is_gui_embedding:
+            if hasattr(current_fig, "canvas"):
+                current_fig.canvas.draw_idle()
+        else:
+            plt.show()
 
     def _generate_data(self):
         """Generate data for analysis.

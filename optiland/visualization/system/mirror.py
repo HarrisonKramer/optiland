@@ -6,7 +6,7 @@ surface.
 Kramer Harrison, 2024
 """
 
-from optiland.visualization.surface import Surface3D
+from optiland.visualization.system.surface import Surface3D
 
 
 class Mirror3D(Surface3D):

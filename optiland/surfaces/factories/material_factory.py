@@ -19,7 +19,7 @@ class MaterialFactory:
     """
 
     def __init__(self):
-        self._last_material = None
+        self.last_material = None
 
     def create(self, index, material_spec, surface_group):
         """Determines the material before and after a surface based on its position.
@@ -37,15 +37,15 @@ class MaterialFactory:
         # Determine material before the surface
         if index == 0:
             material_pre = None  # Object surface has no preceding material
-        elif index == surface_group.num_surfaces and self._last_material is not None:
-            material_pre = self._last_material  # Image surface
+        elif index == surface_group.num_surfaces and self.last_material is not None:
+            material_pre = self.last_material  # Image surface
         else:
             previous_surface = surface_group.surfaces[index - 1]
             material_pre = previous_surface.material_post
 
         # Determine material after the surface
         material_post = MaterialFactory._configure_post_material(material_spec)
-        self._last_material = material_post
+        self.last_material = material_post
 
         # Special case for mirrors: maintain the same material before and after
         if material_spec == "mirror":

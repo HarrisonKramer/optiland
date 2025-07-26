@@ -357,7 +357,7 @@ class IncoherentIrradiance(BaseAnalysis):
         x_g, y_g, z_g = surf.x, surf.y, surf.z
         power = surf.intensity
 
-        from optiland.visualization.utils import transform
+        from optiland.visualization.system.utils import transform
 
         x_local, y_local, _ = transform(x_g, y_g, z_g, surf, is_global=True)
         x_np = be.to_numpy(x_local)

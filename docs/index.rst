@@ -81,6 +81,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    installation
    quickstart
    cheat_sheet
+   gui_quickstart
 
 
 .. toctree::
@@ -137,6 +138,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    developers_guide/tolerancing_framework
    developers_guide/visualization_framework
    developers_guide/optiland_file_format
+   developers_guide/gui
 
 
 .. toctree::
