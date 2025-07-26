@@ -175,9 +175,12 @@ class GratingSurface(Surface):
         
         #grating period        
         pp = self.geometry.grating_period
+        
         #correct grating period considering projection effect on the surface
-        pp = pp/be.abs(nz)
+        pp = pp*be.sqrt(fy**2 + fz**2)/be.abs(fy)
+        
         m = self.geometry.grating_order
+        
         rays.gratingdiffract(nx, ny, nz, fx, fy, fz,m, pp, n1, n2, self.is_reflective)
 
         # if there is a surface scatter model, modify ray properties
