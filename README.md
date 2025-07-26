@@ -15,7 +15,7 @@
 </div>
 
 <div align="center">
-    <img src="docs/images/gui.png" alt="Optiland GUI" style="max-width: 100%; height: auto;">
+    <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/gui.png" alt="Optiland GUI" style="max-width: 100%; height: auto;">
   </a>
 </div>
 
