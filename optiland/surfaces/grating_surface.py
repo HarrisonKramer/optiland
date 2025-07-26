@@ -11,13 +11,7 @@ Kramer Harrison, 2023
 """
 
 import optiland.backend as be
-from optiland.coatings import BaseCoating, FresnelCoating
-from optiland.geometries import BaseGeometry
-from optiland.materials import BaseMaterial
-from optiland.physical_apertures import BaseAperture
-from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
-from optiland.scatter import BaseBSDF
 from optiland.surfaces.standard_surface import Surface
 
 
@@ -65,23 +59,6 @@ class GratingSurface(Surface):
             surface_type,
         )
         
-    def flip(self):
-        """Flips the surface, swapping materials and reversing geometry."""
-        self.material_pre, self.material_post = self.material_post, self.material_pre
-        self.geometry.flip()
-
-        if isinstance(self.coating, FresnelCoating):
-            self.set_fresnel_coating()
-        elif self.coating is not None and hasattr(self.coating, "flip"):
-            self.coating.flip()
-
-        self.reset()
-
-    def __init_subclass__(cls, **kwargs):
-        """Automatically register subclasses."""
-        super().__init_subclass__(**kwargs)
-        Surface._registry[cls.__name__] = cls
-
     def trace(self, rays: BaseRays):
         """Traces the given rays through the surface.
 
@@ -96,57 +73,6 @@ class GratingSurface(Surface):
             return self._trace_paraxial(rays)
         if isinstance(rays, RealRays):
             return self._trace_real(rays)
-
-    def set_semi_aperture(self, r_max: float):
-        """Sets the physical semi-aperture of the surface.
-
-        Args:
-            r_max (float): The maximum radius of the semi-aperture.
-
-        """
-        self.semi_aperture = r_max
-
-    def reset(self):
-        """Resets the recorded information of the surface."""
-        self.y = be.empty(0)
-        self.u = be.empty(0)
-        self.x = be.empty(0)
-        self.y = be.empty(0)
-        self.z = be.empty(0)
-
-        self.L = be.empty(0)
-        self.M = be.empty(0)
-        self.N = be.empty(0)
-
-        self.intensity = be.empty(0)
-        self.aoi = be.empty(0)
-        self.opd = be.empty(0)
-
-    def set_fresnel_coating(self):
-        """Sets the coating of the surface to a Fresnel coating."""
-        self.coating = FresnelCoating(self.material_pre, self.material_post)
-
-    def _record(self, rays):
-        """Records the ray information.
-
-        Args:
-            rays: The rays.
-
-        """
-        if isinstance(rays, ParaxialRays):
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.u = be.copy(be.atleast_1d(rays.u))
-        elif isinstance(rays, RealRays):
-            self.x = be.copy(be.atleast_1d(rays.x))
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.z = be.copy(be.atleast_1d(rays.z))
-
-            self.L = be.copy(be.atleast_1d(rays.L))
-            self.M = be.copy(be.atleast_1d(rays.M))
-            self.N = be.copy(be.atleast_1d(rays.N))
-
-            self.intensity = be.copy(be.atleast_1d(rays.i))
-            self.opd = be.copy(be.atleast_1d(rays.opd))
 
     def _interact(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting
@@ -204,6 +130,8 @@ class GratingSurface(Surface):
 
     def _trace_paraxial(self, rays: ParaxialRays):
         """Traces paraxial rays through the surface.
+        
+        Note: To be modified for grating
 
         Args:
             ParaxialRays: The paraxial rays to be traced.
@@ -279,76 +207,3 @@ class GratingSurface(Surface):
 
         return rays
 
-    def is_rotationally_symmetric(self):
-        """Returns True if the surface is rotationally symmetric, False otherwise."""
-        if not self.geometry.is_symmetric:
-            return False
-
-        cs = self.geometry.cs
-        return not (cs.rx != 0 or cs.ry != 0 or cs.x != 0 or cs.y != 0)
-
-    def to_dict(self):
-        """Returns a dictionary representation of the surface."""
-        return {
-            "type": self.__class__.__name__,
-            "geometry": self.geometry.to_dict(),
-            "material_pre": self.material_pre.to_dict(),
-            "material_post": self.material_post.to_dict(),
-            "is_stop": self.is_stop,
-            "aperture": self.aperture.to_dict() if self.aperture else None,
-            "coating": self.coating.to_dict() if self.coating else None,
-            "bsdf": self.bsdf.to_dict() if self.bsdf else None,
-            "is_reflective": self.is_reflective,
-        }
-
-    @classmethod
-    def from_dict(cls, data):
-        """Creates a surface from a dictionary representation.
-
-        Args:
-            data (dict): The dictionary representation of the surface.
-
-        Returns:
-            Surface: The surface.
-
-        """
-        if "type" not in data:
-            raise ValueError("Missing 'type' field.")
-
-        type_name = data["type"]
-        subclass = cls._registry.get(type_name, cls)
-        return subclass._from_dict(data)
-
-    @classmethod
-    def _from_dict(cls, data):
-        """Protected deserialization logic for direct initialization.
-
-        Args:
-            data (dict): The dictionary representation of the surface.
-
-        Returns:
-            Surface: The surface.
-
-        """
-        surface_type = data.get("type")
-        geometry = BaseGeometry.from_dict(data["geometry"])
-        material_pre = BaseMaterial.from_dict(data["material_pre"])
-        material_post = BaseMaterial.from_dict(data["material_post"])
-        aperture = (
-            BaseAperture.from_dict(data["aperture"]) if data["aperture"] else None
-        )
-        coating = BaseCoating.from_dict(data["coating"]) if data["coating"] else None
-        bsdf = BaseBSDF.from_dict(data["bsdf"]) if data["bsdf"] else None
-
-        surface_class = cls._registry.get(surface_type, cls)
-
-        return surface_class(
-            geometry,
-            material_pre,
-            material_post,
-            data["is_stop"],
-            aperture,
-            coating,
-            bsdf,
-            data["is_reflective"],
-        )
