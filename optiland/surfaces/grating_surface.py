@@ -70,9 +70,9 @@ class GratingSurface(Surface):
         )
         self.grating_order = be.array(grating_order)
         self.grating_period = be.array(grating_period)
-        self.groove_orientation_angle = be.array(groove_orientation_angle)
+        self.groove_orientation_angle = be.radians(be.array(groove_orientation_angle))
 
-    def _compute_tangent_to_grooves(self, rays, nx, ny, nz):
+    def _compute_tangent_to_grooves(self, nx, ny, nz):
         """Computes a unit vector tangent to the grating grooves.
 
         This method calculates the direction of the grating grooves on the
@@ -80,7 +80,6 @@ class GratingSurface(Surface):
         on the tangent plane and rotates it by the groove orientation angle.
 
         Args:
-            rays (RealRays): The rays interacting with the surface.
             nx (be.ndarray): The x-component of the surface normal vector.
             ny (be.ndarray): The y-component of the surface normal vector.
             nz (be.ndarray): The z-component of the surface normal vector.
@@ -127,14 +126,13 @@ class GratingSurface(Surface):
 
         return t_groove_x, t_groove_y, t_groove_z
 
-    def _compute_grating_vector(self, rays, nx, ny, nz):
+    def _compute_grating_vector(self, nx, ny, nz):
         """Computes the grating vector.
 
         The grating vector is perpendicular to both the surface normal and the
         grating grooves. It lies in the tangent plane of the surface.
 
         Args:
-            rays (RealRays): The rays interacting with the surface.
             nx (be.ndarray): The x-component of the surface normal vector.
             ny (be.ndarray): The y-component of the surface normal vector.
             nz (be.ndarray): The z-component of the surface normal vector.
@@ -145,7 +143,7 @@ class GratingSurface(Surface):
         """
         # tangent to the grooves
         t_groove_x, t_groove_y, t_groove_z = self._compute_tangent_to_grooves(
-            rays, nx, ny, nz
+            nx, ny, nz
         )
 
         # grating vector is the cross product of normal and tangent
@@ -179,7 +177,8 @@ class GratingSurface(Surface):
         n2 = self.material_post.n(rays.w)
 
         # grating vector
-        fx, fy, fz = self._compute_grating_vector(rays, nx, ny, nz)
+        fx, fy, fz = self._compute_grating_vector(nx, ny, nz)
+        print(fx, fy, fz)
 
         # diffraction order and period
         m = self.grating_order
