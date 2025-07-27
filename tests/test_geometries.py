@@ -760,14 +760,14 @@ class TestZernikeGeometry:
 def basic_toroid_geometry(set_test_backend):
     """Provides a basic ToroidalGeometry instance for testing"""
     cs = CoordinateSystem(x=0, y=0, z=0)
-    radius_rotation = 100.0  # R (X-Z radius)
-    radius_yz = 50.0  # R_y (Y-Z radius)
+    radius_x = 100.0  # R (X-Z radius)
+    radius_y = 50.0  # R_y (Y-Z radius)
     conic = -0.5  # k_yz (YZ conic)
     coeffs_poly_y = [1e-5]
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=radius_rotation,
-        radius_yz=radius_yz,
+        radius_x=radius_x,
+        radius_y=radius_y,
         conic=conic,
         coeffs_poly_y=coeffs_poly_y,
     )
@@ -777,13 +777,13 @@ def basic_toroid_geometry(set_test_backend):
 def cylinder_x_geometry(set_test_backend):
     """Provides a cylindrical geometry (flat in X). R_rot = inf"""
     cs = CoordinateSystem(x=0, y=0, z=0)
-    radius_rotation = be.inf  # Flat in X-Z plane
-    radius_yz = -50.0
+    radius_x = be.inf  # Flat in X-Z plane
+    radius_y = -50.0
     conic = 0.0
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=radius_rotation,
-        radius_yz=radius_yz,
+        radius_x=radius_x,
+        radius_y=radius_y,
         conic=conic,
     )
 
@@ -792,13 +792,13 @@ def cylinder_x_geometry(set_test_backend):
 def cylinder_y_geometry(set_test_backend):
     """Provides a cylindrical geometry (flat in Y). R_yz = inf"""
     cs = CoordinateSystem(x=0, y=0, z=0)
-    radius_rotation = 100.0
-    radius_yz = be.inf  # Flat in Y-Z plane
+    radius_x = 100.0
+    radius_y = be.inf  # Flat in Y-Z plane
     conic = 0.0
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=radius_rotation,
-        radius_yz=radius_yz,
+        radius_x=radius_x,
+        radius_y=radius_y,
         conic=conic,
     )
 
@@ -809,8 +809,8 @@ def toroid_no_x_curvature_coeffs(set_test_backend):
     cs = CoordinateSystem(x=0, y=0, z=0)
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=be.inf,
-        radius_yz=50.0,
+        radius_x=be.inf,
+        radius_y=50.0,
         conic=-1.1,
         coeffs_poly_y=[1e-5, -2e-6],
     )
@@ -824,8 +824,8 @@ def toroid_no_y_curvature_coeffs(set_test_backend):
     cs = CoordinateSystem(x=0, y=0, z=0)
     return geometries.ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=100.0,
-        radius_yz=be.inf,  # No curvature in Y (base YZ curve is flat before polynomials)
+        radius_x=100.0,
+        radius_y=be.inf,  # No curvature in Y (base YZ curve is flat before polynomials)
         conic=-0.9,  # This k_yz will not be used if R_yz is inf for conic part
         coeffs_poly_y=[1e-5, -2e-6],
     )
@@ -837,8 +837,8 @@ class TestToroidalGeometry:
         cs = CoordinateSystem()
         geometry = geometries.ToroidalGeometry(
             cs,
-            radius_rotation=100.0,
-            radius_yz=50.0,
+            radius_x=100.0,
+            radius_y=50.0,
             conic=-0.5,
             coeffs_poly_y=[1e-5],
         )
@@ -987,7 +987,7 @@ class TestToroidalGeometry:
             thickness=5.0,
             material=IdealMaterial(n=1.5, k=0),
             is_stop=True,
-            radius=100.0,
+            radius_x=100.0,
             radius_y=50.0,
             conic=-0.5,
             toroidal_coeffs_poly_y=[0.05, 0.0002],
@@ -1127,19 +1127,210 @@ class TestToroidalGeometry:
         assert be.allclose(rays_out_xfan.M, zemax_M_out_xfan, rtol=1e-5, atol=1e-6)
         assert be.allclose(rays_out_xfan.N, zemax_N_out_xfan, rtol=1e-5, atol=1e-6)
 
+    def test_toroidal_ray_tracing_comparison_negRx(self, set_test_backend):
+        """
+        Traces rays through a single toroidal surface and compares output
+        with Zemax ray tracing data for the same system.
+        """
+        # --- System Setup ---
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(
+            index=1,
+            surface_type="toroidal",
+            thickness=7.0,
+            material="N-BK7",
+            is_stop=True,
+            radius_x=-50.0,
+            radius_y=40.0,
+            conic=-0.5,
+            toroidal_coeffs_poly_y=[5e-5, 5e-6],
+        )
+        lens.add_surface(index=2, thickness=70.0, material="air")
+        lens.add_surface(index=3)
+
+        lens.set_aperture(aperture_type="EPD", value=20.0)
+        lens.add_wavelength(value=0.550, is_primary=True)
+        lens.set_field_type("angle")
+        lens.add_field(y=0)
+
+        # --- SAG testing ---
+        x_coords = be.array([0.0, 2.5, 0.0, -2.5, 5.0, -5.0, 2.5, -2.5])
+        y_coords = be.array([0.0, 0.0, 2.5, 0.0, 2.5, -2.5, -2.5, 2.5])
+
+        # --- Zemax Sag Data ---
+        zemax_z_sag = be.array(
+            [
+                0.0,                      # (0, 0) - Vertex
+                -6.253911140455271E-002,  # (2.5, 0)
+                7.867099677109624E-002,   # (0, 2.5)
+                -6.253911140455271E-002,  # (-2.5, 0)
+                -1.715614452665938E-001,  # (5, 2.5)
+                -1.715614452665938E-001,  # (-5, -2.5)
+                1.623025381703616E-002,   # (2.5, -2.5)
+                1.623025381703616E-002,   # (-2.5, 2.5)
+            ]
+        )
+
+        # Calculate sag using Optiland
+        optiland_z_sag = lens.surface_group.surfaces[1].geometry.sag(x_coords, y_coords)
+
+        assert be.allclose(optiland_z_sag, zemax_z_sag, rtol=1e-5, atol=1e-6)
+
+
+
+
+        num_rays = 5  # Number of rays per fan
+        wavelength = 0.550
+        z_start = 0.0
+
+        # --- Tangential (Y) Fan Test ---
+        y_coords = be.linspace(-10.0, 10.0, num_rays)
+        x_in_yfan = be.zeros(num_rays)
+        y_in_yfan = y_coords
+        z_in_yfan = be.array([z_start] * num_rays)
+        L_in_yfan = be.zeros(num_rays)
+        M_in_yfan = be.zeros(num_rays)
+        N_in_yfan = be.ones(num_rays)
+        intensity_yfan = be.ones(num_rays)
+        rays_in_yfan = RealRays(
+            x=x_in_yfan,
+            y=y_in_yfan,
+            z=z_in_yfan,
+            L=L_in_yfan,
+            M=M_in_yfan,
+            N=N_in_yfan,
+            wavelength=wavelength,
+            intensity=intensity_yfan,
+        )
+
+        # Trace Y-Fan Rays
+        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+        print("Y-Fan Rays:")
+        print(rays_out_yfan.y)
+        zemax_x_out_yfan = be.array([0.0] * num_rays)
+        zemax_y_out_yfan = be.array(
+            [
+                4.842002236238105E-001,
+                -4.633747816929823E-002,
+                0,
+                4.633747816929823E-002,
+                -4.842002236238105E-001,
+            ]
+        )
+        zemax_z_out_yfan = be.array([77.0] * num_rays)
+        zemax_L_out_yfan = be.array([0.0] * num_rays)
+        zemax_M_out_yfan = be.array(
+            [
+                1.407949486740093E-001,
+                6.643870254059459E-002,
+                0.0,
+                -6.643870254059459E-002,
+                -1.407949486740093E-001,
+            ]
+        )
+        zemax_N_out_yfan = be.array(
+            [
+                9.900387782445106E-001,
+                9.977905084759640E-001,
+                1.0,
+                9.977905084759640E-001,
+                9.900387782445106E-001,
+            ]
+        )
+
+        # Comparison Assertions for Y-Fan
+        assert be.allclose(rays_out_yfan.x, zemax_x_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.y, zemax_y_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.z, zemax_z_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.L, zemax_L_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.M, zemax_M_out_yfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_yfan.N, zemax_N_out_yfan, rtol=1e-5, atol=1e-6)
+
+        # --- Surface Normal Comparison ---
+        geom = lens.surface_group.surfaces[1].geometry
+        # choose a test point or array of points
+        x_norm = be.array([2.5, -2.5, 2.5, -2.5])
+        y_norm = be.array([0.0, 0.0, -2.5, 2.5])
+        # Zemax reference normals at those (x, y) locations:
+        expected_nx = be.array([-4.999999999998470E-002, 4.999999999998470E-002, -4.982229052314893E-002, 4.982229052314893E-002])
+        expected_ny = be.array([0.0, 0.0, -6.299823835002263E-002, 6.299823835002263E-002])
+        expected_nz = be.array([-9.987492177719096E-001, -9.987492177719096E-001, -9.967692618313533E-001, -9.967692618313533E-001])
+        nx_calc, ny_calc, nz_calc = geom._surface_normal(x_norm, y_norm)
+        assert be.allclose(nx_calc, expected_nx, rtol=1e-5, atol=1e-6)
+        assert be.allclose(ny_calc, expected_ny, rtol=1e-5, atol=1e-6)
+        assert be.allclose(nz_calc, expected_nz, rtol=1e-5, atol=1e-6)
+
+        # --- Sagittal (X) Fan Test ---
+        x_coords = be.linspace(-10.0, 10.0, num_rays)
+        x_in_xfan = x_coords
+        y_in_xfan = be.zeros(num_rays)
+        z_in_xfan = be.array([z_start] * num_rays)
+        L_in_xfan = be.zeros(num_rays)
+        M_in_xfan = be.zeros(num_rays)
+        N_in_xfan = be.ones(num_rays)
+        intensity_xfan = be.ones(num_rays)
+        rays_in_xfan = RealRays(
+            x=x_in_xfan,
+            y=y_in_xfan,
+            z=z_in_xfan,
+            L=L_in_xfan,
+            M=M_in_xfan,
+            N=N_in_xfan,
+            wavelength=wavelength,
+            intensity=intensity_xfan,
+        )
+
+        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+
+        zemax_x_out_xfan = be.array(
+            [
+                -1.795367970779353E+001,
+                -8.895158024373812E+000,
+                0.0,
+                8.895158024373812E+000,
+                1.795367970779353E+001,
+            ]
+        )
+        zemax_y_out_xfan = be.array([0.0] * num_rays)
+        zemax_z_out_xfan = be.array([77.0] * num_rays)
+        zemax_L_out_xfan = be.array(
+            [
+                -1.050996348781765E-001,
+                -5.202386983944651E-002,
+                0.0,
+                5.202386983944651E-002,
+                1.050996348781765E-001,
+            ]
+        )
+        zemax_M_out_xfan = be.array([0.0] * num_rays)
+        zemax_N_out_xfan = be.array(
+            [
+                9.944616969740334E-001,
+                9.986458416109926E-001,
+                1.0,
+                9.986458416109926E-001,
+                9.944616969740334E-001,
+            ]
+        )
+
+        assert be.allclose(rays_out_xfan.x, zemax_x_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.y, zemax_y_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.z, zemax_z_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.L, zemax_L_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.M, zemax_M_out_xfan, rtol=1e-5, atol=1e-6)
+        assert be.allclose(rays_out_xfan.N, zemax_N_out_xfan, rtol=1e-5, atol=1e-6)
+
     def test_toroidal_to_dict(self, basic_toroid_geometry, set_test_backend):
         """Test serialization to dictionary."""
         geom_dict = basic_toroid_geometry.to_dict()
         assert geom_dict["type"] == "ToroidalGeometry"
         assert geom_dict["geometry_type"] == "Toroidal"
-        assert geom_dict["radius_rotation"] == 100.0
-        assert geom_dict["radius_yz"] == 50.0
+        assert geom_dict["radius_x"] == 100.0
+        assert geom_dict["radius_y"] == 50.0
         assert geom_dict["conic_yz"] == -0.5
         assert geom_dict["coeffs_poly_y"] == pytest.approx([1e-5])
 
-        assert "radius" not in geom_dict
-        assert "conic" not in geom_dict
-        assert "coefficients" not in geom_dict
 
     def test_toroidal_from_dict(self, basic_toroid_geometry, set_test_backend):
         """Test deserialization from dictionary."""
@@ -1154,7 +1345,7 @@ class TestToroidalGeometry:
         invalid_dict = {
             "type": "ToroidalGeometry",
             "cs": cs.to_dict(),
-            # Missing radius_rotation, radius_yz
+            # Missing radius_x, radius_y
         }
         with pytest.raises(ValueError):
             geometries.ToroidalGeometry.from_dict(invalid_dict)

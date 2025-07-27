@@ -115,34 +115,55 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         return self._surface_normal(rays.x, rays.y)
 
     def distance(self, rays):
-        """Calculates the distance between the geometry and the given ray
-        positions.
-
-        Note:
-            This function uses the Newton-Raphson method for ray tracing.
+        """
+        Calculates the distance from the ray origin to the surface intersection
+        using a robust Newton-Raphson method. This version uses the base conic
+        intersection as a strong initial guess.
 
         Args:
             rays (RealRays): The rays used for calculating distance.
 
         Returns:
-            be.ndarray: An array of distances from each ray's current position
-            to its intersection point with the geometry.
-
+            be.ndarray: An array of propagation distances 't' from each ray's
+            current position to its intersection point with the geometry.
         """
-        x, y, z = self._intersection(rays)
-        intersections = be.column_stack((x, y, z))
-        ray_directions = be.column_stack((rays.L, rays.M, rays.N))
+        # better initial guess for the propagation distance 't' by
+        # intersecting with the base conic surface.
+        t = super().distance(rays)
 
+        # Newton-Raphson method to refine the intersection point
         for _ in range(self.max_iter):
-            z_surface = self.sag(intersections[:, 0], intersections[:, 1])
-            dz = intersections[:, 2] - z_surface
-            distance = dz / ray_directions[:, 2]
-            intersections = intersections - distance[:, None] * ray_directions
-            if be.max(be.abs(dz)) < self.tol:
+            # current intersection point P(t) = P0 + t*D
+            x_int = rays.x + t * rays.L
+            y_int = rays.y + t * rays.M
+            z_int = rays.z + t * rays.N
+
+            # error function f(t) = sag(x(t), y(t)) - z(t)
+            # find the root t such that f(t) = 0
+            f_t = self.sag(x_int, y_int) - z_int
+
+            # convergence check
+            if be.max(be.abs(f_t)) < self.tol:
                 break
 
-        position = be.column_stack((rays.x, rays.y, rays.z))
-        return be.linalg.norm(intersections - position, axis=1)
+            # derivative of the error func at the
+            # curr intersection point
+            # f'(t) = (d_sag/d_x)*Lx + (d_sag/d_y)*My - Nz
+            nx, ny, nz = self._surface_normal(x_int, y_int)
+
+            # normalized normal components:
+            # fx = -nx / nz and fy = -ny / nz.
+            nz_safe = be.where(be.abs(nz) > 1e-14, nz, 1e-14)
+            fx = -nx / nz_safe
+            fy = -ny / nz_safe
+
+            df_dt = fx * rays.L + fy * rays.M - rays.N
+
+            # update step: t_new = t - f(t) / f'(t).
+            safe_df_dt = be.where(be.abs(df_dt) > 1e-14, df_dt, 1e-14)
+            t = t - f_t / safe_df_dt
+
+        return t
 
     def _intersection_plane(self, rays):
         """Calculates the intersection points of the rays with a plane (z=0).
