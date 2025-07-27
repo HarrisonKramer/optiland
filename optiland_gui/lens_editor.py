@@ -7,14 +7,19 @@ such as radius, thickness, and material.
 Author: Manuel Fragata Mendes, 2025
 """
 
-from PySide6.QtCore import QEvent, Qt, Slot
+from PySide6.QtCore import QEvent, Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QFormLayout,
     QHBoxLayout,
     QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMenu,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -22,65 +27,138 @@ from PySide6.QtWidgets import (
 from .optiland_connector import OptilandConnector
 
 
+class SurfacePropertiesWidget(QWidget):
+    """A widget to display and edit specific parameters of a surface geometry."""
+
+    def __init__(self, row, connector, parent=None):
+        super().__init__(parent)
+        self.row = row
+        self.connector = connector
+        self.setObjectName("SurfacePropertiesWidget")
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(15, 8, 15, 8)
+        self.form_layout = QFormLayout()
+        self.form_layout.setHorizontalSpacing(15)
+        self.form_layout.setVerticalSpacing(5)
+        main_layout.addLayout(self.form_layout)
+
+        self.input_widgets = {}
+        params = self.connector.get_surface_geometry_params(self.row)
+
+        if not params:
+            self.form_layout.addRow(
+                QLabel("No additional properties for this surface type.")
+            )
+
+        for name, value in params.items():
+            label_text = name + ":"
+            line_edit = QLineEdit()
+            line_edit.setMaximumWidth(200)  # Shorter text boxes
+
+            if isinstance(value, (list, tuple)) or hasattr(value, "tolist"):
+                list_val = value.tolist() if hasattr(value, "tolist") else value
+                line_edit.setText(str(list_val))
+                line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
+            else:
+                line_edit.setText(f"{value:.6f}")
+
+            line_edit.editingFinished.connect(self.apply_changes)  # Auto-apply
+            self.form_layout.addRow(label_text, line_edit)
+            self.input_widgets[name] = line_edit
+
+    @Slot()
+    def apply_changes(self):
+        """Collects data from input fields and sends it to the connector."""
+        params_to_set = {}
+        for name, widget in self.input_widgets.items():
+            params_to_set[name] = widget.text()
+        self.connector.set_surface_geometry_params(self.row, params_to_set)
+
+
+class SurfaceTypeWidget(QWidget):
+    """A custom widget for the 'Type' column, allowing text edit and dropdown."""
+
+    surfaceTypeChanged = Signal(str)
+
+    def __init__(self, row, current_type_info, connector, parent=None):
+        super().__init__(parent)
+        self.row = row
+        self.connector = connector
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(2, 0, 2, 0)
+        self.layout.setSpacing(4)
+        self.type_button = QToolButton()
+        self.type_button.setObjectName("SurfaceTypeButton")
+        self.type_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.type_button.setFixedSize(18, 18)
+        self.type_button.setAutoRaise(True)
+        self.type_edit = QLineEdit(current_type_info["display_text"])
+        self.type_edit.setObjectName("SurfaceTypeLineEdit")
+        self.type_edit.editingFinished.connect(self.text_changed)
+        self.layout.addWidget(self.type_button)
+        self.layout.addWidget(self.type_edit, 1)
+        self.surface_menu = QMenu(self)
+        self.surface_menu.setObjectName("SurfaceTypeMenu")
+        for surf_type in self.connector.get_available_surface_types():
+            action = self.surface_menu.addAction(surf_type.title())
+            action.triggered.connect(
+                lambda checked=False, t=surf_type: self.type_selected(t)
+            )
+        self.type_button.setMenu(self.surface_menu)
+        is_editable = current_type_info["is_changeable"]
+        self.type_button.setEnabled(is_editable)
+        self.type_button.setVisible(is_editable)
+        self.type_edit.setReadOnly(not is_editable)
+
+    def type_selected(self, new_type):
+        self.type_edit.setText(new_type.title())
+        self.surfaceTypeChanged.emit(new_type)
+
+    def text_changed(self):
+        new_type = self.type_edit.text()
+        if new_type.lower().strip() in self.connector.get_available_surface_types():
+            self.surfaceTypeChanged.emit(new_type)
+        else:
+            type_info = self.connector.get_surface_type_info(self.row)
+            self.type_edit.setText(type_info["display_text"])
+
+
 class LensEditor(QWidget):
-    """A widget for editing the properties of an optical system's surfaces.
-
-    The LensEditor displays optical system data in a table, allowing users to
-    view and modify surface parameters. It interacts with an `OptilandConnector`
-    to synchronize data with the underlying optical model. It also provides
-    controls for adding and removing surfaces.
-
-    Attributes:
-        connector (OptilandConnector): The connector to the Optiland backend.
-        tableWidget (QTableWidget): The table displaying the lens data.
-    """
+    """A widget for editing the properties of an optical system's surfaces."""
 
     def __init__(self, connector: OptilandConnector, parent=None):
-        """Initializes the LensEditor widget.
-
-        Args:
-            connector: The `OptilandConnector` instance for backend communication.
-            parent: The parent widget, if any.
-        """
         super().__init__(parent)
         self.connector = connector
         self.setWindowTitle("Lens Editor")
-
+        self.open_prop_source_row = -1
         self.layout = QVBoxLayout(self)
-
         self.tableWidget = QTableWidget()
         self.tableWidget.installEventFilter(self)
+        self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.layout.addWidget(self.tableWidget)
-
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
         self.btnRemoveSurface = QPushButton("Remove Surface")
         self.buttonLayout.addWidget(self.btnAddSurface)
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
-
         self.setup_table()
         self.load_data()
+        self.connect_signals()
 
+    def connect_signals(self):
         self.btnAddSurface.clicked.connect(self.add_surface_handler)
         self.btnRemoveSurface.clicked.connect(self.remove_surface_handler)
         self.tableWidget.itemChanged.connect(self.on_item_changed_handler)
-
+        self.tableWidget.customContextMenuRequested.connect(self.show_context_menu)
+        self.tableWidget.itemSelectionChanged.connect(self.update_headers_on_selection)
         self.connector.opticLoaded.connect(self.full_refresh_from_optic)
-        self.connector.surfaceDataChanged.connect(self.update_cell_from_connector)
-        self.connector.surfaceCountChanged.connect(self.full_refresh_from_optic)
         self.connector.opticChanged.connect(self.full_refresh_from_optic)
 
     def setup_table(self):
-        """Sets up the table's headers and initial configuration.
-
-        This method configures the table's column headers based on data from the
-        connector and sets initial properties like selection behavior and resize modes.
-        """
         self.tableWidget.blockSignals(True)
-        headers = self.connector.get_column_headers()
-        self.tableWidget.setColumnCount(len(headers))
-        self.tableWidget.setHorizontalHeaderLabels(headers)
+        self.tableWidget.setColumnCount(len(self.connector.get_column_headers()))
         self.tableWidget.setSelectionBehavior(
             QAbstractItemView.SelectionBehavior.SelectRows
         )
@@ -90,146 +168,167 @@ class LensEditor(QWidget):
         self.tableWidget.blockSignals(False)
 
     def eventFilter(self, source, event):
-        """Intercepts key presses on the table to handle shortcuts.
-
-        This event filter listens for `Insert` and `Delete` key presses on the
-        table widget to trigger the addition or removal of surfaces, providing
-        keyboard shortcuts for these common actions.
-
-        Args:
-            source: The object that generated the event.
-            event: The event that occurred.
-
-        Returns:
-            bool: True if the event was handled, otherwise calls the base
-                    class implementation.
-        """
         if source is self.tableWidget and event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Insert:
                 self.add_surface_handler()
                 return True
-            elif event.key() == Qt.Key_Delete:
+            if event.key() == Qt.Key_Delete:
                 self.remove_surface_handler()
                 return True
-
         return super().eventFilter(source, event)
+
+    def map_ui_row_to_surface_index(self, ui_row):
+        if self.open_prop_source_row != -1 and ui_row > self.open_prop_source_row:
+            return ui_row - 1
+        return ui_row
+
+    def map_surface_index_to_ui_row(self, surface_index):
+        if (
+            self.open_prop_source_row != -1
+            and surface_index > self.open_prop_source_row
+        ):
+            return surface_index + 1
+        return surface_index
 
     @Slot()
     def full_refresh_from_optic(self):
-        """Fully refreshes the editor by reloading all data from the optic.
-
-        This slot is connected to signals indicating a major change in the optical
-        system (e.g., a new file loaded, surface count changed). It re-initializes
-        the table structure and reloads all data.
-        """
-        self.setup_table()
         self.load_data()
+        self.update_headers_on_selection()
 
     @Slot()
     def load_data(self):
-        """Populates the table with the current surface data from the connector.
-
-        This method clears the table and fills it with the latest data from the
-        optical system via the `OptilandConnector`. It also sets item flags to
-        make certain cells (like object/image surface properties) non-editable.
-        """
         self.tableWidget.blockSignals(True)
         self.tableWidget.setRowCount(0)
         num_surfaces = self.connector.get_surface_count()
         self.tableWidget.setRowCount(num_surfaces)
 
-        headers = self.connector.get_column_headers()
-        self.tableWidget.setColumnCount(len(headers))
-        self.tableWidget.setHorizontalHeaderLabels(headers)
-
         for r in range(num_surfaces):
-            for c_idx, header in enumerate(headers):
-                item_data = self.connector.get_surface_data(r, c_idx)
-                item = QTableWidgetItem(str(item_data) if item_data is not None else "")
-                is_obj_or_img = r == 0 or r == num_surfaces - 1
-                if is_obj_or_img and header in [
-                    "Radius",
-                    "Thickness",
-                    "Material",
-                    "Conic",
-                    "Semi-Diameter",
-                ]:
-                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                if r == num_surfaces - 1 and header == "Thickness":
-                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.tableWidget.setVerticalHeaderItem(r, QTableWidgetItem(str(r + 1)))
+            for c_idx, header in enumerate(self.connector.get_column_headers()):
+                if c_idx == self.connector.COL_TYPE:
+                    type_info = self.connector.get_surface_type_info(r)
+                    widget = SurfaceTypeWidget(r, type_info, self.connector)
+                    widget.surfaceTypeChanged.connect(
+                        lambda nt, row=r: self.connector.set_surface_type(row, nt)
+                    )
+                    self.tableWidget.setCellWidget(r, c_idx, widget)
+                else:
+                    item_data = self.connector.get_surface_data(r, c_idx)
+                    item = QTableWidgetItem(
+                        str(item_data) if item_data is not None else ""
+                    )
+                    is_obj_or_img = r == 0 or r == num_surfaces - 1
+                    if (
+                        is_obj_or_img
+                        and header
+                        in ["Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]
+                    ) or (r == num_surfaces - 1 and header == "Thickness"):
+                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.tableWidget.setItem(r, c_idx, item)
 
-                self.tableWidget.setItem(r, c_idx, item)
+        if self.open_prop_source_row != -1 and self.open_prop_source_row < num_surfaces:
+            self._insert_properties_widget(self.open_prop_source_row)
+
         self.tableWidget.blockSignals(False)
+
+    def _insert_properties_widget(self, source_row):
+        prop_row_index = source_row + 1
+        self.tableWidget.insertRow(prop_row_index)
+        self.tableWidget.setVerticalHeaderItem(prop_row_index, QTableWidgetItem(""))
+        prop_widget = SurfacePropertiesWidget(source_row, self.connector)
+        self.tableWidget.setCellWidget(prop_row_index, 0, prop_widget)
+        self.tableWidget.setSpan(prop_row_index, 0, 1, self.tableWidget.columnCount())
+        self.tableWidget.resizeRowToContents(prop_row_index)
+
+    @Slot()
+    def update_headers_on_selection(self):
+        selected_items = self.tableWidget.selectedItems()
+        row = (
+            self.tableWidget.currentRow()
+            if not selected_items
+            else selected_items[0].row()
+        )
+        surface_index = self.map_ui_row_to_surface_index(row)
+        headers = self.connector.get_column_headers(surface_index)
+        self.tableWidget.setHorizontalHeaderLabels(headers)
 
     @Slot(QTableWidgetItem)
     def on_item_changed_handler(self, item: QTableWidgetItem):
-        """Handles changes made to a table item by the user.
-
-        This slot is triggered when the user edits a cell in the table. It sends
-        the updated value to the `OptilandConnector` to modify the underlying
-        optical model.
-
-        Args:
-            item: The `QTableWidgetItem` that was changed.
-        """
         if not self.tableWidget.signalsBlocked():
-            row = item.row()
-            col = item.column()
-            new_value_str = item.text()
-            print(
-                f"LensEditor: Item changed by user at "
-                f"({row},{col}) to '{new_value_str}'"
+            surface_index = self.map_ui_row_to_surface_index(item.row())
+            self.connector.set_surface_data(surface_index, item.column(), item.text())
+
+    @Slot()
+    def add_surface_handler(self, surface_index_to_add_before=None):
+        if surface_index_to_add_before is not None:
+            self.connector.add_surface(index=surface_index_to_add_before)
+        else:
+            ui_row = self.tableWidget.currentRow()
+            surface_index = self.map_ui_row_to_surface_index(ui_row)
+            insert_pos = (
+                surface_index + 1
+                if ui_row != -1
+                else self.connector.get_surface_count() - 1
             )
-            self.connector.set_surface_data(row, col, new_value_str)
-
-    @Slot(int, int, object)
-    def update_cell_from_connector(self, row, col, new_value_display_text):
-        """Updates a single cell in the table with a new value from the backend.
-
-        This slot is connected to a signal from the `OptilandConnector` and is
-        called when a property changes in the backend. This ensures the UI stays
-        in sync with the model state.
-
-        Args:
-            row (int): The row index of the cell to update.
-            col (int): The column index of the cell to update.
-            new_value_display_text (object): The new value to display in the cell.
-        """
-        self.tableWidget.blockSignals(True)
-        if (
-            0 <= row < self.tableWidget.rowCount()
-            and 0 <= col < self.tableWidget.columnCount()
-        ):
-            item = self.tableWidget.item(row, col)
-            if item:
-                item.setText(str(new_value_display_text))
-            else:
-                new_item = QTableWidgetItem(str(new_value_display_text))
-                self.tableWidget.setItem(row, col, new_item)
-        self.tableWidget.blockSignals(False)
+            self.connector.add_surface(index=insert_pos)
 
     @Slot()
-    def add_surface_handler(self):
-        """Adds a new surface to the optical system.
+    def remove_surface_handler(self, surface_index_to_remove=None):
+        if surface_index_to_remove is None:
+            ui_row = self.tableWidget.currentRow()
+            if ui_row == -1:
+                return
+            surface_index_to_remove = self.map_ui_row_to_surface_index(ui_row)
 
-        This slot is connected to the 'Add Surface' button. It determines the
-        correct insertion index based on the user's selection and requests the
-        `OptilandConnector` to add a new surface at that position.
-        """
-        current_row = self.tableWidget.currentRow()
-        insert_pos_lde = (
-            current_row + 1 if current_row != -1 else self.tableWidget.rowCount()
+        if self.open_prop_source_row == surface_index_to_remove:
+            self.open_prop_source_row = -1  # Close properties if its owner is removed
+
+        self.connector.remove_surface(surface_index_to_remove)
+
+    @Slot()
+    def toggle_properties_widget(self, source_row):
+        self.open_prop_source_row = (
+            -1 if self.open_prop_source_row == source_row else source_row
         )
-        self.connector.add_surface(index=insert_pos_lde)
+        self.load_data()
 
-    @Slot()
-    def remove_surface_handler(self):
-        """Removes the selected surface from the optical system.
+    @Slot("QPoint")
+    def show_context_menu(self, pos):
+        ui_row = self.tableWidget.rowAt(pos.y())
+        if ui_row < 0:
+            return
 
-        This slot is connected to the 'Remove Surface' button. It removes the
-        currently selected row (surface) from the optical system via the
-        `OptilandConnector`.
-        """
-        current_row = self.tableWidget.currentRow()
-        if current_row != -1:
-            self.connector.remove_surface(current_row)
+        is_prop_widget_row = (
+            self.open_prop_source_row != -1 and ui_row == self.open_prop_source_row + 1
+        )
+
+        surface_index = self.map_ui_row_to_surface_index(ui_row)
+
+        menu = QMenu(self)
+        menu.setObjectName("LDEContextMenu")
+
+        if not is_prop_widget_row:
+            add_above = menu.addAction("Add Surface Above")
+            add_above.triggered.connect(lambda: self.add_surface_handler(surface_index))
+            remove_action = menu.addAction("Remove Current Surface")
+            remove_action.triggered.connect(
+                lambda: self.remove_surface_handler(surface_index)
+            )
+            menu.addSeparator()
+            props_action = menu.addAction("Surface Properties")
+            props_action.triggered.connect(
+                lambda: self.toggle_properties_widget(surface_index)
+            )
+            editor_action = menu.addAction("Surface Editor (WIP)")
+            editor_action.setEnabled(False)
+
+            is_obj_or_img = (surface_index == 0) or (
+                surface_index == self.connector.get_surface_count() - 1
+            )
+            if is_obj_or_img:
+                if surface_index == 0:
+                    add_above.setEnabled(False)
+                remove_action.setEnabled(False)
+                props_action.setEnabled(False)
+
+        menu.exec(self.tableWidget.viewport().mapToGlobal(pos))
