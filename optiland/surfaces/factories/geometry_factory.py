@@ -271,6 +271,20 @@ def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
     return _create_plane(cs, config)
 
 
+def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a grating geometry.
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        Plane or StandardGeometry
+    """
+    return _create_standard(cs, config)
+
+
 geometry_mapper = {
     "biconic": _create_biconic,
     "chebyshev": _create_chebyshev,
@@ -281,6 +295,7 @@ geometry_mapper = {
     "standard": _create_standard,
     "toroidal": _create_toroidal,
     "zernike": _create_zernike,
+    "grating": _create_grating,
 }
 
 
