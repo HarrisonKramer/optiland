@@ -178,7 +178,6 @@ class GratingSurface(Surface):
 
         # grating vector
         fx, fy, fz = self._compute_grating_vector(nx, ny, nz)
-        print(fx, fy, fz)
 
         # diffraction order and period
         m = self.grating_order
