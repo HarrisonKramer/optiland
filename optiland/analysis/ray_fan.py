@@ -51,7 +51,11 @@ class RayFan(BaseAnalysis):
 
         super().__init__(optic, wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(10, 3.33)):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (10, 3.33),
+    ):
         """
         Displays the ray fan plot, either in a new window or on a provided GUI figure.
         """
@@ -137,11 +141,9 @@ class RayFan(BaseAnalysis):
                 )
 
         current_fig.tight_layout()
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, current_fig.get_axes()
 
     def _generate_data(self):
         """Generates the ray fan data.
