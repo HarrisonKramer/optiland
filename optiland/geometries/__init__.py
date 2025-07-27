@@ -9,10 +9,8 @@ from .even_asphere import EvenAsphere
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
-from .plane_grating import PlaneGrating
 from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
-from .standard_grating import StandardGratingGeometry
 from .toroidal import ToroidalGeometry
 from .zernike import ZernikePolynomialGeometry, factorial
 
@@ -31,14 +29,10 @@ __all__ = [
     "OddAsphere",
     # From plane.py
     "Plane",
-    # From plane_grating.py
-    "PlaneGrating",
     # From polynomial.py
     "PolynomialGeometry",
     # From standard.py
     "StandardGeometry",
-    # From standard_grating.py
-    "StandardGratingGeometry",
     # From toroidal.py
     "ToroidalGeometry",
     # From zernike.py
