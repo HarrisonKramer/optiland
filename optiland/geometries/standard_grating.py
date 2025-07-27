@@ -189,7 +189,7 @@ class StandardGratingGeometry(BaseGeometry):
         fy = -nx*tz + nz*tx
         fz = nx*ty - ny*tx
         
-        return fx, fy, fz
+        return -fx, -fy, -fz
 
     def to_dict(self):
         """Convert the geometry to a dictionary.
