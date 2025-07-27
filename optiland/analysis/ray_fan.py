@@ -58,6 +58,14 @@ class RayFan(BaseAnalysis):
     ):
         """
         Displays the ray fan plot, either in a new window or on a provided GUI figure.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple[float, float], optional): The size of the figure.
+                Defaults to (10, 3.33).
+        Returns:
+            tuple: The current figure and its axes.
         """
         is_gui_embedding = fig_to_plot_on is not None
         num_fields = len(self.fields)
