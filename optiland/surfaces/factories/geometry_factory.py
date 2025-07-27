@@ -162,6 +162,7 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         config.coefficients,
     )
 
+
 def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a grating geometry
@@ -175,7 +176,7 @@ def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
     """
     # Use a Plane if the radius is infinity.
     if be.isinf(config.radius):
-        return PlaneGrating(cs,config.grating_order,config.grating_period)    
+        return PlaneGrating(cs, config.grating_order, config.grating_period)
     return StandardGratingGeometry(
         cs,
         config.radius,
@@ -183,6 +184,7 @@ def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
         config.grating_period,
         config.conic,
     )
+
 
 def _create_chebyshev(cs: CoordinateSystem, config: GeometryConfig):
     """

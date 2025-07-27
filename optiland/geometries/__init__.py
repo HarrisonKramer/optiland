@@ -38,7 +38,7 @@ __all__ = [
     # From standard.py
     "StandardGeometry",
     # From standard_grating.py
-    "StandardGratingGeometry",    
+    "StandardGratingGeometry",
     # From toroidal.py
     "ToroidalGeometry",
     # From zernike.py
