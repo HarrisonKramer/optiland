@@ -13,7 +13,7 @@ where:
 - k is the conic constant for the YZ curve
 - alpha_i are polynomial coefficients for the YZ curve (powers y^2, y^4, ...)
 
-Manuel Fragata Mendes, 2024
+Last Corrected by Manuel Fragata Mendes, July 2025
 """
 
 import optiland.backend as be
