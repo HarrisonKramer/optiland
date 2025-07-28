@@ -32,10 +32,10 @@ class RmsSpotSizeVsField(SpotDiagram):
     def __init__(
         self,
         optic,
-        num_fields=64,
+        num_fields: int = 64,
         wavelengths="all",
-        num_rings=6,
-        distribution="hexapolar",
+        num_rings: int = 6,
+        distribution: str = "hexapolar",
     ):
         self.num_fields = num_fields
         fields = [(0, Hy) for Hy in be.linspace(0, 1, num_fields)]
@@ -44,8 +44,35 @@ class RmsSpotSizeVsField(SpotDiagram):
         self._field = be.array(fields)
         self._spot_size = be.array(self.rms_spot_radius())
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
-        """View the RMS spot size versus field coordinate."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """
+        Plots the RMS spot size versus the normalized Y field coordinate for each
+        analysis wavelength.
+
+        Parameters
+        ----------
+        fig_to_plot_on : plt.Figure, optional
+            An existing matplotlib Figure to plot on. If provided, the plot will be
+            embedded in this figure.
+            If None (default), a new figure will be created.
+        figsize : tuple of float, optional
+            Size of the figure to create if `fig_to_plot_on` is None.
+            Default is (7, 4.5).
+
+        Returns
+        -------
+        tuple[plt.Figure, plt.Axes]
+            The matplotlib Figure and Axes objects containing the plot.
+
+        Notes
+        -----
+        - Each wavelength's RMS spot size is plotted as a separate line for clarity
+        and legend handling.
+        - The legend is placed outside the plot area for better readability.
+        - The method is suitable for both standalone plotting and GUI embedding.
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -74,11 +101,9 @@ class RmsSpotSizeVsField(SpotDiagram):
         ax.grid()
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
 
 class RmsWavefrontErrorVsField(Wavefront):
@@ -100,10 +125,10 @@ class RmsWavefrontErrorVsField(Wavefront):
     def __init__(
         self,
         optic,
-        num_fields=32,
-        wavelengths="all",
-        num_rays=12,
-        distribution="hexapolar",
+        num_fields: int = 32,
+        wavelengths: str = "all",
+        num_rays: int = 12,
+        distribution: str = "hexapolar",
     ):
         self.num_fields = num_fields
         fields = [(0, Hy) for Hy in be.linspace(0, 1, num_fields)]
@@ -112,7 +137,9 @@ class RmsWavefrontErrorVsField(Wavefront):
         self._field = be.array(fields)
         self._wavefront_error = be.array(self._rms_wavefront_error())
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
         """View the RMS wavefront error versus field coordinate."""
         is_gui_embedding = fig_to_plot_on is not None
 
@@ -141,11 +168,9 @@ class RmsWavefrontErrorVsField(Wavefront):
         ax.grid()
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""

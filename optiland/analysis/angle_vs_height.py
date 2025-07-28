@@ -12,6 +12,7 @@ import abc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
+from matplotlib.colors import Colormap
 
 import optiland.backend as be
 
@@ -19,8 +20,15 @@ from .base import BaseAnalysis
 
 
 def _plot_angle_vs_height(
-    plot_data_list, axis, optic_name, plot_style, ax, title, color_label, cmap
-):
+    plot_data_list: list,
+    axis: int,
+    optic_name: str,
+    plot_style: str,
+    ax: plt.Axes,
+    title: str | None,
+    color_label: str,
+    cmap: str | Colormap,
+) -> None:
     """Helper function to generate a consistent angle vs. image
     height plot on a given axis.
 
@@ -105,10 +113,10 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        num_points: int = 128,
     ):
         self.surface_idx = surface_idx
         self.axis = axis
@@ -211,12 +219,12 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
     def view(
         self,
-        fig_to_plot_on=None,
-        figsize=(8, 5.5),
-        title=None,
-        cmap="viridis",
-        line_style="-",
-    ):
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (8, 5.5),
+        title: str = None,
+        cmap: str | Colormap = "viridis",
+        line_style: str = "-",
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Displays a plot of the incident angle vs. image height analysis.
 
         Args:
@@ -231,7 +239,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
             line_style (str, optional): Matplotlib plot style. Defaults to '-'.
 
         Returns:
-            matplotlib.axes.Axes: The axes object containing the plot.
+            tuple: A tuple containing the figure and axes objects used for plotting.
         """
         is_gui_embedding = fig_to_plot_on is not None
 
@@ -310,13 +318,10 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
 
-        return ax
+        return current_fig, ax
 
 
 class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
@@ -353,11 +358,11 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        field=(0, 0),
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        field: tuple = (0, 0),
+        num_points: int = 128,
     ):
         self.field = field
         super().__init__(optic, surface_idx, axis, wavelength, num_points)
@@ -435,11 +440,11 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        pupil=(0, 0),
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        pupil: tuple = (0, 0),
+        num_points: int = 128,
     ):
         self.pupil = pupil
         super().__init__(optic, surface_idx, axis, wavelength, num_points)
