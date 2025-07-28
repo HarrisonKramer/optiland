@@ -142,7 +142,6 @@ class SurfaceFactory:
                 aperture=kwargs.get("aperture"),
                 grating_order=kwargs.get("grating_order"),
                 grating_period=kwargs.get("grating_period"),
-                groove_orientation_angle=kwargs.get("groove_orientation_angle", 0.0),
             )
             surface_obj.thickness = kwargs.get("thickness", 0.0)
             return surface_obj
