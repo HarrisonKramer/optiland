@@ -80,7 +80,12 @@ class GeometricMTF(SpotDiagram):
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (12, 4),
+        add_reference: bool = False,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Plots the MTF curve."""
         is_gui_embedding = fig_to_plot_on is not None
 
@@ -110,11 +115,9 @@ class GeometricMTF(SpotDiagram):
         ax.grid(True, alpha=0.25)
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.
@@ -269,7 +272,12 @@ class FFTMTF:
 
         self.mtf = self._generate_mtf_data()
 
-    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_reference=False):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (12, 4),
+        add_reference: bool = False,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualizes the Modulation Transfer Function (MTF)."""
         is_gui_embedding = fig_to_plot_on is not None
 
@@ -306,11 +314,9 @@ class FFTMTF:
         ax.grid(True, alpha=0.25)
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _plot_field(self, ax, freq, mtf_data, field, color):
         """Plot the MTF data for a specific field.

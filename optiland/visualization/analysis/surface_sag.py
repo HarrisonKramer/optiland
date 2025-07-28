@@ -127,4 +127,4 @@ class SurfaceSagViewer(BaseViewer):
         ax_profile_y.autoscale(enable=True, axis="x", tight=True)
 
         fig.tight_layout(pad=1.0)
-        plt.show()
+        return fig, fig.get_axes()
