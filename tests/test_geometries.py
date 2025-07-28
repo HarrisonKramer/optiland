@@ -1206,8 +1206,7 @@ class TestToroidalGeometry:
 
         # Trace Y-Fan Rays
         rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
-        print("Y-Fan Rays:")
-        print(rays_out_yfan.y)
+# (Lines removed as they are unnecessary debug print statements)
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
             [
