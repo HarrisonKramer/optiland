@@ -88,11 +88,17 @@ class StandardGratingGeometry(BaseGeometry):
             tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
             components of the tangent normal vector.
         """
-#        fprime = -x*be.sqrt(-self.k*(x**2 + y**2)/self.radius**2)/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1.0)**2) + 2*x/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1.0))
-        fprime = x*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 2)/(self.radius*(be.sqrt(-self.k*(x**2 + y**2)/self.radius**2) + 1)**2)
-        tx = 1.0/be.sqrt(1+fprime**2)
-        ty = 0
-        tz = fprime/be.sqrt(1+fprime**2)
+        fprime = 2*x/(self.radius*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)) + x*(self.k + 1)*(x**2 + y**2)/(self.radius**3*be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2)*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)**2)
+
+        tx = be.ones_like(fprime)
+        ty = be.zeros_like(fprime)
+        tz = fprime
+
+        # Normalize t
+        norm_t = be.sqrt(tx**2 + ty**2 + tz**2)
+        tx /= norm_t
+        ty /= norm_t
+        tz /= norm_t
         return tx, ty, tz
     
     def distance(self, rays):
@@ -188,6 +194,11 @@ class StandardGratingGeometry(BaseGeometry):
         fx = ny*tz - nz*ty
         fy = -nx*tz + nz*tx
         fz = nx*ty - ny*tx
+
+        mag = be.sqrt(fx**2 + fy**2 + fz**2)
+        fx = fx / mag
+        fy = fy / mag
+        fz = fz / mag
         
         return -fx, -fy, -fz
 
