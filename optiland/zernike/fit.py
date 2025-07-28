@@ -109,23 +109,46 @@ class ZernikeFit:
 
     def view(
         self,
+        fig_to_plot_on: plt.Figure | None = None,
         projection: str = "2d",
         num_points: int = 128,
         figsize: tuple[float, float] = (7, 5.5),
         z_label: str = "OPD (waves)",
-    ):
+    ) -> tuple[plt.Figure, plt.Axes]:
         """
         Visualize the fitted Zernike surface.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): Figure to plot on.
+                If None, a new figure is created.
             projection (str): '2d' for image plot, '3d' for surface plot.
             num_points (int): Grid resolution for display.
             figsize (tuple): Figure size in inches.
+            defaults to (7, 5.5).
             z_label (str): Label for the z-axis or colorbar.
+            defaults to 'OPD (waves)'.
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
 
         Raises:
             ValueError: If `projection` is not '2d' or '3d'.
         """
+        is_gui_embedding = fig_to_plot_on is not None
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = (
+                current_fig.add_subplot(111, figsize=figsize)
+                if projection == "2d"
+                else current_fig.add_subplot(111, figsize=figsize, projection="3d")
+            )
+        else:
+            current_fig, ax = (
+                plt.subplots(figsize=figsize)
+                if projection == "2d"
+                else plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
+            )
+
         # Create grid in unit circle
         grid_x, grid_y = be.meshgrid(
             be.linspace(-1.0, 1.0, num_points),
@@ -144,14 +167,19 @@ class ZernikeFit:
         z_np = be.to_numpy(grid_z)
 
         if projection == "2d":
-            self._plot_2d(z_np, figsize=figsize, z_label=z_label)
+            self._plot_2d(current_fig, ax, z_np, z_label=z_label)
         elif projection == "3d":
-            self._plot_3d(x_np, y_np, z_np, figsize=figsize, z_label=z_label)
+            self._plot_3d(current_fig, ax, x_np, y_np, z_np, z_label=z_label)
         else:
             raise ValueError("`projection` must be '2d' or '3d'.")
 
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
+
     def view_residual(
         self,
+        fig_to_plot_on: plt.Figure = None,
         figsize: tuple[float, float] = (7, 5.5),
         z_label: str = "Residual (waves)",
     ):
@@ -159,15 +187,30 @@ class ZernikeFit:
         Scatter plot of residuals between fitted surface and original data.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): Figure to plot on.
+                If None, a new figure is created.
             figsize (tuple): Figure size in inches.
+                Defaults to (7, 5.5).
             z_label (str): Label for the colorbar.
+                Defaults to 'Residual (waves)'.
+
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
         """
         # Compute fitted values and residuals
         fitted = self.zernike.poly(self.radius, self.phi)
         residuals = fitted - self.z
         rms = be.sqrt(be.mean(residuals**2))
 
-        _, ax = plt.subplots(figsize=figsize)
+        is_gui_embedding = fig_to_plot_on is not None
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111, figsize=figsize)
+
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
+
         sc = ax.scatter(
             be.to_numpy(self.x),
             be.to_numpy(self.y),
@@ -180,9 +223,14 @@ class ZernikeFit:
         ax.set_title(f"Residuals (RMS={rms:.3f})")
         cbar = plt.colorbar(sc)
         cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
-        plt.show()
 
-    def _plot_2d(self, z, figsize, z_label):
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
+
+    def _plot_2d(
+        self, fig: plt.Figure, ax: plt.Axes, z: np.ndarray, z_label: str
+    ) -> None:
         """Plot a 2D representation of the given data.
 
         Args:
@@ -193,30 +241,33 @@ class ZernikeFit:
                 (default is 'OPD (waves)').
 
         """
-        _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(np.flipud(z), extent=[-1, 1, -1, 1])
         ax.set_xlabel("Pupil X")
         ax.set_ylabel("Pupil Y")
         ax.set_title(f"Zernike {self.zernike_type.capitalize()} Fit")
         cbar = plt.colorbar(im)
         cbar.ax.set_ylabel(z_label, rotation=270, labelpad=15)
-        plt.show()
 
-    def _plot_3d(self, x, y, z, figsize, z_label):
+    def _plot_3d(
+        self,
+        fig: plt.Figure,
+        ax: plt.Axes,
+        x: np.ndarray,
+        y: np.ndarray,
+        z: np.ndarray,
+        z_label: str,
+    ) -> None:
         """Plot a 3D surface plot of the given data.
 
         Args:
+            fig (plt.Figure): The figure to plot on.
+            ax (plt.Axes): The axes to plot on.
             x (numpy.ndarray): Array of x-coordinates.
             y (numpy.ndarray): Array of y-coordinates.
             z (numpy.ndarray): Array of z-coordinates.
-            figsize (tuple, optional): Size of the figure (width, height).
-                Default is (7, 5.5).
             z_label (str, optional): Label for the z-axis.
-                Default is 'OPD (waves)'.
 
         """
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection="3d")
         surf = ax.plot_surface(
             x,
             y,
@@ -232,5 +283,4 @@ class ZernikeFit:
         ax.set_zlabel(z_label)
         ax.set_title(f"Zernike {self.zernike_type.capitalize()} Fit")
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
-        plt.tight_layout()
-        plt.show()
+        fig.tight_layout()
