@@ -246,7 +246,7 @@ def test_flip_toroidal_zero_radius():
         assert be.allclose(geom.c_yz, be.array(expected_c_yz))
     else:
         assert be.allclose(geom.c_yz, expected_c_yz)
-    assert geom.R_rot == 0.0  # Base radius also flipped (was 0.0, remains 0.0)
+    assert geom.R_rot == 0.0  # Rotation radius also flipped (was 0.0, remains 0.0)
 
 
 def test_flip_standard_inf_radius():
