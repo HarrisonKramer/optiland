@@ -139,6 +139,7 @@ class SurfaceFactory:
             surface_type=surface_type,
             comment=comment,
             aperture=kwargs.get("aperture"),
+            phase_type=kwargs.get("phase_type")
         )
 
         # Add the thickness as an attribute to the surface

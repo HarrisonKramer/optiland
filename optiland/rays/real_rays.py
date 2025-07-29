@@ -140,7 +140,8 @@ class RealRays(BaseRays):
         self.L = tx
         self.M = ty
         self.N = tz
-
+        #print("this is self.N")
+        #print(self.N)
     def reflect(self, nx, ny, nz):
         """Reflects the rays on the surface.
 
@@ -162,6 +163,57 @@ class RealRays(BaseRays):
         self.L = self.L - 2 * dot * nx
         self.M = self.M - 2 * dot * ny
         self.N = self.N - 2 * dot * nz
+        
+
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m , s):
+    #     Args:
+    #         nx: The x-component of the surface normal.
+    #         ny: The y-component of the surface normal.
+    #         nz: The z-component of the surface normal.
+            
+
+    #     Returns:
+    #         RealRays: The reflected rays.
+
+    #     """
+        self.L0, self.M0, self.N0 = self.L, self.M, self.N
+        #define parameters
+        dx, dy, dz = self.L, self.M, self.N
+        s=-1*s
+        nx, ny, nz = s*surfnx, s*surfny, s*surfnz
+        
+        wavelength = self.w
+        # Incident wavevector (k_in = 2π/λ * direction)
+        k_mag = 2 * be.pi / wavelength
+        kix = k_mag * dx
+        kiy = k_mag * dy
+        kiz = k_mag * dz
+
+        dot_kn = kix * nx + kiy * ny + kiz * nz
+        kpx = kix - dot_kn * nx
+        kpy = kiy - dot_kn * ny
+        kpz = kiz - dot_kn * nz
+        
+        kdx = kpx + m * Kx
+        kdy = kpy + m * Ky
+        kdz = kpz + m * Kz
+     
+    
+        kp2 = kdx**2 + kdy**2 + kdz**2
+
+        k_perp_mag =be.sqrt(k_mag**2 - kp2)
+        kfx =  kdx + k_perp_mag * nx
+        kfy =  kdy + k_perp_mag * ny
+        kfz =  kdz + k_perp_mag * nz
+        
+        
+        self.L = kfx
+        self.M = kfy
+        self.N = kfz
+        self.normalize()  
+        self.opd = self.opd+be.sqrt(kfx**2 + kfy**2 + kfz**2)
+        return
+      
 
     def update(self, jones_matrix: be.ndarray = None):
         """Update ray properties (primarily used for polarization)."""

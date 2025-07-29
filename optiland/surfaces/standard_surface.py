@@ -11,6 +11,7 @@ Kramer Harrison, 2023
 """
 
 import optiland.backend as be
+from optiland.phase.base import BasePhase
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
@@ -52,6 +53,7 @@ class Surface:
         is_reflective: bool = False,
         surface_type: str = None,
         comment: str = "",
+        phase_type: BasePhase =  None,
     ):
         self.geometry = geometry
         self.material_pre = material_pre
@@ -64,6 +66,7 @@ class Surface:
         self.is_reflective = is_reflective
         self.surface_type = surface_type
         self.comment = comment
+        self.phase_type = phase_type
 
         self.thickness = 0.0  # used for surface positioning
 
@@ -164,7 +167,8 @@ class Surface:
         """
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
-
+        
+        
         # Interact with surface (refract or reflect)
         if self.is_reflective:
             rays.reflect(nx, ny, nz)
@@ -172,6 +176,18 @@ class Surface:
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
             rays.refract(nx, ny, nz, n1, n2)
+        if self.phase_type:
+            Kx, Ky, Kz = self.phase_type.phase_grating_general(rays,nx,ny,nz)
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            if self.is_reflective:
+                m =-1*self.phase_type.order
+                s = -1
+            else:
+                m = self.phase_type.order
+                s = -1
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2,m,s)
+            
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:
