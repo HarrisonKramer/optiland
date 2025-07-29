@@ -165,7 +165,7 @@ class RealRays(BaseRays):
         self.N = self.N - 2 * dot * nz
         
 
-    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m , s):
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m):
     #     Args:
     #         nx: The x-component of the surface normal.
     #         ny: The y-component of the surface normal.
@@ -179,7 +179,7 @@ class RealRays(BaseRays):
         self.L0, self.M0, self.N0 = self.L, self.M, self.N
         #define parameters
         dx, dy, dz = self.L, self.M, self.N
-        s=-1*s
+        s=-1
         nx, ny, nz = s*surfnx, s*surfny, s*surfnz
         
         wavelength = self.w
@@ -210,6 +210,7 @@ class RealRays(BaseRays):
         self.L = kfx
         self.M = kfy
         self.N = kfz
+
         self.normalize()  
         self.opd = self.opd+be.sqrt(kfx**2 + kfy**2 + kfz**2)
         return

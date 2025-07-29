@@ -180,13 +180,8 @@ class Surface:
             Kx, Ky, Kz = self.phase_type.phase_grating_general(rays,nx,ny,nz)
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
-            if self.is_reflective:
-                m =-1*self.phase_type.order
-                s = -1
-            else:
-                m = self.phase_type.order
-                s = -1
-            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2,m,s)
+            m = self.phase_type.order
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m)
             
 
         # if there is a surface scatter model, modify ray properties

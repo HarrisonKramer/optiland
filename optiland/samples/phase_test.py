@@ -9,6 +9,37 @@ from optiland.materials import AbbeMaterial, Material
 
 
 
+class AsphericSingletMirror(optic.Optic):
+    """An aspheric singlet lens."""
+
+    def __init__(self):
+        super().__init__()
+        # add surfaces
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        # self.add_surface(index=1, radius=be.inf, thickness=1, material = "N-BK7")
+        self.add_surface(index=1, radius=be.inf, thickness=1, material = "air")
+        self.add_surface(
+            index=2,
+            thickness=-100,
+            radius= 50,
+            is_stop=True,
+            material= "mirror",
+            surface_type="standard",
+            phase_type = GratingPhase(A = 1, order = -1)
+        )
+        self.add_surface(index=3, thickness=0)
+        self.add_surface(index=4)
+
+        # add aperture
+        self.set_aperture(aperture_type="EPD", value=20.0)
+
+        # add field
+        self.set_field_type(field_type="angle")
+        self.add_field(y=0)
+
+        # add wavelength
+        self.add_wavelength(value=0.530, is_primary=True)
+
 class AsphericSinglet(optic.Optic):
     """An aspheric singlet lens."""
 
@@ -16,15 +47,16 @@ class AsphericSinglet(optic.Optic):
         super().__init__()
         # add surfaces
         self.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        self.add_surface(index=1, radius=be.inf, thickness=1, material = "mirror")
+        self.add_surface(index=1, radius=be.inf, thickness=1, material = "N-BK7")
+        # self.add_surface(index=1, radius=be.inf, thickness=1, material = "air")
         self.add_surface(
             index=2,
-            thickness=-100,
+            thickness=100,
             radius= 50,
             is_stop=True,
             material= "air",
             surface_type="standard",
-            phase_type = GratingPhase(A = 1, order = 1)
+            phase_type = GratingPhase(A = 1, order = -1)
         )
         self.add_surface(index=3, thickness=0)
         self.add_surface(index=4)
@@ -39,7 +71,9 @@ class AsphericSinglet(optic.Optic):
         # add wavelength
         self.add_wavelength(value=0.530, is_primary=True)
         
-lens = AsphericSinglet()
+lens = AsphericSingletMirror()
+# You may try a different lens here
+# lens = AsphericSinglet()
 bk7=Material("N-Bk7")
 print(bk7.n(0.530))
 #rays = lens.trace(Hx=0, Hy=0, wavelength=0.53, num_rays=1 )
