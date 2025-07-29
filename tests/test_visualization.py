@@ -249,7 +249,7 @@ class TestOpticViewer3D:
         cylindrical_lens.add_surface(
             index=1,
             thickness=7,
-            radius=20,  # <- radius: x radius of rotation.
+            radius_x=20,  # <- radius: x radius of rotation.
             radius_y=25,
             is_stop=True,
             material="N-BK7",
