@@ -38,8 +38,8 @@ class MaterialVariable(VariableBehavior):
 
         if isinstance(self.surface.material_post, AbbeMaterial):
             nd_vd = (
-                float(self.surface.material_post.index[0]),
-                float(self.surface.material_post.abbe[0]),
+                float(self.surface.material_post.index[0].item()),
+                float(self.surface.material_post.abbe[0].item()),
             )
             glass = find_closest_glass(nd_vd=nd_vd, catalog=glass_selection)
             new_nd, new_vd = get_nd_vd(glass)
