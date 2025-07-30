@@ -416,7 +416,7 @@ class TestLensInfoViewer:
 
     def test_view_asphere(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
-        asphere_geo = EvenAsphere(CoordinateSystem(), 100)
+        asphere_geo = EvenAsphere(CoordinateSystem(), 100, coefficients=[0.1, 0.3, 1.2])
         lens.surface_group.surfaces[2].geometry = asphere_geo
         viewer = LensInfoViewer(lens)
         viewer.view()
@@ -429,6 +429,9 @@ class TestLensInfoViewer:
         assert "Conic" in captured.out
         assert "Semi-aperture" in captured.out
         assert "Even Asphere" in captured.out
+        assert "c0" in captured.out
+        assert "c1" in captured.out
+        assert "c2" in captured.out
 
     def test_view_material_file(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
