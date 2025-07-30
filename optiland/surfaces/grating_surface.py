@@ -74,95 +74,6 @@ class GratingSurface(Surface):
         if isinstance(rays, RealRays):
             return self._trace_real(rays)
 
-    def _compute_tangent_to_grooves(self, nx, ny, nz):
-        """Computes a unit vector tangent to the grating grooves.
-
-        This method calculates the direction of the grating grooves on the
-        tangent plane of the surface. It establishes a local coordinate system
-        on the tangent plane and rotates it by the groove orientation angle.
-
-        Args:
-            nx (be.ndarray): The x-component of the surface normal vector.
-            ny (be.ndarray): The y-component of the surface normal vector.
-            nz (be.ndarray): The z-component of the surface normal vector.
-
-        Returns:
-            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z components
-            of the unit vector tangent to the grooves.
-        """
-        # Choose a vector `s1` that is not parallel to the normal `n`
-        s1_x = be.ones_like(nx)
-        s1_y = be.zeros_like(ny)
-        s1_z = be.zeros_like(nz)
-
-        # Check for near-parallelism between n and s1
-        dot_product = be.abs(nx * s1_x + ny * s1_y + nz * s1_z)
-        is_parallel = dot_product > 0.999
-
-        # If parallel, choose an alternative s1
-        s1_x = be.where(is_parallel, be.zeros_like(s1_x), s1_x)
-        s1_y = be.where(is_parallel, be.ones_like(s1_y), s1_y)
-
-        # Create a tangent vector `t1` by taking the cross product of `n` and `s1`
-        t1_x = ny * s1_z - nz * s1_y
-        t1_y = nz * s1_x - nx * s1_z
-        t1_z = nx * s1_y - ny * s1_x
-        # Normalize t1
-        norm_t1 = be.sqrt(t1_x**2 + t1_y**2 + t1_z**2)
-        t1_x /= norm_t1
-        t1_y /= norm_t1
-        t1_z /= norm_t1
-
-        # Create a second tangent vector `t2` orthogonal to `n` and `t1`
-        t2_x = ny * t1_z - nz * t1_y
-        t2_y = nz * t1_x - nx * t1_z
-        t2_z = nx * t1_y - ny * t1_x
-
-        # Rotate by the groove orientation angle
-#        phi = self.groove_orientation_angle
-#        cos_phi = be.cos(phi)
-#        sin_phi = be.sin(phi)
-#        t_groove_x = cos_phi * t1_x + sin_phi * t2_x
-#        t_groove_y = cos_phi * t1_y + sin_phi * t2_y
-#        t_groove_z = cos_phi * t1_z + sin_phi * t2_z
-
-#        return t_groove_x, t_groove_y, t_groove_z
-        return t2_x, t2_y, t2_z
-
-    def _compute_grating_vector(self, nx, ny, nz):
-        """Computes the grating vector.
-
-        The grating vector is perpendicular to both the surface normal and the
-        grating grooves. It lies in the tangent plane of the surface.
-
-        Args:
-            nx (be.ndarray): The x-component of the surface normal vector.
-            ny (be.ndarray): The y-component of the surface normal vector.
-            nz (be.ndarray): The z-component of the surface normal vector.
-
-        Returns:
-            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z components
-            of the normalized grating vector.
-        """
-        # tangent to the grooves
-        t_groove_x, t_groove_y, t_groove_z = self._compute_tangent_to_grooves(
-            nx, ny, nz
-        )
-
-        # grating vector is the cross product of normal and tangent
-        fx = ny * t_groove_z - nz * t_groove_y
-        fy = nz * t_groove_x - nx * t_groove_z
-        fz = nx * t_groove_y - ny * t_groove_x
-
-        # Normalize the grating vector
-        norm_f = be.sqrt(fx**2 + fy**2 + fz**2)
-        fx /= norm_f
-        fy /= norm_f
-        fz /= norm_f
-
-        # Apply sign convention
-        return fx, fy, fz
-
 
     def _interact(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting
@@ -183,14 +94,12 @@ class GratingSurface(Surface):
         
         #find grating vector
         fx, fy, fz = self.geometry.grating_vector(rays)
-        fx1, fy1, fz1 = self._compute_grating_vector(nx,ny,nz)
                 
         #grating period        
         pp = self.geometry.grating_period
         
         #correct grating period considering projection effect on the surface
-        #pp = pp/be.abs(fy)
-        pp = pp/be.sqrt(fy**2+fx**2)
+        pp = pp/be.abs(fy)
         
         m = self.geometry.grating_order
         

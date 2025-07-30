@@ -86,13 +86,38 @@ class StandardGratingGeometry(BaseGeometry):
 
         Returns:
             tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
-            components of the tangent normal vector.
+            components of the tangent vector.
         """
-        fprime = 2*x/(self.radius*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)) + x*(self.k + 1)*(x**2 + y**2)/(self.radius**3*be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2)*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)**2)
+        dzdx = 2*x/(self.radius*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)) + x*(self.k + 1)*(x**2 + y**2)/(self.radius**3*be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2)*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)**2)
 
-        tx = be.ones_like(fprime)
-        ty = be.zeros_like(fprime)
-        tz = fprime
+        tx = be.ones_like(dzdx)
+        ty = be.zeros_like(dzdx)
+        tz = dzdx
+
+        # Normalize t
+        norm_t = be.sqrt(tx**2 + ty**2 + tz**2)
+        tx /= norm_t
+        ty /= norm_t
+        tz /= norm_t
+        return tx, ty, tz
+    
+    def _tangent(self, x=0, y=0, alfa = 0):
+        """ Compute the unit vector that is lying on the tangent plane in (x,y,z) and tangent to the grating line 
+
+        Args:
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
+            alfa (float): The grating orientation angle in radians. Defaults to 0.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            components of the tangent vector.
+        """
+        dzdx = (x + y*be.tan(alfa))*(2*self.radius**2*be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2)*(be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2) + 1) + (self.k + 1)*(x**2 + y**2))/(self.radius**3*be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2)*(be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2) + 1)**2)
+
+        tx = be.ones_like(dzdx)
+        ty = be.ones_like(dzdx)*be.tan(alfa)
+        tz = dzdx
 
         # Normalize t
         norm_t = be.sqrt(tx**2 + ty**2 + tz**2)
@@ -190,7 +215,7 @@ class StandardGratingGeometry(BaseGeometry):
 
         """
         nx,ny,nz = self.surface_normal(rays)
-        tx,ty,tz = self._tang(rays.x,rays.y)
+        tx,ty,tz = self._tangent(rays.x,rays.y)
         fx = ny*tz - nz*ty
         fy = -nx*tz + nz*tx
         fz = nx*ty - ny*tx
