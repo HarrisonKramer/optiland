@@ -274,23 +274,44 @@ class OPDFan(Wavefront):
             distribution="cross",
         )
 
-    def view(self, figsize=(10, 3)):
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (10, 3)
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualizes the wavefront error for different fields and wavelengths.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (10, 3).
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
 
+        Raises:
+            ValueError: If the number of fields is not equal to the number of
+            wavelengths, or if the number of fields is not equal to the
+            number of rays.
         """
         num_rows = len(self.fields)
+        is_gui_embedding = fig_to_plot_on is not None
 
-        _, axs = plt.subplots(
-            nrows=len(self.fields),
-            ncols=2,
-            figsize=(figsize[0], num_rows * figsize[1]),
-            sharex=True,
-            sharey=True,
-        )
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            axs = current_fig.add_subplots(
+                nrows=len(self.fields),
+                ncols=2,
+                figsize=(figsize[0], num_rows * figsize[1]),
+                sharex=True,
+                sharey=True,
+            )
+        else:
+            current_fig, axs = plt.subplots(
+                nrows=len(self.fields),
+                ncols=2,
+                figsize=(figsize[0], num_rows * figsize[1]),
+                sharex=True,
+                sharey=True,
+            )
 
         # assure axes is a 2D array
         axs = np.atleast_2d(axs)
@@ -333,13 +354,16 @@ class OPDFan(Wavefront):
                 axs[i, 1].axvline(x=0, lw=1, color="gray")
                 axs[i, 1].set_xlabel("$P_x$")
                 axs[i, 1].set_ylabel("Wavefront Error (waves)")
-                axs[i, 0].set_xlim((-1, 1))
+                axs[i, 1].set_xlim((-1, 1))
                 axs[i, 1].set_title(f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
 
-        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3)
-        plt.subplots_adjust(top=1)
-        plt.tight_layout()
-        plt.show()
+        axs[-1, -1].legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3)
+        current_fig.subplots_adjust(top=1)
+        current_fig.tight_layout()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+
+        return current_fig, axs
 
 
 class OPD(Wavefront):
@@ -377,26 +401,54 @@ class OPD(Wavefront):
             distribution="hexapolar",
         )
 
-    def view(self, projection="2d", num_points=256, figsize=(7, 5.5)):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        projection: str = "2d",
+        num_points: int = 256,
+        figsize: tuple[float, float] = (7, 5.5),
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualizes the OPD wavefront.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure is created.
             projection (str, optional): The projection type. Defaults to '2d'.
             num_points (int, optional): The number of points for interpolation.
                 Defaults to 256.
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
-
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
         Raises:
             ValueError: If the projection is not '2d' or '3d'.
-
         """
+        is_gui_embedding = fig_to_plot_on is not None
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = (
+                current_fig.add_subplot(111)
+                if projection == "2d"
+                else current_fig.add_subplot(111, projection="3d")
+            )
+        else:
+            current_fig, ax = (
+                plt.subplots(figsize=figsize)
+                if projection == "2d"
+                else plt.subplots(figsize=figsize, subplot_kw={"projection": "3d"})
+            )
+
         opd_map = self.generate_opd_map(num_points)
         if projection == "2d":
-            self._plot_2d(data=opd_map, figsize=figsize)
+            self._plot_2d(data=opd_map, ax=ax)
         elif projection == "3d":
-            self._plot_3d(data=opd_map, figsize=figsize)
+            self._plot_3d(fig=current_fig, ax=ax, data=opd_map)
         else:
             raise ValueError('OPD projection must be "2d" or "3d".')
+
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def rms(self):
         """Calculates the root mean square (RMS) of the OPD wavefront.
@@ -408,7 +460,7 @@ class OPD(Wavefront):
         data = self.get_data(self.fields[0], self.wavelengths[0])
         return be.sqrt(be.mean(data.opd**2))
 
-    def _plot_2d(self, data, figsize=(7, 5.5)):
+    def _plot_2d(self, ax: plt.Axes, data: dict[str, np.ndarray]) -> None:
         """Plots the 2D visualization of the OPD wavefront.
 
         Args:
@@ -417,7 +469,6 @@ class OPD(Wavefront):
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
 
         """
-        _, ax = plt.subplots(figsize=figsize)
         im = ax.imshow(
             np.flipud(data["z"]), extent=[-1, 1, -1, 1]
         )  # np.flipud is fine here as data['z'] is already numpy
@@ -429,9 +480,10 @@ class OPD(Wavefront):
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("OPD (waves)", rotation=270)
-        plt.show()
 
-    def _plot_3d(self, data, figsize=(7, 5.5)):
+    def _plot_3d(
+        self, fig: plt.Figure, ax: plt.Axes, data: dict[str, np.ndarray]
+    ) -> None:
         """Plots the 3D visualization of the OPD wavefront.
 
         Args:
@@ -440,7 +492,6 @@ class OPD(Wavefront):
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
 
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
         surf = ax.plot_surface(
             data["x"],
@@ -457,10 +508,8 @@ class OPD(Wavefront):
         ax.set_ylabel("Pupil Y")
         ax.set_zlabel("OPD (waves)")
         ax.set_title(f"OPD Map: RMS={self.rms():.3f} waves")
-
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
         fig.tight_layout()
-        plt.show()
 
     def generate_opd_map(self, num_points=256):
         """Generates the OPD map data.
