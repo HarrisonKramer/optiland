@@ -13,6 +13,8 @@ in W/mm^2.
 Manuel Fragata Mendes, 2025
 """
 
+from typing import Union
+
 import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for the binning. Later extend to
 from matplotlib.colors import Colormap
@@ -108,7 +110,7 @@ class IncoherentIrradiance(BaseAnalysis):
         self,
         fig_to_plot_on: plt.Figure = None,
         figsize: tuple = (6, 5),
-        cmap: str | Colormap = "inferno",
+        cmap: Union[str, Colormap] = "inferno",
         cross_section: tuple[str, int] = None,
         *,
         normalize: bool = True,
@@ -344,7 +346,7 @@ class IncoherentIrradiance(BaseAnalysis):
 
     def _plot_cross_section(
         self,
-        ax: plt.Axes | None,
+        ax: plt.Axes,
         irr_map_be,
         x_edges,
         y_edges,
