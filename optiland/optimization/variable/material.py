@@ -6,7 +6,9 @@ The variable can be used in optimization problems to optimize the material
 at a specific surface.
 """
 
+from optiland.materials.abbe import AbbeMaterial
 from optiland.materials.base import BaseMaterial
+from optiland.materials.material_utils import find_closest_glass
 from optiland.optimization.variable.base import VariableBehavior
 from optiland.surfaces.factories.material_factory import MaterialFactory
 
@@ -32,6 +34,20 @@ class MaterialVariable(VariableBehavior):
     ):
         super().__init__(optic, surface_number, apply_scaling=apply_scaling, **kwargs)
         self.glass_selection = glass_selection
+        self.surface = self.optic.surface_group.surfaces[self.surface_number]
+
+        if isinstance(self.surface.material_post, AbbeMaterial):
+            nd_vd = (
+                float(self.surface.material_post.index[0]),
+                float(self.surface.material_post.abbe[0]),
+            )
+            glass = find_closest_glass(nd_vd=nd_vd, catalog=glass_selection)
+            self.update_value(new_value=glass)
+            print(
+                f"The material of surface {surface_number} is defined "
+                f"by its AbbeMaterial {nd_vd}. GlassExpert converted it "
+                f"to real material {glass} to proceed with optimization."
+            )
 
     def get_value(self) -> str:
         """Returns the name of the material at the specified surface.
@@ -40,8 +56,7 @@ class MaterialVariable(VariableBehavior):
             str: The material name.
 
         """
-        surface = self.optic.surface_group.surfaces[self.surface_number]
-        return surface.material_post.name
+        return self.surface.material_post.name
 
     def update_value(self, new_value: str) -> None:
         """Updates the material at the specified surface.
