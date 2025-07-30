@@ -219,10 +219,16 @@ class GlassExpert(OptimizerGeneric):
             self.problem.update_optics()
             result = self.optimize(**self.opt_params)
             error = result.fun
-            self.vprint(
-                f"Error function value: "
-                f"{format(error, '.2e' if error < 0.5 else '.2f')}"
+            fmt = (
+                ".0f"
+                if error >= 100
+                else ".1f"
+                if error >= 10
+                else ".2f"
+                if error >= 1e-2
+                else ".2e"
             )
+            self.vprint(f"Error function value: {format(error, fmt)}")
             if error < best_error:
                 best_error = error
                 best_glass = neighbour
