@@ -17,6 +17,13 @@ import pandas as pd
 
 import optiland.backend as be
 from optiland import materials
+from optiland.geometries import (
+    ChebyshevPolynomialGeometry,
+    EvenAsphere,
+    OddAsphere,
+    PolynomialGeometry,
+    ZernikePolynomialGeometry,
+)
 from optiland.physical_apertures import RadialAperture
 from optiland.visualization.base import BaseViewer
 
@@ -68,6 +75,11 @@ class LensInfoViewer(BaseViewer):
             },
         )
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
+
+        # Aspheric coefficients
+        rows, headers = self._get_aspheric_coefficients()
+        df = pd.DataFrame(rows, columns=headers)
+        print(df.to_markdown(index=False, tablefmt="fancy_outline", floatfmt=".4g"))
 
     def _get_surface_types(self):
         """Extracts and formats the surface types."""
@@ -128,3 +140,28 @@ class LensInfoViewer(BaseViewer):
             else:
                 raise ValueError("Unknown material type")
         return mat
+
+    def _get_aspheric_coefficients(self):
+        """Extracts the aspheric coefficients for each surface."""
+        valid_geometry_types = (
+            EvenAsphere,
+            OddAsphere,
+            PolynomialGeometry,
+            ZernikePolynomialGeometry,
+            ChebyshevPolynomialGeometry,
+        )
+
+        surface_coeffs = []
+        for i, surface in enumerate(self.optic.surface_group.surfaces):
+            if isinstance(surface.geometry, valid_geometry_types):
+                coefficients = list(surface.geometry.c)
+                if coefficients:
+                    rows = [f"Surface {i}"] + coefficients
+                    surface_coeffs.append(rows)
+
+        if surface_coeffs:
+            max_coef_num = len(max(surface_coeffs, key=len))
+            headers = ["Surface"] + [f"c{i}" for i in range(max_coef_num - 1)]
+            return surface_coeffs, headers
+        else:
+            return None, None
