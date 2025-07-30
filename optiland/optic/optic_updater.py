@@ -186,7 +186,7 @@ class OpticUpdater:
         """Update the normalization radius/factors of a given non-spherical surface.
 
         The normalization factors (`norm_x`, `norm_y`, or `norm_radius`) are
-        typically set to 1.1 times the surface's current semi-aperture.
+        typically set to 1.25 times the surface's current semi-aperture.
 
         Args:
             surface (Surface): The surface whose normalization factors are to be
@@ -198,10 +198,10 @@ class OpticUpdater:
             "polynomial",
             "chebyshev",
         ]:
-            surface.geometry.norm_x = surface.semi_aperture * 1.1
-            surface.geometry.norm_y = surface.semi_aperture * 1.1
+            surface.geometry.norm_x = surface.semi_aperture * 1.25
+            surface.geometry.norm_y = surface.semi_aperture * 1.25
         if surface.surface_type == "zernike":
-            surface.geometry.norm_radius = surface.semi_aperture * 1.1
+            surface.geometry.norm_radius = surface.semi_aperture * 1.25
 
     def update(self) -> None:
         """Update the optical system by applying all defined pickups and solves.
