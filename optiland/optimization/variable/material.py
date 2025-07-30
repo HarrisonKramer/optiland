@@ -8,7 +8,7 @@ at a specific surface.
 
 from optiland.materials.abbe import AbbeMaterial
 from optiland.materials.base import BaseMaterial
-from optiland.materials.material_utils import find_closest_glass
+from optiland.materials.material_utils import find_closest_glass, get_nd_vd
 from optiland.optimization.variable.base import VariableBehavior
 from optiland.surfaces.factories.material_factory import MaterialFactory
 
@@ -42,11 +42,13 @@ class MaterialVariable(VariableBehavior):
                 float(self.surface.material_post.abbe[0]),
             )
             glass = find_closest_glass(nd_vd=nd_vd, catalog=glass_selection)
+            new_nd, new_vd = get_nd_vd(glass)
             self.update_value(new_value=glass)
             print(
-                f"The material of surface {surface_number} is defined "
+                f"The material of surface {surface_number:<2} is defined "
                 f"by its AbbeMaterial {nd_vd}. GlassExpert converted it "
-                f"to real material {glass} to proceed with optimization."
+                f"to real material {glass:<7} ({new_nd:.4f}, {new_vd:.2f}) "
+                f"to proceed with optimization."
             )
 
     def get_value(self) -> str:
