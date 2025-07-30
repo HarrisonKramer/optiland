@@ -8,6 +8,8 @@ primary wavelength.
 Kramer Harrison, 2024
 """
 
+from typing import Union
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -38,8 +40,8 @@ class PupilAberration(BaseAnalysis):
     def __init__(
         self,
         optic,
-        fields: str | list = "all",
-        wavelengths: str | list = "all",
+        fields: Union[str, list] = "all",
+        wavelengths: Union[str, list] = "all",
         num_points: int = 256,
     ):
         _optic_ref = optic

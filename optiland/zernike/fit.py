@@ -109,7 +109,7 @@ class ZernikeFit:
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure | None = None,
+        fig_to_plot_on: plt.Figure = None,
         projection: str = "2d",
         num_points: int = 128,
         figsize: tuple[float, float] = (7, 5.5),

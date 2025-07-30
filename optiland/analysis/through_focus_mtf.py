@@ -7,6 +7,8 @@ spatial frequency, wavelength, and fields.
 Kramer Harrison, 2025
 """
 
+from typing import Union
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import make_interp_spline
@@ -58,8 +60,8 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
         spatial_frequency: float,
         delta_focus: float = 0.1,
         num_steps: int = 5,
-        fields: list[tuple[float, float]] | str = "all",
-        wavelength: float | str = "primary",
+        fields: Union[list[tuple[float, float]], str] = "all",
+        wavelength: Union[float, str] = "primary",
         num_rays: int = 128,
     ):
         self.spatial_frequency = spatial_frequency

@@ -66,7 +66,7 @@ class BasePSF(Wavefront):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure | None = None,
+        fig_to_plot_on: plt.Figure = None,
         projection: str = "2d",
         log: bool = False,
         figsize: tuple = (7, 5.5),
