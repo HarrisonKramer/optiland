@@ -22,7 +22,7 @@
 <p align="center"><em>The Optiland GUI showing a reverse telephoto system.</em></p>
 
 
-## Table of Contents
+## Contents
 
 1. [Introduction](#introduction)
 2. [Documentation](#documentation)
