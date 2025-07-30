@@ -243,7 +243,7 @@ The merit function value during a GlassExpert run can look as follows (for 7 nei
       :width: 60%
       :align: center
 
-      Map of the (n_d, v_d) glass space and selected candidates for local search around FK3.
+      Evolution in log scale of the merit function during a GlassExpert run.
 
 The error function jumps are normal and correspond to the optic being restored to its previous best state, or the evaluation of glasses far from the current glass. 
 Also please note that the run duration scales with the number of lenses and the number of glass neighbours.
@@ -266,4 +266,4 @@ Developers might interact with or extend the GlassExpert in several ways:
 
 GlassExpert provides a powerful way to tackle mixed continuous-categorical optimization problems common in lens design, where selecting the right materials is as critical as defining the right shapes and distances. 
 
-Refer to `Tutorial_7e_Glass_Expert.ipynb` for a practical example.
+Refer to `Tutorial_7e_Glass_Expert.ipynb <https://optiland.readthedocs.io/en/latest/examples/Tutorial_7e_Glass_Expert.html>`_ for a practical example.
