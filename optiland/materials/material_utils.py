@@ -180,7 +180,8 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
 
 def get_neighbour_glasses(
     glass: str,
-    glass_selection: list[str],
+    glass_selection: list[str] = None,
+    glass_dict: dict[str, tuple[float, float]] = None,
     num_neighbours: int = 3,
     plot: bool = False,
 ) -> list[str]:
@@ -191,6 +192,8 @@ def get_neighbour_glasses(
     Args:
         glass (str): Name of the reference glass.
         glass_selection (list[str]): List of glass names to search among.
+        glass_dict (dict[str, tuple[float, float]]): dict of glass names associated
+            with their (nv,vd) pairs.
         num_neighbours (int): Number of closest glasses to return.
         plot (bool): If True, plot the selected glass map
                      and highlight neighbors.
@@ -199,13 +202,16 @@ def get_neighbour_glasses(
         list[str]: List of `num_neighbours` closest glasses
                    to `glass` in (n_d, V_d) space.
     """
-    if glass not in glass_selection:
-        raise ValueError(
-            f"In get_neighbor_glasses(): glass {glass}' not found in selected glasses"
-        )
 
-    # Get index and dispersion (n_d, V_d) for all glasses
-    glass_dict = {g: get_nd_vd(g) for g in glass_selection}
+    # If not provided, get index and dispersion (n_d, V_d) for all glasses
+    if not glass_selection and not glass_dict:
+        if glass not in glass_selection:
+            raise ValueError(
+                f"In get_neighbor_glasses(): glass {glass} "
+                f"not found in selected glasses"
+            )
+        glass_dict = {g: get_nd_vd(g) for g in glass_selection}
+
     nd0, vd0 = glass_dict[glass]
 
     # Compute Euclidean distance in (nd, vd) space. Weighting can be added.
@@ -333,3 +339,33 @@ def plot_glass_map(
 
     plt.tight_layout()
     plt.show()
+
+
+def find_closest_glass(nd_vd: tuple, catalog: list[str], plot_map: bool = False) -> str:
+    """
+    Find the glass in `catalog` whose (nd, vd) is closest to `nd_vd`.
+
+    Args:
+        nd_vd (tuple): Target (nd, vd).
+        catalog (list[str]): List of glass names.
+
+    Returns:
+        str: Name of the closest glass.
+    """
+    # Create a mapping of glass name to (nd, vd)
+    glass_dict = {g: get_nd_vd(g) for g in catalog}
+
+    # Find the glass with the minimum squared Euclidean distance
+    closest_glass = min(
+        glass_dict.items(),
+        key=lambda item: (item[1][0] - nd_vd[0]) ** 2 + (item[1][1] - nd_vd[1]) ** 2,
+    )[0]
+
+    if plot_map:
+        plot_glass_map(
+            glass_selection=catalog,
+            highlights=closest_glass,
+            title="Map",
+        )
+
+    return closest_glass

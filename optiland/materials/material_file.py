@@ -502,7 +502,8 @@ class MaterialFile(BaseMaterial):
             # reference temperature
             self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
         except KeyError:
-            print("Thermal dispersion data not found")
+            # print("Thermal dispersion data not found")
+            pass
         # Parse reference info, if available
         with contextlib.suppress(KeyError):
             self.reference_data = data["REFERENCE"]
