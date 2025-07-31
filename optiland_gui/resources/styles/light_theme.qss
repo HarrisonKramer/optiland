@@ -51,6 +51,11 @@ QMainWindow::separator:hover {
     background-color: #007ACC; 
 }
 
+QDockWidget {
+    border: 2px solid #CED4DA; /* Border around the entire dock widget */
+    border-radius: 5px;
+}
+
 /* === Custom Title Bar Styles === */
 /* Main container for the custom title bar */
 #CustomTitleBar {
@@ -679,7 +684,43 @@ QTableWidget QLineEdit {
     color: #212529; 
 }
 
+/* === Custom Dock Widget Title Bar (Light) === */
 QWidget#CustomDockTitleBar {
-    background-color: #DEE2E6; /* --hover-bg */
-    color: #212529; /* --main-text */
+    background-color: #DEE2E6; /* Light gray background */
+    border: 1px solid #CED4DA;
+    border-bottom: 1px solid #F8F9FA; /* Match main background for seamless look */
+    padding: 4px 6px; /* Top/bottom, left/right padding */
+    height: 26px; /* Fixed height for title bar */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
+
+QWidget#CustomDockTitleBar QLabel {
+    color: #212529; /* Dark text */
+    font-weight: bold;
+    font-size: 11pt; /* Larger font size */
+    padding-left: 6px;
+    letter-spacing: 0.5px; /* Spacing between letters */
+    font-family: 'Segoe UI', Arial, sans-serif; /* Modern font */
+}
+
+/* Dock Title Buttons */
+#DockMinimizeButton, #DockUndockButton, #DockCloseButton {
+    min-width: 14px;
+    max-width: 14px;
+    min-height: 14px;
+    max-height: 14px;
+    border-radius: 7px; /* Makes it a circle - half of width/height */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 0px 3px; /* Spacing between buttons */
+    padding: 0px;
+}
+
+#DockMinimizeButton:hover, #DockUndockButton:hover, #DockCloseButton:hover {
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    /* Removed transform property as it's not supported in Qt stylesheets */
+}
+
+#DockMinimizeButton { background-color: #27C840; } /* Green */
+#DockUndockButton { background-color: #FEBC2E; } /* Yellow */
+#DockCloseButton { background-color: #FF5F57; } /* Red */

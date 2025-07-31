@@ -11,7 +11,7 @@ plots and `VTKViewer` for 3D rendering.
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QComboBox,
@@ -82,7 +82,6 @@ class SagViewer(QWidget):
 
         # --- Add Toolbar to container ---
         self.toolbar = CustomMatplotlibToolbar(self.canvas, toolbar_container)
-        self.toolbar.setIconSize(QSize(16, 16))
         toolbar_layout.addWidget(self.toolbar)
         toolbar_layout.addStretch()
 

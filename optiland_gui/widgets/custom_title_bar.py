@@ -194,3 +194,13 @@ class CustomTitleBar(QWidget):
         """
         self._mouse_move_offset = None
         super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        Handles double-click on title bar to maximize/restore window.
+
+        Args:
+            event (QMouseEvent): The mouse double-click event.
+        """
+        if event.button() == Qt.LeftButton:
+            self.maximize_restore_requested.emit()

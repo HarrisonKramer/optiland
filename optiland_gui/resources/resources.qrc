@@ -46,8 +46,10 @@
     <file alias="light/add.svg">icons/light/add.svg</file>
     <file alias="light/flash.svg">icons/light/flash.svg</file>
     <file alias="light/add_quick_action.svg">icons/light/add_quick_action.svg</file>
-
-
-
 </qresource>
+
+<qresource prefix="/images">
+    <file>logo.png</file>
+  </qresource>
+
 </RCC>
