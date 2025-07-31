@@ -7,7 +7,8 @@ such as radius, thickness, and material.
 Author: Manuel Fragata Mendes, 2025
 """
 
-from PySide6.QtCore import QEvent, Qt, Signal, Slot
+from PySide6.QtCore import QEvent, QSize, Qt, Signal, Slot
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFormLayout,
@@ -37,36 +38,70 @@ class SurfacePropertiesWidget(QWidget):
         self.setObjectName("SurfacePropertiesWidget")
         self.setMinimumWidth(750)
 
+        # Add size constraints
+        self.setMinimumHeight(100)
+        self.setMaximumHeight(200)
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 8, 15, 8)
-        self.form_layout = QFormLayout()
-        self.form_layout.setHorizontalSpacing(15)
-        self.form_layout.setVerticalSpacing(5)
-        main_layout.addLayout(self.form_layout)
 
-        self.input_widgets = {}
+        # Create a horizontal layout to hold multiple form layouts
+        columns_layout = QHBoxLayout()
+        columns_layout.setSpacing(20)  # Space between columns
+        main_layout.addLayout(columns_layout)
+
         params = self.connector.get_surface_geometry_params(self.row)
+        self.input_widgets = {}
 
         if not params:
-            self.form_layout.addRow(
+            form_layout = QFormLayout()
+            form_layout.setHorizontalSpacing(15)
+            form_layout.setVerticalSpacing(5)
+            form_layout.addRow(
                 QLabel("No additional properties for this surface type.")
             )
+            columns_layout.addLayout(form_layout)
+        else:
+            # Organize properties into columns with maximum 2 properties per column
+            items_per_column = 2
+            param_items = list(params.items())
 
-        for name, value in params.items():
-            label_text = name + ":"
-            line_edit = QLineEdit()
-            line_edit.setMaximumWidth(60)  # Shorter text boxes
+            # Calculate how many columns we need
+            num_columns = (len(param_items) + items_per_column - 1) // items_per_column
 
-            if isinstance(value, (list, tuple)) or hasattr(value, "tolist"):
-                list_val = value.tolist() if hasattr(value, "tolist") else value
-                line_edit.setText(str(list_val))
-                line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
-            else:
-                line_edit.setText(f"{value:.6f}")
+            # Create and populate each column
+            for col in range(num_columns):
+                form_layout = QFormLayout()
+                form_layout.setHorizontalSpacing(15)
+                form_layout.setVerticalSpacing(5)
 
-            line_edit.editingFinished.connect(self.apply_changes)  # Auto-apply
-            self.form_layout.addRow(label_text, line_edit)
-            self.input_widgets[name] = line_edit
+                # Calculate start and end indices for this column
+                start_idx = col * items_per_column
+                end_idx = min((col + 1) * items_per_column, len(param_items))
+
+                # Add properties to this column
+                for i in range(start_idx, end_idx):
+                    name, value = param_items[i]
+                    label_text = name + ":"
+                    line_edit = QLineEdit()
+                    line_edit.setMaximumWidth(60)  # Shorter text boxes
+
+                    if isinstance(value, (list, tuple)) or hasattr(value, "tolist"):
+                        list_val = value.tolist() if hasattr(value, "tolist") else value
+                        line_edit.setText(str(list_val))
+                        line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
+                    else:
+                        line_edit.setText(f"{value:.6f}")
+
+                    line_edit.editingFinished.connect(self.apply_changes)  # Auto-apply
+                    form_layout.addRow(label_text, line_edit)
+                    self.input_widgets[name] = line_edit
+
+                # Add this column to the horizontal layout
+                columns_layout.addLayout(form_layout)
+
+            # Add a stretch at the end to align columns to the left
+            columns_layout.addStretch(1)
 
     @Slot()
     def apply_changes(self):
@@ -81,6 +116,7 @@ class SurfaceTypeWidget(QWidget):
     """A custom widget for the 'Type' column, allowing text edit and dropdown."""
 
     surfaceTypeChanged = Signal(str)
+    propertiesIconClicked = Signal()
 
     def __init__(self, row, current_type_info, connector, parent=None):
         super().__init__(parent)
@@ -95,6 +131,21 @@ class SurfaceTypeWidget(QWidget):
         self.type_button.setFixedSize(18, 18)
         self.type_button.setAutoRaise(True)
         self.type_button.setArrowType(Qt.DownArrow)
+
+        # --- ADD PROPERTIES BUTTON ---
+        self.props_button = QToolButton()
+        self.props_button.setObjectName("PropertiesButton")
+        self.props_button.setIcon(QIcon(":/icons/dark/tool.svg"))
+        self.props_button.setFixedSize(20, 20)
+        self.props_button.setIconSize(QSize(16, 16))
+        self.props_button.setToolTip("Show/Hide Surface Properties")
+        self.props_button.clicked.connect(self.propertiesIconClicked.emit)
+        self.layout.addWidget(self.props_button)
+
+        # Hide the button if there are no properties to show
+        if not current_type_info.get("has_extra_params", False):
+            self.props_button.hide()
+
         self.type_edit = QLineEdit(current_type_info["display_text"])
         self.type_edit.setObjectName("SurfaceTypeLineEdit")
         self.type_edit.editingFinished.connect(self.text_changed)
@@ -164,9 +215,20 @@ class LensEditor(QWidget):
         self.tableWidget.setSelectionBehavior(
             QAbstractItemView.SelectionBehavior.SelectRows
         )
+        # Prevent excessive column resizing
+        self.tableWidget.horizontalHeader().setMinimumSectionSize(60)
+        self.tableWidget.horizontalHeader().setMaximumSectionSize(200)
         self.tableWidget.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Interactive
         )
+
+        # Prevent excessive row resizing
+        self.tableWidget.verticalHeader().setMinimumSectionSize(30)
+        self.tableWidget.verticalHeader().setMaximumSectionSize(70)
+        self.tableWidget.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Interactive
+        )
+        self.tableWidget.verticalHeader().setDefaultSectionSize(30)
         self.tableWidget.blockSignals(False)
 
     def eventFilter(self, source, event):
@@ -209,9 +271,19 @@ class LensEditor(QWidget):
             for c_idx, header in enumerate(self.connector.get_column_headers()):
                 if c_idx == self.connector.COL_TYPE:
                     type_info = self.connector.get_surface_type_info(r)
+
+                    # Force-check if this surface type has parameters
+                    if "has_extra_params" not in type_info:
+                        # Check if surface has geometry parameters
+                        params = self.connector.get_surface_geometry_params(r)
+                        type_info["has_extra_params"] = bool(params)
+
                     widget = SurfaceTypeWidget(r, type_info, self.connector)
                     widget.surfaceTypeChanged.connect(
                         lambda nt, row=r: self.connector.set_surface_type(row, nt)
+                    )
+                    widget.propertiesIconClicked.connect(
+                        lambda row=r: self.toggle_properties_widget(row)
                     )
                     self.tableWidget.setCellWidget(r, c_idx, widget)
                 else:
@@ -240,7 +312,11 @@ class LensEditor(QWidget):
         prop_widget = SurfacePropertiesWidget(source_row, self.connector)
         self.tableWidget.setCellWidget(prop_row_index, 0, prop_widget)
         self.tableWidget.setSpan(prop_row_index, 0, 1, self.tableWidget.columnCount())
-        self.tableWidget.resizeRowToContents(prop_row_index)
+        default_props_height = 150
+        self.tableWidget.setRowHeight(prop_row_index, default_props_height)
+        self.tableWidget.verticalHeader().setSectionResizeMode(
+            prop_row_index, QHeaderView.ResizeMode.Fixed
+        )
 
     @Slot()
     def update_headers_on_selection(self):
@@ -289,10 +365,53 @@ class LensEditor(QWidget):
 
     @Slot()
     def toggle_properties_widget(self, source_row):
-        self.open_prop_source_row = (
-            -1 if self.open_prop_source_row == source_row else source_row
-        )
+        # Check if we're closing the currently open properties
+        if self.open_prop_source_row == source_row:
+            # Restore interactive resize mode for the rows that were fixed
+            if self.open_prop_source_row >= 0:
+                # Get the row indices to restore
+                row_above = self.open_prop_source_row
+                row_below = (
+                    self.open_prop_source_row + 2
+                )  # +2 because +1 is the properties row
+
+                # Check if these rows exist before changing their mode
+                if row_above >= 0 and row_above < self.tableWidget.rowCount():
+                    self.tableWidget.verticalHeader().setSectionResizeMode(
+                        row_above, QHeaderView.ResizeMode.Interactive
+                    )
+
+                if row_below < self.tableWidget.rowCount():
+                    self.tableWidget.verticalHeader().setSectionResizeMode(
+                        row_below, QHeaderView.ResizeMode.Interactive
+                    )
+
+            # Close the properties
+            self.open_prop_source_row = -1
+        else:
+            # Opening properties for source_row
+            self.open_prop_source_row = source_row
+
+        # Refresh the table
         self.load_data()
+
+        # If we're opening properties, set the rows around it to fixed mode
+        if self.open_prop_source_row >= 0:
+            # The row above is the surface row itself
+            row_above = self.open_prop_source_row
+            # The row below is after the properties row
+            row_below = self.open_prop_source_row + 2
+
+            # Set the resize mode to Fixed for these rows
+            if row_above >= 0 and row_above < self.tableWidget.rowCount():
+                self.tableWidget.verticalHeader().setSectionResizeMode(
+                    row_above, QHeaderView.ResizeMode.Fixed
+                )
+
+            if row_below < self.tableWidget.rowCount():
+                self.tableWidget.verticalHeader().setSectionResizeMode(
+                    row_below, QHeaderView.ResizeMode.Fixed
+                )
 
     @Slot("QPoint")
     def show_context_menu(self, pos):

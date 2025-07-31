@@ -149,7 +149,9 @@ class SurfaceSagViewer(BaseViewer):
         if surface.semi_aperture is None:
             aperture_info = "(No aperture defined)"
         else:
-            aperture_info = f"(Aperture: {be.to_numpy(surface.semi_aperture):.2f} mm)"
+            aperture_info = (
+                f"(Aperture: {be.to_numpy(surface.semi_aperture).item():.2f} mm)"
+            )
         extent_info = f"View: ±{max_extent_grid:.2f} mm"
 
         ax_map.set_title(

@@ -125,6 +125,7 @@ class OptilandConnector(QObject):
             self.redoStackAvailabilityChanged
         )
         self.opticLoaded.emit()
+        self.opticChanged.emit()
         self._undo_redo_manager.clear_stacks()
 
     def set_modified(self, modified: bool):
@@ -167,6 +168,11 @@ class OptilandConnector(QObject):
                 material="Air",
             )
             optic_instance.add_wavelength(0.550, is_primary=True, unit="um")
+            optic_instance.set_field_type("angle")
+            optic_instance.add_field(y=0)
+            # set system aperture
+            optic_instance.pupil_type = "EPD"
+            optic_instance.entrance_pupil_diameter = 10.0
         else:
             if optic_instance.surface_group.num_surfaces < 2:
                 optic_instance.surface_group.surfaces.clear()
@@ -248,6 +254,7 @@ class OptilandConnector(QObject):
         self._current_filepath = None
         self.set_modified(False)
         self.opticLoaded.emit()
+        self.opticChanged.emit()
 
     def load_optic_from_file(self, filepath: str):
         try:
@@ -341,7 +348,12 @@ class OptilandConnector(QObject):
         display_text = (
             f"Stop ({base_type.title()})" if surface.is_stop else base_type.title()
         )
-        return {"display_text": display_text, "is_changeable": not surface.is_stop}
+        has_extra_params = bool(self.get_surface_geometry_params(row))
+        return {
+            "display_text": display_text,
+            "is_changeable": not surface.is_stop,
+            "has_extra_params": has_extra_params,
+        }
 
     def get_surface_data(self, row: int, col_idx: int):
         if not (0 <= row < self.get_surface_count()):
