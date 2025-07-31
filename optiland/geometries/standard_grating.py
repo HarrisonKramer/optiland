@@ -27,7 +27,9 @@ class StandardGratingGeometry(BaseGeometry):
     Args:
         coordinate_system (CoordinateSystem): The coordinate system of the geometry.
         radius (float): The radius of curvature of the geometry.
-        alpha (float): The grating groove orientation angle
+        grating_order (int): The grating diffraction order
+        grating_period (float): The grating period
+        groove_orientation_angle (float): The groove orientation angle
         conic (float, optional): The conic constant of the geometry. Defaults to 0.0.
 
     Methods:
@@ -42,12 +44,13 @@ class StandardGratingGeometry(BaseGeometry):
 
     """
 
-    def __init__(self, coordinate_system, radius, grating_order, grating_period, conic=0.0):
+    def __init__(self, coordinate_system, radius, grating_order, grating_period, groove_orientation_angle, conic=0.0):
         super().__init__(coordinate_system)
         self.radius = be.array(radius)
         self.k = be.array(conic)
         self.grating_order = be.array(grating_order)
         self.grating_period = be.array(grating_period)
+        self.groove_orientation_angle = be.array(groove_orientation_angle)
         self.is_symmetric = True
 
     def __str__(self):
@@ -77,37 +80,13 @@ class StandardGratingGeometry(BaseGeometry):
             self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2))
         )
     
-    def _tang(self, x=0, y=0):
-        """ Compute the unit vector that is lying on the tangent plane in (x,y,z) and tangent to the grating line 
-
-        Args:
-            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
-            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
-
-        Returns:
-            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
-            components of the tangent vector.
-        """
-        dzdx = 2*x/(self.radius*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)) + x*(self.k + 1)*(x**2 + y**2)/(self.radius**3*be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2)*(be.sqrt(1 - (self.k + 1)*(x**2 + y**2)/self.radius**2) + 1)**2)
-
-        tx = be.ones_like(dzdx)
-        ty = be.zeros_like(dzdx)
-        tz = dzdx
-
-        # Normalize t
-        norm_t = be.sqrt(tx**2 + ty**2 + tz**2)
-        tx /= norm_t
-        ty /= norm_t
-        tz /= norm_t
-        return tx, ty, tz
-    
     def _tangent(self, x=0, y=0, alfa = 0):
         """ Compute the unit vector that is lying on the tangent plane in (x,y,z) and tangent to the grating line 
 
         Args:
             x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
             y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
-            alfa (float): The grating orientation angle in radians. Defaults to 0.
+            alfa (float): The groove orientation angle in radians. Defaults to 0.
 
         Returns:
             tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
@@ -215,7 +194,7 @@ class StandardGratingGeometry(BaseGeometry):
 
         """
         nx,ny,nz = self.surface_normal(rays)
-        tx,ty,tz = self._tangent(rays.x,rays.y)
+        tx,ty,tz = self._tangent(rays.x,rays.y,self.groove_orientation_angle)
         fx = ny*tz - nz*ty
         fy = -nx*tz + nz*tx
         fz = nx*ty - ny*tx
@@ -238,7 +217,10 @@ class StandardGratingGeometry(BaseGeometry):
         geometry_dict.update({
             "radius": float(self.radius), 
             "conic": float(self.k),
-            "alpha": float(self.alpha)})
+            "order": float(self.grating_order),
+            "period": float(self.grating_period),
+            "angle": float(self.groove_orientation_angle),
+            })
         return geometry_dict
 
     @classmethod
@@ -259,4 +241,11 @@ class StandardGratingGeometry(BaseGeometry):
 
         cs = CoordinateSystem.from_dict(data["cs"])
 
-        return cls(cs, data["radius"], data["alpha"], data.get("conic", 0.0))
+        return cls(
+            cs, 
+            data["radius"], 
+            data["alpha"], 
+            data["order"], 
+            data["period"],
+            data["angle"],
+            data.get("conic", 0.0))

@@ -55,6 +55,7 @@ class GeometryConfig:
     conic: float = 0.0
     grating_order: int = 0
     grating_period: float = be.inf
+    groove_orientation_angle: float = 0.0
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
@@ -175,12 +176,13 @@ def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
     """
     # Use a Plane if the radius is infinity.
     if be.isinf(config.radius):
-        return PlaneGrating(cs,config.grating_order,config.grating_period)    
+        return PlaneGrating(cs,config.grating_order,config.grating_period,config.groove_orientation_angle)    
     return StandardGratingGeometry(
         cs,
         config.radius,
         config.grating_order,
         config.grating_period,
+        config.groove_orientation_angle,
         config.conic,
     )
 
