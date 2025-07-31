@@ -46,11 +46,6 @@ QDockWidget::title:focus { /* Added for focused dock title */
     padding-top: 5px; /* Adjust padding for thicker border */
 }
 
-QDockWidget::float-button, QDockWidget::close-button {
-    background-color: #5A5A5A;
-    border-radius: 2px;
-}
-
 /* === Custom Title Bar Styles === */
 /* Main container for the custom title bar */
 #CustomTitleBar {
@@ -601,4 +596,9 @@ QTableWidget QLineEdit {
     border-radius: 0px;
     background-color: #3C3C3C;
     color: #E0E0E0; 
+}
+
+QWidget#CustomDockTitleBar {
+    background-color: #3C3C3C; /* var(--secondary-color) */
+    color: #E0E0E0; /* var(--text-color) */
 }

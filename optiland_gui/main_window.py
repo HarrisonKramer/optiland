@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
     QFileDialog,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMenu,
@@ -70,6 +71,82 @@ SIDEBAR_QSS_PATH = os.path.join(
 
 ORGANIZATION_NAME = "OptilandProject"
 APPLICATION_NAME = "OptilandGUI"
+
+
+class CustomDockTitleBar(QWidget):
+    """A custom title bar for QDockWidgets with macOS-style buttons on the right."""
+
+    def __init__(self, parent_dock: QDockWidget, title: str = ""):
+        super().__init__(parent_dock)
+        self.parent_dock = parent_dock
+        self._mouse_press_pos = None
+        self._mouse_move_pos = None
+        self.setObjectName("CustomDockTitleBar")  # For styling
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(6, 0, 6, 0)  # Left, Top, Right, Bottom
+        layout.setSpacing(8)
+
+        # Title Label on the left
+        self.title_label = QLabel(title)
+        self.title_label.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
+        layout.addWidget(self.title_label)
+        layout.addStretch()
+
+        # Create buttons on the right
+        self.minimize_btn = QPushButton()
+        self.undock_btn = QPushButton()
+        self.close_btn = QPushButton()
+
+        buttons = [self.minimize_btn, self.undock_btn, self.close_btn]
+        colors = ["#27C840", "#FEBC2E", "#FF5F57"]  # Green, Yellow, Red
+        tooltips = ["Hide", "Float/Dock", "Close"]
+
+        for btn, color, tip in zip(buttons, colors, tooltips):
+            btn.setFixedSize(12, 12)
+            btn.setToolTip(tip)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {color};
+                    border-radius: 6px;
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                }}
+                QPushButton:hover {{
+                    border: 1px solid rgba(0, 0, 0, 0.6);
+                }}
+            """)
+            layout.addWidget(btn)
+
+        # Connect signals
+        self.close_btn.clicked.connect(self.parent_dock.close)
+        self.undock_btn.clicked.connect(
+            lambda: self.parent_dock.setFloating(not self.parent_dock.isFloating())
+        )
+        self.minimize_btn.clicked.connect(self.parent_dock.toggleViewAction().trigger)
+
+    # --- Corrected mouse handling for dragging floating docks ---
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.parent_dock.isFloating():
+            self._mouse_press_pos = event.globalPosition().toPoint()
+            self._mouse_move_pos = self.parent_dock.pos()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if (
+            event.buttons() == Qt.LeftButton
+            and self._mouse_press_pos is not None
+            and self.parent_dock.isFloating()
+        ):
+            diff = event.globalPosition().toPoint() - self._mouse_press_pos
+            self.parent_dock.move(self._mouse_move_pos + diff)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._mouse_press_pos = None
+        self._mouse_move_pos = None
+        super().mouseReleaseEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -264,6 +341,9 @@ class MainWindow(QMainWindow):
         self.viewerDock = QDockWidget("System Viewer", self)
         self.viewerDock.setWidget(self.viewerPanel)
         self.viewerDock.setObjectName("ViewerDock")
+        self.viewerDock.setTitleBarWidget(
+            CustomDockTitleBar(self.viewerDock, "System Viewer")
+        )
         self.viewerDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -273,6 +353,9 @@ class MainWindow(QMainWindow):
         self.lensEditorDock = QDockWidget("Lens Data Editor", self)
         self.lensEditorDock.setWidget(self.lensEditor)
         self.lensEditorDock.setObjectName("LensEditorDock")
+        self.lensEditorDock.setTitleBarWidget(
+            CustomDockTitleBar(self.lensEditorDock, "Lens Data Editor")
+        )
         self.lensEditorDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -282,6 +365,9 @@ class MainWindow(QMainWindow):
         self.systemPropertiesDock = QDockWidget("System Properties", self)
         self.systemPropertiesDock.setWidget(self.systemPropertiesPanel)
         self.systemPropertiesDock.setObjectName("SystemPropertiesDock")
+        self.systemPropertiesDock.setTitleBarWidget(
+            CustomDockTitleBar(self.systemPropertiesDock, "System Properties")
+        )
         self.systemPropertiesDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -291,6 +377,9 @@ class MainWindow(QMainWindow):
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
         self.analysisPanelDock.setObjectName("AnalysisPanelDock")
+        self.analysisPanelDock.setTitleBarWidget(
+            CustomDockTitleBar(self.analysisPanelDock, "Analysis")
+        )
         self.analysisPanelDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -303,18 +392,12 @@ class MainWindow(QMainWindow):
             lambda pos: self._show_dock_context_menu(pos, self.analysisPanelDock)
         )
 
-        """self.optimizationPanelDock = QDockWidget("Optimization", self)
-        self.optimizationPanelDock.setWidget(self.optimizationPanel)
-        self.optimizationPanelDock.setObjectName("OptimizationPanelDock")
-        self.optimizationPanelDock.setFeatures(
-            QDockWidget.DockWidgetClosable
-            | QDockWidget.DockWidgetMovable
-            | QDockWidget.DockWidgetFloatable
-        )"""
-
         self.terminalDock = QDockWidget("Scripts Terminal", self)
         self.terminalDock.setWidget(self.pythonTerminal)
         self.terminalDock.setObjectName("TerminalDock")
+        self.terminalDock.setTitleBarWidget(
+            CustomDockTitleBar(self.terminalDock, "Scripts Terminal")
+        )
         self.terminalDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -670,7 +753,7 @@ class MainWindow(QMainWindow):
             self.custom_title_bar_widget.set_project_name(display_name)
 
     def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
-        animation_duration = 300
+        animation_duration = 150
         easing_curve = QEasingCurve.InOutQuad
         is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
             Qt.DockWidgetArea.LeftDockWidgetArea,
@@ -705,6 +788,8 @@ class MainWindow(QMainWindow):
             and self.dock_animations[dock_widget].state() == QPropertyAnimation.Running
         ):
             self.dock_animations[dock_widget].stop()
+        if show_state_after_toggle:
+            dock_widget.show()
         current_visibility = not dock_widget.isHidden()
         if show_state_after_toggle:
             if not current_visibility:
@@ -726,6 +811,9 @@ class MainWindow(QMainWindow):
                     )
                 animation.setDuration(animation_duration)
                 animation.setEasingCurve(easing_curve)
+                animation.finished.connect(
+                    lambda: self.dock_animations.pop(dock_widget, None)
+                )
                 animation.start(QPropertyAnimation.DeleteWhenStopped)
                 self.dock_animations[dock_widget] = animation
             else:
@@ -764,6 +852,9 @@ class MainWindow(QMainWindow):
                             original_dimension if original_dimension > 0 else 5000
                         )
                     )
+                )
+                animation.finished.connect(
+                    lambda: self.dock_animations.pop(dock_widget, None)
                 )
                 animation.start(QPropertyAnimation.DeleteWhenStopped)
                 self.dock_animations[dock_widget] = animation

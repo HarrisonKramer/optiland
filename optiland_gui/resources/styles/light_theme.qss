@@ -678,3 +678,8 @@ QTableWidget QLineEdit {
     background-color: #FFFFFF; 
     color: #212529; 
 }
+
+QWidget#CustomDockTitleBar {
+    background-color: #DEE2E6; /* --hover-bg */
+    color: #212529; /* --main-text */
+}

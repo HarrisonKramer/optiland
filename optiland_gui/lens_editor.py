@@ -35,6 +35,7 @@ class SurfacePropertiesWidget(QWidget):
         self.row = row
         self.connector = connector
         self.setObjectName("SurfacePropertiesWidget")
+        self.setMinimumWidth(750)
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 8, 15, 8)
@@ -54,7 +55,7 @@ class SurfacePropertiesWidget(QWidget):
         for name, value in params.items():
             label_text = name + ":"
             line_edit = QLineEdit()
-            line_edit.setMaximumWidth(200)  # Shorter text boxes
+            line_edit.setMaximumWidth(60)  # Shorter text boxes
 
             if isinstance(value, (list, tuple)) or hasattr(value, "tolist"):
                 list_val = value.tolist() if hasattr(value, "tolist") else value
@@ -93,11 +94,12 @@ class SurfaceTypeWidget(QWidget):
         self.type_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.type_button.setFixedSize(18, 18)
         self.type_button.setAutoRaise(True)
+        self.type_button.setArrowType(Qt.DownArrow)
         self.type_edit = QLineEdit(current_type_info["display_text"])
         self.type_edit.setObjectName("SurfaceTypeLineEdit")
         self.type_edit.editingFinished.connect(self.text_changed)
-        self.layout.addWidget(self.type_button)
         self.layout.addWidget(self.type_edit, 1)
+        self.layout.addWidget(self.type_button)
         self.surface_menu = QMenu(self)
         self.surface_menu.setObjectName("SurfaceTypeMenu")
         for surf_type in self.connector.get_available_surface_types():
