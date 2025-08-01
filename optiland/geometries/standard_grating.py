@@ -39,12 +39,20 @@ class StandardGratingGeometry(BaseGeometry):
             given rays.
         surface_normal(rays): Calculates the surface normal of the geometry at
             the given ray positions.
-        grating_vector(rays): Compute the grating vector at the given ray positions. 
-    
+        grating_vector(rays): Compute the grating vector at the given ray positions.
+
 
     """
 
-    def __init__(self, coordinate_system, radius, grating_order, grating_period, groove_orientation_angle, conic=0.0):
+    def __init__(
+        self,
+        coordinate_system,
+        radius,
+        grating_order,
+        grating_period,
+        groove_orientation_angle,
+        conic=0.0,
+    ):
         super().__init__(coordinate_system)
         self.radius = be.array(radius)
         self.k = be.array(conic)
@@ -79,9 +87,10 @@ class StandardGratingGeometry(BaseGeometry):
         return r2 / (
             self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2))
         )
-    
-    def _tangent(self, x=0, y=0, alfa = 0):
-        """ Compute the unit vector that is lying on the tangent plane in (x,y,z) and tangent to the grating line 
+
+    def _tangent(self, x=0, y=0, alfa=0):
+        """Compute the unit vector that is lying on the tangent plane in (x,y,z) and
+        tangent to the grating line
 
         Args:
             x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
@@ -92,10 +101,39 @@ class StandardGratingGeometry(BaseGeometry):
             tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
             components of the tangent vector.
         """
-        dzdx = (x + y*be.tan(alfa))*(2*self.radius**2*be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2)*(be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2) + 1) + (self.k + 1)*(x**2 + y**2))/(self.radius**3*be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2)*(be.sqrt((self.radius**2 - (self.k + 1)*(x**2 + y**2))/self.radius**2) + 1)**2)
+        dzdx = (
+            (x + y * be.tan(alfa))
+            * (
+                2
+                * self.radius**2
+                * be.sqrt(
+                    (self.radius**2 - (self.k + 1) * (x**2 + y**2)) / self.radius**2
+                )
+                * (
+                    be.sqrt(
+                        (self.radius**2 - (self.k + 1) * (x**2 + y**2)) / self.radius**2
+                    )
+                    + 1
+                )
+                + (self.k + 1) * (x**2 + y**2)
+            )
+            / (
+                self.radius**3
+                * be.sqrt(
+                    (self.radius**2 - (self.k + 1) * (x**2 + y**2)) / self.radius**2
+                )
+                * (
+                    be.sqrt(
+                        (self.radius**2 - (self.k + 1) * (x**2 + y**2)) / self.radius**2
+                    )
+                    + 1
+                )
+                ** 2
+            )
+        )
 
         tx = be.ones_like(dzdx)
-        ty = be.ones_like(dzdx)*be.tan(alfa)
+        ty = be.ones_like(dzdx) * be.tan(alfa)
         tz = dzdx
 
         # Normalize t
@@ -104,7 +142,7 @@ class StandardGratingGeometry(BaseGeometry):
         ty /= norm_t
         tz /= norm_t
         return tx, ty, tz
-    
+
     def distance(self, rays):
         """Find the propagation distance to the geometry for the given rays.
 
@@ -193,17 +231,17 @@ class StandardGratingGeometry(BaseGeometry):
             components of the grating vector.
 
         """
-        nx,ny,nz = self.surface_normal(rays)
-        tx,ty,tz = self._tangent(rays.x,rays.y,self.groove_orientation_angle)
-        fx = ny*tz - nz*ty
-        fy = -nx*tz + nz*tx
-        fz = nx*ty - ny*tx
+        nx, ny, nz = self.surface_normal(rays)
+        tx, ty, tz = self._tangent(rays.x, rays.y, self.groove_orientation_angle)
+        fx = ny * tz - nz * ty
+        fy = -nx * tz + nz * tx
+        fz = nx * ty - ny * tx
 
         mag = be.sqrt(fx**2 + fy**2 + fz**2)
         fx = fx / mag
         fy = fy / mag
         fz = fz / mag
-        
+
         return -fx, -fy, -fz
 
     def to_dict(self):
@@ -214,13 +252,15 @@ class StandardGratingGeometry(BaseGeometry):
 
         """
         geometry_dict = super().to_dict()
-        geometry_dict.update({
-            "radius": float(self.radius), 
-            "conic": float(self.k),
-            "order": float(self.grating_order),
-            "period": float(self.grating_period),
-            "angle": float(self.groove_orientation_angle),
-            })
+        geometry_dict.update(
+            {
+                "radius": float(self.radius),
+                "conic": float(self.k),
+                "order": float(self.grating_order),
+                "period": float(self.grating_period),
+                "angle": float(self.groove_orientation_angle),
+            }
+        )
         return geometry_dict
 
     @classmethod
@@ -242,10 +282,11 @@ class StandardGratingGeometry(BaseGeometry):
         cs = CoordinateSystem.from_dict(data["cs"])
 
         return cls(
-            cs, 
-            data["radius"], 
-            data["alpha"], 
-            data["order"], 
+            cs,
+            data["radius"],
+            data["alpha"],
+            data["order"],
             data["period"],
             data["angle"],
-            data.get("conic", 0.0))
+            data.get("conic", 0.0),
+        )

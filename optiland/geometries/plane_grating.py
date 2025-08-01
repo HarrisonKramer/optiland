@@ -22,11 +22,13 @@ class PlaneGrating(BaseGeometry):
 
     """
 
-    def __init__(self, coordinate_system, grating_order, grating_period, groove_orientation_angle):
+    def __init__(
+        self, coordinate_system, grating_order, grating_period, groove_orientation_angle
+    ):
         super().__init__(coordinate_system)
         self.radius = be.inf
         self.grating_order = be.array(grating_order)
-        self.grating_period = be.array(grating_period) 
+        self.grating_period = be.array(grating_period)
         self.groove_orientation_angle = be.array(groove_orientation_angle)
         self.is_symmetric = True
 
@@ -58,8 +60,7 @@ class PlaneGrating(BaseGeometry):
         if be.is_array_like(y):
             return be.zeros_like(y)
         return 0
-    
-   
+
     def distance(self, rays):
         """Find the propagation distance to the plane geometry.
 
@@ -111,13 +112,13 @@ class PlaneGrating(BaseGeometry):
             components of the grating vectors.
 
         """
-        #zero_comp = be.zeros_like(rays.x)
-        #one_comp = be.ones_like(rays.x)
-        gvx = -be.sin(self.groove_orientation_angle)*be.ones_like(rays.x)
-        gvy = be.cos(self.groove_orientation_angle)*be.ones_like(rays.x)
+        # zero_comp = be.zeros_like(rays.x)
+        # one_comp = be.ones_like(rays.x)
+        gvx = -be.sin(self.groove_orientation_angle) * be.ones_like(rays.x)
+        gvy = be.cos(self.groove_orientation_angle) * be.ones_like(rays.x)
         gvz = be.zeros_like(rays.x)
-        
-        #return zero_comp, one_comp, zero_comp
+
+        # return zero_comp, one_comp, zero_comp
         return gvx, gvy, gvz
 
     def to_dict(self):

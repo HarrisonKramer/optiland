@@ -58,7 +58,7 @@ class GratingSurface(Surface):
             is_reflective,
             surface_type,
         )
-        
+
     def trace(self, rays: BaseRays):
         """Traces the given rays through the surface.
 
@@ -73,7 +73,6 @@ class GratingSurface(Surface):
             return self._trace_paraxial(rays)
         if isinstance(rays, RealRays):
             return self._trace_real(rays)
-
 
     def _interact(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting
@@ -91,20 +90,20 @@ class GratingSurface(Surface):
         # Interact with surface (refract or reflect)
         n1 = self.material_pre.n(rays.w)
         n2 = self.material_post.n(rays.w)
-        
-        #find grating vector
+
+        # find grating vector
         fx, fy, fz = self.geometry.grating_vector(rays)
-                
-        #grating period        
+
+        # grating period
         pp = self.geometry.grating_period
-        
-        #correct grating period considering projection effect on the surface
-        pp = pp/be.sqrt(fx**2+fy**2)
-        
-        #grating order
+
+        # correct grating period considering projection effect on the surface
+        pp = pp / be.sqrt(fx**2 + fy**2)
+
+        # grating order
         m = self.geometry.grating_order
-        
-        rays.gratingdiffract(nx, ny, nz, fx, fy, fz,m, pp, n1, n2, self.is_reflective)
+
+        rays.gratingdiffract(nx, ny, nz, fx, fy, fz, m, pp, n1, n2, self.is_reflective)
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:
@@ -127,7 +126,7 @@ class GratingSurface(Surface):
 
     def _trace_paraxial(self, rays: ParaxialRays):
         """Traces paraxial rays through the surface.
-        
+
         Note: To be modified for grating
 
         Args:
@@ -203,4 +202,3 @@ class GratingSurface(Surface):
         self._record(rays)
 
         return rays
-
