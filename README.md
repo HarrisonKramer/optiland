@@ -16,7 +16,6 @@
 
 <div align="center">
     <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/gui.png" alt="Optiland GUI" style="max-width: 100%; height: auto;">
-  </a>
 </div>
 
 <p align="center"><em>The Optiland GUI showing a reverse telephoto system.</em></p>
@@ -30,10 +29,10 @@
 4. [Core capabilities](#core-capabilities)
 5. [Learning Guide](#learning-guide)
 6. [Roadmap](#roadmap)
-6. [Under development](#under-development)
-7. [Contributing](#contributing)
-8. [License](#license)
-9. [Contact and Support](#contact-and-support)
+7. [Under development](#under-development)
+8. [Contributing](#contributing)
+9. [License](#license)
+10. [Contact and Support](#contact-and-support)
 
 
 ---
@@ -46,7 +45,7 @@ Built for professional engineering workflows, Optiland includes full support for
 
 Whether you're developing prototypes in research or refining production systems, Optiland delivers the flexibility and precision needed to model, simulate, and optimize real-world optical instruments:
 
-- ⚙️ Build reractive and reflective systems using a clean, object-oriented API  
+- ⚙️ Build refractive and reflective systems using a clean, object-oriented API  
 - 🔍 Trace rays through multi-surface optical assemblies, including aspherics and freeforms
 - 📊 Analyze paraxial properties, wavefront errors, PSFs/MTFs, and scatter behavior 
 - 🧠 Optimize via traditional merit functions or autograd-enabled differentiable backends  
@@ -96,6 +95,11 @@ Optiland's full documentation is available on [Read the Docs](https://optiland.r
     pip install optiland
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
     ```
+
+⚠️ Important Notes on GPU Installation
+- This command installs PyTorch with CUDA 11.8. Ensure that your NVIDIA drivers and toolkit are compatible.
+- You can find the correct PyTorch + CUDA combo for your system using the [official PyTorch installation selector](https://pytorch.org/get-started/locally/).
+- If you're using a non-NVIDIA GPU or running on Apple Silicon, use the CPU-only installation instead.
 
 
 For more details, see the [installation guide](https://optiland.readthedocs.io/en/latest/installation.html) in the docs.
