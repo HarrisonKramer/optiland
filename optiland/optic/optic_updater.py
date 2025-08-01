@@ -7,8 +7,6 @@ materials, conic constants, polarization, etc.
 Kramer Harrison, 2024
 """
 
-from typing import Union
-
 import optiland.backend as be
 from optiland.apodization import BaseApodization
 from optiland.geometries import Plane, StandardGeometry
@@ -121,7 +119,7 @@ class OpticUpdater:
         surface = self.optic.surface_group.surfaces[surface_number]
         surface.geometry.c[aspher_coeff_idx] = value
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
 
         Args:

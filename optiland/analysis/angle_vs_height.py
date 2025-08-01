@@ -122,7 +122,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                     "Invalid wavelength string for Angle vs. Height Analysis, only "
                     "'primary' is supported as a string."
                 )
-        elif isinstance(wavelength, (float, int)):
+        elif isinstance(wavelength, float | int):
             processed_wavelength = [float(wavelength)]
         else:
             raise TypeError(

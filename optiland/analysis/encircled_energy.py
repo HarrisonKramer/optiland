@@ -42,7 +42,7 @@ class EncircledEnergy(SpotDiagram):
     ):
         self.num_points = num_points
 
-        if isinstance(wavelength, (float, int)):
+        if isinstance(wavelength, float | int):
             # If a number is passed, wrap it in a list for the base classes.
             processed_wavelengths = [wavelength]
         elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:

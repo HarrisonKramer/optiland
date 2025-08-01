@@ -33,7 +33,7 @@ class YYbar(BaseAnalysis):
     def __init__(self, optic, wavelength="primary"):
         if isinstance(wavelength, str) and wavelength.lower() == "primary":
             self.wavelength_value_for_display = optic.primary_wavelength
-        elif isinstance(wavelength, (float, int)):
+        elif isinstance(wavelength, float | int):
             self.wavelength_value_for_display = float(wavelength)
         else:
             self.wavelength_value_for_display = optic.primary_wavelength

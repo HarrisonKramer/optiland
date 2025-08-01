@@ -496,7 +496,7 @@ class OptilandConnector(QObject):
             radius = surface.geometry.radius
             val = (
                 float(radius.item())
-                if hasattr(radius, "item") and not isinstance(radius, (float, int))
+                if hasattr(radius, "item") and not isinstance(radius, float | int)
                 else float(radius)
             )
             return "inf" if val == float("inf") else f"{val:.4f}"

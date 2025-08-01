@@ -47,7 +47,7 @@ class GridDistortion(BaseAnalysis):
         distortion_type="f-tan",
     ):
         # --- Start of Corrected Code ---
-        if isinstance(wavelength, (float, int)):
+        if isinstance(wavelength, float | int):
             # Wrap the single wavelength number in a list for the base class.
             processed_wavelengths = [wavelength]
         elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:

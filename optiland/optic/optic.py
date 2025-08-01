@@ -12,7 +12,6 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-from typing import Union
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
@@ -275,7 +274,7 @@ class Optic:
         """
         self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
 
         Args:
@@ -426,7 +425,7 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength: Union[float, str] = "primary"):
+    def n(self, wavelength: float | str = "primary"):
         """Get the refractive indices of the materials for each space between
         surfaces at a given wavelength.
 

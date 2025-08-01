@@ -99,7 +99,9 @@ class MonteCarlo(SensitivityAnalysis):
             result.update(
                 {
                     f"{name}": value
-                    for name, value in zip(self.operand_names, operand_values)
+                    for name, value in zip(
+                        self.operand_names, operand_values, strict=False
+                    )
                 },
             )
 

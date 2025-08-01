@@ -2,7 +2,6 @@ import csv
 import warnings
 from importlib import resources
 from pathlib import Path
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import yaml
@@ -15,7 +14,7 @@ from optiland.materials.material import Material
 def glasses_selection(
     lambda_min: float,
     lambda_max: float,
-    catalogs: Optional[list[str]] = None,
+    catalogs: list[str] | None = None,
 ) -> list[str]:
     """
     Retrieves a list of glass names whose tabulated transmission window fully covers

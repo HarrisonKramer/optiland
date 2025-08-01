@@ -96,7 +96,7 @@ class GlassExpert(OptimizerGeneric):
     def _restore_state(self, old_state=None):
         # Restore variables to a previous state and update the optical system
         state = old_state or self._state
-        for variable, val in zip(self.problem.variables, state):
+        for variable, val in zip(self.problem.variables, state, strict=False):
             variable.update(val)
         self.problem.update_optics()
 
@@ -353,7 +353,7 @@ class GlassExpert(OptimizerGeneric):
         result = self.optimize(**self.opt_params)
 
         # Update all continuous variables to final values
-        for var, val in zip(self.problem.variables, result.x):
+        for var, val in zip(self.problem.variables, result.x, strict=False):
             var.update(val)
         self.problem.update_optics()
 

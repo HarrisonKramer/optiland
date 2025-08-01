@@ -116,7 +116,7 @@ class BaseZernike(ABC):
         r = be.array(r)
 
         # Initialize value with correct backend
-        value = be.zeros_like(r) if not isinstance(r, (int, float)) else 0.0
+        value = be.zeros_like(r) if not isinstance(r, int | float) else 0.0
 
         for k in range(s_max):
             num = be.factorial(n - k)
