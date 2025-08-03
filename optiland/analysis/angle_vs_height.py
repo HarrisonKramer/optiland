@@ -8,7 +8,6 @@ Implemented in Optiland by Kramer Harrison, 2025
 """
 
 import abc
-from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,7 +27,7 @@ def _plot_angle_vs_height(
     ax: plt.Axes,
     title: str,
     color_label: str,
-    cmap: Union[str, Colormap],
+    cmap: str | Colormap,
 ) -> None:
     """Helper function to generate a consistent angle vs. image
     height plot on a given axis.
@@ -116,7 +115,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: Union[str, int, float] = "primary",
+        wavelength: str | int | float = "primary",
         num_points: int = 128,
     ):
         self.surface_idx = surface_idx
@@ -223,7 +222,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         fig_to_plot_on: plt.Figure = None,
         figsize: tuple[float, float] = (8, 5.5),
         title: str = None,
-        cmap: Union[str, Colormap] = "viridis",
+        cmap: str | Colormap = "viridis",
         line_style: str = "-",
     ) -> tuple[plt.Figure, plt.Axes]:
         """Displays a plot of the incident angle vs. image height analysis.
@@ -361,7 +360,7 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: Union[str, int, float] = "primary",
+        wavelength: str | int | float = "primary",
         field: tuple = (0, 0),
         num_points: int = 128,
     ):
@@ -443,7 +442,7 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: Union[str, int, float] = "primary",
+        wavelength: str | int | float = "primary",
         pupil: tuple = (0, 0),
         num_points: int = 128,
     ):

@@ -13,8 +13,6 @@ in W/mm^2.
 Manuel Fragata Mendes, 2025
 """
 
-from typing import Union
-
 import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for the binning. Later extend to
 from matplotlib.colors import Colormap
@@ -110,11 +108,11 @@ class IncoherentIrradiance(BaseAnalysis):
         self,
         fig_to_plot_on: plt.Figure = None,
         figsize: tuple = (6, 5),
-        cmap: Union[str, Colormap] = "inferno",
+        cmap: str | Colormap = "inferno",
         cross_section: tuple[str, int] = None,
         *,
         normalize: bool = True,
-    ):
+    ) -> tuple[plt.Figure, _np.ndarray[plt.Axes]]:
         """
         Display a false-colour irradiance map or cross-section plots for the current
         irradiance data.
@@ -140,7 +138,7 @@ class IncoherentIrradiance(BaseAnalysis):
         Returns :
             fig : matplotlib.figure.Figure
                 The matplotlib Figure object containing the plot(s).
-            axs : numpy.ndarray or None
+            axs : numpy.ndarray
                 Array of Axes objects for the subplots, or None if plotting on an
                 existing figure.
 

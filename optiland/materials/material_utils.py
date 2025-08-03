@@ -112,9 +112,9 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
                     than the number of available glasses.
     """
     # Validate input
-    assert num_glasses_to_keep <= len(
-        glass_dict
-    ), "Cannot keep more glasses than available in the input dictionary."
+    assert num_glasses_to_keep <= len(glass_dict), (
+        "Cannot keep more glasses than available in the input dictionary."
+    )
     assert num_glasses_to_keep > 1, "Must retain at least 2 glasses."
 
     # Extract glass names and (n_d, V_d) data

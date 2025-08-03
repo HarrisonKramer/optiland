@@ -8,8 +8,6 @@ primary wavelength.
 Kramer Harrison, 2024
 """
 
-from typing import Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -40,8 +38,8 @@ class PupilAberration(BaseAnalysis):
     def __init__(
         self,
         optic,
-        fields: Union[str, list] = "all",
-        wavelengths: Union[str, list] = "all",
+        fields: str | list = "all",
+        wavelengths: str | list = "all",
         num_points: int = 256,
     ):
         _optic_ref = optic
@@ -61,7 +59,7 @@ class PupilAberration(BaseAnalysis):
         self,
         fig_to_plot_on: plt.Figure = None,
         figsize: tuple[float, float] = (10, 3.33),
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """
         Displays the pupil aberration plots for each field and wavelength.
 
@@ -75,7 +73,7 @@ class PupilAberration(BaseAnalysis):
 
         Returns
         -------
-        tuple[plt.Figure, plt.Axes]
+        tuple[plt.Figure, list[plt.Axes]]
             The matplotlib Figure and Axes array containing the plots.
 
         Notes

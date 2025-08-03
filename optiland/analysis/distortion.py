@@ -5,8 +5,6 @@ This module provides a distortion analysis for optical systems.
 Kramer Harrison, 2024
 """
 
-from typing import Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -42,7 +40,7 @@ class Distortion(BaseAnalysis):
     def __init__(
         self,
         optic,
-        wavelengths: Union[str, list] = "all",
+        wavelengths: str | list = "all",
         num_points: int = 128,
         distortion_type: str = "f-tan",
     ):
