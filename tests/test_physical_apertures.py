@@ -63,13 +63,14 @@ class TestRadialAperture:
         assert aperture.r_min == 2
         assert isinstance(aperture, RadialAperture)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show):
+    def test_view(self):
         aperture = RadialAperture(r_max=5, r_min=2)
-        aperture.view()
-        plt.show()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_extent(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
@@ -136,6 +137,15 @@ class TestOffsetRadialAperture:
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         assert aperture.extent == (-4, 6, -4, 6)
 
+    def test_view(self):
+        aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
+        fig, ax = aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestBooleanApertures:
     def setup_method(self, set_test_backend):
@@ -190,6 +200,31 @@ class TestBooleanApertures:
 
         difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
         assert difference_aperture.extent == (-1, 1, -1, 1)
+
+    def test_view(self, set_test_backend):
+        union_aperture = UnionAperture(self.aperture1, self.aperture2)
+        fig, ax = union_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+        intersection_aperture = IntersectionAperture(self.aperture1, self.aperture2)
+        fig, ax = intersection_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+        difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
+        fig, ax = difference_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestRectangularAperture:
@@ -250,6 +285,14 @@ class TestRectangularAperture:
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestEllipticalAperture:
     def setup_method(self, set_test_backend):
@@ -305,6 +348,14 @@ class TestEllipticalAperture:
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestPolygonAperture:
     @pytest.fixture(autouse=True)
@@ -353,6 +404,14 @@ class TestPolygonAperture:
 
     def test_extent(self):
         assert self.aperture.extent == (-10, 10, -15, 15)
+
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestFileAperture:
@@ -409,6 +468,14 @@ class TestFileAperture:
 
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (0, 1, 0, 1)
+
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestConfigureAperture:

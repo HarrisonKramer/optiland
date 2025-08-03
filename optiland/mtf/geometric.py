@@ -84,7 +84,7 @@ class GeometricMTF(SpotDiagram):
         fig_to_plot_on: plt.Figure = None,
         figsize: tuple[float, float] = (12, 4),
         add_reference: bool = False,
-    ) -> plt.Figure:
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Plots the MTF curve.
 
         Args:

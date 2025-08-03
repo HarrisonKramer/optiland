@@ -118,7 +118,7 @@ class SensitivityAnalysis:
         figsize: tuple[float, float] = (2.5, 3.3),
         sharex: str = "col",
         sharey: str = "row",
-    ) -> tuple[plt.Figure, np.ndarray]:
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Visualizes the sensitivity analysis results.
 
         Args:

@@ -108,13 +108,15 @@ class TestPupilIncidentAngleVsHeight:
         assert_allclose(result["height"][-1], 12.46054762, atol=1e-5)
         assert_allclose(np.rad2deg(result["angle"][-1]), 8.20666509, atol=1e-5)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show, set_test_backend, cooke_triplet):
+    def test_view(self, set_test_backend, cooke_triplet):
         """Test that the view method executes and calls plt.show()."""
         analysis = PupilIncidentAngleVsHeight(cooke_triplet)
-        analysis.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = analysis.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(fig)
 
 
 class TestFieldIncidentAngleVsHeight:
@@ -198,13 +200,15 @@ class TestFieldIncidentAngleVsHeight:
         assert_allclose(result["height"][-1], 18.13602593, atol=1e-5)
         assert_allclose(np.rad2deg(result["angle"][-1]), 18.98548523, atol=1e-5)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show, set_test_backend, cooke_triplet):
+    def test_view(self, set_test_backend, cooke_triplet):
         """Test that the view method executes and calls plt.show()."""
         analysis = FieldIncidentAngleVsHeight(cooke_triplet)
-        analysis.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = analysis.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestAngleVsHeightErrors:

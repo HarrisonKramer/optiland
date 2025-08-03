@@ -112,7 +112,7 @@ class MonteCarlo(SensitivityAnalysis):
 
         self._results = pd.DataFrame(results)
 
-    def view_histogram(self, kde=True):
+    def view_histogram(self, kde=True) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Displays a histogram of the data.
 
         Args:
@@ -120,13 +120,13 @@ class MonteCarlo(SensitivityAnalysis):
                 Otherwise, a histogram is plotted.
 
         """
-        self._plot(plot_type="histogram", kde=kde)
+        return self._plot(plot_type="histogram", kde=kde)
 
-    def view_cdf(self):
+    def view_cdf(self) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Generates and displays a cumulative distribution function (CDF) plot
         of the data.
         """
-        self._plot(plot_type="cdf")
+        return self._plot(plot_type="cdf")
 
     def view_heatmap(
         self,
@@ -171,7 +171,7 @@ class MonteCarlo(SensitivityAnalysis):
 
     def _plot(
         self, plot_type: str, kde: bool = True, bins: int = 50
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Plot the Monte Carlo analysis results.
 
         Args:

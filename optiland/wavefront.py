@@ -276,7 +276,7 @@ class OPDFan(Wavefront):
 
     def view(
         self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (10, 3)
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Visualizes the wavefront error for different fields and wavelengths.
 
         Args:
