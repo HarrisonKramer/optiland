@@ -104,16 +104,26 @@ class BaseAperture(ABC):
         aperture_type = data["type"]
         return cls._registry[aperture_type].from_dict(data)
 
-    def view(self, nx=256, ny=256, ax=None, buffer=1.1, **kwargs):
+    def view(
+        self,
+        nx: int = 256,
+        ny: int = 256,
+        ax: plt.Axes = None,
+        buffer: float = 1.1,
+        **kwargs,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualize the aperture.
 
         Args:
             nx (int): The number of points in the x-direction.
             ny (int): The number of points in the y-direction.
-            ax (matplotlib.axes.Axes): The axes to plot on.
+            ax (plt.Axes): The axes to plot on.
             buffer (float): The buffer around the aperture.
             **kwargs: Additional keyword arguments to pass to the plot
                 function.
+
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
 
         """
         x_min, x_max, y_min, y_max = self.extent
@@ -131,6 +141,8 @@ class BaseAperture(ABC):
         ax.set_xlabel("X [mm]")
         ax.set_ylabel("Y [mm]")
         ax.set_aspect("equal")
+
+        return fig, ax
 
     def __or__(self, other):
         """Union: a point is inside if it is in either region."""

@@ -74,12 +74,22 @@ def test_num_rays_and_grid_size(make_fftpsf, num_rays, expected_pupil_sampling):
     assert fftpsf.grid_size == 2 * num_rays
 
 
-@pytest.mark.parametrize("num_rays,grid_size,expectation", [
-    (32, None, does_not_raise()),
-    (64, None, does_not_raise()),
-    (12, 16, does_not_raise()),
-    (16, None, pytest.raises(ValueError, match="num_rays must be at least 32 if grid_size is not specified")),
-])
+@pytest.mark.parametrize(
+    "num_rays,grid_size,expectation",
+    [
+        (32, None, does_not_raise()),
+        (64, None, does_not_raise()),
+        (12, 16, does_not_raise()),
+        (
+            16,
+            None,
+            pytest.raises(
+                ValueError,
+                match="num_rays must be at least 32 if grid_size is not specified",
+            ),
+        ),
+    ],
+)
 def test_num_rays_below_32(make_fftpsf, num_rays, grid_size, expectation):
     with expectation:
         make_fftpsf(num_rays=num_rays, grid_size=grid_size)
@@ -100,7 +110,10 @@ def test_grid_size(make_fftpsf, num_rays, grid_size):
 
 
 def test_invalid_grid_size(make_fftpsf):
-    with pytest.raises(ValueError, match=r"Grid size \(\d+\) must be greater than or equal to the number of rays \(\d+\)"):
+    with pytest.raises(
+        ValueError,
+        match=r"Grid size \(\d+\) must be greater than or equal to the number of rays \(\d+\)",
+    ):
         make_fftpsf(grid_size=63, num_rays=64)
 
 
@@ -119,13 +132,15 @@ def test_strehl_ratio(make_fftpsf):
         ("3d", True),
     ],
 )
-@patch("matplotlib.pyplot.show")
-def test_view(mock_show, projection, log, make_fftpsf, set_test_backend):
+def test_view(projection, log, make_fftpsf, set_test_backend):
     # Skip for torch since view isn't implemented there
     fftpsf = make_fftpsf(field=(0, 1))
-    fftpsf.view(projection=projection, log=log)
-    mock_show.assert_called_once()
-    plt.close("all")
+    fig, ax = fftpsf.view(projection=projection, log=log)
+    assert fig is not None
+    assert ax is not None
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close(fig)
 
 
 def test_find_bounds(make_fftpsf):
@@ -176,7 +191,6 @@ def test_view_oversampling(projection, make_fftpsf):
         fftpsf.view(projection=projection, log=False, num_points=128)
 
 
-
 def test_get_units_finite_obj(make_fftpsf):
     def tweak(optic):
         optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e6)
@@ -197,16 +211,15 @@ def test_psf_log_tick_formatter(make_fftpsf):
     assert fftpsf._log_tick_formatter(-10) == "$10^{-10}$"
 
 
-@patch("matplotlib.pyplot.show")
-def test_invalid_working_FNO(mock_show, make_fftpsf):
+def test_invalid_working_FNO(make_fftpsf):
     def tweak(optic):
         optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e100)
 
     fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
     with pytest.raises(ValueError):
-        fftpsf.view()
-        plt.close("all")
-    
+        fig, ax = fftpsf.view()
+        plt.close(fig)
+
 
 def test_interpolate_zoom_factor_one(make_fftpsf):
     fftpsf = make_fftpsf(field=(0, 1))

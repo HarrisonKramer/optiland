@@ -113,7 +113,12 @@ class SensitivityAnalysis:
         """
         return self._results
 
-    def view(self, figsize=(2.5, 3.3), sharex="col", sharey="row"):
+    def view(
+        self,
+        figsize: tuple[float, float] = (2.5, 3.3),
+        sharex: str = "col",
+        sharey: str = "row",
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Visualizes the sensitivity analysis results.
 
         Args:
@@ -123,6 +128,9 @@ class SensitivityAnalysis:
                 subplots. Default is 'col'.
             sharey (str, optional): Specifies how the y-axis is shared among
                 subplots. Default is 'row'.
+
+        Returns:
+            tuple: A tuple containing the figure and axes of the plot.
 
         """
         df = self._results
@@ -163,8 +171,9 @@ class SensitivityAnalysis:
                 if i == m - 1:
                     axes[i, j].set_xlabel(pert_type)
 
-        plt.tight_layout()
-        plt.show()
+        fig.tight_layout()
+
+        return fig, fig.get_axes()
 
     def _validate(self):
         """Validates the tolerancing system before performing sensitivity
