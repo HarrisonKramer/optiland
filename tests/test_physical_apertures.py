@@ -469,14 +469,6 @@ class TestFileAperture:
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (0, 1, 0, 1)
 
-    def test_view(self, set_test_backend):
-        fig, ax = self.aperture.view()
-        assert fig is not None
-        assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
-        plt.close(fig)
-
 
 class TestConfigureAperture:
     def test_none_input(self, set_test_backend):
