@@ -42,7 +42,7 @@ class EncircledEnergy(SpotDiagram):
     ):
         self.num_points = num_points
 
-        if isinstance(wavelength, (float, int)):
+        if isinstance(wavelength, float | int):
             # If a number is passed, wrap it in a list for the base classes.
             processed_wavelengths = [wavelength]
         elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
@@ -63,8 +63,20 @@ class EncircledEnergy(SpotDiagram):
             distribution=distribution,
         )
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 4.5)):
-        """Plot the Encircled Energy curve."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """Plot the Encircled Energy curve.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure is created. Defaults to None.
+            figsize (tuple, optional): The size of the figure if a new one is
+                created. Defaults to (7, 4.5).
+
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -90,11 +102,9 @@ class EncircledEnergy(SpotDiagram):
         ax.grid(True)
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def centroid(self):
         """Calculate the centroid of the Encircled Energy.

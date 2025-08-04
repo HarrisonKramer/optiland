@@ -109,7 +109,12 @@ class SpotDiagram(BaseAnalysis):
             # as the reference.
             self._analysis_ref_wavelength_index = 0
 
-    def view(self, fig_to_plot_on=None, figsize=(12, 4), add_airy_disk=False):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (12, 4),
+        add_airy_disk: bool = False,
+    ) -> tuple[plt.Figure, list[plt.Axes]]:
         """View the spot diagram
 
         Args:
@@ -120,9 +125,11 @@ class SpotDiagram(BaseAnalysis):
             add_airy_disk (bool): Airy disc visualization controller.
 
         Returns:
-            None
-
+            tuple: A tuple containing the figure and a list of axes objects.
+                If fig_to_plot_on is None, a new figure is created.
+                Otherwise, the existing figure is cleared and reused.
         """
+
         is_gui_embedding = fig_to_plot_on is not None
 
         N = len(self.fields)
@@ -294,11 +301,13 @@ class SpotDiagram(BaseAnalysis):
             rect=[0, 0.05, 1, 1]
         )  # Adjust rect to make space for figure-level legend if used
 
-        if not is_gui_embedding:
-            plt.show()
-        else:
-            if hasattr(current_fig, "canvas") and current_fig.canvas is not None:
-                current_fig.canvas.draw_idle()
+        if (
+            is_gui_embedding
+            and hasattr(current_fig, "canvas")
+            and current_fig.canvas is not None
+        ):
+            current_fig.canvas.draw_idle()
+        return current_fig, current_fig.get_axes()
 
     def angle_from_cosine(self, a, b):
         """Calculate the angle (in radians) between two vectors given their
@@ -616,7 +625,7 @@ class SpotDiagram(BaseAnalysis):
         num_rays,
         distribution,
         coordinates,
-    ):
+    ) -> SpotData:
         """Generates spot data for a given field and wavelength.
 
         Args:

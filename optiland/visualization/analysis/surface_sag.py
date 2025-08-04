@@ -225,7 +225,4 @@ class SurfaceSagViewer(BaseViewer):
         ax_profile_y.autoscale(enable=True, axis="x", tight=True)
 
         fig.tight_layout(pad=1.0)
-        if not is_gui_embedding:
-            plt.show()
-
-        return fig.get_axes()
+        return fig, fig.get_axes()

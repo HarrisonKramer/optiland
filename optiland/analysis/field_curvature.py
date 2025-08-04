@@ -39,8 +39,19 @@ class FieldCurvature(BaseAnalysis):
         self.num_points = num_points
         super().__init__(optic, wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(8, 5.5)):
-        """Displays a plot of the field curvature analysis."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (8, 5.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """Displays a plot of the field curvature analysis.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple[float, float], optional): The size of the figure.
+                Defaults to (8, 5.5).
+        Returns:
+            tuple: The current figure and its axes.
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -84,11 +95,9 @@ class FieldCurvature(BaseAnalysis):
         ax.grid(True)
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_data(self):
         """Generates field curvature data for each wavelength by calculating the

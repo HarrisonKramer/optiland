@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "optiland"
-version = "0.5.4"
+version = "0.5.5"
 authors = [
   { name = "Kramer Harrison", email = "kdanielharrison@gmail.com" },
 ]
 description = "Open Source Optical Design in Python"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

@@ -62,11 +62,11 @@ class SurfacePropertiesWidget(QWidget):
             )
             columns_layout.addLayout(form_layout)
         else:
-            # Organize properties into columns with maximum 2 properties per column
+            # organize properties into columns with maximum 2 properties per column
             items_per_column = 2
             param_items = list(params.items())
 
-            # Calculate how many columns we need
+            # maximum number of columns needed
             num_columns = (len(param_items) + items_per_column - 1) // items_per_column
 
             # Create and populate each column
@@ -84,16 +84,16 @@ class SurfacePropertiesWidget(QWidget):
                     name, value = param_items[i]
                     label_text = name + ":"
                     line_edit = QLineEdit()
-                    line_edit.setMaximumWidth(60)  # Shorter text boxes
+                    line_edit.setMaximumWidth(60)  # size of the input field
 
-                    if isinstance(value, (list, tuple)) or hasattr(value, "tolist"):
+                    if isinstance(value, (list | tuple)) or hasattr(value, "tolist"):
                         list_val = value.tolist() if hasattr(value, "tolist") else value
                         line_edit.setText(str(list_val))
                         line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
                     else:
                         line_edit.setText(f"{value:.6f}")
 
-                    line_edit.editingFinished.connect(self.apply_changes)  # Auto-apply
+                    line_edit.editingFinished.connect(self.apply_changes)  # auto-update
                     form_layout.addRow(label_text, line_edit)
                     self.input_widgets[name] = line_edit
 
@@ -132,7 +132,7 @@ class SurfaceTypeWidget(QWidget):
         self.type_button.setAutoRaise(True)
         self.type_button.setArrowType(Qt.DownArrow)
 
-        # --- ADD PROPERTIES BUTTON ---
+        # properties button
         self.props_button = QToolButton()
         self.props_button.setObjectName("PropertiesButton")
         self.props_button.setIcon(QIcon(":/icons/dark/tool.svg"))
@@ -142,7 +142,7 @@ class SurfaceTypeWidget(QWidget):
         self.props_button.clicked.connect(self.propertiesIconClicked.emit)
         self.layout.addWidget(self.props_button)
 
-        # Hide the button if there are no properties to show
+        # hide the button if there are no properties to show
         if not current_type_info.get("has_extra_params", False):
             self.props_button.hide()
 
@@ -386,16 +386,16 @@ class LensEditor(QWidget):
                         row_below, QHeaderView.ResizeMode.Interactive
                     )
 
-            # Close the properties
+            # close properties widget
             self.open_prop_source_row = -1
         else:
-            # Opening properties for source_row
+            # open properties widget
             self.open_prop_source_row = source_row
 
         # Refresh the table
         self.load_data()
 
-        # If we're opening properties, set the rows around it to fixed mode
+        # If opening properties, set the rows around it to fixed mode
         if self.open_prop_source_row >= 0:
             # The row above is the surface row itself
             row_above = self.open_prop_source_row

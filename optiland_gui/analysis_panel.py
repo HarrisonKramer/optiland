@@ -761,7 +761,7 @@ class AnalysisPanel(QWidget):
             for param_name, widget in self.current_settings_widgets.items():
                 if param_name in page_args:
                     val = page_args[param_name]
-                    if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+                    if isinstance(widget, QSpinBox | QDoubleSpinBox):
                         widget.setValue(val)
                     elif isinstance(widget, QCheckBox):
                         widget.setChecked(bool(val))
@@ -911,7 +911,7 @@ class AnalysisPanel(QWidget):
         constructor_args, view_args = {}, {}
         for param_name, widget in self.current_settings_widgets.items():
             value = None
-            if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+            if isinstance(widget, QSpinBox | QDoubleSpinBox):
                 value = widget.value()
             elif isinstance(widget, QCheckBox):
                 value = widget.isChecked()
@@ -1165,7 +1165,7 @@ class AnalysisPanel(QWidget):
                             index = widget.findData(str(value))
                             if index != -1:
                                 widget.setCurrentIndex(index)
-                        elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+                        elif isinstance(widget, QSpinBox | QDoubleSpinBox):
                             widget.setValue(value)
                         elif isinstance(widget, QCheckBox):
                             widget.setChecked(value)

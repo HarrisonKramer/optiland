@@ -40,16 +40,28 @@ class Distortion(BaseAnalysis):
     def __init__(
         self,
         optic,
-        wavelengths="all",
-        num_points=128,
-        distortion_type="f-tan",
+        wavelengths: str | list = "all",
+        num_points: int = 128,
+        distortion_type: str = "f-tan",
     ):
         self.num_points = num_points
         self.distortion_type = distortion_type
         super().__init__(optic, wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 5.5)):
-        """Visualize the distortion analysis."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 5.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """Visualize the distortion analysis.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple, optional): The size of the figure to create.
+                Defaults to (7, 5.5).
+
+        Returns:
+            tuple: The current figure and its axes.
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -78,11 +90,9 @@ class Distortion(BaseAnalysis):
         ax.grid(True)
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_data(self):
         """Generate data for analysis.

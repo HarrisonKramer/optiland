@@ -387,7 +387,7 @@ class OptilandConnector(QObject):
                 return f"{float(surface.semi_aperture):.4f}"
             return "Auto"
 
-        # Dynamic columns (Radius/Conic)
+        # dynamic columns (Radius/Conic)
         geo = surface.geometry
         if surface.surface_type == "paraxial":
             if col_idx == self.COL_RADIUS:
@@ -405,7 +405,7 @@ class OptilandConnector(QObject):
             if col_idx == self.COL_CONIC:
                 return format_val(getattr(geo, "ky", 0.0))
 
-        # Default Radius/Conic for all other types (including Chebyshev)
+        # default Radius/Conic for all other types (
         if col_idx == self.COL_RADIUS:
             return format_val(geo.radius)
         if col_idx == self.COL_CONIC:
@@ -429,9 +429,9 @@ class OptilandConnector(QObject):
                 conic=getattr(old_geo, "k", 0.0),
             )
 
-            # Special handling for each surface type to ensure proper geometry creation
+            # special handling for each surface type to ensure proper geometry creation
             if new_type == "biconic":
-                # Extract existing biconic parameters if converting from biconic,
+                # extract existing biconic parameters if converting from biconic,
                 # otherwise use finite defaults
                 if hasattr(old_geo, "Rx") and hasattr(old_geo, "Ry"):
                     config.radius_x = getattr(old_geo, "Rx", 100.0)
@@ -439,40 +439,37 @@ class OptilandConnector(QObject):
                     config.conic_x = getattr(old_geo, "kx", 0.0)
                     config.conic_y = getattr(old_geo, "ky", 0.0)
                 else:
-                    # Use finite default values to ensure BiconicGeometry is created,
-                    # not Plane
-                    config.radius_x = 100.0  # Finite default to avoid Plane creation
-                    config.radius_y = 100.0  # Finite default to avoid Plane creation
+                    config.radius_x = 100.0  # finite default to avoid plane
+                    config.radius_y = 100.0
                     config.conic_x = 0.0
                     config.conic_y = 0.0
 
             elif new_type == "toroidal":
-                # Extract existing toroidal parameters if available
                 if hasattr(old_geo, "R_rot"):
-                    config.radius = getattr(old_geo, "R_rot", 100.0)  # Rotation radius
+                    config.radius = getattr(old_geo, "R_rot", 100.0)  # rotation radius
                     config.radius_y = getattr(old_geo, "R_yz", 100.0)  # YZ radius
                     config.conic = getattr(old_geo, "k_yz", 0.0)  # YZ conic
                     config.toroidal_coeffs_poly_y = getattr(
                         old_geo, "coeffs_poly_y", []
                     )
                 else:
-                    config.radius = 100.0  # Finite default for rotation radius
-                    config.radius_y = 100.0  # Finite default for YZ radius
+                    config.radius = 100.0  # finite default for rotation radius
+                    config.radius_y = 100.0  # finite default for YZ radius
                     config.conic = 0.0
                     config.toroidal_coeffs_poly_y = []
 
             elif new_type in ["even_asphere", "odd_asphere", "polynomial"]:
-                # Extract existing coefficients if available
+                # extract existing coefficients if available
                 if hasattr(old_geo, "c"):
                     config.coefficients = getattr(old_geo, "c", [])
                 else:
                     config.coefficients = []
-                # Use finite default radius to avoid Plane creation
+
                 if config.radius == float("inf"):
                     config.radius = 100.0
 
             elif new_type == "chebyshev":
-                # Extract existing Chebyshev parameters if available
+                # extract existing Chebyshev parameters if available
                 if hasattr(old_geo, "c"):
                     config.coefficients = getattr(old_geo, "c", [])
                     config.norm_x = getattr(old_geo, "norm_x", 1.0)
@@ -511,7 +508,7 @@ class OptilandConnector(QObject):
             surface.geometry = new_geo
             surface.surface_type = new_type
             if new_type == "paraxial" and not hasattr(surface, "f"):
-                surface.f = float("inf")  # Default focal length for new paraxial
+                surface.f = float("inf")  # default focal length for new paraxial
 
             self._optic.update()
             self._undo_redo_manager.add_state(old_state)
@@ -556,7 +553,7 @@ class OptilandConnector(QObject):
                         row + 1
                     ].material_pre = surface.material_post
             else:
-                # Handle all other columns which are numeric
+                # handle all other columns which are numeric
                 val = float("inf") if value_str.lower() == "inf" else float(value_str)
                 if col_idx == self.COL_THICKNESS and row < self.get_surface_count() - 1:
                     updater.set_thickness(val, row)
@@ -649,7 +646,7 @@ class OptilandConnector(QObject):
         geometry = surface.geometry
         geo_class_name = geometry.__class__.__name__
 
-        # Special case: if surface_type is biconic but geometry is Plane,
+        # if surface_type is biconic but geometry is Plane,
         # show biconic params anyway
         if surface.surface_type == "biconic" and geo_class_name == "Plane":
             # Return default biconic X-direction parameters that can be edited
@@ -675,7 +672,7 @@ class OptilandConnector(QObject):
             geometry = surface.geometry
             geo_class_name = geometry.__class__.__name__
 
-            # Special case: if surface_type is biconic but geometry is Plane,
+            # if surface_type is biconic but geometry is Plane,
             # we need to create a new BiconicGeometry
             if surface.surface_type == "biconic" and geo_class_name == "Plane":
                 # For biconic surfaces, Y-direction values come from the main table,
@@ -709,12 +706,8 @@ class OptilandConnector(QObject):
 
                 new_geometry = BiconicGeometry(
                     coordinate_system=geometry.cs,
-                    radius_x=(
-                        radius_x if not be.isinf(radius_x) else 50.0
-                    ),  # Use finite default to avoid Plane
-                    radius_y=(
-                        radius_y if not be.isinf(radius_y) else 50.0
-                    ),  # Use finite default to avoid Plane
+                    radius_x=(radius_x if not be.isinf(radius_x) else 50.0),
+                    radius_y=(radius_y if not be.isinf(radius_y) else 50.0),
                     conic_x=conic_x,
                     conic_y=conic_y,
                 )
@@ -738,8 +731,6 @@ class OptilandConnector(QObject):
 
                             setattr(geometry, attr_name, be.array(new_value))
 
-                            # FIX: Sync parent/dependent attributes for specific
-                            # geometries
                             if (
                                 geo_class_name == "ToroidalGeometry"
                                 and attr_name == "R_rot"
@@ -772,7 +763,6 @@ class OptilandConnector(QObject):
         except Exception:
             self._restore_optic_state(old_state)
 
-    # --- Methods to fix crash ---
     def get_field_options(self):
         if not self._optic or self._optic.fields.num_fields == 0:
             return [("all", "'all'")]
