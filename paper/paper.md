@@ -2,16 +2,16 @@
 title: 'Optiland: A Python-based, Open-Source Optical Design Software'
 authors:
   - name: Kramer Harrison
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0000-5494-139X
     affiliation: 1
   - name: Manuel Fragata Mendes
     orcid: 0009-0009-2957-0799
     affiliation: 2
   - name: Grégoire Hein
     orcid: 0000-0000-0000-0000
-    affiliation: 1
+    affiliation:
   - name: Corné Haasjes
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0003-0187-4116
     affiliation: "3, 4, 5"
 affiliations:
   - name: Independent Researcher
@@ -40,7 +40,7 @@ The field of optical design has long been dominated by commercial software packa
 
 Optiland addresses this need by providing a powerful, flexible, and accessible platform for optical design. Its Python-based, object-oriented API facilitates easy learning and seamless integration with the broader scientific Python ecosystem. The differentiable PyTorch backend is especially valuable for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, Optiland can be used as a fully differentiable module within deep learning workflows. This allows gradients to propagate through optical simulations themselves, enabling end-to-end training of models such as Generative Adversarial Networks (GANs) that generate valid and high-performance lens designs.
 
-The PyTorch backend also delivers substantial acceleration. On typical modern hardware, GPU-accelerated ray tracing provides performance gains of 50-60x compared to CPU-based NumPy computations, with even greater speedups possible on high-end or multi-GPU systems. This level of performance makes large-scale, gradient-based optimization and simulation not only feasible but practical for real-world research and development. By combining a modern architecture with strong performance and a rich feature set, Optiland helps democratize access to advanced optical design capabilities.
+The PyTorch backend also delivers substantial acceleration. On typical modern hardware, GPU-accelerated ray tracing provides performance gains of 20-60x compared to CPU-based NumPy computations, with even greater speedups possible on high-end or multi-GPU systems. This level of performance makes large-scale, gradient-based optimization and simulation not only feasible but practical for real-world research and development. By combining a modern architecture with strong performance and a rich feature set, Optiland helps democratize access to advanced optical design capabilities.
 
 # Usage and Examples
 
@@ -112,6 +112,6 @@ Optiland is actively used by researchers in the **MREYE group** at the Leiden Un
 
 # Acknowledgements
 
-Development of Optiland was inspired by the needs of researchers and engineers working across optics, machine learning, and physics. The author thanks the contributors to PyTorch, SciPy, NumPy, as well as the MREYE Lab in Leiden for early adoption, feedback, and collaboration.
+Development of Optiland was inspired by the needs of researchers and engineers working across optics, machine learning, and physics. The author would like to thank all contributors who have helped shape Optiland. The author also thanks the contributors to PyTorch, SciPy, NumPy, as well as the MREYE Lab in Leiden for early adoption, feedback, and collaboration.
 
 # References
