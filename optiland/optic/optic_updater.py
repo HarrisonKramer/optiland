@@ -7,12 +7,11 @@ materials, conic constants, polarization, etc.
 Kramer Harrison, 2024
 """
 
-from typing import Union
-
 import optiland.backend as be
 from optiland.apodization import BaseApodization
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
+from optiland.materials.base import BaseMaterial
 from optiland.rays import PolarizationState
 
 
@@ -76,8 +75,10 @@ class OpticUpdater:
         positions = positions - positions[1]  # force surface 1 to be at zero
         for k, surface in enumerate(self.optic.surface_group.surfaces):
             surface.geometry.cs.z = be.array(positions[k])
+        if surface_number < len(self.optic.surface_group.surfaces):
+            self.optic.surface_group.surfaces[surface_number].thickness = value
 
-    def set_index(self, value, surface_number):
+    def set_index(self, value: float, surface_number: int) -> None:
         """Set the index of refraction of a surface.
 
         Args:
@@ -87,12 +88,23 @@ class OpticUpdater:
                 the *pre-material* of the subsequent surface.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
         new_material = IdealMaterial(n=value, k=0)
-        surface.material_post = new_material
+        self.set_material(new_material, surface_number)
 
+    def set_material(self, material: BaseMaterial, surface_number: int) -> None:
+        """Set the material of a surface.
+
+        Args:
+            value (BaseMaterial): The new material.
+            surface_number (int): The material of the surface whose *post-material*
+                (material after the surface) will be updated. This also updates
+                the *pre-material* of the subsequent surface.
+
+        """
+        surface = self.optic.surface_group.surfaces[surface_number]
+        surface.material_post = material
         surface_post = self.optic.surface_group.surfaces[surface_number + 1]
-        surface_post.material_pre = new_material
+        surface_post.material_pre = material
 
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
@@ -107,7 +119,7 @@ class OpticUpdater:
         surface = self.optic.surface_group.surfaces[surface_number]
         surface.geometry.c[aspher_coeff_idx] = value
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
 
         Args:
@@ -172,7 +184,7 @@ class OpticUpdater:
         """Update the normalization radius/factors of a given non-spherical surface.
 
         The normalization factors (`norm_x`, `norm_y`, or `norm_radius`) are
-        typically set to 1.1 times the surface's current semi-aperture.
+        typically set to 1.25 times the surface's current semi-aperture.
 
         Args:
             surface (Surface): The surface whose normalization factors are to be
@@ -184,10 +196,10 @@ class OpticUpdater:
             "polynomial",
             "chebyshev",
         ]:
-            surface.geometry.norm_x = surface.semi_aperture * 1.1
-            surface.geometry.norm_y = surface.semi_aperture * 1.1
+            surface.geometry.norm_x = surface.semi_aperture * 1.25
+            surface.geometry.norm_y = surface.semi_aperture * 1.25
         if surface.surface_type == "zernike":
-            surface.geometry.norm_radius = surface.semi_aperture * 1.1
+            surface.geometry.norm_radius = surface.semi_aperture * 1.25
 
     def update(self) -> None:
         """Update the optical system by applying all defined pickups and solves.

@@ -40,37 +40,59 @@ class Distortion(BaseAnalysis):
     def __init__(
         self,
         optic,
-        wavelengths="all",
-        num_points=128,
-        distortion_type="f-tan",
+        wavelengths: str | list = "all",
+        num_points: int = 128,
+        distortion_type: str = "f-tan",
     ):
         self.num_points = num_points
         self.distortion_type = distortion_type
         super().__init__(optic, wavelengths)
 
-    def view(self, figsize=(7, 5.5)):
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 5.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualize the distortion analysis.
 
         Args:
-            figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple, optional): The size of the figure to create.
+                Defaults to (7, 5.5).
 
+        Returns:
+            tuple: The current figure and its axes.
         """
-        _, ax = plt.subplots(figsize=figsize)
-        ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
+        is_gui_embedding = fig_to_plot_on is not None
 
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
+
+        ax.axvline(x=0, color="k", linewidth=1, linestyle="--")
         field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
-        for k, wavelength in enumerate(self.wavelengths):
-            dist_k = be.to_numpy(self.data[k])
-            ax.plot(dist_k, field_np, label=f"{wavelength:.4f} µm")
-            ax.set_xlabel("Distortion (%)")
-            ax.set_ylabel("Field")
 
-        current_xlim = plt.xlim()
-        plt.xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
-        plt.ylim([0, None])
-        plt.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        plt.show()
+        for k, wavelength in enumerate(self.wavelengths):
+            dist_k_np = be.to_numpy(self.data[k])
+            ax.plot(dist_k_np, field_np, label=f"{wavelength:.4f} µm")
+
+        ax.set_xlabel("Distortion (%)")
+        ax.set_ylabel("Field")
+
+        xlims = ax.get_xlim()
+        max_abs_lim = max(np.abs(xlims))
+        ax.set_xlim(-max_abs_lim, max_abs_lim)
+        ax.set_ylim(0, None)
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
+        ax.grid(True)
+        current_fig.tight_layout()
+
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_data(self):
         """Generate data for analysis.

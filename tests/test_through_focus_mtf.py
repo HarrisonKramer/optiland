@@ -58,7 +58,13 @@ class TestThroughFocusMTF:
         """Test initialization with a specific float wavelength."""
         optic = CookeTriplet()
         wavelength_val = 0.6328
-        tfm = ThroughFocusMTF(optic, spatial_frequency=5.0, wavelength=wavelength_val, num_rays=23, num_steps=3)
+        tfm = ThroughFocusMTF(
+            optic,
+            spatial_frequency=5.0,
+            wavelength=wavelength_val,
+            num_rays=23,
+            num_steps=3,
+        )
         assert tfm.wavelength == wavelength_val
         assert tfm.wavelengths == [wavelength_val]
 
@@ -103,35 +109,40 @@ class TestThroughFocusMTF:
                 assert 0.0 <= field_result["tangential"] <= 1.0
                 assert 0.0 <= field_result["sagittal"] <= 1.0
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_min_steps(self, mock_show, set_test_backend):
+    def test_view_min_steps(self, set_test_backend):
         """Test view method with num_steps=1 (k=0 spline order)."""
         optic = CookeTriplet()
         tfm = ThroughFocusMTF(optic, spatial_frequency=10.0, num_steps=1)
-        tfm.view()
-        mock_show.assert_called_once()
-        plt.close()  # Close the figure to free resources
+        fig, ax = tfm.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)  # Close the figure to free resources
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_few_steps(self, mock_show, set_test_backend):
+    def test_view_few_steps(self, set_test_backend):
         """Test view method with num_steps=3 (k=1 spline order)."""
         optic = CookeTriplet()
         tfm = ThroughFocusMTF(optic, spatial_frequency=10.0, num_steps=3)
-        tfm.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = tfm.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_default_steps(self, mock_show, set_test_backend):
+    def test_view_default_steps(self, set_test_backend):
         """Test view method with default num_steps=5 (k=3 spline order)."""
         optic = CookeTriplet()
         tfm = ThroughFocusMTF(optic, spatial_frequency=152.0, num_rays=53)
-        tfm.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = tfm.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_single_field(self, mock_show, set_test_backend):
+    def test_view_single_field(self, set_test_backend):
         """Test view method with a single specified field."""
         optic = CookeTriplet()
         tfm = ThroughFocusMTF(
@@ -139,9 +150,12 @@ class TestThroughFocusMTF:
             spatial_frequency=10.0,
             num_steps=5,
             num_rays=23,
-            fields=[(0.0, 0.0)] # Single field
+            fields=[(0.0, 0.0)],  # Single field
         )
         assert len(tfm.fields) == 1
-        tfm.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = tfm.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)

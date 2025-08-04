@@ -30,7 +30,7 @@ def to_numpy(obj):
     if isinstance(obj, np.ndarray):
         return obj
 
-    elif isinstance(obj, (int, float, np.number)):
+    elif isinstance(obj, int | float | np.number):
         return np.array([obj])
 
     # Handle lists: Iterate and convert elements individually
@@ -47,7 +47,7 @@ def to_numpy(obj):
             if isinstance(converted, np.ndarray) and converted.size == 1:
                 processed_elements.append(converted.item())
             # Handle if it was already converted to a Python/Numpy scalar
-            elif isinstance(converted, (int, float, np.number)):
+            elif isinstance(converted, int | float | np.number):
                 processed_elements.append(converted)
             else:
                 raise TypeError(
