@@ -305,6 +305,7 @@ class MainWindow(QMainWindow):
             self._handle_maximize_restore
         )
         self.custom_title_bar_widget.close_requested.connect(self.close)
+        self.custom_title_bar_widget.settings_requested.connect(self.show_settings_wip)
         self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
         self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
         self.connector.modifiedStateChanged.connect(
@@ -1362,3 +1363,12 @@ class MainWindow(QMainWindow):
         print("Main Window: Closing application.")
         self.pythonTerminal.shutdown_kernel()
         event.accept()
+
+    @Slot()
+    def show_settings_wip(self):
+        """Shows a 'Work in Progress' message for the settings panel."""
+        QMessageBox.information(
+            self,
+            "Work in Progress",
+            "The settings panel is currently under development.",
+        )

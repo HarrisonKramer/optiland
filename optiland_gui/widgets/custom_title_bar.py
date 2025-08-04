@@ -8,15 +8,19 @@ a main menu bar and project information label.
 @author: Manuel Fragata Mendes, 2025
 """
 
+import webbrowser
+
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QLabel,
     QMenuBar,
     QPushButton,
     QSizePolicy,
     QSpacerItem,
+    QToolButton,
     QWidget,
 )
 
@@ -46,6 +50,7 @@ class CustomTitleBar(QWidget):
     minimize_requested = Signal()
     maximize_restore_requested = Signal()
     close_requested = Signal()
+    settings_requested = Signal()
 
     def __init__(self, main_menu_bar_instance: QMenuBar, parent=None):
         """
@@ -81,6 +86,39 @@ class CustomTitleBar(QWidget):
             )
             layout.addWidget(self.main_menu_bar, 0, Qt.AlignmentFlag.AlignCenter)
 
+        # certical separator
+        separator = QFrame()
+        separator.setObjectName("TitleBarSeparator")
+        separator.setFrameShape(QFrame.Shape.VLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(separator)
+
+        # buttons (settings, GitHub, help, future: include copyright)
+        btn_size = QSize(30, 30)
+
+        self.settings_button = QToolButton()
+        self.settings_button.setObjectName("TitleBarSettingsButton")
+        self.settings_button.setFixedSize(btn_size)
+        self.settings_button.setToolTip("Settings")
+        self.settings_button.clicked.connect(self.settings_requested.emit)
+        layout.addWidget(self.settings_button)
+        layout.addSpacing(-10)
+
+        self.github_button = QToolButton()
+        self.github_button.setObjectName("TitleBarGitHubButton")
+        self.github_button.setFixedSize(btn_size)
+        self.github_button.setToolTip("Open GitHub Page")
+        self.github_button.clicked.connect(self._open_github_url)
+        layout.addWidget(self.github_button)
+        layout.addSpacing(-10)
+
+        self.help_button = QToolButton()
+        self.help_button.setObjectName("TitleBarHelpButton")
+        self.help_button.setFixedSize(btn_size)
+        self.help_button.setToolTip("Open Documentation")
+        self.help_button.clicked.connect(self._open_help_url)
+        layout.addWidget(self.help_button)
+
         layout.addStretch(1)
 
         self.project_label = QLabel("Current Project: UnnamedProject.opds")
@@ -95,8 +133,7 @@ class CustomTitleBar(QWidget):
         )
 
         btn_size = QSize(30, 30)
-
-        self.minimize_button = QPushButton("_")
+        self.minimize_button = QPushButton()
         self.minimize_button.setObjectName("TitleBarMinimizeButton")
         self.minimize_button.setFixedSize(btn_size)
         self.minimize_button.setToolTip("Minimize")
@@ -132,8 +169,12 @@ class CustomTitleBar(QWidget):
             Defaults to "dark".
         """
         self.current_theme = theme
+        self.minimize_button.setIcon(QIcon(f":/icons/{theme}/minimize.svg"))
         self.close_button.setIcon(QIcon(f":/icons/{theme}/close.svg"))
         self.maximize_button.setIcon(QIcon(f":/icons/{theme}/maximize_restore.svg"))
+        self.settings_button.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
+        self.github_button.setIcon(QIcon(f":/icons/{theme}/brand_github.svg"))
+        self.help_button.setIcon(QIcon(f":/icons/{theme}/help.svg"))
 
     def set_project_name(self, name: str):
         """
@@ -204,3 +245,13 @@ class CustomTitleBar(QWidget):
         """
         if event.button() == Qt.LeftButton:
             self.maximize_restore_requested.emit()
+
+    def _open_github_url(self):
+        """Opens the Optiland GitHub repository URL in a web browser."""
+        url = "https://github.com/HarrisonKramer/optiland"
+        webbrowser.open(url)
+
+    def _open_help_url(self):
+        """Opens the Optiland documentation URL in a web browser."""
+        url = "https://optiland.readthedocs.io/en/latest/index.html"
+        webbrowser.open(url)

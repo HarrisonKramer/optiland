@@ -70,6 +70,7 @@ QDockWidget::title:focus { /* Added for focused dock title */
 #TitleBarOptilandLabel {
     color: #E0E0E0; /* --main-text */
     font-weight: bold;
+    font-size: 12pt;
     padding-left: 5px; /* Alignment */
     background-color: transparent; /* Ensure no overriding background from parent QWidget style */
 }
@@ -78,9 +79,9 @@ QDockWidget::title:focus { /* Added for focused dock title */
 #TitleBarMenuBar {
     color: #E0E0E0; /* --main-text: Text color for top-level menu bar items */
     background-color: transparent; /* Blend with CustomTitleBar background */
-    padding: 0px;
+    
     margin: 0px;
-    font-size: 9pt; /* Match general font size */
+    font-size: 10pt; /* Match general font size */
 }
 
 /* Individual top-level items in the #TitleBarMenuBar (e.g., "File", "Edit") */
@@ -624,7 +625,7 @@ QWidget#CustomDockTitleBar {
 QWidget#CustomDockTitleBar QLabel {
     color: #E0E0E0; /* Light text */
     font-weight: bold;
-    font-size: 11pt; /* Larger font size */
+    font-size: 9pt; 
     padding-left: 6px;
     letter-spacing: 0.5px; /* Spacing between letters */
     font-family: 'Segoe UI'; /* Modern font */
@@ -651,5 +652,25 @@ QWidget#CustomDockTitleBar QLabel {
 #DockUndockButton { background-color: #F48F4F; } /* Yellow */
 #DockCloseButton { background-color: #ED695E; } /* Red */
 
+QFrame#TitleBarSeparator {
+    background-color: #E0E0E0; /* Change this color */
+    max-width: 2px;           /* This is the thickness */
+    max-height: 15px;         /* This is the length/height */
+    border: none;
+}
 
+/* --- Title Bar Icon-Only Buttons --- */
+QToolButton#TitleBarSettingsButton,
+QToolButton#TitleBarGitHubButton,
+QToolButton#TitleBarHelpButton {
+    background-color: transparent;
+    border: none;
+    padding: 2px;
+}
 
+QToolButton#TitleBarSettingsButton:hover,
+QToolButton#TitleBarGitHubButton:hover,
+QToolButton#TitleBarHelpButton:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Faint highlight on hover */
+    border-radius: 4px;
+}
