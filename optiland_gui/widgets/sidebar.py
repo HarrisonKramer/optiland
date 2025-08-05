@@ -9,8 +9,6 @@ and can dynamically collapse to an icon-only view when resized.
 @author: Manuel Fragata Mendes, 2025
 """
 
-import webbrowser
-
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QResizeEvent
 from PySide6.QtWidgets import (
@@ -123,75 +121,6 @@ class SidebarWidget(QWidget):
             button.clicked.connect(self._handle_button_click)
 
         self._main_layout.addStretch(1)
-
-        self.settings_button = QToolButton()
-        self.settings_button.setObjectName("sidebar-btn-settings")
-        self.settings_button.setText("Settings")
-        self.settings_button.setIconSize(QSize(24, 24))
-        self.settings_button.setCheckable(True)
-        self.settings_button.setToolButtonStyle(
-            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
-        )
-        self.settings_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
-        self.settings_button.setFixedHeight(35)
-        self._main_layout.addWidget(self.settings_button)
-        self._button_group.addButton(self.settings_button)
-        self._buttons_list.append(
-            {
-                "widget": self.settings_button,
-                "name": "settings",
-                "text": "Settings",
-                "icon_filename": "settings.svg",
-            }
-        )
-        self.settings_button.clicked.connect(self._handle_button_click)
-
-        self.github_button = QToolButton()
-        self.github_button.setObjectName("sidebar-btn-github")
-        self.github_button.setText("Optiland-GUI")
-        self.github_button.setToolTip("Open the Optiland-GUI GitHub page")
-        self.github_button.setToolButtonStyle(
-            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
-        )
-        self.github_button.clicked.connect(self._open_github_url)
-        self.github_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
-        self.github_button.setFixedHeight(35)
-        self.github_button.setIconSize(QSize(24, 24))
-        self._main_layout.addWidget(self.github_button)
-        self._buttons_list.append(
-            {
-                "widget": self.github_button,
-                "name": "github",
-                "text": "Optiland-GUI",
-                "icon_filename": "brand_github.svg",
-            }
-        )
-
-        self.help_button = QToolButton()
-        self.help_button.setObjectName("sidebar-btn-help")
-        self.help_button.setText("Help")
-        self.help_button.setToolTip("Open the documentation")
-        self.help_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        self.help_button.clicked.connect(self._open_help_url)
-        self.help_button.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-        )
-        self.help_button.setFixedHeight(35)
-        self.help_button.setIconSize(QSize(24, 24))
-        self._main_layout.addWidget(self.help_button)
-        self._buttons_list.append(
-            {
-                "widget": self.help_button,
-                "name": "help",
-                "text": "Help",
-                "icon_filename": "help.svg",
-            }
-        )
-
         self.update_icons()
 
         design_button_item = next(
@@ -200,16 +129,6 @@ class SidebarWidget(QWidget):
         if design_button_item:
             design_button_item["widget"].setChecked(True)
             self._last_checked_button = design_button_item["widget"]
-
-    def _open_github_url(self):
-        """Opens the Optiland GitHub repository URL in a web browser."""
-        url = "https://github.com/HarrisonKramer/optiland"
-        webbrowser.open(url)
-
-    def _open_help_url(self):
-        """Opens the Optiland documentation URL in a web browser."""
-        url = "https://optiland.readthedocs.io/en/latest/index.html"
-        webbrowser.open(url)
 
     def _handle_button_click(self):
         """
