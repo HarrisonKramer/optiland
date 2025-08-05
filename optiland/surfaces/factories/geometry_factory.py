@@ -19,8 +19,10 @@ from optiland.geometries import (
     EvenAsphere,
     OddAsphere,
     Plane,
+    PlaneGrating,
     PolynomialGeometry,
     StandardGeometry,
+    StandardGratingGeometry,
     ToroidalGeometry,
     ZernikePolynomialGeometry,
 )
@@ -51,6 +53,9 @@ class GeometryConfig:
 
     radius: float = be.inf
     conic: float = 0.0
+    grating_order: int = 0
+    grating_period: float = be.inf
+    groove_orientation_angle: float = 0.0
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
@@ -156,6 +161,35 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         config.tol,
         config.max_iter,
         config.coefficients,
+    )
+
+
+def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a grating geometry
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        StandardGratingGeometry
+    """
+    # Use a Plane if the radius is infinity.
+    if be.isinf(config.radius):
+        return PlaneGrating(
+            cs,
+            config.grating_order,
+            config.grating_period,
+            config.groove_orientation_angle,
+        )
+    return StandardGratingGeometry(
+        cs,
+        config.radius,
+        config.grating_order,
+        config.grating_period,
+        config.groove_orientation_angle,
+        config.conic,
     )
 
 
@@ -275,6 +309,7 @@ geometry_mapper = {
     "biconic": _create_biconic,
     "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
+    "grating": _create_grating,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
     "polynomial": _create_polynomial,
