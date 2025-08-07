@@ -181,7 +181,9 @@ class Surface:
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
             m = self.phase_type.order
-            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m)
+            d = 1/self.phase_type.A
+            
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m,d)
             
 
         # if there is a surface scatter model, modify ray properties

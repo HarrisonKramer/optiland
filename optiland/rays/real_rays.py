@@ -165,7 +165,7 @@ class RealRays(BaseRays):
         self.N = self.N - 2 * dot * nz
         
 
-    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m):
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d):
     #     Args:
     #         nx: The x-component of the surface normal.
     #         ny: The y-component of the surface normal.
@@ -200,8 +200,17 @@ class RealRays(BaseRays):
      
     
         kp2 = kdx**2 + kdy**2 + kdz**2
-
-        k_perp_mag =be.sqrt(k_mag**2 - kp2)
+        
+        be.where(kp2 < k_mag**2)
+        dk_mag2_kp2=k_mag**2 - kp2
+        if be.where(dk_mag2_kp2 < 0, True, False).any():
+            raise ValueError("Angular limit on Rays due to phase ")
+        
+        k_perp_mag =be.sqrt(dk_mag2_kp2)
+       
+            
+            
+            
         kfx =  kdx + k_perp_mag * nx
         kfy =  kdy + k_perp_mag * ny
         kfz =  kdz + k_perp_mag * nz
@@ -210,9 +219,20 @@ class RealRays(BaseRays):
         self.L = kfx
         self.M = kfy
         self.N = kfz
+        
+                # calculate path difference in wavelengths introduced by grating. 
+                
 
-        self.normalize()  
-        self.opd = self.opd+be.sqrt(kfx**2 + kfy**2 + kfz**2)
+        #dW = (self._grating_spacing_nm/wvl) * (n1*in_sinI + n2*out_sinI)
+
+        self.normalize() 
+        dot_knn = dx * nx + dy * ny + dz * nz
+        sin_in = be.sqrt(1 - dot_knn**2)
+        dot_kfn = self.L * nx + self.M * ny + self.N * nz
+        sin_out = be.sqrt(1 - dot_kfn**2)
+         
+        self.opd = self.opd + d  * (n1 * sin_in + n2 * sin_out)
+         
         return
       
 
