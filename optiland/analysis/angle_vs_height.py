@@ -12,6 +12,7 @@ import abc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
+from matplotlib.colors import Colormap
 
 import optiland.backend as be
 
@@ -19,9 +20,17 @@ from .base import BaseAnalysis
 
 
 def _plot_angle_vs_height(
-    plot_data_list, axis, optic_name, plot_style, figsize, title, color_label, cmap
-):
-    """Helper function to generate a consistent angle vs. image height plot.
+    plot_data_list: list,
+    axis: int,
+    optic_name: str,
+    plot_style: str,
+    ax: plt.Axes,
+    title: str,
+    color_label: str,
+    cmap: str | Colormap,
+) -> None:
+    """Helper function to generate a consistent angle vs. image
+    height plot on a given axis.
 
     Args:
         plot_data_list (list): A list of tuples, where each tuple contains:
@@ -29,15 +38,11 @@ def _plot_angle_vs_height(
         axis (int): Specifies the axis for measurement (0 for x, 1 for y).
         optic_name (str): The name of the optic, used for the plot title.
         plot_style (str): Matplotlib plot style for the line.
-        figsize (tuple): The size of the figure.
+        ax (matplotlib.axes.Axes): The axes object to plot on.
         title (str or None): An optional subtitle for the plot.
         color_label (str): The label for the colorbar.
         cmap (str): The name of the colormap to use.
-
-    Returns:
-        tuple: The matplotlib figure and axes objects (fig, ax).
     """
-    fig, ax = plt.subplots(figsize=figsize)
     norm = plt.Normalize(-1, 1)
     linewidth = 3
 
@@ -66,6 +71,7 @@ def _plot_angle_vs_height(
         lc.set_linewidth(linewidth)
         line = ax.add_collection(lc)
 
+    fig = ax.get_figure()
     fig.suptitle("Incident Angle vs Image Height" + (" (x-axis)" if axis == 0 else ""))
     ax.set_title(full_title, fontsize=10)
     ax.set_xlabel("Image Height in Millimeters")
@@ -74,9 +80,6 @@ def _plot_angle_vs_height(
     cbar.set_label(color_label, labelpad=15)
     ax.grid(alpha=0.25)
     ax.autoscale_view()
-    fig.tight_layout()
-
-    return fig, ax
 
 
 class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
@@ -110,10 +113,10 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        num_points: int = 128,
     ):
         self.surface_idx = surface_idx
         self.axis = axis
@@ -127,7 +130,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                     "Invalid wavelength string for Angle vs. Height Analysis, only "
                     "'primary' is supported as a string."
                 )
-        elif isinstance(wavelength, (float, int)):
+        elif isinstance(wavelength, float | int):
             processed_wavelength = [float(wavelength)]
         else:
             raise TypeError(
@@ -214,10 +217,19 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         }
         return data
 
-    def view(self, figsize=(8, 5.5), title=None, cmap="viridis", line_style="-"):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (8, 5.5),
+        title: str = None,
+        cmap: str | Colormap = "viridis",
+        line_style: str = "-",
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Displays a plot of the incident angle vs. image height analysis.
 
         Args:
+            fig_to_plot_on (matplotlib.figure.Figure, optional): A figure object
+                to plot on. If None, a new figure is created. Defaults to None.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (8, 5.5).
             title (str, optional): An optional subtitle to be added to the plot.
@@ -227,8 +239,30 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
             line_style (str, optional): Matplotlib plot style. Defaults to '-'.
 
         Returns:
-            tuple: The matplotlib figure and axes objects (fig, ax).
+            tuple: A tuple containing the figure and axes objects used for plotting.
         """
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
+
+        if not self.data:
+            ax.text(
+                0.5,
+                0.5,
+                "Error: Data could not be generated.",
+                ha="center",
+                va="center",
+                color="red",
+            )
+            if is_gui_embedding:
+                current_fig.canvas.draw_idle()
+            return ax
+
         plot_data_list = []
 
         # Determine the colorbar label based on what is being scanned.
@@ -254,13 +288,13 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 legend_label = (
                     f"Px={np.round(fixed_p1, 4).item()} "
                     f"Py={np.round(fixed_p2, 4).item()}, "
-                    f"{np.round(wavelength, 4).item()} μm"
+                    f"{np.round(wavelength, 4).item()} µm"
                 )
             else:  # fixed_coords == 'Field'
                 legend_label = (
                     f"Hx={np.round(fixed_p1, 4).item()} "
                     f"Hy={np.round(fixed_p2, 4).item()}, "
-                    f"{np.round(wavelength, 4).item()} μm"
+                    f"{np.round(wavelength, 4).item()} µm"
                 )
             plot_data_list.append(
                 (
@@ -271,17 +305,23 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
                 )
             )
 
-        _ = _plot_angle_vs_height(
+        _plot_angle_vs_height(
             plot_data_list=plot_data_list,
             axis=self.axis,
             optic_name=self.optic.name,
             plot_style=line_style,
-            figsize=figsize,
+            ax=ax,
             title=title,
             color_label=color_label,
             cmap=cmap,
         )
-        plt.show()
+
+        current_fig.tight_layout()
+
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+
+        return current_fig, ax
 
 
 class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
@@ -297,8 +337,8 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
             height are measured. Defaults to -1 (last surface).
         axis (int, optional): Specifies the axis for measurement. 0 for x-axis,
             1 for y-axis. Defaults to 1 (y-axis).
-        wavelengths (str or list, optional): A single wavelength or a list of
-            wavelengths. Passed directly to BaseAnalysis. Defaults to 'all'.
+        wavelength (str or float, optional): A single wavelength in microns.
+            Defaults to 'primary'.
         field (tuple, optional): A single relative image field point (Hx, Hy).
             Defaults to (0, 0).
         num_points (int, optional): The number of points used for the plot.
@@ -308,8 +348,6 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic (Optic): The optic object being analyzed.
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
-        wavelength (str or float, optional): A single wavelength in microns.
-            Defaults to 'primary'.
         field (tuple): The relative image field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
@@ -320,11 +358,11 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        field=(0, 0),
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        field: tuple = (0, 0),
+        num_points: int = 128,
     ):
         self.field = field
         super().__init__(optic, surface_idx, axis, wavelength, num_points)
@@ -390,7 +428,6 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic (Optic): The optic object being analyzed.
         surface_idx (int): Index of the surface for measurements.
         axis (int): Axis for measurement (0 for x, 1 for y).
-        wavelengths (list): The wavelengths being analyzed (handled by BaseAnalysis).
         pupil (tuple): The pupil field point (fixed for tracing).
         num_points (int): The number of points generated for the analysis.
         data (dict): The generated data for the analysis, structured as:
@@ -403,11 +440,11 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
     def __init__(
         self,
         optic,
-        surface_idx=-1,
-        axis=1,
-        wavelength="primary",
-        pupil=(0, 0),
-        num_points=128,
+        surface_idx: int = -1,
+        axis: int = 1,
+        wavelength: str | int | float = "primary",
+        pupil: tuple = (0, 0),
+        num_points: int = 128,
     ):
         self.pupil = pupil
         super().__init__(optic, surface_idx, axis, wavelength, num_points)

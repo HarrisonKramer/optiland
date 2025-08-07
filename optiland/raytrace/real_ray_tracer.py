@@ -122,7 +122,7 @@ class RealRayTracer:
         return [
             (
                 be.full((max_size,), value)
-                if isinstance(value, (float, int))
+                if isinstance(value, float | int)
                 else value
                 if be.is_array_like(value)
                 else None

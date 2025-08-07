@@ -79,17 +79,38 @@ class GeometricMTF(SpotDiagram):
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
-    def view(self, figsize=(12, 4), add_reference=False):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (12, 4),
+        add_reference: bool = False,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Plots the MTF curve.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If provided, the existing figure is cleared and reused.
+                Defaults to None, which creates a new figure.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (12, 4).
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference curve. Defaults to False.
 
+        Returns:
+            tuple: A tuple containing the matplotlib figure and axes objects.
+                If `fig_to_plot_on` is provided, the existing figure is cleared
+                and reused; otherwise, a new figure is created.
+
         """
-        _, ax = plt.subplots(figsize=figsize)
+
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, data in enumerate(self.mtf):
             self._plot_field(ax, data, self.fields[k], color=f"C{k}")
@@ -107,9 +128,11 @@ class GeometricMTF(SpotDiagram):
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation", labelpad=10)
-        plt.tight_layout()
-        plt.grid(alpha=0.25)
-        plt.show()
+        current_fig.tight_layout()
+        ax.grid(alpha=0.25)
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_mtf_data(self):
         """Generates the MTF data for each field point.

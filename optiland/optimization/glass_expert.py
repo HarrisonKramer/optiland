@@ -67,12 +67,27 @@ class GlassExpert(OptimizerGeneric):
         self.plot_glass_map = False
         self.opt_params = dict()
 
+        self._nd_vd_cache: dict[str, tuple[float, float]] = {}
+
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
 
     def vprint(self, *args, **kwargs):
         if self.verbose:
             print(*args, **kwargs)
+
+    def _get_nd_vd(self, glasses: list[str]) -> dict[str, tuple[float, float]]:
+        """
+        Return (n_d, V_d) for all requested glasses.
+
+        Already computed values are reused from memory.
+        Only unknown glasses are fetched from disk via get_nd_vd().
+        """
+        new_glasses = [g for g in glasses if g not in self._nd_vd_cache]
+        if new_glasses:
+            fetched = {g: get_nd_vd(g) for g in new_glasses}
+            self._nd_vd_cache.update(fetched)
+        return {g: self._nd_vd_cache[g] for g in glasses}
 
     def _save_state(self):
         # Store current values of all problem variables for later restoration
@@ -81,7 +96,7 @@ class GlassExpert(OptimizerGeneric):
     def _restore_state(self, old_state=None):
         # Restore variables to a previous state and update the optical system
         state = old_state or self._state
-        for variable, val in zip(self.problem.variables, state):
+        for variable, val in zip(self.problem.variables, state, strict=False):
             variable.update(val)
         self.problem.update_optics()
 
@@ -110,7 +125,7 @@ class GlassExpert(OptimizerGeneric):
             self.vprint(f"Selecting {variable}:")
 
             # Retreive (nd, vd) information for all glasses
-            glass_dict = {g: get_nd_vd(g) for g in variable.glass_selection}
+            glass_dict = self._get_nd_vd(variable.glass_selection)
 
             # Downsample to promote diversity and limit search size
             glass_dict = downsample_glass_map(glass_dict, num_glasses_to_keep=pool_size)
@@ -153,10 +168,13 @@ class GlassExpert(OptimizerGeneric):
         for variable in glass_variables:
             self.vprint(f"Selecting {variable}:")
 
+            # Retreive (nd, vd) information for all glasses
+            glass_dict = self._get_nd_vd(variable.glass_selection)
+
             # Identify top candidates based on material proximity in (n_d, V_d) space
             neighbours = get_neighbour_glasses(
                 glass=variable.value,
-                glass_selection=variable.glass_selection,
+                glass_dict=glass_dict,
                 num_neighbours=num_neighbours,
                 plot=self.plot_glass_map,
             )
@@ -201,7 +219,16 @@ class GlassExpert(OptimizerGeneric):
             self.problem.update_optics()
             result = self.optimize(**self.opt_params)
             error = result.fun
-            self.vprint(f"Error function value: {error:.2f}")
+            fmt = (
+                ".0f"
+                if error >= 100
+                else ".1f"
+                if error >= 10
+                else ".2f"
+                if error >= 1e-2
+                else ".2e"
+            )
+            self.vprint(f"Error function value: {format(error, fmt)}")
             if error < best_error:
                 best_error = error
                 best_glass = neighbour
@@ -326,7 +353,7 @@ class GlassExpert(OptimizerGeneric):
         result = self.optimize(**self.opt_params)
 
         # Update all continuous variables to final values
-        for var, val in zip(self.problem.variables, result.x):
+        for var, val in zip(self.problem.variables, result.x, strict=False):
             var.update(val)
         self.problem.update_optics()
 

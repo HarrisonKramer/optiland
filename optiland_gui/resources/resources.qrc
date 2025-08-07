@@ -1,0 +1,60 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icons">
+    <file alias="dark/dash.svg">icons/dark/dash.svg</file>
+    <file alias="dark/design.svg">icons/dark/design.svg</file>
+    <file alias="dark/analysis.svg">icons/dark/analysis.svg</file>
+    <file alias="dark/optimization.svg">icons/dark/optimization.svg</file>
+    <file alias="dark/materials.svg">icons/dark/materials.svg</file>
+    <file alias="dark/tolerancing.svg">icons/dark/tolerancing.svg</file>
+    <file alias="dark/settings.svg">icons/dark/settings.svg</file>
+    <file alias="dark/refresh.svg">icons/dark/refresh.svg</file>
+    <file alias="dark/run.svg">icons/dark/run.svg</file>
+    <file alias="dark/stop.svg">icons/dark/stop.svg</file>
+    <file alias="dark/close.svg">icons/dark/close.svg</file>
+    <file alias="dark/maximize_restore.svg">icons/dark/maximize_restore.svg</file>
+    <file alias="dark/run_all.svg">icons/dark/run_all.svg</file>
+    <file alias="dark/check_apply.svg">icons/dark/check_apply.svg</file>
+    <file alias="dark/load_settings.svg">icons/dark/load_settings.svg</file>
+    <file alias="dark/save_settings.svg">icons/dark/save_settings.svg</file>
+    <file alias="dark/terminal.svg">icons/dark/terminal.svg</file>
+    <file alias="dark/brand_github.svg">icons/dark/brand_github.svg</file>
+    <file alias="dark/help.svg">icons/dark/help.svg</file>
+    <file alias="dark/add.svg">icons/dark/add.svg</file>
+    <file alias="dark/flash.svg">icons/dark/flash.svg</file>
+    <file alias="dark/add_quick_action.svg">icons/dark/add_quick_action.svg</file>
+    <file alias="dark/tool.svg">icons/dark/tool.svg</file>
+    <file alias="dark/minimize.svg">icons/dark/minimize.svg</file>
+
+
+    <file alias="light/dash.svg">icons/light/dash.svg</file>
+    <file alias="light/design.svg">icons/light/design.svg</file>
+    <file alias="light/analysis.svg">icons/light/analysis.svg</file>
+    <file alias="light/optimization.svg">icons/light/optimization.svg</file>
+    <file alias="light/materials.svg">icons/light/materials.svg</file>
+    <file alias="light/tolerancing.svg">icons/light/tolerancing.svg</file>
+    <file alias="light/settings.svg">icons/light/settings.svg</file>
+    <file alias="light/refresh.svg">icons/light/refresh.svg</file>
+    <file alias="light/run.svg">icons/light/run.svg</file>
+    <file alias="light/stop.svg">icons/light/stop.svg</file>
+    <file alias="light/close.svg">icons/light/close.svg</file>
+    <file alias="light/maximize_restore.svg">icons/light/maximize_restore.svg</file>
+    <file alias="light/run_all.svg">icons/light/run_all.svg</file>
+    <file alias="light/check_apply.svg">icons/light/check_apply.svg</file>
+    <file alias="light/load_settings.svg">icons/light/load_settings.svg</file>
+    <file alias="light/save_settings.svg">icons/light/save_settings.svg</file>
+    <file alias="light/terminal.svg">icons/light/terminal.svg</file>
+    <file alias="light/brand_github.svg">icons/light/brand_github.svg</file>
+    <file alias="light/help.svg">icons/light/help.svg</file>
+    <file alias="light/add.svg">icons/light/add.svg</file>
+    <file alias="light/flash.svg">icons/light/flash.svg</file>
+    <file alias="light/add_quick_action.svg">icons/light/add_quick_action.svg</file>
+    <file alias="light/tool.svg">icons/light/tool.svg</file>
+    <file alias="light/minimize.svg">icons/light/minimize.svg</file>
+
+</qresource>
+
+<qresource prefix="/images">
+    <file>logo.png</file>
+  </qresource>
+
+</RCC>

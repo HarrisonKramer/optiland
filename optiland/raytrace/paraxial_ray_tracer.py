@@ -163,7 +163,7 @@ class ParaxialRayTracer:
         Returns:
             np.ndarray: The processed input.
         """
-        if isinstance(x, (int, float)):
+        if isinstance(x, int | float):
             return be.array([x])
         else:
             return be.array(x)

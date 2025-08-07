@@ -20,3 +20,11 @@ This section constains examples of typical analysis tasks that can be performed 
     analysis/through_focus_spot_diagram
     analysis/angle_vs_image_height_through_pupil
     analysis/angle_vs_image_height_through_field
+
+Surface Analysis
+----------------
+
+This section contains examples of different types of surface-related analysis.
+
+.. nbgallery::
+    analysis/sag_surface_analysis

@@ -14,7 +14,7 @@ from numba import njit, prange
 
 import optiland.backend as be
 from optiland.psf.base import BasePSF
-from optiland.visualization.utils import transform
+from optiland.visualization.system.utils import transform
 from optiland.wavefront import Wavefront
 
 

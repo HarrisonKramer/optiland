@@ -6,6 +6,8 @@ import pytest
 from optiland import distribution
 from .utils import assert_allclose
 
+import matplotlib.pyplot as plt
+
 
 @pytest.mark.parametrize("num_points", [10, 25, 106, 512])
 def test_line_x(set_test_backend, num_points):
@@ -106,12 +108,15 @@ def test_cross(set_test_backend, num_points):
     assert_allclose(d.y, expected_y)
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_distribution(mock_show, set_test_backend):
+def test_view_distribution(set_test_backend):
     d = distribution.create_distribution("random")
     d.generate_points(num_points=10)
-    d.view()
-    mock_show.assert_called_once()
+    fig, ax = d.view()
+    assert fig is not None
+    assert ax is not None
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close(fig)
 
 
 def test_invalid_distribution_error(set_test_backend):

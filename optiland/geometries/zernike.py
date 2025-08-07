@@ -3,7 +3,7 @@
 The Zernike polynomial geometry represents a surface defined by a Zernike
 polynomial in two dimensions. The surface is defined as:
 
-z(x,y) = z_{base}(x,y) + r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
+z(x,y) = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
     sum_i [c[i] * Z_i(rho, theta)]
 
 where:
@@ -33,7 +33,7 @@ from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     """Represents a Fringe Zernike polynomial geometry defined as:
 
-    z(x,y) = z_{base}(x,y) + r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
+    z(x,y) = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
         sum_i [c[i] * Z_i(rho, theta)]
 
     where:
