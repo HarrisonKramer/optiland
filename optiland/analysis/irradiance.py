@@ -9,12 +9,12 @@ instead of plotting the landing position of individual rays,
 we accumulate their power on a detector and express the result
 in W/mm^2.
 
-
 Manuel Fragata Mendes, 2025
 """
 
 import matplotlib.pyplot as plt
-import numpy as _np  # Use _np for the binning. Later extend to
+import numpy as _np  # Use _np for plotting logic.
+from matplotlib.colors import Colormap
 
 # other backends
 import optiland.backend as be
@@ -97,17 +97,75 @@ class IncoherentIrradiance(BaseAnalysis):
                 "(e.g. RectangularAperture) so that the detector size is defined."
             )
 
+        # Override resolution if px_size is provided
+        if self.px_size is not None:
+            x_min, x_max, y_min, y_max = surf.aperture.extent
+            detector_width = x_max - x_min
+            detector_height = y_max - y_min
+
+            # Calculate resolution from pixel size
+            new_npix_x = int(round(detector_width / self.px_size[0]))
+            new_npix_y = int(round(detector_height / self.px_size[1]))
+
+            # Print warning and update resolution
+            print(
+                "[IncoherentIrradiance] Warning: res parameter ignored - derived "
+                f"from px_size instead → ({new_npix_x},{new_npix_y}) pixels"
+            )
+            self.npix_x, self.npix_y = new_npix_x, new_npix_y
+
         super().__init__(optic, wavelengths)
 
     def view(
         self,
-        figsize=(6, 5),
-        cmap="inferno",
-        cross_section=None,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple = (6, 5),
+        cmap: str | Colormap = "inferno",
+        cross_section: tuple[str, int] = None,
         *,
         normalize: bool = True,
-    ):
-        """Display false-colour irradiance map or cross-section plots."""
+    ) -> tuple[plt.Figure, _np.ndarray[plt.Axes]]:
+        """
+        Display a false-colour irradiance map or cross-section plots for the current
+        irradiance data.
+
+        args :
+            fig_to_plot_on : plt.Figure, optional
+                Existing matplotlib Figure to plot on. If None, a new figure is created.
+                Default is None.
+            figsize : tuple, optional
+                Size of each subplot as (width, height) in inches. Default is (6, 5).
+            cmap : str or Colormap, optional
+                Colormap to use for the irradiance map. Default is "inferno".
+            cross_section : tuple[str, int], optional
+                If provided, plot a cross-section instead of a 2D map. Should be a tuple
+                of ('cross-x' or 'cross-y', index), where index is the slice index along
+                the specified axis.
+                If None, a 2D irradiance map is plotted. Default is None.
+            normalize : bool, optional
+                If True, normalize irradiance maps to their peak value. If False, use
+                absolute values.
+                Default is True.
+
+        Returns :
+            fig : matplotlib.figure.Figure
+                The matplotlib Figure object containing the plot(s).
+            axs : numpy.ndarray
+                Array of Axes objects for the subplots, or None if plotting on an
+                existing figure.
+
+        Notes
+        -----
+        - If no valid irradiance data is available, the method prints a warning
+        and returns None.
+        - If `cross_section` is invalid or not provided, a 2D irradiance map is
+        shown.
+        - The method supports plotting multiple fields and wavelengths as a grid
+        of subplots.
+        - Colorbars and axis labels are automatically added to each subplot.
+        """
+        is_gui_embedding = fig_to_plot_on is not None
+
         if not self.data:  # Changed from self.irr_data
             print("No irradiance data to display.")
             return
@@ -129,6 +187,11 @@ class IncoherentIrradiance(BaseAnalysis):
                     valid_cross_section_request = True
                     cs_axis_type = axis_type_in.lower()
                     cs_slice_idx = slice_idx_in if slice_idx_in is not None else -1
+                    cross_section_title = self._get_cross_section_title(
+                        cs_axis_type,
+                        cs_slice_idx,
+                        normalize=normalize,
+                    )
                 else:
                     print(
                         "[IncoherentIrradiance] Warning: Invalid cross_section_info "
@@ -144,6 +207,32 @@ class IncoherentIrradiance(BaseAnalysis):
         # logic for vmin_plot, vmax_plot calculation
 
         all_irr_values_list = []
+        n_fields = len(self.fields)
+        n_wavelengths = len(self.wavelengths)
+
+        if is_gui_embedding:
+            fig = fig_to_plot_on
+            fig.set_size_inches(figsize[0] * n_wavelengths, figsize[1] * n_fields)
+            fig.clear()
+            axs = fig.subplots(
+                nrows=n_fields,
+                ncols=n_wavelengths,
+                sharex=True,
+                sharey=True,
+                squeeze=False,
+            )
+        else:
+            fig, axs = plt.subplots(
+                nrows=n_fields,
+                ncols=n_wavelengths,
+                figsize=(figsize[0] * n_wavelengths, figsize[1] * n_fields),
+                squeeze=False,
+                tight_layout=True,
+                sharex=True,
+                sharey=True,
+            )
+
+        main_title = "Irradiance Analysis"
 
         for field_block_idx, field_block in enumerate(
             self.data
@@ -191,12 +280,14 @@ class IncoherentIrradiance(BaseAnalysis):
         for f_idx, field_block in enumerate(self.data):  # Changed from self.irr_data
             for w_idx, entry_data in enumerate(field_block):  # entry_data is the tuple
                 irr_map, x_edges, y_edges = entry_data
+                x_edges = be.to_numpy(x_edges)
+                y_edges = be.to_numpy(y_edges)
                 if normalize:
                     peak_val = self.peak_irradiance()[f_idx][w_idx]
                     if peak_val > 0:
                         irr_map = irr_map / peak_val
                 # title string stuff
-                title_str_base = "Irradiance"
+                title_str_base = ""
                 if self.user_initial_rays is not None:
                     # Original code uses self.fields[f_idx][0] for label
                     field_label_info_val = (
@@ -204,31 +295,31 @@ class IncoherentIrradiance(BaseAnalysis):
                         if isinstance(self.fields[f_idx], tuple)
                         else self.fields[f_idx]
                     )
-                    title_str_base = f"Irradiance (User Rays: {field_label_info_val})"
+                    title_str_base = f"(User Rays: {field_label_info_val})"
                 else:
                     field_coord = self.fields[f_idx]
                     wavelength_val = self.wavelengths[w_idx]
                     title_str_base = (
-                        f"Irradiance: Field {f_idx} {field_coord}, "
-                        f"WL {w_idx} ({wavelength_val:.3f} µm)"
+                        f"Field {f_idx} {field_coord}, "
+                        f"$\\lambda_{w_idx}$ = {wavelength_val:.3f} µm"
                     )
 
                 # call helper cross section
                 if plot_cross_section_requested and valid_cross_section_request:
                     self._plot_cross_section(
+                        axs[f_idx, w_idx],
                         irr_map,
                         x_edges,
                         y_edges,
                         cs_axis_type,
                         cs_slice_idx,
-                        figsize,
                         title_str_base,
                         normalize,
                     )
+
                 else:
                     # 2D plotting stuff
-                    plt.figure(figsize=figsize)
-                    plt.imshow(
+                    im = axs[f_idx, w_idx].imshow(
                         be.to_numpy(irr_map).T,
                         aspect="auto",
                         origin="lower",
@@ -238,42 +329,48 @@ class IncoherentIrradiance(BaseAnalysis):
                         vmax=vmax_plot,
                     )
                     cbar_lbl = (
-                        "Normalized Irradiance" if normalize else "Irradiance (W/mm^2)"
+                        "Normalized Irradiance"
+                        if normalize
+                        else "Irradiance (W/mm$^2$)"
                     )
-                    plt.colorbar(label=cbar_lbl)
-                    plt.xlabel("X (mm)")
-                    plt.ylabel("Y (mm)")
-                    plt.title(title_str_base)
-                    plt.show()
+                    fig.colorbar(im, ax=axs[f_idx, w_idx], label=cbar_lbl)
+                    axs[f_idx, w_idx].set_xlabel("X (mm)")
+                    axs[f_idx, w_idx].set_ylabel("Y (mm)")
+                    axs[f_idx, w_idx].set_title(title_str_base)
+                    axs[f_idx, w_idx].set_aspect("equal")
+
+        if plot_cross_section_requested and valid_cross_section_request:
+            main_title += cross_section_title
+        fig.suptitle(main_title)
+
+        if is_gui_embedding and hasattr(fig, "canvas"):
+            fig.canvas.draw_idle()
+
+        return fig, axs
 
     # --- helper functions ---
 
     def peak_irradiance(self):
         """Maximum pixel value for each (field,wvl) pair."""
-        return [
-            [be.max(irr) for irr, *_ in fblock] for fblock in self.data
-        ]  # Changed from self.irr_data
+        return [[be.max(irr) for irr, *_ in fblock] for fblock in self.data]
 
     def _plot_cross_section(
         self,
+        ax: plt.Axes,
         irr_map_be,
         x_edges,
         y_edges,
         axis_type: str,
         slice_idx: int,
-        figsize: tuple,
         title_prefix: str,
         normalize: bool = True,
-    ):
+    ) -> None:
         """Helper method to plot a 1D cross-section of the irradiance map."""
         irr_map_np = be.to_numpy(irr_map_be)
 
         # Calculate pixel centers
         x_centers = (x_edges[:-1] + x_edges[1:]) / 2
         y_centers = (y_edges[:-1] + y_edges[1:]) / 2
-
-        plt.figure(figsize=figsize)
-        plot_title = title_prefix
 
         if axis_type == "cross-x":  # cross section along X, data varies with Y
             if slice_idx < 0:
@@ -283,14 +380,11 @@ class IncoherentIrradiance(BaseAnalysis):
                     f"[IncoherentIrradiance] Warning: X-slice index {slice_idx} is out "
                     f"of bounds for map shape {irr_map_np.shape}. Skipping plot."
                 )
-                plt.close()
                 return
 
             data_to_plot = irr_map_np[slice_idx, :]
             coords_to_plot_against = y_centers
-            plt.xlabel("Y (mm)")
-            plot_title += f" - X-Cross-section at X ≈ {x_centers[slice_idx]:.2f} mm "
-            f"(index {slice_idx})"
+            ax.set_xlabel("Y (mm)")
 
         elif axis_type == "cross-y":  # cross section along Y, data varies with X
             if slice_idx < 0:
@@ -300,39 +394,104 @@ class IncoherentIrradiance(BaseAnalysis):
                     f"[IncoherentIrradiance] Warning: Y-slice index {slice_idx} is "
                     f"out of bounds for map shape {irr_map_np.shape}. Skipping plot."
                 )
-                plt.close()
                 return
 
             data_to_plot = irr_map_np[:, slice_idx]
             coords_to_plot_against = x_centers
-            plt.xlabel("X (mm)")
-            plot_title += f" - Y-Cross-section at Y ≈ {y_centers[slice_idx]:.2f} "
-            f"mm (index {slice_idx})"
+            ax.set_xlabel("X (mm)")
         else:
-            plt.close()
             return
 
         if normalize:
             peak_val = data_to_plot.max()
             if peak_val > 0:
                 data_to_plot = data_to_plot / peak_val
-        plt.plot(coords_to_plot_against, data_to_plot, linestyle="-.")
-        ylbl = "Normalized Irradiance" if normalize else "Irradiance (W/mm^2)"
-        plt.ylabel(ylbl)
-        plt.title(plot_title)
-        plt.grid(True)
-        plt.show()
+
+        ax.plot(coords_to_plot_against, data_to_plot, linestyle="-")
+        ylbl = "Normalized Irradiance" if normalize else "Irradiance (W/mm$^2$)"
+        ax.set_ylabel(ylbl)
+        ax.set_title(title_prefix)
+        ax.grid(True)
+
+    def _get_cross_section_title(
+        self,
+        axis_type: str,
+        slice_idx: int,
+        normalize: bool = True,
+    ) -> str:
+        """
+        Generate a descriptive title for a cross-section plot of an irradiance map.
+
+        Parameters
+        ----------
+        data : Any
+            The data structure containing the irradiance map and its axis edges.
+            (Note: This parameter is not used directly in the function body.)
+        axis_type : str
+            The type of cross-section to plot. Must be either "cross-x" (cross-section
+            along X, varies with Y)
+            or "cross-y" (cross-section along Y, varies with X).
+        slice_idx : int
+            The index of the slice to use for the cross-section. If negative, the
+            middle slice is used.
+        normalize : bool, optional
+            Whether to indicate normalization in the title. Default is True.
+
+        Returns
+        -------
+        str
+            A formatted string suitable as a plot title, indicating the axis,
+            position, index, and normalization status.
+            Returns an empty string if the slice index is out of bounds.
+        """
+
+        irr_map_be = self.data[0][0][0]  # Get the first irradiance map
+        x_edges = self.data[0][0][1]  # Get the x_edges
+        y_edges = self.data[0][0][2]  # Get the y_edges
+
+        irr_map_np = be.to_numpy(irr_map_be)
+
+        # Calculate pixel centers
+        x_centers = (x_edges[:-1] + x_edges[1:]) / 2
+        y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+
+        cross_section_title = ""
+
+        if axis_type == "cross-x":  # cross section along X, data varies with Y
+            if slice_idx < 0:
+                slice_idx = irr_map_np.shape[0] // 2  # middle pixel
+            if not (0 <= slice_idx < irr_map_np.shape[0]):
+                return cross_section_title
+
+            cross_section_title += (
+                f" - $X$-Cross-section at $X$ ≈ {x_centers[slice_idx]:.2f} mm "
+            )
+            cross_section_title += f"(index {slice_idx}/{irr_map_np.shape[0]})"
+
+        elif axis_type == "cross-y":  # cross section along Y, data varies with X
+            if slice_idx < 0:
+                slice_idx = irr_map_np.shape[1] // 2  # middle pixel
+            if not (0 <= slice_idx < irr_map_np.shape[1]):
+                return cross_section_title
+
+            cross_section_title += (
+                f" - $Y$-Cross-section at $Y$ ≈ {y_centers[slice_idx]:.2f} "
+            )
+            cross_section_title += f"mm (index {slice_idx}/{irr_map_np.shape[1]})"
+
+        if normalize:
+            cross_section_title += " (normalized)"
+
+        return cross_section_title
 
     # --- data generation functions ---
 
-    def _generate_data(self):  # Signature changed
+    def _generate_data(self):
         data = []
-        # Use self.fields, self.wavelengths, self.distribution, self.user_initial_rays
+
         for field in self.fields:
             f_block = []
-            for (
-                wl
-            ) in self.wavelengths:  # self.wavelengths is now a list from BaseAnalysis
+            for wl in self.wavelengths:
                 f_block.append(
                     self._generate_field_data(
                         field, wl, self.distribution, self.user_initial_rays
@@ -341,57 +500,54 @@ class IncoherentIrradiance(BaseAnalysis):
             data.append(f_block)
         return data
 
-    def _generate_field_data(
-        self, field, wavelength, distribution, user_initial_rays
-    ):  # Signature unchanged
-        """Trace rays and bin their power into the pixels of the detector."""
-        # Uses self.num_rays internally
+    def _generate_field_data(self, field, wavelength, distribution, user_initial_rays):
+        """
+        Traces rays and bins their power. Switches between standard and
+        differentiable methods based on the gradient mode.
+        """
+
         if user_initial_rays is None:
             Hx, Hy = field
             self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
         else:
             self.optic.surface_group.trace(user_initial_rays)
 
-        # get ray coords on detector surface
         surf = self.optic.surface_group.surfaces[self.detector_surface]
-        x_g, y_g, z_g = surf.x, surf.y, surf.z
-        power = surf.intensity
-
-        from optiland.visualization.utils import transform
-
-        x_local, y_local, _ = transform(x_g, y_g, z_g, surf, is_global=True)
-        x_np = be.to_numpy(x_local)
-        y_np = be.to_numpy(y_local)
-        power_np = be.to_numpy(power)
-
-        valid = power_np > 0.0
-        x_np, y_np, power_np = x_np[valid], y_np[valid], power_np[valid]
-
-        # get the physical siize of the detector
         x_min, x_max, y_min, y_max = surf.aperture.extent
-        if self.px_size is None:
-            x_edges = _np.linspace(x_min, x_max, self.npix_x + 1, dtype=float)
-            y_edges = _np.linspace(y_min, y_max, self.npix_y + 1, dtype=float)
-            pixel_area = (x_edges[1] - x_edges[0]) * (y_edges[1] - y_edges[0])
-        else:
-            dx, dy = self.px_size
-            x_edges = _np.arange(x_min, x_max + 0.5 * dx, dx, dtype=float)
-            y_edges = _np.arange(y_min, y_max + 0.5 * dy, dy, dtype=float)
-            pixel_area = dx * dy
-            # if the pitch supplied by the user gives a different res
-            # than the one requested warn once
-            exp_nx = len(x_edges) - 1
-            exp_ny = len(y_edges) - 1
-            if (exp_nx, exp_ny) != (self.npix_x, self.npix_y):
-                print(
-                    f"[IncoherentIrradiance] Warning: res parameter ignored - "
-                    f"derived from px_size instead → ({exp_nx},{exp_ny}) pixels"
-                )
-                self.npix_x, self.npix_y = exp_nx, exp_ny
+        x_edges = be.linspace(x_min, x_max, self.npix_x + 1)
+        y_edges = be.linspace(y_min, y_max, self.npix_y + 1)
+        pixel_area = (x_edges[1] - x_edges[0]) * (y_edges[1] - y_edges[0])
 
-        # 2d binning with numpy histogram
-        hist, _, _ = _np.histogram2d(
-            x_np, y_np, bins=[x_edges, y_edges], weights=power_np
-        )
-        irr = hist / pixel_area
-        return be.array(irr), x_edges, y_edges
+        if be.get_backend() == "torch" and be.grad_mode.requires_grad:
+            x_local, y_local = surf.x, surf.y
+            power = surf.intensity
+            ray_coords = be.stack([x_local, y_local], axis=1)
+
+            # no rays landed on the detector surface scenario
+            if ray_coords.shape[0] == 0:
+                irr = be.zeros((self.npix_y, self.npix_x))
+                return irr, x_edges, y_edges
+
+            indices, weights = be.get_bilinear_weights(ray_coords, (x_edges, y_edges))
+
+            # directly accumulate weighted power into the pixel map.
+            power_map = be.zeros((self.npix_y, self.npix_x))
+            for i in range(4):
+                power_map = power_map.index_put(
+                    (indices[:, i, 1].long(), indices[:, i, 0].long()),
+                    weights[:, i] * power,
+                    accumulate=True,
+                )
+
+            irr = power_map / pixel_area
+            return irr, x_edges, y_edges
+
+        else:
+            x_local, y_local = surf.x, surf.y
+            power = surf.intensity
+
+            hist, _, _ = be.histogram2d(
+                x_local, y_local, bins=[x_edges, y_edges], weights=power
+            )
+            irr = hist / pixel_area
+            return irr, x_edges, y_edges

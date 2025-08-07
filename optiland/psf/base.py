@@ -66,12 +66,13 @@ class BasePSF(Wavefront):
 
     def view(
         self,
-        projection="2d",
-        log=False,
-        figsize=(7, 5.5),
-        threshold=0.05,
-        num_points=128,
-    ):
+        fig_to_plot_on: plt.Figure = None,
+        projection: str = "2d",
+        log: bool = False,
+        figsize: tuple = (7, 5.5),
+        threshold: float = 0.05,
+        num_points: int = 128,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualizes the PSF.
 
         Args:
@@ -84,14 +85,32 @@ class BasePSF(Wavefront):
                 bounds of the PSF for zoomed view. Defaults to 0.05.
             num_points (int, optional): The number of points used for
                 interpolating the PSF for smoother visualization. Defaults to 128.
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
 
         Raises:
+            RunentimeError: If the PSF has not been computed.
             ValueError: If the projection is not '2d' or '3d'.
             RuntimeError: If the PSF has not been computed by the subclass.
         """
         if self.psf is None:
             raise RuntimeError(
                 "PSF has not been computed. Call _compute_psf in subclass."
+            )
+        is_gui_embedding = fig_to_plot_on is not None
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = (
+                current_fig.add_subplot(111, figsize=figsize)
+                if projection == "2d"
+                else current_fig.add_subplot(111, figsize=figsize, projection="3d")
+            )
+        else:
+            current_fig, ax = (
+                plt.subplots(figsize=figsize)
+                if projection == "2d"
+                else plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
             )
 
         psf_np = be.to_numpy(self.psf)
@@ -122,6 +141,8 @@ class BasePSF(Wavefront):
 
         if projection == "2d":
             self._plot_2d(
+                current_fig,
+                ax,
                 psf_smooth,
                 log,
                 x_extent,
@@ -131,8 +152,11 @@ class BasePSF(Wavefront):
                 y_label,
                 psf_zoomed.shape,
             )
+            return current_fig, ax
         elif projection == "3d":
             self._plot_3d(
+                current_fig,
+                ax,
                 psf_smooth,
                 log,
                 x_extent,
@@ -142,12 +166,27 @@ class BasePSF(Wavefront):
                 y_label,
                 psf_zoomed.shape,
             )
+            return current_fig, ax
+        # Raise error if projection is not recognized
         else:
             raise ValueError('Projection must be "2d" or "3d".')
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _plot_2d(
-        self, image, log, x_extent, y_extent, figsize, x_label, y_label, original_size
-    ):
+        self,
+        fig: plt.Figure,
+        ax: plt.Axes,
+        image: np.ndarray,
+        log: bool,
+        x_extent: float,
+        y_extent: float,
+        figsize: tuple,
+        x_label: str,
+        y_label: str,
+        original_size: tuple,
+    ) -> None:
         """Plots the PSF in 2D.
 
         Args:
@@ -161,7 +200,6 @@ class BasePSF(Wavefront):
             original_size (tuple): The original size of the PSF image before
                 interpolation.
         """
-        fig, ax = plt.subplots(figsize=figsize)
         norm = LogNorm() if log else None
 
         # Replace values <= 0 with smallest non-zero value in image for log scale
@@ -180,11 +218,20 @@ class BasePSF(Wavefront):
         cbar = plt.colorbar(im)
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("Relative Intensity (%)", rotation=270)
-        plt.show()
 
     def _plot_3d(
-        self, image, log, x_extent, y_extent, figsize, x_label, y_label, original_size
-    ):
+        self,
+        fig: plt.Figure,
+        ax: plt.Axes,
+        image: np.ndarray,
+        log: bool,
+        x_extent: float,
+        y_extent: float,
+        figsize: tuple,
+        x_label: str,
+        y_label: str,
+        original_size: tuple,
+    ) -> None:
         """Plots the PSF in 3D.
 
         Args:
@@ -198,7 +245,6 @@ class BasePSF(Wavefront):
             original_size (tuple): The original size of the PSF image before
                 interpolation.
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=figsize)
 
         x_np = be.to_numpy(be.linspace(-x_extent / 2, x_extent / 2, image.shape[1]))
         y_np = be.to_numpy(be.linspace(-y_extent / 2, y_extent / 2, image.shape[0]))
@@ -240,7 +286,6 @@ class BasePSF(Wavefront):
 
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15, format=log_formatter)
         fig.tight_layout()
-        plt.show()
 
     def _log_tick_formatter(self, value, pos=None):
         """Formats tick labels for a logarithmic scale (Z-axis in 3D plot)."""
@@ -359,18 +404,54 @@ class BasePSF(Wavefront):
         center_y = self.psf.shape[1] // 2
         return self.psf[center_x, center_y] / 100
 
-    def _get_effective_FNO(self):
-        """Calculates the effective F-number of the optical system.
+    def _get_working_FNO(self):
+        """Calculates the working F-number of the optical system for the
+        single defined field point and given wavelength.
+
+        Algorithm:
+            1. Retrieve the defined given wavelength and field coordinates.
+            2. Determine the image-space refractive index 'n' at the given wavelength.
+            3. Trace four marginal rays (top, bottom, left, right) at the pupil edges,
+               as well as the chief ray.
+            4. Compute the angle between each marginal ray and the chief ray.
+            4. Calculate the average of the squared numerical apertures from all traced
+               marginal rays.
+            5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
+            6. Cap the calculated F/# at 10,000 if it exceeds this value.
 
         Returns:
-            float: The effective F-number.
+            float: The working F-number.
         """
-        FNO = self.optic.paraxial.FNO()
+        MAX_FNUM = 10000.0
 
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
+        Hx, Hy = self.fields[0]
+        wavelength = self.wavelengths[0]
 
-        return FNO
+        n = self.optic.image_surface.material_post.n(wavelength)
+        Px = be.array([0, 0, 0, 1, -1])
+        Py = be.array([0, 1, -1, 0, 0])
+
+        rays = self.optic.trace_generic(
+            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
+        )
+
+        L0, M0, N0 = rays.L[0], rays.M[0], rays.N[0]
+        L, M, N = rays.L[1:], rays.M[1:], rays.N[1:]
+        dot = L0 * L + M0 * M + N0 * N
+        dot = be.clip(dot, -1.0, 1.0)
+        angles = be.arccos(dot)
+
+        numerical_apertures_squared = (n * be.sin(angles)) ** 2
+        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
+
+        fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
+
+        if fno > MAX_FNUM:
+            fno = MAX_FNUM
+
+        if be.isnan(fno):
+            raise ValueError(
+                "Working F/# could not be calculated due to raytrace errors."
+            )
+
+        return fno

@@ -60,7 +60,7 @@ class GeometryConfig:
     norm_y: float = 1.0
     norm_radius: float = 1.0
     # Biconic and Toroidal parameters
-    radius_x: float = be.inf  # Used by Biconic
+    radius_x: float = be.inf  # Used by Biconic and Toroidal (as radius_x)
     radius_y: float = be.inf  # Used by Biconic and Toroidal (as radius_yz)
     conic_x: float = 0.0  # Used by Biconic
     conic_y: float = 0.0  # Used by Biconic
@@ -254,8 +254,8 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
 
     return ToroidalGeometry(
         coordinate_system=cs,
-        radius_rotation=config.radius,  # Toroidal uses the main 'radius' for rotation
-        radius_yz=config.radius_y,  # Toroidal uses 'radius_y' for its YZ radius
+        radius_x=config.radius_x,  # Toroidal uses radius_x for its X radius
+        radius_y=config.radius_y,  # Toroidal uses 'radius_y' for its YZ radius
         conic=config.conic,
         coeffs_poly_y=config.toroidal_coeffs_poly_y,
         tol=config.tol,

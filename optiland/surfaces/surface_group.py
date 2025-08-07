@@ -159,7 +159,7 @@ class SurfaceGroup:
         """float: the total track length of the system"""
         if self.num_surfaces < 2:
             raise ValueError("Not enough surfaces to calculate total track.")
-        z = self.positions[1:-1]
+        z = self.positions[1:]
         return be.max(z) - be.min(z)
 
     def n(self, wavelength):
@@ -249,6 +249,10 @@ class SurfaceGroup:
                 material,
                 **kwargs,
             )
+
+        # Used for surface positioning
+        new_surface.thickness = kwargs.get("thickness", 0.0)
+        self.surface_factory.material_factory.last_material = new_surface.material_post
 
         if new_surface.is_stop:
             for surface in self.surfaces:

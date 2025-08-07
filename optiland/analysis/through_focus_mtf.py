@@ -55,12 +55,12 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
     def __init__(
         self,
         optic,
-        spatial_frequency,
-        delta_focus=0.1,
-        num_steps=5,
-        fields="all",
-        wavelength="primary",
-        num_rays=128,
+        spatial_frequency: float,
+        delta_focus: float = 0.1,
+        num_steps: int = 5,
+        fields: list[tuple[float, float]] | str = "all",
+        wavelength: float | str = "primary",
+        num_rays: int = 128,
     ):
         self.spatial_frequency = spatial_frequency
         self.num_rays = num_rays
@@ -114,16 +114,51 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
             results_at_this_focus.append({"tangential": mtf_t, "sagittal": mtf_s})
         return results_at_this_focus
 
-    def view(self, figsize=(12, 4)):
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (12, 4)
+    ) -> tuple[plt.Figure, plt.Axes]:
         """
-        Visualizes the through-focus MTF results.
+        Visualizes the through-focus Modulation Transfer Function (MTF) results for
+        each analyzed field.
 
-        This method plots the tangential and sagittal MTF values against
-        defocus for each analyzed field. Spline smoothing is applied to
-        the MTF data for a smoother curve if enough data points are available.
-        The plot shows MTF at the spatial frequency defined during initialization.
+        This method generates a plot of tangential and sagittal MTF values as a function
+        of defocus for each field position.
+        If enough data points are available, spline smoothing is applied to the MTF
+        data to produce smoother curves.
+        Otherwise, raw data points are plotted. The plot displays MTF at the spatial
+        frequency specified during initialization.
+
+        Parameters
+        ----------
+        fig_to_plot_on : plt.Figure, optional
+            An existing matplotlib Figure to plot on. If provided, the plot will be
+            embedded in this figure.
+            If None (default), a new figure will be created.
+        figsize : tuple of float, optional
+            Size of the figure to create if `fig_to_plot_on` is None.
+            Default is (12, 4).
+
+        Returns
+        -------
+        tuple[plt.Figure, plt.Axes]
+            The matplotlib Figure and Axes objects containing the plot.
+
+        Notes
+        -----
+        - Spline smoothing uses cubic splines if at least 4 data points are available,
+        linear splines for 2-3 points, and raw data is plotted if fewer points
+        are present.
+        - The legend displays the field coordinates (Hx, Hy) for each curve.
+        - The plot includes grid lines and is formatted for clarity.
         """
-        fig, ax = plt.subplots(figsize=(12, 4))
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         np_positions = be.to_numpy(be.asarray(self.positions))
         np_nominal_focus = be.to_numpy(be.asarray(self.nominal_focus))
@@ -220,5 +255,9 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.grid(True, linestyle=":", alpha=0.5)
 
-        plt.tight_layout()
-        plt.show()
+        current_fig.tight_layout()
+
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+
+        return current_fig, ax

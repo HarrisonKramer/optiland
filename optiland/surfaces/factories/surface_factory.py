@@ -41,7 +41,7 @@ class SurfaceFactory:
         # CoordinateSystemFactory requires access to SurfaceFactory attributes
         self._coordinate_factory = CoordinateSystemFactory(self)
         self._geometry_factory = GeometryFactory()
-        self._material_factory = MaterialFactory()
+        self.material_factory = MaterialFactory()
         self._coating_factory = CoatingFactory()
 
         self.use_absolute_cs = False
@@ -72,7 +72,7 @@ class SurfaceFactory:
         )
 
         # Build pre and post surface materials
-        material_pre, material_post = self._material_factory.create(
+        material_pre, material_post = self.material_factory.create(
             index, material, self._surface_group
         )
 

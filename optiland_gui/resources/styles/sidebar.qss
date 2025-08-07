@@ -1,0 +1,56 @@
+/* Content: */
+#SidebarWidget {
+    background-color: #1F1F1F;
+    border-right: 1px solid #2A2A2A; /* Optional: visual separation */
+}
+
+QLabel#SidebarTitleLabel {
+    color: #EEEEEE;
+    font-weight: bold;
+    padding: 5px 0px; /* Vertical padding */
+    /* font-size can be set here if needed */
+}
+
+QToolButton[objectName^="sidebar-btn-"] {
+    color: #EEEEEE; /* Default text/icon color */
+    background-color: transparent;
+    border: none; /* Remove default button border */
+    padding: 8px 10px; /* Vertical, Horizontal padding */
+    text-align: left; /* Align text to the left of the icon area */
+    border-radius: 3px; /* Slightly rounded corners */
+}
+
+QToolButton[objectName^="sidebar-btn-"] QAbstractButton::icon {
+    /* If specific icon styling needed beyond color, though color should affect monochrome SVGs */
+}
+
+/* Hover state for all sidebar buttons */
+QToolButton[objectName^="sidebar-btn-"]:hover {
+    background-color: #2A2A2A; /* Dark gray background on hover */
+    color: #007ACC; /* Highlight color for icon and text */
+}
+
+/* Checked (active) state for all sidebar buttons */
+QToolButton[objectName^="sidebar-btn-"]:checked {
+    background-color: #007ACC; /* Highlight color background */
+    color: #FFFFFF; /* White icon and text */
+    font-weight: bold; /* Optional: make active button text bold */
+}
+
+/* Styling for the QSplitter handle (targets all horizontal handles if not specific) */
+/* This will be effective if sidebar.qss is appended to the global stylesheet */
+QSplitter::handle:horizontal {
+    background-color: #2A2A2A; /* Handle default color */
+    width: 6px; /* Ensure this matches setHandleWidth if not overridden here */
+    /* image: url(:/icons/splitter-handle-horizontal.svg); /* Optional: custom handle image */
+}
+
+QSplitter::handle:horizontal:hover {
+    background-color: #333333; /* Handle hover color */
+}
+
+/* Collapsed mode specific styles (if needed beyond widget logic) */
+#SidebarWidget[collapsed="true"] QToolButton[objectName^="sidebar-btn-"] {
+    /* Example: padding: 8px; if different padding needed when collapsed */
+    /* text-align: center; /* If icon should be centered when text is hidden */
+}

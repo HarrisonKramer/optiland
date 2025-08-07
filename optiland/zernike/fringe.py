@@ -76,7 +76,9 @@ class ZernikeFringe(BaseZernike):
                     indices.append((n, m))
 
         # sort indices according to fringe coefficient number
-        indices_sorted = [element for _, element in sorted(zip(number, indices))]
+        indices_sorted = [
+            element for _, element in sorted(zip(number, indices, strict=False))
+        ]
 
         # take only 120 indices
         return indices_sorted[:120]

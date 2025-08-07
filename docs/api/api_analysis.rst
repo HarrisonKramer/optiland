@@ -10,6 +10,7 @@ encircled energy, field curvature, distortion, etc.
    :toctree: analysis/
    :caption: Analysis Modules
 
+   analysis.angle_vs_height
    analysis.distortion
    analysis.encircled_energy
    analysis.field_curvature

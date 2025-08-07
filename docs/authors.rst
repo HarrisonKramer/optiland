@@ -22,6 +22,9 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **Daniel Araújo Miranda** (`GitHub <https://github.com/mirandadam>`_)
 - **Hemkumar Srinivas** (`GitHub <https://github.com/hemkumarsrinivas>`_)
 - **Kacper Rutkowski** (`GitHub <https://github.com/kkrutkowski>`_)
+- **mattemilio** (`GitHub <https://github.com/mattemilio>`_)
+- **BuergiR** (`GitHub <https://github.com/BuergiR>`_)
+- **Corentin Nannini** (`GitHub <https://github.com/lordpositron>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
