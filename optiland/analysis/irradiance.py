@@ -9,12 +9,11 @@ instead of plotting the landing position of individual rays,
 we accumulate their power on a detector and express the result
 in W/mm^2.
 
-
 Manuel Fragata Mendes, 2025
 """
 
 import matplotlib.pyplot as plt
-import numpy as _np  # Use _np for the binning. Later extend to
+import numpy as _np  # Use _np for plotting logic.
 from matplotlib.colors import Colormap
 
 # other backends
@@ -56,13 +55,9 @@ class IncoherentIrradiance(BaseAnalysis):
 
      Methods
      ---
-     view(figsize=(6,5), cmap="inferno") → plt.Figure, np.ndarray
-         Display a false-colour irradiance map or cross-section plots for the
-         current irradiance data.  If `cross_section` is specified, a 1D
-         cross-section is plotted instead of a 2D map.
-         If `normalize` is True, the irradiance maps are normalised to their
-         peak value, otherwise absolute values are used.
-
+     view(figsize=(6,5), cmap="inferno") → None
+         Display false-colour irradiance maps three fields per row, sharing a common
+         colour bar.
      peak_irradiance() → list[list[float]]
          Return the maximum pixel value for every (field,wvl) pair.
     """
@@ -101,6 +96,23 @@ class IncoherentIrradiance(BaseAnalysis):
                 "Detector surface has no physical aperture - set one "
                 "(e.g. RectangularAperture) so that the detector size is defined."
             )
+
+        # Override resolution if px_size is provided
+        if self.px_size is not None:
+            x_min, x_max, y_min, y_max = surf.aperture.extent
+            detector_width = x_max - x_min
+            detector_height = y_max - y_min
+
+            # Calculate resolution from pixel size
+            new_npix_x = int(round(detector_width / self.px_size[0]))
+            new_npix_y = int(round(detector_height / self.px_size[1]))
+
+            # Print warning and update resolution
+            print(
+                "[IncoherentIrradiance] Warning: res parameter ignored - derived "
+                f"from px_size instead → ({new_npix_x},{new_npix_y}) pixels"
+            )
+            self.npix_x, self.npix_y = new_npix_x, new_npix_y
 
         super().__init__(optic, wavelengths)
 
@@ -268,6 +280,8 @@ class IncoherentIrradiance(BaseAnalysis):
         for f_idx, field_block in enumerate(self.data):  # Changed from self.irr_data
             for w_idx, entry_data in enumerate(field_block):  # entry_data is the tuple
                 irr_map, x_edges, y_edges = entry_data
+                x_edges = be.to_numpy(x_edges)
+                y_edges = be.to_numpy(y_edges)
                 if normalize:
                     peak_val = self.peak_irradiance()[f_idx][w_idx]
                     if peak_val > 0:
@@ -338,9 +352,7 @@ class IncoherentIrradiance(BaseAnalysis):
 
     def peak_irradiance(self):
         """Maximum pixel value for each (field,wvl) pair."""
-        return [
-            [be.max(irr) for irr, *_ in fblock] for fblock in self.data
-        ]  # Changed from self.irr_data
+        return [[be.max(irr) for irr, *_ in fblock] for fblock in self.data]
 
     def _plot_cross_section(
         self,
@@ -417,7 +429,7 @@ class IncoherentIrradiance(BaseAnalysis):
             (Note: This parameter is not used directly in the function body.)
         axis_type : str
             The type of cross-section to plot. Must be either "cross-x" (cross-section
-              along X, varies with Y)
+            along X, varies with Y)
             or "cross-y" (cross-section along Y, varies with X).
         slice_idx : int
             The index of the slice to use for the cross-section. If negative, the
@@ -474,14 +486,12 @@ class IncoherentIrradiance(BaseAnalysis):
 
     # --- data generation functions ---
 
-    def _generate_data(self):  # Signature changed
+    def _generate_data(self):
         data = []
-        # Use self.fields, self.wavelengths, self.distribution, self.user_initial_rays
+
         for field in self.fields:
             f_block = []
-            for (
-                wl
-            ) in self.wavelengths:  # self.wavelengths is now a list from BaseAnalysis
+            for wl in self.wavelengths:
                 f_block.append(
                     self._generate_field_data(
                         field, wl, self.distribution, self.user_initial_rays
@@ -490,57 +500,54 @@ class IncoherentIrradiance(BaseAnalysis):
             data.append(f_block)
         return data
 
-    def _generate_field_data(
-        self, field, wavelength, distribution, user_initial_rays
-    ):  # Signature unchanged
-        """Trace rays and bin their power into the pixels of the detector."""
-        # Uses self.num_rays internally
+    def _generate_field_data(self, field, wavelength, distribution, user_initial_rays):
+        """
+        Traces rays and bins their power. Switches between standard and
+        differentiable methods based on the gradient mode.
+        """
+
         if user_initial_rays is None:
             Hx, Hy = field
             self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
         else:
             self.optic.surface_group.trace(user_initial_rays)
 
-        # get ray coords on detector surface
         surf = self.optic.surface_group.surfaces[self.detector_surface]
-        x_g, y_g, z_g = surf.x, surf.y, surf.z
-        power = surf.intensity
-
-        from optiland.visualization.system.utils import transform
-
-        x_local, y_local, _ = transform(x_g, y_g, z_g, surf, is_global=True)
-        x_np = be.to_numpy(x_local)
-        y_np = be.to_numpy(y_local)
-        power_np = be.to_numpy(power)
-
-        valid = power_np > 0.0
-        x_np, y_np, power_np = x_np[valid], y_np[valid], power_np[valid]
-
-        # get the physical siize of the detector
         x_min, x_max, y_min, y_max = surf.aperture.extent
-        if self.px_size is None:
-            x_edges = _np.linspace(x_min, x_max, self.npix_x + 1, dtype=float)
-            y_edges = _np.linspace(y_min, y_max, self.npix_y + 1, dtype=float)
-            pixel_area = (x_edges[1] - x_edges[0]) * (y_edges[1] - y_edges[0])
-        else:
-            dx, dy = self.px_size
-            x_edges = _np.arange(x_min, x_max + 0.5 * dx, dx, dtype=float)
-            y_edges = _np.arange(y_min, y_max + 0.5 * dy, dy, dtype=float)
-            pixel_area = dx * dy
-            # if the pitch supplied by the user gives a different res
-            # than the one requested warn once
-            exp_nx = len(x_edges) - 1
-            exp_ny = len(y_edges) - 1
-            if (exp_nx, exp_ny) != (self.npix_x, self.npix_y):
-                print(
-                    f"[IncoherentIrradiance] Warning: res parameter ignored - "
-                    f"derived from px_size instead → ({exp_nx},{exp_ny}) pixels"
-                )
-                self.npix_x, self.npix_y = exp_nx, exp_ny
+        x_edges = be.linspace(x_min, x_max, self.npix_x + 1)
+        y_edges = be.linspace(y_min, y_max, self.npix_y + 1)
+        pixel_area = (x_edges[1] - x_edges[0]) * (y_edges[1] - y_edges[0])
 
-        # 2d binning with numpy histogram
-        hist, _, _ = _np.histogram2d(
-            x_np, y_np, bins=[x_edges, y_edges], weights=power_np
-        )
-        irr = hist / pixel_area
-        return be.array(irr), x_edges, y_edges
+        if be.get_backend() == "torch" and be.grad_mode.requires_grad:
+            x_local, y_local = surf.x, surf.y
+            power = surf.intensity
+            ray_coords = be.stack([x_local, y_local], axis=1)
+
+            # no rays landed on the detector surface scenario
+            if ray_coords.shape[0] == 0:
+                irr = be.zeros((self.npix_y, self.npix_x))
+                return irr, x_edges, y_edges
+
+            indices, weights = be.get_bilinear_weights(ray_coords, (x_edges, y_edges))
+
+            # directly accumulate weighted power into the pixel map.
+            power_map = be.zeros((self.npix_y, self.npix_x))
+            for i in range(4):
+                power_map = power_map.index_put(
+                    (indices[:, i, 1].long(), indices[:, i, 0].long()),
+                    weights[:, i] * power,
+                    accumulate=True,
+                )
+
+            irr = power_map / pixel_area
+            return irr, x_edges, y_edges
+
+        else:
+            x_local, y_local = surf.x, surf.y
+            power = surf.intensity
+
+            hist, _, _ = be.histogram2d(
+                x_local, y_local, bins=[x_edges, y_edges], weights=power
+            )
+            irr = hist / pixel_area
+            return irr, x_edges, y_edges
