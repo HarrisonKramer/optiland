@@ -33,7 +33,7 @@ class YYbar(BaseAnalysis):
     def __init__(self, optic, wavelength="primary"):
         if isinstance(wavelength, str) and wavelength.lower() == "primary":
             self.wavelength_value_for_display = optic.primary_wavelength
-        elif isinstance(wavelength, (float, int)):
+        elif isinstance(wavelength, float | int):
             self.wavelength_value_for_display = float(wavelength)
         else:
             self.wavelength_value_for_display = optic.primary_wavelength
@@ -54,8 +54,42 @@ class YYbar(BaseAnalysis):
             print(f"Error generating YYbar data: {e}")
             return None
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 5.5)):
-        """Visualizes the ray heights of the marginal and chief rays."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 5.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """
+        Visualizes the ray heights of the marginal and chief rays in a Y Y-bar diagram.
+
+        This method plots the relationship between the chief ray height (Y-bar) and
+        the marginal ray height (Y)
+        for each surface in the optical system. It can either plot on a provided
+        matplotlib Figure (for GUI embedding)
+        or create a new figure.
+
+        Parameters
+        ----------
+        fig_to_plot_on : plt.Figure, optional
+            An existing matplotlib Figure to plot on. If None, a new figure is created.
+            Default is None.
+        figsize : tuple of float, optional
+            Size of the figure to create if `fig_to_plot_on` is None.
+                Default is (7, 5.5).
+
+        Returns
+        -------
+        tuple[plt.Figure, plt.Axes]
+            The matplotlib Figure and Axes objects containing the plot.
+
+        Notes
+        -----
+        - If the required data (`ya` and `yb`) is not available, an error message is
+        displayed on the plot.
+        - Surface labels are generated based on surface comments, IDs, or their role
+        (e.g., "Image", "Stop").
+        - The plot includes horizontal and vertical reference lines at zero.
+        - The diagram's title includes the wavelength used for the calculation.
+
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -120,11 +154,13 @@ class YYbar(BaseAnalysis):
                 [be.to_numpy(yb[k - 1]), be.to_numpy(yb[k])],
                 [be.to_numpy(ya[k - 1]), be.to_numpy(ya[k])],
                 ".-",
-                label=label
-                if k == 1
-                or k == num_surfaces_in_optic - 1
-                or k == self.optic.surface_group.stop_index
-                else None,
+                label=(
+                    label
+                    if k == 1
+                    or k == num_surfaces_in_optic - 1
+                    or k == self.optic.surface_group.stop_index
+                    else None
+                ),
                 markersize=8,
             )
 
@@ -136,8 +172,6 @@ class YYbar(BaseAnalysis):
         ax.legend()
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax

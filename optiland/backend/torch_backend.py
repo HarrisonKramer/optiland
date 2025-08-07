@@ -233,7 +233,7 @@ def copy(x):
 
 
 def is_array_like(x):
-    return isinstance(x, (torch.Tensor, np.ndarray, list, tuple))
+    return isinstance(x, torch.Tensor | np.ndarray | list | tuple)
 
 
 def size(x):
@@ -284,7 +284,7 @@ def unsqueeze_last(x):
 
 
 def tile(x, dims):
-    return torch.tile(x, dims if isinstance(dims, (tuple, list)) else (dims,))
+    return torch.tile(x, dims if isinstance(dims, tuple | list) else (dims,))
 
 
 def isscalar(x):
@@ -409,7 +409,7 @@ def factorial(n):
 
 
 def histogram2d(x, y, bins, weights=None):
-    if not isinstance(bins, (list, tuple)) or len(bins) != 2:
+    if not isinstance(bins, (list | tuple)) or len(bins) != 2:
         raise ValueError("`bins` must be a list or tuple of two edge tensors.")
 
     x_edges, y_edges = bins[0], bins[1]
@@ -645,9 +645,9 @@ def atleast_2d(x):
 
 
 def as_array_1d(data):
-    if isinstance(data, (int, float)):
+    if isinstance(data, int | float):
         return array([data])
-    if isinstance(data, (list, tuple)):
+    if isinstance(data, list | tuple):
         return array(data)
     if is_array_like(data):
         return data.reshape(-1)

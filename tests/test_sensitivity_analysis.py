@@ -79,13 +79,14 @@ def test_sensitivity_analysis_validation_too_many_perturbations(tolerancing):
         SensitivityAnalysis(tolerancing)
 
 
-@patch("matplotlib.pyplot.show")
-def test_sensitivity_analysis_view(mock_show, tolerancing):
+def test_sensitivity_analysis_view(tolerancing):
     sa = SensitivityAnalysis(tolerancing)
     sa.run()
-    sa.view()
-    mock_show.assert_called_once()
-    plt.close()
+    fig, axes = sa.view()
+    assert fig is not None
+    assert axes is not None
+    assert isinstance(fig, plt.Figure)
+    plt.close(fig)
 
 
 def test_invalid_sampler(tolerancing):

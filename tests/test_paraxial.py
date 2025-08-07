@@ -5,6 +5,7 @@ from optiland.optic import Optic
 from optiland.paraxial import Paraxial
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.infrared import InfraredTriplet, InfraredTripletF4
+from optiland.samples.miscellaneous import NavarroWideAngleEye
 from optiland.samples.objectives import (
     CookeTriplet,
     DoubleGauss,
@@ -469,6 +470,29 @@ def get_optic_data():
                 "invariant": -1.999683373079509,
             },
         ),
+        (
+            NavarroWideAngleEye,
+            {
+                "f1": -16.46790413205317,
+                "f2": 22.029115357447527,
+                "F1": -14.885414454279617,
+                "F2": 1.3739473936281545e-05,
+                "P1": 1.5824896777735535,
+                "P2": -22.02910161797359,
+                "P1anti": -31.35331858633279,
+                "P2anti": 22.029129096921462,
+                "N1": 7.143700903167909,
+                "N2": -16.467890392579235,
+                "N1anti": -36.91452981172714,
+                "N2anti": 16.467917871527106,
+                "EPL": 3.0400955345639176,
+                "EPD": 3.4002184,
+                "XPL": -20.237812690355327,
+                "XPD": 3.123730964467005,
+                "FNO": 6.47873542,
+                "invariant": -2.944675511067751  # TODO: check this value with literature
+            }
+        )
     ]
 
 

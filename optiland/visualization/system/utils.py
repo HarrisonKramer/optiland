@@ -84,7 +84,7 @@ def revolve_contour(x, y, z):
         vtk.vtkActor: VTK actor representing the revolved 3D surface.
 
     """
-    pts = [(xi, yi, zi) for xi, yi, zi in zip(x, y, z)]
+    pts = [(xi, yi, zi) for xi, yi, zi in zip(x, y, z, strict=False)]
 
     points = vtk.vtkPoints()
     lines = vtk.vtkCellArray()

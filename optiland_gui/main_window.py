@@ -15,22 +15,27 @@ from PySide6.QtCore import (
     QByteArray,
     QEasingCurve,
     QEvent,
+    QPoint,
     QPropertyAnimation,
+    QRect,
     QSettings,
     Qt,
     Slot,
 )
-from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QResizeEvent
+from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QPainter, QResizeEvent
 from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
     QFileDialog,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
+    QStyle,
+    QStyleOption,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -70,6 +75,83 @@ SIDEBAR_QSS_PATH = os.path.join(
 
 ORGANIZATION_NAME = "OptilandProject"
 APPLICATION_NAME = "OptilandGUI"
+
+
+class CustomDockTitleBar(QWidget):
+    """A custom title bar for QDockWidgets with macOS-style buttons."""
+
+    def __init__(self, parent_dock: QDockWidget, title: str = ""):
+        super().__init__(parent_dock)
+        self.setObjectName("CustomDockTitleBar")
+        self.dock_widget = parent_dock  # Store reference to the actual dock widget
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 3, 8, 3)  # Left, Top, Right, Bottom
+        layout.setSpacing(2)
+
+        self.title_label = QLabel(title)
+        layout.addWidget(self.title_label)
+        layout.addStretch()
+
+        # Create buttons
+        self.minimize_btn = QPushButton(self)
+        self.minimize_btn.setObjectName("DockMinimizeButton")
+        self.minimize_btn.setFixedSize(10, 10)
+        self.minimize_btn.setToolTip("Hide")
+        self.minimize_btn.clicked.connect(parent_dock.toggleViewAction().trigger)
+
+        self.undock_btn = QPushButton(self)
+        self.undock_btn.setObjectName("DockUndockButton")
+        self.undock_btn.setFixedSize(10, 10)
+        self.undock_btn.setToolTip("Float/Dock")
+        self.undock_btn.clicked.connect(
+            lambda: parent_dock.setFloating(not parent_dock.isFloating())
+        )
+
+        self.close_btn = QPushButton(self)
+        self.close_btn.setObjectName("DockCloseButton")
+        self.close_btn.setFixedSize(10, 10)
+        self.close_btn.setToolTip("Close")
+        self.close_btn.clicked.connect(parent_dock.close)
+
+        layout.addWidget(self.minimize_btn)
+        layout.addWidget(self.undock_btn)
+        layout.addWidget(self.close_btn)
+
+    def paintEvent(self, event):
+        """Ensures the background is drawn correctly according to the stylesheet."""
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(
+            QStyle.PrimitiveElement.PE_Widget, opt, painter, self
+        )
+        super().paintEvent(event)
+
+    def mousePressEvent(self, event):
+        """Handles mouse press for dragging the floating dock."""
+        if (
+            event.button() == Qt.MouseButton.LeftButton
+            and self.dock_widget.isFloating()
+        ):
+            self._mouse_press_pos = event.globalPosition().toPoint()
+            self._window_pos_before_move = self.dock_widget.pos()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        """Handles mouse move for dragging."""
+        if (
+            self.dock_widget.isFloating()
+            and event.buttons() == Qt.MouseButton.LeftButton
+        ) and (hasattr(self, "_mouse_press_pos") and self._mouse_press_pos is not None):
+            delta = event.globalPosition().toPoint() - self._mouse_press_pos
+            self.dock_widget.move(self._window_pos_before_move + delta)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Handles mouse release to stop dragging."""
+        self._mouse_press_pos = None
+        super().mouseReleaseEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -166,6 +248,23 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Optiland GUI")
         self.setGeometry(100, 100, 1600, 900)
 
+        # Window resizing and movement handling
+        self.setMouseTracking(True)  # Required for hover detection
+        self.grip_size = 8  # Size of the resize grip area
+        self.is_resizing = False
+        self.resize_area = None
+        self.is_moving = False
+        self.drag_position = QPoint()
+        self.start_geometry = None
+        self.start_pos = None
+
+        self.setMouseTracking(True)  # Required for hover detection
+        self.grip_size = 8  # Size of the resize grip area
+        self.grips = [QWidget(self) for i in range(4)]
+        self.is_resizing = False
+        self.is_moving = False
+        self.drag_position = QPoint()
+
         self.settings = QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
         self.next_save_slot_index = self.settings.value(
             "Layouts/NextSaveSlot", 1, type=int
@@ -206,6 +305,7 @@ class MainWindow(QMainWindow):
             self._handle_maximize_restore
         )
         self.custom_title_bar_widget.close_requested.connect(self.close)
+        self.custom_title_bar_widget.settings_requested.connect(self.show_settings_wip)
         self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
         self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
         self.connector.modifiedStateChanged.connect(
@@ -264,6 +364,9 @@ class MainWindow(QMainWindow):
         self.viewerDock = QDockWidget("System Viewer", self)
         self.viewerDock.setWidget(self.viewerPanel)
         self.viewerDock.setObjectName("ViewerDock")
+        self.viewerDock.setTitleBarWidget(
+            CustomDockTitleBar(self.viewerDock, "System Viewer")
+        )
         self.viewerDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -273,6 +376,9 @@ class MainWindow(QMainWindow):
         self.lensEditorDock = QDockWidget("Lens Data Editor", self)
         self.lensEditorDock.setWidget(self.lensEditor)
         self.lensEditorDock.setObjectName("LensEditorDock")
+        self.lensEditorDock.setTitleBarWidget(
+            CustomDockTitleBar(self.lensEditorDock, "Lens Data Editor")
+        )
         self.lensEditorDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -282,6 +388,9 @@ class MainWindow(QMainWindow):
         self.systemPropertiesDock = QDockWidget("System Properties", self)
         self.systemPropertiesDock.setWidget(self.systemPropertiesPanel)
         self.systemPropertiesDock.setObjectName("SystemPropertiesDock")
+        self.systemPropertiesDock.setTitleBarWidget(
+            CustomDockTitleBar(self.systemPropertiesDock, "System Properties")
+        )
         self.systemPropertiesDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -291,6 +400,9 @@ class MainWindow(QMainWindow):
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
         self.analysisPanelDock.setObjectName("AnalysisPanelDock")
+        self.analysisPanelDock.setTitleBarWidget(
+            CustomDockTitleBar(self.analysisPanelDock, "Analysis")
+        )
         self.analysisPanelDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -303,18 +415,12 @@ class MainWindow(QMainWindow):
             lambda pos: self._show_dock_context_menu(pos, self.analysisPanelDock)
         )
 
-        """self.optimizationPanelDock = QDockWidget("Optimization", self)
-        self.optimizationPanelDock.setWidget(self.optimizationPanel)
-        self.optimizationPanelDock.setObjectName("OptimizationPanelDock")
-        self.optimizationPanelDock.setFeatures(
-            QDockWidget.DockWidgetClosable
-            | QDockWidget.DockWidgetMovable
-            | QDockWidget.DockWidgetFloatable
-        )"""
-
         self.terminalDock = QDockWidget("Scripts Terminal", self)
         self.terminalDock.setWidget(self.pythonTerminal)
         self.terminalDock.setObjectName("TerminalDock")
+        self.terminalDock.setTitleBarWidget(
+            CustomDockTitleBar(self.terminalDock, "Scripts Terminal")
+        )
         self.terminalDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -670,7 +776,7 @@ class MainWindow(QMainWindow):
             self.custom_title_bar_widget.set_project_name(display_name)
 
     def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
-        animation_duration = 300
+        animation_duration = 150
         easing_curve = QEasingCurve.InOutQuad
         is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
             Qt.DockWidgetArea.LeftDockWidgetArea,
@@ -705,6 +811,8 @@ class MainWindow(QMainWindow):
             and self.dock_animations[dock_widget].state() == QPropertyAnimation.Running
         ):
             self.dock_animations[dock_widget].stop()
+        if show_state_after_toggle:
+            dock_widget.show()
         current_visibility = not dock_widget.isHidden()
         if show_state_after_toggle:
             if not current_visibility:
@@ -726,6 +834,9 @@ class MainWindow(QMainWindow):
                     )
                 animation.setDuration(animation_duration)
                 animation.setEasingCurve(easing_curve)
+                animation.finished.connect(
+                    lambda: self.dock_animations.pop(dock_widget, None)
+                )
                 animation.start(QPropertyAnimation.DeleteWhenStopped)
                 self.dock_animations[dock_widget] = animation
             else:
@@ -764,6 +875,9 @@ class MainWindow(QMainWindow):
                             original_dimension if original_dimension > 0 else 5000
                         )
                     )
+                )
+                animation.finished.connect(
+                    lambda: self.dock_animations.pop(dock_widget, None)
                 )
                 animation.start(QPropertyAnimation.DeleteWhenStopped)
                 self.dock_animations[dock_widget] = animation
@@ -947,6 +1061,282 @@ class MainWindow(QMainWindow):
                 f"No layout saved in configuration - {slot_number}.",
             )
 
+    # logic related to freely moving the main window
+    def mousePressEvent(self, event):
+        """Handle mouse press events for window dragging and resizing."""
+        if event.button() == Qt.LeftButton:
+            # Check if we're on a resize grip
+            rect = self.rect()
+            cursor_pos = event.position().toPoint()
+
+            # Define the resize areas (grip regions)
+            top_left = QRect(0, 0, self.grip_size, self.grip_size)
+            top_right = QRect(
+                rect.width() - self.grip_size, 0, self.grip_size, self.grip_size
+            )
+            bottom_left = QRect(
+                0, rect.height() - self.grip_size, self.grip_size, self.grip_size
+            )
+            bottom_right = QRect(
+                rect.width() - self.grip_size,
+                rect.height() - self.grip_size,
+                self.grip_size,
+                self.grip_size,
+            )
+
+            top = QRect(
+                self.grip_size, 0, rect.width() - 2 * self.grip_size, self.grip_size
+            )
+            left = QRect(
+                0, self.grip_size, self.grip_size, rect.height() - 2 * self.grip_size
+            )
+            right = QRect(
+                rect.width() - self.grip_size,
+                self.grip_size,
+                self.grip_size,
+                rect.height() - 2 * self.grip_size,
+            )
+            bottom = QRect(
+                self.grip_size,
+                rect.height() - self.grip_size,
+                rect.width() - 2 * self.grip_size,
+                self.grip_size,
+            )
+
+            # Determine if we're on a resize grip
+            if top_left.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "top_left"
+            elif top_right.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "top_right"
+            elif bottom_left.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "bottom_left"
+            elif bottom_right.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "bottom_right"
+            elif top.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "top"
+            elif left.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "left"
+            elif right.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "right"
+            elif bottom.contains(cursor_pos):
+                self.is_resizing = True
+                self.resize_area = "bottom"
+            # Check for dragging the title bar
+            elif (
+                hasattr(self, "custom_title_bar_widget")
+                and self.custom_title_bar_widget
+            ):
+                titlebar_rect = self.custom_title_bar_widget.rect()
+                global_pos = self.custom_title_bar_widget.mapToGlobal(QPoint(0, 0))
+                window_pos = self.mapFromGlobal(global_pos)
+                titlebar_rect.moveTo(window_pos)
+
+                if titlebar_rect.contains(cursor_pos) and not self.isMaximized():
+                    self.is_moving = True
+                    self.drag_position = (
+                        event.globalPosition().toPoint()
+                        - self.frameGeometry().topLeft()
+                    )
+
+            self.start_geometry = self.geometry()
+            self.start_pos = event.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, event):
+        """Handle mouse move events for window dragging, resizing, and AeroSnap."""
+        cursor_pos = event.position().toPoint()
+        global_pos = event.globalPosition().toPoint()
+
+        # Update cursor based on position
+        self.updateCursorShape(cursor_pos)
+
+        if self.is_resizing and not self.isMaximized():
+            # Handle resizing
+            diff = global_pos - self.start_pos
+            new_geometry = QRect(self.start_geometry)
+
+            if self.resize_area in ["top_left", "top", "top_right"]:
+                new_geometry.setTop(self.start_geometry.top() + diff.y())
+            if self.resize_area in ["bottom_left", "bottom", "bottom_right"]:
+                new_geometry.setBottom(self.start_geometry.bottom() + diff.y())
+            if self.resize_area in ["top_left", "left", "bottom_left"]:
+                new_geometry.setLeft(self.start_geometry.left() + diff.x())
+            if self.resize_area in ["top_right", "right", "bottom_right"]:
+                new_geometry.setRight(self.start_geometry.right() + diff.x())
+
+            # Enforce minimum size
+            if (
+                new_geometry.width() >= self.minimumWidth()
+                and new_geometry.height() >= self.minimumHeight()
+            ):
+                self.setGeometry(new_geometry)
+
+        elif self.is_moving and not self.isMaximized():
+            # Handle window movement with AeroSnap
+            self.move(global_pos - self.drag_position)
+
+            # AeroSnap implementation
+            screen = self.screen()
+            screen_geometry = screen.availableGeometry()
+
+            # Detect screen edges for snapping
+            at_top_edge = global_pos.y() <= screen_geometry.top() + 5
+            at_left_edge = global_pos.x() <= screen_geometry.left() + 5
+            at_right_edge = global_pos.x() >= screen_geometry.right() - 5
+
+            # Apply cursor feedback for AeroSnap zones
+            if at_top_edge or at_left_edge or at_right_edge:
+                self.setCursor(Qt.ArrowCursor)
+                # Show right-half preview outline if needed
+
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release events and implement AeroSnap actions."""
+        if event.button() == Qt.LeftButton:
+            # Implement AeroSnap functionality
+            if self.is_moving and not self.isMaximized():
+                screen = self.screen()
+                screen_geometry = screen.availableGeometry()
+                global_pos = event.globalPosition().toPoint()
+
+                # Detect screen edges for snapping actions
+                at_top_edge = global_pos.y() <= screen_geometry.top() + 5
+                at_left_edge = global_pos.x() <= screen_geometry.left() + 5
+                at_right_edge = global_pos.x() >= screen_geometry.right() - 5
+
+                if at_top_edge:
+                    # Maximize window
+                    self.showMaximized()
+                elif at_left_edge:
+                    # Snap to left half
+                    self.showNormal()
+                    new_geometry = QRect(
+                        screen_geometry.left(),
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                    self.setGeometry(new_geometry)
+                elif at_right_edge:
+                    # Snap to right half
+                    self.showNormal()
+                    new_geometry = QRect(
+                        screen_geometry.left() + screen_geometry.width() // 2,
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                    self.setGeometry(new_geometry)
+
+            # Reset states
+            self.is_moving = False
+            self.is_resizing = False
+            self.setCursor(Qt.ArrowCursor)
+
+    def updateCursorShape(self, pos):
+        """Update the cursor shape based on the mouse position."""
+        if self.isMaximized():
+            self.setCursor(Qt.ArrowCursor)
+            return
+
+        rect = self.rect()
+
+        # Define the resize areas
+        top_left = QRect(0, 0, self.grip_size, self.grip_size)
+        top_right = QRect(
+            rect.width() - self.grip_size, 0, self.grip_size, self.grip_size
+        )
+        bottom_left = QRect(
+            0, rect.height() - self.grip_size, self.grip_size, self.grip_size
+        )
+        bottom_right = QRect(
+            rect.width() - self.grip_size,
+            rect.height() - self.grip_size,
+            self.grip_size,
+            self.grip_size,
+        )
+
+        top = QRect(
+            self.grip_size, 0, rect.width() - 2 * self.grip_size, self.grip_size
+        )
+        left = QRect(
+            0, self.grip_size, self.grip_size, rect.height() - 2 * self.grip_size
+        )
+        right = QRect(
+            rect.width() - self.grip_size,
+            self.grip_size,
+            self.grip_size,
+            rect.height() - 2 * self.grip_size,
+        )
+        bottom = QRect(
+            self.grip_size,
+            rect.height() - self.grip_size,
+            rect.width() - 2 * self.grip_size,
+            self.grip_size,
+        )
+
+        # Set cursor shape based on position
+        if top_left.contains(pos):
+            self.setCursor(Qt.SizeFDiagCursor)
+        elif top_right.contains(pos) or bottom_left.contains(pos):
+            self.setCursor(Qt.SizeBDiagCursor)
+        elif bottom_right.contains(pos):
+            self.setCursor(Qt.SizeFDiagCursor)
+        elif top.contains(pos):
+            self.setCursor(Qt.SizeVerCursor)
+        elif left.contains(pos) or right.contains(pos):
+            self.setCursor(Qt.SizeHorCursor)
+        elif bottom.contains(pos):
+            self.setCursor(Qt.SizeVerCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+
+    def keyPressEvent(self, event):
+        """Handle key events for window management shortcuts."""
+        # Windows key + Left/Right/Up/Down for window snapping
+        if event.modifiers() & Qt.MetaModifier:
+            screen = self.screen()
+            screen_geometry = screen.availableGeometry()
+
+            if event.key() == Qt.Key_Left:
+                # Snap to left half
+                self.showNormal()
+                self.setGeometry(
+                    QRect(
+                        screen_geometry.left(),
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                )
+            elif event.key() == Qt.Key_Right:
+                # Snap to right half
+                self.showNormal()
+                self.setGeometry(
+                    QRect(
+                        screen_geometry.left() + screen_geometry.width() // 2,
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                )
+            elif event.key() == Qt.Key_Up:
+                # Maximize
+                self.showMaximized()
+            elif event.key() == Qt.Key_Down:
+                # Restore/minimize
+                if self.isMaximized():
+                    self.showNormal()
+                else:
+                    self.showMinimized()
+        else:
+            super().keyPressEvent(event)
+
     @Slot()
     def load_layout_1_slot(self):
         print("Loading layout from slot 1...")
@@ -973,3 +1363,12 @@ class MainWindow(QMainWindow):
         print("Main Window: Closing application.")
         self.pythonTerminal.shutdown_kernel()
         event.accept()
+
+    @Slot()
+    def show_settings_wip(self):
+        """Shows a 'Work in Progress' message for the settings panel."""
+        QMessageBox.information(
+            self,
+            "Work in Progress",
+            "The settings panel is currently under development.",
+        )

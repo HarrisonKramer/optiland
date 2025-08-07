@@ -15,6 +15,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QComboBox,
+    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -35,7 +36,7 @@ try:
 except ImportError:
     VTK_AVAILABLE = False
 
-
+from optiland.visualization.analysis.surface_sag import SurfaceSagViewer
 from optiland.visualization.system.rays import Rays2D, Rays3D
 from optiland.visualization.system.system import (
     OpticalSystem as OptilandOpticalSystemPlotter,
@@ -44,6 +45,192 @@ from optiland.visualization.system.system import (
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar
 from .optiland_connector import OptilandConnector
+
+
+class SagViewer(QWidget):
+    """A widget for displaying a 2D sag plot of a selected optical surface."""
+
+    def __init__(self, connector: OptilandConnector, parent=None):
+        super().__init__(parent)
+        self.connector = connector
+        self.current_theme = "dark"
+
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(5, 5, 5, 5)
+        main_layout.setSpacing(25)
+
+        # Main Plotting Area
+        plot_widget = QWidget()
+        plot_layout = QVBoxLayout(plot_widget)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.setSpacing(2)
+        main_layout.addWidget(plot_widget, 1)
+
+        # --- Toolbar and Title ---
+        toolbar_container = QWidget()
+        toolbar_container.setObjectName("ViewerToolbarContainer")
+        toolbar_container.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        toolbar_container.setMaximumHeight(60)
+        toolbar_layout = QHBoxLayout(toolbar_container)
+        toolbar_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.addWidget(toolbar_container)
+
+        # --- Matplotlib Canvas ---
+        self.figure = Figure(figsize=(5, 5), dpi=100)
+        self.canvas = FigureCanvas(self.figure)
+        plot_layout.addWidget(self.canvas, 1)
+
+        # --- Add Toolbar to container ---
+        self.toolbar = CustomMatplotlibToolbar(self.canvas, toolbar_container)
+        toolbar_layout.addWidget(self.toolbar)
+        toolbar_layout.addStretch()
+
+        # Add settings toggle button to toolbar
+        self.settings_toggle_btn = QToolButton()
+        self.settings_toggle_btn.setToolTip("Toggle Sag Viewer Settings")
+        self.settings_toggle_btn.setCheckable(True)
+        self.settings_toggle_btn.setChecked(True)
+        self.settings_toggle_btn.toggled.connect(self._toggle_settings)
+        self.toolbar.addWidget(self.settings_toggle_btn)
+
+        # Re-route the toolbar's home button to our full plot refresh
+        for action in self.toolbar.actions():
+            if action.toolTip() == "Reset original view":
+                action.triggered.disconnect()
+                action.triggered.connect(self.plot_sag)
+                break
+
+        # --- Cursor Coordinate Label ---
+        self.cursor_coord_label = QLabel("", self.canvas)
+        self.cursor_coord_label.setObjectName("CursorCoordLabel")
+        self.cursor_coord_label.setStyleSheet(
+            "background-color:rgba(0,0,0,0.65);color:white;padding:2px 4px;"
+            "border-radius:3px;"
+        )
+        self.cursor_coord_label.setVisible(False)
+        self.cursor_coord_label.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents
+        )
+
+        # Connect mouse move event
+        self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot)
+
+        # Settings Area
+        self.settings_area = QWidget()
+        self.settings_area.setFixedWidth(220)
+        settings_layout = QVBoxLayout(self.settings_area)
+        settings_layout.addWidget(QLabel("Sag Viewer Settings"))
+
+        settings_form = QFormLayout()
+        self.surface_selector = QSpinBox()
+        self.surface_selector.setRange(0, 100)
+        settings_form.addRow("Surface Index:", self.surface_selector)
+
+        self.x_cross_section = QDoubleSpinBox()
+        self.x_cross_section.setRange(-1000, 1000)
+        self.x_cross_section.setValue(0.0)
+        settings_form.addRow("X Cross-section (for Y-plot):", self.x_cross_section)
+
+        self.y_cross_section = QDoubleSpinBox()
+        self.y_cross_section.setRange(-1000, 1000)
+        self.y_cross_section.setValue(0.0)
+        settings_form.addRow("Y Cross-section (for X-plot):", self.y_cross_section)
+
+        settings_layout.addLayout(settings_form)
+        settings_layout.addStretch()
+
+        self.maxExtentSpinBox = QDoubleSpinBox()
+        self.maxExtentSpinBox.setRange(0.01, 1000.0)
+        self.maxExtentSpinBox.setValue(20.0)  # Default value
+        self.maxExtentSpinBox.setSuffix(" mm")
+        self.maxExtentSpinBox.setToolTip("Set the viewing area extent (±mm)")
+        self.maxExtentSpinBox.valueChanged.connect(self.plot_sag)
+
+        settings_form.addRow("View Extent:", self.maxExtentSpinBox)
+
+        apply_button = QPushButton("Plot Sag")
+        apply_button.clicked.connect(self.plot_sag)
+        settings_layout.addWidget(apply_button)
+        main_layout.addWidget(self.settings_area)
+
+        # Initial setup
+        self.connector.opticChanged.connect(self.update_surface_range)
+        self.update_surface_range()
+        self.plot_sag()
+        self.update_theme()
+
+    def _toggle_settings(self, checked):
+        """Toggle the visibility of the settings panel."""
+        self.settings_area.setVisible(checked)
+
+    def on_mouse_move_on_plot(self, event):
+        """Displays the cursor's coordinates on the plot."""
+        if event.inaxes:
+            # Determine which axis the cursor is over for a more informative label
+            axis_label = "Pos"
+            if event.inaxes.get_xlabel() == "X-coordinate":
+                axis_label = "(X, Sag)"
+            elif event.inaxes.get_ylabel() == "Y-coordinate (mm)":
+                axis_label = "(X, Y)"
+            elif event.inaxes.get_xlabel() == "Sag (z)":
+                axis_label = "(Sag, Y)"
+
+            x_coord = f"{event.xdata:.3f}" if event.xdata is not None else "---"
+            y_coord = f"{event.ydata:.3f}" if event.ydata is not None else "---"
+            self.cursor_coord_label.setText(f"{axis_label} = ({x_coord}, {y_coord})")
+            self.cursor_coord_label.adjustSize()
+            # Position at the bottom-left of the canvas
+            self.cursor_coord_label.move(
+                5, self.canvas.height() - self.cursor_coord_label.height() - 5
+            )
+            self.cursor_coord_label.setVisible(True)
+            self.cursor_coord_label.raise_()
+        else:
+            self.cursor_coord_label.setVisible(False)
+
+    def update_surface_range(self):
+        """Updates the range of the surface selector spinbox."""
+        count = self.connector.get_surface_count()
+        self.surface_selector.setRange(0, max(0, count - 1))
+
+    def update_theme(self, theme="dark"):
+        self.current_theme = theme
+        self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
+        self.plot_sag()
+
+    @Slot()
+    def plot_sag(self):
+        gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+        optic = self.connector.get_optic()
+        surface_index = self.surface_selector.value()
+        self.figure.clear()
+
+        if not optic or not (0 <= surface_index < optic.surface_group.num_surfaces):
+            ax = self.figure.add_subplot(111)
+            ax.text(
+                0.5,
+                0.5,
+                f"Invalid Surface Index: {surface_index}",
+                ha="center",
+                va="center",
+            )
+            self.canvas.draw()
+            return
+
+        # Use the existing backend SurfaceSagViewer class
+        viewer = SurfaceSagViewer(optic)
+
+        # Call its view method, passing our figure to be plotted on
+        viewer.view(
+            surface_index=surface_index,
+            y_cross_section=self.y_cross_section.value(),
+            x_cross_section=self.x_cross_section.value(),
+            max_extent=self.maxExtentSpinBox.value(),
+            fig_to_plot_on=self.figure,
+        )
+
+        # Redraw our canvas
+        self.canvas.draw()
 
 
 class ViewerPanel(QWidget):
@@ -80,6 +267,9 @@ class ViewerPanel(QWidget):
         self.viewer2D = MatplotlibViewer(self.connector, self)
         self.tabWidget.addTab(self.viewer2D, "2D View")
 
+        self.sagViewer = SagViewer(self.connector, self)
+        self.tabWidget.addTab(self.sagViewer, "Sag")
+
         self.viewer3D = (
             VTKViewer(self.connector, self)
             if VTK_AVAILABLE
@@ -99,6 +289,7 @@ class ViewerPanel(QWidget):
                                    Defaults to "dark".
         """
         self.viewer2D.update_theme(theme)
+        self.sagViewer.update_theme(theme)
         if VTK_AVAILABLE:
             self.viewer3D.update_theme(theme)
 
@@ -106,6 +297,7 @@ class ViewerPanel(QWidget):
     def update_viewers(self):
         """Updates the content of all viewers."""
         self.viewer2D.plot_optic()
+        self.sagViewer.plot_sag()
         if VTK_AVAILABLE:
             self.viewer3D.render_optic()
 

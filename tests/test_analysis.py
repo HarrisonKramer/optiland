@@ -110,48 +110,54 @@ class TestCookeTripetSpotDiagram:
         assert_allclose(airy_radius_y[1], 0.003430811760325915)
         assert_allclose(airy_radius_y[2], 0.0035453238661865244)
 
-    @patch("matplotlib.pyplot.show")
-    def test_airy_disc_in_view_spot_diagram(
-        self, mock_show, set_test_backend, cooke_triplet
-    ):
+    def test_airy_disc_in_view_spot_diagram(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
-        spot.view(add_airy_disk=True)
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = spot.view(add_airy_disk=True)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram(self, mock_show, set_test_backend, cooke_triplet):
-        spot = analysis.SpotDiagram(cooke_triplet)
-        spot.view()
-        mock_show.assert_called_once()
-        plt.close()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram_larger_fig(
-        self, mock_show, set_test_backend, cooke_triplet
-    ):
+    def test_view_spot_diagram(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
-        spot.view(figsize=(20, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = spot.view()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
+
+    def test_view_spot_diagram_larger_fig(self, set_test_backend, cooke_triplet):
+        spot = analysis.SpotDiagram(cooke_triplet)
+        fig, axes = spot.view(figsize=(20, 10))
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
 
 class TestTripletSpotDiagram:
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram(self, mock_show, set_test_backend, triplet_four_fields):
-        spot = analysis.SpotDiagram(triplet_four_fields)
-        spot.view()
-        mock_show.assert_called_once()
-        plt.close()
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_diagram_larger_fig(
-        self, mock_show, set_test_backend, triplet_four_fields
-    ):
+    def test_view_spot_diagram(self, set_test_backend, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
-        spot.view(figsize=(20, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = spot.view()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
+
+    def test_view_spot_diagram_larger_fig(self, set_test_backend, triplet_four_fields):
+        spot = analysis.SpotDiagram(triplet_four_fields)
+        fig, axes = spot.view(figsize=(20, 10))
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
 
 class TestCookeTripletEncircledEnergy:
@@ -171,21 +177,32 @@ class TestCookeTripletEncircledEnergy:
         assert_allclose(centroid[2][0], 3.1631726815066986e-07, atol=1e-3, rtol=1e-3)
         assert_allclose(centroid[2][1], 18.13502264954927, atol=1e-3, rtol=1e-3)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_encircled_energy(self, mock_show, set_test_backend, cooke_triplet):
+    def test_view_encircled_energy(self, set_test_backend, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
-        encircled_energy.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = encircled_energy.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_encircled_energy_larger_fig(
-        self, mock_show, set_test_backend, cooke_triplet
-    ):
+    def test_view_encircled_energy_larger_fig(self, set_test_backend, cooke_triplet):
         encircled_energy = analysis.EncircledEnergy(cooke_triplet)
-        encircled_energy.view(figsize=(20, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = encircled_energy.view(figsize=(20, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_view_encircled_energy_larger_fig(self, set_test_backend, cooke_triplet):
+        encircled_energy = analysis.EncircledEnergy(cooke_triplet)
+        fig, ax = encircled_energy.view(figsize=(20, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestCookeTripletRayFan:
@@ -393,37 +410,43 @@ class TestCookeTripletRayFan:
             atol=1e-9,
         )
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_ray_fan(self, mock_show, set_test_backend, cooke_triplet):
+    def test_view_ray_fan(self, set_test_backend, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
-        ray_fan.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = ray_fan.view()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_ray_fan_larger_fig(self, mock_show, set_test_backend, cooke_triplet):
+    def test_view_ray_fan_larger_fig(self, set_test_backend, cooke_triplet):
         ray_fan = analysis.RayFan(cooke_triplet)
-        ray_fan.view(figsize=(20, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = ray_fan.view(figsize=(20, 10))
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
 
 class TestTelescopeTripletYYbar:
-    @patch("matplotlib.pyplot.show")
-    def test_view_yybar(self, mock_show, set_test_backend, telescope_objective):
+    def test_view_yybar(self, set_test_backend, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
-        yybar.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = yybar.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_yybar_larger_fig(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_view_yybar_larger_fig(self, set_test_backend, telescope_objective):
         yybar = analysis.YYbar(telescope_objective)
-        yybar.view(figsize=(12.4, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = yybar.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestTelescopeTripletDistortion:
@@ -455,21 +478,41 @@ class TestTelescopeTripletDistortion:
         with pytest.raises(ValueError):
             analysis.Distortion(telescope_objective, distortion_type="invalid")
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_distortion(self, mock_show, set_test_backend, telescope_objective):
+    def test_view_distortion(self, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
-        dist.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = dist.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_distortion_larger_fig(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
         dist = analysis.Distortion(telescope_objective)
-        dist.view(figsize=(12.4, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = dist.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
+        dist = analysis.Distortion(telescope_objective)
+        fig, ax = dist.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
+        dist = analysis.Distortion(telescope_objective)
+        fig, ax = dist.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestTelescopeTripletGridDistortion:
@@ -520,23 +563,25 @@ class TestTelescopeTripletGridDistortion:
         with pytest.raises(ValueError):
             analysis.GridDistortion(telescope_objective, distortion_type="invalid")
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_grid_distortion(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_view_grid_distortion(self, set_test_backend, telescope_objective):
         dist = analysis.GridDistortion(telescope_objective)
-        dist.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = dist.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
     def test_view_grid_distortion_larger_fig(
-        self, mock_show, set_test_backend, telescope_objective
+        self, set_test_backend, telescope_objective
     ):
         dist = analysis.GridDistortion(telescope_objective)
-        dist.view(figsize=(12.4, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = dist.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestTelescopeTripletFieldCurvature:
@@ -588,14 +633,14 @@ class TestTelescopeTripletFieldCurvature:
         assert field_curvature.wavelengths == [0.55]
         assert field_curvature.num_points == num_points
 
-    @patch("matplotlib.pyplot.show")
-    def test_field_curvature_view(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_field_curvature_view(self, set_test_backend, telescope_objective):
         field_curvature = analysis.FieldCurvature(telescope_objective)
-        field_curvature.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = field_curvature.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_field_curvature_generate_data(self, set_test_backend, telescope_objective):
         f = analysis.FieldCurvature(telescope_objective)
@@ -649,21 +694,23 @@ class TestSpotVsField:
             len(telescope_objective.wavelengths.get_wavelengths()),
         )
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_vs_field(self, mock_show, set_test_backend, telescope_objective):
+    def test_view_spot_vs_field(self, set_test_backend, telescope_objective):
         spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
-        spot_vs_field.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = spot_vs_field.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_spot_vs_field_larger_fig(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_view_spot_vs_field_larger_fig(self, set_test_backend, telescope_objective):
         spot_vs_field = analysis.RmsSpotSizeVsField(telescope_objective)
-        spot_vs_field.view(figsize=(12.4, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = spot_vs_field.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestWavefrontErrorVsField:
@@ -687,25 +734,27 @@ class TestWavefrontErrorVsField:
             len(telescope_objective.wavelengths.get_wavelengths()),
         )
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_wave(self, mock_show, set_test_backend, telescope_objective):
+    def test_view_wave(self, set_test_backend, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
             telescope_objective,
         )
-        wavefront_error_vs_field.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = wavefront_error_vs_field.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_wave_larger_fig(
-        self, mock_show, set_test_backend, telescope_objective
-    ):
+    def test_view_wave_larger_fig(self, set_test_backend, telescope_objective):
         wavefront_error_vs_field = analysis.RmsWavefrontErrorVsField(
             telescope_objective,
         )
-        wavefront_error_vs_field.view(figsize=(12.4, 10))
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = wavefront_error_vs_field.view(figsize=(12.4, 10))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestPupilAberration:
@@ -730,12 +779,14 @@ class TestPupilAberration:
         assert "x" in data["(0.0, 0.0)"]["0.4861"]
         assert "y" in data["(0.0, 0.0)"]["0.4861"]
 
-    @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show, set_test_backend, telescope_objective):
+    def test_view(self, set_test_backend, telescope_objective):
         pupil_ab = analysis.PupilAberration(telescope_objective)
-        pupil_ab.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = pupil_ab.view()
+        assert fig is not None
+        assert axes is not None
+        assert len(axes) == 3
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
 
 
 def test_spotdiagram_invalid_coordinates(cooke_triplet):
@@ -869,9 +920,8 @@ def _apply_gaussian_apodization(
 
 
 class TestIncoherentIrradiance:
-    @patch("matplotlib.pyplot.show")
     def test_irradiance_v1_uniform_and_user_defined_rays(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
+        self, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         res = (5, 5)
@@ -882,8 +932,13 @@ class TestIncoherentIrradiance:
         irr_map_uniform, _, _ = irr_uniform.data[0][0]
 
         assert be.sum(irr_map_uniform) > 0
-        irr_uniform.view()
-        plt.close()
+        assert be.max(irr_map_uniform) > 0
+        fig, axes = irr_uniform.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
 
         num_rays_edge = 5
         user_rays = _create_square_grid_rays(
@@ -901,11 +956,9 @@ class TestIncoherentIrradiance:
 
         assert_allclose(total_power_on_detector, initial_total_power, atol=1e-5)
         irr_user.view()
-        plt.close()
 
-    @patch("matplotlib.pyplot.show")
     def test_irradiance_v1_one_ray_per_other_pixel(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
+        self, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         res_val = (10, 10)
@@ -943,12 +996,16 @@ class TestIncoherentIrradiance:
         initial_total_power = be.sum(user_rays.i)
 
         assert_allclose(total_power_on_detector, initial_total_power, atol=1e-5)
-        irr_analysis.view()
-        plt.close()
+        fig, axes = irr_analysis.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
 
-    @patch("matplotlib.pyplot.show")
+        plt.close(fig)
+
     def test_irradiance_gaussian_apodization(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
+        self, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         res_val = (50, 50)
@@ -993,12 +1050,15 @@ class TestIncoherentIrradiance:
         assert be.to_numpy(val_center) > be.to_numpy(val_corner2)
         assert_allclose(val_center, max_val_be, rtol=1e-3)
 
-        irr_apodized.view()
-        plt.close()
+        fig, axes = irr_apodized.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
     def test_irradiance_perfect_mirror_focus(
-        self, mock_show, set_test_backend, perfect_mirror_system
+        self, set_test_backend, perfect_mirror_system
     ):
         optic_sys = perfect_mirror_system
         res_val = (21, 21)
@@ -1044,12 +1104,16 @@ class TestIncoherentIrradiance:
         mask[center_x_idx - 1, center_y_idx - 1] = False
         assert_allclose(np.sum(irr_map_np[mask]), 0.0, atol=1e-5)
 
-        irr_perfect.view()
-        plt.close()
+        fig, axes = irr_perfect.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
 
-    @patch("matplotlib.pyplot.show")
+        plt.close(fig)
+
     def test_irradiance_plot_cross_section_gaussian(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
+        self, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         res_val = (50, 50)
@@ -1080,18 +1144,34 @@ class TestIncoherentIrradiance:
         )
 
         # Test cross-X plot at center
-        irr_apodized.view(cross_section=("cross-x", res_val[0] // 2))
+        fig, axes = irr_apodized.view(cross_section=("cross-x", res_val[0] // 2))
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+
+        plt.close(fig)
         # Test cross-Y plot at default middle slice
-        irr_apodized.view(cross_section=("cross-y", None))
+        fig, axes = irr_apodized.view(cross_section=("cross-y", None))
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+
+        plt.close(fig)
         # Test cross-X plot with normalize=False
-        irr_apodized.view(cross_section=("cross-x", res_val[0] // 2), normalize=False)
+        fig, axes = irr_apodized.view(
+            cross_section=("cross-x", res_val[0] // 2), normalize=False
+        )
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
 
-        assert mock_show.call_count >= 3
-        plt.close("all")
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
     def test_irradiance_peak_irradiance(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
+        self, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         irr = analysis.IncoherentIrradiance(optic_sys, num_rays=20, res=(10, 10))
@@ -1119,10 +1199,9 @@ class TestIncoherentIrradiance:
         ):
             analysis.IncoherentIrradiance(optic_no_ap, num_rays=5, res=(5, 5))
 
-    @patch("matplotlib.pyplot.show")
     @patch("builtins.print")
     def test_px_size_overrides_res_warning(
-        self, mock_print, mock_show, set_test_backend, test_system_irradiance_v1
+        self, mock_print, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         # Detector aperture is 5mm x 5mm. px_size of (1.0, 1.0) should result in 5x5 pixels.
@@ -1141,114 +1220,145 @@ class TestIncoherentIrradiance:
         mock_print.assert_any_call(
             "[IncoherentIrradiance] Warning: res parameter ignored - derived from px_size instead → (5,5) pixels"
         )
-        irr.view()
-        plt.close()
+        fig, axes = irr.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
 
-    @patch("matplotlib.pyplot.show")
-    def test_irradiance_view_options(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
-    ):
+        plt.close(fig)
+
+    def test_irradiance_view_options(self, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
         irr = analysis.IncoherentIrradiance(optic_sys, num_rays=10, res=(10, 10))
 
         # Test with different cmap and normalize=False
-        irr.view(cmap="viridis", normalize=False)
-        mock_show.assert_called_once()
-        plt.close()
-        mock_show.reset_mock()
+        fig, axes = irr.view(cmap="viridis", normalize=False)
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+
+        plt.close(fig)
 
         # Test with cross-section, normalize=True, and different cmap
-        irr.view(cross_section=("cross-x", 0), normalize=True, cmap="magma")
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = irr.view(cross_section=("cross-x", 0), normalize=True, cmap="magma")
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
 
-    @patch("matplotlib.pyplot.show")
+        plt.close(fig)
+
     @patch("builtins.print")
     def test_irradiance_cross_section_invalid_slice(
-        self, mock_print, mock_show, set_test_backend, test_system_irradiance_v1
+        self, mock_print, set_test_backend, test_system_irradiance_v1
     ):
         optic_sys = test_system_irradiance_v1
         res_val = (5, 5)
         irr = analysis.IncoherentIrradiance(optic_sys, num_rays=10, res=res_val)
 
         # Invalid slice index for cross-x
-        irr.view(cross_section=("cross-x", res_val[0] + 5))  # Index out of bounds
+        fig, axes = irr.view(
+            cross_section=("cross-x", res_val[0] + 5)
+        )  # Index out of bounds
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
         mock_print.assert_any_call(
             f"[IncoherentIrradiance] Warning: X-slice index {res_val[0] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
         )
 
         # Invalid slice index for cross-y
-        irr.view(cross_section=("cross-y", res_val[1] + 5))  # Index out of bounds
+        fig, axes = irr.view(
+            cross_section=("cross-y", res_val[1] + 5)
+        )  # Index out of bounds
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
         mock_print.assert_any_call(
             f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
         )
 
         # Invalid cross_section_info format (not tuple)
-        irr.view(cross_section="invalid")
+        fig, axes = irr.view(cross_section="invalid")
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
         mock_print.assert_any_call(
             "[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot."
         )
         # Invalid cross_section_info format (tuple wrong length)
-        irr.view(cross_section=("cross-x",))
+        fig, axes = irr.view(cross_section=("cross-x",))
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
         mock_print.assert_any_call(
             "[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot."
         )
         # Invalid cross_section_info format (tuple wrong types)
-        irr.view(cross_section=(123, "cross-y"))
+        fig, axes = irr.view(cross_section=(123, "cross-y"))
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
         mock_print.assert_any_call(
             "[IncoherentIrradiance] Warning: Invalid cross_section_info format. Expected ('cross-x' or 'cross-y', int). Defaulting to 2D plot."
         )
-        plt.close("all")
 
-    @patch("matplotlib.pyplot.show")
     def test_irradiance_view_no_data(
-        self, mock_show, capsys, set_test_backend, test_system_irradiance_v1
+        self, capsys, set_test_backend, test_system_irradiance_v1
     ):
         irr = analysis.IncoherentIrradiance(
             test_system_irradiance_v1, num_rays=1, res=(2, 2)
         )  # Minimal rays to get some data
         irr.data = []  # Force no data
-        irr.view()
+        res = irr.view()
+        assert res is None  # Should return None if no data
         captured = capsys.readouterr()
         assert "No irradiance data to display." in captured.out
-        mock_show.assert_not_called()
-        plt.close()
 
         # Test with empty field block
         irr.data = [[]]
-        irr.view()
+        res = irr.view()
+        assert res is None
         captured = capsys.readouterr()
         assert (
             "Warning: Field block 0 is empty." in captured.out
             or "No valid irradiance map data found to plot." in captured.out
         )
-        plt.close()
 
         # Test with None entry in field block
         irr.data = [[None]]
-        irr.view()
+        res = irr.view()
+        assert res is None
         captured = capsys.readouterr()
         assert (
             "Warning: Entry 0 in field block 0 is None." in captured.out
             or "No valid irradiance map data found to plot." in captured.out
         )
-        plt.close()
 
         # Test with None irradiance map in entry
         dummy_edges = be.array([0.0, 1.0])
         irr.data = [[(None, dummy_edges, dummy_edges)]]
-        irr.view()
+        res = irr.view()
+        assert res is None
         captured = capsys.readouterr()
         assert (
             "Warning: Irradiance map in entry 0, field block 0 is None." in captured.out
             or "No valid irradiance map data found to plot." in captured.out
         )
-        plt.close()
 
-    @patch("matplotlib.pyplot.show")
-    def test_vmin_vmax_equal_case(
-        self, mock_show, set_test_backend, test_system_irradiance_v1
-    ):
+    def test_vmin_vmax_equal_case(self, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
         num_rays = 10
         user_rays = RealRays(
@@ -1271,23 +1381,30 @@ class TestIncoherentIrradiance:
 
         # Case 1: All pixels have same non-zero irradiance
         irr.data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
-        irr.view(normalize=False)  # Test the vmin=vmax branch in plotting
-        mock_show.assert_called_once()
-        plt.close()
-        mock_show.reset_mock()
+        fig, axes = irr.view(normalize=False)  # Test the vmin=vmax branch in plotting
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
 
         # Case 2: All pixels are zero
         irr.data = [[(be.zeros(res_tuple), dummy_edges, dummy_edges)]]
-        irr.view(normalize=False)
-        mock_show.assert_called_once()
-        plt.close()
-        mock_show.reset_mock()
+        fig, axes = irr.view(normalize=False)
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
 
         # Case 3: Normalization active, vmin/vmax will be 0 and 1
         irr.data = [[(be.full(res_tuple, 10.0), dummy_edges, dummy_edges)]]
-        irr.view(normalize=True)
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = irr.view(normalize=True)
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        plt.close(fig)
 
     def test_peak_irradiance_empty_data(
         self, set_test_backend, test_system_irradiance_v1
@@ -1384,10 +1501,7 @@ def test_incoherent_irradiance_initialization(
     assert len(irr.data[0]) == len(optic.wavelengths.get_wavelengths())
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_normalize_true_peak_zero(
-    mock_show, set_test_backend, test_system_irradiance_v1
-):
+def test_view_normalize_true_peak_zero(set_test_backend, test_system_irradiance_v1):
     optic = test_system_irradiance_v1
     irr = analysis.IncoherentIrradiance(optic, num_rays=1, res=(5, 5))
     dummy_edges = np.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5])  # numpy array for dummy
@@ -1395,25 +1509,25 @@ def test_view_normalize_true_peak_zero(
         [(be.zeros((5, 5)), dummy_edges, dummy_edges)]
     ]  # All zero irradiance map
 
-    irr.view(normalize=True)  # Should handle peak_val = 0
-    mock_show.assert_called_once()
-    plt.close()
+    fig, axes = irr.view(normalize=True)  # Should handle peak_val = 0
+    assert fig is not None
+    assert axes is not None
+    assert isinstance(fig, plt.Figure)
+    assert len(axes) > 0
+    plt.close(fig)
 
 
-@patch("matplotlib.pyplot.show")
 @patch("builtins.print")
 def test_cross_section_plot_helper_out_of_bounds(
-    mock_print, mock_show, set_test_backend, test_system_irradiance_v1
+    mock_print, set_test_backend, test_system_irradiance_v1
 ):
     optic = test_system_irradiance_v1
     irr = analysis.IncoherentIrradiance(optic, num_rays=5, res=(5, 5))
-    irr_map_be, x_edges, y_edges = irr.data[0][
-        0
-    ]  # x_edges, y_edges are numpy arrays
-
+    irr_map_be, x_edges, y_edges = irr.data[0][0]  # x_edges, y_edges are numpy arrays
+    _, ax = plt.subplots()
     # Test cross-x out of bounds
     irr._plot_cross_section(
-        irr_map_be, x_edges, y_edges, "cross-x", 10, (6, 5), "Test", True
+        ax, irr_map_be, x_edges, y_edges, "cross-x", 10, "Test", True
     )
     mock_print.assert_any_call(
         "[IncoherentIrradiance] Warning: X-slice index 10 is out of bounds for map shape (5, 5). Skipping plot."
@@ -1421,7 +1535,7 @@ def test_cross_section_plot_helper_out_of_bounds(
 
     # Test cross-y out of bounds
     irr._plot_cross_section(
-        irr_map_be, x_edges, y_edges, "cross-y", 10, (6, 5), "Test", True
+        ax, irr_map_be, x_edges, y_edges, "cross-y", 10, "Test", True
     )
     mock_print.assert_any_call(
         "[IncoherentIrradiance] Warning: Y-slice index 10 is out of bounds for map shape (5, 5). Skipping plot."
@@ -1429,7 +1543,7 @@ def test_cross_section_plot_helper_out_of_bounds(
 
     # Test invalid axis type
     irr._plot_cross_section(
-        irr_map_be, x_edges, y_edges, "invalid-axis", 0, (6, 5), "Test", True
+        ax, irr_map_be, x_edges, y_edges, "invalid-axis", 0, "Test", True
     )
     
 
@@ -1555,12 +1669,12 @@ class TestThroughFocusSpotDiagram:
             # print(f"Checking delta_f: {current_df}, RMS list: {rms_list}") # For debugging if needed
             for rms_val in rms_list:
                 rms_float = be.to_numpy(rms_val).item()
-                assert rms_float >= 0.0, (
-                    f"RMS value {rms_float} is negative for delta_focus {current_df}"
-                )
-                assert not be.isnan(rms_val), (
-                    f"RMS value is NaN for delta_focus {current_df}"
-                )
+                assert (
+                    rms_float >= 0.0
+                ), f"RMS value {rms_float} is negative for delta_focus {current_df}"
+                assert not be.isnan(
+                    rms_val
+                ), f"RMS value is NaN for delta_focus {current_df}"
 
     @patch("builtins.print")
     def test_view_method(self, mock_print, set_test_backend, cooke_triplet):
@@ -1646,246 +1760,26 @@ class TestThroughFocusSpotDiagram:
         assert isinstance(limit, float)
         assert limit > 0
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_full(self, mock_show, tf_spot):
-        tf_spot.view()
-        mock_show.assert_called_once()
-        plt.close()
+    def test_view_full(self, tf_spot):
+        fig, axes = tf_spot.view()
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_with_all_zero_intensities(self, mock_show, tf_spot):
+    def test_view_with_all_zero_intensities(self, tf_spot):
         # Zero all intensities manually
         for defocus_data in tf_spot.results:
             for field_data in defocus_data:
                 for spot in field_data:
                     spot.intensity = spot.intensity * 0
-        tf_spot.view()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, axes = tf_spot.view()
 
-# ------------------------------------------------------------------------------------------
-def read_zmx_file(file_path, skip_lines, cols=(0, 1)):
-    try:
-        data = np.loadtxt(file_path, skiprows=skip_lines, usecols=cols, encoding='utf-16')
-        if data.ndim == 1 and len(cols) == 2:
-            data = data.reshape(1, -1)
-        if data.shape[0] == 0:
-            return None, None
-        return data[:, 0], data[:, 1]
-    except Exception:
-        return None, None
-
-
-class ExtendedSource:
-    """
-    It generates rays based on a Gaussian distribution defined by the source parameters.
-    """
-
-    def __init__(self, mfd=10.4, wavelength=1.55, total_power=1.0):
-        """
-        Initializes the ExtendedSource with source-specific parameters.
-
-        Args:
-            mfd (float): Mode Field Diameter in micrometers (µm).
-            wavelength (float): Wavelength of the source in micrometers (µm).
-            total_power (float): Total optical power of the source in Watts (W).
-        """
-        self.mfd = mfd
-        self.wavelength = wavelength
-        self.total_power = total_power
-
-        w0_um = self.mfd / 2.0
-        s_L_rad = self.wavelength / (be.pi * w0_um)  # 1/e^2 angular radius in L-space (radians)
-
-        # convert units for Optiland 
-        s_x_mm = (w0_um * 1e-3)
-
-        # importance sampling
-        self.sigma_spatial_mm = s_x_mm / 2.0
-        self.sigma_angular_rad = s_L_rad / 2.0
-
-    def generate_rays(self, num_rays):
-        """
-        Returns:
-            RealRays: An object containing the generated rays.
-        """
-        # generate ray coordinates and angles
-        x_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
-        y_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
-        z_start = be.zeros(num_rays)
-
-        L_initial = be.random_normal(loc=0.0, scale=self.sigma_angular_rad, size=num_rays)
-        M_initial = be.random_normal(loc=0.0, scale=self.sigma_angular_rad, size=num_rays)
-
-        # filter for possible rays 
-        valid_mask = L_initial**2 + M_initial**2 < 1.0
-        x_start, y_start, z_start = x_start[valid_mask], y_start[valid_mask], z_start[valid_mask]
-        L_initial, M_initial = L_initial[valid_mask], M_initial[valid_mask]
-
-        num_valid_rays = be.size(L_initial)
-
-        # calculate power per ray 
-        power_per_ray = self.total_power / num_valid_rays
-        intensity_power_array = be.full((num_valid_rays,), power_per_ray)
-
-        N_initial = be.sqrt(be.maximum(be.array(0.0), 1.0 - L_initial**2 - M_initial**2))
-        wavelength_array = be.full((num_valid_rays,), self.wavelength)
-
-        rays = RealRays(
-            x=x_start, y=y_start, z=z_start,
-            L=L_initial, M=M_initial, N=N_initial,
-            intensity=intensity_power_array,
-            wavelength=wavelength_array
-        )
-        return rays
-
-
-@pytest.fixture
-def extended_source():
-    """Fixture to provide an instance of ExtendedSource."""
-    return ExtendedSource(mfd=10.4, wavelength=1.55, total_power=1.0)
-
-
-@pytest.fixture
-def system_1():
-    """A simple placeholder test system for RadiantIntensity analysis."""
-    class TestSystemForIntensity(Optic):
-        def __init__(self):
-            
-            from optiland.materials import Material
-            super().__init__(name="System 1 for Intensity")
-            
-            self.set_aperture(aperture_type="objectNA", value=0.095)
-
-            self.set_field_type(field_type="angle")
-            self.add_field(y=0)
-
-            self.add_wavelength(value=1.55, is_primary=True)
-    
-            H_K3 = Material("H-K3", reference="cdgm")
-
-            apt_detector = RectangularAperture(-30, 30, -30, 30)
-            
-            self.add_surface(index=0, thickness=0)
-            self.add_surface(index=1, thickness=0.01) 
-            self.add_surface(index=2, thickness=129.6554)
-            self.add_surface(index=3, thickness=4, radius=131.9743, is_stop=True, material=H_K3)
-            self.add_surface(index=4, thickness=10.0, radius=-131.9743)
-            self.add_surface(index=5, aperture=apt_detector) 
-            
-    return TestSystemForIntensity()
-
-class TestRadiantIntensity:
-
-    @pytest.mark.parametrize("reference_surface_index, filename, max_angle",
-        [(1, r"tests/zemax_files/sph_lens_coll_intensity_free_prop.txt", 12), 
-         (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
-        ])
-    def test_intensity_output_values(
-        self, set_test_backend, system_1, extended_source, filename, reference_surface_index, max_angle
-    ):
-        
-        rays_to_trace = extended_source.generate_rays(num_rays=1_000_000)
-
-        analysis_angle_max = max_angle
-        intensity_analysis = analysis.RadiantIntensity(
-            optic=system_1,
-            user_initial_rays=rays_to_trace,
-            num_angular_bins_X=101,
-            num_angular_bins_Y=101,
-            angle_X_min=-analysis_angle_max, angle_X_max=analysis_angle_max,
-            angle_Y_min=-analysis_angle_max, angle_Y_max=analysis_angle_max,
-            reference_surface_index=reference_surface_index,
-            use_absolute_units=True,
-        )
-
-        optiland_map_be, _, _, optiland_angle_X_be, optiland_angle_Y_be = intensity_analysis.data[0][0]
-        optiland_map = be.to_numpy(optiland_map_be)
-        optiland_angles_x = be.to_numpy(optiland_angle_X_be)
-        optiland_angles_y = be.to_numpy(optiland_angle_Y_be)
-
-        central_y_idx = np.argmin(np.abs(optiland_angles_y))
-        optiland_cross_section = optiland_map[:, central_y_idx]
-
-        zemax_angles, zemax_intensity = read_zmx_file(filename, skip_lines=1, cols=(0, 1))
-
-        print(f"Zemax angles: {zemax_angles}")
-        print(f"Zemax intensity: {zemax_intensity}")
-
-        assert zemax_intensity is not None, f"Failed to load intensity data from Zemax file: {filename}"
-        assert zemax_angles is not None, f"Failed to load angle data from Zemax file: {filename}"
-
-        # compare the two datasets
-        # normalize both datasets to their peak for shape comparison
-        if np.max(optiland_cross_section) > 0:
-            optiland_cross_section /= np.max(optiland_cross_section)
-        
-        if np.max(zemax_intensity) > 0:
-            zemax_intensity /= np.max(zemax_intensity)
-            
-        # interpolate Optiland data onto the Zemax angle coordinates for direct comparison
-        interpolated_optiland_intensity = np.interp(
-            zemax_angles, optiland_angles_x, optiland_cross_section
-        )
-
-        # interpolated Optiland data is close to the Zemax data
-        assert_allclose(interpolated_optiland_intensity, zemax_intensity, atol=0.1, rtol=0.1)
-
-
-    @patch("matplotlib.pyplot.show")
-    def test_view_intensity(self, mock_show, set_test_backend, system_1):
-        """
-        Tests the view() method of RadiantIntensity to ensure it runs without error.
-        """
-        radiant_intensity = analysis.RadiantIntensity(
-            system_1,
-            num_rays=50,
-            num_angular_bins_X=11,
-            num_angular_bins_Y=11
-        )
-        radiant_intensity.view()
-        mock_show.assert_called_once()
-        plt.close()
-        
-    def test_intensity_autodiff(self, set_test_backend):
-        if be.get_backend() != "torch":
-            pytest.skip("Autodiff test only runs for torch backend")
-
-        be.grad_mode.enable()
-        
-        optic_sys = Optic()
-        optic_sys.add_surface(index=0, thickness=be.inf)
-        
-        radius_tensor = be.array(20.0)
-        radius_tensor.requires_grad = True
-        optic_sys.add_surface(index=0, thickness=be.inf)
-        optic_sys.add_surface(index=1, thickness=7, radius=radius_tensor, is_stop=True, material="bk7")
-        optic_sys.add_surface(index=2, thickness=10)
-        optic_sys.add_surface(index=3)
-        detector_size = RectangularAperture(x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5)
-        optic_sys.surface_group.surfaces[-1].aperture = detector_size
-        optic_sys.add_wavelength(0.55)
-        optic_sys.set_field_type("angle")
-        optic_sys.add_field(y=0)
-        optic_sys.set_aperture("EPD", 5.0)
-
-        user_rays = _create_square_grid_rays(10, -2.5, 2.5)
-
-        int_analysis = analysis.RadiantIntensity(
-            optic=optic_sys,
-            user_initial_rays=user_rays,
-            num_angular_bins_X=11,
-            num_angular_bins_Y=11,
-            angle_X_min=-5, angle_X_max=5,
-            angle_Y_min=-5, angle_Y_max=5,
-            reference_surface_index=-1,
-        )
-        int_map, _, _, _, _ = int_analysis.data[0][0]
-        
-        # Define a simple loss and backpropagate
-        loss = be.sum(int_map**2)
-        loss.backward()
-        
-        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
-        assert grad is not None
-        assert be.to_numpy(grad) != 0
+        assert fig is not None
+        assert axes is not None
+        assert isinstance(fig, plt.Figure)
+        assert len(axes) > 0
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
