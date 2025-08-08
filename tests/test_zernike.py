@@ -24,10 +24,6 @@ class TestZernikeStandard:
 
         assert_allclose(term, 1.0606601717798214)
 
-    def test_invalid_num_terms(self, set_test_backend):
-        with pytest.raises(ValueError):
-            zernike.ZernikeStandard(coeffs=[0 for _ in range(125)])
-
     def test_terms(self, set_test_backend):
         z = zernike.ZernikeStandard(coeffs=[0.2, 0.8, 0.4, -0.8, -0.1])
         r = be.array([0.1, 0.2, 0.3])
@@ -76,7 +72,7 @@ class TestZernikeStandard:
     def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeStandard()
 
-        indices = z._generate_indices()
+        indices = z._generate_indices(120)
 
         assert indices == [
             (0, 0),
@@ -263,7 +259,7 @@ class TestZernikeFringe:
     def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeFringe()
 
-        indices = z._generate_indices()
+        indices = z._generate_indices(120)
 
         assert indices == [
             (0, 0),
@@ -450,7 +446,7 @@ class TestZernikeNoll:
     def test_generate_indices(self, set_test_backend):
         z = zernike.ZernikeNoll()
 
-        indices = z._generate_indices()
+        indices = z._generate_indices(120)
 
         assert indices == [
             (0, 0),

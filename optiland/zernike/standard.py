@@ -41,11 +41,8 @@ class ZernikeStandard(BaseZernike):
 
     """
 
-    def __init__(self, coeffs=None, num_terms=36):
-        super().__init__(coeffs, num_terms)
-
     @staticmethod
-    def _generate_indices():
+    def _generate_indices(n_indices: int):
         """Generate the indices for the Zernike terms.
 
         Returns:
@@ -54,10 +51,16 @@ class ZernikeStandard(BaseZernike):
 
         """
         indices = []
-        for n in range(15):
+        
+        n = 0
+
+        while len(indices) < n_indices:
             for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
                     indices.append((n, m))
+            
+            n += 1
+
         return indices
 
     @staticmethod

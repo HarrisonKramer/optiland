@@ -31,12 +31,7 @@ class ZernikeFringe(BaseZernike):
            University_of_Arizona_indices
 
     """
-
-    def __init__(self, coeffs=None):
-        if coeffs is None:
-            coeffs = [0 for _ in range(36)]
-        super().__init__(coeffs)
-
+    
     @staticmethod
     def _norm_constant(n=0, m=0):
         """Calculate the normalization constant for a given Zernike polynomial.
@@ -53,7 +48,7 @@ class ZernikeFringe(BaseZernike):
         return be.array(1)
 
     @staticmethod
-    def _generate_indices():
+    def _generate_indices(n_indices: int):
         """Generate the indices for the Zernike terms.
 
         Returns:
@@ -61,24 +56,36 @@ class ZernikeFringe(BaseZernike):
                 Zernike terms.
 
         """
+        numbers_present = np.full(n_indices + 1, False)
+        numbers_present[0] = True
+
         number = []
         indices = []
-        for n in range(20):
+
+        n = 0
+
+        # Iterate until all numbers up to n_indices are present
+        while not np.all(numbers_present):
             for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
-                    number.append(
-                        int(
-                            (1 + (n + np.abs(m)) / 2) ** 2
-                            - 2 * np.abs(m)
-                            + (1 - np.sign(m)) / 2,
-                        ),
+                    _number = int(
+                        (1 + (n + np.abs(m)) / 2) ** 2
+                        - 2 * np.abs(m)
+                        + (1 - np.sign(m)) / 2
                     )
+
+                    number.append(_number)
+
+                    if _number <= n_indices:
+                        numbers_present[_number] = True
+
                     indices.append((n, m))
+
+            n += 1
 
         # sort indices according to fringe coefficient number
         indices_sorted = [
             element for _, element in sorted(zip(number, indices, strict=False))
         ]
 
-        # take only 120 indices
-        return indices_sorted[:120]
+        return indices_sorted[:n_indices]

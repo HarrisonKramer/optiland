@@ -20,16 +20,9 @@ class BaseZernike(ABC):
             Defaults to 36.
     """
 
-    MAX_TERMS = 120
-
     def __init__(self, coeffs=None, num_terms=36):
-        if coeffs is None:
-            coeffs = be.zeros(num_terms)
-        if len(coeffs) > self.MAX_TERMS:
-            raise ValueError("Number of coefficients is limited to 120.")
-
-        self.coeffs = coeffs
-        self.indices = self._generate_indices()
+        self.coeffs = be.zeros(num_terms) if coeffs is None else coeffs
+        self.indices = self._generate_indices(len(self.coeffs))
 
     def get_term(self, coeff=0, n=0, m=0, r=0, phi=0):
         """Calculate the Zernike term for given coefficients and parameters.
@@ -89,7 +82,7 @@ class BaseZernike(ABC):
 
     @staticmethod
     @abstractmethod
-    def _generate_indices():
+    def _generate_indices(n_indices: int):
         """Generate the indices for Zernike terms."""
         # pragma: no cover
 

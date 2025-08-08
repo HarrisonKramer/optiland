@@ -38,11 +38,6 @@ class ZernikeNoll(BaseZernike):
 
     """
 
-    def __init__(self, coeffs=None):
-        if coeffs is None:
-            coeffs = [0 for _ in range(36)]
-        super().__init__(coeffs)
-
     @staticmethod
     def _norm_constant(n=0, m=0):
         """Calculate the normalization constant for a given Zernike polynomial.
@@ -60,7 +55,7 @@ class ZernikeNoll(BaseZernike):
         return be.sqrt(be.array(2 * n + 2))
 
     @staticmethod
-    def _generate_indices():
+    def _generate_indices(n_indices: int):
         """Generate the indices for the Zernike terms.
 
         Returns:
@@ -70,7 +65,10 @@ class ZernikeNoll(BaseZernike):
         """
         number = []
         indices = []
-        for n in range(15):
+
+        n = 0
+
+        while len(indices) < n_indices:
             for m in range(-n, n + 1):
                 if (n - m) % 2 == 0:
                     mod = n % 4
@@ -80,8 +78,10 @@ class ZernikeNoll(BaseZernike):
                         c = 1
                     number.append(n * (n + 1) / 2 + np.abs(m) + c)
                     indices.append((n, m))
+            
+            n += 1
 
-        # sort indices according to fringe coefficient number
+        # sort indices according to Noll coefficient number
         indices_sorted = [
             element for _, element in sorted(zip(number, indices, strict=False))
         ]
