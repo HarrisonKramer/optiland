@@ -62,4 +62,7 @@ Optiland's design prioritizes extensibility:
 - **Custom Optimizations**: The optimization framework supports user-defined variables and operands.
 - **Visualization Customization**: Modular visualization classes allow for tailored rendering of components or results.
 
-With this high-level understanding of Optiland's architecture, we can now dive deeper into individual components in their dedicated sections.
+.. note::
+   For details on the architecture of the PySide6-based Graphical User Interface (GUI), please refer to the :ref:`developers_guide_gui` section.
+
+With this high-level understanding of Optiland's backend architecture, we can now dive deeper into individual components in their dedicated sections.
