@@ -346,20 +346,23 @@ class IncoherentIrradiance(BaseAnalysis):
             fig = fig_to_plot_on
             fig.clear()
             fig.set_size_inches(total_figsize)
-        else:
-            fig, _ = plt.subplots(
-                figsize=total_figsize,
-                tight_layout=True,
+            axs = fig.subplots(
+                nrows=n_fields,
+                ncols=n_wavelengths,
+                sharex=True,
+                sharey=True,
                 squeeze=False,
             )
-
-        axs = fig.subplots(
-            nrows=n_fields,
-            ncols=n_wavelengths,
-            sharex=True,
-            sharey=True,
-            squeeze=False,
-        )
+        else:
+            fig, axs = plt.subplots(
+                nrows=n_fields,
+                ncols=n_wavelengths,
+                figsize=total_figsize,
+                sharex=True,
+                sharey=True,
+                squeeze=False,
+                tight_layout=True,
+            )
         return fig, axs
 
     def _generate_subplot_title(self, f_idx, w_idx):
