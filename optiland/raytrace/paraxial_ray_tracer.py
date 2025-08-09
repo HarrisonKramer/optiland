@@ -155,7 +155,7 @@ class ParaxialRayTracer:
             be.ndarray: The processed input as a backend array.
 
         """
-        if isinstance(x, (int, float)):
+        if isinstance(x, int | float):
             return be.array([x])
         else:
             return be.asarray(x)

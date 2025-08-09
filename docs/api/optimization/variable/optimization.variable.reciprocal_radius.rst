@@ -1,7 +1,12 @@
-optimization.variable.reciprocal_radius
-=========================================
+﻿optimization.variable.reciprocal\_radius
+========================================
 
 .. automodule:: optimization.variable.reciprocal_radius
-   :members:
-   :undoc-members:
-   :show-inheritance:
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ReciprocalRadiusVariable
+   

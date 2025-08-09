@@ -115,17 +115,21 @@ class TestOPDFan:
     def test_opd_fan_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
-        opd_fan.view()
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = opd_fan.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_opd_fan_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd_fan = wavefront.OPDFan(optic)
-        opd_fan.view(figsize=(20, 20))
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = opd_fan.view(figsize=(20, 20))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
 
 
 class TestOPD:
@@ -141,25 +145,34 @@ class TestOPD:
     def test_opd_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
-        opd.view()
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = opd.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_opd_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
-        opd.view(figsize=(20, 20))
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = opd.view(figsize=(20, 20))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_opd_view_3d(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         opd = wavefront.OPD(optic, (0, 1), 0.55)
-        opd.view(projection="3d")
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = opd.view(projection="3d")
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_old_invalid_projection(self, set_test_backend):
         optic = EyepieceErfle()
@@ -192,25 +205,34 @@ class TestZernikeOPD:
     def test_zernike_opd_view(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
-        zernike_opd.view()
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = zernike_opd.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_zernike_opd_view_large(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
-        zernike_opd.view(figsize=(20, 20))
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = zernike_opd.view(figsize=(20, 20))
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
     def test_zernike_opd_view_3d(self, moch_show, set_test_backend):
         optic = DoubleGauss()
         zernike_opd = wavefront.ZernikeOPD(optic, (0, 1), 0.55)
-        zernike_opd.view(projection="3d")
-        moch_show.assert_called_once()
-        plt.close()
+        fig, ax = zernike_opd.view(projection="3d")
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_zernike_opd_rms(self, set_test_backend):
         optic = CookeTriplet()

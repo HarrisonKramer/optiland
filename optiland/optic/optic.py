@@ -12,7 +12,6 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-from typing import Union
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
@@ -27,7 +26,12 @@ from optiland.rays import PolarizationState, RayGenerator
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.visualization import (
+    LensInfoViewer,
+    OpticViewer,
+    OpticViewer3D,
+    SurfaceSagViewer,
+)
 from optiland.wavelength import WavelengthGroup
 
 
@@ -287,7 +291,7 @@ class Optic:
         """
         self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
 
         Args:
@@ -439,8 +443,9 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength: Union[float, str] = "primary"):
-        """Get refractive indices of materials for each space at a wavelength.
+    def n(self, wavelength: float | str = "primary"):
+        """Get the refractive indices of the materials for each space between
+        surfaces at a given wavelength.
 
         Args:
             wavelength (float | str, optional): The wavelength in microns for
@@ -488,6 +493,18 @@ class Optic:
 
         """
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
+
+    def plot_surface_sag(
+        self, surface_index: int, y_cross_section=0, x_cross_section=0
+    ):
+        """
+        Analyzes and visualizes the sag of a given lens surface.
+
+        Args:
+            surface_index (int): The index of the surface to analyze.
+        """
+        viewer = SurfaceSagViewer(self)
+        viewer.view(surface_index, y_cross_section, x_cross_section)
 
     def to_dict(self):
         """Convert the optical system to a dictionary.

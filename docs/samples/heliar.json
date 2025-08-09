@@ -1,0 +1,443 @@
+{
+    "version": 1.0,
+    "aperture": {
+        "type": "imageFNO",
+        "value": 5,
+        "object_space_telecentric": false
+    },
+    "fields": {
+        "fields": [
+            {
+                "field_type": "angle",
+                "x": 0.0,
+                "y": 0,
+                "vx": 0.0,
+                "vy": 0.0
+            },
+            {
+                "field_type": "angle",
+                "x": 0.0,
+                "y": 7,
+                "vx": 0.0,
+                "vy": 0.0
+            },
+            {
+                "field_type": "angle",
+                "x": 0.0,
+                "y": 10,
+                "vx": 0.0,
+                "vy": 0.0
+            }
+        ],
+        "telecentric": false,
+        "field_type": "angle",
+        "object_space_telecentric": false
+    },
+    "wavelengths": {
+        "wavelengths": [
+            {
+                "value": 0.4861327,
+                "is_primary": false,
+                "unit": "um"
+            },
+            {
+                "value": 0.5875618,
+                "is_primary": true,
+                "unit": "um"
+            },
+            {
+                "value": 0.6562725,
+                "is_primary": false,
+                "unit": "um"
+            }
+        ],
+        "polarization": "ignore"
+    },
+    "pickups": [],
+    "solves": {
+        "solves": []
+    },
+    "surface_group": {
+        "surfaces": [
+            {
+                "type": "ObjectSurface",
+                "geometry": {
+                    "type": "Plane",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": -Infinity,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": Infinity
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                }
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": 4.2103,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "material_post": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\schott\\N-SK16.yml",
+                    "name": "N-SK16",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.9004,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": -3.6208,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\schott\\N-SK16.yml",
+                    "name": "N-SK16",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "material_post": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 1.2003,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": 29.1869,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 1.959,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": -3.1715,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "material_post": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 2.1590000000000003,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": 3.2083,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "Plane",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 2.2854,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": Infinity
+                },
+                "material_pre": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "is_stop": true,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 2.5483000000000002,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": 43.071,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "material_post": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 2.7983000000000002,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": 2.4494,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\hikari\\E-LLF6.yml",
+                    "name": "E-LLF6",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "material_post": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\schott\\N-SK16.yml",
+                    "name": "N-SK16",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "StandardGeometry",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 3.6291,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": -3.2576,
+                    "conic": 0.0
+                },
+                "material_pre": {
+                    "type": "Material",
+                    "filename": "C:\\Users\\kdani\\Documents\\Python_Scripts\\optiland\\optiland\\database\\data-nk\\glass\\schott\\N-SK16.yml",
+                    "name": "N-SK16",
+                    "reference": null,
+                    "robust_search": true,
+                    "min_wavelength": null,
+                    "max_wavelength": null
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            },
+            {
+                "type": "Surface",
+                "geometry": {
+                    "type": "Plane",
+                    "cs": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 12.1357,
+                        "rx": 0.0,
+                        "ry": 0.0,
+                        "rz": 0.0,
+                        "reference_cs": null
+                    },
+                    "radius": Infinity
+                },
+                "material_pre": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "material_post": {
+                    "type": "IdealMaterial",
+                    "index": 1.0,
+                    "absorp": 0.0
+                },
+                "is_stop": false,
+                "aperture": null,
+                "coating": null,
+                "bsdf": null,
+                "is_reflective": false
+            }
+        ]
+    }
+}

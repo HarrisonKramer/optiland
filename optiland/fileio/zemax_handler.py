@@ -178,7 +178,9 @@ class ZemaxFileReader:
         sorted_fields = sorted(unique_fields, key=lambda x: x[1])
 
         # Unzip the sorted pairs back into two lists for x, y fields
-        self.data["fields"]["x"], self.data["fields"]["y"] = zip(*sorted_fields)
+        self.data["fields"]["x"], self.data["fields"]["y"] = zip(
+            *sorted_fields, strict=False
+        )
 
         # remove temporary file if it was created
         if self._is_url(self.source):

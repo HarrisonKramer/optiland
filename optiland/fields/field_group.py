@@ -123,7 +123,7 @@ class FieldGroup:
             return [(0, 0)]
         return [
             (float(x / max_field), float(y / max_field))
-            for x, y in zip(self.x_fields, self.y_fields)
+            for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
     def add_field(self, y, x=0.0, vx=0.0, vy=0.0):
