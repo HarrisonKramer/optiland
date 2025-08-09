@@ -591,7 +591,7 @@ class SpotDiagram(BaseAnalysis):
         ax.grid(True, alpha=0.25)
 
     def _finalize_plot(self, fig: plt.Figure, axs: np.ndarray, num_fields: int):
-        """Applies final touches to the plot.
+        """Applies final touches to the plot, including a dynamic shared legend.
 
         Args:
             fig: The Matplotlib figure.
@@ -602,19 +602,33 @@ class SpotDiagram(BaseAnalysis):
         for i in range(num_fields, len(axs)):
             fig.delaxes(axs[i])
 
-        # Create a single, shared legend
-        if num_fields > 0:
-            handles, labels = axs[0].get_legend_handles_labels()
-            if handles:
-                fig.legend(
-                    handles,
-                    labels,
-                    loc="upper center",
-                    bbox_to_anchor=(0.5, 0.05),
-                    ncol=len(self.wavelengths),
-                )
+        if num_fields == 0:
+            if hasattr(fig, "canvas") and fig.canvas:
+                fig.canvas.draw_idle()
+            return
 
-        fig.tight_layout(rect=[0, 0.05, 1, 1])  # Adjust for legend
+        handles, labels = axs[0].get_legend_handles_labels()
+        if not handles:
+            fig.tight_layout()
+            if hasattr(fig, "canvas") and fig.canvas:
+                fig.canvas.draw_idle()
+            return
 
-        if hasattr(fig, "canvas") and fig.canvas:
-            fig.canvas.draw_idle()
+        fig.canvas.draw()
+        pos_left = axs[0].get_position()
+        num_cols = 3
+
+        rightmost_ax_idx = min(num_fields - 1, num_cols - 1)
+        pos_right = axs[rightmost_ax_idx].get_position()
+
+        x_center = (pos_left.x0 + pos_right.x1) / 2.0
+
+        fig.legend(
+            handles,
+            labels,
+            loc="upper center",
+            bbox_to_anchor=(x_center, 0.05),
+            ncol=len(self.wavelengths),
+        )
+
+        fig.subplots_adjust(bottom=0.2)
