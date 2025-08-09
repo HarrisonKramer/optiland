@@ -582,7 +582,7 @@ class SpotDiagram(BaseAnalysis):
         else:
             x_label, y_label = "X (mm)", "Y (mm)"
 
-        ax.set_aspect("equal", adjustable="box")
+        ax.axis("square")
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
         ax.set_xlim(-axis_lim, axis_lim)
@@ -609,8 +609,8 @@ class SpotDiagram(BaseAnalysis):
                 fig.legend(
                     handles,
                     labels,
-                    loc="lower center",
-                    bbox_to_anchor=(0.5, 0),
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, 0.05),
                     ncol=len(self.wavelengths),
                 )
 
