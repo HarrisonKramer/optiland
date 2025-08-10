@@ -221,7 +221,6 @@ class BestFitStrategy(ReferenceStrategy):
         # 3. Compute OPD for all rays
         opd_img = self._opd_image_to_xp(rays, xc, yc, zc, R, wavelength)
         opd = rays.opd - opd_img
-        opd = self._correct_tilt(field, opd)
 
         # 4. Use minimum OPD as the reference
         opd_ref = be.min(opd)
