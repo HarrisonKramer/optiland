@@ -1484,7 +1484,7 @@ def test_cross_section_plot_helper_out_of_bounds(
         ax, irr_map_be, x_edges, y_edges, "cross-x", 10, "Test", True
     )
     mock_print.assert_any_call(
-        "[IncoherentIrradiance] Warning: X-slice index 10 is out of bounds for map shape (5, 5). Skipping plot."
+        "[IncoherentIrradiance] Warning: X-slice index 10 is out of bounds. Skipping."
     )
 
     # Test cross-y out of bounds
@@ -1492,7 +1492,7 @@ def test_cross_section_plot_helper_out_of_bounds(
         ax, irr_map_be, x_edges, y_edges, "cross-y", 10, "Test", True
     )
     mock_print.assert_any_call(
-        "[IncoherentIrradiance] Warning: Y-slice index 10 is out of bounds for map shape (5, 5). Skipping plot."
+        "[IncoherentIrradiance] Warning: Y-slice index 10 is out of bounds. Skipping."
     )
 
     # Test invalid axis type

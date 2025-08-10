@@ -261,7 +261,7 @@ class SpotDiagram(BaseAnalysis):
             An array of shape (num_fields, 2) containing the (x, y) coordinates.
         """
         centers = [
-            [ray.x, ray.y]
+            [float(ray.x), float(ray.y)]
             for H_x, H_y in self.fields
             for ray in [
                 self.optic.trace_generic(
@@ -391,7 +391,7 @@ class SpotDiagram(BaseAnalysis):
         self,
         field: tuple[float, float],
         wavelength: float,
-        num_rings: int,
+        num_rays: int,
         distribution: str,
         coordinates: str,
     ) -> SpotData:
@@ -400,14 +400,15 @@ class SpotDiagram(BaseAnalysis):
         Args:
             field: The (Hx, Hy) field coordinates.
             wavelength: The wavelength for tracing.
-            num_rings: Number of rings for pupil sampling.
+            num_rays: The number of rays to generate, or number of rings if distribution
+                is hexapolar.
             distribution: The ray distribution pattern.
             coordinates: The coordinate system ('local' or 'global').
 
         Returns:
             A SpotData object with the traced ray intersection data.
         """
-        self.optic.trace(*field, wavelength, num_rings, distribution)
+        self.optic.trace(*field, wavelength, num_rays, distribution)
         surf_group = self.optic.surface_group
         x_g, y_g, z_g, i_g = (
             surf_group.x[-1, :],
@@ -483,8 +484,8 @@ class SpotDiagram(BaseAnalysis):
         )
 
         return {
-            "radii_x": np.array(airy_rad_x),
-            "radii_y": np.array(airy_rad_y),
+            "radii_x": be.to_numpy(airy_rad_x),
+            "radii_y": be.to_numpy(airy_rad_y),
             "real_centroids": real_centroids,
         }
 
