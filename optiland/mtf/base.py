@@ -76,7 +76,12 @@ class BaseMTF(abc.ABC):
         """Calculates and potentially stores the Point Spread Function."""
         pass
 
-    def view(self, figsize=(12, 4), add_reference=False):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (12, 4),
+        add_reference: bool = False,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Visualizes the Modulation Transfer Function (MTF).
 
         This method sets up the plot and iterates through field data,
@@ -87,12 +92,23 @@ class BaseMTF(abc.ABC):
         (from __init__) is also used.
 
         Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (12, 4).
             add_reference (bool, optional): Whether to add the diffraction
                 limit reference line. Defaults to False.
+        Returns:
+            tuple: A tuple containing the figure and axes objects.
         """
-        _, ax = plt.subplots(figsize=figsize)
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         for k, field_mtf_item in enumerate(self.mtf):
             self._plot_field_mtf(ax, k, field_mtf_item, color=f"C{k}")
@@ -114,6 +130,8 @@ class BaseMTF(abc.ABC):
         ax.set_ylim([0, 1])
         ax.set_xlabel("Frequency (cycles/mm)", labelpad=10)
         ax.set_ylabel("Modulation", labelpad=10)
-        plt.tight_layout()
-        plt.grid(alpha=0.25)
-        plt.show()
+        current_fig.tight_layout()
+        ax.grid(alpha=0.25)
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax

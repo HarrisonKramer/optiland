@@ -99,6 +99,7 @@ class ObjectSurface(Surface):
             "type": self.__class__.__name__,
             "geometry": self.geometry.to_dict(),
             "material_post": self.material_post.to_dict(),
+            "comment": self.comment,
         }
 
     @classmethod
@@ -114,4 +115,5 @@ class ObjectSurface(Surface):
         """
         geometry = BaseGeometry.from_dict(data["geometry"])
         material_post = BaseMaterial.from_dict(data["material_post"])
-        return cls(geometry, material_post)
+        comment = data.get("comment", "")
+        return cls(geometry, material_post, comment=comment)

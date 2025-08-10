@@ -11,6 +11,9 @@ from .microscopes import (
     Objective60x,
     UVReflectingMicroscope,
 )
+from .miscellaneous import (
+    NavarroWideAngleEye,
+)
 from .objectives import (
     CookeTriplet,
     DoubleGauss,
@@ -51,6 +54,8 @@ __all__ = [
     "Objective60x",
     "Microscope20x",
     "UVReflectingMicroscope",
+    # From miscellaneous.py
+    "NavarroWideAngleEye",
     # From objectives.py
     "TripletTelescopeObjective",
     "CookeTriplet",

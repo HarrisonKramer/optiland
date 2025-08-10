@@ -8,9 +8,11 @@
 
    .. autosummary::
    
+      BasinHopping
       DifferentialEvolution
       DualAnnealing
       LeastSquares
       OptimizationProblem
       OptimizerGeneric
+      SHGO
    

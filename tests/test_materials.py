@@ -421,3 +421,6 @@ def test_downsample_glass_map(set_test_backend):
         'FK5HTi': (1.48748, 70.47),
     }
     assert downsampled_glass_dict == expected_downsample_glass_dict
+
+def test_find_closest_glass(set_test_backend):
+    assert materials.find_closest_glass(nd_vd=(1.5168, 64.17), catalog=['N-BK7', 'F5', 'SF5']) == 'N-BK7'

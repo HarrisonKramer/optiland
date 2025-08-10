@@ -12,12 +12,27 @@ Thank you for your interest in contributing to **Optiland**! Contributions are w
 How to Contribute
 -----------------
 
-1. **Fork** the repository on GitHub.
-2. **Clone** your forked repository locally.
-3. **Create** a new branch for your feature or bugfix.
-4. **Commit** your changes with clear commit messages.
-5. **Push** your changes to your fork.
-6. **Open** a pull request with a detailed description of your changes.
+1. **Start with an issue.** Before beginning work, check whether there's already an open issue for the feature or bug you want to work on. If not, please open one first. This helps others know what's in progress and avoid duplicating effort.
+2. **Let others know you're working on it.** If you'd like to work on an issue, leave a comment to say so. You can also request to be assigned, but this is optional — the goal is just to keep communication open.
+3. **Fork** the repository on GitHub.
+4. **Clone** your forked repository locally.
+5. **Create** a new branch for your feature or bugfix.
+6. **Commit** your changes with clear commit messages.
+7. **Push** your changes to your fork.
+8. **Open** a pull request with a detailed description of your changes.
+
+
+Task Workflow and Coordination
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We use a lightweight workflow to help contributors collaborate smoothly and avoid duplicated effort:
+
+- **Each task should have an issue** on GitHub. If you're working on something new, check for an existing issue or `open a new one <https://github.com/HarrisonKramer/optiland/issues>`_. This keeps the project transparent and easier to coordinate.
+- **Leave a comment on the issue** if you plan to work on it. Optionally, you can be assigned the issue to make your involvement visible.
+- **Progress is tracked using GitHub Projects (kanban).** Issues are moved across columns such as "To Do", "In Progress", and "In Review". You can view the board here: `Optiland GitHub Project <https://github.com/users/HarrisonKramer/projects/1>`_. If you don’t have permission to move cards, maintainers will update them based on issue comments.
+- **Milestones help plan releases.** Larger features and grouped improvements may be linked to a milestone. If you're contributing to a milestone, try to complete the work in time — but there's no strict deadline.
+
+If you start working on something but can't finish it, just leave a note in the issue. That way, someone else can take over if needed.
 
 Guidelines
 ----------

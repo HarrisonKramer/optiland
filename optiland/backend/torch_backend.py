@@ -233,7 +233,7 @@ def copy(x):
 
 
 def is_array_like(x):
-    return isinstance(x, (torch.Tensor, np.ndarray, list, tuple))
+    return isinstance(x, torch.Tensor | np.ndarray | list | tuple)
 
 
 def size(x):
@@ -284,7 +284,7 @@ def unsqueeze_last(x):
 
 
 def tile(x, dims):
-    return torch.tile(x, dims if isinstance(dims, (tuple, list)) else (dims,))
+    return torch.tile(x, dims if isinstance(dims, tuple | list) else (dims,))
 
 
 def isscalar(x):
@@ -533,9 +533,9 @@ def atleast_2d(x):
 
 
 def as_array_1d(data):
-    if isinstance(data, (int, float)):
+    if isinstance(data, int | float):
         return array([data])
-    if isinstance(data, (list, tuple)):
+    if isinstance(data, list | tuple):
         return array(data)
     if is_array_like(data):
         return data.reshape(-1)

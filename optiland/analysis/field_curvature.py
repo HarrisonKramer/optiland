@@ -39,15 +39,27 @@ class FieldCurvature(BaseAnalysis):
         self.num_points = num_points
         super().__init__(optic, wavelengths)
 
-    def view(self, figsize=(8, 5.5)):
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (8, 5.5)
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Displays a plot of the field curvature analysis.
 
         Args:
-            figsize (tuple, optional): The size of the figure.
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (8, 5.5).
-
+        Returns:
+            tuple: The current figure and its axes.
         """
-        fig, ax = plt.subplots(figsize=figsize)
+        is_gui_embedding = fig_to_plot_on is not None
+
+        if is_gui_embedding:
+            current_fig = fig_to_plot_on
+            current_fig.clear()
+            ax = current_fig.add_subplot(111)
+        else:
+            current_fig, ax = plt.subplots(figsize=figsize)
 
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
@@ -72,15 +84,20 @@ class FieldCurvature(BaseAnalysis):
 
         ax.set_xlabel("Image Plane Delta (mm)")
         ax.set_ylabel("Field")
-
         ax.set_ylim([0, self.optic.fields.max_field])
-        current_xlim = plt.xlim()
-        ax.set_xlim([-max(np.abs(current_xlim)), max(np.abs(current_xlim))])
+        current_xlim = ax.get_xlim()
+        max_abs_lim = max(np.abs(current_xlim))
+        if max_abs_lim > 1e-9:
+            ax.set_xlim([-max_abs_lim, max_abs_lim])
         ax.set_title("Field Curvature")
-        plt.axvline(x=0, color="k", linewidth=0.5)
+        ax.axvline(x=0, color="k", linewidth=0.5)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
-        fig.tight_layout()
-        plt.show()
+        ax.grid(True)
+        current_fig.tight_layout()
+
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_data(self):
         """Generates field curvature data for each wavelength by calculating the

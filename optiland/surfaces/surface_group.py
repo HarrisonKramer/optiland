@@ -250,6 +250,10 @@ class SurfaceGroup:
                 **kwargs,
             )
 
+        # Used for surface positioning
+        new_surface.thickness = kwargs.get("thickness", 0.0)
+        self.surface_factory.material_factory.last_material = new_surface.material_post
+
         if new_surface.is_stop:
             for surface in self.surfaces:
                 surface.is_stop = False
