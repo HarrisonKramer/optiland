@@ -68,36 +68,44 @@ def test_run_no_compensator(monte_carlo_no_compensator):
     assert set(monte_carlo_no_compensator._results.columns) == res
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_histogram(mock_show, monte_carlo_no_compensator):
+def test_view_histogram(monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
-    monte_carlo_no_compensator.view_histogram(kde=True)
-    mock_show.assert_called_once()
-    plt.close()
+    fig, axes = monte_carlo_no_compensator.view_histogram(kde=True)
+    assert fig is not None
+    assert axes is not None
+    assert isinstance(fig, plt.Figure)
+    assert len(axes) > 0
+    plt.close(fig)
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_histogram_no_kde(mock_show, monte_carlo_no_compensator):
+def test_view_histogram_no_kde(monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
-    monte_carlo_no_compensator.view_histogram(kde=False)
-    mock_show.assert_called_once()
-    plt.close()
+    fig, axes = monte_carlo_no_compensator.view_histogram(kde=False)
+    assert fig is not None
+    assert axes is not None
+    assert isinstance(fig, plt.Figure)
+    assert len(axes) > 0
+    plt.close(fig)
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_cdf(mock_show, monte_carlo_no_compensator):
+def test_view_cdf(monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
-    monte_carlo_no_compensator.view_cdf()
-    mock_show.assert_called_once()
-    plt.close()
+    fig, axes = monte_carlo_no_compensator.view_cdf()
+    assert fig is not None
+    assert axes is not None
+    assert len(axes) > 0
+    assert isinstance(fig, plt.Figure)
+    plt.close(fig)
 
 
-@patch("matplotlib.pyplot.show")
-def test_view_heatmap(mock_show, monte_carlo_no_compensator):
+def test_view_heatmap(monte_carlo_no_compensator):
     monte_carlo_no_compensator.run(10)
-    monte_carlo_no_compensator.view_heatmap(figsize=(8, 6))
-    mock_show.assert_called_once()
-    plt.close()
+    fig, ax = monte_carlo_no_compensator.view_heatmap(figsize=(8, 6))
+    assert fig is not None
+    assert ax is not None
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close(fig)
 
 
 def test_invalid_plot_type(monte_carlo):

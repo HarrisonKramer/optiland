@@ -7,5 +7,5 @@ This section covers the raytracing functionality of the Optiland package, includ
    :toctree: raytrace/
    :caption: Ray Trace Modules
 
-   raytrace.paraxial_ray_trace
-   raytrace.real_ray_trace
+   raytrace.paraxial_ray_tracer
+   raytrace.real_ray_tracer

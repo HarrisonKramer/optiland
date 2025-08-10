@@ -130,7 +130,7 @@ class ZemaxFileReader:
         Otherwise, sets the source to the filename.
         """
         if self._is_url(self.source):
-            response = requests.get(self.source)
+            response = requests.get(self.source, timeout=10)
             if response.status_code == 200:
                 with tempfile.NamedTemporaryFile(delete=False) as file:
                     file.write(response.content)
@@ -178,7 +178,9 @@ class ZemaxFileReader:
         sorted_fields = sorted(unique_fields, key=lambda x: x[1])
 
         # Unzip the sorted pairs back into two lists for x, y fields
-        self.data["fields"]["x"], self.data["fields"]["y"] = zip(*sorted_fields)
+        self.data["fields"]["x"], self.data["fields"]["y"] = zip(
+            *sorted_fields, strict=False
+        )
 
         # remove temporary file if it was created
         if self._is_url(self.source):

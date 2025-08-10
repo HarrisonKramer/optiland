@@ -99,7 +99,9 @@ class MonteCarlo(SensitivityAnalysis):
             result.update(
                 {
                     f"{name}": value
-                    for name, value in zip(self.operand_names, operand_values)
+                    for name, value in zip(
+                        self.operand_names, operand_values, strict=False
+                    )
                 },
             )
 
@@ -110,7 +112,7 @@ class MonteCarlo(SensitivityAnalysis):
 
         self._results = pd.DataFrame(results)
 
-    def view_histogram(self, kde=True):
+    def view_histogram(self, kde=True) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Displays a histogram of the data.
 
         Args:
@@ -118,27 +120,39 @@ class MonteCarlo(SensitivityAnalysis):
                 Otherwise, a histogram is plotted.
 
         """
-        self._plot(plot_type="histogram", kde=kde)
+        return self._plot(plot_type="histogram", kde=kde)
 
-    def view_cdf(self):
+    def view_cdf(self) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Generates and displays a cumulative distribution function (CDF) plot
         of the data.
         """
-        self._plot(plot_type="cdf")
+        return self._plot(plot_type="cdf")
 
-    def view_heatmap(self, figsize=(8, 6), vmin=None, vmax=None):
+    def view_heatmap(
+        self,
+        figsize: tuple[float, float] = (8, 6),
+        vmin: float = None,
+        vmax: float = None,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """Generates and displays a heatmap of the correlation matrix of the
         results.
 
         Args:
             figsize (tuple, optional): A tuple representing the size of the
                 figure (width, height). Default is (8, 6).
+            vmin (float, optional): Minimum value for the color scale.
+                Default is None, which uses the minimum value in the data.
+            vmax (float, optional): Maximum value for the color scale.
+                Default is None, which uses the maximum value in the data.
+
+        Returns:
+            tuple: A tuple containing the figure and axes of the heatmap.
 
         """
         df = self._results
         corr = df.corr()
         mask = np.triu(np.ones_like(corr, dtype=bool))
-        f, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=figsize)
         cmap = sns.diverging_palette(230, 20, as_cmap=True)
         sns.heatmap(
             corr,
@@ -150,11 +164,14 @@ class MonteCarlo(SensitivityAnalysis):
             vmin=vmin,
             vmax=vmax,
             cbar_kws={"shrink": 0.5},
+            ax=ax,
         )
-        plt.tight_layout()
-        plt.show()
+        fig.tight_layout()
+        return fig, ax
 
-    def _plot(self, plot_type, kde=True, bins=50):
+    def _plot(
+        self, plot_type: str, kde: bool = True, bins: int = 50
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """Plot the Monte Carlo analysis results.
 
         Args:
@@ -164,7 +181,8 @@ class MonteCarlo(SensitivityAnalysis):
                 (KDE) for histograms. Default is True.
             bins (int, optional): Number of bins for the histogram.
                 Default is 50.
-
+        Returns:
+            tuple: A tuple containing the figure and axes of the plot.
         Raises:
             ValueError: If an invalid plot type is provided.
 
@@ -217,8 +235,8 @@ class MonteCarlo(SensitivityAnalysis):
         for j in range(num, len(axes)):
             fig.delaxes(axes[j])
 
-        plt.tight_layout()
-        plt.show()
+        fig.tight_layout()
+        return fig, axes
 
     def _validate(self):
         """Validates the tolerancing system before performing Monte Carlo
