@@ -6,17 +6,19 @@ from optiland.wavefront.reference_sphere import (
 )
 from optiland.samples.objectives import DoubleGauss
 
+from tests.utils import assert_allclose
+
 
 class TestChiefRayReferenceSphereCalculator:
     def test_get_reference_sphere(self, set_test_backend):
         optic = DoubleGauss()
         optic.trace_generic(0, 0, Px=0.0, Py=0.0, wavelength=0.55)
         calculator = ChiefRayReferenceSphereCalculator(optic)
-        xc, yc, zc, R = calculator.calculate(pupil_z=100)
-        assert be.allclose(xc, be.array([0.0]))
-        assert be.allclose(yc, be.array([0.0]))
-        assert be.allclose(zc, be.array([139.454938]))
-        assert be.allclose(R, be.array([39.454938]))
+        xc, yc, zc, R = calculator.calculate()
+        assert_allclose(xc, 0)
+        assert_allclose(yc, 0)
+        assert_allclose(zc, 139.454938)
+        assert_allclose(R, 114.64441695)
 
     def test_get_reference_sphere_error(self, set_test_backend):
         optic = DoubleGauss()
@@ -24,7 +26,7 @@ class TestChiefRayReferenceSphereCalculator:
         calculator = ChiefRayReferenceSphereCalculator(optic)
         # fails when >1 rays traced in the pupil
         with pytest.raises(ValueError):
-            calculator.calculate(pupil_z=100)
+            calculator.calculate()
 
 
 class TestCreateReferenceSphereCalculator:

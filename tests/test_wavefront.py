@@ -58,9 +58,9 @@ class TestWavefront:
         optic = CookeTriplet()
         w = Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
-        xc, yc, zc, R = w.ref_sphere_calculator.calculate(pupil_z=100)
+        xc, yc, zc, R = w.ref_sphere_calculator.calculate()
         path_length, _ = w._get_path_length(xc, yc, zc, R, 0.55)
-        assert be.allclose(path_length, be.array([34.84418309]))
+        assert_allclose(path_length, 23.70608539)
 
     def test_correct_tilt(self, set_test_backend):
         optic = DoubleGauss()
@@ -77,9 +77,9 @@ class TestWavefront:
         optic = DoubleGauss()
         w = Wavefront(optic)
         w._trace_chief_ray((0, 0), 0.55)
-        xc, yc, zc, R = w.ref_sphere_calculator.calculate(pupil_z=100)
+        xc, yc, zc, R = w.ref_sphere_calculator.calculate()
         t = w._opd_image_to_xp(xc, yc, zc, R, 0.55)
-        assert be.allclose(t, be.array([39.454938]))
+        assert_allclose(t, 114.64441695)
 
 
 class TestOPDFan:
