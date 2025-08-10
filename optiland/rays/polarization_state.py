@@ -7,8 +7,6 @@ to define the polarization state of the light rays in an optical system.
 Kramer Harrison, 2024
 """
 
-from typing import Optional
-
 import optiland.backend as be
 
 
@@ -29,10 +27,10 @@ class PolarizationState:
     def __init__(
         self,
         is_polarized: bool = False,
-        Ex: Optional[float] = None,
-        Ey: Optional[float] = None,
-        phase_x: Optional[float] = None,
-        phase_y: Optional[float] = None,
+        Ex: float | None = None,
+        Ey: float | None = None,
+        phase_x: float | None = None,
+        phase_y: float | None = None,
     ):
         if is_polarized:
             if None in [Ex, Ey, phase_x, phase_y]:

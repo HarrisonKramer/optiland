@@ -14,6 +14,7 @@ from optiland.samples.lithography import UVProjectionLens
 from optiland.samples.objectives import TessarLens
 from tests.utils import assert_allclose
 
+
 def test_translate(set_test_backend):
     rays = BaseRays()
     rays.x = 1.0
@@ -165,7 +166,7 @@ def test_rotate_x(set_test_backend):
     assert_allclose(rays.N[0], -1.0, rtol=0, atol=1e-10)
 
     rays.rotate_x(0.0)
-    
+
     assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
     assert_allclose(rays.y[0], -2.0, rtol=0, atol=1e-10)
     assert_allclose(rays.z[0], -3.0, rtol=0, atol=1e-10)
@@ -404,6 +405,56 @@ def test_reflect(set_test_backend):
     assert_allclose(rays.N[0], 0.0, atol=1e-10)
 
 
+def test_real_rays_str(set_test_backend):
+    """Tests the __str__ method of the RealRays class."""
+
+    rays_empty = RealRays([], [], [], [], [], [], [], [])
+    rays_empty.x = []
+    assert str(rays_empty) == "RealRays object (No rays)"
+
+    x = be.array([1.0, 1.1])
+    y = be.array([2.0, 2.1])
+    z = be.array([3.0, 3.1])
+    L = be.array([0.0, 0.1])
+    M = be.array([0.0, 0.2])
+    N = be.array([1.0, 0.9])
+    i = be.array([1.0, 0.5])
+    w = be.array([0.55, 0.65])
+    rays_few = RealRays(x, y, z, L, M, N, i, w)
+
+    h = " Ray # |          x |          y |          z |          L |          M |          N |  Intensity |   Wavelength\n"
+    s = "----------------------------------------------------------------------------------------------------------------------\n"
+    r0 = "     0 |     1.0000 |     2.0000 |     3.0000 |   0.000000 |   0.000000 |   1.000000 |     1.0000 |       0.5500\n"
+    r1 = "     1 |     1.1000 |     2.1000 |     3.1000 |   0.100000 |   0.200000 |   0.900000 |     0.5000 |       0.6500\n"
+    f = "Showing 2 of 2 rays.\n"
+    expected_few = h + s + r0 + r1 + s + f
+    actual_output = str(rays_few)
+    print("\n--- Actual Output (repr) ---")
+    print(repr(actual_output))
+    print("--- Expected Output (repr) ---")
+    print(repr(expected_few))
+    print("--- End ---")
+    assert str(rays_few) == expected_few
+
+    x = be.array([1.0, 1.1, 1.2, 1.3, 1.4])
+    y = be.array([2.0, 2.1, 2.2, 2.3, 2.4])
+    z = be.array([3.0, 3.1, 3.2, 3.3, 3.4])
+    L = be.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    M = be.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    N = be.array([1.0, 0.9, 0.8, 0.7, 0.6])
+    i = be.array([1.0, 0.9, 0.8, 0.7, 0.6])
+    w = be.array([0.55, 0.55, 0.55, 0.55, 0.55])
+    rays_many = RealRays(x, y, z, L, M, N, i, w)
+
+    # Build expected_many programmatically
+    r0 = "     0 |     1.0000 |     2.0000 |     3.0000 |   0.000000 |   0.000000 |   1.000000 |     1.0000 |       0.5500\n"
+    r2 = "     2 |     1.2000 |     2.2000 |     3.2000 |   0.200000 |   0.200000 |   0.800000 |     0.8000 |       0.5500\n"
+    r4 = "     4 |     1.4000 |     2.4000 |     3.4000 |   0.400000 |   0.400000 |   0.600000 |     0.6000 |       0.5500\n"
+    f = "Showing 3 of 5 rays.\n"
+    expected_many = h + s + r0 + r2 + r4 + s + f
+    assert str(rays_many) == expected_many
+
+
 class TestPolarizationState:
     def test_constructor(self, set_test_backend):
         state = PolarizationState(is_polarized=True, Ex=1, Ey=2, phase_x=0, phase_y=1)
@@ -588,7 +639,9 @@ class TestPolarizedRays:
         expected_jones_matrix = be.array(
             [[[1.0, 0.0, 0.0], [0.0, 0.99498744, -0.1], [0.0, 0.1, 0.99498744]]],
         )
-        assert_allclose(rays.p, expected_jones_matrix, atol=1e-8) # Reduced tolerance slightly for potential backend differences
+        assert_allclose(
+            rays.p, expected_jones_matrix, atol=1e-8
+        )  # Reduced tolerance slightly for potential backend differences
 
         # test case when jones = None
         rays.L0 = be.array([0.0])
@@ -640,6 +693,7 @@ class TestPolarizedRays:
 
         with pytest.raises(ValueError):
             rays._get_3d_electric_field(state)
+
 
 @pytest.mark.usefixtures("set_test_backend")
 class TestRayGenerator:

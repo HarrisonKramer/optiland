@@ -204,3 +204,69 @@ class RealRays(BaseRays):
 
         dot = be.abs(dot)
         return nx, ny, nz, dot
+
+    def __str__(self):
+        """Returns a string representation of the rays in a tabular format.
+        Truncates output if the number of rays is large, showing first,
+        central, and last rays.
+        """
+
+        if self.x is None or len(self.x) == 0:
+            return "RealRays object (No rays)"
+
+        num_rays = len(self.x)
+        max_rays_to_print = 3
+        header = (
+            f"{'Ray #':>6} | {'x':>10} | {'y':>10} | {'z':>10} | "
+            f"{'L':>10} | {'M':>10} | {'N':>10} | "
+            f"{'Intensity':>10} | {'Wavelength':>12}\n"
+        )
+        separator = "-" * (len(header) + 5) + "\n"
+
+        table = header + separator
+
+        def format_ray(i):
+            if 0 <= i < num_rays:
+                x = be.to_numpy(self.x)[i]
+                y = be.to_numpy(self.y)[i]
+                z = be.to_numpy(self.z)[i]
+                L = be.to_numpy(self.L)[i]
+                M = be.to_numpy(self.M)[i]
+                N = be.to_numpy(self.N)[i]
+                intensity = be.to_numpy(self.i)[i]
+                wavelength = be.to_numpy(self.w)[i]
+                txt = (
+                    f"{i:6} | {x:10.4f} | {y:10.4f} | {z:10.4f} | {L:10.6f} | "
+                    f"{M:10.6f} | {N:10.6f} | "
+                    f"{intensity:10.4f} | {wavelength:12.4f}\n"
+                )
+                return txt
+            return ""
+
+        if num_rays <= max_rays_to_print:
+            indices_to_print = list(range(num_rays))
+            count_shown = num_rays
+
+            for i in indices_to_print:
+                table += format_ray(i)
+
+        else:
+            num_ends = (max_rays_to_print - 1) // 2
+            central_index = num_rays // 2
+
+            indices = (
+                set(range(num_ends))
+                | {central_index}
+                | set(range(num_rays - num_ends, num_rays))
+            )
+
+            sorted_indices = sorted(list(indices))
+            count_shown = len(sorted_indices)
+
+            for i in sorted_indices:
+                table += format_ray(i)
+
+        table += separator
+        table += f"Showing {count_shown} of {num_rays} rays.\n"
+
+        return table

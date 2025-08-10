@@ -23,35 +23,33 @@ def _is_radius_infinite(radius):
         radius (float or be.ndarray): The radius value to check.
 
     Returns:
-        bool: True if the radius is infinite, False otherwise.
+        bool: True if the radius is effectively infinite (or all elements are
+        infinite if it's an array), False otherwise.
     """
-    if hasattr(radius, "item"):
-        try:
-            # Handles scalar tensor or numpy array with a single element
-            return bool(be.isinf(radius).item())
-        except TypeError:
-            # Handles tensor/array where .item() is not applicable directly on isinf
-            # result (e.g. multi-element)
-            # This case implies we want to check if ALL elements are infinite
-            # if it's an array/tensor
-            return bool(be.all(be.isinf(radius)))
-    else:
-        # Handles standard float or single-element non-item-having objects
-        return bool(be.isinf(radius))
+    is_inf_tensor = be.isinf(radius)
+    if hasattr(is_inf_tensor, "ndim") and is_inf_tensor.ndim > 0:
+        # If it's a multi-element array, check if all are infinite
+        return bool(be.all(is_inf_tensor))
+    # For scalars or single-element arrays that can be converted by .item()
+    return (
+        bool(is_inf_tensor.item())
+        if hasattr(is_inf_tensor, "item")
+        else bool(is_inf_tensor)
+    )
 
 
 class NewtonRaphsonGeometry(StandardGeometry, ABC):
     """Represents a geometry that uses the Newton-Raphson method for ray tracing.
 
     Args:
-        coordinate_system (str): The coordinate system used for the geometry.
-        radius (float): The radius of curvature of the geometry.
-        conic (float, optional): The conic constant of the geometry.
+        coordinate_system (CoordinateSystem): The coordinate system of the geometry.
+        radius (float): The radius of curvature of the base sphere.
+        conic (float, optional): The conic constant of the base sphere.
             Defaults to 0.0.
-        tol (float, optional): The tolerance value used in calculations.
+        tol (float, optional): Tolerance for Newton-Raphson iteration.
             Defaults to 1e-10.
-        max_iter (int, optional): The maximum number of iterations used in
-            calculations. Defaults to 100.
+        max_iter (int, optional): Maximum iterations for Newton-Raphson.
+            Defaults to 100.
 
     """
 
@@ -63,16 +61,25 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
     def __str__(self):
         return "Newton Raphson"  # pragma: no cover
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of curvature.
+        The conic constant remains unchanged.
+        """
+        self.radius = -self.radius
+
     @abstractmethod
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry.
 
         Args:
-            x (float or be.ndarray, optional): The x-coordinate. Defaults to 0.
-            y (float or be.ndarray, optional): The y-coordinate. Defaults to 0.
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
 
         Returns:
-            Union[float, be.ndarray]: The surface sag of the geometry.
+            float or be.ndarray: The surface sag of the geometry at the given
+            coordinates.
 
         """
         # pragma: no cover
@@ -83,11 +90,12 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         position.
 
         Args:
-            x (float, be.ndarray): The x values to use for calculation.
-            y (float, be.ndarray): The y values to use for calculation.
+            x (be.ndarray): The x-coordinate(s) at which to calculate the normal.
+            y (be.ndarray): The y-coordinate(s) at which to calculate the normal.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The surface normal
+            components (nx, ny, nz).
 
         """
         # pragma: no cover
@@ -96,51 +104,76 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         """Calculates the surface normal of the geometry at the given rays.
 
         Args:
-            rays (Rays): The rays used for calculating the surface normal.
+            rays (RealRays): The rays, positioned at the surface, for which to
+                calculate the surface normal.
 
         Returns:
-            tuple: The surface normal components (nx, ny, nz).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The surface normal
+            components (nx, ny, nz).
 
         """
         return self._surface_normal(rays.x, rays.y)
 
     def distance(self, rays):
-        """Calculates the distance between the geometry and the given ray
-        positions.
-
-        Note:
-            This function uses the Newton-Raphson method for ray tracing.
+        """
+        Calculates the distance from the ray origin to the surface intersection
+        using a robust Newton-Raphson method. This version uses the base conic
+        intersection as a strong initial guess.
 
         Args:
-            rays (Rays): The rays used for calculating distance.
+            rays (RealRays): The rays used for calculating distance.
 
         Returns:
-            numpy.ndarray: The distances between the geometry and the rays.
-
+            be.ndarray: An array of propagation distances 't' from each ray's
+            current position to its intersection point with the geometry.
         """
-        x, y, z = self._intersection(rays)
-        intersections = be.column_stack((x, y, z))
-        ray_directions = be.column_stack((rays.L, rays.M, rays.N))
+        # better initial guess for the propagation distance 't' by
+        # intersecting with the base conic surface.
+        t = super().distance(rays)
 
+        # Newton-Raphson method to refine the intersection point
         for _ in range(self.max_iter):
-            z_surface = self.sag(intersections[:, 0], intersections[:, 1])
-            dz = intersections[:, 2] - z_surface
-            distance = dz / ray_directions[:, 2]
-            intersections = intersections - distance[:, None] * ray_directions
-            if be.max(be.abs(dz)) < self.tol:
+            # current intersection point P(t) = P0 + t*D
+            x_int = rays.x + t * rays.L
+            y_int = rays.y + t * rays.M
+            z_int = rays.z + t * rays.N
+
+            # error function f(t) = sag(x(t), y(t)) - z(t)
+            # find the root t such that f(t) = 0
+            f_t = self.sag(x_int, y_int) - z_int
+
+            # convergence check
+            if be.max(be.abs(f_t)) < self.tol:
                 break
 
-        position = be.column_stack((rays.x, rays.y, rays.z))
-        return be.linalg.norm(intersections - position, axis=1)
+            # derivative of the error func at the
+            # curr intersection point
+            # f'(t) = (d_sag/d_x)*Lx + (d_sag/d_y)*My - Nz
+            nx, ny, nz = self._surface_normal(x_int, y_int)
+
+            # normalized normal components:
+            # fx = -nx / nz and fy = -ny / nz.
+            nz_safe = be.where(be.abs(nz) > 1e-14, nz, 1e-14)
+            fx = -nx / nz_safe
+            fy = -ny / nz_safe
+
+            df_dt = fx * rays.L + fy * rays.M - rays.N
+
+            # update step: t_new = t - f(t) / f'(t).
+            safe_df_dt = be.where(be.abs(df_dt) > 1e-14, df_dt, 1e-14)
+            t = t - f_t / safe_df_dt
+
+        return t
 
     def _intersection_plane(self, rays):
         """Calculates the intersection points of the rays with a plane (z=0).
 
         Args:
-            rays (Rays): The rays to calculate the intersection points for.
+            rays (RealRays): The rays to calculate the intersection points for.
 
         Returns:
-            tuple: The intersection points (x, y, z).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            coordinates of the intersection points.
         """
         # handle infinite radius: intersection with plane z=0
         t = be.full_like(rays.z, be.nan)
@@ -163,10 +196,11 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         """Calculates the intersection points of the rays with the geometry.
 
         Args:
-            rays (Rays): The rays to calculate the intersection points for.
+            rays (RealRays): The rays to calculate the intersection points for.
 
         Returns:
-            tuple: The intersection points (x, y, z).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            coordinates of the intersection points.
 
         """
         a = rays.L**2 + rays.M**2 + rays.N**2
@@ -209,10 +243,11 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
         geometry (sphere or plane) before Newton-Raphson iteration.
 
         Args:
-            rays (Rays): The rays to calculate the intersection points for.
+            rays (RealRays): The rays to calculate the intersection points for.
 
         Returns:
-            tuple: The intersection points (x, y, z).
+            tuple[be.ndarray, be.ndarray, be.ndarray]: The x, y, and z
+            coordinates of the initial intersection points.
         """
         if _is_radius_infinite(self.radius):
             return self._intersection_plane(rays)
@@ -238,7 +273,8 @@ class NewtonRaphsonGeometry(StandardGeometry, ABC):
             data (dict): The dictionary representation of the geometry.
 
         Returns:
-            NewtonRaphsonGeometry: The geometry created from the dictionary.
+            NewtonRaphsonGeometry: An instance of a subclass of
+            NewtonRaphsonGeometry, created from the dictionary data.
 
         """
         required_keys = {"cs", "radius"}

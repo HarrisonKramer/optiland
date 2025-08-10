@@ -11,5 +11,6 @@
       OPD
       OPDFan
       Wavefront
+      WavefrontData
       ZernikeOPD
    

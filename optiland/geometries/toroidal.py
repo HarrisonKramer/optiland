@@ -11,9 +11,9 @@ where:
 - R is the radius of rotation (X-Z curvature radius at vertex)
 - R_y = 1/c is the Y-Z curvature radius at vertex
 - k is the conic constant for the YZ curve
-- alpha_i are polynomial coefficients for the YZ curve
+- alpha_i are polynomial coefficients for the YZ curve (powers y^2, y^4, ...)
 
-Manuel Fragata Mendes, 2025
+Last Corrected by Manuel Fragata Mendes, July 2025
 """
 
 import optiland.backend as be
@@ -28,35 +28,46 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
     Args:
         coordinate_system (CoordinateSystem): The coordinate system.
-        radius_rotation (float): Radius of rotation R (X-Z radius).
-        radius_yz (float): Base Y-Z radius R_y.
+        radius_x (float): Radius of rotation R (X-Z radius).
+        radius_y (float): Base Y-Z radius R_y.
         conic (float, optional): Conic constant k for the Y-Z curve. Defaults to 0.0.
         coeffs_poly_y (list[float], optional): Polynomial coefficients alpha_i
-            for the Y-Z curve (powers y^2, y^4, ...). Defaults to [].
-        tol (float, optional): Newton-Raphson tolerance. Defaults to 1e-10.
-        max_iter (int, optional): Newton-Raphson max iterations. Defaults to 100.
+            for the Y-Z curve, where `coeffs_poly_y[i]` corresponds to the
+            coefficient for y^(2*(i+1)). Defaults to an empty list.
+        tol (float, optional): Tolerance for Newton-Raphson iteration.
+            Defaults to 1e-10.
+        max_iter (int, optional): Maximum iterations for Newton-Raphson.
+            Defaults to 100.
+
+    Attributes:
+        R_rot (be.ndarray): Radius of rotation R (X-Z radius).
+        R_yz (be.ndarray): Base Y-Z radius R_y.
+        k_yz (be.ndarray): Conic constant k for the Y-Z curve.
+        coeffs_poly_y (be.ndarray): Polynomial coefficients alpha_i for the Y-Z curve.
+        c_yz (be.ndarray or float): Curvature of the Y-Z profile (1/R_yz).
+        eps (float): Small epsilon value for safe division.
     """
 
     def __init__(
         self,
         coordinate_system: CoordinateSystem,
-        radius_rotation: float,
-        radius_yz: float,
+        radius_x: float,
+        radius_y: float,
         conic: float = 0.0,
         coeffs_poly_y: list[float] = None,
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
-        radius_rotation = be.array(radius_rotation)
-        radius_yz = be.array(radius_yz)
+        radius_x = be.array(radius_x)
+        radius_y = be.array(radius_y)
         conic = be.array(conic)
 
         super().__init__(
-            coordinate_system, radius_rotation, 0.0, tol, max_iter
+            coordinate_system, radius_y, 0.0, tol, max_iter
         )  # Pass 0 for base conic
 
-        self.R_rot = radius_rotation
-        self.R_yz = radius_yz
+        self.R_rot = radius_x
+        self.R_yz = radius_y
         self.k_yz = conic
 
         self.coeffs_poly_y = be.asarray([] if coeffs_poly_y is None else coeffs_poly_y)
@@ -68,8 +79,15 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         )
         self.eps = 1e-14  # safe div
 
-    def _calculate_zy(self, y):
-        """Calculates the sag of the base Y-Z curve."""
+    def _calculate_zy(self, y: be.ndarray) -> be.ndarray:
+        """Calculates the sag of the base Y-Z curve.
+
+        Args:
+            y (be.ndarray): Y-coordinates at which to calculate the Y-Z profile sag.
+
+        Returns:
+            be.ndarray: Sag values of the Y-Z profile.
+        """
         y2 = y**2
         z_y = be.zeros_like(y)
 
@@ -100,8 +118,15 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return z_y
 
-    def _calculate_zy_derivative(self, y):
-        """Calculates the derivative dz_y/dy of the base Y-Z curve."""
+    def _calculate_zy_derivative(self, y: be.ndarray) -> be.ndarray:
+        """Calculates the derivative dz_y/dy of the base Y-Z curve.
+
+        Args:
+            y (be.ndarray): Y-coordinates at which to calculate the derivative.
+
+        Returns:
+            be.ndarray: Derivative values dz_y/dy.
+        """
         y2 = y**2
         dz_dy = be.zeros_like(y)
 
@@ -130,8 +155,18 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return dz_dy
 
-    def sag(self, x, y):
-        """Calculate the sag z(x, y) of the toroidal surface."""
+    def sag(
+        self, x: float or be.ndarray, y: float or be.ndarray
+    ) -> float or be.ndarray:
+        """Calculate the sag z(x, y) of the toroidal surface.
+
+        Args:
+            x (float or be.ndarray): X-coordinate(s).
+            y (float or be.ndarray): Y-coordinate(s).
+
+        Returns:
+            float or be.ndarray: Sag value(s) of the toroidal surface.
+        """
         x2 = x**2
         z_y = self._calculate_zy(y)
         R = self.R_rot
@@ -142,18 +177,32 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         else:
             term_inside_sqrt = (R - z_y) ** 2 - x2
 
-            z = be.where(term_inside_sqrt < 0, be.nan, R - be.sqrt(term_inside_sqrt))
+            z = be.where(
+                term_inside_sqrt < 0,
+                be.nan,
+                z_y + ((R - z_y) - be.sign(R - z_y) * be.sqrt(term_inside_sqrt)),
+            )
 
         return z
 
-    def _surface_normal(self, x, y):
+    def _surface_normal(
+        self, x: be.ndarray, y: be.ndarray
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
         """Calculate the surface normal vector (nx, ny, nz)
-        using Optiland convention."""
+        using Optiland convention.
+
+        Args:
+            x (be.ndarray): X-coordinates for normal calculation.
+            y (be.ndarray): Y-coordinates for normal calculation.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Components (nx, ny, nz)
+            of the surface normal vectors.
+        """
         z_y = self._calculate_zy(y)
         dz_dy = self._calculate_zy_derivative(y)
         R = self.R_rot
 
-        # Partial derivatives of the toroidal part: dz/dx, dz/dy
         if be.isinf(R):
             # Cylinder extruded along X: z = z_y(y)
             fx = be.zeros_like(x)
@@ -161,16 +210,16 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
             term_inside_sqrt = be.inf
         else:
             term_inside_sqrt = (R - z_y) ** 2 - x**2
-            #
+
             valid_mask = term_inside_sqrt >= 0
             safe_term_inside_sqrt = be.where(valid_mask, term_inside_sqrt, self.eps)
             sqrt_term = be.sqrt(safe_term_inside_sqrt)
             safe_sqrt_term = be.where(be.abs(sqrt_term) < self.eps, self.eps, sqrt_term)
 
-            fx = be.where(valid_mask, x / safe_sqrt_term, 0.0)
-            fy = be.where(valid_mask, (R - z_y) * dz_dy / safe_sqrt_term, 0.0)
-
-        # No Zernike derivatives added in this simplified version
+            fx = be.where(valid_mask, be.sign(R) * x / safe_sqrt_term, 0.0)
+            fy = be.where(
+                valid_mask, be.sign(R) * (R - z_y) * dz_dy / safe_sqrt_term, 0.0
+            )
 
         # Normalize according to Optiland convention: (fx, fy, -1) / mag
         mag_sq = fx**2 + fy**2 + 1.0
@@ -188,40 +237,55 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return nx, ny, nz
 
+    def flip(self):
+        """Flip the geometry.
+
+        Changes the sign of the radius of rotation (R_rot) and the base Y-Z radius
+        (R_yz). Updates the Y-Z curvature (c_yz) accordingly.
+        """
+        self.R_rot = -self.R_rot
+        self.R_yz = -self.R_yz
+
+        self.c_yz = (
+            1.0 / self.R_yz if be.isfinite(self.R_yz) and self.R_yz != 0 else 0.0
+        )
+        self.radius = -self.radius
+
     def __str__(self) -> str:
         return "Toroidal"
 
     def to_dict(self) -> dict:
-        """Converts the geometry to a dictionary."""
+        """Converts the geometry to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the toroidal geometry.
+        """
         geometry_dict = super().to_dict()
         # Add toroidal specific parameters, remove conflicting base keys
         geometry_dict.update(
             {
                 "geometry_type": self.__str__(),
-                "radius_rotation": self.R_rot,
-                "radius_yz": self.R_yz,
+                "radius_x": self.R_rot,
+                "radius_y": self.R_yz,
                 "conic_yz": self.k_yz,
                 "coeffs_poly_y": self.coeffs_poly_y.tolist()
                 if hasattr(self.coeffs_poly_y, "tolist")
                 else self.coeffs_poly_y,
             }
         )
-        # Remove base class keys not relevant or potentially confusing here
-        if "radius" in geometry_dict:
-            del geometry_dict["radius"]
-        if "conic" in geometry_dict:
-            del geometry_dict["conic"]
-        if "coefficients" in geometry_dict:
-            del geometry_dict["coefficients"]  # Use specific coeffs_poly_y
-        if "norm_radius" in geometry_dict:
-            del geometry_dict["norm_radius"]  # No Zernike
-
         return geometry_dict
 
     @classmethod
     def from_dict(cls, data: dict) -> "ToroidalGeometry":
-        """Creates a ToroidalGeometry from a dictionary representation."""
-        required_keys = {"cs", "radius_rotation", "radius_yz"}
+        """Creates a ToroidalGeometry from a dictionary representation.
+
+        Args:
+            data (dict): Dictionary containing toroidal geometry parameters.
+
+        Returns:
+            ToroidalGeometry: An instance of ToroidalGeometry.
+        """
+        required_keys = {"cs", "radius_x", "radius_y"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required ToroidalGeometry keys: {missing}")
@@ -230,9 +294,9 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
 
         return cls(
             coordinate_system=cs,
-            radius_rotation=data["radius_rotation"],
-            radius_yz=data["radius_yz"],
-            conic=data.get("conic_yz", 0.0),  # Match key used in to_dict
+            radius_x=data["radius_x"],
+            radius_y=data["radius_y"],
+            conic=data.get("conic_yz", 0.0),
             coeffs_poly_y=data.get("coeffs_poly_y", []),
             tol=data.get("tol", 1e-10),
             max_iter=data.get("max_iter", 100),

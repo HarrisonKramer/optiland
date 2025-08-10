@@ -12,11 +12,12 @@ Kramer Harrison, 2024
 """
 
 from copy import deepcopy
-from typing import Union
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
+from optiland.apodization import BaseApodization
 from optiland.fields import Field, FieldGroup
+from optiland.materials.base import BaseMaterial
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
@@ -24,7 +25,12 @@ from optiland.rays import PolarizationState, RayGenerator
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import LensInfoViewer, OpticViewer, OpticViewer3D
+from optiland.visualization import (
+    LensInfoViewer,
+    OpticViewer,
+    OpticViewer3D,
+    SurfaceSagViewer,
+)
 from optiland.wavelength import WavelengthGroup
 
 
@@ -65,6 +71,7 @@ class Optic:
 
         self.polarization = "ignore"
 
+        self.apodization = None
         self.pickups = PickupManager(self)
         self.solves = SolveManager(self)
         self.obj_space_telecentric = False
@@ -245,6 +252,16 @@ class Optic:
         """
         self._updater.set_index(value, surface_number)
 
+    def set_material(self, material: BaseMaterial, surface_number: int):
+        """Set the material of a surface.
+
+        Args:
+            material (BaseMaterial): The material.
+            surface_number (int): The index of the surface.
+
+        """
+        self._updater.set_material(material, surface_number)
+
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
 
@@ -257,7 +274,7 @@ class Optic:
         """
         self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
-    def set_polarization(self, polarization: Union[PolarizationState, str]):
+    def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
 
         Args:
@@ -267,6 +284,14 @@ class Optic:
 
         """
         self._updater.set_polarization(polarization)
+
+    def set_apodization(self, apodization: BaseApodization):
+        """Set the apodization of the optical system.
+
+        Args:
+            apodization (Apodization): The apodization object to set.
+        """
+        self._updater.set_apodization(apodization)
 
     def scale_system(self, scale_factor):
         """Scales the optical system by a given scale factor.
@@ -296,6 +321,17 @@ class Optic:
         optical axis at the image location.
         """
         self._updater.image_solve()
+
+    def flip(self):
+        """Flips the optical system.
+
+        This reverses the order of surfaces (excluding object and image planes),
+        their geometries, and materials. Pickups and solves referencing surface
+        indices are updated accordingly. The coordinate system is adjusted such
+        that the new first optical surface (originally the last one in the
+        flipped segment) is placed at z=0.0.
+        """
+        self._updater.flip()
 
     def draw(
         self,
@@ -331,7 +367,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-        viewer.view(
+        fig = viewer.view(
             fields,
             wavelengths,
             num_rays,
@@ -342,6 +378,7 @@ class Optic:
             title=title,
             reference=reference,
         )
+        return fig
 
     def draw3D(
         self,
@@ -388,15 +425,18 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength="primary"):
-        """Get the refractive indices of the surfaces.
+    def n(self, wavelength: float | str = "primary"):
+        """Get the refractive indices of the materials for each space between
+        surfaces at a given wavelength.
 
         Args:
-            wavelength (float or str, optional): The wavelength for which to
-                calculate the refractive indices. Defaults to 'primary'.
+            wavelength (float or str, optional): The wavelength in microns for
+                which to calculate the refractive indices. Can be a float value
+                or the string 'primary' to use the system's primary wavelength.
+                Defaults to 'primary'.
 
         Returns:
-            numpy.ndarray: The refractive indices of the surfaces.
+            be.ndarray: An array of refractive indices for each space.
 
         """
         if wavelength == "primary":
@@ -407,13 +447,15 @@ class Optic:
         """Trace a distribution of rays through the optical system.
 
         Args:
-            Hx (float or numpy.ndarray): The normalized x field coordinate.
-            Hy (float or numpy.ndarray): The normalized y field coordinate.
-            wavelength (float): The wavelength of the rays.
-            num_rays (int, optional): The number of rays to be traced. Defaults
-                to 100.
-            distribution (str or Distribution, optional): The distribution of
-                the rays. Defaults to 'hexapolar'.
+            Hx (float or be.ndarray): The normalized x field coordinate(s).
+            Hy (float or be.ndarray): The normalized y field coordinate(s).
+            wavelength (float): The wavelength of the rays in microns.
+            num_rays (int, optional): The number of rays to be traced.
+                Defaults to 100.
+            distribution (str or optiland.distribution.BaseDistribution, optional):
+                The distribution of the rays. Can be a string identifier (e.g.,
+                'hexapolar', 'uniform') or a Distribution object.
+                Defaults to 'hexapolar'.
 
         Returns:
             RealRays: The RealRays object containing the traced rays.
@@ -425,14 +467,26 @@ class Optic:
         """Trace generic rays through the optical system.
 
         Args:
-            Hx (float or numpy.ndarray): The normalized x field coordinate.
-            Hy (float or numpy.ndarray): The normalized y field coordinate.
-            Px (float or numpy.ndarray): The normalized x pupil coordinate.
-            Py (float or numpy.ndarray): The normalized y pupil coordinate
-            wavelength (float): The wavelength of the rays.
+            Hx (float or be.ndarray): The normalized x field coordinate(s).
+            Hy (float or be.ndarray): The normalized y field coordinate(s).
+            Px (float or be.ndarray): The normalized x pupil coordinate(s).
+            Py (float or be.ndarray): The normalized y pupil coordinate(s).
+            wavelength (float): The wavelength of the rays in microns.
 
         """
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
+
+    def plot_surface_sag(
+        self, surface_index: int, y_cross_section=0, x_cross_section=0
+    ):
+        """
+        Analyzes and visualizes the sag of a given lens surface.
+
+        Args:
+            surface_index (int): The index of the surface to analyze.
+        """
+        viewer = SurfaceSagViewer(self)
+        viewer.view(surface_index, y_cross_section, x_cross_section)
 
     def to_dict(self):
         """Convert the optical system to a dictionary.
@@ -446,6 +500,7 @@ class Optic:
             "aperture": self.aperture.to_dict() if self.aperture else None,
             "fields": self.fields.to_dict(),
             "wavelengths": self.wavelengths.to_dict(),
+            "apodization": self.apodization.to_dict() if self.apodization else None,
             "pickups": self.pickups.to_dict(),
             "solves": self.solves.to_dict(),
             "surface_group": self.surface_group.to_dict(),
@@ -472,6 +527,11 @@ class Optic:
         optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
         optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
+
+        apodization_data = data.get("apodization")
+        if apodization_data:
+            optic.apodization = BaseApodization.from_dict(apodization_data)
+
         optic.pickups = PickupManager.from_dict(optic, data["pickups"])
         optic.solves = SolveManager.from_dict(optic, data["solves"])
 

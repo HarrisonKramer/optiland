@@ -37,6 +37,7 @@ The ray tracing framework uses a **Ray Generator** to produce rays for tracing. 
 - Aperture sampling (e.g., uniform grid, random, etc.)
 - Polarization state
 - System properties (e.g., F/#, NA, telecentricity)
+- Apodization (intensity distribution within the pupil)
 
 Generated rays are passed to the **Surface Group** for tracing through the optical system. Each `Optic` instance has both a ray generator and a surface group
 specific to that system.

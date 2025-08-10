@@ -1,0 +1,726 @@
+/*
+  Base Backgrounds:
+    --main-bg: #F8F9FA;         (Windows, central areas, list dropdowns, table cells)
+    --toolbar-sidebar-bg: #E9ECEF; (Toolbars, Sidebars, inactive tabs, headers, input read-only, scrollbar tracks, CustomTitleBar bg)
+    --hover-bg: #DEE2E6;         (Hover states, dock titles, active tabs (non-selected), TitleBarMenu hover)
+    --border-pressed-bg: #CED4DA; (Borders, pressed states, separators, input field borders, TitleBarMenu pressed)
+    --disabled-subtle-border: #ADB5BD; (Disabled text, subtle/darker borders for menus/scroll handles)
+
+  Text Colors:
+    --main-text: #212529;       (Primary text on light backgrounds, OptilandLabel, TitleBarMenu text)
+    --project-label-text: #343A40; (User specified for project label)
+    --secondary-text: #495057;   (Slightly less prominent text, inactive tab text)
+    --accent-text-on-dark: #F8F9FA; (Text on dark accent backgrounds, e.g., selected items, CloseButton hover text)
+
+  Accent Colors (for interactive elements, selections):
+    --accent-primary: #6C757D;   (Primary buttons, selected items background, focused input border)
+    --accent-secondary: #495057; (Hover on primary accent buttons, darker accents)
+    --accent-tertiary: #343A40;  (Pressed on primary accent buttons)
+
+  Input Fields:
+    --input-bg: #FFFFFF;         (Background for QLineEdit, QSpinBox etc. - often pure white)
+
+  Special Colors:
+    --close-button-hover-bg: #E81123; (Red for close button hover)
+*/
+
+/* Global Settings for all QWidget based classes */
+QWidget {
+    font-family: "Segoe UI", Arial, sans-serif; /* Default font */
+    font-size: 9pt; /* Default font size */
+    color: #212529;       /* --main-text: Default text color */
+    background-color: #F8F9FA; /* --main-bg: Default background color */
+}
+
+/* QMainWindow specific styling */
+QMainWindow {
+    background-color: #F8F9FA; /* --main-bg: Main window surface color */
+}
+
+/* Separators between dock widgets in QMainWindow */
+QMainWindow::separator {
+    background-color: #CED4DA; /* --border-pressed-bg: Color of the thin line separator */
+    width: 2px;  /* Thickness */
+    height: 2px; /* Thickness */
+    background-color: #ADB5BD; /* A neutral dark color, adjust to your theme */
+    border: 1px solid #ADB5BD; /* A border to define the separator's edges */
+}
+
+QMainWindow::separator:hover {
+    /* Optional: Highlight the separator on hover. */
+    background-color: #007ACC; 
+}
+
+QDockWidget {
+    border: 2px solid #CED4DA; /* Border around the entire dock widget */
+    border-radius: 5px;
+}
+
+/* === Custom Title Bar Styles === */
+/* Main container for the custom title bar */
+#CustomTitleBar {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background for the title bar area */
+    border-bottom: 1px solid #CED4DA; /* --border-pressed-bg: Bottom border for separation */
+    /* Text color is inherited or set by specific child elements */
+}
+
+/* "Optiland" application title label */
+#TitleBarOptilandLabel {
+    color: #212529; /* --main-text */
+    font-weight: bold;
+    padding-left: 5px; /* Alignment */
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* QMenuBar embedded within the title bar */
+#TitleBarMenuBar {
+    color: #212529; /* --main-text: Text color for top-level menu bar items */
+    background-color: transparent; /* Blend with CustomTitleBar background */
+    padding: 0px;
+    margin: 0px;
+    font-size: 9pt; /* Match general font size */
+}
+
+/* Individual top-level items in the #TitleBarMenuBar (e.g., "File", "Edit") */
+#TitleBarMenuBar::item {
+    color: #212529; /* --main-text */
+    background-color: transparent;
+    padding: 6px 10px; /* Padding for spacing and vertical centering feel */
+}
+
+/* Hovered top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:selected {
+    background-color: #DEE2E6; /* --hover-bg */
+}
+
+/* Pressed top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:pressed {
+    background-color: #CED4DA; /* --border-pressed-bg */
+}
+
+/* Project name label */
+#TitleBarProjectLabel {
+    color: #343A40; /* --project-label-text: USER SPECIFIED COLOR for project label text */
+    font-size: 8pt;
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* Window control buttons: Minimize, Maximize, Close */
+#TitleBarMinimizeButton,
+#TitleBarMaximizeButton,
+#TitleBarCloseButton {
+    background-color: transparent;
+    color: #212529; /* --main-text: Icon/text color for buttons */
+    border: none;
+    font-weight: bold; /* Or use icons */
+    min-width: 30px; /* Fixed size for control buttons */
+    max-width: 30px;
+    min-height: 30px;
+    max-height: 30px;
+    padding: 0px;
+    margin: 0px; /* Remove extra margins if any */
+}
+
+/* Hover state for Minimize and Maximize buttons in TitleBar */
+#TitleBarMinimizeButton:hover,
+#TitleBarMaximizeButton:hover {
+    background-color: #DEE2E6; /* --hover-bg */
+}
+
+/* Hover state for the Close button in TitleBar */
+#TitleBarCloseButton:hover {
+    background-color: #E81123; /* --close-button-hover-bg: Standard red */
+    color: #F8F9FA;       /* --accent-text-on-dark: Light text on red background */
+}
+
+/* Pressed state for all window control buttons in TitleBar */
+#TitleBarMinimizeButton:pressed,
+#TitleBarMaximizeButton:pressed,
+#TitleBarCloseButton:pressed {
+    background-color: #CED4DA; /* --border-pressed-bg */
+}
+/* === End of Custom Title Bar Styles === */
+
+
+/* QToolBar (e.g., the "Quick Actions" toolbar, NOT the custom title bar acting as toolbar) */
+QToolBar#QuickActionsToolbar { /* More specific selector if needed */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background of the toolbar */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around the toolbar */
+    padding: 2px; /* Padding inside the toolbar */
+    spacing: 3px; /* Spacing between toolbar items */
+}
+QToolBar#QuickActionsToolbar::handle {
+    /* image: url(:/path/to/handle_icon.png); You can style this if you use movable toolbars */
+}
+QToolBar#QuickActionsToolbar::separator {
+    height: 16px; /* Height of the separator line */
+    background-color: #CED4DA; /* --border-pressed-bg: Color of the separator */
+    margin-left: 2px;  /* Margins around separator */
+    margin-right: 2px;
+    width: 1px; /* Thickness of separator */
+}
+/* QToolButton when placed inside the QuickActionsToolbar */
+QToolBar#QuickActionsToolbar QToolButton {
+    color: #212529;       /* --main-text: Text/icon color for toolbar buttons */
+    background-color: transparent; /* Transparent background by default */
+    border: 1px solid transparent; /* No border by default */
+    padding: 3px; /* Padding for the button content */
+}
+QToolBar#QuickActionsToolbar QToolButton:hover {
+    background-color: #DEE2E6; /* --hover-bg: Background on hover */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border on hover */
+}
+QToolBar#QuickActionsToolbar QToolButton:pressed {
+    background-color: #CED4DA; /* --border-pressed-bg: Background when pressed */
+}
+QToolBar#QuickActionsToolbar QToolButton:checked { /* Style for checkable QToolButtons when checked */
+    background-color: #CED4DA; /* --border-pressed-bg */
+    border: 1px solid #ADB5BD; /* --disabled-subtle-border: Darker border for checked state */
+}
+
+
+/* Sidebar specific styling */
+#SidebarWidget { /* Main sidebar container */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    border-right: 1px solid #CED4DA; /* --border-pressed-bg */
+}
+#SidebarTitleLabel { /* Title label like "|||" */
+    color: #212529;       /* --main-text */
+    font-weight: bold;
+    font-size: 11pt;
+    padding: 5px;
+    background-color: transparent; /* Ensure it inherits sidebar background */
+}
+#SidebarWidget QToolButton { /* Buttons within the sidebar */
+    color: #212529;       /* --main-text */
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 8px;
+    border-radius: 3px;
+    text-align: left; /* For expanded mode */
+    margin: 2px 0px;
+}
+#SidebarWidget QToolButton:hover {
+    background-color: #DEE2E6; /* --hover-bg */
+}
+#SidebarWidget QToolButton:checked,
+#SidebarWidget QToolButton:pressed {
+    background-color: transparent; /* Ensure background remains transparent */
+    color: #212529;               /* Text color remains the default dark (--main-text) */
+
+    /* Override the default 'border' from the base rule to set only the left border */
+    border-top: 1px solid transparent;    /* Keep other borders transparent */
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-left: 3px solid #6C757D;     /* --accent-primary: Highlight left border with a darker tone */
+
+    /* Adjust left padding to maintain visual text alignment.
+       Original padding: 8px. Original border: 1px transparent.
+       Content starts 1px + 8px = 9px from the edge.
+       New left border: 3px. To maintain 9px offset for content: 3px (border) + 6px (padding-left) = 9px.
+       So, other paddings remain 8px, left padding becomes 6px.
+    */
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 6px;
+}
+
+
+/* QDockWidget styling */
+
+QDockWidget::title { /* Title bar of the QDockWidget */
+    text-align: left;
+    background-color: #DEE2E6; /* --hover-bg: Background of the dock title bar */
+    padding: 5px;
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border for the title bar */
+    border-bottom-width: 2px;  /* Remove bottom border if it looks better */
+    color: #212529;       /* --main-text: Text color of the dock title */
+}
+QDockWidget > QWidget { /* Content area of the QDockWidget */
+    background-color: #F8F9FA; /* --main-bg: Background for content of the dock */
+}
+
+/* QLabel - General labels throughout the application */
+QLabel {
+    color: #212529;       /* --main-text */
+    background-color: transparent;
+}
+
+/* QPushButton - General push buttons (e.g., "Add Surface", "Apply") */
+QPushButton {
+    color: #F8F9FA;       /* --accent-text-on-dark: Text color (light on a darker button) */
+    background-color: #6C757D; /* --accent-primary: Button background */
+    border: 1px solid #495057; /* --accent-secondary: Button border */
+    padding: 6px 12px;
+    border-radius: 3px;
+    min-height: 16px;
+    font-weight: bold;
+
+}
+QPushButton:hover {
+    background-color: #495057; /* --accent-secondary: Darker background on hover */
+    border-color: #343A40;  /* --accent-tertiary: Darker border on hover */
+}
+QPushButton:pressed {
+    background-color: #343A40;  /* --accent-tertiary: Even darker background when pressed */
+    border-color: #212529;    /* --main-text: Darkest border when pressed */
+}
+QPushButton:disabled {
+    color: #ADB5BD;       /* --disabled-subtle-border: Text color for disabled buttons */
+    background-color: #DEE2E6; /* --hover-bg: Background for disabled buttons */
+    border-color: #CED4DA; /* --border-pressed-bg: Border for disabled buttons */
+}
+
+/* QLineEdit, QDoubleSpinBox, QComboBox - Input fields */
+QLineEdit, QDoubleSpinBox, QComboBox {
+    color: #212529;       /* --main-text: Text color inside input fields */
+    background-color: #FFFFFF; /* --input-bg: Background color (often pure white) */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around input fields */
+    padding: 4px;
+    border-radius: 3px;
+    min-height: 16px;
+}
+QLineEdit:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid #6C757D; /* --accent-primary: Border color when field has focus */
+}
+QLineEdit:read-only {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background for read-only fields */
+}
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button { /* Buttons for QDoubleSpinBox */
+    border: 1px solid #CED4DA; /* --border-pressed-bg */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    min-width: 16px;
+}
+QDoubleSpinBox::up-arrow, QDoubleSpinBox::down-arrow { /* Arrows within spinbox buttons */
+     width: 7px; height: 7px;
+     /* Consider using themed SVG icons */
+}
+QComboBox::down-arrow { /* Style for the dropdown arrow area of QComboBox */
+    border: 1px solid #CED4DA; /* --border-pressed-bg */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    min-width: 16px;
+}
+/* Arrow image for QComboBox dropdown:
+QComboBox::down-arrow:on { image: url(:/icons/arrow_down_pressed.svg); }
+QComboBox::down-arrow { image: url(:/icons/arrow_down.svg); }
+*/
+QComboBox QAbstractItemView { /* Dropdown list part of QComboBox */
+    background-color: #FFFFFF; /* --input-bg: Background of the dropdown list */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border of the list */
+    selection-background-color: #6C757D; /* --accent-primary: Background of the selected item */
+    selection-color: #F8F9FA; /* --accent-text-on-dark: Text color of the selected item */
+    color: #212529;       /* --main-text: Default text color of items */
+    padding: 2px;
+}
+
+/* QTableWidget - For data tables like Lens Data Editor ------------------------------------*/
+QTableWidget {
+    color: #212529;       /* --main-text: Default text color in table cells */
+    background-color: #F8F9FA; /* --main-bg: Main background of the table */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around the table */
+    gridline-color: #DEE2E6; /* --hover-bg: Color of the grid lines within the table */
+    /* Remove general selection colors, will be handled by ::item pseudo-states */
+    /* selection-background-color: #6C757D; */
+    /* selection-color: #F8F9FA; */
+}
+
+/* Default appearance for all items/cells in QTableWidget */
+QTableWidget::item {
+    padding: 3px; /* Adjust padding as needed for cell content */
+    border: none; /* Individual cell borders are off by default; gridline-color handles lines */
+    color: #212529; /* --main-text: Inherited, but can be set explicitly */
+    background-color: transparent; /* Default cell background, shows table's background */
+}
+
+/* Styling for items in a selected row */
+/* Since lens_editor.py uses SelectRows, this will style the entire row when a cell in it is clicked. */
+QTableWidget::item:selected {
+    background-color: #DEE2E6; /* --hover-bg: Lighter tone for the selected row background */
+    color: #212529;       /* --main-text: Text color for selected row (ensure good contrast) */
+}
+
+/* Styling for the specific item/cell that currently has focus (e.g., the cell you clicked or navigated to) */
+/* This rule applies on top of the :selected style if the focused cell is also selected. */
+QTableWidget::item:selected:focus {
+    background-color: #6C757D; /* --accent-primary: Darker tone for the focused cell in a selected row */
+    color: #F8F9FA;       /* --accent-text-on-dark: Light text for contrast on the darker tone */
+    /* Optional: Add a border to make the focused cell stand out even more within the selected row */
+    /* border: 1px solid #495057; */ /* --accent-secondary */
+}
+
+/* Optional: Style for a cell that has focus but its row is NOT selected.
+   This is less common if SelectRows is the primary behavior, but can be useful. */
+QTableWidget::item:focus:!selected {
+    /* Example: a subtle border to indicate focus without full selection highlight */
+    /* border: 1px dotted #6C757D; */ /* --accent-primary */
+    /* background-color: #E9ECEF; */ /* --toolbar-sidebar-bg: A very light indication */
+}
+
+
+/* Hover state for items - when the mouse is over a cell but it's not selected */
+QTableWidget::item:hover:!selected { /* Only apply hover if not selected to avoid conflict with selection styles */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: A very light hover, distinct from selection */
+    color: #212529;       /* --main-text */
+}
+
+
+/* Header sections of QTableWidget (column and row headers) */
+QHeaderView::section {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background of header sections */
+    color: #212529;       /* --main-text: Text color in headers */
+    padding: 4px; /* Padding within header sections */
+    border: 1px solid #DEE2E6; /* --hover-bg: Border for header sections */
+    font-weight: bold; /* Bold font for header text */
+}
+/* Corner button where horizontal and vertical headers meet in a QTableWidget */
+QTableWidget QTableCornerButton::section {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    border: 1px solid #DEE2E6; /* --hover-bg */
+}
+
+
+/* QTabWidget - For tabbed interfaces (e.g., ViewerPanel, Analysis/Optimization) -----------------------------------------*/
+/* The pane where the content of the current tab is displayed */
+QTabWidget::pane {
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around the tab content area */
+    background-color: #F8F9FA; /* --main-bg: Background of the content area */
+    padding: 5px;
+}
+/* Individual tabs in the QTabBar */
+QTabBar::tab {
+    background-color: #DEE2E6; /* --hover-bg: Background of inactive (non-selected) tabs */
+    color: #495057;       /* --secondary-text: Text color of inactive tabs */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border of inactive tabs */
+    border-bottom: none; /* Remove bottom border for standard tab appearance, selected tab will handle its bottom edge */
+    padding: 6px 10px; /* Default padding: 6px top/bottom, 10px left/right */
+    margin-right: 1px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+/* The currently selected tab */
+QTabBar::tab:selected {
+    background-color: #F8F9FA; /* --main-bg: Background of selected tab (to match pane) */
+    color: #212529;       /* --main-text: Text color of selected tab */
+
+    /* Maintain existing left and right borders from the base tab style */
+    border-left: 1px solid #CED4DA;   /* --border-pressed-bg */
+    border-right: 1px solid #CED4DA;  /* --border-pressed-bg */
+    
+    /* MODIFICATION: Add a prominent top border as an indicator */
+    border-top: 3px solid #6C757D; /* --accent-primary: Darker tone for top border highlight */
+
+    /* Ensure bottom border visually merges with the pane.
+       If pane has a top border, this makes the tab appear to sit on it.
+       If QTabWidget::pane has border: 1px solid #CED4DA;,
+       the selected tab's bottom border can be made transparent or match tab background.
+       The base 'border-bottom: none;' from QTabBar::tab is often sufficient.
+       Alternatively, to make it look like it "covers" the pane's top border: */
+    border-bottom: 1px solid #F8F9FA; /* Match selected tab background */
+
+
+    /* Adjust padding to maintain text vertical alignment.
+       Original top padding was 6px with a 1px top border. Total space above text = 7px.
+       New top border is 3px. To keep text at same position, new top padding = 7px - 3px = 4px. */
+    padding-top: 4px;    /* Adjusted top padding */
+    padding-bottom: 6px; /* Keep original bottom padding */
+    padding-left: 10px;  /* Keep original left padding */
+    padding-right: 10px; /* Keep original right padding */
+    
+    /* Margin to lift tab slightly to cover pane's top border if needed, often used with border-bottom change above */
+    /* margin-bottom: -1px; */
+}
+/* Hover state for non-selected tabs */
+QTabBar::tab:hover:!selected {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Slightly different hover for inactive tabs */
+}
+
+/* QMenuBar (general, e.g., main menu if not in custom title bar) and QMenu (dropdown menus) */
+/* Note: #TitleBarMenuBar styles above will override these for the specific menu bar in the title bar. */
+QMenuBar { /* Style for any other QMenuBar in the application */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background */
+    color: #212529;       /* --main-text: Text color */
+}
+QMenuBar::item { /* Top-level items in a generic QMenuBar */
+    background-color: transparent;
+    color: #212529;       /* --main-text */
+    padding: 4px 8px;
+}
+QMenuBar::item:selected { /* Hovered/selected top-level item */
+    background-color: #DEE2E6; /* --hover-bg */
+}
+QMenuBar::item:pressed { /* Pressed top-level item */
+    background-color: #CED4DA; /* --border-pressed-bg */
+}
+QMenu { /* QMenu (the dropdown part of a menu from any QMenuBar) */
+    background-color: #F8F9FA; /* --main-bg: Background of the dropdown menu itself */
+    border: 1px solid #ADB5BD; /* --disabled-subtle-border: Border for the dropdown menu */
+    color: #212529;       /* --main-text: Default text color for menu items */
+}
+QMenu::item { /* Individual items within a QMenu */
+    padding: 4px 20px;
+}
+QMenu::item:selected { /* Selected (hovered) item in a QMenu */
+    background-color: #6C757D; /* --accent-primary: Background for selected menu item */
+    color: #F8F9FA;       /* --accent-text-on-dark: Text color for selected menu item */
+}
+QMenu::separator { /* Separator line in a QMenu */
+    height: 1px;
+    background-color: #DEE2E6; /* --hover-bg: Color of the separator */
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+/* QTreeWidget (e.g., System Properties navigation) and QListWidget */
+QTreeWidget, QListWidget {
+    color: #212529;       /* --main-text: Default item text color */
+    background-color: #FFFFFF; /* --input-bg: Background of the list/tree view area */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around the widget */
+    /* alternate-background-color: #E9ECEF; */ /* --toolbar-sidebar-bg: For striped rows if setAlternateRowColors(true) */
+}
+QTreeWidget::item:hover, QListWidget::item:hover {
+    background-color: #DEE2E6; /* --hover-bg: Background of item on hover */
+}
+QTreeWidget::item:selected, QListWidget::item:selected {
+    background-color: #6C757D; /* --accent-primary: Background of selected item */
+    color: #F8F9FA;       /* --accent-text-on-dark: Text color of selected item */
+}
+
+/* QTextEdit (for displaying text, e.g., analysis results) */
+QTextEdit {
+    background-color: #FFFFFF; /* --input-bg: Background color */
+    color: #212529;       /* --main-text: Text color */
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border */
+    padding: 3px;
+}
+QTextEdit:read-only {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Different background if read-only */
+}
+
+/* Style for Matplotlib canvas if it's a QWidget with an objectName */
+#matplotlib_viewer_widget { /* This objectName must be set on the FigureCanvas widget in viewer_panel.py */
+    background-color: #FFFFFF; /* --input-bg: Background for the plot area */
+}
+
+/* Scrollbars - Basic styling for light theme */
+QScrollBar:horizontal {
+    border: 1px solid #CED4DA; /* --border-pressed-bg: Border around scrollbar */
+    background: #E9ECEF; /* --toolbar-sidebar-bg: Background of the scrollbar track */
+    height: 12px;
+    margin: 0px 12px 0 12px;
+}
+QScrollBar::handle:horizontal {
+    background: #ADB5BD; /* --disabled-subtle-border: Color of the draggable handle */
+    min-width: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { /* Arrow buttons */
+    border: 1px solid #CED4DA; /* --border-pressed-bg */
+    background: #DEE2E6; /* --hover-bg */
+    width: 12px;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:horizontal {
+    subcontrol-position: left;
+}
+QScrollBar:vertical {
+    border: 1px solid #CED4DA; /* --border-pressed-bg */
+    background: #E9ECEF; /* --toolbar-sidebar-bg */
+    width: 12px;
+    margin: 12px 0 12px 0;
+}
+QScrollBar::handle:vertical {
+    background: #ADB5BD; /* --disabled-subtle-border */
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { /* Arrow buttons */
+    border: 1px solid #CED4DA; /* --border-pressed-bg */
+    background: #DEE2E6; /* --hover-bg */
+    height: 12px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical {
+    subcontrol-position: top;
+}
+
+/* QSplitter - Handles between resizable sections/docks */
+QSplitter::handle {
+    background-color: #DEE2E6; /* --hover-bg: Color of the splitter handle */
+    border: 3px solid #212529; /* --border-pressed-bg: Optional border for the handle */
+}
+QSplitter::handle:horizontal {
+    width: 2px; /* Width of a horizontal splitter handle */
+}
+QSplitter::handle:vertical {
+    height: 2px; /* Height of a vertical splitter handle */
+}
+QSplitter::handle:pressed {
+    background-color: #6C757D; /* --accent-primary: Color when the handle is pressed/dragged */
+}
+
+/* Styling for Pagination Buttons in AnalysisPanel ------------------------------------------------ */
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton {
+    color: #000000; /* Black text for light theme */
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #c0c0c0;
+    border-radius: 3px; /* Optional: rounded corners */
+
+    /* --- Size Control via QSS (only if setFixedSize is removed from Python) --- */
+    min-width: 10px;
+    max-width: 10px;
+    min-height: 10px;
+    max-height: 10px;
+    /* If you prefer padding-based sizing (remove min/max width/height then):
+    padding: 8px;
+    */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+    border: 1px solid #b0b0b0;
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:pressed {
+    background-color: #d0d0d0; /* Even darker when pressed */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
+    color: #FFFFFF; /* White text when active/checked */
+    background-color: #0078d7; /* Blue background when active/checked */
+    border: 1px solid #005a9e;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - MPL Toolbar & Refresh Button (Light Theme)                */
+/* -------------------------------------------------------------------------- */
+
+/* Make the toolbar container transparent */
+#MPLToolbarInTitlebarContainer,
+#MPLToolbarInTitlebarContainer QToolBar {
+    background: transparent;
+    border: none;
+}
+
+/* Style all buttons on the MPL toolbar and the refresh button */
+#MPLToolbarInTitlebarContainer QToolButton {
+    background-color: #6C757D;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+/* Style for when the mouse is over the buttons */
+#MPLToolbarInTitlebarContainer QToolButton:hover,
+#RefreshPlotButton:hover {
+    background-color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #000000; /* Make icon slightly darker on hover */
+}
+
+/* Style for when a toggleable button (like Pan or Zoom) is active */
+#MPLToolbarInTitlebarContainer QToolButton:checked {
+    background-color: #cce7ff; /* A light blue to indicate selection */
+    border: 1px solid #007ACC;
+    color: #005a9e; /* A darker blue for the icon when checked */
+}
+
+
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton, #ToggleSettingsButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 2px;
+}
+
+#RefreshPlotButton:hover,  #ToggleSettingsButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,
+#RunAnalysisButton:hover {
+    background-color: #ADB5BD;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed, 
+#RunAnalysisButton:pressed, #ToggleSettingsButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#ViewerToolbarContainer,
+#ViewerToolbarContainer QToolBar {
+    background: transparent;
+    border: none;
+}
+
+/* Style all buttons on the 2D Viewer toolbar */
+#ViewerToolbarContainer QToolButton {
+    background-color: #6C757D;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+/* Style for when the mouse is over the buttons */
+#ViewerToolbarContainer QToolButton:hover {
+    background-color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #000000;
+}
+
+/* Style for when a toggleable button (like Pan or Zoom) is active */
+#ViewerToolbarContainer QToolButton:checked {
+    background-color: #cce7ff; /* A light blue to indicate selection */
+    border: 1px solid #007ACC;
+    color: #005a9e; /* A darker blue for the icon when checked */
+}
+
+QTableWidget QLineEdit {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    border-radius: 0px;
+    background-color: #FFFFFF; 
+    color: #212529; 
+}
+
+/* === Custom Dock Widget Title Bar (Light) === */
+QWidget#CustomDockTitleBar {
+    background-color: #4A4A4A; /* Dark gray background */
+    border: 5px solid #4A4A4A;
+    border-bottom: 1px solid #2E2E2E; /* Match surface color for seamless look */
+    padding: 0px 0px; /* Top/bottom, left/right padding */
+    height: 30px; /* Fixed height for title bar */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QWidget#CustomDockTitleBar QLabel {
+    color: #E0E0E0; /* Light text */
+    font-weight: bold;
+    font-size: 9pt; 
+    padding-left: 6px;
+    letter-spacing: 0.5px; /* Spacing between letters */
+    font-family: 'Segoe UI'; /* Modern font */
+}
+
+/* Dock Title Buttons */
+#DockMinimizeButton, #DockUndockButton, #DockCloseButton {
+    min-width: 10px;
+    max-width: 10px;
+    min-height: 10px;
+    max-height: 10px;
+    border-radius: 5px; /* Makes it a circle - half of width/height */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 0px 1px; /* Spacing between buttons */
+    padding: 0px;
+}
+
+#DockMinimizeButton:hover, #DockUndockButton:hover, #DockCloseButton:hover {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    /* Removed transform property as it's not supported in Qt stylesheets */
+}
+
+#DockMinimizeButton { background-color: #6C757D; } /* Green */
+#DockUndockButton { background-color: #F48F4F; } /* Yellow */
+#DockCloseButton { background-color: #ED695E; } /* Red */

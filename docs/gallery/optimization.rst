@@ -18,3 +18,4 @@ These examples demonstrate the optimization capabilities of optical systems usin
     optimization/asphere
     optimization/beam_expander
     optimization/freeform
+    optimization/glass_expert_example

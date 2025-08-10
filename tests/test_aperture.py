@@ -8,7 +8,12 @@ from .utils import assert_allclose
 
 @pytest.mark.parametrize(
     "ap_type, value",
-    [("EPD", 10), ("imageFNO", 3.2), ("objectNA", 0.265), ("float_by_stop_size", 1.142857)],
+    [
+        ("EPD", 10),
+        ("imageFNO", 3.2),
+        ("objectNA", 0.265),
+        ("float_by_stop_size", 1.142857),
+    ],
 )
 def test_aperture_generate(set_test_backend, ap_type, value):
     """Check instantiation of aperture"""

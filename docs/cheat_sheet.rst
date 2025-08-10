@@ -36,6 +36,8 @@ At its heart, Optiland revolves around a few key components:
 
 * **Coordinate Systems** (``CoordinateSystem``): Each surface has its own local coordinate system (LCS) defined by its position (x, y, z) and rotation (rx, ry, rz) relative to a reference system.
 
+* **Apodization** (``BaseApodization``): Defines the intensity distribution within the pupil. This is uniform (``UniformApodization``) by default, but other options include Gaussian (``GaussianApodization``).
+
 **Numerical Backend**
 
 * Optiland can use **NumPy** (default) or **PyTorch**.
@@ -163,8 +165,18 @@ Optiland can trace both paraxial and real rays.
 * **Real Rays**:
 
     * For detailed analysis, including aberrations.
-    * ``optic.trace(Hx, Hy, wavelength, num_rays, distribution)``: Traces a bundle.
-    * ``optic.trace_generic(Hx, Hy, Px, Py, wavelength)``: Traces a specific ray, defined by the normalized field and pupil coordinates, H, P, respectively.
+
+    * Example: Trace a bundle of rays
+
+        .. code-block:: python
+
+            optic.trace(Hx, Hy, wavelength, num_rays, distribution)
+
+    * Example: Trace a specific ray, defined by the normalized field and pupil coordinates.
+
+        .. code-block:: python
+
+            optic.trace_generic(Hx, Hy, Px, Py, wavelength)
 
 * **Advanced Ray Tracing** (``RealRays``, ``surface_group.trace``): For more control, create a ``RealRays`` object and trace using ``optic.surface_group.trace(rays)``.
 
@@ -219,19 +231,23 @@ See the :ref:`Example Gallery <example_gallery>` for a full overview of availabl
 Visualization
 -------------
 
-* **2D Layout (``optic.draw()``):**
+* **2D Layout** (``optic.draw()``):
 
     .. code-block:: python
 
         my_lens.draw(num_rays=5, distribution='line_y')
 
-* **3D Layout (``optic.draw3D()``):**
+* **3D Layout** (``optic.draw3D()``):
 
     .. code-block:: python
 
         my_lens.draw3D(num_rays=24, distribution='ring')
 
-* **Lens Data Table (``optic.info()``):** Prints surface data in a tabular format, resembling the commonly found Lens Data Editor (LDE).
+* **Lens Data Table** (``optic.info()``): Prints surface data in a tabular format, resembling the commonly found Lens Data Editor (LDE).
+
+    .. code-block:: python
+
+        my_lens.info()
 
 Advanced Features (Brief Overview)
 ----------------------------------

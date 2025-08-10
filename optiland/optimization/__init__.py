@@ -21,3 +21,4 @@ from .optimization import (
     SHGO,
     BasinHopping,
 )
+from .glass_expert import GlassExpert

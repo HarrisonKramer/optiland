@@ -65,6 +65,20 @@ class Surface:
         self.surface_type = surface_type
         self.comment = comment
 
+        self.thickness = 0.0  # used for surface positioning
+
+        self.reset()
+
+    def flip(self):
+        """Flips the surface, swapping materials and reversing geometry."""
+        self.material_pre, self.material_post = self.material_post, self.material_pre
+        self.geometry.flip()
+
+        if isinstance(self.coating, FresnelCoating):
+            self.set_fresnel_coating()
+        elif self.coating is not None and hasattr(self.coating, "flip"):
+            self.coating.flip()
+
         self.reset()
 
     def __init_subclass__(cls, **kwargs):
@@ -275,6 +289,7 @@ class Surface:
             "coating": self.coating.to_dict() if self.coating else None,
             "bsdf": self.bsdf.to_dict() if self.bsdf else None,
             "is_reflective": self.is_reflective,
+            "comment": self.comment,
         }
 
     @classmethod
@@ -327,4 +342,5 @@ class Surface:
             coating,
             bsdf,
             data["is_reflective"],
+            comment=data.get("comment", ""),
         )

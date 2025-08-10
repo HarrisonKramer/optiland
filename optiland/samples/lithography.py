@@ -1,12 +1,13 @@
-import numpy as np
-
+# Defines a sample UV projection lithography lens.
+import optiland.backend as be
 from optiland import materials, optic
 
 
 class UVProjectionLens(optic.Optic):
-    """UV projection lens for 248 nm lithography.
+    """A UV projection lens for 248 nm lithography.
 
-    Based on U.S. Patent #5831776
+    This design is based on U.S. Patent #5,831,776.
+    It features a large number of surfaces and is object-space telecentric.
     """
 
     def __init__(self):
@@ -16,7 +17,7 @@ class UVProjectionLens(optic.Optic):
         SiO2 = materials.IdealMaterial(n=1.5084, k=0)
 
         # Define all surfaces
-        self.add_surface(index=0, radius=np.inf, thickness=110.85883544)
+        self.add_surface(index=0, radius=be.inf, thickness=110.85883544)
         self.add_surface(index=1, radius=-737.7847, thickness=27.484, material=SiO2)
         self.add_surface(index=2, radius=-235.2891, thickness=0.916)
         self.add_surface(index=3, radius=211.1786, thickness=36.646, material=SiO2)
@@ -59,7 +60,7 @@ class UVProjectionLens(optic.Optic):
         self.add_surface(index=40, radius=78.6982, thickness=54.304)
         self.add_surface(index=41, radius=49.5443, thickness=18.65, material=SiO2)
         self.add_surface(index=42, radius=109.8136, thickness=13.07647896)
-        self.add_surface(index=43, radius=np.inf)
+        self.add_surface(index=43, radius=be.inf)
 
         # Define the aperture
         self.set_aperture(aperture_type="objectNA", value=0.133)

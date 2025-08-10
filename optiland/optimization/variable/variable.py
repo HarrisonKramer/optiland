@@ -16,6 +16,7 @@ from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariabl
 from optiland.optimization.variable.conic import ConicVariable
 from optiland.optimization.variable.decenter import DecenterVariable
 from optiland.optimization.variable.index import IndexVariable
+from optiland.optimization.variable.material import MaterialVariable
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.variable.radius import RadiusVariable
 from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVariable
@@ -82,7 +83,14 @@ class Variable:
         """This method returns a set of strings that are the names of allowed
         attributes.
         """
-        return {"surface_number", "coeff_number", "wavelength", "coeff_index", "axis"}
+        return {
+            "surface_number",
+            "coeff_number",
+            "wavelength",
+            "coeff_index",
+            "axis",
+            "glass_selection",
+        }
 
     def _get_variable(self):
         """Get the variable.
@@ -105,6 +113,7 @@ class Variable:
             "tilt": TiltVariable,
             "decenter": DecenterVariable,
             "index": IndexVariable,
+            "material": MaterialVariable,
             "asphere_coeff": AsphereCoeffVariable,
             "polynomial_coeff": PolynomialCoeffVariable,
             "chebyshev_coeff": ChebyshevCoeffVariable,

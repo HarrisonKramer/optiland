@@ -1,0 +1,676 @@
+/* Optiland Dark Theme */
+
+/* Global Colors - Hex values will be used directly based on these definitions
+    --background-color: #202020;
+    --surface-color: #2E2E2E;
+    --primary-color: #007ACC;
+    --secondary-color: #3C3C3C;
+    --text-color: #E0E0E0;
+    --border-color: #4A4A4A;
+    --hover-color: #5A5A5A;
+    --pressed-color: #6A6A6A;
+*/
+
+QMainWindow {
+    background-color: #202020; /* var(--background-color) */
+    color: #E0E0E0; /* var(--text-color) */
+}
+
+QMainWindow::separator {
+    /* This styles the draggable separator between dock widgets. */
+    /* Making it slightly wider and giving it a border makes it more visible. */
+    width: 2px;  /* Adjust width as needed */
+    height: 2px; /* Adjust height as needed */
+    background-color: #2E2E2E; /* A neutral dark color, adjust to your theme */
+    border: 1px solid #2E2E2E;   /* A border to define the separator's edges */
+    
+    /* Keep any other existing QMainWindow::separator properties. */
+}
+
+QMainWindow::separator:hover {
+    /* Optional: Highlight the separator on hover. */
+    background-color: #007ACC; 
+}
+
+QDockWidget {
+    border: 2px solid #007ACC;
+    border-radius: 4px;
+}
+
+QDockWidget > QWidget {
+    background-color: #2E2E2E;
+    border-bottom: 2px solid #4A4A4A;
+    border-left: 2px solid #4A4A4A;
+    border-right: 2px solid #4A4A4A;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+QDockWidget::title {
+    color: #E0E0E0; /* var(--text-color) */
+    padding: 6px 10px;
+    border: none;
+}
+
+QDockWidget::title:focus { /* Added for focused dock title */
+    background-color: #2E2E2E; /* var(--surface-color) */
+    border-top: 2px solid #007ACC; /* var(--primary-color), made consistent with light theme focus */
+    padding-top: 5px; /* Adjust padding for thicker border */
+}
+
+/* === Custom Title Bar Styles === */
+/* Main container for the custom title bar */
+#CustomTitleBar {
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg: Background for the title bar area */
+    border-bottom: 1px solid #CED4DA; /* --border-pressed-bg: Bottom border for separation */
+    /* Text color is inherited or set by specific child elements */
+}
+
+/* "Optiland" application title label */
+#TitleBarOptilandLabel {
+    color: #E0E0E0; /* --main-text */
+    font-weight: bold;
+    font-size: 12pt;
+    padding-left: 5px; /* Alignment */
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* QMenuBar embedded within the title bar */
+#TitleBarMenuBar {
+    color: #E0E0E0; /* --main-text: Text color for top-level menu bar items */
+    background-color: transparent; /* Blend with CustomTitleBar background */
+    
+    margin: 0px;
+    font-size: 10pt; /* Match general font size */
+}
+
+/* Individual top-level items in the #TitleBarMenuBar (e.g., "File", "Edit") */
+#TitleBarMenuBar::item {
+    color: #E0E0E0; /* --main-text */
+    background-color: transparent;
+    padding: 6px 10px; /* Padding for spacing and vertical centering feel */
+}
+
+/* Hovered top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:selected {
+    background-color: #5A5A5A; /* --hover-bg */
+}
+
+/* Pressed top-level menu bar item in #TitleBarMenuBar */
+#TitleBarMenuBar::item:pressed {
+    background-color: #6A6A6A; /* --border-pressed-bg */
+}
+
+/* Project name label */
+#TitleBarProjectLabel {
+    color: #E0E0E0; /* --project-label-text: USER SPECIFIED COLOR for project label text */
+    font-size: 8pt;
+    background-color: transparent; /* Ensure no overriding background from parent QWidget style */
+}
+
+/* Window control buttons: Minimize, Maximize, Close */
+#TitleBarMinimizeButton,
+#TitleBarMaximizeButton,
+#TitleBarCloseButton {
+    background-color: transparent;
+    color: #E0E0E0; /* --main-text: Icon/text color for buttons */
+    border: none;
+    font-weight: bold; /* Or use icons */
+    min-width: 30px; /* Fixed size for control buttons */
+    max-width: 30px;
+    min-height: 30px;
+    max-height: 30px;
+    padding: 0px;
+    margin: 0px; /* Remove extra margins if any */
+}
+
+/* Hover state for Minimize and Maximize buttons in TitleBar */
+#TitleBarMinimizeButton:hover,
+#TitleBarMaximizeButton:hover {
+    background-color: #4A4A4A; /* --hover-bg */
+}
+
+/* Hover state for the Close button in TitleBar */
+#TitleBarCloseButton:hover {
+    background-color: #E81123; /* --close-button-hover-bg: Standard red */
+    color: #F8F9FA;       /* --accent-text-on-dark: Light text on red background */
+}
+
+/* Pressed state for all window control buttons in TitleBar */
+#TitleBarMinimizeButton:pressed,
+#TitleBarMaximizeButton:pressed,
+#TitleBarCloseButton:pressed {
+    background-color: #4A4A4A; /* --border-pressed-bg */
+}
+/* === End of Custom Title Bar Styles === */
+
+/* Sidebar specific styling -----------------------------------------------------------------------------*/
+#SidebarWidget { /* Main sidebar container */
+    background-color: #E9ECEF; /* --toolbar-sidebar-bg */
+    border-right: 1px solid #CED4DA; /* --border-pressed-bg */
+}
+#SidebarTitleLabel { /* Title label like "|||" */
+    color: #E0E0E0;       /* --main-text */
+    font-weight: bold;
+    font-size: 11pt;
+    padding: 5px;
+    background-color: transparent; /* Ensure it inherits sidebar background */
+}
+#SidebarWidget QToolButton { /* Buttons within the sidebar */
+    color: #E0E0E0;       /* --main-text */
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 8px;
+    border-radius: 3px;
+    text-align: left; /* For expanded mode */
+    margin: 2px 0px;
+}
+#SidebarWidget QToolButton:hover {
+    background-color: #5A5A5A; /* --hover-bg */
+}
+#SidebarWidget QToolButton:checked,
+#SidebarWidget QToolButton:pressed {
+    background-color: transparent; /* Ensure background remains transparent */
+    color: #E0E0E0;               /* Text color remains the default dark (--main-text) */
+
+    /* Override the default 'border' from the base rule to set only the left border */
+    border-top: 1px solid transparent;    /* Keep other borders transparent */
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-left: 3px solid #007ACC;     /* --accent-primary: Highlight left border with a darker tone */
+
+    /* Adjust left padding to maintain visual text alignment.
+       Original padding: 8px. Original border: 1px transparent.
+       Content starts 1px + 8px = 9px from the edge.
+       New left border: 3px. To maintain 9px offset for content: 3px (border) + 6px (padding-left) = 9px.
+       So, other paddings remain 8px, left padding becomes 6px.
+    */
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 6px;
+}
+
+
+
+/* QToolBar (e.g., the "Quick Actions" toolbar, NOT the custom title bar acting as toolbar) --------------------------------*/
+QToolBar#QuickActionsToolbar { /* More specific selector if needed */
+    background-color: #2E2E2E; /* --toolbar-sidebar-bg: Background of the toolbar */
+    border: 1px solid #4A4A4A; /* --border-pressed-bg: Border around the toolbar */
+    padding: 2px; /* Padding inside the toolbar */
+    spacing: 3px; /* Spacing between toolbar items */
+}
+QToolBar#QuickActionsToolbar::handle {
+    /* image: url(:/path/to/handle_icon.png); You can style this if you use movable toolbars */
+}
+QToolBar#QuickActionsToolbar::separator {
+    height: 16px; /* Height of the separator line */
+    background-color: #4A4A4A; /* --border-pressed-bg: Color of the separator */
+    margin-left: 2px;  /* Margins around separator */
+    margin-right: 2px;
+    width: 1px; /* Thickness of separator */
+}
+/* QToolButton when placed inside the QuickActionsToolbar */
+QToolBar#QuickActionsToolbar QToolButton {
+    color: #E0E0E0;       /* --main-text: Text/icon color for toolbar buttons */
+    background-color: transparent; /* Transparent background by default */
+    border: 1px solid transparent; /* No border by default */
+    padding: 3px; /* Padding for the button content */
+}
+QToolBar#QuickActionsToolbar QToolButton:hover {
+    background-color: #4A4A4A; /* --hover-bg: Background on hover */
+    border: 1px solid #4A4A4A; /* --border-pressed-bg: Border on hover */
+}
+QToolBar#QuickActionsToolbar QToolButton:pressed {
+    background-color: #4A4A4A; /* --border-pressed-bg: Background when pressed */
+}
+QToolBar#QuickActionsToolbar QToolButton:checked { /* Style for checkable QToolButtons when checked */
+    background-color: #4A4A4A; /* --border-pressed-bg */
+    border: 1px solid #4A4A4A; /* --disabled-subtle-border: Darker border for checked state */
+}
+
+QTabWidget::pane {
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    background-color: #2E2E2E; /* var(--surface-color) */
+}
+
+QTabBar::tab {
+    background-color: #3C3C3C; /* var(--secondary-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    padding: 8px 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    border-bottom: none;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background-color: #2E2E2E; /* var(--surface-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    border-bottom: 1px solid #2E2E2E; /* var(--surface-color) - Blend with pane */
+    border-top: 2px solid #007ACC; /* var(--primary-color) - Added emphasis */
+    padding-top: 6px; /* Adjust padding to accommodate border */
+}
+
+QTabBar::tab:!selected:hover {
+    background-color: #5A5A5A; /* var(--hover-color) */
+}
+
+QLabel, QCheckBox, QRadioButton {
+    color: #E0E0E0; /* var(--text-color) */
+    background-color: transparent;
+    padding: 2px;
+}
+
+QPushButton {
+    background-color: #007ACC; /* var(--primary-color) */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #1095F5; /* Brighter hover - Kept specific hex as requested */
+}
+
+QPushButton:pressed {
+    background-color: #005090; /* Slightly deeper press - Kept specific hex as requested */
+}
+
+/* Style for non-accented buttons, if needed (e.g., secondary actions) */
+QPushButton.secondary {
+    background-color: #2E2E2E; /* var(--surface-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+}
+
+QPushButton.secondary:hover {
+    background-color: #5A5A5A; /* var(--hover-color) */
+    border-color: #6A6A6A; /* var(--pressed-color) for border on hover for secondary */
+}
+
+QPushButton.secondary:pressed {
+    background-color: #6A6A6A; /* var(--pressed-color) */
+}
+
+
+QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background-color: #3C3C3C; /* var(--secondary-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    padding: 5px;
+    border-radius: 3px;
+}
+
+QLineEdit:focus, QTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid #007ACC; /* var(--primary-color) */
+    background-color: #2E2E2E; /* var(--surface-color) for focused input field */
+}
+
+QComboBox::drop-down {
+    border: none;
+    background-color: transparent;
+    width: 20px;
+}
+
+QComboBox::down-arrow {
+    /* For a cleaner look, consider using an SVG icon or a font icon if possible.
+       For now, let's try to make it a simple character or remove if it looks bad. */
+    image: none;
+}
+/* A simple triangle character as an arrow (works on some platforms)
+QComboBox::down-arrow {
+      symbol: ▼; For a more robust solution, an SVG icon is better.
+}
+*/
+
+QTableWidget {
+    background-color: #2E2E2E; /* var(--surface-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    gridline-color: #4A4A4A; /* var(--border-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    border-radius: 3px;
+}
+
+QHeaderView::section {
+    background-color: #252525; /* Darker shade for header */
+    color: #E0E0E0; /* var(--text-color) */
+    padding: 6px;
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    border-bottom: 2px solid #4A4A4A; /* var(--border-color), slightly thicker bottom */
+    font-weight: bold;
+}
+
+QTableWidget::item {
+    padding: 5px;
+    border-bottom: 1px solid #4A4A4A; /* var(--border-color) */
+}
+
+QTableWidget::item:selected {
+    background-color: #007ACC; /* var(--primary-color) */
+    color: white;
+}
+
+QScrollBar:vertical {
+    background: #2E2E2E; /* var(--surface-color) */
+    width: 12px;
+    margin: 0px 0px 0px 0px;
+    border-left: 1px solid #4A4A4A; /* var(--border-color) */
+}
+QScrollBar::handle:vertical {
+    background: #5A5A5A; /* var(--hover-color) */
+    min-height: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #007ACC; /* var(--primary-color) */
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+
+QScrollBar:horizontal {
+    background: #2E2E2E; /* var(--surface-color) */
+    height: 12px;
+    margin: 0px 0px 0px 0px;
+    border-top: 1px solid #4A4A4A; /* var(--border-color) */
+}
+QScrollBar::handle:horizontal {
+    background: #5A5A5A; /* var(--hover-color) */
+    min-width: 25px;
+    border-radius: 6px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #007ACC; /* var(--primary-color) */
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: none;
+}
+
+QMenu {
+    background-color: #2E2E2E; /* var(--surface-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 5px 20px 5px 20px;
+}
+
+QMenu::item:selected {
+    background-color: #007ACC; /* var(--primary-color) */
+    color: white;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #4A4A4A; /* var(--border-color) */
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+QMenuBar {
+    background-color: #2E2E2E; /* var(--surface-color) */
+    color: #E0E0E0; /* var(--text-color) */
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+QMenuBar::item:selected { /* When menu is open */
+    background-color: #007ACC; /* var(--primary-color) */
+    color: white;
+}
+
+QMenuBar::item:pressed { /* When menu title is clicked */
+    background-color: #007ACC; /* var(--primary-color) */
+    color: white;
+}
+
+/* Tooltip style */
+QToolTip {
+    background-color: #3C3C3C; /* var(--secondary-color) */
+    color: #E0E0E0; /* var(--text-color) */
+    border: 1px solid #4A4A4A; /* var(--border-color) */
+    padding: 4px;
+    border-radius: 3px;
+}
+
+/* Specific widget styling if needed */
+QWidget#matplotlib_viewer_widget { /* Ensure this ID is set on the Matplotlib widget in Python */
+    background-color: #2E2E2E; /* var(--surface-color), or --background-color if needs to be darker */
+}
+
+/* Styling for Pagination Buttons in AnalysisPanel ------------------------------------------------------ */
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton {
+    /* --- Explicit Box Size Control --- */
+    width: 20px;        /* Exact width of the button box */
+    height: 20px;       /* Exact height of the button box */
+    min-width: 20px;    /* Ensure minimum width */
+    max-width: 20px;    /* Ensure maximum width */
+    min-height: 20px;   /* Ensure minimum height */
+    max-height: 20px;   /* Ensure maximum height */
+
+    /* --- Text Properties --- */
+    color: #000000;     /* Example: Black text color for light theme */
+    font-size: 8pt;    /* Example: Explicitly set font size if needed */
+                         /* Adjust as necessary */
+
+    /* --- Other Appearance Properties --- */
+    background-color: #f0f0f0;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px; /* Slightly more rounded for a larger button */
+    padding: 0px;       /* Reset padding if fixed size is used,
+                           or set padding if you want space around text within the box */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:hover {
+    background-color: #5a5a5a; /* Slightly lighter on hover */
+    border: 1px solid #707070;
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:pressed {
+    background-color: #6a6a6a; /* Even lighter when pressed */
+}
+
+AnalysisPanel QScrollArea#PageButtonsScrollArea QPushButton:checked {
+    color: #FFFFFF; /* White text when active/checked */
+    background-color: #0078d7; /* Blue background when active/checked (same as light theme example) */
+    /* Or a theme-appropriate highlight color for dark mode, e.g., a brighter blue or different color */
+    /* background-color: #1e90ff; */
+    border: 1px solid #005a9e;
+}
+AnalysisPanel QPushButton#ToggleSettingsButton {
+    background-color: transparent; /* Makes the background transparent */
+    border: none;                  /* Removes any border */
+    padding: 0px;                  /* Adjust padding if needed, 0px for minimal space */
+    margin: 0px;                   /* Adjust margin if needed */
+    color: #E0E0E0; 
+}
+AnalysisPanel QPushButton#ToggleSettingsButton:hover {
+    background-color: #5A5A5A; /* Subtle light semi-transparent highlight for dark theme */
+    border-radius: 3px; /* Optional: if you want the highlight to have rounded corners */
+}
+
+AnalysisPanel QPushButton#ToggleSettingsButton:checked { /* If you used checkable state styling before */
+    background-color: transparent;
+    border: none;
+}
+
+AnalysisPanel > QFrame#MainSeparatorLine {
+    /* styles */
+}
+
+/* Plot Area Title Bar (containing title, toolbar, settings toggle) */
+/* You might not need to style plot_area_title_bar_layout directly unless for spacing */
+
+/* Separator line below the plot title/toolbar row */
+AnalysisPanel QFrame#PlotDisplayFrame QFrame#TitlePlotSeparatorLine {
+    max-height: 1px;
+    border: none; 
+    border-top: 1px solid #555555; /* Dark theme example */
+    /* border-top: 1px solid #cccccc; */ /* Light theme example */
+    margin-top: 3px; 
+    margin-bottom: 3px; 
+}
+
+/* Matplotlib Toolbar Container (now inside the title bar layout) */
+AnalysisPanel QFrame#PlotDisplayFrame QWidget#MPLToolbarInTitlebarContainer {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin-left: 5px; /* Add some space between title and toolbar */
+    margin-right: 5px; /* Add some space between toolbar and stretch/settings_toggle */
+}
+
+/* Matplotlib Navigation Toolbar (QToolBar) */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle { /* New object name if you change it */
+    background-color: transparent;
+    border: none;
+    padding: 0px; /* Minimal padding for the toolbar itself */
+    margin: 0px;
+    min-height: 20px;  /* Attempt to make it thinner */
+    max-height: 20px;
+}
+
+/* Buttons within the Matplotlib Toolbar */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton {
+    padding: 0px 1px;   /* Minimal padding: top/bottom 0, left/right 1 */
+    margin: 0px 0px;    /* No margin between buttons for tighter packing */
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+}
+/* ... (hover, pressed, checked states for QToolButton as before) ... */
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:hover {
+    background-color: rgba(100, 100, 100, 0.15); 
+    /* background-color: rgba(0, 0, 0, 0.1); */ 
+    border: 1px solid rgba(120, 120, 120, 0.5);
+}
+
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:pressed,
+AnalysisPanel QFrame#PlotDisplayFrame QToolBar#AnalysisPlotToolbarTitle QToolButton:checked {
+    background-color: rgba(0, 120, 215, 0.2); 
+    border: 1px solid rgba(0, 120, 215, 0.7);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Settings Button Background (Dark Theme)           */
+/* -------------------------------------------------------------------------- */
+
+#ToggleSettingsButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+#ToggleSettingsButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#ToggleSettingsButton:pressed {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* -------------------------------------------------------------------------- */
+/* Analysis Panel - Fix for Refresh Button Background (Dark Theme)            */
+/* -------------------------------------------------------------------------- */
+
+#RefreshPlotButton, #RunAllAnalysisButton, #StopAnalysisButton,
+#RunAnalysisButton {
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+#RefreshPlotButton:hover, #RunAllAnalysisButton:hover, #StopAnalysisButton:hover,  
+#RunAnalysisButton:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#RefreshPlotButton:pressed, #RunAllAnalysisButton:pressed, #StopAnalysisButton:pressed,
+#RunAnalysisButton:pressed  {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+QTableWidget QLineEdit {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    border-radius: 1px;
+    background-color: #3C3C3C;
+    color: #E0E0E0; 
+}
+
+/* === Custom Dock Widget Title Bar (Dark) === */
+QWidget#CustomDockTitleBar {
+    background-color: #4A4A4A; /* Dark gray background */
+    border: 5px solid #4A4A4A;
+    border-bottom: 1px solid #2E2E2E; /* Match surface color for seamless look */
+    padding: 0px 0px; /* Top/bottom, left/right padding */
+    height: 30px; /* Fixed height for title bar */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QWidget#CustomDockTitleBar QLabel {
+    color: #E0E0E0; /* Light text */
+    font-weight: bold;
+    font-size: 9pt; 
+    padding-left: 6px;
+    letter-spacing: 0.5px; /* Spacing between letters */
+    font-family: 'Segoe UI'; /* Modern font */
+}
+
+/* Dock Title Buttons */
+#DockMinimizeButton, #DockUndockButton, #DockCloseButton {
+    min-width: 10px;
+    max-width: 10px;
+    min-height: 10px;
+    max-height: 10px;
+    border-radius: 5px; /* Makes it a circle - half of width/height */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 0px 1px; /* Spacing between buttons */
+    padding: 0px;
+}
+
+#DockMinimizeButton:hover, #DockUndockButton:hover, #DockCloseButton:hover {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    /* Removed transform property as it's not supported in Qt stylesheets */
+}
+
+#DockMinimizeButton { background-color: #D9D9D9; } /* Green */
+#DockUndockButton { background-color: #F48F4F; } /* Yellow */
+#DockCloseButton { background-color: #ED695E; } /* Red */
+
+QFrame#TitleBarSeparator {
+    background-color: #E0E0E0; /* Change this color */
+    max-width: 2px;           /* This is the thickness */
+    max-height: 15px;         /* This is the length/height */
+    border: none;
+}
+
+/* --- Title Bar Icon-Only Buttons --- */
+QToolButton#TitleBarSettingsButton,
+QToolButton#TitleBarGitHubButton,
+QToolButton#TitleBarHelpButton {
+    background-color: transparent;
+    border: none;
+    padding: 2px;
+}
+
+QToolButton#TitleBarSettingsButton:hover,
+QToolButton#TitleBarGitHubButton:hover,
+QToolButton#TitleBarHelpButton:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Faint highlight on hover */
+    border-radius: 4px;
+}

@@ -46,12 +46,12 @@ def test_coordinate_system_localize(set_test_backend):
     cs = CoordinateSystem(10, 20, 30, 0.5, 0.6, 0.7, ref_cs)
     rays = RealRays(1, 2, 3, 0.1, 0.2, 0.3, 1, 1)
     cs.localize(rays)
-    assert_allclose(rays.x, -1.826215)       
-    assert_allclose(rays.y, -26.51361)      
-    assert_allclose(rays.z, -32.55361)      
-    assert_allclose(rays.L, -0.0122750)     
-    assert_allclose(rays.M, 0.2697627)      
-    assert_allclose(rays.N, 0.2589931)      
+    assert_allclose(rays.x, -1.826215)
+    assert_allclose(rays.y, -26.51361)
+    assert_allclose(rays.z, -32.55361)
+    assert_allclose(rays.L, -0.0122750)
+    assert_allclose(rays.M, 0.2697627)
+    assert_allclose(rays.N, 0.2589931)
 
 
 def test_coordinate_system_globalize(set_test_backend):
@@ -80,12 +80,12 @@ def test_coordinate_system_globalize(set_test_backend):
         1,
     )
     cs.globalize(rays)
-    assert_allclose(rays.x, 4.654692)        
-    assert_allclose(rays.y, -12.50279)      
-    assert_allclose(rays.z, 21.51751)       
-    assert_allclose(rays.L, 0.0866579)      
-    assert_allclose(rays.M, 0.3526931)      
-    assert_allclose(rays.N, 0.08998877)    
+    assert_allclose(rays.x, 4.654692)
+    assert_allclose(rays.y, -12.50279)
+    assert_allclose(rays.z, 21.51751)
+    assert_allclose(rays.L, 0.0866579)
+    assert_allclose(rays.M, 0.3526931)
+    assert_allclose(rays.N, 0.08998877)
 
 
 def test_coordinate_system_transform(set_test_backend):

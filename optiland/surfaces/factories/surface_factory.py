@@ -41,7 +41,7 @@ class SurfaceFactory:
         # CoordinateSystemFactory requires access to SurfaceFactory attributes
         self._coordinate_factory = CoordinateSystemFactory(self)
         self._geometry_factory = GeometryFactory()
-        self._material_factory = MaterialFactory()
+        self.material_factory = MaterialFactory()
         self._coating_factory = CoatingFactory()
 
         self.use_absolute_cs = False
@@ -64,7 +64,7 @@ class SurfaceFactory:
             ValueError: If the index is greater than the number of surfaces.
         """
         if index > self._surface_group.num_surfaces:
-            raise ValueError("Surface index cannot be greater than number of surfaces.")
+            raise IndexError("Surface index cannot be greater than number of surfaces.")
 
         # Build coordinate system
         coordinate_system = self._coordinate_factory.create(
@@ -72,7 +72,7 @@ class SurfaceFactory:
         )
 
         # Build pre and post surface materials
-        material_pre, material_post = self._material_factory.create(
+        material_pre, material_post = self.material_factory.create(
             index, material, self._surface_group
         )
 
@@ -108,13 +108,13 @@ class SurfaceFactory:
         if index == 0:
             if surface_type == "paraxial":
                 raise ValueError("Paraxial surface cannot be the object surface.")
-            return ObjectSurface(geometry, material_post, comment)
-
-        common_params = {"aperture": kwargs.get("aperture")}
+            surface_obj = ObjectSurface(geometry, material_post, comment)
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
 
         # Create the appropriate surface type
         if surface_type == "paraxial":
-            return ParaxialSurface(
+            surface_obj = ParaxialSurface(
                 kwargs["f"],
                 geometry,
                 material_pre,
@@ -123,10 +123,13 @@ class SurfaceFactory:
                 is_reflective=is_reflective,
                 coating=coating,
                 surface_type=surface_type,
-                **common_params,
+                aperture=kwargs.get("aperture"),
             )
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
 
-        return Surface(
+        # Standard surface - `surface_type` indicates geometrical shape of surface
+        surface_obj = Surface(
             geometry,
             material_pre,
             material_post,
@@ -135,5 +138,9 @@ class SurfaceFactory:
             coating=coating,
             surface_type=surface_type,
             comment=comment,
-            **common_params,
+            aperture=kwargs.get("aperture"),
         )
+
+        # Add the thickness as an attribute to the surface
+        surface_obj.thickness = kwargs.get("thickness", 0.0)
+        return surface_obj

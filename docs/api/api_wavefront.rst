@@ -9,6 +9,10 @@ including wavefront error, Zernike decomposition, point spread function (PSF) an
    :caption: OPD, PSF, MTF Modules
 
    mtf
-   psf
+   psf.fft
+   psf.huygens_fresnel
    wavefront
-   zernike
+   zernike.fit
+   zernike.fringe
+   zernike.noll
+   zernike.standard

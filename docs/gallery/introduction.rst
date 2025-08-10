@@ -17,4 +17,6 @@ The following sections are covered:
 7. :ref:`Tolerancing <gallery_tolerancing>`
 8. :ref:`Freeform <gallery_freeforms>`
 9. :ref:`Differentiable Ray Tracing <gallery_drt>`
-10. :ref:`Miscellaneous <gallery_miscellaneous>`
+10. :ref:`Real-World Projects <gallery_projects>`
+11. :ref:`External Tools Using Optiland <gallery_external_tools>`
+12. :ref:`Miscellaneous <gallery_miscellaneous>`

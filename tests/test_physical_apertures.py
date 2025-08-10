@@ -63,13 +63,14 @@ class TestRadialAperture:
         assert aperture.r_min == 2
         assert isinstance(aperture, RadialAperture)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view(self, mock_show):
+    def test_view(self):
         aperture = RadialAperture(r_max=5, r_min=2)
-        aperture.view()
-        plt.show()
-        mock_show.assert_called_once()
-        plt.close()
+        fig, ax = aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_extent(self, set_test_backend):
         aperture = RadialAperture(r_max=5, r_min=2)
@@ -136,6 +137,15 @@ class TestOffsetRadialAperture:
         aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
         assert aperture.extent == (-4, 6, -4, 6)
 
+    def test_view(self):
+        aperture = OffsetRadialAperture(r_max=5, r_min=2, offset_x=1, offset_y=1)
+        fig, ax = aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestBooleanApertures:
     def setup_method(self, set_test_backend):
@@ -190,6 +200,31 @@ class TestBooleanApertures:
 
         difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
         assert difference_aperture.extent == (-1, 1, -1, 1)
+
+    def test_view(self, set_test_backend):
+        union_aperture = UnionAperture(self.aperture1, self.aperture2)
+        fig, ax = union_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+        intersection_aperture = IntersectionAperture(self.aperture1, self.aperture2)
+        fig, ax = intersection_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+        difference_aperture = DifferenceAperture(self.aperture1, self.aperture2)
+        fig, ax = difference_aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestRectangularAperture:
@@ -250,6 +285,14 @@ class TestRectangularAperture:
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestEllipticalAperture:
     def setup_method(self, set_test_backend):
@@ -305,6 +348,14 @@ class TestEllipticalAperture:
     def test_extent(self, set_test_backend):
         assert self.aperture.extent == (-1, 1, -0.5, 0.5)
 
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
 
 class TestPolygonAperture:
     @pytest.fixture(autouse=True)
@@ -353,6 +404,14 @@ class TestPolygonAperture:
 
     def test_extent(self):
         assert self.aperture.extent == (-10, 10, -15, 15)
+
+    def test_view(self, set_test_backend):
+        fig, ax = self.aperture.view()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
 
 class TestFileAperture:
@@ -415,11 +474,14 @@ class TestConfigureAperture:
     def test_none_input(self, set_test_backend):
         assert configure_aperture(None) is None
 
-    @pytest.mark.parametrize("scalar_input, expected_r_max", [
-        (2, 1.0),
-        (0.0, 0.0),
-        (3.5, 1.75),
-    ])
+    @pytest.mark.parametrize(
+        "scalar_input, expected_r_max",
+        [
+            (2, 1.0),
+            (0.0, 0.0),
+            (3.5, 1.75),
+        ],
+    )
     def test_scalar_input(self, set_test_backend, scalar_input, expected_r_max):
         result = configure_aperture(scalar_input)
         assert isinstance(result, RadialAperture)
@@ -429,20 +491,26 @@ class TestConfigureAperture:
         class DummyAperture(BaseAperture):
             def contains(self, x, y):
                 pass
+
             def extent(self):
                 pass
+
             def scale(self, scale_factor):
                 pass
+
         ap = DummyAperture()
         assert configure_aperture(ap) is ap
 
-    @pytest.mark.parametrize("invalid_input", [
-        "circle",
-        [1, 2],
-        {"r": 1},
-        object(),
-        set([1.0]),
-    ])
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            "circle",
+            [1, 2],
+            {"r": 1},
+            object(),
+            set([1.0]),
+        ],
+    )
     def test_invalid_input_raises_value_error(self, set_test_backend, invalid_input):
         with pytest.raises(ValueError, match="Invalid `aperture` provided"):
             configure_aperture(invalid_input)
@@ -451,12 +519,16 @@ class TestConfigureAperture:
         class CustomAperture(BaseAperture):
             def __init__(self):
                 self.special = True
+
             def contains(self, x, y):
                 pass
+
             def extent(self):
                 pass
+
             def scale(self, scale_factor):
                 pass
+
         ap = CustomAperture()
         result = configure_aperture(ap)
         assert result is ap

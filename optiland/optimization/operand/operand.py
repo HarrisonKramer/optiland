@@ -37,6 +37,7 @@ METRIC_DICT = {
     "XPD": ParaxialOperand.XPD,
     "XPL": ParaxialOperand.XPL,
     "magnification": ParaxialOperand.magnification,
+    "total_track": ParaxialOperand.total_track,
     "seidel": AberrationOperand.seidels,
     "TSC": AberrationOperand.TSC,
     "SC": AberrationOperand.SC,

@@ -1,0 +1,17 @@
+name: sphinx-build
+channels:
+    - conda-forge
+dependencies:
+    - ipython=8.26.0
+    - nbsphinx=0.9.5
+    - sphinx=7.4.7
+    - sphinx-gallery=0.17.1
+    - sphinx-rtd-theme=2.0.0
+    - micromamba=2.0.5
+    - pip
+    - pandoc
+    - Pygments=2.18.0
+    - pip:
+        - jupyterlite-sphinx
+        - jupyterlite-xeus >=2.1.2
+        - ..

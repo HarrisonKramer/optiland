@@ -76,7 +76,7 @@ class ParaxialRayTracer:
             pos = pos[-1] - be.flip(pos)
             surfs = surfs[::-1]
 
-        power = be.diff(n, prepend=be.array([1])) / R
+        power = be.diff(n, prepend=be.array([n[0]])) / R
 
         heights = []
         slopes = []
@@ -163,7 +163,7 @@ class ParaxialRayTracer:
         Returns:
             np.ndarray: The processed input.
         """
-        if isinstance(x, (int, float)):
+        if isinstance(x, int | float):
             return be.array([x])
         else:
             return be.array(x)
