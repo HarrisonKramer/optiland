@@ -4,8 +4,9 @@ This module defines the ZernikeOPD class.
 Kramer Harrison, 2024
 """
 
-from optiland.wavefront.opd import OPD
 from optiland.zernike import ZernikeFit
+
+from .opd import OPD
 
 
 class ZernikeOPD(ZernikeFit, OPD):

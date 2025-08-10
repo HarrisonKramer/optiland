@@ -9,7 +9,8 @@ import numpy as np
 from scipy.interpolate import griddata
 
 import optiland.backend as be
-from optiland.wavefront.wavefront import Wavefront
+
+from .wavefront import Wavefront
 
 
 class OPD(Wavefront):

@@ -1,5 +1,5 @@
 """
-Wavefront subpackage for Optiland.
+Wavefront Modules.
 
 This subpackage contains modules for wavefront analysis, including OPD (Optical
 Path Difference) calculations, Zernike polynomial fitting, and related data

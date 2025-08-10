@@ -37,7 +37,13 @@ class ChiefRayReferenceSphereCalculator(ReferenceSphereCalculator):
     Calculates the reference sphere based on the chief ray.
     """
 
-    def calculate(self, pupil_z):
+    def __init__(self, optic):
+        super().__init__(optic)
+
+        # Z location of the exit pupil
+        self.pupil_z = optic.paraxial.XPL() + optic.surface_group.positions[-1]
+
+    def calculate(self):
         """
         Determine reference sphere center and radius from chief ray.
         """
@@ -46,7 +52,7 @@ class ChiefRayReferenceSphereCalculator(ReferenceSphereCalculator):
         z = self.optic.surface_group.z[-1, :]
         if be.size(x) != 1:
             raise ValueError("Chief ray cannot be determined. It must be traced alone.")
-        R = be.sqrt(x**2 + y**2 + (z - pupil_z) ** 2)
+        R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
         return x, y, z, R
 
 

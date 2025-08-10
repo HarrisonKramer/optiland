@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
-from optiland.wavefront.wavefront import Wavefront
+
+from .wavefront import Wavefront
 
 
 class OPDFan(Wavefront):

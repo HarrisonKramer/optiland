@@ -91,12 +91,11 @@ class Wavefront:
 
     def _generate_data(self):
         """Generate wavefront data for all fields and wavelengths."""
-        pupil_z = self.optic.paraxial.XPL() + self.optic.surface_group.positions[-1]
         for field in self.fields:
             for wl in self.wavelengths:
                 # trace chief ray and get reference sphere
                 self._trace_chief_ray(field, wl)
-                xc, yc, zc, R = self.ref_sphere_calculator.calculate(pupil_z)
+                xc, yc, zc, R = self.ref_sphere_calculator.calculate()
 
                 # reference OPD (chief ray)
                 opd_ref, _ = self._get_path_length(xc, yc, zc, R, wl)
