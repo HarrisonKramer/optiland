@@ -227,7 +227,7 @@ class BestFitStrategy(ReferenceStrategy):
         opd_ref = be.min(opd)
 
         # 5. Normalize OPD and calculate pupil coordinates
-        opd_wv = (opd - opd_ref) / (wavelength * 1e-3)
+        opd_wv = (opd_ref - opd) / (wavelength * 1e-3)
         t = opd_img / self.n_image
         pupil_x = rays.x - t * rays.L
         pupil_y = rays.y - t * rays.M
