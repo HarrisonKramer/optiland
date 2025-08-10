@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from unittest.mock import patch
 
 import optiland.backend as be
-from optiland.mtf import GeometricMTF, FFTMTF
+from optiland.mtf import GeometricMTF, FFTMTF, HuygensMTF
 from optiland.samples.objectives import CookeTriplet
 
 # Parametrize every test over the two backends
@@ -106,3 +106,29 @@ class TestFFTMTF:
 
         assert m.num_rays == expected_pupil_sampling
         assert m.grid_size == 2 * num_rays
+
+
+class TestHuygensMTF:
+
+    def test_view_mtf_defaults(self, set_test_backend, optic):
+        if be.get_backend() == "torch":
+            pytest.skip("HuygensMTF only supports numpy backend")
+        m = HuygensMTF(optic, num_rays=16, image_size=16)
+        fig, ax = m.view()
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_generate_data(self, set_test_backend, optic):
+        if be.get_backend() == "torch":
+            pytest.skip("HuygensMTF only supports numpy backend")
+        m = HuygensMTF(optic, num_rays=16, image_size=16)
+        assert hasattr(m, "mtf") and m.mtf is not None
+
+    def test_torch_backend_raises_error(self, set_test_backend, optic):
+        if be.get_backend() == "numpy":
+            pytest.skip("Test only applicable for torch backend")
+        with pytest.raises(ValueError):
+            HuygensMTF(optic)
