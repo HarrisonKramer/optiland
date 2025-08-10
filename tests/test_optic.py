@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 import optiland.backend as be
 
 from optiland.apodization import UniformApodization, GaussianApodization
@@ -519,3 +520,16 @@ class TestOptic:
         lens.flip()
         assert lens.pickups.pickups[0].source_surface_idx == 2
         assert lens.pickups.pickups[0].target_surface_idx == 1
+
+    @patch('optiland.optic.optic.SurfaceSagViewer')
+    def test_plot_surface_sag(self, mock_viewer, set_test_backend):
+        lens = singlet_infinite_object()
+        
+        lens.plot_surface_sag(
+            surface_index=1,
+            y_cross_section=2.0,
+            x_cross_section=-2.0
+        )
+        mock_viewer.assert_called_once_with(lens)
+        viewer_instance = mock_viewer.return_value
+        viewer_instance.view.assert_called_once_with(1, 2.0, -2.0)

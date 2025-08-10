@@ -20,6 +20,18 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.base import BaseGeometry
 
 
+def _is_radius_infinite(radius):
+    """Checks if the given radius represents an infinite radius (a plane)."""
+    is_inf_tensor = be.isinf(radius)
+    if hasattr(is_inf_tensor, "ndim") and is_inf_tensor.ndim > 0:
+        return bool(be.all(is_inf_tensor))
+    return (
+        bool(is_inf_tensor.item())
+        if hasattr(is_inf_tensor, "item")
+        else bool(is_inf_tensor)
+    )
+
+
 class StandardGeometry(BaseGeometry):
     """Represents a standard geometry with a given coordinate system, radius, and
     conic.
@@ -83,6 +95,10 @@ class StandardGeometry(BaseGeometry):
             to its intersection point with the geometry.
 
         """
+        if _is_radius_infinite(self.radius):
+            # intersection with the plane z=0 is z0 + t*Nz = 0
+            N_safe = be.where(be.abs(rays.N) > 1e-14, rays.N, 1e-14)
+            return -rays.z / N_safe
         a = self.k * rays.N**2 + rays.L**2 + rays.M**2 + rays.N**2
         b = (
             2 * self.k * rays.N * rays.z

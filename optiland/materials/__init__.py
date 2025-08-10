@@ -9,6 +9,7 @@ from .material import Material
 from .material_file import MaterialFile
 from .material_utils import (
     downsample_glass_map,
+    find_closest_glass,
     get_nd_vd,
     get_neighbour_glasses,
     glasses_selection,
@@ -35,4 +36,5 @@ __all__ = [
     "get_neighbour_glasses",
     "glasses_selection",
     "plot_glass_map",
+    find_closest_glass,
 ]

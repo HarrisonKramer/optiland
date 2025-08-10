@@ -22,6 +22,8 @@
     <file alias="dark/add.svg">icons/dark/add.svg</file>
     <file alias="dark/flash.svg">icons/dark/flash.svg</file>
     <file alias="dark/add_quick_action.svg">icons/dark/add_quick_action.svg</file>
+    <file alias="dark/tool.svg">icons/dark/tool.svg</file>
+    <file alias="dark/minimize.svg">icons/dark/minimize.svg</file>
 
 
     <file alias="light/dash.svg">icons/light/dash.svg</file>
@@ -46,8 +48,13 @@
     <file alias="light/add.svg">icons/light/add.svg</file>
     <file alias="light/flash.svg">icons/light/flash.svg</file>
     <file alias="light/add_quick_action.svg">icons/light/add_quick_action.svg</file>
-
-
+    <file alias="light/tool.svg">icons/light/tool.svg</file>
+    <file alias="light/minimize.svg">icons/light/minimize.svg</file>
 
 </qresource>
+
+<qresource prefix="/images">
+    <file>logo.png</file>
+  </qresource>
+
 </RCC>

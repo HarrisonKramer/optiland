@@ -53,7 +53,7 @@ If you require GPU acceleration, you must install a CUDA‑enabled PyTorch build
    pip install optiland
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-Note that this PyTorch install command is not guaranteed to be up-to-date. Refer to https://pytorch.org/get-started/locally/ for the latest, as well as for other CUDA versions and platforms.
+Note that this command installs PyTorch with CUDA 11.8. This command may not be correct for your system. Refer to https://pytorch.org/get-started/locally/ for the latest installation instructions for your platform.
 
 Installing from Source
 ----------------------
