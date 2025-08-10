@@ -153,7 +153,7 @@ class IncoherentIrradiance(BaseAnalysis):
         """
         if not self.data:
             print("No irradiance data to display.")
-            return None, None
+            return None
 
         cs_info = self._validate_cross_section_request(cross_section)
         vmin_plot, vmax_plot = self._calculate_plot_limits(normalize)

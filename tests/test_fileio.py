@@ -99,7 +99,7 @@ class TestZemaxFileReader:
         zemax_file_reader.source = filename
         zemax_file_reader._configure_source_input()
 
-        mock_requests_get.assert_called_once_with(filename)
+        mock_requests_get.assert_called_once_with(filename, timeout=10)
         temp_file.write.assert_called_once_with(b"Test content")
         assert zemax_file_reader.filename == "temp.zmx"
 
@@ -128,7 +128,7 @@ class TestZemaxFileReader:
         with pytest.raises(ValueError, match="Failed to download Zemax file."):
             zemax_file_reader._configure_source_input()
 
-        mock_requests_get.assert_called_once_with(filename)
+        mock_requests_get.assert_called_once_with(filename, timeout=10)
 
     def test_read_nonexistent_file(self, set_test_backend, zemax_file_reader):
         zemax_file_reader.filename = "non_existent_file.zmx"
