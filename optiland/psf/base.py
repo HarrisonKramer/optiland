@@ -54,13 +54,17 @@ class BasePSF(Wavefront):
             num_points=128): Visualizes the PSF.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128):
+    def __init__(
+        self, optic, field, wavelength, num_rays=128, strategy="chief_ray", **kwargs
+    ):
         super().__init__(
             optic=optic,
             fields=[field],
             wavelengths=[wavelength],
             num_rays=num_rays,
             distribution="uniform",
+            strategy=strategy,
+            **kwargs,
         )
         self.psf = None  # Subclasses must compute and set this
 

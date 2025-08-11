@@ -41,14 +41,31 @@ class HuygensPSF(BasePSF):
             `num_rays` x `num_rays`. Defaults to 128.
         image_size (int, optional): The size of the image grid for PSF
             calculation. Defaults to 128.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "best_fit". Defaults to "chief_ray".
+        **kwargs: Additional keyword arguments passed to the strategy.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, image_size=128):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=128,
+        image_size=128,
+        strategy="chief_ray",
+        **kwargs,
+    ):
         if be.get_backend() != "numpy":
             raise ValueError("HuygensPSF only supports numpy backend.")
 
         super().__init__(
-            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
+            optic=optic,
+            field=field,
+            wavelength=wavelength,
+            num_rays=num_rays,
+            strategy=strategy,
+            **kwargs,
         )
 
         self.cx = None  # center of the image plane
