@@ -126,7 +126,7 @@ class BaseZernike(ABC):
             else:
                 m += 1
 
-        # sort indices according to Noll coefficient number
+        # sort indices according to scheme-specific coefficient number
         indices_sorted = np.array(
             [element for _, element in sorted(zip(number, indices, strict=False))],
             dtype=_ZernikeIndex,
