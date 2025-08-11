@@ -31,7 +31,7 @@ class ZernikeFringe(BaseZernike):
            University_of_Arizona_indices
 
     """
-    
+
     @staticmethod
     def _norm_constant(n=0, m=0):
         """Calculate the normalization constant for a given Zernike polynomial.
@@ -56,32 +56,35 @@ class ZernikeFringe(BaseZernike):
                 Zernike terms.
 
         """
-        numbers_present = np.full(n_indices + 1, False)
-        numbers_present[0] = True
+        numbers_present = np.full(n_indices, False)
 
         number = []
         indices = []
 
         n = 0
+        m = -n
 
         # Iterate until all numbers up to n_indices are present
         while not np.all(numbers_present):
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    _number = int(
-                        (1 + (n + np.abs(m)) / 2) ** 2
-                        - 2 * np.abs(m)
-                        + (1 - np.sign(m)) / 2
-                    )
+            if (n - m) % 2 == 0:
+                _number = int(
+                    (1 + (n + np.abs(m)) / 2) ** 2
+                    - 2 * np.abs(m)
+                    + (1 - np.sign(m)) / 2
+                )
 
-                    number.append(_number)
+                number.append(_number)
 
-                    if _number <= n_indices:
-                        numbers_present[_number] = True
+                if _number <= n_indices:
+                    numbers_present[_number - 1] = True
 
-                    indices.append((n, m))
+                indices.append((n, m))
 
-            n += 1
+            if m == n:
+                n += 1
+                m = -n
+            else:
+                m += 1
 
         # sort indices according to fringe coefficient number
         indices_sorted = [

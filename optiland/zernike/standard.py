@@ -51,15 +51,19 @@ class ZernikeStandard(BaseZernike):
 
         """
         indices = []
-        
+
         n = 0
+        m = -n
 
         while len(indices) < n_indices:
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    indices.append((n, m))
-            
-            n += 1
+            if (n - m) % 2 == 0:
+                indices.append((n, m))
+
+            if m == n:
+                n += 1
+                m = -n
+            else:
+                m += 1
 
         return indices
 

@@ -63,27 +63,38 @@ class ZernikeNoll(BaseZernike):
                 Zernike terms.
 
         """
+        numbers_present = np.full(n_indices, False)
         number = []
         indices = []
 
         n = 0
+        m = -n
 
-        while len(indices) < n_indices:
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    mod = n % 4
-                    if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
-                        c = 0
-                    elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
-                        c = 1
-                    number.append(n * (n + 1) / 2 + np.abs(m) + c)
-                    indices.append((n, m))
-            
-            n += 1
+        while not all(numbers_present):
+            if (n - m) % 2 == 0:
+                mod = n % 4
+                if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
+                    c = 0
+                elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
+                    c = 1
+
+                _number = int(n * (n + 1) / 2 + np.abs(m) + c)
+                number.append(_number)
+
+                if _number <= n_indices:
+                    numbers_present[_number - 1] = True
+
+                indices.append((n, m))
+
+            if m == n:
+                n += 1
+                m = -n
+            else:
+                m += 1
 
         # sort indices according to Noll coefficient number
         indices_sorted = [
             element for _, element in sorted(zip(number, indices, strict=False))
         ]
 
-        return indices_sorted
+        return indices_sorted[:n_indices]
