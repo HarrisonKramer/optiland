@@ -42,30 +42,20 @@ class ZernikeStandard(BaseZernike):
     """
 
     @staticmethod
-    def _generate_indices(n_indices: int):
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        indices = []
+        if (n - m) % 2 == 0:
+            return (n * (n + 2) + m) // 2
 
-        n = 0
-        m = -n
-
-        while len(indices) < n_indices:
-            if (n - m) % 2 == 0:
-                indices.append((n, m))
-
-            if m == n:
-                n += 1
-                m = -n
-            else:
-                m += 1
-
-        return indices
+        return None
 
     @staticmethod
     def _norm_constant(n=0, m=0):

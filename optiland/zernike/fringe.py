@@ -48,47 +48,19 @@ class ZernikeFringe(BaseZernike):
         return be.array(1)
 
     @staticmethod
-    def _generate_indices(n_indices: int):
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        numbers_present = np.full(n_indices, False)
+        if (n - m) % 2 == 0:
+            return int(
+                (1 + (n + np.abs(m)) / 2) ** 2 - 2 * np.abs(m) + (1 - np.sign(m)) / 2
+            )
 
-        number = []
-        indices = []
-
-        n = 0
-        m = -n
-
-        # Iterate until all numbers up to n_indices are present
-        while not np.all(numbers_present):
-            if (n - m) % 2 == 0:
-                _number = int(
-                    (1 + (n + np.abs(m)) / 2) ** 2
-                    - 2 * np.abs(m)
-                    + (1 - np.sign(m)) / 2
-                )
-
-                number.append(_number)
-
-                if _number <= n_indices:
-                    numbers_present[_number - 1] = True
-
-                indices.append((n, m))
-
-            if m == n:
-                n += 1
-                m = -n
-            else:
-                m += 1
-
-        # sort indices according to fringe coefficient number
-        indices_sorted = [
-            element for _, element in sorted(zip(number, indices, strict=False))
-        ]
-
-        return indices_sorted[:n_indices]
+        return None

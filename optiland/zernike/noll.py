@@ -55,46 +55,23 @@ class ZernikeNoll(BaseZernike):
         return be.sqrt(be.array(2 * n + 2))
 
     @staticmethod
-    def _generate_indices(n_indices: int):
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        numbers_present = np.full(n_indices, False)
-        number = []
-        indices = []
+        if (n - m) % 2 == 0:
+            mod = n % 4
+            if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
+                c = 0
+            elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
+                c = 1
 
-        n = 0
-        m = -n
+            return int(n * (n + 1) / 2 + np.abs(m) + c)
 
-        while not all(numbers_present):
-            if (n - m) % 2 == 0:
-                mod = n % 4
-                if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
-                    c = 0
-                elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
-                    c = 1
-
-                _number = int(n * (n + 1) / 2 + np.abs(m) + c)
-                number.append(_number)
-
-                if _number <= n_indices:
-                    numbers_present[_number - 1] = True
-
-                indices.append((n, m))
-
-            if m == n:
-                n += 1
-                m = -n
-            else:
-                m += 1
-
-        # sort indices according to Noll coefficient number
-        indices_sorted = [
-            element for _, element in sorted(zip(number, indices, strict=False))
-        ]
-
-        return indices_sorted[:n_indices]
+        return None

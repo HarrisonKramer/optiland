@@ -6,8 +6,13 @@ Kramer Harrison, 2025
 """
 
 from abc import ABC, abstractmethod
+from typing import ClassVar
+
+import numpy as np
 
 import optiland.backend as be
+
+_ZernikeIndex = np.dtype([("n", int), ("m", int)])
 
 
 class BaseZernike(ABC):
@@ -19,6 +24,8 @@ class BaseZernike(ABC):
         num_terms (int): the maximum number of terms. Only used if coeffs is None.
             Defaults to 36.
     """
+
+    _indices_cache: ClassVar[np.ndarray | None] = None
 
     def __init__(self, coeffs=None, num_terms=36):
         self.coeffs = be.zeros(num_terms) if coeffs is None else coeffs
@@ -80,10 +87,66 @@ class BaseZernike(ABC):
         """
         return sum(self.terms(r, phi))
 
+    @classmethod
+    def _generate_indices(cls, n_indices: int) -> np.ndarray:
+        """Generate the indices for Zernike terms.
+
+        Args:
+            n_indices (int): The number of indices to generate.
+
+        Returns:
+            list: List of tuples representing the indices (n, m) of the
+                Zernike terms.
+        """
+        if cls._indices_cache is not None and len(cls._indices_cache) >= n_indices:
+            return cls._indices_cache[:n_indices]
+
+        numbers_present = np.full(n_indices + 1, False)
+        # Set the first element to True if the notation is one-indexed
+        numbers_present[0] = cls._index_to_number(0, 0) != 0
+        number = []
+        indices = []
+
+        n = 0
+        m = -n
+
+        while not all(numbers_present):
+            _number = cls._index_to_number(n, m)
+
+            if _number is not None:
+                number.append(_number)
+                indices.append((n, m))
+
+                if _number <= n_indices:
+                    numbers_present[_number] = True
+
+            if m == n:
+                n += 1
+                m = -n
+            else:
+                m += 1
+
+        # sort indices according to Noll coefficient number
+        indices_sorted = np.array(
+            [element for _, element in sorted(zip(number, indices, strict=False))],
+            dtype=_ZernikeIndex,
+        )[:n_indices]
+
+        cls._indices_cache = indices_sorted
+        return indices_sorted
+
     @staticmethod
     @abstractmethod
-    def _generate_indices(n_indices: int):
-        """Generate the indices for Zernike terms."""
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
+
+        Returns:
+            int: The coefficient number corresponding to the Zernike indices.
+        """
         # pragma: no cover
 
     @abstractmethod
