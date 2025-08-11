@@ -27,7 +27,8 @@ class OPD(Wavefront):
         optic (Optic): The optic object.
         field (tuple[float, float]): The field coordinates (Hx, Hy).
         wavelength (float): The wavelength of the wavefront in micrometers.
-        num_rings (int): The number of rings used for pupil sampling.
+        num_rays (int): The number of rays (or rings for hexapolar distribution) to use
+            for pupil sampling.
         distribution (BaseDistribution): The pupil sampling distribution instance.
         data (dict): A dictionary mapping (field, wavelength) tuples to
             `WavefrontData` objects. Inherited from `Wavefront`.
@@ -39,13 +40,15 @@ class OPD(Wavefront):
 
     """
 
-    def __init__(self, optic, field, wavelength, num_rings=15, **kwargs):
+    def __init__(
+        self, optic, field, wavelength, num_rays=15, distribution="hexapolar", **kwargs
+    ):
         super().__init__(
             optic,
             fields=[field],
             wavelengths=[wavelength],
-            num_rays=num_rings,
-            distribution="hexapolar",
+            num_rays=num_rays,
+            distribution=distribution,
             **kwargs,
         )
 

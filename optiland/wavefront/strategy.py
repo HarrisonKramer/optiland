@@ -319,15 +319,19 @@ class BestFitStrategy(ReferenceStrategy):
             q (array): Scaled points (N, 3).
 
         Returns:
-            array: Initial parameters [cx, cy, cz, r].
+            be.array: Initial parameters theta = [cx, cy, cz, r]
         """
-        x, y, z = q[:, 0], q[:, 1], q[:, 2]
+        x = q[:, 0]
+        y = q[:, 1]
+        z = q[:, 2]
         A = be.column_stack((x, y, z, be.ones_like(x)))
-        b = x**2 + y**2 + z**2
-        D, E, F, G = be.linalg.lstsq(A, b, rcond=None)[0]
-        cx, cy, cz = -D / 2, -E / 2, -F / 2
-        r = be.sqrt(cx**2 + cy**2 + cz**2 + G)
-        return be.array([cx, cy, cz, r])
+        b = -(x * x + y * y + z * z)
+        coef, *_ = be.linalg.lstsq(A, b, rcond=None)
+        center_q = -0.5 * coef[:3]
+        r_sq = be.dot(center_q, center_q) - coef[3]
+        r_sq = be.maximum(r_sq, 0.0)
+        radius_q = be.sqrt(r_sq)
+        return be.concatenate((center_q, be.atleast_1d(radius_q)))
 
     def _gauss_newton_refine(self, q, theta):
         """Refine sphere parameters with Gauss-Newton iterations.
@@ -339,22 +343,35 @@ class BestFitStrategy(ReferenceStrategy):
         Returns:
             array: Refined parameters [cx, cy, cz, r].
         """
-        x, y, z = q[:, 0], q[:, 1], q[:, 2]
+        x = q[:, 0]
+        y = q[:, 1]
+        z = q[:, 2]
         points = be.column_stack((x, y, z))
+        eps = 1e-12  # small safeguard for distances
 
         for _ in range(self.max_iter):
             diffs = points - theta[:3]
             dists = be.linalg.norm(diffs, axis=1)
+            # Avoid division by zero. If a distance is zero, replace with tiny eps.
+            dists_safe = be.where(dists < eps, eps, dists)
             residuals = dists - theta[3]
 
             J = be.empty((len(points), 4))
-            J[:, 0] = (theta[0] - x) / dists
-            J[:, 1] = (theta[1] - y) / dists
-            J[:, 2] = (theta[2] - z) / dists
+            J[:, 0] = (theta[0] - x) / dists_safe
+            J[:, 1] = (theta[1] - y) / dists_safe
+            J[:, 2] = (theta[2] - z) / dists_safe
             J[:, 3] = -1.0
 
-            delta = be.linalg.solve(J.T @ J, -J.T @ residuals)
-            theta += delta
+            JTJ = J.T @ J
+            JTr = J.T @ residuals
+
+            try:
+                delta = be.linalg.solve(JTJ, -JTr)
+            except Exception:
+                # fallback: solve the linearized least squares directly
+                delta, *_ = be.linalg.lstsq(J, -residuals, rcond=None)
+
+            theta = theta + delta
 
             if be.linalg.norm(delta) < self.tol:
                 break
