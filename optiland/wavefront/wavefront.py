@@ -30,6 +30,7 @@ class Wavefront:
             be a name (e.g., "hexapolar") or a Distribution object.
         strategy (str): The calculation strategy to use. Supported options are
             "chief_ray" and "best_fit". Defaults to "chief_ray".
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         data (dict): A dictionary containing the computed `WavefrontData` for
