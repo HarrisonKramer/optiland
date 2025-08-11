@@ -362,7 +362,7 @@ class BestFitStrategy(ReferenceStrategy):
         return theta
 
 
-def create_strategy(strategy_name, optic, distribution):
+def create_strategy(strategy_name, optic, distribution, **kwargs):
     """Factory function to create a wavefront calculation strategy.
 
     Args:
@@ -383,6 +383,6 @@ def create_strategy(strategy_name, optic, distribution):
     strategy_class = strategies.get(strategy_name)
 
     if strategy_class:
-        return strategy_class(optic, distribution)
+        return strategy_class(optic, distribution, **kwargs)
     else:
         raise ValueError(f"Unknown wavefront strategy: {strategy_name}")
