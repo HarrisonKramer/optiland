@@ -242,7 +242,7 @@ class BestFitStrategy(ReferenceStrategy):
         intensity = self.optic.surface_group.intensity[-1, :]
 
         # 2. If rays originate from different positions, we must first correct tilt
-        rays.opd = opd = self._correct_tilt(field, rays.opd)
+        rays.opd = self._correct_tilt(field, rays.opd)
 
         # 3. Calculate best fit sphere of wavefront
         xc, yc, zc, R = self._calculate_best_fit_sphere(rays)
