@@ -44,6 +44,7 @@ class Wavefront:
         num_rays=12,
         distribution="hexapolar",
         strategy="chief_ray",
+        **kwargs,
     ):
         self.optic = optic
         self.fields = self._resolve_fields(fields)
@@ -55,6 +56,7 @@ class Wavefront:
             strategy_name=strategy,
             optic=self.optic,
             distribution=self.distribution,
+            **kwargs,
         )
 
         self.data = {}

@@ -191,41 +191,61 @@ class ChiefRayStrategy(ReferenceStrategy):
 
 
 class BestFitStrategy(ReferenceStrategy):
-    """Calculates wavefront using a best-fit reference sphere."""
+    """Calculates wavefront using a best-fit reference sphere.
 
-    def compute_wavefront_data(self, field, wavelength):
-        """Computes wavefront data using the best-fit reference method.
+    Fits the sphere in two stages:
+    1. Algebraic least squares for initial estimate.
+    2. Optional Gauss-Newton iterative refinement for improved accuracy.
 
-        This method follows the best-fit algorithm:
-        1. Trace the full set of rays for the field.
-        2. Fit a sphere to the resulting wavefront points to find the
-           best-fit reference sphere.
-        3. Compute the OPD for all rays relative to this sphere.
-        4. Use the minimum OPD value as the reference OPD.
-        5. Normalize the final OPD map.
+    Scaling is applied for numerical robustness.
+    """
+
+    def __init__(
+        self,
+        optic,
+        distribution,
+        max_iter: int = 20,
+        tol: float = 1e-6,
+        refine_fit: bool = True,
+    ):
+        """Initialize the best-fit strategy.
 
         Args:
-            field (tuple[float, float]): The field coordinates to analyze.
-            wavelength (float): The wavelength to use for the analysis.
+            max_iter (int, optional): Max iterations for Gauss-Newton refinement.
+            tol (float, optional): Convergence tolerance for parameter updates.
+            refine_fit (bool, optional): Whether to perform Gauss-Newton refinement.
+        """
+        super().__init__(optic, distribution)
+        self.max_iter = max_iter
+        self.tol = tol
+        self.refine_fit = refine_fit
+
+    def compute_wavefront_data(self, field, wavelength):
+        """Compute wavefront data using the best-fit reference sphere method.
+
+        Steps:
+            1. Trace the full set of rays for the field.
+            2. Fit a sphere to the wavefront points.
+            3. Compute the OPD relative to this sphere.
+            4. Use the minimum OPD as the reference OPD.
+            5. Normalize the OPD map.
+
+        Args:
+            field (tuple[float, float]): Field coordinates to analyze.
+            wavelength (float): Wavelength for the analysis.
 
         Returns:
-            WavefrontData: A data object containing the results.
+            WavefrontData: Computed wavefront data.
         """
-        # 1. Trace the full grid of rays for the field
         rays = self.optic.trace(*field, wavelength, None, self.distribution)
         intensity = self.optic.surface_group.intensity[-1, :]
 
-        # 2. Calculate the best-fit reference sphere
         xc, yc, zc, R = self._calculate_best_fit_sphere(rays)
 
-        # 3. Compute OPD for all rays
         opd_img = self._opd_image_to_xp(rays, xc, yc, zc, R, wavelength)
         opd = rays.opd - opd_img
-
-        # 4. Use minimum OPD as the reference
         opd_ref = be.min(opd)
 
-        # 5. Normalize OPD and calculate pupil coordinates
         opd_wv = (opd_ref - opd) / (wavelength * 1e-3)
         t = opd_img / self.n_image
         pupil_x = rays.x - t * rays.L
@@ -242,13 +262,13 @@ class BestFitStrategy(ReferenceStrategy):
         )
 
     def _calculate_best_fit_sphere(self, rays):
-        """Fit a best-fit reference sphere from ray data."""
+        """Fit a sphere to the wavefront points."""
         pts, _ = self._points_from_rays(rays)
         center, radius = self._fit_sphere(pts)
         return *center, radius
 
     def _points_from_rays(self, rays):
-        """Convert ray data into 3D wavefront points in image space."""
+        """Convert ray data to 3D wavefront points."""
         valid = (
             be.isfinite(rays.x)
             & be.isfinite(rays.y)
@@ -259,38 +279,87 @@ class BestFitStrategy(ReferenceStrategy):
             & be.isfinite(rays.opd)
             & (rays.i != 0)
         )
-
         if not be.any(valid):
             raise ValueError("No valid ray samples found for best-fit sphere.")
 
         p = be.stack((rays.x, rays.y, rays.z), axis=1)[valid]
         d = be.stack((rays.L, rays.M, rays.N), axis=1)[valid]
-
         s = rays.opd[valid] / self.n_image
         pts = p - s[:, None] * d
         return pts, valid
 
     def _fit_sphere(self, pts):
-        """Fit a sphere to points using a stable linear algebraic method."""
+        """Fit a sphere using algebraic LS and optional refinement."""
+        q, mean, scale = self._scale_points(pts)
+        theta = self._algebraic_fit(q)
+        if self.refine_fit:
+            theta = self._gauss_newton_refine(q, theta)
+        center = scale * theta[:3] + mean
+        radius = float(scale * theta[3])
+        return tuple(center), radius
+
+    def _scale_points(self, pts):
+        """Scale points for numerical stability.
+
+        Returns:
+            tuple: (scaled_points, mean, scale_factor)
+        """
         if pts.ndim != 2 or pts.shape[1] != 3:
-            raise ValueError("Input points for sphere fit must be (N, 3).")
+            raise ValueError("Sphere fit points must be shape (N, 3).")
 
         mean = pts.mean(axis=0)
-        scale = be.ptp(pts, axis=0).max()
-        scale = scale if scale > 0 else 1.0
+        scale = be.ptp(pts, axis=0).max() or 1.0
         q = (pts - mean) / scale
+        return q, mean, scale
 
+    def _algebraic_fit(self, q):
+        """Algebraic least squares sphere fit.
+
+        Args:
+            q (array): Scaled points (N, 3).
+
+        Returns:
+            array: Initial parameters [cx, cy, cz, r].
+        """
         x, y, z = q[:, 0], q[:, 1], q[:, 2]
         A = be.column_stack((x, y, z, be.ones_like(x)))
-        b = -(x**2 + y**2 + z**2)
+        b = x**2 + y**2 + z**2
+        D, E, F, G = be.linalg.lstsq(A, b, rcond=None)[0]
+        cx, cy, cz = -D / 2, -E / 2, -F / 2
+        r = be.sqrt(cx**2 + cy**2 + cz**2 + G)
+        return be.array([cx, cy, cz, r])
 
-        coef, *_ = be.linalg.lstsq(A, b, rcond=None)
-        center_q = -0.5 * coef[:3]
-        radius_q = be.sqrt(be.dot(center_q, center_q) - coef[3])
+    def _gauss_newton_refine(self, q, theta):
+        """Refine sphere parameters with Gauss-Newton iterations.
 
-        center = scale * center_q + mean
-        radius = scale * radius_q
-        return center, float(radius)
+        Args:
+            q (array): Scaled points (N, 3).
+            theta (array): Initial parameters [cx, cy, cz, r].
+
+        Returns:
+            array: Refined parameters [cx, cy, cz, r].
+        """
+        x, y, z = q[:, 0], q[:, 1], q[:, 2]
+        points = be.column_stack((x, y, z))
+
+        for _ in range(self.max_iter):
+            diffs = points - theta[:3]
+            dists = be.linalg.norm(diffs, axis=1)
+            residuals = dists - theta[3]
+
+            J = be.empty((len(points), 4))
+            J[:, 0] = (theta[0] - x) / dists
+            J[:, 1] = (theta[1] - y) / dists
+            J[:, 2] = (theta[2] - z) / dists
+            J[:, 3] = -1.0
+
+            delta = be.linalg.solve(J.T @ J, -J.T @ residuals)
+            theta += delta
+
+            if be.linalg.norm(delta) < self.tol:
+                break
+
+        return theta
 
 
 def create_strategy(strategy_name, optic, distribution):
