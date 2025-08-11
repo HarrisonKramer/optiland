@@ -237,16 +237,23 @@ class BestFitStrategy(ReferenceStrategy):
         Returns:
             WavefrontData: Computed wavefront data.
         """
+        # 1. Trace ray bundle
         rays = self.optic.trace(*field, wavelength, None, self.distribution)
         intensity = self.optic.surface_group.intensity[-1, :]
 
+        # 2. If rays originate from different positions, we must first correct tilt
+        rays.opd = opd = self._correct_tilt(field, rays.opd)
+
+        # 3. Calculate best fit sphere of wavefront
         xc, yc, zc, R = self._calculate_best_fit_sphere(rays)
 
+        # 4. Compute OPD from image to reference sphere
         opd_img = self._opd_image_to_xp(rays, xc, yc, zc, R, wavelength)
         opd = rays.opd - opd_img
         opd_ref = be.min(opd)
-
         opd_wv = (opd_ref - opd) / (wavelength * 1e-3)
+
+        # 5. Compute the pupil intersection points
         t = opd_img / self.n_image
         pupil_x = rays.x - t * rays.L
         pupil_y = rays.y - t * rays.M
