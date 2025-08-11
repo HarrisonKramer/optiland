@@ -368,14 +368,16 @@ class BestFitStrategy(ReferenceStrategy):
             try:
                 delta = be.linalg.solve(JTJ, -JTr)
             except Exception:
-                # fallback: solve the linearized least squares directly
-                delta, *_ = be.linalg.lstsq(J, -residuals, rcond=None)
+                # fallback: normal-equation least squares
+                delta, *_ = be.linalg.lstsq(JTJ, -JTr, rcond=None)
 
             theta = theta + delta
 
             if be.linalg.norm(delta) < self.tol:
                 break
 
+        # Ensure radius is positive
+        theta[3] = be.abs(theta[3])
         return theta
 
 
