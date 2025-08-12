@@ -130,7 +130,7 @@ class ZemaxFileReader:
         Otherwise, sets the source to the filename.
         """
         if self._is_url(self.source):
-            response = requests.get(self.source)
+            response = requests.get(self.source, timeout=10)
             if response.status_code == 200:
                 with tempfile.NamedTemporaryFile(delete=False) as file:
                     file.write(response.content)
