@@ -134,13 +134,13 @@ def clenshaw_qbfs(cs, usq, alphas=None):
     """
     if be.get_backend() == "torch":
         bs = change_basis_Qbfs_to_Pn(cs)
-        S, alpha0, alpha1 = _clenshaw_qbfs_functional(bs, usq)
+        S, alpha0, _ = _clenshaw_qbfs_functional(bs, usq)
 
         if alphas is not None:
             M = len(bs) - 1
             fill = []
             if M >= 0:
-                # Reconstruct the full alpha list for the buffer
+                prefix = 2 - 4 * usq
                 alphas_list = [be.zeros_like(alpha0) for _ in range(M + 1)]
                 alphas_list[M] = bs[M] + usq * 0
                 if M > 0:
@@ -258,21 +258,27 @@ def clenshaw_qbfs_der(cs, usq, j=1, alphas=None):
 
 
 def compute_z_zprime_Qbfs(coefs, u, usq):
-    """Computes the raw Q-BFS polynomial sum and its derivative w.r.t. u."""
+    """
+    Computes the raw Q-BFS polynomial sum and its derivative w.r.t. u.
+    This version contains the corrected derivative calculation.
+    """
     if coefs is None or len(coefs) == 0:
         zeros = be.zeros_like(u)
         return zeros, zeros
 
     alphas = clenshaw_qbfs_der(coefs, usq, j=1)
 
+    # The sum S is 2*(alpha_0 + alpha_1)
+    # The derivative S' w.r.t. usq is 2*(alpha_0' + alpha_1')
     if len(coefs) > 1:
         S = 2 * (alphas[0][0] + alphas[0][1])
-        dS_dusq = alphas[1][0] + alphas[1][1]
+        dS_dusq = 2 * (alphas[1][0] + alphas[1][1])
     else:
         S = 2 * alphas[0][0]
-        dS_dusq = alphas[1][0]
+        dS_dusq = 2 * alphas[1][0]
 
-    dS_dusq = dS_dusq * 4
+    # dS/du = dS/dusq * d(usq)/du
+    # d(usq)/du = d(u^2)/du = 2*u
     dS_du = dS_dusq * 2 * u
     return S, dS_du
 
@@ -527,7 +533,7 @@ def compute_z_zprime_Q2d(cm0, ams, bms, u, t):
     dt_m_gt0 = be.zeros_like(u)
 
     m = 0
-    for a_coef, b_coef in zip(ams, bms):
+    for a_coef, b_coef in zip(ams, bms, strict=False):
         m = m + 1
         has_a = a_coef is not None and any(c != 0 for c in a_coef)
         has_b = b_coef is not None and any(c != 0 for c in b_coef)
@@ -584,7 +590,7 @@ def Q2d_nm_c_to_a_b(nms, coefs):
     ac = defaultdict(factory)
     bc = defaultdict(factory)
 
-    for (n, m), c in zip(nms, coefs):
+    for (n, m), c in zip(nms, coefs, strict=False):
         if m == 0:
             if len(cms) < n + 1:
                 cms = expand_and_copy(cms, n)
