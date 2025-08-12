@@ -3,6 +3,7 @@
 This module implements the necessary logic for the
 irradiance analysis in a given optical system.
 *note*: for now we consider incoherent irradiance.
+*note*: for now we consider incoherent irradiance.
 
 The analysis is analogous to the SpotDiagram except that
 instead of plotting the landing position of individual rays,
