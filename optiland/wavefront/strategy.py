@@ -187,7 +187,7 @@ class ChiefRayStrategy(ReferenceStrategy):
         if be.size(x) != 1:
             raise ValueError("Chief ray cannot be determined. It must be traced alone.")
         R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
-        return x, y, z, R
+        return x, y, z, R.item()
 
 
 class BestFitStrategy(ReferenceStrategy):

@@ -271,7 +271,7 @@ class HuygensPSF(BasePSF):
             data.intensity,
             pupil_opd_ideal,
             self.wavelengths[0] * 1e-3,
-            data.radius.item(),
+            data.radius,
         )
 
         return psf_max[0, 0]  # Normalize by the peak of the ideal PSF
@@ -288,7 +288,7 @@ class HuygensPSF(BasePSF):
         pupil_x, pupil_y, pupil_z = data.pupil_x, data.pupil_y, data.pupil_z
         pupil_amp = data.intensity
         pupil_opd = data.opd * wavelength_mm  # waves to mm
-        Rp = data.radius.item()  # Radius of curvature of exit pupil
+        Rp = data.radius  # Radius of curvature of exit pupil
 
         # Get image coordinates
         image_x, image_y, image_z = self._get_image_coordinates()
