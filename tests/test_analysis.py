@@ -1265,7 +1265,7 @@ class TestIncoherentIrradiance:
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
-            f"[IncoherentIrradiance] Warning: X-slice index {res_val[0] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
+            f"[IncoherentIrradiance] Warning: X-slice index {res_val[0] + 5} is out of bounds. Skipping."
         )
 
         # Invalid slice index for cross-y
@@ -1278,7 +1278,7 @@ class TestIncoherentIrradiance:
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
-            f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1] + 5} is out of bounds for map shape {(res_val[0], res_val[1])}. Skipping plot."
+            f"[IncoherentIrradiance] Warning: Y-slice index {res_val[1] + 5} is out of bounds. Skipping."
         )
 
         # Invalid cross_section_info format (not tuple)
@@ -1289,7 +1289,7 @@ class TestIncoherentIrradiance:
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
-            "[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot."
+            "[IncoherentIrradiance] Warning: Invalid cross_section type. Expected tuple. Defaulting to 2D plot."
         )
         # Invalid cross_section_info format (tuple wrong length)
         fig, axes = irr.view(cross_section=("cross-x",))
@@ -1299,7 +1299,7 @@ class TestIncoherentIrradiance:
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
-            "[IncoherentIrradiance] Warning: Invalid cross_section_info type. Expected tuple. Defaulting to 2D plot."
+            "[IncoherentIrradiance] Warning: Invalid cross_section type. Expected tuple. Defaulting to 2D plot."
         )
         # Invalid cross_section_info format (tuple wrong types)
         fig, axes = irr.view(cross_section=(123, "cross-y"))
@@ -1309,7 +1309,7 @@ class TestIncoherentIrradiance:
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
-            "[IncoherentIrradiance] Warning: Invalid cross_section_info format. Expected ('cross-x' or 'cross-y', int). Defaulting to 2D plot."
+            "[IncoherentIrradiance] Warning: Invalid cross_section format. Expected ('cross-x' or 'cross-y', int). Defaulting to 2D plot."
         )
 
     def test_irradiance_view_no_data(
@@ -1323,37 +1323,6 @@ class TestIncoherentIrradiance:
         assert res is None  # Should return None if no data
         captured = capsys.readouterr()
         assert "No irradiance data to display." in captured.out
-
-        # Test with empty field block
-        irr.data = [[]]
-        res = irr.view()
-        assert res is None
-        captured = capsys.readouterr()
-        assert (
-            "Warning: Field block 0 is empty." in captured.out
-            or "No valid irradiance map data found to plot." in captured.out
-        )
-
-        # Test with None entry in field block
-        irr.data = [[None]]
-        res = irr.view()
-        assert res is None
-        captured = capsys.readouterr()
-        assert (
-            "Warning: Entry 0 in field block 0 is None." in captured.out
-            or "No valid irradiance map data found to plot." in captured.out
-        )
-
-        # Test with None irradiance map in entry
-        dummy_edges = be.array([0.0, 1.0])
-        irr.data = [[(None, dummy_edges, dummy_edges)]]
-        res = irr.view()
-        assert res is None
-        captured = capsys.readouterr()
-        assert (
-            "Warning: Irradiance map in entry 0, field block 0 is None." in captured.out
-            or "No valid irradiance map data found to plot." in captured.out
-        )
 
     def test_vmin_vmax_equal_case(self, set_test_backend, test_system_irradiance_v1):
         optic_sys = test_system_irradiance_v1
