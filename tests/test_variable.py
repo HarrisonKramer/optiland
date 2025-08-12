@@ -5,6 +5,8 @@ from unittest.mock import patch
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
+    ForbesQbfsGeometry,
+    ForbesQ2dGeometry,
     PolynomialGeometry,
     ZernikePolynomialGeometry,
 )
@@ -503,6 +505,104 @@ class TestDecenterVariable:
             apply_scaling=False,
         )
         assert_allclose(self.decenter_var_x.get_value(), 0.0)
+
+
+class TestNormalizationRadiusVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = AsphericSinglet()
+        zernike_geo = ZernikePolynomialGeometry(
+            CoordinateSystem(),
+            100,
+            coefficients=be.zeros(3),
+            norm_radius=10.0
+        )
+        self.optic.surface_group.surfaces[1].geometry = zernike_geo
+        self.norm_radius_var = variable.NormalizationRadiusVariable(self.optic, 1)
+
+    def test_get_value(self, set_test_backend):
+        assert_allclose(self.norm_radius_var.get_value(), 10.0)
+
+    def test_update_value(self, set_test_backend):
+        self.norm_radius_var.update_value(12.0)
+        assert_allclose(self.norm_radius_var.get_value(), 12.0)
+
+    def test_string_representation(self, set_test_backend):
+        assert str(self.norm_radius_var) == "Normalization Radius, Surface 1"
+
+
+
+class TestForbesQbfsCoeffVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = AsphericSinglet()
+        forbes_geo = ForbesQbfsGeometry(
+            CoordinateSystem(),
+            100,
+            coeffs_c=[0.1, 0.2, 0.3],
+            norm_radius=15.0
+        )
+        self.optic.surface_group.surfaces[1].geometry = forbes_geo
+        self.forbes_var = variable.ForbesQbfsCoeffVariable(self.optic, 1, 1, apply_scaling=False)
+
+    def test_get_value(self, set_test_backend):
+        assert_allclose(self.forbes_var.get_value(), 0.2)
+
+    def test_update_value(self, set_test_backend):
+        self.forbes_var.update_value(0.5)
+        assert_allclose(self.forbes_var.get_value(), 0.5)
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.coeffs_c[1], 0.5)
+
+    def test_update_value_out_of_bounds(self, set_test_backend):
+        forbes_var_new = variable.ForbesQbfsCoeffVariable(self.optic, 1, 4, apply_scaling=False)
+        forbes_var_new.update_value(0.9)
+        assert_allclose(forbes_var_new.get_value(), 0.9)
+        assert len(self.optic.surface_group.surfaces[1].geometry.coeffs_c) == 5
+
+    def test_string_representation(self, set_test_backend):
+        assert str(self.forbes_var) == "Forbes Q-bfs Coeff n=1, Surface 1"
+
+
+class TestForbesQ2dCoeffVariable:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.optic = AsphericSinglet()
+        forbes_geo = ForbesQ2dGeometry(
+            CoordinateSystem(),
+            100,
+            conic=0.0,
+            coeffs_n=[(1, 1), (2, 2)],
+            coeffs_c=[0.1, 0.2],
+            norm_radius=15.0
+        )
+        self.optic.surface_group.surfaces[1].geometry = forbes_geo
+        self.forbes_var = variable.ForbesQ2dCoeffVariable(self.optic, 1, (2, 2), apply_scaling=False)
+
+    def test_get_value(self, set_test_backend):
+        assert_allclose(self.forbes_var.get_value(), 0.2)
+
+    def test_get_value_nonexistent(self, set_test_backend):
+        forbes_var_new = variable.ForbesQ2dCoeffVariable(self.optic, 1, (3, 1), apply_scaling=False)
+        assert_allclose(forbes_var_new.get_value(), 0.0)
+
+    def test_update_value_existing(self, set_test_backend):
+        self.forbes_var.update_value(0.5)
+        assert_allclose(self.forbes_var.get_value(), 0.5)
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.coeffs_c[1], 0.5)
+
+    def test_update_value_new(self, set_test_backend):
+        forbes_var_new = variable.ForbesQ2dCoeffVariable(self.optic, 1, (3, 1), apply_scaling=False)
+        forbes_var_new.update_value(0.9)
+        assert_allclose(forbes_var_new.get_value(), 0.9)
+        assert (3, 1) in self.optic.surface_group.surfaces[1].geometry.coeffs_n
+        assert len(self.optic.surface_group.surfaces[1].geometry.coeffs_c) == 3
+
+    def test_string_representation(self, set_test_backend):
+        assert str(self.forbes_var) == "Forbes Q-2D Coeff (n=2, m=2), Surface 1"
+
+    def test_invalid_coeff_tuple(self, set_test_backend):
+        with pytest.raises(ValueError):
+            variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
 
 
 class TestVariableManager:

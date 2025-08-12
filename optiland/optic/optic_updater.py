@@ -106,6 +106,24 @@ class OpticUpdater:
         surface_post = self.optic.surface_group.surfaces[surface_number + 1]
         surface_post.material_pre = material
 
+    def set_norm_radius(self, value, surface_number):
+        """Set the normalization radius on a surface.
+
+        Args:
+            value (float): The new value for the normalization radius.
+            surface_number (int): The index of the surface to modify.
+        """
+        surface = self.optic.surface_group.surfaces[surface_number]
+        if hasattr(surface.geometry, "norm_radius"):
+            surface.geometry.norm_radius = value
+        else:
+            # This error is useful for debugging if used on an incorrect surface type
+            raise AttributeError(
+                f"Surface {surface_number} with geometry type "
+                f"'{surface.geometry.__class__.__name__}' has no "
+                "'norm_radius' attribute."
+            )
+
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
 
@@ -190,16 +208,26 @@ class OpticUpdater:
             surface (Surface): The surface whose normalization factors are to be
                 updated.
         """
-        if surface.surface_type in [
-            "even_asphere",
-            "odd_asphere",
-            "polynomial",
-            "chebyshev",
-        ]:
+        # Skip updating normalization when the normalization radius is a variable
+        if getattr(surface, "is_norm_radius_variable", False):
+            return
+
+        if hasattr(surface.geometry, "norm_x"):
             surface.geometry.norm_x = surface.semi_aperture * 1.25
+        if hasattr(surface.geometry, "norm_y"):
             surface.geometry.norm_y = surface.semi_aperture * 1.25
-        if surface.surface_type == ["zernike", "forbes"]:
-            surface.geometry.norm_radius = surface.semi_aperture * 1.25
+
+        other_types = ["zernike"]
+        if surface.surface_type in other_types:
+            # For Zernike and Forbes, we set the normalization radius
+            if hasattr(surface.geometry, "norm_radius"):
+                surface.geometry.norm_radius = surface.semi_aperture * 1.25
+            else:
+                raise AttributeError(
+                    f"Surface {surface.surface_number} with geometry type "
+                    f"'{surface.geometry.__class__.__name__}' has no "
+                    "'norm_radius' attribute."
+                )
 
     def update(self) -> None:
         """Update the optical system by applying all defined pickups and solves.
@@ -210,7 +238,8 @@ class OpticUpdater:
         self.optic.solves.apply()
 
         if any(
-            surface.surface_type in ["chebyshev", "zernike", "forbes"]
+            surface.surface_type
+            in ["chebyshev", "zernike", "forbes_qbfs", "forbes_q2d"]
             for surface in self.optic.surface_group.surfaces
         ):
             self.update_paraxial()

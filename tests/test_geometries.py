@@ -1710,6 +1710,54 @@ class TestForbesGeometry:
         assert be.allclose(rays_out.M, zmx_rays_M, rtol=1e-7, atol=1e-7)
         assert be.allclose(rays_out.N, zmx_rays_N, rtol=1e-7, atol=1e-7)
         
+    def _create_forbes_autodiff_optic(self):
+        """Helper to create a standard Forbes optic for autodiff testing."""
+        optic = Optic(name="Autodiff Test Lens")
+        optic.set_aperture(aperture_type="EPD", value=30.0)
+        optic.add_wavelength(value=1.55, is_primary=True, unit="um")
+        optic.add_field(y=0.0)
+        optic.add_surface(index=0, thickness=be.inf)
+        optic.add_surface(index=1, thickness=10, is_stop=True)
+        optic.add_surface(index=2, surface_type="standard", radius=60, thickness=7.0, material="N-BK7")
+        optic.add_surface(
+            index=3,
+            surface_type="forbes_qbfs",
+            radius=-120,
+            thickness=60.0,
+            material="air",
+            forbes_coeffs_c=[1.0, 0.8, 0.2],
+            forbes_coeffs_n=[(n, 0) for n in range(3)],
+            forbes_norm_radius=30.0,
+        )
+        optic.add_surface(index=4)
+        return optic
+    
+    @pytest.mark.parametrize("backend_name", ["torch"])
+    def test_ray_tracing_autodiff(self, backend_name):
+        """Tests that ray tracing through a Forbes surface is differentiable."""
+        be.set_backend(backend_name)
+        if be.get_backend() != "torch":
+            pytest.skip("Autodiff test requires the torch backend.")
+
+        optic = self._create_forbes_autodiff_optic()
+        forbes_surface = optic.surface_group.surfaces[3].geometry
+        coeffs_to_test = forbes_surface.coeffs_c
+        coeffs_to_test.requires_grad_(True)
+
+        ray = RealRays(
+            x=be.array([0.0]), y=be.array([10.0]), z=be.array([0.0]),
+            L=be.array([0.0]), M=be.array([0.0]), N=be.array([1.0]),
+            wavelength=be.array([1.550]), intensity=be.array([1.0])
+        )
+
+        rays_out = optic.surface_group.trace(ray)
+        loss = be.sum(rays_out.y)
+
+        loss.backward()
+
+        grad = coeffs_to_test.grad
+        assert grad is not None, "Gradient should be computed"
+        assert be.any(grad != 0), "Gradient should not be all zeros"
         
     def test_to_dict_from_dict(self, set_test_backend):
         """
