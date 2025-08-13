@@ -32,11 +32,6 @@ class ZernikeFringe(BaseZernike):
 
     """
 
-    def __init__(self, coeffs=None):
-        if coeffs is None:
-            coeffs = [0 for _ in range(36)]
-        super().__init__(coeffs)
-
     @staticmethod
     def _norm_constant(n=0, m=0):
         """Calculate the normalization constant for a given Zernike polynomial.
@@ -53,32 +48,19 @@ class ZernikeFringe(BaseZernike):
         return be.array(1)
 
     @staticmethod
-    def _generate_indices():
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        number = []
-        indices = []
-        for n in range(20):
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    number.append(
-                        int(
-                            (1 + (n + np.abs(m)) / 2) ** 2
-                            - 2 * np.abs(m)
-                            + (1 - np.sign(m)) / 2,
-                        ),
-                    )
-                    indices.append((n, m))
+        if (n - m) % 2 == 0:
+            return int(
+                (1 + (n + np.abs(m)) / 2) ** 2 - 2 * np.abs(m) + (1 - np.sign(m)) / 2
+            )
 
-        # sort indices according to fringe coefficient number
-        indices_sorted = [
-            element for _, element in sorted(zip(number, indices, strict=False))
-        ]
-
-        # take only 120 indices
-        return indices_sorted[:120]
+        return None
