@@ -1146,9 +1146,6 @@ class TestZernikeGeometry:
     def test_surface_normal(
         self, set_test_backend, zernike_type: str, coefficients: dict[int, float]
     ):
-        if be.get_backend() == "torch":
-            be.grad_mode.disable()
-
         geometry = self.create_geometry(
             self.coefficients_dict_to_list(coefficients, zernike_type),
             norm_radius=10,

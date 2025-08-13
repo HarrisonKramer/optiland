@@ -11,7 +11,6 @@ drpaprika, 2025
 
 import numpy as np
 
-import optiland.backend as be
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 
@@ -79,13 +78,8 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         i = self.coeff_index
 
         if i < len(surf.geometry.coefficients):
-            if be.get_backend() == "torch":
-                with be.grad_mode.temporary_disable():
-                    # If the coefficient already exists, update it
-                    surf.geometry.coefficients[i] = new_value
-            else:
-                # If the coefficient already exists, update it
-                surf.geometry.coefficients[i] = new_value
+            # If the coefficient already exists, update it
+            surf.geometry.coefficients[i] = new_value
         else:
             # If the coefficient does not exist, pad the array and set the value
             pad_width_i = max(0, i + 1)
