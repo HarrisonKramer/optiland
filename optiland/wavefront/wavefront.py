@@ -5,6 +5,7 @@ wavefront of an optical system.
 Kramer Harrison, 2024
 """
 
+import optiland.backend as be
 from optiland.distribution import create_distribution
 
 from .strategy import create_strategy
@@ -45,6 +46,7 @@ class Wavefront:
         num_rays=12,
         distribution="hexapolar",
         strategy="chief_ray",
+        remove_tilt=False,
         **kwargs,
     ):
         self.optic = optic
@@ -59,6 +61,7 @@ class Wavefront:
             distribution=self.distribution,
             **kwargs,
         )
+        self.remove_tilt = remove_tilt
 
         self.data = {}
         self._generate_data()
@@ -74,6 +77,53 @@ class Wavefront:
             WavefrontData: A data container with the computed wavefront results.
         """
         return self.data[(field, wl)]
+
+    @staticmethod
+    def remove_tilt(data, remove_piston=False, ridge=1e-12):
+        """
+        Removes piston and tilt from 1D OPD data using weighted least squares.
+
+        Args:
+            data (WavefrontData): The wavefront data containing pupil coordinates
+                and OPD.
+            remove_piston (bool, optional): If True, removes piston term as well
+                as tilt. Defaults to False.
+            ridge (float, optional): Small diagonal regularization for stability.
+                Defaults to 1e-12.
+
+        Returns:
+            opd_detrended (array-like): OPD with piston and tilt removed, shape (N,).
+            coeffs (array-like): [piston, tilt_x, tilt_y] coefficients, shape (3,).
+        """
+        x = data.pupil_x
+        y = data.pupil_y
+        weights = data.intensity
+        opd = data.opd
+
+        # weighted design matrix
+        one = be.ones_like(x)
+        X = be.stack([one, x, y], axis=1)  # (N,3)
+
+        # apply sqrt(weights) to each column
+        W = be.sqrt(weights)[:, None]
+        Xw = X * W
+        yw = opd * be.sqrt(weights)
+
+        XT_X = be.matmul(Xw.T, Xw) + ridge * be.eye(3, dtype=opd.dtype)
+        XT_y = be.matmul(Xw.T, yw)
+
+        # solve for coefficients
+        coeffs = be.linalg.solve(XT_X, XT_y)
+
+        if not remove_piston:
+            coeffs = be.copy(coeffs)
+            coeffs[0] = 0.0
+
+        # subtract fitted plane
+        fitted = X @ coeffs
+        opd_detrended = opd - fitted
+
+        return opd_detrended
 
     def _resolve_fields(self, fields):
         """Resolves field coordinates from the input specification."""
@@ -105,4 +155,9 @@ class Wavefront:
         """
         for field in self.fields:
             for wl in self.wavelengths:
-                self.data[(field, wl)] = self.strategy.compute_wavefront_data(field, wl)
+                data = self.strategy.compute_wavefront_data(field, wl)
+
+                if self.remove_tilt:
+                    data.opd = self.remove_tilt(data)
+
+                self.data[(field, wl)] = data
