@@ -31,6 +31,8 @@ class Wavefront:
             be a name (e.g., "hexapolar") or a Distribution object.
         strategy (str): The calculation strategy to use. Supported options are
             "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
