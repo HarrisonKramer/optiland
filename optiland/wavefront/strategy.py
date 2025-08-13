@@ -3,7 +3,7 @@
 This module provides different strategies for calculating the wavefront OPD,
 each encapsulating a different algorithm for determining the reference sphere.
 This approach uses the Strategy design pattern to allow for easy switching
-between methods like 'chief_ray' and 'best_fit'.
+between methods like 'chief_ray' and 'centroid_sphere'.
 
 Kramer Harrison, 2024
 """
@@ -190,70 +190,65 @@ class ChiefRayStrategy(ReferenceStrategy):
         return x, y, z, R.item()
 
 
-class BestFitStrategy(ReferenceStrategy):
-    """Calculates wavefront using a best-fit reference sphere.
+class CentroidReferenceSphereStrategy(ReferenceStrategy):
+    """Wavefront analysis strategy using a centroid-anchored reference sphere.
 
-    Fits the sphere in two stages:
-    1. Algebraic least squares for initial estimate.
-    2. Optional Gauss-Newton iterative refinement for improved accuracy.
+    This strategy computes the wavefront error relative to a reference sphere
+    whose center is fixed at the centroid of ray intersections with the image
+    surface. The radius is determined by fitting the wavefront points with
+    this fixed center.
 
-    Scaling is applied for numerical robustness.
+    This method is robust for:
+      * Off-axis fields
+      * Asymmetric pupils
+      * Systems with obscurations
+      * Arbitrary optical configurations (no reliance on paraxial tracing)
+
+    Args:
+        optic: The optical system under analysis.
+        distribution: The pupil sampling distribution.
+        robust_trim_std: Number of standard deviations for optional
+            outlier trimming in centroid computation. Set <= 0 to disable.
     """
 
     def __init__(
         self,
         optic,
         distribution,
-        max_iter: int = 20,
-        tol: float = 1e-6,
-        refine_fit: bool = True,
-    ):
-        """Initialize the best-fit strategy.
-
-        Args:
-            max_iter (int, optional): Max iterations for Gauss-Newton refinement.
-            tol (float, optional): Convergence tolerance for parameter updates.
-            refine_fit (bool, optional): Whether to perform Gauss-Newton refinement.
-        """
+        robust_trim_std: float = 3.0,
+    ) -> None:
         super().__init__(optic, distribution)
-        self.max_iter = max_iter
-        self.tol = tol
-        self.refine_fit = refine_fit
+        self.robust_trim_std = robust_trim_std
 
     def compute_wavefront_data(self, field, wavelength):
-        """Compute wavefront data using the best-fit reference sphere method.
-
-        Steps:
-            1. Trace the full set of rays for the field.
-            2. Fit a sphere to the wavefront points.
-            3. Compute the OPD relative to this sphere.
-            4. Use the minimum OPD as the reference OPD.
-            5. Normalize the OPD map.
+        """Computes wavefront data using a centroid-anchored reference sphere.
 
         Args:
-            field (tuple[float, float]): Field coordinates to analyze.
-            wavelength (float): Wavelength for the analysis.
+            field: Tuple (Hx, Hy) of field coordinates.
+            wavelength: Wavelength for the analysis in the system's units.
 
         Returns:
-            WavefrontData: Computed wavefront data.
+            WavefrontData: Structured data for the computed wavefront.
         """
-        # 1. Trace ray bundle
+        # 1. Trace ray bundle to image surface
         rays = self.optic.trace(*field, wavelength, None, self.distribution)
-        intensity = self.optic.surface_group.intensity[-1, :]
 
-        # 2. If rays originate from different positions, we must first correct tilt
+        # 2. Tilt correction in object space (assures rays have identical starting OPL)
         rays.opd = self._correct_tilt(field, rays.opd)
 
-        # 3. Calculate best fit sphere of wavefront
-        xc, yc, zc, R = self._calculate_best_fit_sphere(rays)
+        # 3. Determine reference sphere center and radius
+        center_x, center_y, center_z, radius = self._calculate_reference_sphere(rays)
 
-        # 4. Compute OPD from image to reference sphere
-        opd_img = self._opd_image_to_xp(rays, xc, yc, zc, R, wavelength)
+        # 4. Compute OPD from image surface to reference sphere
+        opd_img = self._opd_image_to_xp(
+            rays, center_x, center_y, center_z, radius, wavelength
+        )
         opd = rays.opd - opd_img
-        opd_ref = be.min(opd)
-        opd_wv = (opd_ref - opd) / (wavelength * 1e-3)
 
-        # 5. Compute the pupil intersection points
+        # 5. Remove piston by subtracting mean OPD
+        opd_waves = (be.mean(opd) - opd) / (wavelength * 1e-3)  # wavelength: µm to mm
+
+        # 6. Compute pupil coordinates (intersection with reference sphere)
         t = opd_img / self.n_image
         pupil_x = rays.x - t * rays.L
         pupil_y = rays.y - t * rays.M
@@ -263,136 +258,66 @@ class BestFitStrategy(ReferenceStrategy):
             pupil_x=pupil_x,
             pupil_y=pupil_y,
             pupil_z=pupil_z,
-            opd=opd_wv,
-            intensity=intensity,
-            radius=R,
+            opd=opd_waves,
+            intensity=rays.i,
+            radius=radius,
         )
 
-    def _calculate_best_fit_sphere(self, rays):
-        """Fit a sphere to the wavefront points."""
-        pts, _ = self._points_from_rays(rays)
-        center, radius = self._fit_sphere(pts)
-        return *center, radius
-
-    def _points_from_rays(self, rays):
-        """Convert ray data to 3D wavefront points."""
-        valid = (
-            be.isfinite(rays.x)
-            & be.isfinite(rays.y)
-            & be.isfinite(rays.z)
-            & be.isfinite(rays.L)
-            & be.isfinite(rays.M)
-            & be.isfinite(rays.N)
-            & be.isfinite(rays.opd)
-            & (rays.i != 0)
-        )
-        if not be.any(valid):
-            raise ValueError("No valid ray samples found for best-fit sphere.")
-
-        p = be.stack((rays.x, rays.y, rays.z), axis=1)[valid]
-        d = be.stack((rays.L, rays.M, rays.N), axis=1)[valid]
-        s = rays.opd[valid] / self.n_image
-        pts = p - s[:, None] * d
-        return pts, valid
-
-    def _fit_sphere(self, pts):
-        """Fit a sphere using algebraic LS and optional refinement."""
-        q, mean, scale = self._scale_points(pts)
-        theta = self._algebraic_fit(q)
-        if self.refine_fit:
-            theta = self._gauss_newton_refine(q, theta)
-        center = scale * theta[:3] + mean
-        radius = float(scale * theta[3])
-        return tuple(center), radius
-
-    def _scale_points(self, pts):
-        """Scale points for numerical stability.
-
-        Returns:
-            tuple: (scaled_points, mean, scale_factor)
-        """
-        if pts.ndim != 2 or pts.shape[1] != 3:
-            raise ValueError("Sphere fit points must be shape (N, 3).")
-
-        mean = pts.mean(axis=0)
-        scale = be.ptp(pts, axis=0).max() or 1.0
-        q = (pts - mean) / scale
-        return q, mean, scale
-
-    def _algebraic_fit(self, q):
-        """Algebraic least squares sphere fit.
+    def _calculate_reference_sphere(self, rays):
+        """Computes center and radius for the centroid-anchored reference sphere.
 
         Args:
-            q (array): Scaled points (N, 3).
+            rays: Traced rays at the image surface.
 
         Returns:
-            be.array: Initial parameters theta = [cx, cy, cz, r]
+            Tuple[float, float, float, float]: (center_x, center_y, center_z, radius)
         """
-        x = q[:, 0]
-        y = q[:, 1]
-        z = q[:, 2]
-        A = be.column_stack((x, y, z, be.ones_like(x)))
-        b = -(x * x + y * y + z * z)
-        coef, *_ = be.linalg.lstsq(A, b, rcond=None)
-        center_q = -0.5 * coef[:3]
-        r_sq = be.dot(center_q, center_q) - coef[3]
-        r_sq = be.maximum(r_sq, 0.0)
-        radius_q = be.sqrt(r_sq)
-        return be.concatenate((center_q, be.atleast_1d(radius_q)))
+        wavefront_points, valid_mask = self._points_from_rays(rays)
 
-    def _gauss_newton_refine(self, q, theta):
-        """Refine sphere parameters with Gauss-Newton iterations.
+        # Image-plane intersection points
+        image_points = be.stack((rays.x, rays.y, rays.z), axis=1)[valid_mask]
 
-        Args:
-            q (array): Scaled points (N, 3).
-            theta (array): Initial parameters [cx, cy, cz, r].
+        # Initialize weights
+        intensity = rays.i
+        weights = intensity[valid_mask]
+        weights = be.where(weights < 0.0, 0.0, weights)  # Clamp negatives
+        total_weight = be.sum(weights)
+        if total_weight == 0:
+            weights = be.ones_like(weights)
+            total_weight = be.sum(weights)
+        else:
+            weights = be.ones((image_points.shape[0],), dtype=image_points.dtype)
+            total_weight = be.sum(weights)
 
-        Returns:
-            array: Refined parameters [cx, cy, cz, r].
-        """
-        x = q[:, 0]
-        y = q[:, 1]
-        z = q[:, 2]
-        points = be.column_stack((x, y, z))
-        eps = 1e-12  # small safeguard for distances
+        # Weighted centroid of image-plane points
+        centroid = be.sum(image_points * weights[:, None], axis=0) / total_weight
 
-        for _ in range(self.max_iter):
-            diffs = points - theta[:3]
-            dists = be.linalg.norm(diffs, axis=1)
-            # Avoid division by zero. If a distance is zero, replace with tiny eps.
-            dists_safe = be.where(dists < eps, eps, dists)
-            residuals = dists - theta[3]
+        # Optional robust trimming to remove extreme outliers in centroid
+        if self.robust_trim_std and self.robust_trim_std > 0:
+            distances_img = be.linalg.norm(image_points - centroid, axis=1)
+            mean_d = be.mean(distances_img)
+            std_d = be.std(distances_img)
+            if std_d > 0:
+                keep_mask = distances_img <= (mean_d + self.robust_trim_std * std_d)
+                if be.sum(keep_mask) >= 4:
+                    weights = weights * be.cast(keep_mask, weights.dtype)
+                    total_weight = be.sum(weights)
+                    centroid = (
+                        be.sum(image_points * weights[:, None], axis=0) / total_weight
+                    )
 
-            J = be.empty((len(points), 4))
-            J[:, 0] = (theta[0] - x) / dists_safe
-            J[:, 1] = (theta[1] - y) / dists_safe
-            J[:, 2] = (theta[2] - z) / dists_safe
-            J[:, 3] = -1.0
+        # Radius: weighted mean distance from fixed centroid to wavefront points
+        distances_wf = be.linalg.norm(wavefront_points - centroid, axis=1)
+        radius = float(be.sum(weights * distances_wf) / be.sum(weights))
 
-            JTJ = J.T @ J
-            JTr = J.T @ residuals
-
-            try:
-                delta = be.linalg.solve(JTJ, -JTr)
-            except Exception:
-                # fallback: normal-equation least squares
-                delta, *_ = be.linalg.lstsq(JTJ, -JTr, rcond=None)
-
-            theta = theta + delta
-
-            if be.linalg.norm(delta) < self.tol:
-                break
-
-        # Ensure radius is positive
-        theta[3] = be.abs(theta[3])
-        return theta
+        return float(centroid[0]), float(centroid[1]), float(centroid[2]), radius
 
 
 def create_strategy(strategy_name, optic, distribution, **kwargs):
     """Factory function to create a wavefront calculation strategy.
 
     Args:
-        strategy_name (str): The name of the strategy ("chief_ray", "best_fit").
+        strategy_name (str): The name of the strategy ("chief_ray", "centroid_sphere").
         optic (Optic): The optical system.
         distribution (Distribution): The pupil sampling distribution.
 
@@ -404,7 +329,7 @@ def create_strategy(strategy_name, optic, distribution, **kwargs):
     """
     strategies = {
         "chief_ray": ChiefRayStrategy,
-        "best_fit": BestFitStrategy,
+        "centroid_sphere": CentroidReferenceSphereStrategy,
     }
     strategy_class = strategies.get(strategy_name)
 

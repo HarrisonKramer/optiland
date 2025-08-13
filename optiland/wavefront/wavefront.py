@@ -16,7 +16,7 @@ class Wavefront:
 
     This class acts as a high-level controller that delegates the complex
     work of wavefront analysis to a specified strategy (e.g., 'chief_ray' or
-    'best_fit'). It computes ray intersection points with the exit pupil,
+    'centroid_sphere'). It computes ray intersection points with the exit pupil,
     the optical path difference (OPD), ray intensities, and the radius of
     curvature of the reference sphere.
 
@@ -30,7 +30,7 @@ class Wavefront:
         distribution (str or Distribution): The ray distribution pattern. Can
             be a name (e.g., "hexapolar") or a Distribution object.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "best_fit". Defaults to "chief_ray".
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
