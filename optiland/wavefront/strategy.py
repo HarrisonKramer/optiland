@@ -263,6 +263,34 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
             radius=radius,
         )
 
+    def _points_from_rays(self, rays):
+        """Convert ray data to 3D wavefront points.
+
+        Args:
+            rays: Traced rays at the image surface.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: (points, valid_mask)
+        """
+        valid = (
+            be.isfinite(rays.x)
+            & be.isfinite(rays.y)
+            & be.isfinite(rays.z)
+            & be.isfinite(rays.L)
+            & be.isfinite(rays.M)
+            & be.isfinite(rays.N)
+            & be.isfinite(rays.opd)
+            & (rays.i != 0)
+        )
+        if not be.any(valid):
+            raise ValueError("No valid ray samples found for best-fit sphere.")
+
+        p = be.stack((rays.x, rays.y, rays.z), axis=1)[valid]
+        d = be.stack((rays.L, rays.M, rays.N), axis=1)[valid]
+        s = rays.opd[valid] / self.n_image
+        pts = p - s[:, None] * d
+        return pts, valid
+
     def _calculate_reference_sphere(self, rays):
         """Computes center and radius for the centroid-anchored reference sphere.
 
@@ -300,7 +328,7 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
             if std_d > 0:
                 keep_mask = distances_img <= (mean_d + self.robust_trim_std * std_d)
                 if be.sum(keep_mask) >= 4:
-                    weights = weights * be.cast(keep_mask, weights.dtype)
+                    weights = weights * be.array(keep_mask)
                     total_weight = be.sum(weights)
                     centroid = (
                         be.sum(image_points * weights[:, None], axis=0) / total_weight
