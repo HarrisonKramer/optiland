@@ -571,9 +571,10 @@ class TestForbesQ2dCoeffVariable:
             CoordinateSystem(),
             100,
             conic=0.0,
-            
-            coeffs_n=[(1, 1), (2, 2)],
-            coeffs_c=[0.1, 0.2],
+            freeform_coeffs = {
+                (1, 1): 0.1,
+                (2, 2): 0.2,
+            },
             norm_radius=15.0
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
