@@ -12,48 +12,48 @@ from optiland.optimization.variable.base import VariableBehavior
 class ForbesQbfsCoeffVariable(VariableBehavior):
     """
     Represents a variable for a Forbes Q-bfs (rotationally symmetric) coefficient.
-    This variable targets an individual coefficient `c_n` from the `coeffs_c` list.
+    This variable targets a coefficient for a specific radial order `n`.
     """
 
     def __init__(
         self, optic, surface_number, coeff_number, apply_scaling=False, **kwargs
     ):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
-        self.coeff_number = coeff_number
+        self.coeff_number = coeff_number  # This is the radial order 'n'
 
     def get_value(self):
-        """Gets the value of the nth Q-bfs coefficient."""
+        """Gets the value of the nth Q-bfs coefficient from the radial_terms dict."""
         surf = self._surfaces.surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQbfsGeometry):
             raise TypeError("This variable is only for ForbesQbfsGeometry.")
 
-        coeffs = geom.coeffs_c
-        value = coeffs[self.coeff_number] if self.coeff_number < len(coeffs) else 0.0
+        # Access the public radial_terms dictionary directly
+        value = geom.radial_terms.get(self.coeff_number, 0.0)
 
         if self.apply_scaling:
             return self.scale(value)
         return value
 
     def update_value(self, new_value):
-        """Updates the value of the nth Q-bfs coefficient."""
+        """Updates the value of the nth Q-bfs coefficient in the radial_terms dict."""
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
 
         surf = self.optic.surface_group.surfaces[self.surface_number]
         geom = surf.geometry
-        if not isinstance(geom.coeffs_c, list):
-            geom.coeffs_c = list(geom.coeffs_c)
 
-        if self.coeff_number >= len(geom.coeffs_c):
-            pad_width = self.coeff_number + 1 - len(geom.coeffs_c)
-            geom.coeffs_c.extend([0.0] * pad_width)
+        # Update the public dictionary
+        geom.radial_terms[self.coeff_number] = new_value
 
-        geom.coeffs_c[self.coeff_number] = new_value
+        # Trigger the geometry object to re-process the dictionary into its
+        # internal coefficient lists for the computational backend.
+        geom._prepare_coeffs()
 
     def scale(self, value):
         """
         So far, scaling is a no-op for Forbes coefficients.
+        NOTE
         This method can be overridden if scaling is needed in the future.
         """
         scaling_factor = 1.0
@@ -74,53 +74,40 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
     """
     Represents a variable for a Forbes Q-2D (freeform) coefficient.
     This variable targets the coefficient `c` corresponding to a specific
-    (n, m) term defined in the `coeffs_n` list.
+    (n, m, type) term defined in the `freeform_coeffs` dictionary.
     """
 
     def __init__(
-        self, optic, surface_number, coeff_nm_tuple, apply_scaling=False, **kwargs
+        self, optic, surface_number, coeff_tuple, apply_scaling=False, **kwargs
     ):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
-        if not isinstance(coeff_nm_tuple, tuple) or len(coeff_nm_tuple) != 2:
-            raise ValueError("`coeff_nm_tuple` must be a tuple of (n, m).")
-        self.coeff_nm_tuple = coeff_nm_tuple
-
-    def _get_coeff_index(self, geom):
-        """Finds the index of the (n, m) tuple in the geometry's coeffs_n list."""
-        try:
-            return geom.coeffs_n.index(self.coeff_nm_tuple)
-        except (ValueError, AttributeError):
-            return -1  # Not found
+        if not isinstance(coeff_tuple, tuple) or not (2 <= len(coeff_tuple) <= 3):
+            raise ValueError(
+                "`coeff_tuple` must be a tuple of (n, m) or (n, m, 'sin')."
+            )
+        self.coeff_tuple = coeff_tuple
 
     def get_value(self):
-        """Gets the value of the c coefficient for the specified (n, m) term."""
+        """Gets the value of the coefficient for the specified (n, m, type) term."""
         surf = self._surfaces.surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQ2dGeometry):
             raise TypeError("This variable is only for ForbesQ2dGeometry.")
 
-        idx = self._get_coeff_index(geom)
-        if idx != -1 and idx < len(geom.coeffs_c):
-            return geom.coeffs_c[idx]
-        return 0.0
+        return geom.freeform_coeffs.get(self.coeff_tuple, 0.0)
 
     def update_value(self, new_value):
-        """Updates the value of the c coefficient for the specified (n, m) term."""
+        """Updates the value of the coefficient for the specified (n, m, type) term."""
         surf = self.optic.surface_group.surfaces[self.surface_number]
         geom = surf.geometry
 
-        if not isinstance(geom.coeffs_n, list):
-            geom.coeffs_n = list(geom.coeffs_n)
-        if not isinstance(geom.coeffs_c, list):
-            geom.coeffs_c = list(geom.coeffs_c)
-
-        idx = self._get_coeff_index(geom)
-        if idx != -1:
-            geom.coeffs_c[idx] = new_value
-        else:
-            geom.coeffs_n.append(self.coeff_nm_tuple)
-            geom.coeffs_c.append(new_value)
+        geom.freeform_coeffs[self.coeff_tuple] = new_value
+        geom._prepare_coeffs()
 
     def __str__(self):
-        n, m = self.coeff_nm_tuple
-        return f"Forbes Q-2D Coeff (n={n}, m={m}), Surface {self.surface_number}"
+        n, m, *tail = self.coeff_tuple
+        term_type = "sin" if tail and tail[0] == "sin" else "cos"
+        return (
+            f"Forbes Q-2D Coeff (n={n}, m={m}, {term_type}), "
+            f"Surface {self.surface_number}"
+        )

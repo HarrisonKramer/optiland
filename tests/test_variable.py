@@ -546,8 +546,8 @@ class TestForbesQbfsCoeffVariable:
         self.forbes_var = variable.ForbesQbfsCoeffVariable(self.optic, 1, 1, apply_scaling=False)
 
     def test_get_value(self, set_test_backend):
-        assert_allclose(self.forbes_var.get_value(), 0.2)
-
+        assert_allclose(self.forbes_var.get_value(), 0.1)
+        
     def test_update_value(self, set_test_backend):
         self.forbes_var.update_value(0.5)
         assert_allclose(self.forbes_var.get_value(), 0.5)
@@ -562,6 +562,25 @@ class TestForbesQbfsCoeffVariable:
     def test_string_representation(self, set_test_backend):
         assert str(self.forbes_var) == "Forbes Q-bfs Coeff n=1, Surface 1"
 
+    def test_get_value_nonexistent(self, set_test_backend):
+        
+        var_n0 = variable.ForbesQbfsCoeffVariable(self.optic, 1, 0, apply_scaling=False)
+        assert_allclose(var_n0.get_value(), 0.0)
+
+        var_n5 = variable.ForbesQbfsCoeffVariable(self.optic, 1, 5, apply_scaling=False)
+        assert_allclose(var_n5.get_value(), 0.0)
+
+    def test_scaling(self, set_test_backend):
+
+        var_scaled = variable.ForbesQbfsCoeffVariable(self.optic, 1, 2, apply_scaling=True)
+        
+        var_scaled.scale = lambda x: x * 10.0
+        var_scaled.inverse_scale = lambda x: x / 10.0
+        
+        assert_allclose(var_scaled.get_value(), 2.0)
+        
+        var_scaled.update_value(5.0)
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.radial_terms[2], 0.5)
 
 class TestForbesQ2dCoeffVariable:
     @pytest.fixture(autouse=True)
@@ -574,10 +593,12 @@ class TestForbesQ2dCoeffVariable:
             freeform_coeffs = {
                 (1, 1): 0.1,
                 (2, 2): 0.2,
+                (1, 1, 'sin'): 0.3,
             },
             norm_radius=15.0
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
+        # Variable for the (2, 2) cosine term
         self.forbes_var = variable.ForbesQ2dCoeffVariable(self.optic, 1, (2, 2), apply_scaling=False)
 
     def test_get_value(self, set_test_backend):
@@ -590,22 +611,40 @@ class TestForbesQ2dCoeffVariable:
     def test_update_value_existing(self, set_test_backend):
         self.forbes_var.update_value(0.5)
         assert_allclose(self.forbes_var.get_value(), 0.5)
-        assert_allclose(self.optic.surface_group.surfaces[1].geometry.coeffs_c[1], 0.5)
+        # Test the public API, not the internal implementation detail
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[(2, 2)], 0.5)
 
     def test_update_value_new(self, set_test_backend):
         forbes_var_new = variable.ForbesQ2dCoeffVariable(self.optic, 1, (3, 1), apply_scaling=False)
         forbes_var_new.update_value(0.9)
         assert_allclose(forbes_var_new.get_value(), 0.9)
-        assert (3, 1) in self.optic.surface_group.surfaces[1].geometry.coeffs_n
-        assert len(self.optic.surface_group.surfaces[1].geometry.coeffs_c) == 3
+        assert (3, 1) in self.optic.surface_group.surfaces[1].geometry.freeform_coeffs
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[(3, 1)], 0.9)
 
     def test_string_representation(self, set_test_backend):
-        assert str(self.forbes_var) == "Forbes Q-2D Coeff (n=2, m=2), Surface 1"
+        assert str(self.forbes_var) == "Forbes Q-2D Coeff (n=2, m=2, cos), Surface 1"
 
     def test_invalid_coeff_tuple(self, set_test_backend):
         with pytest.raises(ValueError):
             variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
 
+    def test_invalid_coeff_tuple(self, set_test_backend):
+        with pytest.raises(ValueError):
+            variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
+            
+    def test_get_and_update_sine_term(self, set_test_backend):
+       
+        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, (1, 1, 'sin'), apply_scaling=False)
+        assert_allclose(var_sin.get_value(), 0.3)
+
+        var_sin.update_value(-0.5)
+        assert_allclose(var_sin.get_value(), -0.5)
+        assert_allclose(self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[(1, 1, 'sin')], -0.5)
+
+    def test_string_representation_sine(self, set_test_backend):
+        """Test the string representation for a sine term."""
+        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, (1, 1, 'sin'))
+        assert str(var_sin) == "Forbes Q-2D Coeff (n=1, m=1, sin), Surface 1"
 
 class TestVariableManager:
     def test_add(self, set_test_backend):

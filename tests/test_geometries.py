@@ -1651,6 +1651,82 @@ class TestForbesQbfsGeometry:
         cs = CoordinateSystem()
         geometry = ForbesQbfsGeometry(cs, radius=100.0)
         assert str(geometry) == "ForbesQbfs"
+        
+    def test_sag_with_infinite_radius(self, set_test_backend):
+        """Test sag calculation with an infinite radius (planar base)."""
+        geometry = ForbesQbfsGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=be.inf,
+            radial_terms={1: 1e-3},
+            norm_radius=10.0
+        )
+        # Base sag should be 0, total sag is just the departure term
+        x, y = 5.0, 0.0
+        rho = 5.0
+        u = rho / 10.0
+        usq = u**2
+        # For a_1 = 1e-3, S = u^2(1-u^2) * a_1 * Q_1(u^2)
+        # Q_1(x) = (13-16x)/sqrt(19)
+        q1 = (13 - 16 * usq) / np.sqrt(19)
+        expected_sag = usq * (1 - usq) * 1e-3 * q1
+        assert_allclose(geometry.sag(x, y), expected_sag)
+
+    def test_sag_outside_norm_radius(self, set_test_backend):
+        """Test that sag departure is zero outside the normalization radius."""
+        geometry = ForbesQbfsGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=100.0,
+            radial_terms={0: 1e-3},
+            norm_radius=10.0
+        )
+        standard_geom = geometries.StandardGeometry(
+            coordinate_system=CoordinateSystem(), radius=100.0
+        )
+        # Point outside norm_radius
+        x, y = 12.0, 0.0
+        # Sag should be just the base conic sag
+        assert_allclose(geometry.sag(x, y), standard_geom.sag(x, y))
+
+    def test_analytical_normal_vs_autodiff(self, set_test_backend):
+        """Compare analytical surface normal with autodiff for validation."""
+        if be.get_backend() != "torch":
+            pytest.skip("This test requires both numpy and torch backends to compare.")
+
+        radial_terms = {0: 1.6e-4, 1: 0.3e-4, 2: 0.15e-4}
+        
+        be.set_backend("numpy")
+        geometry_np = ForbesQbfsGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=22.0,
+            conic=-4.428,
+            radial_terms=radial_terms,
+            norm_radius=6.336,
+        )
+        
+        
+        be.set_backend("torch")
+        geometry_torch = ForbesQbfsGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=22.0,
+            conic=-4.428,
+            radial_terms=radial_terms,
+            norm_radius=6.336,
+        )
+
+        x, y = 2.5, 1.5
+        
+        # NumPy analytical normal
+        be.set_backend("numpy")
+        nx_np, ny_np, nz_np = geometry_np._surface_normal(x, y)
+
+        # PyTorch autodiff normal
+        be.set_backend("torch")
+        nx_torch, ny_torch, nz_torch = geometry_torch._surface_normal(x, y)
+        
+        assert_allclose(nx_np, be.to_numpy(nx_torch), atol=1e-7)
+        assert_allclose(ny_np, be.to_numpy(ny_torch), atol=1e-7)
+        assert_allclose(nz_np, be.to_numpy(nz_torch), atol=1e-7)
+
 
     def test_sag_vs_zemax(self, set_test_backend):
         """
@@ -1830,6 +1906,106 @@ class TestForbesQbfsGeometry:
         assert reconstructed_geometry.radius == 123.4
         assert reconstructed_geometry.k == -0.9
         assert reconstructed_geometry.radial_terms == radial_terms
+
+
+class TestForbesQ2dGeometry:
+    def test_str(self, set_test_backend):
+        """Test the string representation of the geometry."""
+        cs = CoordinateSystem()
+        geometry = ForbesQ2dGeometry(cs, radius=100.0, conic=0.0)
+        assert str(geometry) == "ForbesQ2d"
+
+    def test_init_no_coeffs(self, set_test_backend):
+        """Test initialization with no freeform coefficients."""
+        geometry = ForbesQ2dGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=100.0,
+            conic=-0.5
+        )
+        assert len(geometry.coeffs_c) == 0
+        assert len(geometry.coeffs_n) == 0
+        assert len(geometry.cm0_coeffs) == 0
+        assert len(geometry.ams_coeffs) == 0
+        assert len(geometry.bms_coeffs) == 0
+
+    def test_sag_symmetric_terms_only(self, set_test_backend):
+        """Test sag with only m=0 terms, should match Q-bfs."""
+        radial_terms = {0: 1e-3, 1: -2e-4}
+        freeform_coeffs = {(n, 0): c for n, c in radial_terms.items()}
+        
+        geom_q2d = ForbesQ2dGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=50.0,
+            conic=0.0,
+            freeform_coeffs=freeform_coeffs,
+            norm_radius=10.0
+        )
+        geom_qbfs = ForbesQbfsGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=50.0,
+            conic=0.0,
+            radial_terms=radial_terms,
+            norm_radius=10.0
+        )
+        x, y = 3.0, 4.0
+        assert_allclose(geom_q2d.sag(x, y), geom_qbfs.sag(x, y))
+
+    def test_sag_with_sine_term(self, set_test_backend):
+        """Test sag with a sine term, which should be zero along the x-axis."""
+        geometry = ForbesQ2dGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=100.0,
+            conic=0.0,
+            freeform_coeffs={(1, 1, 'sin'): 1e-3},
+            norm_radius=10.0
+        )
+        # Along x-axis, theta=0, so sin(m*theta)=0
+        x, y = 5.0, 0.0
+        # Sag should be just the base conic sag
+        base_geom = geometries.StandardGeometry(coordinate_system=CoordinateSystem(), radius=100.0)
+        assert_allclose(geometry.sag(x, y), base_geom.sag(x, y))
+
+    def test_prepare_coeffs(self, set_test_backend):
+        """Test the internal _prepare_coeffs method."""
+        freeform_coeffs = {
+            (0, 0): 1.0,
+            (1, 1): 2.0,
+            (1, 1, 'sin'): 3.0,
+            (0, 2): 4.0,
+        }
+        geometry = ForbesQ2dGeometry(
+            coordinate_system=CoordinateSystem(),
+            radius=100.0,
+            conic=0.0,
+            freeform_coeffs=freeform_coeffs,
+            norm_radius=10.0
+        )
+        # cm0 should have a_0^0
+        assert_allclose(geometry.cm0_coeffs, [1.0])
+        # ams should have a_1^1 and a_0^2
+        assert len(geometry.ams_coeffs) == 2
+        assert_allclose(geometry.ams_coeffs[0], [0.0, 2.0]) # a_n^1
+        assert_allclose(geometry.ams_coeffs[1], [4.0]) # a_n^2
+        # bms should have b_1^1
+        assert len(geometry.bms_coeffs) == 2
+        assert_allclose(geometry.bms_coeffs[0], [0.0, 3.0]) # b_n^1
+
+    def test_to_dict_from_dict(self, set_test_backend):
+        """Test serialization and deserialization."""
+        cs = CoordinateSystem(x=1, y=-1, z=10)
+        freeform_coeffs = {(2, 2): 1e-4, (1, 1, 'sin'): -5e-5}
+        original_geometry = ForbesQ2dGeometry(
+            coordinate_system=cs,
+            radius=123.4,
+            conic=-0.9,
+            freeform_coeffs=freeform_coeffs,
+            norm_radius=45.6
+        )
+        geom_dict = original_geometry.to_dict()
+        reconstructed_geometry = ForbesQ2dGeometry.from_dict(geom_dict)
+        assert reconstructed_geometry.to_dict() == geom_dict
+
+
 
 
 from optiland.geometries.forbes.qpoly import Q2d_nm_c_to_a_b, compute_z_zprime_Q2d

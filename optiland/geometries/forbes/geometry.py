@@ -89,23 +89,30 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
         self.radial_terms = radial_terms if radial_terms else {}
+        self._prepare_coeffs()
+        self.norm_radius = be.array(norm_radius)
+        self.is_symmetric = True
+
+    def _prepare_coeffs(self):
+        """
+        Prepares the internal coefficient lists (coeffs_c, coeffs_n) from the
+        user-facing radial_terms dictionary. This ensures that sparse coefficient
+        dictionaries are correctly converted to the dense list format required
+        by the backend polynomial evaluation functions.
+        """
         if self.radial_terms:
-            # The internal representation still uses coeffs_n and coeffs_c
-            # for the qpoly backend functions, but for the user API
-            # we use radial_terms for clarity.
-            coeffs_n = []
-            coeffs_c = []
-            for n, c in sorted(self.radial_terms.items()):
-                coeffs_n.append((n, 0))
-                coeffs_c.append(c)
-            self.coeffs_n = coeffs_n
-            self.coeffs_c = be.array(coeffs_c)
+            max_n = max(self.radial_terms.keys()) if self.radial_terms else -1
+            if max_n >= 0:
+                coeffs_c = [self.radial_terms.get(n, 0.0) for n in range(max_n + 1)]
+                coeffs_n = [(n, 0) for n in range(max_n + 1)]
+                self.coeffs_n = coeffs_n
+                self.coeffs_c = be.array(coeffs_c)
+            else:
+                self.coeffs_n = []
+                self.coeffs_c = be.array([])
         else:
             self.coeffs_n = []
             self.coeffs_c = be.array([])
-
-        self.norm_radius = be.array(norm_radius)
-        self.is_symmetric = True
 
     def sag(self, x=0, y=0):
         """
@@ -291,14 +298,6 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         nz = -1 / safe_mag
         return nx, ny, nz
 
-    def flip(self):
-        """
-        Flip the surface orientation by negating the radius and flipping
-        the coordinate system.
-        """
-        self.radius = -self.radius
-        self.coordinate_system.flip()
-
     def __str__(self):
         return "ForbesQbfs"
 
@@ -406,48 +405,54 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         self.c = 1 / self.radius if self.radius != 0 else 0
         self.conic = float(conic)
         self.freeform_coeffs = freeform_coeffs if freeform_coeffs else {}
+        self.norm_radius = float(norm_radius)
+
+        # Initialize internal lists that will be populated by _prepare_coeffs
+        self.coeffs_n = []
+        self.coeffs_c = be.array([])
+        self.cm0_coeffs = []
+        self.ams_coeffs = []
+        self.bms_coeffs = []
+
+        # Call prepare_coeffs to populate everything from freeform_coeffs
+        self._prepare_coeffs()
+
+    def _prepare_coeffs(self):
+        """
+        Prepares all internal coefficient structures (coeffs_n, coeffs_c, and
+        the qpoly backend lists) from the user-facing freeform_coeffs dictionary.
+        This method is the single source of truth for converting the user-friendly
+        dictionary into all necessary internal formats.
+        """
         if self.freeform_coeffs:
             coeffs_n = []
             coeffs_c = []
-            # Sort by n, then m, then by type (cos/sin)
+            # Sort by n, then m, then by type (cos/sin) to ensure consistent ordering
             sorted_keys = sorted(
                 self.freeform_coeffs.keys(),
                 key=lambda k: (k[0], abs(k[1]), 0 if len(k) == 2 else 1),
             )
             for key in sorted_keys:
                 value = self.freeform_coeffs[key]
-                if len(key) == 3 and key[2] == "sin":
+                if len(key) == 3 and key[2].lower() == "sin":
                     coeffs_n.append((key[0], -key[1]))
                 else:
                     coeffs_n.append((key[0], key[1]))
                 coeffs_c.append(value)
+
             self.coeffs_n = coeffs_n
             self.coeffs_c = be.array(coeffs_c)
         else:
             self.coeffs_n = []
             self.coeffs_c = be.array([])
 
-        self.norm_radius = float(norm_radius)
-
-        self.cm0_coeffs = None
-        self.ams_coeffs = None
-        self.bms_coeffs = None
-        self._prepare_coeffs()
-
-    def _prepare_coeffs(self):
-        """
-        Prepares the coefficient structure required by the qpoly module.
-
-        This converts the coeffs_n and coeffs_c arrays into the internal format
-        needed for Q2D polynomial calculations, separating the a_n^m and
-        b_n^m coefficients.
-        """
-        if not self.coeffs_n or len(self.coeffs_c) == 0:
-            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
-        else:
+        # Now, prepare the backend-specific lists required by qpoly
+        if self.coeffs_n and len(self.coeffs_c) > 0:
             self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = Q2d_nm_c_to_a_b(
                 self.coeffs_n, self.coeffs_c
             )
+        else:
+            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
 
     def sag(self, x, y):
         """
@@ -525,52 +530,6 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         S = be.where(u > 1, 0.0, total_departure)
 
         return z_base + S
-
-    def to_dict(self):
-        """
-        Serializes the geometry to a dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary containing all parameters needed to reconstruct the geometry
-        """
-        return {
-            "type": self.__class__.__name__,
-            "cs": self.cs.to_dict(),
-            "radius": self.radius,
-            "conic": self.conic,
-            "freeform_coeffs": self.freeform_coeffs,
-            "norm_radius": self.norm_radius,
-            "tol": self.tol,
-            "max_iter": self.max_iter,
-        }
-
-    @classmethod
-    def from_dict(cls, data):
-        """
-        Creates a ForbesQ2dGeometry instance from a dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            Dictionary containing the geometry parameters
-
-        Returns
-        -------
-        ForbesQ2dGeometry
-            The reconstructed geometry instance
-        """
-        cs = CoordinateSystem.from_dict(data["cs"])
-        return cls(
-            cs,
-            data["radius"],
-            data.get("conic", 0.0),
-            freeform_coeffs=data.get("freeform_coeffs", None),
-            norm_radius=data.get("norm_radius", 1.0),
-            tol=data.get("tol", 1e-10),
-            max_iter=data.get("max_iter", 100),
-        )
 
     def _surface_normal(self, x, y):
         x_in = be.array(x)
@@ -671,3 +630,52 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         nz = -1.0 / safe_mag
 
         return nx, ny, nz
+
+    def to_dict(self):
+        """
+        Serializes the geometry to a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all parameters needed to reconstruct the geometry
+        """
+        return {
+            "type": self.__class__.__name__,
+            "cs": self.cs.to_dict(),
+            "radius": self.radius,
+            "conic": self.conic,
+            "freeform_coeffs": self.freeform_coeffs,
+            "norm_radius": self.norm_radius,
+            "tol": self.tol,
+            "max_iter": self.max_iter,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a ForbesQ2dGeometry instance from a dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary containing the geometry parameters
+
+        Returns
+        -------
+        ForbesQ2dGeometry
+            The reconstructed geometry instance
+        """
+        cs = CoordinateSystem.from_dict(data["cs"])
+        return cls(
+            cs,
+            data["radius"],
+            data.get("conic", 0.0),
+            freeform_coeffs=data.get("freeform_coeffs", None),
+            norm_radius=data.get("norm_radius", 1.0),
+            tol=data.get("tol", 1e-10),
+            max_iter=data.get("max_iter", 100),
+        )
+
+    def __str__(self):
+        return "ForbesQ2d"
