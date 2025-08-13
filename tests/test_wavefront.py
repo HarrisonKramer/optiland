@@ -2,13 +2,13 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-import optiland.backend as be
 import pytest
 
+import optiland.backend as be
 from optiland import distribution
-from optiland.wavefront import Wavefront, WavefrontData, OPDFan, OPD, ZernikeOPD
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.objectives import CookeTriplet, DoubleGauss
+from optiland.wavefront import OPD, OPDFan, Wavefront, WavefrontData, ZernikeOPD
 from tests.utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing

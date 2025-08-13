@@ -111,7 +111,7 @@ class Wavefront:
         Xw = X * W
         yw = opd * be.sqrt(weights)
 
-        XT_X = be.matmul(Xw.T, Xw) + ridge * be.eye(3, dtype=opd.dtype)
+        XT_X = be.matmul(Xw.T, Xw) + ridge * be.eye(3)
         XT_y = be.matmul(Xw.T, yw)
 
         # solve for coefficients
