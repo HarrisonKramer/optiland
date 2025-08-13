@@ -275,6 +275,6 @@ class BaseZernike(ABC):
                 continue
 
             power_term = r ** (n - 2 * k - 1) if (n - 2 * k - 1) >= 0 else 0
-            value += (-1) ** k * (numerator / denominator) * factor * power_term
+            value = value + (-1) ** k * (numerator / denominator) * factor * power_term
 
         return value

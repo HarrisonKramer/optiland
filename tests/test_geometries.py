@@ -756,7 +756,7 @@ class TestZernikeGeometry:
         ]
 
     def create_geometry(
-        self, coefficients, norm_radius=10, zernike_type="fringe", radius=22, conic=0.0
+        self, coefficients, norm_radius: float=10, zernike_type: str="fringe", radius=22, conic=0.0
     ) -> geometries.ZernikePolynomialGeometry:
         cs = CoordinateSystem()
 
@@ -1161,7 +1161,7 @@ class TestZernikeGeometry:
             zernike_type, self.REFERENCE_GRADIENT["standard"]
         )
 
-        assert np.allclose(normals, reference, atol=1e-6, rtol=1e-6)
+        assert_allclose(normals, reference, atol=1e-6, rtol=1e-6)
 
     @pytest.mark.parametrize(
         "x, y, norm_radius, expectation",
@@ -1180,6 +1180,33 @@ class TestZernikeGeometry:
 
         with expectation:
             geometry._validate_inputs(x, y)
+
+
+    def test_to_dict(self, set_test_backend):
+        geometry = self.create_geometry(
+            coefficients=[0.5, 0.2, 0.3, 0.1, 0.2],
+            zernike_type="standard",
+            norm_radius=1.0,
+        )
+        geometry_dict = geometry.to_dict()
+
+        assert geometry_dict["coefficients"] == [0.5, 0.2, 0.3, 0.1, 0.2]
+        assert geometry_dict["zernike_type"] == "standard"
+        assert geometry_dict["norm_radius"] == 1.0
+
+    def test_from_dict(self, set_test_backend):
+        geometry = self.create_geometry(
+            coefficients=[0.5, 0.2, 0.3, 0.1, 0.2],
+            zernike_type="standard",
+            norm_radius=1.0,
+        )
+
+        geometry_dict = geometry.to_dict()
+        new_geometry = geometries.ZernikePolynomialGeometry.from_dict(geometry_dict)
+
+        assert all(new_geometry.coefficients == geometry.coefficients)
+        assert new_geometry.zernike_type == geometry.zernike_type
+        assert new_geometry.norm_radius == geometry.norm_radius
 
 # --- Fixtures for Toroidal Tests ---
 @pytest.fixture
