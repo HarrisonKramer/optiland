@@ -12,7 +12,7 @@ from .plane import Plane
 from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
 from .toroidal import ToroidalGeometry
-from .zernike import ZernikePolynomialGeometry, factorial
+from .zernike import ZernikePolynomialGeometry
 
 __all__ = [
     # From base.py
@@ -37,5 +37,4 @@ __all__ = [
     "ToroidalGeometry",
     # From zernike.py
     "ZernikePolynomialGeometry",
-    "factorial",
 ]
