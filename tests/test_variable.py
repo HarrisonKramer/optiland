@@ -209,22 +209,23 @@ class TestMaterialVariable:
     def setup(self):
         self.optic = Objective60x()
         self.surface_number = 1
-        self.glass_selection = ['N-BK7', 'N-SSK2', 'N-SK2', 'N-SK16']
+        self.glass_selection = ["N-BK7", "N-SSK2", "N-SK2", "N-SK16"]
         self.material_var = variable.MaterialVariable(
             optic=self.optic,
             surface_number=self.surface_number,
-            glass_selection=self.glass_selection,)
+            glass_selection=self.glass_selection,
+        )
 
     def test_get_value(self, set_test_backend):
-        assert self.material_var.get_value() == 'N-FK51'
+        assert self.material_var.get_value() == "N-FK51"
 
     def test_update_value(self, set_test_backend):
-        self.material_var.update_value('F5')
-        assert self.material_var.get_value() == 'F5'
+        self.material_var.update_value("F5")
+        assert self.material_var.get_value() == "F5"
 
     def test_scale(self, set_test_backend):
         # Does not make much sense, scale() doesn't do anything
-        assert self.material_var.scale('F5') == 'F5'
+        assert self.material_var.scale("F5") == "F5"
 
     def test_string_representation(self, set_test_backend):
         assert str(self.material_var) == "Material, Surface 1"
@@ -234,10 +235,17 @@ class TestMaterialVariable:
         abbe = AbbeMaterial(n=(1.5168,), abbe=(64.17,))
         self.optic.surface_group.surfaces[self.surface_number].material_post = abbe
 
-        with patch("optiland.materials.material_utils.find_closest_glass", return_value="N-BK7"), \
-            patch("optiland.materials.material_utils.get_nd_vd", return_value=(1.5168, 64.17)), \
-            patch("builtins.print") as mock_print:
-
+        with (
+            patch(
+                "optiland.materials.material_utils.find_closest_glass",
+                return_value="N-BK7",
+            ),
+            patch(
+                "optiland.materials.material_utils.get_nd_vd",
+                return_value=(1.5168, 64.17),
+            ),
+            patch("builtins.print") as mock_print,
+        ):
             mat_var = MaterialVariable(
                 optic=self.optic,
                 surface_number=self.surface_number,
@@ -250,6 +258,7 @@ class TestMaterialVariable:
             printed = mock_print.call_args[0][0]
             assert "AbbeMaterial" in printed
             assert "N-BK7" in printed
+
 
 class TestAsphereCoeffVariable:
     @pytest.fixture(autouse=True)
