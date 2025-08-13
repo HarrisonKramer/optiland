@@ -8,8 +8,10 @@ blocks of optical systems in Optiland.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
@@ -24,6 +26,9 @@ from optiland.geometries import (
     ToroidalGeometry,
     ZernikePolynomialGeometry,
 )
+
+if TYPE_CHECKING:
+    from optiland.geometries.zernike import ZernikeType
 
 
 @dataclass
@@ -47,6 +52,7 @@ class GeometryConfig:
         conic_y (float): conic constant in y for biconic. Defaults to 0.0.
         toroidal_coeffs_poly_y (list): toroidal YZ polynomial coefficients.
                                     Defaults to empty list.
+        zernike_type (str): type of Zernike polynomial to use. Defaults to "fringe".
     """
 
     radius: float = be.inf
@@ -63,6 +69,7 @@ class GeometryConfig:
     conic_x: float = 0.0  # Used by Biconic
     conic_y: float = 0.0  # Used by Biconic
     toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
+    zernike_type: ZernikeType = "fringe"
 
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
@@ -76,7 +83,7 @@ def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
     Returns:
         Plane
     """
-    return Plane(cs)
+    return Plane(coordinate_system=cs)
 
 
 def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
@@ -93,7 +100,9 @@ def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
     # Use a Plane if the radius is infinity.
     if be.isinf(config.radius):
         return Plane(cs)
-    return StandardGeometry(cs, config.radius, config.conic)
+    return StandardGeometry(
+        coordinate_system=cs, radius=config.radius, conic=config.conic
+    )
 
 
 def _create_even_asphere(cs: CoordinateSystem, config: GeometryConfig):
@@ -108,12 +117,12 @@ def _create_even_asphere(cs: CoordinateSystem, config: GeometryConfig):
         EvenAsphere
     """
     return EvenAsphere(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -129,12 +138,12 @@ def _create_odd_asphere(cs: CoordinateSystem, config: GeometryConfig):
         OddAsphere
     """
     return OddAsphere(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -150,12 +159,12 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         PolynomialGeometry
     """
     return PolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -171,14 +180,14 @@ def _create_chebyshev(cs: CoordinateSystem, config: GeometryConfig):
         ChebyshevPolynomialGeometry
     """
     return ChebyshevPolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
-        config.norm_x,
-        config.norm_y,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
+        norm_x=config.norm_x,
+        norm_y=config.norm_y,
     )
 
 
@@ -194,13 +203,14 @@ def _create_zernike(cs: CoordinateSystem, config: GeometryConfig):
         ZernikePolynomialGeometry
     """
     return ZernikePolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
-        config.norm_radius,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        zernike_type=config.zernike_type,
+        coefficients=config.coefficients,
+        norm_radius=config.norm_radius,
     )
 
 

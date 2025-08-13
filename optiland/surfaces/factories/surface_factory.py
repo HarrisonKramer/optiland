@@ -98,6 +98,7 @@ class SurfaceFactory:
             conic_x=kwargs.get("conic_x", 0.0),
             conic_y=kwargs.get("conic_y", 0.0),
             toroidal_coeffs_poly_y=kwargs.get("toroidal_coeffs_poly_y", []),
+            zernike_type=kwargs.get("zernike_type", "fringe"),
         )
 
         geometry = self._geometry_factory.create(

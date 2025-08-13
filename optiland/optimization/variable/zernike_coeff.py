@@ -11,6 +11,7 @@ drpaprika, 2025
 
 import numpy as np
 
+import optiland.backend as be
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 
@@ -50,16 +51,16 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         surf = self._surfaces.surfaces[self.surface_number]
         i = self.coeff_index
         try:
-            value = surf.geometry.c[i]
+            value = surf.geometry.coefficients[i]
         except IndexError:
             pad_width_i = max(0, i + 1)
             c_new = np.pad(
-                surf.geometry.c,
+                surf.geometry.coefficients,
                 pad_width=(0, pad_width_i),
                 mode="constant",
                 constant_values=0,
             )
-            surf.geometry.c = c_new
+            surf.geometry.coefficients = c_new
             value = 0
         if self.apply_scaling:
             return self.scale(value)
@@ -76,18 +77,26 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
             new_value = self.inverse_scale(new_value)
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i = self.coeff_index
-        try:
-            surf.geometry.c[i] = new_value
-        except IndexError:
+
+        if i < len(surf.geometry.coefficients):
+            if be.get_backend() == "torch":
+                with be.grad_mode.temporary_disable():
+                    # If the coefficient already exists, update it
+                    surf.geometry.coefficients[i] = new_value
+            else:
+                # If the coefficient already exists, update it
+                surf.geometry.coefficients[i] = new_value
+        else:
+            # If the coefficient does not exist, pad the array and set the value
             pad_width_i = max(0, i + 1)
-            c_new = np.pad(
-                surf.geometry.c,
+            new_coefficients = np.pad(
+                surf.geometry.coefficients,
                 pad_width=(0, pad_width_i),
                 mode="constant",
                 constant_values=0,
             )
-            c_new[i] = new_value
-            surf.geometry.c = c_new
+            new_coefficients[i] = new_value
+            surf.geometry.coefficients = new_coefficients
 
     def __str__(self):
         """Return a string representation of the variable.
