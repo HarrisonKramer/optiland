@@ -103,8 +103,8 @@ class BaseZernike(ABC):
             tuple[float, float]: The radial and azimuthal derivatives of the
                 Zernike polynomial.
         """
-        radial_term = self._radial_term(n, be.abs(m), r)
-        radial_derivative = self._radial_derivative(n, be.abs(m), r)
+        radial_term = self._radial_term(n, abs(m), r)
+        radial_derivative = self._radial_derivative(n, abs(m), r)
 
         if m == 0:
             partial_radial_derivative = radial_derivative

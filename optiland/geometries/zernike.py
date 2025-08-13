@@ -100,13 +100,16 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         norm_radius: float = 1,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        coefficients = be.atleast_1d(coefficients if coefficients is not None else [])
 
         if zernike_type not in _ZERNIKE_TYPES:
             raise ValueError(
                 "Zernike type must be one of 'standard', 'noll', or 'fringe', got "
                 f"{zernike_type}",
             )
+        if norm_radius <= 0:
+            raise ValueError("Normalization radius must be positive, got {norm_radius}")
+
+        coefficients = be.atleast_1d(coefficients if coefficients is not None else [])
 
         self.zernike = _ZERNIKE_TYPES[zernike_type](coeffs=coefficients)
         self.zernike_type: ZernikeType = zernike_type
