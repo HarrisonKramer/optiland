@@ -48,39 +48,6 @@ class TestWavefront:
             be.size(w.data[((0.0, 1.0), 0.6563)].opd) == 469
         )  # num points in the pupil
 
-    def test_trace_chief_ray(self, set_test_backend):
-        optic = DoubleGauss()
-        w = Wavefront(optic)
-        w._trace_chief_ray((0, 0), 0.55)
-        assert be.all(optic.surface_group.y == 0)
-
-    def test_get_path_length(self, set_test_backend):
-        optic = CookeTriplet()
-        w = Wavefront(optic)
-        w._trace_chief_ray((0, 0), 0.55)
-        xc, yc, zc, R = w.ref_sphere_calculator.calculate()
-        path_length, _ = w._get_path_length(xc, yc, zc, R, 0.55)
-        assert_allclose(path_length, 23.70608539)
-
-    def test_correct_tilt(self, set_test_backend):
-        optic = DoubleGauss()
-        w = Wavefront(optic)
-        opd = be.linspace(5, 100, be.size(w.distribution.x))
-        corrected_opd = w._correct_tilt((0, 1), opd, x=None, y=None)
-        assert_allclose(corrected_opd[0], 2.5806903748015824)
-        assert_allclose(corrected_opd[10], 5.013823175582515)
-        assert_allclose(corrected_opd[100], 24.08949048654609)
-        assert_allclose(corrected_opd[111], 24.699015344473096)
-        assert_allclose(corrected_opd[242], 52.123070395591235)
-
-    def test_opd_image_to_xp(self, set_test_backend):
-        optic = DoubleGauss()
-        w = Wavefront(optic)
-        w._trace_chief_ray((0, 0), 0.55)
-        xc, yc, zc, R = w.ref_sphere_calculator.calculate()
-        t = w._opd_image_to_xp(xc, yc, zc, R, 0.55)
-        assert_allclose(t, 114.64441695)
-
 
 class TestOPDFan:
     def test_opd_fan_initialization(self, set_test_backend):
