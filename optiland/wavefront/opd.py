@@ -22,6 +22,11 @@ class OPD(Wavefront):
         wavelength (float): The wavelength of the wavefront.
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         optic (Optic): The optic object.
@@ -41,7 +46,15 @@ class OPD(Wavefront):
     """
 
     def __init__(
-        self, optic, field, wavelength, num_rays=15, distribution="hexapolar", **kwargs
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=15,
+        distribution="hexapolar",
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
     ):
         super().__init__(
             optic,
@@ -49,6 +62,8 @@ class OPD(Wavefront):
             wavelengths=[wavelength],
             num_rays=num_rays,
             distribution=distribution,
+            strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
 

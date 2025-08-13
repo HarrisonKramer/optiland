@@ -23,6 +23,11 @@ class OPDFan(Wavefront):
             wavefront error is calculated. Defaults to 'all'.
         num_rays (int, optional): The number of rays used to calculate the
             wavefront error. Defaults to 100.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         pupil_coord (be.ndarray): The coordinates of the pupil.
@@ -35,7 +40,16 @@ class OPDFan(Wavefront):
 
     """
 
-    def __init__(self, optic, fields="all", wavelengths="all", num_rays=100, **kwargs):
+    def __init__(
+        self,
+        optic,
+        fields="all",
+        wavelengths="all",
+        num_rays=100,
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
         self.pupil_coord = be.linspace(-1, 1, num_rays)
         super().__init__(
             optic,
@@ -43,6 +57,8 @@ class OPDFan(Wavefront):
             wavelengths=wavelengths,
             num_rays=num_rays,
             distribution="cross",
+            strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
 

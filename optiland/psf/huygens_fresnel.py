@@ -43,6 +43,8 @@ class HuygensPSF(BasePSF):
             calculation. Defaults to 128.
         strategy (str): The calculation strategy to use. Supported options are
             "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to True.
         **kwargs: Additional keyword arguments passed to the strategy.
     """
 
@@ -54,6 +56,7 @@ class HuygensPSF(BasePSF):
         num_rays=128,
         image_size=128,
         strategy="chief_ray",
+        remove_tilt=True,
         **kwargs,
     ):
         if be.get_backend() != "numpy":
@@ -65,6 +68,7 @@ class HuygensPSF(BasePSF):
             wavelength=wavelength,
             num_rays=num_rays,
             strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
 

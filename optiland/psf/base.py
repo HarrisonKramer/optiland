@@ -45,6 +45,11 @@ class BasePSF(Wavefront):
         wavelength (float): The wavelength of light.
         num_rays (int, optional): The number of rays used for wavefront
             computation. Defaults to 128.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to True.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         psf (ndarray): The computed PSF. This should be set by subclasses.
@@ -55,7 +60,14 @@ class BasePSF(Wavefront):
     """
 
     def __init__(
-        self, optic, field, wavelength, num_rays=128, strategy="chief_ray", **kwargs
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=128,
+        strategy="chief_ray",
+        remove_tilt=True,
+        **kwargs,
     ):
         super().__init__(
             optic=optic,
@@ -64,6 +76,7 @@ class BasePSF(Wavefront):
             num_rays=num_rays,
             distribution="uniform",
             strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
         self.psf = None  # Subclasses must compute and set this

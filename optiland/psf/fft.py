@@ -14,8 +14,6 @@ import numpy as np
 import optiland.backend as be
 from optiland.psf.base import BasePSF
 
-from .utils import remove_tilt
-
 
 def calculate_grid_size(num_rays) -> tuple[int, int]:
     """Calculates the effective pupil sampling and grid size based on the number of
@@ -65,6 +63,8 @@ class FFTPSF(BasePSF):
             it is calculated based on `num_rays`.
         strategy (str): The calculation strategy to use. Supported options are
             "chief_ray" and "best_fit". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to True.
         **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
@@ -109,10 +109,10 @@ class FFTPSF(BasePSF):
             wavelength=wavelength,
             num_rays=num_rays,
             strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
         self.grid_size = grid_size
-        self.remove_tilt = remove_tilt
         self.pupils = self._generate_pupils()
         self.psf = self._compute_psf()
 
@@ -144,16 +144,6 @@ class FFTPSF(BasePSF):
 
         for wl in self.wavelengths:
             wavefront_data = self.get_data(field, wl)
-
-            if self.remove_tilt:
-                wavefront_data.opd = remove_tilt(
-                    wavefront_data.pupil_x,
-                    wavefront_data.pupil_y,
-                    wavefront_data.opd,
-                    wavefront_data.intensity,
-                    remove_piston=False,
-                )
-
             P = be.to_complex(be.zeros_like(x))
             amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
             P[R2 <= 1] = be.to_complex(
