@@ -41,7 +41,40 @@ from .qpoly import (
 
 class ForbesQbfsGeometry(NewtonRaphsonGeometry):
     """
-    Represents a Forbes polynomial geometry (rotationally symmetric Q-type).
+    Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
+
+    The Q-bfs surface is defined by the equation:
+
+    z(ρ) = z_base(ρ) + (1/σ(ρ)) * [u²(1-u²) * Σ a_m Q_m(u²)]
+
+    where:
+    - z_base(ρ) = c*ρ²/(1 + √(1 - (1+k)c²ρ²)) is the base conic
+    - c = 1/R is the curvature (R is the radius)
+    - k is the conic constant
+    - u = ρ/ρ_max is the normalized radial coordinate
+    - ρ_max is the normalization radius
+    - Q_m(u²) are the Forbes orthogonal polynomials
+    - a_m are the polynomial coefficients
+    - σ(ρ) = √(1 - c²ρ²) is a scaling factor
+
+    Parameters
+    ----------
+    coordinate_system : CoordinateSystem
+        The coordinate system for the surface.
+    radius : float
+        The vertex radius of curvature (R = 1/c).
+    conic : float, optional
+        The conic constant (k), by default 0.0.
+    radial_terms : dict, optional
+        A dictionary mapping the radial order `n` to the coefficient `a_n`.
+        Example: `{0: 0.01, 2: -0.005}` for coefficients a₀ and a₂.
+        Defaults to None.
+    norm_radius : float, optional
+        The normalization radius (ρ_max) used to define u = ρ/ρ_max, by default 1.0.
+    tol : float, optional
+        Tolerance for Newton-Raphson iteration, by default 1e-10.
+    max_iter : int, optional
+        Maximum number of iterations for Newton-Raphson, by default 100.
     """
 
     def __init__(
@@ -49,20 +82,53 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         coordinate_system: CoordinateSystem,
         radius: float,
         conic: float = 0.0,
-        coeffs_n=None,
-        coeffs_c=None,
+        radial_terms: dict = None,
         norm_radius: float = 1.0,
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        # For Q-BFS (m=0 only), coeffs_n is redundant. We only need coeffs_c.
-        self.coeffs_c = be.array(coeffs_c if coeffs_c is not None else [])
-        self.coeffs_n = coeffs_n if coeffs_n is not None else []
+        self.radial_terms = radial_terms if radial_terms else {}
+        if self.radial_terms:
+            # The internal representation still uses coeffs_n and coeffs_c
+            # for the qpoly backend functions, but for the user API
+            # we use radial_terms for clarity.
+            coeffs_n = []
+            coeffs_c = []
+            for n, c in sorted(self.radial_terms.items()):
+                coeffs_n.append((n, 0))
+                coeffs_c.append(c)
+            self.coeffs_n = coeffs_n
+            self.coeffs_c = be.array(coeffs_c)
+        else:
+            self.coeffs_n = []
+            self.coeffs_c = be.array([])
+
         self.norm_radius = be.array(norm_radius)
         self.is_symmetric = True
 
     def sag(self, x=0, y=0):
+        """
+        Calculate the sag of the Forbes Q-bfs surface at given coordinates.
+
+        For a Q-bfs surface, this implements:
+        z(ρ) = z_base(ρ) + departure(ρ)
+
+        where departure is defined as:
+        departure(ρ) = (1/σ(ρ)) * [u²(1-u²) * Σ a_m Q_m(u²)]
+
+        Parameters
+        ----------
+        x : float or array_like, optional
+            X coordinate(s), by default 0
+        y : float or array_like, optional
+            Y coordinate(s), by default 0
+
+        Returns
+        -------
+        float or array_like
+            The sag value(s) at the specified coordinates
+        """
         x = be.array(x)
         y = be.array(y)
 
@@ -105,6 +171,21 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         """
         Calculates the surface normal. Uses automatic differentiation for PyTorch
         and the analytical derivative for NumPy to ensure correctness and performance.
+
+        The normal vector is based on the gradient of the sag function:
+        n = [-dz/dx, -dz/dy, 1]/√(1 + (dz/dx)² + (dz/dy)²)
+
+        Parameters
+        ----------
+        x : float or array_like
+            X coordinate(s)
+        y : float or array_like
+            Y coordinate(s)
+
+        Returns
+        -------
+        tuple
+            (nx, ny, nz) components of the unit normal vector
         """
         x_in = be.array(x)
         y_in = be.array(y)
@@ -114,12 +195,8 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
             x_grad = x_in.clone().requires_grad_(True)
             y_grad = y_in.clone().requires_grad_(True)
 
-            # --- Forward Pass ---
-            # Calculate sag for all points simultaneously.
             z0 = self.sag(x_grad, y_grad)
 
-            # --- Backward Pass ---
-            # Compute gradients for all points. This will produce NaNs at the vertex.
             gradients = be.autograd.grad(
                 outputs=z0,
                 inputs=(x_grad, y_grad),
@@ -135,13 +212,11 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
             # correct the derivatives at the vertex to avoid NaNs
             df_dx = be.where(is_vertex, 0.0, df_dx_raw)
             df_dy = be.where(is_vertex, 0.0, df_dy_raw)
-        # <<< KEEP ORIGINAL CODE IN ELSE BLOCK FOR NUMPY >>>
-        # use the original analytical derivative if not using torch
+
         else:
             r2 = x_in**2 + y_in**2
             rho = be.sqrt(r2)
 
-            # Avoid division by zero at the vertex
             rho_safe = be.where(rho < 1e-9, 1e-9, rho)
 
             # derivative of the base conic sag (dS_base / d(rho))
@@ -167,7 +242,7 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
                 # Get polynomial value and its derivative w.r.t. u from qpoly
                 poly_val, dPoly_d_u = compute_z_zprime_Qbfs(self.coeffs_c, u, usq)
 
-                # Prefactor = u^2 - u^4
+                # prefactor = u^2 - u^4
                 dPrefactor_d_rho = (2 * u - 4 * u**3) / a
 
                 # d(Poly) / d(rho)
@@ -217,6 +292,10 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         return nx, ny, nz
 
     def flip(self):
+        """
+        Flip the surface orientation by negating the radius and flipping
+        the coordinate system.
+        """
         self.radius = -self.radius
         self.coordinate_system.flip()
 
@@ -224,7 +303,14 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         return "ForbesQbfs"
 
     def to_dict(self):
-        """Serializes the geometry to a dictionary."""
+        """
+        Serializes the geometry to a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all parameters needed to reconstruct the geometry
+        """
         geometry_dict = {
             "type": self.__class__.__name__,
             "cs": self.cs.to_dict(),
@@ -232,24 +318,32 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
             "conic": self.k,
             "tol": self.tol,
             "max_iter": self.max_iter,
-            "coeffs_n": self.coeffs_n,
-            "coeffs_c": self.coeffs_c.tolist()
-            if hasattr(self.coeffs_c, "tolist")
-            else self.coeffs_c,
+            "radial_terms": self.radial_terms,
             "norm_radius": self.norm_radius,
         }
         return geometry_dict
 
     @classmethod
     def from_dict(cls, data):
-        """Creates a ForbesQbfsGeometry instance from a dictionary."""
+        """
+        Creates a ForbesQbfsGeometry instance from a dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary containing the geometry parameters
+
+        Returns
+        -------
+        ForbesQbfsGeometry
+            The reconstructed geometry instance
+        """
         cs = CoordinateSystem.from_dict(data["cs"])
         return cls(
             cs,
             data["radius"],
             data.get("conic", 0.0),
-            coeffs_n=data.get("coeffs_n", []),
-            coeffs_c=data.get("coeffs_c", []),
+            radial_terms=data.get("radial_terms", None),
             norm_radius=data.get("norm_radius", 1.0),
             tol=data.get("tol", 1e-10),
             max_iter=data.get("max_iter", 100),
@@ -258,7 +352,43 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
 
 class ForbesQ2dGeometry(NewtonRaphsonGeometry):
     """
-    Forbes Q2D aspheric surface.
+    Forbes Q2D freeform surface.
+
+    This represents the most general form of a Forbes surface that can describe
+    a freeform optic without rotational symmetry. The sag is defined as:
+
+    z(ρ,θ) = z_base(ρ) + (1/√(1-c²ρ²)) * δ(u,θ)
+
+    where δ(u,θ) is the departure function:
+
+    δ(u,θ) = u²(1-u²)∑_{n=0}^N a_n^0 Q_n^0(u²) +
+             ∑_{m=1}^M u^m ∑_{n=0}^N [a_n^m cos(mθ) + b_n^m sin(mθ)] Q_n^m(u²)
+
+    The first term represents the rotationally symmetric part, and the second
+    term represents the non-symmetric (freeform) part.
+
+    Parameters
+    ----------
+    coordinate_system : CoordinateSystem
+        The coordinate system for the surface.
+    radius : float
+        The vertex radius of curvature (R = 1/c).
+    conic : float
+        The conic constant (k).
+    freeform_coeffs : dict, optional
+        A dictionary defining the freeform surface coefficients.
+        Keys are tuples:
+        - `(n, m)` for a cosine term (a_n^m).
+        - `(n, m, 'sin')` for a sine term (b_n^m).
+        Values are the float coefficient values.
+        Example: `{(2, 2): 0.05, (3, 1, 'sin'): 0.02}`.
+        Defaults to None.
+    norm_radius : float, optional
+        The normalization radius (ρ_max) used to define u = ρ/ρ_max, by default 1.0.
+    tol : float, optional
+        Tolerance for Newton-Raphson iteration, by default 1e-10.
+    max_iter : int, optional
+        Maximum number of iterations for Newton-Raphson, by default 100.
     """
 
     def __init__(
@@ -266,9 +396,8 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         coordinate_system,
         radius,
         conic,
-        coeffs_n,
-        coeffs_c,
-        norm_radius,
+        freeform_coeffs=None,
+        norm_radius=1.0,
         tol: float = 1e-10,
         max_iter: int = 100,
     ):
@@ -276,16 +405,43 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         self.radius = float(radius)
         self.c = 1 / self.radius if self.radius != 0 else 0
         self.conic = float(conic)
-        self.coeffs_n = coeffs_n
-        self.coeffs_c = be.array(coeffs_c)
+        self.freeform_coeffs = freeform_coeffs if freeform_coeffs else {}
+        if self.freeform_coeffs:
+            coeffs_n = []
+            coeffs_c = []
+            # Sort by n, then m, then by type (cos/sin)
+            sorted_keys = sorted(
+                self.freeform_coeffs.keys(),
+                key=lambda k: (k[0], abs(k[1]), 0 if len(k) == 2 else 1),
+            )
+            for key in sorted_keys:
+                value = self.freeform_coeffs[key]
+                if len(key) == 3 and key[2] == "sin":
+                    coeffs_n.append((key[0], -key[1]))
+                else:
+                    coeffs_n.append((key[0], key[1]))
+                coeffs_c.append(value)
+            self.coeffs_n = coeffs_n
+            self.coeffs_c = be.array(coeffs_c)
+        else:
+            self.coeffs_n = []
+            self.coeffs_c = be.array([])
+
         self.norm_radius = float(norm_radius)
 
         self.cm0_coeffs = None
         self.ams_coeffs = None
         self.bms_coeffs = None
+        self._prepare_coeffs()
 
     def _prepare_coeffs(self):
-        """Prepares the coefficient structure required by the qpoly module."""
+        """
+        Prepares the coefficient structure required by the qpoly module.
+
+        This converts the coeffs_n and coeffs_c arrays into the internal format
+        needed for Q2D polynomial calculations, separating the a_n^m and
+        b_n^m coefficients.
+        """
         if not self.coeffs_n or len(self.coeffs_c) == 0:
             self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
         else:
@@ -294,6 +450,26 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
             )
 
     def sag(self, x, y):
+        """
+        Calculate the sag of the Forbes Q2D freeform surface at given coordinates.
+
+        This implements the full freeform surface equation:
+        z(ρ,θ) = z_base(ρ) + (1/√(1-c²ρ²)) * δ(u,θ)
+
+        with both rotationally symmetric and non-symmetric components.
+
+        Parameters
+        ----------
+        x : float or array_like
+            X coordinate(s)
+        y : float or array_like
+            Y coordinate(s)
+
+        Returns
+        -------
+        float or array_like
+            The sag value(s) at the specified coordinates
+        """
         if self.cm0_coeffs is None:
             self._prepare_coeffs()
 
@@ -349,6 +525,52 @@ class ForbesQ2dGeometry(NewtonRaphsonGeometry):
         S = be.where(u > 1, 0.0, total_departure)
 
         return z_base + S
+
+    def to_dict(self):
+        """
+        Serializes the geometry to a dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all parameters needed to reconstruct the geometry
+        """
+        return {
+            "type": self.__class__.__name__,
+            "cs": self.cs.to_dict(),
+            "radius": self.radius,
+            "conic": self.conic,
+            "freeform_coeffs": self.freeform_coeffs,
+            "norm_radius": self.norm_radius,
+            "tol": self.tol,
+            "max_iter": self.max_iter,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Creates a ForbesQ2dGeometry instance from a dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary containing the geometry parameters
+
+        Returns
+        -------
+        ForbesQ2dGeometry
+            The reconstructed geometry instance
+        """
+        cs = CoordinateSystem.from_dict(data["cs"])
+        return cls(
+            cs,
+            data["radius"],
+            data.get("conic", 0.0),
+            freeform_coeffs=data.get("freeform_coeffs", None),
+            norm_radius=data.get("norm_radius", 1.0),
+            tol=data.get("tol", 1e-10),
+            max_iter=data.get("max_iter", 100),
+        )
 
     def _surface_normal(self, x, y):
         x_in = be.array(x)

@@ -33,8 +33,9 @@ class GeometryConfig:
     """Configuration parameters for creating a surface geometry.
 
     Attributes:
-        radius (float): radius of curvature of the geometry. Defaults to be.inf.
-        conic (float): conic constant of the geometry. Defaults to 0.0.as_integer_ratio
+        radius (float): radius of curvature of the geometry (R = 1/c).
+                        Defaults to be.inf.
+        conic (float): conic constant (k) of the geometry. Defaults to 0.0.
         coefficients (list): list of geometry coefficients. Defaults to empty list.
         tol (float): tolerance to use for Newton-Raphson method. Defaults to 1e-6.
         max_iter (int): maximum number of iterations to use for Newton-Raphson method.
@@ -42,7 +43,8 @@ class GeometryConfig:
         norm_x (float): normalization factor in x. Defaults to 1.0.
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
-        radius_x (float): radius of curvature in x for biconic. Defaults to be.inf.
+        radius_x (float): radius of curvature in x for biconic.
+                          Defaults to be.inf.
         radius_y (float): radius of curvature in y for biconic or YZ radius for
             toroidal. Defaults to be.inf.
         conic_x (float): conic constant in x for biconic. Defaults to 0.0.
@@ -66,8 +68,8 @@ class GeometryConfig:
     conic_y: float = 0.0  # Used by Biconic
     toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
     # Forbes parameters
-    forbes_coeffs_n: list = field(default_factory=list)
-    forbes_coeffs_c: list = field(default_factory=list)
+    radial_terms: dict = field(default_factory=dict)
+    freeform_coeffs: dict = field(default_factory=dict)
     forbes_norm_radius: float = 1.0
 
 
@@ -270,8 +272,7 @@ def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
         cs,
         config.radius,
         config.conic,
-        config.forbes_coeffs_n,
-        config.forbes_coeffs_c,
+        config.radial_terms,
         config.forbes_norm_radius,
         config.tol,
         config.max_iter,
@@ -285,8 +286,7 @@ def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
         cs,
         config.radius,
         config.conic,
-        config.forbes_coeffs_n,
-        config.forbes_coeffs_c,
+        config.freeform_coeffs,
         config.forbes_norm_radius,
         config.tol,
         config.max_iter,
