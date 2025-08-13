@@ -1,6 +1,9 @@
 """Base Zernike Module
 
 This module contains the abstract base class for all zernike-related classes.
+The Zernike implementation in this module is based on  Niu, K., & Tian, C. (2022).
+Zernike polynomials and their applications. Journal of Optics, 24(12), 123001.
+https://doi.org/10.1088/2040-8986/ac9e08
 
 Kramer Harrison, 2025
 """
