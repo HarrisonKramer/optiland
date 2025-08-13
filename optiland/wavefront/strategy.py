@@ -314,7 +314,7 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
             weights = be.ones_like(weights)
             total_weight = be.sum(weights)
         else:
-            weights = be.ones((image_points.shape[0],), dtype=image_points.dtype)
+            weights = be.ones((image_points.shape[0],))
             total_weight = be.sum(weights)
 
         # Weighted centroid of image-plane points
