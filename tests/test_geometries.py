@@ -1161,14 +1161,14 @@ class TestToroidalGeometry:
         # --- Zemax Sag Data ---
         zemax_z_sag = be.array(
             [
-                0.0,                      # (0, 0) - Vertex
-                -6.253911140455271E-002,  # (2.5, 0)
-                7.867099677109624E-002,   # (0, 2.5)
-                -6.253911140455271E-002,  # (-2.5, 0)
-                -1.715614452665938E-001,  # (5, 2.5)
-                -1.715614452665938E-001,  # (-5, -2.5)
-                1.623025381703616E-002,   # (2.5, -2.5)
-                1.623025381703616E-002,   # (-2.5, 2.5)
+                0.0,  # (0, 0) - Vertex
+                -6.253911140455271e-002,  # (2.5, 0)
+                7.867099677109624e-002,  # (0, 2.5)
+                -6.253911140455271e-002,  # (-2.5, 0)
+                -1.715614452665938e-001,  # (5, 2.5)
+                -1.715614452665938e-001,  # (-5, -2.5)
+                1.623025381703616e-002,  # (2.5, -2.5)
+                1.623025381703616e-002,  # (-2.5, 2.5)
             ]
         )
 
@@ -1176,9 +1176,6 @@ class TestToroidalGeometry:
         optiland_z_sag = lens.surface_group.surfaces[1].geometry.sag(x_coords, y_coords)
 
         assert be.allclose(optiland_z_sag, zemax_z_sag, rtol=1e-5, atol=1e-6)
-
-
-
 
         num_rays = 5  # Number of rays per fan
         wavelength = 0.550
@@ -1206,35 +1203,35 @@ class TestToroidalGeometry:
 
         # Trace Y-Fan Rays
         rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
-# (Lines removed as they are unnecessary debug print statements)
+        # (Lines removed as they are unnecessary debug print statements)
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
             [
-                4.842002236238105E-001,
-                -4.633747816929823E-002,
+                4.842002236238105e-001,
+                -4.633747816929823e-002,
                 0,
-                4.633747816929823E-002,
-                -4.842002236238105E-001,
+                4.633747816929823e-002,
+                -4.842002236238105e-001,
             ]
         )
         zemax_z_out_yfan = be.array([77.0] * num_rays)
         zemax_L_out_yfan = be.array([0.0] * num_rays)
         zemax_M_out_yfan = be.array(
             [
-                1.407949486740093E-001,
-                6.643870254059459E-002,
+                1.407949486740093e-001,
+                6.643870254059459e-002,
                 0.0,
-                -6.643870254059459E-002,
-                -1.407949486740093E-001,
+                -6.643870254059459e-002,
+                -1.407949486740093e-001,
             ]
         )
         zemax_N_out_yfan = be.array(
             [
-                9.900387782445106E-001,
-                9.977905084759640E-001,
+                9.900387782445106e-001,
+                9.977905084759640e-001,
                 1.0,
-                9.977905084759640E-001,
-                9.900387782445106E-001,
+                9.977905084759640e-001,
+                9.900387782445106e-001,
             ]
         )
 
@@ -1252,9 +1249,25 @@ class TestToroidalGeometry:
         x_norm = be.array([2.5, -2.5, 2.5, -2.5])
         y_norm = be.array([0.0, 0.0, -2.5, 2.5])
         # Zemax reference normals at those (x, y) locations:
-        expected_nx = be.array([-4.999999999998470E-002, 4.999999999998470E-002, -4.982229052314893E-002, 4.982229052314893E-002])
-        expected_ny = be.array([0.0, 0.0, -6.299823835002263E-002, 6.299823835002263E-002])
-        expected_nz = be.array([-9.987492177719096E-001, -9.987492177719096E-001, -9.967692618313533E-001, -9.967692618313533E-001])
+        expected_nx = be.array(
+            [
+                -4.999999999998470e-002,
+                4.999999999998470e-002,
+                -4.982229052314893e-002,
+                4.982229052314893e-002,
+            ]
+        )
+        expected_ny = be.array(
+            [0.0, 0.0, -6.299823835002263e-002, 6.299823835002263e-002]
+        )
+        expected_nz = be.array(
+            [
+                -9.987492177719096e-001,
+                -9.987492177719096e-001,
+                -9.967692618313533e-001,
+                -9.967692618313533e-001,
+            ]
+        )
         nx_calc, ny_calc, nz_calc = geom._surface_normal(x_norm, y_norm)
         assert be.allclose(nx_calc, expected_nx, rtol=1e-5, atol=1e-6)
         assert be.allclose(ny_calc, expected_ny, rtol=1e-5, atol=1e-6)
@@ -1284,32 +1297,32 @@ class TestToroidalGeometry:
 
         zemax_x_out_xfan = be.array(
             [
-                -1.795367970779353E+001,
-                -8.895158024373812E+000,
+                -1.795367970779353e001,
+                -8.895158024373812e000,
                 0.0,
-                8.895158024373812E+000,
-                1.795367970779353E+001,
+                8.895158024373812e000,
+                1.795367970779353e001,
             ]
         )
         zemax_y_out_xfan = be.array([0.0] * num_rays)
         zemax_z_out_xfan = be.array([77.0] * num_rays)
         zemax_L_out_xfan = be.array(
             [
-                -1.050996348781765E-001,
-                -5.202386983944651E-002,
+                -1.050996348781765e-001,
+                -5.202386983944651e-002,
                 0.0,
-                5.202386983944651E-002,
-                1.050996348781765E-001,
+                5.202386983944651e-002,
+                1.050996348781765e-001,
             ]
         )
         zemax_M_out_xfan = be.array([0.0] * num_rays)
         zemax_N_out_xfan = be.array(
             [
-                9.944616969740334E-001,
-                9.986458416109926E-001,
+                9.944616969740334e-001,
+                9.986458416109926e-001,
                 1.0,
-                9.986458416109926E-001,
-                9.944616969740334E-001,
+                9.986458416109926e-001,
+                9.944616969740334e-001,
             ]
         )
 
@@ -1329,7 +1342,6 @@ class TestToroidalGeometry:
         assert geom_dict["radius_y"] == 50.0
         assert geom_dict["conic_yz"] == -0.5
         assert geom_dict["coeffs_poly_y"] == pytest.approx([1e-5])
-
 
     def test_toroidal_from_dict(self, basic_toroid_geometry, set_test_backend):
         """Test deserialization from dictionary."""

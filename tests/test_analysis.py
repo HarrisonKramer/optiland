@@ -140,7 +140,6 @@ class TestCookeTripetSpotDiagram:
 
 
 class TestTripletSpotDiagram:
-
     def test_view_spot_diagram(self, set_test_backend, triplet_four_fields):
         spot = analysis.SpotDiagram(triplet_four_fields)
         fig, axes = spot.view()
@@ -1637,12 +1636,12 @@ class TestThroughFocusSpotDiagram:
             # print(f"Checking delta_f: {current_df}, RMS list: {rms_list}") # For debugging if needed
             for rms_val in rms_list:
                 rms_float = be.to_numpy(rms_val).item()
-                assert (
-                    rms_float >= 0.0
-                ), f"RMS value {rms_float} is negative for delta_focus {current_df}"
-                assert not be.isnan(
-                    rms_val
-                ), f"RMS value is NaN for delta_focus {current_df}"
+                assert rms_float >= 0.0, (
+                    f"RMS value {rms_float} is negative for delta_focus {current_df}"
+                )
+                assert not be.isnan(rms_val), (
+                    f"RMS value is NaN for delta_focus {current_df}"
+                )
 
     @patch("builtins.print")
     def test_view_method(self, mock_print, set_test_backend, cooke_triplet):

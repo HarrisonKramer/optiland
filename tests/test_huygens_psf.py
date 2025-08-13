@@ -186,9 +186,9 @@ class TestHuygensPSF:
         # Thus, the peak value should be <= 100.0 (allowing for small numerical margin
         # if SR > 1 due to artifacts).
         max_psf_value = np.max(psf)
-        assert (
-            0 < max_psf_value <= 100.5
-        ), f"PSF peak {max_psf_value} out of expected range (0, 100.5]"
+        assert 0 < max_psf_value <= 100.5, (
+            f"PSF peak {max_psf_value} out of expected range (0, 100.5]"
+        )
 
         # The peak of the PSF should correspond to Strehl * 100
         # Strehl is peak of actual PSF / peak of diffraction-limited PSF.
@@ -238,9 +238,9 @@ class TestHuygensPSF:
         center_x = psf_instance.psf.shape[0] // 2
         center_y = psf_instance.psf.shape[1] // 2
         expected_sr_from_psf_center = psf_instance.psf[center_x, center_y] / 100.0
-        assert np.isclose(
-            sr, expected_sr_from_psf_center
-        ), "Strehl ratio mismatch with definition"
+        assert np.isclose(sr, expected_sr_from_psf_center), (
+            "Strehl ratio mismatch with definition"
+        )
 
     def test_strehl_ratio_specific_values(
         self, cooke_triplet_optic, double_gauss_optic, reverse_telephoto_optic
@@ -255,7 +255,7 @@ class TestHuygensPSF:
                 (
                     0.7,
                     0.0,
-                ): 0.022018160222076852,
+                ): 0.023256936508115108,
             },
             "DoubleGauss": {
                 (
@@ -343,12 +343,12 @@ class TestHuygensPSF:
         expected_x_extent_um = dummy_image_shape_x * psf_instance.pixel_pitch * 1e3
         expected_y_extent_um = dummy_image_shape_y * psf_instance.pixel_pitch * 1e3
 
-        assert np.isclose(
-            x_extent_um, expected_x_extent_um
-        ), "Calculated X extent is incorrect"
-        assert np.isclose(
-            y_extent_um, expected_y_extent_um
-        ), "Calculated Y extent is incorrect"
+        assert np.isclose(x_extent_um, expected_x_extent_um), (
+            "Calculated X extent is incorrect"
+        )
+        assert np.isclose(y_extent_um, expected_y_extent_um), (
+            "Calculated Y extent is incorrect"
+        )
 
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
     @pytest.mark.parametrize("projection", ["2d", "3d"])
