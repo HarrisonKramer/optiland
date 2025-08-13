@@ -95,7 +95,6 @@ class Wavefront:
 
         Returns:
             opd_detrended (be.ndarray): OPD with piston and tilt removed, shape (N,).
-            coeffs (be.ndarray): [piston, tilt_x, tilt_y] coefficients, shape (3,).
         """
         x = data.pupil_x
         y = data.pupil_y
