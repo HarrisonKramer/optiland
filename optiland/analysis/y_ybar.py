@@ -32,12 +32,12 @@ class YYbar(BaseAnalysis):
             Generates and displays the Y Y-bar diagram.
     """
 
-    def __init__(self, optic, wavelength: str | float | int = "primary") -> None:
+    def __init__(self, optic, wavelength: str | float = "primary") -> None:
         self.wavelength_value_for_display = self._resolve_wavelength(optic, wavelength)
         super().__init__(optic, wavelengths=[self.wavelength_value_for_display])
 
     @staticmethod
-    def _resolve_wavelength(optic, wavelength: str | float | int) -> float:
+    def _resolve_wavelength(optic, wavelength: str | float) -> float:
         """Resolve the wavelength value to use for display."""
         if isinstance(wavelength, str) and wavelength.lower() == "primary":
             return optic.primary_wavelength
