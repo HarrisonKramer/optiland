@@ -81,9 +81,9 @@ class Wavefront:
         return self.data[(field, wl)]
 
     @staticmethod
-    def remove_tilt(data, remove_piston=False, ridge=1e-12):
+    def fit_and_remove_tilt(data, remove_piston=False, ridge=1e-12):
         """
-        Removes piston and tilt from 1D OPD data using weighted least squares.
+        Removes piston and tilt from OPD data using weighted least squares.
 
         Args:
             data (WavefrontData): The wavefront data containing pupil coordinates
@@ -94,8 +94,8 @@ class Wavefront:
                 Defaults to 1e-12.
 
         Returns:
-            opd_detrended (array-like): OPD with piston and tilt removed, shape (N,).
-            coeffs (array-like): [piston, tilt_x, tilt_y] coefficients, shape (3,).
+            opd_detrended (be.ndarray): OPD with piston and tilt removed, shape (N,).
+            coeffs (be.ndarray): [piston, tilt_x, tilt_y] coefficients, shape (3,).
         """
         x = data.pupil_x
         y = data.pupil_y
@@ -160,6 +160,6 @@ class Wavefront:
                 data = self.strategy.compute_wavefront_data(field, wl)
 
                 if self.remove_tilt:
-                    data.opd = self.remove_tilt(data)
+                    data.opd = self.fit_and_remove_tilt(data)
 
                 self.data[(field, wl)] = data
