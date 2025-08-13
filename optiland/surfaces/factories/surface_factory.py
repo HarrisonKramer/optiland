@@ -8,6 +8,9 @@ the surface parameters.
 
 Kramer Harrison, 2024
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Unpack
 
 import optiland.backend as be
 from optiland.surfaces.factories.coating_factory import CoatingFactory
@@ -19,6 +22,10 @@ from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
+
+if TYPE_CHECKING:
+    from optiland._types import SurfaceParameters, SurfaceType
+    from optiland.materials.base import BaseMaterial
 
 
 class SurfaceFactory:
@@ -46,7 +53,15 @@ class SurfaceFactory:
 
         self.use_absolute_cs = False
 
-    def create_surface(self, surface_type, comment, index, is_stop, material, **kwargs):
+    def create_surface(
+        self,
+        surface_type: SurfaceType,
+        comment: str,
+        index: int | None,
+        is_stop: bool,
+        material: BaseMaterial | str,
+        **kwargs: Unpack[SurfaceParameters],
+    ):
         """Creates a surface object based on the given parameters.
 
         Args:
