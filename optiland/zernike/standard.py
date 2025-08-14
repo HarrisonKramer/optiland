@@ -69,4 +69,5 @@ class ZernikeStandard(BaseZernike):
             float: The calculated value of the normalization constant.
 
         """
-        return be.sqrt(be.array((2 * n + 2) / (1 + (m == 0))))
+        denominator = 2 if m == 0 else 1
+        return be.sqrt(be.array((2 * n + 2) / denominator))

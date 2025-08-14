@@ -50,7 +50,8 @@ class ZernikeNoll(BaseZernike):
             float: The normalization constant for the Zernike polynomial.
 
         """
-        return be.sqrt(be.array((2 * n + 2) / (1 + (m == 0))))
+        denominator = 2 if m == 0 else 1
+        return be.sqrt(be.array((2 * n + 2) / denominator))
 
     @staticmethod
     def _index_to_number(n: int, m: int) -> int | None:
