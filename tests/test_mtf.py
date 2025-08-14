@@ -25,7 +25,6 @@ def optic():
 
 
 class TestGeometricMTF:
-
     def test_view_mtf_defaults(self, set_test_backend, optic):
         m = GeometricMTF(optic)
         fig, ax = m.view()  # default figsize, no reference overlay
@@ -56,7 +55,6 @@ class TestGeometricMTF:
 
 
 class TestFFTMTF:
-
     def test_view_mtf_defaults(self, set_test_backend, optic):
         m = FFTMTF(optic)
         fig, ax = m.view()

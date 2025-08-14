@@ -271,7 +271,7 @@ class OptimizerGeneric:
             if be.isnan(rss):
                 return 1e10
             # --- Convert result back to float for SciPy ---
-            return float(be.to_numpy(rss))
+            return be.to_numpy(rss).item()
         except ValueError:
             return 1e10
 

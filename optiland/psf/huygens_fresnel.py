@@ -41,14 +41,35 @@ class HuygensPSF(BasePSF):
             `num_rays` x `num_rays`. Defaults to 128.
         image_size (int, optional): The size of the image grid for PSF
             calculation. Defaults to 128.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, image_size=128):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=128,
+        image_size=128,
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
         if be.get_backend() != "numpy":
             raise ValueError("HuygensPSF only supports numpy backend.")
 
         super().__init__(
-            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
+            optic=optic,
+            field=field,
+            wavelength=wavelength,
+            num_rays=num_rays,
+            strategy=strategy,
+            remove_tilt=remove_tilt,
+            **kwargs,
         )
 
         self.cx = None  # center of the image plane
@@ -254,7 +275,7 @@ class HuygensPSF(BasePSF):
             data.intensity,
             pupil_opd_ideal,
             self.wavelengths[0] * 1e-3,
-            data.radius.item(),
+            data.radius,
         )
 
         return psf_max[0, 0]  # Normalize by the peak of the ideal PSF
@@ -271,7 +292,7 @@ class HuygensPSF(BasePSF):
         pupil_x, pupil_y, pupil_z = data.pupil_x, data.pupil_y, data.pupil_z
         pupil_amp = data.intensity
         pupil_opd = data.opd * wavelength_mm  # waves to mm
-        Rp = data.radius.item()  # Radius of curvature of exit pupil
+        Rp = data.radius  # Radius of curvature of exit pupil
 
         # Get image coordinates
         image_x, image_y, image_z = self._get_image_coordinates()

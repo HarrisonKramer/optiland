@@ -113,6 +113,12 @@ def array(x):
     """Create a tensor with current device, precision, and grad settings."""
     if isinstance(x, torch.Tensor):
         return x
+
+    # to avoid slow conversion, if data is a list/tuple of numpy arrays,
+    # convert it to a single multi-dimensional numpy array first
+    if isinstance(x, (list | tuple)) and len(x) > 0 and isinstance(x[0], np.ndarray):
+        x = np.array(x)
+
     return torch.tensor(
         x,
         device=get_device(),
@@ -248,6 +254,11 @@ def array_equal(a, b):
     return torch.equal(a, b)
 
 
+def shape(tensor):
+    """Returns the shape of a tensor."""
+    return tensor.shape
+
+
 # --------------------------
 # Shape and Indexing
 # --------------------------
@@ -371,6 +382,10 @@ def min(x):
     return np.min(x)
 
 
+def maximum(a, b):
+    return torch.maximum(array(a), array(b))
+
+
 def nanmax(input_tensor, axis=None, keepdim=False):
     nan_mask = torch.isnan(input_tensor)
     replaced = input_tensor.clone()
@@ -402,6 +417,114 @@ def all(x):
 
 def factorial(n):
     return torch.lgamma(array(n + 1)).exp()
+
+
+def histogram2d(x, y, bins, weights=None):
+    if not isinstance(bins, (list | tuple)) or len(bins) != 2:
+        raise ValueError("`bins` must be a list or tuple of two edge tensors.")
+
+    x_edges, y_edges = bins[0], bins[1]
+    nx = x_edges.numel() - 1
+    ny = y_edges.numel() - 1
+
+    # Find which bin each point belongs to
+    # torch.searchsorted with right=False gives the insertion index
+    # For histogram, we want the bin index (insertion_index - 1)
+    x_bin_indices = torch.searchsorted(x_edges, x, right=False) - 1
+    y_bin_indices = torch.searchsorted(y_edges, y, right=False) - 1
+
+    # Clamp to valid bin range [0, n-1]
+    x_bin_indices = torch.clamp(x_bin_indices, 0, nx - 1)
+    y_bin_indices = torch.clamp(y_bin_indices, 0, ny - 1)
+
+    # Create mask for points within the histogram bounds (inclusive of edges)
+    mask = (
+        (x >= x_edges[0]) & (x <= x_edges[-1]) & (y >= y_edges[0]) & (y <= y_edges[-1])
+    )
+
+    if weights is None:
+        weights = torch.ones_like(x)
+
+    # Apply mask to get valid points only
+    valid_x_indices = x_bin_indices[mask]
+    valid_y_indices = y_bin_indices[mask]
+    valid_weights = weights[mask]
+
+    # Convert 2D bin indices to 1D linear indices
+    linear_indices = (valid_y_indices * nx + valid_x_indices).long()
+
+    # Create flattened histogram and accumulate weights
+    hist_flat = torch.zeros(nx * ny, device=x.device, dtype=valid_weights.dtype)
+    hist_flat.index_add_(0, linear_indices, valid_weights)
+
+    # Reshape to 2D form (note: .T transposes to get the right orientation)
+    hist = hist_flat.reshape(ny, nx).T
+
+    return hist, x_edges, y_edges
+
+
+def get_bilinear_weights(coords, bin_edges):
+    """
+    Calculates differentiable bilinear interpolation weights.
+    This version operates on pixel centers to avoid boundary indexing errors.
+    Inspiration from the paper:
+    "Differentiable design of a double-freeform lens with
+    multi-level radial basis functions for extended
+    source irradiance tailoring"
+    https://doi.org/10.1364/OPTICA.520485
+    """
+    x_edges, y_edges = bin_edges
+    x, y = coords[:, 0], coords[:, 1]
+
+    x_centers = (x_edges[:-1] + x_edges[1:]) / 2
+    y_centers = (y_edges[:-1] + y_edges[1:]) / 2
+
+    ix = torch.searchsorted(x_centers, x, right=True) - 1
+    iy = torch.searchsorted(y_centers, y, right=True) - 1
+    # Clamp indices to the valid range for pixel centers.
+    # The max index is len(centers) - 2 to allow access to ix+1.
+    ix = torch.clamp(ix, 0, len(x_centers) - 2)
+    iy = torch.clamp(iy, 0, len(y_centers) - 2)
+
+    x0, x1 = x_centers[ix], x_centers[ix + 1]
+    y0, y1 = y_centers[iy], y_centers[iy + 1]
+
+    # bilinear interpolation weights
+    wx = (x - x0) / (x1 - x0 + 1e-9)
+    wy = (y - y0) / (y1 - y0 + 1e-9)
+
+    # wEights for the four pixels
+    w00 = (1 - wx) * (1 - wy)
+    w01 = (1 - wx) * wy
+    w10 = wx * (1 - wy)
+    w11 = wx * wy
+
+    # stack the indices of the four pixels for each ray
+    all_indices = torch.stack(
+        [
+            torch.stack([ix, iy], dim=1),
+            torch.stack([ix, iy + 1], dim=1),
+            torch.stack([ix + 1, iy], dim=1),
+            torch.stack([ix + 1, iy + 1], dim=1),
+        ],
+        dim=1,
+    )
+
+    all_weights = torch.stack([w00, w01, w10, w11], dim=1)
+
+    return all_indices, all_weights
+
+
+def copy_to(source, destination):
+    """
+    Performs an in-place copy from source to destination tensor.
+    This version safely handles tensors that require gradients by
+    modifying their underlying data.
+    """
+    if destination.requires_grad:
+        destination.data.copy_(source)
+    else:
+        destination.copy_(source)
 
 
 # --------------------------
@@ -617,6 +740,7 @@ __all__ = [
     "is_array_like",
     "size",
     "newaxis",
+    "copy_to",
     # Shape
     "reshape",
     "stack",
@@ -627,6 +751,7 @@ __all__ = [
     "roll",
     "unsqueeze_last",
     "tile",
+    "shape",
     # Random
     "default_rng",
     "random_uniform",
@@ -642,8 +767,11 @@ __all__ = [
     "deg2rad",
     "max",
     "min",
+    "maximum",
     "mean",
     "all",
+    "histogram2d",
+    "get_bilinear_weights",
     # Linear Algebra
     "matmul",
     "batched_chain_matmul3",

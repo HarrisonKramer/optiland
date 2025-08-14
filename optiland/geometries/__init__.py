@@ -6,6 +6,7 @@ from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
 from .even_asphere import EvenAsphere
+from .forbes import ForbesQ2dGeometry, ForbesQbfsGeometry
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
@@ -21,6 +22,8 @@ __all__ = [
     "BiconicGeometry",
     # From chebyshev.py
     "ChebyshevPolynomialGeometry",
+    # From forbes.py
+    "ForbesGeometry",
     # From even_asphere.py
     "EvenAsphere",
     # From newton_raphson.py
@@ -37,4 +40,7 @@ __all__ = [
     "ToroidalGeometry",
     # From zernike.py
     "ZernikePolynomialGeometry",
+    # From forbes subpackage
+    "ForbesQ2dGeometry",
+    "ForbesQbfsGeometry",
 ]
