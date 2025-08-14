@@ -12,7 +12,6 @@ Copyright (c) 2017 Brandon Dube
 from collections import defaultdict
 from functools import lru_cache
 
-import numpy as np
 from scipy import special
 
 import optiland.backend as be
@@ -59,12 +58,12 @@ def f_qbfs(n):
     if n == 0:
         return 2
     elif n == 1:
-        return np.sqrt(19) / 2
+        return be.sqrt(19) / 2
     else:
         term1 = n * (n + 1) + 3
         term2 = g_qbfs(n - 1) ** 2
         term3 = h_qbfs(n - 2) ** 2
-        return np.sqrt(term1 - term2 - term3)
+        return be.sqrt(term1 - term2 - term3)
 
 
 def change_basis_Qbfs_to_Pn(cs):
@@ -355,9 +354,9 @@ def g_q2d(n, m):
 @lru_cache(4000)
 def f_q2d(n, m):
     if n == 0:
-        return np.sqrt(F_q2d(n=0, m=m))
+        return be.sqrt(F_q2d(n=0, m=m))
     else:
-        return np.sqrt(F_q2d(n, m) - g_q2d(n - 1, m) ** 2)
+        return be.sqrt(F_q2d(n, m) - g_q2d(n - 1, m) ** 2)
 
 
 def change_of_basis_Q2d_to_Pnm(cns, m):
