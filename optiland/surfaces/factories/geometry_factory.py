@@ -11,10 +11,10 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
+
 
 import optiland.backend as be
-from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     BiconicGeometry,
     ChebyshevPolynomialGeometry,
@@ -31,6 +31,7 @@ from optiland.geometries import (
 
 if TYPE_CHECKING:
     from optiland.geometries.zernike import ZernikeType
+    from optiland.coordinate_system import CoordinateSystem
 
 
 @dataclass
@@ -74,8 +75,11 @@ class GeometryConfig:
     conic_y: float = 0.0  # Used by Biconic
     toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
     zernike_type: ZernikeType = "fringe"
-    radial_terms: dict = field(default_factory=dict)
-    freeform_coeffs: dict = field(default_factory=dict)
+    # Forbes parameters
+    radial_terms: dict[int, float] = field(default_factory=dict)
+    freeform_coeffs: dict[tuple[int, int] | tuple[int, int, Literal["sin"]], float] = (
+        field(default_factory=dict)
+    )
     forbes_norm_radius: float = 1.0
 
 

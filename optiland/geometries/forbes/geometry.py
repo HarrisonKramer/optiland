@@ -82,7 +82,7 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
         coordinate_system: CoordinateSystem,
         radius: float,
         conic: float = 0.0,
-        radial_terms: dict = None,
+        radial_terms: dict[int, float] | None = None,
         norm_radius: float = 1.0,
         tol: float = 1e-10,
         max_iter: int = 100,
