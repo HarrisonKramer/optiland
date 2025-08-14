@@ -4,11 +4,11 @@ Analytical expressions of the surface sag, its derivatives, and surface normal v
 [drpaprika](https://github.com/drpaprika), 2025. 
 
 
-## The Fringe Zernike Surface 
+## The Zernike Polynomial Surface 
 A point on a freeform surface represented by a set of Fringe Zernike polynomials up to degree $N$ is modeled as:  
 
 $$
-z(x,y) = z_{\mathrm{conic}}(x,y)+\sum_{i=0}^{N-1}c_iZ_i\bigl(\rho,\theta\bigr)
+z(x,y) = z_{\mathrm{conic}}(x,y) + \sum_{i=0}^{N - 1}c_iZ_i\bigl(\rho,\theta\bigr)
 $$  
 
 The polar coordinates are extracted from the cartesian coordinates:
@@ -44,21 +44,36 @@ Z_n^m(\rho,\theta) =
   \end{cases}
 $$  
 
-The conversion from Standard to Fringe ordering follows :
-
-$$i = int\biggr[\biggr(\frac{n+|m|}{2}+1\biggr)^2 -2|m|+\frac{1-sgn(m)}{2} \biggr]$$
-
-Alternatively the radial and azimutal indexes $(n,m)$ from the fringe index $i$:
-
-$$
-n = \text{ceil}\biggr[\frac{-3+\sqrt{9+8i}}{2}\biggr] 
-\quad \quad \text{and} \quad \quad 
-m = 2j - n(n+2)
-$$
-
 <br />
 
+There are multiple ways to convert the radial and azimuthal orders $(n, m)$ to a single index $i$.
+Optiland implements the OSA/ANSI, Noll and Fringe single-index schemes.
+
+### OSA/ANSI
+
+$${\displaystyle i={\frac {n(n+2)+m}{2}}}$$
+
+### Noll
+
+$$
+{\displaystyle i={\frac {n(n+1)}{2}}+|m|+
+\left\{
+  {\begin{array}{ll}
+  0,&m>0\land n\equiv \{0,1\}{\pmod {4}};\\
+  0,&m<0\land n\equiv \{2,3\}{\pmod {4}};\\
+  1,&m\geq 0\land n\equiv \{2,3\}{\pmod {4}};\\
+  1,&m\leq 0\land n\equiv \{0,1\}{\pmod {4}}.\end{array}}
+\right.}
+$$
+
+### Fringe (University of Arizona)
+
+$$
+{\displaystyle i=\left(1+{\frac {n+|m|}{2}}\right)^{2}-2|m|+\left\lfloor {\frac {1-\operatorname {sgn} m}{2}}\right\rfloor }
+$$
+
 ## Base conic derivatives 
+
 The base conic part $z_{\text{base}}$ often has a known partial derivative formula. 
 Example for a conic (sphere, paraboloid ...):
 
@@ -168,3 +183,9 @@ $$
 ## Final Note
 
 The method described is general to any explicit surface $z(x,y)$. The Zernike part just happens to be a sum of polynomials in $(\rho,\theta)$, which requires an extra step to do the chain rule from $(\rho,\theta)$ back to $(x,y)$.
+
+
+## References
+
+- Niu, K., & Tian, C. (2022). Zernike polynomials and their applications. Journal of Optics, 24(12), 123001. https://doi.org/10.1088/2040-8986/ac9e08
+- Zernike polynomials. (2025). In Wikipedia. https://en.wikipedia.org/w/index.php?title=Zernike_polynomials&oldid=1304849323
