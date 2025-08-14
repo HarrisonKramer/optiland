@@ -21,6 +21,7 @@ __all__ = [
     "SurfaceType",
     "SurfaceParameters",
     "Unpack",
+    "ZernikeType",
 ]
 
 DistributionType = Literal[
@@ -38,6 +39,7 @@ ApertureType = Literal["EPD", "imageFNO", "objectNA", "float_by_stop_size"]
 FieldType = Literal["angle", "object_height"]
 ReferenceRay = Literal["chief", "marginal"]
 WavelengthUnit = Literal["nm", "um", "mm", "cm", "m"]
+ZernikeType = Literal["standard", "noll", "fringe"]
 
 FloatOrArray = float | NDArray
 
@@ -69,6 +71,7 @@ class SurfaceParameters(TypedDict, total=False):
     conic_x: float
     conic_y: float
     toroidal_coeffs_poly_y: list[float]
+    zernike_type: ZernikeType
     radial_terms: dict[int, float]
     freeform_coeffs: dict[tuple[int, int] | tuple[int, int, Literal["sin"]], float]
     forbes_norm_radius: float

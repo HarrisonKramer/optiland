@@ -30,7 +30,7 @@ from optiland.geometries import (
 )
 
 if TYPE_CHECKING:
-    from optiland.geometries.zernike import ZernikeType
+    from optiland._types import ZernikeType
     from optiland.coordinate_system import CoordinateSystem
 
 

@@ -37,14 +37,13 @@ from optiland.zernike import ZernikeFringe, ZernikeNoll, ZernikeStandard
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from optiland._types import ZernikeType
     from optiland.zernike.base import BaseZernike
 
 
 __all__ = [
     "ZernikePolynomialGeometry",
 ]
-
-ZernikeType = Literal["standard", "noll", "fringe"]
 
 _ZERNIKE_TYPES: dict[ZernikeType, type[BaseZernike]] = {
     "standard": ZernikeStandard,
