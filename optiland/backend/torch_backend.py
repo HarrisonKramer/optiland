@@ -113,6 +113,12 @@ def array(x):
     """Create a tensor with current device, precision, and grad settings."""
     if isinstance(x, torch.Tensor):
         return x
+
+    # to avoid slow conversion, if data is a list/tuple of numpy arrays,
+    # convert it to a single multi-dimensional numpy array first
+    if isinstance(x, (list | tuple)) and len(x) > 0 and isinstance(x[0], np.ndarray):
+        x = np.array(x)
+
     return torch.tensor(
         x,
         device=get_device(),
@@ -246,6 +252,11 @@ def newaxis():
 
 def array_equal(a, b):
     return torch.equal(a, b)
+
+
+def shape(tensor):
+    """Returns the shape of a tensor."""
+    return tensor.shape
 
 
 # --------------------------
@@ -740,6 +751,7 @@ __all__ = [
     "roll",
     "unsqueeze_last",
     "tile",
+    "shape",
     # Random
     "default_rng",
     "random_uniform",

@@ -114,6 +114,9 @@ class SurfaceFactory:
             conic_x=kwargs.get("conic_x", 0.0),
             conic_y=kwargs.get("conic_y", 0.0),
             toroidal_coeffs_poly_y=kwargs.get("toroidal_coeffs_poly_y", []),
+            radial_terms=kwargs.get("radial_terms"),
+            freeform_coeffs=kwargs.get("freeform_coeffs"),
+            forbes_norm_radius=kwargs.get("forbes_norm_radius", 1.0),
         )
 
         geometry = self._geometry_factory.create(
