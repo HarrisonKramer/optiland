@@ -294,7 +294,9 @@ class Optic:
         """
         self._updater.set_norm_radius(value, surface_number)
 
-    def set_asphere_coeff(self, value: float, surface_number: float, aspher_coeff_idx: float):
+    def set_asphere_coeff(
+        self, value: float, surface_number: float, aspher_coeff_idx: float
+    ):
         """Set the asphere coefficient on a surface
 
         Args:
