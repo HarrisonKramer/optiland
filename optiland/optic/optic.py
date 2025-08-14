@@ -262,6 +262,15 @@ class Optic:
         """
         self._updater.set_material(material, surface_number)
 
+    def set_norm_radius(self, value, surface_number):
+        """Set the normalization radius of a surface.
+
+        Args:
+            value (float): The value of the normalization radius.
+            surface_number (int): The index of the surface.
+        """
+        self._updater.set_norm_radius(value, surface_number)
+
     def set_asphere_coeff(self, value, surface_number, aspher_coeff_idx):
         """Set the asphere coefficient on a surface
 
