@@ -104,7 +104,7 @@ optimizer.optimize()
 
 To support users in leveraging these capabilities, the developers, contributors, and community members continuously update the learning guide, which serves as the primary point of contact between Optiland and its users. This guide provides comprehensive tutorials, examples, and documentation to help users of all levels get the most out of the software.
 
-## Advanced Optical Design and Analyis
+## Advanced Optical Design and Analysis
 
 Optiland's advanced toolset makes it well-suited for the design of complex optical systems, such as three-mirror anastigmats (TMAs), lithography lenses, to name a few. Its support for freeform surfaces, advanced optimization routines, and detailed tolerancing analysis enables the design of high-performance systems that meet demanding specifications. Furthermore, using the PyTorch backend, obtaining crucial information like the radius contribution of the several surfaces in a system to the overall loss function is relatively straightforward.
 
@@ -114,7 +114,7 @@ Optiland's advanced toolset makes it well-suited for the design of complex optic
       <img src="../docs/images/litho_lens.png" alt="Top Left Image" width="300">
     </td>
     <td style="border: none; padding: 5px;">
-      <img src="../docs/images/singlet.png.png" alt="Top Right Image" width="300">
+      <img src="../docs/images/singlet.png" alt="Top Right Image" width="300">
     </td>
   </tr>
   <tr style="background-color: transparent; border: none">
