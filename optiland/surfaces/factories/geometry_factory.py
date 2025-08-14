@@ -13,7 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
-
 import optiland.backend as be
 from optiland.geometries import (
     BiconicGeometry,

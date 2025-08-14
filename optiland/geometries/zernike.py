@@ -27,7 +27,7 @@ drpaprika, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
@@ -106,7 +106,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
                 f"{zernike_type}",
             )
         if norm_radius <= 0:
-            raise ValueError(f"Normalization radius must be positive, got {norm_radius}")
+            raise ValueError(
+                f"Normalization radius must be positive, got {norm_radius}"
+            )
 
         coefficients = be.atleast_1d(coefficients if coefficients is not None else [])
 
