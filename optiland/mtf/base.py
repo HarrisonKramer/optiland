@@ -25,7 +25,15 @@ class BaseMTF(abc.ABC):
         resolved_wavelength: Actual wavelength value (in µm) to be used.
     """
 
-    def __init__(self, optic, fields, wavelength):
+    def __init__(
+        self,
+        optic,
+        fields,
+        wavelength,
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
         """Initializes BaseMTF and resolves field/wavelength values.
 
         Args:
@@ -35,10 +43,18 @@ class BaseMTF(abc.ABC):
             wavelength: The wavelength for MTF calculation. Can be "primary"
                 to use the optic's primary wavelength, or a specific
                 wavelength value (typically in µm).
+            strategy (str): The calculation strategy to use. Supported options are
+                "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+                Defaults to False.
+            **kwargs: Additional keyword arguments passed to the strategy.
         """
         self.optic = optic
         self.fields = fields
         self.wavelength = wavelength
+        self.strategy = strategy
+        self.remove_tilt = remove_tilt
+        self.strategy_kwargs = kwargs
 
         if fields == "all":
             self.resolved_fields = optic.fields.get_field_coords()

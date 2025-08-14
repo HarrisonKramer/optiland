@@ -155,7 +155,6 @@ Welcome, contributors! This section outlines the major features and tasks that a
 | Feature / Topic | Contributor(s) | Status | Discussion / Issue |
 | ------------------------------------------------ | -------------------------------------------------- | -------------- | ------------------------------------------------ |
 | **Core** |                                                    |                |                                                  |
-| Forbes Surface Type | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | - |
 | (extended) Sources | [@manuelFragata](https://github.com/manuelFragata) | 🚧 In Progress | [#224](https://github.com/HarrisonKramer/optiland/issues/224) |
 | Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
 | Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
@@ -163,10 +162,8 @@ Welcome, contributors! This section outlines the major features and tasks that a
 | Paraxial to Thick Lens | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#221](https://github.com/HarrisonKramer/optiland/issues/221) |
 | **Analysis & Visualization** |                                                    |                |                                                  |
 | Huygens MTF | [@HarrisonKramer](https://github.com/HarrisonKramer)| 🚧 In Progress | [#222](https://github.com/HarrisonKramer/optiland/issues/222) |
-| Sag Surface Analysis | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | [#183](https://github.com/HarrisonKramer/optiland/issues/183) |
 | **GUI** |                                                    |                |                                                  |
-| GUI First Iteration | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
-| GUI - Console/Terminal | [@manuelFragata](https://github.com/manuelFragata)| ✅ Done | - |
+| Code Cleanup | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
 
 
 **Status**
@@ -174,7 +171,7 @@ Welcome, contributors! This section outlines the major features and tasks that a
 * 🚧 **In Progress**: Actively being worked on.
 * 🔍 **Under Review**: A pull request has been submitted and is being reviewed.
 * 🛑 **Blocked**: Progress is blocked by another issue.
-* ✅ **Done**: Completed and merged. (You can remove these after a while).
+* ✅ **Done**: Completed and merged.
 
 
 ## Contributing
