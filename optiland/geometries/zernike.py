@@ -10,8 +10,8 @@ where:
 - r^2 = x^2 + y^2
 - R is the radius of curvature
 - k is the conic constant
-- c[i] is the coefficient for the i-th Fringe Zernike polynomial
-- Z_i(...) is the i-th Fringe Zernike polynomial in polar coordinates
+- c[i] is the coefficient for the i-th Zernike polynomial
+- Z_i(...) is the i-th Zernike polynomial in polar coordinates
 - rho = sqrt(x^2 + y^2) / normalization, phi = atan2(y, x)
 
 Zernike polynomials are a set of orthogonal functions defined over the unit
@@ -54,7 +54,7 @@ _ZERNIKE_TYPES: dict[ZernikeType, type[BaseZernike]] = {
 
 
 class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
-    """Represents a Fringe Zernike polynomial geometry defined as:
+    """Represents a Zernike polynomial geometry defined as:
 
     z(x,y) = r^2 / (R * (1 + sqrt(1 - (1 + k) * r^2 / R^2))) +
         sum_i [c[i] * Z_i(rho, phi)]
@@ -63,8 +63,8 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     - r^2 = x^2 + y^2
     - R is the radius of curvature
     - k is the conic constant
-    - c[i] is the coefficient for the i-th Fringe Zernike polynomial
-    - Z_i(...) is the i-th Fringe Zernike polynomial in polar coordinates
+    - c[i] is the coefficient for the i-th Zernike polynomial
+    - Z_i(...) is the i-th Zernike polynomial in polar coordinates
     - rho = sqrt(x^2 + y^2) / normalization, phi = atan2(y, x)
 
     The coefficients are defined in a 1D array where coefficients[i] is the
@@ -83,7 +83,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             Zernike polynomial surface. Defaults to an empty list, indicating
             no Zernike polynomial coefficients are used.
         zernike_type (str, optional): The type of Zernike polynomial to use.
-            Defaults to "fringe". Options are "standard", "noll", or "fringe".
+            Defaults to "standard". Options are "standard", "noll", or "fringe".
         norm_radius (float, optional): The normalization radius for the
             Zernike polynomial coordinates. Defaults to 1.
     """
@@ -96,7 +96,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         tol: float = 1e-10,
         max_iter: int = 100,
         coefficients: NDArray | None = None,
-        zernike_type: ZernikeType = "fringe",
+        zernike_type: ZernikeType = "standard",
         norm_radius: float = 1,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
@@ -288,6 +288,6 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
             tol=data.get("tol", 1e-10),
             max_iter=data.get("max_iter", 100),
             coefficients=be.atleast_1d(data.get("coefficients", [])),
-            zernike_type=data.get("zernike_type", "fringe"),
+            zernike_type=data.get("zernike_type", "standard"),
             norm_radius=data.get("norm_radius", 1),
         )
