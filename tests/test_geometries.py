@@ -8,6 +8,7 @@ from optiland.geometries import BiconicGeometry, ForbesQbfsGeometry, ForbesQ2dGe
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BiconicGeometry
 from optiland.materials import IdealMaterial
+from optiland.materials.material import Material
 from optiland.optic import Optic
 from optiland.rays import RealRays
 
