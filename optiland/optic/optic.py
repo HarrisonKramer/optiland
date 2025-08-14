@@ -14,7 +14,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal, Unpack
+from typing import TYPE_CHECKING, Any, Literal
 
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         ReferenceRay,
         SurfaceParameters,
         SurfaceType,
+        Unpack,
         WavelengthUnit,
     )
     from optiland.distribution import BaseDistribution

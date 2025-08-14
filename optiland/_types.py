@@ -1,9 +1,27 @@
+from sys import version_info
 from typing import Literal, TypedDict
 
 from numpy.typing import NDArray
 
 from optiland.coatings import BaseCoating
 from optiland.physical_apertures.base import BaseAperture
+
+if version_info >= (3, 11):
+    from typing import Unpack
+else:
+    from typing_extensions import Unpack
+
+__all__ = [
+    "DistributionType",
+    "ApertureType",
+    "FieldType",
+    "ReferenceRay",
+    "WavelengthUnit",
+    "FloatOrArray",
+    "SurfaceType",
+    "SurfaceParameters",
+    "Unpack",
+]
 
 DistributionType = Literal[
     "line_x",

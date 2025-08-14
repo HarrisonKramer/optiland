@@ -5,9 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "optiland"
 version = "0.5.5"
-authors = [
-  { name = "Kramer Harrison", email = "kdanielharrison@gmail.com" },
-]
+authors = [{ name = "Kramer Harrison", email = "kdanielharrison@gmail.com" }]
 description = "Open Source Optical Design in Python"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,7 +23,8 @@ dependencies = [
     "tabulate",
     "numba",
     "requests",
-    "seaborn"
+    "seaborn",
+    "typing-extensions>=4.13.2",
 ]
 license = { text = "MIT License" }
 
@@ -36,10 +35,7 @@ Homepage = "https://github.com/HarrisonKramer/optiland"
 optiland = "optiland_gui.run_gui:main"
 
 [project.optional-dependencies]
-dev = [
-    "codecov>=2.1.13",
-    "pytest>=8.3.5",
-]
+dev = ["codecov>=2.1.13", "pytest>=8.3.5"]
 torch = ["torch"]
 gui = ["PySide6", "qtconsole"]
 
@@ -47,7 +43,7 @@ gui = ["PySide6", "qtconsole"]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["optiland", "optiland_gui"]  # Auto-discovers subpackages
+packages = ["optiland", "optiland_gui"] # Auto-discovers subpackages
 
 [tool.hatch.metadata.files]
 "optiland/database" = ["*.csv", "*.yml", "**/*.yml", "*.npy"]
@@ -58,18 +54,16 @@ exclude = ["tests", "docs"]
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle
-    "F",  # Pyflakes
-    "UP", # pyupgrade
-    "B",  # flake8-bugbear
-    "SIM",# flake8-simplify
-    "I",  # isort
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I",   # isort
     "PYI", # pyright
-    "TC", # type-checking
+    "TC",  # type-checking
 ]
 exclude = ["*.ipynb"]
 
 [dependency-groups]
-dev = [
-    "pytest",
-]
+dev = ["pytest"]

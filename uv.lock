@@ -1080,6 +1080,7 @@ dependencies = [
     { name = "scipy" },
     { name = "seaborn" },
     { name = "tabulate" },
+    { name = "typing-extensions" },
     { name = "vtk" },
 ]
 
@@ -1117,6 +1118,7 @@ requires-dist = [
     { name = "seaborn" },
     { name = "tabulate" },
     { name = "torch", marker = "extra == 'torch'" },
+    { name = "typing-extensions", specifier = ">=4.13.2" },
     { name = "vtk" },
 ]
 provides-extras = ["dev", "torch", "gui"]

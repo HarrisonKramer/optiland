@@ -8,9 +8,10 @@ the surface parameters.
 
 Kramer Harrison, 2024
 """
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Unpack
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.surfaces.factories.coating_factory import CoatingFactory
@@ -24,7 +25,7 @@ from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
 
 if TYPE_CHECKING:
-    from optiland._types import SurfaceParameters, SurfaceType
+    from optiland._types import SurfaceParameters, SurfaceType, Unpack
     from optiland.materials.base import BaseMaterial
 
 
