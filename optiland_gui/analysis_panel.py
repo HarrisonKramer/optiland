@@ -8,6 +8,7 @@ interactions for all supported analysis types.
 Author: Manuel Fragata Mendes, 2025
 """
 
+import ast
 import contextlib
 import copy
 import inspect
@@ -808,18 +809,29 @@ class AnalysisPanel(QWidget):
                 widget.setText(
                     ", ".join(map(str, val)) if isinstance(val, tuple) else str(val)
                 )
-            elif isinstance(widget | QComboBox):
+            elif isinstance(widget, QComboBox):
                 # Handle special dropdowns that store data
                 if param_name in ["fields", "wavelengths", "wavelength"]:
                     found_index = -1
                     for i in range(widget.count()):
+                        # Safely evaluate the item data before comparing
+                        item_data_str = widget.itemData(i)
+                        if not item_data_str:
+                            continue
+
                         try:
-                            item_data_obj = eval(widget.itemData(i))
+                            item_data_obj = ast.literal_eval(item_data_str)
                             if item_data_obj == val:
                                 found_index = i
                                 break
-                        except Exception:
+                        except (ValueError, SyntaxError):
+                            # Log the error or handle cases where data might be invalid
+                            print(
+                                f"Warning: Could not parse item data '{item_data_str}' "
+                                f"for widget '{param_name}'."
+                            )
                             continue
+
                     if found_index != -1:
                         widget.setCurrentIndex(found_index)
                 # Handle simple index-based or text-based dropdowns
@@ -962,7 +974,8 @@ class AnalysisPanel(QWidget):
             if not value_str:
                 return None
             try:
-                value = eval(value_str)
+                # Use ast.literal_eval for safe evaluation of Python literals
+                value = ast.literal_eval(value_str)
                 # Ensure single wavelength is not a list
                 if (
                     param_name == "wavelength"
@@ -971,7 +984,8 @@ class AnalysisPanel(QWidget):
                 ):
                     return value[0]
                 return value
-            except Exception:
+            except (ValueError, SyntaxError):
+                # If literal_eval fails, return the raw string
                 return value_str
         elif param_name == "axis":
             return 1 if "Y-Axis" in widget.currentText() else 0
