@@ -8,6 +8,7 @@ interactions for all supported analysis types.
 Author: Manuel Fragata Mendes, 2025
 """
 
+import ast
 import contextlib
 import copy
 import inspect
@@ -127,23 +128,25 @@ class AnalysisPanel(QWidget):
     }
 
     def __init__(self, connector: OptilandConnector, parent=None):
-        """Initializes the AnalysisPanel.
-
-        Args:
-            connector: The `OptilandConnector` instance for backend communication.
-            parent: The parent widget, if any.
-        """
+        """Initializes the AnalysisPanel."""
         super().__init__(parent)
+        self._init_attributes(connector)
+        self._setup_main_layout()
+
+        self._setup_top_bar()
+        self._setup_main_content_area()
+        self._setup_log_area()
+
+        self._connect_signals()
+        self._set_initial_state()
+
+    def _init_attributes(self, connector):
+        """Initializes instance attributes."""
         self.current_theme = "dark"
         self.connector = connector
         self.setWindowTitle("Analysis")
         self.setObjectName("AnalysisPanel")
-
         gui_plot_utils.apply_gui_matplotlib_styles()
-
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
 
         self.analysis_results_pages = []
         self.current_plot_page_index = -1
@@ -152,7 +155,14 @@ class AnalysisPanel(QWidget):
         self.motion_notify_cid = None
         self.current_settings_widgets = {}
 
-        # --- Top Bar for Analysis Selection and Control ---
+    def _setup_main_layout(self):
+        """Sets up the main QVBoxLayout for the panel."""
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        self.main_layout.setSpacing(10)
+
+    def _setup_top_bar(self):
+        """Creates the top bar with analysis selection and control buttons."""
         top_bar_layout = QHBoxLayout()
         top_bar_layout.addWidget(QLabel("Analysis Type:"))
         self.analysisTypeCombo = QComboBox()
@@ -164,6 +174,7 @@ class AnalysisPanel(QWidget):
                 20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
             )
         )
+
         self.btnRun = QPushButton()
         self.btnRun.setObjectName("RunAnalysisButton")
         self.btnRun.setToolTip("Run Selected Analysis")
@@ -175,37 +186,60 @@ class AnalysisPanel(QWidget):
         self.btnStop.setObjectName("StopAnalysisButton")
         self.btnStop.setToolTip("Stop Analysis")
         self.btnStop.setFixedSize(25, 25)
+
         top_bar_layout.addWidget(self.btnRun)
         top_bar_layout.addWidget(self.btnRunAll)
         top_bar_layout.addWidget(self.btnStop)
-        main_layout.addLayout(top_bar_layout)
+        self.main_layout.addLayout(top_bar_layout)
 
-        # --- Main Content Area ---
+    def _setup_main_content_area(self):
+        """Sets up the central area containing the plot and settings panels."""
         main_separator_line = QFrame()
         main_separator_line.setObjectName("MainSeparatorLine")
         main_separator_line.setFrameShape(QFrame.Shape.HLine)
         main_separator_line.setFrameShadow(QFrame.Shadow.Sunken)
-        main_layout.addWidget(main_separator_line)
+        self.main_layout.addWidget(main_separator_line)
 
         main_content_layout = QHBoxLayout()
         main_content_layout.setSpacing(10)
 
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
-        self.resize_timer.setInterval(100)  # Cooldown period in ms
+        self.resize_timer.setInterval(100)
         self.resize_timer.timeout.connect(self.handle_resize_finished)
 
-        # --- Plot Display Frame (Left/Center) ---
+        self._setup_plot_display_frame(main_content_layout)
+        self._setup_settings_panel(main_content_layout)
+
+        self.main_layout.addLayout(main_content_layout, 1)
+
+    def _setup_plot_display_frame(self, parent_layout):
+        """Creates the plot display frame, including its title bar and content area."""
         self.plot_display_frame = QFrame()
         self.plot_display_frame.setObjectName("PlotDisplayFrame")
         plot_display_frame_layout = QVBoxLayout(self.plot_display_frame)
         plot_display_frame_layout.setContentsMargins(5, 5, 5, 5)
 
-        # Title bar for the plot area
+        # Plot area title bar
+        self._setup_plot_title_bar(plot_display_frame_layout)
+
+        # Separator line
+        title_plot_separator_line = QFrame()
+        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine)
+        plot_display_frame_layout.addWidget(title_plot_separator_line)
+
+        # Plot content and pagination
+        self._setup_plot_content_area(plot_display_frame_layout)
+
+        parent_layout.addWidget(self.plot_display_frame, 3)
+
+    def _setup_plot_title_bar(self, parent_layout):
+        """Creates the title bar for the plot area."""
         self.plot_area_title_bar_layout = QHBoxLayout()
         self.plotTitleLabel = QLabel("No Analysis Run")
         self.plotTitleLabel.setObjectName("PlotTitleLabel")
         self.plot_area_title_bar_layout.addWidget(self.plotTitleLabel)
+
         self.mpl_toolbar_in_titlebar_container = QWidget()
         self.mpl_toolbar_in_titlebar_container.setObjectName(
             "MPLToolbarInTitlebarContainer"
@@ -219,48 +253,58 @@ class AnalysisPanel(QWidget):
         )
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
         self.plot_area_title_bar_layout.addStretch()
+
         self.btnRefreshPlot = QPushButton()
         self.btnRefreshPlot.setObjectName("RefreshPlotButton")
         self.btnRefreshPlot.setFixedSize(25, 25)
-        self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
         self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
-        self.toggleSettingsButton = QPushButton()  # Remove the ">" text
+
+        self.toggleSettingsButton = QPushButton()
         self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
         self.toggleSettingsButton.setFixedSize(25, 25)
         self.plot_area_title_bar_layout.addWidget(self.toggleSettingsButton)
-        plot_display_frame_layout.addLayout(self.plot_area_title_bar_layout)
 
-        # Separator line
-        title_plot_separator_line = QFrame()
-        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine)
-        plot_display_frame_layout.addWidget(title_plot_separator_line)
+        parent_layout.addLayout(self.plot_area_title_bar_layout)
 
-        # Plot content and pagination
+    def _setup_plot_content_area(self, parent_layout):
+        """Creates the main plot content area, info labels, and page buttons."""
         plot_content_and_pages_layout = QHBoxLayout()
         plot_content_and_pages_layout.setContentsMargins(0, 0, 0, 0)
+
         plot_and_info_widget = QWidget()
         plot_and_info_layout = QVBoxLayout(plot_and_info_widget)
         plot_and_info_layout.setContentsMargins(0, 0, 0, 0)
+
         self.plot_container_widget = QWidget()
         self.plot_container_widget.setObjectName("PlotContainerWidget")
         self.plot_container_widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         plot_and_info_layout.addWidget(self.plot_container_widget, 1)
+
         self.cursor_coord_label = QLabel("", self.plot_container_widget)
         self.cursor_coord_label.setObjectName("CursorCoordLabel")
         self.cursor_coord_label.setStyleSheet(
-            "background-color:rgba(0,0,0,0.65);color:white;"
-            "padding:2px 4px;border-radius:3px;"
+            "background-color:rgba(0,0,0,0.65);"
+            "color:white;padding:2px 4px;border-radius:3px;"
         )
         self.cursor_coord_label.setVisible(False)
         self.cursor_coord_label.setAttribute(
             Qt.WidgetAttribute.WA_TransparentForMouseEvents
         )
+
         self.dataInfoLabel = QLabel("Data Analysis info will appear here.")
         self.dataInfoLabel.setObjectName("DataInfoLabel")
         plot_and_info_layout.addWidget(self.dataInfoLabel)
+
         plot_content_and_pages_layout.addWidget(plot_and_info_widget, 1)
+
+        self._setup_pagination_controls(plot_content_and_pages_layout)
+
+        parent_layout.addLayout(plot_content_and_pages_layout, 1)
+
+    def _setup_pagination_controls(self, parent_layout):
+        """Creates the vertical pagination buttons on the right of the plot."""
         self.page_buttons_scroll_area = QScrollArea()
         self.page_buttons_scroll_area.setObjectName("PageButtonsScrollArea")
         self.page_buttons_scroll_area.setWidgetResizable(True)
@@ -268,59 +312,59 @@ class AnalysisPanel(QWidget):
         self.page_buttons_scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarAlwaysOff
         )
+
         page_buttons_container_widget = QWidget()
         self.vertical_page_buttons_layout = QVBoxLayout(page_buttons_container_widget)
         self.vertical_page_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.page_buttons_scroll_area.setWidget(page_buttons_container_widget)
-        plot_content_and_pages_layout.addWidget(self.page_buttons_scroll_area)
-        plot_display_frame_layout.addLayout(plot_content_and_pages_layout, 1)
-        main_content_layout.addWidget(self.plot_display_frame, 3)
 
-        # --- Settings Panel (Right) ---
+        parent_layout.addWidget(self.page_buttons_scroll_area)
+
+    def _setup_settings_panel(self, parent_layout):
+        """Creates the collapsible settings panel on the right."""
         self.settings_area_widget = QWidget()
         self.settings_area_widget.setObjectName("SettingsArea")
         self.settings_area_widget.setFixedWidth(250)
         settings_layout = QVBoxLayout(self.settings_area_widget)
         settings_layout.setContentsMargins(5, 5, 5, 5)
         settings_layout.addWidget(QLabel("Analysis Settings"))
+
         self.settings_scroll_area = QScrollArea()
         self.settings_scroll_area.setWidgetResizable(True)
         self.settingsContentWidget = QWidget()
         self.settings_form_layout = QFormLayout(self.settingsContentWidget)
         self.settings_scroll_area.setWidget(self.settingsContentWidget)
         settings_layout.addWidget(self.settings_scroll_area, 1)
+
         settings_button_layout = QHBoxLayout()
-        # --- Apply Button
         self.btnApplySettings = QPushButton()
-        self.btnApplySettings.setObjectName(
-            "ApplySettingsButton"
-        )  # Give it an ID for styling
+        self.btnApplySettings.setObjectName("ApplySettingsButton")
         self.btnApplySettings.setToolTip("Apply current settings and rerun analysis")
         settings_button_layout.addWidget(self.btnApplySettings)
-        # --- Save Button
+
         self.btnSaveSettings = QPushButton()
         self.btnSaveSettings.setObjectName("SaveSettingsButton")
         self.btnSaveSettings.setToolTip("Save current analysis settings to a file")
         settings_button_layout.addWidget(self.btnSaveSettings)
-        # --- Load Button
+
         self.btnLoadSettings = QPushButton()
         self.btnLoadSettings.setObjectName("LoadSettingsButton")
         self.btnLoadSettings.setToolTip("Load analysis settings from a file")
         settings_button_layout.addWidget(self.btnLoadSettings)
-        # Add the new button layout and remove the old button
+
         settings_layout.addLayout(settings_button_layout)
+        parent_layout.addWidget(self.settings_area_widget, 1)
 
-        main_content_layout.addWidget(self.settings_area_widget, 1)
-        main_layout.addLayout(main_content_layout, 1)
-
-        # --- Log Area (Bottom) ---
+    def _setup_log_area(self):
+        """Creates the log text area at the bottom."""
         self.logArea = QTextEdit()
         self.logArea.setObjectName("LogArea")
         self.logArea.setReadOnly(True)
         self.logArea.setFixedHeight(60)
-        main_layout.addWidget(self.logArea)
+        self.main_layout.addWidget(self.logArea)
 
-        # --- Connections ---
+    def _connect_signals(self):
+        """Connects all widget signals to their corresponding slots."""
         self.btnRun.clicked.connect(self.run_analysis_slot)
         self.btnRunAll.clicked.connect(self.run_all_analysis_slot)
         self.btnStop.clicked.connect(self.stop_analysis_slot)
@@ -333,7 +377,8 @@ class AnalysisPanel(QWidget):
         self.btnSaveSettings.clicked.connect(self._save_analysis_settings_slot)
         self.btnLoadSettings.clicked.connect(self._load_analysis_settings_slot)
 
-        # --- Initial State ---
+    def _set_initial_state(self):
+        """Sets the initial visibility and state of widgets."""
         self.update_theme_icons()
         self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
         self.update_pagination_ui()
@@ -712,19 +757,16 @@ class AnalysisPanel(QWidget):
         elif self.active_mpl_canvas_widget:
             self.cursor_coord_label.setVisible(False)
 
-    def display_plot_page(self, page_index):
-        # Disconnect any previously connected event handlers first
-        if self.active_mpl_canvas_widget:
-            if hasattr(self.active_mpl_canvas_widget, "_motion_notify_cid"):
+    def _cleanup_plot_area(self):
+        """Disconnects events, removes old widgets, and clears the plot layout."""
+        # Disconnect any previously connected event handlers
+        if self.active_mpl_canvas_widget and hasattr(
+            self.active_mpl_canvas_widget, "_event_cids"
+        ):
+            for cid in self.active_mpl_canvas_widget._event_cids:
                 with contextlib.suppress(TypeError, RuntimeError):
-                    self.active_mpl_canvas_widget.mpl_disconnect(
-                        self.active_mpl_canvas_widget._motion_notify_cid
-                    )
-            if hasattr(self.active_mpl_canvas_widget, "_double_click_cid"):
-                with contextlib.suppress(TypeError, RuntimeError):
-                    self.active_mpl_canvas_widget.mpl_disconnect(
-                        self.active_mpl_canvas_widget._double_click_cid
-                    )
+                    self.active_mpl_canvas_widget.mpl_disconnect(cid)
+            self.active_mpl_canvas_widget._event_cids = []
 
         # Clean up old UI widgets
         if self.active_mpl_toolbar_widget:
@@ -733,157 +775,167 @@ class AnalysisPanel(QWidget):
             )
             self.active_mpl_toolbar_widget.deleteLater()
             self.active_mpl_toolbar_widget = None
+
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
         self.cursor_coord_label.setVisible(False)
 
+        # Clear the main plot container layout
         plot_content_area_layout = self.plot_container_widget.layout()
         if plot_content_area_layout:
             self._clear_layout(plot_content_area_layout)
         else:
             plot_content_area_layout = QVBoxLayout(self.plot_container_widget)
-        self.plot_container_widget.setLayout(plot_content_area_layout)
+            self.plot_container_widget.setLayout(plot_content_area_layout)
 
         self.active_mpl_canvas_widget = None
+        return plot_content_area_layout
 
-        if 0 <= page_index < len(self.analysis_results_pages):
-            page_data = self.analysis_results_pages[page_index]
-            analysis_name = page_data.get("name", "Analysis")
-            self.plotTitleLabel.setText(analysis_name)
-            self.dataInfoLabel.setText(
-                page_data.get("result_summary", f"Results for {analysis_name}")
+    def _populate_settings_from_page_data(self, page_data):
+        """Updates the settings UI widgets with values from a saved analysis page."""
+        page_args = {
+            **page_data.get("constructor_args_used", {}),
+            **page_data.get("view_args", {}),
+        }
+        for param_name, widget in self.current_settings_widgets.items():
+            if param_name not in page_args:
+                continue
+
+            val = page_args[param_name]
+            if isinstance(widget, (QSpinBox | QDoubleSpinBox)):
+                widget.setValue(val)
+            elif isinstance(widget, QCheckBox):
+                widget.setChecked(bool(val))
+            elif isinstance(widget, QLineEdit):
+                widget.setText(
+                    ", ".join(map(str, val)) if isinstance(val, tuple) else str(val)
+                )
+            elif isinstance(widget, QComboBox):
+                # Handle special dropdowns that store data
+                if param_name in ["fields", "wavelengths", "wavelength"]:
+                    found_index = -1
+                    for i in range(widget.count()):
+                        # Safely evaluate the item data before comparing
+                        item_data_str = widget.itemData(i)
+                        if not item_data_str:
+                            continue
+
+                        try:
+                            item_data_obj = ast.literal_eval(item_data_str)
+                            if item_data_obj == val:
+                                found_index = i
+                                break
+                        except (ValueError, SyntaxError):
+                            # Log the error or handle cases where data might be invalid
+                            print(
+                                f"Warning: Could not parse item data '{item_data_str}' "
+                                f"for widget '{param_name}'."
+                            )
+                            continue
+
+                    if found_index != -1:
+                        widget.setCurrentIndex(found_index)
+                # Handle simple index-based or text-based dropdowns
+                elif param_name == "axis":
+                    widget.setCurrentIndex(0 if val == 1 else 1)
+                else:
+                    widget.setCurrentText(str(val))
+
+    def _create_new_plot_canvas(self, page_data):
+        """Creates a new FigureCanvas and connects mouse interaction events."""
+        fig = Figure(figsize=page_data.get("figsize", (7, 5)), dpi=100)
+        canvas = FigureCanvas(fig)
+        canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus)
+        canvas.setFocus()
+
+        # Connect events and store their IDs for later disconnection
+        cids = [
+            canvas.mpl_connect("scroll_event", self.on_scroll_zoom),
+            canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot),
+            canvas.mpl_connect("button_press_event", self.on_plot_double_click),
+        ]
+        canvas._event_cids = cids
+        return canvas
+
+    def _draw_plot_on_canvas(self, analysis_instance, canvas, view_args):
+        """Invokes the analysis's view method to draw the plot on the canvas."""
+        axs = analysis_instance.view(fig_to_plot_on=canvas.figure, **view_args)
+
+        # Add summary text overlay if available
+        if hasattr(analysis_instance, "get_summary_text"):
+            summary_text = analysis_instance.get_summary_text()
+            ax_to_use = None
+            if isinstance(axs, np.ndarray):
+                ax_to_use = axs.flatten()[-1]
+            elif isinstance(axs, plt.Axes):
+                ax_to_use = axs
+
+            if ax_to_use:
+                props = dict(boxstyle="round,pad=0.4", facecolor="black", alpha=0.6)
+                ax_to_use.text(
+                    0.97,
+                    0.03,
+                    summary_text,
+                    transform=ax_to_use.transAxes,
+                    fontsize=7,
+                    verticalalignment="bottom",
+                    horizontalalignment="right",
+                    bbox=props,
+                    color="white",
+                )
+
+        canvas.figure.tight_layout(rect=[0, 0.05, 1, 1])
+
+    def _setup_plot_toolbar(self, canvas):
+        """Creates and attaches a new custom Matplotlib toolbar."""
+        self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(
+            canvas, self.mpl_toolbar_in_titlebar_container
+        )
+        self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
+        self.mpl_toolbar_in_titlebar_container.setVisible(True)
+
+    def _display_placeholder(self, layout):
+        """Displays a placeholder message when no analysis is selected."""
+        self.plotTitleLabel.setText("No Analysis Selected")
+        self.dataInfoLabel.setText("Run an analysis to see results.")
+        layout.addWidget(QLabel("Select or Run an Analysis"))
+        self._update_settings_ui(self.analysisTypeCombo.currentText())
+
+    def display_plot_page(self, page_index):
+        """
+        Displays a specific analysis result page, orchestrating
+        UI cleanup and redrawing.
+        """
+        plot_layout = self._cleanup_plot_area()
+
+        if not (0 <= page_index < len(self.analysis_results_pages)):
+            self._display_placeholder(plot_layout)
+            return
+
+        page_data = self.analysis_results_pages[page_index]
+        analysis_name = page_data.get("name", "Analysis")
+        analysis_instance = page_data.get("analysis_instance")
+
+        # Update UI text elements
+        self.plotTitleLabel.setText(analysis_name)
+        self.dataInfoLabel.setText(
+            page_data.get("result_summary", f"Results for {analysis_name}")
+        )
+
+        # Update settings panel to reflect this analysis
+        self._update_settings_ui(analysis_name)
+        self._populate_settings_from_page_data(page_data)
+
+        if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
+            self.active_mpl_canvas_widget = self._create_new_plot_canvas(page_data)
+            self._draw_plot_on_canvas(
+                analysis_instance,
+                self.active_mpl_canvas_widget,
+                page_data.get("view_args", {}),
             )
-            self._update_settings_ui(analysis_name)
-
-            page_args = {
-                **page_data.get("constructor_args_used", {}),
-                **page_data.get("view_args", {}),
-            }
-            for param_name, widget in self.current_settings_widgets.items():
-                if param_name in page_args:
-                    val = page_args[param_name]
-                    if isinstance(widget, QSpinBox | QDoubleSpinBox):
-                        widget.setValue(val)
-                    elif isinstance(widget, QCheckBox):
-                        widget.setChecked(bool(val))
-                    elif isinstance(widget, QLineEdit):
-                        widget.setText(
-                            ", ".join(map(str, val))
-                            if isinstance(val, tuple)
-                            else str(val)
-                        )
-                    elif isinstance(widget, QComboBox):
-                        # Correctly set the dropdown selection
-                        if param_name in ["fields", "wavelengths", "wavelength"]:
-                            # For our special dropdowns,
-                            # find the item by its stored data
-                            last_used_value = val
-                            found_index = -1
-                            for i in range(widget.count()):
-                                # The itemData is a string like "'primary'" or "[0.55]"
-                                item_data_str = widget.itemData(i)
-                                try:
-                                    item_data_obj = eval(item_data_str)
-                                    if item_data_obj == last_used_value:
-                                        found_index = i
-                                        break
-                                except Exception:
-                                    continue  # Ignore eval errors
-
-                            if found_index != -1:
-                                widget.setCurrentIndex(found_index)
-                        elif param_name == "axis":
-                            widget.setCurrentIndex(0 if val == 1 else 1)
-                        else:
-                            widget.setCurrentText(str(val))
-
-            analysis_instance = page_data.get("analysis_instance")
-            if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
-                fig = Figure(figsize=page_data.get("figsize", (7, 5)), dpi=100)
-                canvas = FigureCanvas(fig)
-                canvas.setFocusPolicy(
-                    Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus
-                )
-                canvas.setFocus()
-
-                self.active_mpl_canvas_widget = canvas
-                cids = []
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "scroll_event", self.on_scroll_zoom
-                    )
-                )
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "motion_notify_event", self.on_mouse_move_on_plot
-                    )
-                )
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "button_press_event", self.on_plot_double_click
-                    )
-                )
-                self.active_mpl_canvas_widget._event_cids = cids
-                double_click_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    "button_press_event", self.on_plot_double_click
-                )
-                self.active_mpl_canvas_widget._double_click_cid = double_click_cid
-                self.motion_notify_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    "motion_notify_event", self.on_mouse_move_on_plot
-                )
-                self.active_mpl_canvas_widget._motion_notify_cid = (
-                    self.motion_notify_cid
-                )
-
-                axs = analysis_instance.view(
-                    fig_to_plot_on=fig, **page_data.get("view_args", {})
-                )
-
-                if hasattr(analysis_instance, "get_summary_text"):
-                    summary_text = analysis_instance.get_summary_text()
-                    ax_to_use = None
-                    if isinstance(axs, np.ndarray):
-                        ax_to_use = axs.flatten()[-1]
-                    elif isinstance(axs, plt.Axes):
-                        ax_to_use = axs
-
-                    if ax_to_use:
-                        props = dict(
-                            boxstyle="round,pad=0.4", facecolor="black", alpha=0.6
-                        )
-                        ax_to_use.text(
-                            0.97,
-                            0.03,
-                            summary_text,
-                            transform=ax_to_use.transAxes,
-                            fontsize=7,
-                            verticalalignment="bottom",
-                            horizontalalignment="right",
-                            bbox=props,
-                            color="white",
-                        )
-
-                fig.tight_layout(rect=[0, 0.05, 1, 1])
-
-                self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(
-                    self.active_mpl_canvas_widget,
-                    self.mpl_toolbar_in_titlebar_container,
-                )
-                self.mpl_toolbar_in_titlebar_layout.addWidget(
-                    self.active_mpl_toolbar_widget
-                )
-                self.mpl_toolbar_in_titlebar_container.setVisible(True)
-
-                plot_content_area_layout.addWidget(self.active_mpl_canvas_widget)
-
-            else:
-                plot_content_area_layout.addWidget(
-                    QLabel(f"Cannot embed plot for {analysis_name}")
-                )
+            self._setup_plot_toolbar(self.active_mpl_canvas_widget)
+            plot_layout.addWidget(self.active_mpl_canvas_widget)
         else:
-            self.plotTitleLabel.setText("No Analysis Selected")
-            self.dataInfoLabel.setText("Run an analysis to see results.")
-            plot_content_area_layout.addWidget(QLabel("Select or Run an Analysis"))
-            self._update_settings_ui(self.analysisTypeCombo.currentText())
+            plot_layout.addWidget(QLabel(f"Cannot embed plot for {analysis_name}"))
 
     def on_plot_double_click(self, event):
         """Handler for mouse events on the plot canvas."""
@@ -907,126 +959,219 @@ class AnalysisPanel(QWidget):
         except (ValueError, TypeError):
             return None
 
+    def _get_value_from_spinbox(self, widget):
+        """Extracts the value from a QSpinBox or QDoubleSpinBox."""
+        return widget.value()
+
+    def _get_value_from_checkbox(self, widget):
+        """Extracts the value from a QCheckBox."""
+        return widget.isChecked()
+
+    def _get_value_from_combobox(self, param_name, widget):
+        """Extracts the value from a QComboBox, handling special cases."""
+        if param_name in ["fields", "wavelengths", "wavelength"]:
+            value_str = widget.currentData()
+            if not value_str:
+                return None
+            try:
+                # Use ast.literal_eval for safe evaluation of Python literals
+                value = ast.literal_eval(value_str)
+                # Ensure single wavelength is not a list
+                if (
+                    param_name == "wavelength"
+                    and isinstance(value, list)
+                    and len(value) == 1
+                ):
+                    return value[0]
+                return value
+            except (ValueError, SyntaxError):
+                # If literal_eval fails, return the raw string
+                return value_str
+        elif param_name == "axis":
+            return 1 if "Y-Axis" in widget.currentText() else 0
+        else:
+            return widget.currentText()
+
+    def _get_value_from_lineedit(self, param_name, widget):
+        """Extracts and parses the value from a QLineEdit."""
+        text = widget.text().strip()
+        if not text:
+            return None
+
+        # Bug Fix: Ensure max_freq is parsed as an integer
+        if param_name == "max_freq":
+            try:
+                return int(text)
+            except (ValueError, TypeError):
+                return None  # Or a default value, or raise an error
+
+        # Handle tuple parsing for specific parameters
+        if param_name in ["field", "pupil"]:
+            return self._parse_tuple_str(text, float, 2)
+        if param_name == "res" or param_name == "px_size":
+            return self._parse_tuple_str(text, int, 2)
+
+        # Handle cross_section parsing
+        if param_name == "cross_section":
+            parts = [p.strip() for p in text.split(",")]
+            if len(parts) == 2 and parts[0].lower() in ["cross-x", "cross-y"]:
+                try:
+                    return (parts[0].lower(), int(parts[1]))
+                except ValueError:
+                    return text  # Invalid number, pass as string
+            return text
+
+        return text
+
+    def _validate_system_for_analysis(self, optic):
+        """
+        Checks if the optical system is valid for running an analysis.
+
+        Args:
+            optic: The Optic object to validate.
+
+        Returns:
+            True if the system is valid, False otherwise.
+        """
+        if not optic or optic.surface_group.num_surfaces < 2:
+            QMessageBox.warning(
+                self,
+                "Analysis Error",
+                "A minimal optical system (at least 2 surfaces) is required.",
+            )
+            return False
+        if optic.wavelengths.num_wavelengths == 0:
+            QMessageBox.warning(
+                self, "Analysis Error", "The optical system has no defined wavelengths."
+            )
+            return False
+        return True
+
+    def _run_and_package_analysis(
+        self, analysis_class, analysis_name, constructor_args, view_args
+    ):
+        """
+        Instantiates, runs, and packages the analysis results.
+
+        Args:
+            analysis_class: The class of the analysis to run.
+            analysis_name (str): The display name of the analysis.
+            constructor_args (dict): Arguments for the analysis class constructor.
+            view_args (dict): Arguments for the analysis view method.
+
+        Returns:
+            A dictionary containing the packaged page data for display,
+            or None on failure.
+        """
+        optic = self.connector.get_optic()
+        final_args = {"optic": optic, **constructor_args}
+
+        # Filter args to only those accepted by the constructor
+        valid_init_params = inspect.signature(analysis_class.__init__).parameters
+        filtered_args = {k: v for k, v in final_args.items() if k in valid_init_params}
+
+        if (
+            analysis_name in ["Geometric MTF", "FFT MTF"]
+            and "max_freq" in final_args
+            and "max_freq" not in filtered_args
+        ):
+            filtered_args["max_freq"] = final_args["max_freq"]
+
+        print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
+        instance = analysis_class(**filtered_args)
+
+        # Check if the analysis can be plotted directly on a Matplotlib figure
+        can_embed = (
+            hasattr(instance, "view")
+            and "fig_to_plot_on" in inspect.signature(instance.view).parameters
+        )
+        if not can_embed:
+            instance.view(**view_args)  # Open in a separate window
+
+        page_data = {
+            "name": analysis_name,
+            "analysis_instance": instance,
+            "plot_type": "embedded_mpl" if can_embed else "external_window",
+            "view_args": view_args,
+            "constructor_args_used": constructor_args,
+        }
+
+        # Special case for sizing the plot figure for certain analyses
+        if analysis_name == "Through-Focus Spot Diagram":
+            num_f = len(optic.fields.get_field_coords())
+            num_s = final_args.get("num_steps", 5)
+            page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
+
+        return page_data
+
     def _collect_current_settings(self):
+        """
+        Collects all analysis parameters from the current settings UI widgets.
+
+        This method iterates through the UI widgets, extracts their values using
+        type-specific helpers, and sorts them into constructor or view arguments.
+
+        Returns:
+            A tuple containing two dictionaries: (constructor_args, view_args).
+        """
         constructor_args, view_args = {}, {}
+        known_view_args = ["add_airy_disk", "cmap", "normalize", "cross_section"]
+
         for param_name, widget in self.current_settings_widgets.items():
             value = None
-            if isinstance(widget, QSpinBox | QDoubleSpinBox):
-                value = widget.value()
+            if isinstance(widget, (QSpinBox | QDoubleSpinBox)):
+                value = self._get_value_from_spinbox(widget)
             elif isinstance(widget, QCheckBox):
-                value = widget.isChecked()
+                value = self._get_value_from_checkbox(widget)
             elif isinstance(widget, QComboBox):
-                if param_name in ["fields", "wavelengths", "wavelength"]:
-                    value_str = widget.currentData()
-                    if value_str:
-                        try:
-                            value = eval(value_str)
-                        except Exception:
-                            value = value_str
-                    if (
-                        param_name == "wavelength"
-                        and isinstance(value, list)
-                        and len(value) == 1
-                    ):
-                        value = value[0]
-                elif param_name == "axis":
-                    value = 1 if "Y-Axis" in widget.currentText() else 0
-                else:
-                    value = widget.currentText()
+                value = self._get_value_from_combobox(param_name, widget)
             elif isinstance(widget, QLineEdit):
-                text = widget.text().strip()
-                if param_name in ["field", "pupil"]:
-                    value = self._parse_tuple_str(text, float, 2)
-                elif param_name == "res":
-                    value = self._parse_tuple_str(text, int, 2)
-                elif param_name == "px_size":
-                    value = self._parse_tuple_str(text, float, 2)
-                elif param_name == "cross_section":
-                    if not text:
-                        value = None
-                    else:
-                        parts = [p.strip() for p in text.split(",")]
-                        if len(parts) == 2 and parts[0].lower() in [
-                            "cross-x",
-                            "cross-y",
-                        ]:
-                            try:
-                                value = (parts[0].lower(), int(parts[1]))
-                            except ValueError:
-                                value = text
-                        else:
-                            value = text
-                else:
-                    value = text
+                value = self._get_value_from_lineedit(param_name, widget)
 
             if value is not None:
-                if param_name in [
-                    "add_airy_disk",
-                    "cmap",
-                    "normalize",
-                    "cross_section",
-                ]:
+                if param_name in known_view_args:
                     view_args[param_name] = value
                 else:
                     constructor_args[param_name] = value
+
         return constructor_args, view_args
 
     def _execute_analysis(
         self, analysis_class, analysis_name, constructor_args=None, view_args=None
     ):
         """
-        Executes an analysis. If constructor_args are provided, it uses them
-        (for cloning).
-        Otherwise, it collects them from the current UI settings.
+        Main entry point for executing an analysis.
+
+        This method orchestrates the validation, settings collection, execution,
+        and error handling for running a single analysis.
+
+        Args:
+            analysis_class: The analysis class to instantiate.
+            analysis_name (str): The display name of the analysis.
+            constructor_args (dict, optional): Pre-collected args, used for cloning.
+            view_args (dict, optional): Pre-collected view args, used for cloning.
+
+        Returns:
+            A dictionary of page data, or None if the analysis fails.
         """
         optic = self.connector.get_optic()
-        if not optic or optic.surface_group.num_surfaces < 2:
-            QMessageBox.warning(self, "Analysis Error", "Minimal system required.")
-            return None
-        if optic.wavelengths.num_wavelengths == 0:
-            QMessageBox.warning(self, "Analysis Error", "Optic has no wavelengths.")
+        if not self._validate_system_for_analysis(optic):
             return None
 
         try:
-            # If no args are passed, get them from the UI (normal "Run" or "Apply")
+            # If no args are provided, get them from the UI (standard run)
             if constructor_args is None and view_args is None:
                 constructor_args, view_args = self._collect_current_settings()
 
-            final_args = {"optic": optic, **constructor_args}
-
-            valid_init_params = inspect.signature(analysis_class.__init__).parameters
-
-            filtered_args = {
-                k: v for k, v in final_args.items() if k in valid_init_params
-            }
-
-            print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
-            instance = analysis_class(**filtered_args)
-
-            can_embed = (
-                hasattr(instance, "view")
-                and "fig_to_plot_on" in inspect.signature(instance.view).parameters
+            return self._run_and_package_analysis(
+                analysis_class, analysis_name, constructor_args, view_args
             )
-            if not can_embed:
-                instance.view(**view_args)
 
-            page_data = {
-                "name": analysis_name,
-                "analysis_instance": instance,
-                "plot_type": "embedded_mpl" if can_embed else "external_window",
-                "view_args": view_args,
-                "constructor_args_used": constructor_args,
-            }
-
-            if analysis_name == "Through-Focus Spot Diagram":
-                num_f = len(optic.fields.get_field_coords())
-                num_s = final_args.get("num_steps", 5)
-                page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
-
-            return page_data
         except Exception as e:
             QMessageBox.critical(
-                self, "Analysis Error", f"Error during {analysis_name}:\n{e}"
+                self,
+                "Analysis Error",
+                f"An error occurred during {analysis_name}:\n{e}",
             )
             import traceback
 

@@ -37,71 +37,67 @@ class SurfacePropertiesWidget(QWidget):
         self.connector = connector
         self.setObjectName("SurfacePropertiesWidget")
         self.setMinimumWidth(750)
-
-        # Add size constraints
         self.setMinimumHeight(100)
         self.setMaximumHeight(200)
 
+        self.input_widgets = {}
+        self._populate_properties_form()
+
+    def _create_parameter_input(self, name, value):
+        """Creates a configured QLineEdit for a given surface parameter."""
+        line_edit = QLineEdit()
+        line_edit.setMaximumWidth(60)
+
+        if isinstance(value, (list | tuple)) or hasattr(value, "tolist"):
+            list_val = value.tolist() if hasattr(value, "tolist") else value
+            line_edit.setText(str(list_val))
+            line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
+        else:
+            line_edit.setText(f"{value:.6f}")
+
+        line_edit.editingFinished.connect(self.apply_changes)
+        self.input_widgets[name] = line_edit
+        return line_edit
+
+    def _populate_properties_form(self):
+        """Creates and populates the form layout with surface parameter widgets."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 8, 15, 8)
-
-        # Create a horizontal layout to hold multiple form layouts
         columns_layout = QHBoxLayout()
-        columns_layout.setSpacing(20)  # Space between columns
+        columns_layout.setSpacing(20)
         main_layout.addLayout(columns_layout)
 
         params = self.connector.get_surface_geometry_params(self.row)
-        self.input_widgets = {}
 
         if not params:
             form_layout = QFormLayout()
-            form_layout.setHorizontalSpacing(15)
-            form_layout.setVerticalSpacing(5)
             form_layout.addRow(
                 QLabel("No additional properties for this surface type.")
             )
             columns_layout.addLayout(form_layout)
-        else:
-            # organize properties into columns with maximum 2 properties per column
-            items_per_column = 2
-            param_items = list(params.items())
+            return
 
-            # maximum number of columns needed
-            num_columns = (len(param_items) + items_per_column - 1) // items_per_column
+        items_per_column = 2
+        param_items = list(params.items())
+        num_columns = (len(param_items) + items_per_column - 1) // items_per_column
 
-            # Create and populate each column
-            for col in range(num_columns):
-                form_layout = QFormLayout()
-                form_layout.setHorizontalSpacing(15)
-                form_layout.setVerticalSpacing(5)
+        for col in range(num_columns):
+            form_layout = QFormLayout()
+            form_layout.setHorizontalSpacing(15)
+            form_layout.setVerticalSpacing(5)
 
-                # Calculate start and end indices for this column
-                start_idx = col * items_per_column
-                end_idx = min((col + 1) * items_per_column, len(param_items))
+            start_idx = col * items_per_column
+            end_idx = min((col + 1) * items_per_column, len(param_items))
 
-                # Add properties to this column
-                for i in range(start_idx, end_idx):
-                    name, value = param_items[i]
-                    label_text = name + ":"
-                    line_edit = QLineEdit()
-                    line_edit.setMaximumWidth(60)  # size of the input field
+            for i in range(start_idx, end_idx):
+                name, value = param_items[i]
+                label_text = name + ":"
+                line_edit = self._create_parameter_input(name, value)
+                form_layout.addRow(label_text, line_edit)
 
-                    if isinstance(value, (list | tuple)) or hasattr(value, "tolist"):
-                        list_val = value.tolist() if hasattr(value, "tolist") else value
-                        line_edit.setText(str(list_val))
-                        line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
-                    else:
-                        line_edit.setText(f"{value:.6f}")
+            columns_layout.addLayout(form_layout)
 
-                    line_edit.editingFinished.connect(self.apply_changes)  # auto-update
-                    form_layout.addRow(label_text, line_edit)
-                    self.input_widgets[name] = line_edit
-
-                # Add this column to the horizontal layout
-                columns_layout.addLayout(form_layout)
-
-            # Add a stretch at the end to align columns to the left
-            columns_layout.addStretch(1)
+        columns_layout.addStretch(1)
 
     @Slot()
     def apply_changes(self):
@@ -185,20 +181,26 @@ class LensEditor(QWidget):
         self.connector = connector
         self.setWindowTitle("Lens Editor")
         self.open_prop_source_row = -1
+
+        self._init_ui()
+        self.setup_table()
+        self.load_data()
+        self.connect_signals()
+
+    def _init_ui(self):
+        """Initializes the main UI components of the editor."""
         self.layout = QVBoxLayout(self)
         self.tableWidget = QTableWidget()
         self.tableWidget.installEventFilter(self)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.layout.addWidget(self.tableWidget)
+
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
         self.btnRemoveSurface = QPushButton("Remove Surface")
         self.buttonLayout.addWidget(self.btnAddSurface)
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
-        self.setup_table()
-        self.load_data()
-        self.connect_signals()
 
     def connect_signals(self):
         self.btnAddSurface.clicked.connect(self.add_surface_handler)

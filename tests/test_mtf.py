@@ -53,6 +53,18 @@ class TestGeometricMTF:
         m._generate_mtf_data()
         assert m.data is not None, "Unscaled MTF data should be generated"
 
+    def test_max_freq_specification(self, set_test_backend, optic):
+
+        m1 = GeometricMTF(optic)
+
+        wavelength = optic.primary_wavelength
+        expected_cutoff = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
+        assert be.to_numpy(m1.max_freq) == pytest.approx(be.to_numpy(expected_cutoff))
+
+        custom_freq = 50.0
+        m2 = GeometricMTF(optic, max_freq=custom_freq)
+        assert be.to_numpy(m2.max_freq) == pytest.approx(custom_freq)
+
 
 class TestFFTMTF:
     def test_view_mtf_defaults(self, set_test_backend, optic):
