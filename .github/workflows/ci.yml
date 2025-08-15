@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "gui/improve_maintainability_metric" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "gui/improve_maintainability_metric" ]
 
 jobs:
   lock_file:

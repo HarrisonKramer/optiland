@@ -951,126 +951,217 @@ class AnalysisPanel(QWidget):
         except (ValueError, TypeError):
             return None
 
+    def _get_value_from_spinbox(self, widget):
+        """Extracts the value from a QSpinBox or QDoubleSpinBox."""
+        return widget.value()
+
+    def _get_value_from_checkbox(self, widget):
+        """Extracts the value from a QCheckBox."""
+        return widget.isChecked()
+
+    def _get_value_from_combobox(self, param_name, widget):
+        """Extracts the value from a QComboBox, handling special cases."""
+        if param_name in ["fields", "wavelengths", "wavelength"]:
+            value_str = widget.currentData()
+            if not value_str:
+                return None
+            try:
+                value = eval(value_str)
+                # Ensure single wavelength is not a list
+                if (
+                    param_name == "wavelength"
+                    and isinstance(value, list)
+                    and len(value) == 1
+                ):
+                    return value[0]
+                return value
+            except Exception:
+                return value_str
+        elif param_name == "axis":
+            return 1 if "Y-Axis" in widget.currentText() else 0
+        else:
+            return widget.currentText()
+
+    def _get_value_from_lineedit(self, param_name, widget):
+        """Extracts and parses the value from a QLineEdit."""
+        text = widget.text().strip()
+        if not text:
+            return None
+
+        # Bug Fix: Ensure max_freq is parsed as an integer
+        if param_name == "max_freq":
+            try:
+                return int(text)
+            except (ValueError, TypeError):
+                return None  # Or a default value, or raise an error
+
+        # Handle tuple parsing for specific parameters
+        if param_name in ["field", "pupil"]:
+            return self._parse_tuple_str(text, float, 2)
+        if param_name == "res" or param_name == "px_size":
+            return self._parse_tuple_str(text, int, 2)
+
+        # Handle cross_section parsing
+        if param_name == "cross_section":
+            parts = [p.strip() for p in text.split(",")]
+            if len(parts) == 2 and parts[0].lower() in ["cross-x", "cross-y"]:
+                try:
+                    return (parts[0].lower(), int(parts[1]))
+                except ValueError:
+                    return text  # Invalid number, pass as string
+            return text
+
+        return text
+
+    def _validate_system_for_analysis(self, optic):
+        """
+        Checks if the optical system is valid for running an analysis.
+
+        Args:
+            optic: The Optic object to validate.
+
+        Returns:
+            True if the system is valid, False otherwise.
+        """
+        if not optic or optic.surface_group.num_surfaces < 2:
+            QMessageBox.warning(
+                self,
+                "Analysis Error",
+                "A minimal optical system (at least 2 surfaces) is required.",
+            )
+            return False
+        if optic.wavelengths.num_wavelengths == 0:
+            QMessageBox.warning(
+                self, "Analysis Error", "The optical system has no defined wavelengths."
+            )
+            return False
+        return True
+
+    def _run_and_package_analysis(
+        self, analysis_class, analysis_name, constructor_args, view_args
+    ):
+        """
+        Instantiates, runs, and packages the analysis results.
+
+        Args:
+            analysis_class: The class of the analysis to run.
+            analysis_name (str): The display name of the analysis.
+            constructor_args (dict): Arguments for the analysis class constructor.
+            view_args (dict): Arguments for the analysis view method.
+
+        Returns:
+            A dictionary containing the packaged page data for display,
+            or None on failure.
+        """
+        optic = self.connector.get_optic()
+        final_args = {"optic": optic, **constructor_args}
+
+        # Filter args to only those accepted by the constructor
+        valid_init_params = inspect.signature(analysis_class.__init__).parameters
+        filtered_args = {k: v for k, v in final_args.items() if k in valid_init_params}
+
+        if (
+            analysis_name in ["Geometric MTF", "FFT MTF"]
+            and "max_freq" in final_args
+            and "max_freq" not in filtered_args
+        ):
+            filtered_args["max_freq"] = final_args["max_freq"]
+
+        print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
+        instance = analysis_class(**filtered_args)
+
+        # Check if the analysis can be plotted directly on a Matplotlib figure
+        can_embed = (
+            hasattr(instance, "view")
+            and "fig_to_plot_on" in inspect.signature(instance.view).parameters
+        )
+        if not can_embed:
+            instance.view(**view_args)  # Open in a separate window
+
+        page_data = {
+            "name": analysis_name,
+            "analysis_instance": instance,
+            "plot_type": "embedded_mpl" if can_embed else "external_window",
+            "view_args": view_args,
+            "constructor_args_used": constructor_args,
+        }
+
+        # Special case for sizing the plot figure for certain analyses
+        if analysis_name == "Through-Focus Spot Diagram":
+            num_f = len(optic.fields.get_field_coords())
+            num_s = final_args.get("num_steps", 5)
+            page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
+
+        return page_data
+
     def _collect_current_settings(self):
+        """
+        Collects all analysis parameters from the current settings UI widgets.
+
+        This method iterates through the UI widgets, extracts their values using
+        type-specific helpers, and sorts them into constructor or view arguments.
+
+        Returns:
+            A tuple containing two dictionaries: (constructor_args, view_args).
+        """
         constructor_args, view_args = {}, {}
+        known_view_args = ["add_airy_disk", "cmap", "normalize", "cross_section"]
+
         for param_name, widget in self.current_settings_widgets.items():
             value = None
-            if isinstance(widget, QSpinBox | QDoubleSpinBox):
-                value = widget.value()
+            if isinstance(widget, (QSpinBox | QDoubleSpinBox)):
+                value = self._get_value_from_spinbox(widget)
             elif isinstance(widget, QCheckBox):
-                value = widget.isChecked()
+                value = self._get_value_from_checkbox(widget)
             elif isinstance(widget, QComboBox):
-                if param_name in ["fields", "wavelengths", "wavelength"]:
-                    value_str = widget.currentData()
-                    if value_str:
-                        try:
-                            value = eval(value_str)
-                        except Exception:
-                            value = value_str
-                    if (
-                        param_name == "wavelength"
-                        and isinstance(value, list)
-                        and len(value) == 1
-                    ):
-                        value = value[0]
-                elif param_name == "axis":
-                    value = 1 if "Y-Axis" in widget.currentText() else 0
-                else:
-                    value = widget.currentText()
+                value = self._get_value_from_combobox(param_name, widget)
             elif isinstance(widget, QLineEdit):
-                text = widget.text().strip()
-                if param_name in ["field", "pupil"]:
-                    value = self._parse_tuple_str(text, float, 2)
-                elif param_name == "res":
-                    value = self._parse_tuple_str(text, int, 2)
-                elif param_name == "px_size":
-                    value = self._parse_tuple_str(text, float, 2)
-                elif param_name == "cross_section":
-                    if not text:
-                        value = None
-                    else:
-                        parts = [p.strip() for p in text.split(",")]
-                        if len(parts) == 2 and parts[0].lower() in [
-                            "cross-x",
-                            "cross-y",
-                        ]:
-                            try:
-                                value = (parts[0].lower(), int(parts[1]))
-                            except ValueError:
-                                value = text
-                        else:
-                            value = text
-                else:
-                    value = text
+                value = self._get_value_from_lineedit(param_name, widget)
 
             if value is not None:
-                if param_name in [
-                    "add_airy_disk",
-                    "cmap",
-                    "normalize",
-                    "cross_section",
-                ]:
+                if param_name in known_view_args:
                     view_args[param_name] = value
                 else:
                     constructor_args[param_name] = value
+
         return constructor_args, view_args
 
     def _execute_analysis(
         self, analysis_class, analysis_name, constructor_args=None, view_args=None
     ):
         """
-        Executes an analysis. If constructor_args are provided, it uses them
-        (for cloning).
-        Otherwise, it collects them from the current UI settings.
+        Main entry point for executing an analysis.
+
+        This method orchestrates the validation, settings collection, execution,
+        and error handling for running a single analysis.
+
+        Args:
+            analysis_class: The analysis class to instantiate.
+            analysis_name (str): The display name of the analysis.
+            constructor_args (dict, optional): Pre-collected args, used for cloning.
+            view_args (dict, optional): Pre-collected view args, used for cloning.
+
+        Returns:
+            A dictionary of page data, or None if the analysis fails.
         """
         optic = self.connector.get_optic()
-        if not optic or optic.surface_group.num_surfaces < 2:
-            QMessageBox.warning(self, "Analysis Error", "Minimal system required.")
-            return None
-        if optic.wavelengths.num_wavelengths == 0:
-            QMessageBox.warning(self, "Analysis Error", "Optic has no wavelengths.")
+        if not self._validate_system_for_analysis(optic):
             return None
 
         try:
-            # If no args are passed, get them from the UI (normal "Run" or "Apply")
+            # If no args are provided, get them from the UI (standard run)
             if constructor_args is None and view_args is None:
                 constructor_args, view_args = self._collect_current_settings()
 
-            final_args = {"optic": optic, **constructor_args}
-
-            valid_init_params = inspect.signature(analysis_class.__init__).parameters
-
-            filtered_args = {
-                k: v for k, v in final_args.items() if k in valid_init_params
-            }
-
-            print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
-            instance = analysis_class(**filtered_args)
-
-            can_embed = (
-                hasattr(instance, "view")
-                and "fig_to_plot_on" in inspect.signature(instance.view).parameters
+            return self._run_and_package_analysis(
+                analysis_class, analysis_name, constructor_args, view_args
             )
-            if not can_embed:
-                instance.view(**view_args)
 
-            page_data = {
-                "name": analysis_name,
-                "analysis_instance": instance,
-                "plot_type": "embedded_mpl" if can_embed else "external_window",
-                "view_args": view_args,
-                "constructor_args_used": constructor_args,
-            }
-
-            if analysis_name == "Through-Focus Spot Diagram":
-                num_f = len(optic.fields.get_field_coords())
-                num_s = final_args.get("num_steps", 5)
-                page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
-
-            return page_data
         except Exception as e:
             QMessageBox.critical(
-                self, "Analysis Error", f"Error during {analysis_name}:\n{e}"
+                self,
+                "Analysis Error",
+                f"An error occurred during {analysis_name}:\n{e}",
             )
             import traceback
 
