@@ -7,6 +7,10 @@ such as radius, thickness, and material.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QEvent, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -25,7 +29,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .optiland_connector import OptilandConnector
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SurfacePropertiesWidget(QWidget):

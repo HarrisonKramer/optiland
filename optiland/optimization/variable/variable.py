@@ -11,6 +11,8 @@ to specify the type of the variable.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
 from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
 from optiland.optimization.variable.conic import ConicVariable

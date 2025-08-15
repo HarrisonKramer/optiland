@@ -5,6 +5,8 @@ This module provides a base class for Point Spread Function (PSF) calculations.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from abc import abstractmethod
 from warnings import warn
 

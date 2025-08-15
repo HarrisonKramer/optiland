@@ -8,6 +8,10 @@ tree to switch between different property editors.
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -28,7 +32,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .optiland_connector import OptilandConnector
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SystemPropertiesPanel(QWidget):

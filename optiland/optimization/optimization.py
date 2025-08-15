@@ -8,6 +8,8 @@ using different optimization algorithms.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import warnings
 
 import pandas as pd

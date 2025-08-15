@@ -4,6 +4,8 @@ This module defines the ZernikeOPD class.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.zernike import ZernikeFit
 
 from .opd import OPD

@@ -8,6 +8,8 @@ for each surface in the system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be

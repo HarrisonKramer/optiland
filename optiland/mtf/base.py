@@ -7,6 +7,8 @@ and the Huygen-Fresnel-based method.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import abc
 
 import matplotlib.pyplot as plt

@@ -8,6 +8,8 @@ object states to enable undoing and redoing actions within the application.
           Modified by Manuel Mendes,   2025
 """
 
+from __future__ import annotations
+
 from PySide6.QtCore import QObject, Signal
 
 

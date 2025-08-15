@@ -9,6 +9,8 @@ Copyright notice:
 Copyright (c) 2017 Brandon Dube
 """
 
+from __future__ import annotations
+
 from collections import defaultdict
 from functools import lru_cache
 

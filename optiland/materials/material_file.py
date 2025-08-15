@@ -6,6 +6,8 @@ YAML file from the refractiveindex.info database.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import contextlib
 import os
 from io import StringIO

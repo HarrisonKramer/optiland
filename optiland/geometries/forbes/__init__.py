@@ -2,6 +2,8 @@
 for the Optiland backend.
 """
 
+from __future__ import annotations
+
 from .geometry import ForbesQ2dGeometry, ForbesQbfsGeometry
 from .qpoly import (
     Q2d_nm_c_to_a_b,

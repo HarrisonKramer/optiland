@@ -8,6 +8,8 @@ https://doi.org/10.1088/2040-8986/ac9e08
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import ClassVar
 

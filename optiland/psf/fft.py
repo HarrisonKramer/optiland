@@ -9,6 +9,8 @@ the base class.
 Kramer Harrison, 2023
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 import optiland.backend as be

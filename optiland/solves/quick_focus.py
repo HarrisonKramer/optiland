@@ -5,6 +5,8 @@ Defines the quick focus solve.
 Seçkin Berkay Öztürk, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.solves.base import BaseSolve
 

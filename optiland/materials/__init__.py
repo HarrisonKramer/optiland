@@ -2,6 +2,8 @@
 materials, materials based on Abbe numbers, and materials loaded from
 refractiveindex.info data files."""
 
+from __future__ import annotations
+
 from .abbe import AbbeMaterial
 from .base import BaseMaterial
 from .ideal import IdealMaterial

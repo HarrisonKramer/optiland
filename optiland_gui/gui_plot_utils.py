@@ -7,6 +7,8 @@ auto-generate settings interfaces.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import inspect
 
 import matplotlib

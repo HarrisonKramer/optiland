@@ -5,6 +5,8 @@ surfaces and the freeform Q-2D surfaces.
 Manuel Fragata Mendes, August 2025
 """
 
+from __future__ import annotations
+
 from optiland.geometries.forbes.geometry import ForbesQ2dGeometry, ForbesQbfsGeometry
 from optiland.optimization.variable.base import VariableBehavior
 

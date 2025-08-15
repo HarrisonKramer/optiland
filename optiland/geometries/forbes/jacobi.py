@@ -8,6 +8,8 @@ Copyright notice:
 Copyright (c) 2017 Brandon Dube
 """
 
+from __future__ import annotations
+
 from functools import lru_cache
 
 import optiland.backend as be

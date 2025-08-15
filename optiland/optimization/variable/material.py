@@ -6,6 +6,8 @@ The variable can be used in optimization problems to optimize the material
 at a specific surface.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from optiland.materials.abbe import AbbeMaterial

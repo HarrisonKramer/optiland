@@ -10,6 +10,8 @@ system calculated using the same Huygens-Fresnel principle.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from numba import njit, prange
 
 import optiland.backend as be

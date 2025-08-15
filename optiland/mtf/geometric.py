@@ -6,6 +6,8 @@ of an optical system based on spot diagram data.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be

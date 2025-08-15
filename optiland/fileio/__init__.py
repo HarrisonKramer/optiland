@@ -2,6 +2,8 @@
 including loading and saving Optiland's native JSON format and
 importing Zemax (.zmx) files."""
 
+from __future__ import annotations
+
 from .converters import ZemaxToOpticConverter
 from .optiland_handler import (
     load_obj_from_json,

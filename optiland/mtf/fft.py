@@ -6,6 +6,8 @@ of an optical system using FFT techniques.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.psf.fft import FFTPSF, calculate_grid_size
 

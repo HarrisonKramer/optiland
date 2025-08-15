@@ -14,6 +14,8 @@ where
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import warnings
 
 import optiland.backend as be

@@ -8,10 +8,13 @@ interactions for all supported analysis types.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import contextlib
 import copy
 import inspect
 import json
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -60,7 +63,9 @@ from optiland.analysis import (
 from optiland.mtf import FFTMTF, GeometricMTF
 
 from . import gui_plot_utils
-from .optiland_connector import OptilandConnector
+
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class CustomMatplotlibToolbar(NavigationToolbar):

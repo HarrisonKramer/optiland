@@ -13,6 +13,8 @@ Public API:
 - `ZernikeOPD`: A class for Zernike decomposition of OPD data.
 """
 
+from __future__ import annotations
+
 from .opd import OPD
 from .opd_fan import OPDFan
 from .wavefront import Wavefront

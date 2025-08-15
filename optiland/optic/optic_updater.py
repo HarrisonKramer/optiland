@@ -7,12 +7,18 @@ materials, conic constants, polarization, etc.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.apodization import BaseApodization
 from optiland.geometries import Plane, StandardGeometry
 from optiland.materials import IdealMaterial
-from optiland.materials.base import BaseMaterial
-from optiland.rays import PolarizationState
+
+if TYPE_CHECKING:
+    from optiland.materials.base import BaseMaterial
+    from optiland.rays import PolarizationState
 
 
 class OpticUpdater:

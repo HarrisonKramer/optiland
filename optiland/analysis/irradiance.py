@@ -13,13 +13,19 @@ in W/mm^2.
 Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for plotting logic.
-from matplotlib.colors import Colormap
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.colors import Colormap
 
 
 class IncoherentIrradiance(BaseAnalysis):
