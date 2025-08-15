@@ -240,17 +240,25 @@ class MainWindow(QMainWindow):
             self._win.connector.opticChanged.emit()
 
     def __init__(self):
-        """Initializes the MainWindow, setting up all UI components."""
+        """Initializes the MainWindow by orchestrating the setup of all
+        UI components."""
         super().__init__()
-        self.current_theme_path = THEME_DARK_PATH
-        self.analysis_panels = []
+        self._configure_window()
+        self._init_core_components()
+        self._init_ui_panels()
+        self._setup_all_dock_widgets()
+        self._create_actions()
+        self._setup_menus_and_toolbars()
+        self._setup_layout()
+        self._finalize_setup()
+
+    def _configure_window(self):
+        """Sets up the main window's flags, title, geometry, and resizing logic."""
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setWindowTitle("Optiland GUI")
         self.setGeometry(100, 100, 1600, 900)
-
-        # Window resizing and movement handling
-        self.setMouseTracking(True)  # Required for hover detection
-        self.grip_size = 8  # Size of the resize grip area
+        self.setMouseTracking(True)
+        self.grip_size = 8
         self.is_resizing = False
         self.resize_area = None
         self.is_moving = False
@@ -258,32 +266,30 @@ class MainWindow(QMainWindow):
         self.start_geometry = None
         self.start_pos = None
 
-        self.setMouseTracking(True)  # Required for hover detection
-        self.grip_size = 8  # Size of the resize grip area
-        self.grips = [QWidget(self) for i in range(4)]
-        self.is_resizing = False
-        self.is_moving = False
-        self.drag_position = QPoint()
-
+    def _init_core_components(self):
+        """Initializes non-UI core components like settings, the connector,
+        and the scripting interface."""
+        self.current_theme_path = THEME_DARK_PATH
+        self.analysis_panels = []
         self.settings = QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
         self.next_save_slot_index = self.settings.value(
             "Layouts/NextSaveSlot", 1, type=int
         )
         self.connector = OptilandConnector()
         self.iface = self.OptilandInterface(self)
-
         self.dock_animations = {}
         self.dock_original_sizes = {}
+        self.about_dialog = None
 
+    def _init_ui_panels(self):
+        """Creates instances of all the main UI panels and widgets."""
         self.lensEditor = LensEditor(self.connector)
         self.viewerPanel = ViewerPanel(self.connector)
         self.analysisPanel = AnalysisPanel(self.connector)
-        # self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
         initial_theme_name = (
             "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
         )
-
         self.pythonTerminal = PythonTerminalWidget(
             self,
             custom_variables={"connector": self.connector, "iface": self.iface},
@@ -291,12 +297,13 @@ class MainWindow(QMainWindow):
         )
         self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
 
-        self._setup_all_dock_widgets()
-
+    def _setup_menus_and_toolbars(self):
+        """Creates and populates the main menu bar, custom title bar, and toolbars."""
+        # Main Menu Bar
         self._actual_menu_bar_instance = QMenuBar(self)
-        self._create_actions()
         self._populate_main_menu_bar(self._actual_menu_bar_instance)
 
+        # Custom Title Bar
         self.custom_title_bar_widget = CustomTitleBar(
             self._actual_menu_bar_instance, self
         )
@@ -306,11 +313,6 @@ class MainWindow(QMainWindow):
         )
         self.custom_title_bar_widget.close_requested.connect(self.close)
         self.custom_title_bar_widget.settings_requested.connect(self.show_settings_wip)
-        self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
-        self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
-        self.connector.modifiedStateChanged.connect(
-            self._update_project_name_in_title_bar
-        )
 
         self.title_bar_as_toolbar = QToolBar("CustomTitleBarToolbar")
         self.title_bar_as_toolbar.setObjectName("CustomTitleBarToolbar")
@@ -319,6 +321,7 @@ class MainWindow(QMainWindow):
         self.title_bar_as_toolbar.addWidget(self.custom_title_bar_widget)
         self.addToolBar(Qt.TopToolBarArea, self.title_bar_as_toolbar)
 
+        # Quick Actions Toolbar
         self.quick_actions_toolbar = QToolBar("QuickActionsToolbar")
         self.quick_actions_toolbar.setObjectName("QuickActionsToolbar")
         self.quick_actions_toolbar.setMovable(True)
@@ -326,22 +329,31 @@ class MainWindow(QMainWindow):
         self.addToolBarBreak(Qt.TopToolBarArea)
         self.addToolBar(Qt.TopToolBarArea, self.quick_actions_toolbar)
 
+    def _setup_layout(self):
+        """Sets up the central widget and the default dock layout."""
         self.main_docking_area_placeholder = QWidget()
         self.main_docking_area_placeholder.setObjectName("MainDockingAreaPlaceholder")
         self.setCentralWidget(self.main_docking_area_placeholder)
-
         self.setDockNestingEnabled(True)
         self._apply_revised_default_dock_layout()
 
+    def _finalize_setup(self):
+        """Applies stylesheets, connects signals, and sets the initial UI state."""
         self.load_stylesheets()
         if hasattr(self, "darkThemeAction"):
             self.darkThemeAction.setChecked(self.current_theme_path == THEME_DARK_PATH)
             self.lightThemeAction.setChecked(self.current_theme_path != THEME_DARK_PATH)
 
         self._connect_dock_animations()
+
+        self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
+        self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
+        self.connector.modifiedStateChanged.connect(
+            self._update_project_name_in_title_bar
+        )
+
         self._initial_narrow_check_done = False
         self._update_project_name_in_title_bar()
-        self.about_dialog = None
 
     def _setup_all_dock_widgets(self):
         """Initializes and configures all dockable widgets for the application.

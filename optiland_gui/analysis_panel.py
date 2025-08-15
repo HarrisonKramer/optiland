@@ -127,23 +127,25 @@ class AnalysisPanel(QWidget):
     }
 
     def __init__(self, connector: OptilandConnector, parent=None):
-        """Initializes the AnalysisPanel.
-
-        Args:
-            connector: The `OptilandConnector` instance for backend communication.
-            parent: The parent widget, if any.
-        """
+        """Initializes the AnalysisPanel."""
         super().__init__(parent)
+        self._init_attributes(connector)
+        self._setup_main_layout()
+
+        self._setup_top_bar()
+        self._setup_main_content_area()
+        self._setup_log_area()
+
+        self._connect_signals()
+        self._set_initial_state()
+
+    def _init_attributes(self, connector):
+        """Initializes instance attributes."""
         self.current_theme = "dark"
         self.connector = connector
         self.setWindowTitle("Analysis")
         self.setObjectName("AnalysisPanel")
-
         gui_plot_utils.apply_gui_matplotlib_styles()
-
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
 
         self.analysis_results_pages = []
         self.current_plot_page_index = -1
@@ -152,7 +154,14 @@ class AnalysisPanel(QWidget):
         self.motion_notify_cid = None
         self.current_settings_widgets = {}
 
-        # --- Top Bar for Analysis Selection and Control ---
+    def _setup_main_layout(self):
+        """Sets up the main QVBoxLayout for the panel."""
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        self.main_layout.setSpacing(10)
+
+    def _setup_top_bar(self):
+        """Creates the top bar with analysis selection and control buttons."""
         top_bar_layout = QHBoxLayout()
         top_bar_layout.addWidget(QLabel("Analysis Type:"))
         self.analysisTypeCombo = QComboBox()
@@ -164,6 +173,7 @@ class AnalysisPanel(QWidget):
                 20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
             )
         )
+
         self.btnRun = QPushButton()
         self.btnRun.setObjectName("RunAnalysisButton")
         self.btnRun.setToolTip("Run Selected Analysis")
@@ -175,37 +185,60 @@ class AnalysisPanel(QWidget):
         self.btnStop.setObjectName("StopAnalysisButton")
         self.btnStop.setToolTip("Stop Analysis")
         self.btnStop.setFixedSize(25, 25)
+
         top_bar_layout.addWidget(self.btnRun)
         top_bar_layout.addWidget(self.btnRunAll)
         top_bar_layout.addWidget(self.btnStop)
-        main_layout.addLayout(top_bar_layout)
+        self.main_layout.addLayout(top_bar_layout)
 
-        # --- Main Content Area ---
+    def _setup_main_content_area(self):
+        """Sets up the central area containing the plot and settings panels."""
         main_separator_line = QFrame()
         main_separator_line.setObjectName("MainSeparatorLine")
         main_separator_line.setFrameShape(QFrame.Shape.HLine)
         main_separator_line.setFrameShadow(QFrame.Shadow.Sunken)
-        main_layout.addWidget(main_separator_line)
+        self.main_layout.addWidget(main_separator_line)
 
         main_content_layout = QHBoxLayout()
         main_content_layout.setSpacing(10)
 
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
-        self.resize_timer.setInterval(100)  # Cooldown period in ms
+        self.resize_timer.setInterval(100)
         self.resize_timer.timeout.connect(self.handle_resize_finished)
 
-        # --- Plot Display Frame (Left/Center) ---
+        self._setup_plot_display_frame(main_content_layout)
+        self._setup_settings_panel(main_content_layout)
+
+        self.main_layout.addLayout(main_content_layout, 1)
+
+    def _setup_plot_display_frame(self, parent_layout):
+        """Creates the plot display frame, including its title bar and content area."""
         self.plot_display_frame = QFrame()
         self.plot_display_frame.setObjectName("PlotDisplayFrame")
         plot_display_frame_layout = QVBoxLayout(self.plot_display_frame)
         plot_display_frame_layout.setContentsMargins(5, 5, 5, 5)
 
-        # Title bar for the plot area
+        # Plot area title bar
+        self._setup_plot_title_bar(plot_display_frame_layout)
+
+        # Separator line
+        title_plot_separator_line = QFrame()
+        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine)
+        plot_display_frame_layout.addWidget(title_plot_separator_line)
+
+        # Plot content and pagination
+        self._setup_plot_content_area(plot_display_frame_layout)
+
+        parent_layout.addWidget(self.plot_display_frame, 3)
+
+    def _setup_plot_title_bar(self, parent_layout):
+        """Creates the title bar for the plot area."""
         self.plot_area_title_bar_layout = QHBoxLayout()
         self.plotTitleLabel = QLabel("No Analysis Run")
         self.plotTitleLabel.setObjectName("PlotTitleLabel")
         self.plot_area_title_bar_layout.addWidget(self.plotTitleLabel)
+
         self.mpl_toolbar_in_titlebar_container = QWidget()
         self.mpl_toolbar_in_titlebar_container.setObjectName(
             "MPLToolbarInTitlebarContainer"
@@ -219,48 +252,58 @@ class AnalysisPanel(QWidget):
         )
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
         self.plot_area_title_bar_layout.addStretch()
+
         self.btnRefreshPlot = QPushButton()
         self.btnRefreshPlot.setObjectName("RefreshPlotButton")
         self.btnRefreshPlot.setFixedSize(25, 25)
-        self.btnRefreshPlot.clicked.connect(self._refresh_current_plot_page_slot)
         self.plot_area_title_bar_layout.addWidget(self.btnRefreshPlot)
-        self.toggleSettingsButton = QPushButton()  # Remove the ">" text
+
+        self.toggleSettingsButton = QPushButton()
         self.toggleSettingsButton.setObjectName("ToggleSettingsButton")
         self.toggleSettingsButton.setFixedSize(25, 25)
         self.plot_area_title_bar_layout.addWidget(self.toggleSettingsButton)
-        plot_display_frame_layout.addLayout(self.plot_area_title_bar_layout)
 
-        # Separator line
-        title_plot_separator_line = QFrame()
-        title_plot_separator_line.setFrameShape(QFrame.Shape.HLine)
-        plot_display_frame_layout.addWidget(title_plot_separator_line)
+        parent_layout.addLayout(self.plot_area_title_bar_layout)
 
-        # Plot content and pagination
+    def _setup_plot_content_area(self, parent_layout):
+        """Creates the main plot content area, info labels, and page buttons."""
         plot_content_and_pages_layout = QHBoxLayout()
         plot_content_and_pages_layout.setContentsMargins(0, 0, 0, 0)
+
         plot_and_info_widget = QWidget()
         plot_and_info_layout = QVBoxLayout(plot_and_info_widget)
         plot_and_info_layout.setContentsMargins(0, 0, 0, 0)
+
         self.plot_container_widget = QWidget()
         self.plot_container_widget.setObjectName("PlotContainerWidget")
         self.plot_container_widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         plot_and_info_layout.addWidget(self.plot_container_widget, 1)
+
         self.cursor_coord_label = QLabel("", self.plot_container_widget)
         self.cursor_coord_label.setObjectName("CursorCoordLabel")
         self.cursor_coord_label.setStyleSheet(
-            "background-color:rgba(0,0,0,0.65);color:white;"
-            "padding:2px 4px;border-radius:3px;"
+            "background-color:rgba(0,0,0,0.65);"
+            "color:white;padding:2px 4px;border-radius:3px;"
         )
         self.cursor_coord_label.setVisible(False)
         self.cursor_coord_label.setAttribute(
             Qt.WidgetAttribute.WA_TransparentForMouseEvents
         )
+
         self.dataInfoLabel = QLabel("Data Analysis info will appear here.")
         self.dataInfoLabel.setObjectName("DataInfoLabel")
         plot_and_info_layout.addWidget(self.dataInfoLabel)
+
         plot_content_and_pages_layout.addWidget(plot_and_info_widget, 1)
+
+        self._setup_pagination_controls(plot_content_and_pages_layout)
+
+        parent_layout.addLayout(plot_content_and_pages_layout, 1)
+
+    def _setup_pagination_controls(self, parent_layout):
+        """Creates the vertical pagination buttons on the right of the plot."""
         self.page_buttons_scroll_area = QScrollArea()
         self.page_buttons_scroll_area.setObjectName("PageButtonsScrollArea")
         self.page_buttons_scroll_area.setWidgetResizable(True)
@@ -268,59 +311,59 @@ class AnalysisPanel(QWidget):
         self.page_buttons_scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarAlwaysOff
         )
+
         page_buttons_container_widget = QWidget()
         self.vertical_page_buttons_layout = QVBoxLayout(page_buttons_container_widget)
         self.vertical_page_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.page_buttons_scroll_area.setWidget(page_buttons_container_widget)
-        plot_content_and_pages_layout.addWidget(self.page_buttons_scroll_area)
-        plot_display_frame_layout.addLayout(plot_content_and_pages_layout, 1)
-        main_content_layout.addWidget(self.plot_display_frame, 3)
 
-        # --- Settings Panel (Right) ---
+        parent_layout.addWidget(self.page_buttons_scroll_area)
+
+    def _setup_settings_panel(self, parent_layout):
+        """Creates the collapsible settings panel on the right."""
         self.settings_area_widget = QWidget()
         self.settings_area_widget.setObjectName("SettingsArea")
         self.settings_area_widget.setFixedWidth(250)
         settings_layout = QVBoxLayout(self.settings_area_widget)
         settings_layout.setContentsMargins(5, 5, 5, 5)
         settings_layout.addWidget(QLabel("Analysis Settings"))
+
         self.settings_scroll_area = QScrollArea()
         self.settings_scroll_area.setWidgetResizable(True)
         self.settingsContentWidget = QWidget()
         self.settings_form_layout = QFormLayout(self.settingsContentWidget)
         self.settings_scroll_area.setWidget(self.settingsContentWidget)
         settings_layout.addWidget(self.settings_scroll_area, 1)
+
         settings_button_layout = QHBoxLayout()
-        # --- Apply Button
         self.btnApplySettings = QPushButton()
-        self.btnApplySettings.setObjectName(
-            "ApplySettingsButton"
-        )  # Give it an ID for styling
+        self.btnApplySettings.setObjectName("ApplySettingsButton")
         self.btnApplySettings.setToolTip("Apply current settings and rerun analysis")
         settings_button_layout.addWidget(self.btnApplySettings)
-        # --- Save Button
+
         self.btnSaveSettings = QPushButton()
         self.btnSaveSettings.setObjectName("SaveSettingsButton")
         self.btnSaveSettings.setToolTip("Save current analysis settings to a file")
         settings_button_layout.addWidget(self.btnSaveSettings)
-        # --- Load Button
+
         self.btnLoadSettings = QPushButton()
         self.btnLoadSettings.setObjectName("LoadSettingsButton")
         self.btnLoadSettings.setToolTip("Load analysis settings from a file")
         settings_button_layout.addWidget(self.btnLoadSettings)
-        # Add the new button layout and remove the old button
+
         settings_layout.addLayout(settings_button_layout)
+        parent_layout.addWidget(self.settings_area_widget, 1)
 
-        main_content_layout.addWidget(self.settings_area_widget, 1)
-        main_layout.addLayout(main_content_layout, 1)
-
-        # --- Log Area (Bottom) ---
+    def _setup_log_area(self):
+        """Creates the log text area at the bottom."""
         self.logArea = QTextEdit()
         self.logArea.setObjectName("LogArea")
         self.logArea.setReadOnly(True)
         self.logArea.setFixedHeight(60)
-        main_layout.addWidget(self.logArea)
+        self.main_layout.addWidget(self.logArea)
 
-        # --- Connections ---
+    def _connect_signals(self):
+        """Connects all widget signals to their corresponding slots."""
         self.btnRun.clicked.connect(self.run_analysis_slot)
         self.btnRunAll.clicked.connect(self.run_all_analysis_slot)
         self.btnStop.clicked.connect(self.stop_analysis_slot)
@@ -333,7 +376,8 @@ class AnalysisPanel(QWidget):
         self.btnSaveSettings.clicked.connect(self._save_analysis_settings_slot)
         self.btnLoadSettings.clicked.connect(self._load_analysis_settings_slot)
 
-        # --- Initial State ---
+    def _set_initial_state(self):
+        """Sets the initial visibility and state of widgets."""
         self.update_theme_icons()
         self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
         self.update_pagination_ui()

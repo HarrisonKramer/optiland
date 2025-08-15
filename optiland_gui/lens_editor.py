@@ -37,21 +37,21 @@ class SurfacePropertiesWidget(QWidget):
         self.connector = connector
         self.setObjectName("SurfacePropertiesWidget")
         self.setMinimumWidth(750)
-
-        # Add size constraints
         self.setMinimumHeight(100)
         self.setMaximumHeight(200)
 
+        self.input_widgets = {}
+        self._populate_properties_form()
+
+    def _populate_properties_form(self):
+        """Creates and populates the form layout with surface parameter widgets."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 8, 15, 8)
-
-        # Create a horizontal layout to hold multiple form layouts
         columns_layout = QHBoxLayout()
-        columns_layout.setSpacing(20)  # Space between columns
+        columns_layout.setSpacing(20)
         main_layout.addLayout(columns_layout)
 
         params = self.connector.get_surface_geometry_params(self.row)
-        self.input_widgets = {}
 
         if not params:
             form_layout = QFormLayout()
@@ -185,20 +185,26 @@ class LensEditor(QWidget):
         self.connector = connector
         self.setWindowTitle("Lens Editor")
         self.open_prop_source_row = -1
+
+        self._init_ui()
+        self.setup_table()
+        self.load_data()
+        self.connect_signals()
+
+    def _init_ui(self):
+        """Initializes the main UI components of the editor."""
         self.layout = QVBoxLayout(self)
         self.tableWidget = QTableWidget()
         self.tableWidget.installEventFilter(self)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.layout.addWidget(self.tableWidget)
+
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
         self.btnRemoveSurface = QPushButton("Remove Surface")
         self.buttonLayout.addWidget(self.btnAddSurface)
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
-        self.setup_table()
-        self.load_data()
-        self.connect_signals()
 
     def connect_signals(self):
         self.btnAddSurface.clicked.connect(self.add_surface_handler)
