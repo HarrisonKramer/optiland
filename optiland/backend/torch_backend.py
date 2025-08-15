@@ -20,6 +20,8 @@ This module provides a backend for numerical operations using PyTorch.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import contextlib
 
 import numpy as np

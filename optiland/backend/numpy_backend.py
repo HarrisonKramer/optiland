@@ -4,6 +4,8 @@ This module provides a backend for numerical operations using NumPy and SciPy.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import numpy as np
 from matplotlib.path import Path
 from scipy.interpolate import NearestNDInterpolator

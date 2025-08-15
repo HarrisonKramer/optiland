@@ -6,6 +6,8 @@ analysis, calculating the spot diagram at various focal planes.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from typing import Literal
 
 import matplotlib.pyplot as plt

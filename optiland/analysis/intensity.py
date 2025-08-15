@@ -7,6 +7,8 @@ in an optical system, representing power per unit solid angle.
 Manuel Fragata Mendes, June 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 

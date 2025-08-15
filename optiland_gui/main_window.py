@@ -8,6 +8,8 @@ connection to the backend via the `OptilandConnector`.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import contextlib
 import os
 

@@ -2,6 +2,8 @@
 ranging from simple planes and spheres to complex aspheres and polynomial
 surfaces."""
 
+from __future__ import annotations
+
 from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry

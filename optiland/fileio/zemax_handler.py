@@ -7,6 +7,8 @@ to load a Zemax file and return an Optiland Optic object.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import os
 import re
 import tempfile

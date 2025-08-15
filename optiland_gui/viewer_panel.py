@@ -8,6 +8,8 @@ plots and `VTKViewer` for 3D rendering.
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -36,6 +38,8 @@ try:
 except ImportError:
     VTK_AVAILABLE = False
 
+from typing import TYPE_CHECKING
+
 from optiland.visualization.analysis.surface_sag import SurfaceSagViewer
 from optiland.visualization.system.rays import Rays2D, Rays3D
 from optiland.visualization.system.system import (
@@ -44,7 +48,9 @@ from optiland.visualization.system.system import (
 
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar
-from .optiland_connector import OptilandConnector
+
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SagViewer(QWidget):

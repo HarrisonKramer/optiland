@@ -7,6 +7,10 @@ currently a placeholder and will be expanded in the future.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
@@ -16,7 +20,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .optiland_connector import OptilandConnector
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class OptimizationPanel(QWidget):

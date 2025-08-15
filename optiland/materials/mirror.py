@@ -7,6 +7,8 @@ optical properties of a mirror in the Optiland system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.materials.ideal import IdealMaterial
 
 

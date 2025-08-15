@@ -8,6 +8,8 @@ offsetting the value.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 
 class PickupManager:
     """A class for managing multiple pickup operations on an optic surface

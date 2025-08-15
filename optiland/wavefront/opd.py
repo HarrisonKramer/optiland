@@ -4,6 +4,8 @@ This module defines the OPD class.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata

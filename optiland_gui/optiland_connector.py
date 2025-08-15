@@ -9,6 +9,8 @@ undo/redo stack.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import ast
 import json
 

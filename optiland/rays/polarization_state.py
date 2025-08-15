@@ -7,6 +7,8 @@ to define the polarization state of the light rays in an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 

@@ -7,16 +7,21 @@ Original concept by BuergiR, 2025
 Implemented in Optiland by Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import abc
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
-from matplotlib.colors import Colormap
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.colors import Colormap
 
 
 def _plot_angle_vs_height(

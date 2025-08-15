@@ -8,6 +8,8 @@ It contains the `NormalizationRadiusVariable` class for use in optimization prob
 Manuel Fragata Mendes, August 2025
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.base import VariableBehavior
 
 
