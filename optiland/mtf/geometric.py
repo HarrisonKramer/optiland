@@ -75,6 +75,9 @@ class GeometricMTF(SpotDiagram):
         if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
             self.max_freq = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
+        else:
+            # If a specific max_freq is provided, use it directly
+            self.max_freq = max_freq
 
         super().__init__(optic, fields, [wavelength], num_rays, distribution)
 
