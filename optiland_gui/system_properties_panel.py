@@ -345,43 +345,53 @@ class FieldsEditor(PropertyEditorBase):
             self.connector.opticChanged.emit()
             print(f"Field at row {current_row} removed.")
 
+    def _update_field_from_row(self, row_index):
+        """Reads data from a table row and updates the corresponding field object.
+        Returns True if a change was made."""
+        try:
+            x = float(self.tableFields.item(row_index, 0).text())
+            y = float(self.tableFields.item(row_index, 1).text())
+            vx = float(self.tableFields.item(row_index, 2).text())
+            vy = float(self.tableFields.item(row_index, 3).text())
+
+            field_obj = self.connector.get_optic().fields.fields[row_index]
+            if (
+                field_obj.x != x
+                or field_obj.y != y
+                or field_obj.vx != vx
+                or field_obj.vy != vy
+            ):
+                field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = x, y, vx, vy
+                return True
+        except (ValueError, AttributeError) as e:
+            print(f"Invalid data in fields table row {row_index + 1}: {e}")
+            # Re-raise the exception to be handled by the caller
+            raise ValueError(f"Invalid data in row {row_index + 1}") from e
+        return False
+
     @Slot()
     def apply_table_field_changes(self):
         """Applies changes from the fields table to the optical system."""
         optic = self.connector.get_optic()
-        if optic and optic.fields:
-            if self.tableFields.rowCount() == optic.fields.num_fields:
-                changed = False
-                for i in range(self.tableFields.rowCount()):
-                    try:
-                        x = float(self.tableFields.item(i, 0).text())
-                        y = float(self.tableFields.item(i, 1).text())
-                        vx = float(self.tableFields.item(i, 2).text())
-                        vy = float(self.tableFields.item(i, 3).text())
+        if not (optic and optic.fields):
+            return
 
-                        field_obj = optic.fields.fields[i]
-                        if (
-                            field_obj.x != x
-                            or field_obj.y != y
-                            or field_obj.vx != vx
-                            or field_obj.vy != vy
-                        ):
-                            field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = (
-                                x,
-                                y,
-                                vx,
-                                vy,
-                            )
-                            changed = True
-                    except (ValueError, AttributeError):
-                        print(f"Invalid data in fields table row {i}")
-                        self.load_data()
-                        return
-                if changed:
-                    self.connector.opticChanged.emit()
-                    print("Field table changes applied.")
-            else:
-                self.load_data()
+        if self.tableFields.rowCount() != optic.fields.num_fields:
+            self.load_data()  # Mismatch, so reload to be safe
+            return
+
+        any_changed = False
+        try:
+            for i in range(self.tableFields.rowCount()):
+                if self._update_field_from_row(i):
+                    any_changed = True
+        except ValueError:
+            self.load_data()  # Reload table on error to show original valid data
+            return
+
+        if any_changed:
+            self.connector.opticChanged.emit()
+            print("Field table changes applied.")
 
 
 class WavelengthsEditor(PropertyEditorBase):
