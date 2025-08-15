@@ -4,6 +4,8 @@ This module defines the ZernikeOPD class.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.zernike import ZernikeFit
 
 from .opd import OPD
@@ -25,6 +27,11 @@ class ZernikeOPD(ZernikeFit, OPD):
             Default is 'fringe'. See zernike module for more information.
         num_terms (int, optional): The number of Zernike terms used in the
             calculation. Default is 37.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     """
 
@@ -36,9 +43,21 @@ class ZernikeOPD(ZernikeFit, OPD):
         num_rings=15,
         zernike_type="fringe",
         num_terms=37,
+        strategy="chief_ray",
+        remove_tilt=False,
         **kwargs,
     ):
-        OPD.__init__(self, optic, field, wavelength, num_rings, **kwargs)
+        OPD.__init__(
+            self,
+            optic=optic,
+            field=field,
+            wavelength=wavelength,
+            num_rays=num_rings,
+            distribution="hexapolar",
+            strategy=strategy,
+            remove_tilt=remove_tilt,
+            **kwargs,
+        )
 
         x = self.distribution.x
         y = self.distribution.y

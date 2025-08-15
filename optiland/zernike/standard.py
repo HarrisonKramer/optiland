@@ -14,6 +14,8 @@ References:
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.zernike.base import BaseZernike
 
@@ -41,24 +43,21 @@ class ZernikeStandard(BaseZernike):
 
     """
 
-    def __init__(self, coeffs=None, num_terms=36):
-        super().__init__(coeffs, num_terms)
-
     @staticmethod
-    def _generate_indices():
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        indices = []
-        for n in range(15):
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    indices.append((n, m))
-        return indices
+        if (n - m) % 2 == 0:
+            return (n * (n + 2) + m) // 2
+
+        return None
 
     @staticmethod
     def _norm_constant(n=0, m=0):
@@ -72,4 +71,5 @@ class ZernikeStandard(BaseZernike):
             float: The calculated value of the normalization constant.
 
         """
-        return be.sqrt(be.array((2 * n + 2) / (1 + (m == 0))))
+        denominator = 2 if m == 0 else 1
+        return be.sqrt(be.array((2 * n + 2) / denominator))

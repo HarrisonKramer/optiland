@@ -4,9 +4,13 @@ This module defines the WavefrontData class.
 Kramer Harrison, 2024
 """
 
-from dataclasses import dataclass
+from __future__ import annotations
 
-import optiland.backend as be
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import optiland.backend as be
 
 
 @dataclass

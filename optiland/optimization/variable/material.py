@@ -6,11 +6,17 @@ The variable can be used in optimization problems to optimize the material
 at a specific surface.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from optiland.materials.abbe import AbbeMaterial
-from optiland.materials.base import BaseMaterial
 from optiland.materials.material_utils import find_closest_glass, get_nd_vd
 from optiland.optimization.variable.base import VariableBehavior
 from optiland.surfaces.factories.material_factory import MaterialFactory
+
+if TYPE_CHECKING:
+    from optiland.materials.base import BaseMaterial
 
 
 class MaterialVariable(VariableBehavior):

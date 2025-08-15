@@ -6,6 +6,8 @@ wavefront error versus field coordinate of an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be

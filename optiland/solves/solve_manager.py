@@ -5,6 +5,8 @@ Manages the application of solves to an optic.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.solves.base import BaseSolve
 from optiland.solves.factory import SolveFactory
 

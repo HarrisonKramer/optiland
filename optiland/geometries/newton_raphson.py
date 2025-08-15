@@ -7,6 +7,8 @@ by any geometry that uses the Newton-Raphson method for ray tracing.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import warnings
 from abc import ABC, abstractmethod
 

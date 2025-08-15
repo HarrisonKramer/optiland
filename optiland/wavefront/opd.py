@@ -4,6 +4,8 @@ This module defines the OPD class.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
@@ -22,12 +24,18 @@ class OPD(Wavefront):
         wavelength (float): The wavelength of the wavefront.
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         optic (Optic): The optic object.
         field (tuple[float, float]): The field coordinates (Hx, Hy).
         wavelength (float): The wavelength of the wavefront in micrometers.
-        num_rings (int): The number of rings used for pupil sampling.
+        num_rays (int): The number of rays (or rings for hexapolar distribution) to use
+            for pupil sampling.
         distribution (BaseDistribution): The pupil sampling distribution instance.
         data (dict): A dictionary mapping (field, wavelength) tuples to
             `WavefrontData` objects. Inherited from `Wavefront`.
@@ -39,13 +47,25 @@ class OPD(Wavefront):
 
     """
 
-    def __init__(self, optic, field, wavelength, num_rings=15, **kwargs):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=15,
+        distribution="hexapolar",
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
         super().__init__(
             optic,
             fields=[field],
             wavelengths=[wavelength],
-            num_rays=num_rings,
-            distribution="hexapolar",
+            num_rays=num_rays,
+            distribution=distribution,
+            strategy=strategy,
+            remove_tilt=remove_tilt,
             **kwargs,
         )
 

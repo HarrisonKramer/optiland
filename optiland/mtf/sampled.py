@@ -6,6 +6,8 @@ of an optical system based on sampled wavefront data.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.wavefront import Wavefront
 from optiland.zernike import ZernikeFit

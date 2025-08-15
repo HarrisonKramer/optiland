@@ -7,6 +7,8 @@ optimize the decenter of a surface in the optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

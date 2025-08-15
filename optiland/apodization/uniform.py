@@ -6,6 +6,8 @@ scaling factor of 1.0 to all rays.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 from .base import BaseApodization
