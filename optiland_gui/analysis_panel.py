@@ -15,7 +15,7 @@ import contextlib
 import copy
 import inspect
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, get_args, get_origin, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -496,8 +496,13 @@ class AnalysisPanel(QWidget):
             widget = QLineEdit(str(default_value) if default_value is not None else "")
         return widget
 
-    def _add_setting_widget(self, param_name, param_info, default_value_override=None):
+    def _add_setting_widget(
+        self, param_name: str, param_info: dict, default_value_override=None
+    ):
         """Adds a settings widget to the form layout for a given parameter."""
+        if param_name == "kwargs":
+            return
+
         label_text = param_name.replace("_", " ").title() + ":"
         default_value = (
             default_value_override
@@ -505,6 +510,11 @@ class AnalysisPanel(QWidget):
             else param_info.get("default")
         )
         annotation = param_info.get("annotation")
+
+        if param_name == "grid_size":
+            annotation = int
+            if default_value is None:
+                default_value = 128
 
         if annotation is inspect.Parameter.empty or annotation is None:
             if isinstance(default_value, bool):
@@ -518,11 +528,16 @@ class AnalysisPanel(QWidget):
 
         if param_name == "max_freq":
             annotation = str
-        if param_name == "grid_size":
-            annotation = int
 
         widget = None
-        if param_name in ["fields", "wavelengths", "wavelength", "axis"]:
+        # check for literal types
+        if get_origin(annotation) is Literal:
+            widget = QComboBox()
+            options = get_args(annotation)
+            widget.addItems([str(opt) for opt in options])
+            if str(default_value) in [str(o) for o in options]:
+                widget.setCurrentText(str(default_value))
+        elif param_name in ["fields", "wavelengths", "wavelength", "axis"]:
             widget = self._create_combobox_for_parameter(param_name, default_value)
         elif annotation in [int, float]:
             widget = self._create_spinbox_for_parameter(
@@ -534,17 +549,9 @@ class AnalysisPanel(QWidget):
                 bool(default_value) if default_value is not None else False
             )
             label_text = ""
-        elif "Literal" in str(annotation):
-            from typing import get_args
-
-            widget = QComboBox()
-            options = get_args(annotation)
-            widget.addItems([str(opt) for opt in options])
-            if str(default_value) in [str(o) for o in options]:
-                widget.setCurrentText(str(default_value))
         elif annotation is str:
             widget = self._create_widget_for_string_parameter(param_name, default_value)
-        elif annotation is tuple or isinstance(default_value, tuple):
+        elif annotation is tuple or get_origin(annotation) is tuple:
             widget = QLineEdit(
                 ", ".join(map(str, default_value)) if default_value else ""
             )
@@ -563,16 +570,7 @@ class AnalysisPanel(QWidget):
             )
 
     def _update_settings_ui(self, analysis_name: str):
-        """Updates the settings panel with widgets for the selected analysis.
-
-        This method clears the existing settings widgets and dynamically populates
-        the settings panel with new widgets appropriate for the selected analysis
-        type. It inspects the `__init__` and `view` methods of the analysis class
-        to determine which parameters need a UI control.
-
-        Args:
-            analysis_name: The name of the analysis to create a settings UI for.
-        """
+        """Updates the settings panel with widgets for the selected analysis."""
         while self.settings_form_layout.rowCount() > 0:
             self.settings_form_layout.removeRow(0)
         self.current_settings_widgets.clear()
@@ -582,25 +580,44 @@ class AnalysisPanel(QWidget):
             self.settings_form_layout.addRow(QLabel("No settings available."))
             return
 
-        init_params = gui_plot_utils.get_analysis_parameters(analysis_class)
-        # Known view args to add controls for if not in constructor
+        # global namespacing for type hints
+        try:
+            module = inspect.getmodule(analysis_class)
+            resolved_hints = get_type_hints(
+                analysis_class.__init__, globalns=getattr(module, "__dict__", None)
+            )
+        except (TypeError, NameError) as e:
+            print(f"Could not resolve type hints for {analysis_name}: {e}")
+            resolved_hints = {}
+
+        init_params_info = gui_plot_utils.get_analysis_parameters(analysis_class)
+
+        # GEO MTF and FFT MTF because they are missing type hints in the class
+        if analysis_name in ["Geometric MTF", "FFT MTF"]:
+            if "grid_size" not in init_params_info:
+                init_params_info["grid_size"] = {"default": 128, "annotation": int}
+
+            if analysis_name == "FFT MTF" and "max_freq" not in init_params_info:
+                init_params_info["max_freq"] = {"default": "cutoff", "annotation": str}
+
+        for param_name, param_info in init_params_info.items():
+            # skip kwargs parameter
+            if param_name == "kwargs":
+                continue
+
+            param_info["annotation"] = resolved_hints.get(param_name)
+            self._add_setting_widget(param_name, param_info)
+
         view_arg_defaults = {
             "add_airy_disk": (bool, False),
             "cmap": (str, "inferno"),
             "normalize": (bool, True),
             "cross_section": (str, ""),
         }
-
-        # Add constructor params
-        for param_name, param_info in init_params.items():
-            self._add_setting_widget(param_name, param_info)
-
-        # Add controls for known view args if the analysis class has 'view'
-        # and the arg is not already in __init__
         if hasattr(analysis_class, "view") and callable(analysis_class.view):
             view_sig = inspect.signature(analysis_class.view)
             for view_arg, (v_type, v_default) in view_arg_defaults.items():
-                if view_arg in view_sig.parameters and view_arg not in init_params:
+                if view_arg in view_sig.parameters and view_arg not in init_params_info:
                     self._add_setting_widget(
                         view_arg, {"default": v_default, "annotation": v_type}
                     )
