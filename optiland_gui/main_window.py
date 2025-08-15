@@ -789,112 +789,100 @@ class MainWindow(QMainWindow):
 
             self.custom_title_bar_widget.set_project_name(display_name)
 
+    def _animate_dock_show(
+        self, dock_widget, is_left_or_right, original_dimension, duration, curve
+    ):
+        """Handles the animation for showing a dock widget."""
+        if dock_widget.isHidden():
+            dock_widget.show()
+            dock_widget.raise_()
+            target_prop = b"maximumWidth" if is_left_or_right else b"maximumHeight"
+            animation = QPropertyAnimation(dock_widget, target_prop)
+            animation.setStartValue(0)
+            animation.setEndValue(original_dimension)
+            if is_left_or_right:
+                dock_widget.setMaximumWidth(
+                    original_dimension if original_dimension > 0 else 5000
+                )
+            else:
+                dock_widget.setMaximumHeight(
+                    original_dimension if original_dimension > 0 else 5000
+                )
+            animation.setDuration(duration)
+            animation.setEasingCurve(curve)
+            animation.start(QPropertyAnimation.DeleteWhenStopped)
+            self.dock_animations[dock_widget] = animation
+        else:
+            dock_widget.raise_()
+
+    def _animate_dock_hide(
+        self, dock_widget, is_left_or_right, original_dimension, duration, curve
+    ):
+        """Handles the animation for hiding a dock widget."""
+        if not dock_widget.isHidden():
+            current_size = (
+                dock_widget.width() if is_left_or_right else dock_widget.height()
+            )
+            target_prop = b"maximumWidth" if is_left_or_right else b"maximumHeight"
+            animation = QPropertyAnimation(dock_widget, target_prop)
+            animation.setStartValue(current_size)
+            animation.setEndValue(0)
+            animation.setDuration(duration)
+            animation.setEasingCurve(curve)
+            animation.finished.connect(dock_widget.hide)
+            animation.finished.connect(
+                lambda: dock_widget.setMaximumSize(5000, 5000)
+            )  # Restore max size
+            animation.start(QPropertyAnimation.DeleteWhenStopped)
+            self.dock_animations[dock_widget] = animation
+
     def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
         animation_duration = 150
         easing_curve = QEasingCurve.InOutQuad
         is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
-            Qt.DockWidgetArea.LeftDockWidgetArea,
-            Qt.DockWidgetArea.RightDockWidgetArea,
+            Qt.LeftDockWidgetArea,
+            Qt.RightDockWidgetArea,
         ]
-        default_w = 300
-        default_h = 200
 
-        original_dimension = 0
-        if dock_widget == self.sidebarDock:
-            if hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget:
-                original_dimension = (
-                    self.sidebar_content_widget.maximumWidth()
-                    if not self.sidebar_content_widget._is_collapsed
-                    else self.sidebar_content_widget.minimumWidth()
-                )
-            else:
-                original_dimension = SIDEBAR_MAX_WIDTH
-        elif is_left_or_right_dock:
-            original_dimension = self.dock_original_sizes.get(
-                dock_widget,
-                dock_widget.width() if dock_widget.width() > 0 else default_w,
+        # Determine the dimension to animate
+        if dock_widget == self.sidebarDock and self.sidebar_content_widget:
+            original_dimension = (
+                self.sidebar_content_widget.maximumWidth()
+                if not self.sidebar_content_widget._is_collapsed
+                else self.sidebar_content_widget.minimumWidth()
             )
         else:
+            default_size = 300 if is_left_or_right_dock else 200
+            current_size = (
+                dock_widget.width() if is_left_or_right_dock else dock_widget.height()
+            )
             original_dimension = self.dock_original_sizes.get(
-                dock_widget,
-                dock_widget.height() if dock_widget.height() > 0 else default_h,
+                dock_widget, current_size if current_size > 0 else default_size
             )
 
+        # Stop any currently running animation on this dock
         if (
             dock_widget in self.dock_animations
             and self.dock_animations[dock_widget].state() == QPropertyAnimation.Running
         ):
             self.dock_animations[dock_widget].stop()
+
         if show_state_after_toggle:
-            dock_widget.show()
-        current_visibility = not dock_widget.isHidden()
-        if show_state_after_toggle:
-            if not current_visibility:
-                dock_widget.show()
-                dock_widget.raise_()
-                target_prop = (
-                    b"maximumWidth" if is_left_or_right_dock else b"maximumHeight"
-                )
-                animation = QPropertyAnimation(dock_widget, target_prop)
-                animation.setStartValue(0)
-                animation.setEndValue(original_dimension)
-                if is_left_or_right_dock:
-                    dock_widget.setMaximumWidth(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                else:
-                    dock_widget.setMaximumHeight(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                animation.setDuration(animation_duration)
-                animation.setEasingCurve(easing_curve)
-                animation.finished.connect(
-                    lambda: self.dock_animations.pop(dock_widget, None)
-                )
-                animation.start(QPropertyAnimation.DeleteWhenStopped)
-                self.dock_animations[dock_widget] = animation
-            else:
-                dock_widget.raise_()
-                if is_left_or_right_dock:
-                    dock_widget.setMaximumWidth(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                else:
-                    dock_widget.setMaximumHeight(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
+            self._animate_dock_show(
+                dock_widget,
+                is_left_or_right_dock,
+                original_dimension,
+                animation_duration,
+                easing_curve,
+            )
         else:
-            if current_visibility:
-                current_size = (
-                    dock_widget.width()
-                    if is_left_or_right_dock
-                    else dock_widget.height()
-                )
-                target_prop = (
-                    b"maximumWidth" if is_left_or_right_dock else b"maximumHeight"
-                )
-                animation = QPropertyAnimation(dock_widget, target_prop)
-                animation.setStartValue(current_size)
-                animation.setEndValue(0)
-                animation.setDuration(animation_duration)
-                animation.setEasingCurve(easing_curve)
-                animation.finished.connect(dock_widget.hide)
-                animation.finished.connect(
-                    lambda: (
-                        dock_widget.setMaximumWidth(
-                            original_dimension if original_dimension > 0 else 5000
-                        )
-                        if is_left_or_right_dock
-                        else dock_widget.setMaximumHeight(
-                            original_dimension if original_dimension > 0 else 5000
-                        )
-                    )
-                )
-                animation.finished.connect(
-                    lambda: self.dock_animations.pop(dock_widget, None)
-                )
-                animation.start(QPropertyAnimation.DeleteWhenStopped)
-                self.dock_animations[dock_widget] = animation
+            self._animate_dock_hide(
+                dock_widget,
+                is_left_or_right_dock,
+                original_dimension,
+                animation_duration,
+                easing_curve,
+            )
 
     @Slot(str)
     def switch_theme(self, theme_path):

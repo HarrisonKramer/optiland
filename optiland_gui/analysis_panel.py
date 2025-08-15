@@ -15,7 +15,7 @@ import contextlib
 import copy
 import inspect
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, get_args, get_origin, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -390,101 +390,61 @@ class AnalysisPanel(QWidget):
         self.display_plot_page(self.current_plot_page_index)
         self.settings_area_widget.setVisible(False)
 
+    # --- Layout and Widget Management ---
     def _clear_layout(self, layout_to_clear):
-        """Recursively clears all widgets and sub-layouts from a given layout.
+        """Iteratively clears all widgets and sub-layouts from a given layout."""
+        if layout_to_clear is None:
+            return
 
-        This utility function is used to safely remove all items from a layout,
-        ensuring that widgets are properly deleted and disconnected from signals
-        to prevent memory leaks.
+        while layout_to_clear.count():
+            item = layout_to_clear.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                # Special handling for Matplotlib canvas to disconnect signals
+                if isinstance(widget, FigureCanvas):
+                    if (
+                        hasattr(widget, "_motion_notify_cid")
+                        and widget._motion_notify_cid is not None
+                    ):
+                        with contextlib.suppress(TypeError):
+                            widget.mpl_disconnect(widget._motion_notify_cid)
+                        widget._motion_notify_cid = None
+                    plt.close(widget.figure)
+                widget.setParent(None)
+                widget.deleteLater()
+            else:
+                # Recursively clear sub-layouts
+                sub_layout = item.layout()
+                if sub_layout is not None:
+                    self._clear_layout(sub_layout)
 
-        Args:
-            layout_to_clear: The QLayout object to be cleared.
-        """
-        if layout_to_clear is not None:
-            while layout_to_clear.count():
-                item = layout_to_clear.takeAt(0)
-                widget = item.widget()
-                if widget is not None:
-                    if isinstance(widget, FigureCanvas):
-                        if (
-                            hasattr(widget, "_motion_notify_cid")
-                            and widget._motion_notify_cid is not None
-                        ):
-                            with contextlib.suppress(TypeError):
-                                widget.mpl_disconnect(widget._motion_notify_cid)
-                            widget._motion_notify_cid = None
-                        plt.close(widget.figure)
-                    widget.setParent(None)
-                    widget.deleteLater()
-                else:
-                    sub_layout = item.layout()
-                    if sub_layout is not None:
-                        self._clear_layout(sub_layout)
-
-    def _add_setting_widget(self, param_name, param_info, default_value_override=None):
-        """Adds a settings widget to the form layout for a given parameter.
-
-        This function dynamically creates a UI widget (e.g., QSpinBox, QComboBox)
-        based on the type annotation and default value of an analysis parameter.
-        It handles various types like int, float, bool, str, and enums (Literals).
-
-        Args:
-            param_name (str): The name of the parameter.
-            param_info (dict): A dictionary containing parameter details like
-                               'annotation' and 'default' value.
-            default_value_override: A value to use instead of the default from
-                                    `param_info`.
-        """
-        label_text = param_name.replace("_", " ").title() + ":"
-        default_value = (
-            param_info.get("default")
-            if default_value_override is None
-            else default_value_override
-        )
-        annotation = param_info.get("annotation")
-        widget = None
-
-        if annotation is inspect.Parameter.empty or annotation is None:
-            if isinstance(default_value, bool):
-                annotation = bool
-            elif isinstance(default_value, int):
-                annotation = int
-            elif isinstance(default_value, float):
-                annotation = float
-            elif isinstance(default_value, str):
-                annotation = str
-        if param_name == "max_freq":
-            annotation = str
-        if param_name == "grid_size":
-            annotation = int
-
-        # --- Logic for creating dropdowns for fields and wavelengths ---
+    # --- Settings Widget Creation ---
+    def _create_combobox_for_parameter(self, param_name, default_value):
+        """Creates and configures a QComboBox for a given parameter."""
+        widget = QComboBox()
         if param_name == "fields":
-            widget = QComboBox()
             options = self.connector.get_field_options()
             for display_name, value_str in options:
                 widget.addItem(display_name, userData=value_str)
             all_index = widget.findText("all")
             if all_index != -1:
                 widget.setCurrentIndex(all_index)
-
         elif param_name in ["wavelengths", "wavelength"]:
-            widget = QComboBox()
-            label_text = "Wavelengths:"
             options = self.connector.get_wavelength_options()
             for display_name, value_str in options:
                 widget.addItem(display_name, userData=value_str)
             default_index = widget.findText(str(default_value))
             if default_index != -1:
                 widget.setCurrentIndex(default_index)
-
         elif param_name == "axis":
-            widget = QComboBox()
             widget.addItems(["Y-Axis (1)", "X-Axis (0)"])
             if default_value is not None:
                 widget.setCurrentIndex(0 if default_value == 1 else 1)
+        return widget
 
-        elif annotation is int:
+    def _create_spinbox_for_parameter(self, param_name, default_value, annotation):
+        """Creates and configures a QSpinBox or QDoubleSpinBox."""
+        if annotation is int:
             widget = QSpinBox()
             ranges = {
                 "num_rays": (1, 10000000),
@@ -500,74 +460,102 @@ class AnalysisPanel(QWidget):
             step_v = 32 if param_name == "grid_size" else 1
             widget.setRange(min_v, max_v)
             widget.setSingleStep(step_v)
-            if param_name == "num_steps" and default_value and default_value % 2 == 0:
-                default_value += 1
-            if param_name == "grid_size" and default_value_override is None:
-                default_value = 128
             widget.setValue(int(default_value) if default_value is not None else 0)
-
-        elif annotation is float:
+        else:  # float
             widget = QDoubleSpinBox()
             widget.setDecimals(4)
             widget.setRange(-1e9, 1e9)
             widget.setSingleStep(0.01 if "delta_focus" in param_name else 0.1)
             widget.setValue(float(default_value) if default_value is not None else 0.0)
+        return widget
 
+    def _create_widget_for_string_parameter(self, param_name, default_value):
+        """Creates a QComboBox or QLineEdit for a string parameter."""
+        combo_options = {
+            "distribution": [
+                "hexapolar",
+                "grid",
+                "random",
+                "ring",
+                "line_x",
+                "line_y",
+                "gaussian",
+                "uniform",
+            ],
+            "coordinates": ["local", "global"],
+            "distortion_type": ["f-tan", "f-theta"],
+            "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
+        }
+        if param_name in combo_options:
+            widget = QComboBox()
+            widget.addItems(combo_options[param_name])
+            widget.setCurrentText(
+                str(default_value) if default_value else widget.itemText(0)
+            )
+        else:
+            widget = QLineEdit(str(default_value) if default_value is not None else "")
+        return widget
+
+    def _add_setting_widget(
+        self, param_name: str, param_info: dict, default_value_override=None
+    ):
+        """Adds a settings widget to the form layout for a given parameter."""
+        if param_name == "kwargs":
+            return
+
+        label_text = param_name.replace("_", " ").title() + ":"
+        default_value = (
+            default_value_override
+            if default_value_override is not None
+            else param_info.get("default")
+        )
+        annotation = param_info.get("annotation")
+
+        if param_name == "grid_size":
+            annotation = int
+            if default_value is None:
+                default_value = 128
+
+        if annotation is inspect.Parameter.empty or annotation is None:
+            if isinstance(default_value, bool):
+                annotation = bool
+            elif isinstance(default_value, int):
+                annotation = int
+            elif isinstance(default_value, float):
+                annotation = float
+            elif isinstance(default_value, str):
+                annotation = str
+
+        if param_name == "max_freq":
+            annotation = str
+
+        widget = None
+        # check for literal types
+        if get_origin(annotation) is Literal:
+            widget = QComboBox()
+            options = get_args(annotation)
+            widget.addItems([str(opt) for opt in options])
+            if str(default_value) in [str(o) for o in options]:
+                widget.setCurrentText(str(default_value))
+        elif param_name in ["fields", "wavelengths", "wavelength", "axis"]:
+            widget = self._create_combobox_for_parameter(param_name, default_value)
+        elif annotation in [int, float]:
+            widget = self._create_spinbox_for_parameter(
+                param_name, default_value, annotation
+            )
         elif annotation is bool:
             widget = QCheckBox(param_name.replace("_", " ").title())
             widget.setChecked(
                 bool(default_value) if default_value is not None else False
             )
             label_text = ""
-
-        elif "Literal" in str(annotation):
-            from typing import get_args
-
-            options = get_args(annotation)
-            if options:
-                widget = QComboBox()
-                widget.addItems([str(opt) for opt in options])
-                if str(default_value) in [str(o) for o in options]:
-                    widget.setCurrentText(str(default_value))
-
         elif annotation is str:
-            combo_options = {
-                "distribution": [
-                    "hexapolar",
-                    "grid",
-                    "random",
-                    "ring",
-                    "line_x",
-                    "line_y",
-                    "gaussian",
-                    "uniform",
-                ],
-                "coordinates": ["local", "global"],
-                "distortion_type": ["f-tan", "f-theta"],
-                "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
-            }
-            if param_name in combo_options:
-                widget = QComboBox()
-                widget.addItems(combo_options[param_name])
-                widget.setCurrentText(
-                    str(default_value) if default_value else widget.itemText(0)
-                )
-            else:
-                widget = QLineEdit()
-                widget.setText(str(default_value) if default_value is not None else "")
-
-        elif annotation is tuple or isinstance(default_value, tuple):
-            if param_name in ["field", "pupil"]:
-                label_text = f"Fixed {param_name.title()} (Hx, Hy):"
-                widget = QLineEdit(
-                    ", ".join(map(str, default_value)) if default_value else "0, 0"
-                )
-                widget.setPlaceholderText("e.g., 0, 0.5")
-            else:
-                widget = QLineEdit(
-                    ",".join(map(str, default_value)) if default_value else ""
-                )
-                widget.setPlaceholderText("e.g., 128,128")
+            widget = self._create_widget_for_string_parameter(param_name, default_value)
+        elif annotation is tuple or get_origin(annotation) is tuple:
+            widget = QLineEdit(
+                ", ".join(map(str, default_value)) if default_value else ""
+            )
+            widget.setPlaceholderText("e.g., 0, 0.5 or 128,128")
 
         if widget:
             if isinstance(widget, QCheckBox):
@@ -576,19 +564,13 @@ class AnalysisPanel(QWidget):
                 self.settings_form_layout.addRow(QLabel(label_text), widget)
             self.current_settings_widgets[param_name] = widget
         else:
-            print(f"Warning: No widget for '{param_name}' (annotation: {annotation})")
+            print(
+                f"Warning: No widget created for '{param_name}' "
+                f"(annotation: {annotation})"
+            )
 
     def _update_settings_ui(self, analysis_name: str):
-        """Updates the settings panel with widgets for the selected analysis.
-
-        This method clears the existing settings widgets and dynamically populates
-        the settings panel with new widgets appropriate for the selected analysis
-        type. It inspects the `__init__` and `view` methods of the analysis class
-        to determine which parameters need a UI control.
-
-        Args:
-            analysis_name: The name of the analysis to create a settings UI for.
-        """
+        """Updates the settings panel with widgets for the selected analysis."""
         while self.settings_form_layout.rowCount() > 0:
             self.settings_form_layout.removeRow(0)
         self.current_settings_widgets.clear()
@@ -598,25 +580,44 @@ class AnalysisPanel(QWidget):
             self.settings_form_layout.addRow(QLabel("No settings available."))
             return
 
-        init_params = gui_plot_utils.get_analysis_parameters(analysis_class)
-        # Known view args to add controls for if not in constructor
+        # global namespacing for type hints
+        try:
+            module = inspect.getmodule(analysis_class)
+            resolved_hints = get_type_hints(
+                analysis_class.__init__, globalns=getattr(module, "__dict__", None)
+            )
+        except (TypeError, NameError) as e:
+            print(f"Could not resolve type hints for {analysis_name}: {e}")
+            resolved_hints = {}
+
+        init_params_info = gui_plot_utils.get_analysis_parameters(analysis_class)
+
+        # GEO MTF and FFT MTF because they are missing type hints in the class
+        if analysis_name in ["Geometric MTF", "FFT MTF"]:
+            if "grid_size" not in init_params_info:
+                init_params_info["grid_size"] = {"default": 128, "annotation": int}
+
+            if analysis_name == "FFT MTF" and "max_freq" not in init_params_info:
+                init_params_info["max_freq"] = {"default": "cutoff", "annotation": str}
+
+        for param_name, param_info in init_params_info.items():
+            # skip kwargs parameter
+            if param_name == "kwargs":
+                continue
+
+            param_info["annotation"] = resolved_hints.get(param_name)
+            self._add_setting_widget(param_name, param_info)
+
         view_arg_defaults = {
             "add_airy_disk": (bool, False),
             "cmap": (str, "inferno"),
             "normalize": (bool, True),
             "cross_section": (str, ""),
         }
-
-        # Add constructor params
-        for param_name, param_info in init_params.items():
-            self._add_setting_widget(param_name, param_info)
-
-        # Add controls for known view args if the analysis class has 'view'
-        # and the arg is not already in __init__
         if hasattr(analysis_class, "view") and callable(analysis_class.view):
             view_sig = inspect.signature(analysis_class.view)
             for view_arg, (v_type, v_default) in view_arg_defaults.items():
-                if view_arg in view_sig.parameters and view_arg not in init_params:
+                if view_arg in view_sig.parameters and view_arg not in init_params_info:
                     self._add_setting_widget(
                         view_arg, {"default": v_default, "annotation": v_type}
                     )
@@ -624,6 +625,37 @@ class AnalysisPanel(QWidget):
         self.settings_form_layout.addItem(
             QSpacerItem(20, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         )
+
+    def _set_widget_value(self, widget, value):
+        """Sets the value of a widget based on its type."""
+        if isinstance(widget, (QSpinBox | QDoubleSpinBox)):
+            widget.setValue(value)
+        elif isinstance(widget, QCheckBox):
+            widget.setChecked(bool(value))
+        elif isinstance(widget, QLineEdit):
+            text_value = (
+                ", ".join(map(str, value)) if isinstance(value, tuple) else str(value)
+            )
+            widget.setText(text_value)
+        elif isinstance(widget, QComboBox):
+            if widget.property(
+                "special_data"
+            ):  # A custom property to identify our special combo boxes
+                found_index = -1
+                for i in range(widget.count()):
+                    try:
+                        item_data_obj = ast.literal_eval(widget.itemData(i))
+                        if item_data_obj == value:
+                            found_index = i
+                            break
+                    except (ValueError, SyntaxError):
+                        continue
+                if found_index != -1:
+                    widget.setCurrentIndex(found_index)
+            else:
+                index = widget.findText(str(value))
+                if index != -1:
+                    widget.setCurrentIndex(index)
 
     @Slot(str)
     def on_analysis_type_changed(self, analysis_name: str):
@@ -844,6 +876,50 @@ class AnalysisPanel(QWidget):
                     widget.setCurrentIndex(0 if val == 1 else 1)
                 else:
                     widget.setCurrentText(str(val))
+
+    # --- Load/Save Settings ---
+    def _apply_loaded_settings_to_ui(self, loaded_settings):
+        """Applies settings loaded from a file to the current UI widgets."""
+        analysis_name = loaded_settings.get("analysis_name")
+        if not analysis_name:
+            raise ValueError("Settings file does not contain an 'analysis_name'.")
+
+        self.analysisTypeCombo.setCurrentText(analysis_name)
+        self.on_analysis_type_changed(
+            analysis_name
+        )  # Rebuilds the UI for this analysis
+
+        all_args = {
+            **loaded_settings.get("constructor_args", {}),
+            **loaded_settings.get("view_args", {}),
+        }
+
+        for param_name, value in all_args.items():
+            if param_name in self.current_settings_widgets:
+                widget = self.current_settings_widgets[param_name]
+                self._set_widget_value(widget, value)
+
+    @Slot()
+    def _load_analysis_settings_slot(self):
+        """Loads and applies settings for an analysis from a JSON file."""
+        filepath, _ = QFileDialog.getOpenFileName(
+            self, "Load Analysis Settings", "", "JSON Files (*.json);;All Files (*)"
+        )
+        if not filepath:
+            return
+
+        try:
+            with open(filepath) as f:
+                loaded_settings = json.load(f)
+            self._apply_loaded_settings_to_ui(loaded_settings)
+            self.logArea.append(
+                f"Settings loaded from {filepath}. Click 'Apply' or 'Run' "
+                "to see results."
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Load Error", f"Could not load or apply settings:\n{e}"
+            )
 
     def _create_new_plot_canvas(self, page_data):
         """Creates a new FigureCanvas and connects mouse interaction events."""

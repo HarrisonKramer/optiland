@@ -266,6 +266,51 @@ class LensEditor(QWidget):
         self.load_data()
         self.update_headers_on_selection()
 
+    def _process_table_cell(self, row, col_idx, header):
+        """Creates and configures the appropriate widget or item for a
+        single table cell."""
+        if col_idx == self.connector.COL_TYPE:
+            type_info = self.connector.get_surface_type_info(row)
+            params = self.connector.get_surface_geometry_params(row)
+            type_info["has_extra_params"] = bool(params)
+
+            widget = SurfaceTypeWidget(row, type_info, self.connector)
+            widget.surfaceTypeChanged.connect(
+                lambda nt, r=row: self.connector.set_surface_type(r, nt)
+            )
+            widget.propertiesIconClicked.connect(
+                lambda r=row: self.toggle_properties_widget(r)
+            )
+            self.tableWidget.setCellWidget(row, col_idx, widget)
+        else:
+            item_data = self.connector.get_surface_data(row, col_idx)
+            item = QTableWidgetItem(str(item_data) if item_data is not None else "")
+
+            # Determine if the cell should be editable
+            num_surfaces = self.connector.get_surface_count()
+            is_obj_or_img = row == 0 or row == num_surfaces - 1
+            is_non_editable_header = header in [
+                "Radius",
+                "Thickness",
+                "Material",
+                "Conic",
+                "Semi-Diameter",
+            ]
+            is_last_thickness = row == num_surfaces - 1 and header == "Thickness"
+
+            if (is_obj_or_img and is_non_editable_header) or is_last_thickness:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+            self.tableWidget.setItem(row, col_idx, item)
+
+    def _process_table_row(self, row_index):
+        """Populates a single row in the lens data editor table."""
+        self.tableWidget.setVerticalHeaderItem(
+            row_index, QTableWidgetItem(str(row_index + 1))
+        )
+        for col_idx, header in enumerate(self.connector.get_column_headers()):
+            self._process_table_cell(row_index, col_idx, header)
+
     @Slot()
     def load_data(self):
         self.tableWidget.blockSignals(True)
@@ -274,38 +319,7 @@ class LensEditor(QWidget):
         self.tableWidget.setRowCount(num_surfaces)
 
         for r in range(num_surfaces):
-            self.tableWidget.setVerticalHeaderItem(r, QTableWidgetItem(str(r + 1)))
-            for c_idx, header in enumerate(self.connector.get_column_headers()):
-                if c_idx == self.connector.COL_TYPE:
-                    type_info = self.connector.get_surface_type_info(r)
-
-                    # Force-check if this surface type has parameters
-                    if "has_extra_params" not in type_info:
-                        # Check if surface has geometry parameters
-                        params = self.connector.get_surface_geometry_params(r)
-                        type_info["has_extra_params"] = bool(params)
-
-                    widget = SurfaceTypeWidget(r, type_info, self.connector)
-                    widget.surfaceTypeChanged.connect(
-                        lambda nt, row=r: self.connector.set_surface_type(row, nt)
-                    )
-                    widget.propertiesIconClicked.connect(
-                        lambda row=r: self.toggle_properties_widget(row)
-                    )
-                    self.tableWidget.setCellWidget(r, c_idx, widget)
-                else:
-                    item_data = self.connector.get_surface_data(r, c_idx)
-                    item = QTableWidgetItem(
-                        str(item_data) if item_data is not None else ""
-                    )
-                    is_obj_or_img = r == 0 or r == num_surfaces - 1
-                    if (
-                        is_obj_or_img
-                        and header
-                        in ["Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]
-                    ) or (r == num_surfaces - 1 and header == "Thickness"):
-                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                    self.tableWidget.setItem(r, c_idx, item)
+            self._process_table_row(r)
 
         if self.open_prop_source_row != -1 and self.open_prop_source_row < num_surfaces:
             self._insert_properties_widget(self.open_prop_source_row)
