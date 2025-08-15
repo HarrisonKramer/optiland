@@ -170,9 +170,14 @@ class OptilandConnector(QObject):
             optic_instance.add_wavelength(0.550, is_primary=True, unit="um")
             optic_instance.set_field_type("angle")
             optic_instance.add_field(y=0)
-            # set system aperture
-            optic_instance.pupil_type = "EPD"
-            optic_instance.entrance_pupil_diameter = 10.0
+            # Set system aperture properly using set_aperture method
+            try:
+                optic_instance.set_aperture("EPD", 10.0)
+            except Exception as e:
+                print(f"Warning: Failed to set initial aperture: {e}")
+                # Fallback to direct attribute setting if method fails
+                optic_instance.pupil_type = "EPD"
+                optic_instance.entrance_pupil_diameter = 10.0
         else:
             if optic_instance.surface_group.num_surfaces < 2:
                 optic_instance.surface_group.surfaces.clear()
@@ -197,6 +202,15 @@ class OptilandConnector(QObject):
                     optic_instance.add_wavelength(
                         self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
                     )
+                # Ensure aperture is set for loaded systems as well
+                try:
+                    if (
+                        not hasattr(optic_instance, "aperture")
+                        or optic_instance.aperture is None
+                    ):
+                        optic_instance.set_aperture("EPD", 10.0)
+                except Exception as e:
+                    print(f"Warning: Failed to set aperture for loaded system: {e}")
             if optic_instance.wavelengths.num_wavelengths == 0:
                 optic_instance.add_wavelength(
                     self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"

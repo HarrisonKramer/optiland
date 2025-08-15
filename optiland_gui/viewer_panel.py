@@ -425,16 +425,76 @@ class MatplotlibViewer(QWidget):
         self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot)
         self.canvas.mpl_connect("scroll_event", self.on_scroll_zoom)
 
+        # Add new event connections for panning
+        self.canvas.mpl_connect("button_press_event", self.on_mouse_button_press)
+        self.canvas.mpl_connect("button_release_event", self.on_mouse_button_release)
+
+        # Initialize panning state variables
+        self._pan_start_x = None
+        self._pan_start_y = None
+        self._is_panning = False
+
         self.plot_optic()
         self.update_theme()
 
+    def on_mouse_button_press(self, event):
+        """
+        Handles mouse button press events to initiate panning.
+
+        Args:
+            event: The Matplotlib mouse button press event.
+        """
+        if event.button == 1 and event.inaxes:  # Left mouse button
+            self._pan_start_x = event.xdata
+            self._pan_start_y = event.ydata
+            self._is_panning = True
+            self.canvas.setCursor(
+                Qt.ClosedHandCursor
+            )  # Change cursor to indicate panning
+
+    def on_mouse_button_release(self, event):
+        """
+        Handles mouse button release events to stop panning.
+
+        Args:
+            event: The Matplotlib mouse button release event.
+        """
+        if event.button == 1:  # Left mouse button
+            self._is_panning = False
+            self._pan_start_x = None
+            self._pan_start_y = None
+            self.canvas.setCursor(Qt.ArrowCursor)  # Reset cursor
+
     def on_mouse_move_on_plot(self, event):
         """
-        Displays the cursor's coordinates on the plot.
+        Displays the cursor's coordinates on the plot and handles panning.
 
         Args:
             event: The Matplotlib motion notify event.
         """
+        if self._is_panning and event.inaxes and self._pan_start_x is not None:
+            # Calculate the distance moved
+            dx = self._pan_start_x - event.xdata
+            dy = self._pan_start_y - event.ydata
+
+            # Get current axis limits
+            ax = event.inaxes
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
+
+            # Update the limits by the distance moved
+            ax.set_xlim(xlim[0] + dx, xlim[1] + dx)
+            ax.set_ylim(ylim[0] + dy, ylim[1] + dy)
+
+            # Update the starting position for the next move
+            self._pan_start_x = event.xdata
+            self._pan_start_y = event.ydata
+
+            # Redraw the canvas
+            self.canvas.draw_idle()
+            return  # Skip the coordinate display when panning
+
+        # Original coordinate display code
         if event.inaxes:
             x_coord = f"{event.xdata:.3f}"
             y_coord = f"{event.ydata:.3f}"
