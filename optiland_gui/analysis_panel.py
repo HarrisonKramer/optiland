@@ -756,19 +756,16 @@ class AnalysisPanel(QWidget):
         elif self.active_mpl_canvas_widget:
             self.cursor_coord_label.setVisible(False)
 
-    def display_plot_page(self, page_index):
-        # Disconnect any previously connected event handlers first
-        if self.active_mpl_canvas_widget:
-            if hasattr(self.active_mpl_canvas_widget, "_motion_notify_cid"):
+    def _cleanup_plot_area(self):
+        """Disconnects events, removes old widgets, and clears the plot layout."""
+        # Disconnect any previously connected event handlers
+        if self.active_mpl_canvas_widget and hasattr(
+            self.active_mpl_canvas_widget, "_event_cids"
+        ):
+            for cid in self.active_mpl_canvas_widget._event_cids:
                 with contextlib.suppress(TypeError, RuntimeError):
-                    self.active_mpl_canvas_widget.mpl_disconnect(
-                        self.active_mpl_canvas_widget._motion_notify_cid
-                    )
-            if hasattr(self.active_mpl_canvas_widget, "_double_click_cid"):
-                with contextlib.suppress(TypeError, RuntimeError):
-                    self.active_mpl_canvas_widget.mpl_disconnect(
-                        self.active_mpl_canvas_widget._double_click_cid
-                    )
+                    self.active_mpl_canvas_widget.mpl_disconnect(cid)
+            self.active_mpl_canvas_widget._event_cids = []
 
         # Clean up old UI widgets
         if self.active_mpl_toolbar_widget:
@@ -777,157 +774,156 @@ class AnalysisPanel(QWidget):
             )
             self.active_mpl_toolbar_widget.deleteLater()
             self.active_mpl_toolbar_widget = None
+
         self.mpl_toolbar_in_titlebar_container.setVisible(False)
         self.cursor_coord_label.setVisible(False)
 
+        # Clear the main plot container layout
         plot_content_area_layout = self.plot_container_widget.layout()
         if plot_content_area_layout:
             self._clear_layout(plot_content_area_layout)
         else:
             plot_content_area_layout = QVBoxLayout(self.plot_container_widget)
-        self.plot_container_widget.setLayout(plot_content_area_layout)
+            self.plot_container_widget.setLayout(plot_content_area_layout)
 
         self.active_mpl_canvas_widget = None
+        return plot_content_area_layout
 
-        if 0 <= page_index < len(self.analysis_results_pages):
-            page_data = self.analysis_results_pages[page_index]
-            analysis_name = page_data.get("name", "Analysis")
-            self.plotTitleLabel.setText(analysis_name)
-            self.dataInfoLabel.setText(
-                page_data.get("result_summary", f"Results for {analysis_name}")
+    def _populate_settings_from_page_data(self, page_data):
+        """Updates the settings UI widgets with values from a saved analysis page."""
+        page_args = {
+            **page_data.get("constructor_args_used", {}),
+            **page_data.get("view_args", {}),
+        }
+        for param_name, widget in self.current_settings_widgets.items():
+            if param_name not in page_args:
+                continue
+
+            val = page_args[param_name]
+            if isinstance(widget, (QSpinBox | QDoubleSpinBox)):
+                widget.setValue(val)
+            elif isinstance(widget, QCheckBox):
+                widget.setChecked(bool(val))
+            elif isinstance(widget, QLineEdit):
+                widget.setText(
+                    ", ".join(map(str, val)) if isinstance(val, tuple) else str(val)
+                )
+            elif isinstance(widget | QComboBox):
+                # Handle special dropdowns that store data
+                if param_name in ["fields", "wavelengths", "wavelength"]:
+                    found_index = -1
+                    for i in range(widget.count()):
+                        try:
+                            item_data_obj = eval(widget.itemData(i))
+                            if item_data_obj == val:
+                                found_index = i
+                                break
+                        except Exception:
+                            continue
+                    if found_index != -1:
+                        widget.setCurrentIndex(found_index)
+                # Handle simple index-based or text-based dropdowns
+                elif param_name == "axis":
+                    widget.setCurrentIndex(0 if val == 1 else 1)
+                else:
+                    widget.setCurrentText(str(val))
+
+    def _create_new_plot_canvas(self, page_data):
+        """Creates a new FigureCanvas and connects mouse interaction events."""
+        fig = Figure(figsize=page_data.get("figsize", (7, 5)), dpi=100)
+        canvas = FigureCanvas(fig)
+        canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus)
+        canvas.setFocus()
+
+        # Connect events and store their IDs for later disconnection
+        cids = [
+            canvas.mpl_connect("scroll_event", self.on_scroll_zoom),
+            canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot),
+            canvas.mpl_connect("button_press_event", self.on_plot_double_click),
+        ]
+        canvas._event_cids = cids
+        return canvas
+
+    def _draw_plot_on_canvas(self, analysis_instance, canvas, view_args):
+        """Invokes the analysis's view method to draw the plot on the canvas."""
+        axs = analysis_instance.view(fig_to_plot_on=canvas.figure, **view_args)
+
+        # Add summary text overlay if available
+        if hasattr(analysis_instance, "get_summary_text"):
+            summary_text = analysis_instance.get_summary_text()
+            ax_to_use = None
+            if isinstance(axs, np.ndarray):
+                ax_to_use = axs.flatten()[-1]
+            elif isinstance(axs, plt.Axes):
+                ax_to_use = axs
+
+            if ax_to_use:
+                props = dict(boxstyle="round,pad=0.4", facecolor="black", alpha=0.6)
+                ax_to_use.text(
+                    0.97,
+                    0.03,
+                    summary_text,
+                    transform=ax_to_use.transAxes,
+                    fontsize=7,
+                    verticalalignment="bottom",
+                    horizontalalignment="right",
+                    bbox=props,
+                    color="white",
+                )
+
+        canvas.figure.tight_layout(rect=[0, 0.05, 1, 1])
+
+    def _setup_plot_toolbar(self, canvas):
+        """Creates and attaches a new custom Matplotlib toolbar."""
+        self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(
+            canvas, self.mpl_toolbar_in_titlebar_container
+        )
+        self.mpl_toolbar_in_titlebar_layout.addWidget(self.active_mpl_toolbar_widget)
+        self.mpl_toolbar_in_titlebar_container.setVisible(True)
+
+    def _display_placeholder(self, layout):
+        """Displays a placeholder message when no analysis is selected."""
+        self.plotTitleLabel.setText("No Analysis Selected")
+        self.dataInfoLabel.setText("Run an analysis to see results.")
+        layout.addWidget(QLabel("Select or Run an Analysis"))
+        self._update_settings_ui(self.analysisTypeCombo.currentText())
+
+    def display_plot_page(self, page_index):
+        """
+        Displays a specific analysis result page, orchestrating
+        UI cleanup and redrawing.
+        """
+        plot_layout = self._cleanup_plot_area()
+
+        if not (0 <= page_index < len(self.analysis_results_pages)):
+            self._display_placeholder(plot_layout)
+            return
+
+        page_data = self.analysis_results_pages[page_index]
+        analysis_name = page_data.get("name", "Analysis")
+        analysis_instance = page_data.get("analysis_instance")
+
+        # Update UI text elements
+        self.plotTitleLabel.setText(analysis_name)
+        self.dataInfoLabel.setText(
+            page_data.get("result_summary", f"Results for {analysis_name}")
+        )
+
+        # Update settings panel to reflect this analysis
+        self._update_settings_ui(analysis_name)
+        self._populate_settings_from_page_data(page_data)
+
+        if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
+            self.active_mpl_canvas_widget = self._create_new_plot_canvas(page_data)
+            self._draw_plot_on_canvas(
+                analysis_instance,
+                self.active_mpl_canvas_widget,
+                page_data.get("view_args", {}),
             )
-            self._update_settings_ui(analysis_name)
-
-            page_args = {
-                **page_data.get("constructor_args_used", {}),
-                **page_data.get("view_args", {}),
-            }
-            for param_name, widget in self.current_settings_widgets.items():
-                if param_name in page_args:
-                    val = page_args[param_name]
-                    if isinstance(widget, QSpinBox | QDoubleSpinBox):
-                        widget.setValue(val)
-                    elif isinstance(widget, QCheckBox):
-                        widget.setChecked(bool(val))
-                    elif isinstance(widget, QLineEdit):
-                        widget.setText(
-                            ", ".join(map(str, val))
-                            if isinstance(val, tuple)
-                            else str(val)
-                        )
-                    elif isinstance(widget, QComboBox):
-                        # Correctly set the dropdown selection
-                        if param_name in ["fields", "wavelengths", "wavelength"]:
-                            # For our special dropdowns,
-                            # find the item by its stored data
-                            last_used_value = val
-                            found_index = -1
-                            for i in range(widget.count()):
-                                # The itemData is a string like "'primary'" or "[0.55]"
-                                item_data_str = widget.itemData(i)
-                                try:
-                                    item_data_obj = eval(item_data_str)
-                                    if item_data_obj == last_used_value:
-                                        found_index = i
-                                        break
-                                except Exception:
-                                    continue  # Ignore eval errors
-
-                            if found_index != -1:
-                                widget.setCurrentIndex(found_index)
-                        elif param_name == "axis":
-                            widget.setCurrentIndex(0 if val == 1 else 1)
-                        else:
-                            widget.setCurrentText(str(val))
-
-            analysis_instance = page_data.get("analysis_instance")
-            if page_data.get("plot_type") == "embedded_mpl" and analysis_instance:
-                fig = Figure(figsize=page_data.get("figsize", (7, 5)), dpi=100)
-                canvas = FigureCanvas(fig)
-                canvas.setFocusPolicy(
-                    Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus
-                )
-                canvas.setFocus()
-
-                self.active_mpl_canvas_widget = canvas
-                cids = []
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "scroll_event", self.on_scroll_zoom
-                    )
-                )
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "motion_notify_event", self.on_mouse_move_on_plot
-                    )
-                )
-                cids.append(
-                    self.active_mpl_canvas_widget.mpl_connect(
-                        "button_press_event", self.on_plot_double_click
-                    )
-                )
-                self.active_mpl_canvas_widget._event_cids = cids
-                double_click_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    "button_press_event", self.on_plot_double_click
-                )
-                self.active_mpl_canvas_widget._double_click_cid = double_click_cid
-                self.motion_notify_cid = self.active_mpl_canvas_widget.mpl_connect(
-                    "motion_notify_event", self.on_mouse_move_on_plot
-                )
-                self.active_mpl_canvas_widget._motion_notify_cid = (
-                    self.motion_notify_cid
-                )
-
-                axs = analysis_instance.view(
-                    fig_to_plot_on=fig, **page_data.get("view_args", {})
-                )
-
-                if hasattr(analysis_instance, "get_summary_text"):
-                    summary_text = analysis_instance.get_summary_text()
-                    ax_to_use = None
-                    if isinstance(axs, np.ndarray):
-                        ax_to_use = axs.flatten()[-1]
-                    elif isinstance(axs, plt.Axes):
-                        ax_to_use = axs
-
-                    if ax_to_use:
-                        props = dict(
-                            boxstyle="round,pad=0.4", facecolor="black", alpha=0.6
-                        )
-                        ax_to_use.text(
-                            0.97,
-                            0.03,
-                            summary_text,
-                            transform=ax_to_use.transAxes,
-                            fontsize=7,
-                            verticalalignment="bottom",
-                            horizontalalignment="right",
-                            bbox=props,
-                            color="white",
-                        )
-
-                fig.tight_layout(rect=[0, 0.05, 1, 1])
-
-                self.active_mpl_toolbar_widget = CustomMatplotlibToolbar(
-                    self.active_mpl_canvas_widget,
-                    self.mpl_toolbar_in_titlebar_container,
-                )
-                self.mpl_toolbar_in_titlebar_layout.addWidget(
-                    self.active_mpl_toolbar_widget
-                )
-                self.mpl_toolbar_in_titlebar_container.setVisible(True)
-
-                plot_content_area_layout.addWidget(self.active_mpl_canvas_widget)
-
-            else:
-                plot_content_area_layout.addWidget(
-                    QLabel(f"Cannot embed plot for {analysis_name}")
-                )
+            self._setup_plot_toolbar(self.active_mpl_canvas_widget)
+            plot_layout.addWidget(self.active_mpl_canvas_widget)
         else:
-            self.plotTitleLabel.setText("No Analysis Selected")
-            self.dataInfoLabel.setText("Run an analysis to see results.")
-            plot_content_area_layout.addWidget(QLabel("Select or Run an Analysis"))
-            self._update_settings_ui(self.analysisTypeCombo.currentText())
+            plot_layout.addWidget(QLabel(f"Cannot embed plot for {analysis_name}"))
 
     def on_plot_double_click(self, event):
         """Handler for mouse events on the plot canvas."""
