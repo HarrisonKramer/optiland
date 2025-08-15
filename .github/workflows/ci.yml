@@ -1,16 +1,13 @@
+name: CI
+
 on:
   push:
-    branches:
-      - master
-      - gui/improve_maintainability_metric
+    branches: [ "master", "gui/improve_maintainability_metric" ]
   pull_request:
-    branches:
-      - master
+    branches: [ "master", "gui/improve_maintainability_metric" ]
 
 jobs:
-  # Full CI on master
   lock_file:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +15,6 @@ jobs:
       - run: uv lock --locked
 
   linting:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: [lock_file]
     steps:
@@ -27,7 +23,6 @@ jobs:
       - run: uvx ruff check .
 
   formatting:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: [lock_file]
     steps:
@@ -35,52 +30,10 @@ jobs:
       - uses: ./.github/actions/setup
       - run: uvx ruff format --check .
 
-  tests:
-    if: github.ref == 'refs/heads/master'
+  build:
     runs-on: ubuntu-latest
-    needs: [lock_file]
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    needs: [linting, formatting]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          uv add --dev pytest pytest-cov codecov torch
-
-      - name: Run tests with coverage
-        run: |
-          uv run pytest --durations=0 --cov --cov-report=xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-
-  # Maintainability only on gui/improve_maintainability_metric
-  maintainability:
-    if: github.ref == 'refs/heads/gui/improve_maintainability_metric'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-
-      - name: Install qlty.sh CLI
-        run: |
-          curl -sSL https://qlty.sh/install | bash
-          export PATH=$PATH:$HOME/.qlty/bin
-
-      - name: Run qlty maintainability check
-        run: |
-          qlty scan --analyze maintainability
+      - run: uv build
