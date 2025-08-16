@@ -38,14 +38,6 @@ class TestIdealMaterial:
         assert material.k(0.5) == 0.2
 
 
-def test_mirror_material(set_test_backend):
-    mirror = materials.Mirror()
-    assert mirror.n(0.5) == -1.0
-    assert mirror.k(0.5) == 0.0
-    assert mirror.n(1.0) == -1.0
-    assert mirror.k(1.0) == 0.0
-
-
 class TestMaterialFile:
     def test_formula_1(self, set_test_backend):
         filename = str(

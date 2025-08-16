@@ -17,7 +17,6 @@ from .material_utils import (
     glasses_selection,
     plot_glass_map,
 )
-from .mirror import Mirror
 
 __all__ = [
     # From abbe.py
@@ -30,8 +29,6 @@ __all__ = [
     "Material",
     # From material_file.py
     "MaterialFile",
-    # From mirror.py
-    "Mirror",
     # From material_utils.py
     "downsample_glass_map",
     "get_nd_vd",
