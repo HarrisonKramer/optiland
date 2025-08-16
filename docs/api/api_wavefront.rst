@@ -13,7 +13,7 @@ including wavefront error, Zernike decomposition, point spread function (PSF) an
    mtf.fft
    mtf.geometric
    mtf.sampled
-   ppsf.base
+   psf.base
    psf.fft
    psf.huygens_fresnel
    wavefront.opd_fan
