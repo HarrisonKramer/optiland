@@ -250,9 +250,14 @@ class ZemaxDataParser:
         if material.upper() == "MIRROR":
             self._current_surf_data["material"] = "mirror"
             return
+
         self._current_surf_data["material"] = material
-        self._current_surf_data["index"] = float(data[4].replace(",", "."))
-        self._current_surf_data["abbe"] = float(data[5].replace(",", "."))
+        try:
+            self._current_surf_data["index"] = float(data[4].replace(",", "."))
+            self._current_surf_data["abbe"] = float(data[5].replace(",", "."))
+        except IndexError:
+            self._current_surf_data["index"] = None
+            self._current_surf_data["abbe"] = None
 
         try:
             self._current_surf_data["material"] = Material(material)
