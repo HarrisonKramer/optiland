@@ -47,18 +47,3 @@ These modules handle optical path difference (OPD) calculations and wavefront an
    wavefront.wavefront_data
    wavefront.wavefront
    wavefront.zernike_opd
-
-Zernike Polynomials
--------------------
-
-Zernike polynomial modules provide different indexing schemes and fitting capabilities
-for decomposing wavefront aberrations into standard polynomial basis functions.
-
-.. autosummary::
-   :toctree: wavefront/zernike/
-   :caption: Zernike Analysis
-
-   zernike.fit
-   zernike.fringe
-   zernike.noll
-   zernike.standard
