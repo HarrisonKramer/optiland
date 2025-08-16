@@ -11,7 +11,7 @@ from .optiland_handler import (
     save_obj_to_json,
     save_optiland_file,
 )
-from .zemax_handler import ZemaxFileReader, load_zemax_file
+from .zemax_handler import load_zemax_file
 
 __all__ = [
     # From converters.py
@@ -23,5 +23,4 @@ __all__ = [
     "save_optiland_file",
     # From zemax_handler.py
     "load_zemax_file",
-    "ZemaxFileReader",
 ]

@@ -8,10 +8,19 @@ including wavefront error, Zernike decomposition, point spread function (PSF) an
    :toctree: wavefront/
    :caption: OPD, PSF, MTF Modules
 
-   mtf
+   
+   mtf.base
+   mtf.fft
+   mtf.geometric
+   mtf.sampled
+   psf.base
    psf.fft
    psf.huygens_fresnel
-   wavefront
+   wavefront.opd_fan
+   wavefront.opd
+   wavefront.wavefront_data
+   wavefront.wavefront
+   wavefront.zernike_opd
    zernike.fit
    zernike.fringe
    zernike.noll
