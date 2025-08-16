@@ -1,0 +1,264 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal
+
+import optiland.backend as be
+
+if TYPE_CHECKING:
+    from optiland.materials import BaseMaterial
+from .layer import Layer
+
+Pol = Literal["s", "p", "u"]
+
+
+@dataclass
+class ThinFilmStack:
+    """Multilayer thin-film stack with inlined TMM calculations.
+
+    This class encapsulates both the stack structure (incident/substrate, layers)
+    and the numerical Transfer Matrix Method (TMM) to compute complex amplitude
+    coefficients (r, t) and power coefficients (R, T, A) for s, p and unpolarized
+    cases.
+
+    Units and conventions:
+    - Wavelength in microns (µm) internally; convenience helpers accept nm.
+    - AOI in radians internally; convenience helpers accept degrees.
+    - Layers are ordered from the incident side to the substrate side.
+    - Transmittance uses the energy-flux scaling via Re(admittance).
+
+    Parameters
+    ----------
+    incident : BaseMaterial
+        Incident medium (e.g., air).
+    substrate : BaseMaterial
+        Substrate medium (e.g., glass).
+    layers : list[Layer], optional
+        Ordered layers between incident and substrate, default empty.
+
+    Examples
+    --------
+    >>> from optiland.materials import IdealMaterial
+    >>> air, glass = IdealMaterial(1.0), IdealMaterial(1.52)
+    >>> tf = ThinFilmStack(incident=air, substrate=glass)
+    >>> # 100 nm SiO2 on glass
+    >>> sio2 = IdealMaterial(1.46)
+    >>> tf.add_layer_nm(sio2, 100.0)
+    >>> R = tf.reflectance_nm_deg([550.0], [0.0], polarization="s")
+    >>> T = tf.transmittance_nm_deg([550.0], [0.0], polarization="s")
+    >>> A = tf.absorptance_nm_deg([550.0], [0.0], polarization="s")
+    >>> float((R + T + A)[0,0])  # doctest: +ELLIPSIS
+    1.0
+    """
+
+    incident: BaseMaterial
+    substrate: BaseMaterial
+    layers: list[Layer] = field(default_factory=list)
+
+    # ----- structure helpers -----
+    def add_layer(
+        self, material: BaseMaterial, thickness_um: float, name: str | None = None
+    ) -> ThinFilmStack:
+        """Append a layer to the stack.
+
+        Args:
+            material: Optiland material providing n(λ), k(λ).
+            thickness_um: Thickness in microns (µm).
+            name: Optional label.
+
+        Returns:
+            self for chaining.
+        """
+        self.layers.append(Layer(material, thickness_um, name))
+        return self
+
+    def add_layer_nm(
+        self, material: BaseMaterial, thickness_nm: float, name: str | None = None
+    ) -> ThinFilmStack:
+        """Append a layer, thickness in nm.
+
+        Args:
+            material: Optiland material providing n(λ), k(λ).
+            thickness_nm: Thickness in nanometers.
+            name: Optional label.
+        """
+        return self.add_layer(material, thickness_nm / 1000.0, name)
+
+    # ----- units helpers -----
+    @staticmethod
+    def _to_um(wavelength_um_or_nm: float | Any, assume_nm: bool = False):
+        arr = be.atleast_1d(wavelength_um_or_nm)
+        return arr / 1000.0 if assume_nm else arr
+
+    @staticmethod
+    def _deg_to_rad(angle_deg: float | Any):
+        return be.atleast_1d(angle_deg) * (be.pi / 180.0)
+
+    # ----- public API: coefficients -----
+    def coefficients(
+        self,
+        wavelength_um: float | Any,
+        aoi_rad: float | Any = 0.0,
+        polarization: Pol = "s",
+    ) -> dict[str, Any]:
+        """Compute complex and power coefficients over λ×θ grids.
+
+        Args:
+            wavelength_um: Wavelength(s) in microns (scalar or array). Use helpers
+            for nm.
+            aoi_rad: Angle(s) of incidence in radians (scalar or array). Use helpers
+            for degrees.
+            polarization: 's', 'p' or 'u' (unpolarized averages powers of s and p).
+
+        Returns:
+            Dict with keys 'r','t','R','T','A'. Shapes are (Nλ, Nθ).
+        """
+        wl = be.atleast_1d(wavelength_um)
+        th = be.atleast_1d(aoi_rad)
+        if polarization in ("s", "p"):
+            r, t, R, T, A = _tmm_rt(self, wl[:, None], th[None, :], polarization)
+
+            return {"r": r, "t": t, "R": R, "T": T, "A": A}
+        elif polarization == "u":
+            rs, ts, Rs, Ts, As = _tmm_rt(self, wl[:, None], th[None, :], "s")
+            rp, tp, Rp, Tp, Ap = _tmm_rt(self, wl[:, None], th[None, :], "p")
+            R = 0.5 * (Rs + Rp)
+            T = 0.5 * (Ts + Tp)
+            A = 0.5 * (As + Ap)
+            # Return s-amplitudes for reference; intensities are averaged
+            return {"r": rs, "t": ts, "R": R, "T": T, "A": A}
+        else:
+            raise ValueError("polarization must be 's', 'p' or 'u'")
+
+    def coefficients_nm_deg(
+        self,
+        wavelength_nm: float | Any,
+        aoi_deg: float | Any = 0.0,
+        polarization: Pol = "s",
+    ) -> dict[str, Any]:
+        """Same as coefficients() but inputs in nm and degrees."""
+        wl_um = self._to_um(wavelength_nm, assume_nm=True)
+        th_rad = self._deg_to_rad(aoi_deg)
+        return self.coefficients(wl_um, th_rad, polarization)
+
+    # ----- convenience getters -----
+    def reflectance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
+        return self.coefficients(wavelength_um, aoi_rad, polarization)["R"]
+
+    def transmittance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
+        return self.coefficients(wavelength_um, aoi_rad, polarization)["T"]
+
+    def absorptance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
+        return self.coefficients(wavelength_um, aoi_rad, polarization)["A"]
+
+    def reflectance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["R"]
+
+    def transmittance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["T"]
+
+    def absorptance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["A"]
+
+    def __len__(self):
+        return len(self.layers)
+
+    def __repr__(self):
+        parts = [layer.name or f"Layer({i})" for i, layer in enumerate(self.layers)]
+        return f"ThinFilmStack({len(self.layers)} layers: " + " -> ".join(parts) + ")"
+
+
+# -------------- Internal TMM core --------------
+PolSP = Literal["s", "p"]
+
+
+def _complex_index(material: BaseMaterial, wavelength_um):
+    n = material.n(wavelength_um)
+    k = material.k(wavelength_um)
+    n = be.atleast_1d(n)
+    k = be.atleast_1d(k)
+    return be.asarray(n, dtype=be.complex128) + 1j * be.asarray(k, dtype=be.complex128)
+
+
+def _snell_cos(n0, theta0, n):
+    """Transmitted angle cosine with forward-branch selection.
+
+    Select kz = n·cos(theta) with Im(kz) ≥ 0 (and Re(kz) ≥ 0 when Im≈0).
+    Returns cos(theta) = kz/n.
+    """
+    sin0 = be.sin(theta0)
+    sin_t = (n0 * sin0) / n
+    cos_t = be.sqrt(1 - sin_t * sin_t)
+    kz = n * cos_t
+    imag = be.imag(kz)
+    real = be.real(kz)
+    cond_flip = (imag < 0) | ((be.abs(imag) < 1e-14) & (real < 0))
+    kz = be.where(cond_flip, -kz, kz)
+    return kz / n
+
+
+def _admittance(n: complex, cos_t: complex, pol: PolSP):
+    sqrt_eps_mu = 0.002654418729832701370374020517935
+    if pol == "s":
+        return sqrt_eps_mu * n * cos_t
+    else:
+        return sqrt_eps_mu * n / (cos_t)
+
+
+def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
+    """
+    Compute the reflection and transmission coefficients for
+    a thin film stack. Base on Abelès Matrix.
+
+    Ref :
+    - Chap 13. Polarized Light and Optical Systems, Russell
+    A. Chipman, Wai-Sze Tiffany Lam, and Garam Young
+    - F. Abelès, Researches sur la propagation des ondes électromagnétiques
+    sinusoïdales dans les milieus stratifies.
+    Applications aux couches minces, Ann. Phys. Paris,
+    12ième Series 5 (1950): 596–640.
+    """
+    n0 = _complex_index(stack.incident, wavelength_um)
+    ns = _complex_index(stack.substrate, wavelength_um)
+    cos0 = _snell_cos(n0, theta0_rad, n0)
+    coss = _snell_cos(n0, theta0_rad, ns)
+    eta0 = _admittance(n0, cos0, pol)
+    etas = _admittance(ns, coss, pol)
+
+    # Id initial matrix
+    A = be.ones_like(eta0, dtype=be.complex128)
+    B = be.zeros_like(eta0, dtype=be.complex128)
+    C = be.zeros_like(eta0, dtype=be.complex128)
+    D = be.ones_like(eta0, dtype=be.complex128)
+
+    for layer in stack.layers:
+        n_l = layer.n_complex(wavelength_um)
+        cos_l = _snell_cos(n0, theta0_rad, n_l)
+        eta_l = _admittance(n_l, cos_l, pol)
+        delta = layer.phase_thickness(wavelength_um, cos_l, n_l)
+        c = be.cos(delta)
+        s = be.sin(delta)
+        i = 1j
+        mA = c
+        mB = i * (s / eta_l)
+        mC = i * (eta_l * s)
+        mD = c
+        A, B, C, D = A * mA + B * mC, A * mB + B * mD, C * mA + D * mC, C * mB + D * mD
+
+    denom = eta0 * (A + etas * B) + C + etas * D
+    denom = be.where(be.abs(denom) == 0, 1e-30 + 0j, denom)
+
+    r = (eta0 * A + eta0 * etas * B - C - etas * D) / denom
+    t = be.conj((2 * eta0) / denom)
+
+    R = (r * be.conj(r)).real
+    # T = 4 * eta0 * etas.real / (denom * be.conj(denom)).real
+    T = (t * be.conj(t)).real * etas.real / eta0.real
+    abso = (
+        4
+        * eta0
+        * (A + etas * B)
+        * be.conj(C + D * etas)
+        / (denom * be.conj(denom)).real
+    ).real
+    return r, t, R, T, abso
