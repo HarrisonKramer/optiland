@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from unittest.mock import patch
 
 import optiland.backend as be
-from optiland.mtf import GeometricMTF, FFTMTF
+from optiland.mtf import GeometricMTF, FFTMTF, HuygensMTF
 from optiland.samples.objectives import CookeTriplet
 
 # Parametrize every test over the two backends
@@ -25,19 +25,24 @@ def optic():
 
 
 class TestGeometricMTF:
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
-        m = GeometricMTF(optic)
-        m.view()  # default figsize, no reference overlay
-        mock_show.assert_called_once()
-        plt.close("all")
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_defaults(self, set_test_backend, optic):
         m = GeometricMTF(optic)
-        m.view(figsize=(20, 20), add_reference=True)
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view()  # default figsize, no reference overlay
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_view_mtf_custom_fig(self, set_test_backend, optic):
+        m = GeometricMTF(optic)
+        fig, ax = m.view(figsize=(20, 20), add_reference=True)
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_generate_data_scaled(self, set_test_backend, optic):
         m = GeometricMTF(optic, scale=True)
@@ -51,19 +56,24 @@ class TestGeometricMTF:
 
 
 class TestFFTMTF:
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
-        m = FFTMTF(optic)
-        m.view()
-        mock_show.assert_called_once()
-        plt.close("all")
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_defaults(self, set_test_backend, optic):
         m = FFTMTF(optic)
-        m.view(figsize=(20, 20), add_reference=True)
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view()
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_view_mtf_custom_fig(self, set_test_backend, optic):
+        m = FFTMTF(optic)
+        fig, ax = m.view(figsize=(20, 20), add_reference=True)
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_generate_data_infinite_object(self, set_test_backend, optic):
         """Default (infinite object distance) should produce an MTF array."""
@@ -233,8 +243,36 @@ class TestHuygensMTF:
             (1024, 181),
         ],
     )
-    def test_num_rays_and_grid_size(self, set_test_backend, num_rays, expected_pupil_sampling, optic):
+    def test_num_rays_and_grid_size(
+        self, set_test_backend, num_rays, expected_pupil_sampling, optic
+    ):
         m = FFTMTF(optic, num_rays=num_rays, grid_size=None)
 
         assert m.num_rays == expected_pupil_sampling
         assert m.grid_size == 2 * num_rays
+
+
+class TestHuygensMTF:
+
+    def test_view_mtf_defaults(self, set_test_backend, optic):
+        if be.get_backend() == "torch":
+            pytest.skip("HuygensMTF only supports numpy backend")
+        m = HuygensMTF(optic, num_rays=16, image_size=16)
+        fig, ax = m.view()
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_generate_data(self, set_test_backend, optic):
+        if be.get_backend() == "torch":
+            pytest.skip("HuygensMTF only supports numpy backend")
+        m = HuygensMTF(optic, num_rays=16, image_size=16)
+        assert hasattr(m, "mtf") and m.mtf is not None
+
+    def test_torch_backend_raises_error(self, set_test_backend, optic):
+        if be.get_backend() == "numpy":
+            pytest.skip("Test only applicable for torch backend")
+        with pytest.raises(ValueError):
+            HuygensMTF(optic)

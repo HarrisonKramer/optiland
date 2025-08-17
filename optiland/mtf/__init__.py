@@ -14,6 +14,7 @@ from .sampled import SampledMTF
 __all__ = [
     "FFTMTF",
     "GeometricMTF",
+    "HuygensMTF",
     "SampledMTF",
     "HuygensMTF",
 ]
