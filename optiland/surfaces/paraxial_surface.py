@@ -211,49 +211,37 @@ class ParaxialToThickLensConverter:
     """
     Converts a ParaxialSurface into an equivalent thick lens composed of two
     real surfaces.
+
+    Args:
+        paraxial_surface: The ParaxialSurface to convert.
+        optic: The parent Optic instance containing the paraxial surface.
+        material: The lens material. Can be:
+            - A string (e.g., "N-BK7", resolved via Material lookup).
+            - A float (refractive index, creates an IdealMaterial).
+            - A BaseMaterial instance.
+        center_thickness: The desired center thickness of the thick lens.
+        lens_shape: The shape of the lens ("biconvex", "plano-convex",
+                        "convex-plano", "biconcave", "plano-concave",
+                        "concave-plano", "meniscus-convex", "meniscus-concave").
+                        For meniscus lenses, R1 is the more curved surface.
     """
 
     def __init__(
         self,
         paraxial_surface: ParaxialSurface,
-        optic,  # Optic type hint will be added once Optic is imported
+        optic,
         material: str | float | BaseMaterial = "N-BK7",
         center_thickness: float = 3.0,  # Default center thickness in mm
         lens_shape: str = "biconvex",
-        # alignment: str = "center" # TODO: Implement different alignment strategies
     ):
-        """
-        Initializes the converter.
-
-        Args:
-            paraxial_surface: The ParaxialSurface to convert.
-            optic: The parent Optic instance containing the paraxial surface.
-            material: The lens material. Can be:
-                - A string (e.g., "N-BK7", resolved via Material lookup).
-                - A float (refractive index, creates an IdealMaterial).
-                - A BaseMaterial instance.
-            center_thickness: The desired center thickness of the thick lens.
-            lens_shape: The shape of the lens ("biconvex", "plano-convex",
-                          "convex-plano", "biconcave", "plano-concave",
-                          "concave-plano", "meniscus-convex", "meniscus-concave").
-                          For meniscus lenses, R1 is the more curved surface.
-            # alignment: How to align the thick lens relative to the original
-            #              paraxial surface position. "center" aligns geometric
-            #              center, "front" aligns front vertex, "back" aligns
-            #              back vertex.
-        """
         if not isinstance(paraxial_surface, ParaxialSurface):
             raise TypeError("paraxial_surface must be an instance of ParaxialSurface.")
-        # Optic type hint will be added once Optic is imported
-        # if not isinstance(optic, Optic):
-        #     raise TypeError("optic must be an instance of Optic.")
 
         self.paraxial_surface = paraxial_surface
         self.optic = optic
         self.original_focal_length = paraxial_surface.f
         self.center_thickness = center_thickness
         self.lens_shape = lens_shape.lower()
-        # self.alignment = alignment.lower() # TODO
 
         self._material_instance = self._resolve_material(material)
 
@@ -586,9 +574,3 @@ class ParaxialToThickLensConverter:
         # Note: The final optic.update() in convert() is critical for these
         # thickness adjustments to correctly set all z-positions.
         pass
-
-
-# Need to import Optic and Union for type hints if this class grows
-# and gets moved to its own file. For now, keep it here and manage imports
-# locally or defer full type hinting for Optic.
-# from optiland.optic.optic import Optic # Causes circular import if not careful
