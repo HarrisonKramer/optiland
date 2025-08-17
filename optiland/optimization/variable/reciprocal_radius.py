@@ -12,6 +12,8 @@ Daniel Miranda, 2025
 ALL rights ceded to Kramer Harrison
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.optimization.variable.base import VariableBehavior
 

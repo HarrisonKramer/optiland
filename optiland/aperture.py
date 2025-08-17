@@ -9,6 +9,8 @@ the input provided is the diameter of the stop surface.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 
 class Aperture:
     """Represents an aperture used in optics.

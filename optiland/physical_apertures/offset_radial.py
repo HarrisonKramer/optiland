@@ -7,6 +7,8 @@ offset in the x and y directions.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.physical_apertures.radial import RadialAperture
 

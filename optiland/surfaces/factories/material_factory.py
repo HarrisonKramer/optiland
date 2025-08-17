@@ -8,6 +8,8 @@ system components in Optiland.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 
 

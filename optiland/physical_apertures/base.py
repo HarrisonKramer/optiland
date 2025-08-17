@@ -10,6 +10,8 @@ intersection, and difference of two apertures, respectively.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt

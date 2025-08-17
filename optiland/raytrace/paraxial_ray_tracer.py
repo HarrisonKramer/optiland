@@ -6,6 +6,8 @@ paraxial rays through an optical system.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.rays.paraxial_rays import ParaxialRays
 from optiland.surfaces import ObjectSurface

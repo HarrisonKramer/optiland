@@ -9,6 +9,8 @@ used for first-order layout of optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coatings import BaseCoating
 from optiland.geometries import BaseGeometry

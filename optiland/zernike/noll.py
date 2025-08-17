@@ -13,6 +13,8 @@ References:
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 import optiland.backend as be
@@ -38,11 +40,6 @@ class ZernikeNoll(BaseZernike):
 
     """
 
-    def __init__(self, coeffs=None):
-        if coeffs is None:
-            coeffs = [0 for _ in range(36)]
-        super().__init__(coeffs)
-
     @staticmethod
     def _norm_constant(n=0, m=0):
         """Calculate the normalization constant for a given Zernike polynomial.
@@ -55,35 +52,27 @@ class ZernikeNoll(BaseZernike):
             float: The normalization constant for the Zernike polynomial.
 
         """
-        if m == 0:
-            return be.sqrt(be.array(n + 1))
-        return be.sqrt(be.array(2 * n + 2))
+        denominator = 2 if m == 0 else 1
+        return be.sqrt(be.array((2 * n + 2) / denominator))
 
     @staticmethod
-    def _generate_indices():
-        """Generate the indices for the Zernike terms.
+    def _index_to_number(n: int, m: int) -> int | None:
+        """Convert Zernike indices (n, m) to a coefficient number.
+
+        Args:
+            n (int): Radial order of the Zernike term.
+            m (int): Azimuthal order of the Zernike term.
 
         Returns:
-            list: List of tuples representing the indices (n, m) of the
-                Zernike terms.
-
+            int: The coefficient number corresponding to the Zernike indices.
         """
-        number = []
-        indices = []
-        for n in range(15):
-            for m in range(-n, n + 1):
-                if (n - m) % 2 == 0:
-                    mod = n % 4
-                    if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
-                        c = 0
-                    elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
-                        c = 1
-                    number.append(n * (n + 1) / 2 + np.abs(m) + c)
-                    indices.append((n, m))
+        if (n - m) % 2 == 0:
+            mod = n % 4
+            if (m > 0 and mod <= 1) or (m < 0 and mod >= 2):
+                c = 0
+            elif (m >= 0 and mod >= 2) or (m <= 0 and mod <= 1):
+                c = 1
 
-        # sort indices according to fringe coefficient number
-        indices_sorted = [
-            element for _, element in sorted(zip(number, indices, strict=False))
-        ]
+            return int(n * (n + 1) / 2 + np.abs(m) + c)
 
-        return indices_sorted
+        return None

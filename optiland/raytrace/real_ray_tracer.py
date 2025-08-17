@@ -7,6 +7,8 @@ rays and the surface group of the optical system to trace them.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator

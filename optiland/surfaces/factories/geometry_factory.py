@@ -8,15 +8,18 @@ blocks of optical systems in Optiland.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import optiland.backend as be
-from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     BiconicGeometry,
     ChebyshevPolynomialGeometry,
     EvenAsphere,
+    ForbesQ2dGeometry,
+    ForbesQbfsGeometry,
     OddAsphere,
     Plane,
     PolynomialGeometry,
@@ -25,14 +28,19 @@ from optiland.geometries import (
     ZernikePolynomialGeometry,
 )
 
+if TYPE_CHECKING:
+    from optiland._types import ZernikeType
+    from optiland.coordinate_system import CoordinateSystem
+
 
 @dataclass
 class GeometryConfig:
     """Configuration parameters for creating a surface geometry.
 
     Attributes:
-        radius (float): radius of curvature of the geometry. Defaults to be.inf.
-        conic (float): conic constant of the geometry. Defaults to 0.0.as_integer_ratio
+        radius (float): radius of curvature of the geometry (R = 1/c).
+                        Defaults to be.inf.
+        conic (float): conic constant (k) of the geometry. Defaults to 0.0.
         coefficients (list): list of geometry coefficients. Defaults to empty list.
         tol (float): tolerance to use for Newton-Raphson method. Defaults to 1e-6.
         max_iter (int): maximum number of iterations to use for Newton-Raphson method.
@@ -40,13 +48,15 @@ class GeometryConfig:
         norm_x (float): normalization factor in x. Defaults to 1.0.
         norm_y (float): normalization factor in y. Defaults to 1.0.
         norm_radius (float): normalization radius. Defaults to 1.0.
-        radius_x (float): radius of curvature in x for biconic. Defaults to be.inf.
+        radius_x (float): radius of curvature in x for biconic.
+                          Defaults to be.inf.
         radius_y (float): radius of curvature in y for biconic or YZ radius for
             toroidal. Defaults to be.inf.
         conic_x (float): conic constant in x for biconic. Defaults to 0.0.
         conic_y (float): conic constant in y for biconic. Defaults to 0.0.
         toroidal_coeffs_poly_y (list): toroidal YZ polynomial coefficients.
                                     Defaults to empty list.
+        zernike_type (str): type of Zernike polynomial to use. Defaults to "fringe".
     """
 
     radius: float = be.inf
@@ -63,6 +73,13 @@ class GeometryConfig:
     conic_x: float = 0.0  # Used by Biconic
     conic_y: float = 0.0  # Used by Biconic
     toroidal_coeffs_poly_y: list[float] = field(default_factory=list)
+    zernike_type: ZernikeType = "fringe"
+    # Forbes parameters
+    radial_terms: dict[int, float] = field(default_factory=dict)
+    freeform_coeffs: dict[tuple[int, int] | tuple[int, int, Literal["sin"]], float] = (
+        field(default_factory=dict)
+    )
+    forbes_norm_radius: float = 1.0
 
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
@@ -76,7 +93,7 @@ def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
     Returns:
         Plane
     """
-    return Plane(cs)
+    return Plane(coordinate_system=cs)
 
 
 def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
@@ -93,7 +110,9 @@ def _create_standard(cs: CoordinateSystem, config: GeometryConfig):
     # Use a Plane if the radius is infinity.
     if be.isinf(config.radius):
         return Plane(cs)
-    return StandardGeometry(cs, config.radius, config.conic)
+    return StandardGeometry(
+        coordinate_system=cs, radius=config.radius, conic=config.conic
+    )
 
 
 def _create_even_asphere(cs: CoordinateSystem, config: GeometryConfig):
@@ -108,12 +127,12 @@ def _create_even_asphere(cs: CoordinateSystem, config: GeometryConfig):
         EvenAsphere
     """
     return EvenAsphere(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -129,12 +148,12 @@ def _create_odd_asphere(cs: CoordinateSystem, config: GeometryConfig):
         OddAsphere
     """
     return OddAsphere(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -150,12 +169,12 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         PolynomialGeometry
     """
     return PolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
     )
 
 
@@ -171,14 +190,14 @@ def _create_chebyshev(cs: CoordinateSystem, config: GeometryConfig):
         ChebyshevPolynomialGeometry
     """
     return ChebyshevPolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
-        config.norm_x,
-        config.norm_y,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        coefficients=config.coefficients,
+        norm_x=config.norm_x,
+        norm_y=config.norm_y,
     )
 
 
@@ -194,13 +213,14 @@ def _create_zernike(cs: CoordinateSystem, config: GeometryConfig):
         ZernikePolynomialGeometry
     """
     return ZernikePolynomialGeometry(
-        cs,
-        config.radius,
-        config.conic,
-        config.tol,
-        config.max_iter,
-        config.coefficients,
-        config.norm_radius,
+        coordinate_system=cs,
+        radius=config.radius,
+        conic=config.conic,
+        tol=config.tol,
+        max_iter=config.max_iter,
+        zernike_type=config.zernike_type,
+        coefficients=config.coefficients,
+        norm_radius=config.norm_radius,
     )
 
 
@@ -257,6 +277,34 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
     )
 
 
+def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
+    """Create a Forbes (Q-BFS) Geometry."""
+
+    return ForbesQbfsGeometry(
+        cs,
+        config.radius,
+        config.conic,
+        config.radial_terms,
+        config.forbes_norm_radius,
+        config.tol,
+        config.max_iter,
+    )
+
+
+def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
+    """Create a Forbes (Q-2D) geometry."""
+
+    return ForbesQ2dGeometry(
+        cs,
+        config.radius,
+        config.conic,
+        config.freeform_coeffs,
+        config.forbes_norm_radius,
+        config.tol,
+        config.max_iter,
+    )
+
+
 def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a paraxial geometry, which is simply a planar surface.
@@ -281,6 +329,8 @@ geometry_mapper = {
     "standard": _create_standard,
     "toroidal": _create_toroidal,
     "zernike": _create_zernike,
+    "forbes_qbfs": _create_forbes_qbfs,
+    "forbes_q2d": _create_forbes_q2d,
 }
 
 

@@ -208,7 +208,7 @@ class TestOptic:
             thickness=10,
         )
         surface_number = 1
-        material_post = MaterialFactory._configure_post_material('N-BK7')
+        material_post = MaterialFactory._configure_post_material("N-BK7")
         self.optic.set_material(material_post, surface_number)
         surface = self.optic.surface_group.surfaces[surface_number]
         assert surface.material_post == material_post
@@ -500,7 +500,9 @@ class TestOptic:
         lens = Optic()
 
         lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(index=1, radius=100, thickness=4, material="SK16", is_stop=True)
+        lens.add_surface(
+            index=1, radius=100, thickness=4, material="SK16", is_stop=True
+        )
         lens.add_surface(index=2, radius=-1000, thickness=20)
         lens.add_surface(index=3)
         lens.set_aperture(aperture_type="EPD", value=10.0)
@@ -521,14 +523,12 @@ class TestOptic:
         assert lens.pickups.pickups[0].source_surface_idx == 2
         assert lens.pickups.pickups[0].target_surface_idx == 1
 
-    @patch('optiland.optic.optic.SurfaceSagViewer')
+    @patch("optiland.optic.optic.SurfaceSagViewer")
     def test_plot_surface_sag(self, mock_viewer, set_test_backend):
         lens = singlet_infinite_object()
-        
+
         lens.plot_surface_sag(
-            surface_index=1,
-            y_cross_section=2.0,
-            x_cross_section=-2.0
+            surface_index=1, y_cross_section=2.0, x_cross_section=-2.0
         )
         mock_viewer.assert_called_once_with(lens)
         viewer_instance = mock_viewer.return_value

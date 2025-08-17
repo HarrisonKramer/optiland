@@ -215,13 +215,13 @@ def test_flip_zernike_geometry():
 
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
 
 def test_flip_biconic_zero_radius():

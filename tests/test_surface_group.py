@@ -408,7 +408,9 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.add_surface(index=1, radius=-18.39533, thickness=42.20778)
         lens.add_surface(index=1, radius=79.68360, thickness=2.95208, material="SK16")
         lens.add_surface(index=1, radius=20.29192, thickness=4.75041, is_stop=True)
-        lens.add_surface(index=1, radius=-22.21328, thickness=0.99997, material=("F2", "schott"))
+        lens.add_surface(
+            index=1, radius=-22.21328, thickness=0.99997, material=("F2", "schott")
+        )
         lens.add_surface(index=1, radius=-435.76044, thickness=6.00755)
         lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
 
@@ -423,5 +425,9 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.add_wavelength(value=0.55, is_primary=True)
         lens.add_wavelength(value=0.65)
 
-        rays = lens.trace(Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59)
-        assert_allclose(be.mean(rays.y), 18.13506822442731)  # mean y position for Cooke triplet defined above
+        rays = lens.trace(
+            Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59
+        )
+        assert_allclose(
+            be.mean(rays.y), 18.13506822442731
+        )  # mean y position for Cooke triplet defined above

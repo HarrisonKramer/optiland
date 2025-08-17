@@ -38,14 +38,6 @@ class TestIdealMaterial:
         assert material.k(0.5) == 0.2
 
 
-def test_mirror_material(set_test_backend):
-    mirror = materials.Mirror()
-    assert mirror.n(0.5) == -1.0
-    assert mirror.k(0.5) == 0.0
-    assert mirror.n(1.0) == -1.0
-    assert mirror.k(1.0) == 0.0
-
-
 class TestMaterialFile:
     def test_formula_1(self, set_test_backend):
         filename = str(
@@ -398,29 +390,58 @@ def test_abbe_out_of_bounds_wavelength(set_test_backend):
 def test_glasses_selection(set_test_backend):
     glasses = materials.glasses_selection(0.3, 2.5, catalogs=["schott"])
     expected_glasses = [
-        'FK3', 'FK5HTi', 'K10', 'LITHOTEC-CAF2', 'N-BAK1', 
-        'N-BAK2', 'N-BK10', 'N-BK7', 'N-BK7HT', 'N-BK7HTi', 
-        'N-FK5', 'N-FK51', 'N-FK51A', 'N-FK58', 'N-LAK33B', 
-        'N-LAK34', 'N-LAK7', 'N-PK51', 'N-PK52A', 'N-PSK3', 
-        'N-SK11', 'N-SK5', 'N-ZK7', 'N-ZK7A', 'P-LAK35', 'P-SK60']
+        "FK3",
+        "FK5HTi",
+        "K10",
+        "LITHOTEC-CAF2",
+        "N-BAK1",
+        "N-BAK2",
+        "N-BK10",
+        "N-BK7",
+        "N-BK7HT",
+        "N-BK7HTi",
+        "N-FK5",
+        "N-FK51",
+        "N-FK51A",
+        "N-FK58",
+        "N-LAK33B",
+        "N-LAK34",
+        "N-LAK7",
+        "N-PK51",
+        "N-PK52A",
+        "N-PSK3",
+        "N-SK11",
+        "N-SK5",
+        "N-ZK7",
+        "N-ZK7A",
+        "P-LAK35",
+        "P-SK60",
+    ]
     assert glasses == expected_glasses
 
 
 def test_get_nd_vd(set_test_backend):
-    assert materials.get_nd_vd(glass='N-BK7') == (1.5168, 64.17)
+    assert materials.get_nd_vd(glass="N-BK7") == (1.5168, 64.17)
 
 
 def test_downsample_glass_map(set_test_backend):
-    glass_dict = {g: materials.get_nd_vd(g) for g in ['N-BK7', 'FK3', 'FK5HTi', 'K10']}
+    glass_dict = {g: materials.get_nd_vd(g) for g in ["N-BK7", "FK3", "FK5HTi", "K10"]}
     downsampled_glass_dict = materials.downsample_glass_map(
-        glass_dict, num_glasses_to_keep=3,
+        glass_dict,
+        num_glasses_to_keep=3,
     )
     expected_downsample_glass_dict = {
-        'K10': (1.50137, 56.41), 
-        'N-BK7': (1.5168, 64.17), 
-        'FK5HTi': (1.48748, 70.47),
+        "K10": (1.50137, 56.41),
+        "N-BK7": (1.5168, 64.17),
+        "FK5HTi": (1.48748, 70.47),
     }
     assert downsampled_glass_dict == expected_downsample_glass_dict
 
+
 def test_find_closest_glass(set_test_backend):
-    assert materials.find_closest_glass(nd_vd=(1.5168, 64.17), catalog=['N-BK7', 'F5', 'SF5']) == 'N-BK7'
+    assert (
+        materials.find_closest_glass(
+            nd_vd=(1.5168, 64.17), catalog=["N-BK7", "F5", "SF5"]
+        )
+        == "N-BK7"
+    )

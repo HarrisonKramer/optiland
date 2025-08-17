@@ -7,6 +7,8 @@ spatial frequency, wavelength, and fields.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import make_interp_spline

@@ -15,6 +15,8 @@ The module also includes helper classes:
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import os
 
 from PySide6.QtCore import QRegularExpression, QSize, Qt, Signal

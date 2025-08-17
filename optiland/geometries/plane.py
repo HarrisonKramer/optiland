@@ -7,6 +7,8 @@ always defined in the local coordinate system of the geometry.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import warnings
 
 import optiland.backend as be
