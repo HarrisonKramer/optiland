@@ -1,4 +1,6 @@
 # Defines a sample UV projection lithography lens.
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland import materials, optic
 

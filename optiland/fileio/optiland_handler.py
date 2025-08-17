@@ -10,6 +10,8 @@ BaseMaterial, Aperture, FieldGroup, WavelengthGroup, etc.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import json
 import os
 

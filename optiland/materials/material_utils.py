@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import csv
 import warnings
 from importlib import resources
@@ -299,15 +301,15 @@ def plot_glass_map(
     fig, ax = plt.subplots(figsize=(8, 6))
 
     # Plot all standard glasses
-    plt.scatter(x_vd, y_nd, c="gray", marker="+", s=20, label="Glasses")
+    ax.scatter(x_vd, y_nd, c="gray", marker="+", s=20, label="Glasses")
     for i, glass_name in enumerate(labels):
-        plt.text(x_vd[i], y_nd[i], glass_name, fontsize=8, ha="right", va="bottom")
+        ax.text(x_vd[i], y_nd[i], glass_name, fontsize=8, ha="right", va="bottom")
 
     # Plot highlighted glasses in red
     if x_vd_hl:
-        plt.scatter(x_vd_hl, y_nd_hl, c="red", label="Highlighted")
+        ax.scatter(x_vd_hl, y_nd_hl, c="red", label="Highlighted")
         for i, glass_name in enumerate(labels_hl):
-            plt.text(
+            ax.text(
                 x_vd_hl[i],
                 y_nd_hl[i],
                 glass_name,
@@ -319,13 +321,13 @@ def plot_glass_map(
             )
 
     # Set axis labels and title
-    plt.xlabel("$V_d$")
-    plt.ylabel("$n_d$")
-    plt.title("Glass Map: $n_d$ vs. $V_d$" if title is None else title)
+    ax.set_xlabel("$V_d$")
+    ax.set_ylabel("$n_d$")
+    ax.set_title("Glass Map: $n_d$ vs. $V_d$" if title is None else title)
 
     # Reverse x-axis (V_d) to match optical convention
-    plt.gca().invert_xaxis()
-    plt.grid(alpha=0.5)
+    ax.invert_xaxis()
+    ax.grid(alpha=0.5)
 
     # Alternate horizontal bands for readability
     fig.canvas.draw()
@@ -336,8 +338,8 @@ def plot_glass_map(
         except IndexError:
             break  # Last pair might not exist
 
-    plt.tight_layout()
-    plt.show()
+    fig.tight_layout()
+    return fig, ax
 
 
 def find_closest_glass(nd_vd: tuple, catalog: list[str], plot_map: bool = False) -> str:

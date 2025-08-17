@@ -16,6 +16,8 @@ can simply do the following:
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from optiland.optimization.operand.aberration import AberrationOperand

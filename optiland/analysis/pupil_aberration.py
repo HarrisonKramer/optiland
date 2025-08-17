@@ -8,6 +8,8 @@ primary wavelength.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -35,7 +37,13 @@ class PupilAberration(BaseAnalysis):
 
     """
 
-    def __init__(self, optic, fields="all", wavelengths="all", num_points=256):
+    def __init__(
+        self,
+        optic,
+        fields: str | list = "all",
+        wavelengths: str | list = "all",
+        num_points: int = 256,
+    ):
         _optic_ref = optic
         if fields == "all":
             self.fields = _optic_ref.fields.get_field_coords()
@@ -49,10 +57,36 @@ class PupilAberration(BaseAnalysis):
 
         super().__init__(optic, wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(10, 3.33)):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (10, 3.33),
+    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
         """
-        Displays the pupil aberration plot, either in a new window or on a
-        provided GUI figure.
+        Displays the pupil aberration plots for each field and wavelength.
+
+        Parameters
+        ----------
+        fig_to_plot_on : plt.Figure, optional
+            An existing matplotlib Figure to plot on. If None, a new Figure is created.
+        figsize : tuple of float, optional
+            Size of the figure in inches as (width, height). Used only if a new
+            Figure is created.
+
+        Returns
+        -------
+        tuple[plt.Figure, list[plt.Axes]]
+            The matplotlib Figure and Axes array containing the plots.
+
+        Notes
+        -----
+        - If `fig_to_plot_on` is provided, the plots are embedded in the given Figure,
+        otherwise a new Figure is created.
+        - For each field, two subplots are created: one for aberration vs $P_y$ and one
+        for aberration vs $P_x$.
+        - If there are no fields to plot, a warning is printed or a message is displayed
+        on the Figure.
+        - A legend is added if there are plotted wavelengths.
         """
         is_gui_embedding = fig_to_plot_on is not None
         num_fields = len(self.fields)
@@ -132,11 +166,9 @@ class PupilAberration(BaseAnalysis):
                 )
 
         current_fig.tight_layout()
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, axs
 
     def _generate_data(self):
         """Generate the real pupil aberration data.

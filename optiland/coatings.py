@@ -5,12 +5,17 @@ The coatings module contains classes for modeling optical coatings.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.jones import JonesFresnel
 from optiland.materials import BaseMaterial
-from optiland.rays import RealRays
+
+if TYPE_CHECKING:
+    from optiland.rays import RealRays
 
 
 class BaseCoating(ABC):

@@ -9,6 +9,8 @@ system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from scipy.spatial.transform import Rotation as R
 
 import optiland.backend as be
@@ -46,7 +48,7 @@ class CoordinateSystem:
         rx: float = 0,
         ry: float = 0,
         rz: float = 0,
-        reference_cs: "CoordinateSystem" = None,
+        reference_cs: CoordinateSystem = None,
     ):
         self.x = be.array(x)
         self.y = be.array(y)

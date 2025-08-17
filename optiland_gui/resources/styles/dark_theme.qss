@@ -32,23 +32,30 @@ QMainWindow::separator:hover {
     background-color: #007ACC; 
 }
 
+QDockWidget {
+    border: 2px solid #007ACC;
+    border-radius: 4px;
+}
+
+QDockWidget > QWidget {
+    background-color: #2E2E2E;
+    border-bottom: 2px solid #4A4A4A;
+    border-left: 2px solid #4A4A4A;
+    border-right: 2px solid #4A4A4A;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
 QDockWidget::title {
-    background-color: #3C3C3C; /* var(--secondary-color) */
     color: #E0E0E0; /* var(--text-color) */
     padding: 6px 10px;
-    border: 1px solid #4A4A4A; /* var(--border-color) */
-    border-bottom: none; 
+    border: none;
 }
 
 QDockWidget::title:focus { /* Added for focused dock title */
     background-color: #2E2E2E; /* var(--surface-color) */
     border-top: 2px solid #007ACC; /* var(--primary-color), made consistent with light theme focus */
     padding-top: 5px; /* Adjust padding for thicker border */
-}
-
-QDockWidget::float-button, QDockWidget::close-button {
-    background-color: #5A5A5A;
-    border-radius: 2px;
 }
 
 /* === Custom Title Bar Styles === */
@@ -63,6 +70,7 @@ QDockWidget::float-button, QDockWidget::close-button {
 #TitleBarOptilandLabel {
     color: #E0E0E0; /* --main-text */
     font-weight: bold;
+    font-size: 12pt;
     padding-left: 5px; /* Alignment */
     background-color: transparent; /* Ensure no overriding background from parent QWidget style */
 }
@@ -71,9 +79,9 @@ QDockWidget::float-button, QDockWidget::close-button {
 #TitleBarMenuBar {
     color: #E0E0E0; /* --main-text: Text color for top-level menu bar items */
     background-color: transparent; /* Blend with CustomTitleBar background */
-    padding: 0px;
+    
     margin: 0px;
-    font-size: 9pt; /* Match general font size */
+    font-size: 10pt; /* Match general font size */
 }
 
 /* Individual top-level items in the #TitleBarMenuBar (e.g., "File", "Edit") */
@@ -598,7 +606,71 @@ QTableWidget QLineEdit {
     padding: 0px;
     margin: 0px;
     border: none;
-    border-radius: 0px;
+    border-radius: 1px;
     background-color: #3C3C3C;
     color: #E0E0E0; 
+}
+
+/* === Custom Dock Widget Title Bar (Dark) === */
+QWidget#CustomDockTitleBar {
+    background-color: #4A4A4A; /* Dark gray background */
+    border: 5px solid #4A4A4A;
+    border-bottom: 1px solid #2E2E2E; /* Match surface color for seamless look */
+    padding: 0px 0px; /* Top/bottom, left/right padding */
+    height: 30px; /* Fixed height for title bar */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QWidget#CustomDockTitleBar QLabel {
+    color: #E0E0E0; /* Light text */
+    font-weight: bold;
+    font-size: 9pt; 
+    padding-left: 6px;
+    letter-spacing: 0.5px; /* Spacing between letters */
+    font-family: 'Segoe UI'; /* Modern font */
+}
+
+/* Dock Title Buttons */
+#DockMinimizeButton, #DockUndockButton, #DockCloseButton {
+    min-width: 10px;
+    max-width: 10px;
+    min-height: 10px;
+    max-height: 10px;
+    border-radius: 5px; /* Makes it a circle - half of width/height */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 0px 1px; /* Spacing between buttons */
+    padding: 0px;
+}
+
+#DockMinimizeButton:hover, #DockUndockButton:hover, #DockCloseButton:hover {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    /* Removed transform property as it's not supported in Qt stylesheets */
+}
+
+#DockMinimizeButton { background-color: #D9D9D9; } /* Green */
+#DockUndockButton { background-color: #F48F4F; } /* Yellow */
+#DockCloseButton { background-color: #ED695E; } /* Red */
+
+QFrame#TitleBarSeparator {
+    background-color: #E0E0E0; /* Change this color */
+    max-width: 2px;           /* This is the thickness */
+    max-height: 15px;         /* This is the length/height */
+    border: none;
+}
+
+/* --- Title Bar Icon-Only Buttons --- */
+QToolButton#TitleBarSettingsButton,
+QToolButton#TitleBarGitHubButton,
+QToolButton#TitleBarHelpButton {
+    background-color: transparent;
+    border: none;
+    padding: 2px;
+}
+
+QToolButton#TitleBarSettingsButton:hover,
+QToolButton#TitleBarGitHubButton:hover,
+QToolButton#TitleBarHelpButton:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Faint highlight on hover */
+    border-radius: 4px;
 }

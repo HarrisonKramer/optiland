@@ -10,6 +10,8 @@ absorption based on the surface properties and materials involved.
 Kramer Harrison, 2023
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry

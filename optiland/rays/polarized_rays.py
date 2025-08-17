@@ -7,6 +7,8 @@ polarized rays in three-dimensional space. The class inherits from the
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.rays.polarization_state import PolarizationState
 from optiland.rays.real_rays import RealRays

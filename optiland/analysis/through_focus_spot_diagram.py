@@ -6,6 +6,8 @@ analysis, calculating the spot diagram at various focal planes.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -124,10 +126,27 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         )
         return spot_diagram_at_focus.data
 
-    def view(self, fig_to_plot_on=None, figsize_per_plot=(3, 3), buffer=1.05):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize_per_plot: tuple[float, float] = (3, 3),
+        buffer: float = 1.05,
+    ) -> tuple[plt.Figure, list[plt.Axes]]:
         """
         Visualizes the through-focus spot diagrams, either in a new window or on a
         provided GUI figure.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): A matplotlib figure to plot on.
+                If None, a new figure will be created.
+            figsize_per_plot (tuple[float, float], optional): Size of each subplot
+            in inches
+                (width, height). Defaults to (3, 3).
+            buffer (float, optional): Scaling buffer applied to the maximum radius
+                for axis limits. Defaults to 1.05.
+
+        Returns:
+            tuple[plt.Figure, list[plt.Axes]]: The figure and axes used for plotting.
         """
         is_gui_embedding = fig_to_plot_on is not None
         if not self._validate_view_prerequisites():
@@ -194,11 +213,9 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         )
         current_fig.tight_layout(rect=[0, 0.03, 1, 0.97])
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, current_fig.get_axes()
 
     def _validate_view_prerequisites(self):
         """Validates prerequisites before plotting.
@@ -217,7 +234,9 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             return False
         return True
 
-    def _create_subplot_grid(self, num_fields, num_steps, figsize_per_plot):
+    def _create_subplot_grid(
+        self, num_fields: int, num_steps: int, figsize_per_plot: tuple[float, float]
+    ) -> tuple[plt.Figure, list[plt.Axes]]:
         """Creates a 2D grid of subplots.
 
         Args:
@@ -238,7 +257,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         )
         return fig, axs
 
-    def _get_plot_axis_labels(self):
+    def _get_plot_axis_labels(self) -> tuple[str, str]:
         """Determines axis labels based on image surface orientation.
 
         Returns:
@@ -251,7 +270,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             return "U (mm)", "V (mm)"
         return "X (mm)", "Y (mm)"
 
-    def _compute_global_axis_limit(self, buffer):
+    def _compute_global_axis_limit(self, buffer: float) -> float:
         """Computes a global axis limit for consistent plot scaling.
 
         Considers the maximum geometric radius of spot positions
@@ -276,7 +295,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                         max_r_sq = max(max_r_sq, be.to_numpy(be.max(r_sq)).item())
         return np.sqrt(max_r_sq) * buffer if max_r_sq > 0 else 0.01
 
-    def _get_spot_centroid(self, field_data):
+    def _get_spot_centroid(self, field_data: list) -> tuple[float, float]:
         """Computes the centroid of spot data for the primary wavelength.
 
         Uses intensity-weighted centroid unless all rays have zero intensity,
@@ -300,7 +319,17 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             cx = cy = 0.0
         return cx, cy
 
-    def _plot_wavelengths(self, ax, field_data, cx, cy, i, j, handles, labels):
+    def _plot_wavelengths(
+        self,
+        ax: plt.Axes,
+        field_data: list,
+        cx: float,
+        cy: float,
+        i: int,
+        j: int,
+        handles: list,
+        labels: list,
+    ):
         """Plots rays for all wavelengths, centered at the primary centroid.
 
         Args:
@@ -333,7 +362,16 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                     labels.append(f"{wl:.4f} µm")
 
     def _configure_subplot(
-        self, ax, field, defocus, i, j, num_fields, x_label, y_label, limit
+        self,
+        ax: plt.Axes,
+        field: tuple,
+        defocus: float,
+        i: int,
+        j: int,
+        num_fields: int,
+        x_label: str,
+        y_label: str,
+        limit: float,
     ):
         """Applies titles, labels, and axis limits to a subplot.
 
@@ -364,7 +402,14 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         ax.set_xlim(-limit, limit)
         ax.set_ylim(-limit, limit)
 
-    def _add_legend(self, fig, handles, labels, num_fields, figsize_per_plot):
+    def _add_legend(
+        self,
+        fig: plt.Figure,
+        handles: list,
+        labels: list,
+        num_fields: int,
+        figsize_per_plot: tuple[float, float],
+    ):
         """Adds a wavelength legend below the plot grid.
 
         Args:
