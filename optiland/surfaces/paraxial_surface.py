@@ -74,6 +74,10 @@ class ParaxialSurface(Surface):
             RealRays: The refracted rays.
 
         """
+        # add optical path length - workaround for now
+        # TODO: develop more robust method
+        rays.opd = rays.opd - (rays.x**2 + rays.y**2) / (2 * self.f * rays.N)
+
         n1 = self.material_pre.n(rays.w)
 
         n2 = -n1 if self.is_reflective else self.material_post.n(rays.w)
@@ -86,13 +90,6 @@ class ParaxialSurface(Surface):
 
         L = ux2
         M = uy2
-
-        # Add optical path difference
-        Gx = n2 * ux2 - n1 * ux1
-        Gy = n2 * uy2 - n1 * uy1
-        # Straight line path integral from (0,0) to (x,y):
-        deltaS = 0.5 * (Gx * rays.x + Gy * rays.y)  # approx. for slowly varying G
-        rays.opd = rays.opd + deltaS
 
         # only normalize if required
         if self.bsdf or self.coating or isinstance(rays, PolarizedRays):
