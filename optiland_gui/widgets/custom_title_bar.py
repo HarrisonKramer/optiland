@@ -8,6 +8,8 @@ a main menu bar and project information label.
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import webbrowser
 
 from PySide6.QtCore import QSize, Qt, Signal

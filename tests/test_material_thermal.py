@@ -69,7 +69,7 @@ class TestMaterialFileThermal:
         material = materials.Material("N-BK7")
         wavelength = 0.55
         temp_c = 30.0
-        
+
         # Calculate with explicit pressure of 1.0
         n_with_pressure = material.n(wavelength, temp_c, 1.0)
         # Calculate with pressure=None
@@ -85,14 +85,14 @@ class TestMaterialFileThermal:
         material = materials.Material("N-BK7")
         wavelength = 0.55
         # Use the material's reference temperature
-        temp_c = material._t0 # 20.0 C
+        temp_c = material._t0  # 20.0 C
         pressure_atm = 1.0
 
         # Get the uncorrected value
         base_n = material.n(wavelength, temperature=None)
         # Get the value corrected at the reference temperature
         calculated_n = material.n(wavelength, temp_c, pressure_atm)
-        
+
         # The result should be the same as the base refractive index
         assert_allclose(calculated_n, base_n)
 
@@ -138,7 +138,12 @@ class TestMaterialFileThermal:
         # 3. Base relative index (using formula 2 for N-BAF4)
         c = material.coefficients
         wl2 = waverel**2
-        n2 = 1.0 + c[1] * wl2 / (wl2 - c[2]) + c[3] * wl2 / (wl2 - c[4]) + c[5] * wl2 / (wl2 - c[6])
+        n2 = (
+            1.0
+            + c[1] * wl2 / (wl2 - c[2])
+            + c[3] * wl2 / (wl2 - c[4])
+            + c[5] * wl2 / (wl2 - c[6])
+        )
         base_relative_n = be.sqrt(n2)
 
         # 4. Absolute index at reference
@@ -150,7 +155,7 @@ class TestMaterialFileThermal:
         n_sq_minus_1 = n_absolute_reference**2 - 1.0
         two_n = 2.0 * n_absolute_reference
         term1 = c_therm[0] + c_therm[1] * delta_t + c_therm[2] * delta_t**2
-        term2 = (c_therm[3] + c_therm[4] * delta_t) / (wavelength**2 - c_therm[5]**2)
+        term2 = (c_therm[3] + c_therm[4] * delta_t) / (wavelength**2 - c_therm[5] ** 2)
         dn_abs = (n_sq_minus_1 / two_n) * (term1 + term2) * delta_t
 
         # 6. Corrected absolute index

@@ -8,6 +8,10 @@ tree to switch between different property editors.
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -16,7 +20,6 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
     QHeaderView,
-    QLabel,
     QPushButton,
     QSizePolicy,
     QStackedWidget,
@@ -28,7 +31,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .optiland_connector import OptilandConnector
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SystemPropertiesPanel(QWidget):
@@ -49,17 +53,26 @@ class SystemPropertiesPanel(QWidget):
     """
 
     def __init__(self, connector: OptilandConnector, parent=None):
-        """
-        Initializes the SystemPropertiesPanel.
-
-        Args:
-            connector (OptilandConnector): The connector to the main application logic.
-            parent (QWidget, optional): The parent widget. Defaults to None.
-        """
+        """Initializes the SystemPropertiesPanel."""
         super().__init__(parent)
         self.connector = connector
         self.setWindowTitle("System Properties")
 
+        self._init_ui()
+        self._create_editor_pages()
+
+        self.navTree.itemClicked.connect(self.on_nav_item_clicked)
+        self.navTree.expandAll()
+        if self.navTree.topLevelItemCount() > 0:
+            self.navTree.setCurrentItem(self.navTree.topLevelItem(0))
+            self.stackedWidget.setCurrentIndex(0)
+
+        self.connector.opticLoaded.connect(self.load_properties)
+        self.connector.opticChanged.connect(self.load_properties)
+
+    def _init_ui(self):
+        """Initializes the main layout, navigation tree,
+        and stacked widget."""
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -74,6 +87,9 @@ class SystemPropertiesPanel(QWidget):
         )
         main_layout.addWidget(self.stackedWidget)
 
+    def _create_editor_pages(self):
+        """Creates and adds all the property editor pages to the
+        navigation tree and stacked widget."""
         self.apertureEditor = ApertureEditor(self.connector)
         self.fieldsEditor = FieldsEditor(self.connector)
         self.wavelengthsEditor = WavelengthsEditor(self.connector)
@@ -81,30 +97,6 @@ class SystemPropertiesPanel(QWidget):
         self.add_nav_item("Aperture", self.apertureEditor)
         self.add_nav_item("Fields", self.fieldsEditor)
         self.add_nav_item("Wavelengths", self.wavelengthsEditor)
-
-        for placeholder_name in [
-            "Environment",
-            "Polarization",
-        ]:
-            placeholder_widget = QWidget()
-            placeholder_widget.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
-            )
-            placeholder_layout = QVBoxLayout(placeholder_widget)
-            placeholder_layout.addWidget(
-                QLabel(f"{placeholder_name} Properties (Placeholder)")
-            )
-            placeholder_layout.addStretch()
-            self.add_nav_item(placeholder_name, placeholder_widget)
-
-        self.navTree.itemClicked.connect(self.on_nav_item_clicked)
-        self.navTree.expandAll()
-        if self.navTree.topLevelItemCount() > 0:
-            self.navTree.setCurrentItem(self.navTree.topLevelItem(0))
-            self.stackedWidget.setCurrentIndex(0)
-
-        self.connector.opticLoaded.connect(self.load_properties)
-        self.connector.opticChanged.connect(self.load_properties)
 
     def add_nav_item(self, name, widget):
         """
@@ -254,12 +246,25 @@ class FieldsEditor(PropertyEditorBase):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
+        self._create_type_selector(main_layout)
+        self._create_fields_table(main_layout)
+        self._create_control_buttons(main_layout)
+
+        self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change)
+        self.btnAddField.clicked.connect(self.add_field)
+        self.btnRemoveField.clicked.connect(self.remove_field)
+        self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
+
+    def _create_type_selector(self, parent_layout):
+        """Creates the field type dropdown menu."""
         form_layout = QFormLayout()
         self.cmbFieldType = QComboBox()
         self.cmbFieldType.addItems(["angle", "object_height"])
         form_layout.addRow("Field Type:", self.cmbFieldType)
-        main_layout.addLayout(form_layout)
+        parent_layout.addLayout(form_layout)
 
+    def _create_fields_table(self, parent_layout):
+        """Creates the table for editing field points."""
         self.tableFields = QTableWidget()
         self.tableFields.setColumnCount(4)
         self.tableFields.setHorizontalHeaderLabels(
@@ -268,8 +273,10 @@ class FieldsEditor(PropertyEditorBase):
         self.tableFields.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
-        main_layout.addWidget(self.tableFields)
+        parent_layout.addWidget(self.tableFields)
 
+    def _create_control_buttons(self, parent_layout):
+        """Creates the Add, Remove, and Apply buttons."""
         button_layout = QHBoxLayout()
         self.btnAddField = QPushButton("Add Field")
         self.btnRemoveField = QPushButton("Remove Field")
@@ -277,12 +284,7 @@ class FieldsEditor(PropertyEditorBase):
         button_layout.addWidget(self.btnAddField)
         button_layout.addWidget(self.btnRemoveField)
         button_layout.addWidget(self.btnApplyFields)
-        main_layout.addLayout(button_layout)
-
-        self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change)
-        self.btnAddField.clicked.connect(self.add_field)
-        self.btnRemoveField.clicked.connect(self.remove_field)
-        self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
+        parent_layout.addLayout(button_layout)
 
     @Slot()
     def load_data(self):
@@ -348,43 +350,53 @@ class FieldsEditor(PropertyEditorBase):
             self.connector.opticChanged.emit()
             print(f"Field at row {current_row} removed.")
 
+    def _update_field_from_row(self, row_index):
+        """Reads data from a table row and updates the corresponding field object.
+        Returns True if a change was made."""
+        try:
+            x = float(self.tableFields.item(row_index, 0).text())
+            y = float(self.tableFields.item(row_index, 1).text())
+            vx = float(self.tableFields.item(row_index, 2).text())
+            vy = float(self.tableFields.item(row_index, 3).text())
+
+            field_obj = self.connector.get_optic().fields.fields[row_index]
+            if (
+                field_obj.x != x
+                or field_obj.y != y
+                or field_obj.vx != vx
+                or field_obj.vy != vy
+            ):
+                field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = x, y, vx, vy
+                return True
+        except (ValueError, AttributeError) as e:
+            print(f"Invalid data in fields table row {row_index + 1}: {e}")
+            # Re-raise the exception to be handled by the caller
+            raise ValueError(f"Invalid data in row {row_index + 1}") from e
+        return False
+
     @Slot()
     def apply_table_field_changes(self):
         """Applies changes from the fields table to the optical system."""
         optic = self.connector.get_optic()
-        if optic and optic.fields:
-            if self.tableFields.rowCount() == optic.fields.num_fields:
-                changed = False
-                for i in range(self.tableFields.rowCount()):
-                    try:
-                        x = float(self.tableFields.item(i, 0).text())
-                        y = float(self.tableFields.item(i, 1).text())
-                        vx = float(self.tableFields.item(i, 2).text())
-                        vy = float(self.tableFields.item(i, 3).text())
+        if not (optic and optic.fields):
+            return
 
-                        field_obj = optic.fields.fields[i]
-                        if (
-                            field_obj.x != x
-                            or field_obj.y != y
-                            or field_obj.vx != vx
-                            or field_obj.vy != vy
-                        ):
-                            field_obj.x, field_obj.y, field_obj.vx, field_obj.vy = (
-                                x,
-                                y,
-                                vx,
-                                vy,
-                            )
-                            changed = True
-                    except (ValueError, AttributeError):
-                        print(f"Invalid data in fields table row {i}")
-                        self.load_data()
-                        return
-                if changed:
-                    self.connector.opticChanged.emit()
-                    print("Field table changes applied.")
-            else:
-                self.load_data()
+        if self.tableFields.rowCount() != optic.fields.num_fields:
+            self.load_data()  # Mismatch, so reload to be safe
+            return
+
+        any_changed = False
+        try:
+            for i in range(self.tableFields.rowCount()):
+                if self._update_field_from_row(i):
+                    any_changed = True
+        except ValueError:
+            self.load_data()  # Reload table on error to show original valid data
+            return
+
+        if any_changed:
+            self.connector.opticChanged.emit()
+            print("Field table changes applied.")
 
 
 class WavelengthsEditor(PropertyEditorBase):
@@ -396,6 +408,16 @@ class WavelengthsEditor(PropertyEditorBase):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
+        self._create_wavelengths_table(main_layout)
+        self._create_control_buttons(main_layout)
+
+        self.btnAddWavelength.clicked.connect(self.add_wavelength)
+        self.btnRemoveWavelength.clicked.connect(self.remove_wavelength)
+        self.btnSetPrimary.clicked.connect(self.set_primary_wavelength)
+        self.btnApplyWavelengths.clicked.connect(self.apply_table_wavelength_changes)
+
+    def _create_wavelengths_table(self, parent_layout):
+        """Creates the table for editing wavelengths."""
         self.tableWavelengths = QTableWidget()
         self.tableWavelengths.setColumnCount(3)
         self.tableWavelengths.setHorizontalHeaderLabels(
@@ -410,24 +432,20 @@ class WavelengthsEditor(PropertyEditorBase):
         self.tableWavelengths.setSelectionMode(
             QAbstractItemView.SelectionMode.SingleSelection
         )
-        main_layout.addWidget(self.tableWavelengths)
+        parent_layout.addWidget(self.tableWavelengths)
 
+    def _create_control_buttons(self, parent_layout):
+        """Creates the control buttons for managing wavelengths."""
         button_layout = QHBoxLayout()
         self.btnAddWavelength = QPushButton("Add Wavelength")
         self.btnRemoveWavelength = QPushButton("Remove Wavelength")
         self.btnSetPrimary = QPushButton("Set Selected as Primary")
         self.btnApplyWavelengths = QPushButton("Apply Wavelength Changes")
-
         button_layout.addWidget(self.btnAddWavelength)
         button_layout.addWidget(self.btnRemoveWavelength)
         button_layout.addWidget(self.btnSetPrimary)
         button_layout.addWidget(self.btnApplyWavelengths)
-        main_layout.addLayout(button_layout)
-
-        self.btnAddWavelength.clicked.connect(self.add_wavelength)
-        self.btnRemoveWavelength.clicked.connect(self.remove_wavelength)
-        self.btnSetPrimary.clicked.connect(self.set_primary_wavelength)
-        self.btnApplyWavelengths.clicked.connect(self.apply_table_wavelength_changes)
+        parent_layout.addLayout(button_layout)
 
     @Slot()
     def load_data(self):

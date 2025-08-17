@@ -10,6 +10,8 @@ Kramer Harrison, 2025
 """
 
 # common aliases for ndarray and array_equal across backends --
+from __future__ import annotations
+
 import numpy as _np
 
 from optiland.backend import numpy_backend

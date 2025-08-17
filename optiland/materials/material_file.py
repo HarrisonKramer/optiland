@@ -6,6 +6,8 @@ YAML file from the refractiveindex.info database.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import contextlib
 import os
 from io import StringIO
@@ -452,59 +454,71 @@ class MaterialFile(BaseMaterial):
         else:
             raise ValueError("Multiple refractive index formulas found.")
 
-    def _parse_file(self, data):
-        """Parse the material file data."""
-        for sub_data in data["DATA"]:
-            sub_data_type = sub_data["type"]
+    def _parse_file(self, data: dict) -> None:
+        """Parse a material file's structured data.
 
-            # Parse the data based on the type
-            if sub_data_type.startswith("formula "):
-                self.coefficients = be.array(
-                    [float(k) for k in sub_data["coefficients"].split()]
-                )
-                self.coefficients = be.reshape(self.coefficients, (-1, 1))
-                self._set_formula_type(sub_data_type)
+        Args:
+            data (dict): Dictionary containing parsed JSON/YAML material data.
+        """
+        for sub_data in data.get("DATA", []):
+            self._parse_sub_data(sub_data)
 
-            # Parse tabulated data
-            elif sub_data_type.startswith("tabulated"):
-                data_file = StringIO(sub_data["data"])
-                # Use np.loadtxt and then convert to backend array
-                numpy_arr = np.loadtxt(data_file)
-                arr = be.asarray(numpy_arr)
-                # Ensure arr is at least 2D for consistent indexing
-                if arr.ndim == 1:
-                    arr = be.reshape(arr, (1, -1) if arr.shape[0] > 0 else (0, 0))
+        self._parse_thermal_dispersion(data)
+        self._parse_reference(data)
 
-                if sub_data_type == "tabulated n":
-                    self._n_wavelength = arr[:, 0]
-                    self._n = arr[:, 1]
-                    self._set_formula_type(sub_data_type)
+    def _parse_sub_data(self, sub_data: dict) -> None:
+        """Parse a single DATA block from the material file."""
+        sub_data_type = sub_data.get("type", "")
 
-                elif sub_data_type == "tabulated k":
-                    self._k_wavelength = arr[:, 0]
-                    self._k = arr[:, 1]
+        if sub_data_type.startswith("formula "):
+            self._parse_formula_data(sub_data, sub_data_type)
+        elif sub_data_type.startswith("tabulated"):
+            self._parse_tabulated_data(sub_data, sub_data_type)
 
-                elif sub_data_type == "tabulated nk":
-                    self._n_wavelength = arr[:, 0]
-                    self._k_wavelength = arr[:, 0]
-                    self._n = arr[:, 1]
-                    self._k = arr[:, 2]
-                    self._set_formula_type(sub_data_type)
+    def _parse_formula_data(self, sub_data: dict, sub_data_type: str) -> None:
+        """Parse formula-based material data."""
+        self.coefficients = be.array(
+            [float(k) for k in sub_data.get("coefficients", "").split()]
+        )
+        self.coefficients = be.reshape(self.coefficients, (-1, 1))
+        self._set_formula_type(sub_data_type)
 
+    def _parse_tabulated_data(self, sub_data: dict, sub_data_type: str) -> None:
+        """Parse tabulated material data."""
+        data_file = StringIO(sub_data.get("data", ""))
+        numpy_arr = np.loadtxt(data_file)
+        arr = be.asarray(numpy_arr)
+
+        # Ensure at least 2D shape for consistent indexing
+        if arr.ndim == 1:
+            arr = be.reshape(arr, (1, -1) if arr.shape[0] > 0 else (0, 0))
+
+        if sub_data_type == "tabulated n":
+            self._n_wavelength, self._n = arr[:, 0], arr[:, 1]
+            self._set_formula_type(sub_data_type)
+        elif sub_data_type == "tabulated k":
+            self._k_wavelength, self._k = arr[:, 0], arr[:, 1]
+        elif sub_data_type == "tabulated nk":
+            self._n_wavelength = self._k_wavelength = arr[:, 0]
+            self._n, self._k = arr[:, 1], arr[:, 2]
+            self._set_formula_type(sub_data_type)
+
+    def _parse_thermal_dispersion(self, data: dict) -> None:
+        """Parse thermal dispersion and reference temperature data."""
         try:
-            # thermal dispersion coefficents
             coeff = data["SPECS"]["thermal_dispersion"][0]
-            if coeff["type"].startswith("Schott"):
+            if coeff.get("type", "").startswith("Schott"):
                 self.thermdispcoef = be.array(
-                    [float(k) for k in coeff["coefficients"].split()]
+                    [float(k) for k in coeff.get("coefficients", "").split()]
                 )
                 self.thermdispcoef = be.reshape(self.thermdispcoef, (-1, 1))
-            # reference temperature
+
             self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
         except KeyError:
-            # print("Thermal dispersion data not found")
-            pass
-        # Parse reference info, if available
+            pass  # Optional field, safe to ignore
+
+    def _parse_reference(self, data: dict) -> None:
+        """Parse optional reference information."""
         with contextlib.suppress(KeyError):
             self.reference_data = data["REFERENCE"]
 

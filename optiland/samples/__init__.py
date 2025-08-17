@@ -1,5 +1,7 @@
 """This package provides a collection of predefined sample optical systems."""
 
+from __future__ import annotations
+
 from .eyepieces import EyepieceErfle
 from .infrared import (
     InfraredTriplet,

@@ -7,6 +7,10 @@ such as radius, thickness, and material.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QEvent, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -25,7 +29,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .optiland_connector import OptilandConnector
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SurfacePropertiesWidget(QWidget):
@@ -37,71 +42,67 @@ class SurfacePropertiesWidget(QWidget):
         self.connector = connector
         self.setObjectName("SurfacePropertiesWidget")
         self.setMinimumWidth(750)
-
-        # Add size constraints
         self.setMinimumHeight(100)
         self.setMaximumHeight(200)
 
+        self.input_widgets = {}
+        self._populate_properties_form()
+
+    def _create_parameter_input(self, name, value):
+        """Creates a configured QLineEdit for a given surface parameter."""
+        line_edit = QLineEdit()
+        line_edit.setMaximumWidth(60)
+
+        if isinstance(value, (list | tuple)) or hasattr(value, "tolist"):
+            list_val = value.tolist() if hasattr(value, "tolist") else value
+            line_edit.setText(str(list_val))
+            line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
+        else:
+            line_edit.setText(f"{value:.6f}")
+
+        line_edit.editingFinished.connect(self.apply_changes)
+        self.input_widgets[name] = line_edit
+        return line_edit
+
+    def _populate_properties_form(self):
+        """Creates and populates the form layout with surface parameter widgets."""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 8, 15, 8)
-
-        # Create a horizontal layout to hold multiple form layouts
         columns_layout = QHBoxLayout()
-        columns_layout.setSpacing(20)  # Space between columns
+        columns_layout.setSpacing(20)
         main_layout.addLayout(columns_layout)
 
         params = self.connector.get_surface_geometry_params(self.row)
-        self.input_widgets = {}
 
         if not params:
             form_layout = QFormLayout()
-            form_layout.setHorizontalSpacing(15)
-            form_layout.setVerticalSpacing(5)
             form_layout.addRow(
                 QLabel("No additional properties for this surface type.")
             )
             columns_layout.addLayout(form_layout)
-        else:
-            # organize properties into columns with maximum 2 properties per column
-            items_per_column = 2
-            param_items = list(params.items())
+            return
 
-            # maximum number of columns needed
-            num_columns = (len(param_items) + items_per_column - 1) // items_per_column
+        items_per_column = 2
+        param_items = list(params.items())
+        num_columns = (len(param_items) + items_per_column - 1) // items_per_column
 
-            # Create and populate each column
-            for col in range(num_columns):
-                form_layout = QFormLayout()
-                form_layout.setHorizontalSpacing(15)
-                form_layout.setVerticalSpacing(5)
+        for col in range(num_columns):
+            form_layout = QFormLayout()
+            form_layout.setHorizontalSpacing(15)
+            form_layout.setVerticalSpacing(5)
 
-                # Calculate start and end indices for this column
-                start_idx = col * items_per_column
-                end_idx = min((col + 1) * items_per_column, len(param_items))
+            start_idx = col * items_per_column
+            end_idx = min((col + 1) * items_per_column, len(param_items))
 
-                # Add properties to this column
-                for i in range(start_idx, end_idx):
-                    name, value = param_items[i]
-                    label_text = name + ":"
-                    line_edit = QLineEdit()
-                    line_edit.setMaximumWidth(60)  # size of the input field
+            for i in range(start_idx, end_idx):
+                name, value = param_items[i]
+                label_text = name + ":"
+                line_edit = self._create_parameter_input(name, value)
+                form_layout.addRow(label_text, line_edit)
 
-                    if isinstance(value, (list | tuple)) or hasattr(value, "tolist"):
-                        list_val = value.tolist() if hasattr(value, "tolist") else value
-                        line_edit.setText(str(list_val))
-                        line_edit.setPlaceholderText("e.g., [0.1, -0.2]")
-                    else:
-                        line_edit.setText(f"{value:.6f}")
+            columns_layout.addLayout(form_layout)
 
-                    line_edit.editingFinished.connect(self.apply_changes)  # auto-update
-                    form_layout.addRow(label_text, line_edit)
-                    self.input_widgets[name] = line_edit
-
-                # Add this column to the horizontal layout
-                columns_layout.addLayout(form_layout)
-
-            # Add a stretch at the end to align columns to the left
-            columns_layout.addStretch(1)
+        columns_layout.addStretch(1)
 
     @Slot()
     def apply_changes(self):
@@ -185,20 +186,26 @@ class LensEditor(QWidget):
         self.connector = connector
         self.setWindowTitle("Lens Editor")
         self.open_prop_source_row = -1
+
+        self._init_ui()
+        self.setup_table()
+        self.load_data()
+        self.connect_signals()
+
+    def _init_ui(self):
+        """Initializes the main UI components of the editor."""
         self.layout = QVBoxLayout(self)
         self.tableWidget = QTableWidget()
         self.tableWidget.installEventFilter(self)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.layout.addWidget(self.tableWidget)
+
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
         self.btnRemoveSurface = QPushButton("Remove Surface")
         self.buttonLayout.addWidget(self.btnAddSurface)
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
-        self.setup_table()
-        self.load_data()
-        self.connect_signals()
 
     def connect_signals(self):
         self.btnAddSurface.clicked.connect(self.add_surface_handler)
@@ -259,6 +266,51 @@ class LensEditor(QWidget):
         self.load_data()
         self.update_headers_on_selection()
 
+    def _process_table_cell(self, row, col_idx, header):
+        """Creates and configures the appropriate widget or item for a
+        single table cell."""
+        if col_idx == self.connector.COL_TYPE:
+            type_info = self.connector.get_surface_type_info(row)
+            params = self.connector.get_surface_geometry_params(row)
+            type_info["has_extra_params"] = bool(params)
+
+            widget = SurfaceTypeWidget(row, type_info, self.connector)
+            widget.surfaceTypeChanged.connect(
+                lambda nt, r=row: self.connector.set_surface_type(r, nt)
+            )
+            widget.propertiesIconClicked.connect(
+                lambda r=row: self.toggle_properties_widget(r)
+            )
+            self.tableWidget.setCellWidget(row, col_idx, widget)
+        else:
+            item_data = self.connector.get_surface_data(row, col_idx)
+            item = QTableWidgetItem(str(item_data) if item_data is not None else "")
+
+            # Determine if the cell should be editable
+            num_surfaces = self.connector.get_surface_count()
+            is_obj_or_img = row == 0 or row == num_surfaces - 1
+            is_non_editable_header = header in [
+                "Radius",
+                "Thickness",
+                "Material",
+                "Conic",
+                "Semi-Diameter",
+            ]
+            is_last_thickness = row == num_surfaces - 1 and header == "Thickness"
+
+            if (is_obj_or_img and is_non_editable_header) or is_last_thickness:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+            self.tableWidget.setItem(row, col_idx, item)
+
+    def _process_table_row(self, row_index):
+        """Populates a single row in the lens data editor table."""
+        self.tableWidget.setVerticalHeaderItem(
+            row_index, QTableWidgetItem(str(row_index + 1))
+        )
+        for col_idx, header in enumerate(self.connector.get_column_headers()):
+            self._process_table_cell(row_index, col_idx, header)
+
     @Slot()
     def load_data(self):
         self.tableWidget.blockSignals(True)
@@ -267,38 +319,7 @@ class LensEditor(QWidget):
         self.tableWidget.setRowCount(num_surfaces)
 
         for r in range(num_surfaces):
-            self.tableWidget.setVerticalHeaderItem(r, QTableWidgetItem(str(r + 1)))
-            for c_idx, header in enumerate(self.connector.get_column_headers()):
-                if c_idx == self.connector.COL_TYPE:
-                    type_info = self.connector.get_surface_type_info(r)
-
-                    # Force-check if this surface type has parameters
-                    if "has_extra_params" not in type_info:
-                        # Check if surface has geometry parameters
-                        params = self.connector.get_surface_geometry_params(r)
-                        type_info["has_extra_params"] = bool(params)
-
-                    widget = SurfaceTypeWidget(r, type_info, self.connector)
-                    widget.surfaceTypeChanged.connect(
-                        lambda nt, row=r: self.connector.set_surface_type(row, nt)
-                    )
-                    widget.propertiesIconClicked.connect(
-                        lambda row=r: self.toggle_properties_widget(row)
-                    )
-                    self.tableWidget.setCellWidget(r, c_idx, widget)
-                else:
-                    item_data = self.connector.get_surface_data(r, c_idx)
-                    item = QTableWidgetItem(
-                        str(item_data) if item_data is not None else ""
-                    )
-                    is_obj_or_img = r == 0 or r == num_surfaces - 1
-                    if (
-                        is_obj_or_img
-                        and header
-                        in ["Radius", "Thickness", "Material", "Conic", "Semi-Diameter"]
-                    ) or (r == num_surfaces - 1 and header == "Thickness"):
-                        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                    self.tableWidget.setItem(r, c_idx, item)
+            self._process_table_row(r)
 
         if self.open_prop_source_row != -1 and self.open_prop_source_row < num_surfaces:
             self._insert_properties_widget(self.open_prop_source_row)

@@ -7,16 +7,21 @@ Original concept by BuergiR, 2025
 Implemented in Optiland by Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import abc
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
-from matplotlib.colors import Colormap
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.colors import Colormap
 
 
 def _plot_angle_vs_height(
@@ -115,7 +120,7 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: str | int | float = "primary",
+        wavelength: str | float = "primary",
         num_points: int = 128,
     ):
         self.surface_idx = surface_idx
@@ -360,7 +365,7 @@ class PupilIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: str | int | float = "primary",
+        wavelength: str | float = "primary",
         field: tuple = (0, 0),
         num_points: int = 128,
     ):
@@ -442,7 +447,7 @@ class FieldIncidentAngleVsHeight(BaseAngleVsHeightAnalysis):
         optic,
         surface_idx: int = -1,
         axis: int = 1,
-        wavelength: str | int | float = "primary",
+        wavelength: str | float = "primary",
         pupil: tuple = (0, 0),
         num_points: int = 128,
     ):

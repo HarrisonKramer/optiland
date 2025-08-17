@@ -5,6 +5,8 @@ This module contains the base class for rays defined in a 3D space.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 

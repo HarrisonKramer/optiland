@@ -7,6 +7,8 @@ It generates a 2D sag map and 1D sag profiles along user-specified cross-section
 Manuel Fragata Mendes, june 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, ScalarFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
