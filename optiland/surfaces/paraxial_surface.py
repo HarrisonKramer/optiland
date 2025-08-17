@@ -13,14 +13,12 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.coatings import BaseCoating
-from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BaseGeometry
-from optiland.geometries.standard import StandardGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.scatter import BaseBSDF
-from optiland.surfaces.standard_surface import Surface  # Corrected import
+from optiland.surfaces.standard_surface import Surface
 
 
 class ParaxialSurface(Surface):
@@ -221,9 +219,9 @@ class ParaxialToThickLensConverter:
             - A BaseMaterial instance.
         center_thickness: The desired center thickness of the thick lens.
         lens_shape: The shape of the lens ("biconvex", "plano-convex",
-                        "convex-plano", "biconcave", "plano-concave",
-                        "concave-plano", "meniscus-convex", "meniscus-concave").
-                        For meniscus lenses, R1 is the more curved surface.
+            "convex-plano", "biconcave", "plano-concave", "concave-plano",
+            "meniscus-convex", "meniscus-concave"). For meniscus lenses, R1 is the more
+            curved surface. Defaults to "biconvex".
     """
 
     def __init__(
@@ -274,12 +272,10 @@ class ParaxialToThickLensConverter:
 
         This method will:
         1. Calculate the front and back radii of the thick lens.
-        2. Create two new standard surfaces.
-        3. Remove the original paraxial surface from the optic.
-        4. Insert the two new surfaces into the optic.
+        2. Remove the original paraxial surface from the optic.
+        3. Create and add two new surfaces to the optic.
         """
         r1, r2 = self._calculate_radii()
-        surface1, surface2 = self._create_surfaces(r1, r2)
 
         # Store original index before removal
         original_index = self._get_paraxial_surface_index()
@@ -287,13 +283,7 @@ class ParaxialToThickLensConverter:
             raise RuntimeError("Original paraxial surface not found in optic.")
 
         self._remove_paraxial_surface(original_index)
-        self._insert_new_surfaces(surface1, surface2, original_index)
-
-        # Update the optic to reflect changes (e.g., recalculate paraxial properties)
-        if hasattr(self.optic, "update"):
-            self.optic.update()
-
-        return surface1, surface2
+        self._add_surfaces(r1, r2, original_index)
 
     def _get_paraxial_surface_index(self):
         """Finds the index of the self.paraxial_surface in the optic's surface list."""
@@ -340,10 +330,7 @@ class ParaxialToThickLensConverter:
         f_target = self.original_focal_length
         d = self.center_thickness
 
-        if abs(f_target) < 1e-9:  # Effectively infinite focal length
-            # For an afocal system, typically R1 = R2 or both plano.
-            # This is ambiguous without more constraints for a single thick lens.
-            # Returning two plano surfaces for afocal case.
+        if abs(f_target) < 1e-9:
             if self.lens_shape in [
                 "biconvex",
                 "biconcave",
@@ -377,12 +364,11 @@ class ParaxialToThickLensConverter:
                 discriminant = b_quad**2 - 4 * a_quad * c_quad
                 if discriminant < 0:
                     raise ValueError("Biconvex: discriminant < 0, cannot find real R1.")
-                # Choose solution for R1 > 0 if P > 0 (converging)
-                # or R1 > 0 if P < 0 (diverging, unusual for biconvex name)
+
                 sol1 = (-b_quad + be.sqrt(discriminant)) / (2 * a_quad)
                 sol2 = (-b_quad - be.sqrt(discriminant)) / (2 * a_quad)
                 r1 = sol1 if sol1 > 0 else sol2
-                if r1 <= 0:  # If preferred sol isn't >0, try other, or raise
+                if r1 <= 0:
                     r1 = sol2 if sol2 > 0 else sol1
                     if r1 <= 0:
                         raise ValueError("Biconvex: No positive R1 solution found.")
@@ -425,7 +411,7 @@ class ParaxialToThickLensConverter:
                 sol1 = (-b_quad + be.sqrt(discriminant)) / (2 * a_quad)
                 sol2 = (-b_quad - be.sqrt(discriminant)) / (2 * a_quad)
                 r1 = sol1 if sol1 < 0 else sol2
-                if r1 >= 0:  # If preferred sol isn't <0, try other, or raise
+                if r1 >= 0:
                     r1 = sol2 if sol2 < 0 else sol1
                     if r1 >= 0:
                         raise ValueError("Biconcave: No negative R1 solution found.")
@@ -459,118 +445,41 @@ class ParaxialToThickLensConverter:
 
         return float(r1), float(r2)
 
-    def _create_surfaces(self, r1: float, r2: float):
+    def _add_surfaces(self, r1: float, r2: float, original_index: int):
         """
         Creates the two new standard Surface instances.
         Materials pre/post are set based on original paraxial surface context
         and the new lens material.
         """
-        original_material_pre = self.paraxial_surface.material_pre
         original_material_post = self.paraxial_surface.material_post
 
         # Surface 1: front surface of the thick lens
-        cs1 = CoordinateSystem()  # Will be updated by Optic during insertion
-        geom1 = StandardGeometry(radius=r1, coordinate_system=cs1)
-        surface1 = Surface(
-            geometry=geom1,
-            material_pre=original_material_pre,
-            material_post=self._material_instance,
+        self.optic.add_surface(
+            index=original_index,
+            radius=r1,
+            material=self._material_instance,
             is_stop=self.paraxial_surface.is_stop,
+            thickness=self.center_thickness,
             comment="Thick Lens - Surface 1",
         )
-        surface1.thickness = self.center_thickness  # Set thickness after instantiation
 
         # Surface 2: back surface of the thick lens
-        cs2 = CoordinateSystem()  # Will be updated by Optic during insertion
-        geom2 = StandardGeometry(radius=r2, coordinate_system=cs2)
-        surface2 = Surface(
-            geometry=geom2,
-            material_pre=self._material_instance,
-            material_post=original_material_post,
+        self.optic.add_surface(
+            index=original_index + 1,
+            radius=r2,
+            material=original_material_post,
             is_stop=False,  # Stop, if any, is on the first surface
+            thickness=self.paraxial_surface.thickness,
             comment="Thick Lens - Surface 2",
         )
-        # surface2.thickness is initialized to 0.0 by Surface.__init__
-        # and will be set correctly by _insert_new_surfaces
-
-        # The Optic().add_surface method will handle clearing other stops if
-        # surface1.is_stop is True when it's added.
-
-        return surface1, surface2
 
     def _remove_paraxial_surface(self, original_index: int):
         """
         Removes the original ParaxialSurface from the parent optic's
         surface_group using its index.
         """
-        # Basic check, SurfaceGroup.remove_surface has more robust checks
         if not (0 < original_index < len(self.optic.surface_group.surfaces)):
             raise IndexError(
                 f"Invalid index {original_index} for removing paraxial surface."
             )
         self.optic.surface_group.remove_surface(original_index)
-
-    def _insert_new_surfaces(
-        self, surface1: Surface, surface2: Surface, original_index: int
-    ):
-        """
-        Inserts the two new surfaces into the optic's surface_group.
-        Adjusts positions for geometric center alignment.
-        """
-        original_paraxial_z_pos = self.paraxial_surface.geometry.cs.z
-
-        # Thickness of surface2 (gap after it) is the original thickness
-        # that was after the paraxial surface.
-        surface2.thickness = self.paraxial_surface.thickness
-
-        # Insert surfaces
-        self.optic.add_surface(new_surface=surface1, index=original_index)
-        self.optic.add_surface(new_surface=surface2, index=original_index + 1)
-
-        # Adjust z-positions for center alignment.
-        # This relies on optic.update() being called afterwards to correctly
-        # propagate positions if relative positioning is used.
-        # Desired z for surface1 vertex:
-        desired_s1_z = original_paraxial_z_pos - (self.center_thickness / 2.0)
-
-        if original_index > 0:
-            # Adjust thickness of surface before s1
-            surface_before_s1 = self.optic.surface_group.surfaces[original_index - 1]
-
-            is_obj_at_inf = isinstance(
-                surface_before_s1, self.optic.object_surface.__class__
-            ) and be.isinf(surface_before_s1.thickness)
-
-            if not is_obj_at_inf:
-                # desired_s1_z = current_z_of_surface_before_s1 + new_thickness
-                new_thickness_before_s1 = desired_s1_z - surface_before_s1.geometry.cs.z
-                surface_before_s1.thickness = new_thickness_before_s1
-            elif abs(desired_s1_z) > 1e-9 and is_obj_at_inf:
-                # If object at inf, first optical surface is conventionally at z=0.
-                # If desired_s1_z is non-zero, center alignment might be off
-                # as optic.update() will likely place s1 at z=0.
-                print(
-                    f"Warning: Centering for thick lens after object@inf implies "
-                    f"first surface at z={desired_s1_z}. Optic update may "
-                    f"override this to z=0 if it's the first optical element."
-                )
-        else:  # surface1 is the new first optical element (original_index was 0)
-            # This means paraxial_surface was at index 0, which is
-            # unusual (object surface).
-            # Assuming original_index refers to index *after* object surface.
-            # If original_index is for the first *optical* surface (e.g. index 1):
-            obj_surface = self.optic.surface_group.surfaces[0]  # Object surface
-            if be.isinf(obj_surface.thickness):  # Object at infinity
-                if abs(desired_s1_z) > 1e-9:
-                    print(
-                        f"Warning: Centering for thick lens as first element "
-                        f"implies z={desired_s1_z}. Optic update may "
-                        f"override this to z=0."
-                    )
-            else:  # Finite object distance
-                # obj_surface.thickness is distance from object to first lens vertex
-                obj_surface.thickness = desired_s1_z
-
-        # Note: The final optic.update() in convert() is critical for these
-        # thickness adjustments to correctly set all z-positions.
-        pass
