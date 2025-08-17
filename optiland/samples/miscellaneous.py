@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.materials import IdealMaterial
 from optiland.optic import Optic

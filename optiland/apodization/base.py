@@ -6,6 +6,8 @@ simulations.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import abc
 
 

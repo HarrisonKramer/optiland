@@ -18,6 +18,8 @@ terms with even exponents, ensuring symmetry about the optical axis.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry

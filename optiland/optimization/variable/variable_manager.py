@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from optiland.optimization.variable import Variable
 
 

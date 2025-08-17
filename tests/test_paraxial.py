@@ -490,9 +490,9 @@ def get_optic_data():
                 "XPL": -20.237812690355327,
                 "XPD": 3.123730964467005,
                 "FNO": 6.47873542,
-                "invariant": -2.944675511067751  # TODO: check this value with literature
-            }
-        )
+                "invariant": -2.944675511067751,  # TODO: check this value with literature
+            },
+        ),
     ]
 
 

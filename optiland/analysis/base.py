@@ -6,6 +6,8 @@ classes in the Optiland package.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import abc
 
 

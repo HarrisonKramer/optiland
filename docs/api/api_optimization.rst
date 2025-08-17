@@ -54,10 +54,15 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.chebyshev_coeff
    optimization.variable.conic
    optimization.variable.decenter
+   optimization.variable.forbes_coeff
    optimization.variable.index
+   optimization.variable.material
+   optimization.variable.norm_radius
    optimization.variable.polynomial_coeff
    optimization.variable.radius
    optimization.variable.reciprocal_radius
    optimization.variable.thickness
    optimization.variable.tilt
+   optimization.variable.variable_manager
    optimization.variable.variable
+   optimization.variable.zernike_coeff

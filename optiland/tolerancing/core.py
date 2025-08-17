@@ -8,6 +8,8 @@ system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.operand import Operand
 from optiland.tolerancing.compensator import CompensatorOptimizer
 from optiland.tolerancing.perturbation import BaseSampler, Perturbation

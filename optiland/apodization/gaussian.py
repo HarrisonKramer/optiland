@@ -6,6 +6,8 @@ to scale the intensities of rays based on their position in the pupil.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 from .base import BaseApodization

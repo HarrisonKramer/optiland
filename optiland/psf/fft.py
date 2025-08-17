@@ -9,6 +9,8 @@ the base class.
 Kramer Harrison, 2023
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 import optiland.backend as be
@@ -61,6 +63,11 @@ class FFTPSF(BasePSF):
             computation (includes zero-padding). This determines the
             resolution of the PSF. Defaults to 1024. If not specified,
             it is calculated based on `num_rays`.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         pupils (list[be.ndarray]): A list of complex-valued pupil functions,
@@ -75,7 +82,17 @@ class FFTPSF(BasePSF):
                         by `Wavefront` for generating OPD/intensity data.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, grid_size=None):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=128,
+        grid_size=None,
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
         if grid_size is None:
             if num_rays < 32:
                 raise ValueError(
@@ -89,7 +106,13 @@ class FFTPSF(BasePSF):
             )
 
         super().__init__(
-            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
+            optic=optic,
+            field=field,
+            wavelength=wavelength,
+            num_rays=num_rays,
+            strategy=strategy,
+            remove_tilt=remove_tilt,
+            **kwargs,
         )
         self.grid_size = grid_size
         self.pupils = self._generate_pupils()

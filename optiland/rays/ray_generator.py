@@ -6,6 +6,8 @@ for tracing through an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays

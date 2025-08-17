@@ -7,13 +7,19 @@ run a sensitivity analysis on a Tolerancing object and visualize the results.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import optiland.backend as be
-from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.perturbation import RangeSampler
+
+if TYPE_CHECKING:
+    from optiland.tolerancing.core import Tolerancing
 
 
 class SensitivityAnalysis:

@@ -5,6 +5,8 @@ This module provides an encircled energy analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be

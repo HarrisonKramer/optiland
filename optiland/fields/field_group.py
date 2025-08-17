@@ -6,6 +6,8 @@ system.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 from .field import Field

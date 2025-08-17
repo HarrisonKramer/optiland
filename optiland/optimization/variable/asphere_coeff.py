@@ -8,6 +8,8 @@ optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 from optiland.optimization.variable.base import VariableBehavior

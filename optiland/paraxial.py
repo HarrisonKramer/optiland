@@ -14,6 +14,8 @@ space principle plane and F2 is the back focal point.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
