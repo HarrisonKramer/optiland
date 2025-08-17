@@ -9,13 +9,19 @@ operands.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from optiland.tolerancing.core import Tolerancing
 from optiland.tolerancing.sensitivity_analysis import SensitivityAnalysis
+
+if TYPE_CHECKING:
+    from optiland.tolerancing.core import Tolerancing
 
 
 class MonteCarlo(SensitivityAnalysis):

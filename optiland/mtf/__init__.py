@@ -6,6 +6,8 @@ using different methods.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from .fft import FFTMTF
 from .geometric import GeometricMTF
 from .huygens import HuygensMTF

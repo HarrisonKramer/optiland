@@ -5,6 +5,8 @@ Factory for creating solve objects.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.solves.chief_ray_height import ChiefRayHeightSolve
 from optiland.solves.marginal_ray_height import MarginalRayHeightSolve
 from optiland.solves.quick_focus import QuickFocusSolve

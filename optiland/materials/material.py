@@ -10,6 +10,8 @@ Kramer Harrison, 2024
 """
 
 # import pkg_resources
+from __future__ import annotations
+
 from importlib import resources
 
 import pandas as pd

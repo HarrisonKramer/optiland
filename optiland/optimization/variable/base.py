@@ -8,6 +8,8 @@ the optimization process.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 

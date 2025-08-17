@@ -11,12 +11,19 @@ to specify the type of the variable.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
 from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
 from optiland.optimization.variable.conic import ConicVariable
 from optiland.optimization.variable.decenter import DecenterVariable
+from optiland.optimization.variable.forbes_coeff import (
+    ForbesQ2dCoeffVariable,
+    ForbesQbfsCoeffVariable,
+)
 from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.material import MaterialVariable
+from optiland.optimization.variable.norm_radius import NormalizationRadiusVariable
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.variable.radius import RadiusVariable
 from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVariable
@@ -119,6 +126,9 @@ class Variable:
             "chebyshev_coeff": ChebyshevCoeffVariable,
             "zernike_coeff": ZernikeCoeffVariable,
             "reciprocal_radius": ReciprocalRadiusVariable,
+            "forbes_qbfs_coeff": ForbesQbfsCoeffVariable,
+            "forbes_q2d_coeff": ForbesQ2dCoeffVariable,
+            "norm_radius": NormalizationRadiusVariable,
         }
 
         variable_class = variable_types.get(self.type)
