@@ -6,6 +6,8 @@ surface.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.visualization.system.surface import Surface3D
 
 

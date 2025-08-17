@@ -16,6 +16,8 @@ where:
 Last Corrected by Manuel Fragata Mendes, July 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
@@ -276,7 +278,7 @@ class ToroidalGeometry(NewtonRaphsonGeometry):
         return geometry_dict
 
     @classmethod
-    def from_dict(cls, data: dict) -> "ToroidalGeometry":
+    def from_dict(cls, data: dict) -> ToroidalGeometry:
         """Creates a ToroidalGeometry from a dictionary representation.
 
         Args:

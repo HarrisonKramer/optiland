@@ -5,6 +5,8 @@ This module provides a spot diagram analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Literal
 

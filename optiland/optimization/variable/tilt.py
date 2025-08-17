@@ -7,6 +7,8 @@ tilt of a surface in an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

@@ -5,6 +5,8 @@ This module contains the OpticalSystem class for visualizing optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 from optiland.visualization.lens import Lens2D, Lens3D
 from optiland.visualization.mirror import Mirror3D

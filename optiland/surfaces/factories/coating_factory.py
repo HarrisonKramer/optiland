@@ -8,8 +8,14 @@ requirements.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from optiland.coatings import BaseCoating, FresnelCoating
-from optiland.materials import BaseMaterial
+
+if TYPE_CHECKING:
+    from optiland.materials import BaseMaterial
 
 
 class CoatingFactory:

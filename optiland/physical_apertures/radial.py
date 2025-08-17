@@ -6,6 +6,8 @@ aperture that clips rays based on their distance from the origin.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from numbers import Number
 
 from optiland.physical_apertures.base import BaseAperture

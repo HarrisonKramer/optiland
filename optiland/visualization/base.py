@@ -8,6 +8,8 @@ system and for generating visualizations.
 Manuel Fragata Mendes, June 2025
 """
 
+from __future__ import annotations
+
 import abc
 
 

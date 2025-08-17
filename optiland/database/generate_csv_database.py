@@ -5,6 +5,8 @@ the Material class in optiland.materials.py for more information.
 """
 
 # pragma: no cover
+from __future__ import annotations
+
 import os
 from io import StringIO
 

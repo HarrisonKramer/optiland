@@ -5,6 +5,8 @@ Defines the base class for solve operations.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 
