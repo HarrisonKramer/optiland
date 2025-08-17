@@ -6,6 +6,8 @@ system.
 Kramer Harrison, 2023
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 

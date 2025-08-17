@@ -7,6 +7,8 @@ list.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import importlib
 
 import numpy as np

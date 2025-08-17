@@ -6,6 +6,8 @@ of an optical system based on spot diagram data.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
@@ -76,10 +78,11 @@ class GeometricMTF(SpotDiagram):
         self._resolved_wavelength_value = resolved_wavelength
 
         if max_freq == "cutoff":
-            fno = optic.paraxial.FNO()
-            self.max_freq = 1 / (resolved_wavelength * 1e-3 * fno)
+            # wavelength must be converted to mm for frequency units cycles/mm
+            self.max_freq = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
         else:
-            self.max_freq = float(max_freq)
+            # If a specific max_freq is provided, use it directly
+            self.max_freq = max_freq
 
         super().__init__(optic, fields, [resolved_wavelength], num_rays, distribution)
 

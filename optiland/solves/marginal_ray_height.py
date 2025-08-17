@@ -5,6 +5,8 @@ Defines the marginal ray height solve.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.solves.ray_height_base import RayHeightSolveBase
 
 

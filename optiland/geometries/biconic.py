@@ -19,6 +19,8 @@ optical systems where different curvatures are required in orthogonal planes.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
@@ -198,7 +200,7 @@ class BiconicGeometry(NewtonRaphsonGeometry):
         return geometry_dict
 
     @classmethod
-    def from_dict(cls, data: dict) -> "BiconicGeometry":
+    def from_dict(cls, data: dict) -> BiconicGeometry:
         """Creates a BiconicGeometry from a dictionary representation.
 
         Args:

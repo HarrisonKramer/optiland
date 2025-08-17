@@ -6,6 +6,8 @@ elliptical aperture that clips rays based on their position.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.physical_apertures.base import BaseAperture
 
 

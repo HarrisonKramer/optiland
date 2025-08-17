@@ -8,6 +8,8 @@ appropriate coordinate system, including positional and rotational attributes.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.coordinate_system import CoordinateSystem
 
 

@@ -11,6 +11,8 @@ Kramer Harrison, 2024
 re-worked by Manuel Fragata Mendes, june 2025
 """
 
+from __future__ import annotations
+
 import os
 
 import pandas as pd

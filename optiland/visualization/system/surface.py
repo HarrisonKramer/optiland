@@ -5,6 +5,8 @@ This module contains classes for visualizing optical surfaces in 2D and 3D.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import numpy as np
 import vtk
 

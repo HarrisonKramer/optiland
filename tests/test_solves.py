@@ -62,7 +62,7 @@ class TestMarginalRayHeightSolve:
         optic = CookeTriplet()
         data = {"type": "MarginalRayHeightSolve", "surface_idx": 7, "height": 0.5}
 
-        solve = BaseSolve.from_dict(optic, data) # Use imported BaseSolve
+        solve = BaseSolve.from_dict(optic, data)  # Use imported BaseSolve
 
         assert solve.surface_idx == data["surface_idx"]
         assert solve.height == data["height"]
@@ -73,7 +73,7 @@ class TestMarginalRayHeightSolve:
         data = {"type": "Invalid", "surface_idx": 7, "height": 0.5}
 
         with pytest.raises(ValueError):
-            BaseSolve.from_dict(optic, data) # Changed to use imported BaseSolve
+            BaseSolve.from_dict(optic, data)  # Changed to use imported BaseSolve
 
 
 class TestChiefRayHeightSolve:
@@ -104,7 +104,9 @@ class TestChiefRayHeightSolve:
         yc, uc = optic.paraxial.chief_ray()
         # Ensure uc[surface_idx] is not zero to avoid division by zero
         if be.abs(uc[surface_idx] - 0.0) < 1e-6:
-            pytest.skip("Chief ray slope is zero at the specified surface, cannot apply solve.")
+            pytest.skip(
+                "Chief ray slope is zero at the specified surface, cannot apply solve."
+            )
 
         offset = (height - yc[surface_idx]) / uc[surface_idx]
         surf = optic.surface_group.surfaces[surface_idx]

@@ -7,6 +7,8 @@ optimize optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland import wavefront
 from optiland.distribution import GaussianQuadrature
