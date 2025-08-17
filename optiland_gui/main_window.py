@@ -11,7 +11,9 @@ Author: Manuel Fragata Mendes, 2025
 from __future__ import annotations
 
 import contextlib
+import inspect
 import os
+from collections import defaultdict
 
 from PySide6.QtCore import (
     QByteArray,
@@ -43,6 +45,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+import optiland.samples
+from optiland.optic import Optic
 
 from . import gui_plot_utils
 from .analysis_panel import AnalysisPanel
@@ -247,12 +252,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._configure_window()
         self._init_core_components()
+        self._init_ui()
+        self._finalize_setup()
+
+    def _init_ui(self):
+        """Initializes the main UI components, panels, docks, and toolbars."""
         self._init_ui_panels()
         self._setup_all_dock_widgets()
         self._create_actions()
         self._setup_menus_and_toolbars()
         self._setup_layout()
-        self._finalize_setup()
 
     def _configure_window(self):
         """Sets up the main window's flags, title, geometry, and resizing logic."""
@@ -624,6 +633,8 @@ class MainWindow(QMainWindow):
             if dock and dock.toggleViewAction():
                 dock.toggleViewAction().setText(f"Toggle {dock.windowTitle()}")
                 viewMenu.addAction(dock.toggleViewAction())
+
+        self._populate_gallery_menu(menu_bar)
 
         menu_bar.addMenu("&Run")
         helpMenu = menu_bar.addMenu("&Help")
@@ -1067,74 +1078,13 @@ class MainWindow(QMainWindow):
     def mousePressEvent(self, event):
         """Handle mouse press events for window dragging and resizing."""
         if event.button() == Qt.LeftButton:
-            # Check if we're on a resize grip
-            rect = self.rect()
             cursor_pos = event.position().toPoint()
+            self.resize_area = self._get_resize_area(cursor_pos)
 
-            # Define the resize areas (grip regions)
-            top_left = QRect(0, 0, self.grip_size, self.grip_size)
-            top_right = QRect(
-                rect.width() - self.grip_size, 0, self.grip_size, self.grip_size
-            )
-            bottom_left = QRect(
-                0, rect.height() - self.grip_size, self.grip_size, self.grip_size
-            )
-            bottom_right = QRect(
-                rect.width() - self.grip_size,
-                rect.height() - self.grip_size,
-                self.grip_size,
-                self.grip_size,
-            )
-
-            top = QRect(
-                self.grip_size, 0, rect.width() - 2 * self.grip_size, self.grip_size
-            )
-            left = QRect(
-                0, self.grip_size, self.grip_size, rect.height() - 2 * self.grip_size
-            )
-            right = QRect(
-                rect.width() - self.grip_size,
-                self.grip_size,
-                self.grip_size,
-                rect.height() - 2 * self.grip_size,
-            )
-            bottom = QRect(
-                self.grip_size,
-                rect.height() - self.grip_size,
-                rect.width() - 2 * self.grip_size,
-                self.grip_size,
-            )
-
-            # Determine if we're on a resize grip
-            if top_left.contains(cursor_pos):
+            if self.resize_area:
                 self.is_resizing = True
-                self.resize_area = "top_left"
-            elif top_right.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "top_right"
-            elif bottom_left.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "bottom_left"
-            elif bottom_right.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "bottom_right"
-            elif top.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "top"
-            elif left.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "left"
-            elif right.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "right"
-            elif bottom.contains(cursor_pos):
-                self.is_resizing = True
-                self.resize_area = "bottom"
             # Check for dragging the title bar
-            elif (
-                hasattr(self, "custom_title_bar_widget")
-                and self.custom_title_bar_widget
-            ):
+            elif self.custom_title_bar_widget:
                 titlebar_rect = self.custom_title_bar_widget.rect()
                 global_pos = self.custom_title_bar_widget.mapToGlobal(QPoint(0, 0))
                 window_pos = self.mapFromGlobal(global_pos)
@@ -1240,68 +1190,57 @@ class MainWindow(QMainWindow):
             self.is_resizing = False
             self.setCursor(Qt.ArrowCursor)
 
+    def _get_resize_area(self, pos: QPoint) -> str | None:
+        """Determines which resize area the mouse cursor is in."""
+        rect = self.rect()
+        grip = self.grip_size
+
+        if QRect(0, 0, grip, grip).contains(pos):
+            return "top_left"
+        if QRect(rect.width() - grip, 0, grip, grip).contains(pos):
+            return "top_right"
+        if QRect(0, rect.height() - grip, grip, grip).contains(pos):
+            return "bottom_left"
+        if QRect(rect.width() - grip, rect.height() - grip, grip, grip).contains(pos):
+            return "bottom_right"
+        if QRect(grip, 0, rect.width() - 2 * grip, grip).contains(pos):
+            return "top"
+        if QRect(0, grip, grip, rect.height() - 2 * grip).contains(pos):
+            return "left"
+        if QRect(
+            rect.width() - grip, grip, rect.width(), rect.height() - 2 * grip
+        ).contains(pos):
+            return "right"
+        if QRect(grip, rect.height() - grip, rect.width() - 2 * grip, grip).contains(
+            pos
+        ):
+            return "bottom"
+
+        return None
+
     def updateCursorShape(self, pos):
         """Update the cursor shape based on the mouse position."""
         if self.isMaximized():
             self.setCursor(Qt.ArrowCursor)
             return
 
-        rect = self.rect()
+        resize_area = self._get_resize_area(pos)
 
-        # Define the resize areas
-        top_left = QRect(0, 0, self.grip_size, self.grip_size)
-        top_right = QRect(
-            rect.width() - self.grip_size, 0, self.grip_size, self.grip_size
-        )
-        bottom_left = QRect(
-            0, rect.height() - self.grip_size, self.grip_size, self.grip_size
-        )
-        bottom_right = QRect(
-            rect.width() - self.grip_size,
-            rect.height() - self.grip_size,
-            self.grip_size,
-            self.grip_size,
-        )
-
-        top = QRect(
-            self.grip_size, 0, rect.width() - 2 * self.grip_size, self.grip_size
-        )
-        left = QRect(
-            0, self.grip_size, self.grip_size, rect.height() - 2 * self.grip_size
-        )
-        right = QRect(
-            rect.width() - self.grip_size,
-            self.grip_size,
-            self.grip_size,
-            rect.height() - 2 * self.grip_size,
-        )
-        bottom = QRect(
-            self.grip_size,
-            rect.height() - self.grip_size,
-            rect.width() - 2 * self.grip_size,
-            self.grip_size,
-        )
-
-        # Set cursor shape based on position
-        if top_left.contains(pos):
+        if resize_area in ("top_left", "bottom_right"):
             self.setCursor(Qt.SizeFDiagCursor)
-        elif top_right.contains(pos) or bottom_left.contains(pos):
+        elif resize_area in ("top_right", "bottom_left"):
             self.setCursor(Qt.SizeBDiagCursor)
-        elif bottom_right.contains(pos):
-            self.setCursor(Qt.SizeFDiagCursor)
-        elif top.contains(pos):
+        elif resize_area in ("top", "bottom"):
             self.setCursor(Qt.SizeVerCursor)
-        elif left.contains(pos) or right.contains(pos):
+        elif resize_area in ("left", "right"):
             self.setCursor(Qt.SizeHorCursor)
-        elif bottom.contains(pos):
-            self.setCursor(Qt.SizeVerCursor)
         else:
             self.setCursor(Qt.ArrowCursor)
 
     def keyPressEvent(self, event):
         """Handle key events for window management shortcuts."""
-        # Windows key + Left/Right/Up/Down for window snapping
-        if event.modifiers() & Qt.MetaModifier:
+        # ctrl key + Left/Right/Up/Down for window snapping
+        if event.modifiers() & Qt.ControlModifier:
             screen = self.screen()
             screen_geometry = screen.availableGeometry()
 
@@ -1374,3 +1313,45 @@ class MainWindow(QMainWindow):
             "Work in Progress",
             "The settings panel is currently under development.",
         )
+
+    # logic to load samples from the samples folder in optiland
+    def _populate_gallery_menu(self, menu_bar: QMenuBar):
+        """Creates the 'Gallery' menu by inspecting the samples package."""
+        gallery_menu = menu_bar.addMenu("&Gallery")
+        samples_menu = gallery_menu.addMenu("&Samples")
+
+        systems_by_module = defaultdict(list)
+
+        for _, obj_class in inspect.getmembers(optiland.samples, inspect.isclass):
+            if issubclass(obj_class, Optic) and obj_class is not Optic:
+                module_name = obj_class.__module__.split(".")[-1]
+                systems_by_module[module_name].append(obj_class)
+
+        if not systems_by_module:
+            samples_menu.addAction("No samples found.").setEnabled(False)
+            return
+
+        for module_name, classes in sorted(systems_by_module.items()):
+            submenu_name = module_name.replace("_", " ").title()
+            submenu = samples_menu.addMenu(submenu_name)
+            for optic_class in sorted(classes, key=lambda c: c.__name__):
+                action_name = optic_class.__name__.replace("_", " ").title()
+                action = QAction(action_name, self)
+                action.triggered.connect(
+                    lambda checked=False, cls=optic_class: self._load_sample_action(cls)
+                )
+                submenu.addAction(action)
+
+    def _load_sample_action(self, optic_class: type[Optic]):
+        """Instantiates and loads the selected sample class."""
+        try:
+            optic_instance = optic_class()
+            self.connector.load_optic_from_object(optic_instance)
+            print(f"Loaded sample: {optic_class.__name__}")
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Sample Load Error",
+                f"Could not load sample '{optic_class.__name__}':\n{e}",
+            )
