@@ -218,10 +218,6 @@ class ParaxialToThickLensConverter:
             - A float (refractive index, creates an IdealMaterial).
             - A BaseMaterial instance.
         center_thickness: The desired center thickness of the thick lens.
-        lens_shape: The shape of the lens ("biconvex", "plano-convex",
-            "convex-plano", "biconcave", "plano-concave", "concave-plano",
-            "meniscus-convex", "meniscus-concave"). For meniscus lenses, R1 is the more
-            curved surface. Defaults to "biconvex".
     """
 
     def __init__(
@@ -230,7 +226,6 @@ class ParaxialToThickLensConverter:
         optic,
         material: str | float | BaseMaterial = "N-BK7",
         center_thickness: float = 3.0,  # Default center thickness in mm
-        lens_shape: str = "biconvex",
     ):
         if not isinstance(paraxial_surface, ParaxialSurface):
             raise TypeError("paraxial_surface must be an instance of ParaxialSurface.")
@@ -239,7 +234,6 @@ class ParaxialToThickLensConverter:
         self.optic = optic
         self.original_focal_length = paraxial_surface.f
         self.center_thickness = center_thickness
-        self.lens_shape = lens_shape.lower()
 
         self._material_instance = self._resolve_material(material)
 
@@ -307,19 +301,10 @@ class ParaxialToThickLensConverter:
         and assuming n_medium = 1 (air):
         1/f_target = (n - 1) * (1/R1 - 1/R2 + (n - 1)*d / (n*R1*R2))
 
-        This method needs to account for self.lens_shape.
-        - "biconvex": R1 > 0, R2 < 0. Assume R1 = -R2 for simplicity.
-        - "plano-convex": R1 = inf, R2 < 0 (or R1 > 0, R2 = inf).
-        - "convex-plano": R1 > 0, R2 = inf.
-        - "biconcave": R1 < 0, R2 > 0. Assume R1 = -R2.
-        - "plano-concave": R1 = inf, R2 > 0.
-        - "concave-plano": R1 < 0, R2 = inf.
-        - "meniscus-convex": R1, R2 same sign, lens thicker in middle.
-        - "meniscus-concave": R1, R2 same sign, lens thinner in middle.
-
-        For biconvex/biconcave, assumes symmetric radii (R1 = -R2).
-        For plano-convex/concave, one radius is infinity.
-        Meniscus lenses require an additional parameter.
+        This method uses a biconvex lens for positive focal lengths and a biconcave
+        lens for negative focal lengths.
+        - biconvex: R1 > 0, R2 < 0. Assume R1 = -R2 for simplicity.
+        - biconcave: R1 < 0, R2 > 0. Assume R1 = -R2.
 
         Returns:
             tuple[float, float]: (R1, R2)
@@ -331,27 +316,13 @@ class ParaxialToThickLensConverter:
         d = self.center_thickness
 
         if abs(f_target) < 1e-9:
-            if self.lens_shape in [
-                "biconvex",
-                "biconcave",
-                "meniscus-convex",
-                "meniscus-concave",
-                "plano-convex",
-                "convex-plano",
-                "plano-concave",
-                "concave-plano",
-            ]:
-                return be.inf, be.inf
-            else:
-                raise ValueError(
-                    f"Unsupported lens_shape '{self.lens_shape}' for afocal conversion."
-                )
+            return be.inf, be.inf
 
         P = 1.0 / f_target  # Power
         r1, r2 = 0.0, 0.0
 
-        if self.lens_shape == "biconvex":
-            # P*n*R1^2 - 2*n*(n-1)*R1 + (n-1)^2*d = 0. For R1 = -R2.
+        if f_target > 0:
+            # Biconvex: P*n*R1^2 - 2*n*(n-1)*R1 + (n-1)^2*d = 0. For R1 = -R2.
             a_quad = P * n
             b_quad = -2 * n * (n - 1)
             c_quad = (n - 1) ** 2 * d
@@ -374,26 +345,8 @@ class ParaxialToThickLensConverter:
                         raise ValueError("Biconvex: No positive R1 solution found.")
             r2 = -r1
 
-        elif self.lens_shape == "plano-convex":
-            # R1 = inf. P = (n-1) * (-1/R2). R2 = -(n-1)/P
-            r1 = be.inf
-            r2 = -(n - 1) / P
-            if f_target > 0 and r2 >= 0:  # Converging, R2 should be < 0
-                raise ValueError(f"Plano-convex converging error: R2={r2} not < 0.")
-            if f_target < 0 and r2 <= 0:  # Diverging, R2 should be > 0
-                raise ValueError(f"Plano-convex diverging error: R2={r2} not > 0.")
-
-        elif self.lens_shape == "convex-plano":
-            # R2 = inf. P = (n-1) * (1/R1). R1 = (n-1)/P
-            r2 = be.inf
-            r1 = (n - 1) / P
-            if f_target > 0 and r1 <= 0:  # Converging, R1 should be > 0
-                raise ValueError(f"Convex-plano converging error: R1={r1} not > 0.")
-            if f_target < 0 and r1 >= 0:  # Diverging, R1 should be < 0
-                raise ValueError(f"Convex-plano diverging error: R1={r1} not < 0.")
-
-        elif self.lens_shape == "biconcave":
-            # P*n*R1^2 - 2*n*(n-1)*R1 + (n-1)^2*d = 0. For R1 = -R2.
+        else:
+            # Biconcave: P*n*R1^2 - 2*n*(n-1)*R1 + (n-1)^2*d = 0. For R1 = -R2.
             a_quad = P * n
             b_quad = -2 * n * (n - 1)
             c_quad = (n - 1) ** 2 * d
@@ -416,32 +369,6 @@ class ParaxialToThickLensConverter:
                     if r1 >= 0:
                         raise ValueError("Biconcave: No negative R1 solution found.")
             r2 = -r1
-
-        elif self.lens_shape == "plano-concave":
-            # R1 = inf. P = (n-1) * (-1/R2). R2 = -(n-1)/P
-            r1 = be.inf
-            r2 = -(n - 1) / P
-            if f_target < 0 and r2 <= 0:  # Diverging, R2 should be > 0
-                raise ValueError(f"Plano-concave diverging error: R2={r2} not > 0.")
-            if f_target > 0 and r2 >= 0:  # Converging, R2 should be < 0
-                raise ValueError(f"Plano-concave converging error: R2={r2} not < 0.")
-
-        elif self.lens_shape == "concave-plano":
-            # R2 = inf. P = (n-1) * (1/R1). R1 = (n-1)/P
-            r2 = be.inf
-            r1 = (n - 1) / P
-            if f_target < 0 and r1 >= 0:  # Diverging, R1 should be < 0
-                raise ValueError(f"Concave-plano diverging error: R1={r1} not < 0.")
-            if f_target > 0 and r1 <= 0:  # Converging, R1 should be > 0
-                raise ValueError(f"Concave-plano converging error: R1={r1} not > 0.")
-
-        elif "meniscus" in self.lens_shape:
-            raise NotImplementedError(
-                "Meniscus lens shape requires an additional parameter "
-                "(e.g., one radius or shape factor) for radius calculation."
-            )
-        else:
-            raise ValueError(f"Unsupported lens_shape: {self.lens_shape}")
 
         return float(r1), float(r2)
 
