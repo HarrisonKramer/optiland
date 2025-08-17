@@ -18,6 +18,10 @@ followed by continuous local refinement of lens parameters.
 drpaprika, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from optiland.materials import (
     downsample_glass_map,
     get_nd_vd,
@@ -28,7 +32,9 @@ from optiland.optimization.optimization import (
     OptimizationProblem,
     OptimizerGeneric,
 )
-from optiland.optimization.variable import Variable
+
+if TYPE_CHECKING:
+    from optiland.optimization.variable import Variable
 
 
 class GlassExpert(OptimizerGeneric):

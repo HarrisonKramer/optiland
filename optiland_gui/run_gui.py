@@ -6,6 +6,8 @@ event loop to run the graphical user interface for Optiland.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import sys
 import time
 

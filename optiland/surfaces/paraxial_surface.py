@@ -9,18 +9,18 @@ used for first-order layout of optical systems.
 Kramer Harrison, 2024
 """
 
-from typing import Union
+from __future__ import annotations
 
 import optiland.backend as be
 from optiland.coatings import BaseCoating
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BaseGeometry
+from optiland.geometries.standard import StandardGeometry
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.scatter import BaseBSDF
 from optiland.surfaces.standard_surface import Surface  # Corrected import
-from optiland.geometries.standard import StandardGeometry
-from optiland.coordinate_system import CoordinateSystem
 
 
 class ParaxialSurface(Surface):
@@ -217,7 +217,7 @@ class ParaxialToThickLensConverter:
         self,
         paraxial_surface: ParaxialSurface,
         optic,  # Optic type hint will be added once Optic is imported
-        material: Union[str, float, BaseMaterial] = "N-BK7",
+        material: str | float | BaseMaterial = "N-BK7",
         center_thickness: float = 3.0,  # Default center thickness in mm
         lens_shape: str = "biconvex",
         # alignment: str = "center" # TODO: Implement different alignment strategies
@@ -258,7 +258,7 @@ class ParaxialToThickLensConverter:
         self._material_instance = self._resolve_material(material)
 
     def _resolve_material(
-        self, material_input: Union[str, float, BaseMaterial]
+        self, material_input: str | float | BaseMaterial
     ) -> BaseMaterial:
         """Resolves the material input to a BaseMaterial instance."""
         from optiland.materials.ideal import IdealMaterial
@@ -273,7 +273,7 @@ class ParaxialToThickLensConverter:
                 raise ValueError(
                     f"Could not resolve material string '{material_input}': {e}"
                 ) from e
-        elif isinstance(material_input, (int, float)):
+        elif isinstance(material_input, int | float):
             return IdealMaterial(n=float(material_input))
         else:
             raise TypeError(
@@ -481,7 +481,7 @@ class ParaxialToThickLensConverter:
         original_material_post = self.paraxial_surface.material_post
 
         # Surface 1: front surface of the thick lens
-        cs1 = CoordinateSystem() # Will be updated by Optic during insertion
+        cs1 = CoordinateSystem()  # Will be updated by Optic during insertion
         geom1 = StandardGeometry(radius=r1, coordinate_system=cs1)
         surface1 = Surface(
             geometry=geom1,
@@ -490,16 +490,16 @@ class ParaxialToThickLensConverter:
             is_stop=self.paraxial_surface.is_stop,
             comment="Thick Lens - Surface 1",
         )
-        surface1.thickness = self.center_thickness # Set thickness after instantiation
+        surface1.thickness = self.center_thickness  # Set thickness after instantiation
 
         # Surface 2: back surface of the thick lens
-        cs2 = CoordinateSystem() # Will be updated by Optic during insertion
+        cs2 = CoordinateSystem()  # Will be updated by Optic during insertion
         geom2 = StandardGeometry(radius=r2, coordinate_system=cs2)
         surface2 = Surface(
             geometry=geom2,
             material_pre=self._material_instance,
             material_post=original_material_post,
-            is_stop=False, # Stop, if any, is on the first surface
+            is_stop=False,  # Stop, if any, is on the first surface
             comment="Thick Lens - Surface 2",
         )
         # surface2.thickness is initialized to 0.0 by Surface.__init__

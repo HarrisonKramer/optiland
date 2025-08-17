@@ -3,23 +3,29 @@
 This module implements the necessary logic for the
 irradiance analysis in a given optical system.
 *note*: for now we consider incoherent irradiance.
+*note*: for now we consider incoherent irradiance.
 
 The analysis is analogous to the SpotDiagram except that
 instead of plotting the landing position of individual rays,
 we accumulate their power on a detector and express the result
 in W/mm^2.
 
-
 Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
-import numpy as _np  # Use _np for the binning. Later extend to other backends
-from matplotlib.colors import Colormap
+import numpy as _np  # Use _np for plotting logic.
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.colors import Colormap
 
 
 class IncoherentIrradiance(BaseAnalysis):
@@ -55,13 +61,9 @@ class IncoherentIrradiance(BaseAnalysis):
 
      Methods
      ---
-     view(figsize=(6,5), cmap="inferno") → plt.Figure, np.ndarray
-         Display a false-colour irradiance map or cross-section plots for the
-         current irradiance data.  If `cross_section` is specified, a 1D
-         cross-section is plotted instead of a 2D map.
-         If `normalize` is True, the irradiance maps are normalised to their
-         peak value, otherwise absolute values are used.
-
+     view(figsize=(6,5), cmap="inferno") → None
+         Display false-colour irradiance maps three fields per row, sharing a common
+         colour bar.
      peak_irradiance() → list[list[float]]
          Return the maximum pixel value for every (field,wvl) pair.
     """
@@ -100,6 +102,23 @@ class IncoherentIrradiance(BaseAnalysis):
                 "Detector surface has no physical aperture - set one "
                 "(e.g. RectangularAperture) so that the detector size is defined."
             )
+
+        # Override resolution if px_size is provided
+        if self.px_size is not None:
+            x_min, x_max, y_min, y_max = surf.aperture.extent
+            detector_width = x_max - x_min
+            detector_height = y_max - y_min
+
+            # Calculate resolution from pixel size
+            new_npix_x = int(round(detector_width / self.px_size[0]))
+            new_npix_y = int(round(detector_height / self.px_size[1]))
+
+            # Print warning and update resolution
+            print(
+                "[IncoherentIrradiance] Warning: res parameter ignored - derived "
+                f"from px_size instead → ({new_npix_x},{new_npix_y}) pixels"
+            )
+            self.npix_x, self.npix_y = new_npix_x, new_npix_y
 
         super().__init__(optic, wavelengths)
 
@@ -205,7 +224,10 @@ class IncoherentIrradiance(BaseAnalysis):
         return data
 
     def _generate_field_data(self, field, wavelength, distribution, user_initial_rays):
-        """Trace rays and bin their power into the pixels of the detector."""
+        """
+        Traces rays and bins their power. Switches between standard and
+        differentiable methods based on the gradient mode.
+        """
         if user_initial_rays is None:
             Hx, Hy = field
             self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
@@ -218,14 +240,6 @@ class IncoherentIrradiance(BaseAnalysis):
         from optiland.visualization.system.utils import transform
 
         x_local, y_local, _ = transform(x_g, y_g, z_g, surf, is_global=True)
-        x_np, y_np, power_np = (
-            be.to_numpy(x_local),
-            be.to_numpy(y_local),
-            be.to_numpy(power),
-        )
-
-        valid = power_np > 0.0
-        x_np, y_np, power_np = x_np[valid], y_np[valid], power_np[valid]
 
         x_min, x_max, y_min, y_max = surf.aperture.extent
         if self.px_size is None:
@@ -245,11 +259,44 @@ class IncoherentIrradiance(BaseAnalysis):
                 )
                 self.npix_x, self.npix_y = exp_nx, exp_ny
 
-        hist, _, _ = _np.histogram2d(
-            x_np, y_np, bins=[x_edges, y_edges], weights=power_np
-        )
-        irr = hist / pixel_area
-        return be.array(irr), x_edges, y_edges
+        # differentiable path
+        if be.get_backend() == "torch" and be.grad_mode.requires_grad:
+            x_edges_be = be.array(x_edges)
+            y_edges_be = be.array(y_edges)
+            ray_coords = be.stack([x_local, y_local], axis=1)
+
+            if ray_coords.shape[0] == 0:
+                irr = be.zeros((self.npix_x, self.npix_y))
+                return irr, x_edges, y_edges
+
+            indices, weights = be.get_bilinear_weights(
+                ray_coords, (x_edges_be, y_edges_be)
+            )
+            power_map = be.zeros((self.npix_y, self.npix_x))
+            for i in range(4):
+                power_map = power_map.index_put(
+                    (indices[:, i, 1].long(), indices[:, i, 0].long()),
+                    weights[:, i] * power,
+                    accumulate=True,
+                )
+            irr = power_map / pixel_area
+            return irr, x_edges, y_edges
+        # non-differentiable path
+        else:
+            x_np, y_np, power_np = (
+                be.to_numpy(x_local),
+                be.to_numpy(y_local),
+                be.to_numpy(power),
+            )
+
+            valid = power_np > 0.0
+            x_np, y_np, power_np = x_np[valid], y_np[valid], power_np[valid]
+
+            hist, _, _ = _np.histogram2d(
+                x_np, y_np, bins=[x_edges, y_edges], weights=power_np
+            )
+            irr = hist / pixel_area
+            return be.array(irr), x_edges, y_edges
 
     # --- Plotting Helper Functions ---
 

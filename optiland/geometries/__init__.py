@@ -2,17 +2,20 @@
 ranging from simple planes and spheres to complex aspheres and polynomial
 surfaces."""
 
+from __future__ import annotations
+
 from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
 from .even_asphere import EvenAsphere
+from .forbes import ForbesQ2dGeometry, ForbesQbfsGeometry
 from .newton_raphson import NewtonRaphsonGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
 from .polynomial import PolynomialGeometry
 from .standard import StandardGeometry
 from .toroidal import ToroidalGeometry
-from .zernike import ZernikePolynomialGeometry, factorial
+from .zernike import ZernikePolynomialGeometry
 
 __all__ = [
     # From base.py
@@ -21,6 +24,8 @@ __all__ = [
     "BiconicGeometry",
     # From chebyshev.py
     "ChebyshevPolynomialGeometry",
+    # From forbes.py
+    "ForbesGeometry",
     # From even_asphere.py
     "EvenAsphere",
     # From newton_raphson.py
@@ -37,5 +42,7 @@ __all__ = [
     "ToroidalGeometry",
     # From zernike.py
     "ZernikePolynomialGeometry",
-    "factorial",
+    # From forbes subpackage
+    "ForbesQ2dGeometry",
+    "ForbesQbfsGeometry",
 ]

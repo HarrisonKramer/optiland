@@ -8,12 +8,15 @@ plots and `VTKViewer` for 3D rendering.
 @author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import matplotlib
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -36,6 +39,8 @@ try:
 except ImportError:
     VTK_AVAILABLE = False
 
+from typing import TYPE_CHECKING
+
 from optiland.visualization.analysis.surface_sag import SurfaceSagViewer
 from optiland.visualization.system.rays import Rays2D, Rays3D
 from optiland.visualization.system.system import (
@@ -44,7 +49,9 @@ from optiland.visualization.system.system import (
 
 from . import gui_plot_utils
 from .analysis_panel import CustomMatplotlibToolbar
-from .optiland_connector import OptilandConnector
+
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class SagViewer(QWidget):
@@ -258,47 +265,57 @@ class ViewerPanel(QWidget):
         """
         super().__init__(parent)
         self.connector = connector
-        self.setWindowTitle("Viewer")
 
-        self.layout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         self.tabWidget = QTabWidget()
-        self.layout.addWidget(self.tabWidget)
 
-        self.viewer2D = MatplotlibViewer(self.connector, self)
-        self.tabWidget.addTab(self.viewer2D, "2D View")
+        # Create 2D Viewer Tab
+        self.viewer2D = MatplotlibViewer(self.connector)
+        viewer2d_container = self._create_2d_viewer_tab()
+        self.tabWidget.addTab(viewer2d_container, "2D Layout")
 
+        # Create 3D Viewer Tab
+        self.viewer3D = None
+        if VTK_AVAILABLE:
+            self.viewer3D = VTKViewer(self.connector)
+            self.tabWidget.addTab(self.viewer3D, "3D Layout")
+
+        # Create Sag Viewer Tab
         self.sagViewer = SagViewer(self.connector, self)
         self.tabWidget.addTab(self.sagViewer, "Sag")
 
-        self.viewer3D = (
-            VTKViewer(self.connector, self)
-            if VTK_AVAILABLE
-            else QLabel("VTK not available or not installed.")
-        )
-        self.tabWidget.addTab(self.viewer3D, "3D View")
+        main_layout.addWidget(self.tabWidget)
 
         self.connector.opticLoaded.connect(self.update_viewers)
         self.connector.opticChanged.connect(self.update_viewers)
 
-    def update_theme(self, theme="dark"):
-        """
-        Updates the theme for all viewers in the panel.
+    def _create_2d_viewer_tab(self):
+        """Creates the container widget for the 2D viewer, including its toolbar."""
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(5, 5, 5, 5)
 
-        Args:
-            theme (str, optional): The theme name ('dark' or 'light').
-                                   Defaults to "dark".
-        """
-        self.viewer2D.update_theme(theme)
-        self.sagViewer.update_theme(theme)
-        if VTK_AVAILABLE:
-            self.viewer3D.update_theme(theme)
+        # Add toolbar with 'Preserve Zoom' checkbox
+        toolbar_layout = QHBoxLayout()
+        self.preserve_zoom_checkbox = QCheckBox("Preserve Zoom")
+        self.preserve_zoom_checkbox.setToolTip(
+            "Lock the current zoom and pan level when the system updates."
+        )
+        toolbar_layout.addWidget(self.preserve_zoom_checkbox)
+        toolbar_layout.addStretch()
+
+        layout.addLayout(toolbar_layout)
+        layout.addWidget(self.viewer2D)
+        return container
 
     @Slot()
     def update_viewers(self):
-        """Updates the content of all viewers."""
-        self.viewer2D.plot_optic()
-        self.sagViewer.plot_sag()
-        if VTK_AVAILABLE:
+        """Updates all active viewers with the current optic data."""
+        if self.viewer2D:
+            preserve = self.preserve_zoom_checkbox.isChecked()
+            self.viewer2D.plot_optic(preserve_zoom=preserve)
+        if self.viewer3D:
             self.viewer3D.render_optic()
 
 
@@ -414,16 +431,76 @@ class MatplotlibViewer(QWidget):
         self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move_on_plot)
         self.canvas.mpl_connect("scroll_event", self.on_scroll_zoom)
 
+        # Add new event connections for panning
+        self.canvas.mpl_connect("button_press_event", self.on_mouse_button_press)
+        self.canvas.mpl_connect("button_release_event", self.on_mouse_button_release)
+
+        # Initialize panning state variables
+        self._pan_start_x = None
+        self._pan_start_y = None
+        self._is_panning = False
+
         self.plot_optic()
         self.update_theme()
 
+    def on_mouse_button_press(self, event):
+        """
+        Handles mouse button press events to initiate panning.
+
+        Args:
+            event: The Matplotlib mouse button press event.
+        """
+        if event.button == 1 and event.inaxes:  # Left mouse button
+            self._pan_start_x = event.xdata
+            self._pan_start_y = event.ydata
+            self._is_panning = True
+            self.canvas.setCursor(
+                Qt.ClosedHandCursor
+            )  # Change cursor to indicate panning
+
+    def on_mouse_button_release(self, event):
+        """
+        Handles mouse button release events to stop panning.
+
+        Args:
+            event: The Matplotlib mouse button release event.
+        """
+        if event.button == 1:  # Left mouse button
+            self._is_panning = False
+            self._pan_start_x = None
+            self._pan_start_y = None
+            self.canvas.setCursor(Qt.ArrowCursor)  # Reset cursor
+
     def on_mouse_move_on_plot(self, event):
         """
-        Displays the cursor's coordinates on the plot.
+        Displays the cursor's coordinates on the plot and handles panning.
 
         Args:
             event: The Matplotlib motion notify event.
         """
+        if self._is_panning and event.inaxes and self._pan_start_x is not None:
+            # Calculate the distance moved
+            dx = self._pan_start_x - event.xdata
+            dy = self._pan_start_y - event.ydata
+
+            # Get current axis limits
+            ax = event.inaxes
+            xlim = ax.get_xlim()
+            ylim = ax.get_ylim()
+
+            # Update the limits by the distance moved
+            ax.set_xlim(xlim[0] + dx, xlim[1] + dx)
+            ax.set_ylim(ylim[0] + dy, ylim[1] + dy)
+
+            # Update the starting position for the next move
+            self._pan_start_x = event.xdata
+            self._pan_start_y = event.ydata
+
+            # Redraw the canvas
+            self.canvas.draw_idle()
+            return  # Skip the coordinate display when panning
+
+        # Original coordinate display code
         if event.inaxes:
             x_coord = f"{event.xdata:.3f}"
             y_coord = f"{event.ydata:.3f}"
@@ -478,14 +555,22 @@ class MatplotlibViewer(QWidget):
             self.plot_optic()
         self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
 
-    def plot_optic(self):
+    def plot_optic(self, preserve_zoom=False):
         """
         Clears the current plot and redraws the optical system.
 
         This method retrieves the current optical system from the connector and
         uses Optiland's plotting utilities to generate a 2D layout.
+
+        Args:
+            preserve_zoom (bool): If True, maintains the current view
+            limits after redrawing.
         """
         gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+
+        # Store current axis limits if preserving zoom
+        xlim = self.ax.get_xlim() if preserve_zoom else None
+        ylim = self.ax.get_ylim() if preserve_zoom else None
 
         self.ax.clear()
         face_color = matplotlib.rcParams["figure.facecolor"]
@@ -515,28 +600,21 @@ class MatplotlibViewer(QWidget):
                 )
                 self.ax.set_xlabel("Z-axis (mm)")
                 self.ax.set_ylabel("Y-axis (mm)")
-                self.ax.axis("equal")
+
+                # Only set equal aspect if not preserving zoom
+                if not preserve_zoom:
+                    self.ax.axis("equal")
+
                 self.ax.grid(True, linestyle="--", alpha=0.7)
-            except Exception as e:
-                self.ax.text(
-                    0.5,
-                    0.5,
-                    f"Error plotting Optiland 2D view:\n{e}",
-                    ha="center",
-                    va="center",
-                    transform=self.ax.transAxes,
-                    color="red",
-                )
-                print(f"MatplotlibViewer Error: {e}")
+
+                # Restore previous axis limits if preserving zoom
+                if preserve_zoom and xlim is not None and ylim is not None:
+                    self.ax.set_xlim(xlim)
+                    self.ax.set_ylim(ylim)
+            except Exception:
+                self.ax.text(0.5, 0.5, "No system loaded", ha="center", va="center")
         else:
-            self.ax.text(
-                0.5,
-                0.5,
-                "2D Viewer (Matplotlib)\nNo Optic data or empty system.",
-                ha="center",
-                va="center",
-                transform=self.ax.transAxes,
-            )
+            self.ax.text(0.5, 0.5, "No system loaded", ha="center", va="center")
 
         self.canvas.draw()
 
@@ -620,7 +698,13 @@ class VTKViewer(QWidget):
         self.renderer.RemoveAllViewProps()
         optic = self.connector.get_optic()
 
-        if optic and optic.surface_group.num_surfaces > 0:
+        # Check if optic has surfaces and a valid aperture
+        if (
+            optic
+            and optic.surface_group.num_surfaces > 0
+            and hasattr(optic, "aperture")
+            and optic.aperture is not None
+        ):
             try:
                 rays3d_plotter = Rays3D(optic)
                 system_plotter = OptilandOpticalSystemPlotter(
@@ -650,6 +734,18 @@ class VTKViewer(QWidget):
                 textActor.GetTextProperty().SetColor(1, 0, 0)
                 self.renderer.AddActor2D(textActor)
         else:
+            # Display a message if the optic doesn't have a valid aperture
+            if (
+                optic
+                and optic.surface_group.num_surfaces > 0
+                and (not hasattr(optic, "aperture") or optic.aperture is None)
+            ):
+                textActor = vtk.vtkTextActor()
+                textActor.SetInput("Please set an aperture in System Properties.")
+                textActor.GetTextProperty().SetColor(1, 0, 0)
+                self.renderer.AddActor2D(textActor)
+
+            # Add a default sphere for empty systems
             sphereSource = vtk.vtkSphereSource()
             sphereSource.SetRadius(0.1)
             mapper = vtk.vtkPolyDataMapper()
