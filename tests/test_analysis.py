@@ -1433,7 +1433,7 @@ class TestIncoherentIrradiance:
         # Define a simple loss and backpropagate
         loss = be.sum(irr_map**2)
         loss.backward()
-     
+
         grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
@@ -1858,7 +1858,6 @@ def system_1():
 
     class TestSystemForIntensity(Optic):
         def __init__(self):
-
             from optiland.materials import Material
 
             super().__init__(name="System 1 for Intensity")
@@ -1887,14 +1886,12 @@ def system_1():
 
 
 class TestRadiantIntensity:
-
     @pytest.mark.parametrize(
         "reference_surface_index, filename, max_angle",
         [
             (1, r"tests/zemax_files/sph_lens_coll_intensity_free_prop.txt", 12),
-            
         ],
-    ) # (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
+    )  # (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
     def test_intensity_output_values(
         self,
         set_test_backend,
@@ -1904,7 +1901,6 @@ class TestRadiantIntensity:
         reference_surface_index,
         max_angle,
     ):
-
         rays_to_trace = extended_source.generate_rays(num_rays=1_000_000)
 
         analysis_angle_max = max_angle
@@ -1938,12 +1934,12 @@ class TestRadiantIntensity:
         print(f"Zemax angles: {zemax_angles}")
         print(f"Zemax intensity: {zemax_intensity}")
 
-        assert (
-            zemax_intensity is not None
-        ), f"Failed to load intensity data from Zemax file: {filename}"
-        assert (
-            zemax_angles is not None
-        ), f"Failed to load angle data from Zemax file: {filename}"
+        assert zemax_intensity is not None, (
+            f"Failed to load intensity data from Zemax file: {filename}"
+        )
+        assert zemax_angles is not None, (
+            f"Failed to load angle data from Zemax file: {filename}"
+        )
 
         # compare the two datasets
         # normalize both datasets to their peak for shape comparison
@@ -1953,9 +1949,7 @@ class TestRadiantIntensity:
         if np.max(zemax_intensity) > 0:
             zemax_intensity /= np.max(zemax_intensity)
 
-        assert_allclose(
-            optiland_cross_section, zemax_intensity, atol=0.1, rtol=0.1
-        )
+        assert_allclose(optiland_cross_section, zemax_intensity, atol=0.1, rtol=0.1)
 
     def test_view_intensity(self, set_test_backend, system_1):
         """
