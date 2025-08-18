@@ -97,6 +97,10 @@ class ReferenceStrategy(ABC):
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the OPD based on the field angle.
 
+        This step is needed because, in the case of angular fields, rays launch from a
+        plane at z=const in object space. This results in an artificla tilt of the
+        wavefront that must be removed prior to wavefront calculations.
+
         Args:
             field (tuple[float, float]): The field coordinates (Hx, Hy).
             opd (ndarray): The optical path difference array to correct.
@@ -108,19 +112,31 @@ class ReferenceStrategy(ABC):
         Returns:
             ndarray: The OPD array with tilt correction applied.
         """
-        correction = 0
-        if self.optic.field_type == "angle":
-            hx, hy = field
-            max_f = self.optic.fields.max_field
-            x_tilt = max_f * hx
-            y_tilt = max_f * hy
-            xs = self.distribution.x if x is None else x
-            ys = self.distribution.y if y is None else y
-            epd = self.optic.paraxial.EPD()
-            correction = (1 - xs) * be.sin(be.radians(x_tilt)) * epd / 2 + (
-                1 - ys
-            ) * be.sin(be.radians(y_tilt)) * epd / 2
-        return opd - correction
+        if self.optic.field_type != "angle":
+            return opd
+
+        hx, hy = field
+        max_field_deg = self.optic.fields.max_field
+        fx = hx * max_field_deg
+        fy = hy * max_field_deg
+        fx_rad = be.deg2rad(fx)
+        fy_rad = be.deg2rad(fy)
+
+        # direction cosines
+        tx, ty = be.tan(fx_rad), be.tan(fy_rad)
+        uz = 1.0 / be.sqrt(1.0 + tx**2 + ty**2)
+        ux, uy = tx * uz, ty * uz
+
+        # physical pupil coords
+        xs = self.distribution.x if x is None else x
+        ys = self.distribution.y if y is None else y
+        epd = self.optic.paraxial.EPD()
+        X_m = xs * epd / 2
+        Y_m = ys * epd / 2
+
+        # remove artificial tilt from launch plane
+        tilt = ux * X_m + uy * Y_m
+        return opd + tilt
 
 
 class ChiefRayStrategy(ReferenceStrategy):
