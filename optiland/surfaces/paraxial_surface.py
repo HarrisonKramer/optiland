@@ -410,3 +410,20 @@ class ParaxialToThickLensConverter:
                 f"Invalid index {original_index} for removing paraxial surface."
             )
         self.optic.surface_group.remove_surface(original_index)
+
+
+def convert_to_thick_lens(lens):
+    """
+    Converts all paraxial surfaces in a lens into thick lenses
+
+    Args:
+        lens (Optic): the lens to be converted
+
+    Returns:
+        Optic: the converted lens
+    """
+    for surf in lens.surface_group.surfaces:
+        if isinstance(surf, ParaxialSurface):
+            converter = ParaxialToThickLensConverter(surf, lens)
+            converter.convert()
+    return lens
