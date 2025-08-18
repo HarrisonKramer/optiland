@@ -21,6 +21,18 @@ class TestParaxialToThickLensConverter:
         with pytest.raises(TypeError):
             ParaxialToThickLensConverter("not_a_surface", lens)
 
+    def test_missing_paraxial_surface(self, set_test_backend):
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=50)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(
+            lens.surface_group.surfaces[1], lens, "N-BK7"
+        )
+        lens.surface_group.remove_surface(index=1)
+        with pytest.raises(RuntimeError):
+            conv.convert()
+
     def test_resolve_material_string_success(self, set_test_backend):
         lens = Optic()
         lens.add_surface(index=0, thickness=be.inf)
@@ -72,7 +84,7 @@ class TestParaxialToThickLensConverter:
 
     def test_get_paraxial_surface_index_found(self, set_test_backend):
         lens = Optic()
-        lens.add_surface(index=0, thickness=np.inf)
+        lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(index=1, surface_type="paraxial", f=50)
         lens.add_surface(index=2)
         lens.add_wavelength(0.55, is_primary=True)
@@ -120,7 +132,7 @@ class TestParaxialToThickLensConverter:
 
     def test_remove_paraxial_surface_valid_and_invalid(self, set_test_backend):
         lens = Optic()
-        lens.add_surface(index=0, thickness=np.inf)
+        lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(index=1, surface_type="paraxial", f=50)
         lens.add_surface(index=2)
         lens.add_wavelength(0.55, is_primary=True)
@@ -139,7 +151,7 @@ class TestParaxialToThickLensConverter:
 
     def test_convert_replaces_surface(self, set_test_backend):
         lens = Optic()
-        lens.add_surface(index=0, thickness=np.inf)
+        lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(index=1, surface_type="paraxial", thickness=10, f=50)
         lens.add_surface(index=2)
         lens.add_wavelength(0.55, is_primary=True)
@@ -160,3 +172,65 @@ class TestParaxialToThickLensConverter:
         assert all(
             not isinstance(s, ParaxialSurface) for s in new_lens.surface_group.surfaces
         )
+
+    def test_biconvex_unsolvable_linear_case(self, set_test_backend):
+        lens = Optic()
+        # n = 1, f_target > 0 --> (n-1)=0 --> a_quad=0, b_quad=0
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=100)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 1.0)
+        with pytest.raises(ValueError):
+            conv._calculate_radii()
+
+    def test_biconvex_discriminant_negative(self, set_test_backend):
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=1.0)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 10.0)
+        conv.center_thickness = 1e6  # Force discriminant < 0
+        with pytest.raises(ValueError):
+            conv._calculate_radii()
+
+    def test_biconvex_no_positive_solution(self, set_test_backend):
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=1.0)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 0.5)
+        conv.center_thickness = 0.1
+        with pytest.raises(ValueError):
+            conv._calculate_radii()
+
+    def test_biconcave_unsolvable_linear_case(self, set_test_backend):
+        lens = Optic()
+        # n = 1, f_target < 0 --> (n-1)=0 --> a_quad=0, b_quad=0
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=-100)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 1.0)
+        with pytest.raises(ValueError):
+            conv._calculate_radii()
+
+    def test_biconcave_discriminant_negative(self, set_test_backend):
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=-1.0)  # diverging
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 1.5)
+        # Force discriminant < 0 with large negative d
+        conv.center_thickness = -1e6
+        with pytest.raises(ValueError, match="discriminant < 0"):
+            conv._calculate_radii()
+
+    def test_biconcave_no_negative_solution(self, set_test_backend):
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="paraxial", f=-1.0)
+        lens.add_wavelength(0.55, is_primary=True)
+        conv = ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens, 1.01)
+        # Adjust thickness to force both roots ≥ 0
+        conv.center_thickness = -1e3
+        with pytest.raises(ValueError):
+            conv._calculate_radii()
