@@ -187,9 +187,7 @@ class FFTPSF(BasePSF):
         psf = []
         for pupil in pupils:
             amp = be.fft.fftshift(be.fft.fft2(pupil))
-            psf_new = amp * be.conj(amp)
-            psf_new = be.flipud(psf_new)
-            psf.append(psf_new)
+            psf.append(amp * be.conj(amp))
         psf = be.stack(psf)
 
         return be.real(be.sum(psf, axis=0)) / norm_factor * 100

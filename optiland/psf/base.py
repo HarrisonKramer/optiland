@@ -226,7 +226,7 @@ class BasePSF(Wavefront):
             image = replace_nonpositive(image)
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
-        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent)
+        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent, origin="lower")
 
         self._annotate_original_size(fig, original_size)
 
