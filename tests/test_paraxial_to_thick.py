@@ -1,15 +1,16 @@
-import pytest
-import numpy as np
 from unittest.mock import MagicMock
 
-from optiland.optic import Optic
+import numpy as np
+import pytest
+
 import optiland.backend as be
+from optiland.optic import Optic
+from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import (
-    ParaxialToThickLensConverter,
     ParaxialSurface,
+    ParaxialToThickLensConverter,
     convert_to_thick_lens,
 )
-from optiland.samples.objectives import HeliarLens
 
 from .utils import assert_allclose
 
