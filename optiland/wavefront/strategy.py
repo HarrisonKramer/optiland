@@ -97,6 +97,10 @@ class ReferenceStrategy(ABC):
     def _correct_tilt(self, field, opd, x=None, y=None):
         """Corrects for tilt in the OPD based on the field angle.
 
+        This step is needed because, in the case of angular fields, rays launch from a
+        plane at z=const in object space. This results in an artificla tilt of the
+        wavefront that must be removed prior to wavefront calculations.
+
         Args:
             field (tuple[float, float]): The field coordinates (Hx, Hy).
             opd (ndarray): The optical path difference array to correct.
