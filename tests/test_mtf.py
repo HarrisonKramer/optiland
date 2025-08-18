@@ -54,7 +54,6 @@ class TestGeometricMTF:
         assert m.data is not None, "Unscaled MTF data should be generated"
 
     def test_max_freq_specification(self, set_test_backend, optic):
-
         m1 = GeometricMTF(optic)
 
         wavelength = optic.primary_wavelength

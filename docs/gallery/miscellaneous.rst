@@ -13,3 +13,4 @@ or unique functionality of Optiland.
     miscellaneous/float_by_stop_size
     miscellaneous/custom_aperture_sizes
     miscellaneous/apodization
+    miscellaneous/paraxial_to_thick_lens
