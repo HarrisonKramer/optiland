@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from .fft import FFTMTF
 from .geometric import GeometricMTF
-from .huygens import HuygensMTF
+from .huygens_fresnel import HuygensMTF
 from .sampled import SampledMTF
 
 __all__ = [
