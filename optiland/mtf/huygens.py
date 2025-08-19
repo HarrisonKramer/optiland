@@ -6,8 +6,10 @@ of an optical system using Huygens-Fresnel PSF.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
-from optiland.psf.huygens_fresnel import HuygensPSF  # Corrected import path
+from optiland.psf.huygens_fresnel import HuygensPSF
 
 from .base import BaseMTF
 
@@ -82,7 +84,6 @@ class HuygensMTF(BaseMTF):
         super().__init__(optic, fields, wavelength)
 
         self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
-        self.freq = self.freq[self.freq <= self.max_freq]
 
     def _get_fno(self, optic):
         """Calculate the effective F-number (FNO) of the optical system.
