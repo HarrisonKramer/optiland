@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 import numpy as np
 import pytest
@@ -29,6 +29,10 @@ class TestHuygensMTF:
         assert mtf.image_size == 16
         assert mtf.max_freq == pytest.approx(1 / (0.5876e-3 * mtf.FNO))
         assert isinstance(mtf.freq, be.ndarray)
+
+    def test_init_non_primary_wavelength(self, real_optic):
+        mtf = HuygensMTF(real_optic, max_freq="cutoff", image_size=16, wavelength=0.55)
+        assert mtf.max_freq == pytest.approx(1 / (0.55e-3 * mtf.FNO))
 
     def test_init_with_numeric_max_freq(self, real_optic):
         mtf = HuygensMTF(real_optic, max_freq=200.0, image_size=8)
