@@ -118,11 +118,12 @@ class HuygensMTF(BaseMTF):
         self.psf_instances = []  # Reset or initialize
         for field_coord in self.resolved_fields:
             psf_calculator = HuygensPSF(
-                self.optic,
-                field_coord,  # Single field tuple
-                self.resolved_wavelength,  # Single wavelength value
-                self.num_rays,
-                self.image_size,
+                optic=self.optic,
+                field=field_coord,  # Single field tuple
+                wavelength=self.resolved_wavelength,  # Single wavelength value
+                num_rays=self.num_rays,
+                image_size=self.image_size,
+                oversample=2.0,  # oversampling ratio with respect to the optical cutoff
             )
             self.psf_data.append(psf_calculator.psf)
             self.psf_instances.append(psf_calculator)
