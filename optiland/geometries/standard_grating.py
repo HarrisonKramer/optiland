@@ -28,8 +28,8 @@ class StandardGratingGeometry(BaseGeometry):
         coordinate_system (CoordinateSystem): The coordinate system of the geometry.
         radius (float): The radius of curvature of the geometry.
         grating_order (int): The grating diffraction order
-        grating_period (float): The grating period
-        groove_orientation_angle (float): The groove orientation angle
+        grating_period (float): The grating period (units micrometers)
+        groove_orientation_angle (float): The groove orientation angle (units radians)
         conic (float, optional): The conic constant of the geometry. Defaults to 0.0.
 
     Methods:

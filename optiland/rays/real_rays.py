@@ -234,7 +234,7 @@ class RealRays(BaseRays):
                     - fz**2 * m**2 * nx**2 * self.w**2
                     - fz**2 * m**2 * ny**2 * self.w**2
                 )
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
             self.M = (
                 -self.L0 * d * n1 * nx * ny
                 + self.M0 * d * n1 * nx**2
@@ -280,7 +280,7 @@ class RealRays(BaseRays):
                     - fz**2 * m**2 * nx**2 * self.w**2
                     - fz**2 * m**2 * ny**2 * self.w**2
                 )
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
             self.N = -nz * be.sqrt(
                 -(self.L0**2) * d**2 * n1**2 * ny**2
                 - self.L0**2 * d**2 * n1**2 * nz**2
@@ -315,7 +315,7 @@ class RealRays(BaseRays):
                 + 2 * fy * fz * m**2 * ny * nz * self.w**2
                 - fz**2 * m**2 * nx**2 * self.w**2
                 - fz**2 * m**2 * ny**2 * self.w**2
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2)) - (
+            ) / (d * n2c) - (
                 self.L0 * d * n1 * nx * nz
                 + self.M0 * d * n1 * ny * nz
                 - self.N0 * d * n1 * nx**2
@@ -324,7 +324,7 @@ class RealRays(BaseRays):
                 + fy * m * ny * nz * self.w
                 - fz * m * nx**2 * self.w
                 - fz * m * ny**2 * self.w
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
 
         else:
             sgn = 1
@@ -374,7 +374,7 @@ class RealRays(BaseRays):
                     - fz**2 * m**2 * nx**2 * self.w**2
                     - fz**2 * m**2 * ny**2 * self.w**2
                 )
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
             self.M = (
                 -self.L0 * d * n1 * nx * ny
                 + self.M0 * d * n1 * nx**2
@@ -420,7 +420,7 @@ class RealRays(BaseRays):
                     - fz**2 * m**2 * nx**2 * self.w**2
                     - fz**2 * m**2 * ny**2 * self.w**2
                 )
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
             self.N = nz * be.sqrt(
                 -(self.L0**2) * d**2 * n1**2 * ny**2
                 - self.L0**2 * d**2 * n1**2 * nz**2
@@ -455,7 +455,7 @@ class RealRays(BaseRays):
                 + 2 * fy * fz * m**2 * ny * nz * self.w**2
                 - fz**2 * m**2 * nx**2 * self.w**2
                 - fz**2 * m**2 * ny**2 * self.w**2
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2)) - (
+            ) / (d * n2c) - (
                 self.L0 * d * n1 * nx * nz
                 + self.M0 * d * n1 * ny * nz
                 - self.N0 * d * n1 * nx**2
@@ -464,7 +464,7 @@ class RealRays(BaseRays):
                 + fy * m * ny * nz * self.w
                 - fz * m * nx**2 * self.w
                 - fz * m * ny**2 * self.w
-            ) / (d * n2c * (nx**2 + ny**2 + nz**2))
+            ) / (d * n2c)
 
         self.normalize()
 
