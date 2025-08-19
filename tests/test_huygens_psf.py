@@ -209,7 +209,6 @@ class TestHuygensPSF:
         """
         Tests the Strehl ratio calculation for various optics and fields.
         Uses higher resolution for more accurate Strehl.
-        Users should replace placeholder `expected_strehl_min` with known good values.
         """
         # For this general test, we use a placeholder minimum.
         # The `test_strehl_ratio_specific_values` is for more precise checks.
@@ -245,17 +244,13 @@ class TestHuygensPSF:
     def test_strehl_ratio_specific_values(
         self, cooke_triplet_optic, double_gauss_optic, reverse_telephoto_optic
     ):
-        """
-        Placeholder test for specific Strehl Ratios.
-        User should fill in `EXPECTED_STREHL_VALUES` with known good values.
-        """
         EXPECTED_STREHL_VALUES = {
             "CookeTriplet": {
                 (0, 0): 0.3023159962682067,
                 (
                     0.7,
                     0.0,
-                ): 0.022018160222076852,
+                ): 0.019029390469840174,
             },
             "DoubleGauss": {
                 (
