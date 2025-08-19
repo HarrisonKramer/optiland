@@ -101,8 +101,6 @@ class HuygensPSF(BasePSF):
         rx, ry, _ = transform(
             rays.x, rays.y, rays.z, self.optic.image_surface, is_global=True
         )
-        self.cx = be.mean(rx)
-        self.cy = be.mean(ry)
 
         return rx, ry
 
@@ -114,6 +112,8 @@ class HuygensPSF(BasePSF):
         """
         # Determine image center and retrieve x, y intersections
         rx, ry = self._determine_image_center()
+        self.cx = be.mean(rx)
+        self.cy = be.mean(ry)
 
         if self.oversample is not None:
             extent = self._extent_from_cutoff()
