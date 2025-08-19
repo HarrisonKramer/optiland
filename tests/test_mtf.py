@@ -54,7 +54,6 @@ class TestGeometricMTF:
         assert m.data is not None, "Unscaled MTF data should be generated"
 
     def test_max_freq_specification(self, set_test_backend, optic):
-
         m1 = GeometricMTF(optic)
 
         wavelength = optic.primary_wavelength
@@ -93,10 +92,10 @@ class TestFFTMTF:
 
 
 from unittest.mock import MagicMock
-from optiland.mtf import HuygensMTF # Import the new class
-from optiland.optic import Optic # For creating a simple optic for finite object test
-from optiland.surfaces import StandardSurface # For finite object test
-from optiland.materials import Material # For finite object test
+from optiland.mtf import HuygensMTF  # Import the new class
+from optiland.optic import Optic  # For creating a simple optic for finite object test
+from optiland.surfaces import StandardSurface  # For finite object test
+from optiland.materials import Material  # For finite object test
 
 
 class TestHuygensMTF:
@@ -116,7 +115,9 @@ class TestHuygensMTF:
     def test_view_mtf_defaults(self, mock_show, optic_fixture, ensure_numpy_backend):
         """Test HuygensMTF.view() with default arguments."""
         # be.set_backend("numpy") # Ensure numpy backend
-        m = HuygensMTF(optic_fixture, num_rays=32, image_size=32) # Use low res for speed
+        m = HuygensMTF(
+            optic_fixture, num_rays=32, image_size=32
+        )  # Use low res for speed
         m.view()
         mock_show.assert_called_once()
         plt.close("all")
@@ -126,7 +127,7 @@ class TestHuygensMTF:
         """Test HuygensMTF.view() with custom figure size and reference."""
         # be.set_backend("numpy")
         m = HuygensMTF(optic_fixture, num_rays=32, image_size=32)
-        m.view(figsize=(10, 5), add_reference=True) # Adjusted figsize for typical MTF
+        m.view(figsize=(10, 5), add_reference=True)  # Adjusted figsize for typical MTF
         mock_show.assert_called_once()
         plt.close("all")
 
@@ -137,15 +138,20 @@ class TestHuygensMTF:
         # _generate_mtf_data is called during __init__ by BaseMTF
         assert hasattr(m, "mtf"), "MTF data should be generated during init."
         assert m.mtf is not None, "MTF data should not be None."
-        assert len(m.mtf) == len(m.resolved_fields), "MTF data list length should match resolved fields."
-        if m.mtf: # If there are fields and MTF data
-            assert len(m.mtf[0]) == 2, "Each field's MTF data should have tangential and sagittal components."
+        assert len(m.mtf) == len(m.resolved_fields), (
+            "MTF data list length should match resolved fields."
+        )
+        if m.mtf:  # If there are fields and MTF data
+            assert len(m.mtf[0]) == 2, (
+                "Each field's MTF data should have tangential and sagittal components."
+            )
             assert m.mtf[0][0] is not None, "Tangential MTF data should not be None."
             assert m.mtf[0][1] is not None, "Sagittal MTF data should not be None."
             # Check that MTF values are within [0, 1]
-            assert be.all(m.mtf[0][0] >= 0) and be.all(m.mtf[0][0] <= 1.001) # Allow small tolerance
+            assert be.all(m.mtf[0][0] >= 0) and be.all(
+                m.mtf[0][0] <= 1.001
+            )  # Allow small tolerance
             assert be.all(m.mtf[0][1] >= 0) and be.all(m.mtf[0][1] <= 1.001)
-
 
     def test_generate_data_finite_object(self, ensure_numpy_backend):
         """Test MTF data generation for a finite object distance."""
@@ -153,41 +159,52 @@ class TestHuygensMTF:
         # Create a simple optic setup for finite object distance
         finite_optic = Optic()
         finite_optic.object_surface.is_infinite = False
-        finite_optic.object_surface.geometry.cs.z = be.array(200.0) # Finite object distance
+        finite_optic.object_surface.geometry.cs.z = be.array(
+            200.0
+        )  # Finite object distance
         # Add a lens (minimal setup for paraxial calculations to work)
-        finite_optic.add_surface(StandardSurface(radius=50, thickness=5, material=Material("N-BK7")))
-        finite_optic.add_surface(StandardSurface(radius=-50, thickness=100)) # Image plane
+        finite_optic.add_surface(
+            StandardSurface(radius=50, thickness=5, material=Material("N-BK7"))
+        )
+        finite_optic.add_surface(
+            StandardSurface(radius=-50, thickness=100)
+        )  # Image plane
         finite_optic.update()
 
-        m = HuygensMTF(finite_optic, fields=[(0,0)], wavelength=0.55, num_rays=32, image_size=32)
+        m = HuygensMTF(
+            finite_optic, fields=[(0, 0)], wavelength=0.55, num_rays=32, image_size=32
+        )
         assert hasattr(m, "mtf") and m.mtf is not None
         assert len(m.mtf) == 1
         assert len(m.mtf[0]) == 2
         assert be.all(m.mtf[0][0] >= 0) and be.all(m.mtf[0][0] <= 1.001)
         assert be.all(m.mtf[0][1] >= 0) and be.all(m.mtf[0][1] <= 1.001)
 
-
     def test_backend_check_raises_error(self, optic_fixture, current_backend):
         """Test HuygensMTF raises ValueError if backend is not numpy."""
         original_backend = be.get_backend()
-        if original_backend == "torch": # If already torch, just try to init
-            with pytest.raises(ValueError, match="HuygensMTF only supports the 'numpy' backend"):
+        if original_backend == "torch":  # If already torch, just try to init
+            with pytest.raises(
+                ValueError, match="HuygensMTF only supports the 'numpy' backend"
+            ):
                 HuygensMTF(optic_fixture, num_rays=32, image_size=32)
-        else: # If numpy or other, switch to torch, test, then switch back
+        else:  # If numpy or other, switch to torch, test, then switch back
             try:
                 be.set_backend("torch")
                 # Mock HuygensPSF to prevent its own backend check if it runs before HuygensMTF's
                 with patch("optiland.psf.huygens_fresnel.HuygensPSF") as mock_psf:
                     # Ensure the mock_psf doesn't try to do things that require torch setup
                     mock_psf_instance = MagicMock()
-                    mock_psf_instance.psf = be.zeros((32,32)) # dummy psf data
+                    mock_psf_instance.psf = be.zeros((32, 32))  # dummy psf data
                     mock_psf_instance.pixel_pitch = 0.01
                     mock_psf.return_value = mock_psf_instance
 
-                    with pytest.raises(ValueError, match="HuygensMTF only supports the 'numpy' backend"):
+                    with pytest.raises(
+                        ValueError, match="HuygensMTF only supports the 'numpy' backend"
+                    ):
                         HuygensMTF(optic_fixture, num_rays=32, image_size=32)
             finally:
-                be.set_backend(original_backend) # Restore original backend
+                be.set_backend(original_backend)  # Restore original backend
 
     def test_max_freq_cutoff(self, optic_fixture, ensure_numpy_backend):
         """Test if max_freq is calculated correctly when set to 'cutoff'."""
@@ -199,7 +216,9 @@ class TestHuygensMTF:
         # optic_fixture.primary_wavelength is in um
         # m.FNO is calculated in __init__
         expected_max_freq = 1 / (m.resolved_wavelength * 1e-3 * m.FNO)
-        assert abs(m.max_freq - expected_max_freq) < 1e-9, "max_freq 'cutoff' calculation mismatch."
+        assert abs(m.max_freq - expected_max_freq) < 1e-9, (
+            "max_freq 'cutoff' calculation mismatch."
+        )
 
     def test_max_freq_custom(self, optic_fixture, ensure_numpy_backend):
         """Test if max_freq is set correctly when a custom value is provided."""
@@ -212,7 +231,9 @@ class TestHuygensMTF:
         """Test the generation of the frequency array."""
         # be.set_backend("numpy")
         image_s = 32
-        m = HuygensMTF(optic_fixture, num_rays=32, image_size=image_s) # Ensure image_size is passed
+        m = HuygensMTF(
+            optic_fixture, num_rays=32, image_size=image_s
+        )  # Ensure image_size is passed
 
         # freq = be.arange(image_size // 2) * df
         # df = 1.0 / (image_size * pixel_pitch_mm)
@@ -226,7 +247,9 @@ class TestHuygensMTF:
         # Check units calculation indirectly by ensuring freq values are reasonable
         # and that it doesn't exceed max_freq
         if len(m.freq) > 1:
-             assert m.freq[-1] <= m.max_freq * (1 + 1e-9) # allow for small floating point inaccuracies if last point is exactly max_freq
+            assert (
+                m.freq[-1] <= m.max_freq * (1 + 1e-9)
+            )  # allow for small floating point inaccuracies if last point is exactly max_freq
 
         # More detailed check of _get_mtf_units if possible
         # Requires a known pixel_pitch.
@@ -263,7 +286,6 @@ class TestHuygensMTF:
 
 
 class TestHuygensMTF:
-
     def test_view_mtf_defaults(self, set_test_backend, optic):
         if be.get_backend() == "torch":
             pytest.skip("HuygensMTF only supports numpy backend")
