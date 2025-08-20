@@ -6,11 +6,17 @@ surface in an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.geometries import BaseGeometry
 from optiland.materials import BaseMaterial
-from optiland.rays import ParaxialRays, RealRays
 from optiland.surfaces.standard_surface import Surface
+
+if TYPE_CHECKING:
+    from optiland.rays import ParaxialRays, RealRays
 
 
 class ObjectSurface(Surface):

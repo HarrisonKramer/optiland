@@ -8,6 +8,8 @@ coefficient is ignored in this model and is always set to zero.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from importlib import resources
 
 import optiland.backend as be

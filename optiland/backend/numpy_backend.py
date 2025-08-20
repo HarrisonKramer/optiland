@@ -4,6 +4,8 @@ This module provides a backend for numerical operations using NumPy and SciPy.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import numpy as np
 from matplotlib.path import Path
 from scipy.interpolate import NearestNDInterpolator
@@ -21,7 +23,7 @@ def array(x):
 
 def is_array_like(x):
     """Check if x is array-like"""
-    return isinstance(x, (np.ndarray, list, tuple))
+    return isinstance(x, np.ndarray | list | tuple)
 
 
 def atleast_1d(x):
@@ -30,9 +32,9 @@ def atleast_1d(x):
 
 def as_array_1d(data):
     """Force conversion to a 1D array"""
-    if isinstance(data, (int, float)):
+    if isinstance(data, int | float):
         return array([data])
-    elif isinstance(data, (list, tuple)):
+    elif isinstance(data, list | tuple):
         return array(data)
     elif is_array_like(data):
         return data.reshape(-1)

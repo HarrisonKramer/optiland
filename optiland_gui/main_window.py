@@ -8,34 +8,46 @@ connection to the backend via the `OptilandConnector`.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import contextlib
+import inspect
 import os
+from collections import defaultdict
 
 from PySide6.QtCore import (
     QByteArray,
     QEasingCurve,
     QEvent,
+    QPoint,
     QPropertyAnimation,
+    QRect,
     QSettings,
     Qt,
     Slot,
 )
-from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QResizeEvent
+from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QPainter, QResizeEvent
 from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
     QFileDialog,
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
+    QStyle,
+    QStyleOption,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
     QWidget,
 )
+
+import optiland.samples
+from optiland.optic import Optic
 
 from . import gui_plot_utils
 from .analysis_panel import AnalysisPanel
@@ -70,6 +82,83 @@ SIDEBAR_QSS_PATH = os.path.join(
 
 ORGANIZATION_NAME = "OptilandProject"
 APPLICATION_NAME = "OptilandGUI"
+
+
+class CustomDockTitleBar(QWidget):
+    """A custom title bar for QDockWidgets with macOS-style buttons."""
+
+    def __init__(self, parent_dock: QDockWidget, title: str = ""):
+        super().__init__(parent_dock)
+        self.setObjectName("CustomDockTitleBar")
+        self.dock_widget = parent_dock  # Store reference to the actual dock widget
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 3, 8, 3)  # Left, Top, Right, Bottom
+        layout.setSpacing(2)
+
+        self.title_label = QLabel(title)
+        layout.addWidget(self.title_label)
+        layout.addStretch()
+
+        # Create buttons
+        self.minimize_btn = QPushButton(self)
+        self.minimize_btn.setObjectName("DockMinimizeButton")
+        self.minimize_btn.setFixedSize(10, 10)
+        self.minimize_btn.setToolTip("Hide")
+        self.minimize_btn.clicked.connect(parent_dock.toggleViewAction().trigger)
+
+        self.undock_btn = QPushButton(self)
+        self.undock_btn.setObjectName("DockUndockButton")
+        self.undock_btn.setFixedSize(10, 10)
+        self.undock_btn.setToolTip("Float/Dock")
+        self.undock_btn.clicked.connect(
+            lambda: parent_dock.setFloating(not parent_dock.isFloating())
+        )
+
+        self.close_btn = QPushButton(self)
+        self.close_btn.setObjectName("DockCloseButton")
+        self.close_btn.setFixedSize(10, 10)
+        self.close_btn.setToolTip("Close")
+        self.close_btn.clicked.connect(parent_dock.close)
+
+        layout.addWidget(self.minimize_btn)
+        layout.addWidget(self.undock_btn)
+        layout.addWidget(self.close_btn)
+
+    def paintEvent(self, event):
+        """Ensures the background is drawn correctly according to the stylesheet."""
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter = QPainter(self)
+        self.style().drawPrimitive(
+            QStyle.PrimitiveElement.PE_Widget, opt, painter, self
+        )
+        super().paintEvent(event)
+
+    def mousePressEvent(self, event):
+        """Handles mouse press for dragging the floating dock."""
+        if (
+            event.button() == Qt.MouseButton.LeftButton
+            and self.dock_widget.isFloating()
+        ):
+            self._mouse_press_pos = event.globalPosition().toPoint()
+            self._window_pos_before_move = self.dock_widget.pos()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        """Handles mouse move for dragging."""
+        if (
+            self.dock_widget.isFloating()
+            and event.buttons() == Qt.MouseButton.LeftButton
+        ) and (hasattr(self, "_mouse_press_pos") and self._mouse_press_pos is not None):
+            delta = event.globalPosition().toPoint() - self._mouse_press_pos
+            self.dock_widget.move(self._window_pos_before_move + delta)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Handles mouse release to stop dragging."""
+        self._mouse_press_pos = None
+        super().mouseReleaseEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -158,33 +247,60 @@ class MainWindow(QMainWindow):
             self._win.connector.opticChanged.emit()
 
     def __init__(self):
-        """Initializes the MainWindow, setting up all UI components."""
+        """Initializes the MainWindow by orchestrating the setup of all
+        UI components."""
         super().__init__()
-        self.current_theme_path = THEME_DARK_PATH
-        self.analysis_panels = []
+        self._configure_window()
+        self._init_core_components()
+        self._init_ui()
+        self._finalize_setup()
+
+    def _init_ui(self):
+        """Initializes the main UI components, panels, docks, and toolbars."""
+        self._init_ui_panels()
+        self._setup_all_dock_widgets()
+        self._create_actions()
+        self._setup_menus_and_toolbars()
+        self._setup_layout()
+
+    def _configure_window(self):
+        """Sets up the main window's flags, title, geometry, and resizing logic."""
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setWindowTitle("Optiland GUI")
         self.setGeometry(100, 100, 1600, 900)
+        self.setMouseTracking(True)
+        self.grip_size = 8
+        self.is_resizing = False
+        self.resize_area = None
+        self.is_moving = False
+        self.drag_position = QPoint()
+        self.start_geometry = None
+        self.start_pos = None
 
+    def _init_core_components(self):
+        """Initializes non-UI core components like settings, the connector,
+        and the scripting interface."""
+        self.current_theme_path = THEME_DARK_PATH
+        self.analysis_panels = []
         self.settings = QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
         self.next_save_slot_index = self.settings.value(
             "Layouts/NextSaveSlot", 1, type=int
         )
         self.connector = OptilandConnector()
         self.iface = self.OptilandInterface(self)
-
         self.dock_animations = {}
         self.dock_original_sizes = {}
+        self.about_dialog = None
 
+    def _init_ui_panels(self):
+        """Creates instances of all the main UI panels and widgets."""
         self.lensEditor = LensEditor(self.connector)
         self.viewerPanel = ViewerPanel(self.connector)
         self.analysisPanel = AnalysisPanel(self.connector)
-        # self.optimizationPanel = OptimizationPanel(self.connector)
         self.systemPropertiesPanel = SystemPropertiesPanel(self.connector)
         initial_theme_name = (
             "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
         )
-
         self.pythonTerminal = PythonTerminalWidget(
             self,
             custom_variables={"connector": self.connector, "iface": self.iface},
@@ -192,12 +308,13 @@ class MainWindow(QMainWindow):
         )
         self.pythonTerminal.commandExecuted.connect(self.refresh_all_gui_panels)
 
-        self._setup_all_dock_widgets()
-
+    def _setup_menus_and_toolbars(self):
+        """Creates and populates the main menu bar, custom title bar, and toolbars."""
+        # Main Menu Bar
         self._actual_menu_bar_instance = QMenuBar(self)
-        self._create_actions()
         self._populate_main_menu_bar(self._actual_menu_bar_instance)
 
+        # Custom Title Bar
         self.custom_title_bar_widget = CustomTitleBar(
             self._actual_menu_bar_instance, self
         )
@@ -206,11 +323,7 @@ class MainWindow(QMainWindow):
             self._handle_maximize_restore
         )
         self.custom_title_bar_widget.close_requested.connect(self.close)
-        self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
-        self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
-        self.connector.modifiedStateChanged.connect(
-            self._update_project_name_in_title_bar
-        )
+        self.custom_title_bar_widget.settings_requested.connect(self.show_settings_wip)
 
         self.title_bar_as_toolbar = QToolBar("CustomTitleBarToolbar")
         self.title_bar_as_toolbar.setObjectName("CustomTitleBarToolbar")
@@ -219,6 +332,7 @@ class MainWindow(QMainWindow):
         self.title_bar_as_toolbar.addWidget(self.custom_title_bar_widget)
         self.addToolBar(Qt.TopToolBarArea, self.title_bar_as_toolbar)
 
+        # Quick Actions Toolbar
         self.quick_actions_toolbar = QToolBar("QuickActionsToolbar")
         self.quick_actions_toolbar.setObjectName("QuickActionsToolbar")
         self.quick_actions_toolbar.setMovable(True)
@@ -226,22 +340,31 @@ class MainWindow(QMainWindow):
         self.addToolBarBreak(Qt.TopToolBarArea)
         self.addToolBar(Qt.TopToolBarArea, self.quick_actions_toolbar)
 
+    def _setup_layout(self):
+        """Sets up the central widget and the default dock layout."""
         self.main_docking_area_placeholder = QWidget()
         self.main_docking_area_placeholder.setObjectName("MainDockingAreaPlaceholder")
         self.setCentralWidget(self.main_docking_area_placeholder)
-
         self.setDockNestingEnabled(True)
         self._apply_revised_default_dock_layout()
 
+    def _finalize_setup(self):
+        """Applies stylesheets, connects signals, and sets the initial UI state."""
         self.load_stylesheets()
         if hasattr(self, "darkThemeAction"):
             self.darkThemeAction.setChecked(self.current_theme_path == THEME_DARK_PATH)
             self.lightThemeAction.setChecked(self.current_theme_path != THEME_DARK_PATH)
 
         self._connect_dock_animations()
+
+        self.connector.opticLoaded.connect(self._update_project_name_in_title_bar)
+        self.connector.opticChanged.connect(self._update_project_name_in_title_bar)
+        self.connector.modifiedStateChanged.connect(
+            self._update_project_name_in_title_bar
+        )
+
         self._initial_narrow_check_done = False
         self._update_project_name_in_title_bar()
-        self.about_dialog = None
 
     def _setup_all_dock_widgets(self):
         """Initializes and configures all dockable widgets for the application.
@@ -264,6 +387,9 @@ class MainWindow(QMainWindow):
         self.viewerDock = QDockWidget("System Viewer", self)
         self.viewerDock.setWidget(self.viewerPanel)
         self.viewerDock.setObjectName("ViewerDock")
+        self.viewerDock.setTitleBarWidget(
+            CustomDockTitleBar(self.viewerDock, "System Viewer")
+        )
         self.viewerDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -273,6 +399,9 @@ class MainWindow(QMainWindow):
         self.lensEditorDock = QDockWidget("Lens Data Editor", self)
         self.lensEditorDock.setWidget(self.lensEditor)
         self.lensEditorDock.setObjectName("LensEditorDock")
+        self.lensEditorDock.setTitleBarWidget(
+            CustomDockTitleBar(self.lensEditorDock, "Lens Data Editor")
+        )
         self.lensEditorDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -282,6 +411,9 @@ class MainWindow(QMainWindow):
         self.systemPropertiesDock = QDockWidget("System Properties", self)
         self.systemPropertiesDock.setWidget(self.systemPropertiesPanel)
         self.systemPropertiesDock.setObjectName("SystemPropertiesDock")
+        self.systemPropertiesDock.setTitleBarWidget(
+            CustomDockTitleBar(self.systemPropertiesDock, "System Properties")
+        )
         self.systemPropertiesDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -291,6 +423,9 @@ class MainWindow(QMainWindow):
         self.analysisPanelDock = QDockWidget("Analysis", self)
         self.analysisPanelDock.setWidget(self.analysisPanel)
         self.analysisPanelDock.setObjectName("AnalysisPanelDock")
+        self.analysisPanelDock.setTitleBarWidget(
+            CustomDockTitleBar(self.analysisPanelDock, "Analysis")
+        )
         self.analysisPanelDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -303,18 +438,12 @@ class MainWindow(QMainWindow):
             lambda pos: self._show_dock_context_menu(pos, self.analysisPanelDock)
         )
 
-        """self.optimizationPanelDock = QDockWidget("Optimization", self)
-        self.optimizationPanelDock.setWidget(self.optimizationPanel)
-        self.optimizationPanelDock.setObjectName("OptimizationPanelDock")
-        self.optimizationPanelDock.setFeatures(
-            QDockWidget.DockWidgetClosable
-            | QDockWidget.DockWidgetMovable
-            | QDockWidget.DockWidgetFloatable
-        )"""
-
         self.terminalDock = QDockWidget("Scripts Terminal", self)
         self.terminalDock.setWidget(self.pythonTerminal)
         self.terminalDock.setObjectName("TerminalDock")
+        self.terminalDock.setTitleBarWidget(
+            CustomDockTitleBar(self.terminalDock, "Scripts Terminal")
+        )
         self.terminalDock.setFeatures(
             QDockWidget.DockWidgetClosable
             | QDockWidget.DockWidgetMovable
@@ -505,6 +634,8 @@ class MainWindow(QMainWindow):
                 dock.toggleViewAction().setText(f"Toggle {dock.windowTitle()}")
                 viewMenu.addAction(dock.toggleViewAction())
 
+        self._populate_gallery_menu(menu_bar)
+
         menu_bar.addMenu("&Run")
         helpMenu = menu_bar.addMenu("&Help")
         helpMenu.addAction(self.aboutAction)
@@ -669,104 +800,100 @@ class MainWindow(QMainWindow):
 
             self.custom_title_bar_widget.set_project_name(display_name)
 
-    def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
-        animation_duration = 300
-        easing_curve = QEasingCurve.InOutQuad
-        is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
-            Qt.DockWidgetArea.LeftDockWidgetArea,
-            Qt.DockWidgetArea.RightDockWidgetArea,
-        ]
-        default_w = 300
-        default_h = 200
-
-        original_dimension = 0
-        if dock_widget == self.sidebarDock:
-            if hasattr(self, "sidebar_content_widget") and self.sidebar_content_widget:
-                original_dimension = (
-                    self.sidebar_content_widget.maximumWidth()
-                    if not self.sidebar_content_widget._is_collapsed
-                    else self.sidebar_content_widget.minimumWidth()
+    def _animate_dock_show(
+        self, dock_widget, is_left_or_right, original_dimension, duration, curve
+    ):
+        """Handles the animation for showing a dock widget."""
+        if dock_widget.isHidden():
+            dock_widget.show()
+            dock_widget.raise_()
+            target_prop = b"maximumWidth" if is_left_or_right else b"maximumHeight"
+            animation = QPropertyAnimation(dock_widget, target_prop)
+            animation.setStartValue(0)
+            animation.setEndValue(original_dimension)
+            if is_left_or_right:
+                dock_widget.setMaximumWidth(
+                    original_dimension if original_dimension > 0 else 5000
                 )
             else:
-                original_dimension = SIDEBAR_MAX_WIDTH
-        elif is_left_or_right_dock:
-            original_dimension = self.dock_original_sizes.get(
-                dock_widget,
-                dock_widget.width() if dock_widget.width() > 0 else default_w,
+                dock_widget.setMaximumHeight(
+                    original_dimension if original_dimension > 0 else 5000
+                )
+            animation.setDuration(duration)
+            animation.setEasingCurve(curve)
+            animation.start(QPropertyAnimation.DeleteWhenStopped)
+            self.dock_animations[dock_widget] = animation
+        else:
+            dock_widget.raise_()
+
+    def _animate_dock_hide(
+        self, dock_widget, is_left_or_right, original_dimension, duration, curve
+    ):
+        """Handles the animation for hiding a dock widget."""
+        if not dock_widget.isHidden():
+            current_size = (
+                dock_widget.width() if is_left_or_right else dock_widget.height()
+            )
+            target_prop = b"maximumWidth" if is_left_or_right else b"maximumHeight"
+            animation = QPropertyAnimation(dock_widget, target_prop)
+            animation.setStartValue(current_size)
+            animation.setEndValue(0)
+            animation.setDuration(duration)
+            animation.setEasingCurve(curve)
+            animation.finished.connect(dock_widget.hide)
+            animation.finished.connect(
+                lambda: dock_widget.setMaximumSize(5000, 5000)
+            )  # Restore max size
+            animation.start(QPropertyAnimation.DeleteWhenStopped)
+            self.dock_animations[dock_widget] = animation
+
+    def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
+        animation_duration = 150
+        easing_curve = QEasingCurve.InOutQuad
+        is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
+            Qt.LeftDockWidgetArea,
+            Qt.RightDockWidgetArea,
+        ]
+
+        # Determine the dimension to animate
+        if dock_widget == self.sidebarDock and self.sidebar_content_widget:
+            original_dimension = (
+                self.sidebar_content_widget.maximumWidth()
+                if not self.sidebar_content_widget._is_collapsed
+                else self.sidebar_content_widget.minimumWidth()
             )
         else:
+            default_size = 300 if is_left_or_right_dock else 200
+            current_size = (
+                dock_widget.width() if is_left_or_right_dock else dock_widget.height()
+            )
             original_dimension = self.dock_original_sizes.get(
-                dock_widget,
-                dock_widget.height() if dock_widget.height() > 0 else default_h,
+                dock_widget, current_size if current_size > 0 else default_size
             )
 
+        # Stop any currently running animation on this dock
         if (
             dock_widget in self.dock_animations
             and self.dock_animations[dock_widget].state() == QPropertyAnimation.Running
         ):
             self.dock_animations[dock_widget].stop()
-        current_visibility = not dock_widget.isHidden()
+
         if show_state_after_toggle:
-            if not current_visibility:
-                dock_widget.show()
-                dock_widget.raise_()
-                target_prop = (
-                    b"maximumWidth" if is_left_or_right_dock else b"maximumHeight"
-                )
-                animation = QPropertyAnimation(dock_widget, target_prop)
-                animation.setStartValue(0)
-                animation.setEndValue(original_dimension)
-                if is_left_or_right_dock:
-                    dock_widget.setMaximumWidth(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                else:
-                    dock_widget.setMaximumHeight(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                animation.setDuration(animation_duration)
-                animation.setEasingCurve(easing_curve)
-                animation.start(QPropertyAnimation.DeleteWhenStopped)
-                self.dock_animations[dock_widget] = animation
-            else:
-                dock_widget.raise_()
-                if is_left_or_right_dock:
-                    dock_widget.setMaximumWidth(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
-                else:
-                    dock_widget.setMaximumHeight(
-                        original_dimension if original_dimension > 0 else 5000
-                    )
+            self._animate_dock_show(
+                dock_widget,
+                is_left_or_right_dock,
+                original_dimension,
+                animation_duration,
+                easing_curve,
+            )
         else:
-            if current_visibility:
-                current_size = (
-                    dock_widget.width()
-                    if is_left_or_right_dock
-                    else dock_widget.height()
-                )
-                target_prop = (
-                    b"maximumWidth" if is_left_or_right_dock else b"maximumHeight"
-                )
-                animation = QPropertyAnimation(dock_widget, target_prop)
-                animation.setStartValue(current_size)
-                animation.setEndValue(0)
-                animation.setDuration(animation_duration)
-                animation.setEasingCurve(easing_curve)
-                animation.finished.connect(dock_widget.hide)
-                animation.finished.connect(
-                    lambda: (
-                        dock_widget.setMaximumWidth(
-                            original_dimension if original_dimension > 0 else 5000
-                        )
-                        if is_left_or_right_dock
-                        else dock_widget.setMaximumHeight(
-                            original_dimension if original_dimension > 0 else 5000
-                        )
-                    )
-                )
-                animation.start(QPropertyAnimation.DeleteWhenStopped)
-                self.dock_animations[dock_widget] = animation
+            self._animate_dock_hide(
+                dock_widget,
+                is_left_or_right_dock,
+                original_dimension,
+                animation_duration,
+                easing_curve,
+            )
 
     @Slot(str)
     def switch_theme(self, theme_path):
@@ -947,6 +1074,210 @@ class MainWindow(QMainWindow):
                 f"No layout saved in configuration - {slot_number}.",
             )
 
+    # logic related to freely moving the main window
+    def mousePressEvent(self, event):
+        """Handle mouse press events for window dragging and resizing."""
+        if event.button() == Qt.LeftButton:
+            cursor_pos = event.position().toPoint()
+            self.resize_area = self._get_resize_area(cursor_pos)
+
+            if self.resize_area:
+                self.is_resizing = True
+            # Check for dragging the title bar
+            elif self.custom_title_bar_widget:
+                titlebar_rect = self.custom_title_bar_widget.rect()
+                global_pos = self.custom_title_bar_widget.mapToGlobal(QPoint(0, 0))
+                window_pos = self.mapFromGlobal(global_pos)
+                titlebar_rect.moveTo(window_pos)
+
+                if titlebar_rect.contains(cursor_pos) and not self.isMaximized():
+                    self.is_moving = True
+                    self.drag_position = (
+                        event.globalPosition().toPoint()
+                        - self.frameGeometry().topLeft()
+                    )
+
+            self.start_geometry = self.geometry()
+            self.start_pos = event.globalPosition().toPoint()
+
+    def mouseMoveEvent(self, event):
+        """Handle mouse move events for window dragging, resizing, and AeroSnap."""
+        cursor_pos = event.position().toPoint()
+        global_pos = event.globalPosition().toPoint()
+
+        # Update cursor based on position
+        self.updateCursorShape(cursor_pos)
+
+        if self.is_resizing and not self.isMaximized():
+            # Handle resizing
+            diff = global_pos - self.start_pos
+            new_geometry = QRect(self.start_geometry)
+
+            if self.resize_area in ["top_left", "top", "top_right"]:
+                new_geometry.setTop(self.start_geometry.top() + diff.y())
+            if self.resize_area in ["bottom_left", "bottom", "bottom_right"]:
+                new_geometry.setBottom(self.start_geometry.bottom() + diff.y())
+            if self.resize_area in ["top_left", "left", "bottom_left"]:
+                new_geometry.setLeft(self.start_geometry.left() + diff.x())
+            if self.resize_area in ["top_right", "right", "bottom_right"]:
+                new_geometry.setRight(self.start_geometry.right() + diff.x())
+
+            # Enforce minimum size
+            if (
+                new_geometry.width() >= self.minimumWidth()
+                and new_geometry.height() >= self.minimumHeight()
+            ):
+                self.setGeometry(new_geometry)
+
+        elif self.is_moving and not self.isMaximized():
+            # Handle window movement with AeroSnap
+            self.move(global_pos - self.drag_position)
+
+            # AeroSnap implementation
+            screen = self.screen()
+            screen_geometry = screen.availableGeometry()
+
+            # Detect screen edges for snapping
+            at_top_edge = global_pos.y() <= screen_geometry.top() + 5
+            at_left_edge = global_pos.x() <= screen_geometry.left() + 5
+            at_right_edge = global_pos.x() >= screen_geometry.right() - 5
+
+            # Apply cursor feedback for AeroSnap zones
+            if at_top_edge or at_left_edge or at_right_edge:
+                self.setCursor(Qt.ArrowCursor)
+                # Show right-half preview outline if needed
+
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release events and implement AeroSnap actions."""
+        if event.button() == Qt.LeftButton:
+            # Implement AeroSnap functionality
+            if self.is_moving and not self.isMaximized():
+                screen = self.screen()
+                screen_geometry = screen.availableGeometry()
+                global_pos = event.globalPosition().toPoint()
+
+                # Detect screen edges for snapping actions
+                at_top_edge = global_pos.y() <= screen_geometry.top() + 5
+                at_left_edge = global_pos.x() <= screen_geometry.left() + 5
+                at_right_edge = global_pos.x() >= screen_geometry.right() - 5
+
+                if at_top_edge:
+                    # Maximize window
+                    self.showMaximized()
+                elif at_left_edge:
+                    # Snap to left half
+                    self.showNormal()
+                    new_geometry = QRect(
+                        screen_geometry.left(),
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                    self.setGeometry(new_geometry)
+                elif at_right_edge:
+                    # Snap to right half
+                    self.showNormal()
+                    new_geometry = QRect(
+                        screen_geometry.left() + screen_geometry.width() // 2,
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                    self.setGeometry(new_geometry)
+
+            # Reset states
+            self.is_moving = False
+            self.is_resizing = False
+            self.setCursor(Qt.ArrowCursor)
+
+    def _get_resize_area(self, pos: QPoint) -> str | None:
+        """Determines which resize area the mouse cursor is in."""
+        rect = self.rect()
+        grip = self.grip_size
+
+        if QRect(0, 0, grip, grip).contains(pos):
+            return "top_left"
+        if QRect(rect.width() - grip, 0, grip, grip).contains(pos):
+            return "top_right"
+        if QRect(0, rect.height() - grip, grip, grip).contains(pos):
+            return "bottom_left"
+        if QRect(rect.width() - grip, rect.height() - grip, grip, grip).contains(pos):
+            return "bottom_right"
+        if QRect(grip, 0, rect.width() - 2 * grip, grip).contains(pos):
+            return "top"
+        if QRect(0, grip, grip, rect.height() - 2 * grip).contains(pos):
+            return "left"
+        if QRect(
+            rect.width() - grip, grip, rect.width(), rect.height() - 2 * grip
+        ).contains(pos):
+            return "right"
+        if QRect(grip, rect.height() - grip, rect.width() - 2 * grip, grip).contains(
+            pos
+        ):
+            return "bottom"
+
+        return None
+
+    def updateCursorShape(self, pos):
+        """Update the cursor shape based on the mouse position."""
+        if self.isMaximized():
+            self.setCursor(Qt.ArrowCursor)
+            return
+
+        resize_area = self._get_resize_area(pos)
+
+        if resize_area in ("top_left", "bottom_right"):
+            self.setCursor(Qt.SizeFDiagCursor)
+        elif resize_area in ("top_right", "bottom_left"):
+            self.setCursor(Qt.SizeBDiagCursor)
+        elif resize_area in ("top", "bottom"):
+            self.setCursor(Qt.SizeVerCursor)
+        elif resize_area in ("left", "right"):
+            self.setCursor(Qt.SizeHorCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+
+    def keyPressEvent(self, event):
+        """Handle key events for window management shortcuts."""
+        # ctrl key + Left/Right/Up/Down for window snapping
+        if event.modifiers() & Qt.ControlModifier:
+            screen = self.screen()
+            screen_geometry = screen.availableGeometry()
+
+            if event.key() == Qt.Key_Left:
+                # Snap to left half
+                self.showNormal()
+                self.setGeometry(
+                    QRect(
+                        screen_geometry.left(),
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                )
+            elif event.key() == Qt.Key_Right:
+                # Snap to right half
+                self.showNormal()
+                self.setGeometry(
+                    QRect(
+                        screen_geometry.left() + screen_geometry.width() // 2,
+                        screen_geometry.top(),
+                        screen_geometry.width() // 2,
+                        screen_geometry.height(),
+                    )
+                )
+            elif event.key() == Qt.Key_Up:
+                # Maximize
+                self.showMaximized()
+            elif event.key() == Qt.Key_Down:
+                # Restore/minimize
+                if self.isMaximized():
+                    self.showNormal()
+                else:
+                    self.showMinimized()
+        else:
+            super().keyPressEvent(event)
+
     @Slot()
     def load_layout_1_slot(self):
         print("Loading layout from slot 1...")
@@ -973,3 +1304,54 @@ class MainWindow(QMainWindow):
         print("Main Window: Closing application.")
         self.pythonTerminal.shutdown_kernel()
         event.accept()
+
+    @Slot()
+    def show_settings_wip(self):
+        """Shows a 'Work in Progress' message for the settings panel."""
+        QMessageBox.information(
+            self,
+            "Work in Progress",
+            "The settings panel is currently under development.",
+        )
+
+    # logic to load samples from the samples folder in optiland
+    def _populate_gallery_menu(self, menu_bar: QMenuBar):
+        """Creates the 'Gallery' menu by inspecting the samples package."""
+        gallery_menu = menu_bar.addMenu("&Gallery")
+        samples_menu = gallery_menu.addMenu("&Samples")
+
+        systems_by_module = defaultdict(list)
+
+        for _, obj_class in inspect.getmembers(optiland.samples, inspect.isclass):
+            if issubclass(obj_class, Optic) and obj_class is not Optic:
+                module_name = obj_class.__module__.split(".")[-1]
+                systems_by_module[module_name].append(obj_class)
+
+        if not systems_by_module:
+            samples_menu.addAction("No samples found.").setEnabled(False)
+            return
+
+        for module_name, classes in sorted(systems_by_module.items()):
+            submenu_name = module_name.replace("_", " ").title()
+            submenu = samples_menu.addMenu(submenu_name)
+            for optic_class in sorted(classes, key=lambda c: c.__name__):
+                action_name = optic_class.__name__.replace("_", " ").title()
+                action = QAction(action_name, self)
+                action.triggered.connect(
+                    lambda checked=False, cls=optic_class: self._load_sample_action(cls)
+                )
+                submenu.addAction(action)
+
+    def _load_sample_action(self, optic_class: type[Optic]):
+        """Instantiates and loads the selected sample class."""
+        try:
+            optic_instance = optic_class()
+            self.connector.load_optic_from_object(optic_instance)
+            print(f"Loaded sample: {optic_class.__name__}")
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Sample Load Error",
+                f"Could not load sample '{optic_class.__name__}':\n{e}",
+            )

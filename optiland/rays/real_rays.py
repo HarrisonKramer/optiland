@@ -6,9 +6,15 @@ rays in 3D space.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
-from optiland.materials import BaseMaterial
 from optiland.rays.base import BaseRays
+
+if TYPE_CHECKING:
+    from optiland.materials import BaseMaterial
 
 
 class RealRays(BaseRays):

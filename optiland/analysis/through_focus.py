@@ -5,6 +5,8 @@ This module provides a base class for performing through-focus analysis.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import optiland.backend as be

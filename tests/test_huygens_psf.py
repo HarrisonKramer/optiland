@@ -145,7 +145,7 @@ class TestHuygensPSF:
             num_rays=self.NUM_RAYS_LOW,
             image_size=self.IMAGE_SIZE_LOW,
         )
-        image_x, image_y, image_z = psf_instance._get_image_coordinates()  #
+        image_x, image_y, image_z = psf_instance._get_image_coordinates()
 
         assert isinstance(image_x, np.ndarray)
         assert isinstance(image_y, np.ndarray)
@@ -350,12 +350,11 @@ class TestHuygensPSF:
             "Calculated Y extent is incorrect"
         )
 
-    @patch("matplotlib.pyplot.show")
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)
     @pytest.mark.parametrize("projection", ["2d", "3d"])
     @pytest.mark.parametrize("log_scale", [True, False])
     def test_view_runs_without_error(
-        self, mock_show, optic_fixture_name, projection, log_scale, request
+        self, optic_fixture_name, projection, log_scale, request
     ):
         """
         Tests that the `view` method (inherited from BasePSF) runs without raising
@@ -371,14 +370,17 @@ class TestHuygensPSF:
         )
 
         try:
-            psf_instance.view(
+            fig, ax = psf_instance.view(
                 projection=projection, log=log_scale, num_points=32
             )  # Use fewer points for interpolation
         except Exception as e:
             pytest.fail(f"view() raised an exception: {e}")
 
-        mock_show.assert_called_once()
-        plt.close()
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(fig)
 
     def test_view_invalid_projection(self, cooke_triplet_optic):
         """
@@ -396,7 +398,10 @@ class TestHuygensPSF:
 
     @pytest.mark.parametrize(
         "projection",
-        [ "2d", "3d",],
+        [
+            "2d",
+            "3d",
+        ],
     )
     @patch("matplotlib.figure.Figure.text")
     def test_view_annotate_sampling(self, mock_text, projection, cooke_triplet_optic):
@@ -415,7 +420,10 @@ class TestHuygensPSF:
 
     @pytest.mark.parametrize(
         "projection",
-        [ "2d", "3d",],
+        [
+            "2d",
+            "3d",
+        ],
     )
     def test_view_oversampling(self, projection, cooke_triplet_optic):
         psf_instance = HuygensPSF(
@@ -426,7 +434,9 @@ class TestHuygensPSF:
             image_size=self.IMAGE_SIZE_LOW,
         )
 
-        with pytest.warns(UserWarning, match="The PSF view has a high oversampling factor"):
+        with pytest.warns(
+            UserWarning, match="The PSF view has a high oversampling factor"
+        ):
             psf_instance.view(projection=projection, log=False, num_points=128)
 
     @pytest.mark.parametrize("optic_fixture_name", OPTIC_FIXTURES)

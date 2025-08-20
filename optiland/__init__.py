@@ -1,3 +1,5 @@
 """Open-source Optical Design in Python"""
 
-__version__ = "0.5.4"
+from __future__ import annotations
+
+__version__ = "0.5.5"

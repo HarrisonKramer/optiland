@@ -7,6 +7,8 @@ for an optical system.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,27 +18,24 @@ from .base import BaseAnalysis
 
 
 class GridDistortion(BaseAnalysis):
-    """Represents a grid distortion analysis for an optical system.
+    """Grid distortion analysis for an optical system.
 
     Args:
         optic (Optic): The optical system to analyze.
-        wavelength (str, optional): The wavelength of light to use for
-            analysis. Defaults to 'primary'.
-        num_points (int, optional): The number of points along each axis of the
-            grid. Defaults to 10.
-        distortion_type (str, optional): The type of distortion to analyze.
-            Must be 'f-tan' or 'f-theta'. Defaults to 'f-tan'.
+        wavelength (str | float | int, optional): Wavelength for analysis.
+            Can be 'primary', 'all', or a numeric value. Defaults to 'primary'.
+        num_points (int, optional): Number of grid points per axis. Defaults to 10.
+        distortion_type (str, optional): Distortion model, either 'f-tan' or 'f-theta'.
+            Defaults to 'f-tan'.
 
     Attributes:
-        optic (Optic): The optical system being analyzed.
-        wavelength (str): The wavelength of light used for analysis.
-        num_points (int): The number of points in the grid.
-        distortion_type (str): The type of distortion being analyzed.
-        data (dict): The generated data for the analysis.
+        num_points (int): Number of grid points per axis.
+        distortion_type (str): Distortion model used.
+        data (dict): Computed distortion data (after running _generate_data()).
 
     Methods:
-        view(figsize=(7, 5.5)): Visualizes the grid distortion analysis.
-
+        view(fig_to_plot_on=None, figsize=(7, 7)):
+            Visualizes the grid distortion analysis.
     """
 
     def __init__(
@@ -47,7 +46,7 @@ class GridDistortion(BaseAnalysis):
         distortion_type="f-tan",
     ):
         # --- Start of Corrected Code ---
-        if isinstance(wavelength, (float, int)):
+        if isinstance(wavelength, float | int):
             # Wrap the single wavelength number in a list for the base class.
             processed_wavelengths = [wavelength]
         elif isinstance(wavelength, str) and wavelength in ["primary", "all"]:
@@ -64,8 +63,19 @@ class GridDistortion(BaseAnalysis):
         # Pass the formatted list or string to the base class constructor.
         super().__init__(optic, wavelengths=processed_wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(7, 7)):  # Adjusted for squareness
-        """Visualizes the grid distortion analysis."""
+    def view(
+        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 7)
+    ) -> tuple[plt.Figure, plt.Axes]:  # Adjusted for squareness
+        """Visualizes the grid distortion analysis.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): Existing figure to plot on.
+                If None, a new figure is created. Defaults to None.
+            figsize (tuple, optional): Size of the figure if a new one is created.
+                Defaults to (7, 7) for a square plot.
+        Returns:
+            tuple: The figure and axes objects used for plotting.
+        """
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
@@ -101,18 +111,16 @@ class GridDistortion(BaseAnalysis):
         ax.set_aspect("equal", adjustable="box")
         ax.spines["right"].set_visible(False)
         ax.spines["top"].set_visible(False)
-        ax.legend()
+        ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.grid(True, linestyle=":", alpha=0.6)
 
         max_distortion = self.data["max_distortion"]
         ax.set_title(f"Grid Distortion (Max: {max_distortion:.2f}%)")
         current_fig.tight_layout()
 
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, ax
 
     def _generate_data(self):
         """Generates the data for the grid distortion analysis.

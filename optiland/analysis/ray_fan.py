@@ -5,6 +5,8 @@ This module provides a ray fan analysis for optical systems.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -51,9 +53,21 @@ class RayFan(BaseAnalysis):
 
         super().__init__(optic, wavelengths)
 
-    def view(self, fig_to_plot_on=None, figsize=(10, 3.33)):
+    def view(
+        self,
+        fig_to_plot_on: plt.Figure = None,
+        figsize: tuple[float, float] = (10, 3.33),
+    ):
         """
         Displays the ray fan plot, either in a new window or on a provided GUI figure.
+
+        Args:
+            fig_to_plot_on (plt.Figure, optional): The figure to plot on.
+                If None, a new figure will be created. Defaults to None.
+            figsize (tuple[float, float], optional): The size of the figure.
+                Defaults to (10, 3.33).
+        Returns:
+            tuple: The current figure and its axes.
         """
         is_gui_embedding = fig_to_plot_on is not None
         num_fields = len(self.fields)
@@ -137,11 +151,9 @@ class RayFan(BaseAnalysis):
                 )
 
         current_fig.tight_layout()
-        if is_gui_embedding:
-            if hasattr(current_fig, "canvas"):
-                current_fig.canvas.draw_idle()
-        else:
-            plt.show()
+        if is_gui_embedding and hasattr(current_fig, "canvas"):
+            current_fig.canvas.draw_idle()
+        return current_fig, current_fig.get_axes()
 
     def _generate_data(self):
         """Generates the ray fan data.

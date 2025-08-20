@@ -168,8 +168,8 @@ def test_flip_toroidal_geometry():
     initial_coeffs_y = [0.0001, -0.00002]
     geom = ToroidalGeometry(
         cs,
-        radius_rotation=initial_r_rot,
-        radius_yz=initial_r_yz,
+        radius_x=initial_r_rot,
+        radius_y=initial_r_yz,
         conic=initial_k_yz,
         coeffs_poly_y=initial_coeffs_y,
     )
@@ -215,13 +215,13 @@ def test_flip_zernike_geometry():
 
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
 
 def test_flip_biconic_zero_radius():
@@ -236,7 +236,7 @@ def test_flip_biconic_zero_radius():
 
 
 def test_flip_toroidal_zero_radius():
-    geom = ToroidalGeometry(cs, radius_rotation=0.0, radius_yz=-100.0, conic=-0.7)
+    geom = ToroidalGeometry(cs, radius_x=0.0, radius_y=-100.0, conic=-0.7)
     initial_c_yz_val = geom.c_yz
     geom.flip()
     assert geom.R_rot == 0.0  # -0.0 is 0.0
@@ -246,7 +246,7 @@ def test_flip_toroidal_zero_radius():
         assert be.allclose(geom.c_yz, be.array(expected_c_yz))
     else:
         assert be.allclose(geom.c_yz, expected_c_yz)
-    assert geom.radius == 0.0  # Base radius also flipped (was 0.0, remains 0.0)
+    assert geom.R_rot == 0.0  # Rotation radius also flipped (was 0.0, remains 0.0)
 
 
 def test_flip_standard_inf_radius():
@@ -269,7 +269,7 @@ def test_flip_biconic_inf_radius():
 
 
 def test_flip_toroidal_inf_radius():
-    geom = ToroidalGeometry(cs, radius_rotation=be.inf, radius_yz=-100.0, conic=-0.7)
+    geom = ToroidalGeometry(cs, radius_x=be.inf, radius_y=-100.0, conic=-0.7)
     initial_c_yz_val = geom.c_yz
     geom.flip()
     assert geom.R_rot == -be.inf
@@ -279,4 +279,4 @@ def test_flip_toroidal_inf_radius():
         assert be.allclose(geom.c_yz, be.array(expected_c_yz))
     else:
         assert be.allclose(geom.c_yz, expected_c_yz)
-    assert geom.radius == -be.inf
+    assert geom.R_rot == -be.inf

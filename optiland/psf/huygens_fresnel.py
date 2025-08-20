@@ -10,6 +10,8 @@ system calculated using the same Huygens-Fresnel principle.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from numba import njit, prange
 
 import optiland.backend as be
@@ -41,33 +43,52 @@ class HuygensPSF(BasePSF):
             `num_rays` x `num_rays`. Defaults to 128.
         image_size (int, optional): The size of the image grid for PSF
             calculation. Defaults to 128.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        oversample (float): The oversampling ratio with respect to the optical cutoff.
+            Impacts the extent of the image and is generally only used for MTF
+            calculation.
+        **kwargs: Additional keyword arguments passed to the strategy.
     """
 
-    def __init__(self, optic, field, wavelength, num_rays=128, image_size=128):
+    def __init__(
+        self,
+        optic,
+        field,
+        wavelength,
+        num_rays=128,
+        image_size=128,
+        strategy="chief_ray",
+        remove_tilt=False,
+        oversample: float = None,
+        **kwargs,
+    ):
         if be.get_backend() != "numpy":
             raise ValueError("HuygensPSF only supports numpy backend.")
 
         super().__init__(
-            optic=optic, field=field, wavelength=wavelength, num_rays=num_rays
+            optic=optic,
+            field=field,
+            wavelength=wavelength,
+            num_rays=num_rays,
+            strategy=strategy,
+            remove_tilt=remove_tilt,
+            **kwargs,
         )
 
         self.cx = None  # center of the image plane
         self.cy = None
-        self.pixel_pitch = None  # pixel pitch of image plane in m
+        self.pixel_pitch = None  # pixel pitch of image plane in mm
 
         self.image_size = image_size
+        self.oversample = oversample
         self.psf = self._compute_psf()
 
-    def _get_image_extent(self):
-        """Calculate the extent of the image plane based on the optic's parameters.
-
-        This method computes the extent of the image plane based on the geometric
-        spot size, as well as a scaled ideal Airy disk at a given wavelength. The
-        extent is defined as the maximum of the geometric extent and the ideal
-        extent, ensuring that the PSF covers the area where the light is expected
-        to be distributed.
-        """
-        Hx, Hy = self.fields[0]  # single field point
+    def _determine_image_center(self):
+        """Determine center of image via raytrace across field"""
+        Hx, Hy = self.fields[0]
         rays = self.optic.trace(
             Hx=Hx,
             Hy=Hy,
@@ -75,12 +96,62 @@ class HuygensPSF(BasePSF):
             distribution="hexapolar",
             num_rays=6,
         )
-        rx, ry, rz = transform(
+        rx, ry, _ = transform(
             rays.x, rays.y, rays.z, self.optic.image_surface, is_global=True
         )
+
+        return rx, ry
+
+    def _get_image_extent(self) -> tuple[float, float, float, float]:
+        """Calculate the extent of the image plane in mm.
+
+        The extent can be determined either by optical cutoff (oversample mode)
+        or by geometric/Airy coverage (default mode).
+        """
+        # Determine image center and retrieve x, y intersections
+        rx, ry = self._determine_image_center()
         self.cx = be.mean(rx)
         self.cy = be.mean(ry)
 
+        if self.oversample is not None:
+            extent = self._extent_from_cutoff()
+        else:
+            extent = self._extent_from_geometry(rx, ry)
+
+        # Pixel pitch always derived from extent
+        self.pixel_pitch = 2 * extent / self.image_size
+
+        # Final extents centered on chief ray intercept
+        xmin = -extent + self.cx
+        xmax = extent + self.cx
+        ymin = -extent + self.cy
+        ymax = extent + self.cy
+
+        return xmin, xmax, ymin, ymax
+
+    def _extent_from_cutoff(self) -> float:
+        """Compute half-extent based on cutoff frequency and oversampling ratio.
+
+        This method determines the image plane extent by enforcing sampling
+        criteria relative to the optical cutoff frequency. The cutoff frequency
+        is defined by the system's effective F-number and the primary wavelength.
+        The oversampling factor scales the cutoff to achieve finer-than-Nyquist
+        sampling, ensuring that the PSF is adequately resolved on the image grid.
+        """
+        f_cutoff = 1.0 / (self._get_working_FNO() * self.wavelengths[0] * 1e-3)
+        f_nyquist = self.oversample * f_cutoff
+        self.pixel_pitch = 1.0 / (2 * f_nyquist)
+        return 0.5 * self.image_size * self.pixel_pitch
+
+    def _extent_from_geometry(self, rx, ry) -> float:
+        """Compute half-extent based on geometric footprint and Airy disk.
+
+        This method computes the extent of the image plane based on the geometric
+        spot size, as well as a scaled ideal Airy disk at a given wavelength. The
+        extent is defined as the maximum of the geometric extent and the ideal
+        extent, ensuring that the PSF covers the area where the light is expected
+        to be distributed.
+        """
         num_Airy_disks = 5.0  # how many Airy disk radii to include in half-extent
         extent_geometric = be.max(be.hypot(rx - self.cx, ry - self.cy))
         extent_ideal = (
@@ -89,18 +160,7 @@ class HuygensPSF(BasePSF):
             * 1.22
             * (self.wavelengths[0] * 1e-3)  # um --> mm
         )
-
-        extent = max(extent_geometric, extent_ideal)
-
-        # Calculate pixel pitch
-        self.pixel_pitch = 2 * extent / self.image_size
-
-        xmin = -extent + self.cx
-        xmax = extent + self.cx
-        ymin = -extent + self.cy
-        ymax = extent + self.cy
-
-        return xmin, xmax, ymin, ymax
+        return max(extent_geometric, extent_ideal)
 
     def _get_image_coordinates(self):
         """Generate image coordinates for the PSF calculation.
@@ -254,7 +314,7 @@ class HuygensPSF(BasePSF):
             data.intensity,
             pupil_opd_ideal,
             self.wavelengths[0] * 1e-3,
-            data.radius.item(),
+            data.radius,
         )
 
         return psf_max[0, 0]  # Normalize by the peak of the ideal PSF
@@ -271,7 +331,7 @@ class HuygensPSF(BasePSF):
         pupil_x, pupil_y, pupil_z = data.pupil_x, data.pupil_y, data.pupil_z
         pupil_amp = data.intensity
         pupil_opd = data.opd * wavelength_mm  # waves to mm
-        Rp = data.radius.item()  # Radius of curvature of exit pupil
+        Rp = data.radius  # Radius of curvature of exit pupil
 
         # Get image coordinates
         image_x, image_y, image_z = self._get_image_coordinates()

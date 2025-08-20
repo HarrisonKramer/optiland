@@ -13,6 +13,8 @@ where
 Kramer Harrison, 2024  Matteo Taccola 2025
 """
 
+from __future__ import annotations
+
 import warnings
 
 import optiland.backend as be

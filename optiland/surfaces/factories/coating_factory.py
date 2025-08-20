@@ -8,10 +8,14 @@ requirements.
 Kramer Harrison, 2025
 """
 
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from optiland.coatings import BaseCoating, FresnelCoating
-from optiland.materials import BaseMaterial
+
+if TYPE_CHECKING:
+    from optiland.materials import BaseMaterial
 
 
 class CoatingFactory:
@@ -29,10 +33,10 @@ class CoatingFactory:
 
     @staticmethod
     def create(
-        coating: Union[str, BaseCoating],
+        coating: str | BaseCoating,
         material_pre: BaseMaterial,
         material_post: BaseMaterial,
-    ) -> Union[BaseCoating, None]:
+    ) -> BaseCoating | None:
         """Creates a coating instance based on the given input.
 
         Args:

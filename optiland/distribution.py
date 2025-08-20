@@ -5,6 +5,8 @@ This module provides various classes representing 2D pupil distributions.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
@@ -35,20 +37,23 @@ class BaseDistribution(ABC):
         """
         # pragma: no cover
 
-    def view(self):
+    def view(self) -> tuple[plt.Figure, plt.Axes]:
         """Visualize the distribution.
 
         This method plots the distribution points and a unit circle for
-            reference.
+        reference.
+        Returns:
+            tuple: A tuple containing the figure and axes of the plot.
         """
-        plt.plot(be.to_numpy(self.x), be.to_numpy(self.y), "k*")
+        fig, ax = plt.subplots()
+        ax.plot(be.to_numpy(self.x), be.to_numpy(self.y), "k*")
         t = np.linspace(0, 2 * be.pi, 256)
         x, y = np.cos(t), np.sin(t)
-        plt.plot(x, y, "r")
-        plt.xlabel("Normalized Pupil Coordinate X")
-        plt.ylabel("Normalized Pupil Coordinate Y")
-        plt.axis("equal")
-        plt.show()
+        ax.plot(x, y, "r")
+        ax.set_xlabel("Normalized Pupil Coordinate X")
+        ax.set_ylabel("Normalized Pupil Coordinate Y")
+        ax.axis("equal")
+        return fig, ax
 
 
 class LineXDistribution(BaseDistribution):

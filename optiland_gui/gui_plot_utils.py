@@ -7,6 +7,8 @@ auto-generate settings interfaces.
 Author: Manuel Fragata Mendes, 2025
 """
 
+from __future__ import annotations
+
 import inspect
 
 import matplotlib
@@ -97,3 +99,27 @@ def get_analysis_parameters(analysis_class):
             f"Warning: Could not inspect parameters for {analysis_class.__name__}: {e}"
         )
     return params
+
+
+def handle_matplotlib_scroll_zoom(event):
+    """Handles mouse wheel scrolling for zooming on a Matplotlib axes."""
+    if not event.inaxes:
+        return
+
+    ax = event.inaxes
+    scale_factor = 1.1 if event.step < 0 else 1 / 1.1
+
+    cur_xlim = ax.get_xlim()
+    cur_ylim = ax.get_ylim()
+
+    xdata, ydata = event.xdata, event.ydata
+
+    new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+    new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+    rel_x = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+    rel_y = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+
+    ax.set_xlim([xdata - new_width * (1 - rel_x), xdata + new_width * rel_x])
+    ax.set_ylim([ydata - new_height * (1 - rel_y), ydata + new_height * rel_y])
+    ax.figure.canvas.draw_idle()
