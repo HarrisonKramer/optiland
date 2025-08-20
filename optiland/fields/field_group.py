@@ -20,8 +20,6 @@ class FieldGroup:
     Attributes:
         fields (list): A list of fields in the group.
         telecentric (bool): Whether the system is telecentric in object space.
-        mode (BaseFieldMode): The mode for the field group, e.g., angle, object height,
-            paraxial image height, etc.
 
     Methods:
         get_vig_factor(Hx, Hy): Returns the vignetting factors for given Hx
@@ -32,9 +30,8 @@ class FieldGroup:
 
     """
 
-    def __init__(self, mode):
+    def __init__(self):
         self.fields = []
-        self.mode = mode
         self.telecentric = False
 
     @property

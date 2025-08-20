@@ -8,17 +8,34 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from optiland.fields.field_modes import BaseFieldMode
+    from optiland.optic import Optic
 
 
 @contextmanager
-def override_property(obj, property_name, temp_value):
+def temporary_field_mode(optic: Optic, temp_mode: BaseFieldMode):
     """Temporarily override a read-only property with a fixed value."""
-    cls = type(obj)
-    original = getattr(cls, property_name)
+    original = optic.__class__.field_mode
     try:
-        # Replace the property with a temporary one that returns temp_value
-        setattr(cls, property_name, property(lambda self: temp_value))
+        optic.field_mode = property(lambda self: temp_mode)
         yield
     finally:
         # Restore the original property
-        setattr(cls, property_name, original)
+        optic.field_mode = original
+
+
+@dataclass(frozen=True)
+class ResolvedField:
+    """Canonical field definition resolved from an image height request.
+
+    Attributes:
+        mode_type: "angle" when object is at infinity, "object_height" otherwise.
+        value: Canonical field value (degrees for angle, length units for height).
+    """
+
+    mode_type: Literal["angle", "object_height"]
+    value: float

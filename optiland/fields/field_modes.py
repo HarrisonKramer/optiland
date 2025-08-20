@@ -19,6 +19,7 @@ import optiland.backend as be
 from .field_solvers import ParaxialImageHeightSolver
 
 if TYPE_CHECKING:
+    from optiland.fields.field_group import FieldGroup
     from optiland.optic import Optic
 
 
@@ -28,6 +29,9 @@ class BaseFieldMode(ABC):
     """
 
     _registry = {}
+
+    def __init__(self, group: FieldGroup):
+        self.group = group
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
@@ -104,10 +108,10 @@ class ObjectHeightFieldMode(BaseFieldMode):
     given directly.
     """
 
-    def __init__(self):
+    def __init__(self, group: FieldGroup):
         """Initializes an ObjectHeightMode."""
         self.type_ = "object_height"
-        super().__init__()
+        super().__init__(group)
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
         """Calculate ray origin coordinates for object height fields.
@@ -265,10 +269,10 @@ class AngleFieldMode(BaseFieldMode):
     naturally expressed in angular terms.
     """
 
-    def __init__(self):
+    def __init__(self, group: FieldGroup):
         """Initializes an AngleMode."""
         self.type_ = "angle"
-        super().__init__()
+        super().__init__(group)
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
         """Calculate ray origin coordinates for angle fields.
@@ -452,15 +456,9 @@ class ParaxialImageHeightFieldMode(BaseFieldMode):
         target_height (float): Desired paraxial image height in lens units.
     """
 
-    def __init__(self, target_height: float):
-        """Initialize the field mode.
-
-        Args:
-            target_height: Desired paraxial image height (in lens units).
-        """
-        super().__init__()
+    def __init__(self, group: FieldGroup):
+        super().__init__(group)
         self.type_ = "paraxial_image_height"
-        self.target_height = target_height
         self._solver = ParaxialImageHeightSolver()
 
     def _resolve_base_mode(self, optic: Optic) -> BaseFieldMode:

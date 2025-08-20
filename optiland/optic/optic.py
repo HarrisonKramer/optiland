@@ -92,9 +92,8 @@ class Optic:
         self.field_type: FieldType | None = None
 
         self.surface_group: SurfaceGroup = SurfaceGroup()
-        self.fields: FieldGroup = FieldGroup(
-            mode=AngleFieldMode()
-        )  # angle is default field mode
+        self.fields = FieldGroup()
+        self.field_mode = AngleFieldMode(self.fields)
         self.wavelengths: WavelengthGroup = WavelengthGroup()
 
         self.paraxial: Paraxial = Paraxial(self)
