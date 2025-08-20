@@ -115,10 +115,12 @@ class Optic:
         new_optic.surface_group += other.surface_group
         return new_optic
 
+    @property
     def primary_wavelength(self) -> float:
         """float: the primary wavelength in microns"""
         return self.wavelengths.primary_wavelength.value
 
+    @property
     def object_surface(self) -> ObjectSurface | None:
         """Surface: the object surface instance"""
         for surface in self.surface_group.surfaces:
