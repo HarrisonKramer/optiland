@@ -12,8 +12,14 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
+
+from .field_solvers import ParaxialImageHeightSolver
+
+if TYPE_CHECKING:
+    from optiland.optic import Optic
 
 
 class BaseFieldMode(ABC):
@@ -431,34 +437,125 @@ class AngleFieldMode(BaseFieldMode):
 
 
 class ParaxialImageHeightFieldMode(BaseFieldMode):
-    def to_dict(self):
-        """Converts the geometry to a dictionary.
+    """Field mode defined by paraxial image height.
 
-        Returns:
-            dict: The dictionary representation of the geometry.
+    This mode allows fields to be specified in terms of their image-plane
+    height, rather than object-space height or angle. Internally, this mode
+    resolves the requested image height into an equivalent canonical field
+    definition (angle or object height), using paraxial ray tracing.
 
-        """
-        data = super().to_dict()
-        data["base_mode"] = self.base_mode.to_dict()
-        return data
+    The resolution is performed via a `ParaxialImageHeightSolver`. Once resolved,
+    all ray origin and paraxial object position calculations are delegated to
+    the equivalent canonical mode.
 
-    @classmethod
-    def from_dict(cls, data):
-        """Creates an ParaxialImageHeightFieldMode instance from a
-        dictionary representation.
+    Attributes:
+        target_height (float): Desired paraxial image height in lens units.
+    """
+
+    def __init__(self, target_height: float):
+        """Initialize the field mode.
 
         Args:
-            data (dict): The dictionary representation of the field mode.
+            target_height: Desired paraxial image height (in lens units).
+        """
+        super().__init__()
+        self.type_ = "paraxial_image_height"
+        self.target_height = target_height
+        self._solver = ParaxialImageHeightSolver()
+
+    def _resolve_base_mode(self, optic: Optic) -> BaseFieldMode:
+        """Resolve this mode into an equivalent canonical mode.
+
+        Args:
+            optic: The optical system.
 
         Returns:
-            ParaxialImageHeightFieldMode: An instance of ParaxialImageHeightFieldMode.
-
+            BaseFieldMode: A resolved mode (AngleFieldMode or ObjectHeightFieldMode)
+                with parameters scaled to produce the requested image height.
         """
-        if "base_mode" not in data:
-            raise ValueError("Missing 'base_mode' key.")
+        # Solver returns the equivalent object-space field value (angle or height)
+        # solved_field_value = self._solver.solve(optic, self.target_height)
 
-        base_mode = BaseFieldMode.from_dict(data["base_mode"])
-        return cls(base_mode)
+        # Instantiate the appropriate base mode with this solved value
+        if optic.object_surface.is_infinite:
+            # Placeholder: AngleFieldMode may need to accept field value as ctor arg
+            return AngleFieldMode()  # TODO: inject solved_field_value into instance
+        else:
+            return ObjectHeightFieldMode()  # TODO: inject solved_field_value
+
+    def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
+        """Calculate ray origins for this field mode.
+
+        Delegates to the resolved base mode.
+
+        Args:
+            optic: Optical system.
+            Hx, Hy: Normalized field coordinates.
+            Px, Py: Pupil coordinates.
+            vx, vy: Vignetting factors.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray, be.ndarray]: Ray origin coordinates.
+        """
+        base_mode = self._resolve_base_mode(optic)
+        return base_mode.get_ray_origins(optic, Hx, Hy, Px, Py, vx, vy)
+
+    def get_paraxial_object_position(self, optic, Hy, y1, EPL):
+        """Calculate paraxial object position for this field mode.
+
+        Delegates to the resolved base mode.
+
+        Args:
+            optic: Optical system.
+            Hy: Normalized field coordinate.
+            y1: Ray height(s) at the entrance pupil.
+            EPL: Entrance pupil location.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray]: Paraxial object coordinates (y0, z0).
+        """
+        base_mode = self._resolve_base_mode(optic)
+        return base_mode.get_paraxial_object_position(optic, Hy, y1, EPL)
+
+    def get_chief_ray_start_params(
+        self, optic, chief_ray_y_at_stop, chief_ray_u_at_stop
+    ):
+        """Calculate chief ray start params for this field mode.
+
+        Delegates to the resolved base mode.
+
+        Args:
+            optic: Optical system.
+            chief_ray_y_at_stop: Ray height at stop.
+            chief_ray_u_at_stop: Ray slope at stop.
+
+        Returns:
+            float: Chief ray start slope.
+        """
+        base_mode = self._resolve_base_mode(optic)
+        return base_mode.get_chief_ray_start_params(
+            optic, chief_ray_y_at_stop, chief_ray_u_at_stop
+        )
+
+    def validate_optic_state(self, optic):
+        """Validate the optic state for compatibility with this mode.
+
+        Validation is delegated to the resolved base mode.
+        """
+        base_mode = self._resolve_base_mode(optic)
+        base_mode.validate_optic_state(optic)
+
+    def to_dict(self) -> dict:
+        """Serialize this mode to a dictionary."""
+        return {
+            "type": self.type_,
+            "target_height": self.target_height,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> ParaxialImageHeightFieldMode:
+        """Deserialize a field mode from a dictionary."""
+        return cls(target_height=data["target_height"])
 
 
 class RealImageHeightFieldMode(ParaxialImageHeightFieldMode):

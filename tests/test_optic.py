@@ -4,10 +4,7 @@ import optiland.backend as be
 from optiland.aperture import Aperture
 from optiland.apodization import GaussianApodization
 from optiland.fields.field_group import FieldGroup
-from optiland.fields.field_modes import (
-    ObjectHeightFieldMode,
-    AngleFieldMode
-)
+from optiland.fields.field_modes import ObjectHeightFieldMode, AngleFieldMode
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
@@ -418,7 +415,7 @@ class TestOptic:
         assert lens_dict["apodization"]["type"] == "GaussianApodization"
         assert lens_dict["apodization"]["sigma"] == 0.5
         assert "fields" in lens_dict
-        assert lens_dict["fields"]["mode"]['type'] == 'AngleFieldMode'
+        assert lens_dict["fields"]["mode"]["type"] == "AngleFieldMode"
 
     def test_from_dict(self, set_test_backend):
         lens = HeliarLens()  # field_type "angle"
@@ -440,7 +437,9 @@ class TestOptic:
         # Change to object_height for testing this case
         finite_lens.set_field_type("object_height")
         finite_dict_obj_height = finite_lens.to_dict()
-        assert finite_dict_obj_height["fields"]["mode"]["type"] == "ObjectHeightFieldMode"
+        assert (
+            finite_dict_obj_height["fields"]["mode"]["type"] == "ObjectHeightFieldMode"
+        )
 
         new_optic_obj_height = Optic.from_dict(finite_dict_obj_height)
         assert isinstance(new_optic_obj_height.fields.mode, ObjectHeightFieldMode)
