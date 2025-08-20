@@ -1,6 +1,6 @@
 import unittest
 
-from optiland.fields.field_solvers import ParaxialFieldSolver, RealFieldSolver
+from optiland.fields.field_solvers import ParaxialImageHeightSolver, RealImageHeightSolver
 
 # To mock/stub Optic and related components if actual classes are not available.
 # For now, we'll define a simple mock Optic class here.

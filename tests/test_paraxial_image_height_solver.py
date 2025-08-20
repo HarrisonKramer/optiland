@@ -1,6 +1,6 @@
 import pytest
 
-from optiland.fields.field_solvers import _ParaxialImageHeightSolver
+from optiland.fields.field_solvers import ParaxialImageHeightSolver
 from optiland.samples.objectives import CookeTriplet
 
 

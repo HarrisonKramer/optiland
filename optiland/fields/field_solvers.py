@@ -105,6 +105,6 @@ class ParaxialImageHeightSolver:
         return solved_field
 
 
-class RealFieldSolver:
+class RealImageHeightSolver:
     def __init__(self):
         raise NotImplementedError("Real image height field mode not yet implemented.")
