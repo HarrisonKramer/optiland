@@ -145,7 +145,7 @@ class TestHuygensPSF:
             num_rays=self.NUM_RAYS_LOW,
             image_size=self.IMAGE_SIZE_LOW,
         )
-        image_x, image_y, image_z = psf_instance._get_image_coordinates()  #
+        image_x, image_y, image_z = psf_instance._get_image_coordinates()
 
         assert isinstance(image_x, np.ndarray)
         assert isinstance(image_y, np.ndarray)
