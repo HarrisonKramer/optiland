@@ -6,6 +6,8 @@ system.
 Kramer Harrison, 2023
 """
 
+from __future__ import annotations
+
 
 class Field:
     """Represents a field with specific properties.

@@ -5,6 +5,8 @@ This module provides utility functions for managing field properties in optical 
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from contextlib import contextmanager
 
 

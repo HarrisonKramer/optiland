@@ -6,12 +6,18 @@ This module contains classes for solving object-space field values
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.fields.field_modes import AngleFieldMode, ObjectHeightFieldMode
-from optiland.optic import Optic
 from optiland.raytrace.paraxial_ray_tracer import (
     ParaxialRayTracer as BaseParaxialRayTracer,
 )
+
+if TYPE_CHECKING:
+    from optiland.optic import Optic
 
 
 class ParaxialRayTracer(BaseParaxialRayTracer):
