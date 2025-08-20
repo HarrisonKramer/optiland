@@ -6,6 +6,8 @@ of an optical system using FFT techniques.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.psf.fft import FFTPSF, calculate_grid_size
 
@@ -31,6 +33,11 @@ class FFTMTF(BaseMTF):
             as documented in `optiland.psf.fft.FFTPSF`. Defaults to `None`.
         max_freq (str or float, optional): The maximum frequency for the MTF
             calculation. Defaults to 'cutoff'.
+        strategy (str): The calculation strategy to use. Supported options are
+            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt and piston from the OPD data.
+            Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
         num_rays (int): The number of rays used for the MTF calculation.
@@ -50,6 +57,9 @@ class FFTMTF(BaseMTF):
         num_rays=128,
         grid_size=None,
         max_freq="cutoff",
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
     ):
         if grid_size is None:
             self.num_rays, self.grid_size = calculate_grid_size(num_rays)
@@ -57,7 +67,7 @@ class FFTMTF(BaseMTF):
             self.num_rays = num_rays
             self.grid_size = grid_size
 
-        super().__init__(optic, fields, wavelength)
+        super().__init__(optic, fields, wavelength, strategy, remove_tilt, **kwargs)
 
         self.FNO = self._get_fno()
 
@@ -80,6 +90,9 @@ class FFTMTF(BaseMTF):
                 self.resolved_wavelength,
                 self.num_rays,
                 self.grid_size,
+                self.strategy,
+                self.remove_tilt,
+                **self.strategy_kwargs,
             ).psf
             for field in self.resolved_fields
         ]

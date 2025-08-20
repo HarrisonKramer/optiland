@@ -10,6 +10,8 @@ with multiple wavelengths simultaneously.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 
 

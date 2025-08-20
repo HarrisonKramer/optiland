@@ -7,6 +7,8 @@ rays and the surface group of the optical system to trace them.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
@@ -122,7 +124,7 @@ class RealRayTracer:
         return [
             (
                 be.full((max_size,), value)
-                if isinstance(value, (float, int))
+                if isinstance(value, float | int)
                 else value
                 if be.is_array_like(value)
                 else None

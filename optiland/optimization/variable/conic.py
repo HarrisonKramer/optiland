@@ -8,6 +8,8 @@ system. It is used in the optimization process for conic surfaces.
 Kramer Harrison, 2024
 """
 
+from __future__ import annotations
+
 from optiland.optimization.variable.base import VariableBehavior
 
 

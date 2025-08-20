@@ -644,7 +644,7 @@ class TestGlassExpert:
             lens,
             "material",
             surface_number=1,
-            glass_selection=['N-BK7', 'N-SSK2', 'N-SK2', 'N-SK16'],
+            glass_selection=["N-BK7", "N-SSK2", "N-SK2", "N-SK16"],
         )
         input_data = {"optic": lens}
         problem.add_operand(
@@ -656,7 +656,7 @@ class TestGlassExpert:
         optimizer = glass_expert.GlassExpert(problem)
         result = optimizer.run(
             num_neighbours=2,
-            maxiter=8, 
+            maxiter=8,
             disp=False,
             verbose=False,
         )
@@ -676,7 +676,7 @@ class TestGlassExpert:
             lens,
             "material",
             surface_number=1,
-            glass_selection=['N-BK7'],
+            glass_selection=["N-BK7"],
         )
         input_data = {"optic": lens}
         problem.add_operand(
@@ -688,12 +688,12 @@ class TestGlassExpert:
         optimizer = glass_expert.GlassExpert(problem)
         # Since there is a single glass in glass_selection
         # and num_neighbours=2, this should raise:
-        # AssertionError: "Cannot keep more glasses 
+        # AssertionError: "Cannot keep more glasses
         # than available in the input dictionary".
         with pytest.raises(AssertionError):
             result = optimizer.run(
                 num_neighbours=2,
-                maxiter=8, 
+                maxiter=8,
                 disp=False,
                 verbose=False,
             )
@@ -704,7 +704,7 @@ class TestGlassExpert:
         problem = optimization.OptimizationProblem()
         optimizer = glass_expert.GlassExpert(problem)
         optimizer.vprint("Hello World")
-        
+
         # Capture stdout
         captured = capsys.readouterr()
         assert "Hello World" in captured.out

@@ -1,5 +1,7 @@
 """This package provides a collection of predefined sample optical systems."""
 
+from __future__ import annotations
+
 from .eyepieces import EyepieceErfle
 from .infrared import (
     InfraredTriplet,
@@ -10,6 +12,9 @@ from .microscopes import (
     Microscope20x,
     Objective60x,
     UVReflectingMicroscope,
+)
+from .miscellaneous import (
+    NavarroWideAngleEye,
 )
 from .objectives import (
     CookeTriplet,
@@ -51,6 +56,8 @@ __all__ = [
     "Objective60x",
     "Microscope20x",
     "UVReflectingMicroscope",
+    # From miscellaneous.py
+    "NavarroWideAngleEye",
     # From objectives.py
     "TripletTelescopeObjective",
     "CookeTriplet",

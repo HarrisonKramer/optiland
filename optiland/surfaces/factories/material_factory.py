@@ -8,6 +8,8 @@ system components in Optiland.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 
 
@@ -44,7 +46,7 @@ class MaterialFactory:
             material_pre = previous_surface.material_post
 
         # Determine material after the surface
-        material_post = MaterialFactory._configure_post_material(material_spec)
+        material_post = self._configure_post_material(material_spec)
         self.last_material = material_post
 
         # Special case for mirrors: maintain the same material before and after

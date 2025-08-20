@@ -25,19 +25,23 @@ def optic():
 
 
 class TestGeometricMTF:
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_defaults(self, set_test_backend, optic):
         m = GeometricMTF(optic)
-        m.view()  # default figsize, no reference overlay
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view()  # default figsize, no reference overlay
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_custom_fig(self, set_test_backend, optic):
         m = GeometricMTF(optic)
-        m.view(figsize=(20, 20), add_reference=True)
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view(figsize=(20, 20), add_reference=True)
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_generate_data_scaled(self, set_test_backend, optic):
         m = GeometricMTF(optic, scale=True)
@@ -49,21 +53,36 @@ class TestGeometricMTF:
         m._generate_mtf_data()
         assert m.data is not None, "Unscaled MTF data should be generated"
 
+    def test_max_freq_specification(self, set_test_backend, optic):
+        m1 = GeometricMTF(optic)
+
+        wavelength = optic.primary_wavelength
+        expected_cutoff = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
+        assert be.to_numpy(m1.max_freq) == pytest.approx(be.to_numpy(expected_cutoff))
+
+        custom_freq = 50.0
+        m2 = GeometricMTF(optic, max_freq=custom_freq)
+        assert be.to_numpy(m2.max_freq) == pytest.approx(custom_freq)
+
 
 class TestFFTMTF:
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_defaults(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_defaults(self, set_test_backend, optic):
         m = FFTMTF(optic)
-        m.view()
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view()
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
-    @patch("matplotlib.pyplot.show")
-    def test_view_mtf_custom_fig(self, mock_show, set_test_backend, optic):
+    def test_view_mtf_custom_fig(self, set_test_backend, optic):
         m = FFTMTF(optic)
-        m.view(figsize=(20, 20), add_reference=True)
-        mock_show.assert_called_once()
-        plt.close("all")
+        fig, ax = m.view(figsize=(20, 20), add_reference=True)
+        assert fig is not None, "Figure should not be None"
+        assert ax is not None, "Axes should not be None"
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
 
     def test_generate_data_infinite_object(self, set_test_backend, optic):
         """Default (infinite object distance) should produce an MTF array."""
@@ -89,7 +108,9 @@ class TestFFTMTF:
             (1024, 181),
         ],
     )
-    def test_num_rays_and_grid_size(self, set_test_backend, num_rays, expected_pupil_sampling, optic):
+    def test_num_rays_and_grid_size(
+        self, set_test_backend, num_rays, expected_pupil_sampling, optic
+    ):
         m = FFTMTF(optic, num_rays=num_rays, grid_size=None)
 
         assert m.num_rays == expected_pupil_sampling

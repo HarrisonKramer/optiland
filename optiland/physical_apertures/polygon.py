@@ -8,6 +8,8 @@ a polygon-based aperture.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 import numpy as np
 
 import optiland.backend as be

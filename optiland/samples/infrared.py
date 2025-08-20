@@ -1,4 +1,6 @@
 # Defines sample infrared optical systems.
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland import materials, optic
 
