@@ -88,8 +88,6 @@ class HuygensPSF(BasePSF):
 
     def _determine_image_center(self):
         """Determine center of image via raytrace across field"""
-        if self.cx is not None and self.cy is not None:
-            return
         Hx, Hy = self.fields[0]
         rays = self.optic.trace(
             Hx=Hx,
