@@ -29,7 +29,7 @@ class ParaxialRayTracer(BaseParaxialRayTracer):
         return super().trace_generic(y, u, z, wavelength, reverse=reverse, skip=skip)
 
 
-class _ParaxialImageHeightSolver:
+class ParaxialImageHeightSolver:
     """A private helper class to solve for the object field that produces a
     target paraxial image height.
 
@@ -103,3 +103,8 @@ class _ParaxialImageHeightSolver:
         ) * unit_object_field
 
         return solved_field
+
+
+class RealFieldSolver:
+    def __init__(self):
+        raise NotImplementedError("Real image height field mode not yet implemented.")
