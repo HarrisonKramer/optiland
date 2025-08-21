@@ -259,7 +259,7 @@ class HuygensPSF(BasePSF):
                     Q_obliq = 0.5 * (1.0 + cos_theta)  # obliquity factor
 
                     # Pupil function
-                    pupil_phase = be.exp(1j * k * pupil_opd[j])
+                    pupil_phase = be.exp(-1j * k * pupil_opd[j])
 
                     # Add contribution to the field sum
                     sum_val += pupil_amp[j] * pupil_phase * wave * Q_obliq

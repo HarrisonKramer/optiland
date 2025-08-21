@@ -30,7 +30,7 @@ class ReferenceStrategy(ABC):
         distribution (Distribution): The pupil sampling distribution.
     """
 
-    def __init__(self, optic, distribution):
+    def __init__(self, optic, distribution, **kwargs):
         self.optic = optic
         self.distribution = distribution
         self.n_image = optic.n()[-1]
@@ -142,8 +142,8 @@ class ReferenceStrategy(ABC):
 class ChiefRayStrategy(ReferenceStrategy):
     """Calculates wavefront using the chief ray as the reference."""
 
-    def __init__(self, optic, distribution):
-        super().__init__(optic, distribution)
+    def __init__(self, optic, distribution, **kwargs):
+        super().__init__(optic, distribution, **kwargs)
         self.pupil_z = optic.paraxial.XPL() + optic.surface_group.positions[-1]
 
     def compute_wavefront_data(self, field, wavelength):
@@ -230,12 +230,9 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
     """
 
     def __init__(
-        self,
-        optic,
-        distribution,
-        robust_trim_std: float = 3.0,
+        self, optic, distribution, robust_trim_std: float = 3.0, **kwargs
     ) -> None:
-        super().__init__(optic, distribution)
+        super().__init__(optic, distribution, **kwargs)
         self.robust_trim_std = robust_trim_std
 
     def compute_wavefront_data(self, field, wavelength):

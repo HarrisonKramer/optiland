@@ -149,7 +149,7 @@ class FFTPSF(BasePSF):
             P = be.to_complex(be.zeros_like(x))
             amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
             P[R2 <= 1] = be.to_complex(
-                amplitude * be.exp(1j * 2 * be.pi * wavefront_data.opd)
+                amplitude * be.exp(-1j * 2 * be.pi * wavefront_data.opd)
             )
             P = be.reshape(P, (self.num_rays, self.num_rays))
             pupils.append(P)
