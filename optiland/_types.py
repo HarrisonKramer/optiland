@@ -56,6 +56,7 @@ SurfaceType = Literal[
     "standard",
     "toroidal",
     "zernike",
+    "grating",
 ]
 
 
@@ -78,6 +79,9 @@ class SurfaceParameters(TypedDict, total=False):
     radial_terms: dict[int, float]
     freeform_coeffs: dict[tuple[int, int] | tuple[int, int, Literal["sin"]], float]
     forbes_norm_radius: float
+    grating_order: int
+    grating_period: float
+    groove_orientation_angle: float
 
     # Coordinate system parameters
     thickness: float
