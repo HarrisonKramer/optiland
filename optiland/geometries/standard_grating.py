@@ -140,9 +140,9 @@ class StandardGratingGeometry(BaseGeometry):
 
         # Normalize t
         norm_t = be.sqrt(tx**2 + ty**2 + tz**2)
-        tx /= norm_t
-        ty /= norm_t
-        tz /= norm_t
+        tx = tx / norm_t
+        ty = ty / norm_t
+        tz = tz / norm_t
         return tx, ty, tz
 
     def distance(self, rays):

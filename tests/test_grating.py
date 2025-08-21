@@ -117,8 +117,8 @@ def curved_reflective_grating():
     return lens
 
 
-def test_flat_grating_transmission(self, set_test_backend, flat_transmission_grating):
-    lens = flat_transmission_grating()
+def test_flat_grating_transmission(set_test_backend, flat_transmission_grating):
+    lens = flat_transmission_grating
     wv = 0.587
     Px = 0.0
     Py = 0.0
@@ -142,8 +142,8 @@ def test_flat_grating_transmission(self, set_test_backend, flat_transmission_gra
     ray = lens.trace_generic(Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wv)  
     assert_allclose([ray.L[0],ray.M[0],ray.N[0]],[0.0345602649,0.0216899611,0.9991672201])
 
-def test_curved_grating_transmission(self, set_test_backend, curved_transmission_grating):
-    lens = flat_transmission_grating()
+def test_curved_grating_transmission(set_test_backend, curved_transmission_grating):
+    lens = curved_transmission_grating
     wv = 0.587
     Px = 0.0
     Py = 0.0
@@ -167,8 +167,8 @@ def test_curved_grating_transmission(self, set_test_backend, curved_transmission
     ray = lens.trace_generic(Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wv)  
     assert_allclose([ray.L[0],ray.M[0],ray.N[0]],[0.0229384233,0.0764682608,0.9968081229])
 
-def test_curved_grating_reflection(self, set_test_backend, curved_reflective_grating):
-    lens = flat_transmission_grating()
+def test_curved_grating_reflection(set_test_backend, curved_reflective_grating):
+    lens = curved_reflective_grating
     wv = 0.587
     #generic ray
     Px = -0.15
