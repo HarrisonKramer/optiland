@@ -29,181 +29,499 @@ Manuel Fragata Mendes, 2025
 
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
+from typing import Any
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.newton_raphson import NewtonRaphsonGeometry
 
 from .qpoly import (
-    Q2d_nm_c_to_a_b,
+    clenshaw_q2d,
     clenshaw_qbfs,
-    compute_z_zprime_Q2d,
-    compute_z_zprime_Qbfs,
+    compute_z_zprime_q2d,
+    compute_z_zprime_qbfs,
+    q2d_nm_coeffs_to_ams_bms,
+    q2d_sum_from_alphas,
 )
 
+_EPSILON = 1e-9
 
-class ForbesQbfsGeometry(NewtonRaphsonGeometry):
+
+@dataclass
+class SolverConfig:
+    """Configuration for the Newton-Raphson numerical solver.
+
+    Attributes
+    ----------
+    tol : float
+        Tolerance for the iterative solver.
+    max_iter : int
+        Maximum number of iterations for the solver.
     """
-    Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
 
-    The Q-bfs surface is defined by the equation:
+    tol: float = 1e-10
+    max_iter: int = 100
 
-    z(ρ) = z_base(ρ) + (1/σ(ρ)) * [u²(1-u²) * Σ a_m Q_m(u²)]
+
+@dataclass
+class SurfaceConfig:
+    """Configuration for a surface's core geometric properties.
+
+    Attributes
+    ----------
+    radius : float
+        The vertex radius of curvature of the base surface.
+    conic : float
+        The conic constant of the base surface.
+    norm_radius : float
+        The normalization radius for the polynomial terms.
+    terms : dict, optional
+        A dictionary of polynomial coefficients. The key format depends on the
+        specific geometry type (e.g., `radial_terms` for Qbfs,
+        `freeform_coeffs` for Q2d).
+    """
+
+    radius: float
+    conic: float = 0.0
+    norm_radius: float = 1.0
+    # either radial_terms or freeform_coeffs
+    terms: dict[Any, float] | None = None
+
+
+class ForbesGeometryBase(NewtonRaphsonGeometry):
+    """Base class for Forbes geometries to share common mathematical logic."""
+
+    def __init__(
+        self,
+        coordinate_system: CoordinateSystem,
+        surface_config: SurfaceConfig,
+        solver_config: SolverConfig = None,
+    ):
+        """Initializes the base Forbes geometry.
+
+        Parameters
+        ----------
+        coordinate_system : CoordinateSystem
+            The local coordinate system of the surface.
+        surface_config : SurfaceConfig
+            An object containing the core geometric parameters.
+        solver_config : SolverConfig, optional
+            An object containing parameters for the numerical solver. If None,
+            defaults are used.
+        """
+        if solver_config is None:
+            solver_config = SolverConfig()
+
+        super().__init__(
+            coordinate_system,
+            surface_config.radius,
+            surface_config.conic,
+            solver_config.tol,
+            solver_config.max_iter,
+        )
+        self.surface_config = surface_config
+        self.solver_config = solver_config
+
+    def _base_sag(self, r2):
+        """Calculates the sag of the base conic surface.
+
+        Parameters
+        ----------
+        r2 : float or array_like
+            The squared radial coordinate (rho^2).
+
+        Returns
+        -------
+        float or array_like
+            The sag of the base conic.
+        """
+        if be.isinf(self.radius):
+            return be.zeros_like(r2)
+
+        sqrt_arg = 1 - (1 + self.k) * r2 / self.radius**2
+        safe_sqrt_arg = be.where(sqrt_arg < 0, 0, sqrt_arg)
+        return r2 / (self.radius * (1 + be.sqrt(safe_sqrt_arg)))
+
+    def _base_sag_derivative(self, rho, r2):
+        """Calculates the derivative of the base conic sag w.r.t. rho.
+
+        Parameters
+        ----------
+        rho : float or array_like
+            The radial coordinate (rho).
+        r2 : float or array_like
+            The squared radial coordinate (rho^2).
+
+        Returns
+        -------
+        float or array_like
+            The derivative dz_base/drho.
+        """
+        if be.isinf(self.radius) or self.radius == 0:
+            return be.zeros_like(rho)
+
+        c = 1.0 / self.radius
+        sqrt_arg_base = 1 - (self.k + 1) * c**2 * r2
+        safe_sqrt_base = be.sqrt(be.where(sqrt_arg_base > 0, sqrt_arg_base, 1e-12))
+        return c * rho / safe_sqrt_base
+
+    def _conic_correction_factor(self, r2):
+        """Calculates the Forbes conic correction factor and its derivative.
+
+        This factor projects the normal departure from the base conic onto the
+        sag axis.
+
+        Parameters
+        ----------
+        r2 : float or array_like
+            The squared radial coordinate (rho^2).
+
+        Returns
+        -------
+        factor : float or array_like
+            The unitless conic correction factor.
+        derivative : float or array_like
+            The derivative of the factor with respect to rho.
+        """
+        if be.isinf(self.radius):
+            return 1.0, 0.0
+
+        c2 = (1.0 / self.radius) ** 2
+        rho = be.sqrt(r2)
+        num_arg = 1 - self.k * c2 * r2
+        den_arg = 1 - (self.k + 1) * c2 * r2
+
+        safe_num_arg = be.where(num_arg > 0, num_arg, 1e-12)
+        safe_den_arg = be.where(den_arg > 0, den_arg, 1e-12)
+        N = be.sqrt(safe_num_arg)
+        D = be.sqrt(safe_den_arg)
+
+        factor = N / D
+        derivative = (c2 * rho) / (N * D**3)
+        return factor, derivative
+
+
+class ForbesQbfsGeometry(ForbesGeometryBase):
+    """Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
+
+    The Q-bfs surface is defined by the sag equation:
+    $z(\rho) = z_{base}(\rho) + \frac{1}{\sigma(\rho)}
+    \left[ u^2(1-u^2) \sum_{m=0}^{M} a_m Q_m(u^2) \right]$
 
     where:
-    - z_base(ρ) = c*ρ²/(1 + √(1 - (1+k)c²ρ²)) is the base conic
-    - c = 1/R is the curvature (R is the radius)
-    - k is the conic constant
-    - u = ρ/ρ_max is the normalized radial coordinate
-    - ρ_max is the normalization radius
-    - Q_m(u²) are the Forbes orthogonal polynomials
-    - a_m are the polynomial coefficients
-    - σ(ρ) = √(1 - c²ρ²) is a scaling factor
+    - $z_{base}(\rho) = \frac{c\rho^2}{1 + \sqrt{1 - (1+k)c^2\rho^2}}$
+    is the base conic.
+    - $c = 1/R$ is the curvature, $k$ is the conic constant.
+    - $u = \rho/\rho_{max}$ is the normalized radial coordinate.
+    - $Q_m(u^2)$ are the Forbes orthogonal polynomials.
+    - $a_m$ are the polynomial coefficients.
+    - $\sigma(\rho) = \sqrt{\frac{1 - kc^2\rho^2}{1 - (1+k)c^2\rho^2}}$ is a
+    conic scaling factor.
 
     Parameters
     ----------
     coordinate_system : CoordinateSystem
-        The coordinate system for the surface.
-    radius : float
-        The vertex radius of curvature (R = 1/c).
-    conic : float, optional
-        The conic constant (k), by default 0.0.
-    radial_terms : dict, optional
-        A dictionary mapping the radial order `n` to the coefficient `a_n`.
-        Example: `{0: 0.01, 2: -0.005}` for coefficients a₀ and a₂.
-        Defaults to None.
-    norm_radius : float, optional
-        The normalization radius (ρ_max) used to define u = ρ/ρ_max, by default 1.0.
-    tol : float, optional
-        Tolerance for Newton-Raphson iteration, by default 1e-10.
-    max_iter : int, optional
-        Maximum number of iterations for Newton-Raphson, by default 100.
+        The local coordinate system of the surface.
+    surface_config : SurfaceConfig
+        An object containing the core geometric parameters. The `terms`
+        dictionary should be provided as `radial_terms`.
+    solver_config : SolverConfig, optional
+        An object containing parameters for the numerical solver.
     """
 
     def __init__(
         self,
         coordinate_system: CoordinateSystem,
-        radius: float,
-        conic: float = 0.0,
-        radial_terms: dict[int, float] | None = None,
-        norm_radius: float = 1.0,
-        tol: float = 1e-10,
-        max_iter: int = 100,
+        surface_config: SurfaceConfig,
+        solver_config: SolverConfig = None,
     ):
-        super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.radial_terms = radial_terms if radial_terms else {}
+        super().__init__(coordinate_system, surface_config, solver_config)
+        self.radial_terms = self.surface_config.terms or {}
         self._prepare_coeffs()
-        self.norm_radius = be.array(norm_radius)
+        self.norm_radius = be.array(self.surface_config.norm_radius)
         self.is_symmetric = True
 
     def _prepare_coeffs(self):
-        """
-        Prepares the internal coefficient lists (coeffs_c, coeffs_n) from the
-        user-facing radial_terms dictionary. This ensures that sparse coefficient
-        dictionaries are correctly converted to the dense list format required
-        by the backend polynomial evaluation functions.
-        """
-        if self.radial_terms:
-            max_n = max(self.radial_terms.keys()) if self.radial_terms else -1
-            if max_n >= 0:
-                coeffs_c = [self.radial_terms.get(n, 0.0) for n in range(max_n + 1)]
-                coeffs_n = [(n, 0) for n in range(max_n + 1)]
-                self.coeffs_n = coeffs_n
-                self.coeffs_c = be.array(coeffs_c)
-            else:
-                self.coeffs_n = []
-                self.coeffs_c = be.array([])
+        """Prepares the internal coefficient lists from the radial_terms dictionary."""
+        if not self.radial_terms:
+            self.coeffs_n, self.coeffs_c = [], be.array([])
+            return
+
+        max_n = max(self.radial_terms.keys())
+        if max_n >= 0:
+            self.coeffs_c = be.array(
+                [self.radial_terms.get(n, 0.0) for n in range(max_n + 1)]
+            )
+            self.coeffs_n = [(n, 0) for n in range(max_n + 1)]
         else:
-            self.coeffs_n = []
-            self.coeffs_c = be.array([])
+            self.coeffs_n, self.coeffs_c = [], be.array([])
 
     def sag(self, x=0, y=0):
-        """
-        Calculate the sag of the Forbes Q-bfs surface at given coordinates.
-
-        For a Q-bfs surface, this implements:
-        z(ρ) = z_base(ρ) + departure(ρ)
-
-        where departure is defined as:
-        departure(ρ) = (1/σ(ρ)) * [u²(1-u²) * Σ a_m Q_m(u²)]
-
-        Parameters
-        ----------
-        x : float or array_like, optional
-            X coordinate(s), by default 0
-        y : float or array_like, optional
-            Y coordinate(s), by default 0
-
-        Returns
-        -------
-        float or array_like
-            The sag value(s) at the specified coordinates
-        """
-        x = be.array(x)
-        y = be.array(y)
-
+        """Calculate the sag of the Forbes Q-bfs surface."""
+        x, y = be.array(x), be.array(y)
         r2 = x**2 + y**2
-        if be.isinf(self.radius):
-            z_base = be.zeros_like(r2)
-        else:
-            sqrt_arg = 1 - (1 + self.k) * r2 / self.radius**2
-            safe_sqrt_arg = be.where(sqrt_arg < 0, 0, sqrt_arg)
-            z_base = r2 / (self.radius * (1 + be.sqrt(safe_sqrt_arg)))
+        z_base = self._base_sag(r2)
 
         if len(self.coeffs_c) == 0 or be.all(self.coeffs_c == 0):
             return z_base
 
         rho = be.sqrt(r2)
         u = rho / self.norm_radius
-        usq = u * u
+        usq = u**2
 
         poly_sum_m0 = clenshaw_qbfs(self.coeffs_c, usq)
-
         prefactor = usq * (1 - usq)
-
-        # Conic correction factor for the m=0 term
-        if be.isinf(self.radius):
-            conic_correction_factor = 1.0
-        else:
-            c2 = (1.0 / self.radius) ** 2
-            sqrt_arg_num = 1 - c2 * self.k * r2
-            sqrt_arg_den = 1 - c2 * (self.k + 1) * r2
-            safe_sqrt_num = be.sqrt(be.where(sqrt_arg_num >= 0, sqrt_arg_num, 0.0))
-            safe_sqrt_den = be.sqrt(be.where(sqrt_arg_den > 0, sqrt_arg_den, 1e-12))
-            conic_correction_factor = safe_sqrt_num / safe_sqrt_den
-
+        conic_correction_factor, _ = self._conic_correction_factor(r2)
         departure = prefactor * conic_correction_factor * poly_sum_m0
 
         S = be.where(usq > 1, 0.0, departure)
         return z_base + S
 
     def _surface_normal(self, x, y):
-        """
-        Calculates the surface normal. Uses automatic differentiation for PyTorch
-        and the analytical derivative for NumPy to ensure correctness and performance.
+        """Calculates the unit vector normal to the surface.
 
-        The normal vector is based on the gradient of the sag function:
-        n = [-dz/dx, -dz/dy, 1]/√(1 + (dz/dx)² + (dz/dy)²)
+        Dispatches to an autograd-based method for the torch backend and an
+        analytical method for the numpy backend. It also patches the `NaN`
+        gradient that autograd produces at the vertex.
 
         Parameters
         ----------
         x : float or array_like
-            X coordinate(s)
+            X coordinate(s).
         y : float or array_like
-            Y coordinate(s)
+            Y coordinate(s).
 
         Returns
         -------
-        tuple
-            (nx, ny, nz) components of the unit normal vector
+        nx, ny, nz : tuple[float or array_like]
+            Components of the unit normal vector.
         """
-        x_in = be.array(x)
-        y_in = be.array(y)
+        x_in, y_in = be.array(x), be.array(y)
 
-        # If the backend is torch, use its autograd engine on the sag function
         if be.get_backend() == "torch":
-            x_grad = x_in.clone().requires_grad_(True)
-            y_grad = y_in.clone().requires_grad_(True)
+            # ensure inputs require gradients for autograd to work
+            x_grad = x_in.clone().detach().requires_grad_(True)
+            y_grad = y_in.clone().detach().requires_grad_(True)
+            z0 = self.sag(x_grad, y_grad)
 
+            grad_outputs = be.ones_like(z0)
+            gradients = be.autograd.grad(
+                outputs=z0,
+                inputs=(x_grad, y_grad),
+                grad_outputs=grad_outputs,
+                create_graph=True,
+                allow_unused=True,
+            )
+            df_dx, df_dy = gradients[0], gradients[1]
+
+            # replace possible NaNs at the vertex with the analytical value
+            # (which is 0 for Qbfs)
+            is_vertex = be.logical_and(be.abs(x_in) < _EPSILON, be.abs(y_in) < _EPSILON)
+            df_dx = be.where(is_vertex, 0.0, df_dx)
+            df_dy = be.where(is_vertex, 0.0, df_dy)
+        else:
+            df_dx, df_dy = self._surface_normal_analytical(x_in, y_in)
+
+        mag = be.sqrt(df_dx**2 + df_dy**2 + 1)
+        safe_mag = be.where(mag < _EPSILON, 1.0, mag)
+        return df_dx / safe_mag, df_dy / safe_mag, -1 / safe_mag
+
+    def _surface_normal_analytical(self, x, y):
+        """Computes the analytical surface derivatives for the numpy backend.
+
+        Parameters
+        ----------
+        x : float or array_like
+            X coordinate(s).
+        y : float or array_like
+            Y coordinate(s).
+
+        Returns
+        -------
+        df_dx, df_dy : tuple[float or array_like]
+            The partial derivatives $dz/dx$ and $dz/dy$.
+        """
+        r2 = x**2 + y**2
+        rho = be.sqrt(r2)
+        rho_safe = be.where(rho < _EPSILON, _EPSILON, rho)
+        ds_base_d_rho = self._base_sag_derivative(rho, r2)
+
+        if len(self.coeffs_c) == 0 or be.all(self.coeffs_c == 0):
+            df_d_rho = ds_base_d_rho
+        else:
+            u = rho / self.norm_radius
+
+            poly_val, dpoly_d_u = compute_z_zprime_qbfs(self.coeffs_c, u, u**2)
+            dprefactor_d_rho = (2 * u - 4 * u**3) / self.norm_radius
+            dpoly_d_rho = dpoly_d_u / self.norm_radius
+            conic_factor, dconic_factor_d_rho = self._conic_correction_factor(r2)
+
+            usq = u**2
+            ds_dep_d_rho = (
+                dprefactor_d_rho * conic_factor * poly_val
+                + (usq - usq**2) * dconic_factor_d_rho * poly_val
+                + (usq - usq**2) * conic_factor * dpoly_d_rho
+            )
+            df_d_rho = ds_base_d_rho + be.where(u >= 1, 0.0, ds_dep_d_rho)
+
+        return df_d_rho * (x / rho_safe), df_d_rho * (y / rho_safe)
+
+    def to_dict(self):
+        """Serializes the geometry to a dictionary."""
+        return {
+            "type": self.__class__.__name__,
+            "cs": self.cs.to_dict(),
+            "surface_config": asdict(self.surface_config),
+            "solver_config": asdict(self.solver_config),
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates an instance from a dictionary."""
+        cs = CoordinateSystem.from_dict(data["cs"])
+        surface_config = SurfaceConfig(**data["surface_config"])
+        solver_config = SolverConfig(**data.get("solver_config", {}))
+        return cls(cs, surface_config, solver_config)
+
+    def __str__(self):
+        return "ForbesQbfs"
+
+
+class ForbesQ2dGeometry(ForbesGeometryBase):
+    """Forbes Q2D freeform surface.
+
+    The Q2D surface is defined by a departure $\delta(u, \theta)$ from a base conic:
+    $z(\rho, \theta) = z_{base}(\rho) + \frac{1}{\sigma(\rho)} \delta(u, \theta)$
+
+    The departure term $\delta(u, \theta)$ is given by:
+    $\delta(u, \theta) = u^2(1-u^2)\sum_{n=0}^{N} a_n^0 Q_n^0(u^2) +
+    \sum_{m=1}^{M} u^m \sum_{n=0}^{N} [a_n^m \cos(m\theta) +
+    b_n^m \sin(m\theta)] Q_n^m(u^2)$
+
+    Parameters
+    ----------
+    coordinate_system : CoordinateSystem
+        The local coordinate system of the surface.
+    surface_config : SurfaceConfig
+        An object containing the core geometric parameters. The `terms`
+        dictionary should be provided as `freeform_coeffs`.
+    solver_config : SolverConfig, optional
+        An object containing parameters for the numerical solver.
+
+    Notes
+    -----
+    The `freeform_coeffs` dictionary keys follow the Zemax convention to ensure
+    intuitive use for optical designers.
+    - Cosine term $a_n^m$: `('a', m, n)`
+    - Sine term $b_n^m$: `('b', m, n)`
+    Note the index order `(m, n)` matches the Zemax UI, where `m` is the
+    azimuthal frequency and `n` is the radial order. The code handles the
+    translation to the mathematical convention internally.
+    """
+
+    def __init__(
+        self,
+        coordinate_system: CoordinateSystem,
+        surface_config: SurfaceConfig,
+        solver_config: SolverConfig = None,
+    ):
+        super().__init__(coordinate_system, surface_config, solver_config)
+        self.c = 1 / self.radius if self.radius != 0 else 0
+        self.freeform_coeffs = self.surface_config.terms or {}
+        self.norm_radius = float(self.surface_config.norm_radius)
+        self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
+        self._prepare_coeffs()
+
+    def _prepare_coeffs(self):
+        """
+        Translates the user-facing Zemax-style `freeform_coeffs` dictionary
+        into the internal coefficient lists required by the `qpoly` backend.
+        """
+        if not self.freeform_coeffs:
+            self.coeffs_n, self.coeffs_c = [], be.array([])
+            return
+
+        internal_coeffs = {}
+        for key, value in self.freeform_coeffs.items():
+            term_type, idx1, idx2 = key
+            if term_type.lower() == "a":
+                n, m = idx2, idx1
+                internal_coeffs[(n, m)] = value
+            elif term_type.lower() == "b":
+                n, m = idx2, idx1
+                internal_coeffs[(n, m, "sin")] = value
+
+        sorted_keys = sorted(
+            internal_coeffs.keys(),
+            key=lambda k: (k[0], abs(k[1]), 0 if len(k) == 2 else 1),
+        )
+
+        coeffs_n, coeffs_c = [], []
+        for key in sorted_keys:
+            value = internal_coeffs[key]
+            m_val = -key[1] if len(key) == 3 and key[2].lower() == "sin" else key[1]
+            coeffs_n.append((key[0], m_val))
+            coeffs_c.append(value)
+
+        self.coeffs_n, self.coeffs_c = coeffs_n, be.array(coeffs_c)
+        if self.coeffs_n:
+            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = (
+                q2d_nm_coeffs_to_ams_bms(self.coeffs_n, self.coeffs_c)
+            )
+
+    def sag(self, x, y):
+        """Calculate the sag of the Forbes Q2D freeform surface."""
+        x, y = be.array(x), be.array(y)
+        r2 = x**2 + y**2
+        z_base = self._base_sag(r2)
+
+        rho = be.sqrt(r2)
+        u = rho / self.norm_radius
+        safe_x = be.where(rho < _EPSILON, x + 1e-12, x)
+        theta = be.arctan2(y, safe_x)
+
+        poly_sum_m0, _, poly_sum_m_gt0, _, _ = compute_z_zprime_q2d(
+            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs, u, theta
+        )
+        conic_correction_factor, _ = self._conic_correction_factor(r2)
+        usq = u**2
+        prefactor_m0 = usq * (1 - usq)
+
+        departure_m0 = prefactor_m0 * conic_correction_factor * poly_sum_m0
+        departure_m_gt0 = conic_correction_factor * poly_sum_m_gt0
+        total_departure = departure_m0 + departure_m_gt0
+
+        S = be.where(u > 1, 0.0, total_departure)
+        return z_base + S
+
+    def _surface_normal(self, x, y):
+        """Calculates the unit vector normal to the surface.
+
+        Dispatches to an autograd-based method for the torch backend and an
+        analytical method for the numpy backend. For torch, it patches the `NaN`
+        gradient from autograd at the vertex with the correct analytical value.
+
+        Parameters
+        ----------
+        x : float or array_like
+            X coordinate(s).
+        y : float or array_like
+            Y coordinate(s).
+
+        Returns
+        -------
+        nx, ny, nz : tuple[float or array_like]
+            Components of the unit normal vector.
+        """
+        x_in, y_in = be.array(x), be.array(y)
+
+        if be.get_backend() == "torch":
+            # For torch, use autograd but patch the vertex NaN issue.
+            x_grad, y_grad = (
+                x_in.clone().detach().requires_grad_(True),
+                y_in.clone().detach().requires_grad_(True),
+            )
             z0 = self.sag(x_grad, y_grad)
 
             gradients = be.autograd.grad(
@@ -212,472 +530,115 @@ class ForbesQbfsGeometry(NewtonRaphsonGeometry):
                 grad_outputs=be.ones_like(z0),
                 create_graph=True,
                 allow_unused=True,
+                retain_graph=True,
             )
             df_dx_raw, df_dy_raw = gradients[0], gradients[1]
 
-            # identify vertex points where x and y are both 0
-            is_vertex = be.logical_and(x_in == 0.0, y_in == 0.0)
+            rho = be.sqrt(x_in**2 + y_in**2)
+            is_vertex = rho < _EPSILON
 
-            # correct the derivatives at the vertex to avoid NaNs
-            df_dx = be.where(is_vertex, 0.0, df_dx_raw)
-            df_dy = be.where(is_vertex, 0.0, df_dy_raw)
-
+            # If any ray is at the vertex, we need the analytical
+            # derivative to patch the NaN.
+            if be.any(is_vertex):
+                df_dx_vertex, df_dy_vertex = self._surface_normal_analytical_vertex()
+                df_dx = be.where(is_vertex, df_dx_vertex, df_dx_raw)
+                df_dy = be.where(is_vertex, df_dy_vertex, df_dy_raw)
+            else:
+                df_dx, df_dy = df_dx_raw, df_dy_raw
         else:
-            r2 = x_in**2 + y_in**2
-            rho = be.sqrt(r2)
+            # For numpy, the analytical path is stable.
+            df_dx, df_dy = self._surface_normal_analytical(x_in, y_in)
 
-            rho_safe = be.where(rho < 1e-9, 1e-9, rho)
-
-            # derivative of the base conic sag (dS_base / d(rho))
-            if be.isinf(self.radius) or self.radius == 0:
-                dS_base_d_rho = be.zeros_like(rho)
-            else:
-                c = 1.0 / self.radius
-                sqrt_arg_base = 1 - (self.k + 1) * c**2 * r2
-                safe_sqrt_base = be.sqrt(
-                    be.where(sqrt_arg_base > 0, sqrt_arg_base, 1e-12)
-                )
-                dS_base_d_rho = c * rho / safe_sqrt_base
-
-            # if no coefficients, derivative is just from the base conic
-            if len(self.coeffs_c) == 0 or be.all(self.coeffs_c == 0):
-                df_d_rho = dS_base_d_rho
-            else:
-                # derivative of the departure term
-                a = self.norm_radius
-                u = rho / a
-                usq = u * u
-
-                # Get polynomial value and its derivative w.r.t. u from qpoly
-                poly_val, dPoly_d_u = compute_z_zprime_Qbfs(self.coeffs_c, u, usq)
-
-                # prefactor = u^2 - u^4
-                dPrefactor_d_rho = (2 * u - 4 * u**3) / a
-
-                # d(Poly) / d(rho)
-                dPoly_d_rho = dPoly_d_u / a
-
-                if be.isinf(self.radius):
-                    conic_factor = 1.0
-                    dConicFactor_d_rho = 0.0
-                else:
-                    c2 = (1.0 / self.radius) ** 2
-                    num_arg = 1 - self.k * c2 * r2
-                    den_arg = 1 - (self.k + 1) * c2 * r2
-
-                    safe_num_arg = be.where(num_arg > 0, num_arg, 1e-12)
-                    safe_den_arg = be.where(den_arg > 0, den_arg, 1e-12)
-
-                    N = be.sqrt(safe_num_arg)
-                    D = be.sqrt(safe_den_arg)
-
-                    conic_factor = N / D
-                    # simplified derivative of the conic factor w.r.t rho
-                    dConicFactor_d_rho = (c2 * rho) / (N * D**3)
-
-                # full derivative of departure using product rule
-                # for (Prefactor * ConicFactor * Poly)
-                dS_dep_d_rho = (
-                    dPrefactor_d_rho * conic_factor * poly_val
-                    + (u**2 - u**4) * dConicFactor_d_rho * poly_val
-                    + (u**2 - u**4) * conic_factor * dPoly_d_rho
-                )
-
-                # Total derivative - apply departure derivative
-                # only within normalization radius
-                df_d_rho = dS_base_d_rho + be.where(u >= 1, 0.0, dS_dep_d_rho)
-
-            # Convert derivative w.r.t. rho to derivatives w.r.t. x and y
-            df_dx = df_d_rho * (x_in / rho_safe)
-            df_dy = df_d_rho * (y_in / rho_safe)
-
-        # Normalize to get the final normal vector components
         mag = be.sqrt(df_dx**2 + df_dy**2 + 1)
-        safe_mag = be.where(mag < 1e-12, 1.0, mag)
+        safe_mag = be.where(mag < _EPSILON, 1.0, mag)
+        return df_dx / safe_mag, df_dy / safe_mag, -1.0 / safe_mag
 
-        nx = df_dx / safe_mag
-        ny = df_dy / safe_mag
-        nz = -1 / safe_mag
-        return nx, ny, nz
+    def _surface_normal_analytical_vertex(self):
+        """Computes the stable analytical derivative exactly at the vertex."""
+        df_dx_vertex, df_dy_vertex = 0.0, 0.0
+        if self.ams_coeffs and self.ams_coeffs[0]:
+            a_coeffs = self.ams_coeffs[0]
+            alphas_a = clenshaw_q2d(a_coeffs, m=1, usq=0.0)
+            sum_a1 = q2d_sum_from_alphas(alphas_a, m=1, num_coeffs=len(a_coeffs))
+            df_dx_vertex = sum_a1 / self.norm_radius
+        if self.bms_coeffs and self.bms_coeffs[0]:
+            b_coeffs = self.bms_coeffs[0]
+            alphas_b = clenshaw_q2d(b_coeffs, m=1, usq=0.0)
+            sum_b1 = q2d_sum_from_alphas(alphas_b, m=1, num_coeffs=len(b_coeffs))
+            df_dy_vertex = sum_b1 / self.norm_radius
+        return df_dx_vertex, df_dy_vertex
 
-    def __str__(self):
-        return "ForbesQbfs"
-
-    def to_dict(self):
+    def _surface_normal_analytical(self, x_in, y_in):
         """
-        Serializes the geometry to a dictionary.
+        Computes the analytical surface derivatives for the numpy backend.
 
-        Returns
-        -------
-        dict
-            Dictionary containing all parameters needed to reconstruct the geometry
+        This method is fully vectorized and uses a `where` clause to combine
+        the stable vertex calculation with the general non-vertex calculation.
         """
-        geometry_dict = {
-            "type": self.__class__.__name__,
-            "cs": self.cs.to_dict(),
-            "radius": self.radius,
-            "conic": self.k,
-            "tol": self.tol,
-            "max_iter": self.max_iter,
-            "radial_terms": self.radial_terms,
-            "norm_radius": self.norm_radius,
-        }
-        return geometry_dict
+        df_dx_vertex, df_dy_vertex = self._surface_normal_analytical_vertex()
 
-    @classmethod
-    def from_dict(cls, data):
-        """
-        Creates a ForbesQbfsGeometry instance from a dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            Dictionary containing the geometry parameters
-
-        Returns
-        -------
-        ForbesQbfsGeometry
-            The reconstructed geometry instance
-        """
-        cs = CoordinateSystem.from_dict(data["cs"])
-        return cls(
-            cs,
-            data["radius"],
-            data.get("conic", 0.0),
-            radial_terms=data.get("radial_terms", None),
-            norm_radius=data.get("norm_radius", 1.0),
-            tol=data.get("tol", 1e-10),
-            max_iter=data.get("max_iter", 100),
-        )
-
-
-class ForbesQ2dGeometry(NewtonRaphsonGeometry):
-    """
-    Forbes Q2D freeform surface.
-
-    This represents the most general form of a Forbes surface that can describe
-    a freeform optic without rotational symmetry. The sag is defined as:
-
-    z(ρ,θ) = z_base(ρ) + (1/√(1-c²ρ²)) * δ(u,θ)
-
-    where δ(u,θ) is the departure function:
-
-    δ(u,θ) = u²(1-u²)∑_{n=0}^N a_n^0 Q_n^0(u²) +
-             ∑_{m=1}^M u^m ∑_{n=0}^N [a_n^m cos(mθ) + b_n^m sin(mθ)] Q_n^m(u²)
-
-    The first term represents the rotationally symmetric part, and the second
-    term represents the non-symmetric (freeform) part.
-
-    Parameters
-    ----------
-    coordinate_system : CoordinateSystem
-        The coordinate system for the surface.
-    radius : float
-        The vertex radius of curvature (R = 1/c).
-    conic : float
-        The conic constant (k).
-    freeform_coeffs : dict, optional
-        A dictionary defining the freeform surface coefficients.
-        Keys are tuples:
-        - `(n, m)` for a cosine term (a_n^m).
-        - `(n, m, 'sin')` for a sine term (b_n^m).
-        Values are the float coefficient values.
-        Example: `{(2, 2): 0.05, (3, 1, 'sin'): 0.02}`.
-        Defaults to None.
-    norm_radius : float, optional
-        The normalization radius (ρ_max) used to define u = ρ/ρ_max, by default 1.0.
-    tol : float, optional
-        Tolerance for Newton-Raphson iteration, by default 1e-10.
-    max_iter : int, optional
-        Maximum number of iterations for Newton-Raphson, by default 100.
-    """
-
-    def __init__(
-        self,
-        coordinate_system,
-        radius,
-        conic,
-        freeform_coeffs=None,
-        norm_radius=1.0,
-        tol: float = 1e-10,
-        max_iter: int = 100,
-    ):
-        super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.radius = float(radius)
-        self.c = 1 / self.radius if self.radius != 0 else 0
-        self.conic = float(conic)
-        self.freeform_coeffs = freeform_coeffs if freeform_coeffs else {}
-        self.norm_radius = float(norm_radius)
-
-        # Initialize internal lists that will be populated by _prepare_coeffs
-        self.coeffs_n = []
-        self.coeffs_c = be.array([])
-        self.cm0_coeffs = []
-        self.ams_coeffs = []
-        self.bms_coeffs = []
-
-        # Call prepare_coeffs to populate everything from freeform_coeffs
-        self._prepare_coeffs()
-
-    def _prepare_coeffs(self):
-        """
-        Prepares all internal coefficient structures (coeffs_n, coeffs_c, and
-        the qpoly backend lists) from the user-facing freeform_coeffs dictionary.
-        This method is the single source of truth for converting the user-friendly
-        dictionary into all necessary internal formats.
-        """
-        if self.freeform_coeffs:
-            coeffs_n = []
-            coeffs_c = []
-            # Sort by n, then m, then by type (cos/sin) to ensure consistent ordering
-            sorted_keys = sorted(
-                self.freeform_coeffs.keys(),
-                key=lambda k: (k[0], abs(k[1]), 0 if len(k) == 2 else 1),
-            )
-            for key in sorted_keys:
-                value = self.freeform_coeffs[key]
-                if len(key) == 3 and key[2].lower() == "sin":
-                    coeffs_n.append((key[0], -key[1]))
-                else:
-                    coeffs_n.append((key[0], key[1]))
-                coeffs_c.append(value)
-
-            self.coeffs_n = coeffs_n
-            self.coeffs_c = be.array(coeffs_c)
-        else:
-            self.coeffs_n = []
-            self.coeffs_c = be.array([])
-
-        # Now, prepare the backend-specific lists required by qpoly
-        if self.coeffs_n and len(self.coeffs_c) > 0:
-            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = Q2d_nm_c_to_a_b(
-                self.coeffs_n, self.coeffs_c
-            )
-        else:
-            self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
-
-    def sag(self, x, y):
-        """
-        Calculate the sag of the Forbes Q2D freeform surface at given coordinates.
-
-        This implements the full freeform surface equation:
-        z(ρ,θ) = z_base(ρ) + (1/√(1-c²ρ²)) * δ(u,θ)
-
-        with both rotationally symmetric and non-symmetric components.
-
-        Parameters
-        ----------
-        x : float or array_like
-            X coordinate(s)
-        y : float or array_like
-            Y coordinate(s)
-
-        Returns
-        -------
-        float or array_like
-            The sag value(s) at the specified coordinates
-        """
-        if self.cm0_coeffs is None:
-            self._prepare_coeffs()
-
-        x = be.array(x)
-        y = be.array(y)
-        r2 = x**2 + y**2
-
-        if be.isinf(self.radius) or self.radius == 0:
-            z_base = be.zeros_like(r2)
-        else:
-            sqrt_arg = 1 - (1 + self.conic) * self.c**2 * r2
-            safe_sqrt_arg = be.where(sqrt_arg >= 0, be.sqrt(sqrt_arg), 1.0)
-            z_base = self.c * r2 / (1 + safe_sqrt_arg)
-
+        r2 = x_in**2 + y_in**2
         rho = be.sqrt(r2)
-        u = rho / self.norm_radius
-        usq = u * u
-        safe_x = be.where((rho < 1e-9), x + 1e-12, x)
-        theta = be.arctan2(y, safe_x)
+        is_vertex = rho < _EPSILON
 
-        poly_sum_m0, _, poly_sum_m_gt0, _, _ = compute_z_zprime_Q2d(
+        rho_safe = be.where(is_vertex, _EPSILON, rho)
+        u = rho / self.norm_radius
+        theta = be.arctan2(y_in, x_in)
+
+        vals = compute_z_zprime_q2d(
             self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs, u, theta
         )
-
-        # --- m=0 Departure Term ---
-        departure_m0 = be.zeros_like(rho)
-        has_m0_coeffs = (
-            self.cm0_coeffs is not None
-            and len(self.cm0_coeffs) > 0
-            and be.any(be.array(self.cm0_coeffs) != 0)
+        poly_sum_m0, d_poly_m0_du, poly_sum_m_gt0, dr_poly_m_gt0_du, dt_poly_m_gt0 = (
+            vals
         )
 
-        if has_m0_coeffs:
-            prefactor = usq * (1 - usq)
+        d_poly_m0_drho = d_poly_m0_du / self.norm_radius
+        dr_poly_m_gt0_drho = dr_poly_m_gt0_du / self.norm_radius
+        conic_factor, dconic_d_rho = self._conic_correction_factor(r2)
 
-            if be.isinf(self.radius):
-                conic_correction_factor = 1.0
-            else:
-                sqrt_arg_num = 1 - self.c**2 * self.conic * r2
-                sqrt_arg_den = 1 - self.c**2 * (self.conic + 1) * r2
-                safe_sqrt_num = be.sqrt(be.where(sqrt_arg_num >= 0, sqrt_arg_num, 0.0))
-                safe_sqrt_den = be.sqrt(be.where(sqrt_arg_den > 0, sqrt_arg_den, 1e-12))
-                conic_correction_factor = safe_sqrt_num / safe_sqrt_den
+        usq = u**2
+        dprefactor_d_rho = (2 * u - 4 * u**3) / self.norm_radius
+        ds0_d_rho = (
+            dprefactor_d_rho * poly_sum_m0 + (usq - usq**2) * d_poly_m0_drho
+        ) * conic_factor + (usq - usq**2) * poly_sum_m0 * dconic_d_rho
 
-            departure_m0 = prefactor * conic_correction_factor * poly_sum_m0
+        ds_gt0_d_rho = (dconic_d_rho * poly_sum_m_gt0) + (
+            conic_factor * dr_poly_m_gt0_drho
+        )
+        ds_d_rho = be.where(u > 1, 0.0, ds0_d_rho + ds_gt0_d_rho)
+        ds_d_theta = be.where(u > 1, 0.0, conic_factor * dt_poly_m_gt0)
 
-        # --- m>0 Departure Term ---
-        departure_m_gt0 = poly_sum_m_gt0
+        cos_t, sin_t = x_in / rho_safe, y_in / rho_safe
+        ds_dx = cos_t * ds_d_rho - (sin_t / rho_safe) * ds_d_theta
+        ds_dy = sin_t * ds_d_rho + (cos_t / rho_safe) * ds_d_theta
 
-        total_departure = departure_m0 + departure_m_gt0
+        d_base_dr = self._base_sag_derivative(rho, r2)
+        d_base_dx, d_base_dy = d_base_dr * cos_t, d_base_dr * sin_t
 
-        # The departure is only defined for u <= 1
-        S = be.where(u > 1, 0.0, total_departure)
+        df_dx_non_vertex = d_base_dx + ds_dx
+        df_dy_non_vertex = d_base_dy + ds_dy
 
-        return z_base + S
+        df_dx = be.where(is_vertex, df_dx_vertex, df_dx_non_vertex)
+        df_dy = be.where(is_vertex, df_dy_vertex, df_dy_non_vertex)
 
-    def _surface_normal(self, x, y):
-        x_in = be.array(x)
-        y_in = be.array(y)
-
-        # if the backend is torch, use its autodiff for exact gradients
-        if be.get_backend() == "torch" and (x_in.requires_grad or y_in.requires_grad):
-            z0 = self.sag(x_in, y_in)
-
-            # compute d(z0)/dx and d(z0)/dy
-            gradients = be.autograd.grad(
-                outputs=z0,
-                inputs=(x_in, y_in),
-                grad_outputs=be.ones_like(z0),
-                create_graph=True,
-                allow_unused=True,
-            )
-            df_dx, df_dy = gradients[0], gradients[1]
-
-        else:
-            if self.cm0_coeffs is None:
-                self._prepare_coeffs()
-
-            r2 = x_in**2 + y_in**2
-            rho = be.sqrt(r2)
-            rho_safe = be.where(rho < 1e-9, 1e-9, rho)
-
-            u = rho / self.norm_radius
-            safe_x = be.where(rho < 1e-9, 1e-9, x_in)
-            theta = be.arctan2(y_in, safe_x)
-
-            # Get derivatives from qpoly
-            _, d_poly_m0_du, _, dr_poly_m_gt0, dt_poly_m_gt0 = compute_z_zprime_Q2d(
-                self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs, u, theta
-            )
-
-            # m=0 part (from ForbesQbfs logic)
-            dS0_d_rho = be.zeros_like(rho)
-            if self.cm0_coeffs is not None and len(self.cm0_coeffs) > 0:
-                poly_val_m0, _ = compute_z_zprime_Qbfs(self.cm0_coeffs, u, u**2)
-                # identical to the forbesQbfs logic
-                a = self.norm_radius
-                dPrefactor_d_rho = (2 * u - 4 * u**3) / a
-                dPoly_d_rho_m0 = d_poly_m0_du / a
-                if be.isinf(self.radius):
-                    conic_factor = 1.0
-                    dConic_d_rho = 0.0
-                else:
-                    c2 = self.c**2
-                    k = self.conic
-                    n_arg = 1 - k * c2 * r2
-                    d_arg = 1 - (k + 1) * c2 * r2
-                    N = be.sqrt(be.where(n_arg > 0, n_arg, 1e-12))
-                    D = be.sqrt(be.where(d_arg > 0, d_arg, 1e-12))
-                    conic_factor = N / D
-                    dConic_d_rho = (c2 * rho) / (N * D**3)
-
-                dS0_d_rho = (
-                    dPrefactor_d_rho * conic_factor * poly_val_m0
-                    + (u**2 - u**4) * dConic_d_rho * poly_val_m0
-                    + (u**2 - u**4) * conic_factor * dPoly_d_rho_m0
-                )
-
-            # m>0 part
-            dS_d_rho = be.where(u > 1, 0, dS0_d_rho + dr_poly_m_gt0)
-            dS_d_theta = be.where(u > 1, 0, dt_poly_m_gt0)
-
-            #  full derivative using chain rule for polar coords
-            # d/dx = cos(t)*d/d(rho) - sin(t)/rho*d/d(theta)
-            # d/dy = sin(t)*d/d(rho) + cos(t)/rho*d/d(theta)
-            cos_t = x_in / rho_safe
-            sin_t = y_in / rho_safe
-
-            dS_dx = cos_t * dS_d_rho - (sin_t / rho_safe) * dS_d_theta
-            dS_dy = sin_t * dS_d_rho + (cos_t / rho_safe) * dS_d_theta
-
-            # Base conic derivative
-            if be.isinf(self.radius) or self.radius == 0:
-                d_base_dx = be.zeros_like(x_in)
-                d_base_dy = be.zeros_like(y_in)
-            else:
-                sqrt_arg_base = 1 - (1 + self.conic) * self.c**2 * r2
-                safe_sqrt_base = be.sqrt(
-                    be.where(sqrt_arg_base > 0, sqrt_arg_base, 1e-12)
-                )
-                d_base_dr = (self.c * rho) / safe_sqrt_base
-                d_base_dx = d_base_dr * cos_t
-                d_base_dy = d_base_dr * sin_t
-
-            df_dx = d_base_dx + dS_dx
-            df_dy = d_base_dy + dS_dy
-
-        mag = be.sqrt(df_dx**2 + df_dy**2 + 1)
-        safe_mag = be.where(mag < 1e-12, 1.0, mag)
-
-        nx = df_dx / safe_mag
-        ny = df_dy / safe_mag
-        nz = -1.0 / safe_mag
-
-        return nx, ny, nz
+        return df_dx, df_dy
 
     def to_dict(self):
-        """
-        Serializes the geometry to a dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary containing all parameters needed to reconstruct the geometry
-        """
+        """Serializes the geometry to a dictionary."""
         return {
             "type": self.__class__.__name__,
             "cs": self.cs.to_dict(),
-            "radius": self.radius,
-            "conic": self.conic,
-            "freeform_coeffs": self.freeform_coeffs,
-            "norm_radius": self.norm_radius,
-            "tol": self.tol,
-            "max_iter": self.max_iter,
+            "surface_config": asdict(self.surface_config),
+            "solver_config": asdict(self.solver_config),
         }
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Creates a ForbesQ2dGeometry instance from a dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            Dictionary containing the geometry parameters
-
-        Returns
-        -------
-        ForbesQ2dGeometry
-            The reconstructed geometry instance
-        """
+        """Creates an instance from a dictionary."""
         cs = CoordinateSystem.from_dict(data["cs"])
-        return cls(
-            cs,
-            data["radius"],
-            data.get("conic", 0.0),
-            freeform_coeffs=data.get("freeform_coeffs", None),
-            norm_radius=data.get("norm_radius", 1.0),
-            tol=data.get("tol", 1e-10),
-            max_iter=data.get("max_iter", 100),
-        )
+        surface_config = SurfaceConfig(**data["surface_config"])
+        solver_config = SolverConfig(**data.get("solver_config", {}))
+        return cls(cs, surface_config, solver_config)
 
     def __str__(self):
         return "ForbesQ2d"
