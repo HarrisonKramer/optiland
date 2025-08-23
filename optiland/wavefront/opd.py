@@ -197,6 +197,13 @@ class OPD(Wavefront):
         z = be.to_numpy(data.opd)
         intensity = be.to_numpy(data.intensity)
 
+        # Ignore zero intensity points
+        mask = intensity > 0
+        x = x[mask]
+        y = y[mask]
+        z = z[mask]
+        intensity = intensity[mask]
+
         x_interp, y_interp = np.meshgrid(
             np.linspace(-1, 1, num_points),
             np.linspace(-1, 1, num_points),
