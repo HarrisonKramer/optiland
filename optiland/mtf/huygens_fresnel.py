@@ -68,20 +68,15 @@ class HuygensMTF(BaseMTF):
         self.image_size = image_size
         self.psf_instances = []
 
-        if wavelength == "primary":
-            resolved_wavelength_temp = optic.primary_wavelength
-        else:
-            resolved_wavelength_temp = wavelength
+        super().__init__(optic, fields, wavelength)
 
-        self.FNO = self._get_fno(optic)
+        self.FNO = self._get_fno()
 
         if max_freq == "cutoff":
             # wavelength in um, FNO is unitless. max_freq in cycles/mm
-            self.max_freq = 1 / (resolved_wavelength_temp * 1e-3 * self.FNO)
+            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
         else:
             self.max_freq = max_freq
-
-        super().__init__(optic, fields, wavelength)
 
         self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
 
