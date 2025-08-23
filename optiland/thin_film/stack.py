@@ -181,24 +181,14 @@ def _complex_index(material: BaseMaterial, wavelength_um):
 
 
 def _snell_cos(n0, theta0, n):
-    """Transmitted angle cosine with forward-branch selection.
-
-    Select kz = n·cos(theta) with Im(kz) ≥ 0 (and Re(kz) ≥ 0 when Im≈0).
-    Returns cos(theta) = kz/n.
-    """
-    sin0 = be.sin(theta0)
-    sin_t = (n0 * sin0) / n
-    cos_t = be.sqrt(1 - sin_t * sin_t)
-    kz = n * cos_t
-    imag = be.imag(kz)
-    real = be.real(kz)
-    cond_flip = (imag < 0) | ((be.abs(imag) < 1e-14) & (real < 0))
-    kz = be.where(cond_flip, -kz, kz)
-    return kz / n
+    """Transmitted angle cosine with forward-branch selection."""
+    nr = n.real
+    k = n.imag
+    return be.sqrt(nr**2 - k**2 - (n0 * be.sin(theta0)) ** 2 - 2j * nr * k) / n
 
 
 def _admittance(n: complex, cos_t: complex, pol: PolSP):
-    sqrt_eps_mu = 0.002654418729832701370374020517935
+    sqrt_eps_mu = 0.002654418729832701370374020517935  # S
     if pol == "s":
         return sqrt_eps_mu * n * cos_t
     else:
@@ -254,11 +244,5 @@ def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
     R = (r * be.conj(r)).real
     # T = 4 * eta0 * etas.real / (denom * be.conj(denom)).real
     T = (t * be.conj(t)).real * etas.real / eta0.real
-    abso = (
-        4
-        * eta0
-        * (A + etas * B)
-        * be.conj(C + D * etas)
-        / (denom * be.conj(denom)).real
-    ).real
+    abso = 1 - R - T
     return r, t, R, T, abso
