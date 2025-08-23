@@ -85,28 +85,6 @@ class HuygensMTF(BaseMTF):
 
         self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
 
-    def _get_fno(self, optic):
-        """Calculate the effective F-number (FNO) of the optical system.
-
-        Applies a correction if the object is finite.
-
-        Args:
-            optic (Optic): The optical system.
-
-        Returns:
-            float: The effective F-number of the optical system.
-        """
-        FNO = optic.paraxial.FNO()
-
-        if not optic.object_surface.is_infinite:
-            m = optic.paraxial.magnification()
-            D = optic.paraxial.XPD()  # Exit Pupil Diameter
-            epd = optic.paraxial.EPD()
-            p = 1.0 if epd == 0 else D / epd  # Avoid division by zero
-            FNO = FNO if p == 0 else FNO * (1 + be.abs(m) / p)
-
-        return FNO
-
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Functions (PSFs).
 
