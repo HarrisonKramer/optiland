@@ -4,7 +4,7 @@ import pytest
 
 import optiland.backend as be
 from optiland import geometries
-from optiland.geometries import BiconicGeometry, ForbesQbfsGeometry, ForbesQ2dGeometry, SurfaceConfig, SolverConfig
+from optiland.geometries import BiconicGeometry, ForbesQbfsGeometry, ForbesQ2dGeometry, ForbesSurfaceConfig, ForbesSolverConfig
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BiconicGeometry
 from optiland.materials import IdealMaterial
@@ -2148,14 +2148,14 @@ class TestForbesQbfsGeometry:
         """Test the string representation of the geometry."""
         cs = CoordinateSystem()
         
-        config = SurfaceConfig(radius=100.0)
+        config = ForbesSurfaceConfig(radius=100.0)
         geometry = ForbesQbfsGeometry(cs, surface_config=config)
         assert str(geometry) == "ForbesQbfs"
 
     def test_sag_with_infinite_radius(self, set_test_backend):
         """Test sag calculation with an infinite radius (planar base)."""
         
-        config = SurfaceConfig(radius=be.inf, terms={1: 1e-3}, norm_radius=10.0)
+        config = ForbesSurfaceConfig(radius=be.inf, terms={1: 1e-3}, norm_radius=10.0)
         geometry = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config
@@ -2174,7 +2174,7 @@ class TestForbesQbfsGeometry:
     def test_sag_outside_norm_radius(self, set_test_backend):
         """Test that sag departure is zero outside the normalization radius."""
         
-        config = SurfaceConfig(radius=100.0, terms={0: 1e-3}, norm_radius=10.0)
+        config = ForbesSurfaceConfig(radius=100.0, terms={0: 1e-3}, norm_radius=10.0)
         geometry = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config
@@ -2193,7 +2193,7 @@ class TestForbesQbfsGeometry:
             pytest.skip("This test requires both numpy and torch backends to compare.")
 
         radial_terms = {0: 1.6e-4, 1: 0.3e-4, 2: 0.15e-4}
-        config = SurfaceConfig(radius=22.0, conic=-4.428, terms=radial_terms, norm_radius=6.336)
+        config = ForbesSurfaceConfig(radius=22.0, conic=-4.428, terms=radial_terms, norm_radius=6.336)
 
         be.set_backend("numpy")
         geometry_np = ForbesQbfsGeometry(
@@ -2245,7 +2245,7 @@ class TestForbesQbfsGeometry:
         )
 
        
-        config = SurfaceConfig(
+        config = ForbesSurfaceConfig(
             radius=zemax_radius,
             conic=zemax_conic,
             terms=radial_terms,
@@ -2269,7 +2269,7 @@ class TestForbesQbfsGeometry:
         It should always be [0, 0, -1] regardless of parameters.
         """
         
-        config = SurfaceConfig(radius=50.0, conic=-1.0, terms={2: 1e-4}, norm_radius=10.0)
+        config = ForbesSurfaceConfig(radius=50.0, conic=-1.0, terms={2: 1e-4}, norm_radius=10.0)
         geometry = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config,
@@ -2376,8 +2376,8 @@ class TestForbesQbfsGeometry:
         cs = CoordinateSystem(x=1, y=-1, z=10, rx=0.01, ry=0.02, rz=-0.03)
         radial_terms = {0: 1e-3, 1: 2e-4, 2: -5e-5}
 
-        surface_config = SurfaceConfig(radius=123.4, conic=-0.9, terms=radial_terms, norm_radius=45.6)
-        solver_config = SolverConfig(tol=1e-12, max_iter=75)
+        surface_config = ForbesSurfaceConfig(radius=123.4, conic=-0.9, terms=radial_terms, norm_radius=45.6)
+        solver_config = ForbesSolverConfig(tol=1e-12, max_iter=75)
 
         original_geometry = ForbesQbfsGeometry(
             coordinate_system=cs,
@@ -2406,13 +2406,13 @@ class TestForbesQ2dGeometry:
     def test_str(self, set_test_backend):
         """Test the string representation of the geometry."""
         cs = CoordinateSystem()
-        config = SurfaceConfig(radius=100.0, conic=0.0)
+        config = ForbesSurfaceConfig(radius=100.0, conic=0.0)
         geometry = ForbesQ2dGeometry(cs, surface_config=config)
         assert str(geometry) == "ForbesQ2d"
 
     def test_init_no_coeffs(self, set_test_backend):
         """Test initialization with no freeform coefficients."""
-        config = SurfaceConfig(radius=100.0, conic=-0.5)
+        config = ForbesSurfaceConfig(radius=100.0, conic=-0.5)
         geometry = ForbesQ2dGeometry(
             coordinate_system=CoordinateSystem(), surface_config=config
         )
@@ -2428,12 +2428,12 @@ class TestForbesQ2dGeometry:
         
         freeform_coeffs = {('a', 0, n): c for n, c in radial_terms.items()}
 
-        q2d_config = SurfaceConfig(radius=50.0, conic=0.0, terms=freeform_coeffs, norm_radius=10.0)
+        q2d_config = ForbesSurfaceConfig(radius=50.0, conic=0.0, terms=freeform_coeffs, norm_radius=10.0)
         geom_q2d = ForbesQ2dGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=q2d_config
         )
-        qbfs_config = SurfaceConfig(radius=50.0, conic=0.0, terms=radial_terms, norm_radius=10.0)
+        qbfs_config = ForbesSurfaceConfig(radius=50.0, conic=0.0, terms=radial_terms, norm_radius=10.0)
         geom_qbfs = ForbesQbfsGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=qbfs_config
@@ -2444,7 +2444,7 @@ class TestForbesQ2dGeometry:
     def test_sag_with_sine_term(self, set_test_backend):
         """Test sag with a sine term, which should be zero along the x-axis"""
         
-        config = SurfaceConfig(radius=100.0, conic=0.0, terms={('b', 1, 1): 1e-3}, norm_radius=10.0)
+        config = ForbesSurfaceConfig(radius=100.0, conic=0.0, terms={('b', 1, 1): 1e-3}, norm_radius=10.0)
         geometry = ForbesQ2dGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config,
@@ -2463,7 +2463,7 @@ class TestForbesQ2dGeometry:
             ('b', 1, 1): 3.0,   # Sine term b_1^1
             ('a', 0, 4): 4.0,   # Symmetric term a_4^0
         }
-        config = SurfaceConfig(radius=100.0, conic=0.0, terms=freeform_coeffs, norm_radius=10.0)
+        config = ForbesSurfaceConfig(radius=100.0, conic=0.0, terms=freeform_coeffs, norm_radius=10.0)
         geometry = ForbesQ2dGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config,
@@ -2484,7 +2484,7 @@ class TestForbesQ2dGeometry:
         cs = CoordinateSystem(x=1, y=-1, z=10)
         # UPDATED: Convert to the new Zemax-aligned format
         freeform_coeffs = {('a', 2, 2): 1e-4, ('b', 1, 1): -5e-5}
-        config = SurfaceConfig(radius=123.4, conic=-0.9, terms=freeform_coeffs, norm_radius=45.6)
+        config = ForbesSurfaceConfig(radius=123.4, conic=-0.9, terms=freeform_coeffs, norm_radius=45.6)
         original_geometry = ForbesQ2dGeometry(
             coordinate_system=cs,
             surface_config=config,
@@ -2517,7 +2517,8 @@ class TestForbesValidation:
         the explicit formulas published in the Forbes papers. This is the most
         fundamental check of the mathematical engine.
 
-        Reference: "Characterizing the shape of freeform optics" (2012), Fig. 3.
+        References: 
+            "Characterizing the shape of freeform optics" (2012), Fig. 3.
         """
         # We want to isolate a single polynomial Q_n^m. We do this by setting its
         # corresponding coefficient a_n^m or b_n^m to 1.0 and all others to zero
@@ -2628,7 +2629,7 @@ class TestForbesValidation:
             ('b', 1, 0): 0.5,
         }
 
-        config = SurfaceConfig(radius=21.709, conic=-4.428, terms=freeform_coeffs, norm_radius=6.0)
+        config = ForbesSurfaceConfig(radius=21.709, conic=-4.428, terms=freeform_coeffs, norm_radius=6.0)
         geometry = ForbesQ2dGeometry(
             coordinate_system=CoordinateSystem(),
             surface_config=config,

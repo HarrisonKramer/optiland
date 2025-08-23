@@ -1,4 +1,4 @@
-"""Forbes Polynomial Geometries for Optical Surfaces
+"""Forbes Polynomial Geometries for Optical Surfaces.
 
 This module provides implementations for optical surfaces described by
 Forbes polynomials, which are superimposed on a base conic section.
@@ -12,17 +12,15 @@ The implementation is based on the work of G. W. Forbes. See, for example,
 G. W. Forbes, "Manufacturability estimates for optical aspheres," Opt. Express (2011).
 
 This module implements two types of Forbes surfaces:
-
-1.  **ForbesQbfsGeometry (Q-type, Best Fit Sphere)**:
-    This class represents rotationally symmetric aspheric surfaces. The "Qbfs"
-    polynomials are orthogonal over a circular aperture and describe the
-    departure from a base conic.
-
-2.  **ForbesQ2dGeometry (Q-type, 2D)**:
-    This class represents non-rotationally symmetric, or "freeform," surfaces.
-    The Q2D polynomials extend the Q-type formalism to two dimensions, allowing
-    for the description of complex, freeform optical surfaces that lack
-    rotational symmetry.
+    1.  **ForbesQbfsGeometry (Q-type, Best Fit Sphere)**:
+        This class represents rotationally symmetric aspheric surfaces. The "Qbfs"
+        polynomials are orthogonal over a circular aperture and describe the
+        departure from a base conic.
+    2.  **ForbesQ2dGeometry (Q-type, 2D)**:
+        This class represents non-rotationally symmetric, or "freeform," surfaces.
+        The Q2D polynomials extend the Q-type formalism to two dimensions, allowing
+        for the description of complex, freeform optical surfaces that lack
+        rotational symmetry.
 
 Manuel Fragata Mendes, 2025
 """
@@ -49,15 +47,12 @@ _EPSILON = 1e-9
 
 
 @dataclass
-class SolverConfig:
+class ForbesSolverConfig:
     """Configuration for the Newton-Raphson numerical solver.
 
-    Attributes
-    ----------
-    tol : float
-        Tolerance for the iterative solver.
-    max_iter : int
-        Maximum number of iterations for the solver.
+    Attributes:
+        tol (float): Tolerance for the iterative solver.
+        max_iter (int): Maximum number of iterations for the solver.
     """
 
     tol: float = 1e-10
@@ -65,21 +60,17 @@ class SolverConfig:
 
 
 @dataclass
-class SurfaceConfig:
+class ForbesSurfaceConfig:
     """Configuration for a surface's core geometric properties.
 
-    Attributes
-    ----------
-    radius : float
-        The vertex radius of curvature of the base surface.
-    conic : float
-        The conic constant of the base surface.
-    norm_radius : float
-        The normalization radius for the polynomial terms.
-    terms : dict, optional
-        A dictionary of polynomial coefficients. The key format depends on the
-        specific geometry type (e.g., `radial_terms` for Qbfs,
-        `freeform_coeffs` for Q2d).
+    Attributes:
+        radius (float): The vertex radius of curvature of the base surface.
+        conic (float): The conic constant of the base surface.
+        norm_radius (float): The normalization radius for the polynomial terms.
+        terms (dict, optional): A dictionary of polynomial coefficients.
+        The key format depends on the
+            specific geometry type (e.g., `radial_terms` for Qbfs,
+            `freeform_coeffs` for Q2d).
     """
 
     radius: float
@@ -95,23 +86,22 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
     def __init__(
         self,
         coordinate_system: CoordinateSystem,
-        surface_config: SurfaceConfig,
-        solver_config: SolverConfig = None,
+        surface_config: ForbesSurfaceConfig,
+        solver_config: ForbesSolverConfig = None,
     ):
         """Initializes the base Forbes geometry.
 
-        Parameters
-        ----------
-        coordinate_system : CoordinateSystem
-            The local coordinate system of the surface.
-        surface_config : SurfaceConfig
-            An object containing the core geometric parameters.
-        solver_config : SolverConfig, optional
-            An object containing parameters for the numerical solver. If None,
-            defaults are used.
+        Args:
+            coordinate_system (CoordinateSystem): The local coordinate system of
+                                                    the surface.
+            surface_config (ForbesSurfaceConfig): An object containing the
+                                                    core geometric parameters.
+            solver_config (ForbesSolverConfig, optional): An object containing
+                                            parameters for the numerical solver.
+                If None, defaults are used.
         """
         if solver_config is None:
-            solver_config = SolverConfig()
+            solver_config = ForbesSolverConfig()
 
         super().__init__(
             coordinate_system,
@@ -126,15 +116,11 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
     def _base_sag(self, r2):
         """Calculates the sag of the base conic surface.
 
-        Parameters
-        ----------
-        r2 : float or array_like
-            The squared radial coordinate (rho^2).
+        Args:
+            r2 (float or array_like): The squared radial coordinate (rho^2).
 
-        Returns
-        -------
-        float or array_like
-            The sag of the base conic.
+        Returns:
+            float or array_like: The sag of the base conic.
         """
         if be.isinf(self.radius):
             return be.zeros_like(r2)
@@ -146,17 +132,12 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
     def _base_sag_derivative(self, rho, r2):
         """Calculates the derivative of the base conic sag w.r.t. rho.
 
-        Parameters
-        ----------
-        rho : float or array_like
-            The radial coordinate (rho).
-        r2 : float or array_like
-            The squared radial coordinate (rho^2).
+        Args:
+            rho (float or array_like): The radial coordinate (rho).
+            r2 (float or array_like): The squared radial coordinate (rho^2).
 
-        Returns
-        -------
-        float or array_like
-            The derivative dz_base/drho.
+        Returns:
+            float or array_like: The derivative dz_base/drho.
         """
         if be.isinf(self.radius) or self.radius == 0:
             return be.zeros_like(rho)
@@ -172,17 +153,14 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
         This factor projects the normal departure from the base conic onto the
         sag axis.
 
-        Parameters
-        ----------
-        r2 : float or array_like
-            The squared radial coordinate (rho^2).
+        Args:
+            r2 (float or array_like): The squared radial coordinate (rho^2).
 
-        Returns
-        -------
-        factor : float or array_like
-            The unitless conic correction factor.
-        derivative : float or array_like
-            The derivative of the factor with respect to rho.
+        Returns:
+            tuple[float or array_like, float or array_like]: A tuple containing:
+                - factor (float or array_like): The unitless conic correction factor.
+                - derivative (float or array_like): The derivative of the
+                                                        factor with respect to rho.
         """
         if be.isinf(self.radius):
             return 1.0, 0.0
@@ -210,31 +188,30 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
     \left[ u^2(1-u^2) \sum_{m=0}^{M} a_m Q_m(u^2) \right]$
 
     where:
-    - $z_{base}(\rho) = \frac{c\rho^2}{1 + \sqrt{1 - (1+k)c^2\rho^2}}$
-    is the base conic.
-    - $c = 1/R$ is the curvature, $k$ is the conic constant.
-    - $u = \rho/\rho_{max}$ is the normalized radial coordinate.
-    - $Q_m(u^2)$ are the Forbes orthogonal polynomials.
-    - $a_m$ are the polynomial coefficients.
-    - $\sigma(\rho) = \sqrt{\frac{1 - kc^2\rho^2}{1 - (1+k)c^2\rho^2}}$ is a
-    conic scaling factor.
+        - $z_{base}(\rho) = \frac{c\rho^2}{1 + \sqrt{1 - (1+k)c^2\rho^2}}$
+          is the base conic.
+        - $c = 1/R$ is the curvature, $k$ is the conic constant.
+        - $u = \rho/\rho_{max}$ is the normalized radial coordinate.
+        - $Q_m(u^2)$ are the Forbes orthogonal polynomials.
+        - $a_m$ are the polynomial coefficients.
+        - $\sigma(\rho) = \sqrt{\frac{1 - kc^2\rho^2}{1 - (1+k)c^2\rho^2}}$ is a
+          conic scaling factor.
 
-    Parameters
-    ----------
-    coordinate_system : CoordinateSystem
-        The local coordinate system of the surface.
-    surface_config : SurfaceConfig
-        An object containing the core geometric parameters. The `terms`
-        dictionary should be provided as `radial_terms`.
-    solver_config : SolverConfig, optional
-        An object containing parameters for the numerical solver.
+    Args:
+        coordinate_system (CoordinateSystem): The local coordinate system of the
+                                                surface.
+        surface_config (ForbesSurfaceConfig): An object containing the core
+            geometric parameters. The `terms` dictionary should be provided
+            as `radial_terms`.
+        solver_config (ForbesSolverConfig, optional): An object containing
+            parameters for the numerical solver.
     """
 
     def __init__(
         self,
         coordinate_system: CoordinateSystem,
-        surface_config: SurfaceConfig,
-        solver_config: SolverConfig = None,
+        surface_config: ForbesSurfaceConfig,
+        solver_config: ForbesSolverConfig = None,
     ):
         super().__init__(coordinate_system, surface_config, solver_config)
         self.radial_terms = self.surface_config.terms or {}
@@ -258,7 +235,15 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
             self.coeffs_n, self.coeffs_c = [], be.array([])
 
     def sag(self, x=0, y=0):
-        """Calculate the sag of the Forbes Q-bfs surface."""
+        """Calculate the sag of the Forbes Q-bfs surface.
+
+        Args:
+            x (int, optional): x-coordinate. Defaults to 0.
+            y (int, optional): y-coordinate. Defaults to 0.
+
+        Returns:
+            The sag of the Forbes Q-bfs surface.
+        """
         x, y = be.array(x), be.array(y)
         r2 = x**2 + y**2
         z_base = self._base_sag(r2)
@@ -285,17 +270,13 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
         analytical method for the numpy backend. It also patches the `NaN`
         gradient that autograd produces at the vertex.
 
-        Parameters
-        ----------
-        x : float or array_like
-            X coordinate(s).
-        y : float or array_like
-            Y coordinate(s).
+        Args:
+            x (float or array_like): X coordinate(s).
+            y (float or array_like): Y coordinate(s).
 
-        Returns
-        -------
-        nx, ny, nz : tuple[float or array_like]
-            Components of the unit normal vector.
+        Returns:
+            tuple[float or array_like, float or array_like, float or array_like]:
+                Components of the unit normal vector (nx, ny, nz).
         """
         x_in, y_in = be.array(x), be.array(y)
 
@@ -330,17 +311,13 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
     def _surface_normal_analytical(self, x, y):
         """Computes the analytical surface derivatives for the numpy backend.
 
-        Parameters
-        ----------
-        x : float or array_like
-            X coordinate(s).
-        y : float or array_like
-            Y coordinate(s).
+        Args:
+            x (float or array_like): X coordinate(s).
+            y (float or array_like): Y coordinate(s).
 
-        Returns
-        -------
-        df_dx, df_dy : tuple[float or array_like]
-            The partial derivatives $dz/dx$ and $dz/dy$.
+        Returns:
+            tuple[float or array_like, float or array_like]:
+                The partial derivatives (df_dx, df_dy).
         """
         r2 = x**2 + y**2
         rho = be.sqrt(r2)
@@ -368,7 +345,11 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
         return df_d_rho * (x / rho_safe), df_d_rho * (y / rho_safe)
 
     def to_dict(self):
-        """Serializes the geometry to a dictionary."""
+        """Serializes the geometry to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the geometry.
+        """
         return {
             "type": self.__class__.__name__,
             "cs": self.cs.to_dict(),
@@ -378,10 +359,17 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
 
     @classmethod
     def from_dict(cls, data):
-        """Creates an instance from a dictionary."""
+        """Creates an instance from a dictionary.
+
+        Args:
+            data (dict): A dictionary representation of the geometry.
+
+        Returns:
+            ForbesQbfsGeometry: An instance of the class.
+        """
         cs = CoordinateSystem.from_dict(data["cs"])
-        surface_config = SurfaceConfig(**data["surface_config"])
-        solver_config = SolverConfig(**data.get("solver_config", {}))
+        surface_config = ForbesSurfaceConfig(**data["surface_config"])
+        solver_config = ForbesSolverConfig(**data.get("solver_config", {}))
         return cls(cs, surface_config, solver_config)
 
     def __str__(self):
@@ -399,32 +387,29 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
     \sum_{m=1}^{M} u^m \sum_{n=0}^{N} [a_n^m \cos(m\theta) +
     b_n^m \sin(m\theta)] Q_n^m(u^2)$
 
-    Parameters
-    ----------
-    coordinate_system : CoordinateSystem
-        The local coordinate system of the surface.
-    surface_config : SurfaceConfig
-        An object containing the core geometric parameters. The `terms`
-        dictionary should be provided as `freeform_coeffs`.
-    solver_config : SolverConfig, optional
-        An object containing parameters for the numerical solver.
+    Args:
+        coordinate_system (CoordinateSystem): The local coordinate system of the
+                                                surface.
+        surface_config (ForbesSurfaceConfig): An object containing the core geometric
+            parameters. The `terms` dictionary should be provided as `freeform_coeffs`.
+        solver_config (ForbesSolverConfig, optional): An object containing parameters
+        for the numerical solver.
 
-    Notes
-    -----
-    The `freeform_coeffs` dictionary keys follow the Zemax convention to ensure
-    intuitive use for optical designers.
-    - Cosine term $a_n^m$: `('a', m, n)`
-    - Sine term $b_n^m$: `('b', m, n)`
-    Note the index order `(m, n)` matches the Zemax UI, where `m` is the
-    azimuthal frequency and `n` is the radial order. The code handles the
-    translation to the mathematical convention internally.
+    Notes:
+        The `freeform_coeffs` dictionary keys follow the Zemax convention to ensure
+        intuitive use for optical designers.
+        - Cosine term $a_n^m$: `('a', m, n)`
+        - Sine term $b_n^m$: `('b', m, n)`
+        Note the index order `(m, n)` matches the Zemax UI, where `m` is the
+        azimuthal frequency and `n` is the radial order. The code handles the
+        translation to the mathematical convention internally.
     """
 
     def __init__(
         self,
         coordinate_system: CoordinateSystem,
-        surface_config: SurfaceConfig,
-        solver_config: SolverConfig = None,
+        surface_config: ForbesSurfaceConfig,
+        solver_config: ForbesSolverConfig = None,
     ):
         super().__init__(coordinate_system, surface_config, solver_config)
         self.c = 1 / self.radius if self.radius != 0 else 0
@@ -471,7 +456,15 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
             )
 
     def sag(self, x, y):
-        """Calculate the sag of the Forbes Q2D freeform surface."""
+        """Calculate the sag of the Forbes Q2D freeform surface.
+
+        Args:
+            x (float or array_like): x-coordinate
+            y (float or array_like): y-coordinate
+
+        Returns:
+            float or array_like: The sag of the Forbes Q2D freeform surface.
+        """
         x, y = be.array(x), be.array(y)
         r2 = x**2 + y**2
         z_base = self._base_sag(r2)
@@ -502,17 +495,13 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         analytical method for the numpy backend. For torch, it patches the `NaN`
         gradient from autograd at the vertex with the correct analytical value.
 
-        Parameters
-        ----------
-        x : float or array_like
-            X coordinate(s).
-        y : float or array_like
-            Y coordinate(s).
+        Args:
+            x (float or array_like): X coordinate(s).
+            y (float or array_like): Y coordinate(s).
 
-        Returns
-        -------
-        nx, ny, nz : tuple[float or array_like]
-            Components of the unit normal vector.
+        Returns:
+            tuple[float or array_like, float or array_like, float or array_like]:
+                Components of the unit normal vector (nx, ny, nz).
         """
         x_in, y_in = be.array(x), be.array(y)
 
@@ -574,6 +563,14 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
 
         This method is fully vectorized and uses a `where` clause to combine
         the stable vertex calculation with the general non-vertex calculation.
+
+        Args:
+            x_in (float or array_like): x-coordinate
+            y_in (float or array_like): y-coordinate
+
+        Returns:
+            tuple[float or array_like, float or array_like]: The analytical surface
+                                                derivatives for the numpy backend.
         """
         df_dx_vertex, df_dy_vertex = self._surface_normal_analytical_vertex()
 
@@ -624,7 +621,11 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         return df_dx, df_dy
 
     def to_dict(self):
-        """Serializes the geometry to a dictionary."""
+        """Serializes the geometry to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the geometry.
+        """
         return {
             "type": self.__class__.__name__,
             "cs": self.cs.to_dict(),
@@ -634,10 +635,17 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
 
     @classmethod
     def from_dict(cls, data):
-        """Creates an instance from a dictionary."""
+        """Creates an instance from a dictionary.
+
+        Args:
+            data (dict): A dictionary representation of the geometry.
+
+        Returns:
+            ForbesQbfsGeometry: An instance of the class.
+        """
         cs = CoordinateSystem.from_dict(data["cs"])
-        surface_config = SurfaceConfig(**data["surface_config"])
-        solver_config = SolverConfig(**data.get("solver_config", {}))
+        surface_config = ForbesSurfaceConfig(**data["surface_config"])
+        solver_config = ForbesSolverConfig(**data.get("solver_config", {}))
         return cls(cs, surface_config, solver_config)
 
     def __str__(self):

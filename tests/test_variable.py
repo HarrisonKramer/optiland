@@ -9,7 +9,7 @@ from optiland.geometries import (
     ForbesQ2dGeometry,
     PolynomialGeometry,
     ZernikePolynomialGeometry,
-    SurfaceConfig, # forbes dataclass
+    ForbesSurfaceConfig, 
 )
 from optiland.optimization import variable, OptimizationProblem, OptimizerGeneric
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
@@ -515,7 +515,7 @@ class TestForbesQbfsCoeffVariable:
     def setup(self):
         self.optic = AsphericSinglet()
         
-        surface_config = SurfaceConfig(
+        surface_config = ForbesSurfaceConfig(
             radius=100,
             terms={1: 0.1, 2: 0.2, 3: 0.3},
             norm_radius=15.0
@@ -581,7 +581,7 @@ class TestForbesQ2dCoeffVariable:
             ('a', 2, 2): 0.2,
             ('b', 1, 1): 0.3,
         }
-        surface_config = SurfaceConfig(
+        surface_config = ForbesSurfaceConfig(
             radius=100,
             conic=0.0,
             terms=freeform_coeffs,
