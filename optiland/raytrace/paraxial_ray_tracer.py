@@ -96,13 +96,13 @@ class ParaxialRayTracer:
 
             # reflect or refract
             if surfs[k].is_reflective:
-                if surfs[k].surface_type == 'paraxial':
-                    f = surfs[k].f 
+                if surfs[k].surface_type == "paraxial":
+                    f = surfs[k].f
                     u = -u - y / f
                 else:
                     u = -u - 2 * y / R[k]
             else:
-                if surfs[k].surface_type == 'paraxial':
+                if surfs[k].surface_type == "paraxial":
                     f = surfs[k].f
                     u = u - y / f
                 else:
