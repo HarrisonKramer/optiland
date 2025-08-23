@@ -150,25 +150,6 @@ class FFTMTF(BaseMTF):
             mtf.append([tangential / be.max(tangential), sagittal / be.max(sagittal)])
         return mtf
 
-    def _get_fno(self):
-        """Calculate the effective F-number (FNO) of the optical system.
-
-        Applies a correction if the object is finite.
-        Uses self.optic from BaseMTF.
-
-        Returns:
-            float: The effective F-number of the optical system.
-        """
-        FNO = self.optic.paraxial.FNO()
-
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
-
-        return FNO
-
     def _get_mtf_units(self):
         """Calculate the MTF units.
 
