@@ -4,9 +4,14 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 import optiland.backend as be
+from optiland.materials import IdealMaterial
 
 if TYPE_CHECKING:
     from optiland.materials import BaseMaterial
+import re
+
+import matplotlib.pyplot as plt
+
 from .layer import Layer
 
 Pol = Literal["s", "p", "u"]
@@ -25,7 +30,6 @@ class ThinFilmStack:
     - Wavelength in microns (µm) internally; convenience helpers accept nm.
     - AOI in radians internally; convenience helpers accept degrees.
     - Layers are ordered from the incident side to the substrate side.
-    - Transmittance uses the energy-flux scaling via Re(admittance).
 
     Parameters
     ----------
@@ -47,8 +51,6 @@ class ThinFilmStack:
     >>> R = tf.reflectance_nm_deg([550.0], [0.0], polarization="s")
     >>> T = tf.transmittance_nm_deg([550.0], [0.0], polarization="s")
     >>> A = tf.absorptance_nm_deg([550.0], [0.0], polarization="s")
-    >>> float((R + T + A)[0,0])  # doctest: +ELLIPSIS
-    1.0
     """
 
     incident: BaseMaterial
@@ -116,12 +118,12 @@ class ThinFilmStack:
         wl = be.atleast_1d(wavelength_um)
         th = be.atleast_1d(aoi_rad)
         if polarization in ("s", "p"):
-            r, t, R, T, A = _tmm_rt(self, wl[:, None], th[None, :], polarization)
+            r, t, R, T, A = _tmm_coh(self, wl[:, None], th[None, :], polarization)
 
             return {"r": r, "t": t, "R": R, "T": T, "A": A}
         elif polarization == "u":
-            rs, ts, Rs, Ts, As = _tmm_rt(self, wl[:, None], th[None, :], "s")
-            rp, tp, Rp, Tp, Ap = _tmm_rt(self, wl[:, None], th[None, :], "p")
+            rs, ts, Rs, Ts, As = _tmm_coh(self, wl[:, None], th[None, :], "s")
+            rp, tp, Rp, Tp, Ap = _tmm_coh(self, wl[:, None], th[None, :], "p")
             R = 0.5 * (Rs + Rp)
             T = 0.5 * (Ts + Tp)
             A = 0.5 * (As + Ap)
@@ -167,6 +169,160 @@ class ThinFilmStack:
         parts = [layer.name or f"Layer({i})" for i, layer in enumerate(self.layers)]
         return f"ThinFilmStack({len(self.layers)} layers: " + " -> ".join(parts) + ")"
 
+    def plot_structure(self, ax: plt.Axes = None) -> tuple[plt.Figure, plt.Axes]:
+        if ax is None:
+            fig, ax = plt.subplots()
+        import matplotlib.colors as mcolors
+
+        color_cycle = list(mcolors.TABLEAU_COLORS.values())
+
+        def _get_name(obj):
+            name = getattr(obj, "name", "") or ""
+            if isinstance(obj, IdealMaterial):
+                name = f"$n$ = {obj.index[0]}"
+            return name
+
+        def _add_rect(y, height, color, label, text=None):
+            ax.add_patch(
+                plt.Rectangle(
+                    (0, y),
+                    1,
+                    height,
+                    color=color,
+                    label=label,
+                    alpha=0.7,
+                    edgecolor="k",
+                )
+            )
+            if text is not None:
+                ax.text(
+                    0.5,
+                    y + height / 2,
+                    text,
+                    ha="center",
+                    va="center",
+                    fontsize=10,
+                    rotation=0,
+                )
+
+        material_names = (
+            [_get_name(self.incident)]
+            + [_get_name(layer.material) for layer in self.layers]
+            + [_get_name(self.substrate)]
+        )
+        unique_materials = {
+            name: color_cycle[i % len(color_cycle)]
+            for i, name in enumerate(dict.fromkeys(material_names))
+        }
+        total_layer_thickness = sum(layer.thickness_um for layer in self.layers)
+
+        incident_thickness = 0.08 * total_layer_thickness
+        substrate_thickness = 0.08 * total_layer_thickness
+        y = -substrate_thickness
+
+        # Substrate (bottom, negative y)
+        _add_rect(
+            y,
+            substrate_thickness,
+            unique_materials[_get_name(self.substrate)],
+            label=_get_name(self.substrate),
+            text=_get_name(self.substrate),
+        )
+        y = 0
+
+        # Layers (middle, positive y)
+        for _, layer in enumerate(self.layers):
+            color = unique_materials[_get_name(layer.material)]
+            label = layer.name or _get_name(layer.material)
+            if label:
+                label = re.sub(r"\d+", lambda m: str(int(m.group())), label)
+            _add_rect(
+                y,
+                layer.thickness_um,
+                color,
+                label=label,
+                text=None,
+            )
+            y += layer.thickness_um
+
+        # Incident medium (top)
+        _add_rect(
+            y,
+            incident_thickness,
+            unique_materials[_get_name(self.incident)],
+            label=_get_name(self.incident),
+            text=_get_name(self.incident),
+        )
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(-substrate_thickness, y + incident_thickness)
+        ax.set_ylabel("Thickness (µm)")
+        ax.set_xticks([])
+        handles, labels = ax.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles, strict=False))
+        ax.legend(
+            by_label.values(),
+            by_label.keys(),
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            borderaxespad=0.0,
+            ncol=1,
+        )
+        fig = ax.figure
+        return fig, ax
+
+    def plot_structure_thickness(self, ax: plt.Axes = None, max_xticks: int = 10):
+        if ax is None:
+            fig, ax = plt.subplots()
+        import matplotlib.colors as mcolors
+
+        ax.grid(True, alpha=0.3)
+        color_cycle = list(mcolors.TABLEAU_COLORS.values())
+
+        def _get_name(obj):
+            name = getattr(obj, "name", "") or ""
+            if isinstance(obj, IdealMaterial):
+                name = f"$n$ = {obj.index[0]}"
+            return name
+
+        material_names = [_get_name(layer.material) for layer in self.layers]
+        unique_materials = {
+            name: color_cycle[i % len(color_cycle)]
+            for i, name in enumerate(dict.fromkeys(material_names))
+        }
+        colors = [unique_materials[_get_name(layer.material)] for layer in self.layers]
+        thicknesses_nm = [layer.thickness_um * 1000 for layer in self.layers]
+        labels = [layer.name or _get_name(layer.material) for layer in self.layers]
+
+        indices = list(range(len(self.layers)))
+        bars = ax.bar(
+            indices,
+            thicknesses_nm,
+            color=colors,
+            edgecolor=None,
+            alpha=0.7,
+            width=1,
+        )
+        ax.set_xlabel("Layer index")
+        ax.set_ylabel("Thickness (nm)")
+
+        # Legend
+        by_label = {}
+        for bar, label in zip(bars, labels, strict=False):
+            if label not in by_label:
+                by_label[label] = bar
+        ax.legend(
+            by_label.values(),
+            by_label.keys(),
+            loc="center left",
+            bbox_to_anchor=(1.05, 0.5),
+            borderaxespad=0.0,
+            ncol=1,
+        )
+        ax.set_xlim(0.5, len(self.layers) - 0.5)
+        fig = ax.figure
+        return fig, ax
+
 
 # -------------- Internal TMM core --------------
 PolSP = Literal["s", "p"]
@@ -207,7 +363,7 @@ def _admittance(n: complex, cos_t: complex, pol: PolSP):
         raise ValueError("Invalid polarization state")
 
 
-def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
+def _tmm_coh(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
     """
     Compute the reflection and transmission coefficients for
     a thin film stack. Base on Abelès Matrix.

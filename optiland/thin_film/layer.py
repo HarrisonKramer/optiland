@@ -45,8 +45,13 @@ class Layer:
             k, dtype=be._lib.complex128
         )
 
-    def phase_thickness(self, wavelength_um, cos_theta_l, n_complex_l):
-        """Phase δ = 2π/λ0 · n~ · d · cos(θ_l)
+    def phase_thickness(
+        self,
+        wavelength_um: float | be.ndarray,
+        cos_theta_l: complex | be.ndarray,
+        n_complex_l: complex | be.ndarray,
+    ) -> complex | be.ndarray:
+        """Phase δ = 2π/λ·n·d·cos(θ_l)
 
         Inputs must be broadcastable over wavelength and AOI grids.
         """
