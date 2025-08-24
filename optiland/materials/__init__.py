@@ -16,8 +16,8 @@ from .material_utils import (
     get_neighbour_glasses,
     glasses_selection,
     plot_glass_map,
+    plot_nk,
 )
-from .mirror import Mirror
 
 __all__ = [
     # From abbe.py
@@ -30,13 +30,12 @@ __all__ = [
     "Material",
     # From material_file.py
     "MaterialFile",
-    # From mirror.py
-    "Mirror",
     # From material_utils.py
     "downsample_glass_map",
     "get_nd_vd",
     "get_neighbour_glasses",
     "glasses_selection",
     "plot_glass_map",
+    "plot_nk",
     find_closest_glass,
 ]

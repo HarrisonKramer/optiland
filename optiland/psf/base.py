@@ -17,6 +17,7 @@ from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
 import optiland.backend as be
+from optiland.utils import get_working_FNO
 from optiland.wavefront import Wavefront
 
 
@@ -226,7 +227,7 @@ class BasePSF(Wavefront):
             image = replace_nonpositive(image)
 
         extent = [-x_extent / 2, x_extent / 2, -y_extent / 2, y_extent / 2]
-        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent)
+        im = ax.imshow(be.to_numpy(image), norm=norm, extent=extent, origin="lower")
 
         self._annotate_original_size(fig, original_size)
 
@@ -441,36 +442,4 @@ class BasePSF(Wavefront):
         Returns:
             float: The working F-number.
         """
-        MAX_FNUM = 10000.0
-
-        Hx, Hy = self.fields[0]
-        wavelength = self.wavelengths[0]
-
-        n = self.optic.image_surface.material_post.n(wavelength)
-        Px = be.array([0, 0, 0, 1, -1])
-        Py = be.array([0, 1, -1, 0, 0])
-
-        rays = self.optic.trace_generic(
-            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
-        )
-
-        L0, M0, N0 = rays.L[0], rays.M[0], rays.N[0]
-        L, M, N = rays.L[1:], rays.M[1:], rays.N[1:]
-        dot = L0 * L + M0 * M + N0 * N
-        dot = be.clip(dot, -1.0, 1.0)
-        angles = be.arccos(dot)
-
-        numerical_apertures_squared = (n * be.sin(angles)) ** 2
-        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
-
-        fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
-
-        if fno > MAX_FNUM:
-            fno = MAX_FNUM
-
-        if be.isnan(fno):
-            raise ValueError(
-                "Working F/# could not be calculated due to raytrace errors."
-            )
-
-        return fno
+        return get_working_FNO(self.optic, self.fields[0], self.wavelengths[0])

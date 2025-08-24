@@ -38,14 +38,6 @@ class TestIdealMaterial:
         assert material.k(0.5) == 0.2
 
 
-def test_mirror_material(set_test_backend):
-    mirror = materials.Mirror()
-    assert mirror.n(0.5) == -1.0
-    assert mirror.k(0.5) == 0.0
-    assert mirror.n(1.0) == -1.0
-    assert mirror.k(1.0) == 0.0
-
-
 class TestMaterialFile:
     def test_formula_1(self, set_test_backend):
         filename = str(
@@ -453,3 +445,14 @@ def test_find_closest_glass(set_test_backend):
         )
         == "N-BK7"
     )
+
+
+def test_plot_nk():
+    import matplotlib.pyplot as plt
+
+    mat = materials.Material("BK7")
+    fig, axes = materials.plot_nk(mat, wavelength_range=(0.1, 15))
+    assert fig is not None
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(axes, list)
+    assert len(axes) == 2

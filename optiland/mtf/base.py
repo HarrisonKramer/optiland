@@ -14,6 +14,7 @@ import abc
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
+from optiland.utils import get_working_FNO
 
 
 class BaseMTF(abc.ABC):
@@ -153,3 +154,16 @@ class BaseMTF(abc.ABC):
         if is_gui_embedding and hasattr(current_fig, "canvas"):
             current_fig.canvas.draw_idle()
         return current_fig, ax
+
+    def _get_fno(self):
+        """Calculates the working F-number of the optical system for the
+        single defined field point and given wavelength.
+
+        Returns:
+            float: The working F-number.
+        """
+        return get_working_FNO(
+            optic=self.optic,
+            field=(0, 0),  # always calculate on-axis F/#
+            wavelength=self.resolved_wavelength,
+        )

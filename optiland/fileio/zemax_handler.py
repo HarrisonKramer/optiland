@@ -51,6 +51,16 @@ def load_zemax_file(source: str):
 
 @dataclass
 class ZemaxDataModel:
+    """Data model containing data extracted from Zemax files
+
+    Contains data related to:
+        - Aperture
+        - Fields
+        - Wavelengths
+        - Surfaces & all related surface information
+        - Glass Catalogs
+    """
+
     aperture: dict[str, Any] = field(default_factory=dict)
     fields: dict[str, Any] = field(default_factory=dict)
     wavelengths: dict[str, Any] = field(default_factory=lambda: {"data": []})
