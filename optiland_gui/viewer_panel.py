@@ -375,6 +375,9 @@ class MatplotlibViewer(QWidget):
         plot_layout.addWidget(self.canvas)
         self.ax = self.figure.add_subplot(111)
 
+        self._is_plotting = False
+        self._user_initiated_view_change = False
+
         self.toolbar = CustomMatplotlibToolbar(self.canvas, self.toolbar_container)
         toolbar_layout.addWidget(self.toolbar)
         toolbar_layout.addStretch()
@@ -384,7 +387,7 @@ class MatplotlibViewer(QWidget):
                 # Disconnect the default trigger
                 action.triggered.disconnect()
                 # Connect our full plot refresh method
-                action.triggered.connect(self.plot_optic)
+                action.triggered.connect(self.reset_view)
                 break
 
         self.settings_area = QWidget()
@@ -434,6 +437,8 @@ class MatplotlibViewer(QWidget):
         # Add new event connections for panning
         self.canvas.mpl_connect("button_press_event", self.on_mouse_button_press)
         self.canvas.mpl_connect("button_release_event", self.on_mouse_button_release)
+        self.ax.callbacks.connect("xlim_changed", self.on_ax_limit_changed)
+        self.ax.callbacks.connect("ylim_changed", self.on_ax_limit_changed)
 
         # Initialize panning state variables
         self._pan_start_x = None
@@ -442,6 +447,16 @@ class MatplotlibViewer(QWidget):
 
         self.plot_optic()
         self.update_theme()
+
+    def on_ax_limit_changed(self, ax):
+        """Callback for when axis limits change, to detect user interaction."""
+        if not self._is_plotting:
+            self._user_initiated_view_change = True
+
+    def reset_view(self):
+        """Resets the view to the default 1:1 aspect ratio and zoom."""
+        self._user_initiated_view_change = False
+        self.plot_optic(preserve_zoom=False)
 
     def on_mouse_button_press(self, event):
         """
@@ -566,57 +581,92 @@ class MatplotlibViewer(QWidget):
             preserve_zoom (bool): If True, maintains the current view
             limits after redrawing.
         """
-        gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
+        self._is_plotting = True
+        try:
+            gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
 
-        # Store current axis limits if preserving zoom
-        xlim = self.ax.get_xlim() if preserve_zoom else None
-        ylim = self.ax.get_ylim() if preserve_zoom else None
+            should_preserve_limits = preserve_zoom or self._user_initiated_view_change
+            xlim = self.ax.get_xlim() if should_preserve_limits else None
+            ylim = self.ax.get_ylim() if should_preserve_limits else None
 
-        self.ax.clear()
-        face_color = matplotlib.rcParams["figure.facecolor"]
-        self.figure.set_facecolor(face_color)
-        self.ax.set_facecolor(face_color)
+            self.ax.clear()
+            face_color = matplotlib.rcParams["figure.facecolor"]
+            self.figure.set_facecolor(face_color)
+            self.ax.set_facecolor(face_color)
 
-        optic = self.connector.get_optic()
-        num_rays = self.num_rays_spinbox.value()
-        distribution = self.dist_combo.currentText()
-        if optic and optic.surface_group.num_surfaces > 0:
-            try:
-                rays2d_plotter = Rays2D(optic)
-                system_plotter = OptilandOpticalSystemPlotter(
-                    optic, rays2d_plotter, projection="2d"
-                )
-                rays2d_plotter.plot(
-                    self.ax,
-                    fields="all",
-                    wavelengths="primary",
-                    num_rays=num_rays,
-                    distribution=distribution,
-                )
-                system_plotter.plot(self.ax)
-                self.ax.set_title(
-                    f"System: {optic.name} (2D)",
-                    color=matplotlib.rcParams["text.color"],
-                )
-                self.ax.set_xlabel("Z-axis (mm)")
-                self.ax.set_ylabel("Y-axis (mm)")
+            optic = self.connector.get_optic()
+            num_rays = self.num_rays_spinbox.value()
+            distribution = self.dist_combo.currentText()
+            if optic and optic.surface_group.num_surfaces > 0:
+                try:
+                    rays2d_plotter = Rays2D(optic)
+                    system_plotter = OptilandOpticalSystemPlotter(
+                        optic, rays2d_plotter, projection="2d"
+                    )
+                    rays2d_plotter.plot(
+                        self.ax,
+                        fields="all",
+                        wavelengths="primary",
+                        num_rays=num_rays,
+                        distribution=distribution,
+                    )
+                    system_plotter.plot(self.ax)
+                    self.ax.set_title(
+                        f"System: {optic.name} (2D)",
+                        color=matplotlib.rcParams["text.color"],
+                    )
+                    self.ax.set_xlabel("Z-axis (mm)")
+                    self.ax.set_ylabel("Y-axis (mm)")
+                    self.ax.grid(True, linestyle="--", alpha=0.7)
 
-                # Only set equal aspect if not preserving zoom
-                if not preserve_zoom:
-                    self.ax.axis("equal")
+                    if should_preserve_limits and xlim is not None and ylim is not None:
+                        self.ax.set_xlim(xlim)
+                        self.ax.set_ylim(ylim)
+                        self.ax.set_aspect("auto")
+                    else:
+                        fig_width, fig_height = self.figure.get_size_inches()
+                        widget_aspect = fig_height / fig_width
 
-                self.ax.grid(True, linestyle="--", alpha=0.7)
+                        xlim_data = self.ax.get_xlim()
+                        ylim_data = self.ax.get_ylim()
+                        x_range = xlim_data[1] - xlim_data[0]
+                        y_range = ylim_data[1] - ylim_data[0]
 
-                # Restore previous axis limits if preserving zoom
-                if preserve_zoom and xlim is not None and ylim is not None:
-                    self.ax.set_xlim(xlim)
-                    self.ax.set_ylim(ylim)
-            except Exception:
+                        if x_range == 0:
+                            x_range = 1e-6
+                        if y_range == 0:
+                            y_range = 1e-6
+
+                        data_aspect = y_range / x_range
+
+                        # determine which axis to expand to achieve equal aspect ratio
+                        if data_aspect < widget_aspect:
+                            # expand Y
+                            y_center = (ylim_data[0] + ylim_data[1]) / 2
+                            new_y_range = x_range * widget_aspect
+                            self.ax.set_ylim(
+                                y_center - new_y_range / 2, y_center + new_y_range / 2
+                            )
+                        else:
+                            # expand X
+                            x_center = (xlim_data[0] + xlim_data[1]) / 2
+                            new_x_range = y_range / widget_aspect
+                            self.ax.set_xlim(
+                                x_center - new_x_range / 2, x_center + new_x_range / 2
+                            )
+
+                        self.ax.set_aspect("equal")
+
+                except Exception:
+                    self.ax.text(
+                        0.5, 0.5, "Error plotting system", ha="center", va="center"
+                    )
+            else:
                 self.ax.text(0.5, 0.5, "No system loaded", ha="center", va="center")
-        else:
-            self.ax.text(0.5, 0.5, "No system loaded", ha="center", va="center")
 
-        self.canvas.draw()
+            self.canvas.draw()
+        finally:
+            self._is_plotting = False
 
 
 class VTKViewer(QWidget):
