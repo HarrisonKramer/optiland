@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -2046,3 +2046,74 @@ class TestRadiantIntensity:
         grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
+
+
+class TestCookeTripletBestFitRayFan:
+    """Test suite for the BestFitRayFan analysis class using a real optical system."""
+
+    def test_initialization(self, set_test_backend):
+        """
+        Tests that the BestFitRayFan class initializes correctly,
+        setting its own attributes and calling its parent's __init__.
+        """
+        cooke_triplet = CookeTriplet()
+        # Test with default parameters
+        fan = analysis.BestFitRayFan(cooke_triplet)
+        assert fan.num_rays_for_fit == 15
+        assert fan.num_points == 257  # 256 becomes 257 to be odd
+        assert fan.optic == cooke_triplet
+
+        # Test with custom parameters
+        fan_custom = analysis.BestFitRayFan(
+            cooke_triplet, num_points=100, num_rays_for_fit=20
+        )
+        assert fan_custom.num_rays_for_fit == 20
+        assert fan_custom.num_points == 101  # 100 becomes 101 to be odd
+
+    def test_best_fit_ray_fan_data(self, set_test_backend):
+        """
+        Tests the BestFitRayFan class with a real optical system to ensure
+        it runs without errors and that results is similar to standard RayFan.
+        """
+        cooke_triplet = CookeTriplet()
+        num_points = 33
+        
+        # Perform both standard and best-fit analyses for comparison
+        fan_best_fit = analysis.BestFitRayFan(cooke_triplet, num_points=num_points, num_rays_for_fit=5)
+        fan_standard = analysis.RayFan(cooke_triplet, num_points=num_points)
+        
+        data_best_fit = fan_best_fit.data
+        data_standard = fan_standard.data
+
+        # Check top-level data structure
+        assert "Px" in data_best_fit
+        assert "Py" in data_best_fit
+        assert len(data_best_fit["Px"]) == num_points
+        assert len(data_best_fit["Py"]) == num_points
+
+        # Check data for an off-axis field and primary wavelength
+        field_key = f"{cooke_triplet.fields.get_field_coords()[1]}" # e.g., "(0.0, 0.7)"
+        wave_key = f"{cooke_triplet.primary_wavelength}"
+
+        x_best_fit = data_best_fit[field_key][wave_key]["x"]
+        x_standard = data_standard[field_key][wave_key]["x"]
+        
+        y_best_fit = data_best_fit[field_key][wave_key]["y"]
+        y_standard = data_standard[field_key][wave_key]["y"]
+
+        # Assert that the data is valid (not all NaN)
+        assert not be.all(be.isnan(x_best_fit))
+        assert not be.all(be.isnan(y_best_fit))
+        
+        # Crucially, assert that the best-fit data is similar to the standard ray fan data
+        assert_allclose(x_best_fit, x_standard)
+        assert_allclose(y_best_fit, y_standard)
+
+    def test_view_best_fit_ray_fan(self, set_test_backend, cooke_triplet):
+        ray_fan = analysis.BestFitRayFan(cooke_triplet)
+        fig, axes = ray_fan.view()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
