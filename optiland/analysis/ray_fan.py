@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
+from optiland.distribution import create_distribution
+from optiland.wavefront.strategy import BestFitSphereStrategy
 
 from .base import BaseAnalysis
 
@@ -155,6 +157,27 @@ class RayFan(BaseAnalysis):
             current_fig.canvas.draw_idle()
         return current_fig, current_fig.get_axes()
 
+    def _remove_distortion(self, data):
+        """Removes distortion from the ray fan data.
+
+        Args:
+            data (dict): The ray fan data.
+
+        Returns:
+            dict: The ray fan data with distortion removed.
+
+        """
+        wave_ref = self.optic.primary_wavelength
+        for field in self.fields:
+            x_offset = data[f"{field}"][f"{wave_ref}"]["x"][self.num_points // 2]
+            y_offset = data[f"{field}"][f"{wave_ref}"]["y"][self.num_points // 2]
+            for wavelength in self.wavelengths:
+                orig_x = data[f"{field}"][f"{wavelength}"]["x"]
+                orig_y = data[f"{field}"][f"{wavelength}"]["y"]
+                data[f"{field}"][f"{wavelength}"]["x"] = orig_x - x_offset
+                data[f"{field}"][f"{wavelength}"]["y"] = orig_y - y_offset
+        return data
+
     def _generate_data(self):
         """Generates the ray fan data.
 
@@ -202,14 +225,111 @@ class RayFan(BaseAnalysis):
                 )
 
         # remove distortion
-        wave_ref = self.optic.primary_wavelength
+        data = self._remove_distortion(data)
+
+        return data
+
+
+class BestFitRayFan(RayFan):
+    """Represents a ray fan analysis referenced to the best-fit sphere center.
+
+    This class extends the standard `RayFan` analysis by changing the reference
+    point for aberration calculations. Instead of using the chief ray's
+    intersection with the image plane, it uses the lateral coordinates (x, y)
+    of the center of the wavefront's best-fit sphere. This provides a measure
+    of aberration relative to the point of optimal focus for the entire pupil.
+
+    The analysis plane for determining the ray intersection points is the
+    nominal image plane (the final surface in the optical model).
+
+    Args:
+        optic (Optic): The optic object to analyze.
+        fields (str or list, optional): The fields to analyze.
+            Defaults to 'all'.
+        wavelengths (str or list, optional): The wavelengths to analyze.
+            Defaults to 'all'.
+        num_points (int, optional): The number of points in each ray fan.
+            Defaults to 256.
+        num_rays_for_fit (int, optional): The number of rays (rings) in the
+            hexapolar grid used to sample the pupil for the best-fit sphere
+            calculation. A higher number provides a more accurate sphere center
+            at the cost of computation time. Defaults to 15.
+
+    Attributes:
+        num_rays_for_fit (int): The number of rays used for the sphere fit.
+    """
+
+    def __init__(
+        self,
+        optic,
+        fields: str | list = "all",
+        wavelengths: str | list = "all",
+        num_points: int = 256,
+        num_rays_for_fit: int = 15,
+    ):
+        """Initializes the BestFitRayFan analysis."""
+        self.num_rays_for_fit = num_rays_for_fit
+        super().__init__(optic, fields, wavelengths, num_points)
+
+    def _generate_data(self) -> dict:
+        """Generates ray fan data using the best-fit sphere center.
+
+        This method overrides the parent implementation. For each field and
+        wavelength, it first performs a 2D ray trace across the pupil to
+        calculate the wavefront. It then applies the `BestFitSphereStrategy`
+        to find the 3D center of the sphere that best fits this wavefront.
+        The (x, y) coordinates of this center are then used as the reference
+        (origin) for the tangential and sagittal ray fan calculations.
+
+        Returns:
+            dict: A dictionary containing the computed ray fan data, structured
+                  identically to the parent `RayFan` class's data.
+        """
+        data = {}
+        data["Px"] = be.linspace(-1, 1, self.num_points)
+        data["Py"] = be.linspace(-1, 1, self.num_points)
+
+        dist_2d = create_distribution("hexapolar")
+        dist_2d.generate_points(self.num_rays_for_fit)
+
         for field in self.fields:
-            x_offset = data[f"{field}"][f"{wave_ref}"]["x"][self.num_points // 2]
-            y_offset = data[f"{field}"][f"{wave_ref}"]["y"][self.num_points // 2]
+            Hx, Hy = field
+            data[f"{field}"] = {}
+
+            # 1. Find the reference point by calculating the center of the
+            #    best-fit sphere for the primary wavefront
+            strategy = BestFitSphereStrategy(self.optic, dist_2d)
+            strategy.compute_wavefront_data(field, self.optic.primary_wavelength)
+            ref_x, ref_y, _ = strategy.center
+
             for wavelength in self.wavelengths:
-                orig_x = data[f"{field}"][f"{wavelength}"]["x"]
-                orig_y = data[f"{field}"][f"{wavelength}"]["y"]
-                data[f"{field}"][f"{wavelength}"]["x"] = orig_x - x_offset
-                data[f"{field}"][f"{wavelength}"]["y"] = orig_y - y_offset
+                data[f"{field}"][f"{wavelength}"] = {}
+
+                # 2. Trace the tangential ray fan (along the x-axis of pupil)
+                rays_x = self.optic.trace(
+                    Hx=Hx,
+                    Hy=Hy,
+                    wavelength=wavelength,
+                    num_rays=self.num_points,
+                    distribution="line_x",
+                )
+                # 3. Calculate lateral error relative to the reference point
+                data[f"{field}"][f"{wavelength}"]["x"] = rays_x.x - ref_x
+                data[f"{field}"][f"{wavelength}"]["intensity_x"] = rays_x.i
+
+                # 4. Trace the sagittal ray fan (along the y-axis of pupil)
+                rays_y = self.optic.trace(
+                    Hx=Hx,
+                    Hy=Hy,
+                    wavelength=wavelength,
+                    num_rays=self.num_points,
+                    distribution="line_y",
+                )
+                # 5. Calculate lateral error relative to the reference point
+                data[f"{field}"][f"{wavelength}"]["y"] = rays_y.y - ref_y
+                data[f"{field}"][f"{wavelength}"]["intensity_y"] = rays_y.i
+
+        # 6. Remove distortion
+        data = self._remove_distortion(data)
 
         return data
