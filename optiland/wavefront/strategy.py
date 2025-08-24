@@ -365,6 +365,10 @@ class BestFitSphereStrategy(CentroidReferenceSphereStrategy):
     fix the sphere's center at the image-plane centroid, but rather finds
     the optimal center and radius simultaneously.
 
+    Note that this method ignores the location of the image surface. It
+    is not sensitive to defocus, tilt or piston effects, as these are naturally
+    removed in the fitting process.
+
     This method is generally more accurate for systems with significant
     wavefront aberrations where the center of curvature deviates from the
     image centroid.
