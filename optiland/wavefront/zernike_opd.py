@@ -65,4 +65,9 @@ class ZernikeOPD(ZernikeFit, OPD):
         data = self.get_data(self.fields[0], self.wavelengths[0])
         z = data.opd
 
+        mask = data.intensity > 0
+        x = x[mask]
+        y = y[mask]
+        z = z[mask]
+
         ZernikeFit.__init__(self, x, y, z, zernike_type, num_terms)
