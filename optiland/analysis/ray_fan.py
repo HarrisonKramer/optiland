@@ -168,9 +168,30 @@ class RayFan(BaseAnalysis):
 
         """
         wave_ref = self.optic.primary_wavelength
+        center_idx = self.num_points // 2
+
         for field in self.fields:
-            x_offset = data[f"{field}"][f"{wave_ref}"]["x"][self.num_points // 2]
-            y_offset = data[f"{field}"][f"{wave_ref}"]["y"][self.num_points // 2]
+            ref_data_x = data[f"{field}"][f"{wave_ref}"]["x"]
+            ref_data_y = data[f"{field}"][f"{wave_ref}"]["y"]
+            intensity_x = data[f"{field}"][f"{wave_ref}"]["intensity_x"]
+            intensity_y = data[f"{field}"][f"{wave_ref}"]["intensity_y"]
+
+            # Check if the central ray for the x-fan is valid
+            if intensity_x[center_idx] > 0:
+                x_offset = ref_data_x[center_idx]
+            else:
+                # If not, use the mean of all valid rays in the x-fan
+                valid_x = ref_data_x[intensity_x > 0]
+                x_offset = be.mean(valid_x) if be.size(valid_x) > 0 else 0.0
+
+            # Check if the central ray for the y-fan is valid
+            if intensity_y[center_idx] > 0:
+                y_offset = ref_data_y[center_idx]
+            else:
+                # If not, use the mean of all valid rays in the y-fan
+                valid_y = ref_data_y[intensity_y > 0]
+                y_offset = be.mean(valid_y) if be.size(valid_y) > 0 else 0.0
+
             for wavelength in self.wavelengths:
                 orig_x = data[f"{field}"][f"{wavelength}"]["x"]
                 orig_y = data[f"{field}"][f"{wavelength}"]["y"]

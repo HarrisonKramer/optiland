@@ -2117,3 +2117,58 @@ class TestCookeTripletBestFitRayFan:
         assert isinstance(fig, plt.Figure)
         assert all(isinstance(ax, plt.Axes) for ax in axes)
         plt.close(fig)
+
+    def test_remove_distortion_with_invalid_central_ray(self, set_test_backend):
+        """
+        Tests the _remove_distortion logic when the central ray is obscured.
+        It verifies that the function falls back to using the mean of the
+        valid rays as the reference offset.
+        """
+        # 1. Mock the RayFan instance and its essential attributes
+        # We don't need a real optic, just the structure to call the method
+        mock_optic = MagicMock()
+        mock_optic.primary_wavelength = 0.55
+        
+        # Instantiate RayFan, it will be our object under test
+        fan = analysis.BestFitRayFan(mock_optic, num_points=5)
+        fan.fields = [(0.0, 0.7)]
+        fan.wavelengths = [0.55]
+
+        # 2. Manually construct the input data dictionary
+        center_idx = fan.num_points // 2  # This will be index 2 for num_points=5
+        
+        # Create intensity arrays where the central ray has zero intensity
+        intensity_with_obscuration = be.array([1.0, 1.0, 0.0, 1.0, 1.0])
+        
+        # Create coordinate arrays with known values
+        x_coords = be.array([10.0, 20.0, 999.0, 30.0, 40.0]) # 999 is a dummy for the invalid ray
+        y_coords = be.array([-4.0, -2.0, 888.0, 2.0, 4.0])   # 888 is a dummy for the invalid ray
+
+        fan.data = {
+            "(0.0, 0.7)": {
+                "0.55": {
+                    "x": be.copy(x_coords),
+                    "y": be.copy(y_coords),
+                    "intensity_x": be.copy(intensity_with_obscuration),
+                    "intensity_y": be.copy(intensity_with_obscuration),
+                }
+            }
+        }
+
+        # 3. Call the method we want to test
+        processed_data = fan._remove_distortion(fan.data)
+
+        # 4. Define the expected outcome
+        # The offset should be the mean of the valid points, ignoring the central one.
+        # Expected x_offset = mean([10, 20, 30, 40]) = 25
+        # Expected y_offset = mean([-4, -2, 2, 4]) = 0
+        expected_x_offset = 25.0
+        expected_y_offset = 0.0
+        
+        expected_x_final = x_coords - expected_x_offset
+        expected_y_final = y_coords - expected_y_offset
+
+        # 5. Assert that the data was processed correctly
+        output_data = processed_data["(0.0, 0.7)"]["0.55"]
+        assert_allclose(output_data["x"], expected_x_final)
+        assert_allclose(output_data["y"], expected_y_final)
