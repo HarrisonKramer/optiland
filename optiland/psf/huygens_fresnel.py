@@ -44,7 +44,8 @@ class HuygensPSF(BasePSF):
         image_size (int, optional): The size of the image grid for PSF
             calculation. Defaults to 128.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         oversample (float): The oversampling ratio with respect to the optical cutoff.
