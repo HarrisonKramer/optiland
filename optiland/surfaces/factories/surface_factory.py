@@ -121,7 +121,6 @@ class SurfaceFactory:
             zernike_type=kwargs.get("zernike_type", "fringe"),
             radial_terms=kwargs.get("radial_terms"),
             freeform_coeffs=kwargs.get("freeform_coeffs"),
-            forbes_norm_radius=kwargs.get("forbes_norm_radius", 1.0),
         )
 
         geometry = self._geometry_factory.create(
