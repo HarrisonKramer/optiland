@@ -26,7 +26,8 @@ class OPDFan(Wavefront):
         num_rays (int, optional): The number of rays used to calculate the
             wavefront error. Defaults to 100.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
