@@ -18,3 +18,4 @@ This section contains examples of the analysis of the optical path difference (O
     wavefront/through_focus_mtf
     wavefront/sampled_mtf
     wavefront/zernike_decomposition
+    wavefront/wavfront_strategies
