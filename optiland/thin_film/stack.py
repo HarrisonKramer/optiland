@@ -181,18 +181,30 @@ def _complex_index(material: BaseMaterial, wavelength_um):
 
 
 def _snell_cos(n0, theta0, n):
-    """Transmitted angle cosine with forward-branch selection."""
+    """Transmitted angle cosine with forward-branch selection.
+    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
+      Hugh Angus CRC Press, Ch2.6
+    """
     nr = n.real
     k = n.imag
     return be.sqrt(nr**2 - k**2 - (n0 * be.sin(theta0)) ** 2 - 2j * nr * k) / n
 
 
 def _admittance(n: complex, cos_t: complex, pol: PolSP):
+    """Admittance η = sqrt(ε/μ) * n * cos(θ) for s and p polarizations.
+    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
+      Hugh Angus CRC Press, Ch2.6
+    """
     sqrt_eps_mu = 0.002654418729832701370374020517935  # S
+    eta_s = sqrt_eps_mu * n * cos_t
+
     if pol == "s":
-        return sqrt_eps_mu * n * cos_t
+        return eta_s
+    elif pol == "p":
+        eta_p = sqrt_eps_mu**2 * (n.real - 1j * n.imag) ** 2 / eta_s
+        return eta_p
     else:
-        return sqrt_eps_mu * n / (cos_t)
+        raise ValueError("Invalid polarization state")
 
 
 def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
@@ -207,6 +219,7 @@ def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
     sinusoïdales dans les milieus stratifies.
     Applications aux couches minces, Ann. Phys. Paris,
     12ième Series 5 (1950): 596–640.
+    - Chap 2. Thin-Film Optical Filters, Fifth Edition, Macleod, Hugh Angus CRC Press
     """
     n0 = _complex_index(stack.incident, wavelength_um)
     ns = _complex_index(stack.substrate, wavelength_um)
@@ -242,7 +255,8 @@ def _tmm_rt(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
     t = be.conj((2 * eta0) / denom)
 
     R = (r * be.conj(r)).real
-    # T = 4 * eta0 * etas.real / (denom * be.conj(denom)).real
     T = (t * be.conj(t)).real * etas.real / eta0.real
     abso = 1 - R - T
+    # Absorption can also be obtained with :
+    # abso = (1 - R) * (1 - etas.real / ((A + etas * B) * (C + etas * D).conj()).real)
     return r, t, R, T, abso
