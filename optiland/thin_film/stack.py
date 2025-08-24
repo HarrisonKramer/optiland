@@ -170,6 +170,24 @@ class ThinFilmStack:
         return f"ThinFilmStack({len(self.layers)} layers: " + " -> ".join(parts) + ")"
 
     def plot_structure(self, ax: plt.Axes = None) -> tuple[plt.Figure, plt.Axes]:
+        """Plots a schematic representation of the thin film stack structure.
+        This method visualizes the stack as a series of colored rectangles, each
+        representing a material layer, the substrate, and the incident medium.
+        Each rectangle's height corresponds to the physical thickness of the
+        layer (in micrometers), and colors are assigned uniquely to each material.
+        The substrate is plotted at the bottom, followed by the stack layers,
+        and the incident medium at the top. Material names or refractive indices
+        are used as labels in the legend.
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            The axes on which to plot the structure. If None, a new figure and
+            axes are created.
+        Returns
+        -------
+        tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]
+            The matplotlib Figure and Axes objects containing the plot.
+        """
         if ax is None:
             fig, ax = plt.subplots()
         import matplotlib.colors as mcolors
@@ -184,15 +202,7 @@ class ThinFilmStack:
 
         def _add_rect(y, height, color, label, text=None):
             ax.add_patch(
-                plt.Rectangle(
-                    (0, y),
-                    1,
-                    height,
-                    color=color,
-                    label=label,
-                    alpha=0.7,
-                    edgecolor="k",
-                )
+                plt.Rectangle((0, y), 1, height, color=color, label=label, alpha=0.7)
             )
             if text is not None:
                 ax.text(
@@ -271,7 +281,26 @@ class ThinFilmStack:
         fig = ax.figure
         return fig, ax
 
-    def plot_structure_thickness(self, ax: plt.Axes = None, max_xticks: int = 10):
+    def plot_structure_thickness(self, ax: plt.Axes = None):
+        """
+        Plots the thickness of each layer in the thin film stack as a bar chart.
+        Each bar represents a layer, with its height corresponding to the layer's
+        thickness in nanometers.
+        Bars are colored according to the material of each layer, and a legend is
+        provided to identify materials.
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            The matplotlib Axes object to plot on. If None, a new figure and axes
+            will be created.
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The matplotlib Figure object containing the plot.
+        ax : matplotlib.axes.Axes
+            The matplotlib Axes object containing the plot.
+        """
+
         if ax is None:
             fig, ax = plt.subplots()
         import matplotlib.colors as mcolors
