@@ -34,7 +34,8 @@ class FFTMTF(BaseMTF):
         max_freq (str or float, optional): The maximum frequency for the MTF
             calculation. Defaults to 'cutoff'.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
@@ -149,25 +150,6 @@ class FFTMTF(BaseMTF):
             sagittal = data[self.grid_size // 2, self.grid_size // 2 :]
             mtf.append([tangential / be.max(tangential), sagittal / be.max(sagittal)])
         return mtf
-
-    def _get_fno(self):
-        """Calculate the effective F-number (FNO) of the optical system.
-
-        Applies a correction if the object is finite.
-        Uses self.optic from BaseMTF.
-
-        Returns:
-            float: The effective F-number of the optical system.
-        """
-        FNO = self.optic.paraxial.FNO()
-
-        if not self.optic.object_surface.is_infinite:
-            D = self.optic.paraxial.XPD()
-            p = D / self.optic.paraxial.EPD()
-            m = self.optic.paraxial.magnification()
-            FNO = FNO * (1 + be.abs(m) / p)
-
-        return FNO
 
     def _get_mtf_units(self):
         """Calculate the MTF units.

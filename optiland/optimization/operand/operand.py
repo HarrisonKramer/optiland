@@ -21,6 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from optiland.optimization.operand.aberration import AberrationOperand
+from optiland.optimization.operand.lens import LensOperand
 from optiland.optimization.operand.paraxial import ParaxialOperand
 from optiland.optimization.operand.ray import RayOperand
 
@@ -76,6 +77,7 @@ METRIC_DICT = {
     "real_N": RayOperand.N,
     "rms_spot_size": RayOperand.rms_spot_size,
     "OPD_difference": RayOperand.OPD_difference,
+    "edge_thickness": LensOperand.edge_thickness,
 }
 
 
