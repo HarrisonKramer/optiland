@@ -261,7 +261,7 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
         opd = rays.opd - opd_img
 
         # 5. Remove piston by subtracting mean OPD
-        valid_mask = rays.i != 0
+        valid_mask = rays.i > 0
         if be.any(valid_mask):
             mean_opd = be.mean(opd[valid_mask])
         else:
