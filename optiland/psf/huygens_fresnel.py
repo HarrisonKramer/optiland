@@ -48,9 +48,12 @@ class HuygensPSF(BasePSF):
             Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
-        oversample (float): The oversampling ratio with respect to the optical cutoff.
-            Impacts the extent of the image and is generally only used for MTF
-            calculation.
+        oversample (float, optional): The oversampling ratio with respect to the
+            optical cutoff. Impacts the extent of the image and is generally
+            only used for MTF calculation. Defaults to None.
+        pixel_pitch (float, optional): The pixel pitch of the image plane in mm.
+            If provided, this will override the automatic extent calculation.
+            Defaults to None.
         **kwargs: Additional keyword arguments passed to the strategy.
     """
 
@@ -64,6 +67,7 @@ class HuygensPSF(BasePSF):
         strategy="chief_ray",
         remove_tilt=False,
         oversample: float = None,
+        pixel_pitch: float = None,
         **kwargs,
     ):
         if be.get_backend() != "numpy":
@@ -81,7 +85,7 @@ class HuygensPSF(BasePSF):
 
         self.cx = None  # center of the image plane
         self.cy = None
-        self.pixel_pitch = None  # pixel pitch of image plane in mm
+        self.pixel_pitch = pixel_pitch  # pixel pitch of image plane in mm
 
         self.image_size = image_size
         self.oversample = oversample
@@ -97,8 +101,19 @@ class HuygensPSF(BasePSF):
             distribution="hexapolar",
             num_rays=6,
         )
+
+        # Use only rays with positive intensity (i > 0) to calculate the center
+        valid_rays = rays.i > 0
+        if not be.any(valid_rays):
+            # Handle case where no rays make it to the image plane
+            return be.array([0.0]), be.array([0.0])
+
         rx, ry, _ = transform(
-            rays.x, rays.y, rays.z, self.optic.image_surface, is_global=True
+            rays.x[valid_rays],
+            rays.y[valid_rays],
+            rays.z[valid_rays],
+            self.optic.image_surface,
+            is_global=True,
         )
 
         return rx, ry
@@ -106,21 +121,27 @@ class HuygensPSF(BasePSF):
     def _get_image_extent(self) -> tuple[float, float, float, float]:
         """Calculate the extent of the image plane in mm.
 
-        The extent can be determined either by optical cutoff (oversample mode)
-        or by geometric/Airy coverage (default mode).
+        The extent can be determined either by optical cutoff (oversample mode),
+        by geometric/Airy coverage (default mode), or by a user-provided
+        pixel_pitch.
         """
         # Determine image center and retrieve x, y intersections
         rx, ry = self._determine_image_center()
         self.cx = be.mean(rx)
         self.cy = be.mean(ry)
 
-        if self.oversample is not None:
-            extent = self._extent_from_cutoff()
+        # If pixel_pitch is provided, use it to determine the extent.
+        # Otherwise, calculate it automatically.
+        if self.pixel_pitch is not None:
+            extent = 0.5 * self.image_size * self.pixel_pitch
         else:
-            extent = self._extent_from_geometry(rx, ry)
+            if self.oversample is not None:
+                extent = self._extent_from_cutoff()
+            else:
+                extent = self._extent_from_geometry(rx, ry)
 
-        # Pixel pitch always derived from extent
-        self.pixel_pitch = 2 * extent / self.image_size
+            # Pixel pitch is derived from the calculated extent
+            self.pixel_pitch = 2 * extent / self.image_size
 
         # Final extents centered on chief ray intercept
         xmin = -extent + self.cx
