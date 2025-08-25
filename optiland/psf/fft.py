@@ -148,7 +148,15 @@ class FFTPSF(BasePSF):
         for wl in self.wavelengths:
             wavefront_data = self.get_data(field, wl)
             P = be.to_complex(be.zeros_like(x))
-            amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
+
+            valid_intensities = wavefront_data.intensity[wavefront_data.intensity > 0]
+            if be.size(valid_intensities) > 0:
+                mean_valid_intensity = be.mean(valid_intensities)
+                amplitude = wavefront_data.intensity / mean_valid_intensity
+            else:
+                # Handle case with no valid rays
+                amplitude = be.zeros_like(wavefront_data.intensity)
+
             P[R2 <= 1] = be.to_complex(
                 amplitude * be.exp(-1j * 2 * be.pi * wavefront_data.opd)
             )
@@ -244,7 +252,19 @@ class FFTPSF(BasePSF):
         # Create a binary mask: 1 where P_nom is non-zero, 0 otherwise.
         P_nom = be.where(P_nom != 0, be.ones_like(P_nom), P_nom)
 
-        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
+        # Pad the ideal pupil to match grid size
+        pad_before = (self.grid_size - P_nom.shape[0]) // 2
+        pad_after = pad_before + (self.grid_size - P_nom.shape[0]) % 2
+
+        P_nom_padded = be.pad(
+            P_nom,
+            ((pad_before, pad_after), (pad_before, pad_after)),
+            mode="constant",
+            constant_values=0,
+        )
+
+        # Perform FFT on the padded ideal pupil
+        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom_padded))
         psf_norm = amp_norm * be.conj(amp_norm)
         return be.max(be.real(psf_norm)) * len(self.pupils)
 

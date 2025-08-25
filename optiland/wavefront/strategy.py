@@ -261,7 +261,14 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
         opd = rays.opd - opd_img
 
         # 5. Remove piston by subtracting mean OPD
-        opd_waves = (be.mean(opd) - opd) / (wavelength * 1e-3)  # wavelength: µm to mm
+        valid_mask = rays.i > 0
+        if be.any(valid_mask):
+            mean_opd = be.mean(opd[valid_mask])
+        else:
+            raise ValueError(
+                "No valid rays with non-zero intensity for OPD calculation."
+            )
+        opd_waves = (mean_opd - opd) / (wavelength * 1e-3)  # wavelength: µm to mm
 
         # 6. Compute pupil coordinates (intersection with reference sphere)
         t = opd_img / self.n_image

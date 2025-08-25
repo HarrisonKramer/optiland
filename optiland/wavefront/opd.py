@@ -127,7 +127,13 @@ class OPD(Wavefront):
 
         """
         data = self.get_data(self.fields[0], self.wavelengths[0])
-        return be.sqrt(be.mean(data.opd**2))
+        mask = data.intensity > 0
+        if not be.any(mask):
+            raise ValueError(
+                "No valid rays with non-zero intensity for RMS calculation."
+            )
+        opd = data.opd[mask]
+        return be.sqrt(be.mean(opd**2))
 
     def _plot_2d(self, ax: plt.Axes, data: dict[str, np.ndarray]) -> None:
         """Plots the 2D visualization of the OPD wavefront.
