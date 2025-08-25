@@ -3,7 +3,7 @@
 from .angle_vs_height import PupilIncidentAngleVsHeight, FieldIncidentAngleVsHeight
 from .spot_diagram import SpotDiagram
 from .encircled_energy import EncircledEnergy
-from .ray_fan import RayFan
+from .ray_fan import RayFan, BestFitRayFan
 from .y_ybar import YYbar
 from .distortion import Distortion
 from .grid_distortion import GridDistortion

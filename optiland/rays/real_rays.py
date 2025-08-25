@@ -169,6 +169,311 @@ class RealRays(BaseRays):
         self.M = self.M - 2 * dot * ny
         self.N = self.N - 2 * dot * nz
 
+    def gratingdiffract(self, nx, ny, nz, fx, fy, fz, m, d, n1, n2, is_reflective):
+        """Diffract the rays on the surface.
+
+        Args:
+            nx: The x-component of the surface normal.
+            ny: The y-component of the surface normal.
+            nz: The z-component of the surface normal.
+            fx: The x-component of the grating vector.
+            fy: The y-component of the grating vector.
+            fz: The z-component of the grating vector.
+            d:  The grating spacing
+            m:  The grating diffraction order
+
+        Returns:
+            RealRays: The rays diffracted by the grating.
+
+        """
+        self.L0 = be.copy(self.L)
+        self.M0 = be.copy(self.M)
+        self.N0 = be.copy(self.N)
+
+        nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
+
+        if is_reflective:
+            sgn = -1
+            n2c = n2 * sgn
+            self.L = (
+                self.L0 * d * n1 * ny**2
+                + self.L0 * d * n1 * nz**2
+                - self.M0 * d * n1 * nx * ny
+                - self.N0 * d * n1 * nx * nz
+                + fx * m * ny**2 * self.w
+                + fx * m * nz**2 * self.w
+                - fy * m * nx * ny * self.w
+                - fz * m * nx * nz * self.w
+                - nx
+                * be.sqrt(
+                    -(self.L0**2) * d**2 * n1**2 * ny**2
+                    - self.L0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                    + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                    - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                    - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                    + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                    + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                    - self.M0**2 * d**2 * n1**2 * nx**2
+                    - self.M0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                    + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                    + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                    - self.N0**2 * d**2 * n1**2 * nx**2
+                    - self.N0**2 * d**2 * n1**2 * ny**2
+                    + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                    + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                    + d**2 * n2c**2 * nx**2
+                    + d**2 * n2c**2 * ny**2
+                    + d**2 * n2c**2 * nz**2
+                    - fx**2 * m**2 * ny**2 * self.w**2
+                    - fx**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                    + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                    - fy**2 * m**2 * nx**2 * self.w**2
+                    - fy**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                    - fz**2 * m**2 * nx**2 * self.w**2
+                    - fz**2 * m**2 * ny**2 * self.w**2
+                )
+            ) / (d * n2c)
+            self.M = (
+                -self.L0 * d * n1 * nx * ny
+                + self.M0 * d * n1 * nx**2
+                + self.M0 * d * n1 * nz**2
+                - self.N0 * d * n1 * ny * nz
+                - fx * m * nx * ny * self.w
+                + fy * m * nx**2 * self.w
+                + fy * m * nz**2 * self.w
+                - fz * m * ny * nz * self.w
+                - ny
+                * be.sqrt(
+                    -(self.L0**2) * d**2 * n1**2 * ny**2
+                    - self.L0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                    + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                    - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                    - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                    + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                    + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                    - self.M0**2 * d**2 * n1**2 * nx**2
+                    - self.M0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                    + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                    + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                    - self.N0**2 * d**2 * n1**2 * nx**2
+                    - self.N0**2 * d**2 * n1**2 * ny**2
+                    + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                    + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                    + d**2 * n2c**2 * nx**2
+                    + d**2 * n2c**2 * ny**2
+                    + d**2 * n2c**2 * nz**2
+                    - fx**2 * m**2 * ny**2 * self.w**2
+                    - fx**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                    + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                    - fy**2 * m**2 * nx**2 * self.w**2
+                    - fy**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                    - fz**2 * m**2 * nx**2 * self.w**2
+                    - fz**2 * m**2 * ny**2 * self.w**2
+                )
+            ) / (d * n2c)
+            self.N = -nz * be.sqrt(
+                -(self.L0**2) * d**2 * n1**2 * ny**2
+                - self.L0**2 * d**2 * n1**2 * nz**2
+                + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                - self.M0**2 * d**2 * n1**2 * nx**2
+                - self.M0**2 * d**2 * n1**2 * nz**2
+                + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                - self.N0**2 * d**2 * n1**2 * nx**2
+                - self.N0**2 * d**2 * n1**2 * ny**2
+                + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                + d**2 * n2c**2 * nx**2
+                + d**2 * n2c**2 * ny**2
+                + d**2 * n2c**2 * nz**2
+                - fx**2 * m**2 * ny**2 * self.w**2
+                - fx**2 * m**2 * nz**2 * self.w**2
+                + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                - fy**2 * m**2 * nx**2 * self.w**2
+                - fy**2 * m**2 * nz**2 * self.w**2
+                + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                - fz**2 * m**2 * nx**2 * self.w**2
+                - fz**2 * m**2 * ny**2 * self.w**2
+            ) / (d * n2c) - (
+                self.L0 * d * n1 * nx * nz
+                + self.M0 * d * n1 * ny * nz
+                - self.N0 * d * n1 * nx**2
+                - self.N0 * d * n1 * ny**2
+                + fx * m * nx * nz * self.w
+                + fy * m * ny * nz * self.w
+                - fz * m * nx**2 * self.w
+                - fz * m * ny**2 * self.w
+            ) / (d * n2c)
+
+        else:
+            sgn = 1
+            n2c = n2 * sgn
+            self.L = (
+                self.L0 * d * n1 * ny**2
+                + self.L0 * d * n1 * nz**2
+                - self.M0 * d * n1 * nx * ny
+                - self.N0 * d * n1 * nx * nz
+                + fx * m * ny**2 * self.w
+                + fx * m * nz**2 * self.w
+                - fy * m * nx * ny * self.w
+                - fz * m * nx * nz * self.w
+                + nx
+                * be.sqrt(
+                    -(self.L0**2) * d**2 * n1**2 * ny**2
+                    - self.L0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                    + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                    - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                    - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                    + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                    + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                    - self.M0**2 * d**2 * n1**2 * nx**2
+                    - self.M0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                    + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                    + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                    - self.N0**2 * d**2 * n1**2 * nx**2
+                    - self.N0**2 * d**2 * n1**2 * ny**2
+                    + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                    + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                    + d**2 * n2c**2 * nx**2
+                    + d**2 * n2c**2 * ny**2
+                    + d**2 * n2c**2 * nz**2
+                    - fx**2 * m**2 * ny**2 * self.w**2
+                    - fx**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                    + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                    - fy**2 * m**2 * nx**2 * self.w**2
+                    - fy**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                    - fz**2 * m**2 * nx**2 * self.w**2
+                    - fz**2 * m**2 * ny**2 * self.w**2
+                )
+            ) / (d * n2c)
+            self.M = (
+                -self.L0 * d * n1 * nx * ny
+                + self.M0 * d * n1 * nx**2
+                + self.M0 * d * n1 * nz**2
+                - self.N0 * d * n1 * ny * nz
+                - fx * m * nx * ny * self.w
+                + fy * m * nx**2 * self.w
+                + fy * m * nz**2 * self.w
+                - fz * m * ny * nz * self.w
+                + ny
+                * be.sqrt(
+                    -(self.L0**2) * d**2 * n1**2 * ny**2
+                    - self.L0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                    + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                    - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                    - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                    + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                    + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                    - self.M0**2 * d**2 * n1**2 * nx**2
+                    - self.M0**2 * d**2 * n1**2 * nz**2
+                    + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                    + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                    - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                    + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                    - self.N0**2 * d**2 * n1**2 * nx**2
+                    - self.N0**2 * d**2 * n1**2 * ny**2
+                    + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                    + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                    - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                    + d**2 * n2c**2 * nx**2
+                    + d**2 * n2c**2 * ny**2
+                    + d**2 * n2c**2 * nz**2
+                    - fx**2 * m**2 * ny**2 * self.w**2
+                    - fx**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                    + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                    - fy**2 * m**2 * nx**2 * self.w**2
+                    - fy**2 * m**2 * nz**2 * self.w**2
+                    + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                    - fz**2 * m**2 * nx**2 * self.w**2
+                    - fz**2 * m**2 * ny**2 * self.w**2
+                )
+            ) / (d * n2c)
+            self.N = nz * be.sqrt(
+                -(self.L0**2) * d**2 * n1**2 * ny**2
+                - self.L0**2 * d**2 * n1**2 * nz**2
+                + 2 * self.L0 * self.M0 * d**2 * n1**2 * nx * ny
+                + 2 * self.L0 * self.N0 * d**2 * n1**2 * nx * nz
+                - 2 * self.L0 * d * fx * m * n1 * ny**2 * self.w
+                - 2 * self.L0 * d * fx * m * n1 * nz**2 * self.w
+                + 2 * self.L0 * d * fy * m * n1 * nx * ny * self.w
+                + 2 * self.L0 * d * fz * m * n1 * nx * nz * self.w
+                - self.M0**2 * d**2 * n1**2 * nx**2
+                - self.M0**2 * d**2 * n1**2 * nz**2
+                + 2 * self.M0 * self.N0 * d**2 * n1**2 * ny * nz
+                + 2 * self.M0 * d * fx * m * n1 * nx * ny * self.w
+                - 2 * self.M0 * d * fy * m * n1 * nx**2 * self.w
+                - 2 * self.M0 * d * fy * m * n1 * nz**2 * self.w
+                + 2 * self.M0 * d * fz * m * n1 * ny * nz * self.w
+                - self.N0**2 * d**2 * n1**2 * nx**2
+                - self.N0**2 * d**2 * n1**2 * ny**2
+                + 2 * self.N0 * d * fx * m * n1 * nx * nz * self.w
+                + 2 * self.N0 * d * fy * m * n1 * ny * nz * self.w
+                - 2 * self.N0 * d * fz * m * n1 * nx**2 * self.w
+                - 2 * self.N0 * d * fz * m * n1 * ny**2 * self.w
+                + d**2 * n2c**2 * nx**2
+                + d**2 * n2c**2 * ny**2
+                + d**2 * n2c**2 * nz**2
+                - fx**2 * m**2 * ny**2 * self.w**2
+                - fx**2 * m**2 * nz**2 * self.w**2
+                + 2 * fx * fy * m**2 * nx * ny * self.w**2
+                + 2 * fx * fz * m**2 * nx * nz * self.w**2
+                - fy**2 * m**2 * nx**2 * self.w**2
+                - fy**2 * m**2 * nz**2 * self.w**2
+                + 2 * fy * fz * m**2 * ny * nz * self.w**2
+                - fz**2 * m**2 * nx**2 * self.w**2
+                - fz**2 * m**2 * ny**2 * self.w**2
+            ) / (d * n2c) - (
+                self.L0 * d * n1 * nx * nz
+                + self.M0 * d * n1 * ny * nz
+                - self.N0 * d * n1 * nx**2
+                - self.N0 * d * n1 * ny**2
+                + fx * m * nx * nz * self.w
+                + fy * m * ny * nz * self.w
+                - fz * m * nx**2 * self.w
+                - fz * m * ny**2 * self.w
+            ) / (d * n2c)
+
+        self.normalize()
+
     def update(self, jones_matrix: be.ndarray = None):
         """Update ray properties (primarily used for polarization)."""
 

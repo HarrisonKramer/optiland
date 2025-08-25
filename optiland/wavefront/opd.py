@@ -25,7 +25,8 @@ class OPD(Wavefront):
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
@@ -126,7 +127,13 @@ class OPD(Wavefront):
 
         """
         data = self.get_data(self.fields[0], self.wavelengths[0])
-        return be.sqrt(be.mean(data.opd**2))
+        mask = data.intensity > 0
+        if not be.any(mask):
+            raise ValueError(
+                "No valid rays with non-zero intensity for RMS calculation."
+            )
+        opd = data.opd[mask]
+        return be.sqrt(be.mean(opd**2))
 
     def _plot_2d(self, ax: plt.Axes, data: dict[str, np.ndarray]) -> None:
         """Plots the 2D visualization of the OPD wavefront.
@@ -196,6 +203,13 @@ class OPD(Wavefront):
         y = be.to_numpy(self.distribution.y)
         z = be.to_numpy(data.opd)
         intensity = be.to_numpy(data.intensity)
+
+        # Ignore zero intensity points
+        mask = intensity > 0
+        x = x[mask]
+        y = y[mask]
+        z = z[mask]
+        intensity = intensity[mask]
 
         x_interp, y_interp = np.meshgrid(
             np.linspace(-1, 1, num_points),

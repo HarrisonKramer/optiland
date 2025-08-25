@@ -58,7 +58,9 @@ class TestZemaxFileSourceHandler:
         handler = ZemaxFileSourceHandler("http://example.com/test.zmx")
         local = handler.get_local_file()
 
-        mock_requests_get.assert_called_once_with("http://example.com/test.zmx", timeout=10)
+        mock_requests_get.assert_called_once_with(
+            "http://example.com/test.zmx", timeout=10
+        )
         temp_file.write.assert_called_once_with(b"Test content")
         assert local == "temp.zmx"
 
@@ -132,7 +134,9 @@ class TestEndToEnd:
 
 def test_save_load_json_obj():
     mat = Material("SF11")
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json") as temp_file:
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".json"
+    ) as temp_file:
         save_obj_to_json(mat, temp_file.name)
     assert os.path.exists(temp_file.name)
 
@@ -147,8 +151,11 @@ def test_load_invalid_json():
 
 def test_save_load_optiland_file():
     lens = HeliarLens()
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".json") as temp_file:
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".json"
+    ) as temp_file:
         from optiland.fileio import save_optiland_file, load_optiland_file
+
         save_optiland_file(lens, temp_file.name)
         lens2 = load_optiland_file(temp_file.name)
     assert lens.to_dict() == lens2.to_dict()
