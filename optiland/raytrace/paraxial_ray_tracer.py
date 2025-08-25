@@ -95,10 +95,18 @@ class ParaxialRayTracer:
             y = y + t * u
 
             # reflect or refract
-            if surfs[k].interaction_model.is_reflective:
-                u = -u - 2 * y / R[k]
+            if surfs[k].is_reflective:
+                if surfs[k].surface_type == "paraxial":
+                    f = surfs[k].f
+                    u = -u - y / f
+                else:
+                    u = -u - 2 * y / R[k]
             else:
-                u = 1 / n[k] * (n[k - 1] * u - y * power[k])
+                if surfs[k].surface_type == "paraxial":
+                    f = surfs[k].f
+                    u = u - y / f
+                else:
+                    u = 1 / n[k] * (n[k - 1] * u - y * power[k])
 
             heights.append(be.copy(y))
             slopes.append(be.copy(u))

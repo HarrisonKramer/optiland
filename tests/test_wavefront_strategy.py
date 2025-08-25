@@ -10,6 +10,7 @@ from optiland.wavefront.strategy import (
     CentroidReferenceSphereStrategy,
     ChiefRayStrategy,
     ReferenceStrategy,
+    BestFitSphereStrategy,
     create_strategy,
 )
 from optiland.wavefront.wavefront_data import WavefrontData
@@ -343,3 +344,34 @@ def test_create_strategy(optic, distribution, set_test_backend):
         ValueError, match="Unknown wavefront strategy: invalid_strategy"
     ):
         create_strategy("invalid_strategy", optic, distribution)
+
+    # Test best_fit_sphere strategy creation
+    bfs_strategy = create_strategy("best_fit_sphere", optic, distribution)
+    assert isinstance(bfs_strategy, CentroidReferenceSphereStrategy)
+
+
+class TestBestFitSphereStrategy:
+    """Tests for the BestFitSphereStrategy."""
+
+    def test_strategy_compare_at_best_focus(self, set_test_backend):
+        """
+        When the image surface is at best focus, BFS and centroid
+        strategies should match.
+        """
+        optic = DoubleGauss()
+        # Put image surface at known best focus position for field/wavelength
+        optic.image_surface.geometry.cs.z = be.array([139.36352573])
+        dist = create_distribution("uniform")
+        dist.generate_points(32)
+        strategy_centroid = CentroidReferenceSphereStrategy(optic, dist)
+        data_centroid = strategy_centroid.compute_wavefront_data((0, 0), 0.5876)
+        strategy_bfs = BestFitSphereStrategy(optic, dist)
+        data_bfs = strategy_bfs.compute_wavefront_data((0, 0), 0.5876)
+
+        assert isinstance(strategy_bfs.center, tuple)
+        assert_allclose(strategy_bfs.center[0], 0)
+        assert_allclose(strategy_bfs.center[1], 0)
+        assert_allclose(strategy_bfs.center[2], 139.36352573)
+
+        # when at best focus, both strategies should yield similar results
+        assert_allclose(data_bfs.radius, data_centroid.radius)
