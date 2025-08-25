@@ -190,9 +190,6 @@ class HuygensPSF(BasePSF):
 
         return image_x, image_y, image_z
 
-    def _get_normalization(self, pupil_data):
-        pass
-
     @staticmethod
     @njit(parallel=True, fastmath=True)
     def _huygens_fresnel_summation(
