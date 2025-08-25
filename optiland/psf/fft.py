@@ -244,7 +244,19 @@ class FFTPSF(BasePSF):
         # Create a binary mask: 1 where P_nom is non-zero, 0 otherwise.
         P_nom = be.where(P_nom != 0, be.ones_like(P_nom), P_nom)
 
-        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom))
+        # Pad the ideal pupil to match grid size
+        pad_before = (self.grid_size - P_nom.shape[0]) // 2
+        pad_after = pad_before + (self.grid_size - P_nom.shape[0]) % 2
+
+        P_nom_padded = be.pad(
+            P_nom,
+            ((pad_before, pad_after), (pad_before, pad_after)),
+            mode="constant",
+            constant_values=0,
+        )
+
+        # Perform FFT on the padded ideal pupil
+        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom_padded))
         psf_norm = amp_norm * be.conj(amp_norm)
         return be.max(be.real(psf_norm)) * len(self.pupils)
 
