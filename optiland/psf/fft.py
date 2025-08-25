@@ -148,7 +148,15 @@ class FFTPSF(BasePSF):
         for wl in self.wavelengths:
             wavefront_data = self.get_data(field, wl)
             P = be.to_complex(be.zeros_like(x))
-            amplitude = wavefront_data.intensity / be.mean(wavefront_data.intensity)
+
+            valid_intensities = wavefront_data.intensity[wavefront_data.intensity > 0]
+            if be.size(valid_intensities) > 0:
+                mean_valid_intensity = be.mean(valid_intensities)
+                amplitude = wavefront_data.intensity / mean_valid_intensity
+            else:
+                # Handle case with no valid rays
+                amplitude = be.zeros_like(wavefront_data.intensity)
+
             P[R2 <= 1] = be.to_complex(
                 amplitude * be.exp(-1j * 2 * be.pi * wavefront_data.opd)
             )
