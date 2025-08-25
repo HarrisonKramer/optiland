@@ -261,7 +261,14 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
         opd = rays.opd - opd_img
 
         # 5. Remove piston by subtracting mean OPD
-        opd_waves = (be.mean(opd) - opd) / (wavelength * 1e-3)  # wavelength: µm to mm
+        valid_mask = rays.i > 0
+        if be.any(valid_mask):
+            mean_opd = be.mean(opd[valid_mask])
+        else:
+            raise ValueError(
+                "No valid rays with non-zero intensity for OPD calculation."
+            )
+        opd_waves = (mean_opd - opd) / (wavelength * 1e-3)  # wavelength: µm to mm
 
         # 6. Compute pupil coordinates (intersection with reference sphere)
         t = opd_img / self.n_image
@@ -356,11 +363,87 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
         return float(centroid[0]), float(centroid[1]), float(centroid[2]), radius
 
 
+class BestFitSphereStrategy(CentroidReferenceSphereStrategy):
+    """Wavefront analysis strategy using a best-fit reference sphere.
+
+    This strategy computes the wavefront error relative to a reference sphere
+    that is determined by a least-squares fit to the wavefront points.
+    Unlike its parent class, `CentroidReferenceSphereStrategy`, it does not
+    fix the sphere's center at the image-plane centroid, but rather finds
+    the optimal center and radius simultaneously.
+
+    Note that this method ignores the location of the image surface. It
+    is not sensitive to defocus, tilt or piston effects, as these are naturally
+    removed in the fitting process.
+
+    This method is generally more accurate for systems with significant
+    wavefront aberrations where the center of curvature deviates from the
+    image centroid.
+    """
+
+    def __init__(self, optic, distribution, **kwargs):
+        """Initializes the BestFitSphereStrategy.
+
+        Args:
+            optic: The optical system to analyze.
+            distribution: The pupil sampling distribution.
+        """
+        super().__init__(optic, distribution, **kwargs)
+        self.center = None
+
+    def _calculate_reference_sphere(self, rays):
+        """Computes the best-fit sphere (center and radius) for the wavefront.
+
+        This method solves a linear least-squares problem to find the sphere
+        that best fits the 3D wavefront points derived from the ray data.
+
+        Args:
+            rays: Traced rays at the image surface.
+
+        Returns:
+            Tuple[float, float, float, float]: (center_x, center_y, center_z, radius)
+        """
+        wavefront_points, _ = self._points_from_rays(rays)
+
+        # Ensure there are enough points for a stable fit
+        if wavefront_points.shape[0] < 4:
+            raise ValueError("Need at least 4 valid ray samples for a best-fit sphere.")
+
+        x = wavefront_points[:, 0]
+        y = wavefront_points[:, 1]
+        z = wavefront_points[:, 2]
+
+        # Set up the linear system Ax = b to solve for the sphere parameters.
+        # The equation of a sphere is (x-xc)^2 + (y-yc)^2 + (z-zc)^2 = R^2.
+        # This can be rearranged into a linear form:
+        # 2*x*xc + 2*y*yc + 2*z*zc + (R^2 - xc^2 - yc^2 - zc^2) = x^2 + y^2 + z^2
+        A = be.stack([x, y, z, be.ones_like(x)], axis=1)
+        b = x**2 + y**2 + z**2
+
+        # Solve the system using a numerically stable least-squares solver.
+        try:
+            c, _, _, _ = be.linalg.lstsq(A, b, rcond=None)
+        except be.linalg.LinAlgError as e:
+            raise RuntimeError(f"Least-squares sphere fit failed: {e}") from e
+
+        # Extract the sphere's center (xc, yc, zc) and radius R from the solution.
+        xc = c[0] / 2
+        yc = c[1] / 2
+        zc = c[2] / 2
+        radius = be.sqrt(c[3] + xc**2 + yc**2 + zc**2)
+
+        # Save the computed center as an attribute.
+        self.center = (float(xc), float(yc), float(zc))
+
+        return self.center[0], self.center[1], self.center[2], float(radius)
+
+
 def create_strategy(strategy_name, optic, distribution, **kwargs):
     """Factory function to create a wavefront calculation strategy.
 
     Args:
-        strategy_name (str): The name of the strategy ("chief_ray", "centroid_sphere").
+        strategy_name (str): The name of the strategy ("chief_ray", "centroid_sphere",
+            "best_fit_sphere").
         optic (Optic): The optical system.
         distribution (Distribution): The pupil sampling distribution.
 
@@ -373,6 +456,7 @@ def create_strategy(strategy_name, optic, distribution, **kwargs):
     strategies = {
         "chief_ray": ChiefRayStrategy,
         "centroid_sphere": CentroidReferenceSphereStrategy,
+        "best_fit_sphere": BestFitSphereStrategy,
     }
     strategy_class = strategies.get(strategy_name)
 

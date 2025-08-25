@@ -8,6 +8,7 @@ This section constains examples of typical analysis tasks that can be performed 
 .. nbgallery::
     analysis/spot
     analysis/ray_fan
+    analysis/ray_fan_best_fit
     analysis/field_curvature
     analysis/distortion
     analysis/grid_distortion

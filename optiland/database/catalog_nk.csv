@@ -1,4 +1,34 @@
 group,category_name,category_name_full,reference,name,filename,min_wavelength,max_wavelength,filename_no_ext
+main,Ag,Ag (Silver),Johnson,"Johnson and Christy 1972: n,k 0.188–1.94 µm",main/Ag/Johnson.yml,0.1879,1.937,Johnson
+main,Ag,Ag (Silver),Choi,"Choi et al. 2020: n,k 1.23–6.99 µm",main/Ag/Choi.yml,1.231,6.988,Choi
+main,Ag,Ag (Silver),Ferrera-298K,"Ferrera et al. 2019: n,k 0.245–1.45 µm; 298 K",main/Ag/Ferrera-298K.yml,0.245202,1.449249,Ferrera-298K
+main,Ag,Ag (Silver),Ferrera-404K,"Ferrera et al. 2019: n,k 0.245–1.45 µm; 404 K",main/Ag/Ferrera-404K.yml,0.245202,1.449249,Ferrera-404K
+main,Ag,Ag (Silver),Ferrera-501K,"Ferrera et al. 2019: n,k 0.245–1.45 µm; 501 K",main/Ag/Ferrera-501K.yml,0.245202,1.449249,Ferrera-501K
+main,Ag,Ag (Silver),Ferrera-600K,"Ferrera et al. 2019: n,k 0.245–1.45 µm; 600 K",main/Ag/Ferrera-600K.yml,0.245202,1.449249,Ferrera-600K
+main,Ag,Ag (Silver),Jiang,"Jiang et al. 2016: n,k 0.300–2.000 µm",main/Ag/Jiang.yml,0.3,2.0,Jiang
+main,Ag,Ag (Silver),Yang,"Yang et al. 2015: n,k 0.270–24.9 µm",main/Ag/Yang.yml,0.27,24.92,Yang
+main,Ag,Ag (Silver),McPeak,"McPeak et al. 2015: n,k 0.3–1.7 µm",main/Ag/McPeak.yml,0.3,1.7,McPeak
+main,Ag,Ag (Silver),Babar,"Babar and Weaver 2015: n,k 0.207–12.4 µm",main/Ag/Babar.yml,0.2066,12.4,Babar
+main,Ag,Ag (Silver),Wu,"Wu et al. 2014: n,k 0.29–1.00 µm",main/Ag/Wu.yml,0.287493,0.999308,Wu
+main,Ag,Ag (Silver),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Ag/Werner.yml,0.017586,2.479684,Werner
+main,Ag,Ag (Silver),Stahrenberg,"Stahrenberg et al. 2001: n,k 0.128–0.496 µm",main/Ag/Stahrenberg.yml,0.12782,0.49594,Stahrenberg
+main,Ag,Ag (Silver),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Ag/Windt.yml,0.00236,0.12157,Windt
+main,Ag,Ag (Silver),Hagemann,"Hagemann et al. 1974: n,k 2.48e-6-248 µm",main/Ag/Hagemann.yml,2.48e-06,248.0,Hagemann
+main,Ag,Ag (Silver),Ciesielski,"Ciesielski et al. 2017: Ag/SiO2; n,k 0.191–20.9 µm",main/Ag/Ciesielski.yml,0.19077,20.912,Ciesielski
+main,Ag,Ag (Silver),Ciesielski-Ge,"Ciesielski et al. 2017: Ag/Ge/SiO2; n,k 0.191–20.9 µm",main/Ag/Ciesielski-Ge.yml,0.19077,20.912,Ciesielski-Ge
+main,Ag,Ag (Silver),Ciesielski-Ni,"Ciesielski et al. 2017: Ag/Ni/SiO2; n,k 0.191–15.8 µm",main/Ag/Ciesielski-Ni.yml,0.19077,15.811,Ciesielski-Ni
+main,Ag,Ag (Silver),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–12.4 µm",main/Ag/Rakic-BB.yml,0.24797,12.398,Rakic-BB
+main,Ag,Ag (Silver),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–12.4 µm",main/Ag/Rakic-LD.yml,0.24797,12.398,Rakic-LD
+main,Ag,Ag (Silver),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Ag/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
+main,Al,Al (Aluminium),Rakic,"Rakić 1995: n,k 0.000124–200 µm",main/Al/Rakic.yml,0.00012399,200.0,Rakic
+main,Al,Al (Aluminium),Cheng,"Cheng et al. 2016: n,k 0.225–1.00 µm",main/Al/Cheng.yml,0.22543,0.99987,Cheng
+main,Al,Al (Aluminium),McPeak,"McPeak et al. 2015: n,k 0.15–1.7 µm",main/Al/McPeak.yml,0.15,1.7,McPeak
+main,Al,Al (Aluminium),Larruquert,"Larruquert et al. 1996: n,k 0.077–0.114 µm",main/Al/Larruquert.yml,0.077,0.1135,Larruquert
+main,Al,Al (Aluminium),Ordal,"Ordal et al. 1988: n,k 0.667–200 µm",main/Al/Ordal.yml,0.667,200.0,Ordal
+main,Al,Al (Aluminium),Hagemann,"Hagemann et al. 1974: n,k 0.0000103–1240 µm",main/Al/Hagemann.yml,1.033e-05,1240.0,Hagemann
+main,Al,Al (Aluminium),Mathewson,"Mathewson and Myers 1971: n,k 0.496–1.77 µm",main/Al/Mathewson.yml,0.49594,1.7712,Mathewson
+main,Al,Al (Aluminium),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.0620–248 µm",main/Al/Rakic-BB.yml,0.061992,247.97,Rakic-BB
+main,Al,Al (Aluminium),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.0620–248 µm",main/Al/Rakic-LD.yml,0.061992,247.97,Rakic-LD
 main,BeAl2O4,"BeAl<sub>2</sub>O<sub>4</sub> (Beryllium aluminate, chrysoberyl)",Walling-α,Walling et al. 1980: n(α) 0.25–2.6 µm,main/BeAl2O4/Walling-alpha.yml,0.25,2.6,Walling-alpha
 main,BeAl2O4,"BeAl<sub>2</sub>O<sub>4</sub> (Beryllium aluminate, chrysoberyl)",Walling-β,Walling et al. 1980: n(β) 0.25–2.6 µm,main/BeAl2O4/Walling-beta.yml,0.25,2.6,Walling-beta
 main,BeAl2O4,"BeAl<sub>2</sub>O<sub>4</sub> (Beryllium aluminate, chrysoberyl)",Walling-γ,Walling et al. 1980: n(γ) 0.25–2.6 µm,main/BeAl2O4/Walling-gamma.yml,0.25,2.6,Walling-gamma
@@ -14,10 +44,78 @@ main,MgAl2O4,"MgAl<sub>2</sub>O<sub>4</sub> (Magnesium aluminate, spinel)",Tropf
 main,Y3Al5O12,"Y<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> (Yttrium aluminium garnet, YAG)",Zelmon,Zelmon et al. 1998: n 0.4–5.0 µm,main/Y3Al5O12/Zelmon.yml,0.4,5.0,Zelmon
 main,Y3Al5O12,"Y<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> (Yttrium aluminium garnet, YAG)",Hrabovsky,Hrabovský et al. 2021: n 0.193–1.69 µm,main/Y3Al5O12/Hrabovsky.yml,0.193,1.69,Hrabovsky
 main,Y3Al5O12,"Y<sub>3</sub>Al<sub>5</sub>O<sub>12</sub> (Yttrium aluminium garnet, YAG)",Bond,Bond 1965: n 0.4–4.0 µm,main/Y3Al5O12/Bond.yml,0.4,4.0,Bond
+main,Ar,Ar (Argon),Bideau-Mehu,Bideau-Mehu et al. 1981: n 0.140–0.568 µm,main/Ar/Bideau-Mehu.yml,0.1404,0.5677,Bideau-Mehu
+main,Ar,Ar (Argon),Borzsonyi,Börzsönyi et al. 2008: n 0.4–1.0 µm,main/Ar/Borzsonyi.yml,0.4,1.0,Borzsonyi
+main,Ar,Ar (Argon),Peck-0C,Peck and Fisher 1964: n 0.47–2.06 µm; 0 °C,main/Ar/Peck-0C.yml,0.4679,2.0587,Peck-0C
+main,Ar,Ar (Argon),Peck-15C,Peck and Fisher 1964: n 0.47–2.06 µm; 15 °C,main/Ar/Peck-15C.yml,0.4679,2.0587,Peck-15C
+main,Ar,Ar (Argon),Larsen,Larsén 1934: n 0.230–0.568 µm,main/Ar/Larsen.yml,0.230283,0.56774,Larsen
+main,Ar,Ar (Argon),Cuthbertson,Cuthbertson and Cuthbertson 1910: n 0.480–0.671 µm,main/Ar/Cuthbertson.yml,0.48,0.6708,Cuthbertson
+main,Ar,Ar (Argon),Sinnock-liquid-90K,Sinnock and Smith 1969: Liquid at 90 K; n 0.361–0.644 µm,main/Ar/Sinnock-liquid-90K.yml,0.3612,0.6439,Sinnock-liquid-90K
+main,Ar,Ar (Argon),Sinnock-liquid-88K,Sinnock and Smith 1969: Liquid at 88 K; n 0.361–0.644 µm,main/Ar/Sinnock-liquid-88K.yml,0.3612,0.6439,Sinnock-liquid-88K
+main,Ar,Ar (Argon),Sinnock-liquid-86K,Sinnock and Smith 1969: Liquid at 86 K; n 0.361–0.644 µm,main/Ar/Sinnock-liquid-86K.yml,0.3612,0.6439,Sinnock-liquid-86K
+main,Ar,Ar (Argon),Sinnock-liquid-83.81K,Sinnock and Smith 1969: Liquid at 83.81 K; n 0.361–0.644 µm,main/Ar/Sinnock-liquid-83.81K.yml,0.3612,0.6439,Sinnock-liquid-83.81K
+main,Ar,Ar (Argon),Grace-liquid-90K,Grace et al 2017: Liquid at 90 K; n 0.117–0.660 µm,main/Ar/Grace-liquid-90K.yml,0.117,0.66,Grace-liquid-90K
+main,Ar,Ar (Argon),Grace-liquid-83.81K,Grace et al 2017: Liquid at 83.81 K; n 0.117–0.660 µm,main/Ar/Grace-liquid-83.81K.yml,0.117,0.66,Grace-liquid-83.81K
+main,Ar,Ar (Argon),Sinnock-solid-83.81K,Sinnock and Smith 1969: Solid at 83.81 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-83.81K.yml,0.3612,0.6439,Sinnock-solid-83.81K
+main,Ar,Ar (Argon),Sinnock-solid-80K,Sinnock and Smith 1969: Solid at 80 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-80K.yml,0.3612,0.6439,Sinnock-solid-80K
+main,Ar,Ar (Argon),Sinnock-solid-70K,Sinnock and Smith 1969: Solid at 70 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-70K.yml,0.3612,0.6439,Sinnock-solid-70K
+main,Ar,Ar (Argon),Sinnock-solid-60K,Sinnock and Smith 1969: Solid at 60 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-60K.yml,0.3612,0.6439,Sinnock-solid-60K
+main,Ar,Ar (Argon),Sinnock-solid-50K,Sinnock and Smith 1969: Solid at 50 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-50K.yml,0.3612,0.6439,Sinnock-solid-50K
+main,Ar,Ar (Argon),Sinnock-solid-40K,Sinnock and Smith 1969: Solid at 40 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-40K.yml,0.3612,0.6439,Sinnock-solid-40K
+main,Ar,Ar (Argon),Sinnock-solid-30K,Sinnock and Smith 1969: Solid at 30 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-30K.yml,0.3612,0.6439,Sinnock-solid-30K
+main,Ar,Ar (Argon),Sinnock-solid-20K,Sinnock and Smith 1969: Solid at 20 K; n 0.361–0.644 µm,main/Ar/Sinnock-solid-20K.yml,0.3612,0.6439,Sinnock-solid-20K
+main,Ar,Ar (Argon),Grace-solid-83.81K,Grace et al 2017: Solid at 83.81 K; n 0.117–0.660 µm,main/Ar/Grace-solid-83.81K.yml,0.117,0.66,Grace-solid-83.81K
+main,Ar,Ar (Argon),Grace-solid-20K,Grace et al 2017: Solid at 20 K; n 0.117–0.660 µm,main/Ar/Grace-solid-20K.yml,0.117,0.66,Grace-solid-20K
+main,AlAs,AlAs (Aluminium arsenide),Fern,Fern and Onton 1971: n 0.56–2.2 µm,main/AlAs/Fern.yml,0.56,2.2,Fern
+main,AlAs,AlAs (Aluminium arsenide),Rakic,"Rakić and Majewski 1996: n,k 0.221–2.48 µm",main/AlAs/Rakic.yml,0.2214,2.4797,Rakic
+main,GaAs,GaAs (Gallium arsenide),Aspnes,"Aspnes et al. 1986: n,k 0.207–0.827 µm",main/GaAs/Aspnes.yml,0.2066,0.8266,Aspnes
+main,GaAs,GaAs (Gallium arsenide),Perner,Perner et al. 2023: n 2.0–7.1 µm,main/GaAs/Perner.yml,2.0,7.1,Perner
+main,GaAs,GaAs (Gallium arsenide),Papatryfonos,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm",main/GaAs/Papatryfonos.yml,0.26049,1.87868,Papatryfonos
+main,GaAs,GaAs (Gallium arsenide),Skauli,Skauli et al. 2003: n 0.97–17 µm,main/GaAs/Skauli.yml,0.97,17.0,Skauli
+main,GaAs,GaAs (Gallium arsenide),Jellison,"Jellison 1992: n,k 0.234–0.840 µm",main/GaAs/Jellison.yml,0.234,0.84,Jellison
+main,GaAs,GaAs (Gallium arsenide),Kachare,Kachare et al. 1976: n 1.4–11 µm,main/GaAs/Kachare.yml,1.4,11.0,Kachare
+main,GaAs,GaAs (Gallium arsenide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/GaAs/Adachi.yml,0.20664,12.398,Adachi
+main,GaAs,GaAs (Gallium arsenide),Rakic,"Rakić and Majewski 1996: n,k 0.207–12.4 µm",main/GaAs/Rakic.yml,0.20664,12.398,Rakic
+main,GaAs,GaAs (Gallium arsenide),Ozaki,"Ozaki and Adachi 1995: n,k 0.221–1.03 µm",main/GaAs/Ozaki.yml,0.2214,1.0332,Ozaki
+main,InAs,InAs (Indium arsenide),Aspnes,"Aspnes and Studna 1983: n,k 0.21–0.83 µm",main/InAs/Aspnes.yml,0.2066,0.8266,Aspnes
+main,InAs,InAs (Indium arsenide),Lorimor,Lorimor and Spitzer 1965: n 3.7–31.3 µm,main/InAs/Lorimor.yml,3.7,31.3,Lorimor
+main,InAs,InAs (Indium arsenide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/InAs/Adachi.yml,0.20664,12.398,Adachi
 main,CdGeAs2,CdGeAs<sub>2</sub> (Cadmium germanium arsenide),Boyd-o,Boyd et al. 1972: n(o) 2.4–11.5 µm,main/CdGeAs2/Boyd-o.yml,2.4,11.5,Boyd-o
 main,CdGeAs2,CdGeAs<sub>2</sub> (Cadmium germanium arsenide),Boyd-e,Boyd et al. 1972: n(e) 2.4–11.5 µm,main/CdGeAs2/Boyd-e.yml,2.4,11.5,Boyd-e
 main,ZnSiAs2,ZnSiAs<sub>2</sub> (Zinc silicon arsenide),Boyd-o,Boyd et al. 1972: n(o) 0.7–11.5 µm,main/ZnSiAs2/Boyd-o.yml,0.7,11.5,Boyd-o
 main,ZnSiAs2,ZnSiAs<sub>2</sub> (Zinc silicon arsenide),Boyd-e,Boyd et al. 1972: n(e) 0.7–11.5 µm,main/ZnSiAs2/Boyd-e.yml,0.7,11.5,Boyd-e
+main,Au,Au (Gold),Johnson,"Johnson and Christy 1972: n,k 0.188–1.937 µm",main/Au/Johnson.yml,0.1879,1.937,Johnson
+main,Au,Au (Gold),Magnozzi-25C,"Magnozzi et al. 2019: n,k 0.252–1.45 µm; 25 °C",main/Au/Magnozzi-25C.yml,0.25157,1.4492,Magnozzi-25C
+main,Au,Au (Gold),Magnozzi-225C,"Magnozzi et al. 2019: n,k 0.252–1.45 µm; 225 °C",main/Au/Magnozzi-225C.yml,0.25157,1.4492,Magnozzi-225C
+main,Au,Au (Gold),Magnozzi-350C,"Magnozzi et al. 2019: n,k 0.252–1.45 µm; 350 °C",main/Au/Magnozzi-350C.yml,0.25157,1.4492,Magnozzi-350C
+main,Au,Au (Gold),McPeak,"McPeak et al. 2015: n,k 0.3–1.7 µm",main/Au/McPeak.yml,0.3,1.7,McPeak
+main,Au,Au (Gold),Babar,"Babar and Weaver 2015: n,k 0.2066–12.40 µm",main/Au/Babar.yml,0.2066,12.4,Babar
+main,Au,Au (Gold),Olmon-ev,"Olmon et al. 2012: Evaporated gold; n,k 0.300–24.93 µm",main/Au/Olmon-ev.yml,0.3,24.93,Olmon-ev
+main,Au,Au (Gold),Olmon-sc,"Olmon et al. 2012: Single-crystal gold; n,k 0.300–24.93 µm",main/Au/Olmon-sc.yml,0.3,24.93,Olmon-sc
+main,Au,Au (Gold),Olmon-ts,"Olmon et al. 2012: Template-stripped gold; n,k 0.300–24.9 µm",main/Au/Olmon-ts.yml,0.3,24.93,Olmon-ts
+main,Au,Au (Gold),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Au/Werner.yml,0.017586,2.479684,Werner
+main,Au,Au (Gold),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Au/Windt.yml,0.00236,0.12157,Windt
+main,Au,Au (Gold),Ordal,"Ordal et al. 1987: n,k 0.667–286 µm",main/Au/Ordal.yml,0.667,286.0,Ordal
+main,Au,Au (Gold),Hagemann,"Hagemann et al. 1974: n,k 0.000008266–248 µm",main/Au/Hagemann.yml,8.266e-06,248.0,Hagemann
+main,Au,Au (Gold),Hagemann-2,"Hagemann et al. 1974 #2: n,k 0.00354–0.827 µm",main/Au/Hagemann-2.yml,0.003542,0.8266,Hagemann-2
+main,Au,Au (Gold),Yakubovsky-25nm,"Yakubovsky et al. 2017: 25-nm film; n,k 0.30–2.0 µm",main/Au/Yakubovsky-25nm.yml,0.3,2.0,Yakubovsky-25nm
+main,Au,Au (Gold),Yakubovsky-53nm,"Yakubovsky et al. 2017: 53-nm film; n,k 0.30–2.0 µm",main/Au/Yakubovsky-53nm.yml,0.3,2.0,Yakubovsky-53nm
+main,Au,Au (Gold),Yakubovsky-117nm,"Yakubovsky et al. 2017: 117-nm film; n,k 0.30–2.0 µm",main/Au/Yakubovsky-117nm.yml,0.3,2.0,Yakubovsky-117nm
+main,Au,Au (Gold),Rosenblatt-11nm,"Rosenblatt et al. 2020: 11-nm film; n,k 0.25–2.0 µm",main/Au/Rosenblatt-11nm.yml,0.3,2.0,Rosenblatt-11nm
+main,Au,Au (Gold),Rosenblatt-21nm,"Rosenblatt et al. 2020: 21-nm film; n,k 0.30–2.0 µm",main/Au/Rosenblatt-21nm.yml,0.3,2.0,Rosenblatt-21nm
+main,Au,Au (Gold),Rosenblatt-44nm,"Rosenblatt et al. 2020: 44-nm film; n,k 0.30–2.0 µm",main/Au/Rosenblatt-44nm.yml,0.25,2.0,Rosenblatt-44nm
+main,Au,Au (Gold),Yakubovsky-4nm,"Yakubovsky et al. 2019: 4-nm film; n,k 0.30–3.3 µm",main/Au/Yakubovsky-4nm.yml,0.3,3.3,Yakubovsky-4nm
+main,Au,Au (Gold),Yakubovsky-6nm,"Yakubovsky et al. 2019: 6-nm film; n,k 0.30–3.3 µm",main/Au/Yakubovsky-6nm.yml,0.3,3.3,Yakubovsky-6nm
+main,Au,Au (Gold),Yakubovsky-9nm,"Yakubovsky et al. 2019: 9-nm film; n,k 0.30–3.3 µm",main/Au/Yakubovsky-9nm.yml,0.3,3.3,Yakubovsky-9nm
+main,Au,Au (Gold),Ciesielski,"Ciesielski et al. 2018: Au/SiO2; n,k 0.191–20.9 µm",main/Au/Ciesielski.yml,0.19077,20.912,Ciesielski
+main,Au,Au (Gold),Ciesielski-Ge,"Ciesielski et al. 2018: Au/Ge/SiO2 n,k 0.191–20.9 µm",main/Au/Ciesielski-Ge.yml,0.19077,20.912,Ciesielski-Ge
+main,Au,Au (Gold),Lemarchand-3.96nm,"Lemarchand 2013: 3.96-nm film; n,k 0.35–1.8 µm",main/Au/Lemarchand-3.96nm.yml,0.35,1.8,Lemarchand-3.96nm
+main,Au,Au (Gold),Lemarchand-4.62nm,"Lemarchand 2013: 4.62-nm film; n,k 0.35–1.8 µm",main/Au/Lemarchand-4.62nm.yml,0.35,1.8,Lemarchand-4.62nm
+main,Au,Au (Gold),Lemarchand-5.77nm,"Lemarchand 2013: 5.77-nm film; n,k 0.35–1.8 µm",main/Au/Lemarchand-5.77nm.yml,0.35,1.8,Lemarchand-5.77nm
+main,Au,Au (Gold),Lemarchand-11.7nm,"Lemarchand 2013: 11.7-nm film; n,k 0.35–1.8 µm",main/Au/Lemarchand-11.7nm.yml,0.35,1.8,Lemarchand-11.7nm
+main,Au,Au (Gold),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–6.20 µm",main/Au/Rakic-BB.yml,0.24797,6.1992,Rakic-BB
+main,Au,Au (Gold),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–6.20 µm",main/Au/Rakic-LD.yml,0.24797,6.1992,Rakic-LD
+main,Au,Au (Gold),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Au/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,B,B (Boron),Fernandez-Perea,"Fernández-Perea et al. 2007: n,k 0.00138–0.181 µm",main/B/Fernandez-Perea.yml,0.001378047,0.180999976,Fernandez-Perea
 main,BaB2O4,"BaB<sub>2</sub>O<sub>4</sub> (Barium borate, BBO)",Eimerl-o,Eimerl et al. 1987: n(o) 0.22–1.06 µm,main/BaB2O4/Eimerl-o.yml,0.22,1.06,Eimerl-o
 main,BaB2O4,"BaB<sub>2</sub>O<sub>4</sub> (Barium borate, BBO)",Eimerl-e,Eimerl et al. 1987: n(e) 0.22–1.06 µm,main/BaB2O4/Eimerl-e.yml,0.22,1.06,Eimerl-e
@@ -38,6 +136,9 @@ main,LuAl3(BO3)4,"LuAl<sub>3</sub>(BO<sub>3</sub>)<sub>4</sub> (Lutetium alumini
 main,Be,Be (Beryllium),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–62.0 µm",main/Be/Rakic-BB.yml,0.24797,61.992,Rakic-BB
 main,Be,Be (Beryllium),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–62.0 µm",main/Be/Rakic-LD.yml,0.24797,61.992,Rakic-LD
 main,Be,Be (Beryllium),Svechnikov,"Svechnikov et al. 2020: n,k 0.00496–0.0608 µm",main/Be/Svechnikov.yml,0.00495937,0.0607766,Svechnikov
+main,Bi,Bi (Bismuth),Hagemann,"Hagemann et al. 1974: n,k 0.00155–6.20 µm",main/Bi/Hagemann.yml,2.48e-06,6.199,Hagemann
+main,Bi,Bi (Bismuth),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Bi/Werner.yml,0.017586,2.479684,Werner
+main,Bi,Bi (Bismuth),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Bi/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,AgBr,AgBr (Silver bromide),Schröter,Schröter 1931: n 0.495–0.67 µm,main/AgBr/Schroter.yml,0.495,0.67,Schroter
 main,CsBr,CsBr (Cesium bromide),Li,Li 1976: n 0.21–55 µm; 20 °C,main/CsBr/Li.yml,0.21,55.0,Li
 main,CsBr,CsBr (Cesium bromide),Querry,"Querry 1987: n,k 0.213–149 µm",main/CsBr/Querry.yml,0.213,149.2537,Querry
@@ -48,7 +149,45 @@ main,NaBr,NaBr (Sodium bromide),Li,Li 1976: n 0.21–34 µm,main/NaBr/Li.yml,0.2
 main,RbBr,RbBr (Rubidium bromide),Li,Li 1976: n 0.21–50 µm,main/RbBr/Li.yml,0.21,50.0,Li
 main,TlBr,TlBr (Thallium bromide),Palik,Palik 1985: n 0.57–39.4 µm,main/TlBr/Palik.yml,0.57,39.4,Palik
 main,TlBr,TlBr (Thallium bromide),Schroter,Schröter 1931: n 0.54–0.65 µm,main/TlBr/Schroter.yml,0.54,0.65,Schroter
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Phillip,"Phillip and Taft 1964: Diamond; n,k 0.0354–10 µm",main/C/Phillip.yml,0.035424054,10.0,Phillip
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Taylor,"Taylor et al. 2023: Single-crystal CVD film; n,k 0.193–1.69 µm",main/C/Taylor.yml,0.1929754,1.689784,Taylor
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Peter,Peter 1923: Diamond; n 0.226–0.760 µm,main/C/Peter.yml,0.226,0.76,Peter
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Dore,"Dore et al. 1998: Polycrystalline CVD diamond; n,k 2.5–500 µm",main/C/Dore.yml,2.5,500.0,Dore
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Taylor,"Taylor et al. 2023: Single-crystal CVD; n,k 0.193–1.69 µm",main/C/Taylor.yml,0.1929754,1.689784,Taylor
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Hagemann,"Hagemann et al. 1974: n,k 0.0000413–124 µm",main/C/Hagemann.yml,4.133e-05,124.0,Hagemann
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Larruquert,"Larruquert et al. 2013: n,k 0.0197–10.1 µm",main/C/Larruquert.yml,0.019656426,10.07918931,Larruquert
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Arakawa,"Arakawa et al. 1977: n,k 0.326–2.07 µm",main/C/Arakawa.yml,0.3263,2.0664,Arakawa
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Djurisic-o,"Djurišić and Li 1999: Graphite; n,k (o); 0.0310–10.332 µm",main/C/Djurisic-o.yml,0.030996,10.332,Djurisic-o
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Djurisic-e,"Djurišić and Li 1999: Graphite; n,k (e); 0.0310–0.5904 µm",main/C/Djurisic-e.yml,0.030996,0.5904,Djurisic-e
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-DixonKS2,"Querry 1985: Graphite pellet, Dixon KS-2; n,k 0.21–55.6 µm",main/C/Querry-DixonKS2.yml,0.21,55.5556,Querry-DixonKS2
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-DixonHPN2,"Querry 1985: Graphite pellet, Dixon HPN-2; n,k 0.20–55.6 µm",main/C/Querry-DixonHPN2.yml,0.2,55.5556,Querry-DixonHPN2
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-Dixon200-10,"Querry 1985: Graphite pellet, Dixon 200-10; n,k 0.21–55.6 µm",main/C/Querry-Dixon200-10.yml,0.21,55.5556,Querry-Dixon200-10
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-AsburyMicro260,"Querry 1985: Graphite pellet, Asbury Micro 260; n,k 0.21–55.6 µm",main/C/Querry-AsburyMicro260.yml,0.21,55.5556,Querry-AsburyMicro260
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-Dixon1102,"Querry 1985: Intercalated graphite pellet, Dixon 1102; n,k 0.20–55.6 µm",main/C/Querry-Dixon1102.yml,0.2,55.5556,Querry-Dixon1102
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-Asbury3222,"Querry 1985: Intercalated graphite pellet, Asbury 3222; n,k 0.20–55.6 µm",main/C/Querry-Asbury3222.yml,0.2,55.5556,Querry-Asbury3222
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Querry-Pyrolytic,"Querry 1985: Pyrolytic carbon; n,k 0.21–55.6 µm",main/C/Querry-Pyrolytic.yml,0.21,55.5556,Querry-Pyrolytic
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-cHOPG-o,"Song et al. 2018: c-HOPG; n,k(o) 0.193–1.69 µm",main/C/Song-cHOPG-o.yml,0.193,1.69,Song-cHOPG-o
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-cHOPG-e,Song et al. 2018: c-HOPG; n(e) 0.193–1.69 µm,main/C/Song-cHOPG-e.yml,0.193,1.69,Song-cHOPG-e
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-sHOPG-o,"Song et al. 2018: s-HOPG; n,k(o) 0.193–1.69 µm",main/C/Song-sHOPG-o.yml,0.193,1.69,Song-sHOPG-o
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-sHOPG-e,Song et al. 2018: s-HOPG; n(e) 0.193–1.69 µm,main/C/Song-sHOPG-e.yml,0.193,1.69,Song-sHOPG-e
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Weber,"Weber et al. 2010: Graphene; n,k 0.21–1.0 µm",main/C/Weber.yml,0.210873,0.999007,Weber
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Tikuisis,"Tikuišis et al. 2023: Graphene; n,k 0.226–4.40 µm",main/C/Tikuisis.yml,0.226,4.3977,Tikuisis
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",El-Sayed,"El-Sayed et al. 2021: Graphene; n,k 0.24–1.0 µm",main/C/El-Sayed.yml,0.24,1.0,El-Sayed
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song,"Song et al. 2018: Graphene; n,k 0.193–1.69 µm",main/C/Song.yml,0.193,1.69,Song
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Ermolaev,"Ermolaev et al. 2020: Carbon nanotubes film, aerosol CVD; n,k 0.250–3.30 µm",main/C/Ermolaev.yml,0.25,3.3,Ermolaev
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-Arc,"Song et al. 2020: Carbon nanotubes film, Arc grown; n,k 0.370–1.69 µm",main/C/Song-Arc.yml,0.37096,1.68724,Song-Arc
+main,C,"C (Carbon, diamond, graphite, graphene, carbon nanotubes)",Song-HiPco,"Song et al. 2020: Carbon nanotubes film, HiPco grown; n,k 0.370–1.69 µm",main/C/Song-HiPco.yml,0.37096,1.68724,Song-HiPco
 main,B4C,B<sub>4</sub>C (Boron carbide),Larruquert,"Larruquert et al. 2012: n,k 0.001738–21.54 µm",main/B4C/Larruquert.yml,0.001737709,21.53810759,Larruquert
+main,SiC,SiC (Silicon carbide),Singh-o,Singh et al. 1971: α-SiC; n(o) 0.488–1.064 µm,main/SiC/Singh-o.yml,0.488,1.064,Singh-o
+main,SiC,SiC (Silicon carbide),Singh-e,Singh et al. 1971: α-SiC; n(e) 0.488–1.064 µm,main/SiC/Singh-e.yml,0.488,1.064,Singh-e
+main,SiC,SiC (Silicon carbide),Wang-6H-o,Wang et al. 2013: 6H-SiC; n(o) 0.436–2.33 µm,main/SiC/Wang-6H-o.yml,0.4358,2.325,Wang-6H-o
+main,SiC,SiC (Silicon carbide),Wang-6H-e,Wang et al. 2013: 6H-SiC; n(e) 0.436–2.33 µm,main/SiC/Wang-6H-e.yml,0.4358,2.325,Wang-6H-e
+main,SiC,SiC (Silicon carbide),Wang-4H-o,Wang et al. 2013: 4H-SiC; n(o) 0.405–5 µm,main/SiC/Wang-4H-o.yml,0.4047,5.0,Wang-4H-o
+main,SiC,SiC (Silicon carbide),Wang-4H-e,Wang et al. 2013: 4H-SiC; n(e) 0.405–2.33 µm,main/SiC/Wang-4H-e.yml,0.4047,2.325,Wang-4H-e
+main,SiC,SiC (Silicon carbide),Fischer-o,Fischer et al. 2017: 4H-SiC; n(o) 17–150 µm,main/SiC/Fischer-o.yml,17.0,150.0,Fischer-o
+main,SiC,SiC (Silicon carbide),Fischer-e,Fischer et al. 2017: 4H-SiC; n(e) 17–150 µm,main/SiC/Fischer-e.yml,17.0,150.0,Fischer-e
+main,SiC,SiC (Silicon carbide),Shaffer,Shaffer 1971: β-SiC; n 0.467–0.691 µm,main/SiC/Shaffer.yml,0.467,0.691,Shaffer
+main,SiC,SiC (Silicon carbide),Larruquert,"Larruquert et al. 2011: Thin film; n,k 0.006154–131.7 µm",main/SiC/Larruquert.yml,0.00615447,131.7250957,Larruquert
 main,TiC,TiC (Titanium carbide),Pfluger,"Pflüger et al. 1984: n,k 0.0311–2.48 µm",main/TiC/Pfluger.yml,0.03107,2.4797,Pfluger
 main,VC,VC (Vanadium carbide),Pfluger,"Pflüger et al. 1984: n,k 0.0311–2.48 µm",main/VC/Pfluger.yml,0.03107,2.4797,Pfluger
 main,CaCO3,"CaCO<sub>3</sub> (Calcium carbonate, Calcite)",Ghosh-o,Ghosh 1999: n(o) 0.204–2.172 µm,main/CaCO3/Ghosh-o.yml,0.204,2.172,Ghosh-o
@@ -68,10 +207,29 @@ main,NaCl,NaCl (Sodium chloride),Li,Li 1976: n 0.20–30 µm,main/NaCl/Li.yml,0.
 main,NaCl,NaCl (Sodium chloride),Querry,"Querry 1987: n,k 0.22–167 µm",main/NaCl/Querry.yml,0.22,166.6667,Querry
 main,RbCl,RbCl (Rubidium chloride),Li,Li 1976: n 0.18–40 µm,main/RbCl/Li.yml,0.18,40.0,Li
 main,TlCl,TlCl (Thallium chloride),Schroter,Schröter 1931: n 0.43–0.66 µm,main/TlCl/Schroter.yml,0.43,0.66,Schroter
+main,Co,Co (Cobalt),Johnson,"Johnson and Christy 1974: n,k 0.188–1.937 µm",main/Co/Johnson.yml,0.188,1.937,Johnson
+main,Co,Co (Cobalt),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Co/Werner.yml,0.017586,2.479684,Werner
+main,Co,Co (Cobalt),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Co/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
+main,Cr,Chromium (Cr),Johnson,"Johnson and Christy 1974: n,k 0.188–1.937 µm",main/Cr/Johnson.yml,0.188,1.937,Johnson
+main,Cr,Chromium (Cr),Sytchkova,"Sytchkova et al. 2021: 12 nm film; n,k 0.262–2.50 µm",main/Cr/Sytchkova.yml,0.2621,2.5,Sytchkova
+main,Cr,Chromium (Cr),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–62.0 µm",main/Cr/Rakic-BB.yml,0.24797,61.992,Rakic-BB
+main,Cr,Chromium (Cr),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–62.0 µm",main/Cr/Rakic-LD.yml,0.24797,61.992,Rakic-LD
 main,Cs,Cs (Caesium),Smith,"Smith 1970: n,k 0.313–2.42 µm",main/Cs/Smith.yml,0.312539,2.421566,Smith
 main,Cs,Cs (Caesium),Monin,"Monin and Boutry 1974: n,k 0.254–0.620 µm; 195 K",main/Cs/Monin.yml,0.2536,0.62,Monin
 main,Cs,Cs (Caesium),Whang,"Whang et al. 1971: n,k 0.129–0.344 µm",main/Cs/Whang.yml,0.1294,0.3444,Whang
 main,Cs,Cs (Caesium),Ives,"Ives and Briggs 1937: n,k 0.254–0.578 µm",main/Cs/Ives.yml,0.2536,0.578,Ives
+main,Cu,Cu (Copper),Johnson,"Johnson and Christy 1972: n,k 0.188–1.937 µm",main/Cu/Johnson.yml,0.1879,1.937,Johnson
+main,Cu,Cu (Copper),McPeak,"McPeak et al. 2015: n,k 0.3–1.7 µm",main/Cu/McPeak.yml,0.3,1.7,McPeak
+main,Cu,Cu (Copper),Babar,"Babar and Weaver 2015: n,k 0.2066–12.40 µm",main/Cu/Babar.yml,0.2066,12.4,Babar
+main,Cu,Cu (Copper),Brimhall,"Brimhall et al. 2009: n,k 0.0101–0.0421 µm",main/Cu/Brimhall.yml,0.0101,0.0421,Brimhall
+main,Cu,Cu (Copper),Werner,"Werner et al. 2009: n,k 0.01759–2.480 µm",main/Cu/Werner.yml,0.017586,2.479684,Werner
+main,Cu,Cu (Copper),Stahrenberg,"Stahrenberg et al. 2001: n,k 0.128–0.496 µm",main/Cu/Stahrenberg.yml,0.13776,0.49594,Stahrenberg
+main,Cu,Cu (Copper),Ordal,"Ordal et al. 1985: n,k 0.517–55.6 µm",main/Cu/Ordal.yml,0.517,55.6,Ordal
+main,Cu,Cu (Copper),Querry,"Querry 1985: n,k 0.21–55.6 µm",main/Cu/Querry.yml,0.21,55.5556,Querry
+main,Cu,Cu (Copper),Hagemann,"Hagemann et al. 1974: n,k 0.0000248–248 µm",main/Cu/Hagemann.yml,2.48e-05,248.0,Hagemann
+main,Cu,Cu (Copper),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.207–12.4 µm",main/Cu/Rakic-BB.yml,0.20664,12.398,Rakic-BB
+main,Cu,Cu (Copper),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.207–12.4 µm",main/Cu/Rakic-LD.yml,0.20664,12.398,Rakic-LD
+main,Cu,Cu (Copper),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.01759–2.480 µm",main/Cu/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,Er,Er (Erbium),Larruquert,"Larruquert et al. 2011: n,k 0.000784–0.383 µm",main/Er/Larruquert.yml,0.000783614,0.382667245,Larruquert
 main,Eu,Eu (Europium),Fernandez-Perea,"Fernández-Perea et al. 2008: n,k 0.000883–0.149 µm",main/Eu/Fernandez-Perea.yml,0.000882651,0.149199984,Fernandez-Perea
 main,BaF2,BaF<sub>2</sub> (Barium fluoride),Kaiser,"Kaiser et al. 1964: n,k 10–80 µm",main/BaF2/Kaiser.yml,10.0,80.0,Kaiser
@@ -86,10 +244,19 @@ main,CaF2,CaF<sub>2</sub> (Calcium fluoride),Kaiser,"Kaiser et al. 1964: n,k 10�
 main,CeF3,CeF<sub>3</sub> (Cerium trifluoride),Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2017: n,k 0.03–2.0 µm",main/CeF3/Rodriguez-de Marcos.yml,0.0297987,2.017,Rodriguez-de Marcos
 main,CsF,CsF (Cesium fluoride),Li,Li 1976: n 0.15–30 µm,main/CsF/Li.yml,0.15,30.0,Li
 main,KF,KF (Potassium fluoride),Li,Li 1976: n 0.15–22 µm,main/KF/Li.yml,0.15,22.0,Li
+main,LaF3,LaF<sub>3</sub> (Lanthanum fluoride),Laihoa-o,Laihoa and Lakkistoa 1983: n(o) 0.35–0.70 µm,main/LaF3/Laihoa-o.yml,0.35,0.7,Laihoa-o
+main,LaF3,LaF<sub>3</sub> (Lanthanum fluoride),Laihoa-e,Laihoa and Lakkistoa 1983: n(e) 0.35–0.70 µm,main/LaF3/Laihoa-e.yml,0.35,0.7,Laihoa-e
+main,LaF3,LaF<sub>3</sub> (Lanthanum fluoride),Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2017: n,k 0.03–2.0 µm",main/LaF3/Rodriguez-de Marcos.yml,0.0299274,2.00663,Rodriguez-de Marcos
+main,LaF3,LaF<sub>3</sub> (Lanthanum fluoride),Amotchkina,"Amotchkina et al, 2020: n 0.4–12 µm, k 9.5–12 µm",main/LaF3/Amotchkina.yml,9.49308,11.9739,Amotchkina
 main,LiF,LiF (Lithium fluoride),Li,Li 1976: n 0.10–11 µm,main/LiF/Li.yml,0.1,11.0,Li
 main,LiCaAlF6,"LiCaAlF<sub>6</sub> (Lithium calcium aluminum fluoride, LiCAF)",Woods-o,Woods et al. 1991: n(o) 0.4–1.0 µm,main/LiCaAlF6/Woods-o.yml,0.4,1.0,Woods-o
 main,LiCaAlF6,"LiCaAlF<sub>6</sub> (Lithium calcium aluminum fluoride, LiCAF)",Woods-e,Woods et al. 1991: n(e) 0.4–1.0 µm,main/LiCaAlF6/Woods-e.yml,0.4,1.0,Woods-e
 main,NaF,NaF (Sodium fluoride),Li,Li 1976: n 0.15–17 µm,main/NaF/Li.yml,0.15,17.0,Li
+main,MgF2,MgF<sub>2</sub> (Magnesium fluoride),Dodge-o,Dodge 1984: n(o) 0.2–7.0 µm,main/MgF2/Dodge-o.yml,0.2,7.0,Dodge-o
+main,MgF2,MgF<sub>2</sub> (Magnesium fluoride),Dodge-e,Dodge 1984: n(e) 0.2–7.0 µm,main/MgF2/Dodge-e.yml,0.2,7.0,Dodge-e
+main,MgF2,MgF<sub>2</sub> (Magnesium fluoride),Li-o,Li 1980: n(o) 0.14–7.5 µm,main/MgF2/Li-o.yml,0.14,7.5,Li-o
+main,MgF2,MgF<sub>2</sub> (Magnesium fluoride),Li-e,Li 1980: n(e) 0.14–7.5 µm,main/MgF2/Li-e.yml,0.14,7.5,Li-e
+main,MgF2,MgF<sub>2</sub> (Magnesium fluoride),Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2017: n,k 0.03–2.0 µm",main/MgF2/Rodriguez-de Marcos.yml,0.0299919,2.00146,Rodriguez-de Marcos
 main,PbF2,PbF<sub>2</sub> (Lead difluoride),Malitson,Malitson and Dodge 1969: n 0.3–11.9 µm,main/PbF2/Malitson.yml,0.3,11.9,Malitson
 main,RbF,RbF (Rubidium fluoride),Li,Li 1976: n 0.15–25 µm,main/RbF/Li.yml,0.15,25.0,Li
 main,SF6,SF<sub>6</sub6> (Sulphur hexafluoride),Vukovic,Vukovic et al. 1996: n 0.6–1.3 µm,main/SF6/Vukovic.yml,0.6,1.3,Vukovic
@@ -101,7 +268,31 @@ main,ThF4,ThF<sub>4</sub> (Thorium tetrafluoride),Heitmann,Heitmann and Ritter 1
 main,YbF3,YbF3 (Ytterbium trifluoride),Amotchkina,"Amotchkina et al, 2020: Thin film; n 0.4–14 µm, k 9.0–14 µm",main/YbF3/Amotchkina.yml,9.0168,13.975,Amotchkina
 main,YLiF4,"YLiF<sub>4</sub> (Yttrium lithium fluoride, YLF)",Barnes-o,Barnes and Gettemy 1980: n(o) 0.225–2.6 µm,main/YLiF4/Barnes-o.yml,0.225,2.6,Barnes-o
 main,YLiF4,"YLiF<sub>4</sub> (Yttrium lithium fluoride, YLF)",Barnes-e,Barnes and Gettemy 1980: n(e) 0.225–2.6 µm,main/YLiF4/Barnes-e.yml,0.225,2.6,Barnes-e
+main,Fe,Fe (Iron),Johnson,"Johnson and Christy 1974: n,k 0.188–1.94 µm",main/Fe/Johnson.yml,0.188,1.937,Johnson
+main,Fe,Fe (Iron),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Fe/Werner.yml,0.017586,2.479684,Werner
+main,Fe,Fe (Iron),Ordal,"Ordal et al. 1985: n,k 0.667–286 µm",main/Fe/Ordal.yml,0.667,286.0,Ordal
+main,Fe,Fe (Iron),Querry,"Querry 1985: n,k 0.21–55.6 µm",main/Fe/Querry.yml,0.21,55.5556,Querry
+main,Fe,Fe (Iron),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Fe/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,BiFeO3,"BiFeO3 (Bismuth ferrite, BFO)",Kumar,"Kumar et al. 2008: n 0.197–1.67 µm, k 0.197–0.576 µm",main/BiFeO3/Kumar.yml,0.19706,1.6693,Kumar
+main,Ge,Ge (Germanium),Aspnes,"Aspnes and Studna 1983: n,k 0.21–0.83 µm",main/Ge/Aspnes.yml,0.2066,0.8266,Aspnes
+main,Ge,Ge (Germanium),Amotchkina,"Amotchkina et al, 2020: n,k 0.400–11.0 µm",main/Ge/Amotchkina.yml,0.4,11.0,Amotchkina
+main,Ge,Ge (Germanium),Nunley,"Nunley et al, 2016: n,k 0.188–2.48 µm",main/Ge/Nunley.yml,0.1879,2.48,Nunley
+main,Ge,Ge (Germanium),Burnett,Burnett et al. 2016: n 2.00–14.0 µm,main/Ge/Burnett.yml,2.0,14.0,Burnett
+main,Ge,Ge (Germanium),Jellison,"Jellison 1992: n,k 0.234–0.840 µm",main/Ge/Jellison.yml,0.234,0.84,Jellison
+main,Ge,Ge (Germanium),Li-100K,Li 1980: n 1.9–18 µm; 100 K,main/Ge/Li-100K.yml,1.9,18.0,Li-100K
+main,Ge,Ge (Germanium),Li-150K,Li 1980: n 1.9–18 µm; 150 K,main/Ge/Li-150K.yml,1.9,18.0,Li-150K
+main,Ge,Ge (Germanium),Li-200K,Li 1980: n 1.9–18 µm; 200 K,main/Ge/Li-200K.yml,1.9,18.0,Li-200K
+main,Ge,Ge (Germanium),Li-250K,Li 1980: n 1.9–18 µm; 250 K,main/Ge/Li-250K.yml,1.9,18.0,Li-250K
+main,Ge,Ge (Germanium),Li-293K,Li 1980: n 1.9–18 µm; 293 K,main/Ge/Li-293K.yml,1.9,18.0,Li-293K
+main,Ge,Ge (Germanium),Li-350K,Li 1980: n 1.9–18 µm; 350 K,main/Ge/Li-350K.yml,1.9,18.0,Li-350K
+main,Ge,Ge (Germanium),Li-400K,Li 1980: n 1.9–18 µm; 400 K,main/Ge/Li-400K.yml,1.9,18.0,Li-400K
+main,Ge,Ge (Germanium),Li-450K,Li 1980: n 1.9–18 µm; 450 K,main/Ge/Li-450K.yml,1.9,18.0,Li-450K
+main,Ge,Ge (Germanium),Li-500K,Li 1980: n 1.9–18 µm; 500 K,main/Ge/Li-500K.yml,1.9,18.0,Li-500K
+main,Ge,Ge (Germanium),Li-550K,Li 1980: n 1.9–18 µm; 550 K,main/Ge/Li-550K.yml,1.9,18.0,Li-550K
+main,Ge,Ge (Germanium),Icenogle,Icenogle et al. 1976: n 2.5–12 µm; 293 K,main/Ge/Icenogle.yml,2.5,12.0,Icenogle
+main,Ge,Ge (Germanium),Ciesielski-2nm,"Ciesielski et al. 2018: 2 nm film; n,k 0.2–2 µm",main/Ge/Ciesielski-2nm.yml,0.2,2.0,Ciesielski-2nm
+main,Ge,Ge (Germanium),Ciesielski-20nm,"Ciesielski et al. 2018: 20 nm film; n,k 0.2–2 µm",main/Ge/Ciesielski-20nm.yml,0.2,2.0,Ciesielski-20nm
+main,Ge,Ge (Germanium),Amotchkina-film,"Amotchkina et al, 2020: 0.42 µm film; n,k 0.4–15 µm",main/Ge/Amotchkina-film.yml,0.4,15.0,Amotchkina-film
 main,Bi4Ge3O12,"Bi<sub>4</sub>Ge<sub>3</sub>O<sub>12</sub> (Bismuth germanate, BGO)",Williams,Williams et al. 1996: n 0.305–1.0 µm,main/Bi4Ge3O12/Williams.yml,0.305,1.0,Williams
 main,Bi12GeO20,"Bi<sub>12</sub>GeO<sub>20</sub> (Bismuth germanate, BGO)",Simon,Simon et al. 1997: n 0.45–0.70 µm,main/Bi12GeO20/Simon.yml,0.45,0.7,Simon
 main,Pb5Ge3O11,"Pb<sub>5</sub>Ge<sub>3</sub>O<sub>11</sub> (Lead germanate, PGO)",Simon-o,Simon et al. 1997: n(o) 0.45–0.70 µm,main/Pb5Ge3O11/Simon-o.yml,0.45,0.7,Simon-o
@@ -150,6 +341,21 @@ main,K,K (Potassium),Whang,"Whang et al. 1972: n,k 0.116–0.315 µm",main/K/Wha
 main,K,K (Potassium),Sutherland,Sutherland and Arakawa 1968: n 0.128–0.313 µm,main/K/Sutherland.yml,0.128,0.3131,Sutherland
 main,K,K (Potassium),Althoff,"Althoff and Hertz 1967: n,k 2.5–10.15 µm",main/K/Althoff.yml,2.5,10.15,Althoff
 main,K,K (Potassium),Ives,"Ives and Briggs 1936: n,k 0.254–0.578 µm",main/K/Ives.yml,0.2536,0.578,Ives
+main,Kr,Kr (Krypton),Bideau-Mehu,Bideau-Mehu et al. 1981: n 0.140–0.623 µm,main/Kr/Bideau-Mehu.yml,0.1404,0.6234,Bideau-Mehu
+main,Kr,Kr (Krypton),Borzsonyi,Börzsönyi et al. 2008: n 0.4–1.0 µm,main/Kr/Borzsonyi.yml,0.4,1.0,Borzsonyi
+main,Kr,Kr (Krypton),Smith,Smith et al. 1976: n 0.164–0.298 µm,main/Kr/Smith.yml,0.1641,0.29806,Smith
+main,Kr,Kr (Krypton),Koch,Koch 1949: n 0.230–0.623 µm,main/Kr/Koch.yml,0.230209,0.623437,Koch
+main,Kr,Kr (Krypton),Cuthbertson,Cuthbertson and Cuthbertson 1910: n 0.480–0.671 µm,main/Kr/Cuthbertson.yml,0.48,0.6708,Cuthbertson
+main,Kr,Kr (Krypton),Sinnock-liquid-126K,Sinnock and Smith 1969: Liquid at 126 K; n 0.363–0.644 µm,main/Kr/Sinnock-liquid-126K.yml,0.3631,0.6439,Sinnock-liquid-126K
+main,Kr,Kr (Krypton),Sinnock-liquid-122K,Sinnock and Smith 1969: Liquid at 122 K; n 0.363–0.644 µm,main/Kr/Sinnock-liquid-122K.yml,0.3631,0.6439,Sinnock-liquid-122K
+main,Kr,Kr (Krypton),Sinnock-liquid-118K,Sinnock and Smith 1969: Liquid at 118 K; n 0.363–0.644 µm,main/Kr/Sinnock-liquid-118K.yml,0.3631,0.6439,Sinnock-liquid-118K
+main,Kr,Kr (Krypton),Sinnock-liquid-115.95K,Sinnock and Smith 1969: Liquid at 115.95 K; n 0.363–0.644 µm,main/Kr/Sinnock-liquid-115.95K.yml,0.3631,0.6439,Sinnock-liquid-115.95K
+main,Kr,Kr (Krypton),Sinnock-solid-115.95K,Sinnock and Smith 1969: Solid at 115.95 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-115.95K.yml,0.3631,0.6439,Sinnock-solid-115.95K
+main,Kr,Kr (Krypton),Sinnock-solid-105K,Sinnock and Smith 1969: Solid at 105 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-105K.yml,0.3631,0.6439,Sinnock-solid-105K
+main,Kr,Kr (Krypton),Sinnock-solid-95K,Sinnock and Smith 1969: Solid at 95 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-95K.yml,0.3631,0.6439,Sinnock-solid-95K
+main,Kr,Kr (Krypton),Sinnock-solid-85K,Sinnock and Smith 1969: Solid at 85 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-85K.yml,0.3631,0.6439,Sinnock-solid-85K
+main,Kr,Kr (Krypton),Sinnock-solid-75K,Sinnock and Smith 1969: Solid at 75 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-75K.yml,0.3631,0.6439,Sinnock-solid-75K
+main,Kr,Kr (Krypton),Sinnock-solid-67K,Sinnock and Smith 1969: Solid at 67 K; n 0.363–0.644 µm,main/Kr/Sinnock-solid-67K.yml,0.3631,0.6439,Sinnock-solid-67K
 main,Li,Li (Lithium),Mathewson-298K,"Mathewson and Myers 1971: n,k 0.326–1.77 µm; 298 K",main/Li/Mathewson-298K.yml,0.32627,1.7712,Mathewson-298K
 main,Li,Li (Lithium),Mathewson-140K,"Mathewson and Myers 1971: n,k 0.340–1.77 µm; 140 K",main/Li/Mathewson-140K.yml,0.33968,1.7712,Mathewson-140K
 main,Li,Li (Lithium),Rasigni,"Rasigni and Rasigni 1977: n,k 0.116–8.27 µm",main/Li/Rasigni.yml,0.1164,8.266,Rasigni
@@ -161,6 +367,12 @@ main,Mg,Mg (Magnesium),Palm,"Palm et al. 2018: n,k 0.250–1.68 µm",main/Mg/Pal
 main,Mg,Mg (Magnesium),Vidal-Dasilva,"Vidal-Dasilva et al. 2010: n,k 0.000954–0.0496 µm",main/Mg/Vidal-Dasilva.yml,0.000953725,0.049593675,Vidal-Dasilva
 main,Mn,Mn (Manganese),Johnson,"Johnson and Christy 1974: n,k 0.188–1.937 µm",main/Mn/Johnson.yml,0.188,1.937,Johnson
 main,Mn,Mn (Manganese),Querry,"Querry 1987: n,k 0.220–55.6 µm",main/Mn/Querry.yml,0.22,55.5556,Querry
+main,Mo,Mo (Molybdenum),Werner,"Werner et al. 2009: n,k 0.01759–2.480 µm",main/Mo/Werner.yml,0.017586,2.479684,Werner
+main,Mo,Mo (Molybdenum),Ordal,"Ordal et al. 1988: n,k 0.667–154 µm",main/Mo/Ordal.yml,0.667,154.0,Ordal
+main,Mo,Mo (Molybdenum),Windt,"Windt et al. 1988: n,k 0.0024–0.1216 µm",main/Mo/Windt.yml,0.00236,0.12157,Windt
+main,Mo,Mo (Molybdenum),Querry,"Querry 1987: n,k 0.206–167 µm",main/Mo/Querry.yml,0.2063,166.6667,Querry
+main,Mo,Mo (Molybdenum),Kirillova,"Kirillova et al. 1971: n,k 0.265–20 µm",main/Mo/Kirillova.yml,0.265,20.0,Kirillova
+main,Mo,Mo (Molybdenum),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Mo/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,CaMoO4,CaMoO<sub>4</sub> (Calcium molybdate),Bond-o,Bond 1965: n(o) 0.45–3.8 µm,main/CaMoO4/Bond-o.yml,0.45,3.8,Bond-o
 main,CaMoO4,CaMoO<sub>4</sub> (Calcium molybdate),Bond-e,Bond 1965: n(e) 0.45–3.8 µm,main/CaMoO4/Bond-e.yml,0.45,3.8,Bond-e
 main,PbMoO4,PbMoO<sub>4</sub> (Lead Molybdate),Malitson-o,Malitson 1978: n(o) 0.44–1.08 µm,main/PbMoO4/Malitson-o.yml,0.44,1.08,Malitson-o
@@ -171,6 +383,28 @@ main,N2,N<sub>2</sub> (Nitrogen),Peck-0C,Peck and Khanna 1966: n 0.47–2.06 µm
 main,N2,N<sub>2</sub> (Nitrogen),Peck-15C,Peck and Khanna 1966: n 0.47–2.06 µm; 15 °C,main/N2/Peck-15C.yml,0.4679,2.0587,Peck-15C
 main,N2,N<sub>2</sub> (Nitrogen),Borzsonyi,Börzsönyi et al. 2008: n 0.4–1.0 µm; 0 °C,main/N2/Borzsonyi.yml,0.4,1.0,Borzsonyi
 main,N2,N<sub>2</sub> (Nitrogen),Griesmann,Griesmann and Burnett 1999: n 0.145–0.270 µm; 0 °C,main/N2/Griesmann.yml,0.145,0.27,Griesmann
+main,AlN,AlN (Aluminium nitride),Pastrnak-o,Pastrňák and Roskovcová 1966: n(o) 0.22–5 µm,main/AlN/Pastrnak-o.yml,0.22,5.0,Pastrnak-o
+main,AlN,AlN (Aluminium nitride),Pastrnak-e,Pastrňák and Roskovcová 1966: n(e) 0.22–5 µm,main/AlN/Pastrnak-e.yml,0.22,5.0,Pastrnak-e
+main,AlN,AlN (Aluminium nitride),Kischkat,"Kischkat et al. 2012: Non-stoichiometric AlN; n,k 1.54–14.29 µm",main/AlN/Kischkat.yml,1.53846,14.28571,Kischkat
+main,AlN,AlN (Aluminium nitride),Beliaev1,"Beliaev et al. 2021: Non-stoichiometric AlN; n,k 0.211–1.69 µm",main/AlN/Beliaev1.yml,0.2114,1.68816,Beliaev1
+main,AlN,AlN (Aluminium nitride),Beliaev2,"Beliaev et al. 2021: Non-stoichiometric AlN; n,k 2–20 µm",main/AlN/Beliaev2.yml,2.00111,20.0188,Beliaev2
+main,BN,BN (Boron nitride),Lee,Lee et al. 2018: h-BN; n 0.450–1.20 µm,main/BN/Lee.yml,0.45,1.2,Lee
+main,BN,BN (Boron nitride),Grudinin-o,Grudinin et al. 2023: h-BN; n(o) 0.250–1.70 µm,main/BN/Grudinin-o.yml,0.25,1.7,Grudinin-o
+main,BN,BN (Boron nitride),Grudinin-e,Grudinin et al. 2023: h-BN; n(e) 0.250–1.70 µm,main/BN/Grudinin-e.yml,0.25,1.7,Grudinin-e
+main,BN,BN (Boron nitride),Grudinin-DFT-o,"Grudinin et al. 2023: h-BN; n,k(o) 0.199–2.01 µm",main/BN/Grudinin-DFT-o.yml,0.19883,2.01331,Grudinin-DFT-o
+main,BN,BN (Boron nitride),Grudinin-DFT-e,"Grudinin et al. 2023: h-BN; n,k(e) 0.199–2.01 µm",main/BN/Grudinin-DFT-e.yml,0.19883,2.01331,Grudinin-DFT-e
+main,GaN,GaN (Gallium nitride),Barker-o,Barker and Ilegems 1973: n(o) 0.35–10 µm,main/GaN/Barker-o.yml,0.35,10.0,Barker-o
+main,GaN,GaN (Gallium nitride),Barker-e,Barker and Ilegems 1973: n(e) 0.35–10 µm,main/GaN/Barker-e.yml,0.35,10.0,Barker-e
+main,GaN,GaN (Gallium nitride),Lin-wurtzite,Lin et al. 1993: n(o) 0.37–0.99 µm,main/GaN/Lin-wurtzite.yml,0.368124,0.991745,Lin-wurtzite
+main,GaN,GaN (Gallium nitride),Lin-zincblende,Lin et al. 1993: Zincblende; n 0.37–0.99 µm,main/GaN/Lin-zincblende.yml,0.385447,0.960283,Lin-zincblende
+main,GaN,GaN (Gallium nitride),Kawashima,"Kawashima et al. 1997: thin film; n,k 0.124–0.992 µm",main/GaN/Kawashima.yml,0.12398,0.99187,Kawashima
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Philipp,Philipp 1973: n 0.207–1.24 µm,main/Si3N4/Philipp.yml,0.207,1.24,Philipp
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Luke,Luke et al. 2015: n 0.310–5.504 µm,main/Si3N4/Luke.yml,0.31,5.504,Luke
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Kischkat,"Kischkat et al. 2012: Non-stoichiometric SiN; n,k 1.54–14.29 µm",main/Si3N4/Kischkat.yml,1.53846,14.28571,Kischkat
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Beliaev,"Beliaev et al. 2022: Non-stoichiometric SiN; n,k 0.21-1.7 µm",main/Si3N4/Beliaev.yml,0.2114,1.68816,Beliaev
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Vogt-1.91,"Vogt 2015: Non-stoichiometric SiN #1; n,k 0.25-1.7 µm",main/Si3N4/Vogt-1.yml,0.25,1.7,Vogt-1
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Vogt-2.09,"Vogt 2015: Non-stoichiometric SiN #2; n,k 0.25-1.7 µm",main/Si3N4/Vogt-2.yml,0.25,1.7,Vogt-2
+main,Si3N4,"Si<sub>3</sub>N<sub>4</sub>, SiN (Silicon nitride)",Vogt-2.13,"Vogt 2015: Non-stoichiometric SiN #3; n,k 0.25-1.7 µm",main/Si3N4/Vogt-3.yml,0.25,1.7,Vogt-3
 main,TiN,TiN (Titanium nitride),Pfluger,"Pflüger et al. 1984: n,k 0.031–2.48 µm",main/TiN/Pfluger.yml,0.03107,2.4797,Pfluger
 main,TiN,TiN (Titanium nitride),Beliaev,"Beliaev et al. 2023: n,k 0.211-20.0 µm",main/TiN/Beliaev.yml,0.2114,20.0,Beliaev
 main,TiN,TiN (Titanium nitride),Schnabel,"Schnabel et al. 2018: n,k 0.292–0.809 µm",main/TiN/Schnabel.yml,0.2916,0.8091,Schnabel
@@ -179,6 +413,13 @@ main,TiN,TiN (Titanium nitride),Shkondin-700,"Shkondin et al. 2017: Annealed at 
 main,TiN,TiN (Titanium nitride),Shkondin-800,"Shkondin et al. 2017: Annealed at 800 °C; n,k 0.211–1.69 µm",main/TiN/Shkondin-800.yml,0.21073,1.68888,Shkondin-800
 main,TiN,TiN (Titanium nitride),Shkondin-900,"Shkondin et al. 2017: Annealed at 900 °C; n,k 0.211–1.69 µm",main/TiN/Shkondin-900.yml,0.21073,1.68888,Shkondin-900
 main,VN,VN (Vanadium nitride),Pfluger,"Pflüger et al. 1984: n,k 0.031–2.48 µm",main/VN/Pfluger.yml,0.03107,2.4797,Pfluger
+main,Na,Na (Sodium),Smith,"Smith 1969: n,k 0.313–2.24 µm",main/Na/Smith.yml,0.312539,2.237982,Smith
+main,Na,Na (Sodium),Inagaki,"Inagaki et al. 1976: n,k 0.326–2.07 µm",main/Na/Inagaki.yml,0.326,2.066,Inagaki
+main,Na,Na (Sodium),Monin,"Monin and Boutry 1974: n,k 0.254–0.620 µm",main/Na/Monin.yml,0.2536,0.62,Monin
+main,Na,Na (Sodium),Yamaguchi,"Yamaguchi and Hanyu 1971: n,k 0.200–0.600 µm",main/Na/Yamaguchi.yml,0.2,0.6,Yamaguchi
+main,Na,Na (Sodium),Althoff,"Althoff and Hertz 1967: n,k 2.25–10.2 µm",main/Na/Althoff.yml,2.25,10.15,Althoff
+main,Na,Na (Sodium),Ives,"Ives and Briggs 1937: n,k 0.254–0.578 µm",main/Na/Ives.yml,0.2536,0.578,Ives
+main,Na,Na (Sodium),Inagaki-liquid,"Inagaki et al. 1976: Liquid @ 120 °C; n,k 0.335–2.00 µm",main/Na/Inagaki-liquid.yml,0.335,2.0,Inagaki-liquid
 main,Nb,Nb (Niobium),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Nb/Windt.yml,0.00236,0.12157,Windt
 main,Nb,Nb (Niobium),Weaver,"Weaver et al. 1973: n,k 0.0258–0.862 µm",main/Nb/Weaver.yml,0.02583,0.8621,Weaver
 main,Nb,Nb (Niobium),Golovashkin-293K,"Golovashkin et al. 1969: n,k 0.40–10 µm; 293 K",main/Nb/Golovashkin-293K.yml,0.4,10.0,Golovashkin-293K
@@ -192,8 +433,24 @@ main,LiNbO3,LiNbO<sub>3</sub> (Lithium niobate),Zelmon-e,Zelmon et al. 1997: n(e
 main,Ne,Ne (Neon),Bideau-Mehu,Bideau-Mehu et al. 1981: n 0.140–0.546 µm,main/Ne/Bideau-Mehu.yml,0.1404,0.5462,Bideau-Mehu
 main,Ne,Ne (Neon),Borzsonyi,Börzsönyi et al. 2008: n 0.4–1.0 µm,main/Ne/Borzsonyi.yml,0.4,1.0,Borzsonyi
 main,Ne,Ne (Neon),Cuthbertson,Cuthbertson and Cuthbertson 1936: n 0.289–0.546 µm,main/Ne/Cuthbertson.yml,0.2894,0.5462,Cuthbertson
+main,Ni,Ni (Nickel),Johnson,"Johnson and Christy 1974: n,k 0.188–1.937 µm",main/Ni/Johnson.yml,0.188,1.937,Johnson
+main,Ni,Ni (Nickel),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Ni/Werner.yml,0.017586,2.479684,Werner
+main,Ni,Ni (Nickel),Ordal,"Ordal et al. 1987: n,k 0.667–286 µm",main/Ni/Ordal.yml,0.667,286.0,Ordal
+main,Ni,Ni (Nickel),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–6.20 µm",main/Ni/Rakic-BB.yml,0.24797,6.1992,Rakic-BB
+main,Ni,Ni (Nickel),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–6.20 µm",main/Ni/Rakic-LD.yml,0.24797,6.1992,Rakic-LD
+main,Ni,Ni (Nickel),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Ni/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,O2,O<sub>2</sub> (Oxygen),Smith,Smith et al. 1976: n 0.168–0.289 µm,main/O2/Smith.yml,0.1843,0.28824,Smith
 main,O2,O<sub>2</sub> (Oxygen),Zhang,Zhang et al. 2008: n 0.4–1.8 µm; 20 °C,main/O2/Zhang.yml,0.4,1.8,Zhang
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Malitson-o,Malitson and Dodge 1972: α-Al2O3 (Sapphire); n(o) 0.20–5.0 µm,main/Al2O3/Malitson-o.yml,0.2,5.0,Malitson-o
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Malitson-e,Malitson and Dodge 1972: α-Al2O3 (Sapphire); n(e) 0.20–5.0 µm,main/Al2O3/Malitson-e.yml,0.2,5.0,Malitson-e
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Querry-o,"Querry 1985: α-Al2O3 (Sapphire); n,k(o) 0.21–55.6 µm",main/Al2O3/Querry-o.yml,0.21,55.5556,Querry-o
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Querry-e,"Querry 1985: α-Al2O3 (Sapphire); n,k(e) 0.21–55.6 µm",main/Al2O3/Querry-e.yml,0.21,55.5556,Querry-e
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Malitson,Malitson 1962: α-Al2O3 (Sapphire); n(o) 0.2652–5.577 µm,main/Al2O3/Malitson.yml,0.2652,5.577,Malitson
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Hagemann,"Hagemann et al. 1974: Thin film; n,k 0.000775–0.207 µm",main/Al2O3/Hagemann.yml,0.0007749,0.2066,Hagemann
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Boidin,Boidin et al. 2016: Thin film; n 0.3–18 µm,main/Al2O3/Boidin.yml,0.3,18.003,Boidin
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Zhukovsky,Zhukovsky et al. 2015: Thin film; n 0.211–1.69 µm,main/Al2O3/Zhukovsky.yml,0.211002,1.689842,Zhukovsky
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Kischkat,"Kischkat et al. 2012: Thin film; n,k 1.54–14.3 µm",main/Al2O3/Kischkat.yml,1.53941,14.28571,Kischkat
+main,Al2O3,"Al<sub>2</sub>O<sub>3</sub> (Aluminium sesquioxide, Sapphire, Alumina)",Querry,"Querry 1985: Thin film (oxidized Al mirror); n,k 0.21–12.5 µm",main/Al2O3/Querry.yml,0.21,12.5,Querry
 main,BeO,BeO (Beryllium monoxide),Edwards-o,Edwards and White 1991: n(o) 0.44–7.0 µm,main/BeO/Edwards-o.yml,0.44,7.0,Edwards-o
 main,BeO,BeO (Beryllium monoxide),Edwards-e,Edwards and White 1991: n(e) 0.44–7.0 µm,main/BeO/Edwards-e.yml,0.44,7.0,Edwards-e
 main,CO,CO (Carbon monoxide),Smith,Smith et al. 1976: n 0.168–0.289 µm,main/CO1/Smith.yml,0.1672,0.2894,Smith
@@ -207,11 +464,45 @@ main,Fe2O3,"Fe<sub>2</sub>O<sub>3</sub> (Iron sesquioxide, Hematite)",Querry-e,"
 main,Fe3O4,"Fe<sub>3</sub>O<sub>4</sub> (Iron(II,III) oxide, Magnetite)",Querry,"Querry 1985: n,k 0.21–55.6 µm",main/Fe3O4/Querry.yml,0.21,55.5556,Querry
 main,GeO2,"GeO<sub>2</sub> (Germanium dioxide, Germania)",Fleming,Fleming 1984: Fused germania; n 0.36–4.3 µm,main/GeO2/Fleming.yml,0.36,4.3,Fleming
 main,GeO2,"GeO<sub>2</sub> (Germanium dioxide, Germania)",Nunley,"Nunley et al, 2016: n,k 0.188–2.48 µm",main/GeO2/Nunley.yml,0.1879,2.48,Nunley
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Hale,"Hale and Querry 1973: Water; n,k 0.2–200 µm; 25 °C",main/H2O/Hale.yml,0.2,200.0,Hale
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Wang,Wang et al. 2017: Water; k 1.2–1.9 µm; 22 °C,main/H2O/Wang.yml,1.2,1.9,Wang
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kedenburg,"Kedenburg et al. 2012: Water; n 0.5–1.6 µm, k 0.5–1.75 µm; 20.0 °C",main/H2O/Kedenburg.yml,0.5,1.6,Kedenburg
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Daimon-19.0C,Daimon and Masumura 2007: Water; n 0.18–1.13 µm; 19.0 °C,main/H2O/Daimon-19.0C.yml,0.182,1.129,Daimon-19.0C
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Daimon-20.0C,Daimon and Masumura 2007: Water; n 0.18–1.13 µm; 20.0 °C,main/H2O/Daimon-20.0C.yml,0.182,1.129,Daimon-20.0C
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Daimon-21.5C,Daimon and Masumura 2007: Water; n 0.18–1.13 µm; 21.5 °C,main/H2O/Daimon-21.5C.yml,0.182,1.129,Daimon-21.5C
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Daimon-24.0C,Daimon and Masumura 2007: Water; n 0.18–1.13 µm; 24.0 °C,main/H2O/Daimon-24.0C.yml,0.182,1.129,Daimon-24.0C
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Segelstein,"Segelstein 1981: Water; n,k 0.034–1.0e7 µm; 25 °C",main/H2O/Segelstein.yml,0.033962528,10000000.0,Segelstein
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Asfar-H2O,"Afsar and Hasted 1977: Water; n,k 22.22–1733 µm; 19.0 °C",main/H2O/Asfar.yml,22.22,1733.0,Asfar
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Warren-2008,"Warren and Brandt 2008: Ice; n,k 0.00443–2e6 µm",main/H2O/Warren-2008.yml,0.0443,2000000.0,Warren-2008
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Warren-1984,"Warren 1984: Ice; n,k 0.00443–167 µm",main/H2O/Warren-1984.yml,0.0443,167.0,Warren-1984
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-10K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 10 K,main/H2O/Kofman-10K.yml,0.21,0.757,Kofman-10K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-30K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 30 K,main/H2O/Kofman-30K.yml,0.21,0.757,Kofman-30K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-50K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 50 K,main/H2O/Kofman-50K.yml,0.21,0.757,Kofman-50K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-70K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 70 K,main/H2O/Kofman-70K.yml,0.21,0.757,Kofman-70K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-90K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 90 K,main/H2O/Kofman-90K.yml,0.21,0.757,Kofman-90K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-110K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 110 K,main/H2O/Kofman-110K.yml,0.21,0.757,Kofman-110K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-130K,Kofman et al. 2019: Amorphous ice; n 0.210–0.757 µm; 130 K,main/H2O/Kofman-130K.yml,0.21,0.757,Kofman-130K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kofman-150K,Kofman et al. 2019: Crystalline ice; n 0.210–0.757 µm; 150 K,main/H2O/Kofman-150K.yml,0.21,0.757,Kofman-150K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Rowe-240K,"Rowe et al. 2020: Water; n,k 0.667–10400 µm; -33 °C",main/H2O/Rowe-240K.yml,0.66668373,10395.939,Rowe-240K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Rowe-253K,"Rowe et al. 2020: Water; n,k 0.667–10400 µm; -20 °C",main/H2O/Rowe-253K.yml,0.66668373,10395.939,Rowe-253K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Rowe-263K,"Rowe et al. 2020: Water; n,k 0.667–10400 µm; -10 °C",main/H2O/Rowe-263K.yml,0.66668373,10395.939,Rowe-263K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Rowe-273K,"Rowe et al. 2020: Water; n,k 0.667–10400 µm; 0 °C",main/H2O/Rowe-273K.yml,0.66668373,10395.939,Rowe-273K
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Kedenburg-D2O,"Kedenburg et al. 2012: Heavy water; n 0.5–1.6 µm, k 0.5–1.75 µm",main/D2O/Kedenburg.yml,0.5,1.6,Kedenburg
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Sarkar-D2O,Sarkar et al. 2022: n 0.48–0.71 µm,main/D2O/Sarkar.yml,0.48,0.71,Sarkar
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Wang-D2O,Wang et al. 2016: Heavy water; k 1.2–2.6 µm,main/D2O/Wang.yml,1.2,2.6,Wang
+main,H2O,"H<sub>2</sub>O, D<sub>2</sub>O (Water, heavy water, ice)",Asfar-D2O,"Afsar and Hasted 1977: Heavy water; n,k 250–2000 µm",main/D2O/Asfar.yml,250.0,2000.0,Asfar
+main,HfO2,"HfO<sub>2</sub> (Hafnium dioxide, Hafnia)",Al-Kuhaili,Al-Kuhaili 2004: n 0.2–2.0 µm,main/HfO2/Al-Kuhaili.yml,0.2,2.0,Al-Kuhaili
+main,HfO2,"HfO<sub>2</sub> (Hafnium dioxide, Hafnia)",Bright,"Bright et al. 2012: n,k 0.385–500 µm",main/HfO2/Bright.yml,0.38462,500.0,Bright
 main,Lu2O3,Lu<sub>2</sub>O<sub>3</sub> (Lutetium sesquioxide),Medenbach,Medenbach et al. 2001: n 0.435–0.644 µm,main/Lu2O3/Medenbach.yml,0.435,0.644,Medenbach
 main,Lu2O3,Lu<sub>2</sub>O<sub>3</sub> (Lutetium sesquioxide),Yao,"Yao et al. 2022: n 0.210–1.69 µm, k 0.210–0.224 µm",main/Lu2O3/Yao.yml,0.21,1.69,Yao
 main,Lu2O3,Lu<sub>2</sub>O<sub>3</sub> (Lutetium sesquioxide),Kaminskii,Kaminskii et al. 2008: n 0.365–2.325 µm,main/Lu2O3/Kaminskii.yml,0.365,2.325,Kaminskii
 main,MgO,MgO (Magnesium monoxide),Stephens,Stephens and Malitson 1952: n 0.36–5.4 µm,main/MgO/Stephens.yml,0.36,5.4,Stephens
 main,MgO,MgO (Magnesium monoxide),Stephens-vis,Stephens and Malitson 1952: n 0.405–0.768 µm,main/MgO/Stephens-vis.yml,0.4047,0.7679,Stephens-vis
+main,MoO3,MoO<sub>3</sub> (Molybdenum trioxide),Lajaunie-α,"Lajaunie et al. 2013: n,k(α) 0.019–24.8 µm",main/MoO3/Lajaunie-alpha.yml,0.0190745,24.7968,Lajaunie-alpha
+main,MoO3,MoO<sub>3</sub> (Molybdenum trioxide),Lajaunie-β,"Lajaunie et al. 2013: n,k(β) 0.019–24.8 µm",main/MoO3/Lajaunie-beta.yml,0.0190745,24.7968,Lajaunie-beta
+main,MoO3,MoO<sub>3</sub> (Molybdenum trioxide),Lajaunie-γ,"Lajaunie et al. 2013: n,k(γ) 0.019–24.8 µm",main/MoO3/Lajaunie-gamma.yml,0.0190745,24.7968,Lajaunie-gamma
+main,MoO3,MoO<sub>3</sub> (Molybdenum trioxide),Vos,"Vos et al. 2016: Thin film; n,k 0.019–1 µm",main/MoO3/Vos.yml,0.190654,0.99928,Vos
+main,MoO3,MoO<sub>3</sub> (Molybdenum trioxide),Stelling,"Stelling et al. 2017: Thin film; n,k 0.301–0.899 µm",main/MoO3/Stelling.yml,0.30082,0.89945,Stelling
 main,Nb2O5,Nb<sub>2</sub>O<sub>5</sub> (Niobium pentoxide),Lemarchand,"Lemarchand 2013: Thin film; n,k 0.25–2.5 µm",main/Nb2O5/Lemarchand.yml,0.25,2.5,Lemarchand
 main,Nb2O5,Nb<sub>2</sub>O<sub>5</sub> (Niobium pentoxide),Horcholle-400,"Horcholle et al. 2022: Thin film annealed at 400 °C; n,k 0.207–0.827 µm",main/Nb2O5/Horcholle-400.yml,0.20664,0.82656,Horcholle-400
 main,Nb2O5,Nb<sub>2</sub>O<sub>5</sub> (Niobium pentoxide),Horcholle-800,"Horcholle et al. 2022: Thin film annealed at 800 °C; n,k 0.207–0.827 µm",main/Nb2O5/Horcholle-800.yml,0.20664,0.82656,Horcholle-800
@@ -222,12 +513,35 @@ main,ScAlMgO4,"ScAlMgO<sub>4</sub> (Magnesium aluminate scandium oxide, SAM, SCA
 main,ScAlMgO4,"ScAlMgO<sub>4</sub> (Magnesium aluminate scandium oxide, SAM, SCAM)",Stefaniuk-e,"Stefaniuk et al. 2023: n,k(e) 0.193–1.690 µm",main/ScAlMgO4/Stefaniuk-e.yml,0.193,1.69,Stefaniuk-e
 main,SiO,SiO (Silicon monoxide),Fernandez-Perea,"Fernandez-Perea et al. 2009: n,k 0.00155–0.177 µm",main/SiO/Fernandez-Perea.yml,0.001548,0.177120268,Fernandez-Perea
 main,SiO,SiO (Silicon monoxide),Hass,"Hass and Salzberg 1954: n,k 0.24–14.0 µm",main/SiO/Hass.yml,0.24,14.0,Hass
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Malitson,Malitson 1965: Fused silica; n 0.21–6.7 µm,main/SiO2/Malitson.yml,0.21,6.7,Malitson
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Nyakuchena,Nyakuchena et al. 2023: n 1.10–1.65 µm,main/SiO2/Nyakuchena.yml,1.1,1.65,Nyakuchena
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Arosa,Arosa and de la Fuente 2020: Fused silica; n 0.26–1.7 µm,main/SiO2/Arosa.yml,0.26,1.7,Arosa
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Popova,"Popova et al. 1972: Fused silica; n,k 7–50 µm",main/SiO2/Popova.yml,7.0,50.0,Popova
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Ghosh-o,"Ghosh 1999: α-Quartz, n(o) 0.198–2.05 µm",main/SiO2/Ghosh-o.yml,0.198,2.0531,Ghosh-o
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Ghosh-e,"Ghosh 1999: α-Quartz, n(e) 0.198–2.05 µm",main/SiO2/Ghosh-e.yml,0.198,2.0531,Ghosh-e
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Radhakrishnan-o,Radhakrishnan 1951: α-Quartz; n(o) 0.18–3 µm,main/SiO2/Radhakrishnan-o.yml,0.18,3.0,Radhakrishnan-o
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Radhakrishnan-e,Radhakrishnan 1951: α-Quartz; n(e) 0.18–3 µm,main/SiO2/Radhakrishnan-e.yml,0.18,3.0,Radhakrishnan-e
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Kischkat,"Kischkat et al. 2012: Thin film; n,k 1.54–14.3 µm",main/SiO2/Kischkat.yml,1.53846,14.28571,Kischkat
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2016: Thin film; n,k 0.03–1.5 µm",main/SiO2/Rodriguez-de Marcos.yml,0.0299714,1.51066,Rodriguez-de Marcos
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Gao,"Gao et al. 2013: Thin film; n,k 0.252–1.25 µm",main/SiO2/Gao.yml,0.252,1.25,Gao
+main,SiO2,"SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)",Lemarchand,"Lemarchand 2013: Thin film; n,k 0.25–2.5 µm",main/SiO2/Lemarchand.yml,0.25,2.5,Lemarchand
 main,Ta2O5,Ta<sub>2</sub>O<sub>5</sub> (Tantalum pentoxide),Bright-amorphous,"Bright et al. 2013: Amorphous film; n,k 0.5–1000 µm",main/Ta2O5/Bright-amorphous.yml,0.5,1000.0,Bright-amorphous
 main,Ta2O5,Ta<sub>2</sub>O<sub>5</sub> (Tantalum pentoxide),Bright-nanocrystalline,"Bright et al. 2013: Nanocrystalline film; n,k 0.5–1000 µm",main/Ta2O5/Bright-nanocrystalline.yml,0.5,1000.0,Bright-nanocrystalline
 main,Ta2O5,Ta<sub>2</sub>O<sub>5</sub> (Tantalum pentoxide),Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2016: n,k 0.03–1.5 µm",main/Ta2O5/Rodriguez-de Marcos.yml,0.0294938,1.51429,Rodriguez-de Marcos
 main,Ta2O5,Ta<sub>2</sub>O<sub>5</sub> (Tantalum pentoxide),Gao,"Gao et al. 2012: n,k 0.35–1.8 µm",main/Ta2O5/Gao.yml,0.35,1.8,Gao
 main,TeO2,TeO<sub>2</sub> (Tellurium dioxide),Uchida-o,Uchida 1971: α-TeO<sub>2</sub>; n(o) 0.4–1.0 µm,main/TeO2/Uchida-o.yml,0.4,1.0,Uchida-o
 main,TeO2,TeO<sub>2</sub> (Tellurium dioxide),Uchida-e,Uchida 1971: α-TeO<sub>2</sub>; n(e) 0.4–1.0 µm,main/TeO2/Uchida-e.yml,0.4,1.0,Uchida-e
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Devore-o,Devore 1951: n(o) 0.43–1.53 µm,main/TiO2/Devore-o.yml,0.43,1.53,Devore-o
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Devore-e,Devore 1951: n(e) 0.43–1.53 µm,main/TiO2/Devore-e.yml,0.43,1.53,Devore-e
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Bond-o,Bond 1965: n(o) 0.45–2.4 µm,main/TiO2/Bond-o.yml,0.45,2.4,Bond-o
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Bond-e,Bond 1965: n(e) 0.45–2.4 µm,main/TiO2/Bond-e.yml,0.45,2.4,Bond-e
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Kischkat,"Kischkat et al. 2012: Thin film; n,k 1.54–14.29 µm",main/TiO2/Kischkat.yml,1.53846,14.28571,Kischkat
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Jolivet-anatase,"Jolivet et al. 2023: Anatase thin film; n,k 0.207–0.827 µm",main/TiO2/Jolivet-anatase.yml,0.20664,0.82656,Jolivet-anatase
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Jolivet-amorphous,"Jolivet et al. 2023: Amorphous thin film; n,k 0.207–0.827 µm",main/TiO2/Jolivet-amorphous.yml,0.20664,0.82656,Jolivet-amorphous
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Sarkar,"Sarkar et al. 2019: Thin film; n,k 0.30–1.69 µm",main/TiO2/Sarkar.yml,0.3,1.69,Sarkar
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Siefke,"Siefke et al. 2016: Thin film; n,k 0.120–125 µm",main/TiO2/Siefke.yml,0.120181141,125.1227623,Siefke
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Zhukovsky,Zhukovsky et al. 2015: Thin film; n 0.211–1.69 µm,main/TiO2/Zhukovsky.yml,0.211002,1.689842,Zhukovsky
+main,TiO2,TiO<sub>2</sub> (Titanium dioxide),Bodurov,Bodurov et al. 2016: Nanoparticles; n 0.405–0.635 µm,main/TiO2/Bodurov.yml,0.405,0.635,Bodurov
 main,VO2,VO2 (Vanadium dioxide),Beaini-25C,"Beaini et al. 2020: n,k 0.5–25 µm; 25 °C",main/VO2/Beaini-25C.yml,0.5,25.0,Beaini-25C
 main,VO2,VO2 (Vanadium dioxide),Beaini-100C,"Beaini et al. 2020: n,k 0.5–25 µm; 100 °C",main/VO2/Beaini-100C.yml,0.5,25.0,Beaini-100C
 main,VO2,VO2 (Vanadium dioxide),Oguntoye-20C,"Oguntoye et al. 2023: n,k 0.21–2.5 µm; 20 °C",main/VO2/Oguntoye-20C.yml,0.21,2.5,Oguntoye-20C
@@ -241,6 +555,14 @@ main,VO2,VO2 (Vanadium dioxide),Oguntoye-80C,"Oguntoye et al. 2023: n,k 0.21–2
 main,WO3,WO3 (Tungsten trioxide),Kulikova,"Kulikova et al. 2020: n,k 0.3–1.0 µm",main/WO3/Kulikova.yml,0.3,1.0,Kulikova
 main,Y2O3,Y<sub>2</sub>O<sub>3</sub> (Yttrium sesquioxide),Nigara,Nigara 1968: n 0.25–9.6 µm,main/Y2O3/Nigara.yml,0.25,9.6,Nigara
 main,Yb2O3,Yb<sub>2</sub>O<sub>3</sub> (Ytterbium sesquioxide),Medenbach,Medenbach et al. 2001: n 0.435–0.644 µm,main/Yb2O3/Medenbach.yml,0.435,0.644,Medenbach
+main,ZnO,ZnO (Zinc monoxide),Bond-o,Bond et al. 1965: n(o) 0.45–4.0 µm,main/ZnO/Bond-o.yml,0.45,4.0,Bond-o
+main,ZnO,ZnO (Zinc monoxide),Bond-e,Bond et al. 1965: n(e) 0.45–4.0 µm,main/ZnO/Bond-e.yml,0.45,4.0,Bond-e
+main,ZnO,ZnO (Zinc monoxide),Stelling,"Stelling et al. 2017: n,k 0.302–1.685 µm",main/ZnO/Stelling.yml,0.30158,1.68492,Stelling
+main,ZnO,ZnO (Zinc monoxide),Aguilar,"Aguilar et al. 2019: n,k 0.3–3.2 µm",main/ZnO/Aguilar.yml,0.3,3.2,Aguilar
+main,ZnO,ZnO (Zinc monoxide),Querry,"Querry 1985: n,k 0.21–55.6 µm",main/ZnO/Querry.yml,0.21,55.5556,Querry
+main,ZnO,ZnO (Zinc monoxide),Bodurov,Bodurov et al. 2016: Nanoparticles; n 0.405–0.635 µm,main/ZnO/Bodurov.yml,0.405,0.635,Bodurov
+main,ZrO2,"ZrO<sub>2</sub> (Zirconium dioxide, Zirconia)",Wood,Wood and Nassau 1982: Cubic zirconia stabilized with yttria; n 0.361–5.14 µm,other/mixed crystals/ZrO2-Y2O3/Wood.yml,0.361,5.135,Wood
+main,ZrO2,"ZrO<sub>2</sub> (Zirconium dioxide, Zirconia)",Bodurov,Bodurov et al. 2016: Nanoparticles; n 0.405–0.635 µm,main/ZrO2/Bodurov.yml,0.405,0.635,Bodurov
 main,Os,Os (Osmium),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Os/Windt.yml,0.00236,0.12157,Windt
 main,Os,Os (Osmium),Nemoshkalenko-o,"Nemoshkalenko et al. 1968: n,k(o) 0.24–15 µm",main/Os/Nemoshkalenko-o.yml,0.24,15.0,Nemoshkalenko-o
 main,Os,Os (Osmium),Nemoshkalenko-e,"Nemoshkalenko et al. 1968: n,k(e) 0.25–8.0 µm",main/Os/Nemoshkalenko-e.yml,0.25,8.0,Nemoshkalenko-e
@@ -251,6 +573,16 @@ main,CdGeP2,CdGeP<sub>2</sub> (Cadmium germanium phosphide),Boyd-20-o,Boyd et al
 main,CdGeP2,CdGeP<sub>2</sub> (Cadmium germanium phosphide),Boyd-20-e,Boyd et al. 1972: n(e) 0.8–12.5 µm; 20 °C,main/CdGeP2/Boyd-20-e.yml,0.8,12.5,Boyd-20-e
 main,CdGeP2,CdGeP<sub>2</sub> (Cadmium germanium phosphide),Boyd-118-o,Boyd et al. 1972: n(o) 0.8–12.5 µm; 118 °C,main/CdGeP2/Boyd-118-o.yml,0.8,12.5,Boyd-118-o
 main,CdGeP2,CdGeP<sub>2</sub> (Cadmium germanium phosphide),Boyd-118-e,Boyd et al. 1972: n(e) 0.8–12.5 µm; 118 °C,main/CdGeP2/Boyd-118-e.yml,0.8,12.5,Boyd-118-e
+main,GaP,GaP (Gallium phosphide),Aspnes,"Aspnes and Studna 1983: n,k 0.21–0.83 µm",main/GaP/Aspnes.yml,0.2066,0.8266,Aspnes
+main,GaP,GaP (Gallium phosphide),Khmelevskaia,"Khmelevskaia et al. 2021: n 0.235-1.70, k 0.235–0.686 µm",main/GaP/Khmelevskaia.yml,0.235,1.7,Khmelevskaia
+main,GaP,GaP (Gallium phosphide),Jellison,"Jellison 1992: n,k 0.234–0.840 µm",main/GaP/Jellison.yml,0.234,0.84,Jellison
+main,GaP,GaP (Gallium phosphide),Parsons,Parsons and Coleman 1971: n 54.4–366 µm,main/GaP/Parsons.yml,54.369,366.03,Parsons
+main,GaP,GaP (Gallium phosphide),Bond,Bond 1965: n 0.5–4.0 µm,main/GaP/Bond.yml,0.5,4.0,Bond
+main,GaP,GaP (Gallium phosphide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/GaP/Adachi.yml,0.20664,12.398,Adachi
+main,InP,InP (Indium phosphide),Aspnes,"Aspnes and Studna 1983: n,k 0.21–0.83 µm",main/InP/Aspnes.yml,0.2066,0.8266,Aspnes
+main,InP,InP (Indium phosphide),Panah,"Panah et al. 2016: n,k 5.0–30 µm",main/InP/Panah.yml,5.0,30.0,Panah
+main,InP,InP (Indium phosphide),Pettit,Pettit and Turner 1965: n 0.95–10 µm,main/InP/Pettit.yml,0.95,10.0,Pettit
+main,InP,InP (Indium phosphide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/InP/Adachi.yml,0.20664,12.398,Adachi
 main,ZnGeP2,"ZnGeP<sub>2</sub> (Zinc germanium phosphide, ZGP)",Das-o,Das et al. 2003: n(o) 1.32–11 µm,main/ZnGeP2/Das-o.yml,1.32,11.0,Das-o
 main,ZnGeP2,"ZnGeP<sub>2</sub> (Zinc germanium phosphide, ZGP)",Das-e,Das et al. 2003: n(e) 1.32–11 µm,main/ZnGeP2/Das-e.yml,1.32,11.0,Das-e
 main,ZnGeP2,"ZnGeP<sub>2</sub> (Zinc germanium phosphide, ZGP)",Zelmon-o,Zelmon et al. 2001: n(o) 2–9 µm,main/ZnGeP2/Zelmon-o.yml,2.0,9.0,Zelmon-o
@@ -269,7 +601,27 @@ main,NH4H2PO4,"NH<sub>4</sub>H<sub>2</sub>PO<sub>4</sub> (Ammonium dihydrogen ph
 main,RbTiOPO4,"RbTiOPO<sub>4</sub> (Rubidium titanyl phosphate, RTP)",Carvajal-α,Carvajal et al. 2007: n(α) 0.4–1.5 µm,main/RbTiOPO4/Carvajal-alpha.yml,0.4,1.5,Carvajal-alpha
 main,RbTiOPO4,"RbTiOPO<sub>4</sub> (Rubidium titanyl phosphate, RTP)",Carvajal-β,Carvajal et al. 2007: n(β) 0.4–1.5 µm,main/RbTiOPO4/Carvajal-beta.yml,0.4,1.5,Carvajal-beta
 main,RbTiOPO4,"RbTiOPO<sub>4</sub> (Rubidium titanyl phosphate, RTP)",Carvajal-γ,Carvajal et al. 2007: n(γ) 0.4–1.5 µm,main/RbTiOPO4/Carvajal-gamma.yml,0.4,1.5,Carvajal-gamma
+main,Pb,Pb (Lead),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Pb/Werner.yml,0.017586,2.479684,Werner
+main,Pb,Pb (Lead),Ordal,"Ordal et al. 1987: n,k 0.667–667 µm",main/Pb/Ordal.yml,0.667,667.0,Ordal
+main,Pb,Pb (Lead),Mathewson-298K,"Mathewson and Myers 1971: n,k 0.344–1.77 µm; 298 K",main/Pb/Mathewson-298K.yml,0.3444,1.7712,Mathewson-298K
+main,Pb,Pb (Lead),Mathewson-140K,"Mathewson and Myers 1971: n,k 0.344–1.77 µm; 140 K",main/Pb/Mathewson-140K.yml,0.3444,1.7712,Mathewson-140K
+main,Pb,Pb (Lead),Golovashkin-293K,"Golovashkin and Motulevich 1968: n,k 0.45–12 µm; 293 K",main/Pb/Golovashkin-293K.yml,0.45,12.0,Golovashkin-293K
+main,Pb,Pb (Lead),Golovashkin-78K,"Golovashkin and Motulevich 1968: n,k 0.45–12 µm; 78 K",main/Pb/Golovashkin-78K.yml,0.45,12.0,Golovashkin-78K
+main,Pb,Pb (Lead),Golovashkin-4.2K,"Golovashkin and Motulevich 1968: n,k 0.54–12 µm; 4.2 K",main/Pb/Golovashkin-4.2K.yml,0.54,12.0,Golovashkin-4.2K
+main,Pb,Pb (Lead),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Pb/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
+main,Pd,Pd (Palladium),Johnson,"Johnson and Christy 1974: n,k 0.188–1.94 µm",main/Pd/Johnson.yml,0.188,1.937,Johnson
+main,Pd,Pd (Palladium),Palm,"Palm et al. 2018: n,k 0.250–1.68 µm",main/Pd/Palm.yml,0.250019531,1.684528687,Palm
+main,Pd,Pd (Palladium),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Pd/Werner.yml,0.017586,2.479684,Werner
+main,Pd,Pd (Palladium),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Pd/Windt.yml,0.00236,0.12157,Windt
+main,Pd,Pd (Palladium),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–12.4 µm",main/Pd/Rakic-BB.yml,0.24797,12.398,Rakic-BB
+main,Pd,Pd (Palladium),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–12.4 µm",main/Pd/Rakic-LD.yml,0.24797,12.398,Rakic-LD
+main,Pd,Pd (Palladium),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Pd/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,Pr,Pr (Praseodymium),Fernandez-Perea,"Fernandez-Perea et al. 2008: n,k 0.000775–0.323 µm",main/Pr/Fernandez-Perea.yml,0.000774901,0.323113894,Fernandez-Perea
+main,Pt,Pt (Platinum),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Pt/Werner.yml,0.017586,2.479684,Werner
+main,Pt,Pt (Platinum),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Pt/Windt.yml,0.00236,0.12157,Windt
+main,Pt,Pt (Platinum),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–12.4 µm",main/Pt/Rakic-BB.yml,0.24797,12.398,Rakic-BB
+main,Pt,Pt (Platinum),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–12.4 µm",main/Pt/Rakic-LD.yml,0.24797,12.398,Rakic-LD
+main,Pt,Pt (Platinum),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Pt/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,Rb,Rb (Rubidium),Smith,"Smith 1969: n,k 0.313–2.24 µm",main/Rb/Smith.yml,0.312539,2.237982,Smith
 main,Rb,Rb (Rubidium),Monin,"Monin and Boutry 1974: n,k 0.254–0.620 µm; 195 K",main/Rb/Monin.yml,0.265,0.62,Monin
 main,Rb,Rb (Rubidium),Yamaguchi,"Yamaguchi and Hanyu 1973: n,k 0.200–0.600 µm",main/Rb/Yamaguchi.yml,0.2,0.6,Yamaguchi
@@ -297,12 +649,18 @@ main,BaGa4S7,"BaGa<sub>4</sub>S<sub>7</sub> (Barium gallium sulfide, BGS)",Kato-
 main,CS2,CS<sub>2</sub> (Carbon disulfide),Kedenburg,Kedenburg et al. 2012: n 0.5–1.6 µm,main/CS2/Kedenburg.yml,0.5,1.6,Kedenburg
 main,CS2,CS<sub>2</sub> (Carbon disulfide),Chemnitz,Chemnitz et al. 2017: n 0.3–12 µm,main/CS2/Chemnitz.yml,0.3,12.0,Chemnitz
 main,CS2,CS<sub>2</sub> (Carbon disulfide),Ghosal,Ghosal et al. 1993: n 7.3–11 µm,main/CS2/Ghosal.yml,7.3,11.0,Ghosal
+main,CdS,CdS (Cadmium sulfide),Bieniewski-o,Bieniewski and Czyzak 1963: n(o) 0.51–1.4 µm,main/CdS/Bieniewski-o.yml,0.51,1.4,Bieniewski-o
+main,CdS,CdS (Cadmium sulfide),Bieniewski-e,Bieniewski and Czyzak 1963: n(e) 0.51–1.4 µm,main/CdS/Bieniewski-e.yml,0.51,1.4,Bieniewski-e
+main,CdS,CdS (Cadmium sulfide),Treharne,"Treharne et al. 2011: Thin film; n,k 0.3–1.5 µm",main/CdS/Treharne.yml,0.30141754,1.4979382,Treharne
+main,CdS,CdS (Cadmium sulfide),Ninomiya-o,"Ninomiya and Adachi 1995: n,k(o) 0.218–1.03 µm",main/CdS/Ninomiya-o.yml,0.21752,1.0332,Ninomiya-o
+main,CdS,CdS (Cadmium sulfide),Ninomiya-e,"Ninomiya and Adachi 1995: n,k(e) 0.218–1.03 µm",main/CdS/Ninomiya-e.yml,0.21752,1.0332,Ninomiya-e
 main,CdGa2S4,CdGa<sub>2</sub>S<sub>4</sub> (Cadmium gallium sulfide),Kato-o,Kato et al. 2017: n(o) 0.490–7.52 µm,main/CdGa2S4/Kato-o.yml,0.49,7.519,Kato-o
 main,CdGa2S4,CdGa<sub>2</sub>S<sub>4</sub> (Cadmium gallium sulfide),Kato-e,Kato et al. 2017: n(e) 0.490–7.52 µm,main/CdGa2S4/Kato-e.yml,0.49,7.519,Kato-e
 main,CuGaS2,CuGaS<sub>2</sub> (Copper gallium sulfide),Boyd-20-o,Boyd et al. 1971: n(o) 0.55–11.5 µm; 20 °C,main/CuGaS2/Boyd-20-o.yml,0.55,11.5,Boyd-20-o
 main,CuGaS2,CuGaS<sub>2</sub> (Copper gallium sulfide),Boyd-20-e,Boyd et al. 1971: n(e) 0.55–11.5 µm; 20 °C,main/CuGaS2/Boyd-20-e.yml,0.55,11.5,Boyd-20-e
 main,CuGaS2,CuGaS<sub>2</sub> (Copper gallium sulfide),Boyd-120-o,Boyd et al. 1971: n(o) 0.55–11.5 µm; 120 °C,main/CuGaS2/Boyd-120-o.yml,0.55,11.5,Boyd-120-o
 main,CuGaS2,CuGaS<sub>2</sub> (Copper gallium sulfide),Boyd-120-e,Boyd et al. 1971: n(e) 0.55–11.5 µm; 120 °C,main/CuGaS2/Boyd-120-e.yml,0.55,11.5,Boyd-120-e
+main,EuS,EuS (Europium sulfide),Meretska,"Meretska et al. 2022: thin film; n,k 0.190–1.700 µm",main/EuS/Meretska.yml,0.19,1.7,Meretska
 main,GaS,GaS (Gallium sulfide),Kato-o,Kato and Umemura 2011: n(o) 0.633–10.6 µm,main/GaS/Kato-o.yml,0.633,10.591,Kato-o
 main,GaS,GaS (Gallium sulfide),Kato-e,Kato and Umemura 2011: n(e) 0.633–10.6 µm,main/GaS/Kato-e.yml,0.633,10.591,Kato-e
 main,HgS,HgS (Mercury sulfide),Bond-o,Bond et al. 1967: α-HgS; n(o) 0.62–11 µm,main/HgS/Bond-o.yml,0.62,11.0,Bond-o
@@ -312,45 +670,218 @@ main,HgGa2S4,HgGa<sub>2</sub>S<sub>4</sub> (Mercury gallium sulfide),Kato-e,Kato
 main,LiGaS2,"LiGaS<sub>2</sub> (Lithium gallium sulfide, LGS)",Kato-α,Kato et al. 2017: n(α) 1.025–10.591 µm,main/LiGaS2/Kato-alpha.yml,1.025,10.591,Kato-alpha
 main,LiGaS2,"LiGaS<sub>2</sub> (Lithium gallium sulfide, LGS)",Kato-β,Kato et al. 2017: n(β) 1.025–10.591 µm,main/LiGaS2/Kato-beta.yml,1.025,10.591,Kato-beta
 main,LiGaS2,"LiGaS<sub>2</sub> (Lithium gallium sulfide, LGS)",Kato-γ,Kato et al. 2017: n(γ) 1.025–10.591 µm,main/LiGaS2/Kato-gamma.yml,1.025,10.591,Kato-gamma
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Beal,"Beal and Huges 1979: bulk; n,k 0.081–1.24 µm",main/MoS2/Beal.yml,0.0811,1.236,Beal
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Ermolaev-o,"Ermolaev et al. 2020: bulk; n(o),k 0.290–3.30 µm",main/MoS2/Ermolaev-o.yml,0.29,3.3,Ermolaev-o
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Ermolaev-e,Ermolaev et al. 2021: bulk; n(e) 0.360–1.70 µm,main/MoS2/Ermolaev-e.yml,0.36,1.7,Ermolaev-e
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-bulk,"Song et al. 2019: bulk; n,k 0.193–1.69 µm",main/MoS2/Song-bulk.yml,0.193,1.69,Song-bulk
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Yim-2nm,"Yim et al. 2014: 2-nm film; n,k 0.38–0.90 µm",main/MoS2/Yim-2nm.yml,0.382448,0.886647,Yim-2nm
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Yim-3nm,"Yim et al. 2014: 3-nm film; n,k 0.38–0.90 µm",main/MoS2/Yim-3nm.yml,0.382417,0.887428,Yim-3nm
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Yim-20nm,"Yim et al. 2014: 20-nm film; n,k 0.38–0.90 µm",main/MoS2/Yim-20nm.yml,0.382938,0.884671,Yim-20nm
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Islam-o,"Islam et al. 2021: 33.5-nm film; n,k(o) 0.190–1.70 µm",main/MoS2/Islam-o.yml,0.19,1.7,Islam-o
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Islam-e,Islam et al. 2021: 33.5-nm film; n(e) 0.954–1.70 µm,main/MoS2/Islam-e.yml,0.954,1.7,Islam-e
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n(o),k 0.30–1.69 µm",main/MoS2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Munkhbat-e,Munkhbat et al. 2022: multilayer flakes; n(e) 0.30–1.69 µm,main/MoS2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Zhang,"Zhang et al. 2015: monolayer (1L) film; n,k 0.40–0.75 µm",main/MoS2/Zhang.yml,0.4,0.75,Zhang
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Islam-1L,"Islam et al. 2021: monolayer (1L) film; n,k 0.190–1.70 µm",main/MoS2/Islam-1L.yml,0.19,1.7,Islam-1L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Islam-fewL,"Islam et al. 2021: few-layer (2.15 nm) film; n,k 0.190–1.70 µm",main/MoS2/Islam-fewL.yml,0.19,1.7,Islam-fewL
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Ermolaev-1L,"Ermolaev et al. 2020: monolayer (1L) film; n,k 0.290–3.30 µm",main/MoS2/Ermolaev-1L.yml,0.29,3.3,Ermolaev-1L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Hsu-1L,"Hsu et al. 2019: monolayer (1L) film; n,k 0.40–0.86 µm",main/MoS2/Hsu-1L.yml,0.39697,0.85697,Hsu-1L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Hsu-2L,"Hsu et al. 2019: 2-layer (2L) film; n,k 0.40–0.86 µm",main/MoS2/Hsu-2L.yml,0.39697,0.85697,Hsu-2L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Hsu-3L,"Hsu et al. 2019: 3-layer (3L) film; n,k 0.40–0.86 µm",main/MoS2/Hsu-3L.yml,0.39697,0.85697,Hsu-3L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-1L,"Song et al. 2019: monolayer (1L) film; n,k 0.193–1.69 µm",main/MoS2/Song-1L.yml,0.193,1.69,Song-1L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-3L,"Song et al. 2019: 3-layer (3L) film; n,k 0.193–1.69 µm",main/MoS2/Song-3L.yml,0.193,1.69,Song-3L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-4L,"Song et al. 2019: 4-layer (4L) film; n,k 0.193–1.69 µm",main/MoS2/Song-4L.yml,0.193,1.69,Song-4L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-6L,"Song et al. 2019: 6-layer (6L) film; n,k 0.193–1.69 µm",main/MoS2/Song-6L.yml,0.193,1.69,Song-6L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-8L,"Song et al. 2019: 8-layer (8L) film; n,k 0.193–1.69 µm",main/MoS2/Song-8L.yml,0.193,1.69,Song-8L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-10L,"Song et al. 2019: 10-layer (10L) film; n,k 0.193–1.69 µm",main/MoS2/Song-10L.yml,0.193,1.69,Song-10L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Song-13L,"Song et al. 2019: 13-layer (13L) film; n,k 0.193–1.69 µm",main/MoS2/Song-13L.yml,0.193,1.69,Song-13L
+main,MoS2,MoS<sub>2</sub> (Molybdenum disulfide),Jung,"Jung et al. 2019: monolayer (1L) film; n,k 0.38–0.89 µm",main/MoS2/Jung.yml,0.3813,0.89341,Jung
 main,PbS,PbS (Lead sulfide),Zemel,Zemel et al. 1965: n 3.5–10 µm,main/PbS/Zemel.yml,3.5,10.0,Zemel
 main,PtS2,PtS<sub>2</sub> (Platinum disulfide),Ermolaev,"Ermolaev et al. 2021: 5 nm film; n,k 0.245–3.30 µm",main/PtS2/Ermolaev.yml,0.245,3.3,Ermolaev
+main,ReS2,ReS<sub>2</sub> (Rhenium disulfide),Munkhbat-α,"Munkhbat et al. 2022: multilayer flakes; n(α),k(α) 0.30–1.69 µm",main/ReS2/Munkhbat-alpha.yml,0.3,1.69,Munkhbat-alpha
+main,ReS2,ReS<sub>2</sub> (Rhenium disulfide),Munkhbat-β,"Munkhbat et al. 2022: multilayer flakes; n(β),k(β) 0.30–1.69 µm",main/ReS2/Munkhbat-beta.yml,0.3,1.69,Munkhbat-beta
+main,ReS2,ReS<sub>2</sub> (Rhenium disulfide),Munkhbat-γ,Munkhbat et al. 2022: multilayer flakes; n(γ) 0.30–1.69 µm,main/ReS2/Munkhbat-gamma.yml,0.3,1.69,Munkhbat-gamma
 main,SnS2,SnS<sub>2</sub> (Tin disulfide),Ermolaev,"Ermolaev et al. 2022: thin film; n 0.300–3.30 µm, k 0.300–0.629 µm",main/SnS2/Ermolaev.yml,0.3,3.3,Ermolaev
+main,TaS2,TaS<sub>2</sub> (Tantalum disulfide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n,k(o) 0.30–1.69 µm",main/TaS2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,TaS2,TaS<sub>2</sub> (Tantalum disulfide),Munkhbat-e,"Munkhbat et al. 2022: multilayer flakes; n,k(e) 0.30–1.69 µm",main/TaS2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Jung,"Jung et al. 2019: monolayer film; n,k 0.38–0.89 µm",main/WS2/Jung.yml,0.38135,0.89352,Jung
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Ermolaev,"Ermolaev et al. 2020: monolayer film; n,k 0.365–1.70 µm",main/WS2/Ermolaev.yml,0.365,1.7,Ermolaev
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Hsu-1L,"Hsu et al. 2019: monolayer (1L) film; n,k 0.40–0.85 µm",main/WS2/Hsu-1L.yml,0.397,0.8502,Hsu-1L
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Hsu-2L,"Hsu et al. 2019: 2-layer (2L) film; n,k 0.40–0.85 µm",main/WS2/Hsu-2L.yml,0.39697,0.85023,Hsu-2L
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Hsu-3L,"Hsu et al. 2019: 3-layer (3L) film; n,k 0.40–0.85 µm",main/WS2/Hsu-3L.yml,0.39697,0.85023,Hsu-3L
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n(o),k 0.30–1.69 µm",main/WS2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,WS2,WS<sub>2</sub> (Tungsten disulfide),Munkhbat-e,Munkhbat et al. 2022: multilayer flakes; n(e) 0.30–1.69 µm,main/WS2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,ZnS,ZnS (Zinc sulfide),Debenham,Debenham 1984: Cubic ZnS; n 0.405–13 µm,main/ZnS/Debenham.yml,0.405,13.0,Debenham
+main,ZnS,ZnS (Zinc sulfide),Querry,"Querry 1987: n,k 0.220–167 µm",main/ZnS/Querry.yml,0.22,166.6667,Querry
+main,ZnS,ZnS (Zinc sulfide),Bond,Bond 1965: n 0.45–2.4 µm,main/ZnS/Bond.yml,0.45,2.4,Bond
+main,ZnS,ZnS (Zinc sulfide),Amotchkina,"Amotchkina et al, 2020: n 0.4–14 µm, k 0.4–1.0 µm",main/ZnS/Amotchkina.yml,0.4,1.0,Amotchkina
+main,ZnS,ZnS (Zinc sulfide),Ozaki,"Ozaki and Adachi 1993: Cubic ZnS; n,k 0.221–1.03 µm",main/ZnS/Ozaki.yml,0.2214,1.0332,Ozaki
 main,CaSO4,CaSO<sub>4</sub> (Calcium sulfate),Querry-α,"Querry 1987: n,k(α) 2.50–55.6 µm",main/CaSO4/Querry-alpha.yml,2.5,55.5556,Querry-alpha
 main,CaSO4,CaSO<sub>4</sub> (Calcium sulfate),Querry-β,"Querry 1987: n,k(β) 2.50–55.6 µm",main/CaSO4/Querry-beta.yml,2.5,55.5556,Querry-beta
 main,CaSO4,CaSO<sub>4</sub> (Calcium sulfate),Querry-γ,"Querry 1987: n,k(γ) 2.50–55.6 µm",main/CaSO4/Querry-gamma.yml,2.5,55.5556,Querry-gamma
+main,AlSb,AlSb (Aluminium antimonide),Zollner,"Zollner et al. 1989: n,k 0.214–0.886 µm",main/AlSb/Zollner.yml,0.2138,0.8856,Zollner
+main,AlSb,AlSb (Aluminium antimonide),Adachi,"Adachi 1990: n,k 0.207–12.4 µm",main/AlSb/Adachi.yml,0.20664,12.398,Adachi
+main,AlSb,AlSb (Aluminium antimonide),Djurisic,"Djurišić et al. 2000: n,k 0.207–12.4 µm",main/AlSb/Djurisic.yml,0.20664,12.398,Djurisic
+main,GaSb,GaSb (Gallium antimonide),Aspnes,"Aspnes and Studna 1983: n,k 0.207–0.827 µm",main/GaSb/Aspnes.yml,0.2066,0.8266,Aspnes
+main,GaSb,GaSb (Gallium antimonide),Ferrini,"Ferrini et al. 1998: n,k 0.207–2.48 µm",other/semiconductor alloys/AlSb-GaSb/Ferrini-0.yml,0.207,2.48,Ferrini-0
+main,GaSb,GaSb (Gallium antimonide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/GaSb/Adachi.yml,0.20664,12.398,Adachi
+main,GaSb,GaSb (Gallium antimonide),Djurisic,"Djurišić et al. 2000: n,k 0.207–2.48 µm",main/GaSb/Djurisic.yml,0.20664,2.4797,Djurisic
+main,InSb,InSb (Indium antimonide),Aspnes,"Aspnes and Studna 1983: n,k 0.207–0.827 µm",main/InSb/Aspnes.yml,0.2066,0.8266,Aspnes
+main,InSb,InSb (Indium antimonide),Adachi,"Adachi 1989: n,k 0.207–12.4 µm",main/InSb/Adachi.yml,0.20664,12.398,Adachi
+main,InSb,InSb (Indium antimonide),Djurisic,"Djurišić et al. 2000: n,k 0.207–0.827 µm",main/InSb/Djurisic.yml,0.20664,1.2398,Djurisic
 main,Sc,Sc (Scandium),Larruquert,"Larruquert et al. 2004: n,k 0.00124–0.190 µm",main/Sc/Larruquert.yml,0.001239842,0.189781921,Larruquert
+main,Se,Se (Selenium),Campel-o,Campel and Johnson 1969: n(o) 1.06–10.6 µm,main/Se/Campel-o.yml,1.06,10.6,Campel-o
+main,Se,Se (Selenium),Campel-e,Campel and Johnson 1969: n(e) 1.06–10.6 µm,main/Se/Campel-e.yml,1.06,10.6,Campel-e
+main,Se,Se (Selenium),Ciesielski,"Ciesielski et al. 2018: 25-nm film; n,k 0.2–2 µm",main/Se/Ciesielski.yml,0.2,2.0,Ciesielski
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Kato-o,Kato et al. 2021: n(o) 0.81–18 µm,main/AgGaSe2/Kato-o.yml,0.81,18.0,Kato-o
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Kato-e,Kato et al. 2021: n(e) 0.81–18 µm,main/AgGaSe2/Kato-e.yml,0.81,18.0,Kato-e
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Harasaki-o,Harasaki and Kato 1997: n(o) 0.81–16 µm,main/AgGaSe2/Harasaki-o.yml,0.81,16.0,Harasaki-o
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Harasaki-e,Harasaki and Kato 1997: n(e) 0.81–16 µm,main/AgGaSe2/Harasaki-e.yml,0.81,16.0,Harasaki-e
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Boyd-o,Boyd et al. 1972: n(o) 0.725–13.5 µm,main/AgGaSe2/Boyd-o.yml,0.725,13.5,Boyd-o
 main,AgGaSe2,"AgGaSe<sub>2</sub> (Silver gallium selenide, AGSe)",Boyd-e,Boyd et al. 1972: n(e) 0.725–13.5 µm,main/AgGaSe2/Boyd-e.yml,0.725,13.5,Boyd-e
+main,As2Se3,As<sub>2</sub>Se<sub>3</sub> (Arsenic triselenide),Joseph-400nm,"Joseph et al. 2021: 400-nm film; n,k 0.246–1.69 µm",main/As2Se3/Joseph-400nm.yml,0.2458,1.688,Joseph-400nm
+main,As2Se3,As<sub>2</sub>Se<sub>3</sub> (Arsenic triselenide),Joseph-700nm,"Joseph et al. 2020: 700-nm film; n,k 0.246–1.69 µm",main/As2Se3/Joseph-700nm.yml,0.2458,1.688,Joseph-700nm
 main,BaGa2GeSe6,BaGa<sub>2</sub>GeSe<sub>6</sub> (BGGSe),Kato-o,Kato et al. 2018: n(o) 0.778–10.6 µm,main/BaGa2GeSe6/Kato-o.yml,0.778,10.6,Kato-o
 main,BaGa2GeSe6,BaGa<sub>2</sub>GeSe<sub>6</sub> (BGGSe),Kato-e,Kato et al. 2018: n(e) 0.778–10.6 µm,main/BaGa2GeSe6/Kato-e.yml,0.778,10.6,Kato-e
+main,Bi2Se3,Bi<sub>2</sub>Se<sub>3</sub> (Bismuth selenide),Fang-2L,"Fang et al. 2020: 2-layer (2L) film; n,k 0.193–1.69 µm",main/Bi2Se3/Fang-2L.yml,0.193,1.69,Fang-2L
+main,Bi2Se3,Bi<sub>2</sub>Se<sub>3</sub> (Bismuth selenide),Fang-4L,"Fang et al. 2020: 4-layer (4L) film; n,k 0.193–1.69 µm",main/Bi2Se3/Fang-4L.yml,0.193,1.69,Fang-4L
+main,Bi2Se3,Bi<sub>2</sub>Se<sub>3</sub> (Bismuth selenide),Fang-6L,"Fang et al. 2020: 6-layer (6L) film; n,k 0.193–1.69 µm",main/Bi2Se3/Fang-6L.yml,0.193,1.69,Fang-6L
+main,Bi2Se3,Bi<sub>2</sub>Se<sub>3</sub> (Bismuth selenide),Fang-8L,"Fang et al. 2020: 8-layer (8L) film; n,k 0.193–1.69 µm",main/Bi2Se3/Fang-8L.yml,0.193,1.69,Fang-8L
+main,Bi2Se3,Bi<sub>2</sub>Se<sub>3</sub> (Bismuth selenide),Fang-10L,"Fang et al. 2020: 10-layer (10L) film; n,k 0.193–1.69 µm",main/Bi2Se3/Fang-10L.yml,0.193,1.69,Fang-10L
+main,CdSe,CdSe (Cadmium selenide),Lisitsa-o,Lisitsa et al. 1969: n(o) 1.01–22.0 µm,main/CdSe/Lisitsa-o.yml,1.01,22.0,Lisitsa-o
+main,CdSe,CdSe (Cadmium selenide),Lisitsa-e,Lisitsa et al. 1969: n(e) 1.01–22.0 µm,main/CdSe/Lisitsa-e.yml,1.01,22.0,Lisitsa-e
+main,CdSe,CdSe (Cadmium selenide),Bond-o,Bond et al. 1965: n(o) 0.80–4.0 µm,main/CdSe/Bond-o.yml,0.8,4.0,Bond-o
+main,CdSe,CdSe (Cadmium selenide),Bond-e,Bond et al. 1965: n(e) 0.80–4.0 µm,main/CdSe/Bond-e.yml,0.8,4.0,Bond-e
+main,CdSe,CdSe (Cadmium selenide),Ninomiya-o,"Ninomiya and Adachi 1995: n,k(o) 0.234–1.03 µm",main/CdSe/Ninomiya-o.yml,0.23393,1.0332,Ninomiya-o
+main,CdSe,CdSe (Cadmium selenide),Ninomiya-e,"Ninomiya and Adachi 1995: n,k(e) 0.234–1.03 µm",main/CdSe/Ninomiya-e.yml,0.23393,1.0332,Ninomiya-e
+main,CdSe,CdSe (Cadmium selenide),Ninomiya-cubic,"Ninomiya and Adachi 1995: Cubic; n,k 0.207–0.827 µm",main/CdSe/Ninomiya-cubic.yml,0.20664,0.82656,Ninomiya-cubic
 main,GaSe,GaSe (Gallium selenide),Kato-o,Kato et al. 2013: n(o) 0.8–162 µm,main/GaSe/Kato-o.yml,0.8,1620.0,Kato-o
 main,GaSe,GaSe (Gallium selenide),Kato-e,Kato et al. 2013: n(e) 0.8–162 µm,main/GaSe/Kato-e.yml,0.8,1620.0,Kato-e
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Beal,"Beal and Huges 1979: n,k 0.044–1.16 µm",main/MoSe2/Beal.yml,0.04387,1.161,Beal
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Hsu-1L,"Hsu et al. 2019: monolayer (1L) film; n,k 0.40–0.86 µm",main/MoSe2/Hsu-1L.yml,0.39697,0.85698,Hsu-1L
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Hsu-2L,"Hsu et al. 2019: 2-layer (2L) film; n,k 0.40–0.86 µm",main/MoSe2/Hsu-2L.yml,0.39697,0.85697,Hsu-2L
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Hsu-3L,"Hsu et al. 2019: 3-layer (3L) film; n,k 0.40–0.86 µm",main/MoSe2/Hsu-3L.yml,0.39697,0.85697,Hsu-3L
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n(o),k 0.30–1.69 µm",main/MoSe2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,MoSe2,MoSe<sub>2</sub> (Molybdenum diselenide),Munkhbat-e,Munkhbat et al. 2022: multilayer flakes; n(e) 0.30–1.69 µm,main/MoSe2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,NbSe2,NbSe<sub>2</sub> (Niobium diselenide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n,k(o) 0.30–1.69 µm",main/NbSe2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,NbSe2,NbSe<sub>2</sub> (Niobium diselenide),Munkhbat-e,"Munkhbat et al. 2022: multilayer flakes; n,k(e) 0.30–1.69 µm",main/NbSe2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,PbSe,PbSe (Lead selenide),Zemel,Zemel et al. 1965: n 5–10 µm,main/PbSe/Zemel.yml,5.0,10.0,Zemel
+main,PbSe,PbSe (Lead selenide),Suzuki,"Suzuki et al. 1995: n,k 0.230–1.08 µm",main/PbSe/Suzuki.yml,0.2296,1.0781,Suzuki
 main,PdSe2,PdSe2 (Palladium diselenide),Ermolaev,"Ermolaev et al. 2022: 4.5 nm film; n,k 0.200–10.0 µm",main/PdSe2/Ermolaev.yml,0.2,10.0,Ermolaev
 main,PtSe2,PtSe<sub>2</sub> (Platinum diselenide),Ermolaev,"Ermolaev et al. 2021: thin film; n,k 0.245–3.30 µm",main/PtSe2/Ermolaev.yml,0.245,3.3,Ermolaev
 main,SnSe,SnSe (Tin selenide),Guo-α,"Guo et al. 2022: n,k(α) 0.193–1.69 µm",main/SnSe/Guo-alpha.yml,0.193,1.69,Guo-alpha
 main,SnSe,SnSe (Tin selenide),Guo-β,"Guo et al. 2022: n,k(β) 0.193–1.69 µm",main/SnSe/Guo-beta.yml,0.193,1.69,Guo-beta
 main,SnSe,SnSe (Tin selenide),Guo-γ,"Guo et al. 2022: n,k(γ) 0.193–1.69 µm",main/SnSe/Guo-gamma.yml,0.193,1.69,Guo-gamma
 main,SnSe2,SnSe<sub>2</sub> (Tin diselenide),Ermolaev,"Ermolaev et al. 2022: thin film; n 0.300–3.30 µm, k 0.300–1.68 µm",main/SnSe2/Ermolaev.yml,0.3,3.3,Ermolaev
+main,TaSe2,TaSe<sub>2</sub> (Tantalum diselenide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n,k(o) 0.30–1.69 µm",main/TaSe2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,TaSe2,TaSe<sub>2</sub> (Tantalum diselenide),Munkhbat-e,"Munkhbat et al. 2022: multilayer flakes; n,k(e) 0.30–1.69 µm",main/TaSe2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
 main,Tl3AsSe3,"Tl<sub>3</sub>AsSe<sub>3</sub> (Thallium arsenic selenide, TAS)",Ewbank-o,Ewbank et al. 1980: n(o) 2–12 µm,main/Tl3AsSe3/Ewbank-o.yml,2.0,12.0,Ewbank-o
 main,Tl3AsSe3,"Tl<sub>3</sub>AsSe<sub>3</sub> (Thallium arsenic selenide, TAS)",Ewbank-e,Ewbank et al. 1980: n(e) 2–12 µm,main/Tl3AsSe3/Ewbank-e.yml,2.0,12.0,Ewbank-e
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Jung,"Jung et al. 2019: monolayer (1L) film; n,k 0.38–0.89 µm",main/WSe2/Jung.yml,0.38135,0.89352,Jung
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Ermolaev,"Ermolaev et al. 2021: monolayer (1L) film; n,k 0.30–1.70 µm",main/WSe2/Ermolaev.yml,0.301,1.7,Ermolaev
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Gu-1L,"Gu et al. 2019: monolayer (1L) film; n,k 0.193–1.69 µm",main/WSe2/Gu-1L.yml,0.193,1.69,Gu-1L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Gu-2L,"Gu et al. 2019: 2-layer (2L) film; n,k 0.193–1.69 µm",main/WSe2/Gu-2L.yml,0.193,1.69,Gu-2L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Gu-3L,"Gu et al. 2019: 3-layer (3L) film; n,k 0.193–1.69 µm",main/WSe2/Gu-3L.yml,0.193,1.69,Gu-3L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Gu-4L,"Gu et al. 2019: 4-layer (4L) film; n,k 0.193–1.69 µm",main/WSe2/Gu-4L.yml,0.193,1.69,Gu-4L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Gu-5L,"Gu et al. 2019: 5-layer (5L) film; n,k 0.193–1.69 µm",main/WSe2/Gu-5L.yml,0.193,1.69,Gu-5L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Hsu-1L,"Hsu et al. 2019: monolayer (1L) film; n,k 0.40–0.85 µm",main/WSe2/Hsu-1L.yml,0.39697,0.85023,Hsu-1L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Hsu-2L,"Hsu et al. 2019: 2-layer (2L) film; n,k 0.40–0.85 µm",main/WSe2/Hsu-2L.yml,0.39697,0.85023,Hsu-2L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Hsu-3L,"Hsu et al. 2019: 3-layer (3L) film; n,k 0.40–0.85 µm",main/WSe2/Hsu-3L.yml,0.39697,0.85024,Hsu-3L
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n(o),k 0.30–1.69 µm",main/WSe2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,WSe2,WSe<sub>2</sub> (Tungsten diselenide),Munkhbat-e,Munkhbat et al. 2022: multilayer flakes; n(e) 0.30–1.69 µm,main/WSe2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
+main,ZnSe,ZnSe (Zinc selenide),Marple,Marple 1964: n 0.48–2.5 µm,main/ZnSe/Marple.yml,0.48,2.5,Marple
+main,ZnSe,ZnSe (Zinc selenide),Amotchkina,"Amotchkina et al, 2020: n 0.400–13.9 µm, k 0.4-0.888  µm",main/ZnSe/Amotchkina.yml,0.4,0.888,Amotchkina
+main,ZnSe,ZnSe (Zinc selenide),Querry,"Querry 1987: n,k 0.500–21.7 µm",main/ZnSe/Querry.yml,0.5,21.7391,Querry
+main,ZnSe,ZnSe (Zinc selenide),Connolly,Connolly et al. 1979: n 0.54–18.2 µm,main/ZnSe/Connolly.yml,0.54,18.2,Connolly
+main,ZnSe,ZnSe (Zinc selenide),Adachi,"Adachi and Taguchi 1991: n,k 0.234–0.827 µm",main/ZnSe/Adachi.yml,0.23393,0.82656,Adachi
+main,Si,Si (Silicon),Aspnes,"Aspnes and Studna 1983: n,k 0.21–0.83 µm",main/Si/Aspnes.yml,0.2066,0.8266,Aspnes
+main,Si,Si (Silicon),Shkondin,"Shkondin et al. 2017: n,k 2–20 µm",main/Si/Shkondin.yml,2.0,20.0,Shkondin
+main,Si,Si (Silicon),Schinke,"Schinke et al. 2015: n,k 0.25–1.45 µm",main/Si/Schinke.yml,0.25,1.45,Schinke
+main,Si,Si (Silicon),Green-2008,"Green 2008: n,k 0.25–1.45 µm",main/Si/Green-2008.yml,0.25,1.45,Green-2008
+main,Si,Si (Silicon),Chandler-Horowitz,"Chandler-Horowitz and Amirtharaj 2005: n 2.5–22.2 µm, k 6.25–23.3 µm",main/Si/Chandler-Horowitz.yml,6.25,22.222,Chandler-Horowitz
+main,Si,Si (Silicon),Sik-25C,"Šik et al. 1998: n,k 0.29–0.62 µm; 25 °C",main/Si/Sik-25C.yml,0.2883,0.6199,Sik-25C
+main,Si,Si (Silicon),Sik-250C,"Šik et al. 1998: n,k 0.29–0.62 µm; 250 °C",main/Si/Sik-250C.yml,0.2883,0.6199,Sik-250C
+main,Si,Si (Silicon),Sik-500C,"Šik et al. 1998: n,k 0.29–0.62 µm; 500 °C",main/Si/Sik-500C.yml,0.2883,0.6199,Sik-500C
+main,Si,Si (Silicon),Sik-700C,"Šik et al. 1998: n,k 0.29–0.62 µm; 700 °C",main/Si/Sik-700C.yml,0.2883,0.6199,Sik-700C
+main,Si,Si (Silicon),Sik-850C,"Šik et al. 1998: n,k 0.29–0.62 µm; 850 °C",main/Si/Sik-850C.yml,0.2883,0.6199,Sik-850C
+main,Si,Si (Silicon),Green-1995,"Green and Keevers 1995: n 0.25–1.45 µm, k 0.25–1.00 µm",main/Si/Green-1995.yml,0.25,1.0,Green-1995
+main,Si,Si (Silicon),Daub,Daub 1995: k 0.94–1.42 µm,main/Si/Daub.yml,0.941,1.421,Daub
+main,Si,Si (Silicon),Vuye-20C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 20 °C",main/Si/Vuye-20C.yml,0.2638,0.8266,Vuye-20C
+main,Si,Si (Silicon),Vuye-100C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 100 °C",main/Si/Vuye-100C.yml,0.2638,0.8266,Vuye-100C
+main,Si,Si (Silicon),Vuye-150C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 150 °C",main/Si/Vuye-150C.yml,0.2638,0.8266,Vuye-150C
+main,Si,Si (Silicon),Vuye-200C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 200 °C",main/Si/Vuye-200C.yml,0.2638,0.8266,Vuye-200C
+main,Si,Si (Silicon),Vuye-250C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 250 °C",main/Si/Vuye-250C.yml,0.2638,0.8266,Vuye-250C
+main,Si,Si (Silicon),Vuye-300C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 300 °C",main/Si/Vuye-300C.yml,0.2638,0.8266,Vuye-300C
+main,Si,Si (Silicon),Vuye-350C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 350 °C",main/Si/Vuye-350C.yml,0.2638,0.8266,Vuye-350C
+main,Si,Si (Silicon),Vuye-400C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 400 °C",main/Si/Vuye-400C.yml,0.2638,0.8266,Vuye-400C
+main,Si,Si (Silicon),Vuye-450C,"Vuye et al. 1993: n,k 0.26–0.83 µm; 450 °C",main/Si/Vuye-450C.yml,0.2638,0.8266,Vuye-450C
+main,Si,Si (Silicon),Jellison,"Jellison 1992: n,k 0.234–0.840 µm",main/Si/Jellison.yml,0.234,0.84,Jellison
+main,Si,Si (Silicon),Edwards,Edwards and Ochoa 1980: n 2.5–25 µm,main/Si/Edwards.yml,2.4373,25.0,Edwards
+main,Si,Si (Silicon),Li-100K,Li 1980: n 1.2–14 µm; 100 K,main/Si/Li-100K.yml,1.2,14.0,Li-100K
+main,Si,Si (Silicon),Li-150K,Li 1980: n 1.2–14 µm; 150 K,main/Si/Li-150K.yml,1.2,14.0,Li-150K
+main,Si,Si (Silicon),Li-200K,Li 1980: n 1.2–14 µm; 200 K,main/Si/Li-200K.yml,1.2,14.0,Li-200K
+main,Si,Si (Silicon),Li-250K,Li 1980: n 1.2–14 µm; 250 K,main/Si/Li-250K.yml,1.2,14.0,Li-250K
+main,Si,Si (Silicon),Li-293K,Li 1980: n 1.2–14 µm; 293 K,main/Si/Li-293K.yml,1.2,14.0,Li-293K
+main,Si,Si (Silicon),Li-350K,Li 1980: n 1.2–14 µm; 350 K,main/Si/Li-350K.yml,1.2,14.0,Li-350K
+main,Si,Si (Silicon),Li-400K,Li 1980: n 1.2–14 µm; 400 K,main/Si/Li-400K.yml,1.2,14.0,Li-400K
+main,Si,Si (Silicon),Li-450K,Li 1980: n 1.2–14 µm; 450 K,main/Si/Li-450K.yml,1.2,14.0,Li-450K
+main,Si,Si (Silicon),Li-500K,Li 1980: n 1.2–14 µm; 500 K,main/Si/Li-500K.yml,1.2,14.0,Li-500K
+main,Si,Si (Silicon),Li-550K,Li 1980: n 1.2–14 µm; 550 K,main/Si/Li-550K.yml,1.2,14.0,Li-550K
+main,Si,Si (Silicon),Li-600K,Li 1980: n 1.2–14 µm; 600 K,main/Si/Li-600K.yml,1.2,14.0,Li-600K
+main,Si,Si (Silicon),Li-650K,Li 1980: n 1.2–14 µm; 650 K,main/Si/Li-650K.yml,1.2,14.0,Li-650K
+main,Si,Si (Silicon),Li-700K,Li 1980: n 1.2–14 µm; 700 K,main/Si/Li-700K.yml,1.2,14.0,Li-700K
+main,Si,Si (Silicon),Li-750K,Li 1980: n 1.2–14 µm; 750 K,main/Si/Li-750K.yml,1.2,14.0,Li-750K
+main,Si,Si (Silicon),Salzberg,Salzberg and Villa 1957: n 1.36–11 µm,main/Si/Salzberg.yml,1.357,11.04,Salzberg
+main,Si,Si (Silicon),Pierce,"Pierce and Spicer 1972: α-Si; n,k 0.0103–2.07 µm",main/Si/Pierce.yml,0.1033,2.066,Pierce
 main,Bi12SiO20,"Bi<sub>12</sub>SiO<sub>20</sub> (Bismuth silicate, BSO)",Gospodinov,Gospodinov et al. 1988: n 0.48–0.70 µm,main/Bi12SiO20/Gospodinov.yml,0.48,0.7,Gospodinov
 main,Sn,Sn (Tin),Golovashkin-293K,"Golovashkin and Motulevich 1964: n,k 0.73–12 µm; 293 K",main/Sn/Golovashkin-293K.yml,0.73,12.0,Golovashkin-293K
 main,Sn,Sn (Tin),Golovashkin-78K,"Golovashkin and Motulevich 1964: n,k 0.73–12 µm; 78 K",main/Sn/Golovashkin-78K.yml,0.73,12.0,Golovashkin-78K
 main,Sn,Sn (Tin),Golovashkin-4.2K,"Golovashkin and Motulevich 1964: n,k 0.73–12 µm; 4.2 K",main/Sn/Golovashkin-4.2K.yml,0.93,12.0,Golovashkin-4.2K
 main,Sr,Sr (Strontium),Rodriguez-de_Marcos,"Rodríguez-de Marcos et al. 2012: n,k 0.00101–0.212 µm",main/Sr/Rodriguez-de Marcos.yml,0.001011751,0.212037407,Rodriguez-de Marcos
+main,Ta,Ta (Tantalum),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Ta/Werner.yml,0.017586,2.479684,Werner
+main,Ta,Ta (Tantalum),Ordal,"Ordal et al. 1988: n,k 0.667–125 µm",main/Ta/Ordal.yml,0.667,125.0,Ordal
+main,Ta,Ta (Tantalum),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Ta/Windt.yml,0.00236,0.12157,Windt
+main,Ta,Ta (Tantalum),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Ta/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,KTaO3,KTaO<sub>3</sub> (Potassium tantalate),Fujii,Fujii and Sakudo 1976: n 0.4–1.06 µm,main/KTaO3/Fujii.yml,0.4,1.06,Fujii
 main,LiTaO3,LiTaO<sub>3</sub> (Lithium tantalate),Bond-o,Bond et al. 1965: n(o) 0.45–4.0 µm,main/LiTaO3/Bond-o.yml,0.45,4.0,Bond-o
 main,LiTaO3,LiTaO<sub>3</sub> (Lithium tantalate),Bond-e,Bond et al. 1965: n(e) 0.45–4.0 µm,main/LiTaO3/Bond-e.yml,0.45,4.0,Bond-e
+main,Te,Te (Tellurium),Sherman-o,Sherman et al. 1970: n(o) 8.5–30.3 µm,main/Te/Sherman-o.yml,8.5,30.3,Sherman-o
+main,Te,Te (Tellurium),Sherman-e,Sherman et al. 1970: n(e) 8.5–30.3 µm,main/Te/Sherman-e.yml,8.5,30.3,Sherman-e
+main,Te,Te (Tellurium),Caldwell-o,Caldwell and Fan 1959: n(o) 4.0–14 µm,main/Te/Caldwell-o.yml,4.0,14.0,Caldwell-o
+main,Te,Te (Tellurium),Caldwell-e,Caldwell and Fan 1959: n(e) 4.0–14 µm,main/Te/Caldwell-e.yml,4.0,14.0,Caldwell-e
+main,Te,Te (Tellurium),Ciesielski,"Ciesielski et al. 2018: 30-nm film; n,k 0.2–2 µm",main/Te/Ciesielski.yml,0.2,2.0,Ciesielski
+main,Te,Te (Tellurium),Guo-o,"Guo et al. 2022: n,k(o) 0.400–0.900 µm",main/Te/Guo-o.yml,0.4,0.9,Guo-o
+main,Te,Te (Tellurium),Guo-e,"Guo et al. 2022: n,k(e) 0.400–0.900 µm",main/Te/Guo-e.yml,0.4,0.9,Guo-e
+main,CdTe,CdTe (Cadmium telluride),Marple,Marple 1964: n 0.86–2.5 µm,main/CdTe/Marple.yml,0.86,2.5,Marple
+main,CdTe,CdTe (Cadmium telluride),Treharne,"Treharne et al. 2011: n,k 0.3–1.5 µm",main/CdTe/Treharne.yml,0.30141754,1.4979382,Treharne
+main,CdTe,CdTe (Cadmium telluride),DeBell-300K,DeBell et al. 1979: n 6–22 µm; 300 K,main/CdTe/DeBell-300K.yml,6.0,22.0,DeBell-300K
+main,CdTe,CdTe (Cadmium telluride),DeBell-80K,DeBell et al. 1979: n 6–22 µm; 80 K,main/CdTe/DeBell-80K.yml,6.0,22.0,DeBell-80K
+main,CdTe,CdTe (Cadmium telluride),DeBell-20K,DeBell et al. 1979: n 6–22 µm; 20 K,main/CdTe/DeBell-20K.yml,6.0,22.0,DeBell-20K
+main,CdTe,CdTe (Cadmium telluride),Adachi,"Adachi et al. 1993: n,k 0.221–1.13 µm",main/CdTe/Adachi.yml,0.2214,1.1271,Adachi
+main,MoTe2,MoTe<sub>2</sub> (Molybdenum ditelluride),Beal,"Beal and Huges 1979: n,k 0.069–1.22 µm",main/MoTe2/Beal.yml,0.06911,1.216,Beal
+main,MoTe2,MoTe<sub>2</sub> (Molybdenum ditelluride),Munkhbat-o,"Munkhbat et al. 2022: multilayer flakes; n(o),k 0.30–1.69 µm",main/MoTe2/Munkhbat-o.yml,0.3,1.69,Munkhbat-o
+main,MoTe2,MoTe<sub>2</sub> (Molybdenum ditelluride),Munkhbat-e,Munkhbat et al. 2022: multilayer flakes; n(e) 0.30–1.69 µm,main/MoTe2/Munkhbat-e.yml,0.3,1.69,Munkhbat-e
 main,PbTe,PbTe (Lead telluride),Weiting-300K,Weiting and Yixun 1990: n 4.10–12.5 µm; 300 K,main/PbTe/Weiting-300K.yml,4.099,12.51,Weiting-300K
 main,PbTe,PbTe (Lead telluride),Weiting-130K,Weiting and Yixun 1990: n 5.19–12.5 µm; 130 K,main/PbTe/Weiting-130K.yml,5.189,12.51,Weiting-130K
 main,PbTe,PbTe (Lead telluride),Weiting-80K,Weiting and Yixun 1990: n 5.19–12.5 µm; 80 K,main/PbTe/Weiting-80K.yml,5.189,12.51,Weiting-80K
+main,WTe2,WTe<sub>2</sub> (Tungsten ditelluride),Munkhbat-α,"Munkhbat et al. 2022: multilayer flakes; n(α),k(α) 0.30–1.69 µm",main/WTe2/Munkhbat-alpha.yml,0.3,1.69,Munkhbat-alpha
+main,WTe2,WTe<sub>2</sub> (Tungsten ditelluride),Munkhbat-β,"Munkhbat et al. 2022: multilayer flakes; n(β),k(β) 0.30–1.69 µm",main/WTe2/Munkhbat-beta.yml,0.3,1.69,Munkhbat-beta
+main,WTe2,WTe<sub>2</sub> (Tungsten ditelluride),Munkhbat-γ,Munkhbat et al. 2022: multilayer flakes; n(γ) 0.30–1.69 µm,main/WTe2/Munkhbat-gamma.yml,0.3,1.69,Munkhbat-gamma
+main,ZnTe,ZnTe (Zinc telluride),Marple,Marple 1964: n 0.58–2.5 µm,main/ZnTe/Marple.yml,0.58,2.5,Marple
+main,ZnTe,ZnTe (Zinc telluride),Li,Li 1984: n 0.55–30 µm;,main/ZnTe/Li.yml,0.55,30.0,Li
+main,ZnTe,ZnTe (Zinc telluride),Sato,"Sato and Adachi 1993: n,k 0.221–0.827 µm",main/ZnTe/Sato.yml,0.2214,0.82656,Sato
 main,ZrTe5,ZrTe5 (Zirconium pentatelluride),Guo-α,"Guo et al. 2021: n,k(α) 0.193–1.30 µm",main/ZrTe5/Guo-alpha.yml,0.193,1.3,Guo-alpha
 main,ZrTe5,ZrTe5 (Zirconium pentatelluride),Guo-β,"Guo et al. 2021: n,k(β) 0.193–1.30 µm",main/ZrTe5/Guo-beta.yml,0.193,1.3,Guo-beta
 main,ZrTe5,ZrTe5 (Zirconium pentatelluride),Guo-γ,"Guo et al. 2021: n,k(γ) 0.193–1.30 µm",main/ZrTe5/Guo-gamma.yml,0.193,1.3,Guo-gamma
+main,Ti,Ti (Titanium),Johnson,"Johnson and Christy 1974: n,k 0.188–1.94 µm",main/Ti/Johnson.yml,0.188,1.937,Johnson
+main,Ti,Ti (Titanium),Palm,"Palm et al. 2018: n,k 0.226–1.68 µm",main/Ti/Palm.yml,0.226076263,1.684528687,Palm
+main,Ti,Ti (Titanium),Werner,"Werner et al. 2009: n,k 0.01759–2.480 µm",main/Ti/Werner.yml,0.017586,2.479684,Werner
+main,Ti,Ti (Titanium),Ordal,"Ordal et al. 1988: n,k 0.667–200 µm",main/Ti/Ordal.yml,0.667,200.0,Ordal
+main,Ti,Ti (Titanium),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Ti/Windt.yml,0.00236,0.12157,Windt
+main,Ti,Ti (Titanium),Mash,"Mash and Motulevich 1973: n,k 0.4–10 µm",main/Ti/Mash.yml,0.4,10.0,Mash
+main,Ti,Ti (Titanium),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–31.0 µm",main/Ti/Rakic-BB.yml,0.24797,30.996,Rakic-BB
+main,Ti,Ti (Titanium),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–31.0 µm",main/Ti/Rakic-LD.yml,0.24797,30.996,Rakic-LD
+main,Ti,Ti (Titanium),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Ti/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,BaTiO3,BaTiO<sub>3</sub> (Barium titanate),Wemple-o,Wemple et al. 1968: n(o) 0.4–0.7 µm,main/BaTiO3/Wemple-o.yml,0.4,0.7,Wemple-o
 main,BaTiO3,BaTiO<sub>3</sub> (Barium titanate),Wemple-e,Wemple et al. 1968: n(e) 0.4–0.7 µm,main/BaTiO3/Wemple-e.yml,0.4,0.7,Wemple-e
 main,Bi4Ti3O12,"Bi<sub>4</sub>Ti<sub>3</sub>O<sub>12</sub> (Bismuth titanate, BTO)",Simon-a,Simon et al. 1997: n(a); 0.45–0.70 µm,main/Bi4Ti3O12/Simon-a.yml,0.45,0.7,Simon-a
@@ -360,6 +891,10 @@ main,PbTiO3,PbTiO<sub>3</sub> (Lead titanate),Singh-e,Singh et al. 1972: n(e) 0.
 main,SrTiO3,"SrTiO<sub>3</sub> (Strontium titanate, STO)",Dodge,Dodge 1986: n 0.43–3.8 µm,main/SrTiO3/Dodge.yml,0.43,3.8,Dodge
 main,SrTiO3,"SrTiO<sub>3</sub> (Strontium titanate, STO)",Bond,Bond 1965: n 0.45–3.8 µm,main/SrTiO3/Bond.yml,0.45,3.8,Bond
 main,Tm,Tm (Thulium),Vidal-Dasilva,"Vidal-Dasilva et al. 2009: n,k 0.000775–0.480 µm",main/Tm/Vidal-Dasilva.yml,0.00077478,0.480311785,Vidal-Dasilva
+main,V,V (Vanadium),Johnson,"Johnson and Christy 1974: n,k 0.188–1.937 µm",main/V/Johnson.yml,0.188,1.937,Johnson
+main,V,V (Vanadium),Palm,"Palm et al. 2018: n,k 0.301–1.68 µm",main/V/Palm.yml,0.301107483,1.684528687,Palm
+main,V,V (Vanadium),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/V/Werner.yml,0.017586,2.479684,Werner
+main,V,V (Vanadium),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/V/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Birnbaum-o,Birnbaum and DeShazer 1976: n(o) 0.488–3.39 µm,main/YVO4/Birnbaum-o.yml,0.488,3.39,Birnbaum-o
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Birnbaum-e,Birnbaum and DeShazer 1976: n(e) 0.488–3.39 µm,main/YVO4/Birnbaum-e.yml,0.488,3.39,Birnbaum-e
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Shi-o-20C,Shi et al. 2001: n(o) 0.48–1.34 µm; 20 °C,main/YVO4/Shi-o-20C.yml,0.48,1.34,Shi-o-20C
@@ -372,15 +907,54 @@ main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Shi-o-110C,Shi et al. 2001: n(
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Shi-e-110C,Shi et al. 2001: n(e) 0.48–1.34 µm; 110 °C,main/YVO4/Shi-e-110C.yml,0.48,1.34,Shi-e-110C
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Shi-o-140C,Shi et al. 2001: n(o) 0.48–1.34 µm; 140 °C,main/YVO4/Shi-o-140C.yml,0.48,1.34,Shi-o-140C
 main,YVO4,YVO<sub>4</sub> (Yttrium orthovanadate),Shi-e-140C,Shi et al. 2001: n(e) 0.48–1.34 µm; 140 °C,main/YVO4/Shi-e-140C.yml,0.48,1.34,Shi-e-140C
+main,W,W (Tungsten),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/W/Werner.yml,0.017586,2.479684,Werner
+main,W,W (Tungsten),Ordal,"Ordal et al. 1988: n,k 0.667–200 µm",main/W/Ordal.yml,0.667,200.0,Ordal
+main,W,W (Tungsten),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/W/Windt.yml,0.00236,0.12157,Windt
+main,W,W (Tungsten),Weaver,"Weaver et al. 1975: n,k 0.0443–4.11 µm",main/W/Weaver.yml,0.04429,4.11,Weaver
+main,W,W (Tungsten),Rakic-BB,"Rakić et al. 1998: Brendel-Bormann model; n,k 0.248–12.4 µm",main/W/Rakic-BB.yml,0.24797,12.398,Rakic-BB
+main,W,W (Tungsten),Rakic-LD,"Rakić et al. 1998: Lorentz-Drude model; n,k 0.248–12.4 µm",main/W/Rakic-LD.yml,0.24797,12.398,Rakic-LD
+main,W,W (Tungsten),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/W/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,CaWO4,CaWO<sub>4</sub> (Calcium tungstate),Bond-o,Bond 1965: n(o) 0.45–4.0 µm,main/CaWO4/Bond-o.yml,0.45,4.0,Bond-o
 main,CaWO4,CaWO<sub>4</sub> (Calcium tungstate),Bond-e,Bond 1965: n(e) 0.45–4.0 µm,main/CaWO4/Bond-e.yml,0.45,4.0,Bond-e
 main,ZnWO4,ZnWO<sub>4</sub> (Zinc tungstate),Bond-α,Bond et al. 1965: n(α) 0.42–4.0 µm,main/ZnWO4/Bond-alpha.yml,0.42,4.0,Bond-alpha
 main,ZnWO4,ZnWO<sub>4</sub> (Zinc tungstate),Bond-β,Bond et al. 1965: n(β) 0.42–3.6 µm,main/ZnWO4/Bond-beta.yml,0.42,3.6,Bond-beta
 main,ZnWO4,ZnWO<sub>4</sub> (Zinc tungstate),Bond-γ,Bond et al. 1965: n(γ) 0.42–3.6 µm,main/ZnWO4/Bond-gamma.yml,0.42,3.6,Bond-gamma
+main,Xe,Xe (Xenon),Bideau-Mehu,Bideau-Mehu et al. 1981: n 0.140–0.623 µm,main/Xe/Bideau-Mehu.yml,0.1404,0.6234,Bideau-Mehu
+main,Xe,Xe (Xenon),Borzsonyi,Börzsönyi et al. 2008: n 0.4–1.0 µm,main/Xe/Borzsonyi.yml,0.4,1.0,Borzsonyi
+main,Xe,Xe (Xenon),Koch,Koch 1949: n 0.230–0.623 µm,main/Xe/Koch.yml,0.230209,0.623437,Koch
+main,Xe,Xe (Xenon),Cuthbertson,Cuthbertson and Cuthbertson 1910: n 0.480–0.671 µm,main/Xe/Cuthbertson.yml,0.48,0.6708,Cuthbertson
+main,Xe,Xe (Xenon),Sinnock-liquid-178K,Sinnock and Smith 1969: Liquid at 178 K; n 0.361–0.644 µm,main/Xe/Sinnock-liquid-178K.yml,0.3612,0.6439,Sinnock-liquid-178K
+main,Xe,Xe (Xenon),Sinnock-liquid-174K,Sinnock and Smith 1969: Liquid at 174 K; n 0.361–0.644 µm,main/Xe/Sinnock-liquid-174K.yml,0.3612,0.6439,Sinnock-liquid-174K
+main,Xe,Xe (Xenon),Sinnock-liquid-170K,Sinnock and Smith 1969: Liquid at 170 K; n 0.361–0.644 µm,main/Xe/Sinnock-liquid-170K.yml,0.3612,0.6439,Sinnock-liquid-170K
+main,Xe,Xe (Xenon),Sinnock-liquid-166K,Sinnock and Smith 1969: Liquid at 166 K; n 0.361–0.644 µm,main/Xe/Sinnock-liquid-166K.yml,0.3612,0.6439,Sinnock-liquid-166K
+main,Xe,Xe (Xenon),Sinnock-liquid-161.35K,Sinnock and Smith 1969: Liquid at 161.35 K; n 0.361–0.644 µm,main/Xe/Sinnock-liquid-161.35K.yml,0.3612,0.6439,Sinnock-liquid-161.35K
+main,Xe,Xe (Xenon),Grace-liquid-178K,Grace et al. 2017: Liquid at 178 K; n 0.157–0.660 µm,main/Xe/Grace-liquid-178K.yml,0.157,0.66,Grace-liquid-178K
+main,Xe,Xe (Xenon),Grace-liquid-161.35K,Grace et al. 2017: Liquid at 161.35 K; n 0.157–0.660 µm,main/Xe/Grace-liquid-161.35K.yml,0.157,0.66,Grace-liquid-161.35K
+main,Xe,Xe (Xenon),Sinnock-solid-161.35K,Sinnock and Smith 1969: Solid at 161.35 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-161.35K.yml,0.3612,0.6439,Sinnock-solid-161.35K
+main,Xe,Xe (Xenon),Sinnock-solid-150K,Sinnock and Smith 1969: Solid at 150 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-150K.yml,0.3612,0.6439,Sinnock-solid-150K
+main,Xe,Xe (Xenon),Sinnock-solid-140K,Sinnock and Smith 1969: Solid at 140 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-140K.yml,0.3612,0.6439,Sinnock-solid-140K
+main,Xe,Xe (Xenon),Sinnock-solid-130K,Sinnock and Smith 1969: Solid at 130 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-130K.yml,0.3612,0.6439,Sinnock-solid-130K
+main,Xe,Xe (Xenon),Sinnock-solid-120K,Sinnock and Smith 1969: Solid at 120 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-120K.yml,0.3612,0.6439,Sinnock-solid-120K
+main,Xe,Xe (Xenon),Sinnock-solid-110K,Sinnock and Smith 1969: Solid at 110 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-110K.yml,0.3612,0.6439,Sinnock-solid-110K
+main,Xe,Xe (Xenon),Sinnock-solid-100K,Sinnock and Smith 1969: Solid at 100 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-100K.yml,0.3612,0.6439,Sinnock-solid-100K
+main,Xe,Xe (Xenon),Sinnock-solid-90K,Sinnock and Smith 1969: Solid at 90 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-90K.yml,0.3612,0.6439,Sinnock-solid-90K
+main,Xe,Xe (Xenon),Sinnock-solid-80K,Sinnock and Smith 1969: Solid at 80 K; n 0.361–0.644 µm,main/Xe/Sinnock-solid-80K.yml,0.3612,0.6439,Sinnock-solid-80K
+main,Xe,Xe (Xenon),Grace-solid-161.35K,Grace et al. 2017: Solid at 161.35 K; n 0.157–0.660 µm,main/Xe/Grace-solid-161.35K.yml,0.157,0.66,Grace-solid-161.35K
+main,Xe,Xe (Xenon),Grace-solid-80K,Grace et al. 2017: Solid at 80 K; n 0.157–0.660 µm,main/Xe/Grace-solid-80K.yml,0.157,0.66,Grace-solid-80K
 main,Yb,Yb (Ytterbium),Larruquert,"Larruquert et al. 2003: n,k 0.000730–0.207 µm",main/Yb/Larruquert.yml,0.000730178,0.206606976,Larruquert
+main,Zn,Zn (Zinc),Werner,"Werner et al. 2009: n,k 0.0176–2.48 µm",main/Zn/Werner.yml,0.017586,2.479684,Werner
+main,Zn,Zn (Zinc),Querry,"Querry 1987: n,k 0.360–55.6 µm",main/Zn/Querry.yml,0.36,55.5556,Querry
+main,Zn,Zn (Zinc),Motulevich,"Motulevich and Shubin 1969: n,k 1.3–10 µm",main/Zn/Motulevich.yml,1.23,10.0,Motulevich
+main,Zn,Zn (Zinc),Werner-DFT,"Werner et al. 2009: DFT calculations; n,k 0.0176–2.48 µm",main/Zn/Werner-DFT.yml,0.017586,2.479684,Werner-DFT
 main,Zr,Zr (Zirconium),Windt,"Windt et al. 1988: n,k 0.0024–0.122 µm",main/Zr/Windt.yml,0.00236,0.12157,Windt
 main,Zr,Zr (Zirconium),Palm,"Palm et al. 2018: n,k 0.226–1.68 µm",main/Zr/Palm.yml,0.226076263,1.684528687,Palm
 main,Zr,Zr (Zirconium),Querry,"Querry 1987: n,k 0.220–55.6 µm",main/Zr/Querry.yml,0.22,55.5556,Querry
+organic,methane,CH<sub>4</sub> (Methane),Rollefson,Rollefson and Havens 1940: Gas at 0 °C; n 1.68–14.8 µm,organic/CH4 - methane/Rollefson.yml,1.68,14.8,Rollefson
+organic,methane,CH<sub>4</sub> (Methane),Loria,Loria 1909: Gas at 0 °C; n 0.529–0.659 µm,organic/CH4 - methane/Loria.yml,0.529,0.6585,Loria
+organic,methane,CH<sub>4</sub> (Methane),Martonchik-liquid-111K,"Martonchik and Orton 1994: Liquid at 111 K; n,k 0.002–71.4 µm",organic/CH4 - methane/Martonchik-liquid-111K.yml,0.002,71.43,Martonchik-liquid-111K
+organic,methane,CH<sub>4</sub> (Methane),Martonchik-liquid-90K,"Martonchik and Orton 1994: Liquid at 90 K; n,k 0.002–71.4 µm",organic/CH4 - methane/Martonchik-liquid-90K.yml,0.002,71.43,Martonchik-liquid-90K
+organic,methane,CH<sub>4</sub> (Methane),Martonchik-solid-90K,"Martonchik and Orton 1994: Solid at 90 K; n,k 0.002–100 µm",organic/CH4 - methane/Martonchik-solid-90K.yml,0.002,100.0,Martonchik-solid-90K
+organic,methane,CH<sub>4</sub> (Methane),Martonchik-solid-30K,"Martonchik and Orton 1994: Solid at 30 K; n,k 0.002–100 µm",organic/CH4 - methane/Martonchik-solid-30K.yml,0.002,100.0,Martonchik-solid-30K
 organic,ethane,C<sub>2</sub>H<sub>6</sub> (Ethane),Loria,Loria 1909: Gas at 0 °C; n 0.523–0.668 µm,organic/C2H6 - ethane/Loria.yml,0.523,0.6677,Loria
 organic,pentane,C<sub>5</sub>H<sub>12</sub> (Pentane),Kerl-293K,Kerl and Varchmin 1995: n-Pentane; 293 K; n 0.326–0.644 µm,organic/C5H12 - pentane/Kerl-293K.yml,0.326,0.644,Kerl-293K
 organic,pentane,C<sub>5</sub>H<sub>12</sub> (Pentane),Kerl-313K,Kerl and Varchmin 1995: n-Pentane; 313 K; n 0.326–0.644 µm,organic/C5H12 - pentane/Kerl-313K.yml,0.326,0.644,Kerl-313K
@@ -579,6 +1153,18 @@ glass,SCHOTT-multipurpose,SCHOTT - multiple purpose,D263TECO,D 263® T eco Thin 
 glass,SCHOTT-multipurpose,SCHOTT - multiple purpose,BOROFLOAT33,BOROFLOAT® 33,glass/schott/misc/BOROFLOAT33.yml,0.36501,1.55,BOROFLOAT33
 glass,SCHOTT-multipurpose,SCHOTT - multiple purpose,LITHOSIL-Q,LITHOSIL-Q (obsolete),glass/schott/LITHOSIL-Q.yml,0.25,2.325,LITHOSIL-Q
 glass,SCHOTT-multipurpose,SCHOTT - multiple purpose,LITHOTEC-CAF2,LITHOTEC-CAF2 (obsolete),glass/schott/LITHOTEC-CAF2.yml,0.25,2.5,LITHOTEC-CAF2
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NIFS-A,NIFS-A,glass/hikari/SiO2/NIFS-A.yml,0.18489,2.32542,NIFS-A
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NIFS-S,NIFS-S,glass/hikari/SiO2/NIFS-S.yml,0.193,2.32542,NIFS-S
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NIFS-U,NIFS-U,glass/hikari/SiO2/NIFS-U.yml,0.193,2.32542,NIFS-U
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NIFS-V,NIFS-V,glass/hikari/SiO2/NIFS-V.yml,0.18489,2.32542,NIFS-V
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NICF-A,NICF-A,glass/hikari/CaF/NICF-A.yml,0.18489,2.32542,NICF-A
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NICF-U,NICF-U,glass/hikari/CaF/NICF-U.yml,0.18489,2.32542,NICF-U
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,NICF-V,NICF-V,glass/hikari/CaF/NICF-V.yml,0.18489,2.32542,NICF-V
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,4786,4786,glass/hikari/i-line/4786.yml,0.32611,2.32542,4786
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,5165,5165,glass/hikari/i-line/5165.yml,0.32611,2.32542,5165
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,5742,5742,glass/hikari/i-line/5742.yml,0.32611,2.32542,5742
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,5859,5859,glass/hikari/i-line/5859.yml,0.32611,2.32542,5859
+glass,HIKARI-multipurpose,HIKARI - multiple purpose,7054,7054,glass/hikari/i-line/7054.yml,0.32611,2.32542,7054
 glass,NSG-multipurpose,NSG - multiple purpose,Pilkington-Optiwhite,Pilkington Optiwhite™ (Low iron glass),glass/nsg/Pilkington-Optiwhite.yml,0.30141754,1.4979382,Pilkington-Optiwhite
 glass,CORNING-display,CORNING - display,EagleXG,EAGLE XG®,glass/corning/EagleXG.yml,0.4358,0.6438,EagleXG
 glass,BARBERINI-crown,BARBERINI - Normal Crown,D0290,D0290: HC-Weiss 0290,glass/barberini/D0290.yml,0.43583,0.65627,D0290
@@ -2341,6 +2927,25 @@ other,V-Ga,V-Ga (Vanadium-gallium alloy),Golovashkin-293K,"Golovashkin et al. 19
 other,V-Ga,V-Ga (Vanadium-gallium alloy),Golovashkin-78K,"Golovashkin et al. 1970: n,k 0.45–2.6 µm; 78 K",other/alloys/V-Ga/Golovashkin-78K.yml,0.45,2.6,Golovashkin-78K
 other,V-H,"V-H (Vanadium-hydrogen alloy, Vanadium hydride)",Palm,"Palm et al. 2018: n,k 0.301–1.68 µm",other/alloys/V-H/Palm.yml,0.301107483,1.684528687,Palm
 other,Zr-H,"Zr-H (Zirconium-hydrogen alloy, Zirconium hydride)",Palm,"Palm et al. 2018: n,k 0.226–1.68 µm",other/alloys/Zr-H/Palm.yml,0.226076263,1.684528687,Palm
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-0,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 0% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-0.yml,0.2066,0.8266,Aspnes-0
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-9.9,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 9.9% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-9.9.yml,0.2066,0.8266,Aspnes-9.9
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-19.8,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 19.8% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-19.8.yml,0.2066,0.8266,Aspnes-19.8
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-31.5,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 31.5% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-31.5.yml,0.2066,0.8266,Aspnes-31.5
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-41.9,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 41.9% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-41.9.yml,0.2066,0.8266,Aspnes-41.9
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-49.1,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 49.1% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-49.1.yml,0.2066,0.8266,Aspnes-49.1
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-59.0,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 59.0% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-59.0.yml,0.2066,0.8266,Aspnes-59.0
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-70.0,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 70.0% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-70.0.yml,0.2066,0.8266,Aspnes-70.0
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Aspnes-80.4,"Aspnes et al. 1986: n,k 0.207–0.827 µm; 80.4% Al",other/semiconductor alloys/AlAs-GaAs/Aspnes-80.4.yml,0.2066,0.8266,Aspnes-80.4
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Perner-0,Perner et al. 2023: n 2.0–7.1 µm; 0% Al,other/semiconductor alloys/AlAs-GaAs/Perner-0.yml,2.0,7.1,Perner-0
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Perner-92.9,Perner et al. 2023: n 2.0–7.1 µm; 92.9% Al,other/semiconductor alloys/AlAs-GaAs/Perner-92.9.yml,2.0,7.1,Perner-92.9
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-0,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 0% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-0.yml,0.26049,1.87868,Papatryfonos-0
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-9.7,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 9.7% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-9.7.yml,0.26049,1.87868,Papatryfonos-9.7
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-21.9,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 21.9% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-21.9.yml,0.26049,1.87868,Papatryfonos-21.9
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-34.2,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 34.2% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-34.2.yml,0.26049,1.87868,Papatryfonos-34.2
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-41.1,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 41.1% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-41.1.yml,0.26049,1.87868,Papatryfonos-41.1
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Papatryfonos-45.2,"Papatryfonos et al. 2021: n,k 0.260–1.88 µm; 45.2% Al",other/semiconductor alloys/AlAs-GaAs/Papatryfonos-45.2.yml,0.26049,1.87868,Papatryfonos-45.2
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Adachi-0.315,"Adachi 1989: n,k 0.207–12.4 µm; 31.5% Al",other/semiconductor alloys/AlAs-GaAs/Adachi-0.315.yml,0.20664,12.398,Adachi-0.315
+other,AlAs-GaAs,"AlAs-GaAs (Aluminium gallium arsenide, AlGaAs)",Adachi-0.700,"Adachi 1989: n,k 0.207–12.4 µm; 70.0% Al",other/semiconductor alloys/AlAs-GaAs/Adachi-0.700.yml,0.20664,12.398,Adachi-0.700
 other,AlSb-GaSb,"AlSb-GaSb (Aluminium gallium antimonide, AlGaSb)",Ferrini-0,"Ferrini et al. 1998: n,k 0.207–2.480 µm; 0% Al",other/semiconductor alloys/AlSb-GaSb/Ferrini-0.yml,0.207,2.48,Ferrini-0
 other,AlSb-GaSb,"AlSb-GaSb (Aluminium gallium antimonide, AlGaSb)",Ferrini-10,"Ferrini et al. 1998: n,k 0.207–2.480 µm; 10% Al",other/semiconductor alloys/AlSb-GaSb/Ferrini-10.yml,0.207,2.48,Ferrini-10
 other,AlSb-GaSb,"AlSb-GaSb (Aluminium gallium antimonide, AlGaSb)",Ferrini-30,"Ferrini et al. 1998: n,k 0.207–2.480 µm; 30% Al",other/semiconductor alloys/AlSb-GaSb/Ferrini-30.yml,0.207,2.48,Ferrini-30
@@ -2361,6 +2966,9 @@ other,Si-Ge,"Si-Ge (Silicon-germanium, SiGe)",Jellison-47,"Jellison et al. 1993:
 other,Si-Ge,"Si-Ge (Silicon-germanium, SiGe)",Jellison-65,"Jellison et al. 1993: 65% Si, Si substrate; n,k 0.24–0.84 µm",other/semiconductor alloys/Si-Ge/Jellison-65.yml,0.24,0.84,Jellison-65
 other,Si-Ge,"Si-Ge (Silicon-germanium, SiGe)",Jellison-85,"Jellison et al. 1993: 85% Si, Si substrate; n,k 0.24–0.84 µm",other/semiconductor alloys/Si-Ge/Jellison-85.yml,0.24,0.84,Jellison-85
 other,Si-Ge,"Si-Ge (Silicon-germanium, SiGe)",Jellison-98,"Jellison et al. 1993: 98% Si, Si substrate; n,k 0.24–0.84 µm",other/semiconductor alloys/Si-Ge/Jellison-98.yml,0.24,0.84,Jellison-98
+other,AuAl2,"AuAl<sub>2</sub> (Gold-aluminium intermetallic, Purple plague)",Chen,"Chen and Lynch 1988: n,k 0.22–0.79 µm",other/intermetallics/AuAl2/Chen.yml,0.22,0.79,Chen
+other,AuAl2,"AuAl<sub>2</sub> (Gold-aluminium intermetallic, Purple plague)",Supansomboon,"Supansomboon et al. 2008: n,k 0.300–1.32 µm",other/intermetallics/AuAl2/Supansomboon.yml,0.3,1.32,Supansomboon
+other,PtAl2,PtAl<sub>2</sub> (Platinum-aluminium intermetallic),Chen,"Chen and Lynch 1988: n,k 0.22–0.79 µm",other/intermetallics/PtAl2/Chen.yml,0.22,0.79,Chen
 other,AgGaS2-AgInS2,AgGaS<sub>2</sub>-AgInS<sub>2</sub>,Kato-o,Kato et al. 2021: n(o) 0.565–10.6 µm,other/mixed crystals/AgGaS2-AgInS2/Kato-o.yml,0.565,10.6,Kato-o
 other,AgGaS2-AgInS2,AgGaS<sub>2</sub>-AgInS<sub>2</sub>,Kato-e,Kato et al. 2021: n(e) 0.565–10.6 µm,other/mixed crystals/AgGaS2-AgInS2/Kato-e.yml,0.565,10.6,Kato-e
 other,HfO2-Y2O3,HfO<sub>2</sub>-Y<sub>2</sub>O<sub>3</sub> (Hafnium dioxide - Yttrium oxide),Wood,Wood et al. 1990: n 0.36–5.0 µm,other/mixed crystals/HfO2-Y2O3/Wood.yml,0.365,5.0,Wood

@@ -28,7 +28,8 @@ class ZernikeOPD(ZernikeFit, OPD):
         num_terms (int, optional): The number of Zernike terms used in the
             calculation. Default is 37.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray" and "centroid_sphere". Defaults to "chief_ray".
+            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
@@ -64,5 +65,10 @@ class ZernikeOPD(ZernikeFit, OPD):
 
         data = self.get_data(self.fields[0], self.wavelengths[0])
         z = data.opd
+
+        mask = data.intensity > 0
+        x = x[mask]
+        y = y[mask]
+        z = z[mask]
 
         ZernikeFit.__init__(self, x, y, z, zernike_type, num_terms)

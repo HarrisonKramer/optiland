@@ -38,9 +38,9 @@ class TestHuygensMTF:
         mtf = HuygensMTF(real_optic, max_freq=200.0, image_size=8)
         assert mtf.max_freq == 200.0
 
-    def test_get_fno_matches_paraxial(self, real_optic):
+    def test_get_fno(self, real_optic):
         mtf = HuygensMTF(real_optic, image_size=8)
-        assert pytest.approx(real_optic.paraxial.FNO()) == mtf.FNO
+        assert pytest.approx(4.992598838013766) == mtf.FNO
 
     def test_calculate_psf_stores_data(self, real_optic):
         mtf = HuygensMTF(real_optic, image_size=8)

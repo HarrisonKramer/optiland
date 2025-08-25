@@ -91,24 +91,24 @@ class ParaxialRayTracer:
         z = self._process_input(z)
 
         R = self.optic.surface_group.radii
-        n_indices = self.optic.n(wavelength)
+        n = self.optic.n(wavelength)
         pos = be.ravel(self.optic.surface_group.positions)
         surfs = self.optic.surface_group.surfaces
 
         if reverse:
             R = -be.flip(R)
-            n_indices = be.roll(n_indices, shift=1)
-            n_indices = be.flip(n_indices)
+            n = be.roll(n, shift=1)
+            n = be.flip(n)
             pos = pos[-1] - be.flip(pos)
             surfs = surfs[::-1]
 
-        power = be.diff(n_indices, prepend=be.array([n_indices[0]])) / R
+        power = be.diff(n, prepend=be.array([n[0]])) / R
 
         heights = []
         slopes = []
 
-        for k_idx, surf_k in enumerate(surfs):
-            if k_idx < skip:  # Skip surfaces if requested
+        for k, surf_k in enumerate(surfs):
+            if k < skip:  # Skip surfaces if requested
                 continue
 
             if isinstance(surf_k, ObjectSurface):
@@ -117,22 +117,28 @@ class ParaxialRayTracer:
                 continue
 
             # Propagate to surface k
-            t = pos[k_idx] - z  # Thickness to propagate
-            z = pos[k_idx]  # Update z to current surface's global position
+            t = pos[k] - z  # Thickness to propagate
+            z = pos[k]  # Update z to current surface's global position
             y = y + t * u  # Ray height at surface k
 
-            # Refract or Reflect at surface k
-            if surf_k.is_reflective:
-                u = -u - 2 * y / R[k_idx]
+            # reflect or refract
+            if surfs[k].is_reflective:
+                if surfs[k].surface_type == "paraxial":
+                    f = surfs[k].f
+                    u = -u - y / f
+                else:
+                    u = -u - 2 * y / R[k]
             else:
-                u = (1 / n_indices[k_idx]) * (
-                    n_indices[k_idx - 1] * u - y * power[k_idx]
-                )
+                if surfs[k].surface_type == "paraxial":
+                    f = surfs[k].f
+                    u = u - y / f
+                else:
+                    u = 1 / n[k] * (n[k - 1] * u - y * power[k])
 
             heights.append(be.copy(y))
             slopes.append(be.copy(u))
 
-            if k_idx >= len(R) - 1 + skip - (len(surfs) - len(R)):
+            if k >= len(R) - 1 + skip - (len(surfs) - len(R)):
                 break
 
         heights_arr = be.array(heights)

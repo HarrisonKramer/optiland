@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import optiland.backend as be
 from optiland.psf.huygens_fresnel import HuygensPSF
 from optiland.samples.objectives import CookeTriplet, DoubleGauss, ReverseTelephoto
+from optiland.rays import RealRays
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
@@ -499,3 +500,32 @@ class TestHuygensPSF:
         psf_instance.psf = None  # Manually override
         with pytest.raises(RuntimeError, match="PSF has not been computed."):
             psf_instance.strehl_ratio()
+
+    def test_pixel_pitch_override(self, cooke_triplet_optic):
+        """
+        Tests that providing a pixel_pitch in the constructor overrides the
+        automatic calculation.
+        """
+        custom_pixel_pitch = 0.005  # 5 um in mm
+        image_size = self.IMAGE_SIZE_LOW
+
+        psf_instance = HuygensPSF(
+            optic=cooke_triplet_optic,
+            field=(0, 0),
+            wavelength=self.WAVELENGTH_GREEN,
+            num_rays=self.NUM_RAYS_LOW,
+            image_size=image_size,
+            pixel_pitch=custom_pixel_pitch,
+        )
+
+        # 1. Check if the instance's pixel_pitch is set correctly
+        assert psf_instance.pixel_pitch == custom_pixel_pitch
+
+        # 2. Check if the image extent is calculated based on this pixel_pitch
+        # The total extent is image_size * pixel_pitch. Half-extent is half of that.
+        expected_extent = 0.5 * image_size * custom_pixel_pitch
+        xmin, xmax, ymin, ymax = psf_instance._get_image_extent()
+
+        # The extent is centered around (cx, cy)
+        assert np.isclose(xmax - xmin, 2 * expected_extent)
+        assert np.isclose(ymax - ymin, 2 * expected_extent)

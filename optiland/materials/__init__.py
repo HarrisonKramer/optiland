@@ -16,6 +16,7 @@ from .material_utils import (
     get_neighbour_glasses,
     glasses_selection,
     plot_glass_map,
+    plot_nk,
 )
 
 __all__ = [
@@ -35,5 +36,6 @@ __all__ = [
     "get_neighbour_glasses",
     "glasses_selection",
     "plot_glass_map",
+    "plot_nk",
     find_closest_glass,
 ]
