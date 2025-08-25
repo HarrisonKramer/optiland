@@ -68,44 +68,17 @@ class HuygensMTF(BaseMTF):
         self.image_size = image_size
         self.psf_instances = []
 
-        if wavelength == "primary":
-            resolved_wavelength_temp = optic.primary_wavelength
-        else:
-            resolved_wavelength_temp = wavelength
+        super().__init__(optic, fields, wavelength)
 
-        self.FNO = self._get_fno(optic)
+        self.FNO = self._get_fno()
 
         if max_freq == "cutoff":
             # wavelength in um, FNO is unitless. max_freq in cycles/mm
-            self.max_freq = 1 / (resolved_wavelength_temp * 1e-3 * self.FNO)
+            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
         else:
             self.max_freq = max_freq
 
-        super().__init__(optic, fields, wavelength)
-
         self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
-
-    def _get_fno(self, optic):
-        """Calculate the effective F-number (FNO) of the optical system.
-
-        Applies a correction if the object is finite.
-
-        Args:
-            optic (Optic): The optical system.
-
-        Returns:
-            float: The effective F-number of the optical system.
-        """
-        FNO = optic.paraxial.FNO()
-
-        if not optic.object_surface.is_infinite:
-            m = optic.paraxial.magnification()
-            D = optic.paraxial.XPD()  # Exit Pupil Diameter
-            epd = optic.paraxial.EPD()
-            p = 1.0 if epd == 0 else D / epd  # Avoid division by zero
-            FNO = FNO if p == 0 else FNO * (1 + be.abs(m) / p)
-
-        return FNO
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Functions (PSFs).

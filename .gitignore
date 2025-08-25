@@ -16,3 +16,4 @@ htmlcov/
 **/auto_examples/
 **/gui/
 sg_execution_times.rst
+.qlty/

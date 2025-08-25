@@ -11,7 +11,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.geometries import (
@@ -20,10 +20,14 @@ from optiland.geometries import (
     EvenAsphere,
     ForbesQ2dGeometry,
     ForbesQbfsGeometry,
+    ForbesSolverConfig,  # forbes
+    ForbesSurfaceConfig,  # forbes
     OddAsphere,
     Plane,
+    PlaneGrating,
     PolynomialGeometry,
     StandardGeometry,
+    StandardGratingGeometry,
     ToroidalGeometry,
     ZernikePolynomialGeometry,
 )
@@ -41,6 +45,10 @@ class GeometryConfig:
         radius (float): radius of curvature of the geometry (R = 1/c).
                         Defaults to be.inf.
         conic (float): conic constant (k) of the geometry. Defaults to 0.0.
+        grating_order (int): order of the grating. Defaults to 0.
+        grating_period (float): period of the grating. Defaults to be.inf.
+        groove_orientation_angle (float): angle of the groove orientation.
+                                        Defaults to 0.0.
         coefficients (list): list of geometry coefficients. Defaults to empty list.
         tol (float): tolerance to use for Newton-Raphson method. Defaults to 1e-6.
         max_iter (int): maximum number of iterations to use for Newton-Raphson method.
@@ -57,10 +65,15 @@ class GeometryConfig:
         toroidal_coeffs_poly_y (list): toroidal YZ polynomial coefficients.
                                     Defaults to empty list.
         zernike_type (str): type of Zernike polynomial to use. Defaults to "fringe".
+        radial_terms (dict): radial terms for Forbes Q-BFS surfaces.
+        freeform_coeffs (dict): freeform coefficients for Forbes Q-2D surfaces.
     """
 
     radius: float = be.inf
     conic: float = 0.0
+    grating_order: int = 0
+    grating_period: float = be.inf
+    groove_orientation_angle: float = 0.0
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
@@ -76,10 +89,7 @@ class GeometryConfig:
     zernike_type: ZernikeType = "fringe"
     # Forbes parameters
     radial_terms: dict[int, float] = field(default_factory=dict)
-    freeform_coeffs: dict[tuple[int, int] | tuple[int, int, Literal["sin"]], float] = (
-        field(default_factory=dict)
-    )
-    forbes_norm_radius: float = 1.0
+    freeform_coeffs: dict[tuple[str, int, int], float] = field(default_factory=dict)
 
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
@@ -175,6 +185,35 @@ def _create_polynomial(cs: CoordinateSystem, config: GeometryConfig):
         tol=config.tol,
         max_iter=config.max_iter,
         coefficients=config.coefficients,
+    )
+
+
+def _create_grating(cs: CoordinateSystem, config: GeometryConfig):
+    """
+    Create a grating geometry
+
+    Args:
+        cs (CoordinateSystem): coordinate system of the geometry.
+        config (GeometryConfig): configuration of the geometry.
+
+    Returns:
+        StandardGratingGeometry
+    """
+    # Use a Plane if the radius is infinity.
+    if be.isinf(config.radius):
+        return PlaneGrating(
+            cs,
+            config.grating_order,
+            config.grating_period,
+            config.groove_orientation_angle,
+        )
+    return StandardGratingGeometry(
+        cs,
+        config.radius,
+        config.grating_order,
+        config.grating_period,
+        config.groove_orientation_angle,
+        config.conic,
     )
 
 
@@ -279,29 +318,35 @@ def _create_toroidal(cs: CoordinateSystem, config: GeometryConfig):
 
 def _create_forbes_qbfs(cs: CoordinateSystem, config: GeometryConfig):
     """Create a Forbes (Q-BFS) Geometry."""
+    surface_config = ForbesSurfaceConfig(
+        radius=config.radius,
+        conic=config.conic,
+        terms=config.radial_terms,
+        norm_radius=config.norm_radius,
+    )
+    solver_config = ForbesSolverConfig(tol=config.tol, max_iter=config.max_iter)
 
     return ForbesQbfsGeometry(
         cs,
-        config.radius,
-        config.conic,
-        config.radial_terms,
-        config.forbes_norm_radius,
-        config.tol,
-        config.max_iter,
+        surface_config=surface_config,
+        solver_config=solver_config,
     )
 
 
 def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
     """Create a Forbes (Q-2D) geometry."""
+    surface_config = ForbesSurfaceConfig(
+        radius=config.radius,
+        conic=config.conic,
+        terms=config.freeform_coeffs,
+        norm_radius=config.norm_radius,
+    )
+    solver_config = ForbesSolverConfig(tol=config.tol, max_iter=config.max_iter)
 
     return ForbesQ2dGeometry(
         cs,
-        config.radius,
-        config.conic,
-        config.freeform_coeffs,
-        config.forbes_norm_radius,
-        config.tol,
-        config.max_iter,
+        surface_config=surface_config,
+        solver_config=solver_config,
     )
 
 
@@ -323,6 +368,7 @@ geometry_mapper = {
     "biconic": _create_biconic,
     "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
+    "grating": _create_grating,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
     "polynomial": _create_polynomial,
