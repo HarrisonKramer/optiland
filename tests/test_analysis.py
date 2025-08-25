@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -1433,7 +1433,7 @@ class TestIncoherentIrradiance:
         # Define a simple loss and backpropagate
         loss = be.sum(irr_map**2)
         loss.backward()
-     
+
         grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
@@ -1858,7 +1858,6 @@ def system_1():
 
     class TestSystemForIntensity(Optic):
         def __init__(self):
-
             from optiland.materials import Material
 
             super().__init__(name="System 1 for Intensity")
@@ -1887,14 +1886,12 @@ def system_1():
 
 
 class TestRadiantIntensity:
-
     @pytest.mark.parametrize(
         "reference_surface_index, filename, max_angle",
         [
             (1, r"tests/zemax_files/sph_lens_coll_intensity_free_prop.txt", 12),
-            
         ],
-    ) # (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
+    )  # (-1, r"tests/zemax_files/sph_lens_coll_intensity_img.txt", 0.5),
     def test_intensity_output_values(
         self,
         set_test_backend,
@@ -1904,7 +1901,6 @@ class TestRadiantIntensity:
         reference_surface_index,
         max_angle,
     ):
-
         rays_to_trace = extended_source.generate_rays(num_rays=1_000_000)
 
         analysis_angle_max = max_angle
@@ -1938,12 +1934,12 @@ class TestRadiantIntensity:
         print(f"Zemax angles: {zemax_angles}")
         print(f"Zemax intensity: {zemax_intensity}")
 
-        assert (
-            zemax_intensity is not None
-        ), f"Failed to load intensity data from Zemax file: {filename}"
-        assert (
-            zemax_angles is not None
-        ), f"Failed to load angle data from Zemax file: {filename}"
+        assert zemax_intensity is not None, (
+            f"Failed to load intensity data from Zemax file: {filename}"
+        )
+        assert zemax_angles is not None, (
+            f"Failed to load angle data from Zemax file: {filename}"
+        )
 
         # compare the two datasets
         # normalize both datasets to their peak for shape comparison
@@ -1953,9 +1949,7 @@ class TestRadiantIntensity:
         if np.max(zemax_intensity) > 0:
             zemax_intensity /= np.max(zemax_intensity)
 
-        assert_allclose(
-            optiland_cross_section, zemax_intensity, atol=0.1, rtol=0.1
-        )
+        assert_allclose(optiland_cross_section, zemax_intensity, atol=0.1, rtol=0.1)
 
     def test_view_intensity(self, set_test_backend, system_1):
         """
@@ -2052,3 +2046,129 @@ class TestRadiantIntensity:
         grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
+
+
+class TestCookeTripletBestFitRayFan:
+    """Test suite for the BestFitRayFan analysis class using a real optical system."""
+
+    def test_initialization(self, set_test_backend):
+        """
+        Tests that the BestFitRayFan class initializes correctly,
+        setting its own attributes and calling its parent's __init__.
+        """
+        cooke_triplet = CookeTriplet()
+        # Test with default parameters
+        fan = analysis.BestFitRayFan(cooke_triplet)
+        assert fan.num_rays_for_fit == 15
+        assert fan.num_points == 257  # 256 becomes 257 to be odd
+        assert fan.optic == cooke_triplet
+
+        # Test with custom parameters
+        fan_custom = analysis.BestFitRayFan(
+            cooke_triplet, num_points=100, num_rays_for_fit=20
+        )
+        assert fan_custom.num_rays_for_fit == 20
+        assert fan_custom.num_points == 101  # 100 becomes 101 to be odd
+
+    def test_best_fit_ray_fan_data(self, set_test_backend):
+        """
+        Tests the BestFitRayFan class with a real optical system to ensure
+        it runs without errors and that results is similar to standard RayFan.
+        """
+        cooke_triplet = CookeTriplet()
+        num_points = 33
+        
+        # Perform both standard and best-fit analyses for comparison
+        fan_best_fit = analysis.BestFitRayFan(cooke_triplet, num_points=num_points, num_rays_for_fit=5)
+        fan_standard = analysis.RayFan(cooke_triplet, num_points=num_points)
+        
+        data_best_fit = fan_best_fit.data
+        data_standard = fan_standard.data
+
+        # Check top-level data structure
+        assert "Px" in data_best_fit
+        assert "Py" in data_best_fit
+        assert len(data_best_fit["Px"]) == num_points
+        assert len(data_best_fit["Py"]) == num_points
+
+        # Check data for an off-axis field and primary wavelength
+        field_key = f"{cooke_triplet.fields.get_field_coords()[1]}" # e.g., "(0.0, 0.7)"
+        wave_key = f"{cooke_triplet.primary_wavelength}"
+
+        x_best_fit = data_best_fit[field_key][wave_key]["x"]
+        x_standard = data_standard[field_key][wave_key]["x"]
+        
+        y_best_fit = data_best_fit[field_key][wave_key]["y"]
+        y_standard = data_standard[field_key][wave_key]["y"]
+
+        # Assert that the data is valid (not all NaN)
+        assert not be.all(be.isnan(x_best_fit))
+        assert not be.all(be.isnan(y_best_fit))
+        
+        # Crucially, assert that the best-fit data is similar to the standard ray fan data
+        assert_allclose(x_best_fit, x_standard)
+        assert_allclose(y_best_fit, y_standard)
+
+    def test_view_best_fit_ray_fan(self, set_test_backend, cooke_triplet):
+        ray_fan = analysis.BestFitRayFan(cooke_triplet)
+        fig, axes = ray_fan.view()
+        assert fig is not None
+        assert len(axes) > 0
+        assert isinstance(fig, plt.Figure)
+        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        plt.close(fig)
+
+    def test_remove_distortion_with_invalid_central_ray(self, set_test_backend):
+        """
+        Tests the _remove_distortion logic when the central ray is obscured.
+        It verifies that the function falls back to using the mean of the
+        valid rays as the reference offset.
+        """
+        # 1. Mock the RayFan instance and its essential attributes
+        # We don't need a real optic, just the structure to call the method
+        mock_optic = MagicMock()
+        mock_optic.primary_wavelength = 0.55
+        
+        # Instantiate RayFan, it will be our object under test
+        fan = analysis.BestFitRayFan(mock_optic, num_points=5)
+        fan.fields = [(0.0, 0.7)]
+        fan.wavelengths = [0.55]
+
+        # 2. Manually construct the input data dictionary
+        center_idx = fan.num_points // 2  # This will be index 2 for num_points=5
+        
+        # Create intensity arrays where the central ray has zero intensity
+        intensity_with_obscuration = be.array([1.0, 1.0, 0.0, 1.0, 1.0])
+        
+        # Create coordinate arrays with known values
+        x_coords = be.array([10.0, 20.0, 999.0, 30.0, 40.0]) # 999 is a dummy for the invalid ray
+        y_coords = be.array([-4.0, -2.0, 888.0, 2.0, 4.0])   # 888 is a dummy for the invalid ray
+
+        fan.data = {
+            "(0.0, 0.7)": {
+                "0.55": {
+                    "x": be.copy(x_coords),
+                    "y": be.copy(y_coords),
+                    "intensity_x": be.copy(intensity_with_obscuration),
+                    "intensity_y": be.copy(intensity_with_obscuration),
+                }
+            }
+        }
+
+        # 3. Call the method we want to test
+        processed_data = fan._remove_distortion(fan.data)
+
+        # 4. Define the expected outcome
+        # The offset should be the mean of the valid points, ignoring the central one.
+        # Expected x_offset = mean([10, 20, 30, 40]) = 25
+        # Expected y_offset = mean([-4, -2, 2, 4]) = 0
+        expected_x_offset = 25.0
+        expected_y_offset = 0.0
+        
+        expected_x_final = x_coords - expected_x_offset
+        expected_y_final = y_coords - expected_y_offset
+
+        # 5. Assert that the data was processed correctly
+        output_data = processed_data["(0.0, 0.7)"]["0.55"]
+        assert_allclose(output_data["x"], expected_x_final)
+        assert_allclose(output_data["y"], expected_y_final)

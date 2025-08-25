@@ -135,7 +135,7 @@ ZERNIKE_STANDARD_INDICES = np.array(
         (14, 12),
         (14, 14),
     ],
-    dtype=[('n', int), ('m', int)]
+    dtype=[("n", int), ("m", int)],
 )
 
 
@@ -334,8 +334,9 @@ ZERNIKE_FRINGE_INDICES = np.array(
         (19, 1),
         (19, -1),
     ],
-    dtype=[('n', int), ('m', int)]
+    dtype=[("n", int), ("m", int)],
 )
+
 
 class TestZernikeFringe:
     def test_get_term(self, set_test_backend):
@@ -532,8 +533,9 @@ ZERNIKE_NOLL_INDICES = np.array(
         (14, -14),
         (14, 14),
     ],
-    dtype=[('n', int), ('m', int)]
+    dtype=[("n", int), ("m", int)],
 )
+
 
 class TestZernikeNoll:
     def test_get_term(self, set_test_backend):

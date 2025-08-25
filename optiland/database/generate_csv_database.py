@@ -32,6 +32,12 @@ def generate_database(output_file):
                 mat_name = full_mat_data["BOOK"]
                 mat_name_full = full_mat_data["name"]
                 for mat_data in full_mat_data["content"]:
+                    if (
+                        mat_data.get("PAGE") is None
+                        or mat_data.get("name") is None
+                        or mat_data.get("data") is None
+                    ):
+                        continue
                     data.append(
                         [
                             group_name,
@@ -85,6 +91,11 @@ def generate_database(output_file):
 
             except KeyError:
                 pass
+
+            # Add filename without extension
+            filename_no_ext = os.path.basename(row["filename"])
+            filename_no_ext = os.path.splitext(filename_no_ext)[0]
+            df.loc[k, "filename_no_ext"] = filename_no_ext
 
     # save the database
     df.to_csv(output_file, index=False)
