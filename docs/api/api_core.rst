@@ -22,5 +22,4 @@ properties of the optical system and provides interfaces to core functionalities
    jones
    pickup
    scatter
-   solves
    wavelength

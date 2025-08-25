@@ -370,3 +370,119 @@ def find_closest_glass(nd_vd: tuple, catalog: list[str], plot_map: bool = False)
         )
 
     return closest_glass
+
+
+def plot_nk(
+    material: Material,
+    wavelength_range: tuple = None,
+    ax: plt.Axes | tuple[plt.Axes, plt.Axes] = None,
+    n_sample: int = 800,
+    share_yscale: bool = False,
+) -> tuple[plt.Figure, list[plt.Axes]]:
+    """
+    Plot the refractive index (n) and extinction coefficient (k) of a material
+    versus wavelength.
+
+    Args:
+        material (Material): The material object containing optical data.
+        wavelength_range (tuple): The range of wavelengths to plot (min_wl, max_wl)
+        in micrometers. If None, the full range is used. If wavelength_range is not
+        contained within the material's range, red shading is applied to indicate
+        the out-of-bounds region.
+        ax (matplotlib.axes.Axes, optional): The axes to plot on. If None, a new
+        figure and axes are created.
+        n_sample (int): The number of wavelength samples to compute.
+        share_yscale (bool): Whether to share the y-axis scale between n and k plots.
+
+    Returns:
+        tuple[plt.Figure, list[plt.Axes]]: The figure and axes objects ([ax_n, ax_k])
+
+    Example:
+    >>> mat = Material("BK7", reference="SCHOTT")
+    >>> plot_nk(mat, wavelength_range=(0.4, 0.7))
+
+    """
+
+    # gather wavelength range information
+    min_wl = material.material_data.get("min_wavelength")
+    max_wl = material.material_data.get("max_wavelength")
+
+    # Check if the specified wavelength_range is valid
+    if wavelength_range is None:
+        wavelength_range = (min_wl, max_wl)
+    if len(wavelength_range) != 2:
+        raise ValueError("wavelength_range must be a tuple of (min_wl, max_wl)")
+
+    if ax is None:
+        fig, ax_n = plt.subplots()
+        ax_k = ax_n.twinx()
+    elif (
+        isinstance(ax, tuple)
+        and len(ax) == 2
+        and all(isinstance(a, plt.Axes) for a in ax)
+    ):
+        ax_n, ax_k = ax
+    elif isinstance(ax, plt.Axes):
+        ax_n = ax
+        ax_k = ax.twinx()
+    else:
+        raise ValueError(
+            f"Invalid ax argument should be None, a tuple of (ax_n, ax_k), or "
+            f"a single Axes instance. Here : {type(ax)}"
+        )
+
+    # Check if the specified wavelength_range is valid
+    if min_wl > wavelength_range[0] or max_wl < wavelength_range[1]:
+        warnings.warn(
+            "Specified wavelength_range is outside the material's available range. "
+            "Red shading will indicate out-of-bounds regions.",
+            UserWarning,
+            stacklevel=2,
+        )
+        # Shade the out-of-bounds region
+        if min_wl > wavelength_range[0]:
+            ax_n.axvspan(
+                min_wl,
+                wavelength_range[0],
+                facecolor="red",
+                alpha=0.15,
+                label="Out of bounds",
+            )
+        if max_wl < wavelength_range[1]:
+            ax_n.axvspan(wavelength_range[1], max_wl, facecolor="red", alpha=0.15)
+
+    # Plot n and k
+    wl = be.linspace(*wavelength_range, n_sample)
+    n = material.n(wl)
+    k = material.k(wl)
+
+    ax_n.plot(wl, n, label="n", color="k")
+    ax_k.plot(wl, k, label="k", color="k", linestyle=":")
+    ax_n.set_xlabel("$\lambda$ (nm)")
+    ax_n.set_ylabel("$n$", color="k")
+    ax_n.tick_params(axis="y", labelcolor="k")
+    ax_k.set_ylabel("$k$", color="k")
+    ax_k.tick_params(axis="y", labelcolor="k")
+
+    # title stuff
+    full_name = material.material_data.get("category_name_full", "")
+    ref = material.material_data.get("reference", "")
+    full_name = full_name.replace("<sub>", "$_{")
+    full_name = full_name.replace("</sub>", "}$")
+    ax_n.set_title(f"{full_name} - {ref}")
+
+    ax_n.set_xlim(wavelength_range)
+    ax_k.set_xlim(wavelength_range)
+
+    if share_yscale:
+        ymin = min(ax_n.get_ylim()[0], ax_k.get_ylim()[0])
+        ymax = max(ax_n.get_ylim()[1], ax_k.get_ylim()[1])
+        ax_n.set_ylim(ymin, ymax)
+        ax_k.set_ylim(ymin, ymax)
+
+    # Combine legends from both axes
+    lines, labels = ax_n.get_legend_handles_labels()
+    lines2, labels2 = ax_k.get_legend_handles_labels()
+    ax_n.legend(lines + lines2, labels + labels2)
+
+    return fig, [ax_n, ax_k]

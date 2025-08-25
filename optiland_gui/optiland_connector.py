@@ -305,6 +305,24 @@ class OptilandConnector(QObject):
                 None, "Save Error", f"Could not save system to {filepath}:\n{e}"
             )
 
+    def load_optic_from_object(self, optic_instance: Optic):
+        """Loads an optical system directly from an instantiated Optic object."""
+        try:
+            optic_data = optic_instance.to_dict()
+
+            self._undo_redo_manager.clear_stacks()
+            self._optic = Optic.from_dict(optic_data)
+            self._current_filepath = None
+            self._initialize_optic_structure(self._optic)
+            self.set_modified(True)
+            self.opticLoaded.emit()
+            self.opticChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(
+                None, "Load Error", f"Failed to load system from sample object:\n{e}"
+            )
+            self.new_system()
+
     def get_current_filepath(self) -> str | None:
         return self._current_filepath
 
@@ -817,4 +835,5 @@ class OptilandConnector(QObject):
             display_name = f"{wl_value:.4f} µm"
             value_str = f"[{wl_value}]"
             options.append((display_name, value_str))
+        return options
         return options
