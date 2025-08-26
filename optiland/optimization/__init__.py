@@ -12,8 +12,8 @@ from .variable import (
     Variable,
 )
 from .operand import ParaxialOperand, AberrationOperand, RayOperand, Operand
-from .optimization import (
-    OptimizationProblem,
+from .problem import OptimizationProblem
+from .optimizer.scipy import (
     OptimizerGeneric,
     LeastSquares,
     DualAnnealing,
@@ -21,4 +21,4 @@ from .optimization import (
     SHGO,
     BasinHopping,
 )
-from .glass_expert import GlassExpert
+from .optimizer.glass_expert import GlassExpert
