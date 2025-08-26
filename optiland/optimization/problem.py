@@ -76,7 +76,8 @@ class OptimizationProblem:
 
     def fun_array(self):
         """Array of operand weighted deltas squared"""
-        return be.array([op.fun() for op in self.operands]) ** 2
+        terms = [op.fun() for op in self.operands]  # each should be a torch scalar
+        return be.stack(terms) ** 2
 
     def sum_squared(self):
         """Calculate the sum of squared operand weighted deltas"""

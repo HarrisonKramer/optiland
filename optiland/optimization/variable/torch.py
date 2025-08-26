@@ -49,7 +49,11 @@ class TorchVariable(VariableBehavior):
 
         This is useful for resetting the variable to a specific state.
         """
-        with torch.no_grad():
-            # Ensure the new value is a tensor on the correct device
-            new_tensor = be.array(new_value)
-            self.value.data.copy_(new_tensor)
+        if isinstance(new_value, torch.nn.Parameter):
+            # bind to the same object so optimizer and variable share it
+            self._param = new_value
+        else:
+            # previous behavior: copy data into existing parameter
+            with torch.no_grad():
+                new_tensor = be.array(new_value)
+                self.value.data.copy_(new_tensor)
