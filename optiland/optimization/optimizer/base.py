@@ -13,7 +13,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 
-class AbstractOptimizer(ABC):
+class BaseOptimizer(ABC):
     """
     Abstract base class for an optimization algorithm.
 

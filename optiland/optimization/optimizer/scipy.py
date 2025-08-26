@@ -17,11 +17,13 @@ from scipy import optimize
 
 import optiland.backend as be
 
+from .base import BaseOptimizer
+
 if TYPE_CHECKING:
     from .problem import OptimizationProblem
 
 
-class OptimizerGeneric:
+class OptimizerGeneric(BaseOptimizer):
     """Generic optimizer class for solving optimization problems.
 
     Args:
@@ -41,7 +43,7 @@ class OptimizerGeneric:
     """
 
     def __init__(self, problem: OptimizationProblem):
-        self.problem = problem
+        super().__init__(problem)
         self._x = []
 
         assert not any(isinstance(var.value, str) for var in self.problem.variables), (
