@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from optiland.optimization.variable import Variable
+from optiland.optimization.scipy_variable import ScipyVariable
 
 
 class VariableManager:
@@ -30,7 +30,7 @@ class VariableManager:
                 constructor.
 
         """
-        self.variables.append(Variable(optic, variable_type, **kwargs))
+        self.variables.append(ScipyVariable(optic, variable_type, **kwargs))
 
     def clear(self):
         """Clear all variables from the merit function"""
@@ -59,7 +59,7 @@ class VariableManager:
 
     def __setitem__(self, index, value):
         """Set the variable at the specified index"""
-        if not isinstance(value, Variable):
+        if not isinstance(value, ScipyVariable):
             raise ValueError("Value must be an instance of Variable")
         self.variables[index] = value
 
