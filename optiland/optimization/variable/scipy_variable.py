@@ -1,12 +1,8 @@
-"""Variable Module
+"""Scipy Variable Module
 
-This module contains the Variable class, which represents a variable in an
-optical system. This is the core class for defining variables in the
-optimization process within Optiland. In general, this class is used to define
-any arbitrary variable that can be optimized in an optical system. The class
-provides a common interface for all types of variables, such as radius, conic,
-thickness, index, asphere coefficients, etc. The input parameter 'type' is used
-to specify the type of the variable.
+This module contains the Variable class for defining variables in an optical
+system for optimization using scipy. The Variable class serves as a wrapper
+around specific variable behaviors defined in separate modules.
 
 Kramer Harrison, 2024
 """
