@@ -1,7 +1,9 @@
-"""Optiland Optimization Module
+"""Optiland Scipy Optimization Module
 
 This module contains classes for various optimization algorithms that can be
 used to solve optimization problems defined in the OptimizationProblem class.
+This module provides a generic optimizer class and several specific optimizers
+that utilize different algorithms from the SciPy library.
 
 Kramer Harrison, 2024
 """
