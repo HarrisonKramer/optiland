@@ -115,7 +115,7 @@ class OptimizationProblem:
         if total == 0.0:
             df["Contrib. [%]"] = 0.0
         else:
-            df["Contrib. [%]"] = be.round(values / total * 100, 2)
+            df["Contrib. [%]"] = be.round(values / total * 100, decimals=2)
 
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
