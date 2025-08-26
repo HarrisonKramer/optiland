@@ -8,6 +8,7 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+import warnings
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
@@ -36,6 +37,10 @@ class TorchAdamOptimizer(BaseOptimizer):
         super().__init__(problem)
         if be.get_backend() != "torch":
             raise RuntimeError("TorchAdamOptimizer requires the 'torch' backend.")
+        else:
+            if not be.grad_mode.requires_grad:
+                warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
+                be.grad_mode.enable()
 
         initial_params = [var.variable.get_value() for var in self.problem.variables]
         self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]

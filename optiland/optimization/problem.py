@@ -10,6 +10,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+import warnings
+
 import pandas as pd
 
 import optiland.backend as be
@@ -45,6 +47,11 @@ class OptimizationProblem:
         self.operands = OperandManager()
         self.variables = VariableManager()
         self.initial_value = 0.0
+
+        # Enable gradient tracking for PyTorch
+        if be.get_backend() == "torch" and not be.grad_mode.requires_grad:
+            warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
+            be.grad_mode.enable()
 
     def add_operand(
         self,
