@@ -42,6 +42,7 @@ class OpticalSystemModule(nn.Module):
 
         self.optic = optic
         self.problem = problem
+
         self._torch_variables = []
         params = []
 
@@ -53,9 +54,9 @@ class OpticalSystemModule(nn.Module):
                 apply_scaling=var_def.apply_scaling,
             )
             self._torch_variables.append(tv)
-            params.append(tv.value)
+            params.append(tv.value)  # tv.value is an nn.Parameter
 
-        # Make the variables discoverable by model.parameters()
+        # Register parameters so PyTorch optimizers see them
         self.params = nn.ParameterList(params)
 
     def _sync_params_to_optics(self):
@@ -81,7 +82,7 @@ class OpticalSystemModule(nn.Module):
         self._sync_params_to_optics()
         self.problem.update_optics()
 
-        # 3. Compute RMS spot size average
+        # 2. Compute RMS spot size average
         spot = SpotDiagram(self.optic)
-        spot_size = be.mean(be.array(spot.rms_spot_size()))
+        spot_size = be.mean(be.array(spot.rms_spot_radius()))
         return spot_size
