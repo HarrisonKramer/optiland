@@ -11,7 +11,8 @@ from __future__ import annotations
 import torch
 
 import optiland.backend as be
-from optiland.optimization.variable.base import VariableBehavior
+
+from .base import VariableBehavior
 
 
 class TorchVariable(VariableBehavior):
