@@ -21,4 +21,9 @@ from .optimizer.scipy import (
     SHGO,
     BasinHopping,
 )
+
+try:
+    from .optimizer.torch import TorchAdamOptimizer
+except (ImportError, ModuleNotFoundError):
+    pass
 from .optimizer.glass_expert import GlassExpert

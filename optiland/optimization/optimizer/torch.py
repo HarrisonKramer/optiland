@@ -11,7 +11,10 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-import torch
+try:
+    import torch
+except (ImportError, ModuleNotFoundError):
+    torch = None
 
 import optiland.backend as be
 

@@ -8,7 +8,10 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-import torch
+try:
+    import torch
+except (ImportError, ModuleNotFoundError):
+    torch = None
 
 import optiland.backend as be
 
