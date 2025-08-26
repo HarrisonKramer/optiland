@@ -59,8 +59,9 @@ class Optic:
     """The Optic class represents an optical system.
 
     Attributes:
-        aperture (Aperture): The aperture of the optical system.
-        field_type (str): The type of field used in the optical system.
+        name (str | None): The name of the optical system.
+        aperture (Aperture | None): The aperture of the optical system.
+        field_type (FieldType | None): The type of field used in the optical system.
         surface_group (SurfaceGroup): The group of surfaces in the optical
             system.
         fields (FieldGroup): The group of fields in the optical system.
@@ -70,15 +71,29 @@ class Optic:
             optical system.
         aberrations (Aberrations): The aberrations analysis helper class for
             the optical system.
+        ray_tracer (RealRayTracer): The real ray tracer for the optical system.
+        polarization (PolarizationState | Literal["ignore"]): The polarization 
+            state of the optical system.
+        apodization (BaseApodization | None): The apodization function for the 
+            optical system.
+        pickups (PickupManager): The pickup manager for the optical system.
+        solves (SolveManager): The solve manager for the optical system.
+        obj_space_telecentric (bool): Whether the object space is telecentric.
 
     """
 
     def __init__(self, name: str | None = None):
+        """Initialize an Optic object.
+        
+        Args:
+            name (str | None, optional): The name of the optical system. 
+                Defaults to None.
+        """
         self.name = name
         self.reset()
 
     def _initialize_attributes(self):
-        """Reset the optical system to its initial state."""
+        """Initialize the optical system attributes to their default values."""
         self.aperture: Aperture | None = None
         self.field_type: FieldType | None = None
 
@@ -99,7 +114,14 @@ class Optic:
         self._updater = OpticUpdater(self)
 
     def __add__(self, other: Optic) -> Optic:
-        """Add two Optic objects together."""
+        """Add two Optic objects together.
+        
+        Args:
+            other (Optic): The other optical system to add to this one.
+            
+        Returns:
+            Optic: A new optical system combining this system with the other.
+        """
         new_optic = deepcopy(self)
         new_optic.surface_group += other.surface_group
         return new_optic
@@ -160,13 +182,16 @@ class Optic:
             new_surface (Surface, optional): The new surface to add. If not
                 provided, a new surface will be created based on the other
                 arguments.
-            surface_type (str, optional): The type of surface to create.
+            surface_type (SurfaceType, optional): The type of surface to create.
+                Defaults to "standard".
+            comment (str, optional): A comment for the surface. Defaults to "".
             index (int, optional): The index at which to insert the new
                 surface. If not provided, the surface will be appended to the
                 end of the list.
             is_stop (bool, optional): Indicates if the surface is the aperture.
-            material (str, optional): The material of the surface.
-                Default is 'air'.
+                Defaults to False.
+            material (str or BaseMaterial, optional): The material of the surface.
+                Defaults to 'air'.
             **kwargs: Additional keyword arguments for surface-specific
                 parameters such as radius, conic, dx, dy, rx, ry, aperture.
 
@@ -229,6 +254,9 @@ class Optic:
 
         Args:
             field_type (str): The type of field.
+
+        Raises:
+            ValueError: If field_type is not "angle" or "object_height".
 
         """
         if field_type not in ["angle", "object_height"]:
@@ -301,8 +329,8 @@ class Optic:
 
         Args:
             value (float): The value of aspheric coefficient
-            surface_number (int): The index of the surface.
-            aspher_coeff_idx (int): index of the aspheric coefficient on the
+            surface_number (float): The index of the surface.
+            aspher_coeff_idx (float): index of the aspheric coefficient on the
                 surface
 
         """
@@ -396,8 +424,13 @@ class Optic:
                 None.
             ylim (tuple, optional): The y-axis limits of the plot. Defaults to
                 None.
+            title (str, optional): The title of the plot. Defaults to None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+
+        Returns:
+            tuple[Figure, Axes]: A tuple containing the matplotlib Figure and Axes 
+                objects of the plot.
 
         """
         viewer = OpticViewer(self)
@@ -522,17 +555,23 @@ class Optic:
             Py (float or be.ndarray): The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
 
+        Returns:
+            RealRays: The RealRays object containing the traced rays.
+
         """
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
 
     def plot_surface_sag(
         self, surface_index: int, y_cross_section=0, x_cross_section=0
     ):
-        """
-        Analyzes and visualizes the sag of a given lens surface.
+        """Analyzes and visualizes the sag of a given lens surface.
 
         Args:
             surface_index (int): The index of the surface to analyze.
+            y_cross_section (float, optional): Y-coordinate for cross-section analysis. 
+                Defaults to 0.
+            x_cross_section (float, optional): X-coordinate for cross-section analysis. 
+                Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
         viewer.view(surface_index, y_cross_section, x_cross_section)
