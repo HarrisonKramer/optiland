@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from optiland.optimization.scipy_variable import ScipyVariable
+from .scipy_variable import ScipyVariable
 
 
 class VariableManager:

@@ -14,6 +14,6 @@ from .forbes_coeff import ForbesQbfsCoeffVariable, ForbesQ2dCoeffVariable
 from .polynomial_coeff import PolynomialCoeffVariable
 from .chebyshev_coeff import ChebyshevCoeffVariable
 from .zernike_coeff import ZernikeCoeffVariable
-from .variable import Variable
+from .scipy_variable import ScipyVariable
 from .variable_manager import VariableManager
 from .norm_radius import NormalizationRadiusVariable
