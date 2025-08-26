@@ -51,7 +51,21 @@ class RealRayTracer:
         Px = distribution.x
         Py = distribution.y
 
-        rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
+        Hx = be.atleast_1d(Hx)
+        Hy = be.atleast_1d(Hy)
+
+        # expand coordinates to create a ray for each field point at each pupil point
+        num_fields = len(Hx)
+        num_pupil_points = len(Px)
+
+        Hx_full = be.repeat(Hx, num_pupil_points)
+        Hy_full = be.repeat(Hy, num_pupil_points)
+        Px_full = be.tile(Px, num_fields)
+        Py_full = be.tile(Py, num_fields)
+
+        rays = self.ray_generator.generate_rays(
+            Hx_full, Hy_full, Px_full, Py_full, wavelength
+        )
         self.optic.surface_group.trace(rays)
 
         if isinstance(rays, PolarizedRays):
