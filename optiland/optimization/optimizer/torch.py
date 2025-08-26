@@ -18,7 +18,6 @@ except (ImportError, ModuleNotFoundError):
 
 import optiland.backend as be
 
-from ..variable.torch import TorchVariable
 from .base import BaseOptimizer
 
 if TYPE_CHECKING:
@@ -38,24 +37,8 @@ class TorchAdamOptimizer(BaseOptimizer):
         if be.get_backend() != "torch":
             raise RuntimeError("TorchAdamOptimizer requires the 'torch' backend.")
 
-        # Create a parallel list of TorchVariables from the problem definition
-        self.torch_variables = []
-        for var_def in self.problem.variables:
-            tv = TorchVariable(
-                optic=var_def.optic,
-                surface_number=getattr(var_def, "surface_number", None),
-                initial_value=var_def.value,
-                apply_scaling=var_def.apply_scaling,
-            )
-            self.torch_variables.append(tv)
-
-    def _sync_params_to_optics(self):
-        """
-        Pushes the current tensor values from TorchVariables into the optic objects.
-        """
-        for i, torch_var in enumerate(self.torch_variables):
-            original_var = self.problem.variables[i]
-            original_var.variable.update_value(torch_var.value)
+        initial_params = [var.variable.get_value() for var in self.problem.variables]
+        self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]
 
     def _apply_bounds(self):
         """
@@ -63,14 +46,14 @@ class TorchAdamOptimizer(BaseOptimizer):
         This is called after each optimizer step to enforce constraints.
         """
         with torch.no_grad():
-            for i, torch_var in enumerate(self.torch_variables):
+            for i, param in enumerate(self.params):
                 min_val, max_val = self.problem.variables[i].bounds
                 if min_val is not None and max_val is not None:
-                    torch_var.value.data.clamp_(min_val, max_val)
+                    param.data.clamp_(min_val, max_val)
                 elif min_val is not None:
-                    torch_var.value.data.clamp_(min=min_val)
+                    param.data.clamp_(min=min_val)
                 elif max_val is not None:
-                    torch_var.value.data.clamp_(max=max_val)
+                    param.data.clamp_(max=max_val)
 
     def optimize(self, n_steps: int = 100, lr: float = 1e-2, disp: bool = True):
         """
@@ -81,34 +64,37 @@ class TorchAdamOptimizer(BaseOptimizer):
             lr (float): The learning rate for the Adam optimizer.
             disp (bool): If True, prints the loss at regular intervals.
         """
-        params = [tv.value for tv in self.torch_variables]
-        optimizer = torch.optim.Adam(params, lr=lr)
+        optimizer = torch.optim.Adam(self.params, lr=lr)
 
         with be.grad_mode.temporary_enable():
             for i in range(n_steps):
                 optimizer.zero_grad()
 
-                # 1. Sync Tensors -> Optic State
-                self._sync_params_to_optics()
+                # 1. Update the model state using the optimizer's current params.
+                # This function call rebuilds the computational graph for this step.
+                for k, param in enumerate(self.params):
+                    self.problem.variables[k].variable.update_value(param)
 
-                # 2. Compute Loss
-                # Triggers the forward pass through the differentiable model
+                # 2. Update any dependent properties.
+                self.problem.update_optics()
+
+                # 3. Compute loss from the updated model.
                 loss = self.problem.sum_squared()
 
-                # 3. Backpropagate and Optimize
+                # 4. Backpropagate and step.
                 loss.backward()
                 optimizer.step()
 
-                # 4. Enforce Constraints
+                # 5. Enforce constraints on the scaled parameters.
                 self._apply_bounds()
 
                 if disp and (i % 10 == 0 or i == n_steps - 1):
                     print(f"  Step {i:04d}/{n_steps - 1}, Loss: {loss.item():.6f}")
 
-        # Final sync to ensure the optic objects have the optimized values
-        self._sync_params_to_optics()
+        # Final update to ensure the model reflects the last optimized state
+        for k, param in enumerate(self.params):
+            self.problem.variables[k].variable.update_value(param)
         self.problem.update_optics()
 
-        # Return a result object similar to scipy's OptimizeResult for compatibility
         final_loss = self.problem.sum_squared().item()
-        return SimpleNamespace(fun=final_loss, x=[p.item() for p in params])
+        return SimpleNamespace(fun=final_loss, x=[p.item() for p in self.params])
