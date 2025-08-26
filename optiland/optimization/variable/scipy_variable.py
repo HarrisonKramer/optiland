@@ -28,8 +28,8 @@ from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
 
 
-class Variable:
-    """Represents a variable in an optical system.
+class ScipyVariable:
+    """Represents a Scipy variable in an optical system.
 
     Args:
         optic (OpticalSystem): The optical system to which the variable
