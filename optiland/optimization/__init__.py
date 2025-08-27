@@ -30,4 +30,5 @@ except (ImportError, ModuleNotFoundError):
 
 from .optimizer.scipy import glass_expert
 import sys
+
 optimization = sys.modules[__name__]

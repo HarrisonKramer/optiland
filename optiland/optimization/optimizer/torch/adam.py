@@ -9,41 +9,71 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import warnings
+from abc import ABC, abstractmethod
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 try:
     import torch
+    import torch.optim as optim
+    from torch.optim.lr_scheduler import ExponentialLR, LRScheduler
 except (ImportError, ModuleNotFoundError):
     torch = None
+    optim = None
+    ExponentialLR = None
+    LRScheduler = None
 
 import optiland.backend as be
 
 from ..base import BaseOptimizer
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from ...problem import OptimizationProblem
 
 
-class TorchAdamOptimizer(BaseOptimizer):
+class TorchBaseOptimizer(BaseOptimizer, ABC):
     """
-    An optimizer that uses the PyTorch Adam algorithm.
+    A base class for all PyTorch-based optimizers.
 
-    This optimizer leverages automatic differentiation to perform gradient-based
-    optimization on an OptimizationProblem.
+    This class handles the common setup and optimization loop logic for any
+    optimizer using the PyTorch backend.
     """
 
     def __init__(self, problem: OptimizationProblem):
         super().__init__(problem)
         if be.get_backend() != "torch":
-            raise RuntimeError("TorchAdamOptimizer requires the 'torch' backend.")
-        else:
-            if not be.grad_mode.requires_grad:
-                warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
-                be.grad_mode.enable()
+            raise RuntimeError(
+                f"{self.__class__.__name__} requires the 'torch' backend."
+            )
 
+        # Ensure gradients are enabled for PyTorch operations
+        if not be.grad_mode.requires_grad:
+            warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
+            be.grad_mode.enable()
+
+        # Initialize parameters as torch.nn.Parameter objects
         initial_params = [var.variable.get_value() for var in self.problem.variables]
         self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]
+
+    @abstractmethod
+    def _create_optimizer_and_scheduler(
+        self, lr: float, gamma: float
+    ) -> tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]:
+        """
+        Creates and returns the specific PyTorch optimizer and learning rate scheduler.
+        Subclasses must implement this method.
+
+        Args:
+            lr (float): The learning rate.
+            gamma (float): The decay factor for the learning rate.
+
+        Returns:
+            tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]: The
+                optimizer and learning rate scheduler.
+        """
+        raise NotImplementedError
 
     def _apply_bounds(self):
         """
@@ -60,23 +90,32 @@ class TorchAdamOptimizer(BaseOptimizer):
                 elif max_val is not None:
                     param.data.clamp_(max=max_val)
 
-    def optimize(self, n_steps: int = 100, lr: float = 1e-2, disp: bool = True):
+    def optimize(
+        self,
+        n_steps: int = 100,
+        lr: float = 1e-2,
+        gamma: float = 0.99,
+        disp: bool = True,
+        callback: Callable[[int, float], None] | None = None,
+    ):
         """
-        Runs the Adam optimization loop.
+        Runs the optimization loop.
 
         Args:
-            n_steps (int): The number of optimization steps to perform.
-            lr (float): The learning rate for the Adam optimizer.
-            disp (bool): If True, prints the loss at regular intervals.
+            n_steps (int): The number of optimization steps.
+            lr (float): The learning rate.
+            gamma (float): The decay factor for the learning rate.
+            disp (bool): Whether to display progress.
+            callback (Callable[[int, float], None] | None): A callback function to
+                be called after each step with the current step and loss value.
         """
-        optimizer = torch.optim.Adam(self.params, lr=lr)
+        optimizer, scheduler = self._create_optimizer_and_scheduler(lr, gamma)
 
         with be.grad_mode.temporary_enable():
             for i in range(n_steps):
                 optimizer.zero_grad()
 
-                # 1. Update the model state using the optimizer's current params.
-                # This function call rebuilds the computational graph for this step.
+                # 1. Update the model state from the current nn.Parameter values.
                 for k, param in enumerate(self.params):
                     self.problem.variables[k].variable.update_value(param)
 
@@ -93,6 +132,14 @@ class TorchAdamOptimizer(BaseOptimizer):
                 # 5. Enforce constraints on the scaled parameters.
                 self._apply_bounds()
 
+                # 6. Step the learning rate scheduler.
+                scheduler.step()
+
+                # 7. Call the user-provided callback
+                if callback:
+                    callback(i, loss.item())
+
+                # 8. Print loss if display is enabled.
                 if disp and (i % 10 == 0 or i == n_steps - 1):
                     print(f"  Step {i:04d}/{n_steps - 1}, Loss: {loss.item():.6f}")
 
@@ -103,3 +150,30 @@ class TorchAdamOptimizer(BaseOptimizer):
 
         final_loss = self.problem.sum_squared().item()
         return SimpleNamespace(fun=final_loss, x=[p.item() for p in self.params])
+
+
+class TorchAdamOptimizer(TorchBaseOptimizer):
+    """
+    An optimizer that uses the PyTorch Adam algorithm.
+
+    This optimizer leverages automatic differentiation to perform gradient-based
+    optimization on an OptimizationProblem.
+    """
+
+    def _create_optimizer_and_scheduler(
+        self, lr: float, gamma: float
+    ) -> tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]:
+        """
+        Creates and returns the Adam optimizer and an ExponentialLR scheduler.
+
+        Args:
+            lr (float): The learning rate.
+            gamma (float): The decay factor for the learning rate.
+
+        Returns:
+            tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]: The
+                optimizer and learning rate scheduler.
+        """
+        optimizer = optim.Adam(self.params, lr=lr)
+        scheduler = ExponentialLR(optimizer, gamma=gamma)
+        return optimizer, scheduler
