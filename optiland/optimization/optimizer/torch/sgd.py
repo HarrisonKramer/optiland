@@ -1,6 +1,6 @@
-"""Torch Adam Optimizer
+"""Torch SGD Optimizer
 
-This module contains an implementation of the Adam optimizer for PyTorch.
+This module contains an implementation of the SGD optimizer for PyTorch.
 
 Kramer Harrison, 2025
 """
@@ -20,9 +20,9 @@ except (ImportError, ModuleNotFoundError):
 from .base import TorchBaseOptimizer
 
 
-class TorchAdamOptimizer(TorchBaseOptimizer):
+class TorchSGDOptimizer(TorchBaseOptimizer):
     """
-    An optimizer that uses the PyTorch Adam algorithm.
+    An optimizer that uses the PyTorch SGD algorithm.
 
     This optimizer leverages automatic differentiation to perform gradient-based
     optimization on an OptimizationProblem.
@@ -32,7 +32,7 @@ class TorchAdamOptimizer(TorchBaseOptimizer):
         self, lr: float, gamma: float
     ) -> tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]:
         """
-        Creates and returns the Adam optimizer and an ExponentialLR scheduler.
+        Creates and returns the SGD optimizer and an ExponentialLR scheduler.
 
         Args:
             lr (float): The learning rate.
@@ -42,6 +42,6 @@ class TorchAdamOptimizer(TorchBaseOptimizer):
             tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]: The
                 optimizer and learning rate scheduler.
         """
-        optimizer = optim.Adam(self.params, lr=lr)
+        optimizer = optim.SGD(self.params, lr=lr)
         scheduler = ExponentialLR(optimizer, gamma=gamma)
         return optimizer, scheduler
