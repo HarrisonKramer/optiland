@@ -19,10 +19,10 @@ except (ImportError, ModuleNotFoundError):
 
 import optiland.backend as be
 
-from .base import BaseOptimizer
+from ..base import BaseOptimizer
 
 if TYPE_CHECKING:
-    from ..problem import OptimizationProblem
+    from ...problem import OptimizationProblem
 
 
 class TorchAdamOptimizer(BaseOptimizer):

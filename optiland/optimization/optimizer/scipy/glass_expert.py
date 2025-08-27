@@ -29,11 +29,11 @@ from optiland.materials import (
     plot_glass_map,
 )
 
-from .scipy import OptimizerGeneric
+from .base import OptimizerGeneric
 
 if TYPE_CHECKING:
-    from ..problem import OptimizationProblem
-    from ..variable import Variable
+    from ...problem import OptimizationProblem
+    from ...variable import Variable
 
 
 class GlassExpert(OptimizerGeneric):

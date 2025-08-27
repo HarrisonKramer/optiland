@@ -20,10 +20,14 @@ from .optimizer.scipy import (
     DifferentialEvolution,
     SHGO,
     BasinHopping,
+    GlassExpert,
 )
 
 try:
     from .optimizer.torch import TorchAdamOptimizer
 except (ImportError, ModuleNotFoundError):
     pass
-from .optimizer.glass_expert import GlassExpert
+
+from .optimizer.scipy import glass_expert
+import sys
+optimization = sys.modules[__name__]
