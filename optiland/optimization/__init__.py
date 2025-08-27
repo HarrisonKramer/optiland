@@ -9,7 +9,7 @@ from .variable import (
     AsphereCoeffVariable,
     PolynomialCoeffVariable,
     ChebyshevCoeffVariable,
-    ScipyVariable,
+    Variable,
 )
 from .operand import ParaxialOperand, AberrationOperand, RayOperand, Operand
 from .problem import OptimizationProblem
