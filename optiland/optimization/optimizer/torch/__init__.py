@@ -1,3 +1,6 @@
-from .adam import TorchAdamOptimizer
+from __future__ import annotations
 
-__all__ = ["TorchAdamOptimizer"]
+from .adam import TorchAdamOptimizer
+from .sgd import TorchSGDOptimizer
+
+__all__ = ["TorchAdamOptimizer", "TorchSGDOptimizer"]

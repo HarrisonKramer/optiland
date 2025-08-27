@@ -24,7 +24,8 @@ from .optimizer.scipy import (
 )
 
 try:
-    from .optimizer.torch import TorchAdamOptimizer
+    from .optimizer.torch.adam import TorchAdamOptimizer
+    from .optimizer.torch.sgd import TorchSGDOptimizer
 except (ImportError, ModuleNotFoundError):
     pass
 
