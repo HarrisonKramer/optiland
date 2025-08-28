@@ -119,10 +119,10 @@ class TestOpticalSystemModule:
         
         assert be.isclose(expected_loss, actual_loss)
 
-    def test_sync_params_to_optics_and_bounds(self):
+    def test_sync_params_to_problem_and_bounds(self):
         """
-        Test that _sync_params_to_optics correctly updates the underlying
-        optic variables and applies bounds.
+        Test that _sync_params_to_problem correctly updates the underlying
+        problem variables and applies bounds.
         """
         min_b, max_b = 5.0, 15.0
         problem, lens = setup_problem(min_val=min_b, max_val=max_b)
@@ -132,19 +132,19 @@ class TestOpticalSystemModule:
         with torch.no_grad():
             module.params[0].data.fill_(20.0)
         
-        module._sync_params_to_optics()
+        module._sync_params_to_problem()
+        module.apply_bounds()
         
-        updated_value = problem.variables[0].variable.get_value()
-        assert be.isclose(be.array(updated_value), be.array(max_b))
+        assert be.isclose(module.params[0].data, be.array(max_b))
 
         # Test clamping to the minimum bound
         with torch.no_grad():
             module.params[0].data.fill_(1.0)
 
-        module._sync_params_to_optics()
+        module._sync_params_to_problem()
+        module.apply_bounds()
         
-        updated_value = problem.variables[0].variable.get_value()
-        assert be.isclose(be.array(updated_value), be.array(min_b))
+        assert be.isclose(module.params[0].data, be.array(min_b))
 
     def test_forward_pass_and_optimization(self):
         """
@@ -153,19 +153,20 @@ class TestOpticalSystemModule:
         """
         problem, lens = setup_problem()
         module = OpticalSystemModule(lens, problem)
-        
+
         initial_loss = module.forward()
         assert isinstance(initial_loss, torch.Tensor)
-        initial_loss = initial_loss.item()
+        initial_loss = be.copy(initial_loss)
 
         # Use a simple optimizer to check if loss decreases
-        optimizer = optim.Adam(module.parameters(), lr=0.1)
-        
+        optimizer = optim.Adam(module.parameters(), lr=10)
+
         for _ in range(10):
             optimizer.zero_grad()
             loss = module.forward()
             loss.backward()
             optimizer.step()
+            module.apply_bounds()
 
         final_loss = module.forward()
         assert final_loss.item() < initial_loss

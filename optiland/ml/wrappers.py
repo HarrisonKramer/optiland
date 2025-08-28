@@ -89,10 +89,19 @@ class OpticalSystemModule(nn.Module):
         """
         return self.problem.sum_squared()
 
-    def _sync_params_to_optics(self):
+    def _sync_params_to_problem(self):
         """
-        Pushes the current tensor values from the nn.Parameters into the optic objects.
-        This also handles the scaling and applies bounds.
+        Pushes the current tensor values from the nn.Parameters into the problem
+        variables. This operation is part of the computation graph.
+        """
+        for i, param in enumerate(self.params):
+            var = self._original_variables[i]
+            var.variable.update_value(param)
+
+    def apply_bounds(self):
+        """
+        Applies the defined bounds to the parameters in-place.
+        This should be called after each optimizer step to enforce constraints.
         """
         with torch.no_grad():  # Operations here shouldn't be part of the gradient graph
             for i, param in enumerate(self.params):
@@ -107,16 +116,13 @@ class OpticalSystemModule(nn.Module):
                     var.variable.inverse_scale(max_val) if max_val is not None else None
                 )
 
-                # Apply bounds before updating the original variable
+                # Clamp the parameter data to the defined bounds
                 if min_val is not None and max_val is not None:
                     param.data.clamp_(min_val, max_val)
                 elif min_val is not None:
                     param.data.clamp_(min=min_val)
                 elif max_val is not None:
                     param.data.clamp_(max=max_val)
-
-                # Update the original variable
-                var.variable.update_value(param)
 
     def forward(self) -> torch.Tensor:
         """
@@ -131,8 +137,7 @@ class OpticalSystemModule(nn.Module):
         specific optimization objectives.
         """
         # 1. Synchronize the nn.Parameter values with the Optiland problem variables.
-        # This step now includes applying bounds directly to the parameters.
-        self._sync_params_to_optics()
+        self._sync_params_to_problem()
 
         # 2. Update dependent properties within the optical system
         self.problem.update_optics()
