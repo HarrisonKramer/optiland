@@ -96,10 +96,18 @@ class OpticalSystemModule(nn.Module):
         """
         with torch.no_grad():  # Operations here shouldn't be part of the gradient graph
             for i, param in enumerate(self.params):
-                original_var = self._original_variables[i]
+                var = self._original_variables[i]
+                min_val, max_val = var.bounds
+
+                # Inverse scale the parameter data
+                min_val = (
+                    var.variable.inverse_scale(min_val) if min_val is not None else None
+                )
+                max_val = (
+                    var.variable.inverse_scale(max_val) if max_val is not None else None
+                )
 
                 # Apply bounds before updating the original variable
-                min_val, max_val = original_var.bounds
                 if min_val is not None and max_val is not None:
                     param.data.clamp_(min_val, max_val)
                 elif min_val is not None:
@@ -108,7 +116,7 @@ class OpticalSystemModule(nn.Module):
                     param.data.clamp_(max=max_val)
 
                 # Update the original variable
-                original_var.variable.update_value(param)
+                var.variable.update_value(param)
 
     def forward(self) -> torch.Tensor:
         """

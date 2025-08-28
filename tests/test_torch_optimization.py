@@ -99,7 +99,7 @@ class TestTorchBaseOptimizer:
         optimizer.params[0].data.fill_(15.0)
         optimizer._apply_bounds()
         assert be.allclose(optimizer.params[0].data, be.array(10.0))
-        assert problem.variables[0].bounds == (None, 10.0)
+        assert problem.variables[0].bounds == (None, 1.0)
 
         problem, lens = setup_problem(min_val=10, max_val=None)
         optimizer = TorchAdamOptimizer(problem)
