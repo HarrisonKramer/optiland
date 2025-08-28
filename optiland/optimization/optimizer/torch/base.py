@@ -151,7 +151,7 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
 
                 # 8. Print loss if display is enabled.
                 if disp and (i % 10 == 0 or i == n_steps - 1):
-                    print(f"  Step {i:04d}/{n_steps - 1}, Loss: {loss.item():.6f}")
+                    print(f"  Step {i + 1:04d}/{n_steps}, Loss: {loss.item():.6f}")
 
         # Final update to ensure the model reflects the last optimized state
         for k, param in enumerate(self.params):
