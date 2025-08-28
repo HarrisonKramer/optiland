@@ -53,6 +53,18 @@ class OptimizationProblem:
             warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
             be.grad_mode.enable()
 
+    @staticmethod
+    def _to_item(x):
+        """
+        Convert a single-element backend array to a Python scalar.
+        This is a utility for printing and string formatting.
+        """
+        if x is None:
+            return None
+        if hasattr(x, "item"):
+            return x.item()
+        return x
+
     def add_operand(
         self,
         operand_type=None,
@@ -109,23 +121,33 @@ class OptimizationProblem:
         data = {
             "Operand Type": [op.operand_type.replace("_", " ") for op in self.operands],
             "Target": [
-                f"{op.target:+.3f}" if op.target is not None else ""
+                f"{self._to_item(op.target):+.3f}" if op.target is not None else ""
                 for op in self.operands
             ],
-            "Min. Bound": [op.min_val if op.min_val else "" for op in self.operands],
-            "Max. Bound": [op.max_val if op.max_val else "" for op in self.operands],
-            "Weight": [op.weight for op in self.operands],
-            "Value": [f"{op.value:+.3f}" for op in self.operands],
-            "Delta": [f"{op.delta():+.3f}" for op in self.operands],
+            "Min. Bound": [
+                self._to_item(op.min_val) if op.min_val is not None else ""
+                for op in self.operands
+            ],
+            "Max. Bound": [
+                self._to_item(op.max_val) if op.max_val is not None else ""
+                for op in self.operands
+            ],
+            "Weight": [self._to_item(op.weight) for op in self.operands],
+            "Value": [f"{self._to_item(op.value):+.3f}" for op in self.operands],
+            "Delta": [f"{self._to_item(op.delta()):+.3f}" for op in self.operands],
         }
 
         df = pd.DataFrame(data)
         values = self.fun_array()
         total = be.sum(values)
-        if total == 0.0:
+
+        total_item = self._to_item(total)
+
+        if total_item == 0.0:
             df["Contrib. [%]"] = 0.0
         else:
-            df["Contrib. [%]"] = be.round(values / total * 100, decimals=2)
+            contrib = be.round(values / total * 100, decimals=2)
+            df["Contrib. [%]"] = be.to_numpy(contrib)
 
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
@@ -134,9 +156,12 @@ class OptimizationProblem:
         data = {
             "Variable Type": [var.type for var in self.variables],
             "Surface": [var.surface_number for var in self.variables],
-            "Value": [var.variable.inverse_scale(var.value) for var in self.variables],
-            "Min. Bound": [var.min_val for var in self.variables],
-            "Max. Bound": [var.max_val for var in self.variables],
+            "Value": [
+                self._to_item(var.variable.inverse_scale(var.value))
+                for var in self.variables
+            ],
+            "Min. Bound": [self._to_item(var.min_val) for var in self.variables],
+            "Max. Bound": [self._to_item(var.max_val) for var in self.variables],
         }
 
         df = pd.DataFrame(data)
@@ -146,15 +171,20 @@ class OptimizationProblem:
         """Print information about the merit function."""
         current_value = self.sum_squared()
 
+        # Convert tensor to a Python scalar for calculations and printing
+        printable_current_value = self._to_item(current_value)
+
         if self.initial_value == 0.0:
             improve_percent = 0.0
         else:
             improve_percent = (
-                (self.initial_value - current_value) / self.initial_value * 100
+                (self.initial_value - printable_current_value)
+                / self.initial_value
+                * 100
             )
 
         data = {
-            "Merit Function Value": [current_value],
+            "Merit Function Value": [printable_current_value],
             "Improvement (%)": improve_percent,
         }
         df = pd.DataFrame(data)
