@@ -30,6 +30,8 @@ from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVar
 from optiland.optimization.variable.thickness import ThicknessVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
+from optiland.optimization.variable.nurbs import NurbsPointsVariable, NurbsWeightsVariable
+
 
 
 class Variable:
@@ -129,6 +131,8 @@ class Variable:
             "forbes_qbfs_coeff": ForbesQbfsCoeffVariable,
             "forbes_q2d_coeff": ForbesQ2dCoeffVariable,
             "norm_radius": NormalizationRadiusVariable,
+            "nurbs_control_point": NurbsPointsVariable,
+            "nurbs_weight": NurbsWeightsVariable,
         }
 
         variable_class = variable_types.get(self.type)

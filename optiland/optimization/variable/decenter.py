@@ -18,7 +18,7 @@ class DecenterVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
-        axis (str): The axis of the decenter. Valid values are 'x' and 'y'.
+        axis (str): The axis of the decenter. Valid values are 'x' , 'y' and 'z'.
         apply_scaling (bool): Whether to apply scaling to the variable.
             Defaults to True.
         **kwargs: Additional keyword arguments.
@@ -37,7 +37,7 @@ class DecenterVariable(VariableBehavior):
         super().__init__(optic, surface_number, apply_scaling, **kwargs)
         self.axis = axis
 
-        if self.axis not in ["x", "y"]:
+        if self.axis not in ["x", "y", "z"]:
             raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
 
     def get_value(self):
@@ -52,6 +52,8 @@ class DecenterVariable(VariableBehavior):
             value = surf.geometry.cs.x
         elif self.axis == "y":
             value = surf.geometry.cs.y
+        elif self.axis == "z":
+            value = surf.geometry.cs.z
 
         if self.apply_scaling:
             return self.scale(value)
@@ -72,6 +74,8 @@ class DecenterVariable(VariableBehavior):
             surf.geometry.cs.x = new_value
         elif self.axis == "y":
             surf.geometry.cs.y = new_value
+        elif self.axis == "z":
+            surf.geometry.cs.z = new_value
 
     def scale(self, value):
         """Scale the value of the variable for improved optimization performance.
