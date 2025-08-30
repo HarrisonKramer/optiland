@@ -9,6 +9,7 @@ from optiland.geometries import (
     ForbesQ2dGeometry,
     PolynomialGeometry,
     ZernikePolynomialGeometry,
+    ForbesSurfaceConfig, 
 )
 from optiland.optimization import variable, OptimizationProblem, OptimizerGeneric
 from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
@@ -54,7 +55,6 @@ class TestReciprocalRadiusVariable:
         )
 
     def test_get_value(self, set_test_backend):
-        # Expected reciprocal = 1 / radius; radius from TestRadiusVariable ≈ 553.260
         expected = self.scaling * (1.0 / self.radius_var.get_value())
         assert_allclose(self.reciprocal_radius_var.get_value(), expected, atol=1e-4)
         a = str(self.reciprocal_radius_var)
@@ -74,60 +74,37 @@ class TestReciprocalRadiusVariable:
         )
 
     def test_update_value(self, set_test_backend):
-        # Update reciprocal value to 0.25, expect new radius = 1/0.25 = 4.0
         self.reciprocal_radius_var.update_value(0.25)
         expected_radius = self.scaling * (1.0 / 0.25)
         assert_allclose(self.radius_var.get_value(), expected_radius, atol=1e-4)
         assert_allclose(self.reciprocal_radius_var.get_value(), 0.25, atol=1e-4)
 
     def test_get_value_infinity(self, set_test_backend):
-        # Set the surface radius to 0 so reciprocal becomes infinity (division by zero)
         self.radius_var.update_value(0.0)
         val = self.reciprocal_radius_var.get_value()
         assert val == be.inf
 
     def test_update_value_zero(self, set_test_backend):
-        # Update reciprocal value to 0 -> new radius set to infinity, so reciprocal becomes 0
         self.reciprocal_radius_var.update_value(0.0)
         assert_allclose(self.reciprocal_radius_var.get_value(), 0.0)
 
-    def test_optimization(self):  # do not test for torch backend
-        # Add the reciprocal radius variable for the first surface
+    def test_optimization(self):
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
-
-        # Run the optimization
         optimizer = OptimizerGeneric(self.problem)
-
-        # this will set the radius of surface 1 to scale*(1/0.1) = 10*(10) = 100
         self.reciprocal_radius_var.update_value(0.1)
         optimizer.optimize(tol=1e-9)
-
-        # Check if the radius of the first surface is close to the expected value
-        expected_radius = 19.93  # Expected value from the initial definition
+        expected_radius = 19.93
         optimized_radius = self.radius_var.get_value()
-        # just make sure the final value is in the ballpark, and there were no exceptions thrown
         assert_allclose(optimized_radius, expected_radius, atol=5)
 
-    def test_optimization_with_flat_surface(self):  # do not test for torch backend
-        # Add the reciprocal radius variable for the first surface
+    def test_optimization_with_flat_surface(self):
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
-
-        # Make the first surface mathematically flat
         self.radius_var.update_value(-be.inf)
-
-        # Run the optimization
         optimizer = OptimizerGeneric(self.problem)
         optimizer.optimize(tol=1e-9)
-
-        # the optimization above stops prematurely, so we have to try again.
-        # TODO: understand the problem and fix it or at least properly document it.
-        # trying again:
         optimizer.optimize(tol=1e-9)
-
-        # Check if the radius of the first surface is close to the expected value
-        expected_radius = 19.93  # Expected value from the initial definition
+        expected_radius = 19.93
         optimized_radius = self.radius_var.get_value()
-        # just make sure the final value is in the ballpark, and there were no exceptions thrown
         assert_allclose(optimized_radius, expected_radius, atol=5)
 
 
@@ -226,14 +203,12 @@ class TestMaterialVariable:
         assert self.material_var.get_value() == "F5"
 
     def test_scale(self, set_test_backend):
-        # Does not make much sense, scale() doesn't do anything
         assert self.material_var.scale("F5") == "F5"
 
     def test_string_representation(self, set_test_backend):
         assert str(self.material_var) == "Material, Surface 1"
 
     def test_init_with_abbe_material(self):
-        # Force surface 1 to use an AbbeMaterial
         abbe = AbbeMaterial(n=(1.5168,), abbe=(64.17,))
         self.optic.surface_group.surfaces[self.surface_number].material_post = abbe
 
@@ -253,8 +228,6 @@ class TestMaterialVariable:
                 surface_number=self.surface_number,
                 glass_selection=self.glass_selection,
             )
-
-            # Confirm conversion occurred
             assert mat_var.get_value() == "N-BK7"
             mock_print.assert_called()
             printed = mock_print.call_args[0][0]
@@ -541,11 +514,15 @@ class TestForbesQbfsCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
+        
+        surface_config = ForbesSurfaceConfig(
+            radius=100,
+            terms={1: 0.1, 2: 0.2, 3: 0.3},
+            norm_radius=15.0
+        )
         forbes_geo = ForbesQbfsGeometry(
             CoordinateSystem(),
-            100,
-            radial_terms={1: 0.1, 2: 0.2, 3: 0.3},
-            norm_radius=15.0,
+            surface_config=surface_config
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
         self.forbes_var = variable.ForbesQbfsCoeffVariable(
@@ -598,49 +575,57 @@ class TestForbesQ2dCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
+        
+        freeform_coeffs = {
+            ('a', 1, 1): 0.1,
+            ('a', 2, 2): 0.2,
+            ('b', 1, 1): 0.3,
+        }
+        surface_config = ForbesSurfaceConfig(
+            radius=100,
+            conic=0.0,
+            terms=freeform_coeffs,
+            norm_radius=15.0
+        )
         forbes_geo = ForbesQ2dGeometry(
             CoordinateSystem(),
-            100,
-            conic=0.0,
-            freeform_coeffs={
-                (1, 1): 0.1,
-                (2, 2): 0.2,
-                (1, 1, "sin"): 0.3,
-            },
-            norm_radius=15.0,
+            surface_config=surface_config,
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
-        # Variable for the (2, 2) cosine term
+        
         self.forbes_var = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, (2, 2), apply_scaling=False
+            self.optic, 1, ('a', 2, 2), apply_scaling=False
         )
 
     def test_get_value(self, set_test_backend):
         assert_allclose(self.forbes_var.get_value(), 0.2)
 
     def test_get_value_nonexistent(self, set_test_backend):
+        
         forbes_var_new = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, (3, 1), apply_scaling=False
+            self.optic, 1, ('a', 1, 3), apply_scaling=False
         )
         assert_allclose(forbes_var_new.get_value(), 0.0)
 
     def test_update_value_existing(self, set_test_backend):
         self.forbes_var.update_value(0.5)
         assert_allclose(self.forbes_var.get_value(), 0.5)
-        # Test the public API, not the internal implementation detail
+        
         assert_allclose(
-            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[(2, 2)], 0.5
+            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[('a', 2, 2)], 0.5
         )
 
     def test_update_value_new(self, set_test_backend):
+        
+        key = ('a', 1, 3)
         forbes_var_new = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, (3, 1), apply_scaling=False
+            self.optic, 1, key, apply_scaling=False
         )
         forbes_var_new.update_value(0.9)
         assert_allclose(forbes_var_new.get_value(), 0.9)
-        assert (3, 1) in self.optic.surface_group.surfaces[1].geometry.freeform_coeffs
+        assert key in self.optic.surface_group.surfaces[1].geometry.freeform_coeffs
         assert_allclose(
-            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[(3, 1)], 0.9
+            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[key], 0.9
         )
 
     def test_string_representation(self, set_test_backend):
@@ -650,28 +635,25 @@ class TestForbesQ2dCoeffVariable:
         with pytest.raises(ValueError):
             variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
 
-    def test_invalid_coeff_tuple(self, set_test_backend):
-        with pytest.raises(ValueError):
-            variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
-
     def test_get_and_update_sine_term(self, set_test_backend):
+        
+        key = ('b', 1, 1)
         var_sin = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, (1, 1, "sin"), apply_scaling=False
+            self.optic, 1, key, apply_scaling=False
         )
         assert_allclose(var_sin.get_value(), 0.3)
 
         var_sin.update_value(-0.5)
         assert_allclose(var_sin.get_value(), -0.5)
         assert_allclose(
-            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[
-                (1, 1, "sin")
-            ],
+            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[key],
             -0.5,
         )
 
     def test_string_representation_sine(self, set_test_backend):
         """Test the string representation for a sine term."""
-        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, (1, 1, "sin"))
+        
+        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, ('b', 1, 1))
         assert str(var_sin) == "Forbes Q-2D Coeff (n=1, m=1, sin), Surface 1"
 
 

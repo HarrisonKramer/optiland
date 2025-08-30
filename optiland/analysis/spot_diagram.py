@@ -419,6 +419,10 @@ class SpotDiagram(BaseAnalysis):
             surf_group.intensity[-1, :],
         )
 
+        # Ignore rays with zero intensity
+        mask = i_g > 0
+        x_g, y_g, z_g, i_g = x_g[mask], y_g[mask], z_g[mask], i_g[mask]
+
         if coordinates == "local":
             x_plot, y_plot, _ = transform(
                 x_g, y_g, z_g, self.optic.image_surface, is_global=True

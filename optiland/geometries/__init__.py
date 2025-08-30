@@ -8,9 +8,14 @@ from .base import BaseGeometry
 from .biconic import BiconicGeometry
 from .chebyshev import ChebyshevPolynomialGeometry
 from .even_asphere import EvenAsphere
-from .forbes import ForbesQ2dGeometry, ForbesQbfsGeometry
-from .nurbs import NurbsGeometry
+from .forbes import (
+    ForbesQ2dGeometry,
+    ForbesQbfsGeometry,
+    ForbesSolverConfig,
+    ForbesSurfaceConfig,
+)
 from .newton_raphson import NewtonRaphsonGeometry
+from .nurbs import NurbsGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
 from .plane_grating import PlaneGrating
@@ -52,6 +57,8 @@ __all__ = [
     # From forbes subpackage
     "ForbesQ2dGeometry",
     "ForbesQbfsGeometry",
+    "ForbesSurfaceConfig",
+    "ForbesSolverConfig",
     # From nurbs subpackage
     "NurbsGeometry",
 ]

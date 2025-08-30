@@ -876,3 +876,92 @@ class TestRayGenerator:
         rays.is_normalized = False
         rays.normalize()
         assert rays.is_normalized is True
+
+
+@pytest.mark.usefixtures("set_test_backend")
+class TestOpticTrace:
+    @pytest.fixture
+    def sample_optic(self):
+        """Provides a configured TessarLens instance for tracing tests."""
+        optic = TessarLens()
+        optic.add_field(y=0.7)
+        optic.add_field(y=1.0)
+        return optic
+
+    def test_trace_single_field_scalar_input(self, sample_optic):
+        """Tests .trace() with a single field point and scalar Hx, Hy."""
+        num_rays = 50
+        rays = sample_optic.trace(
+            Hx=0.0,
+            Hy=0.7,
+            wavelength=sample_optic.primary_wavelength,
+            num_rays=num_rays,
+            distribution="random",
+        )
+        assert isinstance(rays, RealRays)
+        assert len(rays.x) == num_rays
+
+    def test_trace_multiple_fields_array_input(self, sample_optic):
+        """Tests .trace() with multiple field points using array inputs for Hx, Hy."""
+        num_rays_grid_size = 20  
+        num_fields = 2
+        Hx_all = be.array([0.0, 0.0])
+        Hy_all = be.array([0.7, 1.0])
+
+        from optiland.distribution import create_distribution
+        dist = create_distribution("uniform")
+        dist.generate_points(num_rays_grid_size)
+        num_pupil_points = len(dist.x)
+
+        rays = sample_optic.trace(
+            Hx=Hx_all,
+            Hy=Hy_all,
+            wavelength=sample_optic.primary_wavelength,
+            num_rays=num_rays_grid_size,
+            distribution="uniform",
+        )
+        assert isinstance(rays, RealRays)
+        assert len(rays.x) == num_pupil_points * num_fields
+
+    def test_trace_generic_single_ray(self, sample_optic):
+        """Tests .trace_generic() with scalar inputs for a single ray."""
+        rays = sample_optic.trace_generic(
+            Hx=0.0, Hy=1.0, Px=0.5, Py=0.5, wavelength=sample_optic.primary_wavelength
+        )
+        assert isinstance(rays, RealRays)
+        assert len(rays.x) == 1
+
+    def test_trace_generic_multiple_rays_mixed_inputs(self, sample_optic):
+        """Tests .trace_generic() with a mix of scalar and array inputs."""
+        num_pupil_points = 10
+        Px = be.linspace(-1, 1, num_pupil_points)
+        Py = be.zeros(num_pupil_points)
+
+        rays = sample_optic.trace_generic(
+            Hx=0.0, Hy=0.7, Px=Px, Py=Py, wavelength=sample_optic.primary_wavelength
+        )
+        assert isinstance(rays, RealRays)
+        assert len(rays.x) == num_pupil_points
+
+    def test_trace_generic_multiple_fields_and_pupil_points(self, sample_optic):
+        """Tests .trace_generic() with manually expanded arrays for all coordinates."""
+        
+        Hx_in = be.array([0.0, 0.5])
+        Hy_in = be.array([0.7, 0.5])
+        Px_in = be.array([-0.5, 0.5])
+        Py_in = be.array([0.0, 0.0])
+
+        num_fields = len(Hx_in)
+        num_pupils = len(Px_in)
+
+        Hx = be.repeat(Hx_in, num_pupils)
+        Hy = be.repeat(Hy_in, num_pupils)
+        Px = be.tile(Px_in, num_fields)
+        Py = be.tile(Py_in, num_fields)
+
+        # results in: 4 rays (2 fields x 2 pupil points)
+        rays = sample_optic.trace_generic(
+            Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=sample_optic.primary_wavelength
+        )
+        assert isinstance(rays, RealRays)
+        assert len(rays.x) == 4
