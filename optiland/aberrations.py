@@ -247,6 +247,7 @@ class Aberrations:
         various aberration term methods.
         """
         self._inv = self.optic.paraxial.invariant()  # Lagrange invariant
+        self._on_axis = be.isclose(self._inv, 0)
         self._n = self.optic.n()  # Refractive indices for all surfaces
         self._N = self.optic.surface_group.num_surfaces
         self._C = 1 / self.optic.surface_group.radii
@@ -267,7 +268,7 @@ class Aberrations:
             ip_list.append(ip_val)
 
             denom = 2 * self._n[k] * self._inv
-            if denom == 0:
+            if self._on_axis:
                 B_list.append(0)
                 Bp_list.append(0)
             else:
@@ -293,6 +294,27 @@ class Aberrations:
         self._B = be.array(B_list)
         self._Bp = be.array(Bp_list)
 
+    def _TSC_on_axis_term(self, k):
+        """
+        Compute third-order transverse spherical aberration term for surface k
+        when the system is on-axis.
+
+        Args:
+            k (int): Surface index.
+
+        Returns:
+            float: Computed transverse spherical aberration term.
+        """
+        i_val = self._C[k] * self._ya[k] + self._ua[k - 1]
+        term = (
+            self._n[k - 1]
+            * (self._n[k] - self._n[k - 1])
+            * self._ya[k]
+            * (self._ua[k] + i_val)
+            * i_val**2
+        )
+        return term / (2 * self._n[k] * self._n[-1] * self._ua[-1])
+
     def _TSC_term(self, k):
         """
         Compute third-order transverse spherical aberration term for surface k.
@@ -303,6 +325,8 @@ class Aberrations:
         Returns:
             float: Computed transverse spherical aberration term.
         """
+        if self._on_axis:
+            return self._TSC_on_axis_term(k)
         return self._B[k - 1] * self._i[k - 1] ** 2 * self._hp
 
     def _CC_term(self, k):
