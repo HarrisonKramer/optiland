@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for plotting logic.
 
 import optiland.backend as be
+from optiland.rays import RealRays
 
 from .base import BaseAnalysis
 
@@ -93,6 +94,21 @@ class IncoherentIrradiance(BaseAnalysis):
         )
         self.detector_surface = int(detector_surface)
         self.user_initial_rays = user_initial_rays
+        self._initial_ray_data = None
+        if self.user_initial_rays is not None:
+            if not isinstance(self.user_initial_rays, RealRays):
+                raise TypeError("user_initial_rays must be a RealRays object.")
+
+            self._initial_ray_data = {
+                "x": self.user_initial_rays.x,
+                "y": self.user_initial_rays.y,
+                "z": self.user_initial_rays.z,
+                "L": self.user_initial_rays.L,
+                "M": self.user_initial_rays.M,
+                "N": self.user_initial_rays.N,
+                "intensity": self.user_initial_rays.i,
+                "wavelength": self.user_initial_rays.w,
+            }
         self.distribution = distribution
 
         # The detector surface must have a physical aperture
@@ -230,12 +246,21 @@ class IncoherentIrradiance(BaseAnalysis):
         """
         if user_initial_rays is None:
             Hx, Hy = field
-            self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
+            rays_traced = self.optic.trace(
+                Hx, Hy, wavelength, self.num_rays, distribution
+            )
         else:
-            self.optic.surface_group.trace(user_initial_rays)
+            rays_to_trace = RealRays(**self._initial_ray_data)
+            self.optic.surface_group.trace(rays_to_trace)
+            rays_traced = rays_to_trace
 
         surf = self.optic.surface_group.surfaces[self.detector_surface]
-        x_g, y_g, z_g, power = surf.x, surf.y, surf.z, surf.intensity
+        x_g, y_g, z_g, power = (
+            rays_traced.x,
+            rays_traced.y,
+            rays_traced.z,
+            rays_traced.i,
+        )
 
         from optiland.visualization.system.utils import transform
 
