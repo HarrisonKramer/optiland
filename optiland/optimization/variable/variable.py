@@ -29,8 +29,12 @@ from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
 
 
 class Variable:
-    """Represents a Scipy variable in an optical system.
+    """Represents a general variable in an optical system for optimization.
 
+    This class serves as a backend-agnostic abstraction for variables used in
+    optical system optimization. It acts as a wrapper around specific variable
+    behaviors defined in separate modules, and can be used with multiple optimization
+    backends.
     Args:
         optic (OpticalSystem): The optical system to which the variable
             belongs.
