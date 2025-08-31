@@ -457,8 +457,14 @@ class TestLeastSquaresErrorHandling:
         problem = optimization.OptimizationProblem()
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         # No operands are added
-
+        problem.add_operand(
+            operand_type="f2",
+            target=lens.paraxial.f2(),
+            weight=0.0,
+            input_data={"optic": lens},
+        )
         optimizer = optimization.LeastSquares(problem)
+        problem.clear_operands()
         result = optimizer.optimize(maxiter=5)
 
         assert result.success  # Or a similar status indicating valid completion
@@ -702,6 +708,12 @@ class TestGlassExpert:
     def test_vprint_verbose_true(self, capsys):
         """vprint should print when verbose=True."""
         problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=0,
+            weight=0,
+            input_data={"optic": CookeTriplet()},
+        )
         optimizer = glass_expert.GlassExpert(problem)
         optimizer.vprint("Hello World")
 
@@ -712,6 +724,12 @@ class TestGlassExpert:
     def test_vprint_verbose_false(self, capsys):
         """vprint should not print when verbose=False."""
         problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=0,
+            weight=0,
+            input_data={"optic": CookeTriplet()},
+        )
         optimizer = glass_expert.GlassExpert(problem)
         optimizer.verbose = False
         optimizer.vprint("This should not appear")

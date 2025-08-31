@@ -476,7 +476,7 @@ def get_bilinear_weights(coords, bin_edges):
     https://doi.org/10.1364/OPTICA.520485
     """
     x_edges, y_edges = bin_edges
-    x, y = coords[:, 0], coords[:, 1]
+    x, y = coords[:, 0].contiguous(), coords[:, 1].contiguous()
 
     x_centers = (x_edges[:-1] + x_edges[1:]) / 2
     y_centers = (y_edges[:-1] + y_edges[1:]) / 2
