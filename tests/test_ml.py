@@ -178,9 +178,9 @@ class TestOpticalSystemModule:
         problem, lens = setup_problem()
         
         # A simple custom objective that returns a constant
-        custom_fn = lambda: torch.tensor(123.45)
+        custom_fn = lambda: torch.tensor(123.45, dtype=torch.float64)
         
         module = OpticalSystemModule(lens, problem, objective_fn=custom_fn)
         
         loss = module.forward()
-        assert be.isclose(loss, be.array(123.45))
+        assert be.isclose(loss, torch.tensor(123.45, dtype=torch.float64))
