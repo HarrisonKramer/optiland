@@ -11,11 +11,30 @@ Copyright (c) 2017 Brandon Dube
 from __future__ import annotations
 
 from collections import defaultdict
-from functools import lru_cache
+from functools import lru_cache, wraps
 
 from scipy import special
 
 import optiland.backend as be
+
+
+def autograd_aware_cache(func):
+    """
+    A decorator that provides LRU caching but automatically bypasses the
+    cache if the PyTorch backend is active with gradient tracking enabled
+    """
+    cached_func = lru_cache(2000)(func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if be.get_backend() == "torch" and be.grad_mode.requires_grad:
+            # If gradients are on, bypass the cache and run the original function
+            return func(*args, **kwargs)
+        else:
+            # Otherwise (Numpy backend or PyTorch with no_grad), use the cache
+            return cached_func(*args, **kwargs)
+
+    return wrapper
 
 
 def kronecker(i: int, j: int) -> int:
@@ -23,7 +42,7 @@ def kronecker(i: int, j: int) -> int:
     return 1 if i == j else 0
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def gamma_func(n: int, m: int) -> float:
     """Recursive gamma function for Q2D polynomials."""
     if n == 1 and m == 2:
@@ -43,7 +62,7 @@ def gamma_func(n: int, m: int) -> float:
 # bfs polynomials logic
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def g_qbfs(n_minus_1: int) -> float:
     """Recurrence coefficient g for Q-BFS polynomials."""
     if n_minus_1 == 0:
@@ -52,14 +71,14 @@ def g_qbfs(n_minus_1: int) -> float:
     return -(1 + g_qbfs(n_minus_2) * h_qbfs(n_minus_2)) / f_qbfs(n_minus_1)
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def h_qbfs(n_minus_2: int) -> float:
     """Recurrence coefficient h for Q-BFS polynomials."""
     n = n_minus_2 + 2
     return -n * (n - 1) / (2 * f_qbfs(n_minus_2))
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def f_qbfs(n: int) -> float:
     """Recurrence coefficient f for Q-BFS polynomials."""
     if n == 0:
@@ -73,26 +92,34 @@ def f_qbfs(n: int) -> float:
 
 
 def change_basis_qbfs_to_pn(cs: list[float]) -> be.array:
-    """Changes the basis of Q-BFS coefficients to orthonormal Pn coefficients."""
-    bs = be.empty_like(be.array(cs))
-    m = len(bs) - 1
+    """
+    Changes the basis of Q-BFS coefficients to orthonormal Pn coefficients.
+    """
+    m = len(cs) - 1
     if m < 0:
-        return bs
+        return be.array(cs)
+
+    bs_list = [0.0] * (m + 1)
 
     f_m = f_qbfs(m)
-    bs[m] = cs[m] / f_m
+    if not isinstance(f_m, (int | float)):
+        cs = be.stack(cs)
+
+    bs_list[m] = cs[m] / f_m
     if m == 0:
-        return bs
+        return be.array(bs_list) if be.get_backend() != "torch" else be.stack(bs_list)
 
     g = g_qbfs(m - 1)
     f = f_qbfs(m - 1)
-    bs[m - 1] = (cs[m - 1] - g * bs[m]) / f
+    bs_list[m - 1] = (cs[m - 1] - g * bs_list[m]) / f
+
     for i in range(m - 2, -1, -1):
         g = g_qbfs(i)
         h = h_qbfs(i)
         f = f_qbfs(i)
-        bs[i] = (cs[i] - g * bs[i + 1] - h * bs[i + 2]) / f
-    return bs
+        bs_list[i] = (cs[i] - g * bs_list[i + 1] - h * bs_list[i + 2]) / f
+
+    return be.array(bs_list) if be.get_backend() != "torch" else be.stack(bs_list)
 
 
 def _initialize_alphas_q(cs, x, alphas, j=0):
@@ -206,9 +233,19 @@ def _clenshaw_qbfs_der_functional(cs, usq, j=1):
     bs = change_basis_qbfs_to_pn(cs)
     prefix = 2 - 4 * usq
 
-    alphas_j0_list = list(
-        _clenshaw_qbfs_recurrence(bs, usq, be.empty((len(bs), *usq.shape)))
-    )
+    # functional implementation of the base case (j=0)
+    alphas_j0_list = [be.zeros_like(usq) for _ in range(m + 1)]
+    if m >= 0:
+        #  first scalar coefficient is broadcast to the full
+        # tensor size
+        alphas_j0_list[m] = bs[m] + be.zeros_like(usq)
+    if m >= 1:
+        alphas_j0_list[m - 1] = bs[m - 1] + prefix * alphas_j0_list[m]
+    for i in range(m - 2, -1, -1):
+        alphas_j0_list[i] = (
+            bs[i] + prefix * alphas_j0_list[i + 1] - alphas_j0_list[i + 2]
+        )
+
     all_alphas_tensors = [be.stack(alphas_j0_list)]
     prev_alphas_j_list = alphas_j0_list
 
@@ -256,7 +293,7 @@ def compute_z_zprime_qbfs(
 # q2d polynomials logic
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def _g_q2d_raw(n: int, m: int) -> float:
     """Raw G coefficient for Q2D polynomials."""
     if n == 0:
@@ -280,7 +317,7 @@ def _g_q2d_raw(n: int, m: int) -> float:
     return term1 * gamma_func(n, m)
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def _f_q2d_raw(n: int, m: int) -> float:
     """Raw F coefficient for Q2D polynomials."""
     if n == 0 and m == 1:
@@ -307,13 +344,13 @@ def _f_q2d_raw(n: int, m: int) -> float:
     return term1 * gamma_func(n, m)
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def g_q2d(n: int, m: int) -> float:
     """Recurrence coefficient g for Q2D polynomials."""
     return _g_q2d_raw(n, m) / f_q2d(n, m)
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def f_q2d(n: int, m: int) -> float:
     """Recurrence coefficient f for Q2D polynomials."""
     if n == 0:
@@ -322,17 +359,22 @@ def f_q2d(n: int, m: int) -> float:
 
 
 def change_basis_q2d_to_pnm(cns: list[float], m: int) -> be.array:
-    """Changes the basis of Q2D coefficients to orthonormal Pnm coefficients."""
+    """
+    Changes the basis of Q2D coefficients to orthonormal Pnm coefficients.
+    This version is autograd-safe and avoids in-place operations.
+    """
     m = abs(m)
-    ds = be.empty_like(be.array(cns))
     n_max = len(cns) - 1
     if n_max < 0:
-        return ds
+        return be.array(cns)
 
-    ds[n_max] = cns[n_max] / f_q2d(n_max, m)
+    ds_list = [be.array(0.0)] * (n_max + 1)
+    ds_list[n_max] = cns[n_max] / f_q2d(n_max, m)
+
     for n in range(n_max - 1, -1, -1):
-        ds[n] = (cns[n] - g_q2d(n, m) * ds[n + 1]) / f_q2d(n, m)
-    return ds
+        ds_list[n] = (cns[n] - g_q2d(n, m) * ds_list[n + 1]) / f_q2d(n, m)
+
+    return be.stack(ds_list)
 
 
 _ABC_Q2D_SPECIAL_CASES = {
@@ -344,7 +386,7 @@ _ABC_Q2D_SPECIAL_CASES = {
 }
 
 
-@lru_cache(None)
+@autograd_aware_cache
 def abc_q2d(n: int, m: int) -> tuple[float, float, float]:
     """Recurrence coefficients A, B, C for Q2D Clenshaw algorithm."""
     d = (4 * n**2 - 1) * (m + n - 2) * (m + 2 * n - 3)
@@ -392,16 +434,12 @@ def _compute_m_gt0_components(ams, bms, u, t, usq):
 
     for m_idx, (a_coef, b_coef) in enumerate(zip(ams, bms, strict=False)):
         m = m_idx + 1
-        has_a = a_coef and any(c != 0 for c in a_coef)
-        has_b = b_coef and any(c != 0 for c in b_coef)
-        if not has_a and not has_b:
-            continue
 
         s_a, s_b, s_prime_a, s_prime_b = 0, 0, 0, 0
-        if has_a:
+        if a_coef:
             alphas_a = clenshaw_q2d_der(a_coef, m, usq, j=1)
             s_a, s_prime_a = _get_s_and_s_prime(alphas_a, m, len(a_coef))
-        if has_b:
+        if b_coef:
             alphas_b = clenshaw_q2d_der(b_coef, m, usq, j=1)
             s_b, s_prime_b = _get_s_and_s_prime(alphas_b, m, len(b_coef))
 
@@ -434,7 +472,7 @@ def compute_z_zprime_q2d(cm0, ams, bms, u, t):
     zeros = be.zeros_like(u)
 
     poly_sum_m0, d_poly_sum_m0_du = zeros, zeros
-    if cm0 and any(c != 0 for c in cm0):
+    if cm0:
         poly_sum_m0, d_poly_sum_m0_du = compute_z_zprime_qbfs(cm0, u, usq)
 
     poly_sum_m_gt0, dr_m_gt0, dt_m_gt0 = _compute_m_gt0_components(ams, bms, u, t, usq)
