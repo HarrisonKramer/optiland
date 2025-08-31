@@ -84,13 +84,9 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
                 var = self.problem.variables[i]
                 min_val, max_val = var.bounds
 
-                # Inverse scale the parameter data
-                min_val = (
-                    var.variable.inverse_scale(min_val) if min_val is not None else None
-                )
-                max_val = (
-                    var.variable.inverse_scale(max_val) if max_val is not None else None
-                )
+                # Scale the parameter data
+                min_val = var.variable.scale(min_val) if min_val is not None else None
+                max_val = var.variable.scale(max_val) if max_val is not None else None
 
                 # Clamp the parameter data to the defined bounds
                 if min_val is not None and max_val is not None:
