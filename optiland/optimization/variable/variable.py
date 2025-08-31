@@ -1,7 +1,7 @@
-"""Scipy Variable Module
+"""Variable Module
 
 This module contains the Variable class for defining variables in an optical
-system for optimization using scipy. The Variable class serves as a wrapper
+system for optimization. The Variable class serves as a wrapper
 around specific variable behaviors defined in separate modules.
 
 Kramer Harrison, 2024
