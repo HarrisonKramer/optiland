@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from .base import OptimizerGeneric
-from .least_squares import LeastSquares
-from .dual_annealing import DualAnnealing
-from .differential_evolution import DifferentialEvolution
-from .shgo import SHGO
 from .basin_hopping import BasinHopping
+from .differential_evolution import DifferentialEvolution
+from .dual_annealing import DualAnnealing
 from .glass_expert import GlassExpert
+from .least_squares import LeastSquares
+from .shgo import SHGO
 
 __all__ = [
     "OptimizerGeneric",

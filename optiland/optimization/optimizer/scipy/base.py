@@ -13,9 +13,8 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from scipy import optimize
-
 import optiland.backend as be
+from scipy import optimize
 
 from ..base import BaseOptimizer
 

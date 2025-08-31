@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 
 from scipy import optimize
 
-import optiland.backend as be
-
 from .base import OptimizerGeneric
 
 if TYPE_CHECKING:
