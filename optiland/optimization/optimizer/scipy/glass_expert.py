@@ -28,13 +28,12 @@ from optiland.materials import (
     get_neighbour_glasses,
     plot_glass_map,
 )
-from optiland.optimization.optimization import (
-    OptimizationProblem,
-    OptimizerGeneric,
-)
+
+from .base import OptimizerGeneric
 
 if TYPE_CHECKING:
-    from optiland.optimization.variable import Variable
+    from ...problem import OptimizationProblem
+    from ...variable import Variable
 
 
 class GlassExpert(OptimizerGeneric):

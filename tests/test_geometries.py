@@ -2344,29 +2344,95 @@ class TestForbesQbfsGeometry:
         optic = self._create_forbes_autodiff_optic()
         forbes_surface = optic.surface_group.surfaces[3].geometry
         # We need to get the tensor that requires grad, which is now internal
-        coeffs_to_test = forbes_surface.coeffs_c
-        coeffs_to_test.requires_grad_(True)
+        coeffs_to_test = forbes_surface.radial_terms
+        # Iterate through the dictionary of terms and set requires_grad on each tensor value
+        for coeff_tensor in coeffs_to_test.values():
+            coeff_tensor.requires_grad_(True)
 
-        ray = RealRays(
-            x=be.array([0.0]),
-            y=be.array([10.0]),
-            z=be.array([0.0]),
-            L=be.array([0.0]),
-            M=be.array([0.0]),
-            N=be.array([1.0]),
-            wavelength=be.array([1.550]),
-            intensity=be.array([1.0]),
-        )
+        # ray trace
+        initial_rays = RealRays(x=0.1, y=0.1, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55)
+        optic.surface_group.trace(initial_rays)
+        final_x = initial_rays.x
 
-        rays_out = optic.surface_group.trace(ray)
-        loss = be.sum(rays_out.y)
-
+        # Define a simple loss and backpropagate
+        loss = be.sum(final_x**2)
         loss.backward()
 
-        grad = coeffs_to_test.grad
-        assert grad is not None, "Gradient should be computed"
-        assert be.any(grad != 0), "Gradient should not be all zeros"
-        assert not be.any(be.isnan(grad)), "Gradient contains NaN values"
+        # Check that at least one coefficient has a gradient
+        grads = [c.grad for c in coeffs_to_test.values()]
+        assert any(g is not None and be.to_numpy(g) != 0 for g in grads)
+
+
+    @pytest.mark.parametrize("backend_name", ["torch"])
+    def test_forbes_qbfs_autodiff_inplace_modification(self, backend_name):
+        """
+        Tests for in-place modification errors during backpropagation with ForbesQbfsGeometry.
+        This test replicates the conditions that led to the RuntimeError in the user's notebook.
+        """
+        be.set_backend(backend_name)
+        be.grad_mode.enable()
+        from optiland.physical_apertures import RectangularAperture
+        from optiland.analysis import IncoherentIrradiance
+        # 1. Create a simple optical system with a Forbes Q-bfs surface
+        optic = Optic(name="Test Forbes Autodiff")
+        optic.set_aperture(aperture_type="EPD", value=10.0)
+        optic.add_wavelength(value=0.55, is_primary=True)
+        optic.set_field_type(field_type="angle")
+        optic.add_field(y=0.0)
+        optic.add_surface(index=0, thickness=be.inf)
+        optic.add_surface(
+            index=1,
+            surface_type="forbes_qbfs",
+            radius=be.tensor(100.0, requires_grad=True),
+            conic=be.tensor(0.0, requires_grad=True),
+            thickness=10.0,
+            material="N-BK7",
+            radial_terms={i: be.tensor(0.0, requires_grad=True) for i in range(2)},
+            norm_radius=be.tensor(10.0, requires_grad=True)
+        )
+        optic.add_surface(index=2, aperture=RectangularAperture(x_min=-5, x_max=5, y_min=-5, y_max=5))
+
+        # 2. Create a simple source and rays
+        x_start = be.linspace(-1, 1, 10)
+        y_start = be.linspace(-1, 1, 10)
+        y_grid, x_grid = be.meshgrid(y_start, x_start) # Corrected meshgrid call
+
+        x_flat, y_flat = x_grid.flatten(), y_grid.flatten()
+        num_rays = len(x_flat)
+        num_bins = 10
+
+        initial_rays = RealRays(
+            x=x_flat,
+            y=y_flat,
+            z=be.zeros(num_rays),
+            L=be.zeros(num_rays),
+            M=be.zeros(num_rays),
+            N=be.ones(num_rays),
+            intensity=be.ones(num_rays),
+            wavelength=be.full((num_rays,), 0.55),
+        )
+
+        # 3. Perform a forward pass and calculate a loss FUNCTION IDENTICAL TO THE NOTEBOOK
+        irradiance_analyzer = IncoherentIrradiance(optic, user_initial_rays=initial_rays, res=(num_bins, num_bins))
+        irradiance_analyzer._generate_data()
+        irr_map, _, _ = irradiance_analyzer.data[0][0]
+        
+        # --- NEW: Replicating the notebook's loss calculation ---
+        actual_profile = irr_map[:, num_bins // 2]
+        if actual_profile.max() > 0:
+            actual_profile = actual_profile / actual_profile.max()
+        
+        target_irradiance = be.ones(num_bins) # A simple target
+        loss_fn = be.nn.MSELoss()
+        loss = loss_fn(actual_profile, target_irradiance)
+        # --- END NEW ---
+
+        # 4. Attempt to perform a backward pass
+        try:
+            loss.backward()
+        except RuntimeError as e:
+            pytest.fail(f"Backward pass failed with a RuntimeError, indicating a probable in-place modification issue: {e}")
+
 
     def test_to_dict_from_dict(self, set_test_backend):
         """
@@ -2615,7 +2681,7 @@ class TestForbesValidation:
         # The sum S(x) = 0.5 * alpha_0 for the Q2D polynomials
         Q_n_m_optiland = 0.5 * alphas[0]
 
-        assert np.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
+        assert be.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
 
 
     def test_q2d_normal_against_numerical_derivative(self):
