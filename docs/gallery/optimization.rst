@@ -32,5 +32,6 @@ taking advantage of PyTorch’s autograd and optimizers for differentiable desig
 
 .. nbgallery::
     optimization/torch_rms_spot_size
-    # optimization/torch_constrained
-    optimization/torch_module_optimization
+    optimization/torch_constrained
+    optimization/torch_module_rms_spot
+    optimization/torch_module_custom_objective
