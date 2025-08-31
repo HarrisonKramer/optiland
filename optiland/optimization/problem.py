@@ -95,9 +95,7 @@ class OptimizationProblem:
 
     def fun_array(self):
         """Array of operand weighted deltas squared"""
-        terms = [op.fun() for op in self.operands]
-        if not terms:
-            return be.array([])
+            return be.array([0.0])
         return be.stack(terms) ** 2
 
     def sum_squared(self):
