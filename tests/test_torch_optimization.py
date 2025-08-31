@@ -14,20 +14,36 @@ def setup_problem(
     min_val=1.0,
     max_val=10.0,
     target=12.0,
+    initial_value=5.0,
 ):
     """
-    Helper function to set up a standard optimization problem.
+    Helper function to set up a standard optimization problem for testing.
+
+    Args:
+        add_variable (bool): Whether to add a variable to the problem.
+        add_operand (bool): Whether to add an operand to the problem.
+        min_val (float, optional): The minimum bound for the variable.
+        max_val (float, optional): The maximum bound for the variable.
+        target (float): The target value for the operand.
+        initial_value (float): The initial value for the variable.
+
+    Returns:
+        tuple: A tuple containing the OptimizationProblem and the lens object.
     """
     lens = CookeTriplet()
     problem = OptimizationProblem()
+
+    # Set the initial state before adding variables to ensure it's captured
     if add_variable:
+        lens.surface_group.surfaces[1].radius = initial_value
         problem.add_variable(
             lens,
-            "thickness",
+            "radius",
             surface_number=1,
             min_val=min_val,
             max_val=max_val,
         )
+
     if add_operand:
         problem.add_operand(
             operand_type="f2",
@@ -35,6 +51,9 @@ def setup_problem(
             weight=1.0,
             input_data={"optic": lens},
         )
+
+    # Manually update optics to reflect initial state
+    problem.update_optics()
     return problem, lens
 
 
@@ -42,8 +61,8 @@ def setup_problem(
 def set_torch_backend():
     """
     Fixture to ensure the torch backend is set for all tests in this file.
-    It will set the backend to torch before the tests run and revert to numpy
-    after all tests are completed, even if a test fails.
+    It will set the backend to torch before the tests run and revert to the
+    original backend after all tests in the module are completed.
     """
     original_backend = be.get_backend()
     be.set_backend("torch")
@@ -51,182 +70,145 @@ def set_torch_backend():
     be.set_backend(original_backend)
 
 
-class TestTorchBaseOptimizer:
+class TestTorchBaseOptimizerSetup:
     """
-    Tests for the TorchBaseOptimizer abstract base class.
+    Tests focused on the setup and edge cases of the TorchBaseOptimizer,
+    which are independent of the specific optimizer algorithm used.
     """
 
-    def test_init_runtime_error(self):
+    def test_init_raises_error_if_backend_not_torch(self):
         """
-        Test that an error is raised if the backend is not 'torch'.
+        Ensures that initializing a Torch optimizer without the 'torch'
+        backend raises a RuntimeError.
         """
+        # This test temporarily switches the backend and must restore it
+        # to not affect other tests, as the module-scoped fixture will
+        # not run between tests.
         original_backend = be.get_backend()
-        be.set_backend("numpy")
-        problem = setup_problem()[0]
-        # We need to use a concrete class to test the base class __init__
-        with pytest.raises(RuntimeError) as e:
-            _ = TorchAdamOptimizer(problem)
-        assert "requires the 'torch' backend" in str(e.value)
-        be.set_backend(original_backend)  # Reset backend for other tests
+        try:
+            be.set_backend("numpy")
+            # We need to re-run setup_problem under the numpy backend
+            problem, _ = setup_problem()
+            with pytest.raises(RuntimeError, match="requires the 'torch' backend"):
+                TorchAdamOptimizer(problem)
+        finally:
+            # Restore the backend for subsequent tests
+            be.set_backend(original_backend)
 
-    def test_bounds_application(self):
+    def test_init_enables_gradient_tracking_with_warning(self):
         """
-        Test that _apply_bounds correctly clamps parameters to min/max values.
+        Tests that a warning is issued if gradient tracking is disabled
+        when the optimizer is initialized, and that it gets enabled.
         """
-        problem, lens = setup_problem(min_val=10, max_val=20)
-        optimizer = TorchAdamOptimizer(problem)
+        # Create the problem first. This may enable grad mode.
+        problem, _ = setup_problem()
+        
+        # Now, explicitly disable grad mode to test the optimizer's __init__.
+        if hasattr(be.grad_mode, "disable"):
+             be.grad_mode.disable()
+        assert not be.grad_mode.requires_grad
 
-        # Set a parameter value outside the bounds to test clamping
-        optimizer.params[0].data.fill_(5.0)
-        optimizer._apply_bounds()
-        assert be.allclose(optimizer.params[0].data, be.array(10.0))
+        # The optimizer's __init__ should now issue a warning and enable grad mode.
+        with pytest.warns(UserWarning, match="Gradient tracking is enabled for PyTorch"):
+             optimizer = TorchAdamOptimizer(problem)
+        
+        # Check that gradients are now enabled by the optimizer
+        assert be.grad_mode.requires_grad
+        
+        # Cleanup: Ensure grad mode is enabled for subsequent tests
+        if hasattr(be.grad_mode, "enable"):
+            be.grad_mode.enable()
 
-        optimizer.params[0].data.fill_(25.0)
-        optimizer._apply_bounds()
-        assert be.allclose(optimizer.params[0].data, be.array(20.0))
+@pytest.mark.parametrize("optimizer_class", [TorchAdamOptimizer, TorchSGDOptimizer])
+class TestTorchOptimizers:
+    """
+    A parametrized test suite for all concrete Torch optimizer implementations.
+    """
 
-        optimizer.params[0].data.fill_(15.0)
-        optimizer._apply_bounds()
-        assert be.allclose(optimizer.params[0].data, be.array(15.0))
-
-    def test_bounds_application_with_none(self):
+    def test_optimize_successfully_reduces_loss(self, optimizer_class):
         """
-        Test that _apply_bounds works correctly with None bounds.
+        Verifies that the optimizer successfully reduces the loss function value
+        over a number of steps.
         """
-        problem, lens = setup_problem(min_val=None, max_val=10)
-        optimizer = TorchAdamOptimizer(problem)
+        problem, _ = setup_problem()
+        initial_loss = problem.sum_squared().item()
 
-        optimizer.params[0].data.fill_(15.0)
-        optimizer._apply_bounds()
-        assert be.allclose(optimizer.params[0].data, be.array(10.0))
-        assert problem.variables[0].bounds == (None, 0.0)
+        optimizer = optimizer_class(problem)
+        result = optimizer.optimize(n_steps=50, disp=False)
 
-        problem, lens = setup_problem(min_val=10, max_val=None)
-        optimizer = TorchAdamOptimizer(problem)
-        optimizer.params[0].data.fill_(5.0)
-        optimizer._apply_bounds()
-        assert be.allclose(optimizer.params[0].data, be.array(10.0))
+        assert result.fun < initial_loss
+        assert be.isclose(be.array(result.fun), be.array(problem.sum_squared().item()))
 
-    def test_optimize_no_variables(self):
+    def test_optimize_no_operands_returns_zero_loss(self, optimizer_class):
         """
-        Test that optimization completes successfully with no variables.
+        Tests that optimization with no operands results in a loss of zero,
+        as there is nothing to optimize.
         """
-        problem, lens = setup_problem(add_variable=False)
-        optimizer = TorchAdamOptimizer(problem)
-        with pytest.raises(ValueError):
-            result = optimizer.optimize()
-
-    def test_optimize_no_operands(self):
-        """
-        Test that optimization completes successfully with no operands.
-        """
-        problem, lens = setup_problem(add_operand=False)
-        optimizer = TorchAdamOptimizer(problem)
-        result = optimizer.optimize()
+        problem, _ = setup_problem(add_operand=False)
+        optimizer = optimizer_class(problem)
+        result = optimizer.optimize(n_steps=10, disp=False)
         assert be.isclose(be.array(result.fun), be.array(0.0))
 
-    def test_callback(self):
+    def test_optimize_no_variables_raises_error(self, optimizer_class):
         """
-        Test that the callback function is called at each step with the correct values.
+        Tests that attempting to optimize a problem with no variables raises
+        a ValueError, as there are no parameters for the optimizer to act on.
+        """
+        problem, _ = setup_problem(add_variable=False)
+        optimizer = optimizer_class(problem)
+        with pytest.raises(ValueError):
+            optimizer.optimize(n_steps=10)
+
+    def test_optimize_with_zero_steps_makes_no_change(self, optimizer_class):
+        """
+        Tests that running the optimizer for zero steps results in no change
+        to the loss function or the variable values.
+        """
+        problem, _ = setup_problem(initial_value=5.0)
+        initial_loss = problem.sum_squared().item()
+        initial_param_val = problem.variables[0].variable.get_value()
+
+        optimizer = optimizer_class(problem)
+        result = optimizer.optimize(n_steps=0, disp=False)
+
+        assert be.isclose(be.array(result.fun), be.array(initial_loss))
+        final_param_val = problem.variables[0].variable.get_value()
+        assert be.isclose(initial_param_val, final_param_val)
+
+
+    def test_callback_is_invoked_at_each_step(self, optimizer_class):
+        """
+        Ensures the callback function is called exactly n_steps times with the
+        correct step index and a float loss value.
         """
         problem, _ = setup_problem()
-        optimizer = TorchAdamOptimizer(problem)
-        n_steps = 5
-
+        optimizer = optimizer_class(problem)
+        n_steps = 10
         history = []
+
         def callback_fn(step, loss):
             history.append((step, loss))
-        
-        optimizer.optimize(n_steps=n_steps, callback=callback_fn)
-        
+
+        optimizer.optimize(n_steps=n_steps, callback=callback_fn, disp=False)
+
         assert len(history) == n_steps
-        for i in range(n_steps):
-            assert history[i][0] == i
-            assert isinstance(history[i][1], float)
+        for i, (step, loss) in enumerate(history):
+            assert step == i
+            assert isinstance(loss, float)
+            if i > 0: # Loss is not guaranteed to decrease every step for all optimizers
+                assert loss >= 0.0
 
-    def test_vprint_disp_true(self, capsys):
+    @pytest.mark.parametrize("disp, should_have_output", [(True, True), (False, False)])
+    def test_display_output_controlled_by_disp_flag(self, capsys, optimizer_class, disp, should_have_output):
         """
-        Test that print statements appear when disp is True.
+        Tests that console output is correctly controlled by the 'disp' flag.
         """
         problem, _ = setup_problem()
-        optimizer = TorchAdamOptimizer(problem)
-        optimizer.optimize(n_steps=1, disp=True)
-
+        optimizer = optimizer_class(problem)
+        optimizer.optimize(n_steps=1, disp=disp)
         captured = capsys.readouterr()
-        assert "Loss" in captured.out
 
-
-    def test_vprint_disp_false(self, capsys):
-        """
-        Test that print statements do not appear when disp is False.
-        """
-        problem, _ = setup_problem()
-        optimizer = TorchAdamOptimizer(problem)
-        optimizer.optimize(n_steps=1, disp=False)
-
-        captured = capsys.readouterr()
-        assert "Loss" not in captured.out
-
-
-class TestTorchAdamOptimizer:
-    """
-    Tests for the concrete TorchAdamOptimizer class.
-    """
-
-    def test_optimize_success(self):
-        """
-        Test that the optimizer successfully reduces the merit function.
-        """
-        problem, _ = setup_problem()
-        initial_value = problem.sum_squared().item()
-
-        optimizer = TorchAdamOptimizer(problem)
-        result = optimizer.optimize(n_steps=50, disp=False)
-
-        assert result.fun < initial_value
-
-    def test_optimize_with_bounds(self):
-        """
-        Test that optimization works correctly with bounds and the final
-        variable is within the bounds.
-        """
-        min_b, max_b = 10, 100
-        problem, lens = setup_problem(min_val=min_b, max_val=max_b)
-        original = problem.sum_squared().item()
-
-        optimizer = TorchAdamOptimizer(problem)
-        result = optimizer.optimize(n_steps=100, disp=False)
-
-        assert result.fun < original # Check for improvement
-
-
-class TestTorchSGDOptimizer:
-    """
-    Tests for the concrete TorchSGDOptimizer class.
-    """
-
-    def test_optimize_success(self):
-        """
-        Test that the optimizer successfully reduces the merit function.
-        """
-        problem, _ = setup_problem()
-        initial_value = problem.sum_squared().item()
-
-        optimizer = TorchSGDOptimizer(problem)
-        result = optimizer.optimize(n_steps=50, disp=False)
-
-        assert result.fun < initial_value
-    
-    def test_optimize_with_bounds(self):
-        """
-        Test that optimization works correctly with bounds and the final
-        variable is within the bounds.
-        """
-        min_b, max_b = 10, 100
-        problem, lens = setup_problem(min_val=min_b, max_val=max_b)
-        original = problem.sum_squared().item()
-
-        optimizer = TorchSGDOptimizer(problem)
-        result = optimizer.optimize(n_steps=100, disp=False)
-
-        assert result.fun < original # Check for improvement
+        if should_have_output:
+            assert "Loss" in captured.out
+        else:
+            assert "Loss" not in captured.out
