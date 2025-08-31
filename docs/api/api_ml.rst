@@ -1,4 +1,4 @@
-Machine Learnin (ML)
+Machine Learning (ML)
 ====================
 
 This section describes the machine learning (ML) modules in Optiland. These modules provide tools and functionalities for integrating machine learning techniques into optical design and optimization workflows.
