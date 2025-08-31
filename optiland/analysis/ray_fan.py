@@ -210,44 +210,32 @@ class RayFan(BaseAnalysis):
         data["Px"] = be.linspace(-1, 1, self.num_points)
         data["Py"] = be.linspace(-1, 1, self.num_points)
         for field in self.fields:
-            Hx = field[0]
-            Hy = field[1]
-
+            Hx, Hy = field[0], field[1]
             data[f"{field}"] = {}
             for wavelength in self.wavelengths:
                 data[f"{field}"][f"{wavelength}"] = {}
 
-                self.optic.trace(
+                rays_x = self.optic.trace(
                     Hx=Hx,
                     Hy=Hy,
                     wavelength=wavelength,
                     num_rays=self.num_points,
                     distribution="line_x",
                 )
-                data[f"{field}"][f"{wavelength}"]["x"] = self.optic.surface_group.x[
-                    -1, :
-                ]
-                data[f"{field}"][f"{wavelength}"]["intensity_x"] = (
-                    self.optic.surface_group.intensity[-1, :]
-                )
+                data[f"{field}"][f"{wavelength}"]["x"] = rays_x.x
+                data[f"{field}"][f"{wavelength}"]["intensity_x"] = rays_x.i
 
-                self.optic.trace(
+                rays_y = self.optic.trace(
                     Hx=Hx,
                     Hy=Hy,
                     wavelength=wavelength,
                     num_rays=self.num_points,
                     distribution="line_y",
                 )
-                data[f"{field}"][f"{wavelength}"]["y"] = self.optic.surface_group.y[
-                    -1, :
-                ]
-                data[f"{field}"][f"{wavelength}"]["intensity_y"] = (
-                    self.optic.surface_group.intensity[-1, :]
-                )
+                data[f"{field}"][f"{wavelength}"]["y"] = rays_y.y
+                data[f"{field}"][f"{wavelength}"]["intensity_y"] = rays_y.i
 
-        # remove distortion
         data = self._remove_distortion(data)
-
         return data
 
 
@@ -262,6 +250,11 @@ class BestFitRayFan(RayFan):
 
     The analysis plane for determining the ray intersection points is the
     nominal image plane (the final surface in the optical model).
+
+    Unlike the standard `RayFan`, this analysis does not recenter the plot on
+    the chief ray. The origin (0,0) is the location of the best-fit sphere
+    center. Therefore, the plot shows all aberrations, including distortion,
+    relative to this optimal focal point.
 
     Args:
         optic (Optic): The optic object to analyze.
@@ -349,8 +342,5 @@ class BestFitRayFan(RayFan):
                 # 5. Calculate lateral error relative to the reference point
                 data[f"{field}"][f"{wavelength}"]["y"] = rays_y.y - ref_y
                 data[f"{field}"][f"{wavelength}"]["intensity_y"] = rays_y.i
-
-        # 6. Remove distortion
-        data = self._remove_distortion(data)
 
         return data

@@ -19,8 +19,17 @@ Core Functionalities
    :toctree: optimization/
    :caption: Optimization Modules
 
-   optimization.optimization
-   optimization.glass_expert
+   optimization.problem
+   optimization.optimizer.scipy.base
+   optimization.optimizer.scipy.basin_hopping
+   optimization.optimizer.scipy.differential_evolution
+   optimization.optimizer.scipy.dual_annealing
+   optimization.optimizer.scipy.least_squares
+   optimization.optimizer.scipy.shgo
+   optimization.optimizer.scipy.glass_expert
+   optimization.optimizer.torch.base
+   optimization.optimizer.torch.adam
+   optimization.optimizer.torch.sgd
 
 
 Operands

@@ -214,8 +214,13 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
         solver_config: ForbesSolverConfig = None,
     ):
         super().__init__(coordinate_system, surface_config, solver_config)
-        self.radial_terms = self.surface_config.terms or {}
-        self._prepare_coeffs()
+        if be.get_backend() == "torch":
+            self.radial_terms = {
+                k: be.array(v) for k, v in (self.surface_config.terms or {}).items()
+            }
+        else:
+            self.radial_terms = self.surface_config.terms or {}
+
         self.norm_radius = be.array(self.surface_config.norm_radius)
         self.is_symmetric = True
 
@@ -227,9 +232,11 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
 
         max_n = max(self.radial_terms.keys())
         if max_n >= 0:
-            self.coeffs_c = be.array(
-                [self.radial_terms.get(n, 0.0) for n in range(max_n + 1)]
-            )
+            terms_list = [
+                self.radial_terms.get(n, be.array(0.0)) for n in range(max_n + 1)
+            ]
+            self.coeffs_c = be.stack(terms_list)
+
             self.coeffs_n = [(n, 0) for n in range(max_n + 1)]
         else:
             self.coeffs_n, self.coeffs_c = [], be.array([])
@@ -244,12 +251,10 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
         Returns:
             The sag of the Forbes Q-bfs surface.
         """
+        self._prepare_coeffs()
         x, y = be.array(x), be.array(y)
         r2 = x**2 + y**2
         z_base = self._base_sag(r2)
-
-        if len(self.coeffs_c) == 0 or be.all(self.coeffs_c == 0):
-            return z_base
 
         rho = be.sqrt(r2)
         u = rho / self.norm_radius
@@ -278,6 +283,7 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
             tuple[float or array_like, float or array_like, float or array_like]:
                 Components of the unit normal vector (nx, ny, nz).
         """
+        self._prepare_coeffs()
         x_in, y_in = be.array(x), be.array(y)
 
         if be.get_backend() == "torch":
@@ -413,8 +419,14 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
     ):
         super().__init__(coordinate_system, surface_config, solver_config)
         self.c = 1 / self.radius if self.radius != 0 else 0
-        self.freeform_coeffs = self.surface_config.terms or {}
-        self.norm_radius = float(self.surface_config.norm_radius)
+        if be.get_backend() == "torch":
+            self.freeform_coeffs = {
+                k: be.array(v) for k, v in (self.surface_config.terms or {}).items()
+            }
+        else:
+            self.freeform_coeffs = self.surface_config.terms or {}
+
+        self.norm_radius = be.array(self.surface_config.norm_radius)
         self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
         self._prepare_coeffs()
 
@@ -449,7 +461,10 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
             coeffs_n.append((key[0], m_val))
             coeffs_c.append(value)
 
-        self.coeffs_n, self.coeffs_c = coeffs_n, be.array(coeffs_c)
+        self.coeffs_n, self.coeffs_c = (
+            coeffs_n,
+            be.stack(coeffs_c) if coeffs_c else be.array([]),
+        )
         if self.coeffs_n:
             self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = (
                 q2d_nm_coeffs_to_ams_bms(self.coeffs_n, self.coeffs_c)

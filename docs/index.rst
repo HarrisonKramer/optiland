@@ -159,6 +159,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_fileio
    api/api_geometries
    api/api_materials
+   api/api_ml
    api/api_wavefront
    api/api_optic
    api/api_optimization

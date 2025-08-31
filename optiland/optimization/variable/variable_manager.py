@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from optiland.optimization.variable import Variable
+from .variable import Variable
 
 
 class VariableManager:
