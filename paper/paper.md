@@ -45,7 +45,7 @@ Optiland addresses this need by providing the most complete open-source optical 
 
 The PyTorch backend also provides significant performance gains through GPU acceleration. On typical modern hardware, GPU-accelerated ray tracing achieves speedups of 20-60x compared to CPU-bound NumPy computations, with greater gains possible on high-end or multi-GPU systems. This level of performance enables large-scale, gradient-based optimization and simulations for real-world research and development. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
 
-While several open-source optical packages exist, such as Prysm [https://github.com/brandondube/prysm] and RayOptics [https://github.com/mjhoptics/ray-optics], they either lack important features, such as PyTorch integration, or are not sufficiently comprehensive for many research and industrial applications.
+While several powerful open-source optical packages exist, such as Prysm [@Prysm] and RayOptics [@RayOptics], they either lack important features, such as an optimization framework or PyTorch integration, or are not sufficiently comprehensive for many research and industrial applications.
 
 # Functionalities
 
@@ -54,10 +54,11 @@ Optiland supports a wide range of design, analysis, and optimization tasks, maki
 - **Design Tools**: Sequential ray tracing, lens system modeling (spherical, conic, aspheric, freeform surfaces), and flexible aperture/field/wavelength configurations.
 - **Analysis Tools**: Spot diagrams, wavefront analysis, OPD maps, polarization ray tracing, PSF/MTF evaluation, and scattering models.
 - **Optimization and Tolerancing**: Gradient-based and global optimization, Monte Carlo tolerancing, parametric sweeps, and specialized glass selection tools.
+- **Differentiable Ray Tracing**: A fully differentiable backend via PyTorch enables gradient-based optimization and integration with machine learning frameworks.
 - **Material Database**: Built-in refractive index library with support for user-defined materials.
 - **Visualization**: 2D layout plots, 3D ray-trace visualization, and an interactive GUI.
 - **Interoperability**: Import of Zemax OpticStudio files, JSON-based I/O, and a full Python API.
-- **Performance**: GPU acceleration with PyTorch, CPU acceleration with Numba, and differentiable pipelines compatible with machine learning frameworks.
+- **Performance**: GPU acceleration with PyTorch and CPU acceleration with Numba.
 
 # Usage and Examples
 
