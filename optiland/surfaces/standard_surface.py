@@ -167,6 +167,10 @@ class Surface:
         """
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
+        print("normals geo")
+        print(nx)
+        print(ny)
+        print(nz)
         
         
         # Interact with surface (refract or reflect)
@@ -177,13 +181,13 @@ class Surface:
             n2 = self.material_post.n(rays.w)
             rays.refract(nx, ny, nz, n1, n2)
         if self.phase_type:
-            Kx, Ky, Kz = self.phase_type.phase_grating_general(rays,nx,ny,nz)
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
+            Kx, Ky, Kz, opd = self.phase_type.phase_grating_general(rays, nx, ny, nz, n1, n2)
             m = self.phase_type.order
             d = 1/self.phase_type.A
             
-            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m,d)
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m, d, opd)
             
 
         # if there is a surface scatter model, modify ray properties

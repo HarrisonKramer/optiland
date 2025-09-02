@@ -165,7 +165,76 @@ class RealRays(BaseRays):
         self.N = self.N - 2 * dot * nz
         
 
-    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d):
+    # def add _phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d):
+    # #     Args:
+    # #         nx: The x-component of the surface normal.
+    # #         ny: The y-component of the surface normal.
+    # #         nz: The z-component of the surface normal.
+            
+
+    # #     Returns:
+    # #         RealRays: The reflected rays.
+
+    # #     """
+    #     self.L0, self.M0, self.N0 = self.L, self.M, self.N
+    #     #define parameters
+    #     dx, dy, dz = self.L, self.M, self.N
+    #     s=-1
+    #     nx, ny, nz = s*surfnx, s*surfny, s*surfnz
+        
+    #     wavelength = self.w
+    #     # Incident wavevector (k_in = 2π/λ * direction)
+    #     k_mag = 2 * be.pi / wavelength
+    #     kix = k_mag * dx
+    #     kiy = k_mag * dy
+    #     kiz = k_mag * dz
+
+    #     dot_kn = kix * nx + kiy * ny + kiz * nz
+    #     kpx = kix - dot_kn * nx
+    #     kpy = kiy - dot_kn * ny
+    #     kpz = kiz - dot_kn * nz
+        
+    #     kdx = kpx + m * Kx
+    #     kdy = kpy + m * Ky
+    #     kdz = kpz + m * Kz
+     
+    
+    #     kp2 = kdx**2 + kdy**2 + kdz**2
+        
+    #     be.where(kp2 < k_mag**2)
+    #     dk_mag2_kp2=k_mag**2 - kp2
+    #     if be.where(dk_mag2_kp2 < 0, True, False).any():
+    #         raise ValueError("Angular limit on Rays due to phase ")
+        
+    #     k_perp_mag =be.sqrt(dk_mag2_kp2)
+       
+            
+            
+            
+    #     kfx =  kdx + k_perp_mag * nx
+    #     kfy =  kdy + k_perp_mag * ny
+    #     kfz =  kdz + k_perp_mag * nz
+        
+        
+    #     self.L = kfx
+    #     self.M = kfy
+    #     self.N = kfz
+        
+    #             # calculate path difference in wavelengths introduced by grating. 
+                
+
+    #     #dW = (self._grating_spacing_nm/wvl) * (n1*in_sinI + n2*out_sinI)
+
+    #     self.normalize() 
+    #     dot_knn = dx * nx + dy * ny + dz * nz
+    #     sin_in = be.sqrt(1 - dot_knn**2)
+    #     dot_kfn = self.L * nx + self.M * ny + self.N * nz
+    #     sin_out = be.sqrt(1 - dot_kfn**2)
+         
+    #     self.opd = self.opd + d  * (n1 * sin_in + n2 * sin_out)
+         
+    #     return
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d,opd):
     #     Args:
     #         nx: The x-component of the surface normal.
     #         ny: The y-component of the surface normal.
@@ -176,65 +245,12 @@ class RealRays(BaseRays):
     #         RealRays: The reflected rays.
 
     #     """
-        self.L0, self.M0, self.N0 = self.L, self.M, self.N
-        #define parameters
-        dx, dy, dz = self.L, self.M, self.N
-        s=-1
-        nx, ny, nz = s*surfnx, s*surfny, s*surfnz
-        
-        wavelength = self.w
-        # Incident wavevector (k_in = 2π/λ * direction)
-        k_mag = 2 * be.pi / wavelength
-        kix = k_mag * dx
-        kiy = k_mag * dy
-        kiz = k_mag * dz
-
-        dot_kn = kix * nx + kiy * ny + kiz * nz
-        kpx = kix - dot_kn * nx
-        kpy = kiy - dot_kn * ny
-        kpz = kiz - dot_kn * nz
-        
-        kdx = kpx + m * Kx
-        kdy = kpy + m * Ky
-        kdz = kpz + m * Kz
-     
-    
-        kp2 = kdx**2 + kdy**2 + kdz**2
-        
-        be.where(kp2 < k_mag**2)
-        dk_mag2_kp2=k_mag**2 - kp2
-        if be.where(dk_mag2_kp2 < 0, True, False).any():
-            raise ValueError("Angular limit on Rays due to phase ")
-        
-        k_perp_mag =be.sqrt(dk_mag2_kp2)
-       
-            
-            
-            
-        kfx =  kdx + k_perp_mag * nx
-        kfy =  kdy + k_perp_mag * ny
-        kfz =  kdz + k_perp_mag * nz
-        
-        
-        self.L = kfx
-        self.M = kfy
-        self.N = kfz
-        
-                # calculate path difference in wavelengths introduced by grating. 
-                
-
-        #dW = (self._grating_spacing_nm/wvl) * (n1*in_sinI + n2*out_sinI)
-
-        self.normalize() 
-        dot_knn = dx * nx + dy * ny + dz * nz
-        sin_in = be.sqrt(1 - dot_knn**2)
-        dot_kfn = self.L * nx + self.M * ny + self.N * nz
-        sin_out = be.sqrt(1 - dot_kfn**2)
-         
-        self.opd = self.opd + d  * (n1 * sin_in + n2 * sin_out)
+        self.L = Kx
+        self.M = Ky
+        self.N = Kz
+        self.opd += opd
          
         return
-      
 
     def update(self, jones_matrix: be.ndarray = None):
         """Update ray properties (primarily used for polarization)."""

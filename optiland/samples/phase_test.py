@@ -5,7 +5,8 @@ from optiland.phase.grating import GratingPhase
 import math as mth
 import numpy as np
 from optiland.materials import AbbeMaterial, Material
-
+from optiland import wavefront
+import matplotlib.pyplot as plt
 
 
 
@@ -21,7 +22,7 @@ class AsphericSingletMirror(optic.Optic):
         self.add_surface(
             index=2,
             thickness=-100,
-            radius= 50,
+            radius= 500000000000,
             is_stop=True,
             material= "mirror",
             surface_type="standard",
@@ -52,7 +53,7 @@ class AsphericSinglet(optic.Optic):
         self.add_surface(
             index=2,
             thickness=100,
-            radius= 50,
+            radius= 500000000000,
             is_stop=True,
             material= "air",
             surface_type="standard",
@@ -83,13 +84,15 @@ rayData = lens.trace_generic(Hx=0, Hy=0,Px = 0, Py = 1, wavelength=0.53)
 #rayDataFull = lens.trace(Hx = 0, Hy = 0, wavelength = 0.530, num_rays=1, distribution="line_y")
 num_surfaces = lens.surface_group.num_surfaces
 # take intersection points on last surface only
-print(lens.surface_group.y[:,:],lens.surface_group.z[:,:], lens.surface_group.M[:,:],lens.surface_group.N[:,:])
+# print(lens.surface_group.y[:,:],lens.surface_group.z[:,:], lens.surface_group.M[:,:],lens.surface_group.N[:,:])
 #x_image = lens.surface_group.x[num_surfaces - 1, :]
 #y_image = lens.surface_group.y[num_surfaces - 1, :]
 #print(rayDataFull)
-print(rayData)
-print(mth.atan(rayData.M/rayData.N)*180/mth.pi)
+# print(rayData)
+# print(mth.atan(rayData.M/rayData.N)*180/mth.pi)
 lens.draw3D(distribution="line_y")
 #lens.draw()
-
+#opd = wavefront.OPD(lens, field=(0, 0), wavelength=0.530)
+#opd.view(projection="3d", num_points=128)
+#plt.show()
 #rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
