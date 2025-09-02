@@ -240,11 +240,14 @@ class RealRays(BaseRays):
     #         ny: The y-component of the surface normal.
     #         nz: The z-component of the surface normal.
             
-
+        
     #     Returns:
     #         RealRays: The reflected rays.
 
     #     """
+        self.L0 = self.L
+        self.M0 = self.M
+        self.N0 = self.N
         self.L = Kx
         self.M = Ky
         self.N = Kz

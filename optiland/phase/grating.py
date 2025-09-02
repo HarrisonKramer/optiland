@@ -51,10 +51,7 @@ class GratingPhase(BasePhase):
         nx = -nx
         ny = -ny
         nz = -nz
-        print("nx ny nz")
-        print(nx)
-        print(ny)
-        print(nz)
+
         #cross product of n x g
         tx = ny * self.gz - nz * self.gy
         ty = nz * self.gx - nx * self.gz
@@ -66,19 +63,12 @@ class GratingPhase(BasePhase):
         tx = be.where(mag <= 0, 0, tx/ mag)
         ty = be.where(mag <= 0, 0, ty/ mag)
         tz = be.where(mag <= 0, 0, tz/ mag)
-        print("tx ty tz")
-        print(tx)
-        print(ty)
-        print(tz)
+
         
         Kx = (2 * be.pi / spacing) * tx
         Ky = (2 * be.pi / spacing) * ty
         Kz = (2 * be.pi / spacing) * tz
-        print("L M N")
-        print(Kx)
-        print(Ky)
-        print(Kz)
-        rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
+
         #define parameters
         dx, dy, dz = rays.L, rays.M, rays.N
         s=1
@@ -132,6 +122,6 @@ class GratingPhase(BasePhase):
         d = 1/self.A 
         opd =  d  * (n1 * sin_in + n2 * sin_out)
 
-        return kfx, kfy, kfz , opd
+        return kfx, kfy, kfz , opd 
 
    

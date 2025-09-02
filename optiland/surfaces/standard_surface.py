@@ -167,12 +167,7 @@ class Surface:
         """
         # find surface normals
         nx, ny, nz = self.geometry.surface_normal(rays)
-        print("normals geo")
-        print(nx)
-        print(ny)
-        print(nz)
-        
-        
+
         # Interact with surface (refract or reflect)
         if self.is_reflective:
             rays.reflect(nx, ny, nz)
@@ -186,6 +181,7 @@ class Surface:
             Kx, Ky, Kz, opd = self.phase_type.phase_grating_general(rays, nx, ny, nz, n1, n2)
             m = self.phase_type.order
             d = 1/self.phase_type.A
+            
             
             rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m, d, opd)
             
