@@ -45,7 +45,7 @@ Optiland addresses this need by providing the most complete open-source optical 
 
 The PyTorch backend also provides significant performance gains through GPU acceleration. On typical modern hardware, GPU-accelerated ray tracing achieves speedups of 20-60x compared to CPU-bound NumPy computations, with greater gains possible on high-end or multi-GPU systems. This level of performance enables large-scale, gradient-based optimization and simulations for real-world research and development. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
 
-While several powerful open-source optical packages exist, such as Prysm [@Prysm] and RayOptics [@RayOptics], they either lack important features, such as an optimization framework or PyTorch integration, or are not sufficiently comprehensive for many research and industrial applications.
+Several open-source optical packages exist, such as Prysm [@Prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform.
 
 # Functionalities
 
@@ -120,7 +120,7 @@ optimizer.optimize()
 
 ## 3. Switching to the PyTorch backend
 
-Optiland’s API is consistent across backends. Switching to PyTorch enables gradient tracking and GPU acceleration.
+Optiland’s API is identical across backends. Switching to PyTorch enables gradient tracking and GPU acceleration.
 
 ```python
 import optiland.backend as be
@@ -132,7 +132,7 @@ be.set_device("cuda")        # Use CUDA (GPU)
 
 ## 4. End-to-end optimization with PyTorch
 
-The PyTorch backend allows integration with neural networks and gradient-based optimizers.
+The PyTorch backend allows integration with neural networks and gradient-based optimizers. Note that to enable this functionality, the lens should be built when the Pytorch backend is active.
 
 ```python
 import torch
