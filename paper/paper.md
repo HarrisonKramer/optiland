@@ -1,5 +1,5 @@
 ---
-title: 'Optiland: A Python-based, Open-Source Optical Design Software'
+title: 'Optiland: Python-based, Open-Source Optical Design Software'
 authors:
   - name: Kramer Harrison
     orcid: 0009-0000-5494-139X
@@ -7,136 +7,164 @@ authors:
   - name: Manuel Fragata Mendes
     orcid: 0009-0009-2957-0799
     affiliation: 2
-  - name: Grégoire Hein
-    orcid: 0000-0000-0000-0000
-    affiliation:
   - name: Corné Haasjes
     orcid: 0000-0003-0187-4116
     affiliation: "3, 4, 5"
+  - name: Grégoire Hein
+    orcid: 0009-0001-3029-7242
+    affiliation: 1
 affiliations:
   - name: Independent Researcher
     index: 1
   - name: Friedrich Schiller University Jena
     index: 2
-  - name: Department of Ophthalmology, Leiden University Medical Center, The Netherlands
+  - name: Department of Ophthalmology, Leiden University Medical Center, Leiden, The Netherlands
     index: 3
-  - name: Department of Radiology, Leiden University Medical Center, The Netherlands
+    ror: 05xvt9f17
+  - name: Department of Radiology, Leiden University Medical Center, Leiden, The Netherlands
     index: 4
-  - name: Department of Radiation Oncology, Leiden University Medical Center, The Netherlands
+    ror: 05xvt9f17
+  - name: Department of Radiation Oncology, Leiden University Medical Center, Leiden, The Netherlands
     index: 5
-date: 2025-08-01
+    ror: 05xvt9f17
+date: 2025-09-02
 bibliography: paper.bib
 ---
 
 # Summary
 
-**Optiland** is an open-source optical design software written in Python. It offers a comprehensive platform for the design, analysis, and optimization of optical systems, catering to a wide audience from students and hobbyists to professional engineers and researchers. The software supports a variety of optical systems, including traditional refractive and reflective designs, as well as modern freeform and computational optics.
+**Optiland** is open-source optical design software written in Python. It offers a comprehensive platform for the design, analysis, and optimization of optical systems, catering to a wide audience from students and hobbyists to professional engineers and researchers. The software supports a variety of optical systems, including traditional refractive and reflective designs, as well as modern freeform and computational optics.
 
 Core features include sequential ray tracing, a rich library of surface types (spherical, aspheric, freeform), optimization and tolerancing support, and a suite of analysis tools for evaluating optical performance (e.g., spot diagrams, wavefront analysis, modulation transfer function). A key feature of Optiland is its dual-backend architecture, which allows users to switch between a NumPy backend for fast CPU computations and a PyTorch backend for GPU acceleration and automatic differentiation. This enables the integration of Optiland with machine learning workflows and gradient-based optimization, as all calculations are differentiable. The software also includes a graphical user interface (GUI) for interactive design and analysis.
 
 # Statement of Need
 
-The field of optical design has long been dominated by commercial software tools that are often expensive and proprietary. This creates a significant barrier to entry for students, educators, and researchers, who often have limited access to the professional-grade tools required for optical design tasks. While several open-source alternatives exist, they often lack the comprehensive feature set, modern architecture, and performance required for research and industrial applications.
+The field of optical design has long been dominated by commercial software tools such as OpticStudio and CODE V, which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for students, educators, and researchers.
 
-Optiland addresses this need by providing a flexible and feature-rich platform for optical design in Python. The differentiable PyTorch backend is particular relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
+Optiland addresses this need by providing the most complete open-source optical design package available. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particular relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
 
-The PyTorch backend also provides significant performance gains through GPU acceleration. On typical modern hardware, GPU-accelerated ray tracing achieves speedups of 20-60x compared to CPU-bound NumPy computations, with greater gains possible on high-end or multi-GPU systems. This level of performance enables large-scale, gradient-based optimization and simulations for real-world research and development. By combining a modern architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
+The PyTorch backend also provides significant performance gains through GPU acceleration. On typical modern hardware, GPU-accelerated ray tracing achieves speedups of 20-60x compared to CPU-bound NumPy computations, with greater gains possible on high-end or multi-GPU systems. This level of performance enables large-scale, gradient-based optimization and simulations for real-world research and development. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
+
+While several open-source optical packages exist, such as Prysm [https://github.com/brandondube/prysm] and RayOptics [https://github.com/mjhoptics/ray-optics], they either lack important features, such as PyTorch integration, or are not sufficiently comprehensive for many research and industrial applications.
+
+# Functionalities
+
+Optiland supports a wide range of design, analysis, and optimization tasks, making it suitable for both classical optical engineering and modern computational applications. Its main capabilities include:
+
+- **Design Tools**: Sequential ray tracing, lens system modeling (spherical, conic, aspheric, freeform surfaces), and flexible aperture/field/wavelength configurations.
+- **Analysis Tools**: Spot diagrams, wavefront analysis, OPD maps, polarization ray tracing, PSF/MTF evaluation, and scattering models.
+- **Optimization and Tolerancing**: Gradient-based and global optimization, Monte Carlo tolerancing, parametric sweeps, and specialized glass selection tools.
+- **Material Database**: Built-in refractive index library with support for user-defined materials.
+- **Visualization**: 2D layout plots, 3D ray-trace visualization, and an interactive GUI.
+- **Interoperability**: Import of Zemax OpticStudio files, JSON-based I/O, and a full Python API.
+- **Performance**: GPU acceleration with PyTorch, CPU acceleration with Numba, and differentiable pipelines compatible with machine learning frameworks.
 
 # Usage and Examples
 
-Optiland's API is consistent across its backends, allowing users to switch between NumPy and PyTorch with a single command. The following code demonstrates how to set the backend to PyTorch and enable gradient calculations, a crucial step for machine learning applications.
+The following examples demonstrate how to use Optiland, starting with a simple system definition, then optimization, and finally machine-learning integration with PyTorch.
 
-```python
-import optiland.backend as be
-be.set_backend("torch")  # Use the PyTorch backend
-be.set_precision("float32")  # Set precision of calculations
-be.grad_mode.enable()  # Enable gradient tracking
-be.set_device("cuda")  # Use CUDA (GPU)
-```
-
-The example below illustrates a typical optimization workflow. The code defines a simple lens system, sets up an optimization problem to minimize the root-mean-square (RMS) spot size, and then performs the optimization using SciPy-based optimizers.
+## 1. Defining a simple optical system
 
 ```python
 import numpy as np
-from optiland import optic, optimization
+from optiland import optic
 
-# Define the lens system
+# Create empty Optic instance
 lens = optic.Optic()
-lens.add_surface(index=0, thickness=np.inf)
-lens.add_surface(index=1, thickness=7, radius=1000, material="N-SF11", is_stop=True)
-lens.add_surface(index=2, thickness=30, radius=-1000)
-lens.add_surface(index=3)
 
-# Set aperture, field, and wavelength
-lens.set_aperture(aperture_type="EPD", value=15)
+# Define lens surfaces
+lens.add_surface(index=0, thickness=np.inf)  # Object surface
+lens.add_surface(index=1, thickness=7, radius=20.0, is_stop=True, material="N-SF11")
+lens.add_surface(index=2, thickness=23.0, radius=-20.0)
+lens.add_surface(index=3)  # Image surface
+
+# Configure aperture, field, and wavelength
+lens.set_aperture(aperture_type="EPD", value=20)
 lens.set_field_type(field_type="angle")
-lens.add_field(y=0)
+lens.add_field(y=0)  # on-axis field
 lens.add_wavelength(value=0.55, is_primary=True)
 
-# Define the optimization problem
+# Visualize in 3D
+lens.draw3D()
+```
+
+![Singlet Lens in 3D](../docs/images/singlet.png)
+
+## 2. Optimizing the lens
+
+```python
+from optiland import optimization
+
+# Define optimization problem
 problem = optimization.OptimizationProblem()
 input_data = {
     "optic": lens,
-    "surface_number": -1,  # -1 indicates image surface
-    "Hx": 0,               # Normalized field coordinate in x
-    "Hy": 0,               # Normalized field coordinate in y
+    "surface_number": -1,  # image surface
+    "Hx": 0, "Hy": 0,
     "num_rays": 5,
     "wavelength": 0.55,
     "distribution": "hexapolar",
 }
 
-# Add RMS spot size operand
-problem.add_operand(
-    operand_type="rms_spot_size",
-    target=0,
-    weight=1,
-    input_data=input_data,
-)
-
-# Add variables to be optimized
+problem.add_operand("rms_spot_size", target=0, weight=1, input_data=input_data)
 problem.add_variable(lens, "radius", surface_number=1)
 problem.add_variable(lens, "radius", surface_number=2)
 
-# Run the optimization
+# Optimize
 optimizer = optimization.OptimizerGeneric(problem)
 optimizer.optimize()
 ```
 
-To support users in leveraging these capabilities, the developers, contributors, and community members continuously update the learning guide, which serves as the primary point of contact between Optiland and its users. This guide provides comprehensive tutorials, examples, and documentation to help users of all levels get the most out of the software.
+![Singlet Lens in 3D](../docs/images/singlet_optimized.png)
 
-## Advanced Optical Design and Analysis
+## 3. Switching to the PyTorch backend
 
-Optiland's advanced toolset makes it well-suited for the design of complex optical systems, such as three-mirror anastigmats (TMAs), lithography lenses, to name a few. Its support for freeform surfaces, advanced optimization routines, and detailed tolerancing analysis enables the design of high-performance systems that meet demanding specifications. Furthermore, using the PyTorch backend, obtaining crucial information like the radius contribution of the several surfaces in a system to the overall loss function is relatively straightforward.
+Optiland’s API is consistent across backends. Switching to PyTorch enables gradient tracking and GPU acceleration.
 
-<table>
-  <tr style="border: none">
-    <td style="border: none; padding: 5px;">
-      <img src="../docs/images/litho_lens.png" alt="Top Left Image" width="300">
-    </td>
-    <td style="border: none; padding: 5px;">
-      <img src="../docs/images/singlet.png" alt="Top Right Image" width="300">
-    </td>
-  </tr>
-  <tr style="background-color: transparent; border: none">
-    <td style="border: none; padding: 5px;">
-      <img src="../docs/images/gradients.png" alt="Bottom Left Image" width="300">
-    </td>
-    <td style="border: none; padding: 5px; vertical-align: top;">
-      <p> <strong>[CAPTION HERE]</strong>, [spectrometer can go to the second image maybe?] 
-    </td>
-  </tr>
-</table>
+```python
+import optiland.backend as be
+be.set_backend("torch")      # Use the PyTorch backend
+be.set_precision("float32")  # Set precision of calculations
+be.grad_mode.enable()        # Enable gradient tracking
+be.set_device("cuda")        # Use CUDA (GPU)
+```
+
+## 4. End-to-end optimization with PyTorch
+
+The PyTorch backend allows integration with neural networks and gradient-based optimizers.
+
+```python
+import torch
+from optiland.ml import OpticalSystemModule
+
+# Wrap the lens system and optimization problem in a PyTorch module
+model = OpticalSystemModule(lens, problem)
+
+# Define PyTorch optimizer
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+
+losses = []
+for step in range(250):
+    optimizer.zero_grad()
+    loss = model()      # merit function
+    loss.backward()
+    optimizer.step()
+    model.apply_bounds()
+    losses.append(loss.item())
+```
+
+This workflow enables research scenarios such as inverse design, generative optical modelling, or generic end-to-end optical design.
 
 # Research Enabled by Optiland
 
-Optiland is actively used by researchers in the **MREYE group** at the Leiden University Medical Center. It serves as a configurable backend for all optical computations within the [Visisipy](https://github.com/MREYE-LUMC/visisipy) project, a Python library for simulating visual optics.
+Optiland is actively used by researchers in the **MReye group** at the Leiden University Medical Center. It serves as a configurable backend for all optical computations within the [Visisipy](https://github.com/MReye-LUMC/visisipy) [cite] project, a Python library for simulating visual optics.
 
 # Figures
 
-![The Optiland GUI showing a reverse telephoto system..\label{fig:example}](../docs/images/gui.png)
+![Image of TMA, UV photolithography lens, and Folded Czerny-Turner Spectrometer](../docs/images/examples.png)
 
 # Acknowledgements
 
-Development of Optiland was inspired by the needs of researchers and engineers working across optics, machine learning, and physics. The author would like to thank all contributors who have helped shape Optiland. The author also thanks the contributors to PyTorch, SciPy, NumPy, as well as the MREYE Lab in Leiden for early adoption, feedback, and collaboration.
+The authors thank Jan-Willem Beenakker for initiating the collaboration that led to the integration of Optiland into Visisipy. We also thank contributors and community members for feedback and code contributions, in particular Seçkin Berkay Öztürk, Hemkumar Srinivas, Matteo Taccola, Corentin Nannini, and Kacper Rutkowski.
 
 # References
