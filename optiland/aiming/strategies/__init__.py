@@ -4,6 +4,7 @@ This package provides various strategies for ray aiming.
 
 Kramer Harrison, 2025
 """
+
 from __future__ import annotations
 
 from .base import RayAimingStrategy
