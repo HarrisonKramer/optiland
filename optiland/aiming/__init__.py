@@ -7,7 +7,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from .base import AimingStrategy
-from .factory import AimingStrategyFactory
+from .aiming import RayAiming
+from .factory import RayAimingStrategyFactory
+from .strategies.base import RayAimingStrategy
 
-__all__ = ["AimingStrategy", "AimingStrategyFactory"]
+__all__ = ["RayAiming", "RayAimingStrategy", "RayAimingStrategyFactory"]

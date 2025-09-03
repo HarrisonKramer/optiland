@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from optiland.aberrations import Aberrations
 from optiland.aiming import RayAiming
-from optiland.aiming.strategies import ParaxialAimingStrategy
 from optiland.aperture import Aperture
 from optiland.apodization import BaseApodization
 from optiland.fields import Field, FieldGroup
@@ -91,7 +90,7 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
-        self.ray_aiming = RayAiming(ParaxialAimingStrategy())
+        self.ray_aiming = RayAiming(self)
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 

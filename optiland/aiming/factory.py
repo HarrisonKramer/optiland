@@ -9,11 +9,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .cached import CachedAiming
-from .fallback import FallbackAiming
-from .iterative import IterativeAiming
-from .model_based import ModelBasedAiming
-from .paraxial import ParaxialAiming
+from .strategies.cached import CachedAimingStrategy
+from .strategies.fallback import FallbackAimingStrategy
+from .strategies.iterative import IterativeAimingStrategy
+from .strategies.model_based import ModelBasedAimingStrategy
+from .strategies.paraxial import ParaxialAimingStrategy
 
 if TYPE_CHECKING:
     from optiland.optic.optic import Optic
@@ -21,15 +21,15 @@ if TYPE_CHECKING:
     from .base import AimingStrategy
 
 
-class AimingStrategyFactory:
+class RayAimingStrategyFactory:
     """Factory for creating aiming strategies."""
 
     _strategies = {
-        "iterative": IterativeAiming,
-        "paraxial": ParaxialAiming,
-        "cached": CachedAiming,
-        "fallback": FallbackAiming,
-        "model_based": ModelBasedAiming,
+        "iterative": IterativeAimingStrategy,
+        "paraxial": ParaxialAimingStrategy,
+        "cached": CachedAimingStrategy,
+        "fallback": FallbackAimingStrategy,
+        "model_based": ModelBasedAimingStrategy,
     }
 
     @classmethod
@@ -84,4 +84,4 @@ class AimingStrategyFactory:
             )
 
         # For other strategies, we can instantiate directly.
-        return strategy_class(optic=optic, **kwargs)
+        return strategy_class(**kwargs)
