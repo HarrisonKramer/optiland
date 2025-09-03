@@ -1,6 +1,6 @@
 """ abstract base class for ray aiming strategies """
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import optiland.backend as be
 from optiland.rays.real_rays import RealRays
@@ -283,3 +283,51 @@ class IterativeAimingStrategy(RayAimingStrategy):
 
         J_transposed = (pupil_coords_plus - pupil_coords_minus) / (2 * epsilon)
         return be.transpose(J_transposed, axes=(0, 2, 1))
+
+
+class FallbackAimingStrategy(RayAimingStrategy):
+    """A ray aiming strategy that falls back to a secondary strategy if the primary fails."""
+
+    def __init__(
+        self,
+        primary: Optional[RayAimingStrategy] = None,
+        secondary: Optional[RayAimingStrategy] = None,
+        pupil_error_threshold: float = 1e-2,
+    ):
+        self.primary = primary if primary is not None else IterativeAimingStrategy()
+        self.secondary = secondary if secondary is not None else ParaxialAimingStrategy()
+        self.pupil_error_threshold = pupil_error_threshold
+
+    def aim_ray(self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float):
+        """given an optic, normalized field and pupil coordinates and wavelength, return the ray"""
+        try:
+            primary_rays = self.primary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+
+            # Trace the rays to check for failure and pupil error
+            rays_to_trace = RealRays.from_other(primary_rays)
+            optic.surface_group.trace(rays_to_trace)
+
+            if be.any(rays_to_trace.fail):
+                return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+
+            # Check pupil error
+            stop_idx = optic.surface_group.stop_index
+            pupil_x = optic.surface_group.x[stop_idx]
+            pupil_y = optic.surface_group.y[stop_idx]
+
+            aperture = optic.surface_group.surfaces[stop_idx].aperture
+            if aperture is None or not hasattr(aperture, "r_max") or aperture.r_max <= 0:
+                return primary_rays
+
+            stop_radius = aperture.r_max
+            actual_px = pupil_x / stop_radius
+            actual_py = pupil_y / stop_radius
+
+            error = be.sqrt((actual_px - be.array(Px)) ** 2 + (actual_py - be.array(Py)) ** 2)
+
+            if be.any(error > self.pupil_error_threshold):
+                return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+
+            return primary_rays
+        except Exception:
+            return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
