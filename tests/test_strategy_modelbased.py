@@ -2,7 +2,7 @@ import pytest
 import time
 import optiland.backend as be
 from optiland.optic.optic import Optic
-from optiland.rays.aiming.strategy import ModelBasedAimingStrategy, IterativeAimingStrategy
+from optiland.aiming.strategies import ModelBasedAimingStrategy, IterativeAimingStrategy
 from optiland.physical_apertures import RadialAperture
 
 @pytest.fixture
@@ -82,7 +82,7 @@ def test_model_fitting_and_prediction(single_lens_optic):
 
     # Populate the cache to trigger model fitting
     for i in range(5):
-        strategy.aim_ray(optic, 0.0, 0.1 * (i + 1), 0.0, 0.1 * (i + 1), wavelength)
+        strategy.aim_ray(optic, 0.1 * i, 0.1 * (i + 1), 0.1 * i, 0.1 * (i + 1), wavelength)
 
     assert optic_cache["model"] is not None
 

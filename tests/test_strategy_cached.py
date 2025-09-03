@@ -3,7 +3,7 @@ import optiland.backend as be
 from unittest.mock import MagicMock
 
 from optiland.optic.optic import Optic
-from optiland.rays.aiming.strategy import CachedAimingStrategy, ParaxialAimingStrategy
+from optiland.aiming.strategies import CachedAimingStrategy, ParaxialAimingStrategy
 from optiland.rays.real_rays import RealRays
 
 @pytest.fixture

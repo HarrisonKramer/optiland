@@ -7,4 +7,3 @@ from .polarized_rays import PolarizedRays
 from .ray_generator import RayGenerator
 from .polarization_state import PolarizationState, create_polarization
 
-from . import aiming

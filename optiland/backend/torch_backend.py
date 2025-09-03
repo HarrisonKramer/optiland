@@ -245,6 +245,8 @@ def is_array_like(x):
 
 
 def size(x):
+    if not isinstance(x, torch.Tensor):
+        return 1
     return torch.numel(x)
 
 
@@ -408,6 +410,12 @@ def mean(x, axis=None, keepdims=False):
     return torch.where(
         cnt > 0, s / cnt, torch.tensor(float("nan"), dtype=x.dtype, device=x.device)
     )
+
+
+def allclose(a, b, atol=1e-8):
+    if not isinstance(b, torch.Tensor):
+        b = torch.tensor(b, dtype=a.dtype, device=a.device)
+    return torch.allclose(a, b, atol=atol)
 
 
 def all(x):
@@ -778,6 +786,7 @@ __all__ = [
     "maximum",
     "mean",
     "all",
+    "allclose",
     "histogram2d",
     "get_bilinear_weights",
     # Linear Algebra

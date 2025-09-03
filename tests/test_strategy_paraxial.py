@@ -1,7 +1,7 @@
 import pytest
 import optiland.backend as be
 from optiland.optic.optic import Optic
-from optiland.rays.aiming.strategy import ParaxialAimingStrategy
+from optiland.aiming.strategies import ParaxialAimingStrategy
 from optiland.samples import objectives
 
 @pytest.fixture

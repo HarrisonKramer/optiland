@@ -33,9 +33,7 @@ class RayGenerator:
 
         """
         # Use the aiming context to aim the ray
-        rays = self.optic.ray_aiming_context.aim_ray(
-            self.optic, Hx, Hy, Px, Py, wavelength
-        )
+        rays = self.optic.ray_aiming.aim_ray(self.optic, Hx, Hy, Px, Py, wavelength)
 
         # Apply apodization
         apodization = self.optic.apodization

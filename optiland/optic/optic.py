@@ -17,6 +17,8 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 from optiland.aberrations import Aberrations
+from optiland.aiming import RayAiming
+from optiland.aiming.strategies import ParaxialAimingStrategy
 from optiland.aperture import Aperture
 from optiland.apodization import BaseApodization
 from optiland.fields import Field, FieldGroup
@@ -24,8 +26,6 @@ from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
 from optiland.rays import PolarizationState, RayGenerator
-from optiland.rays.aiming.context import RayAimingContext
-from optiland.rays.aiming.strategy import ParaxialAimingStrategy
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
@@ -91,7 +91,7 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
-        self.ray_aiming_context = RayAimingContext(ParaxialAimingStrategy())
+        self.ray_aiming = RayAiming(ParaxialAimingStrategy())
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 

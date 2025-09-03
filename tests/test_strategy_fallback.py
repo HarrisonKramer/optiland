@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 
-from optiland.rays.aiming.strategy import (
+from optiland.aiming.strategies import (
     FallbackAimingStrategy,
     IterativeAimingStrategy,
     ParaxialAimingStrategy,
