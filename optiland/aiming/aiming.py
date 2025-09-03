@@ -14,8 +14,9 @@ from optiland.aiming.factory import RayAimingStrategyFactory
 from optiland.aiming.strategies.base import RayAimingStrategy
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from optiland.optic.optic import Optic
-    from optiland.rays import RealRays
 
 
 class RayAiming:
@@ -45,7 +46,15 @@ class RayAiming:
                 "strategy must be a string or an RayAimingStrategy instance"
             )
 
-    def aim(self, rays: RealRays) -> RealRays:
+    def aim(
+        self,
+        optic: Optic,
+        Hx: ArrayLike,
+        Hy: ArrayLike,
+        Px: ArrayLike,
+        Py: ArrayLike,
+        wavelength: float,
+    ):
         """
         Aim the given rays through the optic.
 
@@ -55,4 +64,11 @@ class RayAiming:
         Returns:
             The aimed rays.
         """
-        return self.strategy.aim(rays)
+        return self.strategy.aim(
+            optic=self.optic,
+            Hx=Hx,
+            Hy=Hy,
+            Px=Px,
+            Py=Py,
+            wavelength=wavelength,
+        )
