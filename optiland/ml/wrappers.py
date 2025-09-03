@@ -29,119 +29,119 @@ if TYPE_CHECKING:
     from optiland.optimization.problem import OptimizationProblem
 
 
-class OpticalSystemModule(nn.Module):
-    """
-    A PyTorch nn.Module that wraps an Optiland OptimizationProblem.
-
-    This class exposes the optical system's variables as trainable nn.Parameters,
-    allowing the entire system to be integrated as a differentiable layer into
-    larger machine learning models.
-
-    Args:
-        optic (Optic): The optical system definition.
-        problem (OptimizationProblem): The optimization problem defining variables and
-            objectives.
-        objective_fn (Callable[[], torch.Tensor] | None): An optional callable tha
-            takes no arguments and returns a scalar PyTorch tensor representing the loss
-            or metric to be optimized. If None, problem.sum_squared() is used as
-            default.
-    """
-
-    def __init__(
-        self,
-        optic: Optic,
-        problem: OptimizationProblem,
-        objective_fn: Callable[[], torch.Tensor] | None = None,
-    ):
-        super().__init__()
-        if be.get_backend() != "torch":
-            raise RuntimeError("OpticalSystemModule requires the 'torch' backend.")
-
-        # Ensure gradients are enabled for PyTorch operations
-        if not be.grad_mode.requires_grad:
-            warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
-            be.grad_mode.enable()
-
-        self.optic = optic
-        self.problem = problem
-
-        # Initialize parameters as torch.nn.Parameter objects
-        initial_params = [var.variable.get_value() for var in self.problem.variables]
-        self.params = nn.ParameterList(
-            [torch.nn.Parameter(be.array(p)) for p in initial_params]
-        )
-
-        # Store the original variable definitions
-        self._original_variables = self.problem.variables
-
-        # Store the user-provided objective function or set a default
-        self.objective_fn = (
-            objective_fn if objective_fn is not None else self._default_loss
-        )
-
-    def _default_loss(self) -> torch.Tensor:
+if nn:
+    class OpticalSystemModule(nn.Module):
         """
-        The default loss function, which computes the sum of squared errors from the
-        provided optimization problem.
+        A PyTorch nn.Module that wraps an Optiland OptimizationProblem.
+        This class exposes the optical system's variables as trainable nn.Parameters,
+        allowing the entire system to be integrated as a differentiable layer into
+        larger machine learning models.
+        Args:
+            optic (Optic): The optical system definition.
+            problem (OptimizationProblem): The optimization problem defining variables and
+                objectives.
+            objective_fn (Callable[[], torch.Tensor] | None): An optional callable tha
+                takes no arguments and returns a scalar PyTorch tensor representing the loss
+                or metric to be optimized. If None, problem.sum_squared() is used as
+                default.
+        """
 
-        Returns:
-            torch.Tensor: The computed loss value.
-        """
-        return self.problem.sum_squared()
+        def __init__(
+            self,
+            optic: Optic,
+            problem: OptimizationProblem,
+            objective_fn: Callable[[], torch.Tensor] | None = None,
+        ):
+            super().__init__()
+            if be.get_backend() != "torch":
+                raise RuntimeError("OpticalSystemModule requires the 'torch' backend.")
 
-    def _sync_params_to_problem(self):
-        """
-        Pushes the current tensor values from the nn.Parameters into the problem
-        variables. This operation is part of the computation graph.
-        """
-        for i, param in enumerate(self.params):
-            var = self._original_variables[i]
-            var.variable.update_value(param)
+            # Ensure gradients are enabled for PyTorch operations
+            if not be.grad_mode.requires_grad:
+                warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
+                be.grad_mode.enable()
 
-    def apply_bounds(self):
-        """
-        Applies the defined bounds to the parameters in-place.
-        This should be called after each optimizer step to enforce constraints.
-        """
-        with torch.no_grad():  # Operations here shouldn't be part of the gradient graph
+            self.optic = optic
+            self.problem = problem
+
+            # Initialize parameters as torch.nn.Parameter objects
+            initial_params = [var.variable.get_value() for var in self.problem.variables]
+            self.params = nn.ParameterList(
+                [torch.nn.Parameter(be.array(p)) for p in initial_params]
+            )
+
+            # Store the original variable definitions
+            self._original_variables = self.problem.variables
+
+            # Store the user-provided objective function or set a default
+            self.objective_fn = (
+                objective_fn if objective_fn is not None else self._default_loss
+            )
+
+        def _default_loss(self) -> torch.Tensor:
+            """
+            The default loss function, which computes the sum of squared errors from the
+            provided optimization problem.
+            Returns:
+                torch.Tensor: The computed loss value.
+            """
+            return self.problem.sum_squared()
+
+        def _sync_params_to_problem(self):
+            """
+            Pushes the current tensor values from the nn.Parameters into the problem
+            variables. This operation is part of the computation graph.
+            """
             for i, param in enumerate(self.params):
                 var = self._original_variables[i]
-                min_val, max_val = var.bounds
+                var.variable.update_value(param)
 
-                # Inverse scale the parameter data
-                min_val = (
-                    var.variable.inverse_scale(min_val) if min_val is not None else None
-                )
-                max_val = (
-                    var.variable.inverse_scale(max_val) if max_val is not None else None
-                )
+        def apply_bounds(self):
+            """
+            Applies the defined bounds to the parameters in-place.
+            This should be called after each optimizer step to enforce constraints.
+            """
+            with torch.no_grad():  # Operations here shouldn't be part of the gradient graph
+                for i, param in enumerate(self.params):
+                    var = self._original_variables[i]
+                    min_val, max_val = var.bounds
 
-                # Clamp the parameter data to the defined bounds
-                if min_val is not None and max_val is not None:
-                    param.data.clamp_(min_val, max_val)
-                elif min_val is not None:
-                    param.data.clamp_(min=min_val)
-                elif max_val is not None:
-                    param.data.clamp_(max=max_val)
+                    # Inverse scale the parameter data
+                    min_val = (
+                        var.variable.inverse_scale(min_val) if min_val is not None else None
+                    )
+                    max_val = (
+                        var.variable.inverse_scale(max_val) if max_val is not None else None
+                    )
 
-    def forward(self) -> torch.Tensor:
-        """
-        Defines the forward pass of the optical system.
+                    # Clamp the parameter data to the defined bounds
+                    if min_val is not None and max_val is not None:
+                        param.data.clamp_(min_val, max_val)
+                    elif min_val is not None:
+                        param.data.clamp_(min=min_val)
+                    elif max_val is not None:
+                        param.data.clamp_(max=max_val)
 
-        This implementation synchronizes the PyTorch parameters with the Optiland
-        problem variables, updates the optics, and then computes the loss using
-        either the user-provided objective function or the default sum of squared
-        errors. The output is a differentiable scalar tensor.
+        def forward(self) -> torch.Tensor:
+            """
+            Defines the forward pass of the optical system.
+            This implementation synchronizes the PyTorch parameters with the Optiland
+            problem variables, updates the optics, and then computes the loss using
+            either the user-provided objective function or the default sum of squared
+            errors. The output is a differentiable scalar tensor.
+            Users are encouraged to customize or override this method to suit their
+            specific optimization objectives.
+            """
+            # 1. Synchronize the nn.Parameter values with the Optiland problem variables.
+            self._sync_params_to_problem()
 
-        Users are encouraged to customize or override this method to suit their
-        specific optimization objectives.
-        """
-        # 1. Synchronize the nn.Parameter values with the Optiland problem variables.
-        self._sync_params_to_problem()
+            # 2. Update dependent properties within the optical system
+            self.problem.update_optics()
 
-        # 2. Update dependent properties within the optical system
-        self.problem.update_optics()
-
-        # 3. Compute the objective using the stored objective_fn
-        loss = self.objective_fn()
-        return loss
+            # 3. Compute the objective using the stored objective_fn
+            loss = self.objective_fn()
+            return loss
+else:
+    class OpticalSystemModule:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("PyTorch is not installed. Please install it to use OpticalSystemModule.")

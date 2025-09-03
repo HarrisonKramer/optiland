@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.rays.polarized_rays import PolarizedRays
-from optiland.rays.real_rays import RealRays
 
 
 class RayGenerator:

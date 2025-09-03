@@ -1,5 +1,7 @@
 """ context for ray aiming strategies """
-from typing import Optional, TYPE_CHECKING
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from optiland.rays.aiming.strategy import RayAimingStrategy
 
@@ -10,14 +12,14 @@ if TYPE_CHECKING:
 class RayAimingContext:
     """Context for ray aiming strategies."""
 
-    def __init__(self, strategy: Optional[RayAimingStrategy] = None):
+    def __init__(self, strategy: RayAimingStrategy | None = None):
         self._strategy = strategy
 
     def set_strategy(self, strategy: RayAimingStrategy):
         """Set the ray aiming strategy."""
         self._strategy = strategy
 
-    def aim_ray(self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float):
+    def aim_ray(self, optic: Optic, Hx: float, Hy: float, Px: float, Py: float, wavelength: float):
         """Aim a ray using the current strategy."""
         if self._strategy is None:
             raise ValueError("Ray aiming strategy not set.")
