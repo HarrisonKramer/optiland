@@ -39,13 +39,13 @@ Core features include sequential ray tracing, a rich library of surface types (s
 
 # Statement of Need
 
-The field of optical design has long been dominated by commercial software tools such as OpticStudio and CodeV, which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for students, educators, and researchers.
+The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CodeV [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for students, educators, and researchers.
 
 Optiland addresses this need by providing the most complete open-source optical design package available. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particular relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
 
-The PyTorch backend also provides significant performance gains through GPU acceleration. On typical modern hardware, GPU-accelerated ray tracing achieves speedups of 20-60x compared to CPU-bound NumPy computations, with greater gains possible on high-end or multi-GPU systems. This level of performance enables large-scale, gradient-based optimization and simulations for real-world research and development. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
+The PyTorch backend also provides substantial performance improvements through GPU acceleration. In practice, ray tracing workloads that can take minutes on a CPU are reduced to seconds on a modern GPU, and the speedups scale with both hardware quality and problem size. This level of acceleration enables experiments that would otherwise be impractical, such as large-scale Monte Carlo tolerancing, high-resolution simulations, or gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
 
-Several open-source optical packages exist, such as Prysm [@Prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform.
+Several open-source optical packages exist, such as Prysm [@Prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
 
 # Functionalities
 
@@ -155,7 +155,7 @@ lens.draw()
 
 ![cooke_2d](../docs/images/cooke_2d.png)
 
-The result can be refined further using optiland's GlassExpert functionnality to automatically choose good glass candidates.
+The result can be refined further using Optiland's GlassExpert functionality to automatically choose high-quality glass candidates.
 
 ## 3. Switching to the PyTorch backend
 
