@@ -58,6 +58,25 @@ class RealRays(BaseRays):
 
         self.is_normalized = True
 
+    @classmethod
+    def from_other(cls, other: RealRays):
+        """Create a new RealRays object from another."""
+        new_rays = cls(
+            x=be.copy(other.x),
+            y=be.copy(other.y),
+            z=be.copy(other.z),
+            L=be.copy(other.L),
+            M=be.copy(other.M),
+            N=be.copy(other.N),
+            intensity=be.copy(other.i),
+            wavelength=be.copy(other.w),
+        )
+        if hasattr(other, 'fail'):
+            new_rays.fail = be.copy(other.fail)
+        if hasattr(other, 'opd'):
+            new_rays.opd = be.copy(other.opd)
+        return new_rays
+
     def rotate_x(self, rx: float):
         """Rotate the rays about the x-axis."""
         rx = be.array(rx)

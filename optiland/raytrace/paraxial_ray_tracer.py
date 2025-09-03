@@ -148,7 +148,7 @@ class ParaxialRayTracer:
             y0 = y1 + y
             z0 = be.ones_like(y1) * z
         elif self.optic.field_type == "object_height":
-            y = -field_y
+            y = field_y
             z = obj.geometry.cs.z
 
             y0 = be.ones_like(y1) * y

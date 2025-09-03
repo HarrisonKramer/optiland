@@ -17,6 +17,11 @@ class TestFallbackAimingStrategySimple(unittest.TestCase):
     def setUp(self):
         self.optic = MagicMock(spec=Optic)
         self.optic.surface_group = MagicMock()
+        self.optic.surface_group.stop_index = 1
+        self.optic.surface_group.x = be.array([[0.0], [0.0]])
+        self.optic.surface_group.y = be.array([[0.0], [0.0]])
+        self.optic.surface_group.surfaces = [MagicMock(), MagicMock()]
+        self.optic.surface_group.surfaces[1].aperture.r_max = 1.0
         self.primary_strategy = MagicMock(spec=IterativeAimingStrategy)
         self.secondary_strategy = MagicMock(spec=ParaxialAimingStrategy)
 
