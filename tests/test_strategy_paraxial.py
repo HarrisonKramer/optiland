@@ -28,7 +28,7 @@ def test_paraxial_aiming_strategy_compare_to_legacy(single_thin_lens_optic):
     wavelength = optic.primary_wavelength
 
     # 1. Trace with new strategy (real rays)
-    initial_rays = strategy.aim_ray(optic, Hx=0, Hy=Hy, Px=0, Py=Py, wavelength=wavelength)
+    initial_rays = strategy.aim(optic, Hx=0, Hy=Hy, Px=0, Py=Py, wavelength=wavelength)
     optic.surface_group.trace(initial_rays)
     y_new = be.copy(optic.surface_group.y)
 
@@ -50,7 +50,7 @@ def test_paraxial_aiming_strategy_vectorized(single_thin_lens_optic):
     Py = be.array([0.1, 0.1])
     wavelength = optic.primary_wavelength
 
-    rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     assert rays.x.shape == (2,)
     assert not be.any(be.isnan(rays.x))
@@ -61,7 +61,7 @@ def test_paraxial_aiming_strategy_vectorized(single_thin_lens_optic):
     assert not be.any(be.isnan(rays.N))
 
     # check first ray against scalar calculation
-    ray0_scalar = strategy.aim_ray(optic, Hx[0], Hy[0], Px[0], Py[0], wavelength)
+    ray0_scalar = strategy.aim(optic, Hx[0], Hy[0], Px[0], Py[0], wavelength)
     assert be.allclose(rays.x[0], ray0_scalar.x)
     assert be.allclose(rays.y[0], ray0_scalar.y)
     assert be.allclose(rays.L[0], ray0_scalar.L)

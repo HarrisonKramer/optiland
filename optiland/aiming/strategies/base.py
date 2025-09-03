@@ -11,19 +11,16 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import optiland.v_math as np
     from numpy.typing import ArrayLike
 
-    from optiland.aberrations import Aberrations
     from optiland.optic.optic import Optic
-    from optiland.rays import RayBundle
 
 
 class RayAimingStrategy(ABC):
     """Abstract base class for ray aiming strategies."""
 
     @abstractmethod
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,

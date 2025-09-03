@@ -28,19 +28,19 @@ def test_cache_miss_and_hit(single_thin_lens_optic):
     dummy_ray = RealRays(x=be.array([0]), y=be.array([0]), z=be.array([0]),
                          L=be.array([0]), M=be.array([0]), N=be.array([1]),
                          intensity=be.array([1]), wavelength=be.array([0.55]))
-    wrapped_strategy.aim_ray.return_value = dummy_ray
+    wrapped_strategy.aim.return_value = dummy_ray
 
     cached_strategy = CachedAimingStrategy(wrapped_strategy)
     optic = single_thin_lens_optic
     params = {"optic": optic, "Hx": 0.0, "Hy": 0.1, "Px": 0.0, "Py": 0.1, "wavelength": 0.55}
 
     # First call - should be a miss
-    cached_strategy.aim_ray(**params)
-    wrapped_strategy.aim_ray.assert_called_once_with(**params)
+    cached_strategy.aim(**params)
+    wrapped_strategy.aim.assert_called_once_with(**params)
 
     # Second call - should be a hit
-    cached_strategy.aim_ray(**params)
-    wrapped_strategy.aim_ray.assert_called_once()  # Should not be called again
+    cached_strategy.aim(**params)
+    wrapped_strategy.aim.assert_called_once()  # Should not be called again
 
 def test_optic_change_invalidation(single_thin_lens_optic):
     """Test that changing the optic invalidates the cache."""
@@ -48,23 +48,23 @@ def test_optic_change_invalidation(single_thin_lens_optic):
     dummy_ray = RealRays(x=be.array([0]), y=be.array([0]), z=be.array([0]),
                          L=be.array([0]), M=be.array([0]), N=be.array([1]),
                          intensity=be.array([1]), wavelength=be.array([0.55]))
-    wrapped_strategy.aim_ray.return_value = dummy_ray
+    wrapped_strategy.aim.return_value = dummy_ray
 
     cached_strategy = CachedAimingStrategy(wrapped_strategy)
     optic = single_thin_lens_optic
     params = {"optic": optic, "Hx": 0.0, "Hy": 0.1, "Px": 0.0, "Py": 0.1, "wavelength": 0.55}
 
     # First call
-    cached_strategy.aim_ray(**params)
-    wrapped_strategy.aim_ray.assert_called_once()
+    cached_strategy.aim(**params)
+    wrapped_strategy.aim.assert_called_once()
 
     # Modify the optic
     optic.set_thickness(110, 0)
     params["optic"] = optic # update params with modified optic
 
     # Second call with modified optic - should be a miss
-    cached_strategy.aim_ray(**params)
-    assert wrapped_strategy.aim_ray.call_count == 2
+    cached_strategy.aim(**params)
+    assert wrapped_strategy.aim.call_count == 2
 
 def test_cache_eviction(single_thin_lens_optic):
     """Test LRU cache eviction."""
@@ -72,7 +72,7 @@ def test_cache_eviction(single_thin_lens_optic):
     dummy_ray = RealRays(x=be.array([0]), y=be.array([0]), z=be.array([0]),
                          L=be.array([0]), M=be.array([0]), N=be.array([1]),
                          intensity=be.array([1]), wavelength=be.array([0.55]))
-    wrapped_strategy.aim_ray.return_value = dummy_ray
+    wrapped_strategy.aim.return_value = dummy_ray
 
     cached_strategy = CachedAimingStrategy(wrapped_strategy, max_size=2)
     optic = single_thin_lens_optic
@@ -82,21 +82,21 @@ def test_cache_eviction(single_thin_lens_optic):
     params3 = {"optic": optic, "Hx": 0.0, "Hy": 0.3, "Px": 0.0, "Py": 0.3, "wavelength": 0.55}
 
     # Fill the cache
-    cached_strategy.aim_ray(**params1)
-    cached_strategy.aim_ray(**params2)
-    assert wrapped_strategy.aim_ray.call_count == 2
+    cached_strategy.aim(**params1)
+    cached_strategy.aim(**params2)
+    assert wrapped_strategy.aim.call_count == 2
 
     # This should evict params1
-    cached_strategy.aim_ray(**params3)
-    assert wrapped_strategy.aim_ray.call_count == 3
+    cached_strategy.aim(**params3)
+    assert wrapped_strategy.aim.call_count == 3
 
     # Access params2 to make it most recently used
-    cached_strategy.aim_ray(**params2)
-    assert wrapped_strategy.aim_ray.call_count == 3
+    cached_strategy.aim(**params2)
+    assert wrapped_strategy.aim.call_count == 3
 
     # This call should be a miss because params1 was evicted
-    cached_strategy.aim_ray(**params1)
-    assert wrapped_strategy.aim_ray.call_count == 4
+    cached_strategy.aim(**params1)
+    assert wrapped_strategy.aim.call_count == 4
 
 def test_vectorized_input(single_thin_lens_optic):
     """Test that vectorized input is handled correctly."""
@@ -111,10 +111,10 @@ def test_vectorized_input(single_thin_lens_optic):
     wavelength = 0.55
 
     # Get expected results from the underlying strategy
-    expected_rays = paraxial_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    expected_rays = paraxial_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     # Get results from the cached strategy
-    cached_rays = cached_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    cached_rays = cached_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     assert be.allclose(cached_rays.x, expected_rays.x)
     assert be.allclose(cached_rays.y, expected_rays.y)
@@ -133,8 +133,8 @@ def test_result_correctness(single_thin_lens_optic):
     optic = single_thin_lens_optic
     params = {"optic": optic, "Hx": 0.0, "Hy": 0.1, "Px": 0.0, "Py": 0.1, "wavelength": 0.55}
 
-    expected_rays = paraxial_strategy.aim_ray(**params)
-    cached_rays = cached_strategy.aim_ray(**params)
+    expected_rays = paraxial_strategy.aim(**params)
+    cached_rays = cached_strategy.aim(**params)
 
     assert be.allclose(cached_rays.x, expected_rays.x)
     assert be.allclose(cached_rays.y, expected_rays.y)

@@ -45,7 +45,7 @@ class IterativeAimingStrategy(RayAimingStrategy):
         self.step_size_cap = step_size_cap
         self.paraxial_aim = ParaxialAimingStrategy()
 
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,
@@ -74,7 +74,7 @@ class IterativeAimingStrategy(RayAimingStrategy):
         Py = be.atleast_1d(Py)
 
         # Get initial guess from paraxial aiming
-        initial_rays = self.paraxial_aim.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+        initial_rays = self.paraxial_aim.aim(optic, Hx, Hy, Px, Py, wavelength)
 
         if optic.object_surface.is_infinite:
             variables = be.stack([initial_rays.L, initial_rays.M], axis=-1)

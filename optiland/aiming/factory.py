@@ -16,8 +16,6 @@ from .strategies.model_based import ModelBasedAimingStrategy
 from .strategies.paraxial import ParaxialAimingStrategy
 
 if TYPE_CHECKING:
-    from optiland.optic.optic import Optic
-
     from .base import AimingStrategy
 
 
@@ -73,9 +71,7 @@ class RayAimingStrategyFactory:
             primary_strategy_name = kwargs.pop("primary_strategy", "iterative")
             fallback_strategy_name = kwargs.pop("fallback_strategy", "paraxial")
 
-            primary_strategy = cls.create_strategy(
-                primary_strategy_name, **kwargs
-            )
+            primary_strategy = cls.create_strategy(primary_strategy_name, **kwargs)
             fallback_strategy = cls.create_strategy(fallback_strategy_name)
 
             return strategy_class(

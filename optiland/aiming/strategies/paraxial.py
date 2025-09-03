@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class ParaxialAimingStrategy(RayAimingStrategy):
     """A ray aiming strategy that uses paraxial optics to aim rays."""
 
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,

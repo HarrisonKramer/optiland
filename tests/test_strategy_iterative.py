@@ -27,7 +27,7 @@ def test_iterative_aiming_convergence(single_lens_optic):
     Hx, Hy, Px, Py = 0.0, 1.0, 0.0, 1.0
     wavelength = optic.primary_wavelength
 
-    rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
     optic.surface_group.trace(rays)
 
     stop_idx = optic.surface_group.stop_index
@@ -51,7 +51,7 @@ def test_iterative_improves_on_paraxial(single_lens_optic):
     wavelength = optic.primary_wavelength
 
     # Paraxial error
-    paraxial_rays = paraxial_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    paraxial_rays = paraxial_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
     optic.surface_group.trace(paraxial_rays)
     stop_idx = optic.surface_group.stop_index
     paraxial_pupil_x = optic.surface_group.x[stop_idx]
@@ -60,7 +60,7 @@ def test_iterative_improves_on_paraxial(single_lens_optic):
     paraxial_error = be.sqrt((paraxial_pupil_x/stop_radius - Px)**2 + (paraxial_pupil_y/stop_radius - Py)**2)
 
     # Iterative error
-    iterative_rays = iterative_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    iterative_rays = iterative_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
     optic.surface_group.trace(iterative_rays)
     iterative_pupil_x = optic.surface_group.x[stop_idx]
     iterative_pupil_y = optic.surface_group.y[stop_idx]
@@ -80,7 +80,7 @@ def test_backend_consistency(single_lens_optic, backend):
     Hx, Hy, Px, Py = 0.0, 1.0, 0.0, 1.0
     wavelength = optic.primary_wavelength
 
-    rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     assert not be.any(be.isnan(rays.x))
     assert not be.any(be.isnan(rays.y))
@@ -114,6 +114,6 @@ def test_singular_jacobian_fallback(afocal_system):
 
     # This should not raise a LinAlgError
     try:
-        strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+        strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
     except be.linalg.LinAlgError:
         pytest.fail("IterativeAimingStrategy failed to handle singular Jacobian.")

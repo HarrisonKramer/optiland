@@ -49,7 +49,7 @@ class FallbackAimingStrategy(RayAimingStrategy):
         )
         self.pupil_error_threshold = pupil_error_threshold
 
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,
@@ -73,14 +73,14 @@ class FallbackAimingStrategy(RayAimingStrategy):
             The aimed ray(s).
         """
         try:
-            primary_rays = self.primary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+            primary_rays = self.primary.aim(optic, Hx, Hy, Px, Py, wavelength)
 
             # Trace the rays to check for failure and pupil error
             rays_to_trace = RealRays.from_other(primary_rays)
             optic.surface_group.trace(rays_to_trace)
 
             if be.any(rays_to_trace.fail):
-                return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+                return self.secondary.aim(optic, Hx, Hy, Px, Py, wavelength)
 
             # Check pupil error
             stop_idx = optic.surface_group.stop_index
@@ -100,8 +100,8 @@ class FallbackAimingStrategy(RayAimingStrategy):
             )
 
             if be.any(error > self.pupil_error_threshold):
-                return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+                return self.secondary.aim(optic, Hx, Hy, Px, Py, wavelength)
 
             return primary_rays
         except Exception:
-            return self.secondary.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+            return self.secondary.aim(optic, Hx, Hy, Px, Py, wavelength)

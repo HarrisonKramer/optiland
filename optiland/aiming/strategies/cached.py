@@ -65,7 +65,7 @@ class CachedAimingStrategy(RayAimingStrategy):
         s = json.dumps(optic_dict, sort_keys=True, cls=NumpyEncoder)
         return hashlib.md5(s.encode()).hexdigest()
 
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,
@@ -107,7 +107,7 @@ class CachedAimingStrategy(RayAimingStrategy):
                 px = Px_arr[i] if len(Px_arr) > 1 else Px_arr[0]
                 py = Py_arr[i] if len(Py_arr) > 1 else Py_arr[0]
                 results.append(
-                    self._aim_ray_scalar(optic, optic_hash, hx, hy, px, py, wavelength)
+                    self._aim_scalar(optic, optic_hash, hx, hy, px, py, wavelength)
                 )
 
             # Stack results into a single RealRays object
@@ -122,9 +122,9 @@ class CachedAimingStrategy(RayAimingStrategy):
                 wavelength=be.stack([r.w for r in results]),
             )
         else:
-            return self._aim_ray_scalar(optic, optic_hash, Hx, Hy, Px, Py, wavelength)
+            return self._aim_scalar(optic, optic_hash, Hx, Hy, Px, Py, wavelength)
 
-    def _aim_ray_scalar(
+    def _aim_scalar(
         self,
         optic: Optic,
         optic_hash: str,
@@ -134,7 +134,7 @@ class CachedAimingStrategy(RayAimingStrategy):
         Py: float,
         wavelength: float,
     ):
-        """Helper for scalar inputs to aim_ray."""
+        """Helper for scalar inputs to aim."""
         cache_key = (optic_hash, Hx, Hy, Px, Py, wavelength)
 
         if cache_key in self.cache:
@@ -146,7 +146,7 @@ class CachedAimingStrategy(RayAimingStrategy):
             )
 
         # Cache miss
-        rays = self.wrapped_strategy.aim_ray(
+        rays = self.wrapped_strategy.aim(
             optic=optic, Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
         )
 

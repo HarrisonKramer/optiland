@@ -106,7 +106,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
             }
         return self.optic_caches[optic_hash]
 
-    def aim_ray(
+    def aim(
         self,
         optic: Optic,
         Hx: ArrayLike,
@@ -146,7 +146,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
                 px = Px_arr[i] if len(Px_arr) > 1 else Px_arr[0]
                 py = Py_arr[i] if len(Py_arr) > 1 else Py_arr[0]
                 rays_list.append(
-                    self._aim_ray_scalar(optic, optic_cache, hx, hy, px, py, wavelength)
+                    self._aim_scalar(optic, optic_cache, hx, hy, px, py, wavelength)
                 )
 
             return RealRays(
@@ -160,9 +160,9 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
                 wavelength=be.stack([r.w for r in rays_list]),
             )
 
-        return self._aim_ray_scalar(optic, optic_cache, Hx, Hy, Px, Py, wavelength)
+        return self._aim_scalar(optic, optic_cache, Hx, Hy, Px, Py, wavelength)
 
-    def _aim_ray_scalar(
+    def _aim_scalar(
         self,
         optic: Optic,
         optic_cache: dict,
@@ -172,7 +172,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
         Py: float,
         wavelength: float,
     ) -> RealRays:
-        """Helper for scalar inputs to aim_ray."""
+        """Helper for scalar inputs to aim."""
         if optic_cache["model"] is not None:
             predicted_ray = self._predict_ray(
                 optic, optic_cache["model"], Hx, Hy, Px, Py, wavelength
@@ -182,7 +182,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
                 if error < self.error_tolerance:
                     return predicted_ray
 
-        refined_ray = self.iterative_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+        refined_ray = self.iterative_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
         self._update_cache_and_model(
             optic_cache, (Hx, Hy, Px, Py, wavelength), refined_ray
         )
@@ -208,9 +208,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
                 return None
 
             N = be.sqrt(1 - L**2 - M**2)
-            paraxial_ray = self.paraxial_strategy.aim_ray(
-                optic, Hx, Hy, Px, Py, wavelength
-            )
+            paraxial_ray = self.paraxial_strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
             predicted_ray = RealRays(
                 paraxial_ray.x,
                 paraxial_ray.y,

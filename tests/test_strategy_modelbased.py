@@ -38,7 +38,7 @@ def test_fallback_on_empty_cache(single_lens_optic):
     wavelength = optic.primary_wavelength
 
     # With an empty cache, this should be equivalent to the iterative strategy
-    rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     # Verify the ray hits the target pupil coordinates accurately
     optic.surface_group.trace(rays)
@@ -62,13 +62,13 @@ def test_cache_growth(single_lens_optic):
     assert len(optic_cache["cache"]) == 0
 
     # Aim a few unique rays
-    strategy.aim_ray(optic, 0.0, 0.1, 0.0, 0.1, wavelength)
-    strategy.aim_ray(optic, 0.0, 0.2, 0.0, 0.2, wavelength)
+    strategy.aim(optic, 0.0, 0.1, 0.0, 0.1, wavelength)
+    strategy.aim(optic, 0.0, 0.2, 0.0, 0.2, wavelength)
 
     assert len(optic_cache["cache"]) == 2
 
     # Aiming the same ray again should not grow the cache
-    strategy.aim_ray(optic, 0.0, 0.1, 0.0, 0.1, wavelength)
+    strategy.aim(optic, 0.0, 0.1, 0.0, 0.1, wavelength)
     assert len(optic_cache["cache"]) == 2
 
 def test_model_fitting_and_prediction(single_lens_optic):
@@ -82,14 +82,14 @@ def test_model_fitting_and_prediction(single_lens_optic):
 
     # Populate the cache to trigger model fitting
     for i in range(5):
-        strategy.aim_ray(optic, 0.1 * i, 0.1 * (i + 1), 0.1 * i, 0.1 * (i + 1), wavelength)
+        strategy.aim(optic, 0.1 * i, 0.1 * (i + 1), 0.1 * i, 0.1 * (i + 1), wavelength)
 
     assert optic_cache["model"] is not None
 
     # Now, aim a ray that is in the cache. It should be predicted correctly.
     # We can't directly check if the model is used, but we can check the result.
     Hx, Hy, Px, Py = 0.0, 0.3, 0.0, 0.3
-    predicted_rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    predicted_rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     optic.surface_group.trace(predicted_rays)
     stop_idx = optic.surface_group.stop_index
@@ -110,11 +110,11 @@ def test_interpolation_capability(single_lens_optic):
     # Populate cache with a grid of points
     for i in range(4):
         for j in range(4):
-            strategy.aim_ray(optic, 0.1*i, 0.1*j, 0.1*i, 0.1*j, wavelength)
+            strategy.aim(optic, 0.1*i, 0.1*j, 0.1*i, 0.1*j, wavelength)
 
     # Aim a ray at an intermediate point not in the cache
     Hx, Hy, Px, Py = 0.15, 0.15, 0.15, 0.15
-    interpolated_rays = strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+    interpolated_rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
 
     optic.surface_group.trace(interpolated_rays)
     stop_idx = optic.surface_group.stop_index
@@ -137,18 +137,18 @@ def test_convergence_speed(single_lens_optic):
     # Prime the model-based strategy cache
     for i in range(10):
         for j in range(10):
-            model_strategy.aim_ray(optic, 0.1*i, 0.1*j, 0.1*i, 0.1*j, wavelength)
+            model_strategy.aim(optic, 0.1*i, 0.1*j, 0.1*i, 0.1*j, wavelength)
 
     # Time the iterative strategy
     start_time = time.time()
     for _ in range(100):
-        iterative_strategy.aim_ray(optic, 0.5, 0.5, 0.5, 0.5, wavelength)
+        iterative_strategy.aim(optic, 0.5, 0.5, 0.5, 0.5, wavelength)
     iterative_time = time.time() - start_time
 
     # Time the model-based strategy
     start_time = time.time()
     for _ in range(100):
-        model_strategy.aim_ray(optic, 0.5, 0.5, 0.5, 0.5, wavelength)
+        model_strategy.aim(optic, 0.5, 0.5, 0.5, 0.5, wavelength)
     model_time = time.time() - start_time
 
     # With a trained model, the model-based strategy should be significantly faster
@@ -165,14 +165,14 @@ def test_cache_eviction(single_lens_optic):
 
     # Fill the cache
     for i in range(5):
-        strategy.aim_ray(optic, 0.1, 0.1 * i, 0.1, 0.1 * i, wavelength)
+        strategy.aim(optic, 0.1, 0.1 * i, 0.1, 0.1 * i, wavelength)
 
     assert len(optic_cache["cache"]) == 5
     first_key = next(iter(optic_cache["cache"]))
     assert first_key == (0.1, 0.0, 0.1, 0.0, wavelength)
 
     # Add one more entry to trigger eviction
-    strategy.aim_ray(optic, 0.1, 0.5, 0.1, 0.5, wavelength)
+    strategy.aim(optic, 0.1, 0.5, 0.1, 0.5, wavelength)
 
     assert len(optic_cache["cache"]) == 5
     new_first_key = next(iter(optic_cache["cache"]))

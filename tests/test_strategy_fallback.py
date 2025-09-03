@@ -45,50 +45,50 @@ class TestFallbackAimingStrategySimple(unittest.TestCase):
 
     def test_primary_succeeds(self):
         """Test that the primary strategy is used when it succeeds."""
-        self.primary_strategy.aim_ray.return_value = self.mock_rays
+        self.primary_strategy.aim.return_value = self.mock_rays
 
         def trace_effect(rays):
             rays.fail = be.array([False])
 
         self.optic.surface_group.trace.side_effect = trace_effect
 
-        result_rays = self.fallback_strategy.aim_ray(
+        result_rays = self.fallback_strategy.aim(
             self.optic, self.Hx, self.Hy, self.Px, self.Py, self.wavelength
         )
 
-        self.primary_strategy.aim_ray.assert_called_once()
-        self.fallback_strategy_mock.aim_ray.assert_not_called()
+        self.primary_strategy.aim.assert_called_once()
+        self.fallback_strategy_mock.aim.assert_not_called()
         self.assertIs(result_rays, self.mock_rays)
 
     def test_fallback_on_exception(self):
         """Test fallback to secondary strategy when primary raises an exception."""
-        self.primary_strategy.aim_ray.side_effect = Exception("Primary failed")
-        self.fallback_strategy_mock.aim_ray.return_value = self.mock_rays
+        self.primary_strategy.aim.side_effect = Exception("Primary failed")
+        self.fallback_strategy_mock.aim.return_value = self.mock_rays
 
-        result_rays = self.fallback_strategy.aim_ray(
+        result_rays = self.fallback_strategy.aim(
             self.optic, self.Hx, self.Hy, self.Px, self.Py, self.wavelength
         )
 
-        self.primary_strategy.aim_ray.assert_called_once()
-        self.fallback_strategy_mock.aim_ray.assert_called_once()
+        self.primary_strategy.aim.assert_called_once()
+        self.fallback_strategy_mock.aim.assert_called_once()
         self.assertIs(result_rays, self.mock_rays)
 
     def test_fallback_on_ray_fail(self):
         """Test fallback to secondary strategy when a ray fails to trace."""
-        self.primary_strategy.aim_ray.return_value = self.mock_rays
+        self.primary_strategy.aim.return_value = self.mock_rays
 
         def trace_effect(rays):
             rays.fail = be.array([True])
 
         self.optic.surface_group.trace.side_effect = trace_effect
-        self.fallback_strategy_mock.aim_ray.return_value = self.mock_rays
+        self.fallback_strategy_mock.aim.return_value = self.mock_rays
 
-        result_rays = self.fallback_strategy.aim_ray(
+        result_rays = self.fallback_strategy.aim(
             self.optic, self.Hx, self.Hy, self.Px, self.Py, self.wavelength
         )
 
-        self.primary_strategy.aim_ray.assert_called_once()
-        self.fallback_strategy_mock.aim_ray.assert_called_once()
+        self.primary_strategy.aim.assert_called_once()
+        self.fallback_strategy_mock.aim.assert_called_once()
         self.assertIs(result_rays, self.mock_rays)
 
 if __name__ == "__main__":

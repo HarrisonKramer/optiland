@@ -14,10 +14,8 @@ from optiland.aiming.factory import RayAimingStrategyFactory
 from optiland.aiming.strategies.base import RayAimingStrategy
 
 if TYPE_CHECKING:
-    import optiland.v_math as np
-    from optiland.aberrations import Aberrations
     from optiland.optic.optic import Optic
-    from optiland.rays import RayBundle
+    from optiland.rays import RealRays
 
 
 class RayAiming:
@@ -39,9 +37,7 @@ class RayAiming:
         """
         self.optic = optic
         if isinstance(strategy, str):
-            self.strategy = RayAimingStrategyFactory.create_strategy(
-                strategy, **kwargs
-            )
+            self.strategy = RayAimingStrategyFactory.create_strategy(strategy, **kwargs)
         elif isinstance(strategy, RayAimingStrategy):
             self.strategy = strategy
         else:
@@ -49,11 +45,7 @@ class RayAiming:
                 "strategy must be a string or an RayAimingStrategy instance"
             )
 
-    @property
-    def chief_ray_aiming(self):
-        return self.strategy
-
-    def aim(self, rays: RayBundle) -> RayBundle:
+    def aim(self, rays: RealRays) -> RealRays:
         """
         Aim the given rays through the optic.
 
@@ -64,20 +56,3 @@ class RayAiming:
             The aimed rays.
         """
         return self.strategy.aim(rays)
-
-    def get_reference_ray_from_field_point(
-        self, field_point: np.ndarray, wavelength_index: int
-    ) -> Aberrations:
-        """
-        Get the reference ray for a given field point.
-
-        Args:
-            field_point: The field point to use.
-            wavelength_index: The wavelength index to use.
-
-        Returns:
-            The reference ray.
-        """
-        return self.strategy.get_reference_ray_from_field_point(
-            field_point, wavelength_index
-        )
