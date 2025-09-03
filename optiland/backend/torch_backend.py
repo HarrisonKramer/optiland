@@ -682,6 +682,11 @@ def errstate(**kwargs):
 # --------------------------
 # Miscellaneous Utilities
 # --------------------------
+def transpose(a, axes=None):
+    if axes is None:
+        return torch.transpose(a, 0, 1)
+    return a.permute(*axes)
+
 def path_contains_points(
     vertices: torch.Tensor, points: torch.Tensor
 ) -> torch.BoolTensor:

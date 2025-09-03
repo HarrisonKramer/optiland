@@ -253,7 +253,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
@@ -273,7 +273,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
@@ -293,7 +293,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = c[0]
             for k in range(1, len(c), 2):
@@ -313,7 +313,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = (
                 c[0]
@@ -337,7 +337,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = c[0]
             for k in range(1, len(c), 2):
@@ -357,7 +357,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = 1 + c[0]
             for k in range(1, len(c), 2):
@@ -377,7 +377,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         try:
             n = c[0] + c[1] / (w**2 - 0.028) + c[2] * (1 / (w**2 - 0.028)) ** 2
             for k in range(3, len(c)):
@@ -397,7 +397,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         if len(c) != 4:
             raise ValueError("Invalid coefficients for dispersion formula 8.")
 
@@ -415,7 +415,7 @@ class MaterialFile(BaseMaterial):
             float or be.ndarray: The refractive index(s) of the material.
 
         """
-        c = self.coefficients
+        c = be.array(self.coefficients)
         if len(c) != 6:
             raise ValueError("Invalid coefficients for dispersion formula 9.")
 
@@ -477,10 +477,7 @@ class MaterialFile(BaseMaterial):
 
     def _parse_formula_data(self, sub_data: dict, sub_data_type: str) -> None:
         """Parse formula-based material data."""
-        self.coefficients = be.array(
-            [float(k) for k in sub_data.get("coefficients", "").split()]
-        )
-        self.coefficients = be.reshape(self.coefficients, (-1, 1))
+        self.coefficients = [float(k) for k in sub_data.get("coefficients", "").split()]
         self._set_formula_type(sub_data_type)
 
     def _parse_tabulated_data(self, sub_data: dict, sub_data_type: str) -> None:
@@ -508,10 +505,7 @@ class MaterialFile(BaseMaterial):
         try:
             coeff = data["SPECS"]["thermal_dispersion"][0]
             if coeff.get("type", "").startswith("Schott"):
-                self.thermdispcoef = be.array(
-                    [float(k) for k in coeff.get("coefficients", "").split()]
-                )
-                self.thermdispcoef = be.reshape(self.thermdispcoef, (-1, 1))
+                self.thermdispcoef = [float(k) for k in coeff.get("coefficients", "").split()]
 
             self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
         except KeyError:

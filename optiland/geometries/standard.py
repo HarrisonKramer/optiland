@@ -55,8 +55,8 @@ class StandardGeometry(BaseGeometry):
 
     def __init__(self, coordinate_system, radius, conic=0.0):
         super().__init__(coordinate_system)
-        self.radius = be.array(radius)
-        self.k = be.array(conic)
+        self.radius = float(radius)
+        self.k = float(conic)
         self.is_symmetric = True
 
     def __str__(self):
@@ -101,6 +101,7 @@ class StandardGeometry(BaseGeometry):
             # intersection with the plane z=0 is z0 + t*Nz = 0
             N_safe = be.where(be.abs(rays.N) > 1e-14, rays.N, 1e-14)
             return -rays.z / N_safe
+
         a = self.k * rays.N**2 + rays.L**2 + rays.M**2 + rays.N**2
         b = (
             2 * self.k * rays.N * rays.z
