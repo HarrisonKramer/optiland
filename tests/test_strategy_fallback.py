@@ -23,11 +23,13 @@ class TestFallbackAimingStrategySimple(unittest.TestCase):
         self.optic.surface_group.surfaces = [MagicMock(), MagicMock()]
         self.optic.surface_group.surfaces[1].aperture.r_max = 1.0
         self.primary_strategy = MagicMock(spec=IterativeAimingStrategy)
-        self.secondary_strategy = MagicMock(spec=ParaxialAimingStrategy)
+        self.primary_strategy.aim = MagicMock()
+        self.fallback_strategy_mock = MagicMock(spec=ParaxialAimingStrategy)
+        self.fallback_strategy_mock.aim = MagicMock()
 
         self.fallback_strategy = FallbackAimingStrategy(
-            primary=self.primary_strategy,
-            secondary=self.secondary_strategy,
+            primary_strategy=self.primary_strategy,
+            fallback_strategy=self.fallback_strategy_mock,
         )
 
         self.Hx, self.Hy = 0.0, 1.0
@@ -55,20 +57,20 @@ class TestFallbackAimingStrategySimple(unittest.TestCase):
         )
 
         self.primary_strategy.aim_ray.assert_called_once()
-        self.secondary_strategy.aim_ray.assert_not_called()
+        self.fallback_strategy_mock.aim_ray.assert_not_called()
         self.assertIs(result_rays, self.mock_rays)
 
     def test_fallback_on_exception(self):
         """Test fallback to secondary strategy when primary raises an exception."""
         self.primary_strategy.aim_ray.side_effect = Exception("Primary failed")
-        self.secondary_strategy.aim_ray.return_value = self.mock_rays
+        self.fallback_strategy_mock.aim_ray.return_value = self.mock_rays
 
         result_rays = self.fallback_strategy.aim_ray(
             self.optic, self.Hx, self.Hy, self.Px, self.Py, self.wavelength
         )
 
         self.primary_strategy.aim_ray.assert_called_once()
-        self.secondary_strategy.aim_ray.assert_called_once()
+        self.fallback_strategy_mock.aim_ray.assert_called_once()
         self.assertIs(result_rays, self.mock_rays)
 
     def test_fallback_on_ray_fail(self):
@@ -79,14 +81,14 @@ class TestFallbackAimingStrategySimple(unittest.TestCase):
             rays.fail = be.array([True])
 
         self.optic.surface_group.trace.side_effect = trace_effect
-        self.secondary_strategy.aim_ray.return_value = self.mock_rays
+        self.fallback_strategy_mock.aim_ray.return_value = self.mock_rays
 
         result_rays = self.fallback_strategy.aim_ray(
             self.optic, self.Hx, self.Hy, self.Px, self.Py, self.wavelength
         )
 
         self.primary_strategy.aim_ray.assert_called_once()
-        self.secondary_strategy.aim_ray.assert_called_once()
+        self.fallback_strategy_mock.aim_ray.assert_called_once()
         self.assertIs(result_rays, self.mock_rays)
 
 if __name__ == "__main__":

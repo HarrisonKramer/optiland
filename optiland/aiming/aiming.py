@@ -40,7 +40,7 @@ class RayAiming:
         self.optic = optic
         if isinstance(strategy, str):
             self.strategy = RayAimingStrategyFactory.create_strategy(
-                strategy, optic=self.optic, **kwargs
+                strategy, **kwargs
             )
         elif isinstance(strategy, RayAimingStrategy):
             self.strategy = strategy

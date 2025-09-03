@@ -33,13 +33,12 @@ class RayAimingStrategyFactory:
     }
 
     @classmethod
-    def create_strategy(cls, name: str, optic: Optic, **kwargs) -> AimingStrategy:
+    def create_strategy(cls, name: str, **kwargs) -> AimingStrategy:
         """
         Create an aiming strategy instance from a string identifier.
 
         Args:
             name (str): The name of the strategy to create.
-            optic (Optic): The optic object to be used by the strategy.
             **kwargs: Additional keyword arguments for the strategy's constructor.
 
         Returns:
@@ -67,7 +66,7 @@ class RayAimingStrategyFactory:
             if "cache_size" in kwargs:
                 cached_kwargs["cache_size"] = kwargs.pop("cache_size")
 
-            base_strategy = cls.create_strategy(base_strategy_name, optic, **kwargs)
+            base_strategy = cls.create_strategy(base_strategy_name, **kwargs)
             return strategy_class(base_strategy=base_strategy, **cached_kwargs)
 
         if name == "fallback":
@@ -75,9 +74,9 @@ class RayAimingStrategyFactory:
             fallback_strategy_name = kwargs.pop("fallback_strategy", "paraxial")
 
             primary_strategy = cls.create_strategy(
-                primary_strategy_name, optic, **kwargs
+                primary_strategy_name, **kwargs
             )
-            fallback_strategy = cls.create_strategy(fallback_strategy_name, optic)
+            fallback_strategy = cls.create_strategy(fallback_strategy_name)
 
             return strategy_class(
                 primary_strategy=primary_strategy, fallback_strategy=fallback_strategy
