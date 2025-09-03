@@ -10,66 +10,72 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+from optiland.aiming.strategies.base import AimingStrategy
+from optiland.aiming.strategies.factory import AimingStrategyFactory
 
-    from optiland.aiming.strategies.base import RayAimingStrategy
+if TYPE_CHECKING:
+    import optiland.v_math as np
+    from optiland.aberrations import Aberrations
     from optiland.optic.optic import Optic
+    from optiland.rays import RayBundle
 
 
 class RayAiming:
-    """A class to manage and execute ray aiming strategies.
+    """Class for finding the entrance beam pupil for a given ray."""
 
-    This class holds a ray aiming strategy and uses it to aim rays for a given
-    optic. It provides a simple interface to the user, who can set the
-    strategy and then call the aim_ray method.
-
-    Attributes:
-        _strategy (RayAimingStrategy | None): The ray aiming strategy to use.
-    """
-
-    def __init__(self, strategy: RayAimingStrategy | None = None) -> None:
-        """Initializes the RayAiming class.
-
-        Args:
-            strategy: The ray aiming strategy to use. If None, a strategy must
-                be set before aiming rays.
-        """
-        self._strategy = strategy
-
-    def set_strategy(self, strategy: RayAimingStrategy) -> None:
-        """Sets the ray aiming strategy.
-
-        Args:
-            strategy: The ray aiming strategy to use.
-        """
-        self._strategy = strategy
-
-    def aim_ray(
-        self,
-        optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
-        wavelength: float,
+    def __init__(
+        self, optic: Optic, strategy: AimingStrategy | str = "iterative", **kwargs
     ):
-        """Aims a ray using the current strategy.
+        """
+        Initialize a new ray aiming instance.
 
         Args:
-            optic: The optic to aim the ray for.
-            Hx: The normalized x field coordinate(s).
-            Hy: The normalized y field coordinate(s).
-            Px: The normalized x pupil coordinate(s).
-            Py: The normalized y pupil coordinate(s).
-            wavelength: The wavelength of the ray in microns.
+            optic: The optic to use for ray aiming.
+            strategy: The aiming strategy to use. Can be a string identifier
+                or an AimingStrategy instance. If a string, a strategy will be created
+                using the AimingStrategyFactory. Defaults to 'iterative'.
+            **kwargs: Additional keyword arguments to pass to the strategy constructor
+                if created from a string.
+        """
+        self.optic = optic
+        if isinstance(strategy, str):
+            self.strategy = AimingStrategyFactory.create_strategy(
+                strategy, optic=self.optic, **kwargs
+            )
+        elif isinstance(strategy, AimingStrategy):
+            self.strategy = strategy
+        else:
+            raise TypeError("strategy must be a string or an AimingStrategy instance")
+
+    @property
+    def chief_ray_aiming(self):
+        return self.strategy
+
+    def aim(self, rays: RayBundle) -> RayBundle:
+        """
+        Aim the given rays through the optic.
+
+        Args:
+            rays: The rays to aim.
 
         Returns:
-            The aimed ray(s).
-
-        Raises:
-            ValueError: If the ray aiming strategy is not set.
+            The aimed rays.
         """
-        if self._strategy is None:
-            raise ValueError("Ray aiming strategy not set.")
-        return self._strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
+        return self.strategy.aim(rays)
+
+    def get_reference_ray_from_field_point(
+        self, field_point: np.ndarray, wavelength_index: int
+    ) -> Aberrations:
+        """
+        Get the reference ray for a given field point.
+
+        Args:
+            field_point: The field point to use.
+            wavelength_index: The wavelength index to use.
+
+        Returns:
+            The reference ray.
+        """
+        return self.strategy.get_reference_ray_from_field_point(
+            field_point, wavelength_index
+        )
