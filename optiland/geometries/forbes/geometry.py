@@ -43,7 +43,7 @@ from .qpoly import (
     q2d_sum_from_alphas,
 )
 
-_EPSILON = 1e-9
+_EPSILON = 1e-12
 
 
 @dataclass
@@ -256,9 +256,7 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
         r2 = x**2 + y**2
         z_base = self._base_sag(r2)
 
-        rho = be.sqrt(r2)
-        u = rho / self.norm_radius
-        usq = u**2
+        usq = r2 / (self.norm_radius**2)
 
         poly_sum_m0 = clenshaw_qbfs(self.coeffs_c, usq)
         prefactor = usq * (1 - usq)
@@ -326,14 +324,13 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
                 The partial derivatives (df_dx, df_dy).
         """
         r2 = x**2 + y**2
-        rho = be.sqrt(r2)
-        rho_safe = be.where(rho < _EPSILON, _EPSILON, rho)
-        ds_base_d_rho = self._base_sag_derivative(rho, r2)
+        rho_safe = be.sqrt(r2 + _EPSILON)
+        ds_base_d_rho = self._base_sag_derivative(rho_safe, r2)
 
         if len(self.coeffs_c) == 0 or be.all(self.coeffs_c == 0):
             df_d_rho = ds_base_d_rho
         else:
-            u = rho / self.norm_radius
+            u = rho_safe / self.norm_radius
 
             poly_val, dpoly_d_u = compute_z_zprime_qbfs(self.coeffs_c, u, u**2)
             dprefactor_d_rho = (2 * u - 4 * u**3) / self.norm_radius
@@ -484,7 +481,8 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         r2 = x**2 + y**2
         z_base = self._base_sag(r2)
 
-        rho = be.sqrt(r2)
+        rho = be.sqrt(r2 + _EPSILON)
+
         u = rho / self.norm_radius
         safe_x = be.where(rho < _EPSILON, x + 1e-12, x)
         theta = be.arctan2(y, safe_x)
@@ -526,7 +524,12 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
                 x_in.clone().detach().requires_grad_(True),
                 y_in.clone().detach().requires_grad_(True),
             )
-            z0 = self.sag(x_grad, y_grad)
+            # offset to avoid 0/0 derivative at the vertex
+            is_vertex = be.sqrt(x_grad**2 + y_grad**2) < _EPSILON
+            x_grad_safe = be.where(is_vertex, x_grad + _EPSILON, x_grad)
+            y_grad_safe = be.where(is_vertex, y_grad + _EPSILON, y_grad)
+
+            z0 = self.sag(x_grad_safe, y_grad_safe)
 
             gradients = be.autograd.grad(
                 outputs=z0,
