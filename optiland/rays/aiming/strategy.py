@@ -1,11 +1,12 @@
-""" abstract base class for ray aiming strategies """
+"""abstract base class for ray aiming strategies"""
+
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from collections import OrderedDict
 import hashlib
 import json
-from typing import TYPE_CHECKING, Optional
+from abc import ABC, abstractmethod
+from collections import OrderedDict
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -21,7 +22,13 @@ class RayAimingStrategy(ABC):
 
     @abstractmethod
     def aim_ray(
-        self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float
+        self,
+        optic: Optic,
+        Hx: float,
+        Hy: float,
+        Px: float,
+        Py: float,
+        wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
@@ -33,7 +40,13 @@ class ParaxialAimingStrategy(RayAimingStrategy):
     """A ray aiming strategy that uses paraxial optics to aim rays."""
 
     def aim_ray(
-        self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float
+        self,
+        optic: Optic,
+        Hx: float,
+        Hy: float,
+        Px: float,
+        Py: float,
+        wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
@@ -163,7 +176,7 @@ class IterativeAimingStrategy(RayAimingStrategy):
         self.step_size_cap = step_size_cap
         self.paraxial_aim = ParaxialAimingStrategy()
 
-    def aim_ray(self, optic: "Optic", Hx, Hy, Px, Py, wavelength: float):
+    def aim_ray(self, optic: Optic, Hx, Hy, Px, Py, wavelength: float):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
         """
@@ -208,9 +221,10 @@ class IterativeAimingStrategy(RayAimingStrategy):
                 delta = be.linalg.solve(J_reg, error[..., None])[..., 0]
             except (be.linalg.LinAlgError, RuntimeError):  # RuntimeError for torch
                 # Fallback to gradient descent if Jacobian is singular
-                delta = self.damping * be.matmul(
-                    be.transpose(J, (0, 2, 1)), error[..., None]
-                )[..., 0]
+                delta = (
+                    self.damping
+                    * be.matmul(be.transpose(J, (0, 2, 1)), error[..., None])[..., 0]
+                )
 
             step = self.damping * delta
             step_norm = be.linalg.norm(step, axis=-1, keepdims=True)
@@ -356,7 +370,13 @@ class FallbackAimingStrategy(RayAimingStrategy):
         self.pupil_error_threshold = pupil_error_threshold
 
     def aim_ray(
-        self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float
+        self,
+        optic: Optic,
+        Hx: float,
+        Hy: float,
+        Px: float,
+        Py: float,
+        wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
@@ -415,7 +435,7 @@ class CachedAimingStrategy(RayAimingStrategy):
         self.cache = OrderedDict()
         self.max_size = max_size
 
-    def _get_optic_hash(self, optic: "Optic") -> str:
+    def _get_optic_hash(self, optic: Optic) -> str:
         """Generate a hash for the optic based on its dictionary representation."""
         # The default `str` representation of the dict is not canonical, so we sort keys
         optic_dict = optic.to_dict()
@@ -423,7 +443,13 @@ class CachedAimingStrategy(RayAimingStrategy):
         return hashlib.md5(s.encode()).hexdigest()
 
     def aim_ray(
-        self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float
+        self,
+        optic: Optic,
+        Hx: float,
+        Hy: float,
+        Px: float,
+        Py: float,
+        wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
@@ -467,7 +493,7 @@ class CachedAimingStrategy(RayAimingStrategy):
 
     def _aim_ray_scalar(
         self,
-        optic: "Optic",
+        optic: Optic,
         optic_hash: str,
         Hx: float,
         Hy: float,
@@ -579,7 +605,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
         self.paraxial_strategy = ParaxialAimingStrategy()
         self.optic_caches = {}  # Stores caches for different optics
 
-    def _get_optic_hash(self, optic: "Optic") -> str:
+    def _get_optic_hash(self, optic: Optic) -> str:
         """Generate a hash for the optic based on its dictionary representation."""
         optic_dict = optic.to_dict()
         s = json.dumps(optic_dict, sort_keys=True, cls=NumpyEncoder)
@@ -596,7 +622,13 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
         return self.optic_caches[optic_hash]
 
     def aim_ray(
-        self, optic: "Optic", Hx: float, Hy: float, Px: float, Py: float, wavelength: float
+        self,
+        optic: Optic,
+        Hx: float,
+        Hy: float,
+        Px: float,
+        Py: float,
+        wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
         return the ray
@@ -645,9 +677,7 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
                 if error < self.error_tolerance:
                     return predicted_ray
 
-        refined_ray = self.iterative_strategy.aim_ray(
-            optic, Hx, Hy, Px, Py, wavelength
-        )
+        refined_ray = self.iterative_strategy.aim_ray(optic, Hx, Hy, Px, Py, wavelength)
         self._update_cache_and_model(
             optic_cache, (Hx, Hy, Px, Py, wavelength), refined_ray
         )
@@ -699,7 +729,9 @@ class ModelBasedAimingStrategy(RayAimingStrategy):
         stop_radius = aperture.r_max
         actual_px = pupil_x / stop_radius
         actual_py = pupil_y / stop_radius
-        error = be.sqrt((actual_px - be.array(Px)) ** 2 + (actual_py - be.array(Py)) ** 2)
+        error = be.sqrt(
+            (actual_px - be.array(Px)) ** 2 + (actual_py - be.array(Py)) ** 2
+        )
         return be.to_numpy(error).item()
 
     def _update_cache_and_model(self, optic_cache, cache_key_inputs, refined_ray):

@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
 
 if nn:
+
     class OpticalSystemModule(nn.Module):
         """
         A PyTorch nn.Module that wraps an Optiland OptimizationProblem.
@@ -38,12 +39,12 @@ if nn:
         larger machine learning models.
         Args:
             optic (Optic): The optical system definition.
-            problem (OptimizationProblem): The optimization problem defining variables and
-                objectives.
-            objective_fn (Callable[[], torch.Tensor] | None): An optional callable tha
-                takes no arguments and returns a scalar PyTorch tensor representing the loss
-                or metric to be optimized. If None, problem.sum_squared() is used as
-                default.
+            problem (OptimizationProblem): The optimization problem defining variables
+                and objectives.
+            objective_fn (Callable[[], torch.Tensor] | None): An optional callable that
+                takes no arguments and returns a scalar PyTorch tensor representing the
+                loss or metric to be optimized. If None, problem.sum_squared() is used
+                as default.
         """
 
         def __init__(
@@ -65,7 +66,9 @@ if nn:
             self.problem = problem
 
             # Initialize parameters as torch.nn.Parameter objects
-            initial_params = [var.variable.get_value() for var in self.problem.variables]
+            initial_params = [
+                var.variable.get_value() for var in self.problem.variables
+            ]
             self.params = nn.ParameterList(
                 [torch.nn.Parameter(be.array(p)) for p in initial_params]
             )
@@ -101,17 +104,23 @@ if nn:
             Applies the defined bounds to the parameters in-place.
             This should be called after each optimizer step to enforce constraints.
             """
-            with torch.no_grad():  # Operations here shouldn't be part of the gradient graph
+            with (
+                torch.no_grad()
+            ):  # Operations here shouldn't be part of the gradient graph
                 for i, param in enumerate(self.params):
                     var = self._original_variables[i]
                     min_val, max_val = var.bounds
 
                     # Inverse scale the parameter data
                     min_val = (
-                        var.variable.inverse_scale(min_val) if min_val is not None else None
+                        var.variable.inverse_scale(min_val)
+                        if min_val is not None
+                        else None
                     )
                     max_val = (
-                        var.variable.inverse_scale(max_val) if max_val is not None else None
+                        var.variable.inverse_scale(max_val)
+                        if max_val is not None
+                        else None
                     )
 
                     # Clamp the parameter data to the defined bounds
@@ -132,7 +141,7 @@ if nn:
             Users are encouraged to customize or override this method to suit their
             specific optimization objectives.
             """
-            # 1. Synchronize the nn.Parameter values with the Optiland problem variables.
+            # 1. Synchronize the nn.Parameter values with the Optiland problem variables
             self._sync_params_to_problem()
 
             # 2. Update dependent properties within the optical system
@@ -142,6 +151,10 @@ if nn:
             loss = self.objective_fn()
             return loss
 else:
+
     class OpticalSystemModule:
         def __init__(self, *args, **kwargs):
-            raise ImportError("PyTorch is not installed. Please install it to use OpticalSystemModule.")
+            raise ImportError(
+                "PyTorch is not installed. "
+                "Please install it to use OpticalSystemModule."
+            )

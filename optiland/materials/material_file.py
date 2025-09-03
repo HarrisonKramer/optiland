@@ -505,7 +505,9 @@ class MaterialFile(BaseMaterial):
         try:
             coeff = data["SPECS"]["thermal_dispersion"][0]
             if coeff.get("type", "").startswith("Schott"):
-                self.thermdispcoef = [float(k) for k in coeff.get("coefficients", "").split()]
+                self.thermdispcoef = [
+                    float(k) for k in coeff.get("coefficients", "").split()
+                ]
 
             self._t0 = float(data["SPECS"]["temperature"].split(" ")[0])
         except KeyError:

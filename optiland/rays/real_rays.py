@@ -71,9 +71,9 @@ class RealRays(BaseRays):
             intensity=be.copy(other.i),
             wavelength=be.copy(other.w),
         )
-        if hasattr(other, 'fail'):
+        if hasattr(other, "fail"):
             new_rays.fail = be.copy(other.fail)
-        if hasattr(other, 'opd'):
+        if hasattr(other, "opd"):
             new_rays.opd = be.copy(other.opd)
         return new_rays
 

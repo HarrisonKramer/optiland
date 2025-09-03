@@ -1,11 +1,14 @@
-""" Polynomial regression model """
+"""Polynomial regression model"""
+
 from __future__ import annotations
 
 from itertools import combinations_with_replacement
-
-from numpy.typing import NDArray
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class PolynomialRegression:

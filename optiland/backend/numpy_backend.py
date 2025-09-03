@@ -109,5 +109,6 @@ def path_contains_points(vertices: np.ndarray, points: np.ndarray) -> np.ndarray
     mask = path.contains_points(points)
     return np.asarray(mask, dtype=bool)
 
+
 def transpose(a, axes=None):
     return np.transpose(a, axes)
