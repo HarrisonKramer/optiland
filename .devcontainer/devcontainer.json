@@ -1,0 +1,11 @@
+{
+  "name": "Optiland",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    },
+    "ghcr.io/va-h/devcontainers-features/uv:1": {
+      "shellautocompletion": true
+    }
+  }
+}
