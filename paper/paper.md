@@ -58,7 +58,7 @@ Optiland supports a wide range of design, analysis, and optimization tasks, maki
 - **Material Database**: Built-in refractive index library with support for user-defined materials.
 - **Visualization**: 2D layout plots, 3D ray-trace visualization, and an interactive GUI.
 - **Interoperability**: Import of Zemax OpticStudio files, JSON-based I/O, and a full Python API.
-- **Performance**: GPU acceleration with PyTorch and CPU acceleration with Numba.
+- **Performance**: GPU acceleration with PyTorch and CPU acceleration with Numba [@lam2015numba].
 
 # Example
 
