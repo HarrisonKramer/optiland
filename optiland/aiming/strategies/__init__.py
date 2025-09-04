@@ -11,7 +11,6 @@ from .base import RayAimingStrategy
 from .cached import CachedAimingStrategy
 from .fallback import FallbackAimingStrategy
 from .iterative import IterativeAimingStrategy
-from .model_based import ModelBasedAimingStrategy
 from .paraxial import ParaxialAimingStrategy
 
 __all__ = [
@@ -20,5 +19,4 @@ __all__ = [
     "IterativeAimingStrategy",
     "FallbackAimingStrategy",
     "CachedAimingStrategy",
-    "ModelBasedAimingStrategy",
 ]
