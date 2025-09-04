@@ -17,8 +17,7 @@ from optiland.aiming.strategies.paraxial import ParaxialAimingStrategy
 from optiland.rays.real_rays import RealRays
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
+    from optiland.backend import ndarray
     from optiland.optic.optic import Optic
 
 
@@ -52,10 +51,10 @@ class FallbackAimingStrategy(RayAimingStrategy):
     def aim(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ):
         """Aims a ray using a primary strategy and falling back to a secondary

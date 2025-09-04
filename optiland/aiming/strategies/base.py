@@ -11,8 +11,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
+    from optiland.backend import ndarray
     from optiland.optic.optic import Optic
 
 
@@ -23,10 +22,10 @@ class RayAimingStrategy(ABC):
     def aim(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,

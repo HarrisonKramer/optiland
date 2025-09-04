@@ -13,23 +13,20 @@ import json
 from collections import OrderedDict
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 import optiland.backend as be
 from optiland.aiming.strategies.base import RayAimingStrategy
 from optiland.rays.real_rays import RealRays
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
+    from optiland.backend import ndarray
     from optiland.optic.optic import Optic
 
 
-class NumpyEncoder(json.JSONEncoder):
-    """Custom encoder for numpy data types."""
+class BackendEncoder(json.JSONEncoder):
+    """Custom encoder for backend data types."""
 
     def default(self, obj):
-        """Encode numpy data types.
+        """Encode backend data types.
 
         Args:
             obj: The object to encode.
@@ -37,10 +34,14 @@ class NumpyEncoder(json.JSONEncoder):
         Returns:
             The encoded object.
         """
-        if isinstance(obj, np.integer | np.floating | np.bool_):
+        # Handle backend-specific scalar types
+        if hasattr(obj, "item") and callable(obj.item):
             return obj.item()
-        elif isinstance(obj, np.ndarray):
+
+        # Handle backend array types
+        if isinstance(obj, be.ndarray):
             return obj.tolist()
+
         return super().default(obj)
 
 
@@ -62,16 +63,16 @@ class CachedAimingStrategy(RayAimingStrategy):
         """Generate a hash for the optic based on its dictionary representation."""
         # The default `str` representation of the dict is not canonical, so we sort keys
         optic_dict = optic.to_dict()
-        s = json.dumps(optic_dict, sort_keys=True, cls=NumpyEncoder)
+        s = json.dumps(optic_dict, sort_keys=True, cls=BackendEncoder)
         return hashlib.md5(s.encode()).hexdigest()
 
     def aim(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ):
         """Aims a ray, using a cache to avoid recomputation.
@@ -140,9 +141,16 @@ class CachedAimingStrategy(RayAimingStrategy):
         if cache_key in self.cache:
             self.cache.move_to_end(cache_key)
             cached_result = self.cache[cache_key]
-            # Recreate RealRays from cached data. Assuming intensity is 1.0.
+            # Recreate RealRays from cached backend arrays.
             return RealRays(
-                *cached_result, intensity=be.array(1.0), wavelength=be.array(wavelength)
+                x=cached_result[0],
+                y=cached_result[1],
+                z=cached_result[2],
+                L=cached_result[3],
+                M=cached_result[4],
+                N=cached_result[5],
+                intensity=be.array(1.0),
+                wavelength=be.array(wavelength),
             )
 
         # Cache miss
@@ -152,29 +160,29 @@ class CachedAimingStrategy(RayAimingStrategy):
 
         # Ensure result from base strategy is suitable for caching (scalar-like)
         # The base strategy should return a RealRays object where each attribute
-        # is a 1-element array
+        # is a 1-element array. We will cache the backend arrays directly.
         if be.size(rays.x) > 1:
             # This indicates the base strategy might have returned a vectorized
-            # result unexpectedly.
-            # The current caching implementation expects to cache individual rays.
-            # For simplicity, we'll cache the first ray's data. A more robust
-            # solution might be needed.
+            # result unexpectedly. The current caching implementation expects to
+            # cache individual rays. For simplicity, we'll cache the first
+            # ray's data as backend arrays of size 1.
             result_to_cache = (
-                be.to_numpy(rays.x)[0],
-                be.to_numpy(rays.y)[0],
-                be.to_numpy(rays.z)[0],
-                be.to_numpy(rays.L)[0],
-                be.to_numpy(rays.M)[0],
-                be.to_numpy(rays.N)[0],
+                rays.x[0:1],
+                rays.y[0:1],
+                rays.z[0:1],
+                rays.L[0:1],
+                rays.M[0:1],
+                rays.N[0:1],
             )
         else:
+            # Cache the scalar-like backend arrays directly.
             result_to_cache = (
-                be.to_numpy(rays.x).item(),
-                be.to_numpy(rays.y).item(),
-                be.to_numpy(rays.z).item(),
-                be.to_numpy(rays.L).item(),
-                be.to_numpy(rays.M).item(),
-                be.to_numpy(rays.N).item(),
+                rays.x,
+                rays.y,
+                rays.z,
+                rays.L,
+                rays.M,
+                rays.N,
             )
 
         self.cache[cache_key] = result_to_cache

@@ -15,8 +15,7 @@ from optiland.aiming.strategies.base import RayAimingStrategy
 from optiland.rays.real_rays import RealRays
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
+    from optiland.backend import ndarray
     from optiland.optic.optic import Optic
 
 
@@ -26,10 +25,10 @@ class ParaxialAimingStrategy(RayAimingStrategy):
     def aim(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ):
         """Given an optic, normalized field and pupil coordinates and wavelength,
@@ -91,12 +90,12 @@ class ParaxialAimingStrategy(RayAimingStrategy):
     def _get_ray_origins(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
-        vx: ArrayLike,
-        vy: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
+        vx: ndarray,
+        vy: ndarray,
     ):
         """Calculate the initial positions for rays originating at the object.
 

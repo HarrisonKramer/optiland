@@ -16,8 +16,7 @@ from optiland.aiming.strategies.paraxial import ParaxialAimingStrategy
 from optiland.rays.real_rays import RealRays
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-
+    from optiland.backend import ndarray
     from optiland.optic.optic import Optic
 
 
@@ -48,10 +47,10 @@ class IterativeAimingStrategy(RayAimingStrategy):
     def aim(
         self,
         optic: Optic,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ):
         """Aims a ray using an iterative refinement method.
@@ -132,12 +131,12 @@ class IterativeAimingStrategy(RayAimingStrategy):
     def _create_rays_from_variables(
         self,
         optic: Optic,
-        variables: ArrayLike,
+        variables: ndarray,
         initial_rays: RealRays,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
     ) -> RealRays:
         """Creates a RealRays object from the given variables.
@@ -186,14 +185,14 @@ class IterativeAimingStrategy(RayAimingStrategy):
     def _get_pupil_coords(
         self,
         optic: Optic,
-        variables: ArrayLike,
+        variables: ndarray,
         initial_rays: RealRays,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
-    ) -> ArrayLike:
+    ) -> ndarray:
         """Gets the pupil coordinates for the given variables.
 
         Args:
@@ -226,15 +225,15 @@ class IterativeAimingStrategy(RayAimingStrategy):
     def _estimate_jacobian_vectorized(
         self,
         optic: Optic,
-        variables: ArrayLike,
+        variables: ndarray,
         initial_rays: RealRays,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
         wavelength: float,
         epsilon: float = 1e-6,
-    ) -> ArrayLike:
+    ) -> ndarray:
         """Estimates the Jacobian matrix using vectorized operations.
 
         Args:
