@@ -10,16 +10,24 @@ def cooke_triplet_optic():
     """A Cooke triplet optic that is known to cause issues with ray aiming."""
     return CookeTriplet()
 
-def test_iterative_aiming_with_complex_optic(cooke_triplet_optic):
+@pytest.mark.parametrize(
+    "Hx, Hy, Px, Py",
+    [
+        (0.0, 1.0, 0.0, 1.0),  # Original test case
+        (1.0, 0.0, 1.0, 0.0),  # Edge of field and pupil
+        (0.7, 0.7, 0.7, 0.7),  # Another stressful case
+        (1.0, 0.0, -1.0, 0.0), # Other side of pupil
+        (0.0, 1.0, 0.0, -1.0),
+    ],
+)
+def test_iterative_aiming_with_complex_optic(cooke_triplet_optic, Hx, Hy, Px, Py):
     """Test that iterative aiming does not produce NaNs with a complex optic."""
     strategy = IterativeAimingStrategy()
     optic = cooke_triplet_optic
 
-    # These coordinates are known to cause failures
-    Hx, Hy, Px, Py = 0.0, 1.0, 0.0, 1.0
     wavelength = optic.primary_wavelength
 
-    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
+    rays = strategy.aim(optic, be.array(Hx), be.array(Hy), be.array(Px), be.array(Py), wavelength)
 
     assert not be.any(be.isnan(rays.x)), "NaN values found in ray x coordinates"
     assert not be.any(be.isnan(rays.y)), "NaN values found in ray y coordinates"

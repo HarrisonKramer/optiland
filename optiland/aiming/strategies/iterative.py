@@ -101,12 +101,18 @@ class IterativeAimingStrategy(RayAimingStrategy):
                 optic, variables, initial_rays, Hx, Hy, Px, Py, wavelength
             )
 
+            use_fallback = False
             try:
                 # Add a small value to the diagonal to prevent singular matrix
                 J_reg = J + be.eye(J.shape[1]) * 1e-9
                 delta = be.linalg.solve(J_reg, error[..., None])[..., 0]
+                if be.any(be.isnan(delta)) or be.any(be.isinf(delta)):
+                    use_fallback = True
             except (be.linalg.LinAlgError, RuntimeError):  # RuntimeError for torch
-                # Fallback to gradient descent if Jacobian is singular
+                use_fallback = True
+
+            if use_fallback:
+                # Fallback to gradient descent if Jacobian is singular or solver failed
                 delta = (
                     self.damping
                     * be.matmul(be.transpose(J, (0, 2, 1)), error[..., None])[..., 0]
