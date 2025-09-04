@@ -138,14 +138,14 @@ problem.add_variable(lens, "thickness", surface_number=5, min_val=2.5, max_val=5
 problem.add_variable(lens, "thickness", surface_number=6, min_val=40, max_val=50)
 
 # RMS spot size operand - to be minimized
-for field in lens.fields.get_field_coords():
+for (Hx, Hy) in lens.fields.get_field_coords():
     input_data = {
         "optic": lens,
         "surface_number": 7,
-        "Hx": field[0],
-        "Hy": field[1],
+        "Hx": Hx,
+        "Hy": Hy,
         "num_rays": 11,
-        "wavelength": 0.587,
+        "wavelength": 0.587,  # µm
         "distribution": "uniform",
     }
     problem.add_operand(
