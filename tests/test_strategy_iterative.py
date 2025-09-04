@@ -3,6 +3,30 @@ import optiland.backend as be
 from optiland.optic.optic import Optic
 from optiland.aiming.strategies import IterativeAimingStrategy, ParaxialAimingStrategy
 from optiland.physical_apertures import RadialAperture
+from optiland.samples.objectives import CookeTriplet
+
+@pytest.fixture
+def cooke_triplet_optic():
+    """A Cooke triplet optic that is known to cause issues with ray aiming."""
+    return CookeTriplet()
+
+def test_iterative_aiming_with_complex_optic(cooke_triplet_optic):
+    """Test that iterative aiming does not produce NaNs with a complex optic."""
+    strategy = IterativeAimingStrategy()
+    optic = cooke_triplet_optic
+
+    # These coordinates are known to cause failures
+    Hx, Hy, Px, Py = 0.0, 1.0, 0.0, 1.0
+    wavelength = optic.primary_wavelength
+
+    rays = strategy.aim(optic, Hx, Hy, Px, Py, wavelength)
+
+    assert not be.any(be.isnan(rays.x)), "NaN values found in ray x coordinates"
+    assert not be.any(be.isnan(rays.y)), "NaN values found in ray y coordinates"
+    assert not be.any(be.isnan(rays.z)), "NaN values found in ray z coordinates"
+    assert not be.any(be.isnan(rays.L)), "NaN values found in ray L direction cosines"
+    assert not be.any(be.isnan(rays.M)), "NaN values found in ray M direction cosines"
+    assert not be.any(be.isnan(rays.N)), "NaN values found in ray N direction cosines"
 
 @pytest.fixture
 def single_lens_optic():

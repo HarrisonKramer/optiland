@@ -156,6 +156,12 @@ class IterativeAimingStrategy(RayAimingStrategy):
         """
         if optic.object_surface.is_infinite:
             L, M = variables[..., 0], variables[..., 1]
+            # clip L and M to prevent nans in N
+            norm = be.sqrt(L**2 + M**2)
+            cond = norm > 1.0
+            L = be.where(cond, L / norm, L)
+            M = be.where(cond, M / norm, M)
+
             N = be.sqrt(1 - L**2 - M**2)
             return RealRays(
                 initial_rays.x,
@@ -216,6 +222,13 @@ class IterativeAimingStrategy(RayAimingStrategy):
 
         pupil_x = optic.surface_group.x[stop_idx]
         pupil_y = optic.surface_group.y[stop_idx]
+
+        # check for failed rays (nans) and replace with a large number
+        # this will push the solver away from regions that cause ray failures
+        failed_rays = be.isnan(pupil_x) | be.isnan(pupil_y)
+        if be.any(failed_rays):
+            pupil_x = be.where(failed_rays, 1e10, pupil_x)
+            pupil_y = be.where(failed_rays, 1e10, pupil_y)
 
         aperture = optic.surface_group.surfaces[stop_idx].aperture
         stop_radius = aperture.r_max if aperture is not None else 1e10
