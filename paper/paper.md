@@ -50,13 +50,13 @@ The PyTorch backend also provides substantial performance improvements through G
 | Backend Configuration | Precision | Throughput (ray-surfaces/s) | Relative Speedup |
 | :--- | :--- | :--- | :--- |
 | NumPy (CPU) | `float64` | 2.3 × 10^6 | 1.0x |
-| PyTorch (CPU) | `float64` | 7.1 × 10^6 | 3.0x |
-| PyTorch (GPU) | `float64` | 5.7 × 10^7 | 24.4x |
-| **PyTorch (GPU)** | **`float32`** | **2.3 × 10^8** | **97.7x** |
+| PyTorch (CPU) | `float64` | 7.1 × 10^6 | 3.1x |
+| PyTorch (GPU) | `float64` | 5.7 × 10^7 | 24.8x |
+| **PyTorch (GPU)** | **`float32`** | **2.3 × 10^8** | **100.0x** |
 
-Table: Benchmark of ray-tracing throughput for a Cooke triplet system. Results show that the GPU-accelerated `float32` configuration, standard in machine learning workflows, achieves nearly two orders of magnitude higher throughput compared to NumPy on CPU \label{tbl:benchmark}
+Table: Benchmark of ray-tracing throughput for a Cooke triplet system. Results show that the GPU-accelerated `float32` configuration, standard in machine learning workflows, achieves two orders of magnitude higher throughput compared to NumPy on CPU \label{tbl:benchmark}
 
-As shown in the table, the GPU-accelerated, 32-bit precision backend achieves a 97.7x throughput gain over the standard NumPy implementation. This acceleration enables experiments that would otherwise be impractical, including large-scale Monte Carlo tolerancing, high-resolution simulations, and gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland lowers the barrier to entry for advanced optical design and makes computational experiments accessible to a much wider community.
+As shown in the table, the GPU-accelerated, 32-bit precision backend achieves a 100.0x throughput gain over the standard NumPy implementation. This acceleration enables experiments that would otherwise be impractical, including large-scale Monte Carlo tolerancing, high-resolution simulations, and gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland lowers the barrier to entry for advanced optical design and makes computational experiments accessible to a much wider community.
 
 
 # Functionalities
