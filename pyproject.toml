@@ -21,7 +21,7 @@ dependencies = [
     "matplotlib",
     "vtk",
     "tabulate",
-    "numba",
+    "numba>=0.60.0",
     "requests",
     "seaborn",
     "typing-extensions>=4.13.2",
