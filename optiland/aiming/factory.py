@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from .strategies.cached import CachedAimingStrategy
 from .strategies.fallback import FallbackAimingStrategy
 from .strategies.iterative import IterativeAimingStrategy
-from .strategies.model_based import ModelBasedAimingStrategy
 from .strategies.paraxial import ParaxialAimingStrategy
 
 if TYPE_CHECKING:
@@ -27,7 +26,6 @@ class RayAimingStrategyFactory:
         "paraxial": ParaxialAimingStrategy,
         "cached": CachedAimingStrategy,
         "fallback": FallbackAimingStrategy,
-        "model_based": ModelBasedAimingStrategy,
     }
 
     @classmethod
