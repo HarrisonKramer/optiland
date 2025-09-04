@@ -35,17 +35,17 @@ bibliography: paper.bib
 
 **Optiland** is an open-source optical design package written in Python. It offers a comprehensive platform for the design, analysis, and optimization of complex optical systems, catering to a wide audience from professional engineers and researchers to students and hobbyists. Optiland handles a wide range of optical systems, from classical refractive and reflective designs to advanced freeform and computational optics.
 
-Core features include sequential ray tracing, a rich library of surface types (spherical, aspheric, freeform), optimization and tolerancing support, and a suite of analysis tools for evaluating optical performance (e.g., spot diagrams, wavefront analysis, modulation transfer function). A key feature of Optiland is its dual-backend architecture, which allows users to switch between a NumPy backend for fast CPU computations and a PyTorch backend for GPU acceleration and automatic differentiation. This enables the integration of Optiland with machine learning workflows and gradient-based optimization, as all calculations are differentiable. Optiland also includes a graphical user interface (GUI) for interactive design and analysis.
+Core features include sequential ray tracing, a rich library of surface types (spherical, aspheric, freeform), optimization and tolerancing support, and a suite of analysis tools for evaluating optical performance (e.g., spot diagrams, wavefront analysis, modulation transfer function). A key feature of Optiland is its dual-backend architecture, which allows users to switch between a NumPy [@harris2020array] backend for fast CPU computations and a PyTorch [@NEURIPS2019_9015] backend for GPU acceleration and automatic differentiation. This enables the integration of Optiland with machine learning workflows and gradient-based optimization, as all calculations are differentiable. Optiland also includes a graphical user interface (GUI) for interactive design and analysis.
 
 # Statement of Need
 
 The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CodeV [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for students, educators, and researchers.
 
-Optiland addresses this need by providing the most complete open-source optical design package available. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particular relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
+Optiland addresses this need by providing the most complete open-source optical design package available. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
 
 The PyTorch backend also provides substantial performance improvements through GPU acceleration. In practice, ray tracing workloads that can take minutes on a CPU are reduced to seconds on a modern GPU, and the speedups scale with both hardware quality and problem size. This level of acceleration enables experiments that would otherwise be impractical, such as large-scale Monte Carlo tolerancing, high-resolution simulations, or gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
 
-Several open-source optical packages exist, such as Prysm [@Prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
+Several open-source optical packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
 
 # Functionalities
 
@@ -74,7 +74,7 @@ from optiland import optic
 lens = optic.Optic()
 
 # Define lens surfaces
-lens.add_surface(index=0, radius=np.inf, thickness=np.inf)
+lens.add_surface(index=0, radius=np.inf, thickness=np.inf)  # Object plane
 lens.add_surface(index=1, radius=+22.01359, thickness=3.25896, material="SK16")
 lens.add_surface(index=2, radius=-435.7604, thickness=6.00755)
 lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
@@ -171,7 +171,7 @@ be.set_device("cuda")        # Use CUDA (GPU)
 
 ## 4. End-to-end optimization with PyTorch
 
-The PyTorch backend allows integration with neural networks and gradient-based optimizers. Note that to enable this functionality, the lens should be built when the Pytorch backend is active.
+The PyTorch backend allows integration with neural networks and gradient-based optimizers. Note that to enable this functionality, the lens should be built when the PyTorch backend is active.
 
 ```python
 import torch
@@ -186,18 +186,18 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 losses = []
 for step in range(250):
     optimizer.zero_grad()
-    loss = model()      # merit function
+    loss = model()      # lens merit function
     loss.backward()
     optimizer.step()
     model.apply_bounds()
     losses.append(loss.item())
 ```
 
-This workflow enables research scenarios such as inverse design, generative optical modelling, or generic end-to-end optical design.
+This workflow enables research scenarios such as inverse design, generative modeling, and end-to-end optical design.
 
 # Research Enabled by Optiland
 
-Optiland is actively used by researchers in the **MReye group** at the Leiden University Medical Center. It serves as a configurable backend for all optical computations within the [Visisipy](https://github.com/MReye-LUMC/visisipy) [cite] project, a Python library for simulating visual optics.
+Optiland is actively used by researchers in the **MReye group** at the Leiden University Medical Center. It serves as a configurable backend for all optical computations within the [Visisipy](https://github.com/MReye-LUMC/visisipy) [@visisipy-zenodo] project, a Python library for simulating visual optics.
 
 # Figures
 
@@ -208,5 +208,7 @@ Optiland is actively used by researchers in the **MReye group** at the Leiden Un
 # Acknowledgements
 
 The authors thank Jan-Willem Beenakker for initiating the collaboration that led to the integration of Optiland into Visisipy. We also thank contributors and community members for feedback and code contributions, in particular Seçkin Berkay Öztürk, Hemkumar Srinivas, Matteo Taccola, Corentin Nannini, Kacper Rutkowski, and David Fariña.
+
+The contributions of Corné Haasjes are part of the OPENOPTICS project with project number SD23.2.004 of the Open Science Fund, which is financed by the Dutch Research Council (NWO).
 
 # References
