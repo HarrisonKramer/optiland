@@ -1118,7 +1118,7 @@ requires-dist = [
     { name = "seaborn" },
     { name = "tabulate" },
     { name = "torch", marker = "extra == 'torch'" },
-    { name = "typing-extensions", specifier = ">=4.13.2" },
+    { name = "typing-extensions", specifier = ">=4.1.0" },
     { name = "vtk" },
 ]
 provides-extras = ["dev", "torch", "gui"]
