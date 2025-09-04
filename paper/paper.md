@@ -43,9 +43,21 @@ The field of optical design has long been dominated by commercial software tools
 
 Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
 
-The PyTorch backend also provides substantial performance improvements through GPU acceleration. In practice, ray tracing workloads that can take minutes on a CPU are reduced to seconds on a modern GPU, and the speedups scale with both hardware quality and problem size. This level of acceleration enables experiments that would otherwise be impractical, such as large-scale Monte Carlo tolerancing, high-resolution simulations, or gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland aims to democratize access to advanced optical design tools.
+Several open-source optical packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
 
-Several open-source optical packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray-tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
+The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs. To illustrate this, we benchmarked ray tracing through a Cooke triplet lens and measured throughput in terms of ray–surface interactions per second. Benchmarks were run on a system with an Intel Core i7-12700H CPU and an NVIDIA RTX 3070 GPU, with results shown in \autoref{tbl:benchmark}.
+
+| Backend Configuration | Precision | Throughput (ray-surfaces/s) | Relative Speedup |
+| :--- | :--- | :--- | :--- |
+| NumPy (CPU) | `float64` | 2.3 × 10^6 | 1.0x |
+| PyTorch (CPU) | `float64` | 7.1 × 10^6 | 3.0x |
+| PyTorch (GPU) | `float64` | 5.7 × 10^7 | 24.4x |
+| **PyTorch (GPU)** | **`float32`** | **2.3 × 10^8** | **97.7x** |
+
+Table: Benchmark of ray-tracing throughput for a Cooke triplet system. The GPU-accelerated `float32` configuration, which is standard for machine learning workflows, shows the most significant performance gain. \label{tbl:benchmark}
+
+As shown in the table, the GPU-accelerated, 32-bit precision backend achieves a 97.7x throughput gain over the standard NumPy implementation. This acceleration enables experiments that would otherwise be impractical, including large-scale Monte Carlo tolerancing, high-resolution simulations, and gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland lowers the barrier to entry for advanced optical design and makes computational experiments accessible to a much wider community.
+
 
 # Functionalities
 
@@ -103,7 +115,7 @@ lens.update_paraxial()
 lens.draw3D()
 ```
 
-![Cooke Triplet in 3D](../docs/images/cooke.png)
+![A 3D rendering of a Cooke triplet lens system modeled in Optiland. \label{fig:cooke3d}](../docs/images/cooke.png)
 
 ## 2. Optimizing the lens
 
@@ -153,7 +165,7 @@ optimizer.optimize()
 lens.draw()
 ```
 
-![cooke_2d](../docs/images/cooke_2d.png)
+![The 2D layout of the Cooke triplet lens.](../docs/images/cooke_2d.png)
 
 The result can be refined further using Optiland's GlassExpert functionality to automatically choose high-quality glass candidates.
 
@@ -201,9 +213,9 @@ Optiland is actively used by researchers in the **MReye group** at the Leiden Un
 
 # Figures
 
-![Image of UV photolithography lens](../docs/images/litho_lens.png)
+![An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776.](../docs/images/litho_lens.png)
 
-![Image of Folded Czerny-Turner Spectrometer](../docs/images/czerny_turner.png)
+![A model of a folded Czerny-Turner spectrometer.](../docs/images/czerny_turner.png)
 
 # Acknowledgements
 
