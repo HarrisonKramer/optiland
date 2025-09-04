@@ -47,14 +47,14 @@ class NumpyEncoder(json.JSONEncoder):
 class CachedAimingStrategy(RayAimingStrategy):
     """A ray aiming strategy that caches results to avoid recomputation."""
 
-    def __init__(self, wrapped_strategy: RayAimingStrategy, max_size: int = 1024):
+    def __init__(self, base_strategy: RayAimingStrategy, max_size: int = 1024):
         """Initializes the CachedAimingStrategy.
 
         Args:
-            wrapped_strategy: The strategy to wrap and cache results from.
+            base_strategy: The strategy to wrap and cache results from.
             max_size: The maximum number of results to cache.
         """
-        self.wrapped_strategy = wrapped_strategy
+        self.base_strategy = base_strategy
         self.cache = OrderedDict()
         self.max_size = max_size
 
@@ -146,15 +146,15 @@ class CachedAimingStrategy(RayAimingStrategy):
             )
 
         # Cache miss
-        rays = self.wrapped_strategy.aim(
+        rays = self.base_strategy.aim(
             optic=optic, Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength
         )
 
-        # Ensure result from wrapped strategy is suitable for caching (scalar-like)
-        # The wrapped strategy should return a RealRays object where each attribute
+        # Ensure result from base strategy is suitable for caching (scalar-like)
+        # The base strategy should return a RealRays object where each attribute
         # is a 1-element array
         if be.size(rays.x) > 1:
-            # This indicates the wrapped strategy might have returned a vectorized
+            # This indicates the base strategy might have returned a vectorized
             # result unexpectedly.
             # The current caching implementation expects to cache individual rays.
             # For simplicity, we'll cache the first ray's data. A more robust

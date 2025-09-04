@@ -37,14 +37,25 @@ class RayAiming:
                 if created from a string.
         """
         self.optic = optic
+        self.set_strategy(strategy, **kwargs)
+
+    def set_strategy(self, strategy: RayAimingStrategy | str, **kwargs):
+        """
+        Update the ray aiming strategy.
+
+        Args:
+            strategy: The aiming strategy to use. Can be a string identifier
+            or a RayAimingStrategy instance. If a string, a strategy will be created
+            using the RayAimingStrategyFactory.
+            **kwargs: Additional keyword arguments to pass to the strategy constructor
+            if created from a string.
+        """
         if isinstance(strategy, str):
             self.strategy = RayAimingStrategyFactory.create_strategy(strategy, **kwargs)
         elif isinstance(strategy, RayAimingStrategy):
             self.strategy = strategy
         else:
-            raise TypeError(
-                "strategy must be a string or an RayAimingStrategy instance"
-            )
+            raise TypeError("strategy must be a string or a RayAimingStrategy instance")
 
     def aim(
         self,
