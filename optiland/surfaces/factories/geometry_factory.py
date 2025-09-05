@@ -22,6 +22,7 @@ from optiland.geometries import (
     ForbesQbfsGeometry,
     ForbesSolverConfig,  # forbes
     ForbesSurfaceConfig,  # forbes
+    NurbsGeometry,
     OddAsphere,
     Plane,
     PlaneGrating,
@@ -68,6 +69,20 @@ class GeometryConfig:
         radial_terms (dict): radial terms for Forbes Q-BFS surfaces.
         freeform_coeffs (dict): freeform coefficients for Forbes Q-2D surfaces.
     """
+
+    # NURBS parameters
+    nurbs_norm_x: None
+    nurbs_norm_y: None
+    nurbs_x_center: None
+    nurbs_y_center: None
+    control_points: None
+    weights: None
+    u_degree: None
+    v_degree: None
+    u_knots: None
+    v_knots: None
+    n_points_u: None
+    n_points_v: None
 
     radius: float = be.inf
     conic: float = 0.0
@@ -350,6 +365,30 @@ def _create_forbes_q2d(cs: CoordinateSystem, config: GeometryConfig):
     )
 
 
+def _create_nurbs(cs: CoordinateSystem, config: GeometryConfig):
+    """Create a NURBS geometry."""
+
+    return NurbsGeometry(
+        cs,
+        config.radius,
+        config.conic,
+        config.nurbs_norm_x,
+        config.nurbs_norm_y,
+        config.nurbs_x_center,
+        config.nurbs_y_center,
+        config.control_points,
+        config.weights,
+        config.u_degree,
+        config.v_degree,
+        config.u_knots,
+        config.v_knots,
+        config.n_points_u,
+        config.n_points_v,
+        config.tol,
+        config.max_iter,
+    )
+
+
 def _create_paraxial(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a paraxial geometry, which is simply a planar surface.
@@ -377,6 +416,7 @@ geometry_mapper = {
     "zernike": _create_zernike,
     "forbes_qbfs": _create_forbes_qbfs,
     "forbes_q2d": _create_forbes_q2d,
+    "nurbs": _create_nurbs,
 }
 
 
