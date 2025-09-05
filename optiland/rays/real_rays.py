@@ -157,14 +157,21 @@ class RealRays(BaseRays):
         u = n1 / n2
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        root = be.sqrt(1 - u**2 * (1 - dot**2))
+        # Check for Total Internal Reflection (TIR)
+        tir_condition = 1 - u**2 * (1 - dot**2)
+        has_tir = tir_condition < 0
+
+        # For rays with TIR, set direction cosines to NaN to mark them as failed
+        # For valid rays, calculate the refracted direction
+        root = be.sqrt(be.maximum(0.0, tir_condition))
+
         tx = u * self.L0 + nx * root - u * nx * dot
         ty = u * self.M0 + ny * root - u * ny * dot
         tz = u * self.N0 + nz * root - u * nz * dot
 
-        self.L = tx
-        self.M = ty
-        self.N = tz
+        self.L = be.where(has_tir, be.nan, tx)
+        self.M = be.where(has_tir, be.nan, ty)
+        self.N = be.where(has_tir, be.nan, tz)
 
     def reflect(self, nx, ny, nz):
         """Reflects the rays on the surface.
