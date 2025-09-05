@@ -181,7 +181,7 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
 
 
 class ForbesQbfsGeometry(ForbesGeometryBase):
-    """Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
+    r"""Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
 
     The Q-bfs surface is defined by the sag equation:
     $z(\rho) = z_{base}(\rho) + \frac{1}{\sigma(\rho)}
@@ -380,7 +380,7 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
 
 
 class ForbesQ2dGeometry(ForbesGeometryBase):
-    """Forbes Q2D freeform surface.
+    r"""Forbes Q2D freeform surface.
 
     The Q2D surface is defined by a departure $\delta(u, \theta)$ from a base conic:
     $z(\rho, \theta) = z_{base}(\rho) + \frac{1}{\sigma(\rho)} \delta(u, \theta)$
