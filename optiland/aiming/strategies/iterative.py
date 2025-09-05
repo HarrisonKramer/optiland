@@ -18,11 +18,11 @@ class IterativeAimingStrategy(RayAimingStrategy):
     def __init__(
         self,
         max_iter: int = 20,
-        tol: float = 1e-9,
+        tolerance: float = 1e-9,
         robust_fail_penalty: float = 5.0,
     ) -> None:
         self.max_iter = max_iter
-        self.tol = tol
+        self.tol = tolerance
         self.robust_fail_penalty = robust_fail_penalty
         self.paraxial = ParaxialAimingStrategy()
 
@@ -52,44 +52,39 @@ class IterativeAimingStrategy(RayAimingStrategy):
             if be.any(be.isnan(v0)):
                 v0 = be.zeros_like(v0)
 
-        v_optimized = be.copy(v0)
-        for i in range(v0.shape[0]):
-
-            def residual_func(v_i):
-                v_i_reshaped = be.reshape(v_i, (1, 2))
-                single_ray0 = RealRays(
-                    be.atleast_1d(rays0.x[i]), be.atleast_1d(rays0.y[i]), be.atleast_1d(rays0.z[i]),
-                    be.atleast_1d(rays0.L[i]), be.atleast_1d(rays0.M[i]), be.atleast_1d(rays0.N[i]),
-                    be.atleast_1d(rays0.i[i]), be.atleast_1d(rays0.w[i])
-                )
-                ray_i = self._rays_from_variables(
-                    optic, v_i_reshaped, single_ray0,
-                    be.atleast_1d(Hx[i]), be.atleast_1d(Hy[i]),
-                    be.atleast_1d(Px[i]), be.atleast_1d(Py[i]),
-                    wavelength, mode
-                )
-                optic.surface_group.trace(ray_i)
-                stop_idx = optic.surface_group.stop_index
-                x, y = optic.surface_group.x[stop_idx], optic.surface_group.y[stop_idx]
-                failed = be.isnan(x) | be.isnan(y)
-                if be.any(failed):
-                    return be.full(2, self.robust_fail_penalty)
-                r_stop = self._stop_radius(optic)
-                p_stop = be.stack([x / r_stop, y / r_stop], axis=-1)
-                residual = p_stop - p_target[i]
-                return be.to_numpy(residual.flatten())
-
-            if mode == "direction":
-                bounds = (-1.0, 1.0)
-            else:
-                stop_radius = self._stop_radius(optic)
-                bounds = (-2 * stop_radius, 2 * stop_radius)
-
-            res = least_squares(
-                residual_func, be.to_numpy(v0[i]), method="trf",
-                xtol=self.tol, max_nfev=self.max_iter * 5, bounds=bounds
+        def residual_func(v):
+            v = be.array(v)  # convert numpy array from scipy to backend array
+            v_reshaped = be.reshape(v, (-1, 2))
+            rays = self._rays_from_variables(
+                optic, v_reshaped, rays0, Hx, Hy, Px, Py, wavelength, mode
             )
-            v_optimized[i] = be.array(res.x)
+            optic.surface_group.trace(rays)
+            stop_idx = optic.surface_group.stop_index
+            x, y = optic.surface_group.x[stop_idx], optic.surface_group.y[stop_idx]
+
+            r_stop = self._stop_radius(optic)
+            p_stop = be.stack([x / r_stop, y / r_stop], axis=-1)
+
+            residual = p_stop - p_target
+
+            failed = be.isnan(residual)
+            residual = be.where(failed, be.full_like(residual, self.robust_fail_penalty), residual)
+
+            return be.to_numpy(residual.flatten())
+
+        if mode == "direction":
+            bounds = (-1.0, 1.0)
+        else:
+            stop_radius = self._stop_radius(optic)
+            bounds = (-2 * stop_radius, 2 * stop_radius)
+
+        bounds = (be.full(v0.flatten().shape, bounds[0]), be.full(v0.flatten().shape, bounds[1]))
+
+        res = least_squares(
+            residual_func, be.to_numpy(v0.flatten()), method="trf",
+            xtol=self.tol, max_nfev=self.max_iter * 5, bounds=bounds
+        )
+        v_optimized = be.reshape(be.array(res.x), (-1, 2))
 
         return self._rays_from_variables(
             optic, v_optimized, rays0, Hx, Hy, Px, Py, wavelength, mode
