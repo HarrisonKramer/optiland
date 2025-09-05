@@ -16,7 +16,7 @@ authors:
 affiliations:
   - name: Independent Researcher
     index: 1
-  - name: Friedrich Schiller University Jena
+  - name: Friedrich Schiller University Jena, Germany
     index: 2
   - name: Department of Ophthalmology, Leiden University Medical Center, Leiden, The Netherlands
     index: 3
