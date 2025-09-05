@@ -13,6 +13,7 @@ While these lenses are perhaps more complex, they are built using the same basic
     specialized_lenses/odd_asphere
     specialized_lenses/microscope
     specialized_lenses/catadioptric
+    specialized_lenses/telecentric_lens
     specialized_lenses/endoscope
     specialized_lenses/infrared
     specialized_lenses/infrared_triplet
