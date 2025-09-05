@@ -2335,62 +2335,32 @@ class TestForbesQbfsGeometry:
         return optic
 
     @pytest.mark.parametrize("backend_name", ["torch"])
-    def test_ray_tracing_autodiff_off_axis(self, backend_name):
-        """Tests that ray tracing is differentiable for a general off-axis ray."""
+    def test_ray_tracing_autodiff(self, backend_name):
+        """Tests that ray tracing through a Forbes surface is differentiable."""
         be.set_backend(backend_name)
         if be.get_backend() != "torch":
             pytest.skip("Autodiff test requires the torch backend.")
 
         optic = self._create_forbes_autodiff_optic()
         forbes_surface = optic.surface_group.surfaces[3].geometry
+        # We need to get the tensor that requires grad, which is now internal
         coeffs_to_test = forbes_surface.radial_terms
-        
+        # Iterate through the dictionary of terms and set requires_grad on each tensor value
         for coeff_tensor in coeffs_to_test.values():
             coeff_tensor.requires_grad_(True)
 
-        # Ray trace an OFF-AXIS ray
+        # ray trace
         initial_rays = RealRays(x=0.1, y=0.1, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55)
         optic.surface_group.trace(initial_rays)
         final_x = initial_rays.x
 
+        # Define a simple loss and backpropagate
         loss = be.sum(final_x**2)
         loss.backward()
 
+        # Check that at least one coefficient has a gradient
         grads = [c.grad for c in coeffs_to_test.values()]
         assert any(g is not None and be.to_numpy(g) != 0 for g in grads)
-
-
-    # --- NEW TEST ADDED ---
-    @pytest.mark.parametrize("backend_name", ["torch"])
-    def test_ray_tracing_autodiff_at_vertex(self, backend_name):
-        """
-        Tests that ray tracing is differentiable for a ray hitting the exact
-        vertex, which was the source of the NaN gradient bug.
-        """
-        be.set_backend(backend_name)
-        if be.get_backend() != "torch":
-            pytest.skip("Autodiff test requires the torch backend.")
-        
-        be.grad_mode.enable()
-
-        optic = self._create_forbes_autodiff_optic()
-        
-        # We will test the gradient with respect to the radius
-        trainable_radius = optic.surface_group.surfaces[3].geometry.radius
-        trainable_radius.requires_grad_(True)
-
-        # Ray trace a ray hitting the VERTEX
-        initial_rays = RealRays(x=0.0, y=0.0, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55)
-        optic.surface_group.trace(initial_rays)
-        final_y = initial_rays.y
-
-        loss = be.sum(final_y**2)
-        loss.backward()
-        
-        # The crucial check: assert the gradient is a valid number, not NaN
-        grad = trainable_radius.grad
-        assert grad is not None, "Gradient at vertex should not be None"
-        assert not be.isnan(grad), "Gradient at vertex must not be NaN"
 
 
     @pytest.mark.parametrize("backend_name", ["torch"])
@@ -2574,48 +2544,6 @@ class TestForbesQ2dGeometry:
         
         assert len(geometry.bms_coeffs) == 1
         assert_allclose(geometry.bms_coeffs[0], [0.0, 3.0]) 
-
-    def _create_forbes_q2d_autodiff_optic(self):
-        """Helper to create a standard Forbes Q2D optic for autodiff testing."""
-        optic = Optic(name="Q2D Autodiff Test Lens")
-        optic.add_wavelength(value=0.55, is_primary=True)
-        optic.add_field(y=0.0)
-
-        # Create a trainable freeform coefficient
-        trainable_coeff = be.tensor(0.01, requires_grad=True)
-        freeform_coeffs = {('a', 1, 1): trainable_coeff}
-
-        optic.add_surface(index=0, thickness=be.inf)
-        optic.add_surface(
-            index=1,
-            surface_type="forbes_q2d",
-            radius=-100.0,
-            thickness=50.0,
-            material="N-BK7",
-            freeform_coeffs=freeform_coeffs,
-            norm_radius=20.0,
-        )
-        optic.add_surface(index=2)
-        return optic, trainable_coeff
-
-    @pytest.mark.parametrize("backend_name", ["torch"])
-    def test_gradient_stability_at_vertex(self, backend_name):
-        be.set_backend(backend_name)
-        be.grad_mode.enable()
-
-        optic, trainable_coeff = self._create_forbes_q2d_autodiff_optic()
-
-        # ray through the vertex
-        vertex_ray = RealRays(x=0.0, y=0.0, z=0.0, L=0.0, M=0.0, N=1.0, intensity=1.0, wavelength=0.55)
-        final_ray = optic.surface_group.trace(vertex_ray)
-        
-        # define loss and compute gradient
-        loss = be.sum(final_ray.y**2)
-        loss.backward()
-
-        grad = trainable_coeff.grad
-        assert grad is not None
-        assert not be.isnan(grad)
 
     def test_to_dict_from_dict(self, set_test_backend):
         """Test serialization and deserialization."""

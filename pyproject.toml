@@ -21,10 +21,10 @@ dependencies = [
     "matplotlib",
     "vtk",
     "tabulate",
-    "numba>=0.60.0",
+    "numba",
     "requests",
     "seaborn",
-    "typing-extensions>=4.1.0",
+    "typing-extensions>=4.13.2",
 ]
 license = { text = "MIT License" }
 
