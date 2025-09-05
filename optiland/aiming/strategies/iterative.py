@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
-import optiland.backend as be
+
 from scipy.optimize import least_squares
+
+import optiland.backend as be
 from optiland.aiming.strategies.base import RayAimingStrategy
 from optiland.aiming.strategies.paraxial import ParaxialAimingStrategy
 from optiland.rays.real_rays import RealRays
@@ -12,8 +15,7 @@ if TYPE_CHECKING:
 
 
 class IterativeAimingStrategy(RayAimingStrategy):
-    """Iterative ray aiming using scipy.optimize.least_squares.
-    """
+    """Iterative ray aiming using scipy.optimize.least_squares."""
 
     def __init__(
         self,
@@ -68,7 +70,9 @@ class IterativeAimingStrategy(RayAimingStrategy):
             residual = p_stop - p_target
 
             failed = be.isnan(residual)
-            residual = be.where(failed, be.full_like(residual, self.robust_fail_penalty), residual)
+            residual = be.where(
+                failed, be.full_like(residual, self.robust_fail_penalty), residual
+            )
 
             return be.to_numpy(residual.flatten())
 
@@ -78,11 +82,18 @@ class IterativeAimingStrategy(RayAimingStrategy):
             stop_radius = self._stop_radius(optic)
             bounds = (-2 * stop_radius, 2 * stop_radius)
 
-        bounds = (be.full(v0.flatten().shape, bounds[0]), be.full(v0.flatten().shape, bounds[1]))
+        bounds = (
+            be.full(v0.flatten().shape, bounds[0]),
+            be.full(v0.flatten().shape, bounds[1]),
+        )
 
         res = least_squares(
-            residual_func, be.to_numpy(v0.flatten()), method="trf",
-            xtol=self.tol, max_nfev=self.max_iter * 5, bounds=bounds
+            residual_func,
+            be.to_numpy(v0.flatten()),
+            method="trf",
+            xtol=self.tol,
+            max_nfev=self.max_iter * 5,
+            bounds=bounds,
         )
         v_optimized = be.reshape(be.array(res.x), (-1, 2))
 
@@ -99,8 +110,16 @@ class IterativeAimingStrategy(RayAimingStrategy):
         return float(optic.paraxial.EPD()) / 2.0
 
     def _rays_from_variables(
-        self, optic: Optic, v: ndarray, rays0: RealRays, Hx: ndarray, Hy: ndarray,
-        Px: ndarray, Py: ndarray, wavelength: float, mode: str
+        self,
+        optic: Optic,
+        v: ndarray,
+        rays0: RealRays,
+        Hx: ndarray,
+        Hy: ndarray,
+        Px: ndarray,
+        Py: ndarray,
+        wavelength: float,
+        mode: str,
     ) -> RealRays:
         if mode == "direction":
             L, M = v[..., 0], v[..., 1]
