@@ -235,6 +235,61 @@ class RayOperand:
         return optic.surface_group.N[surface_number, 0]
 
     @staticmethod
+    def AOI(optic, surface_number, Hx, Hy, Px, Py, wavelength):
+        """
+        Calculates the real ray angle of incidence in degrees at a specific surface.
+        This angle is always positive, and it is the angle between the incident ray and
+        the surface normal.
+
+        Args:
+            optic: The optic object.
+            surface_number: The number of the surface.
+            Hx: The normalized x field coordinate.
+            Hy: The normalized y field coordinate.
+            Px: The normalized x pupil coordinate.
+            Py: The normalized y pupil coordinate.
+            wavelength: The wavelength of the ray.
+
+        Returns:
+            The angle of incidence in degrees (always positive as in zemax).
+        """
+
+        optic.trace_generic(Hx, Hy, Px, Py, wavelength)
+
+        surface = optic.surface_group.surfaces[surface_number]
+        geometry = surface.geometry
+
+        L_inc = optic.surface_group.L[surface_number - 1, 0]
+        M_inc = optic.surface_group.M[surface_number - 1, 0]
+        N_inc = optic.surface_group.N[surface_number - 1, 0]
+
+        from optiland.rays import RealRays
+
+        rays_at_surface = RealRays(
+            x=optic.surface_group.x[surface_number, 0],
+            y=optic.surface_group.y[surface_number, 0],
+            z=optic.surface_group.z[surface_number, 0],
+            L=L_inc,
+            M=M_inc,
+            N=N_inc,
+            intensity=1.0,  # irrelevant for AOI
+            wavelength=wavelength,
+        )
+
+        # public surface_normal method
+        nx, ny, nz = geometry.surface_normal(rays=rays_at_surface)
+
+        # dot product between incident ray and surface normal
+        dot_product = be.abs(L_inc * nx + M_inc * ny + N_inc * nz)
+
+        # handle potential floating point errors where dot_product > 1.0
+        dot_product_clip = be.minimum(dot_product, be.array(1.0))
+
+        angle_rad = be.arccos(dot_product_clip)
+
+        return be.rad2deg(angle_rad)
+
+    @staticmethod
     def rms_spot_size(
         optic,
         surface_number,
