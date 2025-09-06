@@ -72,7 +72,7 @@ Optiland supports a wide range of design, analysis, and optimization tasks, maki
 - **Interoperability**: Import of Zemax OpticStudio files, JSON-based I/O, and a full Python API.
 - **Performance**: GPU acceleration with PyTorch and CPU acceleration with Numba [@lam2015numba].
 
-# Example
+# Examples
 
 The following examples demonstrate how to use Optiland, starting with a simple system definition, then optimization, and finally machine-learning integration with PyTorch.
 
