@@ -48,19 +48,20 @@ class ThinFilmStack:
 
     Examples
     --------
-    >>> from optiland.materials import IdealMaterial
+    >>> from optiland.materials import IdealMaterial, Material
+    >>> from optiland.thin_film import ThinFilmStack
     >>> air, glass = IdealMaterial(1.0), IdealMaterial(1.52)
-    >>> tf = ThinFilmStack(incident=air, substrate=glass)
+    >>> tf = ThinFilmStack(incident_material=air, substrate_material=glass)
     >>> # 100 nm SiO2 on glass
-    >>> sio2 = IdealMaterial(1.46)
-    >>> tf.add_layer_nm(sio2, 100.0)
+    >>> SiO2 = Material("SiO2", reference="Gao")
+    >>> tf.add_layer_nm(SiO2, 100.0)
     >>> R = tf.reflectance_nm_deg([550.0], [0.0], polarization="s")
     >>> T = tf.transmittance_nm_deg([550.0], [0.0], polarization="s")
     >>> A = tf.absorptance_nm_deg([550.0], [0.0], polarization="s")
     """
 
-    incident: BaseMaterial
-    substrate: BaseMaterial
+    incident_material: BaseMaterial
+    substrate_material: BaseMaterial
     layers: list[Layer] = field(default_factory=list)
     reference_wl_um: float | None = None
     reference_AOI_deg: float | None = 0
@@ -117,7 +118,9 @@ class ThinFilmStack:
         if self.reference_AOI_deg is not None:
             th_rad = self._deg_to_rad(self.reference_AOI_deg)
         n_complex = material.n(wl_um) + 1j * material.k(wl_um)
-        cos_t = be.sqrt(1 - (self.incident.n(wl_um) * be.sin(th_rad) / n_complex) ** 2)
+        cos_t = be.sqrt(
+            1 - (self.incident_material.n(wl_um) * be.sin(th_rad) / n_complex) ** 2
+        )
         thickness_um = qwot_thickness * wl_um / (4 * n_complex.real * cos_t.real)
         return self.add_layer(thickness_um=thickness_um, material=material, name=name)
 
@@ -232,12 +235,14 @@ class ThinFilmStack:
     ) -> Array:
         return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["A"]
 
-    def rtRAT(
+    def rtRTA(
         self,
         wavelength_um: float | Array,
         aoi_rad: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> tuple[Array, Array, Array, Array, Array]:
+        """Return (r, t, R, T, A) for given wavelength(s) in µm and AOI(s)
+        in radians."""
         rta_data = self.compute_rtRTA(wavelength_um, aoi_rad, polarization)
         return (
             rta_data["r"],
@@ -247,12 +252,14 @@ class ThinFilmStack:
             rta_data["A"],
         )
 
-    def rtRAT_nm_deg(
+    def rtRTA_nm_deg(
         self,
         wavelength_nm: float | Array,
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> tuple[Array, Array, Array, Array, Array]:
+        """Return (r, t, R, T, A) for given wavelength(s) in nm and
+        AOI(s) in degrees."""
         rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
         return (
             rta_data["r"],
@@ -268,6 +275,7 @@ class ThinFilmStack:
         aoi_rad: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> tuple[Array, Array, Array]:
+        """Return (R, T, A) for given wavelength(s) in µm and AOI(s) in radians."""
         rta_data = self.compute_rtRTA(wavelength_um, aoi_rad, polarization)
         return (
             rta_data["R"],
@@ -281,6 +289,7 @@ class ThinFilmStack:
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> tuple[Array, Array, Array]:
+        """Return (R, T, A) for given wavelength(s) in nm and AOI(s) in degrees."""
         rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
         return (
             rta_data["R"],
@@ -321,6 +330,11 @@ class ThinFilmStack:
         color_cycle = list(mcolors.TABLEAU_COLORS.values())
 
         def _get_name(obj):
+            """
+            Get the name of a material or layer, or its refractive index if it's an
+            IdealMaterial. Because IdealMaterial may not have a name, we use its
+            refractive index for labeling.
+            """
             name = getattr(obj, "name", "") or ""
             if isinstance(obj, IdealMaterial):
                 name = f"$n$ = {obj.index[0]}"
@@ -342,9 +356,9 @@ class ThinFilmStack:
                 )
 
         material_names = (
-            [_get_name(self.incident)]
+            [_get_name(self.incident_material)]
             + [_get_name(layer.material) for layer in self.layers]
-            + [_get_name(self.substrate)]
+            + [_get_name(self.substrate_material)]
         )
         unique_materials = {
             name: color_cycle[i % len(color_cycle)]
@@ -360,9 +374,9 @@ class ThinFilmStack:
         _add_rect(
             y,
             substrate_thickness,
-            unique_materials[_get_name(self.substrate)],
-            label=_get_name(self.substrate),
-            text=_get_name(self.substrate),
+            unique_materials[_get_name(self.substrate_material)],
+            label=_get_name(self.substrate_material),
+            text=_get_name(self.substrate_material),
         )
         y = 0
 
@@ -385,9 +399,9 @@ class ThinFilmStack:
         _add_rect(
             y,
             incident_thickness,
-            unique_materials[_get_name(self.incident)],
-            label=_get_name(self.incident),
-            text=_get_name(self.incident),
+            unique_materials[_get_name(self.incident_material)],
+            label=_get_name(self.incident_material),
+            text=_get_name(self.incident_material),
         )
 
         ax.set_xlim(0, 1)
@@ -407,7 +421,9 @@ class ThinFilmStack:
         fig = ax.figure
         return fig, ax
 
-    def plot_structure_thickness(self, ax: plt.Axes = None):
+    def plot_structure_thickness(
+        self, ax: plt.Axes = None
+    ) -> tuple[plt.Figure, plt.Axes]:
         """
         Plots the thickness of each layer in the thin film stack as a bar chart.
         Each bar represents a layer, with its height corresponding to the layer's
@@ -494,7 +510,7 @@ def _complex_index(material: BaseMaterial, wavelength_um: float | Array) -> Arra
 def _snell_cos(n0, theta0, n):
     """Transmitted angle cosine with forward-branch selection.
     Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-      Hugh Angus CRC Press, Ch2.6
+    Hugh Angus CRC Press, Ch2.6
     """
     nr = n.real
     k = n.imag
@@ -504,7 +520,7 @@ def _snell_cos(n0, theta0, n):
 def _admittance(n: complex, cos_t: complex, pol: PolSP):
     """Admittance η = sqrt(ε/μ) * n * cos(θ) for s and p polarizations.
     Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-      Hugh Angus CRC Press, Ch2.6
+    Hugh Angus CRC Press, Ch2.6
     """
     sqrt_eps_mu = 0.002654418729832701370374020517935  # S
     eta_s = sqrt_eps_mu * n * cos_t
@@ -525,15 +541,15 @@ def _tmm_coh(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
 
     Ref :
     - Chap 13. Polarized Light and Optical Systems, Russell
-    A. Chipman, Wai-Sze Tiffany Lam, and Garam Young
+        A. Chipman, Wai-Sze Tiffany Lam, and Garam Young
     - F. Abelès, Researches sur la propagation des ondes électromagnétiques
-    sinusoïdales dans les milieus stratifies.
-    Applications aux couches minces, Ann. Phys. Paris,
-    12ième Series 5 (1950): 596–640.
+        sinusoïdales dans les milieus stratifies.
+        Applications aux couches minces, Ann. Phys. Paris,
+        12ième Series 5 (1950): 596–640.
     - Chap 2. Thin-Film Optical Filters, Fifth Edition, Macleod, Hugh Angus CRC Press
     """
-    n0 = _complex_index(stack.incident, wavelength_um)
-    ns = _complex_index(stack.substrate, wavelength_um)
+    n0 = _complex_index(stack.incident_material, wavelength_um)
+    ns = _complex_index(stack.substrate_material, wavelength_um)
     cos0 = _snell_cos(n0, theta0_rad, n0)
     coss = _snell_cos(n0, theta0_rad, ns)
     eta0 = _admittance(n0, cos0, pol)
