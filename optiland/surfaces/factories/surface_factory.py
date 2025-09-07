@@ -23,8 +23,8 @@ from optiland.surfaces.factories.interaction_model_factory import (
     InteractionModelFactory,
 )
 from optiland.surfaces.factories.material_factory import MaterialFactory
-from optiland.surfaces.grating_surface import GratingSurface
 from optiland.surfaces.object_surface import ObjectSurface
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
 
 if TYPE_CHECKING:
@@ -141,8 +141,19 @@ class SurfaceFactory:
         # Determine interaction type
         interaction_type = kwargs.get("interaction_type", "refractive_reflective")
         if surface_type == "paraxial":
-            interaction_type = "thin_lens"
-            surface_type = "plane"  # Thin lens is geometrically a plane
+            surface_obj = ParaxialSurface(
+                geometry=geometry,
+                focal_length=kwargs.get("f"),
+                material_pre=material_pre,
+                material_post=material_post,
+                is_stop=is_stop,
+                comment=comment,
+                aperture=kwargs.get("aperture"),
+            )
+            surface_obj.thickness = kwargs.get("thickness", 0.0)
+            return surface_obj
+        elif surface_type == "grating":
+            interaction_type = "diffractive"
 
         # Build interaction model
         interaction_model = self._interaction_model_factory.create(
@@ -155,22 +166,6 @@ class SurfaceFactory:
             bsdf=kwargs.get("bsdf"),
             focal_length=kwargs.get("f"),
         )
-
-        # Create the appropriate surface type
-        # TODO: refactor for diffractive interaction type
-        if surface_type == "grating":
-            surface_obj = GratingSurface(
-                geometry,
-                material_pre,
-                material_post,
-                is_stop,
-                is_reflective=is_reflective,
-                coating=coating,
-                surface_type=surface_type,
-                aperture=kwargs.get("aperture"),
-            )
-            surface_obj.thickness = kwargs.get("thickness", 0.0)
-            return surface_obj
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(

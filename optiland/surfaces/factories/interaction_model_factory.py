@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 
@@ -67,6 +68,15 @@ class InteractionModelFactory:
                 raise ValueError("Focal length is required for thin lens.")
             return ThinLensInteractionModel(
                 focal_length=focal_length,
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=is_reflective,
+                coating=coating,
+                bsdf=bsdf,
+            )
+        elif interaction_type == "diffractive":
+            return DiffractiveInteractionModel(
                 geometry=geometry,
                 material_pre=material_pre,
                 material_post=material_post,

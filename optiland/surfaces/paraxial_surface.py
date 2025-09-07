@@ -14,6 +14,7 @@ from __future__ import annotations
 import optiland.backend as be
 from optiland.coatings import BaseCoating
 from optiland.geometries import BaseGeometry
+from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.rays.polarized_rays import PolarizedRays
@@ -45,17 +46,24 @@ class ParaxialSurface(Surface):
         comment="",
     ):
         self.f = be.array(focal_length)
+        interaction_model = ThinLensInteractionModel(
+            focal_length=focal_length,
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_reflective=is_reflective,
+            coating=coating,
+            bsdf=bsdf,
+        )
         super().__init__(
-            geometry,
-            material_pre,
-            material_post,
-            is_stop,
-            aperture,
-            coating,
-            bsdf,
-            is_reflective,
-            surface_type,
-            comment,
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_stop=is_stop,
+            aperture=aperture,
+            surface_type=surface_type,
+            comment=comment,
+            interaction_model=interaction_model,
         )
 
     def _interact(self, rays):

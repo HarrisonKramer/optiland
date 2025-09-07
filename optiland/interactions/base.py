@@ -66,6 +66,9 @@ class BaseInteractionModel(ABC):
     @classmethod
     def from_dict(cls, data, geometry, material_pre, material_post):
         """Creates an interaction model from a dictionary representation."""
+        from optiland.coatings import BaseCoating
+        from optiland.scatter import BaseBSDF
+
         interaction_type = data["type"]
         subclass = cls._registry.get(interaction_type)
         if subclass is None:
@@ -74,6 +77,11 @@ class BaseInteractionModel(ABC):
         # Remove 'type' from data to avoid passing it to the constructor
         init_data = data.copy()
         init_data.pop("type")
+
+        if "coating" in init_data and init_data["coating"] is not None:
+            init_data["coating"] = BaseCoating.from_dict(init_data["coating"])
+        if "bsdf" in init_data and init_data["bsdf"] is not None:
+            init_data["bsdf"] = BaseBSDF.from_dict(init_data["bsdf"])
 
         return subclass(
             geometry=geometry,

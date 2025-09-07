@@ -4,6 +4,7 @@ import pytest
 from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.materials import IdealMaterial
 from optiland.samples.objectives import TessarLens
+from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
@@ -173,7 +174,7 @@ class TestSurfaceFactory:
             coating=SimpleCoating(0.5, 0.5),
         )
         assert isinstance(surface, Surface)
-        assert isinstance(surface.coating, SimpleCoating)
+        assert isinstance(surface.interaction_model.coating, SimpleCoating)
 
     def test_create_surface_with_fresnel(self, set_test_backend):
         surface = self.factory.create_surface(
@@ -188,7 +189,7 @@ class TestSurfaceFactory:
             coating="fresnel",
         )
         assert isinstance(surface, Surface)
-        assert isinstance(surface.coating, FresnelCoating)
+        assert isinstance(surface.interaction_model.coating, FresnelCoating)
 
     def test_invalid_z_with_thickness(self, set_test_backend):
         with pytest.raises(ValueError):
@@ -247,6 +248,22 @@ class TestSurfaceFactory:
         )
         assert isinstance(surface, ParaxialSurface)
         assert surface.f == 100
+
+    def test_create_grating_surface(self, set_test_backend):
+        surface = self.factory.create_surface(
+            surface_type="grating",
+            comment="Grating",
+            index=1,
+            is_stop=False,
+            material="air",
+            thickness=5,
+            radius=10,
+            conic=0,
+            grating_period=1,
+            grating_order=1,
+        )
+        assert isinstance(surface, Surface)
+        assert isinstance(surface.interaction_model, DiffractiveInteractionModel)
 
     def test_invalid_paraxial_surface(self, set_test_backend):
         with pytest.raises(ValueError):
