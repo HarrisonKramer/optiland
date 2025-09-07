@@ -267,11 +267,11 @@ class Aberrations:
             i_list.append(i_val)
             ip_list.append(ip_val)
 
-            denom = 2 * self._n[k] * self._inv
             if self._on_axis:
                 B_list.append(0)
                 Bp_list.append(0)
             else:
+                denom = 2 * self._n[k] * self._inv
                 B_val = (
                     self._n[k - 1]
                     * (self._n[k] - self._n[k - 1])
