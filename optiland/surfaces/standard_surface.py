@@ -87,14 +87,19 @@ class Surface:
         self.geometry.flip()
 
         # Re-create the interaction model with flipped properties
-        self.interaction_model.flip()
+        self.interaction_model = RefractiveReflectiveModel(
+            geometry=self.geometry,
+            material_pre=self.material_pre,
+            material_post=self.material_post,
+            is_reflective=self.is_reflective,
+            coating=self.coating,
+            bsdf=self.bsdf,
+        )
 
-        if isinstance(self.interaction_model.coating, FresnelCoating):
+        if isinstance(self.coating, FresnelCoating):
             self.set_fresnel_coating()
-        elif self.interaction_model.coating is not None and hasattr(
-            self.interaction_model.coating, "flip"
-        ):
-            self.interaction_model.coating.flip()
+        elif self.coating is not None and hasattr(self.coating, "flip"):
+            self.coating.flip()
 
         self.reset()
 

@@ -23,10 +23,6 @@ class RefractiveReflectiveModel(BaseInteractionModel):
         """Returns a dictionary representation of the model."""
         return super().to_dict()
 
-    def flip(self):
-        """Flip the interaction model."""
-        self.material_pre, self.material_post = self.material_post, self.material_pre
-
     def interact_real_rays(self, rays: RealRays) -> RealRays:
         """Interact with real rays, causing refraction or reflection.
 

@@ -6,7 +6,7 @@ from optiland.materials import IdealMaterial
 from optiland.samples.objectives import TessarLens
 from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
+from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces import SurfaceFactory
 
@@ -246,9 +246,8 @@ class TestSurfaceFactory:
             material="air",
             thickness=5,
         )
-        assert isinstance(surface, Surface)
-        assert isinstance(surface.interaction_model, ThinLensInteractionModel)
-        assert surface.interaction_model.f == 100
+        assert isinstance(surface, ParaxialSurface)
+        assert surface.f == 100
 
     def test_create_grating_surface(self, set_test_backend):
         surface = self.factory.create_surface(
