@@ -56,12 +56,13 @@ class MMDFTPSF(BasePSF):
         remove_tilt=False,
         **kwargs,
     ):
-        if image_size is None:
+        if image_size is None and pixel_pitch is None:
             if num_rays < 32:
                 raise ValueError(
-                    "num_rays must be at least 32 if grid_size is not specified."
+                    "num_rays must be at least 32 if image_size and pixel_pitch are "
+                    "not specified."
                 )
-            num_rays, image_size = calculate_grid_size(num_rays)
+            num_rays, grid_size = calculate_grid_size(num_rays)
 
         super().__init__(
             optic=optic,
@@ -75,10 +76,30 @@ class MMDFTPSF(BasePSF):
 
         clear_size = num_rays - 1
 
+        # General idea for below:
+        #  - If only pixel_pitch is None, calculate based off of image_size, assuming
+        #    image_size is full pad size
+        #  - If only image_size is None, calculate based off of pixel_pitch,
+        #    truncating any trailing decimals
+        #  - If both pixel_pitch and image_size are none, set image_size = grid_size
+        #    and solve for pixel_pitch
+        # I would implement this as a function, but since it needs access to the FNO,
+        # it has to happen after super() initialization, which requires knowing
+        # num_rays ahead of time
         if pixel_pitch is None:
-            # Set pad_size = image_size, solve for pixel_pitch
+            if image_size is None:
+                # Use grid_size above to set Q and therefore pixel pitch
+                image_size = grid_size
             pixel_pitch = (
                     wavelength * self._get_working_FNO() * clear_size / image_size
+            )
+
+        # Below triggers only if pixel_pitch was given but image_size was not
+        if image_size is None:
+            # Use pixel_pitch to calculate max pad size and set image size to be 1
+            # pixel less than that
+            image_size = int(
+                wavelength * self._get_working_FNO() * clear_size / pixel_pitch
             )
 
         self.image_size = image_size
@@ -212,8 +233,8 @@ class MMDFTPSF(BasePSF):
         """
         # Assume clear aperture is defined as (num_rays - 1) - done in FFTPSF
         clear_size = self.num_rays - 1
-        Q = self.wavelengths[0] * self._get_working_FNO() / self.pixel_pitch
-        pad_size = Q * clear_size
+        pad_size = (self.wavelengths[0] * self._get_working_FNO() * clear_size /
+                    self.pixel_pitch)
 
         # Check to make sure we aren't sampling outside the max extent of the image
         # domain (defined by pad_size)
