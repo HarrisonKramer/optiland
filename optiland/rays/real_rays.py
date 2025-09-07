@@ -234,7 +234,7 @@ class RealRays(BaseRays):
     #     self.opd = self.opd + d  * (n1 * sin_in + n2 * sin_out)
          
     #     return
-    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d,opd):
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, d,opd, d_eff):
     #     Args:
     #         nx: The x-component of the surface normal.
     #         ny: The y-component of the surface normal.
@@ -252,7 +252,7 @@ class RealRays(BaseRays):
         self.M = Ky
         self.N = Kz
         self.opd += opd
-        #self.i = efficiency(self)*self.i  Need to add this code
+        self.i = d_eff*self.i
          
         return
 

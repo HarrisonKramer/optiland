@@ -31,14 +31,14 @@ class GratingPhase(BasePhase):
 
     """
 
-    def __init__(self, A= 1, order = 1, gx = 1, gy = 0, gz = 0):
+    def __init__(self, A= 1, order = 1, gx = 1, gy = 0, gz = 0, eff = 'ideal'):
         
         self.A= be.array(A)
         self.order = be.array(order)
         self.gx = gx
         self.gy = gy
         self.gz = gz
-#        self.efficiency(self, rays) = eff
+        self.eff = eff 
                 
     def __str__(self):
         return "Grating"
@@ -124,9 +124,13 @@ class GratingPhase(BasePhase):
         opd =  d  * (n1 * sin_in + n2 * sin_out)
 
         return kfx, kfy, kfz , opd 
+    
     def efficiency(self, ray):
         #need to add code to this
-        return 1
+        if (self.eff == 'ideal'):
+            d_eff = 1
+            
+        return d_eff
     
     def to_dict(self):
         """Convert the phase to a dictionary.

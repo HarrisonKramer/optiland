@@ -44,7 +44,7 @@ class BasePhase():
         """applies the efficiency to the ray based on the order and the fabrication of the doe deisgn"""
 
 
-        return eff
+        return d_eff
     
     def to_dict(self):
         """Convert the phase to a dictionary.
