@@ -178,7 +178,7 @@ class Surface:
         if self.phase_type:
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
-            Kx, Ky, Kz, opd = self.phase_type.phase_grating_general(rays, nx, ny, nz, n1, n2)
+            Kx, Ky, Kz, opd = self.phase_type.phase_calc(rays, nx, ny, nz, n1, n2)
             m = self.phase_type.order
             d = 1/self.phase_type.A
             

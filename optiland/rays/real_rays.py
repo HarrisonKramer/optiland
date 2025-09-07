@@ -252,6 +252,7 @@ class RealRays(BaseRays):
         self.M = Ky
         self.N = Kz
         self.opd += opd
+        #self.i = efficiency(self)*self.i  Need to add this code
          
         return
 

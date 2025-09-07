@@ -38,13 +38,14 @@ class GratingPhase(BasePhase):
         self.gx = gx
         self.gy = gy
         self.gz = gz
-        
+#        self.efficiency(self, rays) = eff
+                
     def __str__(self):
         return "Grating"
 
    
 
-    def phase_grating_general(self, rays, nx, ny, nz, n1, n2):
+    def phase_calc(self, rays, nx, ny, nz, n1, n2):
         """"Phase function that discribes a diffraction grating
         Args:"""
         spacing = 1/self.A
@@ -123,5 +124,37 @@ class GratingPhase(BasePhase):
         opd =  d  * (n1 * sin_in + n2 * sin_out)
 
         return kfx, kfy, kfz , opd 
+    def efficiency(self, ray):
+        #need to add code to this
+        return 1
+    
+    def to_dict(self):
+        """Convert the phase to a dictionary.
 
-   
+        Returns:
+            dict: The dictionary representation of the geometry.
+
+        """
+        phase_dict = super().to_dict()
+        phase_dict.update({"period": float(self.A), "order": float(self.order)})
+        return phase_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a phase from a dictionary.
+
+        Args:
+            data (dict): The dictionary representation of the phase.
+
+        Returns:
+            GratingPhase: An instance of GratingPhase.
+
+        """
+        required_keys = {"order", "period"}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
+        cs = CoordinateSystem.from_dict(data["cs"])
+
+        return cls(cs, data["period"], data.get("order", 0.0))
