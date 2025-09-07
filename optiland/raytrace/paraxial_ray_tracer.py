@@ -9,7 +9,6 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import optiland.backend as be
-from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 from optiland.rays.paraxial_rays import ParaxialRays
 from optiland.surfaces import ObjectSurface
 
@@ -97,13 +96,13 @@ class ParaxialRayTracer:
 
             # reflect or refract
             if surfs[k].interaction_model.is_reflective:
-                if isinstance(surfs[k].interaction_model, ThinLensInteractionModel):
+                if surfs[k].surface_type == "paraxial":
                     f = surfs[k].f
                     u = -u - y / f
                 else:
                     u = -u - 2 * y / R[k]
             else:
-                if isinstance(surfs[k].interaction_model, ThinLensInteractionModel):
+                if surfs[k].surface_type == "paraxial":
                     f = surfs[k].f
                     u = u - y / f
                 else:

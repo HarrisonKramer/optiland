@@ -36,6 +36,7 @@ class Surface:
         aperture (BaseAperture, int, float, optional): The physical aperture of the
             surface. Defaults to None. If a scalar is provided, it specifies the
             diameter of the lens.
+        surface_type (str, optional): The type of surface. Defaults to None.
         comment (str, optional): A comment for the surface. Defaults to ''.
         interaction_model (BaseInteractionModel, optional): The interaction
             model for the surface. Defaults to None.
@@ -51,6 +52,7 @@ class Surface:
         material_post: BaseMaterial,
         is_stop: bool = False,
         aperture: BaseAperture = None,
+        surface_type: str = None,
         comment: str = "",
         interaction_model: BaseInteractionModel = None,
     ):
@@ -60,6 +62,7 @@ class Surface:
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
         self.semi_aperture = None
+        self.surface_type = surface_type
         self.comment = comment
 
         if interaction_model is None:

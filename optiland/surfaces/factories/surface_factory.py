@@ -178,6 +178,7 @@ class SurfaceFactory:
             material_pre=material_pre,
             material_post=material_post,
             is_stop=is_stop,
+            surface_type=surface_type,
             comment=comment,
             aperture=kwargs.get("aperture"),
             interaction_model=interaction_model,
