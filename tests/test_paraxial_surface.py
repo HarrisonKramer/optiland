@@ -41,7 +41,7 @@ class TestParaxialSurface:
         assert surface.material_pre is not None
         assert surface.material_post is not None
         assert surface.aperture is None
-        assert surface.coating is not None
+        assert surface.interaction_model.coating is not None
         assert surface.bsdf is None
         assert surface.is_reflective is True
         assert surface.surface_type == "paraxial"

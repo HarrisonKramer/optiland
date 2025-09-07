@@ -24,7 +24,6 @@ from optiland.surfaces.factories.interaction_model_factory import (
 )
 from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
 
 if TYPE_CHECKING:
@@ -141,17 +140,7 @@ class SurfaceFactory:
         # Determine interaction type
         interaction_type = kwargs.get("interaction_type", "refractive_reflective")
         if surface_type == "paraxial":
-            surface_obj = ParaxialSurface(
-                geometry=geometry,
-                focal_length=kwargs.get("f"),
-                material_pre=material_pre,
-                material_post=material_post,
-                is_stop=is_stop,
-                comment=comment,
-                aperture=kwargs.get("aperture"),
-            )
-            surface_obj.thickness = kwargs.get("thickness", 0.0)
-            return surface_obj
+            interaction_type = "thin_lens"
         elif surface_type == "grating":
             interaction_type = "diffractive"
 
