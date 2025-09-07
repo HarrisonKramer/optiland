@@ -152,7 +152,7 @@ class SurfaceGroup:
     def uses_polarization(self):
         """bool: True if any surface uses polarization, False otherwise"""
         for surf in self.surfaces:
-            if isinstance(surf.coating, BaseCoatingPolarized):
+            if isinstance(surf.interaction_model.coating, BaseCoatingPolarized):
                 return True
         return False
 
