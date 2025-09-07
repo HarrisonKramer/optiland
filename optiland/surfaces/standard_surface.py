@@ -91,15 +91,17 @@ class Surface:
             geometry=self.geometry,
             material_pre=self.material_pre,
             material_post=self.material_post,
-            is_reflective=self.is_reflective,
-            coating=self.coating,
-            bsdf=self.bsdf,
+            is_reflective=self.interaction_model.is_reflective,
+            coating=self.interaction_model.coating,
+            bsdf=self.interaction_model.bsdf,
         )
 
-        if isinstance(self.coating, FresnelCoating):
+        if isinstance(self.interaction_model.coating, FresnelCoating):
             self.set_fresnel_coating()
-        elif self.coating is not None and hasattr(self.coating, "flip"):
-            self.coating.flip()
+        elif self.interaction_model.coating is not None and hasattr(
+            self.interaction_model.coating, "flip"
+        ):
+            self.interaction_model.coating.flip()
 
         self.reset()
 
