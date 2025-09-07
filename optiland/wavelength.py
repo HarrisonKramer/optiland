@@ -22,7 +22,7 @@ class Wavelength:
         value (float): The value of the wavelength.
         is_primary (bool): Indicates whether the wavelength is a primary
             wavelength.
-        unit (str): The unit of the wavelength value. Defaults to 'microns'.
+        unit (str): The unit of the wavelength value. Defaults to 'um'.
         weight (float): The weight of the wavelength. Defaults to 1.0.
 
     Methods:
