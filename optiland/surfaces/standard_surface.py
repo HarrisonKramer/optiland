@@ -91,7 +91,7 @@ class Surface:
             geometry=self.geometry,
             material_pre=self.material_pre,
             material_post=self.material_post,
-            is_reflective=self.is_reflective,
+            is_reflective=self.interaction_model.is_reflective,
             coating=self.coating,
             bsdf=self.bsdf,
         )
