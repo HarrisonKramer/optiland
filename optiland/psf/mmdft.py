@@ -4,6 +4,7 @@ import optiland.backend as be
 from optiland.psf.base import BasePSF
 from optiland.psf.fft import calculate_grid_size
 
+
 class MMDFTPSF(BasePSF):
     """Class representing the Matrix Multiply Discrete Fourier Transform (MMDFT) PSF.
 
@@ -90,9 +91,7 @@ class MMDFTPSF(BasePSF):
             if image_size is None:
                 # Use grid_size above to set Q and therefore pixel pitch
                 image_size = grid_size
-            pixel_pitch = (
-                    wavelength * self._get_working_FNO() * clear_size / image_size
-            )
+            pixel_pitch = wavelength * self._get_working_FNO() * clear_size / image_size
 
         # Below triggers only if pixel_pitch was given but image_size was not
         if image_size is None:
@@ -129,8 +128,8 @@ class MMDFTPSF(BasePSF):
         y = y.ravel()
         R2 = x**2 + y**2
 
-        field = self.fields[0]   # PSF contains a single field.
-        wl = self.wavelengths[0] # PSF contains a single wavelength.
+        field = self.fields[0]  # PSF contains a single field.
+        wl = self.wavelengths[0]  # PSF contains a single wavelength.
 
         wavefront_data = self.get_data(field, wl)
         P = be.to_complex(be.zeros_like(x))
@@ -233,13 +232,17 @@ class MMDFTPSF(BasePSF):
         """
         # Assume clear aperture is defined as (num_rays - 1) - done in FFTPSF
         clear_size = self.num_rays - 1
-        pad_size = (self.wavelengths[0] * self._get_working_FNO() * clear_size /
-                    self.pixel_pitch)
+        pad_size = (
+            self.wavelengths[0]
+            * self._get_working_FNO()
+            * clear_size
+            / self.pixel_pitch
+        )
 
         # Check to make sure we aren't sampling outside the max extent of the image
         # domain (defined by pad_size)
         if self.image_size > pad_size:
-            max_size = int(pad_size) # truncate
+            max_size = int(pad_size)  # truncate
             raise ValueError(
                 f"Supplied image_size of {self.image_size} not less than or equal to "
                 f"calculated pad size of {max_size}. Consider increasing num_rays."
