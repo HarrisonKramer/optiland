@@ -2,16 +2,17 @@
 
 This module contains classes that convert between different surface types.
 
-Kramer Harrison, 2025
+Kramer Harrison, 2024
 """
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
+
 import optiland.backend as be
-from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 from optiland.materials.base import BaseMaterial
+from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
+
 
 if TYPE_CHECKING:
     from optiland.optic.optic import Optic
@@ -36,12 +37,14 @@ class ParaxialToThickLensConverter:
     def __init__(
         self,
         paraxial_surface: Surface,
-        optic: Optic,
+        optic: "Optic",
         material: str | float | BaseMaterial = "N-BK7",
         center_thickness: float = 3.0,  # Default center thickness in mm
     ):
         if not isinstance(paraxial_surface.interaction_model, ThinLensInteractionModel):
-            raise TypeError("paraxial_surface must have a ThinLensInteractionModel.")
+            raise TypeError(
+                "paraxial_surface must have a ThinLensInteractionModel."
+            )
 
         self.paraxial_surface = paraxial_surface
         self.optic = optic
@@ -225,7 +228,7 @@ class ParaxialToThickLensConverter:
         self.optic.surface_group.remove_surface(original_index)
 
 
-def convert_to_thick_lens(lens: Optic):
+def convert_to_thick_lens(lens: "Optic"):
     """
     Converts all paraxial surfaces in a lens into thick lenses
 
