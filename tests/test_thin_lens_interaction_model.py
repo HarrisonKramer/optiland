@@ -7,7 +7,8 @@ from optiland.geometries import Plane
 from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.rays import ParaxialRays, RealRays
-from optiland.surfaces.paraxial_surface import ParaxialSurface
+from optiland.interactions import ThinLensInteractionModel
+from optiland.surfaces import Surface
 from .utils import assert_allclose
 
 
@@ -21,29 +22,36 @@ def surface(set_test_backend):
     aperture = None
     coating = SimpleCoating(0.5, 0.5)
     bsdf = None
-    return ParaxialSurface(
+    interaction_model = ThinLensInteractionModel(
         focal_length=focal_length,
+        geometry=geometry,
+        material_pre=material_pre,
+        material_post=material_post,
+        is_reflective=True,
+        coating=coating,
+        bsdf=bsdf,
+    )
+    return Surface(
         geometry=geometry,
         material_pre=material_pre,
         material_post=material_post,
         is_stop=True,
         aperture=aperture,
-        coating=coating,
-        bsdf=bsdf,
-        is_reflective=True,
+        interaction_model=interaction_model,
+        surface_type="paraxial",
     )
 
 
-class TestParaxialSurface:
+class TestThinLensInteractionModel:
     def test_init(self, surface):
-        assert surface.f == be.array(42)
+        assert surface.interaction_model.f == be.array(42)
         assert surface.geometry is not None
         assert surface.material_pre is not None
         assert surface.material_post is not None
         assert surface.aperture is None
-        assert surface.coating is not None
-        assert surface.bsdf is None
-        assert surface.is_reflective is True
+        assert surface.interaction_model.coating is not None
+        assert surface.interaction_model.bsdf is None
+        assert surface.interaction_model.is_reflective is True
         assert surface.surface_type == "paraxial"
 
     def test_trace_paraxial_rays(self, surface):
@@ -100,31 +108,3 @@ class TestParaxialSurface:
         # confirm all points at exact same z
         assert_allclose(rays.z, 100)
 
-    def test_to_dict(self, surface):
-        data = surface.to_dict()
-        assert data["type"] == "ParaxialSurface"
-        assert data["focal_length"] == 42
-
-    def test_from_dict(self, surface):
-        data = surface.to_dict()
-        new_surface = ParaxialSurface.from_dict(data)
-        assert isinstance(new_surface, ParaxialSurface)
-        assert new_surface.f == 42
-        assert new_surface.geometry.to_dict() == surface.geometry.to_dict()
-        assert new_surface.material_pre.to_dict() == surface.material_pre.to_dict()
-        assert new_surface.material_post.to_dict() == surface.material_post.to_dict()
-        assert new_surface.is_stop
-        assert new_surface.aperture == surface.aperture
-        assert new_surface.coating.to_dict() == surface.coating.to_dict()
-        assert new_surface.is_reflective
-        assert new_surface.semi_aperture is None
-        assert_allclose(new_surface.y, be.empty(0))
-        assert_allclose(new_surface.u, be.empty(0))
-        assert_allclose(new_surface.x, be.empty(0))
-        assert_allclose(new_surface.z, be.empty(0))
-        assert_allclose(new_surface.L, be.empty(0))
-        assert_allclose(new_surface.M, be.empty(0))
-        assert_allclose(new_surface.N, be.empty(0))
-        assert_allclose(new_surface.intensity, be.empty(0))
-        assert_allclose(new_surface.aoi, be.empty(0))
-        assert_allclose(new_surface.opd, be.empty(0))

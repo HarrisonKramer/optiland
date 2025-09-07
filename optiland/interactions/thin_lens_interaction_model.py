@@ -50,6 +50,11 @@ class ThinLensInteractionModel(BaseInteractionModel):
         data["focal_length"] = self.f.item()
         return data
 
+    def flip(self):
+        """Flip the interaction model."""
+        self.material_pre, self.material_post = self.material_post, self.material_pre
+        self.f = -self.f
+
     def interact_real_rays(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting
 

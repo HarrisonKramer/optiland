@@ -54,6 +54,11 @@ class BaseInteractionModel(ABC):
         """Interact with paraxial rays."""
         pass
 
+    @abstractmethod
+    def flip(self):
+        """Flip the interaction model."""
+        pass
+
     def to_dict(self):
         """Returns a dictionary representation of the interaction model."""
         return {
