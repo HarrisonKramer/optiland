@@ -10,6 +10,7 @@ This section contains examples of the analysis of the optical path difference (O
     wavefront/opd_map
     wavefront/fft_psf_2d
     wavefront/fft_psf_3d
+    wavefront/mmdft_psf_2d
     wavefront/huygens_psf_2d
     wavefront/huygens_psf_3d
     wavefront/mtf_geometric
