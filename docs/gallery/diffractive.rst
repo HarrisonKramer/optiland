@@ -8,3 +8,4 @@ This section contains examples of optical systems that utilize diffraction grati
 .. nbgallery::
     diffractive/Dyson_Spectrometer
     diffractive/Littrow_Spectrometer
+    diffractive/Czerny_Turner_Spectrometer
