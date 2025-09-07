@@ -251,7 +251,7 @@ class TestSimpleSinglet:
         """Test that Seidel coefficients are computed correctly for on-axis field"""
         S = simple_singlet.aberrations.seidels()
         # Spherical aberration should be non-zero
-        assert not be.isclose(S[0], 0)
+        assert not be.isclose(S[0], be.array(0.0))
         assert_allclose(S[0], -0.675281089)
 
         # Other Seidel coefficients are expected to be zero for on-axis field
