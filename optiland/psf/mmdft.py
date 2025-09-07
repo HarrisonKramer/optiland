@@ -1,20 +1,15 @@
 from __future__ import annotations
 
-import numpy as np
-
 import optiland.backend as be
-from optiland.psf.fft import FFTPSF, calculate_grid_size
+from optiland.psf.base import BasePSF
+from optiland.psf.fft import calculate_grid_size
 
-class MMDFTPSF(FFTPSF):
+class MMDFTPSF(BasePSF):
     """Class representing the Matrix Multiply Discrete Fourier Transform (MMDFT) PSF.
 
     This class computes the PSF of an optical system by taking the Fourier
     Transform of the pupil function. It inherits common visualization and
     initialization functionalities from `BasePSF`.
-
-    If no grid size is specified, OpticStudio's FFT PSF sampling behavior is
-    emulated by scaling down the number of rays in the pupil and using a
-    grid size of `num_rays * 2`.
 
     Args:
         optic (Optic): The optical system object, containing properties like
@@ -25,10 +20,10 @@ class MMDFTPSF(FFTPSF):
         num_rays (int, optional): The number of rays used to sample the pupil
             plane along one dimension. The pupil will be a grid of
             `num_rays` x `num_rays`. Defaults to 128.
-        grid_size (int, optional): The size of the grid used for FFT
-            computation (includes zero-padding). This determines the
-            resolution of the PSF. Defaults to 1024. If not specified,
-            it is calculated based on `num_rays`.
+        image_size (int, optional): The size of the image plane, in pixels. If not
+            specified, it is calculated based on `num_rays`.
+        pixel_pitch (float, optional): The size of the pixels in the image plane. If
+            not specified, it is calculated based on image_size.
         strategy (str): The calculation strategy to use. Supported options are
             "chief_ray", "centroid_sphere", and "best_fit_sphere".
             Defaults to "chief_ray".
@@ -37,37 +32,36 @@ class MMDFTPSF(FFTPSF):
         **kwargs: Additional keyword arguments passed to the strategy.
 
     Attributes:
-        pupils (list[be.ndarray]): A list of complex-valued pupil functions,
-            one for each wavelength used in the `Wavefront` parent. Each pupil
-            is a 2D array.
+        pupil (be.ndarray): A complex-valued pupil function based on the wavelength
+            used in the `Wavefront` parent. The pupil is a 2D array.
         psf (be.ndarray): The computed Point Spread Function. This is a 2D
             array representing the intensity distribution in the image plane,
             normalized such that a diffraction-limited system has a peak of 100.
-        grid_size (int): The size of the grid used for FFT computation.
+        image_size (int): The output size of the image after DFT calculation.
+        pixel_pitch (float): The resolution of the image after DFT calculation.
         num_rays (int): The number of rays used to sample the pupil. This is
                         the `num_rays` passed during initialization and used
                         by `Wavefront` for generating OPD/intensity data.
     """
 
-    # TODO: Documentation
     def __init__(
         self,
         optic,
         field,
         wavelength,
         num_rays=128,
-        grid_size=None,
+        image_size=None,
         pixel_pitch=None,
         strategy="chief_ray",
         remove_tilt=False,
         **kwargs,
     ):
-        if grid_size is None:
+        if image_size is None:
             if num_rays < 32:
                 raise ValueError(
                     "num_rays must be at least 32 if grid_size is not specified."
                 )
-            num_rays, grid_size = calculate_grid_size(num_rays)
+            num_rays, image_size = calculate_grid_size(num_rays)
 
         super().__init__(
             optic=optic,
@@ -79,41 +73,156 @@ class MMDFTPSF(FFTPSF):
             **kwargs,
         )
 
+        clear_size = num_rays - 1
+
         if pixel_pitch is None:
-            pixel_pitch = be.min(self.wavelengths) * self._get_working_FNO() / 2
-
-        self.grid_size = grid_size
-        self.pixel_pitch = pixel_pitch
-        self.pupils = self._generate_pupils()
-        self.psf = self._compute_psf()
-
-    def _compute_psf(self):
-        #TODO: Documentation
-        if not self.pupils:
-            raise ValueError(
-                "Pupil functions have not been generated prior to _compute_psf call."
+            # Set pad_size = image_size, solve for pixel_pitch
+            pixel_pitch = (
+                    wavelength * self._get_working_FNO() * clear_size / image_size
             )
 
-        left_kernels, right_kernels = self._compute_base_kernels()
-        psf = []
-        for p, lk, rk in zip(self.pupils, left_kernels, right_kernels):
-            image_plane = be.matmul(lk, be.matmul(p, rk))
-            psf.append(image_plane * be.conj(image_plane))
-        psf = be.stack(psf)
+        self.image_size = image_size
+        self.pixel_pitch = pixel_pitch
+        self.pupil = self._generate_pupil()
+        self.psf = self._compute_psf()
 
-        # TODO: Normalization??
-        return be.real(be.sum(psf, axis=0))
+    def _generate_pupil(self):
+        """Generates complex pupil functions for each wavelength. Copied from FFTPSF.
 
-    # TODO: Strehl Ratio Calculations (ties in with normalization)
+        For the specified wavelength, this method:
+        1. Obtains wavefront data (Optical Path Difference - OPD, intensity)
+           at the exit pupil using the `get_data` method from `Wavefront`.
+        2. Creates a 2D grid representing the pupil, sampled with `self.num_rays`
+           points across its diameter.
+        3. Populates the grid with complex values: `A * exp(j * phi)`, where
+           amplitude `A` is derived from ray intensity and phase `phi` from OPD.
+           The OPD is converted to phase using the wavelength.
 
-    def _compute_base_kernels(self):
-        # TODO: Documentation
-        # clear_size is a reference to the number of pixels in the pupil grid
-        # covering the pupil. The assumption here is that num_rays spans the X and Y
-        # extend of the pupil with no pixels inside having an amplitude of zero.
-        clear_size = self.num_rays
-        Qs = self.wavelengths * self._get_working_FNO() / self.pixel_pitch
-        pad_sizes = Qs * clear_size
+        Returns:
+            be.ndarray: A complex 2D array (shape: `num_rays` x `num_rays`),
+            representing the pupil function for the given wavelength.
+        """
+        x = be.linspace(-1, 1, self.num_rays)
+        x, y = be.meshgrid(x, x)
+        x = x.ravel()
+        y = y.ravel()
+        R2 = x**2 + y**2
+
+        field = self.fields[0]   # PSF contains a single field.
+        wl = self.wavelengths[0] # PSF contains a single wavelength.
+
+        wavefront_data = self.get_data(field, wl)
+        P = be.to_complex(be.zeros_like(x))
+
+        valid_intensities = wavefront_data.intensity[wavefront_data.intensity > 0]
+        if be.size(valid_intensities) > 0:
+            mean_valid_intensity = be.mean(valid_intensities)
+            amplitude = wavefront_data.intensity / mean_valid_intensity
+        else:
+            # Handle case with no valid rays
+            amplitude = be.zeros_like(wavefront_data.intensity)
+
+        P[R2 <= 1] = be.to_complex(
+            amplitude * be.exp(-1j * 2 * be.pi * wavefront_data.opd)
+        )
+        pupil = be.reshape(P, (self.num_rays, self.num_rays))
+
+        return pupil
+
+    def _compute_psf(self):
+        """Computes the PSF from the generated pupil functions via matrix
+        triple-product DFT.
+
+        This involves:
+        1. Generating the appropriate kernels (L, R) based on user inputs.
+        2. Using the kernels to perform a matrix triple-product with the pupil such
+           that the image field G = L g R, where g is the calculated pupil field.
+        3. Taking the absolute square of the image field G to calculate intensity.
+        4. Scaling the result by a calculated normalization factor to ensure
+           consistent Strehl ratio (diffraction-limited peak = 100%).
+
+        Returns:
+            be.ndarray: The computed 2D PSF (shape: `image_size` x `image_size`),
+            normalized so that a diffraction-limited system's peak is 100.
+        """
+        left_kernel, right_kernel = self._compute_kernels()
+        image_plane = be.matmul(left_kernel, be.matmul(self.pupil, right_kernel))
+        psf = image_plane * be.conj(image_plane)
+
+        return be.real(psf) * 100 / self._get_normalization()
+
+    def _get_normalization(self):
+        """Calculates the normalization factor for the PSF.
+
+        This factor ensures that an ideal, diffraction-limited system (no
+        aberrations, uniform unit amplitude transmission across the pupil)
+        would have a peak PSF intensity corresponding to a Strehl ratio of 1.0
+        (or 100% when scaled by `_compute_psf`).
+
+        The normalization is based on the peak intensity of a PSF computed
+        from an idealized pupil: one with uniform amplitude (1.0) and zero
+        phase within the aperture defined by the actual system's first pupil,
+        and zero outside.
+
+        Since the maximum of the PSF of an ideal pupil is always centered on (0, 0),
+        the value of the propagation kernel is always 1 and therefore the Fourier
+        integral just becomes a sum of the input field over all points. For a
+        binary-valued aperture, this is the same as just counting all the non-zero
+        pixels (summation) and taking the square of the value (to go from field to PSF)
+
+        Returns:
+            float: The normalization factor.
+        """
+        return be.sum(be.abs(self.pupil) > 0) ** 2
+
+    def strehl_ratio(self):
+        """Computes the Strehl ratio of the PSF.
+
+        The Strehl ratio is the ratio of the peak intensity of the aberrated
+        PSF to the peak intensity of the diffraction-limited PSF.
+        Assumes self.psf is normalized such that its peak would be 1.0 (or 100%)
+        for a diffraction-limited system.
+
+        Returns:
+            float: The Strehl ratio.
+
+        Raises:
+            RuntimeError: If the PSF has not been computed.
+        """
+        if self.psf is None:
+            raise RuntimeError("PSF has not been computed.")
+
+        # Make sure to use max! The PSF may not be centered in the image plane
+        return be.max(self.psf) / 100
+
+    def _compute_kernels(self):
+        """Generate the Fourier Kernels for optical propagation with appropriate
+        sampling in the image plane.
+
+        In order to be inline with calculations in FFTPSF, the number of samples
+        across the exit pupil is assumed to be num_rays - 1. This takes with it the
+        assumption that all rays trace completely through the system and aren't
+        clipped.
+
+        Returns:
+            tuple[be.ndarray, be.ndarray]: A tuple with the left and right kernels
+            for the matrix triple product to perform the Fourier propagation
+            of the pupil plane electric field. Kernels are non-unitary.
+
+        """
+        # Assume clear aperture is defined as (num_rays - 1) - done in FFTPSF
+        clear_size = self.num_rays - 1
+        Q = self.wavelengths[0] * self._get_working_FNO() / self.pixel_pitch
+        pad_size = Q * clear_size
+
+        # Check to make sure we aren't sampling outside the max extent of the image
+        # domain (defined by pad_size)
+        if self.image_size > pad_size:
+            max_size = int(pad_size) # truncate
+            raise ValueError(
+                f"Supplied image_size of {self.image_size} not less than or equal to "
+                f"calculated pad size of {max_size}. Consider increasing num_rays."
+            )
 
         # MMDFT generates 2 kernels:
         # right kernel = exp[-2 pi (u x) / pad_size_x]
@@ -125,44 +234,46 @@ class MMDFTPSF(FFTPSF):
         # (u x) = np.outer(a, c)
         # (v y) = np.outer(d, b)
         # This ensures that the shape of the kernels is correct
-        in_units = be.arange(self.num_rays) - self.num_rays//2
-        out_units = be.arange(self.grid_size) - self.grid_size//2
+        pupil_coordinates = be.arange(self.num_rays) - self.num_rays // 2
+        image_coordinates = be.arange(self.image_size) - self.image_size // 2
 
-        right_vector_product = be.outer(in_units, out_units)
-        left_vector_product = be.outer(out_units, in_units)
+        # Because we are dealing with a pupil array sized (num_rays x num_rays) and
+        # an image plane size (image_size x image_size), we can reuse coordinates. In
+        # the future, this will fail if pupil.shape[0] != pupil.shape[1] or
+        # psf.shape[0] != psf.shape[1].
+        right_vector_product = be.outer(pupil_coordinates, image_coordinates)
+        left_vector_product = be.outer(image_coordinates, pupil_coordinates)
 
-        right_kernels = []
-        left_kernels = []
+        right_kernel = be.to_complex(
+            be.exp(-2j * be.pi * right_vector_product / pad_size)
+        )
 
-        for pad_size in pad_sizes:
-            right_kernel = be.to_complex(
-                be.exp(-2j * np.pi * right_vector_product / pad_size)
-            )
-            right_kernel = right_kernel / be.sqrt(pad_size)
-            right_kernels.append(right_kernel)
-            left_kernel = be.to_complex(
-                be.exp(-2j * np.pi * left_vector_product / pad_size)
-            )
-            left_kernel = left_kernel / be.sqrt(pad_size)
-            left_kernels.append(left_kernel)
-        return left_kernels, right_kernels
+        left_kernel = be.to_complex(
+            be.exp(-2j * be.pi * left_vector_product / pad_size)
+        )
+        return left_kernel, right_kernel
 
-# QUESTIONS FOR THE GROUP:
-# 1) Are we worried about spectral weightings at all?
-# 2) When we calculate a polychromatic PSF, do we consider the normalization factor
-# for each wavelength separately, or only compared to the primary wavelength?
-# 3) What do we do in polychromatic calculations about the 1/lambda*F factor?
-# 4) Is an option for normalization simply energy_in = energy_out?
-#    Ex: For a Q=2 or greater PSF, sum(abs(pupil)**2) = sum(psf) over all pixels in
-#    pad_size. Can we then use sum(abs(pupil)**2) as a norm factor?
-# 5) Does all this talk of normalization fuck with the Strehl calculation?
-# 6) Check assumptions:
-#    - The total size of the nonzero aperture is num_rays x num_rays
-#    - Working_FNO is a valid way to calculate Q (versus image_FNO - I think this is
-#    fine)
-# 7) Simplifying kernels/memory - have one single kernel and then modify by raising
-#    kernels to power based on wavelength
-#    pad_size(lambda) = Q * clear_size = lambda * fno * clear_size / pixel_pitch
-#    pad_size(lambda1)/pad_size(lambda2) = lambda1/lambda2
-#    k(lambda1) = exp[-2 pi u x / pad_size(lambda1)]
-#    k(lambda2) = k(lambda1) ** (lambda1/lambda2)
+    def _get_psf_units(self, image):
+        """Calculates the physical extent (units) of the PSF image for plotting.
+
+        This method is called by `BasePSF.view()` to determine axis labels.
+        It computes the total spatial width and height (in micrometers) of the
+        provided PSF image data directly using the provided pixel_pitch.
+
+        Args:
+            image (be.ndarray): The PSF image data (often a
+                zoomed/cropped version from `BasePSF.view`). Its shape is used
+                to determine the total extent for labeling.
+
+        Returns:
+            tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the physical
+            total width and total height of the PSF image area, in micrometers.
+            These are returned as NumPy arrays as `BasePSF.view` expects them
+            for Matplotlib's `extent` argument.
+        """
+        dx = self.pixel_pitch
+
+        x = be.to_numpy(image.shape[1] * dx)
+        y = be.to_numpy(image.shape[0] * dx)
+
+        return x, y
