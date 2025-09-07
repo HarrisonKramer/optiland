@@ -1,3 +1,14 @@
+"""MMDFT Point Spread Function (PSF) Module
+
+This module provides functionality for simulating and analyzing the Point
+Spread Function (PSF) of optical systems using the Matrix Multiply Discrete Fourier
+Transform. It includes capabilities for generating a monochromatic PSF at a desired
+image size and pixel pitch from given wavefront aberrations and calculating the
+Strehl ratio. Visualization is handled by the base class.
+
+Scott Paine, 2025
+"""
+
 from __future__ import annotations
 
 import optiland.backend as be
