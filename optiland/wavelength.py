@@ -23,15 +23,17 @@ class Wavelength:
         is_primary (bool): Indicates whether the wavelength is a primary
             wavelength.
         unit (str): The unit of the wavelength value. Defaults to 'microns'.
+        weight (float): The weight of the wavelength. Defaults to 1.0.
 
     Methods:
         _convert_to_um(): Converts the wavelength value to microns.
 
     """
 
-    def __init__(self, value, is_primary=True, unit="um"):
+    def __init__(self, value, is_primary=True, unit="um", weight: float = 1.0):
         self._value = value
         self.is_primary = is_primary
+        self.weight = weight
         self._unit = unit.lower()
         self._value_in_um = self._convert_to_um()
 
@@ -82,7 +84,12 @@ class Wavelength:
             dict: A dictionary representation of the wavelength.
 
         """
-        return {"value": self._value, "is_primary": self.is_primary, "unit": self._unit}
+        return {
+            "value": self._value,
+            "is_primary": self.is_primary,
+            "unit": self._unit,
+            "weight": self.weight,
+        }
 
     @classmethod
     def from_dict(cls, data):
@@ -104,11 +111,12 @@ class Wavelength:
             value=data["value"],
             is_primary=data["is_primary"],
             unit=data["unit"],
+            weight=data.get("weight", 1.0),
         )
 
 
 class WavelengthGroup:
-    """Represents a group of wavelengths.
+    """Represents a group of wavelengths, each with an optional weight.
 
     Attributes:
         wavelengths (list): A list of Wavelength objects.
@@ -130,6 +138,11 @@ class WavelengthGroup:
         self.wavelengths = []
 
     @property
+    def weights(self):
+        """tuple: the weights of the wavelengths"""
+        return tuple(wave.weight for wave in self.wavelengths)
+
+    @property
     def num_wavelengths(self):
         """int: the number of wavelengths"""
         return len(self.wavelengths)
@@ -146,7 +159,7 @@ class WavelengthGroup:
         """float: the primary wavelength"""
         return self.wavelengths[self.primary_index]
 
-    def add_wavelength(self, value, is_primary=True, unit="um"):
+    def add_wavelength(self, value, is_primary=True, unit="um", weight=1.0):
         """Adds a new wavelength to the list of wavelengths.
 
         Args:
@@ -154,6 +167,8 @@ class WavelengthGroup:
             is_primary (bool, optional): Indicates if the wavelength is
                 primary. Default is True.
             unit (str, optional): The unit of the wavelength. Default is 'um'.
+            weight (float, optional): The weight of the wavelength.
+                Default is 1.0.
 
         """
         if is_primary:
@@ -163,7 +178,7 @@ class WavelengthGroup:
         if self.num_wavelengths == 0:
             is_primary = True
 
-        self.wavelengths.append(Wavelength(value, is_primary, unit))
+        self.wavelengths.append(Wavelength(value, is_primary, unit, weight))
 
     def get_wavelength(self, wavelength_number):
         """Get the value of a specific wavelength.
@@ -285,7 +300,9 @@ def add_wavelengths(
         for i, node in enumerate(nodes):
             is_primary = i == num_wavelengths // 2
             value = min_value * 2 ** (span * node)
-            wavelength_group.wavelengths.append(Wavelength(value, is_primary, unit))
+            wavelength_group.wavelengths.append(
+                Wavelength(value, is_primary, unit, 1.0)
+            )
     else:
         min_value = min_value**power
         max_value = max_value**power
@@ -294,5 +311,5 @@ def add_wavelengths(
             is_primary = i == num_wavelengths // 2
             value = min_value + (span * node)
             wavelength_group.wavelengths.append(
-                Wavelength(value ** (1.0 / power), is_primary, unit)
+                Wavelength(value ** (1.0 / power), is_primary, unit, 1.0)
             )
