@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 import optiland.backend as be
 from optiland.materials import IdealMaterial
@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from .layer import Layer
 
 Pol = Literal["s", "p", "u"]
+Array: TypeAlias = Any  # be.ndarray
 
 
 @dataclass
@@ -39,6 +40,11 @@ class ThinFilmStack:
         Substrate medium (e.g., glass).
     layers : list[Layer], optional
         Ordered layers between incident and substrate, default empty.
+    reference_wl_um : float | None, optional
+        Reference wavelength for thickness quarter-wave calculations, by default None.
+    reference_AOI_deg : float | None, optional
+        Reference angle of incidence in degrees for thickness quarter-wave
+        calculations, by default 0 degrees (normal incidence).
 
     Examples
     --------
@@ -56,6 +62,8 @@ class ThinFilmStack:
     incident: BaseMaterial
     substrate: BaseMaterial
     layers: list[Layer] = field(default_factory=list)
+    reference_wl_um: float | None = None
+    reference_AOI_deg: float | None = 0
 
     # ----- structure helpers -----
     def add_layer(
@@ -86,22 +94,49 @@ class ThinFilmStack:
         """
         return self.add_layer(material, thickness_nm / 1000.0, name)
 
+    def add_layer_qwot(
+        self, qwot_thickness: float, material: BaseMaterial, name: str | None = None
+    ) -> ThinFilmStack:
+        """Append a quarter-wave optical thickness (QWOT) layer at the reference
+        wavelength and angle of incidence.
+
+        Args:
+            material: Optiland material providing n(λ), k(λ).
+            name: Optional label.
+
+        Raises:
+            ValueError: If reference_wl_um is not set.
+
+        Returns:
+            self for chaining.
+        """
+        if self.reference_wl_um is None:
+            raise ValueError("reference_wl_um must be set for adding QWOT layer")
+        wl_um = self.reference_wl_um
+        th_rad = 0.0
+        if self.reference_AOI_deg is not None:
+            th_rad = self._deg_to_rad(self.reference_AOI_deg)
+        n_complex = material.n(wl_um) + 1j * material.k(wl_um)
+        cos_t = be.sqrt(1 - (self.incident.n(wl_um) * be.sin(th_rad) / n_complex) ** 2)
+        thickness_um = qwot_thickness * wl_um / (4 * n_complex.real * cos_t.real)
+        return self.add_layer(thickness_um=thickness_um, material=material, name=name)
+
     # ----- units helpers -----
     @staticmethod
-    def _to_um(wavelength_um_or_nm: float | Any, assume_nm: bool = False):
+    def _to_um(wavelength_um_or_nm: float | Array, assume_nm: bool = False):
         arr = be.atleast_1d(wavelength_um_or_nm)
         return arr / 1000.0 if assume_nm else arr
 
     @staticmethod
-    def _deg_to_rad(angle_deg: float | Any):
+    def _deg_to_rad(angle_deg: float | Array):
         return be.atleast_1d(angle_deg) * (be.pi / 180.0)
 
     # ----- public API: coefficients -----
-    def coefficients(
+    def compute_rtRTA(
         self,
-        wavelength_um: float | Any,
-        aoi_rad: float | Any = 0.0,
-        polarization: Pol = "s",
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
     ) -> dict[str, Any]:
         """Compute complex and power coefficients over λ×θ grids.
 
@@ -111,9 +146,14 @@ class ThinFilmStack:
             aoi_rad: Angle(s) of incidence in radians (scalar or array). Use helpers
             for degrees.
             polarization: 's', 'p' or 'u' (unpolarized averages powers of s and p).
+                default 'u'.
 
         Returns:
             Dict with keys 'r','t','R','T','A'. Shapes are (Nλ, Nθ).
+
+        Note:
+        - For unpolarized 'u', r, t are s-polarization amplitudes; R, T, A are
+        averaged powers.
         """
         wl = be.atleast_1d(wavelength_um)
         th = be.atleast_1d(aoi_rad)
@@ -134,33 +174,119 @@ class ThinFilmStack:
 
     def coefficients_nm_deg(
         self,
-        wavelength_nm: float | Any,
-        aoi_deg: float | Any = 0.0,
-        polarization: Pol = "s",
-    ) -> dict[str, Any]:
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> dict[str, float | Array]:
         """Same as coefficients() but inputs in nm and degrees."""
         wl_um = self._to_um(wavelength_nm, assume_nm=True)
         th_rad = self._deg_to_rad(aoi_deg)
-        return self.coefficients(wl_um, th_rad, polarization)
+        return self.compute_rtRTA(wl_um, th_rad, polarization)
 
     # ----- convenience getters -----
-    def reflectance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
-        return self.coefficients(wavelength_um, aoi_rad, polarization)["R"]
+    def reflectance(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
+        return self.compute_rtRTA(wavelength_um, aoi_rad, polarization)["R"]
 
-    def transmittance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
-        return self.coefficients(wavelength_um, aoi_rad, polarization)["T"]
+    def transmittance(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
+        return self.compute_rtRTA(wavelength_um, aoi_rad, polarization)["T"]
 
-    def absorptance(self, wavelength_um, aoi_rad=0.0, polarization: Pol = "s"):
-        return self.coefficients(wavelength_um, aoi_rad, polarization)["A"]
+    def absorptance(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
+        return self.compute_rtRTA(wavelength_um, aoi_rad, polarization)["A"]
 
-    def reflectance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+    def reflectance_nm_deg(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
         return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["R"]
 
-    def transmittance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+    def transmittance_nm_deg(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
         return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["T"]
 
-    def absorptance_nm_deg(self, wavelength_nm, aoi_deg=0.0, polarization: Pol = "s"):
+    def absorptance_nm_deg(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> Array:
         return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["A"]
+
+    def rtRAT(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> tuple[Array, Array, Array, Array, Array]:
+        rta_data = self.compute_rtRTA(wavelength_um, aoi_rad, polarization)
+        return (
+            rta_data["r"],
+            rta_data["t"],
+            rta_data["R"],
+            rta_data["T"],
+            rta_data["A"],
+        )
+
+    def rtRAT_nm_deg(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> tuple[Array, Array, Array, Array, Array]:
+        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
+        return (
+            rta_data["r"],
+            rta_data["t"],
+            rta_data["R"],
+            rta_data["T"],
+            rta_data["A"],
+        )
+
+    def RTA(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> tuple[Array, Array, Array]:
+        rta_data = self.compute_rtRTA(wavelength_um, aoi_rad, polarization)
+        return (
+            rta_data["R"],
+            rta_data["T"],
+            rta_data["A"],
+        )
+
+    def RTA_nm_deg(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> tuple[Array, Array, Array]:
+        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
+        return (
+            rta_data["R"],
+            rta_data["T"],
+            rta_data["A"],
+        )
 
     def __len__(self):
         return len(self.layers)
@@ -357,7 +483,7 @@ class ThinFilmStack:
 PolSP = Literal["s", "p"]
 
 
-def _complex_index(material: BaseMaterial, wavelength_um):
+def _complex_index(material: BaseMaterial, wavelength_um: float | Array) -> Array:
     n = material.n(wavelength_um)
     k = material.k(wavelength_um)
     n = be.atleast_1d(n)

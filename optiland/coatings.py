@@ -522,7 +522,7 @@ class JonesThinFilm(BaseJones):
         # Reshape to (N,1) to reuse stack’s 2D API, then squeeze back
         wl2 = wl_um.reshape((-1, 1))
         th2 = th_rad.reshape((-1, 1))
-        out = self.stack.coefficients(wl2, th2, pol)
+        out = self.stack.compute_rtRTA(wl2, th2, pol)
         r, t = out["r"].squeeze(), out["t"].squeeze()
         R, T = out["R"].squeeze(), out["T"].squeeze()
         return r, t, R, T
