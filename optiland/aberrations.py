@@ -247,7 +247,7 @@ class Aberrations:
         various aberration term methods.
         """
         self._inv = self.optic.paraxial.invariant()  # Lagrange invariant
-        self._on_axis = be.isclose(self._inv, 0)
+        self._on_axis = be.isclose(self._inv, be.array(0.0))
         self._n = self.optic.n()  # Refractive indices for all surfaces
         self._N = self.optic.surface_group.num_surfaces
         self._C = 1 / self.optic.surface_group.radii
