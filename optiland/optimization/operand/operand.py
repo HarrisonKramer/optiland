@@ -78,6 +78,7 @@ METRIC_DICT = {
     "rms_spot_size": RayOperand.rms_spot_size,
     "OPD_difference": RayOperand.OPD_difference,
     "edge_thickness": LensOperand.edge_thickness,
+    "AOI": RayOperand.AOI,
 }
 
 
