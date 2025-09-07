@@ -2,7 +2,7 @@
 
 This module contains classes that convert between different surface types.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations
