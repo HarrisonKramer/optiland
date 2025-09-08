@@ -49,10 +49,10 @@ The PyTorch backend also provides substantial performance improvements through G
 
 | Backend Configuration | Precision | Throughput (ray-surfaces/s) | Relative Speedup |
 | :--- | :--- | :--- | :--- |
-| NumPy (CPU) | `float64` | 2.3 × 10^6 | 1.0x |
-| PyTorch (CPU) | `float64` | 7.1 × 10^6 | 3.1x |
-| PyTorch (GPU) | `float64` | 5.7 × 10^7 | 24.8x |
-| **PyTorch (GPU)** | **`float32`** | **2.3 × 10^8** | **100.0x** |
+| NumPy (CPU) | `float64` | $2.3 \times 10^6$ | $1.0 \times$ |
+| PyTorch (CPU) | `float64` | $7.1 \times 10^6$ | $3.1 \times$ |
+| PyTorch (GPU) | `float64` | $5.7 \times 10^7$ | $24.8 \times$ |
+| **PyTorch (GPU)** | **`float32`** | **$2.3 \times 10^8$** | **$100.0 \times$** |
 
 Table: Benchmark of ray-tracing throughput for a Cooke triplet system. Results show that the GPU-accelerated `float32` configuration, standard in machine learning workflows, achieves two orders of magnitude higher throughput compared to NumPy on CPU \label{tbl:benchmark}
 
