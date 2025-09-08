@@ -1,5 +1,5 @@
 ---
-title: 'Optiland: Python-based, Open-Source Optical Design Software'
+title: 'Optiland: Open-Source Optical Design Software in Python'
 authors:
   - name: Kramer Harrison
     orcid: 0009-0000-5494-139X
@@ -33,31 +33,17 @@ bibliography: paper.bib
 
 # Summary
 
-**Optiland** is an open-source optical design package written in Python. It offers a comprehensive platform for the design, analysis, and optimization of complex optical systems, catering to a wide audience from professional engineers and researchers to students and hobbyists. Optiland handles a wide range of optical systems, from classical refractive and reflective designs to advanced freeform and computational optics.
+**Optiland** is an open-source optical design package written in Python. It offers a comprehensive platform for the design, analysis, and optimization of complex optical systems, catering to a wide audience from professional engineers and researchers to students and educators. Optiland handles a broad range of optical systems, from classical refractive and reflective designs to advanced freeform and computational optics.
 
 Core features include sequential ray tracing, a rich library of surface types (spherical, aspheric, freeform), optimization and tolerancing support, and a suite of analysis tools for evaluating optical performance (e.g., spot diagrams, wavefront analysis, modulation transfer function). A key feature of Optiland is its dual-backend architecture, which allows users to switch between a NumPy [@harris2020array] backend for fast CPU computations and a PyTorch [@NEURIPS2019_9015] backend for GPU acceleration and automatic differentiation. This enables the integration of Optiland with machine learning workflows and gradient-based optimization, as all calculations are differentiable. Optiland also includes a graphical user interface (GUI) for interactive design and analysis.
 
 # Statement of Need
 
-The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CodeV [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for students, educators, and researchers.
+The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CodeV [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for engineers, educators, and researchers.
 
-Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. The differentiable PyTorch backend is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models.
+Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. Optiland offers a differentiable PyTorch backend, which is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models. The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs.
 
-Several open-source optical packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers Python-based ray tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
-
-The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs. To illustrate this, we benchmarked ray tracing through a Cooke triplet lens and measured throughput in terms of ray–surface interactions per second. Benchmarks were run on a system with an Intel Core i7-12700H CPU and an NVIDIA RTX 3070 GPU, with results shown in \autoref{tbl:benchmark}.
-
-| Backend Configuration | Precision | Throughput (ray-surfaces/s) | Relative Speedup |
-| :--- | :--- | :--- | :--- |
-| NumPy (CPU) | `float64` | $2.3 \times 10^6$ | $1.0 \times$ |
-| PyTorch (CPU) | `float64` | $7.1 \times 10^6$ | $3.1 \times$ |
-| PyTorch (GPU) | `float64` | $5.7 \times 10^7$ | $24.8 \times$ |
-| **PyTorch (GPU)** | **`float32`** | **$2.3 \times 10^8$** | **$100.0 \times$** |
-
-Table: Benchmark of ray-tracing throughput for a Cooke triplet system. Results show that the GPU-accelerated `float32` configuration, standard in machine learning workflows, achieves two orders of magnitude higher throughput compared to NumPy on CPU \label{tbl:benchmark}
-
-As shown in the table, the GPU-accelerated, 32-bit precision backend achieves a 100.0x throughput gain over the standard NumPy implementation. This acceleration enables experiments that would otherwise be impractical, including large-scale Monte Carlo tolerancing, high-resolution simulations, and gradient-based inverse design. By combining a flexible and fully differentiable architecture with strong performance and a rich feature set, Optiland lowers the barrier to entry for advanced optical design and makes computational experiments accessible to a much wider community.
-
+Several open-source optical design packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers ray tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
 
 # Functionalities
 
@@ -67,10 +53,27 @@ Optiland supports a wide range of design, analysis, and optimization tasks, maki
 - **Analysis Tools**: Spot diagrams, wavefront analysis, OPD maps, polarization ray tracing, PSF/MTF evaluation, and scattering models.
 - **Optimization and Tolerancing**: Gradient-based and global optimization, Monte Carlo tolerancing, parametric sweeps, and specialized glass selection tools.
 - **Differentiable Ray Tracing**: A fully differentiable backend via PyTorch enables gradient-based optimization and integration with machine learning frameworks.
-- **Material Database**: Built-in refractive index library with support for user-defined materials.
+- **Material Database**: Built-in refractive index library based on the refractiveindex.info database [@polyanskiy2024]. Support for user-defined materials.
 - **Visualization**: 2D layout plots, 3D ray-trace visualization, and an interactive GUI.
-- **Interoperability**: Import of Zemax OpticStudio files, JSON-based I/O, and a full Python API.
+- **Interoperability**: Import of Zemax OpticStudio files, JSON-based Optiland file format for import/export, and a full Python API.
 - **Performance**: GPU acceleration with PyTorch and CPU acceleration with Numba [@lam2015numba].
+
+## Performance and benchmarking
+
+To illustrate the performance gain using GPU acceleration, we benchmarked ray tracing through a Cooke triplet lens and measured throughput in terms of ray–surface interactions per second. Benchmarks were run on a system with an Intel Core i7-12700H CPU and an NVIDIA RTX 3070 GPU, with results shown in \autoref{tbl:benchmark}.
+
+| Backend Configuration | RMSE vs NumPy float64 (m) |Throughput (ray-surfaces/s) | Relative Speedup |
+| :--- | :--- | :--- | :--- |
+| NumPy (CPU, float64) | 0 (reference)  | $2.3 \times 10^6$ | $1.0 \times$ |
+| PyTorch (CPU, float64) | $1.6 \times 10^-18$ | $7.1 \times 10^6$ | $3.1 \times$ |
+| PyTorch (GPU, float64) | $1.2 \times 10^-18$ | $5.7 \times 10^7$ | $24.8 \times$ |
+| **PyTorch (GPU, float32)** | **$3.4 \times 10^-9$** |  **$2.3 \times 10^8$** | **$100.0 \times$** |
+
+Table: Benchmark of ray-tracing throughput for a Cooke triplet system. Reported accuracy is the root mean square error (RMSE) of ray intersection points on the image plane relative to NumPy float64. \label{tbl:benchmark}
+
+As shown in \autoref{tbl:benchmark}, the GPU-accelerated 32-bit backend achieves two orders of magnitude higher throughput than the NumPy float64 baseline. This acceleration enables experiments that would otherwise be impractical, including large-scale Monte Carlo tolerancing, high-resolution simulations, and gradient-based inverse design.  
+
+As different numerical precisions can in principle affect ray accuracy, we also report the RMSE of intersection points relative to the NumPy float64 reference. For the float32 GPU backend, the observed errors are on the order of nanometers, well below typical optical tolerances except in the most demanding applications.
 
 # Examples
 
