@@ -92,7 +92,7 @@ lens = optic.Optic()
 lens.add_surface(index=0, radius=np.inf, thickness=np.inf)  # Object plane
 lens.add_surface(index=1, radius=+22.01359, thickness=3.25896, material="SK16")
 lens.add_surface(index=2, radius=-435.7604, thickness=6.00755)
-lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"),)
+lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"))
 lens.add_surface(index=4, radius=+20.29192, thickness=4.75041, is_stop=True)
 lens.add_surface(index=5, radius=+79.68360, thickness=2.95208, material="SK16")
 lens.add_surface(index=6, radius=-18.39533, thickness=42.2077)
