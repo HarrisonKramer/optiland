@@ -17,6 +17,8 @@ from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
 from optiland.visualization.base import BaseViewer
 from optiland.visualization.system import OpticViewer, OpticViewer3D
+from optiland.visualization.system.system import OpticalSystem
+from optiland.visualization.system.lens import Lens2D, Lens3D
 from optiland.visualization.info import LensInfoViewer
 from optiland.visualization.analysis import SurfaceSagViewer
 
@@ -530,3 +532,48 @@ class TestSurfaceSagViewer:
         viewer.view(surface_index=1, y_cross_section=1.5, x_cross_section=-1.5)
         assert plt.gcf() is not None
         plt.close()
+
+
+@pytest.mark.parametrize("projection, lens_class", [("2d", Lens2D), ("3d", Lens3D)])
+def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
+    """Test that a Mangin mirror is visualized as a single lens component."""
+    # Create a simple Mangin mirror
+    mangin_mirror = Optic(name="Mangin Mirror")
+    mangin_mirror.add_wavelength(value=0.55, is_primary=True)
+    mangin_mirror.add_surface(index=0, radius=be.inf, thickness=be.inf)  # Object
+    mangin_mirror.add_surface(index=1, radius=-100, thickness=+5, material="N-BK7")   # Front surface
+    mangin_mirror.add_surface(index=2, radius=-100, thickness=-5, material="mirror", is_stop=True)  # Back surface (reflective)
+    mangin_mirror.add_surface(index=3, radius=-100, thickness=-50, material="N-BK7")   # Front surface
+    mangin_mirror.add_surface(index=4, radius=be.inf)  # Image
+    mangin_mirror.set_field_type("angle")
+    mangin_mirror.add_field(y=0)
+    mangin_mirror.set_aperture(aperture_type="EPD", value=25)
+    mangin_mirror.add_wavelength(value=0.65, is_primary=True)
+
+    # Dummy rays object for OpticalSystem
+    class DummyRays:
+        def __init__(self, optic):
+            self.r_extent = [15] * optic.surface_group.num_surfaces
+
+    optical_system = OpticalSystem(
+        mangin_mirror, DummyRays(mangin_mirror), projection=projection
+    )
+    optical_system._identify_components()
+
+    # Verify the components were identified correctly
+    # Two "lens" (really just same lens, superimposed) and one image plane.
+    assert (
+        len(optical_system.components) == 3
+    ), "Expected two components: the lens and the image plane."
+
+    lens_components = [
+        c for c in optical_system.components if isinstance(c, lens_class)
+    ]
+    
+    # Ensure "two" lenses are found - really, this is the same lens, superimposed.
+    assert len(lens_components) == 2
+
+    # Ensure that the identified lens consists of two surfaces.
+    assert (
+        len(lens_components[0].surfaces) == 2
+    ), "The Mangin mirror component should be made of two surfaces."

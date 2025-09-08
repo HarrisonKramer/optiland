@@ -236,7 +236,8 @@ class SurfaceGroup:
                 bsdf, x, y, z.
 
         Raises:
-            ValueError: If index is not provided when defining a new surface.
+            ValueError: If a new surface is provided and no index is given.
+            IndexError: If the index is out of bounds for insertion, or negative.
 
         """
         if new_surface is None:

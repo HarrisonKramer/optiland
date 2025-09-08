@@ -222,7 +222,7 @@ Optiland offers a suite of tools to evaluate performance:
 * ``RayFan``: Transverse ray aberrations.
 * ``OPD``: Wavefront errors.
 * ``MTF``: Image contrast vs. frequency.
-* ``PSF``: Point source image.
+* ``PSF``: Point spread function.
 * ``FieldCurvature``, ``Distortion``: Field performance.
 * *(Many classes have a ``.view()`` method for plotting)*.
 

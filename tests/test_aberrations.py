@@ -247,6 +247,12 @@ class TestSingletStopTwo:
 
 
 class TestSimpleSinglet:
-    def test_seidels(self, set_test_backend, simple_singlet):
+    def test_on_axis_seidels_are_not_zero(self, set_test_backend, simple_singlet):
+        """Test that Seidel coefficients are computed correctly for on-axis field"""
         S = simple_singlet.aberrations.seidels()
-        assert_allclose(S, [0, 0, 0, 0, 0])
+        # Spherical aberration should be non-zero
+        assert not be.isclose(S[0], be.array(0.0))
+        assert_allclose(S[0], -0.675281089)
+
+        # Other Seidel coefficients are expected to be zero for on-axis field
+        assert_allclose(S[1:], [0, 0, 0, 0], atol=1e-8)

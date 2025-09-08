@@ -47,3 +47,4 @@ from fast Fourier transforms to more rigorous diffraction calculations.
    psf.base
    psf.fft
    psf.huygens_fresnel
+   psf.mmdft
