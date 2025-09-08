@@ -39,7 +39,7 @@ Core features include sequential ray tracing, a rich library of surface types (s
 
 # Statement of Need
 
-The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CodeV [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for engineers, educators, and researchers.
+The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CODE V [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for engineers, educators, and researchers.
 
 Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. Optiland offers a differentiable PyTorch backend, which is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models. The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs.
 
