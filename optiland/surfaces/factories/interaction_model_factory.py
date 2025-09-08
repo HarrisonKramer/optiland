@@ -15,6 +15,7 @@ from optiland.interactions.refractive_reflective_model import RefractiveReflecti
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 
 if TYPE_CHECKING:
+    # pragma: no cover
     from optiland.coatings import BaseCoating
     from optiland.geometries.base import BaseGeometry
     from optiland.interactions.base import BaseInteractionModel

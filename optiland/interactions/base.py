@@ -11,11 +11,12 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from optiland.coatings import BaseCoating  # pragma: no cover
-    from optiland.geometries import BaseGeometry  # pragma: no cover
-    from optiland.materials import BaseMaterial  # pragma: no cover
-    from optiland.rays import ParaxialRays, RealRays  # pragma: no cover
-    from optiland.scatter import BaseBSDF  # pragma: no cover
+    # pragma: no cover
+    from optiland.coatings import BaseCoating
+    from optiland.geometries import BaseGeometry
+    from optiland.materials import BaseMaterial
+    from optiland.rays import ParaxialRays, RealRays
+    from optiland.scatter import BaseBSDF
 
 
 class BaseInteractionModel(ABC):
