@@ -124,7 +124,7 @@ class LensInfoViewer(BaseViewer):
         """Determines the material for each surface."""
         mat = []
         for surf in self.optic.surface_group.surfaces:
-            if surf.is_reflective:
+            if surf.interaction_model.is_reflective:
                 mat.append("Mirror")
             elif isinstance(surf.material_post, materials.Material):
                 mat.append(surf.material_post.name)
