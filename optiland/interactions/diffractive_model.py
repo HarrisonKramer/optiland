@@ -16,7 +16,7 @@ from optiland.interactions.refractive_reflective_model import (
 )
 
 if TYPE_CHECKING:
-    from optiland.rays import ParaxialRays, RealRays
+    from optiland.rays import ParaxialRays, RealRays  # pragma: no cover
 
 
 class DiffractiveInteractionModel(RefractiveReflectiveModel):
