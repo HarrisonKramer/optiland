@@ -213,23 +213,9 @@ Optiland is actively used by researchers in the **MReye group** at the Leiden Un
 
 # Figures
 
-<figure>
-  <img src="../docs/images/litho_lens.png" alt="An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776.">
-  <figcaption>
-  An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776. Different colored rays represent different fields.
-  </figcaption>
-</figure>
+![An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776. Different colored rays represent different fields.](../docs/images/litho_lens.png)
 
-<br>
-<br>
-
-<figure>
-  <img src="../docs/images/czerny_turner.png" alt="A model of a folded Czerny-Turner spectrometer.">
-  <figcaption>
-  A model of a folded Czerny-Turner spectrometer. Different colored rays represent different wavelengths.
-  </figcaption>
-</figure>
-
+![A model of a folded Czerny-Turner spectrometer. Different colored rays represent different wavelengths.](../docs/images/czerny_turner.png)
 
 # Acknowledgements
 
