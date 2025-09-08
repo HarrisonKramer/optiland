@@ -108,3 +108,53 @@ class TestThinLensInteractionModel:
         # confirm all points at exact same z
         assert_allclose(rays.z, 100)
 
+    def test_flip(self, surface):
+        f_initial = be.copy(surface.interaction_model.f)
+        surface.interaction_model.flip()
+        assert_allclose(surface.interaction_model.f, -f_initial)
+
+    def test_to_dict(self, surface):
+        data = surface.interaction_model.to_dict()
+        assert "focal_length" in data
+        assert data["focal_length"] == 42
+
+    def test_refractive_paraxial_ray_trace(self, set_test_backend):
+        lens = Optic()
+
+        # add surfaces
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(
+            index=1,
+            surface_type="paraxial",
+            thickness=50,
+            f=50,
+            is_stop=True,
+            material_pre=IdealMaterial(1, 0),
+            material_post=IdealMaterial(1.5, 0),
+            is_reflective=False,
+        )
+        lens.add_surface(index=2)
+
+        # add aperture
+        lens.set_aperture(aperture_type="EPD", value=20)
+
+        # add field
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+
+        # add wavelength
+        lens.add_wavelength(value=0.55, is_primary=True)
+
+        rays = lens.trace(
+            Hx=0,
+            Hy=0,
+            wavelength=0.55,
+            distribution="uniform",
+            num_rays=32,
+        )
+
+        # confirm all points exactly on axis
+        assert_allclose(rays.y, 0)
+
+        # confirm all points at exact same z
+        assert_allclose(rays.z, 50)

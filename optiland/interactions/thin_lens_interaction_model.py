@@ -15,10 +15,10 @@ from optiland.interactions.base import BaseInteractionModel
 from optiland.rays.polarized_rays import PolarizedRays
 
 if TYPE_CHECKING:
-    from optiland.coatings import BaseCoating
-    from optiland.geometries.base import BaseGeometry
-    from optiland.materials.base import BaseMaterial
-    from optiland.scatter import BaseBSDF
+    from optiland.coatings import BaseCoating  # pragma: no cover
+    from optiland.geometries.base import BaseGeometry  # pragma: no cover
+    from optiland.materials.base import BaseMaterial  # pragma: no cover
+    from optiland.scatter import BaseBSDF  # pragma: no cover
 
 
 class ThinLensInteractionModel(BaseInteractionModel):
