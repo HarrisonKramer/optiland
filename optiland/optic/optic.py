@@ -171,7 +171,8 @@ class Optic:
                 parameters such as radius, conic, dx, dy, rx, ry, aperture.
 
         Raises:
-            ValueError: If index is not provided when defining a new surface.
+            ValueError: If a new surface is provided and no index is given.
+            IndexError: If the index is out of bounds for insertion, or negative.
 
         """
         self.surface_group.add_surface(
