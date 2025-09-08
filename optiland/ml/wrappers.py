@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from optiland.optimization.problem import OptimizationProblem
 
 
-class OpticalSystemModule(nn.Module):
+class OpticalSystemModule(nn.Module if nn is not None else object):
     """
     A PyTorch nn.Module that wraps an Optiland OptimizationProblem.
 
@@ -54,6 +54,11 @@ class OpticalSystemModule(nn.Module):
         objective_fn: Callable[[], torch.Tensor] | None = None,
     ):
         super().__init__()
+        if torch is None:
+            raise RuntimeError(
+                "OpticalSystemModule requires the 'torch' package. "
+                "Install PyTorch to use this class."
+            )
         if be.get_backend() != "torch":
             raise RuntimeError("OpticalSystemModule requires the 'torch' backend.")
 
