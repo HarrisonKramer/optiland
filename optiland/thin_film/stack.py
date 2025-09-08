@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from .layer import Layer
 
 Pol = Literal["s", "p", "u"]
+PlotType = Literal["R", "T", "A"]
 Array: TypeAlias = Any  # be.ndarray
 
 
@@ -493,6 +494,117 @@ class ThinFilmStack:
         ax.set_xlim(0.5, len(self.layers) - 0.5)
         fig = ax.figure
         return fig, ax
+
+    def plot(
+        self,
+        wavelength_nm: float | Array,
+        aoi_deg: float | Array = 0.0,
+        polarization: Pol = "u",
+        to_plot: PlotType | list[PlotType] = "R",
+        ax: plt.Axes = None,
+    ) -> plt.Figure:
+        """Plot R/T/A vs wavelength and/or AOI for given polarization.
+        Args:
+            wavelength_nm: Wavelength(s) in nanometers (scalar or array).
+            aoi_deg: Angle(s) of incidence in degrees (scalar or array), default 0.
+            polarization: 's', 'p' or 'u' (unpolarized averages powers of s and p),
+            default 'u'.
+            to_plot: 'R', 'T', 'A' or list of these, default 'R'.
+            ax: Optional matplotlib Axes to plot on. If None, a new figure
+            and axes are created.
+        Returns:
+            fig: The matplotlib Figure object containing the plot.
+        """
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        wl_array = be.atleast_1d(wavelength_nm)
+        aoi_array = be.atleast_1d(aoi_deg)
+
+        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
+
+        if isinstance(to_plot, str):
+            to_plot = [to_plot]
+
+        # Case 1: wavelength is array, AOI is scalar
+        if len(wl_array) > 1 and len(aoi_array) == 1:
+            for quantity in to_plot:
+                if quantity not in ("R", "T", "A"):
+                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+                ax.plot(
+                    wl_array,
+                    rta_data[quantity].flatten(),
+                    label=f"{quantity}, {polarization}-pol, AOI={aoi_deg}°",
+                )
+            ax.set_xlabel("$\lambda$ (nm)")
+            ax.set_ylabel("Power fraction")
+            ax.set_xlim(wl_array.min(), wl_array.max())
+            ax.set_ylim(0, 1)
+            ax.grid(True, alpha=0.3)
+            ax.legend()
+
+        # Case 2: AOI is array, wavelength is scalar
+        elif len(aoi_array) > 1 and len(wl_array) == 1:
+            for quantity in to_plot:
+                if quantity not in ("R", "T", "A"):
+                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+                ax.plot(
+                    aoi_array,
+                    rta_data[quantity].flatten(),
+                    label=f"{quantity}, {polarization}-pol, λ={wavelength_nm}nm",
+                )
+            ax.set_xlabel("AOI (°)")
+            ax.set_ylabel("Power fraction")
+            ax.set_xlim(aoi_array.min(), aoi_array.max())
+            ax.set_ylim(0, 1)
+            ax.grid(True, alpha=0.3)
+            ax.legend()
+        # Case 3: Both are arrays - 2D plot using pcolormesh
+        elif len(wl_array) > 1 and len(aoi_array) > 1:
+            if isinstance(to_plot, str):
+                to_plot = [to_plot]
+
+            WL, AOI = be.meshgrid(wl_array, aoi_array, indexing="ij")
+
+            # If multiple quantities requested, create one subplot per quantity
+            if len(to_plot) > 1:
+                fig, axs = plt.subplots(len(to_plot), 1, figsize=(6, 4 * len(to_plot)))
+                if len(to_plot) == 1:
+                    axs = [axs]
+                for ax_idx, quantity in enumerate(to_plot):
+                    if quantity not in ("R", "T", "A"):
+                        raise ValueError(
+                            "to_plot must be 'R', 'T', 'A' or a list of these"
+                        )
+                    ax_i = axs[ax_idx]
+                    im = ax_i.pcolormesh(WL, AOI, rta_data[quantity], shading="auto")
+                    ax_i.set_xlabel("$\\lambda$ (nm)")
+                    ax_i.set_ylabel("AOI (°)")
+                    ax_i.set_title(f"{quantity}, {polarization}-pol")
+                    fig.colorbar(im, ax=ax_i, label="Power fraction")
+            else:
+                # Single quantity: honor provided ax or create one
+                quantity = to_plot[0]
+                if quantity not in ("R", "T", "A"):
+                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+                if ax is None:
+                    fig, ax = plt.subplots()
+                im = ax.pcolormesh(WL, AOI, rta_data[quantity], shading="auto")
+                ax.set_xlabel("$\\lambda$ (nm)")
+                ax.set_ylabel("AOI (°)")
+                ax.set_title(f"{quantity}, {polarization}-pol")
+                fig.colorbar(im, ax=ax, label="Power fraction")
+
+            # Ensure fig is defined for return
+            if "fig" not in locals():
+                fig = ax.figure
+            return fig
+
+        # Case 4: Both are scalars - single point plot
+        else:
+            raise ValueError(
+                "At least one of wavelength_nm or aoi_deg must be an array"
+            )
 
 
 # -------------- Internal TMM core --------------
