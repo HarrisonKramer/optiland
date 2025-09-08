@@ -11,11 +11,11 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from optiland.coatings import BaseCoating
-    from optiland.geometries import BaseGeometry
-    from optiland.materials import BaseMaterial
-    from optiland.rays import ParaxialRays, RealRays
-    from optiland.scatter import BaseBSDF
+    from optiland.coatings import BaseCoating  # pragma: no cover
+    from optiland.geometries import BaseGeometry  # pragma: no cover
+    from optiland.materials import BaseMaterial  # pragma: no cover
+    from optiland.rays import ParaxialRays, RealRays  # pragma: no cover
+    from optiland.scatter import BaseBSDF  # pragma: no cover
 
 
 class BaseInteractionModel(ABC):
@@ -47,17 +47,17 @@ class BaseInteractionModel(ABC):
     @abstractmethod
     def interact_real_rays(self, rays: RealRays) -> RealRays:
         """Interact with real rays."""
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def interact_paraxial_rays(self, rays: ParaxialRays) -> ParaxialRays:
         """Interact with paraxial rays."""
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def flip(self):
         """Flip the interaction model."""
-        pass
+        pass  # pragma: no cover
 
     def to_dict(self):
         """Returns a dictionary representation of the interaction model."""
