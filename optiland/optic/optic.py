@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import (
-        ApertureType,
         DistributionType,
         FieldType,
         ReferenceRay,
@@ -252,7 +251,11 @@ class Optic:
         self.fields.add_field(new_field)
 
     def add_wavelength(
-        self, value: float, is_primary: bool = False, unit: WavelengthUnit = "um"
+        self,
+        value: float,
+        is_primary: bool = False,
+        unit: WavelengthUnit = "um",
+        weight: float = 1.0,
     ):
         """Add a wavelength to the optical system.
 
@@ -262,15 +265,20 @@ class Optic:
                 primary wavelength. Defaults to False.
             unit (WavelengthUnit, optional): The unit of the wavelength.
                 Defaults to 'um'.
+            weight (float, optional): The weight of the wavelength for
+                polychromatic analysis. Defaults to 1.0.
 
         """
-        self.wavelengths.add_wavelength(value, is_primary, unit)
+        self.wavelengths.add_wavelength(
+            value=value, is_primary=is_primary, unit=unit, weight=weight
+        )
 
-    def set_aperture(self, aperture_type: ApertureType, value: float):
+    def set_aperture(self, aperture_type: str, value: float):
         """Set the aperture of the optical system.
 
         Args:
-            aperture_type (ApertureType): The type of the aperture.
+            aperture_type (str): The type of the aperture. Must be one of 'EPD',
+                'imageFNO', or 'objectNA'.
             value (float): The value of the aperture.
 
         """
@@ -392,13 +400,11 @@ class Optic:
         self._updater.scale_system(scale_factor)
 
     def update_paraxial(self):
-        """Update the semi-aperture of the surfaces based on the paraxial
-        analysis.
-        """
+        """Update the semi-aperture of the surfaces based on paraxial analysis."""
         self._updater.update_paraxial()
 
     def update_normalization(self, surface: Surface) -> None:
-        """Update the normalization radius of non-spherical surfaces."""
+        """Update the normalization radius of surfaces."""
         self._updater.update_normalization(surface)
 
     def update(self) -> None:
@@ -406,8 +412,8 @@ class Optic:
         self._updater.update()
 
     def image_solve(self):
-        """Update the image position such that the marginal ray crosses the
-        optical axis at the image location.
+        """Update the image position such that the marginal ray crosses the optical axis
+        at the image location.
         """
         self._updater.image_solve()
 
@@ -424,10 +430,10 @@ class Optic:
 
     def draw(
         self,
-        fields: list[int] | Literal["all"] = "all",
-        wavelengths: list[int] | Literal["primary"] = "primary",
+        fields: list[tuple[float, float]] | Literal["all"] = "all",
+        wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
-        distribution="line_y",
+        distribution: DistributionType = "line_y",
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
@@ -437,9 +443,9 @@ class Optic:
         """Draw a 2D representation of the optical system.
 
         Args:
-            fields (list[int] | Literal['all'], optional): The fields to be
-                displayed, specified by their indices. Defaults to 'all'.
-            wavelengths (list[int] | Literal['primary'], optional): The
+            fields (list[tuple[float, float]] | Literal['all'], optional): The fields to
+                be displayed, specified by their indices. Defaults to 'all'.
+            wavelengths (list[float] | Literal['primary'], optional): The
                 wavelengths to be displayed, specified by their indices.
                 Defaults to 'primary'.
             num_rays (int, optional): The number of rays to trace for each
@@ -463,7 +469,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-        fig = viewer.view(
+        fig, ax = viewer.view(
             fields,
             wavelengths,
             num_rays,
@@ -474,14 +480,14 @@ class Optic:
             title=title,
             reference=reference,
         )
-        return fig
+        return fig, ax
 
     def draw3D(
         self,
-        fields: list[int] | Literal["all"] = "all",
-        wavelengths: list[int] | Literal["primary"] = "primary",
+        fields: list[tuple[float, float]] | Literal["all"] = "all",
+        wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 24,
-        distribution="ring",
+        distribution: DistributionType = "ring",
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
@@ -489,8 +495,8 @@ class Optic:
         """Draw a 3D representation of the optical system.
 
         Args:
-            fields (list[int] | Literal['all'], optional): The fields to be
-                displayed, specified by their indices. Defaults to 'all'.
+            fields (list[tuple[float, float]] | Literal['all'], optional): The fields to
+                be displayed, specified by their indices. Defaults to 'all'.
             wavelengths (list[int] | Literal['primary'], optional): The
                 wavelengths to be displayed, specified by their indices.
                 Defaults to 'primary'.
@@ -545,8 +551,8 @@ class Optic:
 
     def trace(
         self,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
+        Hx: ArrayLike | float,
+        Hy: ArrayLike | float,
         wavelength: float,
         num_rays: int = 100,
         distribution: DistributionType | BaseDistribution = "hexapolar",
@@ -554,8 +560,8 @@ class Optic:
         """Trace a distribution of rays through the optical system.
 
         Args:
-            Hx (ArrayLike): The normalized x field coordinate(s).
-            Hy (ArrayLike): The normalized y field coordinate(s).
+            Hx (ArrayLike | float): The normalized x field coordinate(s).
+            Hy (ArrayLike | float): The normalized y field coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
             num_rays (int, optional): The number of rays to trace.
                 Defaults to 100.
@@ -572,19 +578,19 @@ class Optic:
 
     def trace_generic(
         self,
-        Hx: ArrayLike,
-        Hy: ArrayLike,
-        Px: ArrayLike,
-        Py: ArrayLike,
+        Hx: ArrayLike | float,
+        Hy: ArrayLike | float,
+        Px: ArrayLike | float,
+        Py: ArrayLike | float,
         wavelength: float,
     ):
         """Trace generic rays through the optical system.
 
         Args:
-            Hx (ArrayLike): The normalized x field coordinate(s).
-            Hy (ArrayLike): The normalized y field coordinate(s).
-            Px (ArrayLike): The normalized x pupil coordinate(s).
-            Py (ArrayLike): The normalized y pupil coordinate(s).
+            Hx (ArrayLike | float): The normalized x field coordinate(s).
+            Hy (ArrayLike | float): The normalized y field coordinate(s).
+            Px (ArrayLike | float): The normalized x pupil coordinate(s).
+            Py (ArrayLike | float): The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
 
         Returns:
