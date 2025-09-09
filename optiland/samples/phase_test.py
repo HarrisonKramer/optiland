@@ -1,7 +1,8 @@
 # Defines simple sample optical systems.
 import optiland.backend as be
 from optiland import optic
-from optiland.phase.grating import GratingPhase
+#from optiland.phase.grating import GratingPhase
+from optiland.phase.radial import RadialPhase
 import math as mth
 import numpy as np
 from optiland.materials import AbbeMaterial, Material
@@ -26,7 +27,8 @@ class AsphericSingletMirror(optic.Optic):
             is_stop=True,
             material= "mirror",
             surface_type="standard",
-            phase_type = GratingPhase(A = 1, order = -1)
+            #phase_type = GratingPhase(A = 1, order = -1, eff = 'ideal')
+            phase_type = RadialPhase(coef = [0.071, -.0005], order = -1, eff = 'ideal')
         )
         self.add_surface(index=3, thickness=0)
         self.add_surface(index=4)
@@ -57,7 +59,7 @@ class AsphericSinglet(optic.Optic):
             is_stop=True,
             material= "air",
             surface_type="standard",
-            phase_type = GratingPhase(A = 1, order = -1)
+            phase_type = GratingPhase(A = 1, order = -1, eff = 'ideal')
         )
         self.add_surface(index=3, thickness=0)
         self.add_surface(index=4)
@@ -74,7 +76,7 @@ class AsphericSinglet(optic.Optic):
         
 lens = AsphericSingletMirror()
 # You may try a different lens here
-# lens = AsphericSinglet()
+#lens = AsphericSinglet()
 bk7=Material("N-Bk7")
 print(bk7.n(0.530))
 #rays = lens.trace(Hx=0, Hy=0, wavelength=0.53, num_rays=1 )

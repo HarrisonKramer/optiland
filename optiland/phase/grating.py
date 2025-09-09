@@ -125,10 +125,12 @@ class GratingPhase(BasePhase):
 
         return kfx, kfy, kfz , opd 
     
-    def efficiency(self, ray):
+    def efficiency(self, rays ):
         #need to add code to this
         if (self.eff == 'ideal'):
             d_eff = 1
+            
+            #beta  = d * (n1 * be.cos( rays))
             
         return d_eff
     
@@ -154,11 +156,11 @@ class GratingPhase(BasePhase):
             GratingPhase: An instance of GratingPhase.
 
         """
-        required_keys = {"order", "period"}
+        required_keys = {"order", "period","eff"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
 
         cs = CoordinateSystem.from_dict(data["cs"])
 
-        return cls(cs, data["period"], data.get("order", 0.0))
+        return cls(cs, data["period"], data.get("order", 0.0), data.get("eff", 'ideal'))

@@ -180,10 +180,9 @@ class Surface:
             n2 = self.material_post.n(rays.w)
             Kx, Ky, Kz, opd = self.phase_type.phase_calc(rays, nx, ny, nz, n1, n2)
             m = self.phase_type.order
-            d = 1/self.phase_type.A
             d_eff = self.phase_type.efficiency(rays)
             
-            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m, d, opd, d_eff)
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz,n1,n2, m, opd, d_eff)
             
 
         # if there is a surface scatter model, modify ray properties
