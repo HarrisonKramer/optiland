@@ -5,8 +5,6 @@ This module implements a collimated Gaussian source that generates rays with a
 Gaussian spatial distribution but collimated direction (all rays parallel to the
 optical axis). This source uses quasi-random Sobol sequences for improved sampling
 quality and differentiable ray generation.
-
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations
@@ -45,6 +43,7 @@ class CollimatedGaussianSource(BaseSource):
         gaussian_waist: float = 5.2,  # mm, half of 10.4 µm MFD converted
         wavelength: float = 1.55,  # µm
         total_power: float = 1.0,  # W
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
     ):
         """
         Initialize the CollimatedGaussianSource with source-specific parameters.
@@ -56,7 +55,11 @@ class CollimatedGaussianSource(BaseSource):
                 Default is 1.55.
             total_power (float): Total optical power of the source in Watts (W).
                 Default is 1.0.
+            position (tuple[float, float, float]): The (x, y, z) position of
+                the source in millimeters. Defaults to (0.0, 0.0, 0.0).
         """
+        super().__init__(position=position)
+
         self.gaussian_waist = gaussian_waist
         self.wavelength = wavelength
         self.total_power = total_power
@@ -105,9 +108,30 @@ class CollimatedGaussianSource(BaseSource):
             f"backend: '{be.get_backend()}'"
         )
 
-        # --- Calculate power per ray ---
+        # --- Calculate power and intensity arrays ---
         power_per_ray = self.total_power / num_valid_rays
-        intensity_power_array = be.full((num_valid_rays,), power_per_ray)
+
+        # Calculate theoretical Gaussian intensity profile for visualization
+        # For collimated beams, only spatial profile matters (no angular dependence)
+        # I(x,y) = I0 * exp(-2*x²/w² - 2*y²/w²) where w is the gaussian_waist
+
+        # Convert spatial coordinates to match the Gaussian profile calculation
+        x_start_mm = x_start  # Already in mm
+        y_start_mm = y_start  # Already in mm
+
+        # Calculate the spatial Gaussian profile
+        term_x = -2.0 * (x_start_mm / self.gaussian_waist) ** 2
+        term_y = -2.0 * (y_start_mm / self.gaussian_waist) ** 2
+
+        # Theoretical Gaussian intensity profile (for visualization)
+        theoretical_intensity = be.exp(term_x + term_y)
+
+        # Scale the theoretical intensity to match the total power
+        # This gives us both: equal power per ray AND correct intensity profile
+        # for visualization
+        intensity_power_array = theoretical_intensity * (
+            power_per_ray / be.mean(theoretical_intensity)
+        )
 
         # --- Create wavelength array ---
         wavelength_array = be.full((num_valid_rays,), self.wavelength)
@@ -130,11 +154,16 @@ class CollimatedGaussianSource(BaseSource):
         )
         print(f"Each ray carries {power_per_ray:.3e} Watts of power.")
 
+        # Transform rays from local source coordinates to global coordinates
+        self.cs.globalize(rays)
+
         return rays
 
     def __repr__(self) -> str:
         """Return a string representation of the CollimatedGaussianSource."""
+        position = (float(self.cs.x), float(self.cs.y), float(self.cs.z))
         return (
             f"CollimatedGaussianSource(gaussian_waist={self.gaussian_waist}, "
-            f"wavelength={self.wavelength}, total_power={self.total_power})"
+            f"wavelength={self.wavelength}, total_power={self.total_power}, "
+            f"position={position})"
         )

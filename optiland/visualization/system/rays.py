@@ -57,41 +57,85 @@ class Rays2D:
     ):
         """Plots the rays for the given fields and wavelengths.
 
+        If the optic has an extended source attached, it will automatically
+        use the source for ray generation instead of the traditional
+        field/wavelength approach.
+
         Args:
             ax: The matplotlib axis to plot on.
             fields: The fields at which to trace the rays. Default is 'all'.
+                Ignored if extended source is attached.
             wavelengths: The wavelengths at which to trace the rays.
-                Default is 'primary'.
+                Default is 'primary'. Ignored if extended source is attached.
             num_rays: The number of rays to trace for each field and
-                wavelength. Default is 3.
+                wavelength, or total rays for extended source. Default is 3.
             distribution: The distribution of the rays. Default is 'line_y'.
+                Ignored if extended source is attached.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+                Ignored if extended source is attached.
 
         """
-        if fields == "all":
-            fields = self.optic.fields.get_field_coords()
+        # Check if an extended source is attached
+        if hasattr(self.optic, "source") and self.optic.source is not None:
+            # Use extended source for ray tracing
+            self._trace_extended_source(num_rays if num_rays > 3 else 100)
+            self._plot_lines(ax, 0)  # Use single color for all source rays
+        else:
+            # Use traditional field/wavelength approach
+            if fields == "all":
+                fields = self.optic.fields.get_field_coords()
 
-        if wavelengths == "primary":
-            wavelengths = [self.optic.wavelengths.primary_wavelength.value]
+            if wavelengths == "primary":
+                wavelengths = [self.optic.wavelengths.primary_wavelength.value]
 
-        for i, field in enumerate(fields):
-            for j, wavelength in enumerate(wavelengths):
-                # if only one field, use different colors for each wavelength
-                color_idx = i if len(fields) > 1 else j
+            for i, field in enumerate(fields):
+                for j, wavelength in enumerate(wavelengths):
+                    # if only one field, use different colors for each wavelength
+                    color_idx = i if len(fields) > 1 else j
 
-                if distribution is None:
-                    # trace only for surface extents
-                    self._trace(field, wavelength, num_rays, "line_y")
-                else:
-                    # trace rays and plot lines
-                    self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx)
+                    if distribution is None:
+                        # trace only for surface extents
+                        self._trace(field, wavelength, num_rays, "line_y")
+                    else:
+                        # trace rays and plot lines
+                        self._trace(field, wavelength, num_rays, distribution)
+                        self._plot_lines(ax, color_idx)
 
-                # trace reference rays and plot lines
-                if reference is not None:
-                    self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, linewidth=1.5)
+                    # trace reference rays and plot lines
+                    if reference is not None:
+                        self._trace_reference(field, wavelength, reference)
+                        self._plot_lines(ax, color_idx, linewidth=1.5)
+
+    def _trace_extended_source(self, num_rays):
+        """Traces rays from an extended source through the optical system.
+
+        Args:
+            num_rays (int): The number of rays to trace from the extended source.
+
+        """
+        # Generate and trace rays from the extended source
+        traced_rays, ray_path = self.optic.trace_source(num_rays)
+
+        # Set the ray path data
+        self.x = ray_path["x"]
+        self.y = ray_path["y"]
+        self.z = ray_path["z"]
+
+        # Handle intensity data - extend final intensities to all surfaces
+        final_intensities = traced_rays.i  # shape: (num_rays,)
+        num_surfaces = self.z.shape[0]
+
+        # Create intensity array for all surfaces by replicating final intensities
+        # Set to 0 where rays don't reach (using NaN locations in coordinates)
+        self.i = be.tile(final_intensities[None, :], (num_surfaces, 1))
+
+        # Set intensity to 0 where coordinates are NaN (blocked rays)
+        nan_mask = be.isnan(self.z)
+        self.i[nan_mask] = 0
+
+        # Update surface extents
+        self._update_surface_extents()
 
     def _process_traced_rays(self):
         """Processes the traced rays and updates the surface extents."""
@@ -144,8 +188,20 @@ class Rays2D:
         """Updates the extents of the surfaces in the optic's surface group."""
         r_extent_new = be.copy(be.zeros_like(self.r_extent))
         for i, surf in enumerate(self.optic.surface_group.surfaces):
-            # convert to local coordinate system
-            x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
+            # Handle both traditional rays and extended source rays
+            if len(self.x.shape) == 2:
+                # 2D array from extended sources: (num_surfaces, num_rays)
+                x_surf = self.x[i]
+                y_surf = self.y[i]
+                z_surf = self.z[i]
+            else:
+                # 1D array from traditional tracing
+                x_surf = self.x[i] if i < len(self.x) else 0
+                y_surf = self.y[i] if i < len(self.y) else 0
+                z_surf = self.z[i] if i < len(self.z) else 0
+
+            # Convert to local coordinate system
+            x, y, _ = transform(x_surf, y_surf, z_surf, surf, is_global=True)
 
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)

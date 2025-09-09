@@ -449,16 +449,23 @@ class Optic:
     ) -> tuple[Figure, Axes]:
         """Draw a 2D representation of the optical system.
 
+        If an extended source is attached to this optic (via set_source()),
+        it will automatically use the source for ray generation instead of
+        the traditional field/wavelength approach. The OpticViewer will
+        handle the visualization seamlessly regardless of ray generation method.
+
         Args:
             fields (list[tuple[float, float]] | Literal['all'], optional): The fields to
                 be displayed, specified by their indices. Defaults to 'all'.
+                Used only when no extended source is attached.
             wavelengths (list[float] | Literal['primary'], optional): The
                 wavelengths to be displayed, specified by their indices.
-                Defaults to 'primary'.
+                Defaults to 'primary'. Used only when no extended source is attached.
             num_rays (int, optional): The number of rays to trace for each
-                field and wavelength. Defaults to 3.
+                field and wavelength, or total rays for extended source. Defaults to 3.
             distribution (DistributionType, optional): The distribution of
-                rays to trace. Defaults to 'line_y'.
+                rays to trace. Defaults to 'line_y'. Used only when no extended
+                source is attached.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -468,7 +475,8 @@ class Optic:
             title (str | None, optional): The title of the plot. Defaults to
                 None.
             reference (ReferenceRay | None, optional): The reference rays to
-                plot, e.g., 'chief' or 'marginal'. Defaults to None.
+                plot, e.g., 'chief' or 'marginal'. Defaults to None. Used only
+                when no extended source is attached.
 
         Returns:
             tuple[Figure, Axes]: A tuple containing the matplotlib Figure and
@@ -476,6 +484,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
+
         fig, ax = viewer.view(
             fields,
             wavelengths,
