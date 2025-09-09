@@ -33,9 +33,11 @@ bibliography: paper.bib
 
 # Summary
 
-**Optiland** is an open-source optical design package written in Python. It offers a comprehensive platform for the design, analysis, and optimization of complex optical systems, catering to a wide audience from professional engineers and researchers to students and educators. Optiland handles a broad range of optical systems, from classical refractive and reflective designs to advanced freeform and computational optics.
+**Optiland** [@optiland-zenodo-2025] is an open-source optical design package written in Python. It offers a comprehensive platform for the design, analysis, and optimization of complex optical systems, catering to a wide audience from professional engineers and researchers to students and educators. Optiland handles a broad range of optical systems, from classical refractive and reflective designs to advanced freeform and computational optics.
 
 Core features include sequential ray tracing, a rich library of surface types (spherical, aspheric, freeform), optimization and tolerancing support, and a suite of analysis tools for evaluating optical performance (e.g., spot diagrams, wavefront analysis, modulation transfer function). A key feature of Optiland is its dual-backend architecture, which allows users to switch between a NumPy [@harris2020array] backend for fast CPU computations and a PyTorch [@NEURIPS2019_9015] backend for GPU acceleration and automatic differentiation. This enables the integration of Optiland with machine learning workflows and gradient-based optimization, as all calculations are differentiable. Optiland also includes a graphical user interface (GUI) for interactive design and analysis.
+
+Further documentation is available online [@optiland-docs].
 
 # Statement of Need
 
@@ -51,7 +53,7 @@ Optiland supports a wide range of design, analysis, and optimization tasks, maki
 
 - **Design Tools**: Sequential ray tracing, lens system modeling (spherical, conic, aspheric, freeform surfaces), and flexible aperture/field/wavelength configurations.
 - **Analysis Tools**: Spot diagrams, wavefront analysis, OPD maps, polarization ray tracing, PSF/MTF evaluation, and scattering models.
-- **Optimization and Tolerancing**: Gradient-based and global optimization, Monte Carlo tolerancing, parametric sweeps, and specialized glass selection tools.
+- **Optimization and Tolerancing**: Gradient-based and global optimization [@2020SciPy-NMeth], Monte Carlo tolerancing, parametric sweeps, and specialized glass selection tools.
 - **Differentiable Ray Tracing**: A fully differentiable backend via PyTorch enables gradient-based optimization and integration with machine learning frameworks.
 - **Material Database**: Built-in refractive index library based on the refractiveindex.info database [@polyanskiy2024]. Support for user-defined materials.
 - **Visualization**: 2D layout plots, 3D ray-trace visualization, and an interactive GUI.
