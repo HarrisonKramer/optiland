@@ -64,7 +64,7 @@ To illustrate the performance gain using GPU acceleration, we benchmarked ray tr
 
 | Backend Configuration | RMSE vs NumPy float64 (m) |Throughput (ray-surfaces/s) | Relative Speedup |
 | :--- | :--- | :--- | :--- |
-| NumPy (CPU,&nbsp;float64) | 0 (reference)  | $2.3 \times 10^6$ | $1.0 \times$ |
+| NumPy (CPU,&nbsp;float64) | $0$ (reference)  | $2.3 \times 10^6$ | $1.0 \times$ |
 | PyTorch (CPU,&nbsp;float64) | $1.6 \times 10^{-18}$ | $7.1 \times 10^6$ | $3.1 \times$ |
 | PyTorch (GPU,&nbsp;float64) | $1.2 \times 10^{-18}$ | $5.7 \times 10^7$ | $24.8 \times$ |
 | **PyTorch (GPU,&nbsp;float32)** | **$3.4 \times 10^{-9}$** |  **$2.3 \times 10^8$** | **$100.0 \times$** |
