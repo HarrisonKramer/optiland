@@ -118,7 +118,7 @@ lens.update_paraxial()
 lens.draw3D()
 ```
 
-![A 3D rendering of a Cooke triplet lens system modeled in Optiland. \label{fig:cooke3d}](../docs/images/cooke.png)
+![A 3D rendering of a Cooke triplet lens system modeled in Optiland. \label{fig:cooke3d}](figures/cooke.png)
 
 ## 2. Optimizing the lens
 
@@ -168,7 +168,7 @@ optimizer.optimize()
 lens.draw()
 ```
 
-![The 2D layout of the Cooke triplet lens.](../docs/images/cooke_2d.png)
+![The 2D layout of the Cooke triplet lens.](figures/cooke_2d.svg)
 
 The result can be refined further using Optiland's GlassExpert functionality to automatically choose high-quality glass candidates.
 
@@ -216,9 +216,9 @@ Optiland is actively used by researchers in the **MReye group** at the Leiden Un
 
 # Figures
 
-![An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776. Different colored rays represent different fields.](../docs/images/litho_lens.png)
+![An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776. Different colored rays represent different fields.](figures/litho_lens.svg)
 
-![A model of a folded Czerny-Turner spectrometer. Different colored rays represent different wavelengths.](../docs/images/czerny_turner.png){height="750px"}
+![A model of a folded Czerny-Turner spectrometer. Different colored rays represent different wavelengths.](figures/czerny_turner.svg){height="750px"}
 
 # Acknowledgements
 
