@@ -72,6 +72,55 @@ def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
     return generator.normal(loc, scale, size)
 
 
+def sobol_sampler(dim, num_samples, scramble=True, seed=None):
+    """
+    Generate quasi-random samples using Sobol sequences.
+
+    Args:
+        dim (int): Dimension of the samples
+        num_samples (int): Number of samples to generate
+        scramble (bool): Whether to scramble the sequence
+        seed (int): Random seed for scrambling
+
+    Returns:
+        np.ndarray: Samples of shape (num_samples, dim)
+    """
+    try:
+        from scipy.stats import qmc
+    except ImportError as exc:
+        raise ImportError(
+            "scipy is required for Sobol sampling with numpy backend"
+        ) from exc
+
+    # Ensure num_samples is a power of 2 for best Sobol performance
+    if num_samples > 0:
+        num_samples_pow2 = 1 << (num_samples - 1).bit_length()
+    else:
+        num_samples_pow2 = num_samples
+
+    sobol = qmc.Sobol(d=dim, scramble=scramble, seed=seed)
+    samples = sobol.random(n=num_samples_pow2)
+    return samples.astype(np.float32)
+
+
+def erfinv(x):
+    """
+    Inverse error function.
+
+    Args:
+        x: Input array
+
+    Returns:
+        np.ndarray: Inverse error function of x
+    """
+    try:
+        from scipy.special import erfinv as scipy_erfinv
+    except ImportError as exc:
+        raise ImportError("scipy is required for erfinv with numpy backend") from exc
+
+    return scipy_erfinv(np.asarray(x))
+
+
 def matrix_vector_multiply_and_squeeze(p, E, backend="numpy"):
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
 
