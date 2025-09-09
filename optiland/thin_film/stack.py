@@ -97,7 +97,10 @@ class ThinFilmStack:
         return self.add_layer(material, thickness_nm / 1000.0, name)
 
     def add_layer_qwot(
-        self, qwot_thickness: float, material: BaseMaterial, name: str | None = None
+        self,
+        material: BaseMaterial,
+        qwot_thickness: float = 1.0,
+        name: str | None = None,
     ) -> ThinFilmStack:
         """Append a quarter-wave optical thickness (QWOT) layer at the reference
         wavelength and angle of incidence.
@@ -117,12 +120,9 @@ class ThinFilmStack:
         wl_um = self.reference_wl_um
         th_rad = 0.0
         if self.reference_AOI_deg is not None:
-            th_rad = self._deg_to_rad(self.reference_AOI_deg)
-        n_complex = material.n(wl_um) + 1j * material.k(wl_um)
-        cos_t = be.sqrt(
-            1 - (self.incident_material.n(wl_um) * be.sin(th_rad) / n_complex) ** 2
-        )
-        thickness_um = qwot_thickness * wl_um / (4 * n_complex.real * cos_t.real)
+            th_rad = be.deg2rad(self.reference_AOI_deg)
+        n = float(be.atleast_1d(material.n(wl_um))[0])  # to ensure scalar float
+        thickness_um = qwot_thickness * wl_um / (4 * n * be.cos(th_rad))
         return self.add_layer(thickness_um=thickness_um, material=material, name=name)
 
     # ----- units helpers -----
@@ -497,7 +497,7 @@ class ThinFilmStack:
 
     def plot(
         self,
-        wavelength_nm: float | Array,
+        wavelength_um: float | Array,
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
         to_plot: PlotType | list[PlotType] = "R",
@@ -505,7 +505,7 @@ class ThinFilmStack:
     ) -> plt.Figure:
         """Plot R/T/A vs wavelength and/or AOI for given polarization.
         Args:
-            wavelength_nm: Wavelength(s) in nanometers (scalar or array).
+            wavelength_um: Wavelength(s) in micrometers (scalar or array).
             aoi_deg: Angle(s) of incidence in degrees (scalar or array), default 0.
             polarization: 's', 'p' or 'u' (unpolarized averages powers of s and p),
             default 'u'.
@@ -518,10 +518,10 @@ class ThinFilmStack:
         if ax is None:
             fig, ax = plt.subplots()
 
-        wl_array = be.atleast_1d(wavelength_nm)
+        wl_array = be.atleast_1d(wavelength_um) * 1000.0  # convert to nm
         aoi_array = be.atleast_1d(aoi_deg)
 
-        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
+        rta_data = self.coefficients_nm_deg(wl_array, aoi_array, polarization)
 
         if isinstance(to_plot, str):
             to_plot = [to_plot]
@@ -551,7 +551,7 @@ class ThinFilmStack:
                 ax.plot(
                     aoi_array,
                     rta_data[quantity].flatten(),
-                    label=f"{quantity}, {polarization}-pol, λ={wavelength_nm}nm",
+                    label=f"{quantity}, {polarization}-pol, λ={wavelength_um}nm",
                 )
             ax.set_xlabel("AOI (°)")
             ax.set_ylabel("Power fraction")
