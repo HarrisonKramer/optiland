@@ -57,3 +57,19 @@ class Layer:
         """
         k0 = 2 * be.pi / wavelength_um  # µm^-1
         return k0 * n_complex_l * self.thickness_um * cos_theta_l
+
+    def update_thickness(self, new_thickness_um: float) -> Layer:
+        """Update the layer thickness.
+
+        Parameters
+        ----------
+        new_thickness_um : float
+            New layer thickness in microns (µm).
+
+        Returns
+        -------
+        Layer
+            self for chaining.
+        """
+        self.thickness_um = new_thickness_um
+        return self

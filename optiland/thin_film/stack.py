@@ -6,13 +6,14 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 import optiland.backend as be
 from optiland.materials import IdealMaterial
 
+from .core import _tmm_coh
+from .layer import Layer
+
 if TYPE_CHECKING:
     from optiland.materials import BaseMaterial
 import re
 
 import matplotlib.pyplot as plt
-
-from .layer import Layer
 
 Pol = Literal["s", "p", "u"]
 PlotType = Literal["R", "T", "A"]
@@ -111,9 +112,6 @@ class ThinFilmStack:
 
         Raises:
             ValueError: If reference_wl_um is not set.
-
-        Returns:
-            self for chaining.
         """
         if self.reference_wl_um is None:
             raise ValueError("reference_wl_um must be set for adding QWOT layer")
@@ -176,7 +174,7 @@ class ThinFilmStack:
         else:
             raise ValueError("polarization must be 's', 'p' or 'u'")
 
-    def coefficients_nm_deg(
+    def compute_rtRAT_nm_deg(
         self,
         wavelength_nm: float | Array,
         aoi_deg: float | Array = 0.0,
@@ -218,7 +216,7 @@ class ThinFilmStack:
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> Array:
-        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["R"]
+        return self.compute_rtRAT_nm_deg(wavelength_nm, aoi_deg, polarization)["R"]
 
     def transmittance_nm_deg(
         self,
@@ -226,7 +224,7 @@ class ThinFilmStack:
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> Array:
-        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["T"]
+        return self.compute_rtRAT_nm_deg(wavelength_nm, aoi_deg, polarization)["T"]
 
     def absorptance_nm_deg(
         self,
@@ -234,41 +232,7 @@ class ThinFilmStack:
         aoi_deg: float | Array = 0.0,
         polarization: Pol = "u",
     ) -> Array:
-        return self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)["A"]
-
-    def rtRTA(
-        self,
-        wavelength_um: float | Array,
-        aoi_rad: float | Array = 0.0,
-        polarization: Pol = "u",
-    ) -> tuple[Array, Array, Array, Array, Array]:
-        """Return (r, t, R, T, A) for given wavelength(s) in µm and AOI(s)
-        in radians."""
-        rta_data = self.compute_rtRTA(wavelength_um, aoi_rad, polarization)
-        return (
-            rta_data["r"],
-            rta_data["t"],
-            rta_data["R"],
-            rta_data["T"],
-            rta_data["A"],
-        )
-
-    def rtRTA_nm_deg(
-        self,
-        wavelength_nm: float | Array,
-        aoi_deg: float | Array = 0.0,
-        polarization: Pol = "u",
-    ) -> tuple[Array, Array, Array, Array, Array]:
-        """Return (r, t, R, T, A) for given wavelength(s) in nm and
-        AOI(s) in degrees."""
-        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
-        return (
-            rta_data["r"],
-            rta_data["t"],
-            rta_data["R"],
-            rta_data["T"],
-            rta_data["A"],
-        )
+        return self.compute_rtRAT_nm_deg(wavelength_nm, aoi_deg, polarization)["A"]
 
     def RTA(
         self,
@@ -291,7 +255,7 @@ class ThinFilmStack:
         polarization: Pol = "u",
     ) -> tuple[Array, Array, Array]:
         """Return (R, T, A) for given wavelength(s) in nm and AOI(s) in degrees."""
-        rta_data = self.coefficients_nm_deg(wavelength_nm, aoi_deg, polarization)
+        rta_data = self.compute_rtRAT_nm_deg(wavelength_nm, aoi_deg, polarization)
         return (
             rta_data["R"],
             rta_data["T"],
@@ -494,208 +458,3 @@ class ThinFilmStack:
         ax.set_xlim(0.5, len(self.layers) - 0.5)
         fig = ax.figure
         return fig, ax
-
-    def plot(
-        self,
-        wavelength_um: float | Array,
-        aoi_deg: float | Array = 0.0,
-        polarization: Pol = "u",
-        to_plot: PlotType | list[PlotType] = "R",
-        ax: plt.Axes = None,
-    ) -> plt.Figure:
-        """Plot R/T/A vs wavelength and/or AOI for given polarization.
-        Args:
-            wavelength_um: Wavelength(s) in micrometers (scalar or array).
-            aoi_deg: Angle(s) of incidence in degrees (scalar or array), default 0.
-            polarization: 's', 'p' or 'u' (unpolarized averages powers of s and p),
-            default 'u'.
-            to_plot: 'R', 'T', 'A' or list of these, default 'R'.
-            ax: Optional matplotlib Axes to plot on. If None, a new figure
-            and axes are created.
-        Returns:
-            fig: The matplotlib Figure object containing the plot.
-        """
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        wl_array = be.atleast_1d(wavelength_um) * 1000.0  # convert to nm
-        aoi_array = be.atleast_1d(aoi_deg)
-
-        rta_data = self.coefficients_nm_deg(wl_array, aoi_array, polarization)
-
-        if isinstance(to_plot, str):
-            to_plot = [to_plot]
-
-        # Case 1: wavelength is array, AOI is scalar
-        if len(wl_array) > 1 and len(aoi_array) == 1:
-            for quantity in to_plot:
-                if quantity not in ("R", "T", "A"):
-                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
-                ax.plot(
-                    wl_array,
-                    rta_data[quantity].flatten(),
-                    label=f"{quantity}, {polarization}-pol, AOI={aoi_deg}°",
-                )
-            ax.set_xlabel("$\lambda$ (nm)")
-            ax.set_ylabel("Power fraction")
-            ax.set_xlim(wl_array.min(), wl_array.max())
-            ax.set_ylim(0, 1)
-            ax.grid(True, alpha=0.3)
-            ax.legend()
-
-        # Case 2: AOI is array, wavelength is scalar
-        elif len(aoi_array) > 1 and len(wl_array) == 1:
-            for quantity in to_plot:
-                if quantity not in ("R", "T", "A"):
-                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
-                ax.plot(
-                    aoi_array,
-                    rta_data[quantity].flatten(),
-                    label=f"{quantity}, {polarization}-pol, λ={wavelength_um}nm",
-                )
-            ax.set_xlabel("AOI (°)")
-            ax.set_ylabel("Power fraction")
-            ax.set_xlim(aoi_array.min(), aoi_array.max())
-            ax.set_ylim(0, 1)
-            ax.grid(True, alpha=0.3)
-            ax.legend()
-        # Case 3: Both are arrays - 2D plot using pcolormesh
-        elif len(wl_array) > 1 and len(aoi_array) > 1:
-            if isinstance(to_plot, str):
-                to_plot = [to_plot]
-
-            WL, AOI = be.meshgrid(wl_array, aoi_array, indexing="ij")
-
-            # If multiple quantities requested, create one subplot per quantity
-            if len(to_plot) > 1:
-                fig, axs = plt.subplots(len(to_plot), 1, figsize=(6, 4 * len(to_plot)))
-                if len(to_plot) == 1:
-                    axs = [axs]
-                for ax_idx, quantity in enumerate(to_plot):
-                    if quantity not in ("R", "T", "A"):
-                        raise ValueError(
-                            "to_plot must be 'R', 'T', 'A' or a list of these"
-                        )
-                    ax_i = axs[ax_idx]
-                    im = ax_i.pcolormesh(WL, AOI, rta_data[quantity], shading="auto")
-                    ax_i.set_xlabel("$\\lambda$ (nm)")
-                    ax_i.set_ylabel("AOI (°)")
-                    ax_i.set_title(f"{quantity}, {polarization}-pol")
-                    fig.colorbar(im, ax=ax_i, label="Power fraction")
-            else:
-                # Single quantity: honor provided ax or create one
-                quantity = to_plot[0]
-                if quantity not in ("R", "T", "A"):
-                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
-                if ax is None:
-                    fig, ax = plt.subplots()
-                im = ax.pcolormesh(WL, AOI, rta_data[quantity], shading="auto")
-                ax.set_xlabel("$\\lambda$ (nm)")
-                ax.set_ylabel("AOI (°)")
-                ax.set_title(f"{quantity}, {polarization}-pol")
-                fig.colorbar(im, ax=ax, label="Power fraction")
-
-            # Ensure fig is defined for return
-            if "fig" not in locals():
-                fig = ax.figure
-            return fig
-
-        # Case 4: Both are scalars - single point plot
-        else:
-            raise ValueError(
-                "At least one of wavelength_nm or aoi_deg must be an array"
-            )
-
-
-# -------------- Internal TMM core --------------
-PolSP = Literal["s", "p"]
-
-
-def _complex_index(material: BaseMaterial, wavelength_um: float | Array) -> Array:
-    n = material.n(wavelength_um)
-    k = material.k(wavelength_um)
-    n = be.atleast_1d(n)
-    k = be.atleast_1d(k)
-    return be.asarray(n, dtype=be.complex128) + 1j * be.asarray(k, dtype=be.complex128)
-
-
-def _snell_cos(n0, theta0, n):
-    """Transmitted angle cosine with forward-branch selection.
-    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-    Hugh Angus CRC Press, Ch2.6
-    """
-    nr = n.real
-    k = n.imag
-    return be.sqrt(nr**2 - k**2 - (n0 * be.sin(theta0)) ** 2 - 2j * nr * k) / n
-
-
-def _admittance(n: complex, cos_t: complex, pol: PolSP):
-    """Admittance η = sqrt(ε/μ) * n * cos(θ) for s and p polarizations.
-    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-    Hugh Angus CRC Press, Ch2.6
-    """
-    sqrt_eps_mu = 0.002654418729832701370374020517935  # S
-    eta_s = sqrt_eps_mu * n * cos_t
-
-    if pol == "s":
-        return eta_s
-    elif pol == "p":
-        eta_p = sqrt_eps_mu**2 * (n.real - 1j * n.imag) ** 2 / eta_s
-        return eta_p
-    else:
-        raise ValueError("Invalid polarization state")
-
-
-def _tmm_coh(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
-    """
-    Compute the reflection and transmission coefficients for
-    a thin film stack. Base on Abelès Matrix.
-
-    Ref :
-    - Chap 13. Polarized Light and Optical Systems, Russell
-        A. Chipman, Wai-Sze Tiffany Lam, and Garam Young
-    - F. Abelès, Researches sur la propagation des ondes électromagnétiques
-        sinusoïdales dans les milieus stratifies.
-        Applications aux couches minces, Ann. Phys. Paris,
-        12ième Series 5 (1950): 596–640.
-    - Chap 2. Thin-Film Optical Filters, Fifth Edition, Macleod, Hugh Angus CRC Press
-    """
-    n0 = _complex_index(stack.incident_material, wavelength_um)
-    ns = _complex_index(stack.substrate_material, wavelength_um)
-    cos0 = _snell_cos(n0, theta0_rad, n0)
-    coss = _snell_cos(n0, theta0_rad, ns)
-    eta0 = _admittance(n0, cos0, pol)
-    etas = _admittance(ns, coss, pol)
-
-    # Id initial matrix
-    A = be.ones_like(eta0, dtype=be.complex128)
-    B = be.zeros_like(eta0, dtype=be.complex128)
-    C = be.zeros_like(eta0, dtype=be.complex128)
-    D = be.ones_like(eta0, dtype=be.complex128)
-
-    for layer in stack.layers:
-        n_l = layer.n_complex(wavelength_um)
-        cos_l = _snell_cos(n0, theta0_rad, n_l)
-        eta_l = _admittance(n_l, cos_l, pol)
-        delta = layer.phase_thickness(wavelength_um, cos_l, n_l)
-        c = be.cos(delta)
-        s = be.sin(delta)
-        i = 1j
-        mA = c
-        mB = i * (s / eta_l)
-        mC = i * (eta_l * s)
-        mD = c
-        A, B, C, D = A * mA + B * mC, A * mB + B * mD, C * mA + D * mC, C * mB + D * mD
-
-    denom = eta0 * (A + etas * B) + C + etas * D
-    denom = be.where(be.abs(denom) == 0, 1e-30 + 0j, denom)
-
-    r = (eta0 * A + eta0 * etas * B - C - etas * D) / denom
-    t = be.conj((2 * eta0) / denom)
-
-    R = (r * be.conj(r)).real
-    T = (t * be.conj(t)).real * etas.real / eta0.real
-    abso = 1 - R - T
-    # Absorption can also be obtained with :
-    # abso = (1 - R) * (1 - etas.real / ((A + etas * B) * (C + etas * D).conj()).real)
-    return r, t, R, T, abso
