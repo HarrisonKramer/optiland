@@ -116,14 +116,14 @@ class NurbsGeometry(BaseGeometry):
         self.tol = tol
         self.max_iter = max_iter
         
-        self.is_symmetric = True #TO BE CHECKED. If I put false I get an error calling draw3D 
+        self.is_symmetric = False #TO BE CHECKED. If I put false I get an error calling draw3D 
 
         # If control points are not provided the NURBS is obtained as fit of standard surface 
         if control_points is None and weights is None and u_degree is None and v_degree is None \
                 and u_knots is None and v_knots is None:
 
             self.is_fitted = True
-            self.P_ndim = 3 
+            self.ndim = 3 
             self.P_size_u = n_points_u + 1 
             self.P_size_v = n_points_v + 1
 
@@ -283,9 +283,17 @@ class NurbsGeometry(BaseGeometry):
         if be.isscalar(u) and be.isscalar(v): pass
         elif u.size == v.size: pass
         else: raise Exception('u and v must have the same size')
-
-        # Evaluate the NURBS surface for the input (u,v) parametrization
-        S = self.compute_nurbs_coordinates(self.P, self.W, self.p, self.q, self.U, self.V, u, v)
+        
+        if u.ndim > 1:
+            a,b = u.shape
+            u = be.ravel(u)
+            v = be.ravel(v)
+            # Evaluate the NURBS surface for the input (u,v) parametrization
+            S = self.compute_nurbs_coordinates(self.P, self.W, self.p, self.q, self.U, self.V, u, v)
+            S = be.reshape(S,(self.ndim,a,b))            
+        else:    
+            # Evaluate the NURBS surface for the input (u,v) parametrization
+            S = self.compute_nurbs_coordinates(self.P, self.W, self.p, self.q, self.U, self.V, u, v)
 
         return S
 
@@ -483,8 +491,18 @@ class NurbsGeometry(BaseGeometry):
 
         """
 
-        # Compute the array of surface derivatives up to the input (u,v) orders and slice the desired values
-        dS = self.compute_nurbs_derivatives(self.P, self.W, self.p, self.q, self.U, self.V, u, v, order_u, order_v)[order_u, order_v, ...]
+        if u.ndim > 1:
+            a,b = u.shape
+            u = be.ravel(u)
+            v = be.ravel(v)
+            # Compute the array of surface derivatives up to the input (u,v) orders and slice the desired values
+            dS = self.compute_nurbs_derivatives(self.P, self.W, self.p, self.q, self.U, self.V, u, v, order_u, order_v)[order_u, order_v, ...]
+            dS = be.reshape(dS,(self.ndim,a,b))            
+        else:    
+            # Compute the array of surface derivatives up to the input (u,v) orders and slice the desired values
+            dS = self.compute_nurbs_derivatives(self.P, self.W, self.p, self.q, self.U, self.V, u, v, order_u, order_v)[order_u, order_v, ...]
+
+
 
         return dS
 
@@ -760,12 +778,8 @@ class NurbsGeometry(BaseGeometry):
         detJ = be.linalg.det(J)
         detJ = detJ[: , be.newaxis,be.newaxis]
         invj = adj/detJ
-
-        m = be.matmul(invj,r)
-        m = be.einsum('ijk->jik',m)
-        correction = be.zeros((2,Np))
-        correction[0,:] = be.diag(m[0,:])
-        correction[1,:] = be.diag(m[1,:])
+        
+        correction = be.einsum('ijk,ki->ji',invj,r)
         
         residual = be.max(be.abs(r))
         
@@ -814,12 +828,8 @@ class NurbsGeometry(BaseGeometry):
         detJ = be.linalg.det(J)
         detJ = detJ[: , be.newaxis,be.newaxis]
         invj = adj/detJ
-
-        m = be.matmul(invj,r)
-        m = be.einsum('ijk->jik',m)
-        correction = be.zeros((2,Np))
-        correction[0,:] = be.diag(m[0,:])
-        correction[1,:] = be.diag(m[1,:])        
+        
+        correction = be.einsum('ijk,ki->ji',invj,r)
 
         residual = be.max(be.abs(r))
         return correction,residual
@@ -843,10 +853,11 @@ class NurbsGeometry(BaseGeometry):
             DESCRIPTION.
 
         '''
-        u = be.zeros_like(x)
-        v = be.zeros_like(u)        
+        shape = x.shape
+        u = be.zeros(x.size)
+        v = be.zeros(x.size)        
         for _ in range(self.max_iter):
-            correction,residual = self._corr(u,v,-y,-x)
+            correction,residual = self._corr(u,v,-be.ravel(y),-be.ravel(x))
             u = u - correction[0,:]
             v = v - correction[1,:]
             u[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
@@ -856,7 +867,7 @@ class NurbsGeometry(BaseGeometry):
 
             if residual < self.tol:
                 break        
-        return self.get_value(u,v)[2,:]
+        return self.get_value(u,v)[2,:].reshape(shape)
     
     def distance(self, rays):
         """Find the propagation distance to the geometry for the given rays.
@@ -996,7 +1007,7 @@ class NurbsGeometry(BaseGeometry):
         yc = self.y_center
         P_size_u = self.P_size_u
         P_size_v = self.P_size_v
-        P_ndim = self.P_ndim
+        P_ndim = self.ndim
         
         x = be.linspace(xc - nurbs_norm_x,xc + nurbs_norm_x,P_size_u)
         y = be.linspace(yc - nurbs_norm_y,yc + nurbs_norm_y,P_size_v)
@@ -1065,7 +1076,7 @@ class NurbsGeometry(BaseGeometry):
         y = be.linspace(self.y_center - self.nurbs_norm_y,self.y_center + self.nurbs_norm_y,self.P_size_v)
         x,y = be.meshgrid(x,y)
         z = be.zeros_like(x)
-        control_points = be.zeros((self.P_ndim, self.P_size_u, self.P_size_v))
+        control_points = be.zeros((self.ndim, self.P_size_u, self.P_size_v))
         control_points[0,:,:] = x.T
         control_points[1,:,:] = y.T
         control_points[2,:,:] = z.T
