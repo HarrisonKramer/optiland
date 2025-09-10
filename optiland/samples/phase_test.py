@@ -28,7 +28,7 @@ class AsphericSingletMirror(optic.Optic):
             material= "mirror",
             surface_type="standard",
             #phase_type = GratingPhase(A = 1, order = -1, eff = 'ideal')
-            phase_type = RadialPhase(coef = [0.071, -.0005], order = -1, eff = 'ideal')
+            phase_type = RadialPhase(coef = [0.01, 0], order = -1, eff = 'ideal')
         )
         self.add_surface(index=3, thickness=0)
         self.add_surface(index=4)
@@ -92,9 +92,9 @@ num_surfaces = lens.surface_group.num_surfaces
 #print(rayDataFull)
 # print(rayData)
 # print(mth.atan(rayData.M/rayData.N)*180/mth.pi)
-lens.draw3D(distribution="line_y")
-#lens.draw()
-#opd = wavefront.OPD(lens, field=(0, 0), wavelength=0.530)
-#opd.view(projection="3d", num_points=128)
-#plt.show()
+#lens.draw3D(distribution="line_y")
+lens.draw()
+opd = wavefront.OPD(lens, field=(0, 0), wavelength=0.530)
+#opd.view(projection="2d", num_points=128)
+plt.show()
 #rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
