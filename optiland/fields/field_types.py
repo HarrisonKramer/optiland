@@ -54,6 +54,41 @@ class BaseFieldDefinition(ABC):
         """
         pass
 
+    def to_dict(self) -> dict:
+        """Convert the field definition to a dictionary.
+
+        Returns:
+            dict: A dictionary representation of the field definition.
+
+        """
+        return {"field_type": self.__class__.__name__}
+
+    @classmethod
+    def from_dict(cls, field_def_dict: dict) -> BaseFieldDefinition:
+        """Create a field definition from a dictionary.
+
+        Args:
+            field_def_dict (dict): A dictionary representation of the field
+                definition.
+
+        Returns:
+            BaseFieldDefinition: A field definition object created from the
+                dictionary.
+
+        """
+        # TODO: Update to use subclass registry
+        if "field_type" not in field_def_dict:
+            raise ValueError("Missing required keys: field_type")
+
+        field_type = field_def_dict["field_type"]
+
+        if field_type == "AngleField":
+            return AngleField()
+        elif field_type == "ObjectHeightField":
+            return ObjectHeightField()
+        else:
+            raise ValueError(f"Unknown field type: {field_type}")
+
 
 class AngleField(BaseFieldDefinition):
     """Defines fields by angle (in degrees) relative to the optical axis."""
@@ -127,10 +162,10 @@ class AngleField(BaseFieldDefinition):
                 at infinity.
 
         """
-        field_y = self.optic.fields.max_field * Hy
+        field_y = optic.fields.max_field * Hy
 
         y = -be.tan(be.radians(field_y)) * EPL
-        z = self.optic.surface_group.positions[1]
+        z = optic.surface_group.positions[1]
 
         y0 = y1 + y
         z0 = be.ones_like(y1) * z
