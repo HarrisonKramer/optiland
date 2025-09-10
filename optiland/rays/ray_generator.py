@@ -9,10 +9,10 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import optiland.backend as be
-
-from ..fields.field_types import AngleField
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays
+
+from ..fields.field_types import AngleField
 
 
 class RayGenerator:
