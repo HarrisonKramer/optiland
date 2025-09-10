@@ -43,6 +43,10 @@ class RadiantIntensity(BaseAnalysis):
         num_rays (int): Number of rays to trace if user_initial_rays is None.
         distribution_name (str): Ray distribution if user_initial_rays is None.
         user_initial_rays (RealRays | None): Optional user-provided initial rays.
+        source (BaseSource | None): Optional extended source object
+            (e.g., GaussianSource) to generate initial rays automatically.
+            Cannot be used with user_initial_rays. When provided, num_rays
+            determines how many rays to generate.
         data (list[list[tuple]]): Stores (intensity_map,
                                           angle_X_bin_edges, angle_Y_bin_edges,
                                           angle_X_bin_centers, angle_Y_bin_centers)
@@ -68,6 +72,7 @@ class RadiantIntensity(BaseAnalysis):
         num_rays: int = 100000,
         distribution: str = "random",
         user_initial_rays=None,
+        source=None,
     ):
         if fields == "all":
             self.fields = optic.fields.get_field_coords()
@@ -75,6 +80,19 @@ class RadiantIntensity(BaseAnalysis):
             if not isinstance(fields, list):
                 fields = [fields]
             self.fields = tuple(fields)
+
+        # Handle source integration
+        if source is not None and user_initial_rays is not None:
+            raise ValueError("Cannot specify both 'source' and 'user_initial_rays'.")
+
+        if source is not None:
+            # Generate rays from the extended source
+            self.user_initial_rays = source.generate_rays(num_rays)
+            # When using a source, we treat all rays as a single "field"
+            # The source emission defines the field, not optic.fields
+            self.fields = [(0.0, 0.0)]  # Single dummy field for source rays
+        else:
+            self.user_initial_rays = user_initial_rays
 
         self.num_angular_bins_X = num_angular_bins_X
         self.num_angular_bins_Y = num_angular_bins_Y
@@ -84,7 +102,7 @@ class RadiantIntensity(BaseAnalysis):
         # for absolute units, we need to ensure the user has provided rays
         # with 'calibrated' power
         self.use_absolute_units = use_absolute_units
-        if self.use_absolute_units and user_initial_rays is None:
+        if self.use_absolute_units and self.user_initial_rays is None:
             print(
                 "Warning: `use_absolute_units` is True, but no `user_initial_rays` "
                 "were provided."
@@ -98,7 +116,6 @@ class RadiantIntensity(BaseAnalysis):
         self.reference_surface_index = int(reference_surface_index)
         self.num_rays = num_rays
         self.distribution_name = distribution
-        self.user_initial_rays = user_initial_rays
 
         super().__init__(optic, wavelengths)
 

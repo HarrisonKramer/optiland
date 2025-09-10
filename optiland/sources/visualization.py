@@ -97,17 +97,48 @@ class SourceViewer(BaseViewer):
         L = be.to_numpy(rays.L)
         M = be.to_numpy(rays.M)
         N = be.to_numpy(rays.N)
-        intensity = be.to_numpy(rays.i)
 
-        # Normalize intensities for color mapping
-        intensity_norm = (
-            intensity / np.max(intensity) if np.max(intensity) > 0 else intensity
+        # --- Calculate Theoretical Radiance for Visualization ---
+        # This value is for color-coding only and is separate from rays.i (power)
+        # Import here to avoid potential circular imports
+        from optiland.sources.collimated_gaussian import CollimatedGaussianSource
+        from optiland.sources.gaussian import GaussianSource
+
+        if isinstance(self.source, CollimatedGaussianSource):
+            # Radiance depends only on the spatial profile for a collimated source
+            term_x = -2.0 * (rays.x / self.source.gaussian_waist) ** 2
+            term_y = -2.0 * (rays.y / self.source.gaussian_waist) ** 2
+            radiance = be.exp(term_x + term_y)
+
+        elif isinstance(self.source, GaussianSource):
+            # Radiance depends on both spatial and angular profiles
+            s_x_mm = self.source.sigma_spatial_mm_x * 2
+            s_y_mm = self.source.sigma_spatial_mm_y * 2
+            s_L_rad = self.source.sigma_angular_rad_x * 2
+            s_M_rad = self.source.sigma_angular_rad_y * 2
+
+            term_x = -2.0 * (rays.x / s_x_mm) ** 2
+            term_y = -2.0 * (rays.y / s_y_mm) ** 2
+            term_L = -2.0 * (rays.L / s_L_rad) ** 2
+            term_M = -2.0 * (rays.M / s_M_rad) ** 2
+            radiance = be.exp(term_x + term_y + term_L + term_M)
+
+        else:
+            # Default for unknown source types: use ray power
+            radiance = rays.i
+
+        # Convert to numpy and normalize for plotting
+        radiance_np = be.to_numpy(radiance)
+        radiance_norm = (
+            radiance_np / np.max(radiance_np)
+            if np.max(radiance_np) > 0
+            else radiance_np
         )
 
         # Column 1: Spatial and Angular Distributions
         # Panel (0,0): XY Spatial Distribution
         scatter1 = axes[0, 0].scatter(
-            x, y, c=intensity_norm, s=5, alpha=0.6, cmap="viridis"
+            x, y, c=radiance_norm, s=5, alpha=0.6, cmap="viridis"
         )
         axes[0, 0].set_xlabel("X [mm]")
         axes[0, 0].set_ylabel("Y [mm]")
@@ -119,7 +150,7 @@ class SourceViewer(BaseViewer):
 
         # Panel (1,0): Angular Distribution (L vs M)
         scatter2 = axes[1, 0].scatter(
-            L, M, c=intensity_norm, s=5, alpha=0.6, cmap="viridis"
+            L, M, c=radiance_norm, s=5, alpha=0.6, cmap="viridis"
         )
         axes[1, 0].set_xlabel("L (Direction Cosine)")
         axes[1, 0].set_ylabel("M (Direction Cosine)")
@@ -135,7 +166,7 @@ class SourceViewer(BaseViewer):
             axes[0, 1],
             x,
             y,
-            intensity_norm,
+            radiance_norm,
             cross_spatial,
             ["X [mm]", "Y [mm]"],
             "Spatial Cross-Sections",
@@ -147,7 +178,7 @@ class SourceViewer(BaseViewer):
             axes[1, 1],
             L,
             M,
-            intensity_norm,
+            radiance_norm,
             cross_angular,
             ["L", "M"],
             "Angular Cross-Sections",
@@ -162,7 +193,7 @@ class SourceViewer(BaseViewer):
             z,
             L,
             N,
-            intensity_norm,
+            radiance_norm,
             propagation_distance,
             "Z [mm]",
             "X [mm]",
@@ -176,7 +207,7 @@ class SourceViewer(BaseViewer):
             z,
             M,
             N,
-            intensity_norm,
+            radiance_norm,
             propagation_distance,
             "Z [mm]",
             "Y [mm]",
@@ -211,17 +242,24 @@ class SourceViewer(BaseViewer):
             spatial (bool): Whether this is spatial (True) or angular (False).
             num_bins (int): Number of bins for histograms.
         """
-        # Calculate weighted histograms
-        weights1 = intensity / np.sum(intensity) if np.sum(intensity) > 0 else None
-        weights2 = intensity / np.sum(intensity) if np.sum(intensity) > 0 else None
+        # Handle spatial vs angular cross-sections differently
+        if spatial:
+            # For spatial coordinates (x, y): Use density=True to avoid double-weighting
+            # Rays are already spatially distributed according to the beam profile
+            hist1, bins1 = np.histogram(coord1, bins=num_bins, density=True)
+            hist2, bins2 = np.histogram(coord2, bins=num_bins, density=True)
+        else:
+            # For angular coordinates (L, M): Use intensity weighting
+            weights1 = intensity / np.sum(intensity) if np.sum(intensity) > 0 else None
+            weights2 = intensity / np.sum(intensity) if np.sum(intensity) > 0 else None
 
-        # Create bins
-        bins1 = np.linspace(coord1.min(), coord1.max(), num_bins)
-        bins2 = np.linspace(coord2.min(), coord2.max(), num_bins)
+            # Create bins
+            bins1 = np.linspace(coord1.min(), coord1.max(), num_bins)
+            bins2 = np.linspace(coord2.min(), coord2.max(), num_bins)
 
-        # Calculate weighted histograms
-        hist1, _ = np.histogram(coord1, bins=bins1, weights=weights1)
-        hist2, _ = np.histogram(coord2, bins=bins2, weights=weights2)
+            # Calculate weighted histograms
+            hist1, _ = np.histogram(coord1, bins=bins1, weights=weights1)
+            hist2, _ = np.histogram(coord2, bins=bins2, weights=weights2)
 
         # Normalize histograms
         hist1 = hist1 / np.max(hist1) if np.max(hist1) > 0 else hist1
@@ -271,10 +309,10 @@ class SourceViewer(BaseViewer):
         end_coord1 = coord1 + dir1 * distance
         end_coord2 = coord2 + dir2 * distance
 
-        # Sample subset of rays for clearer visualization (max 500 rays)
+        # Sample subset of rays for clearer visualization (max 1000 rays)
         num_rays = len(coord1)
-        if num_rays > 500:
-            indices = np.linspace(0, num_rays - 1, 500, dtype=int)
+        if num_rays > 1000:
+            indices = np.linspace(0, num_rays - 1, 1000, dtype=int)
             coord1 = coord1[indices]
             coord2 = coord2[indices]
             end_coord1 = end_coord1[indices]

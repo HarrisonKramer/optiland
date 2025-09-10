@@ -40,7 +40,7 @@ class CollimatedGaussianSource(BaseSource):
 
     def __init__(
         self,
-        gaussian_waist: float = 5.2,  # mm, half of 10.4 µm MFD converted
+        gaussian_waist: float = 0.0052,  # mm, half of 10.4 µm MFD
         wavelength: float = 1.55,  # µm
         total_power: float = 1.0,  # W
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
@@ -108,30 +108,11 @@ class CollimatedGaussianSource(BaseSource):
             f"backend: '{be.get_backend()}'"
         )
 
-        # --- Calculate power and intensity arrays ---
+        # --- Calculate power per ray (corrected for importance sampling) ---
+        # Since rays are already importance-sampled according to Gaussian distribution,
+        # each ray should carry equal power to maintain energy conservation
         power_per_ray = self.total_power / num_valid_rays
-
-        # Calculate theoretical Gaussian intensity profile for visualization
-        # For collimated beams, only spatial profile matters (no angular dependence)
-        # I(x,y) = I0 * exp(-2*x²/w² - 2*y²/w²) where w is the gaussian_waist
-
-        # Convert spatial coordinates to match the Gaussian profile calculation
-        x_start_mm = x_start  # Already in mm
-        y_start_mm = y_start  # Already in mm
-
-        # Calculate the spatial Gaussian profile
-        term_x = -2.0 * (x_start_mm / self.gaussian_waist) ** 2
-        term_y = -2.0 * (y_start_mm / self.gaussian_waist) ** 2
-
-        # Theoretical Gaussian intensity profile (for visualization)
-        theoretical_intensity = be.exp(term_x + term_y)
-
-        # Scale the theoretical intensity to match the total power
-        # This gives us both: equal power per ray AND correct intensity profile
-        # for visualization
-        intensity_power_array = theoretical_intensity * (
-            power_per_ray / be.mean(theoretical_intensity)
-        )
+        intensity_power_array = be.full((num_valid_rays,), power_per_ray)
 
         # --- Create wavelength array ---
         wavelength_array = be.full((num_valid_rays,), self.wavelength)
@@ -152,7 +133,10 @@ class CollimatedGaussianSource(BaseSource):
             f"Successfully created backend-agnostic RealRays object with "
             f"{be.size(rays.x)} collimated rays."
         )
-        print(f"Each ray carries {power_per_ray:.3e} Watts of power.")
+        print(
+            f"Each ray carries equal power: {power_per_ray:.3e} Watts "
+            f"(importance-sampled)."
+        )
 
         # Transform rays from local source coordinates to global coordinates
         self.cs.globalize(rays)

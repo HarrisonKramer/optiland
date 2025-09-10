@@ -59,6 +59,10 @@ class IncoherentIrradiance(BaseAnalysis):
      user_initial_rays : RealRays | None
          Optional user-provided initial rays (at the source/object plane)
          to be traced through the whole optical system.
+     source : BaseSource | None
+         Optional extended source object (e.g., GaussianSource) to generate
+         initial rays automatically. Cannot be used with user_initial_rays.
+         When provided, num_rays determines how many rays to generate.
 
      Methods
      ---
@@ -81,11 +85,25 @@ class IncoherentIrradiance(BaseAnalysis):
         wavelengths="all",
         distribution: str = "random",
         user_initial_rays=None,
+        source=None,
     ):
         if fields == "all":
             self.fields = optic.fields.get_field_coords()
         else:
             self.fields = tuple(fields)
+
+        # Handle source integration
+        if source is not None and user_initial_rays is not None:
+            raise ValueError("Cannot specify both 'source' and 'user_initial_rays'.")
+
+        if source is not None:
+            # Generate rays from the extended source
+            self.user_initial_rays = source.generate_rays(num_rays)
+            # When using a source, we treat all rays as a single "field"
+            # The source emission defines the field, not optic.fields
+            self.fields = [(0.0, 0.0)]  # Single dummy field for source rays
+        else:
+            self.user_initial_rays = user_initial_rays
 
         self.num_rays = num_rays
         self.npix_x, self.npix_y = res
@@ -93,7 +111,7 @@ class IncoherentIrradiance(BaseAnalysis):
             None if px_size is None else (float(px_size[0]), float(px_size[1]))
         )
         self.detector_surface = int(detector_surface)
-        self.user_initial_rays = user_initial_rays
+        # self.user_initial_rays = user_initial_rays
         self._initial_ray_data = None
         if self.user_initial_rays is not None:
             if not isinstance(self.user_initial_rays, RealRays):
