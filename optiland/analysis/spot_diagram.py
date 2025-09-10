@@ -263,7 +263,7 @@ class SpotDiagram(BaseAnalysis):
             An array of shape (num_fields, 2) containing the (x, y) coordinates.
         """
         centers = [
-            [float(ray.x), float(ray.y)]
+            [ray.x.item(), ray.y.item()]
             for H_x, H_y in self.fields
             for ray in [
                 self.optic.trace_generic(
