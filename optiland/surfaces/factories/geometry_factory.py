@@ -71,18 +71,18 @@ class GeometryConfig:
     """
 
     # NURBS parameters
-    nurbs_norm_x: None
-    nurbs_norm_y: None
-    nurbs_x_center: None
-    nurbs_y_center: None
-    control_points: None
-    weights: None
-    u_degree: None
-    v_degree: None
-    u_knots: None
-    v_knots: None
-    n_points_u: None
-    n_points_v: None
+    control_points: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
+    weights: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
+    u_knots: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
+    v_knots: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
+    nurbs_norm_x: float = 0.0
+    nurbs_norm_y: float = 0.0
+    nurbs_x_center: float = 0.0
+    nurbs_y_center: float = 0.0
+    u_degree: int = 3
+    v_degree: int = 3
+    n_points_u: int = 5
+    n_points_v: int = 5
 
     radius: float = be.inf
     conic: float = 0.0
