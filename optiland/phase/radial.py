@@ -42,7 +42,23 @@ class RadialPhase(BasePhase):
     def __str__(self):
         return "Radial"
 
-   
+    def phasefunction(self, x=0, y=0):
+        """Calculate the surface sag of the geometry at the given coordinates.
+
+        Args:
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
+
+        Returns:
+            be.ndarray or float: The sag value(s) at the given coordinates.
+
+        """
+        m = self.order
+        r = be.sqrt(x**2 + y**2)
+        """Compute radial wrapped phase for order m."""
+        phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1))
+        phi_ordered = m * phi_design
+        return phi_ordered
 
     def phase_calc(self, rays, nx, ny, nz, n1, n2):
         m = self.order
