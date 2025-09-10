@@ -19,7 +19,13 @@ from typing import TYPE_CHECKING, Any, Literal
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.apodization import BaseApodization
-from optiland.fields import Field, FieldGroup
+from optiland.fields import (
+    AngleField,
+    BaseFieldDefinition,
+    Field,
+    FieldGroup,
+    ObjectHeightField,
+)
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
@@ -73,8 +79,8 @@ class Optic:
     Attributes:
         name (str | None): An optional name for the optical system.
         aperture (Aperture | None): The aperture of the optical system.
-        field_type (FieldType | None): The type of field used in the optical
-            system, e.g., 'angle' or 'object_height'.
+        field_definition (BaseFieldDefinition | None): The definition of the field used
+            in the optical system, e.g., AngleField or ObjectHeightField.
         surface_group (SurfaceGroup): The group of surfaces that constitute
             the optical system.
         fields (FieldGroup): The group of fields defined for the system.
@@ -112,7 +118,7 @@ class Optic:
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
         self.aperture: Aperture | None = None
-        self.field_type: FieldType | None = None
+        self.field_definition: BaseFieldDefinition | None = None
 
         self.surface_group: SurfaceGroup = SurfaceGroup()
         self.fields: FieldGroup = FieldGroup()
@@ -248,7 +254,7 @@ class Optic:
                 factor. Defaults to 0.0.
 
         """
-        new_field = Field(self.field_type, x, y, vx, vy)
+        new_field = Field(x, y, vx, vy)
         self.fields.add_field(new_field)
 
     def add_wavelength(
@@ -295,9 +301,12 @@ class Optic:
         Raises:
             ValueError: If the field type is invalid.
         """
-        if field_type not in ["angle", "object_height"]:
-            raise ValueError('Invalid field type. Must be "angle" or "object_height".')
-        self.field_type = field_type
+        if field_type == "angle":
+            self.field_definition = AngleField()
+        elif field_type == "object_height":
+            self.field_definition = ObjectHeightField()
+        else:
+            raise ValueError(f"Invalid field type: {field_type}.")
 
     def set_radius(self, value: float, surface_number: int):
         """Set the radius of curvature of a surface.

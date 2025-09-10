@@ -38,7 +38,9 @@ class ParaxialRayTracer:
 
         y1 = Py * EPD / 2
 
-        y0, z0 = self._get_object_position(Hy, y1, EPL)
+        y0, z0 = self.optic.field_definition.get_paraxial_object_position(
+            self.optic, Hy, y1, EPL
+        )
         u0 = (y1 - y0) / (EPL - z0)
         rays = ParaxialRays(y0, u0, z0, wavelength)
 
@@ -115,53 +117,6 @@ class ParaxialRayTracer:
         slopes = be.array(slopes).reshape(-1, 1)
 
         return heights, slopes
-
-    def _get_object_position(self, Hy, y1, EPL):
-        """Calculate the position of the object in the paraxial optical system.
-
-        Args:
-            Hy (float): The normalized field height.
-            y1 (ndarray): The initial y-coordinate of the ray.
-            EPL (float): The effective focal length of the lens.
-
-        Returns:
-            tuple: A tuple containing the y and z coordinates of the object
-                position.
-
-        Raises:
-            ValueError: If the field type is "object_height" and the object is
-                at infinity.
-
-        """
-        obj = self.optic.object_surface
-        field_y = self.optic.fields.max_field * Hy
-
-        if obj.is_infinite:
-            if self.optic.field_type == "object_height":
-                raise ValueError(
-                    'Field type cannot be "object_height" for an object at infinity.',
-                )
-
-            y = -be.tan(be.radians(field_y)) * EPL
-            z = self.optic.surface_group.positions[1]
-
-            y0 = y1 + y
-            z0 = be.ones_like(y1) * z
-        elif self.optic.field_type == "object_height":
-            y = -field_y
-            z = obj.geometry.cs.z
-
-            y0 = be.ones_like(y1) * y
-            z0 = be.ones_like(y1) * z
-
-        elif self.optic.field_type == "angle":
-            y = -be.tan(be.radians(field_y))
-            z = self.optic.surface_group.positions[0]
-
-            y0 = y1 + y
-            z0 = be.ones_like(y1) * z
-
-        return y0, z0
 
     def _process_input(self, x):
         """
