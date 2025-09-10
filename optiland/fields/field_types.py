@@ -77,17 +77,17 @@ class BaseFieldDefinition(ABC):
 
         """
         # TODO: Update to use subclass registry
-        if "field_type" not in field_def_dict:
-            raise ValueError("Missing required keys: field_type")
+        if "field_definition" not in field_def_dict:
+            raise ValueError("Missing required keys: field_definition")
 
-        field_type = field_def_dict["field_type"]
+        field_definition = field_def_dict["field_definition"]
 
-        if field_type == "AngleField":
+        if field_definition == "AngleField":
             return AngleField()
-        elif field_type == "ObjectHeightField":
+        elif field_definition == "ObjectHeightField":
             return ObjectHeightField()
         else:
-            raise ValueError(f"Unknown field type: {field_type}")
+            raise ValueError(f"Unknown field definition: {field_definition}")
 
 
 class AngleField(BaseFieldDefinition):
