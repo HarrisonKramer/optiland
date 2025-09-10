@@ -9,6 +9,8 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import optiland.backend as be
+
+from ..fields.field_types import AngleField
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays
 
@@ -41,7 +43,7 @@ class RayGenerator:
         )
 
         if self.optic.obj_space_telecentric:
-            if self.optic.field_type == "angle":
+            if isinstance(self.optic.field_definition, AngleField):
                 raise ValueError(
                     'Field type cannot be "angle" for telecentric object space.',
                 )

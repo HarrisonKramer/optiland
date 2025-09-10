@@ -77,17 +77,17 @@ class BaseFieldDefinition(ABC):
 
         """
         # TODO: Update to use subclass registry
-        if "field_definition" not in field_def_dict:
-            raise ValueError("Missing required keys: field_definition")
+        if "field_type" not in field_def_dict:
+            raise ValueError("Missing required keys: field_type")
 
-        field_definition = field_def_dict["field_definition"]
+        field_type = field_def_dict["field_type"]
 
-        if field_definition == "AngleField":
+        if field_type == "AngleField":
             return AngleField()
-        elif field_definition == "ObjectHeightField":
+        elif field_type == "ObjectHeightField":
             return ObjectHeightField()
         else:
-            raise ValueError(f"Unknown field definition: {field_definition}")
+            raise ValueError(f"Unknown field definition: {field_type}")
 
 
 class AngleField(BaseFieldDefinition):
@@ -234,7 +234,11 @@ class ObjectHeightField(BaseFieldDefinition):
                 infinity.
         """
         obj = optic.object_surface
-        max_field = self.optic.fields.max_field
+        if obj.is_infinite:
+            raise ValueError(
+                'Field type "object_height" is not supported for an object at infinity.'
+            )
+        max_field = optic.fields.max_field
         field_x = max_field * Hx
         field_y = max_field * Hy
         x0 = be.array(field_x)
@@ -259,8 +263,12 @@ class ObjectHeightField(BaseFieldDefinition):
                 at infinity.
 
         """
-        obj = self.optic.object_surface
-        field_y = self.optic.fields.max_field * Hy
+        obj = optic.object_surface
+        if obj.is_infinite:
+            raise ValueError(
+                'Field type "object_height" is not supported for an object at infinity.'
+            )
+        field_y = optic.fields.max_field * Hy
         y = -field_y
         z = obj.geometry.cs.z
         y0 = be.ones_like(y1) * y
