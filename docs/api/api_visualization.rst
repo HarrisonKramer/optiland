@@ -12,10 +12,13 @@ of the full system, including rays, is orchestrated by the `optiland.visualizati
    :toctree: visualization/
    :caption: visualization Modules
 
-   visualization.lens
-   visualization.mirror
-   visualization.rays
-   visualization.surface
-   visualization.system
-   visualization.utils
-   visualization.visualization
+   visualization.analysis.surface_sag
+   visualization.info.lens_info_viewer
+   visualization.system.lens
+   visualization.system.mirror
+   visualization.system.optic_viewer
+   visualization.system.optic_viewer_3d
+   visualization.system.rays
+   visualization.system.surface
+   visualization.system.system
+   visualization.system.utils
