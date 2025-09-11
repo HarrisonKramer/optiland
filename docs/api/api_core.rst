@@ -16,7 +16,6 @@ properties of the optical system and provides interfaces to core functionalities
    aperture
    coordinate_system
    distribution
-   fields
    jones
    pickup
    scatter
