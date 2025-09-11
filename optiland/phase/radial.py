@@ -42,7 +42,23 @@ class RadialPhase(BasePhase):
     def __str__(self):
         return "Radial"
 
-   
+    def phasefunction(self, x=0, y=0):
+        """Calculate the surface sag of the geometry at the given coordinates.
+
+        Args:
+            x (float or be.ndarray, optional): The x-coordinate(s). Defaults to 0.
+            y (float or be.ndarray, optional): The y-coordinate(s). Defaults to 0.
+
+        Returns:
+            be.ndarray or float: The sag value(s) at the given coordinates.
+
+        """
+        m = self.order
+        r = be.sqrt(x**2 + y**2)
+        """Compute radial wrapped phase for order m."""
+        phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1))
+        phi_ordered = m * phi_design
+        return phi_ordered
 
     def phase_calc(self, rays, nx, ny, nz, n1, n2):
         m = self.order
@@ -57,75 +73,99 @@ class RadialPhase(BasePhase):
         with be.errstate(divide='ignore', invalid='ignore'):
             dphi_dx = be.where(r != 0, dphi_dr * rays.x / r, 0.0)
             dphi_dy = be.where(r != 0, dphi_dr * rays.y / r, 0.0)
+        wvl = rays.w
         
         #k = 2 * be.pi / rays.w
+        mu = 1.0 if wvl is None else wvl / rays.w 
+        
+        in_cosI = rays.L * nx +rays.M * ny +rays.N * nz
+        
+        b = in_cosI + m * (nx*dphi_dx + ny * dphi_dy)
+        c = mu * (mu * (dphi_dx**2 + dphi_dy**2) / 2 + m * (rays.L * dphi_dx + rays.M * dphi_dy))
+        
+        discrim = b**2-2*c
+        #if discrim < 0:
+        #    raise ValeError("nogo")
+        
+        Q =  - b + rays.N * discrim**0.5
+        
+        kfx = rays.L + m * mu * dphi_dx + Q*nx
+        kfy = rays.M + m * mu * dphi_dy + Q*ny
+        kfz = rays.N + Q * nx
+        
+        out_mag = (kfx**2 + kfy**2 + kfz**2)**0.5
+        kfx /= out_mag
+        kfy /= out_mag
+        kfz /= out_mag 
+        
+        opd =    mu * (dphi_dx + dphi_dy)
             
-        Kx = -dphi_dx 
-        Ky = -dphi_dy
-        Kz = be.sqrt(1 - Kx**2 - Ky**2)
+        # Kx = -dphi_dx 
+        # Ky = -dphi_dy
+        # Kz = be.sqrt(1 - Kx**2 - Ky**2)
 
-        #l = rays.L + theta_x
-        #m = rays.M + theta_y
-        #n = rays.N + theta_z
+        # #l = rays.L + theta_x
+        # #m = rays.M + theta_y
+        # #n = rays.N + theta_z
 
-        #uk=be.sqrt(l**2 + m**2 + n**2)
+        # #uk=be.sqrt(l**2 + m**2 + n**2)
 
-        #l = l/uk
-        #m = m/uk
-        #n = n/uk
-
-
+        # #l = l/uk
+        # #m = m/uk
+        # #n = n/uk
 
 
-        #define parameters
-        dx, dy, dz = rays.L, rays.M, rays.N
-        s=1
-        nx, ny, nz = s*nx, s*ny, s*nz
+
+
+        # #define parameters
+        # dx, dy, dz = rays.L, rays.M, rays.N
+        # s=1
+        # nx, ny, nz = s*nx, s*ny, s*nz
         
-        wavelength = rays.w
-        # Incident wavevector (k_in = 2π/λ * direction)
-        k_mag = 2 * be.pi / wavelength
-        kix = k_mag * dx
-        kiy = k_mag * dy
-        kiz = k_mag * dz
+        # wavelength = rays.w
+        # # Incident wavevector (k_in = 2π/λ * direction)
+        # k_mag = 2 * be.pi / wavelength
+        # kix = k_mag * dx
+        # kiy = k_mag * dy
+        # kiz = k_mag * dz
 
-        dot_kn = kix * nx + kiy * ny + kiz * nz
-        kpx = kix - dot_kn * nx
-        kpy = kiy - dot_kn * ny
-        kpz = kiz - dot_kn * nz
+        # dot_kn = kix * nx + kiy * ny + kiz * nz
+        # kpx = kix - dot_kn * nx
+        # kpy = kiy - dot_kn * ny
+        # kpz = kiz - dot_kn * nz
         
-        m = self.order
+        # m = self.order
 
-        kdx = kpx + m * Kx
-        kdy = kpy + m * Ky
-        kdz = kpz + m * Kz
+        # kdx = kpx + m * Kx
+        # kdy = kpy + m * Ky
+        # kdz = kpz + m * Kz
 
-        kp2 = kdx**2 + kdy**2 + kdz**2
+        # kp2 = kdx**2 + kdy**2 + kdz**2
         
-        be.where(kp2 < k_mag**2)
-        dk_mag2_kp2=k_mag**2 - kp2
-        if be.where(dk_mag2_kp2 < 0, True, False).any():
-            raise ValueError("Angular limit on Rays due to phase ")
+        # be.where(kp2 < k_mag**2)
+        # dk_mag2_kp2=k_mag**2 - kp2
+        # if be.where(dk_mag2_kp2 < 0, True, False).any():
+        #     raise ValueError("Angular limit on Rays due to phase ")
         
-        k_perp_mag =be.sqrt(dk_mag2_kp2)
+        # k_perp_mag =be.sqrt(dk_mag2_kp2)
        
             
             
             
-        kfx =  kdx + k_perp_mag * nx
-        kfy =  kdy + k_perp_mag * ny
-        kfz =  kdz + k_perp_mag * nz
+        # kfx =  kdx + k_perp_mag * nx
+        # kfy =  kdy + k_perp_mag * ny
+        # kfz =  kdz + k_perp_mag * nz
 
-        uk=be.sqrt(kfx**2 + kfy**2 + kfz**2)
+        # uk=be.sqrt(kfx**2 + kfy**2 + kfz**2)
 
-        kfx = kfx/uk
-        kfy = kfy/uk
-        kfz = kfz/uk
-
-
+        # kfx = kfx/uk
+        # kfy = kfy/uk
+        # kfz = kfz/uk
 
 
-        opd = phi_ordered
+
+
+        #opd = phi_ordered
 
         return kfx, kfy , kfz, opd 
         #return phi_design
