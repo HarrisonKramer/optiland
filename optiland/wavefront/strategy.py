@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 
 import optiland.backend as be
 
+from ..fields.field_types import AngleField
 from .wavefront_data import WavefrontData
 
 
@@ -112,7 +113,7 @@ class ReferenceStrategy(ABC):
         Returns:
             ndarray: The OPD array with tilt correction applied.
         """
-        if self.optic.field_type != "angle":
+        if not isinstance(self.optic.field_definition, AngleField):
             return opd
 
         hx, hy = field
@@ -128,8 +129,8 @@ class ReferenceStrategy(ABC):
         ux, uy = tx * uz, ty * uz
 
         # physical pupil coords
-        xs = self.distribution.x if x is None else x
-        ys = self.distribution.y if y is None else y
+        xs = be.array(self.distribution.x) if x is None else be.array(x)
+        ys = be.array(self.distribution.y) if y is None else be.array(y)
         epd = self.optic.paraxial.EPD()
         X_m = xs * epd / 2
         Y_m = ys * epd / 2

@@ -373,14 +373,15 @@ class Paraxial:
         # trace from center of stop on axis
         y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True, skip=skip)
 
-        max_field = self.optic.fields.max_y_field
+        # scale chief ray to field edge
+        scaling_factor = self.optic.field_definition.scale_chief_ray_for_field(
+            self.optic, y[-1], u[-1]
+        )
+        u1_scaled = u0 * scaling_factor
 
-        if self.optic.field_type == "object_height":
-            u1 = 0.1 * max_field / y[-1]
-        elif self.optic.field_type == "angle":
-            u1 = 0.1 * be.tan(be.deg2rad(max_field)) / u[-1]
-
-        yn, un = self._trace_generic(y0, u1, z0, wavelength, reverse=True, skip=skip)
+        yn, un = self._trace_generic(
+            y0, u1_scaled, z0, wavelength, reverse=True, skip=skip
+        )
 
         # trace in forward direction
         z0 = self.optic.surface_group.positions[1]
