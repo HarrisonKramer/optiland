@@ -101,12 +101,12 @@ class NurbsGeometry(BaseGeometry):
                  n_points_u = 4, n_points_v = 4, tol=1e-10, max_iter=100):
 
         super().__init__(coordinate_system)
-        self.P = control_points
-        self.W = weights
+        self.P = be.asarray(control_points)
+        self.W = be.asarray(weights)
         self.p = u_degree
         self.q = v_degree
-        self.U = u_knots
-        self.V = v_knots       
+        self.U = be.asarray(u_knots)
+        self.V = be.asarray(v_knots)       
         self.nurbs_norm_x = nurbs_norm_x
         self.nurbs_norm_y = nurbs_norm_y
         self.x_center = x_center

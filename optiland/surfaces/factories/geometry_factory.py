@@ -70,20 +70,6 @@ class GeometryConfig:
         freeform_coeffs (dict): freeform coefficients for Forbes Q-2D surfaces.
     """
 
-    # NURBS parameters
-    control_points: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
-    weights: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
-    u_knots: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
-    v_knots: be.ndarray[Any, be.dtype[be.float64]] = field(default_factory=be.ndarray)
-    nurbs_norm_x: float = 0.0
-    nurbs_norm_y: float = 0.0
-    nurbs_x_center: float = 0.0
-    nurbs_y_center: float = 0.0
-    u_degree: int = 3
-    v_degree: int = 3
-    n_points_u: int = 5
-    n_points_v: int = 5
-
     radius: float = be.inf
     conic: float = 0.0
     grating_order: int = 0
@@ -105,7 +91,19 @@ class GeometryConfig:
     # Forbes parameters
     radial_terms: dict[int, float] = field(default_factory=dict)
     freeform_coeffs: dict[tuple[str, int, int], float] = field(default_factory=dict)
-
+    # NURBS parameters
+    control_points: list[list[list[float]]] = field(default_factory=list)
+    weights: list[float] = field(default_factory=list)
+    u_knots: list[float] = field(default_factory=list)
+    v_knots: list[float] = field(default_factory=list)
+    nurbs_norm_x: float = 0.0
+    nurbs_norm_y: float = 0.0
+    nurbs_x_center: float = 0.0
+    nurbs_y_center: float = 0.0
+    u_degree: int = 3
+    v_degree: int = 3
+    n_points_u: int = 5
+    n_points_v: int = 5
 
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
     """
