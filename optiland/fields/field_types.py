@@ -294,3 +294,83 @@ class ObjectHeightField(BaseFieldDefinition):
         """
         max_field = optic.fields.max_y_field
         return max_field / y_back_obj
+
+
+class ParaxialImageHeightField(BaseFieldDefinition):
+    """Defines fields by the chief ray's paraxial height at the image plane."""
+
+    def _get_chief_ray_start_for_field(
+        self, optic: Optic, Hy: float
+    ) -> tuple[float, float]:
+        """
+        Calculates the starting (y, u) in object space for a chief ray
+        that will have a specific height on the image plane.
+        """
+        # 1. Trace a unit ray backwards from the stop center.
+        stop_index = optic.surface_group.stop_index
+        pos = optic.surface_group.positions
+        z_start_back = pos[-1] - pos[stop_index]
+        wavelength = optic.primary_wavelength
+        num_surf = optic.surface_group.num_surfaces
+        skip_back = num_surf - stop_index
+
+        y_back, u_back = optic.paraxial._trace_generic(
+            y=0,
+            u=0.1,
+            z=z_start_back,
+            wavelength=wavelength,
+            reverse=True,
+            skip=skip_back,
+        )
+
+        y_img_unit = y_back[0]  # Height at the image plane for the unit ray
+
+        # 2. Determine the scaling factor.
+        desired_y_image = optic.fields.max_field * Hy
+        if abs(y_img_unit) < 1e-9:
+            raise RuntimeError(
+                "Cannot use image height for an image-space telecentric system."
+            )
+
+        scale = desired_y_image / y_img_unit
+
+        # 3. Calculate the initial ray parameters in object space.
+        y_obj_start = -y_back[-1] * scale  # y is inverted for forward trace
+        u_obj_start = u_back[-1] * scale
+
+        return y_obj_start, u_obj_start
+
+    def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
+        # For real rays, we need the chief ray's origin on the object surface.
+        y0_chief, u0_chief = self._get_chief_ray_start_for_field(optic, Hy)
+        # Note: This implementation assumes fields are only in Y. A more robust
+        # version would handle Hx as well.
+
+        obj = optic.object_surface
+        if obj.is_infinite:
+            raise NotImplementedError(
+                "Paraxial Image Height is not yet supported for objects at infinity."
+            )
+
+        y0 = be.full_like(Py, y0_chief)
+        x0 = be.zeros_like(Px)  # Assuming x-field is zero
+        z0 = obj.geometry.sag(x0, y0) + obj.geometry.cs.z
+
+        return x0, y0, z0
+
+    def get_paraxial_object_position(self, optic, Hy, y1, EPL):
+        y0_chief, _ = self._get_chief_ray_start_for_field(optic, Hy)
+        z0 = optic.object_surface.geometry.cs.z
+
+        # The object height for the entire fan is defined by the chief ray's height.
+        return be.full_like(y1, y0_chief), be.full_like(y1, z0)
+
+    def scale_chief_ray_for_field(self, optic, y_back_obj, u_back_obj):
+        # This is conceptually different. The field *is* the result of the trace.
+        # We want the chief ray that produces y_image = max_field.
+        # This requires a forward trace, which complicates the current chief_ray method.
+        # For now, an exception is clearest.
+        raise NotImplementedError(
+            "`chief_ray` calculation is not directly applicable "
+            "when field is defined by image height."
+        )
