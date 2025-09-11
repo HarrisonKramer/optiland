@@ -1,13 +1,13 @@
-﻿fields
+Fields
 ======
 
-.. automodule:: fields
+.. automodule:: optiland.fields
+   :members:
 
-   
-   .. rubric:: Classes
+.. autosummary::
+   :toctree: .
+   :caption: Fields Modules
 
-   .. autosummary::
-   
-      Field
-      FieldGroup
-   
+   field
+   field_group
+   field_types

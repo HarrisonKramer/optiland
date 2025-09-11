@@ -15,6 +15,7 @@ These modules handle optical path difference (OPD) calculations and wavefront an
 
    wavefront.opd_fan
    wavefront.opd
+   wavefront.strategy
    wavefront.wavefront_data
    wavefront.wavefront
    wavefront.zernike_opd
@@ -32,6 +33,7 @@ which characterizes the spatial frequency response of optical systems.
    mtf.base
    mtf.fft
    mtf.geometric
+   mtf.huygens_fresnel
    mtf.sampled
 
 Point Spread Function (PSF)
