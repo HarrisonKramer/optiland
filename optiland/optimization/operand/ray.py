@@ -33,7 +33,176 @@ class RayOperand:
         OPD_difference: Calculates the optical path difference (OPD)
             difference for a given ray distribution.
 
+        *_from_traced methods: Pure calculation functions that operate on
+            pre-traced data for use by the BatchedRayEvaluator.
+
     """
+
+    # ========================================================================
+    # PURE CALCULATION FUNCTIONS OPERATING ON PRE-TRACED DATA
+    # These are the "single source of truth" for all operand calculations
+    # ========================================================================
+
+    @staticmethod
+    def x_intercept_from_traced(traced_data, op_data, ray_indices):
+        """Calculate x-coordinate from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.x[surface_number, ray_index]
+
+    @staticmethod
+    def y_intercept_from_traced(traced_data, op_data, ray_indices):
+        """Calculate y-coordinate from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.y[surface_number, ray_index]
+
+    @staticmethod
+    def z_intercept_from_traced(traced_data, op_data, ray_indices):
+        """Calculate z-coordinate from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.z[surface_number, ray_index]
+
+    @staticmethod
+    def x_intercept_lcs_from_traced(traced_data, op_data, ray_indices):
+        """Calculate x-coordinate in local coordinate system from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        intercept = traced_data.x[surface_number, ray_index]
+        decenter = traced_data.surfaces[surface_number].geometry.cs.x
+        return intercept - decenter
+
+    @staticmethod
+    def y_intercept_lcs_from_traced(traced_data, op_data, ray_indices):
+        """Calculate y-coordinate in local coordinate system from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        intercept = traced_data.y[surface_number, ray_index]
+        decenter = traced_data.surfaces[surface_number].geometry.cs.y
+        return intercept - decenter
+
+    @staticmethod
+    def z_intercept_lcs_from_traced(traced_data, op_data, ray_indices):
+        """Calculate z-coordinate in local coordinate system from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        intercept = traced_data.z[surface_number, ray_index]
+        decenter = traced_data.surfaces[surface_number].geometry.cs.z
+
+        # For some reason decenter can sometimes be a single-element array.
+        # In that case, retreive the float inside.
+        # This is a workaround until a solution is found.
+        if be.is_array_like(decenter):
+            decenter = decenter.item()
+
+        return intercept - decenter
+
+    @staticmethod
+    def L_from_traced(traced_data, op_data, ray_indices):
+        """Calculate direction cosine L from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.L[surface_number, ray_index]
+
+    @staticmethod
+    def M_from_traced(traced_data, op_data, ray_indices):
+        """Calculate direction cosine M from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.M[surface_number, ray_index]
+
+    @staticmethod
+    def N_from_traced(traced_data, op_data, ray_indices):
+        """Calculate direction cosine N from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        return traced_data.N[surface_number, ray_index]
+
+    @staticmethod
+    def AOI_from_traced(traced_data, op_data, ray_indices):
+        """Calculate angle of incidence from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        ray_index = ray_indices[0]  # Single ray operand
+        wavelength = op_data["wavelength"]
+
+        surface = traced_data.surfaces[surface_number]
+        geometry = surface.geometry
+
+        L_inc = traced_data.L[surface_number - 1, ray_index]
+        M_inc = traced_data.M[surface_number - 1, ray_index]
+        N_inc = traced_data.N[surface_number - 1, ray_index]
+
+        from optiland.rays import RealRays
+
+        rays_at_surface = RealRays(
+            x=traced_data.x[surface_number, ray_index],
+            y=traced_data.y[surface_number, ray_index],
+            z=traced_data.z[surface_number, ray_index],
+            L=L_inc,
+            M=M_inc,
+            N=N_inc,
+            intensity=1.0,  # irrelevant for AOI
+            wavelength=wavelength,
+        )
+
+        # public surface_normal method
+        nx, ny, nz = geometry.surface_normal(rays=rays_at_surface)
+
+        # dot product between incident ray and surface normal
+        dot_product = be.abs(L_inc * nx + M_inc * ny + N_inc * nz)
+
+        # handle potential floating point errors where dot_product > 1.0
+        dot_product_clip = be.minimum(dot_product, be.array(1.0))
+
+        angle_rad = be.arccos(dot_product_clip)
+
+        return be.rad2deg(angle_rad)
+
+    @staticmethod
+    def rms_spot_size_from_traced(traced_data, op_data, ray_indices):
+        """Calculate RMS spot size from pre-traced data."""
+        surface_number = op_data["surface_number"]
+        # ray_indices will be a slice(None) here, indicating all rays in this job
+        x = traced_data.x[surface_number, ray_indices]
+        y = traced_data.y[surface_number, ray_indices]
+        r2 = (x - be.mean(x)) ** 2 + (y - be.mean(y)) ** 2
+        return be.sqrt(be.mean(r2))
+
+    @staticmethod
+    def clearance_from_traced(traced_data, op_data, ray_indices):
+        """Calculate clearance from pre-traced data."""
+        line_ray_surface_idx = op_data["line_ray_surface_idx"]
+        point_ray_surface_idx = op_data["point_ray_surface_idx"]
+
+        # Assuming the first two rays are the line ray and point ray respectively
+        line_ray_idx = ray_indices[0]
+        point_ray_idx = ray_indices[1]
+
+        yA = traced_data.y[line_ray_surface_idx, line_ray_idx]
+        zA = traced_data.z[line_ray_surface_idx, line_ray_idx]
+        mA = traced_data.M[line_ray_surface_idx, line_ray_idx]
+        nA = traced_data.N[line_ray_surface_idx, line_ray_idx]
+
+        yB = traced_data.y[point_ray_surface_idx, point_ray_idx]
+        zB = traced_data.z[point_ray_surface_idx, point_ray_idx]
+
+        denominator = be.sqrt(mA**2 + nA**2)
+        epsilon = 1e-9
+
+        if be.abs(denominator) < epsilon:
+            d = 0.0
+        else:
+            numerator = nA * (yB - yA) - mA * (zB - zA)
+            d = numerator / denominator
+            if nA < 0:
+                d = -d
+        return d
+
+    # ========================================================================
+    # INTERACTIVE PATH METHODS - LEGACY API FOR USER-FRIENDLINESS
+    # These will call trace and then invoke the corresponding _from_traced method
+    # ========================================================================
 
     @staticmethod
     def x_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -54,7 +223,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.x[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.x_intercept_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def y_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -75,7 +245,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.y[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.y_intercept_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def z_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -96,7 +267,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.z[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.z_intercept_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def x_intercept_lcs(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -117,9 +289,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.x[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.x
-        return intercept - decenter
+        op_data = {"surface_number": surface_number}
+        return RayOperand.x_intercept_lcs_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def y_intercept_lcs(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -140,9 +311,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.y[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.y
-        return intercept - decenter
+        op_data = {"surface_number": surface_number}
+        return RayOperand.y_intercept_lcs_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def z_intercept_lcs(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -163,16 +333,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.z[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.z
-
-        # For some reason decenter can sometimes be a single-element array.
-        # In that case, retreive the float inside.
-        # This is a workaround until a solution is found.
-        if be.is_array_like(decenter):
-            decenter = decenter.item()
-
-        return intercept - decenter
+        op_data = {"surface_number": surface_number}
+        return RayOperand.z_intercept_lcs_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def L(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -192,7 +354,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.L[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.L_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def M(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -212,7 +375,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.M[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.M_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def N(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -232,7 +396,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.N[surface_number, 0]
+        op_data = {"surface_number": surface_number}
+        return RayOperand.N_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def AOI(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -253,41 +418,9 @@ class RayOperand:
         Returns:
             The angle of incidence in degrees (always positive as in zemax).
         """
-
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-
-        surface = optic.surface_group.surfaces[surface_number]
-        geometry = surface.geometry
-
-        L_inc = optic.surface_group.L[surface_number - 1, 0]
-        M_inc = optic.surface_group.M[surface_number - 1, 0]
-        N_inc = optic.surface_group.N[surface_number - 1, 0]
-
-        from optiland.rays import RealRays
-
-        rays_at_surface = RealRays(
-            x=optic.surface_group.x[surface_number, 0],
-            y=optic.surface_group.y[surface_number, 0],
-            z=optic.surface_group.z[surface_number, 0],
-            L=L_inc,
-            M=M_inc,
-            N=N_inc,
-            intensity=1.0,  # irrelevant for AOI
-            wavelength=wavelength,
-        )
-
-        # public surface_normal method
-        nx, ny, nz = geometry.surface_normal(rays=rays_at_surface)
-
-        # dot product between incident ray and surface normal
-        dot_product = be.abs(L_inc * nx + M_inc * ny + N_inc * nz)
-
-        # handle potential floating point errors where dot_product > 1.0
-        dot_product_clip = be.minimum(dot_product, be.array(1.0))
-
-        angle_rad = be.arccos(dot_product_clip)
-
-        return be.rad2deg(angle_rad)
+        op_data = {"surface_number": surface_number, "wavelength": wavelength}
+        return RayOperand.AOI_from_traced(optic.surface_group, op_data, [0])
 
     @staticmethod
     def rms_spot_size(
@@ -326,11 +459,12 @@ class RayOperand:
             mean_y = be.mean(y[wave_idx])
             r2 = [(x[i] - mean_x) ** 2 + (y[i] - mean_y) ** 2 for i in range(len(x))]
             return be.sqrt(be.mean(be.concatenate(r2)))
+
         optic.trace(Hx, Hy, wavelength, num_rays, distribution)
-        x = optic.surface_group.x[surface_number, :].flatten()
-        y = optic.surface_group.y[surface_number, :].flatten()
-        r2 = (x - be.mean(x)) ** 2 + (y - be.mean(y)) ** 2
-        return be.sqrt(be.mean(r2))
+        op_data = {"surface_number": surface_number}
+        return RayOperand.rms_spot_size_from_traced(
+            optic.surface_group, op_data, slice(None)
+        )
 
     @staticmethod
     def OPD_difference(

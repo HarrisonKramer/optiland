@@ -56,6 +56,11 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
         initial_params = [var.variable.get_value() for var in self.problem.variables]
         self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]
 
+        # Initialize the BatchedRayEvaluator for high-performance evaluation
+        from ..evaluator import BatchedRayEvaluator
+
+        self.evaluator = BatchedRayEvaluator(self.problem)
+
     @abstractmethod
     def _create_optimizer_and_scheduler(
         self, lr: float, gamma: float
@@ -121,11 +126,8 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
                 for k, param in enumerate(self.params):
                     self.problem.variables[k].variable.update_value(param)
 
-                # 2. Update any dependent properties.
-                self.problem.update_optics()
-
-                # 3. Compute loss from the updated model.
-                loss = self.problem.sum_squared()
+                # 2. Compute loss using the high-performance batched evaluator
+                loss = self.evaluator.evaluate(self.params)
 
                 # 4. Backpropagate and step.
                 loss.backward()

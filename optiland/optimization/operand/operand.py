@@ -202,11 +202,71 @@ class Operand:
 
     @property
     def value(self):
-        """Get current value of the operand"""
+        """Get current value of the operand.
+
+        For ray-based operands, this performs an on-demand, un-batched trace
+        suitable for inspection. For performance, optimizers should use a
+        BatchedRayEvaluator.
+        """
         metric_function = operand_registry.get(self.operand_type)
-        if metric_function:
+        if not metric_function:
+            raise ValueError(f"Unknown operand type: {self.operand_type}")
+
+        # Non-ray operands are evaluated directly
+        ray_operand_types = {
+            "real_x_intercept",
+            "real_y_intercept",
+            "real_z_intercept",
+            "real_x_intercept_lcs",
+            "real_y_intercept_lcs",
+            "real_z_intercept_lcs",
+            "real_L",
+            "real_M",
+            "real_N",
+            "AOI",
+            "rms_spot_size",
+        }
+
+        if self.operand_type not in ray_operand_types:
             return metric_function(**self.input_data)
-        raise ValueError(f"Unknown operand type: {self.operand_type}")
+
+        # --- Interactive Path for Ray Operands ---
+        optic = self.input_data["optic"]
+
+        # Get the refactored calculation function
+        calc_func_name = self.operand_type.replace("real_", "") + "_from_traced"
+        calc_func = getattr(RayOperand, calc_func_name)
+
+        # Perform the necessary trace for this single operand
+        if self.operand_type == "rms_spot_size":
+            # This operand uses optic.trace
+            Hx = self.input_data["Hx"]
+            Hy = self.input_data["Hy"]
+            wavelength = self.input_data["wavelength"]
+            num_rays = self.input_data["num_rays"]
+            distribution = self.input_data.get("distribution", "hexapolar")
+
+            if wavelength == "all":
+                # Handle multi-wavelength case directly
+                return metric_function(**self.input_data)
+            else:
+                optic.trace(Hx, Hy, wavelength, num_rays, distribution)
+                traced_data = optic.surface_group
+                ray_indices = slice(None)  # Use all rays from the trace
+        else:
+            # This operand uses optic.trace_generic for a single ray
+            Hx = self.input_data["Hx"]
+            Hy = self.input_data["Hy"]
+            Px = self.input_data["Px"]
+            Py = self.input_data["Py"]
+            wavelength = self.input_data["wavelength"]
+
+            optic.trace_generic(Hx, Hy, Px, Py, wavelength)
+            traced_data = optic.surface_group
+            ray_indices = [0]  # It's the first (and only) ray in this trace
+
+        # Call the single source of truth calculation function
+        return calc_func(traced_data, self.input_data, ray_indices)
 
     def delta_target(self):
         """Calculate the difference between the value and target"""
