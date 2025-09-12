@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import optiland.backend as be
+    from numpy.typing import NDArray
 
 
 @dataclass
@@ -27,9 +27,9 @@ class WavefrontData:
         radius (be.ndarray): Radius of curvature of the exit pupil reference sphere.
     """
 
-    pupil_x: be.ndarray
-    pupil_y: be.ndarray
-    pupil_z: be.ndarray
-    opd: be.ndarray
-    intensity: be.ndarray
-    radius: be.ndarray
+    pupil_x: NDArray
+    pupil_y: NDArray
+    pupil_z: NDArray
+    opd: NDArray
+    intensity: NDArray
+    radius: NDArray

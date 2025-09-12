@@ -6,9 +6,16 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from optiland.zernike import ZernikeFit
 
 from .opd import OPD
+
+if TYPE_CHECKING:
+    from optiland._types import ZernikeType
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
 
 
 class ZernikeOPD(ZernikeFit, OPD):
@@ -38,14 +45,14 @@ class ZernikeOPD(ZernikeFit, OPD):
 
     def __init__(
         self,
-        optic,
-        field,
-        wavelength,
-        num_rings=15,
-        zernike_type="fringe",
-        num_terms=37,
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        field: tuple[float, float],
+        wavelength: float,
+        num_rings: int = 15,
+        zernike_type: ZernikeType = "fringe",
+        num_terms: int = 37,
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
     ):
         OPD.__init__(

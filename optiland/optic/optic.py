@@ -564,8 +564,8 @@ class Optic:
         Hx: ArrayLike | float,
         Hy: ArrayLike | float,
         wavelength: float,
-        num_rays: int = 100,
-        distribution: DistributionType | BaseDistribution = "hexapolar",
+        num_rays: int | None = 100,
+        distribution: DistributionType | BaseDistribution | None = "hexapolar",
     ):
         """Trace a distribution of rays through the optical system.
 
