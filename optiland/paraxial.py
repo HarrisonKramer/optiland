@@ -389,7 +389,10 @@ class Paraxial:
         )
 
         # Determine initial ray parameters for final forward trace
-        y_obj_start = -(y_obj_unit * scaling_factor)
+        if self.optic.field_definition.__class__.__name__ == "ParaxialImageHeightField":
+            y_obj_start = y_obj_unit * scaling_factor
+        else:
+            y_obj_start = -(y_obj_unit * scaling_factor)
         u_obj_start = u_obj_unit * scaling_factor
 
         if self.optic.object_surface.is_infinite:
