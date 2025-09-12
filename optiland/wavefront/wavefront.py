@@ -7,10 +7,22 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
-from optiland.distribution import create_distribution
+from optiland.distribution import BaseDistribution, create_distribution
 
 from .strategy import create_strategy
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from numpy.typing import NDArray
+
+    from optiland._types import DistributionType, Fields, Wavelengths
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
+    from optiland.wavefront.wavefront_data import WavefrontData
 
 
 class Wavefront:
@@ -45,13 +57,13 @@ class Wavefront:
 
     def __init__(
         self,
-        optic,
-        fields="all",
-        wavelengths="all",
-        num_rays=12,
-        distribution="hexapolar",
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        fields: Fields = "all",
+        wavelengths: Wavelengths = "all",
+        num_rays: int = 12,
+        distribution: DistributionType = "hexapolar",
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
     ):
         self.optic = optic
@@ -68,10 +80,10 @@ class Wavefront:
         )
         self.remove_tilt = remove_tilt
 
-        self.data = {}
+        self.data: dict[tuple[tuple[float, float], float], WavefrontData] = {}
         self._generate_data()
 
-    def get_data(self, field, wl):
+    def get_data(self, field: tuple[float, float], wl: float) -> WavefrontData:
         """Retrieves precomputed wavefront data for a field and wavelength.
 
         Args:
@@ -84,7 +96,9 @@ class Wavefront:
         return self.data[(field, wl)]
 
     @staticmethod
-    def fit_and_remove_tilt(data, remove_piston=False, ridge=1e-12):
+    def fit_and_remove_tilt(
+        data: WavefrontData, remove_piston: bool = False, ridge: float = 1e-12
+    ) -> NDArray:
         """
         Removes piston and tilt from OPD data using weighted least squares.
 
@@ -129,13 +143,14 @@ class Wavefront:
 
         return opd_detrended
 
-    def _resolve_fields(self, fields):
+    def _resolve_fields(self, fields: Fields) -> Sequence[tuple[float, float]]:
         """Resolves field coordinates from the input specification."""
         if fields == "all":
             return self.optic.fields.get_field_coords()
+
         return fields
 
-    def _resolve_wavelengths(self, wavelengths):
+    def _resolve_wavelengths(self, wavelengths: Wavelengths) -> Sequence[float]:
         """Resolves wavelengths from the input specification."""
         if wavelengths == "all":
             return self.optic.wavelengths.get_wavelengths()
@@ -143,7 +158,9 @@ class Wavefront:
             return [self.optic.primary_wavelength]
         return wavelengths
 
-    def _resolve_distribution(self, dist, num_rays):
+    def _resolve_distribution(
+        self, dist: DistributionType | BaseDistribution, num_rays
+    ) -> BaseDistribution:
         """Resolves the pupil distribution from the input specification."""
         if isinstance(dist, str):
             dist_obj = create_distribution(dist)
