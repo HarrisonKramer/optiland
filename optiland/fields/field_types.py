@@ -44,14 +44,9 @@ class BaseFieldDefinition(ABC):
 
     @abstractmethod
     def scale_chief_ray_for_field(
-        self, optic: Optic, y_back_obj: float, u_back_obj: float
+        self, optic: Optic, y_obj_unit: float, u_obj_unit: float, y_img_unit: float
     ) -> float:
-        """
-        Calculates scaling factor for a unit chief ray based on the field definition.
-
-        This is used in the paraxial chief_ray calculation. It determines whether
-        to scale based on the resulting object height or angle of a back-traced ray.
-        """
+        """Calculates scaling factor for a chief ray based on the field definition."""
         pass
 
     def to_dict(self) -> dict:
@@ -174,25 +169,26 @@ class AngleField(BaseFieldDefinition):
 
         return y0, z0
 
-    def scale_chief_ray_for_field(self, optic, y_back_obj, u_back_obj):
+    def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
         """Calculates the scaling factor for a unit chief ray based on the field
         definition.
 
-        This is used in the paraxial chief_ray calculation. It determines whether
-        to scale based on the resulting object height or angle of a back-traced ray.
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
 
         Args:
-            optic (Optic): The optical system being traced.
-            y_back_obj (float): The y-coordinate of the back-traced ray at the
-                object surface.
-            u_back_obj (float): The angle (in radians) of the back-traced ray
-                at the object surface.
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
 
         Returns:
-            float: The scaling factor for the chief ray.
+            float: The scaling factor.
         """
-        max_field = optic.fields.max_y_field
-        return be.tan(be.deg2rad(max_field)) / u_back_obj
+        max_field_angle = optic.fields.max_y_field
+        target_slope = be.tan(be.deg2rad(max_field_angle))
+        return target_slope / u_obj_unit
 
     def _get_starting_z_offset(self, optic):
         """Calculate the starting ray z-coordinate offset for systems with an
@@ -277,25 +273,25 @@ class ObjectHeightField(BaseFieldDefinition):
         z0 = be.ones_like(y1) * z
         return y0, z0
 
-    def scale_chief_ray_for_field(self, optic, y_back_obj, u_back_obj):
+    def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
         """Calculates the scaling factor for a unit chief ray based on the field
         definition.
 
-        This is used in the paraxial chief_ray calculation. It determines whether
-        to scale based on the resulting object height or angle of a back-traced ray.
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
 
         Args:
-            optic (Optic): The optical system being traced.
-            y_back_obj (float): The y-coordinate of the back-traced ray at the
-                object surface.
-            u_back_obj (float): The angle (in radians) of the back-traced ray
-                at the object surface.
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
 
         Returns:
-            float: The scaling factor for the chief ray.
+            float: The scaling factor.
         """
-        max_field = optic.fields.max_y_field
-        return max_field / y_back_obj
+        max_field_height = optic.fields.max_y_field
+        return max_field_height / y_obj_unit
 
 
 class ParaxialImageHeightField(BaseFieldDefinition):
@@ -406,25 +402,25 @@ class ParaxialImageHeightField(BaseFieldDefinition):
             z0 = be.ones_like(y1) * z
         return y0, z0
 
-    def scale_chief_ray_for_field(self, optic, y_back_obj, u_back_obj):
-        # back-trace a unit chief ray from the stop to the image plane
-        y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
+    def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
+        """Calculates the scaling factor for a unit chief ray based on the field
+        definition.
 
-        # find what paraxial image height our current back-traced ray has
-        # this is the y_back_obj and u_back_obj passed in to this function
-        y_chief_at_stop = y_back_obj / y_img_unit
-        u_chief_at_stop = u_back_obj / y_img_unit
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
 
-        # now forward trace this ray to the image plane to find its height
-        y_fwd, u_fwd = optic.paraxial._trace_generic(
-            y_chief_at_stop,
-            u_chief_at_stop,
-            z=optic.surface_group.positions[optic.surface_group.stop_index],
-            wavelength=optic.primary_wavelength,
-            skip=optic.surface_group.stop_index + 1,
-        )
+        Args:
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
 
-        return optic.fields.max_y_field / y_fwd[-1]
+        Returns:
+            float: The scaling factor.
+        """
+        max_image_height = optic.fields.max_y_field
+        return max_image_height / y_img_unit
 
     def _get_starting_z_offset(self, optic):
         """Calculate the starting ray z-coordinate offset for systems with an
