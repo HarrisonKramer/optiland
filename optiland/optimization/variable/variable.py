@@ -30,8 +30,10 @@ from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVar
 from optiland.optimization.variable.thickness import ThicknessVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
-from optiland.optimization.variable.nurbs import NurbsPointsVariable, NurbsWeightsVariable
-
+from optiland.optimization.variable.nurbs import (
+    NurbsPointsVariable,
+    NurbsWeightsVariable,
+)
 
 
 class Variable:

@@ -96,7 +96,7 @@ class SurfaceParameters(TypedDict, total=False):
     v_degree: int
     n_points_u: int
     n_points_v: int
-    
+
     # Coordinate system parameters
     thickness: float
     x: float

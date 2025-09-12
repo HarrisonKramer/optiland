@@ -7,8 +7,7 @@ import numba as nb
 # -------------------------------------------------------------------------------------------------------------------- #
 @nb.jit(nopython=True, cache=True)
 def compute_basis_polynomials(n, p, U, u, return_degree=None):
-
-    """ Evaluate the n-th B-Spline basis polynomials of degree ´p´ for the input u-parametrization
+    """Evaluate the n-th B-Spline basis polynomials of degree ´p´ for the input u-parametrization
 
     The basis polynomials are computed from their definition by implementing equation 2.5 directly
 
@@ -46,7 +45,7 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
     # if p > n: raise Exception('The degree of the basis polynomials must be equal or lower than the number of basis polynomials')
 
     # Number of points where the polynomials are evaluated (vectorized computations)
-    u = be.asarray(u * 1.0)     # Convert to array of floats
+    u = be.asarray(u * 1.0)  # Convert to array of floats
     Nu = u.size
 
     # Number of basis polynomials at the current step of the recursion
@@ -61,17 +60,19 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
     for i in range(m):
         # N[0, i, :] = 0.0 + 1.0 * (u >= U[i]) * (u < U[i + 1])
         # N[0, i, :] = 0.0 + 1.0 * (u >= U[i]) * (u < U[i + 1]) + 1.00 * (be.logical_and(u == 1, i == n))
-        N[0, i, :] = 0.0 + 1.0 * (be.real(u) >= U[i]) * (be.real(u) < U[i + 1]) + 1.00 * (be.logical_and(be.real(u) == U[-1], i == n))
+        N[0, i, :] = (
+            0.0
+            + 1.0 * (be.real(u) >= U[i]) * (be.real(u) < U[i + 1])
+            + 1.00 * (be.logical_and(be.real(u) == U[-1], i == n))
+        )
 
     # Second and next steps of the recursion formula (p = 1, 2, ...)
     for k in range(1, p + 1):
-
         # Update the number of basis polynomials
         m = m - 1
 
         # Compute the basis polynomials using the de Boor recursion formula
         for i in range(m):
-
             # Compute first factor (avoid division by zero by convention)
             if (U[i + k] - U[i]) == 0:
                 n1 = be.zeros((Nu,), dtype=u.dtype)
@@ -88,8 +89,7 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
             N[k, i, ...] = n1 + n2
 
     # Get the n+1 basis polynomials of the desired degree
-    N = N[p, 0:n+1, :] if return_degree is None else N[return_degree, 0:n+1, :]
-
+    N = N[p, 0 : n + 1, :] if return_degree is None else N[return_degree, 0 : n + 1, :]
 
     # # Numba assertions
     # assert p >= 0    # The degree of the basis polynomials cannot be negative
@@ -98,14 +98,12 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
     return N
 
 
-
 # -------------------------------------------------------------------------------------------------------------------- #
 # Compute the derivatives of the basis polynomials
 # -------------------------------------------------------------------------------------------------------------------- #
 @nb.jit(nopython=True, cache=True)
 def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
-
-    """ Evaluate the derivative of the n-th B-Spline basis polynomials of degree ´p´ for the input u-parametrization
+    """Evaluate the derivative of the n-th B-Spline basis polynomials of degree ´p´ for the input u-parametrization
 
     The basis polynomials derivatives are computed recursively by implementing equations 2.7 and 2.9 directly
 
@@ -138,10 +136,11 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
 
     # Check the number of derivative order (not possible to compile with Numba yet)
     # if derivative_order > p: raise Exception('The derivative order is higher than the degree of the basis polynomials')
-    if derivative_order > p: print('The derivative order is higher than the degree of the basis polynomials')
+    if derivative_order > p:
+        print("The derivative order is higher than the degree of the basis polynomials")
 
     # Number of points where the polynomials are evaluated (vectorized computations)
-    u = be.asarray(u * 1.0)     # Convert to array of floats
+    u = be.asarray(u * 1.0)  # Convert to array of floats
     Nu = u.size
 
     # Compute the basis polynomials to the right hand side of equation 2.9 recursively down to the zeroth derivative
@@ -153,7 +152,9 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         N = compute_basis_polynomials(n, p, U, u)
         return N
     else:
-        print('Oooopps, something went wrong in compute_basis_polynomials_derivatives()')
+        print(
+            "Oooopps, something went wrong in compute_basis_polynomials_derivatives()"
+        )
         N = compute_basis_polynomials(n, p, U, u)
         return N
 
@@ -162,7 +163,6 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
 
     # Compute the derivatives of the (0, 1, ..., n) basis polynomials using equations 2.7 and 2.9
     for i in range(n + 1):
-
         # Compute first factor (avoid division by zero by convention)
         if (U[i + p] - U[i]) == 0:
             n1 = be.zeros(Nu, dtype=u.dtype)
@@ -179,6 +179,7 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         N_ders[i, :] = n1 - n2
 
     return N_ders
+
 
 def basis_function(degree, knot_vector, span, knot):
     """Computes the non-vanishing basis functions for a single parameter.
@@ -213,6 +214,7 @@ def basis_function(degree, knot_vector, span, knot):
         N[j] = saved
 
     return N
+
 
 def basis_function_one(degree, knot_vector, span, knot):
     """Computes the value of a basis function for a single parameter.
@@ -254,7 +256,9 @@ def basis_function_one(degree, knot_vector, span, knot):
         # Detecting zeros saves computations
         saved = 0.0
         if N[0] != 0.0:
-            saved = ((knot - knot_vector[span]) * N[0]) / (knot_vector[span + k] - knot_vector[span])
+            saved = ((knot - knot_vector[span]) * N[0]) / (
+                knot_vector[span + k] - knot_vector[span]
+            )
 
         for j in range(0, degree - k + 1):
             Uleft = knot_vector[span + j + 1]

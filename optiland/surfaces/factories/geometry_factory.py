@@ -105,6 +105,7 @@ class GeometryConfig:
     n_points_u: int = 5
     n_points_v: int = 5
 
+
 def _create_plane(cs: CoordinateSystem, config: GeometryConfig):
     """
     Create a planar geometry

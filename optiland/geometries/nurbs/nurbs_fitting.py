@@ -9,6 +9,7 @@ from scipy.linalg import lu_factor, lu_solve
 import optiland.backend as be
 from .nurbs_basis_functions import basis_function, basis_function_one
 
+
 def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
     """Surface approximation using least squares method with fixed number of control points.
 
@@ -35,8 +36,12 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
     """
     # Keyword arguments
     use_centripetal = kwargs.get("centripetal", False)
-    num_cpts_u = kwargs.get("ctrlpts_size_u", size_u - 1)  # number of datapts, r + 1 > number of ctrlpts, n + 1
-    num_cpts_v = kwargs.get("ctrlpts_size_v", size_v - 1)  # number of datapts, s + 1 > number of ctrlpts, m + 1
+    num_cpts_u = kwargs.get(
+        "ctrlpts_size_u", size_u - 1
+    )  # number of datapts, r + 1 > number of ctrlpts, n + 1
+    num_cpts_v = kwargs.get(
+        "ctrlpts_size_v", size_v - 1
+    )  # number of datapts, s + 1 > number of ctrlpts, m + 1
 
     # Dimension
     dim = len(points[0])
@@ -67,7 +72,9 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
     ctrlpts_tmp = [[0.0 for _ in range(dim)] for _ in range(num_cpts_u * size_v)]
     for j in range(size_v):
         ctrlpts_tmp[j + (size_v * 0)] = list(points[j + (size_v * 0)])
-        ctrlpts_tmp[j + (size_v * (num_cpts_u - 1))] = list(points[j + (size_v * (size_u - 1))])
+        ctrlpts_tmp[j + (size_v * (num_cpts_u - 1))] = list(
+            points[j + (size_v * (size_u - 1))]
+        )
         # Compute Rku - Eqn. 9.63
         pt0 = points[j + (size_v * 0)]  # Qzero
         ptm = points[j + (size_v * (size_u - 1))]  # Qm
@@ -84,7 +91,9 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
         for i in range(1, num_cpts_u - 1):
             ru_tmp = []
             for idx, pt in enumerate(rku):
-                ru_tmp.append([p * basis_function_one(degree_u, kv_u, i, uk[idx + 1]) for p in pt])
+                ru_tmp.append(
+                    [p * basis_function_one(degree_u, kv_u, i, uk[idx + 1]) for p in pt]
+                )
             for d in range(dim):
                 for idx in range(len(ru_tmp)):
                     ru[i - 1][d] += ru_tmp[idx][d]
@@ -114,7 +123,9 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
     ctrlpts = [[0.0 for _ in range(dim)] for _ in range(num_cpts_u * num_cpts_v)]
     for i in range(num_cpts_u):
         ctrlpts[0 + (num_cpts_v * i)] = list(ctrlpts_tmp[0 + (size_v * i)])
-        ctrlpts[num_cpts_v - 1 + (num_cpts_v * i)] = list(ctrlpts_tmp[size_v - 1 + (size_v * i)])
+        ctrlpts[num_cpts_v - 1 + (num_cpts_v * i)] = list(
+            ctrlpts_tmp[size_v - 1 + (size_v * i)]
+        )
         # Compute Rkv - Eqs. 9.63
         pt0 = ctrlpts_tmp[0 + (size_v * i)]  # Qzero
         ptm = ctrlpts_tmp[size_v - 1 + (size_v * i)]  # Qm
@@ -131,7 +142,9 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
         for j in range(1, num_cpts_v - 1):
             rv_tmp = []
             for idx, pt in enumerate(rkv):
-                rv_tmp.append([p * basis_function_one(degree_v, kv_v, j, vl[idx + 1]) for p in pt])
+                rv_tmp.append(
+                    [p * basis_function_one(degree_v, kv_v, j, vl[idx + 1]) for p in pt]
+                )
             for d in range(dim):
                 for idx in range(len(rv_tmp)):
                     rv[j - 1][d] += rv_tmp[idx][d]
@@ -142,7 +155,8 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
             for j in range(1, num_cpts_v - 1):
                 ctrlpts[j + (num_cpts_v * i)][d] = x[j - 1]
 
-    return ctrlpts,degree_u,degree_v,num_cpts_u,num_cpts_v,kv_u,kv_v
+    return ctrlpts, degree_u, degree_v, num_cpts_u, num_cpts_v, kv_u, kv_v
+
 
 def compute_knot_vector(degree, num_dpts, num_cpts, params):
     """Computes a knot vector ensuring that every knot span has at least one :math:`\\overline{u}_{k}`.
@@ -201,7 +215,7 @@ def compute_params_curve(points, centripetal=False):
     cds = [0.0 for _ in range(num_points + 1)]
     cds[-1] = 1.0
     for i in range(1, num_points):
-        distance = be.linalg.norm(be.asarray(points[i]) - be.asarray(points[i-1]))
+        distance = be.linalg.norm(be.asarray(points[i]) - be.asarray(points[i - 1]))
         cds[i] = be.sqrt(distance) if centripetal else distance
 
     # Find the total chord length
@@ -294,9 +308,10 @@ def _build_coeff_matrix(degree, knotvector, params, points):
         while span < num_points and knotvector[span] <= params[i]:
             span += 1
 
-        span = span - 1        
-        matrix_a[i][span - degree : span + 1] = basis_function(degree, knotvector, span, params[i])
+        span = span - 1
+        matrix_a[i][span - degree : span + 1] = basis_function(
+            degree, knotvector, span, params[i]
+        )
 
     # Return coefficient matrix
     return matrix_a
-
