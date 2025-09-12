@@ -323,7 +323,7 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         y_img_target = optic.fields.max_field * Hy
         x_img_target = optic.fields.max_field * Hx
 
-        # back-trace a unit chief ray from the stop to the object and image planes
+        # trace a unit chief ray from the stop to the object and image planes
         y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
         y_obj_unit, u_obj_unit = self._trace_unit_chief_ray(optic, plane="object")
 
@@ -332,8 +332,6 @@ class ParaxialImageHeightField(BaseFieldDefinition):
             u_obj_y = u_obj_unit * (y_img_target / y_img_unit)
             u_obj_x = u_obj_unit * (x_img_target / y_img_unit)
 
-            # now that we have the required obj space angle, this is very
-            # similar to AngleField's implementation for an infinite object
             EPL = optic.paraxial.EPL()
             EPD = optic.paraxial.EPD()
 
