@@ -100,7 +100,7 @@ class OPDFan(Wavefront):
         if is_gui_embedding:
             current_fig = cast("Figure", fig_to_plot_on)
             current_fig.clear()
-            axs = current_fig.add_subplots(
+            axs = current_fig.add_subplot(
                 nrows=len(self.fields),
                 ncols=2,
                 figsize=(figsize[0], num_rows * figsize[1]),
