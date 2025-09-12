@@ -459,19 +459,21 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         """
         stop_idx = optic.surface_group.stop_index
         num_surf = optic.surface_group.num_surfaces
-        z_stop = optic.surface_group.positions[stop_idx]
+        pos = optic.surface_group.positions
         wavelength = optic.primary_wavelength
 
         if plane == "image":
             # trace forward from stop to image plane
+            z_start = pos[stop_idx]
             y, u = optic.paraxial._trace_generic(
-                y=0, u=1, z=z_stop, wavelength=wavelength, skip=stop_idx + 1
+                y=0, u=1, z=z_start, wavelength=wavelength, skip=stop_idx
             )
             return y[-1], u[-1]
         elif plane == "object":
             # trace backward from stop to object plane
+            z_start = pos[-1] - pos[stop_idx]
             skip = num_surf - stop_idx
             y, u = optic.paraxial._trace_generic(
-                y=0, u=1, z=z_stop, wavelength=wavelength, reverse=True, skip=skip
+                y=0, u=1, z=z_start, wavelength=wavelength, reverse=True, skip=skip
             )
             return y[-1], u[-1]
