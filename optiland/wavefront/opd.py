@@ -6,7 +6,7 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,20 +17,21 @@ import optiland.backend as be
 from .wavefront import Wavefront
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes,
+    from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+    from mpl_toolkits.mplot3d import Axes3D
     from numpy.typing import NDArray
 
     from optiland._types import DistributionType, PlotProjection
     from optiland.optic.optic import Optic
     from optiland.wavefront.strategy import WavefrontStrategyType
-    from mpl_toolkits.mplot3d import Axes3D
 
 
 class OPDData(TypedDict):
     x: NDArray
     y: NDArray
     z: NDArray
+
 
 class OPD(Wavefront):
     """Represents an Optical Path Difference (OPD) wavefront.
@@ -173,9 +174,7 @@ class OPD(Wavefront):
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("OPD (waves)", rotation=270)
 
-    def _plot_3d(
-        self, fig: Figure, ax: Axes3D, data: dict[str, np.ndarray]
-    ) -> None:
+    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, np.ndarray]) -> None:
         """Plots the 3D visualization of the OPD wavefront.
 
         Args:
@@ -202,7 +201,7 @@ class OPD(Wavefront):
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
         fig.tight_layout()
 
-    def generate_opd_map(self, num_points: int=256) -> OPDData:
+    def generate_opd_map(self, num_points: int = 256) -> OPDData:
         """Generates the OPD map data.
 
         Args:
