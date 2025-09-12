@@ -86,6 +86,8 @@ class BaseFieldDefinition(ABC):
             return AngleField()
         elif field_type == "ObjectHeightField":
             return ObjectHeightField()
+        elif field_type == "ParaxialImageHeightField":
+            return ParaxialImageHeightField()
         else:
             raise ValueError(f"Unknown field definition: {field_type}")
 
@@ -151,7 +153,7 @@ class AngleField(BaseFieldDefinition):
         Args:
             Hy (float): The normalized field height.
             y1 (ndarray): The initial y-coordinate of the ray.
-            EPL (float): The effective focal length of the lens.
+            EPL (float): The entrance pupil location.
 
         Returns:
             tuple: A tuple containing the y and z coordinates of the object
@@ -252,7 +254,7 @@ class ObjectHeightField(BaseFieldDefinition):
         Args:
             Hy (float): The normalized field height.
             y1 (ndarray): The initial y-coordinate of the ray.
-            EPL (float): The effective focal length of the lens.
+            EPL (float): The entrance pupil location.
 
         Returns:
             tuple: A tuple containing the y and z coordinates of the object
@@ -300,6 +302,24 @@ class ParaxialImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's paraxial height at the image plane."""
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
+        """Calculate the initial positions for rays originating at the object.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
+            vx (float): Vignetting factor in the x-direction.
+            vy (float): Vignetting factor in the y-direction.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        Raises:
+            ValueError: If the field type is "object_height" for an object at
+                infinity.
+        """
         y_img_target = optic.fields.max_field * Hy
         x_img_target = optic.fields.max_field * Hx
 
@@ -353,6 +373,22 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         return x0, y0, z0
 
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
+        """Calculate the position of the object in the paraxial optical system.
+
+        Args:
+            Hy (float): The normalized field height.
+            y1 (ndarray): The initial y-coordinate of the ray.
+            EPL (float): The entrance pupil location.
+
+        Returns:
+            tuple: A tuple containing the y and z coordinates of the object
+                position.
+
+        Raises:
+            ValueError: If the field type is "object_height" and the object is
+                at infinity.
+
+        """
         y_img_target = optic.fields.max_field * Hy
         # back-trace a unit chief ray from the stop to the object and image planes
         y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
@@ -411,7 +447,18 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         return offset - be.min(z)
 
     def _trace_unit_chief_ray(self, optic, plane="image"):
-        """Traces a chief ray with u=1 at the stop backwards to the object plane."""
+        """Traces a chief ray with u=1 at the stop to either the image or
+        object plane.
+
+        Args:
+            optic (Optic): The optical system being traced.
+            plane (str): The plane to trace to, either "image" or "object".
+
+        Returns:
+            tuple: A tuple containing the y and u coordinates of the ray at the
+                specified plane.
+
+        """
         stop_idx = optic.surface_group.stop_index
         num_surf = optic.surface_group.num_surfaces
         z_stop = optic.surface_group.positions[stop_idx]
