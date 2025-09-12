@@ -300,10 +300,133 @@ class ParaxialImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's paraxial height at the image plane."""
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
-        pass
+        y_img_target = optic.fields.max_field * Hy
+        x_img_target = optic.fields.max_field * Hx
+
+        # back-trace a unit chief ray from the stop to the object and image planes
+        y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
+        y_obj_unit, u_obj_unit = self._trace_unit_chief_ray(optic, plane="object")
+
+        if optic.object_surface.is_infinite:
+            # find required chief ray slope in object space
+            u_obj_y = u_obj_unit * (y_img_target / y_img_unit)
+            u_obj_x = u_obj_unit * (x_img_target / y_img_unit)
+
+            # now that we have the required obj space angle, this is very
+            # similar to AngleField's implementation for an infinite object
+            EPL = optic.paraxial.EPL()
+            EPD = optic.paraxial.EPD()
+
+            offset = self._get_starting_z_offset(optic)
+
+            # x, y, z positions of ray starting points
+            x = -u_obj_x * (offset + EPL)
+            y = -u_obj_y * (offset + EPL)
+            z = optic.surface_group.positions[1] - offset
+
+            x0 = Px * EPD / 2 * vx + x
+            y0 = Py * EPD / 2 * vy + y
+            z0 = be.full_like(Px, z)
+
+        else:  # finite object
+            # find required chief ray height on object surface
+            y_obj = y_obj_unit * (y_img_target / y_img_unit)
+            x_obj = y_obj_unit * (x_img_target / y_img_unit)
+
+            # for a finite object, the ray's origin is simply this position on
+            # the object surface
+            x0 = x_obj
+            y0 = y_obj
+            z0 = (
+                optic.object_surface.geometry.sag(x0, y0)
+                + optic.object_surface.geometry.cs.z
+            )
+
+            # ensure outputs are broadcast to same shape as pupil coordinates
+            if be.size(x0) == 1:
+                x0 = be.full_like(Px, x0)
+            if be.size(y0) == 1:
+                y0 = be.full_like(Px, y0)
+            if be.size(z0) == 1:
+                z0 = be.full_like(Px, z0)
+
+        return x0, y0, z0
 
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
-        pass
+        y_img_target = optic.fields.max_field * Hy
+        # back-trace a unit chief ray from the stop to the object and image planes
+        y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
+        y_obj_unit, u_obj_unit = self._trace_unit_chief_ray(optic, plane="object")
+
+        if optic.object_surface.is_infinite:
+            u_obj = u_obj_unit * (y_img_target / y_img_unit)
+            y = u_obj * -EPL
+            z = optic.surface_group.positions[1]
+            y0 = y1 + y
+            z0 = be.ones_like(y1) * z
+        else:
+            y_obj = y_obj_unit * (y_img_target / y_img_unit)
+            y = y_obj
+            z = optic.object_surface.geometry.cs.z
+            y0 = be.ones_like(y1) * y
+            z0 = be.ones_like(y1) * z
+        return y0, z0
 
     def scale_chief_ray_for_field(self, optic, y_back_obj, u_back_obj):
-        pass
+        # back-trace a unit chief ray from the stop to the image plane
+        y_img_unit, u_img_unit = self._trace_unit_chief_ray(optic, plane="image")
+
+        # find what paraxial image height our current back-traced ray has
+        # this is the y_back_obj and u_back_obj passed in to this function
+        y_chief_at_stop = y_back_obj / y_img_unit
+        u_chief_at_stop = u_back_obj / y_img_unit
+
+        # now forward trace this ray to the image plane to find its height
+        y_fwd, u_fwd = optic.paraxial._trace_generic(
+            y_chief_at_stop,
+            u_chief_at_stop,
+            z=optic.surface_group.positions[optic.surface_group.stop_index],
+            wavelength=optic.primary_wavelength,
+            skip=optic.surface_group.stop_index + 1,
+        )
+
+        return optic.fields.max_y_field / y_fwd[-1]
+
+    def _get_starting_z_offset(self, optic):
+        """Calculate the starting ray z-coordinate offset for systems with an
+        object at infinity. This is relative to the first surface of the optic.
+
+        This method chooses a starting point that is equivalent to the entrance
+        pupil diameter of the optic.
+
+        Args:
+            optic (Optic): The optical system being traced.
+
+        Returns:
+            float: The z-coordinate offset relative to the first surface.
+
+        """
+        z = optic.surface_group.positions[1:-1]
+        offset = optic.paraxial.EPD()
+        return offset - be.min(z)
+
+    def _trace_unit_chief_ray(self, optic, plane="image"):
+        """Traces a chief ray with u=1 at the stop backwards to the object plane."""
+        stop_idx = optic.surface_group.stop_index
+        num_surf = optic.surface_group.num_surfaces
+        z_stop = optic.surface_group.positions[stop_idx]
+        wavelength = optic.primary_wavelength
+
+        if plane == "image":
+            # trace forward from stop to image plane
+            y, u = optic.paraxial._trace_generic(
+                y=0, u=1, z=z_stop, wavelength=wavelength, skip=stop_idx + 1
+            )
+            return y[-1], u[-1]
+        elif plane == "object":
+            # trace backward from stop to object plane
+            skip = num_surf - stop_idx
+            y, u = optic.paraxial._trace_generic(
+                y=0, u=1, z=z_stop, wavelength=wavelength, reverse=True, skip=skip
+            )
+            return y[-1], u[-1]

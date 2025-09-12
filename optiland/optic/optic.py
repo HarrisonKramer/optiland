@@ -25,6 +25,7 @@ from optiland.fields import (
     Field,
     FieldGroup,
     ObjectHeightField,
+    ParaxialImageHeightField,
 )
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
@@ -295,8 +296,8 @@ class Optic:
         """Set the type of field used in the optical system.
 
         Args:
-            field_type (FieldType): The type of field, e.g., 'angle' or
-                'object_height'.
+            field_type (FieldType): The type of field, e.g., 'angle',
+                'object_height', or 'paraxial_image_height'.
 
         Raises:
             ValueError: If the field type is invalid.
@@ -305,6 +306,8 @@ class Optic:
             self.field_definition = AngleField()
         elif field_type == "object_height":
             self.field_definition = ObjectHeightField()
+        elif field_type == "paraxial_image_height":
+            self.field_definition = ParaxialImageHeightField()
         else:
             raise ValueError(f"Invalid field type: {field_type}.")
 
