@@ -245,28 +245,16 @@ class FFTPSF(BasePSF):
         phase within the aperture defined by the actual system's first pupil,
         and zero outside.
 
+        Since the maximum of the PSF of an ideal pupil is always centered on (0, 0),
+        the value of the propagation kernel is always 1 and therefore the Fourier
+        integral just becomes a sum of the input field over all points. For a
+        binary-valued aperture, this is the same as just counting all the non-zero
+        pixels (summation) and taking the square of the value (to go from field to PSF)
+
         Returns:
             float: The normalization factor.
         """
-        P_nom = be.copy(self.pupils[0])
-        # Create a binary mask: 1 where P_nom is non-zero, 0 otherwise.
-        P_nom = be.where(P_nom != 0, be.ones_like(P_nom), P_nom)
-
-        # Pad the ideal pupil to match grid size
-        pad_before = (self.grid_size - P_nom.shape[0]) // 2
-        pad_after = pad_before + (self.grid_size - P_nom.shape[0]) % 2
-
-        P_nom_padded = be.pad(
-            P_nom,
-            ((pad_before, pad_after), (pad_before, pad_after)),
-            mode="constant",
-            constant_values=0,
-        )
-
-        # Perform FFT on the padded ideal pupil
-        amp_norm = be.fft.fftshift(be.fft.fft2(P_nom_padded))
-        psf_norm = amp_norm * be.conj(amp_norm)
-        return be.max(be.real(psf_norm)) * len(self.pupils)
+        return be.sum(be.abs(self.pupils[0]) > 0) ** 2
 
     def _get_psf_units(self, image):
         """Calculates the physical extent (units) of the PSF image for plotting.
