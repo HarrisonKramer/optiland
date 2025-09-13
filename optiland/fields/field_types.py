@@ -33,21 +33,62 @@ class BaseFieldDefinition(ABC):
         vx: be.ndarray | float,
         vy: be.ndarray | float,
     ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
-        """Calculates the initial positions (x0, y0, z0) for real rays."""
+        """Calculate the initial positions for rays originating at the object.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
+            vx (float): Vignetting factor in the x-direction.
+            vy (float): Vignetting factor in the y-direction.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        """
         pass
 
     @abstractmethod
     def get_paraxial_object_position(
         self, optic: Optic, Hy: float, y1: be.ndarray, EPL: float
     ) -> tuple[be.ndarray, be.ndarray]:
-        """Calculates the object position (y0, z0) for a paraxial ray fan."""
+        """Calculate the position of the object in the paraxial optical system.
+
+        Args:
+            Hy (float): The normalized field height.
+            y1 (ndarray): The initial y-coordinate of the ray.
+            EPL (float): The entrance pupil location.
+
+        Returns:
+            tuple: A tuple containing the y and z coordinates of the object
+                position.
+
+        """
         pass
 
     @abstractmethod
     def scale_chief_ray_for_field(
         self, optic: Optic, y_obj_unit: float, u_obj_unit: float, y_img_unit: float
     ) -> float:
-        """Calculates scaling factor for a chief ray based on the field definition."""
+        """Calculates the scaling factor for a unit chief ray based on the field
+        definition.
+
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
+
+        Args:
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
+
+        Returns:
+            float: The scaling factor.
+
+        """
         pass
 
     def to_dict(self) -> dict:

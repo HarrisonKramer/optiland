@@ -17,6 +17,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import optiland.backend as be
+from optiland.field import ParaxialImageHeightField
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
 
@@ -389,7 +390,7 @@ class Paraxial:
         )
 
         # Determine initial ray parameters for final forward trace
-        if self.optic.field_definition.__class__.__name__ == "ParaxialImageHeightField":
+        if isinstance(self.optic.field_definition, ParaxialImageHeightField):
             y_obj_start = y_obj_unit * scaling_factor
         else:
             y_obj_start = -(y_obj_unit * scaling_factor)
