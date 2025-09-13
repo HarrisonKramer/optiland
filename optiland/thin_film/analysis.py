@@ -241,15 +241,15 @@ class SpectralAnalyzer:
         for quantity in to_plot:
             if quantity not in ("R", "T", "A"):
                 raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+
+            wl_label_prefix = (
+                self._get_wavelength_axis_label(wavelength_unit).split("(")[0].strip()
+            )
             ax.plot(
                 x_values,
                 rta_data[quantity].flatten(),
-                label=f"{quantity}, {polarization}-pol, "
-                + f"{
-                    self._get_wavelength_axis_label(wavelength_unit)
-                    .split('(')[0]
-                    .strip()
-                }={wavelength}{wavelength_unit}",
+                label=f"{quantity}, {polarization}-pol"
+                + f", {wl_label_prefix}={wavelength}{wavelength_unit}",
             )
 
         xlabel = r"AOI (°)" if aoi_unit == "deg" else r"AOI (rad)"

@@ -7,6 +7,9 @@ from optiland.thin_film import Layer, ThinFilmStack, SpectralAnalyzer
 from optiland.materials import Material, IdealMaterial
 from .utils import assert_allclose
 
+# Import physical constants for testing unit conversions
+from optiland.thin_film.analysis import SPEED_OF_LIGHT, PLANCK_EV
+
 
 @pytest.fixture
 def air():
@@ -352,6 +355,138 @@ class TestThinFilmStackVisualization:
         plt.close(fig)
 
 
+class TestSpectralAnalyzerUnitConversions:
+    """Test unit conversion methods in SpectralAnalyzer."""
+
+    def test_wavelength_unit_conversions(self, set_test_backend, simple_stack):
+        """Test wavelength unit conversions with specific known values."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        # Test wavelength: 550 nm = 0.55 μm
+        wl_nm = 550.0
+        wl_um = 0.55
+
+        # Test conversions
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_nm, "nm"), wl_um, rtol=1e-10
+        )
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_um, "um"), wl_um, rtol=1e-10
+        )
+
+        # Test frequency conversion: λ = c/ν
+        frequency_hz = SPEED_OF_LIGHT / (wl_um * 1e-6)  # Convert μm to m
+        converted_wl = analyzer._convert_to_wavelength_um(frequency_hz, "frequency")
+        assert_allclose(converted_wl, wl_um, rtol=1e-10)
+
+        # Test energy conversion: E = hc/λ
+        energy_ev = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)  # Convert μm to m
+        converted_wl = analyzer._convert_to_wavelength_um(energy_ev, "energy")
+        assert_allclose(converted_wl, wl_um, rtol=1e-10)
+
+        # Test wavenumber conversion: k = 1/λ (cm⁻¹)
+        wavenumber_cm_inv = 1e4 / wl_um  # Convert μm to cm, then invert
+        converted_wl = analyzer._convert_to_wavelength_um(
+            wavenumber_cm_inv, "wavenumber"
+        )
+        assert_allclose(converted_wl, wl_um, rtol=1e-10)
+
+    def test_relative_wavenumber_conversion(self, set_test_backend, air, glass):
+        """Test relative wavenumber conversion."""
+        stack = ThinFilmStack(
+            incident_material=air, substrate_material=glass, reference_wl_um=0.55
+        )
+        analyzer = SpectralAnalyzer(stack)
+
+        # Relative wavenumber: k_rel = λ_ref / λ
+        reference_wl = 0.55
+        target_wl = 0.6
+        k_rel = reference_wl / target_wl
+
+        converted_wl = analyzer._convert_to_wavelength_um(k_rel, "relative_wavenumber")
+        assert_allclose(converted_wl, target_wl, rtol=1e-10)
+
+    def test_relative_wavenumber_no_reference_fails(
+        self, set_test_backend, simple_stack
+    ):
+        """Test that relative wavenumber fails without reference wavelength."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        with pytest.raises(ValueError, match="reference_wl_um must be set"):
+            analyzer._convert_to_wavelength_um(1.0, "relative_wavenumber")
+
+    def test_invalid_wavelength_unit_fails(self, set_test_backend, simple_stack):
+        """Test that invalid wavelength unit raises error."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        with pytest.raises(ValueError, match="Unknown wavelength unit"):
+            analyzer._convert_to_wavelength_um(550.0, "invalid_unit")
+
+    def test_angle_unit_conversions(self, set_test_backend, simple_stack):
+        """Test angle unit conversions."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        # Test 30 degrees to radians
+        angle_deg = 30.0
+        angle_rad = be.deg2rad(30.0)
+
+        converted_rad = analyzer._convert_angle_to_radians(angle_deg, "deg")
+        assert_allclose(converted_rad, angle_rad, rtol=1e-10)
+
+        # Test radians to radians (no conversion)
+        converted_rad2 = analyzer._convert_angle_to_radians(angle_rad, "rad")
+        assert_allclose(converted_rad2, angle_rad, rtol=1e-10)
+
+    def test_invalid_angle_unit_fails(self, set_test_backend, simple_stack):
+        """Test that invalid angle unit raises error."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        with pytest.raises(ValueError, match="Unknown angle unit"):
+            analyzer._convert_angle_to_radians(30.0, "invalid_unit")
+
+    def test_wavelength_axis_labels(self, set_test_backend, simple_stack):
+        """Test wavelength axis label generation."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        expected_labels = {
+            "um": r"$\lambda$ ($\mu$m)",
+            "nm": r"$\lambda$ (nm)",
+            "frequency": r"$\nu$ (Hz)",
+            "energy": r"$E$ (eV)",
+            "wavenumber": r"$k$ (cm$^{-1}$)",
+            "relative_wavenumber": r"$k/k_{\mathrm{ref}}$",
+        }
+
+        for unit, expected_label in expected_labels.items():
+            assert analyzer._get_wavelength_axis_label(unit) == expected_label
+
+    def test_wavelength_plotting_conversions(self, set_test_backend, simple_stack):
+        """Test wavelength conversion for plotting axes."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        wl_um = be.array([0.5, 0.55, 0.6])
+
+        # Test nm conversion
+        wl_nm = analyzer._convert_wavelength_for_plotting(wl_um, "nm")
+        expected_nm = wl_um * 1000.0
+        assert_allclose(wl_nm, expected_nm, rtol=1e-10)
+
+        # Test frequency conversion
+        wl_freq = analyzer._convert_wavelength_for_plotting(wl_um, "frequency")
+        expected_freq = SPEED_OF_LIGHT / (wl_um * 1e-6)
+        assert_allclose(wl_freq, expected_freq, rtol=1e-10)
+
+        # Test energy conversion
+        wl_energy = analyzer._convert_wavelength_for_plotting(wl_um, "energy")
+        expected_energy = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)
+        assert_allclose(wl_energy, expected_energy, rtol=1e-10)
+
+        # Test wavenumber conversion
+        wl_wavenumber = analyzer._convert_wavelength_for_plotting(wl_um, "wavenumber")
+        expected_wavenumber = 1e4 / wl_um
+        assert_allclose(wl_wavenumber, expected_wavenumber, rtol=1e-10)
+
+
 class TestSpectralAnalyzer:
     """Test SpectralAnalyzer functionality."""
 
@@ -364,7 +499,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
-        fig, ax = analyzer.view(wavelengths_um, aoi_deg=0.0, to_plot="R")
+        fig, ax = analyzer.wavelength_view(wavelengths_um, aoi=0.0, to_plot="R")
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -374,7 +509,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         angles_deg = be.linspace(0, 80, 10)
 
-        fig, ax = analyzer.view(0.55, aoi_deg=angles_deg, to_plot="R")
+        fig, ax = analyzer.angular_view(angles_deg, wavelength=0.55, to_plot="R")
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -385,9 +520,9 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 5)
         angles_deg = be.linspace(0, 60, 4)
 
-        fig, axs = analyzer.view(wavelengths_um, aoi_deg=angles_deg, to_plot="R")
+        fig, axs = analyzer.map_view(wavelengths_um, aoi_values=angles_deg, to_plot="R")
         assert isinstance(fig, plt.Figure)
-        assert isinstance(axs, list)
+        assert isinstance(axs, plt.Axes)
         plt.close(fig)
 
     def test_plot_multiple_quantities(self, set_test_backend, simple_stack):
@@ -395,7 +530,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
-        fig, ax = analyzer.view(wavelengths_um, to_plot=["R", "T", "A"])
+        fig, ax = analyzer.wavelength_view(wavelengths_um, to_plot=["R", "T", "A"])
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -406,7 +541,7 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
         fig, ax = plt.subplots()
-        returned_fig, returned_ax = analyzer.view(wavelengths_um, ax=ax)
+        returned_fig, returned_ax = analyzer.wavelength_view(wavelengths_um, ax=ax)
         assert returned_fig is fig
         assert returned_ax is ax
         plt.close(fig)
@@ -417,17 +552,347 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
         with pytest.raises(ValueError, match="to_plot must be"):
-            analyzer.view(wavelengths_um, to_plot="invalid")
+            analyzer.wavelength_view(wavelengths_um, to_plot="invalid")
 
-    def test_plot_scalar_inputs_fails(self, set_test_backend, simple_stack):
-        """Test that both scalar inputs raises error."""
+    def test_wavelength_view_different_units(self, set_test_backend, simple_stack):
+        """Test wavelength_view with different wavelength units."""
         analyzer = SpectralAnalyzer(simple_stack)
 
-        with pytest.raises(
-            ValueError,
-            match="At least one of wavelength_um or aoi_deg must be an array",
-        ):
-            analyzer.view(0.55, aoi_deg=0.0)
+        # Define wavelength range in different units
+        wl_um = be.linspace(0.4, 0.8, 5)
+        wl_nm = wl_um * 1000.0
+        wl_freq = SPEED_OF_LIGHT / (wl_um * 1e-6)
+        wl_energy = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)
+        wl_wavenumber = 1e4 / wl_um
+
+        # Test each unit and verify same results
+        result_um = analyzer.stack.compute_rtRTA(wl_um, 0.0, "s")
+
+        # Test nm
+        fig, ax = analyzer.wavelength_view(wl_nm, wavelength_unit="nm", to_plot="R")
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test frequency
+        fig, ax = analyzer.wavelength_view(
+            wl_freq, wavelength_unit="frequency", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test energy
+        fig, ax = analyzer.wavelength_view(
+            wl_energy, wavelength_unit="energy", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test wavenumber
+        fig, ax = analyzer.wavelength_view(
+            wl_wavenumber, wavelength_unit="wavenumber", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_wavelength_view_relative_wavenumber(self, set_test_backend, air, glass):
+        """Test wavelength_view with relative wavenumber unit."""
+        stack = ThinFilmStack(
+            incident_material=air, substrate_material=glass, reference_wl_um=0.55
+        )
+        analyzer = SpectralAnalyzer(stack)
+
+        # Define relative wavenumber range (around 1.0 for reference wavelength)
+        k_rel = be.linspace(0.8, 1.2, 5)
+
+        fig, ax = analyzer.wavelength_view(
+            k_rel, wavelength_unit="relative_wavenumber", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_wavelength_view_different_angles(self, set_test_backend, simple_stack):
+        """Test wavelength_view with different angle units."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+
+        # Test degrees
+        fig, ax = analyzer.wavelength_view(
+            wavelengths_um, aoi=30.0, aoi_unit="deg", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test radians
+        fig, ax = analyzer.wavelength_view(
+            wavelengths_um, aoi=be.deg2rad(30.0), aoi_unit="rad", to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_wavelength_view_multiple_polarizations(
+        self, set_test_backend, simple_stack
+    ):
+        """Test wavelength_view with different polarizations."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+
+        for pol in ["s", "p", "u"]:
+            fig, ax = analyzer.wavelength_view(
+                wavelengths_um, polarization=pol, to_plot="R"
+            )
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+    def test_angular_view_different_units(self, set_test_backend, simple_stack):
+        """Test angular_view with different wavelength and angle units."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_deg = be.linspace(0, 60, 5)
+        angles_rad = be.deg2rad(angles_deg)
+
+        # Test degrees
+        fig, ax = analyzer.angular_view(
+            angles_deg,
+            aoi_unit="deg",
+            wavelength=550,
+            wavelength_unit="nm",
+            to_plot="R",
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test radians
+        fig, ax = analyzer.angular_view(
+            angles_rad,
+            aoi_unit="rad",
+            wavelength=0.55,
+            wavelength_unit="um",
+            to_plot="R",
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_angular_view_wavelength_units(self, set_test_backend, simple_stack):
+        """Test angular_view with different wavelength units."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_deg = be.linspace(0, 60, 5)
+
+        # Define wavelength in different units (all equivalent to 550 nm)
+        test_cases = [
+            (550.0, "nm"),
+            (0.55, "um"),
+            (SPEED_OF_LIGHT / (0.55e-6), "frequency"),
+            ((PLANCK_EV * SPEED_OF_LIGHT) / (0.55e-6), "energy"),
+            (1e4 / 0.55, "wavenumber"),
+        ]
+
+        for wavelength, unit in test_cases:
+            fig, ax = analyzer.angular_view(
+                angles_deg, wavelength=wavelength, wavelength_unit=unit, to_plot="R"
+            )
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+    def test_angular_view_multiple_quantities(self, set_test_backend, simple_stack):
+        """Test angular_view with multiple quantities and polarizations."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_deg = be.linspace(0, 60, 5)
+
+        # Test multiple quantities
+        fig, ax = analyzer.angular_view(angles_deg, to_plot=["R", "T", "A"])
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test different polarizations
+        for pol in ["s", "p", "u"]:
+            fig, ax = analyzer.angular_view(angles_deg, polarization=pol, to_plot="R")
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+    def test_map_view_different_units(self, set_test_backend, simple_stack):
+        """Test map_view with different wavelength and angle units."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        wavelengths_nm = be.linspace(400, 800, 3)
+        wavelengths_um = wavelengths_nm / 1000.0
+        angles_deg = be.linspace(0, 60, 3)
+        angles_rad = be.deg2rad(angles_deg)
+
+        # Test nm and degrees
+        fig, ax = analyzer.map_view(
+            wavelengths_nm,
+            wavelength_unit="nm",
+            aoi_values=angles_deg,
+            aoi_unit="deg",
+            to_plot="R",
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test um and radians
+        fig, ax = analyzer.map_view(
+            wavelengths_um,
+            wavelength_unit="um",
+            aoi_values=angles_rad,
+            aoi_unit="rad",
+            to_plot="R",
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_map_view_wavelength_units(self, set_test_backend, simple_stack):
+        """Test map_view with different wavelength units."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_deg = be.linspace(0, 60, 3)
+
+        # Test with frequency units
+        wl_um = be.linspace(0.4, 0.8, 3)
+        wl_freq = SPEED_OF_LIGHT / (wl_um * 1e-6)
+        fig, ax = analyzer.map_view(
+            wl_freq, wavelength_unit="frequency", aoi_values=angles_deg, to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test with energy units
+        wl_energy = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)
+        fig, ax = analyzer.map_view(
+            wl_energy, wavelength_unit="energy", aoi_values=angles_deg, to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test with wavenumber units
+        wl_wavenumber = 1e4 / wl_um
+        fig, ax = analyzer.map_view(
+            wl_wavenumber,
+            wavelength_unit="wavenumber",
+            aoi_values=angles_deg,
+            to_plot="R",
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+    def test_map_view_multiple_quantities(self, set_test_backend, simple_stack):
+        """Test map_view with multiple quantities."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 3)
+        angles_deg = be.linspace(0, 60, 3)
+
+        # Test multiple quantities - should return array of axes
+        fig, axs = analyzer.map_view(
+            wavelengths_um, aoi_values=angles_deg, to_plot=["R", "T", "A"]
+        )
+        assert isinstance(fig, plt.Figure)
+        assert hasattr(axs, "__len__")  # axs should be array-like
+        assert len(axs) == 3
+        plt.close(fig)
+
+    def test_map_view_default_angles(self, set_test_backend, simple_stack):
+        """Test map_view with default angle range."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 3)
+
+        # Test without providing aoi_values (should use default)
+        fig, ax = analyzer.map_view(wavelengths_um, to_plot="R")
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
+        plt.close(fig)
+
+    def test_spectral_analyzer_error_cases(self, set_test_backend, simple_stack):
+        """Test error cases for SpectralAnalyzer methods."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+        angles_deg = be.linspace(0, 60, 5)
+
+        # Test invalid wavelength unit in wavelength_view
+        with pytest.raises(ValueError, match="Unknown wavelength unit"):
+            analyzer.wavelength_view(wavelengths_um, wavelength_unit="invalid_unit")
+
+        # Test invalid angle unit in wavelength_view
+        with pytest.raises(ValueError, match="Unknown angle unit"):
+            analyzer.wavelength_view(wavelengths_um, aoi_unit="invalid_unit")
+
+        # Test invalid wavelength unit in angular_view
+        with pytest.raises(ValueError, match="Unknown wavelength unit"):
+            analyzer.angular_view(angles_deg, wavelength_unit="invalid_unit")
+
+        # Test invalid angle unit in angular_view
+        with pytest.raises(ValueError, match="Unknown angle unit"):
+            analyzer.angular_view(angles_deg, aoi_unit="invalid_unit")
+
+        # Test invalid wavelength unit in map_view
+        with pytest.raises(ValueError, match="Unknown wavelength unit"):
+            analyzer.map_view(wavelengths_um, wavelength_unit="invalid_unit")
+
+        # Test invalid angle unit in map_view
+        with pytest.raises(ValueError, match="Unknown angle unit"):
+            analyzer.map_view(
+                wavelengths_um, aoi_values=angles_deg, aoi_unit="invalid_unit"
+            )
+
+        # Test invalid quantity in all methods
+        with pytest.raises(ValueError, match="to_plot must be"):
+            analyzer.wavelength_view(wavelengths_um, to_plot="invalid")
+
+        with pytest.raises(ValueError, match="to_plot must be"):
+            analyzer.angular_view(angles_deg, to_plot="invalid")
+
+        with pytest.raises(ValueError, match="to_plot must be"):
+            analyzer.map_view(wavelengths_um, to_plot="invalid")
+
+    def test_relative_wavenumber_errors(self, set_test_backend, simple_stack):
+        """Test relative wavenumber errors in plotting methods."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        k_rel = be.linspace(0.8, 1.2, 5)
+
+        # Test wavelength_view with relative_wavenumber but no reference
+        with pytest.raises(ValueError, match="reference_wl_um must be set"):
+            analyzer.wavelength_view(k_rel, wavelength_unit="relative_wavenumber")
+
+        # Test angular_view with relative_wavenumber but no reference
+        with pytest.raises(ValueError, match="reference_wl_um must be set"):
+            analyzer.angular_view(
+                be.linspace(0, 60, 5),
+                wavelength=1.0,
+                wavelength_unit="relative_wavenumber",
+            )
+
+        # Test map_view with relative_wavenumber but no reference
+        with pytest.raises(ValueError, match="reference_wl_um must be set"):
+            analyzer.map_view(k_rel, wavelength_unit="relative_wavenumber")
+
+    def test_consistency_across_units(self, set_test_backend, simple_stack):
+        """Test that different units give consistent results."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        # Define equivalent wavelengths in different units
+        wl_um = 0.55
+        wl_nm = wl_um * 1000.0
+        wl_freq = SPEED_OF_LIGHT / (wl_um * 1e-6)
+        wl_energy = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)
+        wl_wavenumber = 1e4 / wl_um
+
+        # Get results for each unit using angular_view
+        angles_deg = be.linspace(0, 60, 5)
+
+        result_um = analyzer.stack.compute_rtRTA(wl_um, be.deg2rad(angles_deg), "s")
+
+        # Test consistency - all should convert to the same wavelength internally
+        # We can't easily test the plotting results directly, but we can test the conversion methods
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_nm, "nm"), wl_um, rtol=1e-10
+        )
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_freq, "frequency"), wl_um, rtol=1e-10
+        )
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_energy, "energy"), wl_um, rtol=1e-10
+        )
+        assert_allclose(
+            analyzer._convert_to_wavelength_um(wl_wavenumber, "wavenumber"),
+            wl_um,
+            rtol=1e-10,
+        )
 
 
 class TestThinFilmStackComplex:
