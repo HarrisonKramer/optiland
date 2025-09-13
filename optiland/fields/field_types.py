@@ -215,11 +215,8 @@ class ObjectHeightField(BaseFieldDefinition):
             ValueError: If the field type is "object_height" for an object at
                 infinity.
         """
+        self._validate_object_infinite(optic)
         obj = optic.object_surface
-        if obj.is_infinite:
-            raise ValueError(
-                'Field type "object_height" is not supported for an object at infinity.'
-            )
         max_field = optic.fields.max_field
         field_x = max_field * Hx
         field_y = max_field * Hy
@@ -245,11 +242,8 @@ class ObjectHeightField(BaseFieldDefinition):
                 at infinity.
 
         """
+        self._validate_object_infinite(optic)
         obj = optic.object_surface
-        if obj.is_infinite:
-            raise ValueError(
-                'Field type "object_height" is not supported for an object at infinity.'
-            )
         field_y = optic.fields.max_field * Hy
         y = -field_y
         z = obj.geometry.cs.z
@@ -276,6 +270,18 @@ class ObjectHeightField(BaseFieldDefinition):
         """
         max_field_height = optic.fields.max_y_field
         return max_field_height / y_obj_unit
+
+    def _validate_object_infinite(self, optic):
+        """Check if the object surface is at infinity.
+
+        Args:
+            optic (Optic): The optical system being traced.
+
+        Raises:
+            ValueError: If the object surface is at infinity.
+        """
+        if optic.object_surface.is_infinite:
+            raise ValueError("Object surface is at infinity.")
 
 
 class ParaxialImageHeightField(BaseFieldDefinition):
