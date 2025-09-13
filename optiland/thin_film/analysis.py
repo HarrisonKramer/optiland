@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 Pol = Literal["s", "p", "u"]
 PlotType = Literal["R", "T", "A"]
 Array: TypeAlias = Any  # be.ndarray
+x_axis = Literal[
+    "wavelength", "aoi", "frequency", "energy", "wavenumber", "relative_wavenumber"
+]
 
 
 class SpectralAnalyzer:
@@ -29,7 +32,7 @@ class SpectralAnalyzer:
         """
         self.stack = stack
 
-    def plot(
+    def view(
         self,
         wavelength_um: float | Array,
         aoi_deg: float | Array = 0.0,

@@ -364,7 +364,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
-        fig, ax = analyzer.plot(wavelengths_um, aoi_deg=0.0, to_plot="R")
+        fig, ax = analyzer.view(wavelengths_um, aoi_deg=0.0, to_plot="R")
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -374,7 +374,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         angles_deg = be.linspace(0, 80, 10)
 
-        fig, ax = analyzer.plot(0.55, aoi_deg=angles_deg, to_plot="R")
+        fig, ax = analyzer.view(0.55, aoi_deg=angles_deg, to_plot="R")
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -385,7 +385,7 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 5)
         angles_deg = be.linspace(0, 60, 4)
 
-        fig, axs = analyzer.plot(wavelengths_um, aoi_deg=angles_deg, to_plot="R")
+        fig, axs = analyzer.view(wavelengths_um, aoi_deg=angles_deg, to_plot="R")
         assert isinstance(fig, plt.Figure)
         assert isinstance(axs, list)
         plt.close(fig)
@@ -395,7 +395,7 @@ class TestSpectralAnalyzer:
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
-        fig, ax = analyzer.plot(wavelengths_um, to_plot=["R", "T", "A"])
+        fig, ax = analyzer.view(wavelengths_um, to_plot=["R", "T", "A"])
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, plt.Axes)
         plt.close(fig)
@@ -406,7 +406,7 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
         fig, ax = plt.subplots()
-        returned_fig, returned_ax = analyzer.plot(wavelengths_um, ax=ax)
+        returned_fig, returned_ax = analyzer.view(wavelengths_um, ax=ax)
         assert returned_fig is fig
         assert returned_ax is ax
         plt.close(fig)
@@ -417,7 +417,7 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 10)
 
         with pytest.raises(ValueError, match="to_plot must be"):
-            analyzer.plot(wavelengths_um, to_plot="invalid")
+            analyzer.view(wavelengths_um, to_plot="invalid")
 
     def test_plot_scalar_inputs_fails(self, set_test_backend, simple_stack):
         """Test that both scalar inputs raises error."""
@@ -427,7 +427,7 @@ class TestSpectralAnalyzer:
             ValueError,
             match="At least one of wavelength_um or aoi_deg must be an array",
         ):
-            analyzer.plot(0.55, aoi_deg=0.0)
+            analyzer.view(0.55, aoi_deg=0.0)
 
 
 class TestThinFilmStackComplex:
