@@ -1,7 +1,7 @@
 import optiland.backend as be
 import pytest
 
-from optiland import Optic
+from optiland.optic import Optic
 from optiland.samples import objectives
 from .utils import assert_allclose
 
