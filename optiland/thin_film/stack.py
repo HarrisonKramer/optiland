@@ -1,3 +1,13 @@
+"""Thin film optics stack class with inlined TMM.
+
+This class encapsulates both the stack structure (incident/substrate, layers)
+and the numerical Transfer Matrix Method (TMM) to compute complex amplitude
+coefficients (r, t) and power coefficients (R, T, A) for s, p and unpolarized
+cases.
+
+Corentin Nannini, 2025
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

@@ -1,3 +1,11 @@
+"""Layer data class for thin-film optics.
+
+This class represents a single layer in a thin-film stack, including its
+material properties and thickness.
+
+Corentin Nannini, 2025
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
