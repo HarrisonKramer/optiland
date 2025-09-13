@@ -632,6 +632,38 @@ class TestSpectralAnalyzer:
     def test_wavelength_view_multiple_polarizations(
         self, set_test_backend, simple_stack
     ):
+        """Test wavelength_view with different polarizations including multiple at once."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+
+        # Test single polarizations
+        for pol in ["s", "p", "u"]:
+            fig, ax = analyzer.wavelength_view(
+                wavelengths_um, polarization=pol, to_plot="R"
+            )
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+        # Test multiple polarizations at once
+        fig, ax = analyzer.wavelength_view(
+            wavelengths_um, polarization=["s", "p"], to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test all three polarizations
+        fig, ax = analyzer.wavelength_view(
+            wavelengths_um, polarization=["s", "p", "u"], to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test multiple polarizations with multiple quantities
+        fig, ax = analyzer.wavelength_view(
+            wavelengths_um, polarization=["s", "p"], to_plot=["R", "T"]
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
         """Test wavelength_view with different polarizations."""
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 5)
@@ -702,11 +734,25 @@ class TestSpectralAnalyzer:
         assert isinstance(fig, plt.Figure)
         plt.close(fig)
 
-        # Test different polarizations
+        # Test single polarizations
         for pol in ["s", "p", "u"]:
             fig, ax = analyzer.angular_view(angles_deg, polarization=pol, to_plot="R")
             assert isinstance(fig, plt.Figure)
             plt.close(fig)
+
+        # Test multiple polarizations at once
+        fig, ax = analyzer.angular_view(
+            angles_deg, polarization=["s", "p"], to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
+
+        # Test multiple polarizations with multiple quantities
+        fig, ax = analyzer.angular_view(
+            angles_deg, polarization=["s", "p"], to_plot=["R", "T"]
+        )
+        assert isinstance(fig, plt.Figure)
+        plt.close(fig)
 
     def test_map_view_different_units(self, set_test_backend, simple_stack):
         """Test map_view with different wavelength and angle units."""
@@ -773,12 +819,12 @@ class TestSpectralAnalyzer:
         plt.close(fig)
 
     def test_map_view_multiple_quantities(self, set_test_backend, simple_stack):
-        """Test map_view with multiple quantities."""
+        """Test map_view with multiple quantities and polarizations."""
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 3)
         angles_deg = be.linspace(0, 60, 3)
 
-        # Test multiple quantities - should return array of axes
+        # Test multiple quantities with single polarization - should return array of axes
         fig, axs = analyzer.map_view(
             wavelengths_um, aoi_values=angles_deg, to_plot=["R", "T", "A"]
         )
@@ -786,6 +832,82 @@ class TestSpectralAnalyzer:
         assert hasattr(axs, "__len__")  # axs should be array-like
         assert len(axs) == 3
         plt.close(fig)
+
+        # Test single quantity with multiple polarizations
+        fig, axs = analyzer.map_view(
+            wavelengths_um, aoi_values=angles_deg, polarization=["s", "p"], to_plot="R"
+        )
+        assert isinstance(fig, plt.Figure)
+        assert hasattr(axs, "__len__")  # axs should be array-like
+        assert len(axs) == 2  # Two polarizations
+        plt.close(fig)
+
+        # Test multiple quantities with multiple polarizations
+        fig, axs = analyzer.map_view(
+            wavelengths_um,
+            aoi_values=angles_deg,
+            polarization=["s", "p"],
+            to_plot=["R", "T"],
+        )
+        assert isinstance(fig, plt.Figure)
+        assert hasattr(axs, "__len__")  # axs should be array-like
+        # Should be 2D array: 2 quantities x 2 polarizations
+        plt.close(fig)
+
+    def test_multiple_polarizations_comprehensive(self, set_test_backend, simple_stack):
+        """Test comprehensive support for multiple polarizations across all view methods."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+        angles_deg = be.linspace(0, 60, 5)
+
+        # Test all combinations of polarizations
+        pol_combinations = [
+            "s",  # Single polarization
+            ["s"],  # Single polarization as list
+            ["s", "p"],  # Two polarizations
+            ["s", "p", "u"],  # All three polarizations
+        ]
+
+        for pols in pol_combinations:
+            # Test wavelength_view with multiple polarizations
+            fig, ax = analyzer.wavelength_view(
+                wavelengths_um, polarization=pols, to_plot="R"
+            )
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+            # Test angular_view with multiple polarizations
+            fig, ax = analyzer.angular_view(angles_deg, polarization=pols, to_plot="R")
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+            # Test map_view with multiple polarizations
+            fig, axs = analyzer.map_view(
+                wavelengths_um[:3],
+                aoi_values=angles_deg[:3],
+                polarization=pols,
+                to_plot="R",
+            )
+            assert isinstance(fig, plt.Figure)
+            plt.close(fig)
+
+    def test_polarization_line_styles(self, set_test_backend, simple_stack):
+        """Test that different polarizations get different line styles."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wavelengths_um = be.linspace(0.4, 0.8, 5)
+
+        # Test that the line style method works
+        style_0 = analyzer._get_line_style(0)
+        style_1 = analyzer._get_line_style(1)
+        style_2 = analyzer._get_line_style(2)
+
+        assert "linestyle" in style_0
+        assert "linestyle" in style_1
+        assert "linestyle" in style_2
+
+        # They should be different
+        assert style_0["linestyle"] != style_1["linestyle"]
+        assert style_1["linestyle"] != style_2["linestyle"]
 
     def test_map_view_default_angles(self, set_test_backend, simple_stack):
         """Test map_view with default angle range."""

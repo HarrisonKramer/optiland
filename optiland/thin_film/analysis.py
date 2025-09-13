@@ -25,6 +25,7 @@ PLANCK_EV = PLANCK_CONSTANT / ELEMENTARY_CHARGE  # eV⋅s ≈ 4.135667696e-15
 
 # Type definitions
 Pol = Literal["s", "p", "u"]
+PolInput = Pol | list[Pol]
 PlotType = Literal["R", "T", "A"]
 Array: TypeAlias = Any  # be.ndarray
 WavelengthUnit = Literal[
@@ -47,6 +48,21 @@ class SpectralAnalyzer:
             stack (ThinFilmStack): The thin film stack to be analyzed.
         """
         self.stack = stack
+
+    def _normalize_polarizations(self, polarization: PolInput) -> list[Pol]:
+        """Convert polarization input to a list of polarizations."""
+        if isinstance(polarization, str):
+            return [polarization]
+        return polarization
+
+    def _get_line_style(self, pol_idx: int) -> dict[str, Any]:
+        """Get line style for different polarizations."""
+        styles = [
+            {"linestyle": "-", "alpha": 0.8},  # solid for first
+            {"linestyle": "--", "alpha": 0.8},  # dashed for second
+            {"linestyle": ":", "alpha": 0.8},  # dotted for third
+        ]
+        return styles[pol_idx % len(styles)]
 
     def _convert_to_wavelength_um(
         self, values: float | Array, unit: WavelengthUnit
@@ -136,11 +152,11 @@ class SpectralAnalyzer:
 
     def wavelength_view(
         self,
-        wavelength_values: Array,
+        wavelength_values: float | Array,
         wavelength_unit: WavelengthUnit = "um",
         aoi: float = 0.0,
         aoi_unit: AngleUnit = "deg",
-        polarization: Pol = "u",
+        polarization: PolInput = "u",
         to_plot: PlotType | list[PlotType] = "R",
         ax: plt.Axes = None,
     ) -> tuple[plt.Figure, plt.Axes]:
@@ -148,11 +164,10 @@ class SpectralAnalyzer:
 
         Args:
             wavelength_values: Wavelength values in the specified unit
-            wavelength_unit: Unit of wavelength values ('um', 'nm', 'frequency',
-            'energy', 'wavenumber', 'relative_wavenumber')
+            wavelength_unit: Unit of wavelength values
             aoi: Angle of incidence (scalar)
-            aoi_unit: Unit of the angle ('deg' or 'rad')
-            polarization: Polarization type
+            aoi_unit: Unit of the angle
+            polarization: Polarization type(s) - single string or list
             to_plot: Quantity(ies) to plot
             ax: Optional matplotlib Axes
 
@@ -161,13 +176,12 @@ class SpectralAnalyzer:
         """
         # Convert inputs
         wl_um = self._convert_to_wavelength_um(wavelength_values, wavelength_unit)
-        aoi_rad = float(self._convert_angle_to_radians(aoi, aoi_unit))
+        aoi_rad = float(self._convert_angle_to_radians(aoi, aoi_unit).item())
 
+        # Normalize inputs to lists
+        polarizations = self._normalize_polarizations(polarization)
         if isinstance(to_plot, str):
             to_plot = [to_plot]
-
-        # Compute R/T/A
-        rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, polarization)
 
         # Convert wavelength back for plotting x-axis
         x_values = self._convert_wavelength_for_plotting(wl_um, wavelength_unit)
@@ -177,14 +191,24 @@ class SpectralAnalyzer:
         else:
             fig = ax.figure
 
-        for quantity in to_plot:
-            if quantity not in ("R", "T", "A"):
-                raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
-            ax.plot(
-                x_values,
-                rta_data[quantity].flatten(),
-                label=f"{quantity}, {polarization}-pol, AOI={aoi}{aoi_unit}",
-            )
+        # Plot for each polarization and quantity combination
+        for pol_idx, pol in enumerate(polarizations):
+            # Compute R/T/A for this polarization
+            rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, pol)
+
+            for quantity in to_plot:
+                if quantity not in ("R", "T", "A"):
+                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+
+                # Get line style for this polarization
+                line_style = self._get_line_style(pol_idx)
+
+                ax.plot(
+                    x_values,
+                    rta_data[quantity].flatten(),
+                    label=f"{quantity}, {pol}-pol, AOI={aoi}{aoi_unit}",
+                    **line_style,
+                )
 
         ax.set_xlabel(self._get_wavelength_axis_label(wavelength_unit))
         ax.set_ylabel("Power fraction")
@@ -197,11 +221,11 @@ class SpectralAnalyzer:
 
     def angular_view(
         self,
-        aoi_values: Array,
+        aoi_values: float | Array,
         aoi_unit: AngleUnit = "deg",
         wavelength: float = 0.55,
         wavelength_unit: WavelengthUnit = "um",
-        polarization: Pol = "u",
+        polarization: PolInput = "u",
         to_plot: PlotType | list[PlotType] = "R",
         ax: plt.Axes = None,
     ) -> tuple[plt.Figure, plt.Axes]:
@@ -209,11 +233,10 @@ class SpectralAnalyzer:
 
         Args:
             aoi_values: Angle of incidence values in the specified unit
-            aoi_unit: Unit of the angle values ('deg' or 'rad')
+            aoi_unit: Unit of the angle values
             wavelength: Wavelength value (scalar)
-            wavelength_unit: Unit of the wavelength ('um', 'nm', 'frequency',
-            'energy', 'wavenumber', 'relative_wavenumber')
-            polarization: Polarization type
+            wavelength_unit: Unit of the wavelength
+            polarization: Polarization type(s) - single string or list
             to_plot: Quantity(ies) to plot
             ax: Optional matplotlib Axes
 
@@ -222,13 +245,14 @@ class SpectralAnalyzer:
         """
         # Convert inputs
         aoi_rad = self._convert_angle_to_radians(aoi_values, aoi_unit)
-        wl_um = float(self._convert_to_wavelength_um(wavelength, wavelength_unit))
+        wl_um = float(
+            self._convert_to_wavelength_um(wavelength, wavelength_unit).item()
+        )
 
+        # Normalize inputs to lists
+        polarizations = self._normalize_polarizations(polarization)
         if isinstance(to_plot, str):
             to_plot = [to_plot]
-
-        # Compute R/T/A
-        rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, polarization)
 
         # Convert angles back for plotting x-axis
         x_values = be.atleast_1d(aoi_values)
@@ -238,19 +262,28 @@ class SpectralAnalyzer:
         else:
             fig = ax.figure
 
-        for quantity in to_plot:
-            if quantity not in ("R", "T", "A"):
-                raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+        # Plot for each polarization and quantity combination
+        for pol_idx, pol in enumerate(polarizations):
+            # Compute R/T/A for this polarization
+            rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, pol)
 
-            wl_label_prefix = (
-                self._get_wavelength_axis_label(wavelength_unit).split("(")[0].strip()
-            )
-            ax.plot(
-                x_values,
-                rta_data[quantity].flatten(),
-                label=f"{quantity}, {polarization}-pol"
-                + f", {wl_label_prefix}={wavelength}{wavelength_unit}",
-            )
+            for quantity in to_plot:
+                if quantity not in ("R", "T", "A"):
+                    raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
+
+                # Get line style for this polarization
+                line_style = self._get_line_style(pol_idx)
+
+                # Create label parts
+                wl_axis_label = self._get_wavelength_axis_label(wavelength_unit)
+                wl_symbol = wl_axis_label.split("(")[0].strip()
+
+                ax.plot(
+                    x_values,
+                    rta_data[quantity].flatten(),
+                    label=f"{quantity}, {pol}-pol, {wl_symbol}={wavelength}",
+                    **line_style,
+                )
 
         xlabel = r"AOI (°)" if aoi_unit == "deg" else r"AOI (rad)"
         ax.set_xlabel(xlabel)
@@ -268,7 +301,7 @@ class SpectralAnalyzer:
         wavelength_unit: WavelengthUnit = "um",
         aoi_values: float | Array = None,
         aoi_unit: AngleUnit = "deg",
-        polarization: Pol = "u",
+        polarization: PolInput = "u",
         to_plot: PlotType | list[PlotType] = "R",
         fig: plt.Figure = None,
         axs: plt.Axes | list[plt.Axes] = None,
@@ -277,11 +310,10 @@ class SpectralAnalyzer:
 
         Args:
             wavelength_values: Wavelength values in the specified unit
-            wavelength_unit: Unit of wavelength values ('um', 'nm', 'frequency',
-            'energy', 'wavenumber', 'relative_wavenumber')
+            wavelength_unit: Unit of wavelength values
             aoi_values: Angle of incidence values in the specified unit
-            aoi_unit: Unit of the angle values ('deg' or 'rad')
-            polarization: Polarization type
+            aoi_unit: Unit of the angle values
+            polarization: Polarization type(s) - single string or list
             to_plot: Quantity(ies) to plot
             fig: Optional matplotlib Figure
             axs: Optional matplotlib Axes (single or list)
@@ -301,11 +333,10 @@ class SpectralAnalyzer:
         wl_um = self._convert_to_wavelength_um(wavelength_values, wavelength_unit)
         aoi_rad = self._convert_angle_to_radians(aoi_values, aoi_unit)
 
+        # Normalize inputs to lists
+        polarizations = self._normalize_polarizations(polarization)
         if isinstance(to_plot, str):
             to_plot = [to_plot]
-
-        # Compute R/T/A on 2D grid
-        rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, polarization)
 
         # Convert back for plotting axes
         wl_plot = self._convert_wavelength_for_plotting(wl_um, wavelength_unit)
@@ -316,33 +347,58 @@ class SpectralAnalyzer:
 
         # Create figure and axes
         if fig is None or axs is None:
-            fig, axs = plt.subplots(len(to_plot), 1, figsize=(8, 4 * len(to_plot)))
-            if len(to_plot) == 1:
+            # Organize subplots: polarizations as columns, quantities as rows
+            nrows = len(to_plot)
+            ncols = len(polarizations)
+            fig, axs = plt.subplots(nrows, ncols, figsize=(6 * ncols, 4 * nrows))
+
+            # Ensure axs is always 2D array for consistent indexing
+            if nrows == 1 and ncols == 1:
+                axs = [[axs]]
+            elif nrows == 1:
                 axs = [axs]
+            elif ncols == 1:
+                axs = [[ax] for ax in axs]
         else:
-            if len(to_plot) == 1 and not isinstance(axs, list):
+            # If axs is provided, assume it's properly formatted
+            if not isinstance(axs, list):
+                axs = [[axs]]
+            elif not isinstance(axs[0], list):
                 axs = [axs]
 
-        # Plot each quantity
-        for ax_idx, quantity in enumerate(to_plot):
+        # Plot each quantity and polarization combination
+        for qty_idx, quantity in enumerate(to_plot):
             if quantity not in ("R", "T", "A"):
                 raise ValueError("to_plot must be 'R', 'T', 'A' or a list of these")
 
-            ax_i = axs[ax_idx]
-            im = ax_i.pcolormesh(
-                WL, AOI, rta_data[quantity], shading="auto", vmin=0, vmax=1
-            )
+            for pol_idx, pol in enumerate(polarizations):
+                # Compute R/T/A for this polarization
+                rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, pol)
 
-            ax_i.set_xlabel(self._get_wavelength_axis_label(wavelength_unit))
-            ylabel = r"AOI (°)" if aoi_unit == "deg" else r"AOI (rad)"
-            ax_i.set_ylabel(ylabel)
-            ax_i.set_title(f"{quantity}, {polarization}-pol")
+                ax_i = axs[qty_idx][pol_idx]
+                im = ax_i.pcolormesh(
+                    WL, AOI, rta_data[quantity], shading="auto", vmin=0, vmax=1
+                )
 
-            # Add colorbar
-            cbar = fig.colorbar(im, ax=ax_i, label="Power fraction")
-            cbar.set_label("Power fraction")
+                ax_i.set_xlabel(self._get_wavelength_axis_label(wavelength_unit))
+                ylabel = r"AOI (°)" if aoi_unit == "deg" else r"AOI (rad)"
+                ax_i.set_ylabel(ylabel)
+                ax_i.set_title(f"{quantity}, {pol}-pol")
+
+                # Add colorbar
+                cbar = fig.colorbar(im, ax=ax_i, label="Power fraction")
+                cbar.set_label("Power fraction")
 
         fig.tight_layout()
 
-        # Return single axes if only one plot, otherwise return list
-        return fig, axs[0] if len(to_plot) == 1 else axs
+        # Return format depends on the number of plots
+        if len(to_plot) == 1 and len(polarizations) == 1:
+            return fig, axs[0][0]
+        elif len(to_plot) == 1:
+            return fig, axs[0]  # Return list of axes for different polarizations
+        elif len(polarizations) == 1:
+            return fig, [
+                row[0] for row in axs
+            ]  # Return list of axes for different quantities
+        else:
+            return fig, axs  # Return 2D array of axes
