@@ -48,7 +48,7 @@ class BaseFieldDefinition(ABC):
                 object position.
 
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get_paraxial_object_position(
@@ -66,7 +66,7 @@ class BaseFieldDefinition(ABC):
                 position.
 
         """
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def scale_chief_ray_for_field(
@@ -89,7 +89,7 @@ class BaseFieldDefinition(ABC):
             float: The scaling factor.
 
         """
-        pass
+        pass  # pragma: no cover
 
     def to_dict(self) -> dict:
         """Convert the field definition to a dictionary.
