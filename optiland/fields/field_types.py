@@ -60,7 +60,7 @@ class BaseFieldDefinition(ABC):
         return {"field_type": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, field_def_dict: dict) -> "BaseFieldDefinition":
+    def from_dict(cls, field_def_dict: dict) -> BaseFieldDefinition:
         """Create a field definition from a dictionary.
 
         Args:
@@ -91,7 +91,21 @@ class AngleField(BaseFieldDefinition):
     """Defines fields by angle (in degrees) relative to the optical axis."""
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
-        """Calculates the initial positions for rays originating at the object."""
+        """Calculate the initial positions for rays originating at the object.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
+            vx (float): Vignetting factor in the x-direction.
+            vy (float): Vignetting factor in the y-direction.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        """
         obj = optic.object_surface
         EPL = optic.paraxial.EPL()
         max_field = optic.fields.max_field
@@ -120,7 +134,18 @@ class AngleField(BaseFieldDefinition):
         return x0, y0, z0
 
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
-        """Calculates the object position for a paraxial ray fan."""
+        """Calculate the position of the object in the paraxial optical system.
+
+        Args:
+            Hy (float): The normalized field height.
+            y1 (ndarray): The initial y-coordinate of the ray.
+            EPL (float): The entrance pupil location.
+
+        Returns:
+            tuple: A tuple containing the y and z coordinates of the object
+                position.
+
+        """
         field_y = optic.fields.max_field * Hy
         y = -be.tan(be.radians(field_y)) * EPL
         z = optic.surface_group.positions[1]
@@ -129,12 +154,40 @@ class AngleField(BaseFieldDefinition):
         return y0, z0
 
     def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
-        """Calculates scaling factor for a chief ray based on the field definition."""
+        """Calculates the scaling factor for a unit chief ray based on the field
+        definition.
+
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
+
+        Args:
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
+
+        Returns:
+            float: The scaling factor.
+        """
         max_field_angle = optic.fields.max_y_field
         target_slope = be.tan(be.deg2rad(max_field_angle))
         return target_slope / u_obj_unit
 
     def _get_starting_z_offset(self, optic):
+        """Calculate the starting ray z-coordinate offset for systems with an
+        object at infinity. This is relative to the first surface of the optic.
+
+        This method chooses a starting point that is equivalent to the entrance
+        pupil diameter of the optic.
+
+        Args:
+            optic (Optic): The optical system being traced.
+
+        Returns:
+            float: The z-coordinate offset relative to the first surface.
+
+        """
         z = optic.surface_group.positions[1:-1]
         offset = optic.paraxial.EPD()
         return offset - be.min(z)
@@ -144,7 +197,24 @@ class ObjectHeightField(BaseFieldDefinition):
     """Defines fields by height on the object surface."""
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
-        """Calculates the initial positions for rays originating at the object."""
+        """Calculate the initial positions for rays originating at the object.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
+            vx (float): Vignetting factor in the x-direction.
+            vy (float): Vignetting factor in the y-direction.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        Raises:
+            ValueError: If the field type is "object_height" for an object at
+                infinity.
+        """
         obj = optic.object_surface
         if obj.is_infinite:
             raise ValueError(
@@ -159,7 +229,22 @@ class ObjectHeightField(BaseFieldDefinition):
         return x0, y0, z0
 
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
-        """Calculates the object position for a paraxial ray fan."""
+        """Calculate the position of the object in the paraxial optical system.
+
+        Args:
+            Hy (float): The normalized field height.
+            y1 (ndarray): The initial y-coordinate of the ray.
+            EPL (float): The entrance pupil location.
+
+        Returns:
+            tuple: A tuple containing the y and z coordinates of the object
+                position.
+
+        Raises:
+            ValueError: If the field type is "object_height" and the object is
+                at infinity.
+
+        """
         obj = optic.object_surface
         if obj.is_infinite:
             raise ValueError(
@@ -173,7 +258,22 @@ class ObjectHeightField(BaseFieldDefinition):
         return y0, z0
 
     def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
-        """Calculates scaling factor for a chief ray based on the field definition."""
+        """Calculates the scaling factor for a unit chief ray based on the field
+        definition.
+
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
+
+        Args:
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
+
+        Returns:
+            float: The scaling factor.
+        """
         max_field_height = optic.fields.max_y_field
         return max_field_height / y_obj_unit
 
@@ -182,7 +282,24 @@ class ParaxialImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's paraxial height at the image plane."""
 
     def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
-        """Calculates the initial positions for rays originating at the object."""
+        """Calculate the initial positions for rays originating at the object.
+
+        Args:
+            Hx (float): Normalized x field coordinate.
+            Hy (float): Normalized y field coordinate.
+            Px (float or be.ndarray): x-coordinate of the pupil point.
+            Py (float or be.ndarray): y-coordinate of the pupil point.
+            vx (float): Vignetting factor in the x-direction.
+            vy (float): Vignetting factor in the y-direction.
+
+        Returns:
+            tuple: A tuple containing the x, y, and z coordinates of the
+                object position.
+
+        Raises:
+            ValueError: If the field type is "object_height" for an object at
+                infinity.
+        """
         y_img_target = optic.fields.max_field * Hy
         x_img_target = optic.fields.max_field * Hx
 
@@ -221,7 +338,18 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         return x0, y0, z0
 
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
-        """Calculates the object position for a paraxial ray fan."""
+        """Calculate the position of the object in the paraxial optical system.
+
+        Args:
+            Hy (float): The normalized field height.
+            y1 (ndarray): The initial y-coordinate of the ray.
+            EPL (float): The entrance pupil location.
+
+        Returns:
+            tuple: A tuple containing the y and z coordinates of the object
+                position.
+
+        """
         y_img_target = optic.fields.max_field * Hy
         y_img_unit, _ = self._trace_unit_chief_ray(optic, plane="image")
         y_obj_unit, u_obj_unit = self._trace_unit_chief_ray(optic, plane="object")
@@ -241,11 +369,39 @@ class ParaxialImageHeightField(BaseFieldDefinition):
         return y0, z0
 
     def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
-        """Calculates scaling factor for a chief ray based on the field definition."""
+        """Calculates the scaling factor for a unit chief ray based on the field
+        definition.
+
+        This is used in the paraxial chief_ray calculation. It uses the results
+        of a forward and backward "unit" trace from the stop to determine the
+        final scaling factor.
+
+        Args:
+            optic (Optic): The optical system.
+            y_obj_unit (float): The object-space height of the unit ray.
+            u_obj_unit (float): The object-space angle of the unit ray.
+            y_img_unit (float): The image-space height of the unit ray.
+
+        Returns:
+            float: The scaling factor.
+        """
         max_image_height = optic.fields.max_y_field
         return max_image_height / y_img_unit
 
     def _get_starting_z_offset(self, optic):
+        """Calculate the starting ray z-coordinate offset for systems with an
+        object at infinity. This is relative to the first surface of the optic.
+
+        This method chooses a starting point that is equivalent to the entrance
+        pupil diameter of the optic.
+
+        Args:
+            optic (Optic): The optical system being traced.
+
+        Returns:
+            float: The z-coordinate offset relative to the first surface.
+
+        """
         z = optic.surface_group.positions[1:-1]
         offset = optic.paraxial.EPD()
         return offset - be.min(z)
