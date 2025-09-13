@@ -222,6 +222,11 @@ class OpticUpdater:
             surface.geometry.norm_x = surface.semi_aperture * 1.25
         if hasattr(surface.geometry, "norm_y"):
             surface.geometry.norm_y = surface.semi_aperture * 1.25
+        if hasattr(surface.geometry, "is_fitted"):
+            if surface.geometry.is_fitted == True:
+                surface.geometry.nurbs_norm_x = surface.semi_aperture * 1.25
+                surface.geometry.nurbs_norm_y = surface.semi_aperture * 1.25
+                surface.geometry.fit_surface()
 
         other_types = ["zernike"]
         if surface.surface_type in other_types:
