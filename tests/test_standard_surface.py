@@ -4,6 +4,7 @@ import optiland.backend as be
 from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
+from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
 from optiland.materials import IdealMaterial
 from optiland.rays import ParaxialRays, RealRays
 from optiland.surfaces.standard_surface import Surface
@@ -18,15 +19,21 @@ class TestSurface:
         aperture = None
         coating = SimpleCoating(0.5, 0.5)
         bsdf = None
+        interaction_model = RefractiveReflectiveModel(
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_reflective=True,
+            coating=coating,
+            bsdf=bsdf,
+        )
         return Surface(
             geometry=geometry,
             material_pre=material_pre,
             material_post=material_post,
             is_stop=True,
             aperture=aperture,
-            coating=coating,
-            bsdf=bsdf,
-            is_reflective=True,
+            interaction_model=interaction_model,
         )
 
     def test_trace_paraxial_rays(self, set_test_backend):
@@ -69,7 +76,7 @@ class TestSurface:
     def test_set_fresnel_coating(self, set_test_backend):
         surface = self.create_surface()
         surface.set_fresnel_coating()
-        assert isinstance(surface.coating, FresnelCoating)
+        assert isinstance(surface.interaction_model.coating, FresnelCoating)
 
     def test_is_rotationally_symmetric(self, set_test_backend):
         surface = self.create_surface()
@@ -107,8 +114,14 @@ class TestSurface:
         assert new_surface.material_post.to_dict() == surface.material_post.to_dict()
         assert new_surface.is_stop == surface.is_stop
         assert new_surface.aperture == surface.aperture
-        assert new_surface.coating.to_dict() == surface.coating.to_dict()
-        assert new_surface.is_reflective == surface.is_reflective
+        assert (
+            new_surface.interaction_model.coating.to_dict()
+            == surface.interaction_model.coating.to_dict()
+        )
+        assert (
+            new_surface.interaction_model.is_reflective
+            == surface.interaction_model.is_reflective
+        )
         assert new_surface.semi_aperture is None
         assert be.array_equal(new_surface.y, be.empty(0))
         assert be.array_equal(new_surface.u, be.empty(0))

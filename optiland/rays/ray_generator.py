@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.rays.polarized_rays import PolarizedRays
+from optiland.rays.real_rays import RealRays
+
+from ..fields.field_types import AngleField
 
 
 class RayGenerator:
@@ -32,25 +35,58 @@ class RayGenerator:
             RealRays: RealRays object containing the generated rays.
 
         """
-        # Use the aiming context to aim the ray
-        rays = self.optic.ray_aiming.aim(self.optic, Hx, Hy, Px, Py, wavelength)
+        vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
+        vx = 1 - be.array(vxf)
+        vy = 1 - be.array(vyf)
+        x0, y0, z0 = self.optic.field_definition.get_ray_origins(
+            self.optic, Hx, Hy, Px, Py, vx, vy
+        )
 
-        # Apply apodization
+        if self.optic.obj_space_telecentric:
+            if isinstance(self.optic.field_definition, AngleField):
+                raise ValueError(
+                    'Field type cannot be "angle" for telecentric object space.',
+                )
+            if self.optic.aperture.ap_type == "EPD":
+                raise ValueError(
+                    'Aperture type cannot be "EPD" for telecentric object space.',
+                )
+            if self.optic.aperture.ap_type == "imageFNO":
+                raise ValueError(
+                    'Aperture type cannot be "imageFNO" for telecentric object space.',
+                )
+
+            sin = self.optic.aperture.value
+            z = be.sqrt(1 - sin**2) / sin + z0
+            z1 = be.full_like(Px, z)
+            x1 = Px * vx + x0
+            y1 = Py * vy + y0
+        else:
+            EPL = self.optic.paraxial.EPL()
+            EPD = self.optic.paraxial.EPD()
+
+            x1 = Px * EPD * vx / 2
+            y1 = Py * EPD * vy / 2
+            z1 = be.full_like(Px, EPL)
+
+        mag = be.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
+        L = (x1 - x0) / mag
+        M = (y1 - y0) / mag
+        N = (z1 - z0) / mag
+
         apodization = self.optic.apodization
         if apodization:
-            rays.intensity = apodization.get_intensity(Px, Py)
+            intensity = apodization.get_intensity(Px, Py)
         else:
-            rays.intensity = be.ones_like(Px)
+            intensity = be.ones_like(Px)
 
-        rays.wavelength = be.ones_like(Px) * wavelength
+        wavelength = be.ones_like(x1) * wavelength
 
-        # Handle polarization
         if self.optic.polarization == "ignore":
             if self.optic.surface_group.uses_polarization:
                 raise ValueError(
                     "Polarization must be set when surfaces have "
                     "polarization-dependent coatings.",
                 )
-            return rays
-        else:
-            return PolarizedRays.from_real_rays(rays)
+            return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
+        return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)

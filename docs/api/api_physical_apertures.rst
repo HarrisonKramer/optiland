@@ -17,4 +17,3 @@ physical aperture that is circular with a hole in the center (i.e., `RadialApert
    physical_apertures.elliptical
    physical_apertures.offset_radial
    physical_apertures.polygon
-   physical_apertures.file

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from sys import version_info
 from typing import TYPE_CHECKING, Literal, TypedDict
 
@@ -39,8 +40,11 @@ DistributionType = Literal[
     "ring",
 ]
 ApertureType = Literal["EPD", "imageFNO", "objectNA", "float_by_stop_size"]
+Fields = Literal["all"] | Sequence[tuple[float, float]]
 FieldType = Literal["angle", "object_height"]
+PlotProjection = Literal["2d", "3d"]
 ReferenceRay = Literal["chief", "marginal"]
+Wavelengths = Literal["all", "primary"] | Sequence[float]
 WavelengthUnit = Literal["nm", "um", "mm", "cm", "m"]
 ZernikeType = Literal["standard", "noll", "fringe"]
 

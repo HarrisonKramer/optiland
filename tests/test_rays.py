@@ -825,14 +825,13 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.0
+        wavelength = 0.55
 
-        x0, y0, z0 = generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+        rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-        assert x0.shape == (2,)
-        assert y0.shape == (2,)
-        assert z0.shape == (2,)
+        assert rays.x.shape == (2,)
+        assert rays.y.shape == (2,)
+        assert rays.z.shape == (2,)
 
     def test_get_ray_origins_invalid_field_type(self):
         lens = TessarLens()
@@ -843,11 +842,10 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.1
+        wavelength = 0.55
 
         with pytest.raises(ValueError):
-            generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
     def test_invalid_ray_origin_telecentric(self):
         lens = TessarLens()
@@ -858,11 +856,10 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.1
+        wavelength = 0.55
 
         with pytest.raises(ValueError):
-            generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
     def test_normalize(self):
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
