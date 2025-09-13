@@ -17,7 +17,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import optiland.backend as be
-from optiland.field import ParaxialImageHeightField
+from optiland.fields import ParaxialImageHeightField
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
 
