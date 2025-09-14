@@ -738,3 +738,66 @@ class TestGlassExpert:
         captured = capsys.readouterr()
         print("captured.out =", captured.out)
         assert captured.out == ""  # Nothing should be printed
+
+
+class TestOptimizerWithBounds:
+    def test_optimize_with_reciprocal_scaler_and_min_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        min_b = 500.0
+        problem.add_variable(
+            lens, "radius", surface_number=1, scaler=ReciprocalScaler(), min_val=min_b
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = optimization.OptimizerGeneric(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        assert optimized_radius >= min_b
+
+    def test_optimize_with_reciprocal_scaler_and_max_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        lens.set_radius(-1000, 1)
+        problem = optimization.OptimizationProblem()
+        max_b = -500.0
+        problem.add_variable(
+            lens, "radius", surface_number=1, scaler=ReciprocalScaler(), max_val=max_b
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = optimization.OptimizerGeneric(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        assert optimized_radius <= max_b
+
+    def test_optimize_with_reciprocal_scaler_and_crossing_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "radius",
+            surface_number=1,
+            scaler=ReciprocalScaler(),
+            min_val=-100,
+            max_val=100,
+        )
+        with pytest.raises(ValueError):
+            _ = problem.variables[0].bounds
