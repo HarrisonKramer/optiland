@@ -9,8 +9,16 @@ Units: wavelength in µm, thickness in µm (nm helpers), AOI in radians (deg hel
 
 from __future__ import annotations
 
+# flake8: noqa
+
 from .analysis import SpectralAnalyzer
 from .layer import Layer
 from .stack import ThinFilmStack
+from . import optimization
 
-__all__ = ["Layer", "ThinFilmStack", "SpectralAnalyzer"]
+__all__ = [
+    "SpectralAnalyzer",
+    "Layer",
+    "ThinFilmStack",
+    "optimization",
+]

@@ -1,7 +1,7 @@
 """Thin film analysis class.
 
-This provides core functions for thin film optics calculations using the
-transfer matrix method (TMM).
+This provides thin film analysis class for optical response calculations
+using the transfer matrix method (TMM).
 
 Corentin Nannini, 2025
 """
