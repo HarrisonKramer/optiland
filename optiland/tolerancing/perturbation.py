@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 
 import optiland.backend as be
 from optiland.optimization.variable import Variable
+from optiland.optimization.scaling.identity import IdentityScaler
 
 
 class BaseSampler(ABC):
@@ -158,7 +159,7 @@ class Perturbation:
         self.optic = optic
         self.type = variable_type
         self.sampler = sampler
-        self.variable = Variable(optic, variable_type, apply_scaling=False, **kwargs)
+        self.variable = Variable(optic, variable_type, scaler=IdentityScaler(), **kwargs)
         self.value = None
 
     def apply(self):
@@ -169,4 +170,4 @@ class Perturbation:
     def reset(self):
         """Reset the perturbation to its original value."""
         self.variable.reset()
-        self.value = self.variable.value
+        self.value = self.variable.variable.get_value()
