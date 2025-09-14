@@ -123,6 +123,19 @@ class SurfaceFactory:
             zernike_type=kwargs.get("zernike_type", "fringe"),
             radial_terms=kwargs.get("radial_terms"),
             freeform_coeffs=kwargs.get("freeform_coeffs"),
+            # forbes_norm_radius=kwargs.get("forbes_norm_radius", 1.0),
+            nurbs_norm_x=kwargs.get("nurbs_norm_x"),
+            nurbs_norm_y=kwargs.get("nurbs_norm_y"),
+            nurbs_x_center=kwargs.get("nurbs_x_center", 0.0),
+            nurbs_y_center=kwargs.get("nurbs_y_center", 0.0),
+            control_points=kwargs.get("control_points"),
+            weights=kwargs.get("weights"),
+            u_degree=kwargs.get("u_degree"),
+            v_degree=kwargs.get("v_degree"),
+            u_knots=kwargs.get("u_knots"),
+            v_knots=kwargs.get("v_knots"),
+            n_points_u=kwargs.get("n_points_u", 4),
+            n_points_v=kwargs.get("n_points_v", 4),
         )
 
         geometry = self._geometry_factory.create(
