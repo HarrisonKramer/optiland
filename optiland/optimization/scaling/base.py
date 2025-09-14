@@ -1,9 +1,7 @@
 """Base Scaler Module
 
-This module contains the base class for a scaler in an optic system. The
-Scaler class is an abstract class that represents the behavior of a
-scaler in an optic system. It is used as a base class for all scalers in
-the optimization process.
+This module contains the base class for scaling variables in an optic system. Scaling is
+used in optimization to improve convergence and performance.
 
 Kramer Harrison, 2025
 """

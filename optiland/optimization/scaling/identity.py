@@ -1,14 +1,14 @@
 """Identity Scaler Module
 
-This module contains the IdentityScaler class, which is a scaler that does
-not perform any scaling.
+This module contains the IdentityScaler class, which is a "scaler" that does
+not perform any scaling at all.
 
 Kramer Harrison, 2025
 """
 
 from __future__ import annotations
 
-from optiland.optimization.scaling.base import Scaler
+from .base import Scaler
 
 
 class IdentityScaler(Scaler):

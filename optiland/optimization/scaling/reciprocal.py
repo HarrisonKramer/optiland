@@ -9,7 +9,8 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import optiland.backend as be
-from optiland.optimization.scaling.base import Scaler
+
+from .base import Scaler
 
 
 class ReciprocalScaler(Scaler):
