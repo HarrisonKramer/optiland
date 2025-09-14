@@ -10,6 +10,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from optiland.optimization.variable.base import VariableBehavior
+from optiland.optimization.scaling.identity import IdentityScaler
 
 
 class TiltVariable(VariableBehavior):
@@ -19,8 +20,8 @@ class TiltVariable(VariableBehavior):
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
         axis (str): The axis of the tilt. Valid values are 'x' and 'y'.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            IdentityScaler().
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -33,8 +34,10 @@ class TiltVariable(VariableBehavior):
 
     """
 
-    def __init__(self, optic, surface_number, axis, apply_scaling=True, **kwargs):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+    def __init__(self, optic, surface_number, axis, scaler=None, **kwargs):
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.axis = axis
 
         if self.axis not in ["x", "y"]:
@@ -49,13 +52,9 @@ class TiltVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         if self.axis == "x":
-            value = surf.geometry.cs.rx
+            return surf.geometry.cs.rx
         elif self.axis == "y":
-            value = surf.geometry.cs.ry
-
-        if self.apply_scaling:
-            return self.scale(value)
-        return value
+            return surf.geometry.cs.ry
 
     def update_value(self, new_value):
         """Updates the tilt value of the surface.
@@ -64,32 +63,11 @@ class TiltVariable(VariableBehavior):
             new_value (float): The new tilt value.
 
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
-
         surf = self._surfaces.surfaces[self.surface_number]
         if self.axis == "x":
             surf.geometry.cs.rx = new_value
         elif self.axis == "y":
             surf.geometry.cs.ry = new_value
-
-    def scale(self, value):
-        """Scale the value of the variable for improved optimization performance.
-
-        Args:
-            value: The value to scale
-
-        """
-        return value
-
-    def inverse_scale(self, scaled_value):
-        """Inverse scale the value of the variable.
-
-        Args:
-            scaled_value: The scaled value to inverse scale
-
-        """
-        return scaled_value
 
     def __str__(self):
         """Return a string representation of the variable.

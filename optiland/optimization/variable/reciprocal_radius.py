@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.optimization.variable.base import VariableBehavior
+from optiland.optimization.scaling.linear import LinearScaler
 
 
 class ReciprocalRadiusVariable(VariableBehavior):
@@ -24,8 +25,8 @@ class ReciprocalRadiusVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object that contains the surface.
         surface_number (int): The index of the surface in the optic.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            a linear scaler with factor=10.0.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -38,8 +39,10 @@ class ReciprocalRadiusVariable(VariableBehavior):
          to radius.
     """
 
-    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+    def __init__(self, optic, surface_number, scaler=None, **kwargs):
+        if scaler is None:
+            scaler = LinearScaler(factor=10.0)
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
 
     def get_value(self):
         """Returns the current value of the reciprocal of the radius.
@@ -53,8 +56,6 @@ class ReciprocalRadiusVariable(VariableBehavior):
             reciprocal = 1.0 / radius if be.isfinite(radius) else 0.0
         else:
             reciprocal = be.inf
-        if self.apply_scaling:
-            return self.scale(reciprocal)
         return reciprocal
 
     def update_value(self, new_value):
@@ -63,33 +64,9 @@ class ReciprocalRadiusVariable(VariableBehavior):
         Args:
             new_value (float): The new reciprocal radius value.
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
         # Allow zero but handle appropriately
         new_radius = be.inf if new_value == 0 else 1.0 / new_value
         self.optic.set_radius(new_radius, self.surface_number)
-
-    def scale(self, value):
-        """Scale the reciprocal value for improved optimization performance.
-
-        Args:
-            value (float): The reciprocal value to scale.
-
-        Returns:
-            float: The scaled reciprocal value.
-        """
-        return value * 10.0
-
-    def inverse_scale(self, scaled_value):
-        """Inverse scale the reciprocal value.
-
-        Args:
-            scaled_value (float): The scaled reciprocal value to inverse scale.
-
-        Returns:
-            float: The original reciprocal value.
-        """
-        return scaled_value / 10.0
 
     def __str__(self):
         """Return a string representation of the variable.
@@ -97,8 +74,7 @@ class ReciprocalRadiusVariable(VariableBehavior):
         Returns:
             str: A string representation of the reciprocal radius variable.
         """
-        s = "scaled" if self.apply_scaling else "unscaled"
         n = self.surface_number
         v = self.get_value()
 
-        return f"Reciprocal Radius of Curvature - Surface {n} - {s} value: {v}"
+        return f"Reciprocal Radius of Curvature - Surface {n} - value: {v}"

@@ -12,6 +12,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from optiland.optimization.scaling.base import Scaler
+from optiland.optimization.scaling.identity import IdentityScaler
+
 
 class VariableBehavior(ABC):
     """Represents the behavior of a variable in an optic system.
@@ -19,22 +22,26 @@ class VariableBehavior(ABC):
     Args:
         optic (Optic): The optic system to which the variable belongs.
         surface_number (int): The surface number of the variable.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            IdentityScaler().
         **kwargs: Additional keyword arguments.
 
     Attributes:
         optic (Optic): The optic system to which the variable belongs.
         _surfaces (SurfaceGroup): The group of surfaces in the optic system.
         surface_number (int): The surface number of the variable.
+        scaler (Scaler): The scaler to use for the variable.
 
     """
 
-    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
+    def __init__(self, optic, surface_number, scaler: Scaler = None, **kwargs):
         self.optic = optic
         self._surfaces = self.optic.surface_group
         self.surface_number = surface_number
-        self.apply_scaling = apply_scaling
+        if scaler is None:
+            self.scaler = IdentityScaler()
+        else:
+            self.scaler = scaler
 
     @abstractmethod
     def get_value(self):
@@ -63,7 +70,7 @@ class VariableBehavior(ABC):
             value: The value to scale
 
         """
-        return value  # pragma: no cover
+        return self.scaler.scale(value)
 
     def inverse_scale(self, scaled_value):
         """Inverse scale the value of the variable.
@@ -72,4 +79,4 @@ class VariableBehavior(ABC):
             scaled_value: The scaled value to inverse scale
 
         """
-        return scaled_value  # pragma: no cover
+        return self.scaler.inverse_scale(scaled_value)

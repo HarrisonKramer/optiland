@@ -26,6 +26,8 @@ from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVar
 from optiland.optimization.variable.thickness import ThicknessVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
+from optiland.optimization.scaling.base import Scaler
+from optiland.optimization.scaling.identity import IdentityScaler
 
 
 class Variable:
@@ -43,8 +45,8 @@ class Variable:
             Defaults to None.
         max_val (float or None): The maximum value allowed for the variable.
             Defaults to None.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            None, which will use the default scaler for the variable type.
         **kwargs: Additional keyword arguments to be stored as attributes of
             the variable.
 
@@ -66,14 +68,14 @@ class Variable:
         type_name,
         min_val=None,
         max_val=None,
-        apply_scaling=True,
+        scaler: Scaler = None,
         **kwargs,
     ):
         self.optic = optic
         self.type = type_name
         self.min_val = min_val
         self.max_val = max_val
-        self.apply_scaling = apply_scaling
+        self.scaler = scaler
         self.kwargs = kwargs
 
         for key, value in kwargs.items():
@@ -109,7 +111,7 @@ class Variable:
         behavior_kwargs = {
             "type_name": self.type,
             "optic": self.optic,
-            "apply_scaling": self.apply_scaling,
+            "scaler": self.scaler,
             **self.kwargs,
         }
 
@@ -149,7 +151,8 @@ class Variable:
             ValueError: If the variable type is invalid.
 
         """
-        return self.variable.get_value()
+        raw_value = self.variable.get_value()
+        return self.variable.scale(raw_value)
 
     @property
     def bounds(self):
@@ -177,7 +180,8 @@ class Variable:
             ValueError: If the variable type is invalid.
 
         """
-        self.variable.update_value(new_value)
+        unscaled_value = self.variable.inverse_scale(new_value)
+        self.variable.update_value(unscaled_value)
 
     def reset(self):
         """Reset the variable to its initial value."""

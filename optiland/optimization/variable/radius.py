@@ -10,6 +10,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from optiland.optimization.variable.base import VariableBehavior
+from optiland.optimization.scaling.linear import LinearScaler
 
 
 class RadiusVariable(VariableBehavior):
@@ -18,8 +19,8 @@ class RadiusVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object that contains the surface.
         surface_number (int): The index of the surface in the optic.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            a linear scaler with factor=1/100 and offset=-1.0.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -32,8 +33,10 @@ class RadiusVariable(VariableBehavior):
 
     """
 
-    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+    def __init__(self, optic, surface_number, scaler=None, **kwargs):
+        if scaler is None:
+            scaler = LinearScaler(factor=1 / 100.0, offset=-1.0)
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
 
     def get_value(self):
         """Returns the current value of the radius.
@@ -42,10 +45,7 @@ class RadiusVariable(VariableBehavior):
             float: The current value of the radius.
 
         """
-        value = self._surfaces.radii[self.surface_number]
-        if self.apply_scaling:
-            return self.scale(value)
-        return value
+        return self._surfaces.radii[self.surface_number]
 
     def update_value(self, new_value):
         """Updates the value of the radius.
@@ -54,27 +54,7 @@ class RadiusVariable(VariableBehavior):
             new_value (float): The new value of the radius.
 
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
         self.optic.set_radius(new_value, self.surface_number)
-
-    def scale(self, value):
-        """Scale the value of the variable for improved optimization performance.
-
-        Args:
-            value: The value to scale
-
-        """
-        return value / 100.0 - 1.0
-
-    def inverse_scale(self, scaled_value):
-        """Inverse scale the value of the variable.
-
-        Args:
-            scaled_value: The scaled value to inverse scale
-
-        """
-        return (scaled_value + 1.0) * 100.0
 
     def __str__(self):
         """Return a string representation of the variable.

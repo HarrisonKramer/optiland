@@ -12,6 +12,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
+from optiland.optimization.scaling.identity import IdentityScaler
 
 
 class ChebyshevCoeffVariable(PolynomialCoeffVariable):
@@ -22,8 +23,8 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
         surface_number (int): The index of the surface in the optical system.
         coeff_index (tuple(int, int)): The (x, y) indices of the Chebyshev
             coefficient.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            IdentityScaler().
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -36,10 +37,12 @@ class ChebyshevCoeffVariable(PolynomialCoeffVariable):
         optic,
         surface_number,
         coeff_index,
-        apply_scaling=True,
+        scaler=None,
         **kwargs,
     ):
-        super().__init__(optic, surface_number, coeff_index, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, coeff_index, scaler=scaler, **kwargs)
 
     def __str__(self):
         """Return a string representation of the variable.

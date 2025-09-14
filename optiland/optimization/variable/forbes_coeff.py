@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from optiland.geometries.forbes.geometry import ForbesQ2dGeometry, ForbesQbfsGeometry
 from optiland.optimization.variable.base import VariableBehavior
+from optiland.optimization.scaling.identity import IdentityScaler
 
 
 class ForbesQbfsCoeffVariable(VariableBehavior):
@@ -22,19 +23,19 @@ class ForbesQbfsCoeffVariable(VariableBehavior):
         coeff_number (int): The radial order 'n' of the coefficient.
     """
 
-    def __init__(
-        self, optic, surface_number, coeff_number, apply_scaling=False, **kwargs
-    ):
+    def __init__(self, optic, surface_number, coeff_number, scaler=None, **kwargs):
         """Initializes the ForbesQbfsCoeffVariable.
 
         Args:
             optic: The optical system.
             surface_number (int): The surface number to which the coefficient belongs.
             coeff_number (int): The radial order 'n' of the coefficient.
-            apply_scaling (bool, optional): Whether to apply scaling. Defaults to False.
+            scaler (Scaler, optional): The scaler to use. Defaults to IdentityScaler().
             **kwargs: Additional keyword arguments.
         """
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.coeff_number = coeff_number  # the radial order 'n'
 
     def get_value(self):
@@ -51,11 +52,7 @@ class ForbesQbfsCoeffVariable(VariableBehavior):
         if not isinstance(geom, ForbesQbfsGeometry):
             raise TypeError("This variable is only for ForbesQbfsGeometry.")
 
-        value = geom.radial_terms.get(self.coeff_number, 0.0)
-
-        if self.apply_scaling:
-            return self.scale(value)
-        return value
+        return geom.radial_terms.get(self.coeff_number, 0.0)
 
     def update_value(self, new_value):
         """Updates the value of the nth Q-bfs coefficient.
@@ -63,22 +60,11 @@ class ForbesQbfsCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value for the coefficient.
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
-
         surf = self.optic.surface_group.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.radial_terms[self.coeff_number] = new_value
         geom._prepare_coeffs()
-
-    def scale(self, value):
-        scaling_factor = 1.0
-        return value * scaling_factor
-
-    def inverse_scale(self, scaled_value):
-        scaling_factor = 1.0
-        return scaled_value / scaling_factor
 
     def __str__(self):
         return (
@@ -100,9 +86,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         coeff_tuple (tuple): The identifier for the coefficient.
     """
 
-    def __init__(
-        self, optic, surface_number, coeff_tuple, apply_scaling=False, **kwargs
-    ):
+    def __init__(self, optic, surface_number, coeff_tuple, scaler=None, **kwargs):
         """Initializes the ForbesQ2dCoeffVariable.
 
         Args:
@@ -111,13 +95,15 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
             coeff_tuple (tuple): The identifier for the coefficient, following the
                 Zemax convention: `('a', m, n)` for a cosine term a_n^m, or
                 `('b', m, n)` for a sine term b_n^m.
-            apply_scaling (bool, optional): Whether to apply scaling. Defaults to False.
+            scaler (Scaler, optional): The scaler to use. Defaults to IdentityScaler().
             **kwargs: Additional keyword arguments.
 
         Raises:
             ValueError: If `coeff_tuple` is not in the correct format.
         """
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.attribute = "freeform_coeffs"
 
         # Parse the Zemax-style key for correct string representation and validation

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .variable import Variable
+from ..scaling.base import Scaler
 
 
 class VariableManager:
@@ -19,18 +20,23 @@ class VariableManager:
     def __init__(self):
         self.variables = []
 
-    def add(self, optic, variable_type, **kwargs):
+    def add(self, optic, variable_type, scaler: Scaler = None, **kwargs):
         """Add a variable to the merit function
 
         Args:
             optic (OpticalSystem): The optical system to which the variable
                 belongs.
             variable_type (str): The type of the variable.
+            scaler (Scaler, optional): The scaler to use for the variable.
+                Defaults to None, which will use the default scaler for the
+                variable type.
             **kwargs: Additional keyword arguments to be passed to the Variable
                 constructor.
 
         """
-        self.variables.append(Variable(optic, variable_type, **kwargs))
+        self.variables.append(
+            Variable(optic, variable_type, scaler=scaler, **kwargs)
+        )
 
     def clear(self):
         """Clear all variables from the merit function"""
