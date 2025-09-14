@@ -342,6 +342,10 @@ def sin(x):
     return torch.sin(array(x))
 
 
+def power(x, y):
+    return torch.pow(array(x), array(y))
+
+
 def cos(x):
     return torch.cos(array(x))
 
