@@ -165,13 +165,7 @@ class Variable:
             tuple: the bounds of the variable
 
         """
-        min_val = (
-            self.variable.scale(self.min_val) if self.min_val is not None else None
-        )
-        max_val = (
-            self.variable.scale(self.max_val) if self.max_val is not None else None
-        )
-        return min_val, max_val
+        return self.variable.scaler.transform_bounds(self.min_val, self.max_val)
 
     def update(self, new_value):
         """Update variable to a new value.
