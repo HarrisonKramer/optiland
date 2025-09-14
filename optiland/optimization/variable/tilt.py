@@ -9,8 +9,8 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from optiland.optimization.variable.base import VariableBehavior
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class TiltVariable(VariableBehavior):

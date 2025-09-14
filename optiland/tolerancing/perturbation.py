@@ -12,8 +12,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import optiland.backend as be
-from optiland.optimization.variable import Variable
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable import Variable
 
 
 class BaseSampler(ABC):
@@ -159,7 +159,9 @@ class Perturbation:
         self.optic = optic
         self.type = variable_type
         self.sampler = sampler
-        self.variable = Variable(optic, variable_type, scaler=IdentityScaler(), **kwargs)
+        self.variable = Variable(
+            optic, variable_type, scaler=IdentityScaler(), **kwargs
+        )
         self.value = None
 
     def apply(self):

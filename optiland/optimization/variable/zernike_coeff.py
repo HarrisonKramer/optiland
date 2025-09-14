@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 
 class ZernikeCoeffVariable(PolynomialCoeffVariable):

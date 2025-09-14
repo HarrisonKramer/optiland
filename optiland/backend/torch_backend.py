@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import contextlib
 
-import optiland.backend as be
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -344,7 +343,7 @@ def sin(x):
 
 
 def power(x, y):
-    return torch.pow(be.asarray(x), be.asarray(y))
+    return torch.pow(array(x), array(y))
 
 
 def cos(x):

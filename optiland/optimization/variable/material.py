@@ -12,13 +12,13 @@ from typing import TYPE_CHECKING
 
 from optiland.materials.abbe import AbbeMaterial
 from optiland.materials.material_utils import find_closest_glass, get_nd_vd
+from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable.base import VariableBehavior
 from optiland.surfaces.factories.material_factory import MaterialFactory
-from optiland.optimization.scaling.identity import IdentityScaler
-from optiland.optimization.scaling.base import Scaler
 
 if TYPE_CHECKING:
     from optiland.materials.base import BaseMaterial
+    from optiland.optimization.scaling.base import Scaler
 
 
 class MaterialVariable(VariableBehavior):

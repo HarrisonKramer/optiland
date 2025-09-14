@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from .variable import Variable
-from ..scaling.base import Scaler
+
+if TYPE_CHECKING:
+    from ..scaling.base import Scaler
 
 
 class VariableManager:
@@ -34,9 +38,7 @@ class VariableManager:
                 constructor.
 
         """
-        self.variables.append(
-            Variable(optic, variable_type, scaler=scaler, **kwargs)
-        )
+        self.variables.append(Variable(optic, variable_type, scaler=scaler, **kwargs))
 
     def clear(self):
         """Clear all variables from the merit function"""

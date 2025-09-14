@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from optiland.optimization.variable.base import VariableBehavior
 from optiland.optimization.scaling.linear import LinearScaler
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class AsphereCoeffVariable(VariableBehavior):

@@ -10,8 +10,8 @@ Manuel Fragata Mendes, August 2025
 
 from __future__ import annotations
 
-from optiland.optimization.variable.base import VariableBehavior
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class NormalizationRadiusVariable(VariableBehavior):

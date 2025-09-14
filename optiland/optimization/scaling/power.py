@@ -3,13 +3,13 @@
 This module contains the PowerScaler class, which is a scaler that
 performs a power transformation on the value.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations
 
-from optiland.optimization.scaling.base import Scaler
 import optiland.backend as be
+from optiland.optimization.scaling.base import Scaler
 
 
 class PowerScaler(Scaler):

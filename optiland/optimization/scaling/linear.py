@@ -3,7 +3,7 @@
 This module contains the LinearScaler class, which is a scaler that
 performs a linear transformation on the value.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations

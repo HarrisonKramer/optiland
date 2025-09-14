@@ -11,8 +11,8 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 
 class ChebyshevCoeffVariable(PolynomialCoeffVariable):

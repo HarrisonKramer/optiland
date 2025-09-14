@@ -3,7 +3,7 @@
 This module contains the IdentityScaler class, which is a scaler that does
 not perform any scaling.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations

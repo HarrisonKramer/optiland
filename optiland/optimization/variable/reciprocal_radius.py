@@ -15,8 +15,8 @@ ALL rights ceded to Kramer Harrison
 from __future__ import annotations
 
 import optiland.backend as be
-from optiland.optimization.variable.base import VariableBehavior
 from optiland.optimization.scaling.linear import LinearScaler
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class ReciprocalRadiusVariable(VariableBehavior):

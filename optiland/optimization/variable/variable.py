@@ -9,6 +9,8 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from optiland.optimization.variable.asphere_coeff import AsphereCoeffVariable
 from optiland.optimization.variable.chebyshev_coeff import ChebyshevCoeffVariable
 from optiland.optimization.variable.conic import ConicVariable
@@ -26,8 +28,9 @@ from optiland.optimization.variable.reciprocal_radius import ReciprocalRadiusVar
 from optiland.optimization.variable.thickness import ThicknessVariable
 from optiland.optimization.variable.tilt import TiltVariable
 from optiland.optimization.variable.zernike_coeff import ZernikeCoeffVariable
-from optiland.optimization.scaling.base import Scaler
-from optiland.optimization.scaling.identity import IdentityScaler
+
+if TYPE_CHECKING:
+    from optiland.optimization.scaling.base import Scaler
 
 
 class Variable:

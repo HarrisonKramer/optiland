@@ -3,7 +3,7 @@
 This module contains the ReciprocalScaler class, which is a scaler that
 performs a reciprocal transformation on the value.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations

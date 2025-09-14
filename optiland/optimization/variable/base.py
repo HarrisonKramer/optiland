@@ -11,9 +11,12 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from optiland.optimization.scaling.base import Scaler
 from optiland.optimization.scaling.identity import IdentityScaler
+
+if TYPE_CHECKING:
+    from optiland.optimization.scaling.base import Scaler
 
 
 class VariableBehavior(ABC):

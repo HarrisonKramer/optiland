@@ -5,7 +5,7 @@ Scaler class is an abstract class that represents the behavior of a
 scaler in an optic system. It is used as a base class for all scalers in
 the optimization process.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations

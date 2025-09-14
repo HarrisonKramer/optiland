@@ -11,13 +11,16 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
 import optiland.backend as be
 from optiland.optimization.operand import OperandManager
 from optiland.optimization.variable import VariableManager
-from optiland.optimization.scaling.base import Scaler
+
+if TYPE_CHECKING:
+    from optiland.optimization.scaling.base import Scaler
 
 
 class OptimizationProblem:

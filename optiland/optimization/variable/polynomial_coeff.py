@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from optiland.optimization.variable.base import VariableBehavior
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable.base import VariableBehavior
 
 
 class PolynomialCoeffVariable(VariableBehavior):
