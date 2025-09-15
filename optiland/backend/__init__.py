@@ -12,6 +12,8 @@ Kramer Harrison, 2025
 # common aliases for ndarray and array_equal across backends --
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as _np
 
 from optiland.backend import numpy_backend
@@ -21,6 +23,14 @@ try:
     import torch as _torch
 except ImportError:
     _torch = None
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from numpy.typing import ArrayLike, NDArray
+    from torch import Tensor
+
+    from optiland._types import BEArray, ScalarOrArray
 
 # ndarray: either a NumPy ndarray or a PyTorch Tensor
 ndarray = (_np.ndarray, _torch.Tensor) if _torch is not None else _np.ndarray
@@ -32,7 +42,7 @@ _torch_equal = (
 )
 
 
-def array_equal(a, b):
+def array_equal(a: BEArray, b: BEArray) -> bool:
     """Elementwise equality test for arrays/tensors in the active backend."""
     from . import get_backend
 
@@ -46,7 +56,7 @@ def array_equal(a, b):
 # arrays/tensors created when a *different* backend was active
 
 
-def isinf(x):
+def isinf(x: ScalarOrArray) -> ScalarOrArray:
     """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
@@ -56,7 +66,7 @@ def isinf(x):
     return _np.isinf(x)
 
 
-def isnan(x):
+def isnan(x: ScalarOrArray) -> ScalarOrArray:
     """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         return _torch.isnan(x)
@@ -85,7 +95,7 @@ if _torch_available:
 _current_backend = "numpy"
 
 
-def set_backend(name: str):
+def set_backend(name: str) -> None:
     """Set the current backend.
 
     Args:
@@ -102,7 +112,7 @@ def set_backend(name: str):
     _current_backend = name
 
 
-def get_backend():
+def get_backend() -> str:
     """Get the name of the current backend."""
     return _current_backend
 

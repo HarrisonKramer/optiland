@@ -6,31 +6,40 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Literal, TypeVar
+
 import numpy as np
 from matplotlib.path import Path
+from numpy.typing import ArrayLike, NDArray
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
 from scipy.special import gamma
+
+if TYPE_CHECKING:
+    from numpy.random import Generator
 
 # Link to the underlying library
 _lib = np
 
 
-def array(x):
+ScalarOrArray = TypeVar("ScalarOrArray", float, NDArray)
+
+
+def array(x: ArrayLike) -> NDArray:
     """Create an array/tensor"""
     return np.array(x, dtype=float)
 
 
-def is_array_like(x):
+def is_array_like(x: NDArray | list | tuple) -> bool:
     """Check if x is array-like"""
     return isinstance(x, np.ndarray | list | tuple)
 
 
-def atleast_1d(x):
+def atleast_1d(x: ArrayLike) -> NDArray:
     return np.atleast_1d(x).astype(float)
 
 
-def as_array_1d(data):
+def as_array_1d(data: float | list | tuple | NDArray) -> NDArray:
     """Force conversion to a 1D array"""
     if isinstance(data, int | float):
         return array([data])
@@ -44,67 +53,81 @@ def as_array_1d(data):
         )
 
 
-def ravel(x):
+def ravel(x: NDArray) -> NDArray:
     return np.ravel(x).astype(float)
 
 
-def from_matrix(matrix):
+def from_matrix(matrix: NDArray) -> R:
     return R.from_matrix(matrix)
 
 
-def from_euler(euler):
+def from_euler(euler: NDArray) -> R:
     return R.from_euler("xyz", euler)
 
 
-def default_rng(seed=None):
+def default_rng(seed: int | None = None) -> Generator:
     return np.random.default_rng(seed)
 
 
-def random_uniform(low=0.0, high=1.0, size=None, generator=None):
+def random_uniform(
+    low: ScalarOrArray = 0.0,
+    high: ScalarOrArray = 1.0,
+    size: float | tuple[float, ...] | None = None,
+    generator: Generator | None = None,
+) -> ScalarOrArray:
     if generator is None:
         generator = np.random.default_rng()
     return generator.uniform(low, high, size)
 
 
-def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
+def random_normal(
+    loc: ScalarOrArray = 0.0,
+    scale: ScalarOrArray = 1.0,
+    size: float | tuple[float, ...] | None = None,
+    generator: Generator | None = None,
+) -> ScalarOrArray:
     if generator is None:
         generator = np.random.default_rng()
     return generator.normal(loc, scale, size)
 
 
-def matrix_vector_multiply_and_squeeze(p, E, backend="numpy"):
+def matrix_vector_multiply_and_squeeze(
+    p: NDArray, E: NDArray, backend: Literal["numpy"] = "numpy"
+) -> NDArray:
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
 
 
-def nearest_nd_interpolator(points, values, x, y):
+def nearest_nd_interpolator(
+    points: NDArray, values: NDArray, x: ScalarOrArray, y: ScalarOrArray
+) -> NDArray:
     interpolator = NearestNDInterpolator(points, values)
     result = interpolator(x, y)
     return result
 
 
-def unsqueeze_last(x):
+def unsqueeze_last(x: NDArray) -> NDArray:
     return x[:, np.newaxis]
 
 
-def mult_p_E(p, E):
+def mult_p_E(p: NDArray, E: NDArray) -> NDArray:
     # Used only for electric field multiplication in polarized_rays.py
     return np.squeeze(np.matmul(p, E[:, :, np.newaxis]), axis=2)
 
 
-def to_complex(x):
+def to_complex(x: NDArray) -> NDArray:
     return x.astype(np.complex128) if np.isrealobj(x) else x
 
 
-def batched_chain_matmul3(a, b, c):
+def batched_chain_matmul3(a: NDArray, b: NDArray, c: NDArray) -> NDArray:
     dtype = np.result_type(a, b, c)
     return np.matmul(np.matmul(a.astype(dtype), b.astype(dtype)), c.astype(dtype))
 
 
-def factorial(n):
+def factorial(n: ScalarOrArray) -> ScalarOrArray:
     return gamma(n + 1)
 
 
-def path_contains_points(vertices: np.ndarray, points: np.ndarray) -> np.ndarray:
+def path_contains_points(vertices: NDArray, points: NDArray) -> NDArray:
     path = Path(vertices)
     mask = path.contains_points(points)
     return np.asarray(mask, dtype=bool)
