@@ -56,11 +56,6 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
         initial_params = [var.variable.get_value() for var in self.problem.variables]
         self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]
 
-        # Initialize the BatchedRayEvaluator for high-performance evaluation
-        from ..evaluator import BatchedRayEvaluator
-
-        self.evaluator = BatchedRayEvaluator(self.problem)
-
     @abstractmethod
     def _create_optimizer_and_scheduler(
         self, lr: float, gamma: float
@@ -122,28 +117,36 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
             for i in range(n_steps):
                 optimizer.zero_grad()
 
-                # 1. Update the model state from the current nn.Parameter values.
-                for k, param in enumerate(self.params):
-                    self.problem.variables[k].variable.update_value(param)
+                # The logic is unified. The evaluator handles variable
+                # updates internally. The `self.params` are passed to the
+                # evaluator, which then updates the problem's variables
+                # before computing the loss
 
-                # 2. Compute loss using the high-performance batched evaluator
-                loss = self.evaluator.evaluate(self.params)
+                if self.problem.use_batched_evaluator:
+                    # Use the batched evaluator
+                    loss = self.problem.evaluator.evaluate(self.params)
+                else:
+                    # Fallback to the original, non-batched method
+                    for k, param in enumerate(self.params):
+                        self.problem.variables[k].variable.update_value(param)
+                    self.problem.update_optics()
+                    loss = self.problem.sum_squared()
 
-                # 4. Backpropagate and step.
+                # Backpropagate and step
                 loss.backward()
                 optimizer.step()
 
-                # 5. Enforce constraints on the scaled parameters.
+                # Enforce constraints on the scaled parameters
                 self._apply_bounds()
 
-                # 6. Step the learning rate scheduler.
+                # Step the learning rate scheduler
                 scheduler.step()
 
-                # 7. Call the user-provided callback
+                # Call the user-provided callback
                 if callback:
                     callback(i, loss.item())
 
-                # 8. Print loss if display is enabled.
+                # Print loss if display is enabled
                 if disp and (i % 10 == 0 or i == n_steps - 1):
                     print(f"  Step {i + 1:04d}/{n_steps}, Loss: {loss.item():.6f}")
 

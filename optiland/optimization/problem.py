@@ -26,6 +26,9 @@ class OptimizationProblem:
         operands (list): List of operands in the merit function.
         variables (list): List of variables in the merit function.
         initial_value (float): Initial value of the merit function.
+        use_batched_evaluator (bool): Whether to use batched evaluation for
+            optimization.
+        evaluator: BatchedRayEvaluator instance if batched evaluation is enabled.
 
     Methods:
         add_operand: Add an operand to the merit function.
@@ -43,10 +46,18 @@ class OptimizationProblem:
 
     """
 
-    def __init__(self):
+    def __init__(self, use_batched_evaluator: bool = True):
         self.operands = OperandManager()
         self.variables = VariableManager()
         self.initial_value = 0.0
+        self.use_batched_evaluator = use_batched_evaluator
+        self.evaluator = None
+
+        # evaluator logic if batched evaluation is True
+        if use_batched_evaluator:
+            from .optimizer.evaluator import BatchedRayEvaluator
+
+            self.evaluator = BatchedRayEvaluator(self)
 
         # Enable gradient tracking for PyTorch
         if be.get_backend() == "torch" and not be.grad_mode.requires_grad:
@@ -100,8 +111,17 @@ class OptimizationProblem:
             return be.array([0.0])
         return be.stack(terms) ** 2
 
-    def sum_squared(self):
-        """Calculate the sum of squared operand weighted deltas"""
+    def sum_squared(self, x: list | None = None):
+        """
+        Calculate the sum of squared operand weighted deltas.
+
+        If `use_batched_evaluator` is True and a variable vector `x` is provided,
+        it will use the high-performance batched evaluator. Otherwise, it will fall
+        back to the non-batched, iterative calculation.
+        """
+        if self.use_batched_evaluator and self.evaluator and x is not None:
+            return self.evaluator.evaluate(x)
+
         return be.sum(self.fun_array())
 
     def rss(self):

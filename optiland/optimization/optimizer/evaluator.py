@@ -7,8 +7,6 @@ of operand evaluations.
 The evaluator analyzes optimization problems to create efficient "trace jobs" that
 batch multiple operands together, then evaluates all operands using pre-traced
 data for maximum performance.
-
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations
@@ -50,11 +48,7 @@ class TraceJob:
             self._execute_vectorized_trace()
         else:
             raise ValueError(f"Unknown job type: {self.job_type}")
-
-        # Return a copy to prevent overwriting by subsequent traces
-        import copy
-
-        return copy.deepcopy(self.optic.surface_group)
+        return self.optic.surface_group
 
     def _execute_vectorized_trace(self):
         """Execute vectorized ray tracing for multiple rays at once."""
@@ -246,86 +240,118 @@ class BatchedRayEvaluator:
             The sum of squared weighted operand deltas. Returns a torch.Tensor
             if using PyTorch backend, or a float if using NumPy backend.
         """
-        # Update all variables to their new values
-        is_iterable = hasattr(variables_vector, "__iter__")
-        if is_iterable and not be.is_array_like(variables_vector):
-            # Handle list of torch.nn.Parameter objects or plain list
-            for i, var in enumerate(self.problem.variables):
-                if hasattr(variables_vector[i], "data"):
-                    # torch.nn.Parameter
-                    var.variable.update_value(variables_vector[i])
-                else:
-                    # Plain value
-                    var.update(be.array(variables_vector[i]))
-        else:
-            # Handle numpy array or single torch tensor
-            for i, var in enumerate(self.problem.variables):
-                var.update(be.array(variables_vector[i]))
+        try:
+            # (new operands may have been added)
+            if len(self.operand_map) != len(self.problem.operands):
+                self._analyze_problem()
 
-        # Update optics (e.g., pickups and solves)
-        self.problem.update_optics()
+            # Update all variables to their new values
+            is_iterable = hasattr(variables_vector, "__iter__")
+            if is_iterable and not be.is_array_like(variables_vector):
+                # Handle list of torch.nn.Parameter objects or plain list
+                for i, var in enumerate(self.problem.variables):
+                    if hasattr(variables_vector[i], "data"):
+                        # torch.nn.Parameter
+                        var.variable.update_value(variables_vector[i])
+                    else:
+                        # Plain value
+                        var.update(be.array(variables_vector[i]))
+            else:
+                # Handle numpy array or single torch tensor
+                for i, var in enumerate(self.problem.variables):
+                    # Check if it's already a tensor to avoid unnecessary conversion
+                    if be.is_array_like(variables_vector[i]):
+                        var.update(variables_vector[i])
+                    else:
+                        var.update(be.array(variables_vector[i]))
 
-        # Execute all trace jobs and store results
-        traced_results = []
-        for job in self.trace_jobs:
-            try:
-                result = job.execute()
-                traced_results.append(result)
-            except Exception:
-                # If tracing fails, return a high penalty
-                return be.array(1e10) if be.get_backend() == "torch" else 1e10
+            # Update optics
+            self.problem.update_optics()
 
-        # Compute all operand values using the traced data
-        operand_values = []
+            # Execute all trace jobs and store results
+            traced_results = []
+            job_success = []  # Track which jobs succeeded
+            for job in self.trace_jobs:
+                try:
+                    result = job.execute()
+                    traced_results.append(result)
+                    job_success.append(True)
+                except Exception as e:
+                    # If tracing fails, add a placeholder and mark as failed
+                    print(f"TraceJob failed: {e}")
+                    traced_results.append(None)
+                    job_success.append(False)
 
-        for i, operand in enumerate(self.problem.operands):
-            try:
-                job_idx, ray_indices, calc_func = self.operand_map[i]
+            # Compute all operand values using the traced data
+            operand_values = []
 
-                if job_idx is None:
-                    # Non-ray operand - evaluate directly
-                    from optiland.optimization.operand.operand import operand_registry
+            for i, operand in enumerate(self.problem.operands):
+                try:
+                    job_idx, ray_indices, calc_func = self.operand_map[i]
 
-                    metric_function = operand_registry.get(operand.operand_type)
-                    value = metric_function(**operand.input_data)
-                else:
-                    # Ray operand - use traced data
-                    traced_data = traced_results[job_idx]
-                    value = calc_func(traced_data, operand.input_data, ray_indices)
+                    if job_idx is None:
+                        # Non-ray operand
+                        from optiland.optimization.operand.operand import (
+                            operand_registry,
+                        )
 
-                # Calculate operand contribution (weight * delta)
-                if operand.target is not None:
-                    delta = value - operand.target
-                elif operand.min_val is not None or operand.max_val is not None:
-                    lower_penalty = (
-                        be.maximum(be.array(0.0), operand.min_val - value)
-                        if operand.min_val is not None
-                        else be.array(0.0)
-                    )
-                    upper_penalty = (
-                        be.maximum(be.array(0.0), value - operand.max_val)
-                        if operand.max_val is not None
-                        else be.array(0.0)
-                    )
-                    delta = lower_penalty + upper_penalty
-                else:
-                    raise ValueError(f"Operand {i} has no target or bounds defined")
+                        metric_function = operand_registry.get(operand.operand_type)
+                        value = metric_function(**operand.input_data)
+                    else:
+                        # Ray operand - use traced data
+                        if job_idx >= len(traced_results) or not job_success[job_idx]:
+                            # Job failed or index out of bounds
+                            raise RuntimeError(
+                                f"TraceJob {job_idx} failed or not found"
+                            )
 
-                weighted_delta = operand.weight * delta
-                operand_values.append(weighted_delta)
+                        traced_data = traced_results[job_idx]
+                        if traced_data is None:
+                            raise RuntimeError(f"TraceJob {job_idx} returned None")
 
-            except Exception:
-                # If operand evaluation fails, add high penalty
-                operand_values.append(be.array(1e10))
+                        value = calc_func(traced_data, operand.input_data, ray_indices)
 
-        # Sum all squared operand contributions
-        if not operand_values:
-            return be.array(0.0)
+                    # Calculate operand contribution (weight * delta)
+                    if operand.target is not None:
+                        delta = value - operand.target
+                    elif operand.min_val is not None or operand.max_val is not None:
+                        lower_penalty = (
+                            be.maximum(be.array(0.0), operand.min_val - value)
+                            if operand.min_val is not None
+                            else be.array(0.0)
+                        )
+                        upper_penalty = (
+                            be.maximum(be.array(0.0), value - operand.max_val)
+                            if operand.max_val is not None
+                            else be.array(0.0)
+                        )
+                        delta = lower_penalty + upper_penalty
+                    else:
+                        raise ValueError(f"Operand {i} has no target or bounds defined")
 
-        squared_values = [val**2 for val in operand_values]
-        if len(squared_values) > 1:
-            total = be.sum(be.stack(squared_values))
-        else:
-            total = be.sum(squared_values[0])
+                    weighted_delta = operand.weight * delta
+                    operand_values.append(weighted_delta)
 
-        return total
+                except Exception as e:
+                    # If operand evaluation fails, add high penalty
+                    print(f"Operand {i} evaluation failed: {e}")
+                    operand_values.append(be.array(1e10))
+
+            # Sum all squared operand contributions
+            if not operand_values:
+                return be.array(0.0)
+
+            squared_values = [val**2 for val in operand_values]
+            if len(squared_values) > 1:
+                total = be.sum(be.stack(squared_values))
+            else:
+                total = be.sum(squared_values[0])
+
+            return total
+
+        except Exception as e:
+            print(f"BatchedRayEvaluator.evaluate() failed: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return be.array(1e10) if be.get_backend() == "torch" else 1e10

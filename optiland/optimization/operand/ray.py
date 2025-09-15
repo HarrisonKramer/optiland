@@ -40,7 +40,6 @@ class RayOperand:
 
     # ========================================================================
     # PURE CALCULATION FUNCTIONS OPERATING ON PRE-TRACED DATA
-    # These are the "single source of truth" for all operand calculations
     # ========================================================================
 
     @staticmethod
@@ -92,7 +91,7 @@ class RayOperand:
 
         # For some reason decenter can sometimes be a single-element array.
         # In that case, retreive the float inside.
-        # This is a workaround until a solution is found.
+        # This is a workaround until a solution is found
         if be.is_array_like(decenter):
             decenter = decenter.item()
 

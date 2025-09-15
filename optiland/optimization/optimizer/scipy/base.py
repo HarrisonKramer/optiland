@@ -50,10 +50,7 @@ class OptimizerGeneric(BaseOptimizer):
             "Please use GlassExpert or remove them."
         )
 
-        # Initialize the BatchedRayEvaluator for high-performance evaluation
-        from ..evaluator import BatchedRayEvaluator
-
-        self.evaluator = BatchedRayEvaluator(self.problem)
+        # The BatchedRayEvaluator is now managed by the problem itself
 
         if self.problem.initial_value == 0.0:
             self.problem.initial_value = self.problem.sum_squared()
@@ -122,9 +119,9 @@ class OptimizerGeneric(BaseOptimizer):
             rss (float): The residual sum of squares.
 
         """
-        # Use the high-performance batched evaluator
         try:
-            rss = self.evaluator.evaluate(x)
+            rss = self.problem.sum_squared(x)
+
             if be.isnan(rss):
                 return 1e10
             # --- Convert result back to float for SciPy ---
