@@ -16,16 +16,16 @@ This helps us respond more effectively and keeps the issue tracker focused. -->
 - [ ] I have read the [documentation](https://optiland.readthedocs.io/en/latest/) and tried to find an answer there.
 - [ ] I am using the **latest version** of Optiland (if not, please update and retry).
 - [ ] I have tried to reproduce or debug the issue myself before opening this.
-- [ ] I have included **all necessary context**, such as version info, error messages, or minimal reproducible examples.
+- [ ] I have included **all necessary context**, including version info, error messages, _and_ a minimal reproducible example.
 
 *Thanks for taking the time to go through this — it really helps us help you!*
 
 ### Bug Report
 
-**Describe the bug**
+**Describe the bug (Required)**
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+**To Reproduce (Required)**
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
@@ -33,7 +33,7 @@ Steps to reproduce the behavior:
 4. See error
 
 
-**Expected behavior**
+**Expected behavior (Required)**
 A clear and concise description of what you expected to happen.
 
 
@@ -41,7 +41,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 
-**Environment**  
+**Environment (Required)**  
 - Optiland Version: `X.X.X`
 - Python Version: `X.X`
 - OS: `[Windows/Linux/macOS]`
