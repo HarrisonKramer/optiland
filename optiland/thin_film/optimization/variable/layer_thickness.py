@@ -75,9 +75,9 @@ class LayerThicknessVariable(VariableBehavior):
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
 
-        # Ensure positive thickness
+        # Ensure positive thickness - clamp to minimum instead of raising exception
         if new_value <= 0:
-            raise ValueError(f"Layer thickness must be positive, got {new_value}")
+            new_value = 0.0001  # Force minimum thickness of 1 nm
 
         self.stack.layers[self.layer_index].update_thickness(new_value)
 

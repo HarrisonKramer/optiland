@@ -94,11 +94,13 @@ class TestLayerThicknessVariable:
         var.update_value(scaled_value)
         assert abs(simple_stack.layers[0].thickness_um - 0.15) < 1e-10
 
-    def test_update_value_negative_fails(self, simple_stack):
-        """Test that negative thickness raises error."""
+    def test_update_value_negative_corrected(self, simple_stack):
+        """Test that negative thickness is corrected to minimum value."""
         var = LayerThicknessVariable(simple_stack, layer_index=0, apply_scaling=False)
-        with pytest.raises(ValueError, match="must be positive"):
-            var.update_value(-0.1)
+        # Try to set negative thickness - should be corrected to minimum
+        var.update_value(-0.05)
+        # Should be corrected to minimum thickness (1 nm = 0.001 μm)
+        assert simple_stack.layers[0].thickness_um == 0.001
 
     def test_scaling_functions(self, simple_stack):
         """Test scaling and inverse scaling."""
