@@ -56,44 +56,66 @@ class RadialPhase(BasePhase):
         m = self.order
         r = be.sqrt(x**2 + y**2)
         """Compute radial wrapped phase for order m."""
-        phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1))
+        #phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1))
+        #phi_ordered = m * phi_design
+        
+        #data[1]*((*x)*(*x)+(*y)*(*y));
+        #*x_der = 2.0*data[1]*(*x);
+        #*y_der = 2.0*data[1]*(*y);
+        
+        
+        phi_design = self.coef[0]*r**2
         phi_ordered = m * phi_design
         return phi_ordered
 
     def phase_calc(self, rays, nx, ny, nz, n1, n2):
+        nx = -1*nx
+        ny = -1*ny
+        nz = -1*nz
+        
+        #print((nx**2 + ny**2 + nz**2)**0.5)
+        
         m = self.order
         r = be.sqrt(rays.x**2 + rays.y**2)
         """Compute radial wrapped phase for order m."""
-        phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1))
-        phi_ordered = m * phi_design
-        
+        # phi_design = sum(a * r**(2*i) for i, a in enumerate(self.coef, start=1)) 
+        # phi_ordered = m * (phi_design ) 
 
-   
-        dphi_dr = sum(2*i * a * r**(2*i - 1) for i, a in enumerate(self.coef, start=1)) * m
-        with be.errstate(divide='ignore', invalid='ignore'):
-            dphi_dx = be.where(r != 0, dphi_dr * rays.x / r, 0.0)
-            dphi_dy = be.where(r != 0, dphi_dr * rays.y / r, 0.0)
+        phi_design = self.coef[0]*r
+        dphi_dx = 0
+        dphi_dy = 0
+        
+        dphi_dx += (2*1 ) * self.coef[0] * (rays.x )
+        dphi_dy += (2*1 ) * self.coef[0] * (rays.y )
+        #dphi_dr = sum(2*i * a * r**(2*i - 1) for i, a in enumerate(self.coef,start=1)) 
+        # with be.errstate(divide='ignore', invalid='ignore'):
+        #     dphi_dx = be.where(r != 0, dphi_dr * rays.x / r, 0.0)
+        #     dphi_dy = be.where(r != 0, dphi_dr * rays.y / r, 0.0)
+        #     #dphi_dx = dphi_dr * rays.x 
+        #     #dphi_dy = dphi_dr * rays.y 
+        
+        
         wvl = rays.w
         
         #k = 2 * be.pi / rays.w
         mu = 1.0 if wvl is None else wvl / rays.w 
         
-        in_cosI = rays.L * nx +rays.M * ny +rays.N * nz
+        in_cosI = rays.L * nx + rays.M * ny + rays.N * nz
         
         b = in_cosI + m * (nx*dphi_dx + ny * dphi_dy)
         c = mu * (mu * (dphi_dx**2 + dphi_dy**2) / 2 + m * (rays.L * dphi_dx + rays.M * dphi_dy))
         
-        discrim = b**2-2*c
+        discrim = b**2 - 2*c
         #if discrim < 0:
         #    raise ValeError("nogo")
         
-        Q =  - b + rays.N * discrim**0.5
+        Q =  - b + rays.N * be.sqrt(discrim)
         
         kfx = rays.L + m * mu * dphi_dx + Q*nx
         kfy = rays.M + m * mu * dphi_dy + Q*ny
         kfz = rays.N + Q * nx
         
-        out_mag = (kfx**2 + kfy**2 + kfz**2)**0.5
+        out_mag = be.sqrt(kfx**2 + kfy**2 + kfz**2)
         kfx /= out_mag
         kfy /= out_mag
         kfz /= out_mag 
