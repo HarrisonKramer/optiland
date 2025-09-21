@@ -175,6 +175,68 @@ class MonteCarlo(SensitivityAnalysis):
         fig.tight_layout()
         return fig, ax
 
+    def analyze_principal_components(self) -> pd.DataFrame:
+        """Performs Principal Component Analysis (PCA) on the Monte Carlo
+        results.
+
+        This method analyzes the results of the Monte Carlo simulation to
+        identify the principal components or "error modes" that contribute most
+        significantly to performance variation. It operates on the perturbation
+        and compensator data from the results DataFrame.
+
+        The process includes:
+        1.  Selecting the relevant data columns (perturbations and compensators).
+        2.  Handling any missing values by filling them with the mean of their
+            respective columns.
+        3.  Standardizing the data to have a mean of 0 and a standard deviation
+            of 1.
+        4.  Performing PCA to compute the principal components and explained
+            variance.
+        5.  Returning the results in a pandas DataFrame, where each column
+            represents a principal component and each row corresponds to an
+            original variable. The column names include the explained variance
+            for each component.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the principal components
+                (error modes). The index of the DataFrame lists the original
+                variables (perturbations and compensators), and the columns
+                represent the principal components, with their explained
+                variance included in the header.
+
+        """
+        # 1. Select perturbation and compensator columns
+        perturbation_cols = [
+            col for col in self._results.columns if "C0" not in col and ":" not in col
+        ]
+        compensator_cols = [
+            col for col in self._results.columns if "C0" in col
+        ]
+        data = self._results[perturbation_cols + compensator_cols]
+
+        # 2. Handle missing data
+        data = data.fillna(data.mean())
+
+        # 3. Scale the data
+        data_standardized = (data - data.mean()) / data.std()
+
+        # 4. Perform PCA using numpy
+        covariance_matrix = np.cov(data_standardized.T)
+        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+
+        # 5. Format results
+        explained_variance = eigenvalues / np.sum(eigenvalues)
+        component_df = pd.DataFrame(
+            eigenvectors,
+            columns=[
+                f"PC{i+1} ({var:.2%})"
+                for i, var in enumerate(explained_variance)
+            ],
+            index=data.columns,
+        )
+
+        return component_df
+
     def _plot(
         self, plot_type: str, kde: bool = True, bins: int = 50
     ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:

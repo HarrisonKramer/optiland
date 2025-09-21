@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
 import pytest
 
 from optiland.samples.objectives import ReverseTelephoto
@@ -126,3 +127,20 @@ def test_validate_no_perturbations(monte_carlo):
     msg = "No perturbations found in the tolerancing system."
     with pytest.raises(ValueError, match=msg):
         monte_carlo._validate()
+
+
+def test_analyze_principal_components(monte_carlo):
+    num_iterations = 100
+    monte_carlo.run(num_iterations)
+    pca_results = monte_carlo.analyze_principal_components()
+
+    assert pca_results is not None
+    assert isinstance(pca_results, pd.DataFrame)
+
+    # there is one perturbation and one compensator
+    assert pca_results.shape == (2, 2)
+
+    # Check if column names are in the expected format "PCx (xx.xx%)"
+    for col in pca_results.columns:
+        assert "PC" in col
+        assert "%" in col
