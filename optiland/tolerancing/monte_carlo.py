@@ -175,64 +175,83 @@ class MonteCarlo(SensitivityAnalysis):
         fig.tight_layout()
         return fig, ax
 
-    def analyze_principal_components(self) -> pd.DataFrame:
+    def analyze_principal_components(
+        self,
+    ) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
         """Performs Principal Component Analysis (PCA) on the Monte Carlo
-        results.
+        results to identify the primary "error modes" of the system.
 
-        This method analyzes the results of the Monte Carlo simulation to
-        identify the principal components or "error modes" that contribute most
-        significantly to performance variation. It operates on the perturbation
-        and compensator data from the results DataFrame.
-
-        The process includes:
-        1.  Selecting the relevant data columns (perturbations and compensators).
-        2.  Handling any missing values by filling them with the mean of their
-            respective columns.
-        3.  Standardizing the data to have a mean of 0 and a standard deviation
-            of 1.
-        4.  Performing PCA to compute the principal components and explained
-            variance.
-        5.  Returning the results in a pandas DataFrame, where each column
-            represents a principal component and each row corresponds to an
-            original variable. The column names include the explained variance
-            for each component.
+        This method analyzes the perturbation and compensator data from the
+        simulation results. It does not modify the instance; instead, it
+        returns the complete PCA results.
 
         Returns:
-            pd.DataFrame: A DataFrame containing the principal components
-                (error modes). The index of the DataFrame lists the original
-                variables (perturbations and compensators), and the columns
-                represent the principal components, with their explained
-                variance included in the header.
+            tuple[pd.DataFrame, pd.Series, pd.DataFrame]: A tuple containing:
+            - **components** (pd.DataFrame): The principal components (loadings).
+              The index contains the original variable names, and the columns
+              are the principal components ('PC1', 'PC2', etc.). The values
+              show how much each variable contributes to a component.
+            - **explained_variance_ratio** (pd.Series): The proportion of the
+              dataset's variance that lies along each principal component.
+            - **scores** (pd.DataFrame): The transformed data, representing
+              each simulation iteration in terms of the new principal
+              component axes.
 
+        Example:
+            >>> mc = MonteCarlo(my_tolerancing_system)
+            >>> mc.run(10000)
+            >>> components, variance, scores = mc.analyze_principal_components()
+            >>>
+            >>> # View the top 5 error modes
+            >>> print(components[['PC1', 'PC2', 'PC3', 'PC4', 'PC5']])
+            >>>
+            >>> # Check the cumulative variance explained by the first 3 components
+            >>> print(variance.head(3).sum())
         """
+        if self._results is None or self._results.empty:
+            raise RuntimeError(
+                "Monte Carlo results are not available. Please run the "
+                "simulation using the .run() method first."
+            )
+
         # 1. Select perturbation and compensator columns
         perturbation_cols = [
             col for col in self._results.columns if "C0" not in col and ":" not in col
         ]
         compensator_cols = [col for col in self._results.columns if "C0" in col]
-        data = self._results[perturbation_cols + compensator_cols]
+        feature_cols = perturbation_cols + compensator_cols
+        data = self._results[feature_cols]
 
-        # 2. Handle missing data
+        # 2. Handle missing data by filling with the column mean
         data = data.fillna(data.mean())
 
-        # 3. Scale the data
+        # 3. Standardize the data (mean=0, std=1)
         data_standardized = (data - data.mean()) / data.std()
 
-        # 4. Perform PCA using numpy
-        covariance_matrix = np.cov(data_standardized.T)
-        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+        # 4. Perform PCA using Singular Value Decomposition
+        U, S, Vt = np.linalg.svd(data_standardized, full_matrices=False)
 
-        # 5. Format results
-        explained_variance = eigenvalues / np.sum(eigenvalues)
-        component_df = pd.DataFrame(
-            eigenvectors,
-            columns=[
-                f"PC{i + 1} ({var:.2%})" for i, var in enumerate(explained_variance)
-            ],
-            index=data.columns,
+        eigenvalues = S**2 / (len(data_standardized) - 1)
+        eigenvectors = Vt.T
+
+        # 5. Format results for returning
+        pc_names = [f"PC{i + 1}" for i in range(len(eigenvalues))]
+
+        # Explained variance ratio
+        total_variance = np.sum(eigenvalues)
+        explained_variance_ratio = pd.Series(
+            eigenvalues / total_variance,
+            index=pc_names,
+            name="Explained Variance Ratio",
         )
 
-        return component_df
+        # Principal components (loadings)
+        components = pd.DataFrame(eigenvectors, index=feature_cols, columns=pc_names)
+
+        # Transformed data (scores)
+        scores = pd.DataFrame(data_standardized.values @ eigenvectors, columns=pc_names)
+
+        return components, explained_variance_ratio, scores
 
     def _plot(
         self, plot_type: str, kde: bool = True, bins: int = 50
