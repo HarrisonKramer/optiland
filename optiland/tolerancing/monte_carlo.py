@@ -209,9 +209,7 @@ class MonteCarlo(SensitivityAnalysis):
         perturbation_cols = [
             col for col in self._results.columns if "C0" not in col and ":" not in col
         ]
-        compensator_cols = [
-            col for col in self._results.columns if "C0" in col
-        ]
+        compensator_cols = [col for col in self._results.columns if "C0" in col]
         data = self._results[perturbation_cols + compensator_cols]
 
         # 2. Handle missing data
@@ -229,8 +227,7 @@ class MonteCarlo(SensitivityAnalysis):
         component_df = pd.DataFrame(
             eigenvectors,
             columns=[
-                f"PC{i+1} ({var:.2%})"
-                for i, var in enumerate(explained_variance)
+                f"PC{i + 1} ({var:.2%})" for i, var in enumerate(explained_variance)
             ],
             index=data.columns,
         )
