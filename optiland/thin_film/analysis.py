@@ -303,6 +303,7 @@ class SpectralAnalyzer:
         aoi_unit: AngleUnit = "deg",
         polarization: PolInput = "u",
         to_plot: PlotType | list[PlotType] = "R",
+        colormap: str = "viridis",
         fig: plt.Figure = None,
         axs: plt.Axes | list[plt.Axes] = None,
     ) -> tuple[plt.Figure, plt.Axes | list[plt.Axes]]:
@@ -377,7 +378,13 @@ class SpectralAnalyzer:
 
                 ax_i = axs[qty_idx][pol_idx]
                 im = ax_i.pcolormesh(
-                    WL, AOI, rta_data[quantity], shading="auto", vmin=0, vmax=1
+                    WL,
+                    AOI,
+                    rta_data[quantity],
+                    shading="auto",
+                    vmin=0,
+                    vmax=1,
+                    cmap=colormap,
                 )
 
                 ax_i.set_xlabel(self._get_wavelength_axis_label(wavelength_unit))
