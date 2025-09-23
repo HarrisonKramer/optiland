@@ -1,8 +1,9 @@
 # Defines simple sample optical systems.
 import optiland.backend as be
 from optiland import optic
-#from optiland.phase.grating import GratingPhase
+from optiland.phase.grating import GratingPhase
 from optiland.phase.radial import RadialPhase
+
 import math as mth
 import numpy as np
 from optiland.materials import AbbeMaterial, Material
@@ -29,7 +30,6 @@ class AsphericSingletMirror(optic.Optic):
             is_stop=True,
             material= "mirror",
             surface_type="standard",
-            #phase_type = GratingPhase(A = 1, order = -1, eff = 'ideal')
             phase_type = RadialPhase(coef = [a1], order = -1, eff = 'ideal')
         )
         self.add_surface(index=3, thickness=-0)
@@ -108,7 +108,7 @@ radius = np.sqrt(x**2 + y**2)
 
 
 
-def plot_phase(values,A, num_points):
+def plot_phase(values,A,m, num_points):
     _, ax = plt.subplots(figsize=(7, 5.5))
 
     x, y = np.meshgrid(np.linspace(-1*A, 1*A, num_points), np.linspace(-1*A, 1*A, num_points))
@@ -117,7 +117,7 @@ def plot_phase(values,A, num_points):
     p.order = -1
     p.coef= [-0.01]
     
-    values=m*2*pi/0.53e-3*p.phasefunction( x, y)
+    values=m*2*np.pi/0.53e-3*p.phasefunction( x, y)
     values[radius > 1*A] = 0.0
     im = ax.imshow(np.flipud(values), extent=[-1*A, 1*A, -1*A, 1*A], cmap = "jet")
     #im = ax.plot(np.linspace(-1*A, 1*A, num_points),values[int(33),:])
@@ -130,5 +130,5 @@ def plot_phase(values,A, num_points):
     
 
 
-plot_phase(0.01*2*np.pi/0.53e-3, 10, num_points)
+plot_phase(-0.01, 10, -1, num_points)
 
