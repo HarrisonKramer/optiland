@@ -17,10 +17,7 @@ class AsphericSingletMirror(optic.Optic):
     def __init__(self):
         super().__init__()
         # add surfaces
-        #a1 = 0.053/(2*3.14)*0.53e-3*100*10**2
-        #a1 = 0.05
-        #a1 = 0.9*1*(2*np.pi )/(2*np.pi )/ 0.530e-1
-        a1 = .01
+        a1 = -0.01
         print(a1)
         self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         # self.add_surface(index=1, radius=be.inf, thickness=1, material = "N-BK7")
@@ -28,7 +25,7 @@ class AsphericSingletMirror(optic.Optic):
         self.add_surface(
             index=2,
             thickness=-50,
-            radius= -np.inf,
+            radius= -75,
             is_stop=True,
             material= "mirror",
             surface_type="standard",
@@ -83,27 +80,12 @@ lens = AsphericSingletMirror()
 # You may try a different lens here
 #lens = AsphericSinglet()
 bk7=Material("N-Bk7")
-#print(bk7.n(0.530))
-#rays = lens.trace(Hx=0, Hy=0, wavelength=0.53, num_rays=1 )
+
 rayData = lens.trace_generic(Hx=0, Hy=0,Px = 0, Py = 1, wavelength=0.53)
-
-
-#rayDataFull = lens.trace(Hx = 0, Hy = 0, wavelength = 0.530, num_rays=1, distribution="line_y")
 num_surfaces = lens.surface_group.num_surfaces
-#lens.surface_group.
-# take intersection points on last surface only
-# print(lens.surface_group.y[:,:],lens.surface_group.z[:,:], lens.surface_group.M[:,:],lens.surface_group.N[:,:])
-#x_image = lens.surface_group.x[num_surfaces - 1, :]
-#y_image = lens.surface_group.y[num_surfaces - 1, :]
-#print(rayDataFull)
-# print(rayData)
-# print(mth.atan(rayData.M/rayData.N)*180/mth.pi)
-#lens.draw3D(distribution="line_y")
-lens.draw(distribution="line_y",num_rays=10)
-#opd = wavefront.OPD(lens, field=(0, 0), wavelength=0.530)
-#opd.view(projection="3d", num_points=128)
+lens.draw(distribution="line_y",num_rays=11)
 plt.show()
-#rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=1024, distribution="random")
+
 
 def generate_wavefront(z, num_points=32):
     x, y = np.meshgrid(np.linspace(-1, 1, num_points), np.linspace(-1, 1, num_points))
@@ -131,47 +113,22 @@ def plot_phase(values,A, num_points):
 
     x, y = np.meshgrid(np.linspace(-1*A, 1*A, num_points), np.linspace(-1*A, 1*A, num_points))
     radius = np.sqrt(x**2 + y**2)
+    p=RadialPhase()
+    p.order = -1
+    p.coef= [-0.01]
+    
+    values=m*2*pi/0.53e-3*p.phasefunction( x, y)
     values[radius > 1*A] = 0.0
-    #im = ax.imshow(np.flipud(values), extent=[-1*A, 1*A, -1*A, 1*A], cmap = "jet")
+    im = ax.imshow(np.flipud(values), extent=[-1*A, 1*A, -1*A, 1*A], cmap = "jet")
     #im = ax.plot(np.linspace(-1*A, 1*A, num_points),values[int(33),:])
     
 
-
-    #ax.set_xlabel("Pupil X")
-    #ax.set_ylabel("Pupil Y")
-    #plt.colorbar(im)
+    ax.set_xlabel("Pupil X")
+    ax.set_ylabel("Pupil Y")
+    plt.colorbar(im)
     plt.show()
     
-def plot_phase2D(values,A,num_points):
-    _, ax = plt.subplots(figsize=(7, 5.5))
-    x = np.linspace(-1*A, 1*A, num_points)
-    radius = np.sqrt(x**2)
-  
-    #im = ax.imshow(np.flipud(values), extent=[-1*A, 1*A, -1*A, 1*A], cmap = "jet")
-    #im = ax.plot(x,radius)
-    
-    m = -1
-    r = be.sqrt(x**2)
 
-        
-        
-    phi_design = values*r**2 + 4.3*r
-    phi_ordered = m * phi_design
-    im = ax.plot(x,phi_ordered)
-    #ax.set_xlabel("Pupil X")
-    #ax.set_ylabel("Pupil Y")
-    #plt.colorbar(im)
-    plt.show()
 
-#z = ZernikeStandard(np.random.rand(10))
-#a1=0.053/(2*3.15)*0.53e-3*100*10**2
-a1 = 1
-#print(a1)
-#p = 0.9*RadialPhase(coef = [a1, 0], order = -1, eff = 'ideal').phasefunction(x,y)*(2*np.pi )/(2*np.pi )/ 0.530e-1
-#p = RadialPhase(coef = [0.01*2*np.pi/0.53e-3, 0], order = -1, eff = 'ideal').phasefunction(x,0)
-#p[radius > 1*A] = 0.0
-#print(np.max(abs(p))) 
-
-#plt.show()
-plot_phase2D(a1*0.01*2*np.pi/0.53e-3, 10, num_points)
+plot_phase(0.01*2*np.pi/0.53e-3, 10, num_points)
 
