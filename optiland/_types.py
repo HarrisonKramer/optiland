@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from sys import version_info
-from typing import TYPE_CHECKING, Literal, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Literal, TypedDict, TypeVar, Union
 
 from numpy.typing import NDArray
 
@@ -34,8 +34,10 @@ __all__ = [
     "ZernikeType",
 ]
 
-BEArray = TypeVar("BEArray", NDArray, "Tensor")
-ScalarOrArray = TypeVar("ScalarOrArray", float, NDArray, "Tensor")
+BEArray = TypeVar("BEArray", NDArray, "Tensor", Union[NDArray, "Tensor"])
+ScalarOrArray = TypeVar(
+    "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
+)
 
 DistributionType = Literal[
     "line_x",

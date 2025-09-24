@@ -137,7 +137,7 @@ class OPD(Wavefront):
             current_fig.canvas.draw_idle()
         return current_fig, ax
 
-    def rms(self) -> float:
+    def rms(self) -> be.ndarray:
         """Calculates the root mean square (RMS) of the OPD wavefront.
 
         Returns:
@@ -174,7 +174,7 @@ class OPD(Wavefront):
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("OPD (waves)", rotation=270)
 
-    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, np.ndarray]) -> None:
+    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, NDArray]) -> None:
         """Plots the 3D visualization of the OPD wavefront.
 
         Args:
