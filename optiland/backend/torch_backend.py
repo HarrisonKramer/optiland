@@ -360,6 +360,10 @@ def sin(x: ArrayLike) -> Tensor:
     return torch.sin(array(x))
 
 
+def power(x: ArrayLike, y: ArrayLike) -> Tensor:
+    return torch.pow(array(x), array(y))
+
+
 def cos(x: ArrayLike) -> Tensor:
     return torch.cos(array(x))
 

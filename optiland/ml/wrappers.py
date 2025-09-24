@@ -71,7 +71,7 @@ class OpticalSystemModule(nn.Module if nn is not None else object):
         self.problem = problem
 
         # Initialize parameters as torch.nn.Parameter objects
-        initial_params = [var.variable.get_value() for var in self.problem.variables]
+        initial_params = [var.value for var in self.problem.variables]
         self.params = nn.ParameterList(
             [torch.nn.Parameter(be.array(p)) for p in initial_params]
         )
@@ -101,7 +101,7 @@ class OpticalSystemModule(nn.Module if nn is not None else object):
         """
         for i, param in enumerate(self.params):
             var = self._original_variables[i]
-            var.variable.update_value(param)
+            var.update(param)
 
     def apply_bounds(self):
         """
