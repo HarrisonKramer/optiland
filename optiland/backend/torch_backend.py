@@ -23,7 +23,6 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import contextlib
-from collections.abc import Callable, Generator, Sequence
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
@@ -31,6 +30,8 @@ import torch
 import torch.nn.functional as F
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Generator, Sequence
+
     from numpy.typing import ArrayLike
     from torch import Generator as TorchGenerator
     from torch import Tensor
@@ -305,8 +306,8 @@ def unsqueeze_last(x: Tensor) -> Tensor:
     return x.unsqueeze(-1)
 
 
-def tile(x: Tensor, dims: int | Sequence[int]) -> Tensor:
-    return torch.tile(x, dims if isinstance(dims, Sequence) else (dims,))
+def tile(x: Tensor, dims: int | list[int] | tuple[int, ...]) -> Tensor:
+    return torch.tile(x, dims if isinstance(dims, list | tuple) else (dims,))
 
 
 def isscalar(x: ArrayLike | Tensor) -> bool:

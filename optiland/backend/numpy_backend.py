@@ -72,7 +72,7 @@ def default_rng(seed: int | None = None) -> Generator:
 def random_uniform(
     low: ScalarOrArray = 0.0,
     high: ScalarOrArray = 1.0,
-    size: float | tuple[float, ...] | None = None,
+    size: int | tuple[int, ...] | None = None,
     generator: Generator | None = None,
 ) -> ScalarOrArray:
     if generator is None:
@@ -83,7 +83,7 @@ def random_uniform(
 def random_normal(
     loc: ScalarOrArray = 0.0,
     scale: ScalarOrArray = 1.0,
-    size: float | tuple[float, ...] | None = None,
+    size: int | tuple[int, ...] | None = None,
     generator: Generator | None = None,
 ) -> ScalarOrArray:
     if generator is None:
