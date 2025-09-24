@@ -25,10 +25,7 @@ except ImportError:
     _torch = None
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from numpy.typing import ArrayLike, NDArray
-    from torch import Tensor
+    from torch import Tensor  # noqa: TC004
 
     from optiland._types import BEArray, ScalarOrArray
 
@@ -58,7 +55,7 @@ def array_equal(a: BEArray, b: BEArray) -> bool:
 
 def isinf(x: ScalarOrArray) -> ScalarOrArray:
     """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
-    if _torch_available and isinstance(x, _torch.Tensor):
+    if _torch_available and isinstance(x, Tensor):
         # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
         return _torch.isinf(x)
     # Fallback to numpy for np.ndarray or Python scalars
@@ -68,7 +65,7 @@ def isinf(x: ScalarOrArray) -> ScalarOrArray:
 
 def isnan(x: ScalarOrArray) -> ScalarOrArray:
     """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
-    if _torch_available and isinstance(x, _torch.Tensor):
+    if _torch_available and isinstance(x, Tensor):
         return _torch.isnan(x)
 
     return _np.isnan(x)

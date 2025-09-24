@@ -23,7 +23,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import contextlib
-from collections.abc import Callable, Sequence, Generator
+from collections.abc import Callable, Generator, Sequence
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
@@ -32,7 +32,8 @@ import torch.nn.functional as F
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
-    from torch import Generator as TorchGenerator, Tensor
+    from torch import Generator as TorchGenerator
+    from torch import Tensor
 
 _lib = torch  # Alias for torch library
 
@@ -662,12 +663,14 @@ def vectorize(pyfunc: Callable[..., Any]) -> Callable[[Tensor], Tensor]:
     def wrapped(x: Tensor) -> Tensor:
         flat = x.reshape(-1)
         mapped = [pyfunc(xi) for xi in flat]
-        out = torch.stack([
-            m
-            if isinstance(m, torch.Tensor)
-            else torch.tensor(m, dtype=get_precision(), device=get_device())
-            for m in mapped
-        ])
+        out = torch.stack(
+            [
+                m
+                if isinstance(m, torch.Tensor)
+                else torch.tensor(m, dtype=get_precision(), device=get_device())
+                for m in mapped
+            ]
+        )
         return out.view(x.shape)
 
     return wrapped

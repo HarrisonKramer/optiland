@@ -1,6 +1,6 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Generator, Sequence
 from contextlib import contextmanager
-from typing import Any, Generator, Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from numpy.random import Generator as NumpyGenerator
 from numpy.typing import ArrayLike, NDArray
