@@ -159,3 +159,36 @@ def test_save_load_optiland_file():
         save_optiland_file(lens, temp_file.name)
         lens2 = load_optiland_file(temp_file.name)
     assert lens.to_dict() == lens2.to_dict()
+
+
+def test_load_legacy_optiland_file_with_field_type():
+    """Test loading an Optiland file with the legacy `field_type` key."""
+    import json
+    from optiland.fields import AngleField
+    from optiland.fileio import load_optiland_file
+
+    # 1. Create a modern optic and get its dictionary representation
+    lens = HeliarLens()
+    lens.set_field_type("angle")
+    modern_dict = lens.to_dict()
+
+    # 2. Create a legacy dictionary from the modern one
+    legacy_dict = lens.to_dict()
+    legacy_dict["fields"]["field_type"] = "angle"
+    del legacy_dict["fields"]["field_definition"]
+
+    # 3. Save the legacy dictionary to a temporary file
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".json"
+    ) as temp_file:
+        json.dump(legacy_dict, temp_file)
+        filepath = temp_file.name
+
+    # 4. Load the legacy file
+    loaded_lens = load_optiland_file(filepath)
+
+    # 5. Assert that the loaded lens is correct
+    assert isinstance(loaded_lens.field_definition, AngleField)
+    assert modern_dict == loaded_lens.to_dict()
+
+    os.remove(filepath)
