@@ -313,8 +313,8 @@ class HuygensPSF(BasePSF):
                 self.optic,
                 distribution="uniform",
                 num_rays=self.num_rays,
-                fields=((0, 0),),
-                wavelengths=(self.wavelengths[0],),
+                fields=[(0, 0)],
+                wavelengths=[self.wavelengths[0]],
             )
             data = wf.get_data((0, 0), self.wavelengths[0])
 

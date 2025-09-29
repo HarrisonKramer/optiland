@@ -16,6 +16,8 @@ from optiland.utils import resolve_fields, resolve_wavelengths
 from .strategy import create_strategy
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from optiland._types import DistributionType, Fields, Wavelengths
     from optiland.optic.optic import Optic
     from optiland.wavefront.strategy import WavefrontStrategyType

@@ -15,8 +15,8 @@ import numpy as np
 from matplotlib import patches
 
 import optiland.backend as be
-from optiland.utils import resolve_fields
 from optiland.visualization.system.utils import transform
+from optiland.utils import resolve_fields
 
 from .base import BaseAnalysis
 

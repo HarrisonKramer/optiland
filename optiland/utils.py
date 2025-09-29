@@ -129,7 +129,7 @@ def resolve_wavelength(optic, wavelength):
                 "Invalid wavelength string. For a single wavelength, it must be "
                 "'primary'."
             )
-    elif isinstance(wavelength, int | float):
+    elif isinstance(wavelength, (int, float)):
         return float(wavelength)
     else:
         raise TypeError("Wavelength must be a string ('primary') or a number.")
