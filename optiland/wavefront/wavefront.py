@@ -11,12 +11,11 @@ from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.distribution import BaseDistribution, create_distribution
+from optiland.utils import resolve_fields, resolve_wavelengths
 
 from .strategy import create_strategy
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from optiland._types import DistributionType, Fields, Wavelengths
     from optiland.optic.optic import Optic
     from optiland.wavefront.strategy import WavefrontStrategyType
@@ -65,8 +64,8 @@ class Wavefront:
         **kwargs,
     ):
         self.optic = optic
-        self.fields = self._resolve_fields(fields)
-        self.wavelengths = self._resolve_wavelengths(wavelengths)
+        self.fields = resolve_fields(optic, fields)
+        self.wavelengths = resolve_wavelengths(optic, wavelengths)
         self.num_rays = num_rays
         self.distribution = self._resolve_distribution(distribution, self.num_rays)
 
@@ -140,21 +139,6 @@ class Wavefront:
         opd_detrended = opd - fitted
 
         return opd_detrended
-
-    def _resolve_fields(self, fields: Fields) -> Sequence[tuple[float, float]]:
-        """Resolves field coordinates from the input specification."""
-        if fields == "all":
-            return self.optic.fields.get_field_coords()
-
-        return fields
-
-    def _resolve_wavelengths(self, wavelengths: Wavelengths) -> Sequence[float]:
-        """Resolves wavelengths from the input specification."""
-        if wavelengths == "all":
-            return self.optic.wavelengths.get_wavelengths()
-        if wavelengths == "primary":
-            return [self.optic.primary_wavelength]
-        return wavelengths
 
     def _resolve_distribution(
         self, dist: DistributionType | BaseDistribution, num_rays

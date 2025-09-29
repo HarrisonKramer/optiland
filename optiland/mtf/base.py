@@ -14,7 +14,7 @@ import abc
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
-from optiland.utils import get_working_FNO
+from optiland.utils import get_working_FNO, resolve_fields, resolve_wavelength
 
 
 class BaseMTF(abc.ABC):
@@ -31,8 +31,8 @@ class BaseMTF(abc.ABC):
     def __init__(
         self,
         optic,
-        fields,
-        wavelength,
+        fields: str | list,
+        wavelength: str | float,
         strategy="chief_ray",
         remove_tilt=False,
         **kwargs,
@@ -60,15 +60,8 @@ class BaseMTF(abc.ABC):
         self.remove_tilt = remove_tilt
         self.strategy_kwargs = kwargs
 
-        if fields == "all":
-            self.resolved_fields = optic.fields.get_field_coords()
-        else:
-            self.resolved_fields = fields
-
-        if wavelength == "primary":
-            self.resolved_wavelength = optic.primary_wavelength
-        else:
-            self.resolved_wavelength = wavelength
+        self.resolved_fields = resolve_fields(optic, fields)
+        self.resolved_wavelength = resolve_wavelength(optic, wavelength)
 
         self._calculate_psf()
         self.mtf = self._generate_mtf_data()
