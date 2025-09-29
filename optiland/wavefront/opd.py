@@ -14,6 +14,8 @@ from scipy.interpolate import griddata
 
 import optiland.backend as be
 
+from optiland.utils import resolve_wavelength
+
 from .wavefront import Wavefront
 
 if TYPE_CHECKING:
@@ -39,7 +41,8 @@ class OPD(Wavefront):
     Args:
         optic (Optic): The optic object.
         field (tuple): The field at which to calculate the OPD.
-        wavelength (float): The wavelength of the wavefront.
+        wavelength (str | float): The wavelength of the wavefront. Can be 'primary'
+            or a float value.
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
         strategy (str): The calculation strategy to use. Supported options are
@@ -70,17 +73,18 @@ class OPD(Wavefront):
         self,
         optic: Optic,
         field: tuple[float, float],
-        wavelength: float,
+        wavelength: str | float,
         num_rays: int = 15,
         distribution: DistributionType = "hexapolar",
         strategy: WavefrontStrategyType = "chief_ray",
         remove_tilt: bool = False,
         **kwargs,
     ) -> None:
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         super().__init__(
             optic,
             fields=[field],
-            wavelengths=[wavelength],
+            wavelengths=[resolved_wavelength],
             num_rays=num_rays,
             distribution=distribution,
             strategy=strategy,

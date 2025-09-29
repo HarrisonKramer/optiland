@@ -17,7 +17,7 @@ from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
 import optiland.backend as be
-from optiland.utils import get_working_FNO
+from optiland.utils import get_working_FNO, resolve_wavelength
 from optiland.wavefront import Wavefront
 
 
@@ -45,7 +45,8 @@ class BasePSF(Wavefront):
     Args:
         optic (Optic): The optical system.
         field (tuple): The field as (x, y) at which to compute the PSF.
-        wavelength (float): The wavelength of light.
+        wavelength (str | float): The wavelength of light. Can be 'primary' or a
+            float value.
         num_rays (int, optional): The number of rays used for wavefront
             computation. Defaults to 128.
         strategy (str): The calculation strategy to use. Supported options are
@@ -67,16 +68,17 @@ class BasePSF(Wavefront):
         self,
         optic,
         field,
-        wavelength,
+        wavelength: str | float,
         num_rays=128,
         strategy="chief_ray",
         remove_tilt=True,
         **kwargs,
     ):
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         super().__init__(
             optic=optic,
             fields=[field],
-            wavelengths=[wavelength],
+            wavelengths=[resolved_wavelength],
             num_rays=num_rays,
             distribution="uniform",
             strategy=strategy,
