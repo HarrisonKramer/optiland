@@ -17,8 +17,6 @@ from .strategy import create_strategy
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
-
     from optiland._types import DistributionType, Fields, Wavelengths
     from optiland.optic.optic import Optic
     from optiland.wavefront.strategy import WavefrontStrategyType
@@ -98,7 +96,7 @@ class Wavefront:
     @staticmethod
     def fit_and_remove_tilt(
         data: WavefrontData, remove_piston: bool = False, ridge: float = 1e-12
-    ) -> NDArray:
+    ) -> be.ndarray:
         """
         Removes piston and tilt from OPD data using weighted least squares.
 
