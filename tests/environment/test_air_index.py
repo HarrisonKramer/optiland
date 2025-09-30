@@ -60,12 +60,20 @@ def test_dispatch_to_correct_model(
         n_via_dispatcher = refractive_index_air(
             reference_wavelength_um, typical_conditions, model=model_name_actual
         )
+
+        # For torch backend, must detach tensors before comparing with pytest.approx
+        if hasattr(expected_n, "detach"):
+            expected_n = expected_n.detach()
+        if hasattr(n_via_dispatcher, "detach"):
+            n_via_dispatcher = n_via_dispatcher.detach()
         assert n_via_dispatcher == pytest.approx(expected_n)
 
         # Test case-insensitivity for model name
         n_via_dispatcher_upper = refractive_index_air(
             reference_wavelength_um, typical_conditions, model=model_name_actual.upper()
         )
+        if hasattr(n_via_dispatcher_upper, "detach"):
+            n_via_dispatcher_upper = n_via_dispatcher_upper.detach()
         assert n_via_dispatcher_upper == pytest.approx(expected_n)
 
     except ModuleNotFoundError as e:

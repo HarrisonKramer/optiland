@@ -119,8 +119,10 @@ def _calculate_saturation_vapor_pressure(temp_c: float) -> float:
     # The reference implementation uses a different formula for t < 0.
     # Using a ternary operator or if/else based on backend support.
     if hasattr(be, "where"):
+        # The condition needs to be a tensor/array for `where` to work correctly.
+        condition = be.asarray(temp_c) >= 0
         return be.where(
-            temp_c >= 0,
+            condition,
             be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k),
             10.0 ** (-2663.5 / temp_k + 12.537),
         )
