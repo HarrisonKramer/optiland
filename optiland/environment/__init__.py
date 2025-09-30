@@ -1,4 +1,3 @@
-# flake8: noqa
 """Environmental Modeling Package
 
 This package provides tools for calculating environmental parameters
@@ -23,9 +22,20 @@ Key exports:
     birch_downs_refractive_index: Direct access to Birch & Downs model.
 """
 
-from .conditions import EnvironmentalConditions
+from __future__ import annotations
+
 from .air_index import refractive_index_air
+from .conditions import EnvironmentalConditions
 from .models.birch_downs import birch_downs_refractive_index
 from .models.ciddor import ciddor_refractive_index
 from .models.edlen import edlen_refractive_index
 from .models.kohlrausch import kohlrausch_refractive_index
+
+__all__ = [
+    "EnvironmentalConditions",
+    "refractive_index_air",
+    "ciddor_refractive_index",
+    "kohlrausch_refractive_index",
+    "edlen_refractive_index",
+    "birch_downs_refractive_index",
+]

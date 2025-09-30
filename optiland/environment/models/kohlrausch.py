@@ -15,7 +15,12 @@ References:
 Kramer Harrison, 2025
 """
 
-from ..conditions import EnvironmentalConditions
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from the Kohlrausch Formula ---
 

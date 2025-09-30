@@ -15,9 +15,14 @@ References:
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 
-from ..conditions import EnvironmentalConditions
+if TYPE_CHECKING:
+    from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Edlén (1966) ---
 

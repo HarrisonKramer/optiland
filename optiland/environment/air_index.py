@@ -8,6 +8,8 @@ and a simplified Kohlrausch model.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from .conditions import EnvironmentalConditions
 from .models.birch_downs import birch_downs_refractive_index
 from .models.ciddor import ciddor_refractive_index

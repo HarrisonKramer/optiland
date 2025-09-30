@@ -7,6 +7,8 @@ humidity, and CO2 concentration.
 Kramer Harrison, 2025
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 
