@@ -1,9 +1,19 @@
-"""Provides a unified interface for calculating the refractive index of air.
+"""Unified Interface for Air Refractive Index Models.
 
-This module offers a single function, `refractive_index_air`, to access
-different models for air refractive index based on environmental conditions.
-It supports Ciddor (1996), Edlén (1966), Birch & Downs (1993/1994),
-and a simplified Kohlrausch model.
+This module provides a high-level dispatcher function, `refractive_index_air`,
+to conveniently access various models for calculating the refractive index of
+air. This allows users to easily switch between models based on their specific
+requirements for accuracy, environmental conditions, or consistency with other
+tools.
+
+The supported models include:
+- Ciddor (1996): A highly accurate model for a wide range of wavelengths and
+  atmospheric conditions.
+- Edlén (1966): A widely used model, implemented here with the NIST
+  temperature correction for the water vapor term to improve accuracy.
+- Birch & Downs (1994): A revised Edlén-style equation, also implemented
+  with the NIST temperature correction for the water vapor term.
+- Kohlrausch: A model based on the formula used in Zemax OpticStudio.
 
 Kramer Harrison, 2025
 """
@@ -17,7 +27,9 @@ from .models.edlen import edlen_refractive_index
 from .models.kohlrausch import kohlrausch_refractive_index
 
 
-def refractive_index_air(wavelength_um, conditions, model="ciddor"):
+def refractive_index_air(
+    wavelength_um: float, conditions: EnvironmentalConditions, model: str = "ciddor"
+) -> float:
     """Calculates the refractive index of air using a specified model.
 
     This function acts as a dispatcher to various air refractive index models.
@@ -25,20 +37,15 @@ def refractive_index_air(wavelength_um, conditions, model="ciddor"):
     encapsulated in the `conditions` object.
 
     Args:
-        wavelength_um (float): The wavelength of light in microns (μm).
-        conditions (EnvironmentalConditions): An object containing the
-            environmental parameters. Specific models might ignore some
-            parameters (e.g., simplified Kohlrausch ignores humidity and CO2).
-            - pressure (Pa)
-            - temperature (°C)
-            - relative_humidity (0 to 1)
-            - co2_ppm (parts per million)
-        model (str, optional): The model to use for calculation.
-            Supported models: 'ciddor', 'edlen', 'birch_downs', 'kohlrausch'.
-            Defaults to 'ciddor'.
+        wavelength_um: The wavelength of light in a vacuum, in micrometers (μm).
+        conditions: An `EnvironmentalConditions` object containing the
+            environmental parameters (temperature, pressure, humidity, CO2).
+        model: The model to use for the calculation. Supported models are:
+            'ciddor', 'edlen', 'birch_downs', 'kohlrausch'. This is
+            case-insensitive. Defaults to 'ciddor'.
 
     Returns:
-        float: The calculated refractive index of air.
+        The calculated refractive index of air.
 
     Raises:
         ValueError: If an unsupported model is specified.
@@ -46,13 +53,15 @@ def refractive_index_air(wavelength_um, conditions, model="ciddor"):
 
     Example:
         >>> from optiland.environment import EnvironmentalConditions
-        >>> conditions_std = EnvironmentalConditions(temperature=15.0,
-        ...                                          pressure=101325.0,
-        ...                                          relative_humidity=0.0,
-        ...                                          co2_ppm=400.0)
-        >>> n_ciddor = refractive_index_air(0.55, conditions_std, model='ciddor')
-        >>> print(f"Ciddor n(0.55um, std cond): {n_ciddor:.9f}")
-        Ciddor n(0.55um, std cond): 1.000277641
+        >>> conditions_std = EnvironmentalConditions(
+        ...     temperature=15.0,
+        ...     pressure=101325.0,
+        ...     relative_humidity=0.0,
+        ...     co2_ppm=400.0,
+        ... )
+        >>> n_ciddor = refractive_index_air(0.55, conditions_std, model="ciddor")
+        >>> print(f"Refractive index at 0.55 µm is {n_ciddor:.8f}")
+        Refractive index at 0.55 µm is 1.00027764
     """
     if not isinstance(conditions, EnvironmentalConditions):
         raise TypeError(

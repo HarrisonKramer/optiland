@@ -1,29 +1,32 @@
-"""Ciddor (1996) Air Refractive Index Model
+"""Ciddor (1996) Air Refractive Index Model.
 
-This module provides functions to calculate the phase refractive index of air
-based on the Ciddor (1996) formulation. This model is considered highly
-accurate over a wide range of atmospheric conditions and wavelengths.
+This module provides a highly accurate calculation of the phase refractive index
+of air based on the Ciddor (1996) formulation. It is considered a reference
+standard for a wide range of atmospheric conditions and wavelengths.
 
-The method calculates the refractivity of moist air by determining the density
-of the dry air and water vapor components under actual conditions and scaling
-their standard refractivities accordingly. This approach relies on the BIPM-91
-equation for the density of moist air.
+The model's methodology involves calculating the density of the dry air and
+water vapor components separately under the given conditions. These densities
+are then used to scale their respective standard refractivities. This approach
+relies on the BIPM-91 equation for the density of moist air, which accounts for
+non-ideal gas behavior.
+
+This implementation has been validated against the reference script provided
+by `RefractiveIndex.INFO`.
 
 References:
-    Ciddor, P. E. (1996). Refractive index of air: new equations for the
-    visible and near infrared. Applied Optics, 35(9), 1566-1573.
+    - Ciddor, P. E. (1996). Refractive index of air: new equations for the
+      visible and near infrared. Applied Optics, 35(9), 1566-1573.
+    - Polyanskiy, M. (2017). Ciddor 1996 - air.py.
+      https://github.com/polyanskiy/refractiveindex.info-scripts
 
 Kramer Harrison, 2025
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import optiland.backend as be
 
-if TYPE_CHECKING:
-    from ..conditions import EnvironmentalConditions
+from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Ciddor (1996), Appendix A ---
 
@@ -86,19 +89,60 @@ E_Z = -0.765e-8  # K² Pa⁻²
 
 
 def _calculate_molar_mass_air(co2_ppm: float) -> float:
-    """Calculates the molar mass of dry air based on CO₂ concentration."""
+    """Calculates the molar mass of dry air based on CO₂ concentration.
+
+    Args:
+        co2_ppm: The CO₂ concentration in parts per million (ppm).
+
+    Returns:
+        The molar mass of dry air in kg/mol.
+    """
     # Source: Ciddor (1996), text following Eq. (4) [cite: 77]
     return 1e-3 * (28.9635 + 12.011e-6 * (co2_ppm - CO2_MOLAR_PPM))
 
 
-def _calculate_saturation_vapor_pressure(temp_k: float) -> float:
-    """Calculates saturation vapor pressure of water."""
+def _calculate_saturation_vapor_pressure(temp_c: float) -> float:
+    """Calculates the saturation vapor pressure of water in air.
+
+    This function uses two different formulas from the Ciddor paper, one for
+    temperatures at or above 0 °C and another for temperatures below 0 °C.
+
+    Args:
+        temp_c: The air temperature in degrees Celsius.
+
+    Returns:
+        The saturation vapor pressure in Pascals (Pa).
+    """
     # Source: Ciddor (1996), Appendix A [cite: 213, 214, 215]
-    return be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k)
+    # The paper provides two different formulas based on temperature.
+    temp_k = temp_c + 273.15
+    # The reference implementation uses a different formula for t < 0.
+    # Using a ternary operator or if/else based on backend support.
+    if hasattr(be, "where"):
+        return be.where(
+            temp_c >= 0,
+            be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k),
+            10.0 ** (-2663.5 / temp_k + 12.537),
+        )
+    else:  # Fallback for backends without `where`
+        if temp_c >= 0:
+            return be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k)
+        else:
+            return 10.0 ** (-2663.5 / temp_k + 12.537)
 
 
 def _calculate_enhancement_factor(pressure_pa: float, temp_c: float) -> float:
-    """Calculates the enhancement factor of water vapor in air."""
+    """Calculates the enhancement factor for water vapor in air.
+
+    This factor accounts for the non-ideal behavior of moist air.
+
+    Args:
+        pressure_pa: The air pressure in Pascals (Pa).
+        temp_c: The air temperature in degrees Celsius.
+
+    Returns:
+        The dimensionless enhancement factor (f).
+    """
     # Source: Ciddor (1996), Appendix A [cite: 78, 216, 217]
     return ALPHA_F + BETA_F * pressure_pa + GAMMA_F * temp_c**2
 
@@ -106,7 +150,18 @@ def _calculate_enhancement_factor(pressure_pa: float, temp_c: float) -> float:
 def _calculate_compressibility(
     pressure_pa: float, temp_k: float, molar_fraction_h2o: float
 ) -> float:
-    """Calculates the compressibility factor Z for moist air."""
+    """Calculates the compressibility factor (Z) for moist air.
+
+    This factor accounts for the deviation of moist air from ideal gas behavior.
+
+    Args:
+        pressure_pa: The air pressure in Pascals (Pa).
+        temp_k: The air temperature in Kelvin (K).
+        molar_fraction_h2o: The molar fraction of water vapor in the air.
+
+    Returns:
+        The dimensionless compressibility factor (Z).
+    """
     # Source: Ciddor (1996), Appendix A, Eq. (12) [cite: 219, 221]
     t_c = temp_k - 273.15
     xw = molar_fraction_h2o
@@ -124,42 +179,44 @@ def _calculate_compressibility(
     return z
 
 
-def _get_density(
-    pressure_pa: float,
-    temp_k: float,
-    molar_mass_air: float,
-    molar_fraction_h2o: float,
-) -> float:
-    """Calculates the density of a moist air sample using the BIPM-91 equation."""
-    # Source: Ciddor (1996), Eq. (4) [cite: 74]
-    z = _calculate_compressibility(pressure_pa, temp_k, molar_fraction_h2o)
-    if z == 0:
-        return 0.0
-
-    # Density of the full moist air sample
-    rho = (pressure_pa * molar_mass_air / (z * R_GAS_CONSTANT * temp_k)) * (
-        1.0 - molar_fraction_h2o * (1.0 - M_W_VAPOR / molar_mass_air)
-    )
-    return rho
-
-
 def ciddor_refractive_index(
     wavelength_um: float, conditions: EnvironmentalConditions
 ) -> float:
     """Calculates the refractive index of air using the full Ciddor (1996) model.
 
-    This implementation follows the detailed procedure outlined in Appendix B
-    of the paper[cite: 231]. It calculates component densities and scales standard
-    refractivities to find the final refractive index of moist air.
+    This implementation follows the detailed procedure outlined in the Ciddor
+    paper, calculating component densities of dry air and water vapor to
+    determine the final refractivity of the moist air mixture.
 
     Args:
         wavelength_um: The wavelength of light in a vacuum, in micrometers (μm).
-        conditions: An EnvironmentalConditions object with temperature, pressure,
-            relative humidity, and CO₂ concentration.
+        conditions: An `EnvironmentalConditions` object with temperature,
+            pressure, relative humidity, and CO₂ concentration.
 
     Returns:
         The phase refractive index of air (n).
+
+    Raises:
+        ValueError: If wavelength is not positive.
+        TypeError: If conditions is not an `EnvironmentalConditions` object.
+
+    Example:
+        >>> from optiland.environment import EnvironmentalConditions
+        >>> conditions_std = EnvironmentalConditions(
+        ...     temperature=15.0,
+        ...     pressure=101325.0,
+        ...     relative_humidity=0.0,
+        ...     co2_ppm=450.0,
+        ... )
+        >>> n = ciddor_refractive_index(0.6328, conditions_std)
+        >>> print(f"Refractive index at 0.6328 µm is {n:.8f}")
+        Refractive index at 0.6328 µm is 1.00027653
     """
+    if not isinstance(conditions, EnvironmentalConditions):
+        raise TypeError("conditions must be an EnvironmentalConditions object.")
+    if not be.all(wavelength_um > 0):
+        raise ValueError("Wavelength must be positive.")
+
     # --- 1. Calculate vacuum wavenumber and standard refractivities ---
     sigma_sq = (1.0 / wavelength_um) ** 2
 
@@ -180,7 +237,8 @@ def ciddor_refractive_index(
     m_a = _calculate_molar_mass_air(conditions.co2_ppm)
 
     # Density of standard dry air (at actual CO₂ level)
-    rho_axs = _get_density(P_STD_AIR_PA, T_STD_AIR_K, m_a, 0.0)
+    z_axs = _calculate_compressibility(P_STD_AIR_PA, T_STD_AIR_K, 0.0)
+    rho_axs = (P_STD_AIR_PA * m_a) / (z_axs * R_GAS_CONSTANT * T_STD_AIR_K)
 
     # Density of standard pure water vapor
     # For pure vapor, molar fraction xw=1, and molar mass is M_W_VAPOR
@@ -192,11 +250,11 @@ def ciddor_refractive_index(
 
     # Properties of the actual moist air sample
     t_c = conditions.temperature
-    t_k = t_c + 273.15
     p_pa = conditions.pressure
     rh = conditions.relative_humidity
 
-    svp = _calculate_saturation_vapor_pressure(t_k)
+    svp = _calculate_saturation_vapor_pressure(t_c)
+    t_k = t_c + 273.15
     f = _calculate_enhancement_factor(p_pa, t_c)
     xw = f * rh * svp / p_pa if p_pa > 0 else 0.0
 

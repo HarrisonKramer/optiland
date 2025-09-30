@@ -1,29 +1,31 @@
-"""Birch and Downs Air Refractive Index Model
+"""Birch and Downs Air Refractive Index Model (with NIST Modification)
 
 This module provides a function to calculate the refractive index of air based on
 the revised Edlén-style equation published by K. P. Birch and M. J. Downs in
-1994. This model corrects and supersedes their previous 1993 paper.
+1994. This implementation includes a temperature-dependent correction to the
+water vapor term, as described in the NIST documentation for their "Modified
+Edlén" equation, which is based on the Birch and Downs model.
 
 The calculation is valid for standard air (N₂, O₂, Ar, CO₂) and can be
 adjusted for varying temperature, pressure, humidity, and CO₂ concentration.
 
 Example:
+    >>> from optiland.environment import EnvironmentalConditions
     >>> conditions = EnvironmentalConditions(
     ...     temperature=20.0,
     ...     pressure=101325.0,
     ...     relative_humidity=0.5,
     ...     co2_ppm=450.0
     ... )
-    >>> n = refractive_index(wavelength_um=0.633, conditions=conditions)
+    >>> n = birch_downs_refractive_index(0.633, conditions)
     >>> print(f"Refractive index at 633 nm is {n:.8f}")
-    Refractive index at 633 nm is 1.00027103
+    Refractive index at 633 nm is 1.00027137
 
 References:
     - Birch, K. P., & Downs, M. J. (1994). Correction to the Updated Edlén
       Equation for the Refractive Index of Air. Metrologia, 31(4), 315-316.
-    - Ciddor, P. E. (1996). Refractive index of air: new equations for the
-      range 16 °C to 20 °C. Applied Optics, 35(9), 1566-1573. (For CO₂
-      correction methodology).
+    - Stone, J. A., & Zimmerman, J. H. (2001). Index of Refraction of Air
+      (NIST Web Page). https://emtoolbox.nist.gov/Wavelength/Documentation.asp
 
 Kramer Harrison, 2025
 """
@@ -157,6 +159,7 @@ def birch_downs_refractive_index(
     # This equation includes the non-ideal gas compressibility factor.
     t_c = conditions.temperature
     p_pa = conditions.pressure
+    # The constant 96095.43 is from the original papers.
     density_term = (p_pa / 96095.43) * (
         (1 + 1e-8 * (0.601 - 0.00972 * t_c) * p_pa) / (1 + 0.003661 * t_c)
     )
@@ -164,11 +167,14 @@ def birch_downs_refractive_index(
 
     # 5. Calculate the correction due to water vapor (humidity).
     # This term is subtracted from the dry air refractivity.
-    # Source: Birch & Downs (1994), Eq. (3).
+    # Source: Birch & Downs (1994), Eq. (3), with NIST modification.
     f_pa = _calculate_water_vapor_partial_pressure(conditions)
-    water_vapor_correction = (
+    water_vapor_correction_unscaled = (
         -f_pa * (WATER_VAPOR_A - WATER_VAPOR_B * sigma_sq) * 1.0e-10
     )
+    # NIST modification for temperature dependence of water vapor term.
+    temp_correction = 292.75 / (t_c + 273.15)
+    water_vapor_correction = water_vapor_correction_unscaled * temp_correction
 
     # 6. Calculate the final refractivity of moist air by applying the water
     # vapor correction to the dry air refractivity.

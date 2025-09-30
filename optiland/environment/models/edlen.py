@@ -1,28 +1,27 @@
-"""Edlén (1966) Air Refractive Index Model
+"""Edlén (1966) Air Refractive Index Model (with NIST Modification).
 
 This module provides functions to calculate the refractive index of air based
-on the seminal Edlén (1966) formulation. It includes the dispersion formula
-for standard air and the full, non-simplified corrections for temperature,
-pressure, humidity, and carbon dioxide concentration.
+on the seminal Edlén (1966) formulation. This implementation includes the
+NIST-recommended temperature correction for the water vapor term, which
+improves accuracy over a wider range of temperatures.
 
 The original Edlén formulas require pressure in Torr (mmHg). This implementation
 accepts environmental conditions in SI units (Pascals, Celsius) and performs
 the necessary conversions internally.
 
 References:
-    Edlén, B. (1966). The Refractive Index of Air. Metrologia, 2(2), 71-80.
+    - Edlén, B. (1966). The Refractive Index of Air. Metrologia, 2(2), 71-80.
+    - Stone, J. A., & Zimmerman, J. H. (2001). Index of Refraction of Air
+      (NIST Web Page). https://emtoolbox.nist.gov/Wavelength/Documentation.asp
 
 Kramer Harrison, 2025
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import optiland.backend as be
 
-if TYPE_CHECKING:
-    from ..conditions import EnvironmentalConditions
+from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Edlén (1966) ---
 
@@ -84,16 +83,40 @@ def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
 def edlen_refractive_index(
     wavelength_um: float, conditions: EnvironmentalConditions
 ) -> float:
-    """Calculates the refractive index of air using the Edlén (1966) model.
+    """Calculates refractive index using the modified Edlén (1966) model.
+
+    This implementation uses the Edlén (1966) formula with the NIST
+    temperature correction for the water vapor term to improve accuracy.
 
     Args:
         wavelength_um: The wavelength of light in a vacuum, in micrometers (μm).
-        conditions: An EnvironmentalConditions object containing the temperature,
-            pressure, relative humidity, and CO₂ concentration.
+        conditions: An `EnvironmentalConditions` object containing the
+            temperature, pressure, relative humidity, and CO₂ concentration.
 
     Returns:
         The phase refractive index of air (n).
+
+    Raises:
+        ValueError: If wavelength is not positive.
+        TypeError: If conditions is not an `EnvironmentalConditions` object.
+
+    Example:
+        >>> from optiland.environment import EnvironmentalConditions
+        >>> nist_conditions = EnvironmentalConditions(
+        ...     temperature=20.0,
+        ...     pressure=101325.0,
+        ...     relative_humidity=0.0,
+        ...     co2_ppm=450.0,
+        ... )
+        >>> n = edlen_refractive_index(0.633, nist_conditions)
+        >>> print(f"Refractive index at 0.633 µm is {n:.8f}")
+        Refractive index at 0.633 µm is 1.00027176
     """
+    if not isinstance(conditions, EnvironmentalConditions):
+        raise TypeError("conditions must be an EnvironmentalConditions object.")
+    if not be.all(wavelength_um > 0):
+        raise ValueError("Wavelength must be positive.")
+
     # --- 1. Calculate vacuum wavenumber and standard refractivity ---
     sigma_sq = (1.0 / wavelength_um) ** 2
 
@@ -127,10 +150,13 @@ def edlen_refractive_index(
 
     # This term is the difference (n_moist - n_dry) and is added to the
     # dry air refractivity.
-    # Source: Edlén (1966), Eq. (22) [cite: 461, 848]
-    water_vapor_correction = (
+    # Source: Edlén (1966), Eq. (22) [cite: 461, 848], with NIST modification.
+    water_vapor_correction_unscaled = (
         -f_torr * (WATER_VAPOR_A - WATER_VAPOR_B * sigma_sq) * 1.0e-8
     )
+    # NIST modification for temperature dependence of water vapor term.
+    temp_correction = 292.75 / (t_c + 273.15)
+    water_vapor_correction = water_vapor_correction_unscaled * temp_correction
 
     # --- 5. Combine terms for the final refractive index ---
     n_final_minus_1 = n_tp_minus_1 + water_vapor_correction
