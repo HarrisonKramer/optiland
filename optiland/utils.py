@@ -28,7 +28,7 @@ def get_working_FNO(optic, field, wavelength):
         4. Compute the angle between each marginal ray and the chief ray.
         4. Calculate the average of the squared numerical apertures from all traced
             marginal rays.
-        5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
+        5. Compute the working F-number as 1 / (2 * be.sqrt(average_NA_squared)).
         6. Cap the calculated F/# at 10,000 if it exceeds this value.
 
     Returns:
@@ -62,3 +62,74 @@ def get_working_FNO(optic, field, wavelength):
         raise ValueError("Working F/# could not be calculated due to raytrace errors.")
 
     return fno
+
+
+def resolve_wavelengths(optic, wavelengths):
+    """Resolves wavelength input into a list of wavelength values.
+
+    Args:
+        optic (Optic): The optic object.
+        wavelengths (str or list): The wavelengths to resolve.
+            Can be 'all', 'primary', or a list of wavelength values.
+
+    Returns:
+        list: A list of wavelength values.
+    """
+    if isinstance(wavelengths, str):
+        if wavelengths == "all":
+            return optic.wavelengths.get_wavelengths()
+        elif wavelengths == "primary":
+            return [optic.primary_wavelength]
+        else:
+            raise ValueError("Invalid wavelength string. Must be 'all' or 'primary'.")
+    elif isinstance(wavelengths, list):
+        return wavelengths
+    else:
+        raise TypeError("Wavelengths must be a string ('all', 'primary') or a list.")
+
+
+def resolve_fields(optic, fields):
+    """Resolves field input into a list of field coordinates.
+
+    Args:
+        optic (Optic): The optic object.
+        fields (str or list): The fields to resolve.
+            Can be 'all' or a list of field coordinates.
+
+    Returns:
+        list: A list of field coordinates.
+    """
+    if isinstance(fields, str):
+        if fields == "all":
+            return optic.fields.get_field_coords()
+        else:
+            raise ValueError("Invalid field string. Must be 'all'.")
+    elif isinstance(fields, list):
+        return fields
+    else:
+        raise TypeError("Fields must be a string ('all') or a list.")
+
+
+def resolve_wavelength(optic, wavelength):
+    """Resolves a single wavelength input into a float value.
+
+    Args:
+        optic (Optic): The optic object.
+        wavelength (str or float or int): The wavelength to resolve.
+            Can be 'primary' or a numerical value.
+
+    Returns:
+        float: A single wavelength value.
+    """
+    if isinstance(wavelength, str):
+        if wavelength == "primary":
+            return optic.primary_wavelength
+        else:
+            raise ValueError(
+                "Invalid wavelength string. For a single wavelength, it must be "
+                "'primary'."
+            )
+    elif isinstance(wavelength, int | float):
+        return float(wavelength)
+    else:
+        raise TypeError("Wavelength must be a string ('primary') or a number.")

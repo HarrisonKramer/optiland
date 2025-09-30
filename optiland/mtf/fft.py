@@ -53,8 +53,8 @@ class FFTMTF(BaseMTF):
     def __init__(
         self,
         optic,
-        fields="all",
-        wavelength="primary",
+        fields: str | list = "all",
+        wavelength: str | float = "primary",
         num_rays=128,
         grid_size=None,
         max_freq="cutoff",

@@ -7,14 +7,13 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import Generic
 
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
+from optiland._types import BEArray
 
 
 @dataclass
-class WavefrontData:
+class WavefrontData(Generic[BEArray]):
     """
     Data container for wavefront results at a given field and wavelength.
 
@@ -27,9 +26,9 @@ class WavefrontData:
         radius (be.ndarray): Radius of curvature of the exit pupil reference sphere.
     """
 
-    pupil_x: NDArray
-    pupil_y: NDArray
-    pupil_z: NDArray
-    opd: NDArray
-    intensity: NDArray
-    radius: NDArray
+    pupil_x: BEArray
+    pupil_y: BEArray
+    pupil_z: BEArray
+    opd: BEArray
+    intensity: BEArray
+    radius: float

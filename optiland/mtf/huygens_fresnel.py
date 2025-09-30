@@ -52,8 +52,8 @@ class HuygensMTF(BaseMTF):
     def __init__(
         self,
         optic,
-        fields="all",
-        wavelength="primary",
+        fields: str | list = "all",
+        wavelength: str | float = "primary",
         num_rays=128,
         image_size=128,
         max_freq="cutoff",

@@ -187,6 +187,17 @@ class TestOpticViewer:
         assert ax.get_ylim() == custom_ylim
         plt.close(fig)
 
+    def test_view_all_wavelengths(self, set_test_backend):
+        lens = ReverseTelephoto()
+        # Add a second wavelength to test "all"
+        lens.add_wavelength(value=0.65)
+        viewer = OpticViewer(lens)
+        fig, ax = viewer.view(wavelengths="all")
+        assert fig is not None
+        assert ax is not None
+        assert len(ax.get_lines()) > 0  # Ensure rays were drawn
+        plt.close(fig)
+
 
 class TestOpticViewer3D:
     def test_init(self, set_test_backend):

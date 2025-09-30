@@ -27,7 +27,8 @@ class ZernikeOPD(ZernikeFit, OPD):
     Args:
         optic (object): The optic object representing the optical system.
         field (tuple): The field used for the calculation.
-        wavelength (float): The wavelength of light used in the calculation.
+        wavelength (str | float): The wavelength of light used in the calculation.
+            Can be 'primary' or a float value.
         num_rings (int, optional): The number of rings used in the Zernike
             calculation. Default is 15.
         zernike_type (str, optional): The type of Zernike polynomials used.
@@ -47,7 +48,7 @@ class ZernikeOPD(ZernikeFit, OPD):
         self,
         optic: Optic,
         field: tuple[float, float],
-        wavelength: float,
+        wavelength: str | float,
         num_rings: int = 15,
         zernike_type: ZernikeType = "fringe",
         num_terms: int = 37,

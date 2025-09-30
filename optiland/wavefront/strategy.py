@@ -19,8 +19,7 @@ from ..fields.field_types import AngleField
 from .wavefront_data import WavefrontData
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
+    from optiland._types import BEArray
     from optiland.distribution import BaseDistribution
     from optiland.optic.optic import Optic
     from optiland.rays.base import BaseRays
@@ -119,10 +118,10 @@ class ReferenceStrategy(ABC):
     def _correct_tilt(
         self,
         field: tuple[float, float],
-        opd: NDArray,
-        x: NDArray | float | None = None,
-        y: NDArray | float | None = None,
-    ) -> NDArray:
+        opd: BEArray,
+        x: BEArray | float | None = None,
+        y: BEArray | float | None = None,
+    ) -> BEArray:
         """Corrects for tilt in the OPD based on the field angle.
 
         This step is needed because, in the case of angular fields, rays launch from a
@@ -323,7 +322,7 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
             radius=radius,
         )
 
-    def _points_from_rays(self, rays: RealRays) -> tuple[NDArray, NDArray]:
+    def _points_from_rays(self, rays: RealRays) -> tuple[be.ndarray, be.ndarray]:
         """Convert ray data to 3D wavefront points.
 
         Args:

@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from sys import version_info
-from typing import TYPE_CHECKING, Literal, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict, TypeVar, Union
 
 from numpy.typing import NDArray
 
 if TYPE_CHECKING:
+    from torch import Tensor  # noqa: F401
+
     from optiland.coatings import BaseCoating
     from optiland.physical_apertures.base import BaseAperture
 
@@ -16,17 +18,26 @@ else:
     from typing_extensions import Unpack
 
 __all__ = [
+    "BEArray",
     "DistributionType",
     "ApertureType",
+    "Fields",
     "FieldType",
+    "PlotProjection",
     "ReferenceRay",
     "WavelengthUnit",
-    "FloatOrArray",
+    "Wavelengths",
+    "ScalarOrArray",
     "SurfaceType",
     "SurfaceParameters",
     "Unpack",
     "ZernikeType",
 ]
+
+BEArray = TypeVar("BEArray", NDArray, "Tensor", Union[NDArray, "Tensor"])
+ScalarOrArray = TypeVar(
+    "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
+)
 
 DistributionType = Literal[
     "line_x",
@@ -47,8 +58,6 @@ ReferenceRay = Literal["chief", "marginal"]
 Wavelengths = Literal["all", "primary"] | Sequence[float]
 WavelengthUnit = Literal["nm", "um", "mm", "cm", "m"]
 ZernikeType = Literal["standard", "noll", "fringe"]
-
-FloatOrArray = float | NDArray
 
 SurfaceType = Literal[
     "biconic",
