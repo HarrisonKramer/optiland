@@ -13,6 +13,7 @@ import numpy as np
 from scipy.interpolate import griddata
 
 import optiland.backend as be
+from optiland.utils import resolve_wavelength
 
 from .wavefront import Wavefront
 
@@ -39,7 +40,8 @@ class OPD(Wavefront):
     Args:
         optic (Optic): The optic object.
         field (tuple): The field at which to calculate the OPD.
-        wavelength (float): The wavelength of the wavefront.
+        wavelength (str | float): The wavelength of the wavefront. Can be 'primary'
+            or a float value.
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
         strategy (str): The calculation strategy to use. Supported options are
@@ -70,17 +72,18 @@ class OPD(Wavefront):
         self,
         optic: Optic,
         field: tuple[float, float],
-        wavelength: float,
+        wavelength: str | float,
         num_rays: int = 15,
         distribution: DistributionType = "hexapolar",
         strategy: WavefrontStrategyType = "chief_ray",
         remove_tilt: bool = False,
         **kwargs,
     ) -> None:
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         super().__init__(
             optic,
             fields=[field],
-            wavelengths=[wavelength],
+            wavelengths=[resolved_wavelength],
             num_rays=num_rays,
             distribution=distribution,
             strategy=strategy,
@@ -137,7 +140,7 @@ class OPD(Wavefront):
             current_fig.canvas.draw_idle()
         return current_fig, ax
 
-    def rms(self) -> float:
+    def rms(self) -> be.ndarray:
         """Calculates the root mean square (RMS) of the OPD wavefront.
 
         Returns:
@@ -174,7 +177,7 @@ class OPD(Wavefront):
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("OPD (waves)", rotation=270)
 
-    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, np.ndarray]) -> None:
+    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, NDArray]) -> None:
         """Plots the 3D visualization of the OPD wavefront.
 
         Args:

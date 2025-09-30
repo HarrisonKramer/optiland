@@ -15,6 +15,7 @@ import numpy as np
 from matplotlib import patches
 
 import optiland.backend as be
+from optiland.utils import resolve_fields
 from optiland.visualization.system.utils import transform
 
 from .base import BaseAnalysis
@@ -56,8 +57,8 @@ class SpotDiagram(BaseAnalysis):
     def __init__(
         self,
         optic,
-        fields: str | tuple = "all",
-        wavelengths: str | tuple[float, ...] = "all",
+        fields: str | list = "all",
+        wavelengths: str | list = "all",
         num_rings: int = 6,
         distribution: str = "hexapolar",
         coordinates: Literal["global", "local"] = "local",
@@ -83,10 +84,7 @@ class SpotDiagram(BaseAnalysis):
         Raises:
             ValueError: If `coordinates` is not 'global' or 'local'.
         """
-        if fields == "all":
-            self.fields = optic.fields.get_field_coords()
-        else:
-            self.fields = fields
+        self.fields = resolve_fields(optic, fields)
 
         if coordinates not in ["global", "local"]:
             raise ValueError("Coordinates must be 'global' or 'local'.")

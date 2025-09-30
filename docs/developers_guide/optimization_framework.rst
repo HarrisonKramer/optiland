@@ -9,6 +9,7 @@ The Optiland optimization framework includes the following components:
 
 - **Operands**: Quantitative metrics for evaluating optical system performance or properties (e.g., RMS spot size, wavefront error, etc.).
 - **Variables**: System parameters that can be adjusted (e.g., surface curvatures, separations).
+- **Scaling**: Methods to scale optimization variables to a (roughly) common range for improved convergence and performance.
 - **Optimization Problem Class**: Encapsulates the problem definition, linking operands and variables.
 - **Optimizers**: Algorithms for solving optimization problems, such as gradient-based methods or evolutionary strategies.
 
@@ -65,6 +66,16 @@ Components Explained
      - Material refractive indices
      - Surface tilts and decenters
      - Geometry parameters (e.g., freeform coefficients)
+
+4. **Scaling**:
+
+   - Scaling methods help improve optimization performance by normalizing variable ranges.
+   - Built-in scalers include:
+
+     - Linear Scaling
+     - Logarithmic Scaling
+     - Power Scaling
+     - Reciprocal Scaling
 
 .. note::
    The optimization framework is written in a modular way, allowing users to easily extend the framework with custom optimizers, operands, and variables.

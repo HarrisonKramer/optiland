@@ -679,11 +679,14 @@ class Optic:
         optic.solves = SolveManager.from_dict(optic, data["solves"])
 
         optic.polarization = data["wavelengths"]["polarization"]
-        optic.field_definition = (
-            BaseFieldDefinition.from_dict(data["fields"]["field_definition"])
-            if data["fields"].get("field_definition")
-            else None
-        )
+        if data["fields"].get("field_definition"):
+            optic.field_definition = BaseFieldDefinition.from_dict(
+                data["fields"]["field_definition"]
+            )
+        elif data["fields"].get("field_type"):
+            optic.set_field_type(data["fields"]["field_type"])
+        else:
+            optic.field_definition = None
         optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
 
         optic.paraxial = Paraxial(optic)

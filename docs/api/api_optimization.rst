@@ -6,11 +6,12 @@ provides a set of tools for optimizing optical systems. It includes a variety of
 such as gradient-based and evolutionary algorithms, as well as tools for defining optimization variables
 and objectives.
 
-The optimization module is divided into three subcategories:
+The optimization module is divided into four subcategories:
 
-1. Optimization Core Functionalities
-2. Optimization Operands
-3. Optimization Variables
+1. Core Functionalities - Problem definition and optimizers
+2. Operands - Functions to compute optical performance metrics
+3. Variables - Properties of optical elements that can be optimized
+4. Scaling - Methods to scale optimization variables for better performance
 
 Core Functionalities
 --------------------
@@ -75,3 +76,21 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.variable_manager
    optimization.variable.variable
    optimization.variable.zernike_coeff
+
+
+Scaling
+-------
+
+The `optimization.scaling` subpackage contains the following modules:
+
+.. autosummary::
+   :toctree: optimization/scaling/
+   :caption: Scaling Modules
+   :recursive:
+
+   optimization.scaling.base
+   optimization.scaling.identity
+   optimization.scaling.linear
+   optimization.scaling.log
+   optimization.scaling.power
+   optimization.scaling.reciprocal
