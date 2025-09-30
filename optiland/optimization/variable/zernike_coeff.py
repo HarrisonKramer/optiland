@@ -52,16 +52,16 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         surf = self._surfaces.surfaces[self.surface_number]
         i = self.coeff_index
         try:
-            value = surf.geometry.coefficients[i]
+            value = surf.geometry.c[i]
         except IndexError:
             pad_width_i = max(0, i + 1)
             c_new = np.pad(
-                surf.geometry.coefficients,
+                surf.geometry.c,
                 pad_width=(0, pad_width_i),
                 mode="constant",
                 constant_values=0,
             )
-            surf.geometry.coefficients = c_new
+            surf.geometry.c = c_new
             value = 0
         if self.apply_scaling:
             return self.scale(value)
@@ -79,20 +79,20 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i = self.coeff_index
 
-        if i < len(surf.geometry.coefficients):
+        if i < len(surf.geometry.c):
             # If the coefficient already exists, update it
-            surf.geometry.coefficients[i] = new_value
+            surf.geometry.c[i] = new_value
         else:
             # If the coefficient does not exist, pad the array and set the value
             pad_width_i = max(0, i + 1)
             new_coefficients = np.pad(
-                surf.geometry.coefficients,
+                surf.geometry.c,
                 pad_width=(0, pad_width_i),
                 mode="constant",
                 constant_values=0,
             )
             new_coefficients[i] = new_value
-            surf.geometry.coefficients = new_coefficients
+            surf.geometry.c = new_coefficients
 
     def __str__(self):
         """Return a string representation of the variable.

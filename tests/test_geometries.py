@@ -804,8 +804,8 @@ class TestZernikeGeometry:
         coefficients = list(range(10))
         geometry = self.create_geometry(coefficients)
 
-        assert list(geometry.coefficients) == coefficients
-        assert_array_equal(geometry.coefficients, geometry.zernike.coeffs)
+        assert list(geometry.c) == coefficients
+        assert_array_equal(geometry.c, geometry.zernike.coeffs)
 
     def test_set_coefficients(self, set_test_backend):
         coefficients = list(range(10))
@@ -813,9 +813,9 @@ class TestZernikeGeometry:
         old_zernike = geometry.zernike
 
         new_coefficients = list(range(20))
-        geometry.coefficients = new_coefficients
+        geometry.c = new_coefficients
 
-        assert list(geometry.coefficients) == new_coefficients
+        assert list(geometry.c) == new_coefficients
         assert geometry.zernike != old_zernike
         assert len(geometry.zernike.indices) == len(new_coefficients)
 
@@ -1248,7 +1248,7 @@ class TestZernikeGeometry:
         geometry_dict = geometry.to_dict()
         new_geometry = geometries.ZernikePolynomialGeometry.from_dict(geometry_dict)
 
-        assert all(new_geometry.coefficients == geometry.coefficients)
+        assert all(new_geometry.c == geometry.c)
         assert new_geometry.zernike_type == geometry.zernike_type
         assert new_geometry.norm_radius == geometry.norm_radius
 
