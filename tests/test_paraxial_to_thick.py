@@ -6,8 +6,8 @@ import pytest
 import optiland.backend as be
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
+from optiland.interactions import ThinLensInteractionModel
 from optiland.surfaces import (
-    ParaxialSurface,
     ParaxialToThickLensConverter,
     convert_to_thick_lens,
 )
@@ -18,8 +18,11 @@ from .utils import assert_allclose
 class TestParaxialToThickLensConverter:
     def test_init_with_invalid_surface_type(self, set_test_backend):
         lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=1, surface_type="standard", f=50)
+        lens.add_wavelength(0.55, is_primary=True)
         with pytest.raises(TypeError):
-            ParaxialToThickLensConverter("not_a_surface", lens)
+            ParaxialToThickLensConverter(lens.surface_group.surfaces[1], lens)
 
     def test_missing_paraxial_surface(self, set_test_backend):
         lens = Optic()
@@ -142,7 +145,8 @@ class TestParaxialToThickLensConverter:
         # valid removal
         conv._remove_paraxial_surface(1)
         assert all(
-            not isinstance(s, ParaxialSurface) for s in lens.surface_group.surfaces
+            not isinstance(s.interaction_model, ThinLensInteractionModel)
+            for s in lens.surface_group.surfaces
         )
 
         # invalid removal
@@ -159,7 +163,8 @@ class TestParaxialToThickLensConverter:
         conv = ParaxialToThickLensConverter(paraxial, lens, 1.5)
         conv.convert()
         assert all(
-            not isinstance(s, ParaxialSurface) for s in lens.surface_group.surfaces
+            not isinstance(s.interaction_model, ThinLensInteractionModel)
+            for s in lens.surface_group.surfaces
         )
 
     def test_convert_to_thick_lens_function(self, set_test_backend):
@@ -170,7 +175,8 @@ class TestParaxialToThickLensConverter:
         new_lens = convert_to_thick_lens(lens)
         assert isinstance(new_lens, Optic)
         assert all(
-            not isinstance(s, ParaxialSurface) for s in new_lens.surface_group.surfaces
+            not isinstance(s.interaction_model, ThinLensInteractionModel)
+            for s in new_lens.surface_group.surfaces
         )
 
     def test_biconvex_unsolvable_linear_case(self, set_test_backend):

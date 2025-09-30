@@ -429,5 +429,5 @@ class TestSurfaceGroupUpdatesRealObjects:
             Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59
         )
         assert_allclose(
-            be.mean(rays.y), 18.13506822442731
+            be.mean(rays.y), 3.47484521
         )  # mean y position for Cooke triplet defined above

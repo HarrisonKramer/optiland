@@ -69,7 +69,7 @@ class IdealMaterial(BaseMaterial):
 
         """
         material_dict = super().to_dict()
-        material_dict.update({"index": float(self.index), "absorp": float(self.absorp)})
+        material_dict.update({"index": self.index.item(), "absorp": self.absorp.item()})
         return material_dict
 
     @classmethod

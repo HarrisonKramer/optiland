@@ -4,7 +4,7 @@ import optiland.backend as be
 
 from optiland.apodization import UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
-from optiland.fields import FieldGroup
+from optiland.fields import FieldGroup, AngleField
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
@@ -67,7 +67,7 @@ class TestOptic:
 
     def test_initialization(self, set_test_backend):
         assert self.optic.aperture is None
-        assert self.optic.field_type is None
+        assert self.optic.field_definition is None
         assert isinstance(self.optic.surface_group, SurfaceGroup)
         assert isinstance(self.optic.fields, FieldGroup)
         assert isinstance(self.optic.wavelengths, WavelengthGroup)
@@ -103,7 +103,7 @@ class TestOptic:
 
     def test_set_field_type(self, set_test_backend):
         self.optic.set_field_type("angle")
-        assert self.optic.field_type == "angle"
+        assert isinstance(self.optic.field_definition, AngleField)
 
     def test_set_comment(self, set_test_backend):
         self.optic.add_surface(
@@ -311,7 +311,7 @@ class TestOptic:
         )
         self.optic.reset()
         assert self.optic.aperture is None
-        assert self.optic.field_type is None
+        assert self.optic.field_definition is None
         assert len(self.optic.surface_group.surfaces) == 0
         assert len(self.optic.fields.fields) == 0
         assert len(self.optic.wavelengths.wavelengths) == 0

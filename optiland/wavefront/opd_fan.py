@@ -6,12 +6,22 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
 
 from .wavefront import Wavefront
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
+
+    from optiland._types import Fields, Wavelengths
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
 
 
 class OPDFan(Wavefront):
@@ -45,12 +55,12 @@ class OPDFan(Wavefront):
 
     def __init__(
         self,
-        optic,
-        fields="all",
-        wavelengths="all",
-        num_rays=100,
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        fields: Fields = "all",
+        wavelengths: Wavelengths = "all",
+        num_rays: int = 100,
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
     ):
         self.pupil_coord = be.linspace(-1, 1, num_rays)
@@ -66,8 +76,10 @@ class OPDFan(Wavefront):
         )
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (10, 3)
-    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (10, 3),
+    ) -> tuple[Figure, NDArray]:
         """Visualizes the wavefront error for different fields and wavelengths.
 
         Args:
@@ -86,9 +98,9 @@ class OPDFan(Wavefront):
         is_gui_embedding = fig_to_plot_on is not None
 
         if is_gui_embedding:
-            current_fig = fig_to_plot_on
+            current_fig = cast("Figure", fig_to_plot_on)
             current_fig.clear()
-            axs = current_fig.add_subplots(
+            axs = current_fig.add_subplot(
                 nrows=len(self.fields),
                 ncols=2,
                 figsize=(figsize[0], num_rows * figsize[1]),

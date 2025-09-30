@@ -177,3 +177,25 @@ def test_curved_grating_reflection(set_test_backend, curved_reflective_grating):
     Hy = 0.8
     ray = lens.trace_generic(Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wv)  
     assert_allclose([ray.L[0],ray.M[0],ray.N[0]],[-0.0040370331,-0.4006582284,0.9162186892])
+
+def test_paraxial_flat_grating_transmission(set_test_backend, flat_transmission_grating):
+    lens = flat_transmission_grating
+    wv = 0.587
+    Hy = 0.0
+    Py = 0.0
+    lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
+    u = lens.surface_group.u[-1].item()
+    y = lens.surface_group.y[-1].item()
+    assert_allclose([u,y],[0.1174, 3.522])
+    Hy = 0.0
+    Py = 1.0
+    lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
+    u = lens.surface_group.u[-1].item()
+    y = lens.surface_group.y[-1].item()
+    assert_allclose([u,y],[0.1174, 11.022])
+    Hy = 0.8
+    Py = 0.8
+    lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
+    u = lens.surface_group.u[-1].item()
+    y = lens.surface_group.y[-1].item()
+    assert_allclose([u,y],[0.25794083, 13.73822504])

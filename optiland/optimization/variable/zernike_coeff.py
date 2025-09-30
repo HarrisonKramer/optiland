@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable.polynomial_coeff import PolynomialCoeffVariable
 
 
@@ -23,8 +24,8 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         optic (Optic): The optic object associated with the variable.
         surface_number (int): The index of the surface in the optical system.
         coeff_index (int): The i index of the Zernike coefficient.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
+        scaler (Scaler): The scaler to use for the variable. Defaults to
+            IdentityScaler().
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -37,10 +38,12 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
         optic,
         surface_number,
         coeff_index,
-        apply_scaling=True,
+        scaler=None,
         **kwargs,
     ):
-        super().__init__(optic, surface_number, coeff_index, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, coeff_index, scaler=scaler, **kwargs)
 
     def get_value(self):
         """Get the current value of the Zernike coefficient.
@@ -63,8 +66,6 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
             )
             surf.geometry.coefficients = c_new
             value = 0
-        if self.apply_scaling:
-            return self.scale(value)
         return value
 
     def update_value(self, new_value):
@@ -74,8 +75,6 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
             new_value (float): The new value of the Zernike coefficient.
 
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i = self.coeff_index
 

@@ -23,6 +23,7 @@ to improve optical systems using classical numerical methods.
     optimization/global
     optimization/basin_hopping
     optimization/shgo
+    optimization/custom_scaler
 
 Torch Optimization
 ------------------

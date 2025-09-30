@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
+from optiland.utils import resolve_wavelength
 
 
 class GeometricMTF(SpotDiagram):
@@ -59,8 +60,8 @@ class GeometricMTF(SpotDiagram):
     def __init__(
         self,
         optic,
-        fields="all",
-        wavelength="primary",
+        fields: str | list = "all",
+        wavelength: str | float = "primary",
         num_rays=100,
         distribution="uniform",
         num_points=256,
@@ -70,16 +71,10 @@ class GeometricMTF(SpotDiagram):
         self.num_points = num_points
         self.scale = scale
 
-        if wavelength == "primary":
-            resolved_wavelength = optic.primary_wavelength
-        else:
-            resolved_wavelength = wavelength
-
-        self._resolved_wavelength_value = resolved_wavelength
-
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
+            self.max_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
         else:
             # If a specific max_freq is provided, use it directly
             self.max_freq = max_freq

@@ -11,11 +11,10 @@ Most analyses are performed on the `SurfaceGroup` level, which abstracts the com
    :toctree: surfaces/
    :caption: Surface Modules
 
+   surfaces.converters
    surfaces.image_surface
    surfaces.object_surface
-   surfaces.paraxial_surface
    surfaces.standard_surface
-   surfaces.surface_factory
    surfaces.surface_group
 
 Surface Factory
@@ -33,5 +32,6 @@ submodules, which are listed here.
    surfaces.factories.coating_factory
    surfaces.factories.coordinate_system_factory
    surfaces.factories.geometry_factory
+   surfaces.factories.interaction_model_factory
    surfaces.factories.material_factory
    surfaces.factories.surface_factory

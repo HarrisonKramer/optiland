@@ -104,7 +104,7 @@ class TestOpticalSystemModule:
         assert isinstance(module.params, nn.ParameterList)
         assert len(module.params) == len(problem.variables)
         
-        initial_val = problem.variables[0].variable.get_value()
+        initial_val = problem.variables[0].value
         assert be.isclose(module.params[0].data, be.array(initial_val))
 
     def test_default_loss_function(self):

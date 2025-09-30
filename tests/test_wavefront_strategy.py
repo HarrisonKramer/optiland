@@ -97,7 +97,7 @@ class TestReferenceStrategy:
         dist = create_distribution("hexapolar")
         dist.generate_points(15)
         strategy = ConcreteReferenceStrategy(optic, dist)
-        optic.field_type = "angle"
+        optic.set_field_type("angle")
         opd = be.ones(strategy.distribution.x.shape)
         field = (0.5, 0.5)  # Hx, Hy
 
@@ -108,7 +108,7 @@ class TestReferenceStrategy:
 
     def test_correct_tilt_object_height_field(self, strategy, optic, set_test_backend):
         """Test tilt correction when field type is not 'angle'."""
-        optic.field_type = "height"
+        optic.set_field_type("object_height")
         opd = be.ones(strategy.distribution.x.shape)
         field = (0.5, 0.5)
 
@@ -118,7 +118,7 @@ class TestReferenceStrategy:
 
     def test_correct_tilt_with_custom_coords(self, strategy, optic, set_test_backend):
         """Test tilt correction with explicitly passed coordinates."""
-        optic.field_type = "angle"
+        optic.set_field_type("angle")
         opd = be.ones(5)
         x = be.linspace(-1, 1, 5)
         y = be.linspace(-1, 1, 5)

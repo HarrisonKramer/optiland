@@ -274,7 +274,7 @@ class OpticUpdater:
 
         # 1. Capture original global Z-coordinates
         original_z_coords = [
-            float(be.to_numpy(surf.geometry.cs.z))
+            be.to_numpy(surf.geometry.cs.z).item()
             for surf in self.optic.surface_group.surfaces
         ]
 

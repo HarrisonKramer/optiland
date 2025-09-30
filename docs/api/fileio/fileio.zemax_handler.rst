@@ -14,5 +14,7 @@
 
    .. autosummary::
    
-      ZemaxFileReader
+      ZemaxDataModel
+      ZemaxDataParser
+      ZemaxFileSourceHandler
    
