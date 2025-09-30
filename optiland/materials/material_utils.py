@@ -458,7 +458,7 @@ def plot_nk(
 
     ax_n.plot(wl, n, label="n", color="k")
     ax_k.plot(wl, k, label="k", color="k", linestyle=":")
-    ax_n.set_xlabel("$\lambda$ (nm)")
+    ax_n.set_xlabel(r"$\lambda$ (nm)")
     ax_n.set_ylabel("$n$", color="k")
     ax_n.tick_params(axis="y", labelcolor="k")
     ax_k.set_ylabel("$k$", color="k")

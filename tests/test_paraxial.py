@@ -606,32 +606,6 @@ def test_calculate_invariant(optic_and_values):
     assert_allclose(optic_instance.paraxial.invariant(), values["invariant"])
 
 
-def test_get_object_position_finite_object(set_test_backend):
-    lens = Edmund_49_847()
-
-    # move object to z = -10
-    lens.surface_group.surfaces[0].geometry.cs.z = be.array(-10)
-    y, z = lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=-5)
-
-    assert_allclose(z, -10)
-    assert_allclose(y, 0)
-
-    # make field type object height
-    lens.set_field_type(field_type="object_height")
-    y, z = lens.paraxial._ray_tracer._get_object_position(Hy=1, y1=0, EPL=-5)
-    assert_allclose(z, -10)
-    assert_allclose(y, -14)
-
-
-def test_invalid_object_position_call(set_test_backend):
-    # object position can't be calculated for field type object height
-    # when the object is at infinity
-    lens = Edmund_49_847()
-    lens.set_field_type(field_type="object_height")
-    with pytest.raises(ValueError):
-        lens.paraxial._ray_tracer._get_object_position(Hy=0, y1=0, EPL=5)
-
-
 def test_EPD_float_by_stop_size_finite(set_test_backend):
     lens = Optic()
 

@@ -12,6 +12,8 @@ import optiland.backend as be
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays
 
+from ..fields.field_types import AngleField
+
 
 class RayGenerator:
     """Generator class for creating rays."""
@@ -36,10 +38,12 @@ class RayGenerator:
         vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
         vx = 1 - be.array(vxf)
         vy = 1 - be.array(vyf)
-        x0, y0, z0 = self._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+        x0, y0, z0 = self.optic.field_definition.get_ray_origins(
+            self.optic, Hx, Hy, Px, Py, vx, vy
+        )
 
         if self.optic.obj_space_telecentric:
-            if self.optic.field_type == "angle":
+            if isinstance(self.optic.field_definition, AngleField):
                 raise ValueError(
                     'Field type cannot be "angle" for telecentric object space.',
                 )
@@ -86,85 +90,3 @@ class RayGenerator:
                 )
             return RealRays(x0, y0, z0, L, M, N, intensity, wavelength)
         return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)
-
-    def _get_ray_origins(self, Hx, Hy, Px, Py, vx, vy):
-        """Calculate the initial positions for rays originating at the object.
-
-        Args:
-            Hx (float): Normalized x field coordinate.
-            Hy (float): Normalized y field coordinate.
-            Px (float or be.ndarray): x-coordinate of the pupil point.
-            Py (float or be.ndarray): y-coordinate of the pupil point.
-            vx (float): Vignetting factor in the x-direction.
-            vy (float): Vignetting factor in the y-direction.
-
-        Returns:
-            tuple: A tuple containing the x, y, and z coordinates of the
-                object position.
-
-        Raises:
-            ValueError: If the field type is "object_height" for an object at
-                infinity.
-
-        """
-        obj = self.optic.object_surface
-        max_field = self.optic.fields.max_field
-        field_x = max_field * Hx
-        field_y = max_field * Hy
-        if obj.is_infinite:
-            if self.optic.field_type == "object_height":
-                raise ValueError(
-                    'Field type cannot be "object_height" for an object at infinity.',
-                )
-            if self.optic.obj_space_telecentric:
-                raise ValueError(
-                    "Object space cannot be telecentric for an object at infinity.",
-                )
-            EPL = self.optic.paraxial.EPL()
-            EPD = self.optic.paraxial.EPD()
-
-            offset = self._get_starting_z_offset()
-
-            # x, y, z positions of ray starting points
-            x = -be.tan(be.radians(field_x)) * (offset + EPL)
-            y = -be.tan(be.radians(field_y)) * (offset + EPL)
-            z = self.optic.surface_group.positions[1] - offset
-
-            x0 = Px * EPD / 2 * vx + x
-            y0 = Py * EPD / 2 * vy + y
-            z0 = be.full_like(Px, z)
-        else:
-            if self.optic.field_type == "object_height":
-                x0 = be.array(field_x)
-                y0 = be.array(field_y)
-                z0 = obj.geometry.sag(x0, y0) + obj.geometry.cs.z
-
-            elif self.optic.field_type == "angle":
-                EPL = self.optic.paraxial.EPL()
-                z0 = self.optic.surface_group.positions[0]
-                x0 = -be.tan(be.radians(field_x)) * (EPL - z0)
-                y0 = -be.tan(be.radians(field_y)) * (EPL - z0)
-
-            if be.size(x0) == 1:
-                x0 = be.full_like(Px, x0)
-            if be.size(y0) == 1:
-                y0 = be.full_like(Px, y0)
-            if be.size(z0) == 1:
-                z0 = be.full_like(Px, z0)
-
-        return x0, y0, z0
-
-    def _get_starting_z_offset(self):
-        """Calculate the starting ray z-coordinate offset for systems with an
-        object at infinity. This is relative to the first surface of the optic.
-
-        This method chooses a starting point that is equivalent to the entrance
-        pupil diameter of the optic.
-
-        Returns:
-            float: The z-coordinate offset relative to the first surface.
-
-        """
-        z = self.optic.surface_group.positions[1:-1]
-        offset = self.optic.paraxial.EPD()
-        return offset - be.min(z)

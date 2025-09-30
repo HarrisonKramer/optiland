@@ -28,7 +28,8 @@ class MMDFTPSF(BasePSF):
             paraxial data and surface information.
         field (tuple): The field point (e.g., (Hx, Hy) in normalized field
             coordinates) at which to compute the PSF.
-        wavelength (float): The wavelength of light in micrometers.
+        wavelength (str | float): The wavelength of light in micrometers. Can be
+            'primary' or a float value.
         num_rays (int, optional): The number of rays used to sample the pupil
             plane along one dimension. The pupil will be a grid of
             `num_rays` x `num_rays`. Defaults to 128.
@@ -60,7 +61,7 @@ class MMDFTPSF(BasePSF):
         self,
         optic,
         field,
-        wavelength,
+        wavelength: str | float,
         num_rays=128,
         image_size=None,
         pixel_pitch=None,
