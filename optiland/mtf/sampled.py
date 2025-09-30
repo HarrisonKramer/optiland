@@ -9,6 +9,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import optiland.backend as be
+from optiland.utils import resolve_wavelength
 from optiland.wavefront import Wavefront
 from optiland.zernike import ZernikeFit
 
@@ -61,7 +62,7 @@ class SampledMTF:
         self,
         optic,
         field,
-        wavelength,
+        wavelength: str | float,
         num_rays=128,
         distribution="uniform",
         zernike_terms=37,
@@ -70,14 +71,11 @@ class SampledMTF:
         """Initializes the SampledMTF instance."""
         self.optic = optic
         self.field = field
-        self.wavelength = wavelength
+        self.wavelength = resolve_wavelength(optic, wavelength)
         self.num_rays = num_rays
         self.distribution = distribution
         self.zernike_terms = zernike_terms
         self.zernike_type = zernike_type
-
-        if wavelength == "primary":
-            self.wavelength = optic.primary_wavelength
 
         wf = Wavefront(
             optic,

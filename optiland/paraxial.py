@@ -17,6 +17,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import optiland.backend as be
+from optiland.fields import ParaxialImageHeightField
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
 
@@ -362,30 +363,53 @@ class Paraxial:
 
         """
         stop_index = self.optic.surface_group.stop_index
-        y0 = 0
-        u0 = 0.1
         pos = self.optic.surface_group.positions
-        z0 = pos[-1] - pos[stop_index]
         wavelength = self.optic.primary_wavelength
         num_surf = self.surfaces.num_surfaces
-        skip = num_surf - stop_index
+        y0 = 0.0
+        u0 = 0.1  # Arbitrary small angle for unit trace
 
-        # trace from center of stop on axis
-        y, u = self._trace_generic(y0, u0, z0, wavelength, reverse=True, skip=skip)
+        # Trace a unit ray forward from stop to image
+        z_fwd = pos[stop_index]
+        skip_fwd = stop_index
+        y_fwd_unit, _ = self._trace_generic(y0, u0, z_fwd, wavelength, skip=skip_fwd)
+        y_img_unit = y_fwd_unit[-1]
 
-        max_field = self.optic.fields.max_y_field
+        # Trace the same unit ray backward from stop to object
+        z_rev = pos[-1] - pos[stop_index]
+        skip_rev = num_surf - stop_index
+        y_rev_unit, u_rev_unit = self._trace_generic(
+            y0, u0, z_rev, wavelength, reverse=True, skip=skip_rev
+        )
+        y_obj_unit = y_rev_unit[-1]
+        u_obj_unit = u_rev_unit[-1]
 
-        if self.optic.field_type == "object_height":
-            u1 = 0.1 * max_field / y[-1]
-        elif self.optic.field_type == "angle":
-            u1 = 0.1 * be.tan(be.deg2rad(max_field)) / u[-1]
+        # Scale based on field definition
+        scaling_factor = self.optic.field_definition.scale_chief_ray_for_field(
+            self.optic, y_obj_unit, u_obj_unit, y_img_unit
+        )
 
-        yn, un = self._trace_generic(y0, u1, z0, wavelength, reverse=True, skip=skip)
+        # Determine initial ray parameters for final forward trace
+        if isinstance(self.optic.field_definition, ParaxialImageHeightField):
+            y_obj_start = y_obj_unit * scaling_factor
+        else:
+            y_obj_start = -(y_obj_unit * scaling_factor)
+        u_obj_start = u_obj_unit * scaling_factor
 
-        # trace in forward direction
-        z0 = self.optic.surface_group.positions[1]
-
-        return self._trace_generic(-yn[-1, 0], un[-1, 0], z0[0], wavelength)
+        if self.optic.object_surface.is_infinite:
+            # For infinite conjugates, chief ray is defined by angle in object space.
+            # We find its height at the first surface by propagating from the EPL,
+            # where its height is zero.
+            EPL = self.EPL()
+            z_surf1 = self.surfaces.positions[1, 0]
+            y1_start = u_obj_start * (z_surf1 - EPL)
+            u1_start = u_obj_start
+            z1_start = z_surf1
+            return self._trace_generic(y1_start, u1_start, z1_start, wavelength)
+        else:  # Finite conjugate
+            # For finite conjugates, ray starts at y_obj_start on the object plane.
+            z_start = self.optic.object_surface.geometry.cs.z
+            return self._trace_generic(y_obj_start, u_obj_start, z_start, wavelength)
 
     def trace(self, Hy, Py, wavelength):
         """Trace paraxial ray through the optical system based on specified field

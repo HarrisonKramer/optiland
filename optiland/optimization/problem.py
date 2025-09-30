@@ -11,12 +11,16 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
 import optiland.backend as be
 from optiland.optimization.operand import OperandManager
 from optiland.optimization.variable import VariableManager
+
+if TYPE_CHECKING:
+    from optiland.optimization.scaling.base import Scaler
 
 
 class OptimizationProblem:
@@ -79,9 +83,9 @@ class OptimizationProblem:
             input_data = {}
         self.operands.add(operand_type, target, min_val, max_val, weight, input_data)
 
-    def add_variable(self, optic, variable_type, **kwargs):
+    def add_variable(self, optic, variable_type, scaler: Scaler = None, **kwargs):
         """Add a variable to the merit function"""
-        self.variables.add(optic, variable_type, **kwargs)
+        self.variables.add(optic, variable_type, scaler=scaler, **kwargs)
 
     def clear_operands(self):
         """Clear all operands from the merit function"""
