@@ -178,11 +178,10 @@ class FieldGroup:
             contains the (normalized_x, normalized_y) coordinates of a field.
 
         """
-        max_field = self.max_field
-        if max_field == 0:
+        if self.max_field == 0:
             return [(0, 0)]
         return [
-            (float(x / max_field), float(y / max_field))
+            (float(x / self.max_x_field), float(y / self.max_y_field))
             for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
