@@ -29,11 +29,12 @@ class AbbeMaterial(BaseMaterial):
     """
 
     def __init__(self, n, abbe):
+        super().__init__()
         self.index = be.array([n])
         self.abbe = be.array([abbe])
         self._p = self._get_coefficients()
 
-    def n(self, wavelength):
+    def _calculate_n(self, wavelength, **kwargs):
         """Returns the refractive index of the material.
 
         Args:
@@ -49,7 +50,7 @@ class AbbeMaterial(BaseMaterial):
             raise ValueError("Wavelength out of range for this model.")
         return be.atleast_1d(be.polyval(self._p, wavelength))
 
-    def k(self, wavelength):
+    def _calculate_k(self, wavelength, **kwargs):
         """Returns the extinction coefficient of the material.
 
         Args:
