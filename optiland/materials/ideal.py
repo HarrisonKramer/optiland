@@ -24,10 +24,11 @@ class IdealMaterial(BaseMaterial):
     """
 
     def __init__(self, n, k=0):
+        super().__init__()
         self.index = be.array([n])
         self.absorp = be.array([k])
 
-    def n(self, wavelength):
+    def _calculate_n(self, wavelength, **kwargs):
         """Returns the refractive index of the material.
 
         Args:
@@ -44,7 +45,7 @@ class IdealMaterial(BaseMaterial):
             return be.full_like(wavelength, self.index[0])
         return self.index[0]
 
-    def k(self, wavelength):
+    def _calculate_k(self, wavelength, **kwargs):
         """Returns the extinction coefficient of the material.
 
         Args:
