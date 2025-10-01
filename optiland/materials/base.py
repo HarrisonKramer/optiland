@@ -11,7 +11,6 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
 
 import numpy as np
 
@@ -32,10 +31,10 @@ class BaseMaterial(ABC):
         None
 
     Methods:
-        n(wavelength: Any) -> Any:
+        n(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the refractive index at a given
             wavelength(s) in microns.
-        k(wavelength: Any) -> Any:
+        k(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the extinction coefficient at a given
             wavelength(s) in microns.
         abbe() -> float:
@@ -55,7 +54,7 @@ class BaseMaterial(ABC):
         super().__init_subclass__(**kwargs)
         BaseMaterial._registry[cls.__name__] = cls
 
-    def _create_cache_key(self, wavelength: Any, **kwargs) -> tuple:
+    def _create_cache_key(self, wavelength: float | be.ndarray, **kwargs) -> tuple:
         """Creates a hashable cache key from wavelength and kwargs."""
         if be.is_array_like(wavelength):
             wavelength_key = tuple(np.ravel(be.to_numpy(wavelength)))
@@ -63,16 +62,16 @@ class BaseMaterial(ABC):
             wavelength_key = wavelength
         return (wavelength_key,) + tuple(sorted(kwargs.items()))
 
-    def n(self, wavelength: Any, **kwargs) -> Any:
+    def n(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
         """Calculates the refractive index at a given wavelength with caching.
 
         Args:
-            wavelength (Any): The wavelength(s) of light in microns. Can be a
-                float, numpy array, or torch tensor.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
             **kwargs: Additional keyword arguments for calculation (e.g., temperature).
 
         Returns:
-            Any: The refractive index at the given wavelength(s).
+            float | be.ndarray: The refractive index at the given wavelength(s).
         """
         cache_key = self._create_cache_key(wavelength, **kwargs)
 
@@ -83,16 +82,16 @@ class BaseMaterial(ABC):
         self._n_cache[cache_key] = result
         return result
 
-    def k(self, wavelength: Any, **kwargs) -> Any:
+    def k(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
         """Calculates the extinction coefficient at a given wavelength with caching.
 
         Args:
-            wavelength (Any): The wavelength(s) of light in microns. Can be a
-                float, numpy array, or torch tensor.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
             **kwargs: Additional keyword arguments for calculation.
 
         Returns:
-            Any: The extinction coefficient at the given wavelength(s).
+            float | be.ndarray: The extinction coefficient at the given wavelength(s).
         """
         cache_key = self._create_cache_key(wavelength, **kwargs)
 
@@ -104,26 +103,30 @@ class BaseMaterial(ABC):
         return result
 
     @abstractmethod
-    def _calculate_n(self, wavelength: Any, **kwargs) -> Any:
+    def _calculate_n(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the refractive index at a given wavelength.
 
         Args:
-            wavelength (Any): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            Any: The refractive index at the given wavelength(s).
+            float | be.ndarray: The refractive index at the given wavelength(s).
         """
         pass  # pragma: no cover
 
     @abstractmethod
-    def _calculate_k(self, wavelength: Any, **kwargs) -> Any:
+    def _calculate_k(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the extinction coefficient at a given wavelength.
 
         Args:
-            wavelength (Any): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            Any: The extinction coefficient at the given
+            float | be.ndarray: The extinction coefficient at the given
             wavelength(s).
         """
         pass  # pragma: no cover

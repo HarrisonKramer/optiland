@@ -48,10 +48,10 @@ class InvalidMaterial(BaseMaterial):
         super().__init__()
         self.index = -42
 
-    def n(self, wavelength):
+    def _calculate_n(self, wavelength):
         return -42
 
-    def k(self, wavelength):
+    def _calculate_k(self, wavelength):
         return -42
 
 
