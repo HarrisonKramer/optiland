@@ -10,7 +10,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from optiland.materials import BaseMaterial, IdealMaterial, Material
+from optiland.environment.manager import environment_manager
+from optiland.materials import BaseMaterial, Material
 
 
 class MaterialFactory:
@@ -36,11 +37,14 @@ class MaterialFactory:
                 - The material before the surface (None for the object surface).
                 - The material after the surface.
         """
+        # If no material is specified, assume it's the environment medium.
+        if material_spec is None:
+            material_spec = "air"  # Treat None as 'air'
+
         # Determine material before the surface
         if index == 0:
-            material_pre = None  # Object surface has no preceding material
-        elif index == surface_group.num_surfaces and self.last_material is not None:
-            material_pre = self.last_material  # Image surface
+            # The medium before the object surface is the environment medium
+            material_pre = environment_manager.get_environment().medium
         else:
             previous_surface = surface_group.surfaces[index - 1]
             material_pre = previous_surface.material_post
@@ -81,9 +85,10 @@ class MaterialFactory:
 
         if isinstance(material_spec, str):
             if material_spec.lower() == "air":
-                return IdealMaterial(n=1.0, k=0.0)
+                # "air" refers to the current global environment medium.
+                return environment_manager.get_environment().medium
             if material_spec.lower() == "mirror":
-                return None  # Mirror material is handled separately in surface logic.
+                return None  # Mirror material is handled separately
             return Material(material_spec)
 
         raise ValueError(f"Unrecognized material specification: {material_spec}")
