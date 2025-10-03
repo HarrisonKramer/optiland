@@ -28,8 +28,8 @@ class IdealMaterial(BaseMaterial):
         self.index = be.array([n])
         self.absorp = be.array([k])
 
-    def _calculate_n(self, wavelength, **kwargs):
-        """Returns the refractive index of the material.
+    def _calculate_absolute_n(self, wavelength, **kwargs):
+        """Returns the refractive index of the material relative to vacuum.
 
         Args:
             wavelength (float or be.ndarray): The wavelength(s) of light in microns.
