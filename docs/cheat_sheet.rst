@@ -107,6 +107,9 @@ Basic Workflow: Defining an Optical System
         # Or for object height:
         # my_lens.set_field_type(field_type="object_height")
         # my_lens.add_field(y=10.0) # Object height of 10 mm
+        # Or for real image height:
+        # my_lens.set_field_type(field_type="real_image_height")
+        # my_lens.add_field(y=8.0) # Target real image height of 8.0 mm
 
 6.  **Define Wavelengths** (``add_wavelength``):
 

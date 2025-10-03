@@ -11,7 +11,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import optiland.backend as be
 
@@ -124,6 +124,8 @@ class BaseFieldDefinition(ABC):
             return ObjectHeightField()
         elif field_type == "ParaxialImageHeightField":
             return ParaxialImageHeightField()
+        elif field_type == "RealImageHeightField":
+            return RealImageHeightField()
         else:
             raise ValueError(f"Unknown field definition: {field_type}")
 
@@ -169,7 +171,7 @@ class AngleField(BaseFieldDefinition):
             if be.size(x0) == 1:
                 x0 = be.full_like(Px, x0)
             if be.size(y0) == 1:
-                y0 = be.full_like(Px, y0)
+                y0 = be.full_like(Py, y0)
             if be.size(z0) == 1:
                 z0 = be.full_like(Px, z0)
         return x0, y0, z0
@@ -379,7 +381,7 @@ class ParaxialImageHeightField(BaseFieldDefinition):
             if be.size(x0) == 1:
                 x0 = be.full_like(Px, x0)
             if be.size(y0) == 1:
-                y0 = be.full_like(Px, y0)
+                y0 = be.full_like(Py, y0)
             if be.size(z0) == 1:
                 z0 = be.full_like(Px, z0)
         return x0, y0, z0
@@ -472,3 +474,140 @@ class ParaxialImageHeightField(BaseFieldDefinition):
                 y=0, u=1, z=z_start, wavelength=wavelength, reverse=True, skip=skip
             )
             return y[-1], u[-1]
+
+
+class RealImageHeightField(BaseFieldDefinition):
+    """Defines fields by the chief ray's real height at the image plane."""
+
+    def _solve(
+        self,
+        func: Callable[[float], float],
+        x0: float,
+        tol: float = 1e-9,
+        max_iter: int = 30
+    ) -> float:
+        """A simple backend-agnostic secant method root-finder."""
+        x1 = x0 * 1.01 if x0 != 0 else 0.01
+        f0 = func(x0)
+
+        for _ in range(max_iter):
+            if abs(f0) < tol:
+                return x0
+
+            f1 = func(x1)
+
+            if abs(f1 - f0) < 1e-12:
+                # Perturb x1 to escape a flat region
+                x1 = x1 + tol if x1 >=0 else x1 - tol
+                continue
+
+            x_next = x1 - f1 * (x1 - x0) / (f1 - f0)
+            x0, f0 = x1, f1
+            x1 = x_next
+
+        raise RuntimeError("Solver failed to converge.")
+
+    def _find_chief_ray_object_properties(
+        self,
+        optic: Optic,
+        target_image_height: float,
+        axis: str = "y"
+    ) -> float:
+        """Finds the object-space property that produces the target image height."""
+        max_field_val = optic.fields.max_field
+        is_infinite = optic.object_surface.is_infinite
+
+        def error_func(p: float) -> float:
+            """Objective function for the root-finder. `p` is object property."""
+            H = p / max_field_val if max_field_val != 0 else 0.0
+
+            trace_kwargs = {"Px": 0.0, "Py": 0.0, "wavelength": optic.primary_wavelength}
+            if axis == 'y':
+                trace_kwargs['Hy'] = H
+                trace_kwargs['Hx'] = 0.0
+            else:
+                trace_kwargs['Hx'] = H
+                trace_kwargs['Hy'] = 0.0
+
+            optic.trace_generic(**trace_kwargs)
+
+            if axis == 'y':
+                height = optic.surface_group.y[-1, 0]
+            else:
+                height = optic.surface_group.x[-1, 0]
+
+            return height - target_image_height
+
+        y_img_unit, _ = ParaxialImageHeightField()._trace_unit_chief_ray(optic, plane="image")
+        y_obj_unit, u_obj_unit = ParaxialImageHeightField()._trace_unit_chief_ray(optic, plane="object")
+
+        if abs(y_img_unit) < 1e-12:
+            y_img_unit = 1e-12
+
+        if is_infinite:
+            paraxial_slope = u_obj_unit * (target_image_height / y_img_unit)
+            initial_guess = be.rad2deg(be.arctan(paraxial_slope))
+        else:
+            initial_guess = y_obj_unit * (target_image_height / y_img_unit)
+
+        try:
+            solved_p = self._solve(error_func, initial_guess)
+        except RuntimeError as e:
+            raise RuntimeError(f"Solver failed to converge for target image height {target_image_height}") from e
+
+        return solved_p
+
+    def get_ray_origins(self, optic, Hx, Hy, Px, Py, vx, vy):
+        """Calculates ray origins using the iterative real-ray solver."""
+        y_img_target = optic.fields.max_field * Hy
+        x_img_target = optic.fields.max_field * Hx
+
+        prop_y = self._find_chief_ray_object_properties(optic, y_img_target, axis='y') if Hy != 0 else 0.0
+        prop_x = self._find_chief_ray_object_properties(optic, x_img_target, axis='x') if Hx != 0 else 0.0
+
+        if optic.object_surface.is_infinite:
+            EPL = optic.paraxial.EPL()
+            EPD = optic.paraxial.EPD()
+            offset = ParaxialImageHeightField()._get_starting_z_offset(optic)
+            x = -be.tan(be.radians(prop_x)) * (offset + EPL)
+            y = -be.tan(be.radians(prop_y)) * (offset + EPL)
+            z = optic.surface_group.positions[1] - offset
+            x0 = Px * EPD / 2 * vx + x
+            y0 = Py * EPD / 2 * vy + y
+            z0 = be.full_like(Px, z)
+        else:
+            x0 = be.full_like(Px, prop_x)
+            y0 = be.full_like(Py, prop_y)
+            z0 = optic.object_surface.geometry.sag(x0, y0) + optic.object_surface.geometry.cs.z
+            if be.size(z0) == 1:
+                z0 = be.full_like(Px, z0)
+        return x0, y0, z0
+
+    def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
+        """Aligns the paraxial model with the real field definition."""
+        max_image_height = optic.fields.max_y_field
+        real_prop_max = self._find_chief_ray_object_properties(optic, max_image_height, axis='y')
+
+        if optic.object_surface.is_infinite:
+            real_slope_max = be.tan(be.radians(real_prop_max))
+            scale = real_slope_max / u_obj_unit
+        else:
+            scale = real_prop_max / y_obj_unit
+        return scale
+
+    def get_paraxial_object_position(self, optic, Hy, y1, EPL):
+        """Calculates paraxial starting coordinates corresponding to the real field."""
+        y_img_target = optic.fields.max_field * Hy
+        real_prop = self._find_chief_ray_object_properties(optic, y_img_target, axis='y') if Hy != 0 else 0.0
+
+        if optic.object_surface.is_infinite:
+            y = -be.tan(be.radians(real_prop)) * EPL
+            z = optic.surface_group.positions[1]
+            y0 = y1 + y
+            z0 = be.ones_like(y1) * z
+        else:
+            y = -real_prop
+            z = optic.object_surface.geometry.cs.z
+            y0 = be.ones_like(y1) * y
+            z0 = be.ones_like(y1) * z
+        return y0, z0
