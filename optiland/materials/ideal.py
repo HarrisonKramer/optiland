@@ -9,6 +9,8 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import Any
+
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
@@ -17,71 +19,76 @@ class IdealMaterial(BaseMaterial):
     """Represents an ideal material with a fixed refractive index and extinction
     coefficient for all wavelengths.
 
-    Attributes:
-        index (float): The refractive index of the material.
-        absorp (float): The extinction coefficient of the material.
+    By default, the refractive index of this material is considered absolute
+    and does not change with the environment.
 
+    Args:
+        n (float): The refractive index of the material.
+        k (float): The extinction coefficient of the material. Defaults to 0.0.
+        relative_to_environment (bool): If True, the refractive index is
+            treated as relative to the environment. Defaults to False.
+
+    Attributes:
+        n_val (float): The refractive index of the material.
+        k_val (float): The extinction coefficient of the material.
+        relative_to_environment (bool): Flag indicating if the index is relative.
     """
 
-    def __init__(self, n, k=0):
+    def __init__(
+        self, n: float, k: float = 0.0, relative_to_environment: bool = False
+    ):
         super().__init__()
-        self.index = be.array([n])
-        self.absorp = be.array([k])
+        self.n_val = n
+        self.k_val = k
+        self.relative_to_environment = relative_to_environment
 
-    def _calculate_absolute_n(self, wavelength, **kwargs):
-        """Returns the refractive index of the material relative to vacuum.
-
-        Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
-                This argument is not used by this material model as the index is
-                constant.
-
-        Returns:
-            float or be.ndarray: The refractive index of the material. Returns a
-            scalar if wavelength is scalar, otherwise an array of the same shape
-            as wavelength, filled with the constant refractive index.
+    def n(self, wavelength: float | be.ndarray, **kwargs: Any) -> float | be.ndarray:
         """
+        Calculates the refractive index of the material.
+
+        If `relative_to_environment` is False, this method returns the constant
+        refractive index `n_val`. Otherwise, it calculates the index relative
+        to the current environment using the base class implementation.
+        """
+        if not self.relative_to_environment:
+            if be.is_array_like(wavelength) and be.size(wavelength) > 1:
+                return be.full_like(wavelength, self.n_val)
+            return self.n_val
+        return super().n(wavelength, **kwargs)
+
+    def _calculate_absolute_n(
+        self, wavelength: float | be.ndarray, **kwargs: Any
+    ) -> float | be.ndarray:
+        """Returns the absolute refractive index of the material."""
         if be.is_array_like(wavelength) and be.size(wavelength) > 1:
-            return be.full_like(wavelength, self.index[0])
-        return self.index[0]
+            return be.full_like(wavelength, self.n_val)
+        return self.n_val
 
-    def _calculate_k(self, wavelength, **kwargs):
-        """Returns the extinction coefficient of the material.
-
-        Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
-                This argument is not used by this material model as the value is
-                constant.
-
-        Returns:
-            float or be.ndarray: The extinction coefficient of the material. Returns a
-            scalar if wavelength is scalar, otherwise an array of the same shape
-            as wavelength, filled with the constant extinction coefficient.
-        """
+    def _calculate_k(
+        self, wavelength: float | be.ndarray, **kwargs: Any
+    ) -> float | be.ndarray:
+        """Returns the constant extinction coefficient of the material."""
         if be.is_array_like(wavelength) and be.size(wavelength) > 1:
-            return be.full_like(wavelength, self.absorp[0])
-        return self.absorp[0]
+            return be.full_like(wavelength, self.k_val)
+        return self.k_val
 
-    def to_dict(self):
-        """Returns a dictionary representation of the material.
-
-        Returns:
-            dict: A dictionary representation of the material.
-
-        """
+    def to_dict(self) -> dict[str, Any]:
+        """Returns a dictionary representation of the material."""
         material_dict = super().to_dict()
-        material_dict.update({"index": self.index.item(), "absorp": self.absorp.item()})
+        material_dict.update(
+            {
+                "n": self.n_val,
+                "k": self.k_val,
+                "relative_to_environment": self.relative_to_environment,
+            }
+        )
         return material_dict
 
     @classmethod
-    def from_dict(cls, data):
-        """Creates a material from a dictionary representation.
-
-        Args:
-            data (dict): The dictionary representation of the material.
-
-        Returns:
-            IdealMaterial: The material.
-
-        """
-        return cls(data["index"], data.get("absorp", 0))
+    def from_dict(cls, data: dict[str, Any]) -> IdealMaterial:
+        """Creates an IdealMaterial instance from a dictionary representation."""
+        return cls(
+            data["n"],
+            data.get("k", 0.0),
+            data.get("relative_to_environment", False),
+        )

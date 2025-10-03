@@ -10,10 +10,11 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+import numpy as np
 
 import optiland.backend as be
-from optiland.environment.air_index import refractive_index_air
 from optiland.materials.base import BaseMaterial
 
 if TYPE_CHECKING:
@@ -21,8 +22,7 @@ if TYPE_CHECKING:
 
 
 class Air(BaseMaterial):
-    """
-    Represents air as a material whose refractive index is dependent
+    """Represents air as a material whose refractive index is dependent
     on wavelength and environmental conditions.
 
     Args:
@@ -30,34 +30,85 @@ class Air(BaseMaterial):
             (temperature, pressure) affecting the refractive index of air.
         model (str): The empirical model to use for refractive index
             calculation. Options include "ciddor", "edlen", "birch_downs",
-            and "kohlrausch". Default is "ciddor".
+            and "kohlrausch". Defaults to "kohlrausch".
+
+    Attributes:
+        conditions (EnvironmentalConditions): The environmental conditions.
+        model (str): The refractive index model name.
     """
 
-    def __init__(self, conditions: EnvironmentalConditions, model: str = "ciddor"):
+    def __init__(self, conditions: EnvironmentalConditions, model: str = "kohlrausch"):
         super().__init__()
         self.conditions = conditions
         self.model = model
 
     def _calculate_absolute_n(
-        self, wavelength: float | be.ndarray, **kwargs
+        self, wavelength: float | be.ndarray, **kwargs: Any
     ) -> float | be.ndarray:
+        """Calculates the absolute refractive index of air using the specified model.
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) in microns.
+            **kwargs: Additional keyword arguments (not used).
+
+        Returns:
+            float | be.ndarray: The absolute refractive index of air.
         """
-        Calculates the absolute refractive index of air using the specified model.
-        """
-        # TODO: Handle array inputs more efficiently
+        from optiland.environment.air_index import refractive_index_air
+
         if be.is_array_like(wavelength):
-            return be.array(
-                [
-                    refractive_index_air(w, self.conditions, self.model)
-                    for w in be.to_numpy(wavelength).flatten()
-                ]
-            ).reshape(wavelength.shape)
+            # Vectorize the calculation since the underlying models are scalar
+            np_wavelength = np.ravel(be.to_numpy(wavelength))
+            results = [
+                refractive_index_air(w, self.conditions, self.model)
+                for w in np_wavelength
+            ]
+            return be.asarray(results).reshape(wavelength.shape)
+
         return refractive_index_air(wavelength, self.conditions, self.model)
 
     def _calculate_k(
-        self, wavelength: float | be.ndarray, **kwargs
+        self, wavelength: float | be.ndarray, **kwargs: Any
     ) -> float | be.ndarray:
-        """Extinction coefficient of air is assumed negligible."""
-        if be.is_array_like(wavelength):
+        """Extinction coefficient of air is assumed to be negligible (zero).
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) in microns.
+            **kwargs: Additional keyword arguments (not used).
+
+        Returns:
+            float | be.ndarray: The extinction coefficient, which is always 0.
+        """
+        if be.is_array_like(wavelength) and be.size(wavelength) > 1:
             return be.zeros_like(wavelength)
         return 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        """Returns a dictionary representation of the Air material.
+
+        Returns:
+            dict: A dictionary containing the material's type, conditions, and model.
+        """
+        material_dict = super().to_dict()
+        material_dict.update(
+            {
+                "conditions": self.conditions.to_dict(),
+                "model": self.model,
+            }
+        )
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Air:
+        """Creates an Air material from a dictionary representation.
+
+        Args:
+            data (dict): The dictionary representation of the material.
+
+        Returns:
+            Air: The deserialized Air material instance.
+        """
+        from optiland.environment.conditions import EnvironmentalConditions
+
+        conditions = EnvironmentalConditions.from_dict(data["conditions"])
+        return cls(conditions, data.get("model", "kohlrausch"))
