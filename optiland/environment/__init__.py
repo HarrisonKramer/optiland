@@ -53,6 +53,8 @@ from __future__ import annotations
 
 from .air_index import refractive_index_air
 from .conditions import EnvironmentalConditions
+from .environment import Environment
+from .manager import EnvironmentManager, environment_manager
 from .models.birch_downs import birch_downs_refractive_index
 from .models.ciddor import ciddor_refractive_index
 from .models.edlen import edlen_refractive_index
@@ -60,6 +62,9 @@ from .models.kohlrausch import kohlrausch_refractive_index
 
 __all__ = [
     "EnvironmentalConditions",
+    "Environment",
+    "EnvironmentManager",
+    "environment_manager",
     "refractive_index_air",
     "ciddor_refractive_index",
     "kohlrausch_refractive_index",
