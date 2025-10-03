@@ -11,11 +11,13 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from optiland import Optic
 
 
@@ -484,7 +486,7 @@ class RealImageHeightField(BaseFieldDefinition):
         func: Callable[[float], float],
         x0: float,
         tol: float = 1e-9,
-        max_iter: int = 30
+        max_iter: int = 30,
     ) -> float:
         """A simple backend-agnostic secant method root-finder."""
         x1 = x0 * 1.01 if x0 != 0 else 0.01
@@ -498,7 +500,7 @@ class RealImageHeightField(BaseFieldDefinition):
 
             if abs(f1 - f0) < 1e-12:
                 # Perturb x1 to escape a flat region
-                x1 = x1 + tol if x1 >=0 else x1 - tol
+                x1 = x1 + tol if x1 >= 0 else x1 - tol
                 continue
 
             x_next = x1 - f1 * (x1 - x0) / (f1 - f0)
@@ -508,10 +510,7 @@ class RealImageHeightField(BaseFieldDefinition):
         raise RuntimeError("Solver failed to converge.")
 
     def _find_chief_ray_object_properties(
-        self,
-        optic: Optic,
-        target_image_height: float,
-        axis: str = "y"
+        self, optic: Optic, target_image_height: float, axis: str = "y"
     ) -> float:
         """Finds the object-space property that produces the target image height."""
         max_field_val = optic.fields.max_field
@@ -521,25 +520,33 @@ class RealImageHeightField(BaseFieldDefinition):
             """Objective function for the root-finder. `p` is object property."""
             H = p / max_field_val if max_field_val != 0 else 0.0
 
-            trace_kwargs = {"Px": 0.0, "Py": 0.0, "wavelength": optic.primary_wavelength}
-            if axis == 'y':
-                trace_kwargs['Hy'] = H
-                trace_kwargs['Hx'] = 0.0
+            trace_kwargs = {
+                "Px": 0.0,
+                "Py": 0.0,
+                "wavelength": optic.primary_wavelength,
+            }
+            if axis == "y":
+                trace_kwargs["Hy"] = H
+                trace_kwargs["Hx"] = 0.0
             else:
-                trace_kwargs['Hx'] = H
-                trace_kwargs['Hy'] = 0.0
+                trace_kwargs["Hx"] = H
+                trace_kwargs["Hy"] = 0.0
 
             optic.trace_generic(**trace_kwargs)
 
-            if axis == 'y':
+            if axis == "y":
                 height = optic.surface_group.y[-1, 0]
             else:
                 height = optic.surface_group.x[-1, 0]
 
             return height - target_image_height
 
-        y_img_unit, _ = ParaxialImageHeightField()._trace_unit_chief_ray(optic, plane="image")
-        y_obj_unit, u_obj_unit = ParaxialImageHeightField()._trace_unit_chief_ray(optic, plane="object")
+        y_img_unit, _ = ParaxialImageHeightField()._trace_unit_chief_ray(
+            optic, plane="image"
+        )
+        y_obj_unit, u_obj_unit = ParaxialImageHeightField()._trace_unit_chief_ray(
+            optic, plane="object"
+        )
 
         if abs(y_img_unit) < 1e-12:
             y_img_unit = 1e-12
@@ -553,7 +560,10 @@ class RealImageHeightField(BaseFieldDefinition):
         try:
             solved_p = self._solve(error_func, initial_guess)
         except RuntimeError as e:
-            raise RuntimeError(f"Solver failed to converge for target image height {target_image_height}") from e
+            raise RuntimeError(
+                f"Solver failed to converge for target image "
+                f"height {target_image_height}"
+            ) from e
 
         return solved_p
 
@@ -562,8 +572,16 @@ class RealImageHeightField(BaseFieldDefinition):
         y_img_target = optic.fields.max_field * Hy
         x_img_target = optic.fields.max_field * Hx
 
-        prop_y = self._find_chief_ray_object_properties(optic, y_img_target, axis='y') if Hy != 0 else 0.0
-        prop_x = self._find_chief_ray_object_properties(optic, x_img_target, axis='x') if Hx != 0 else 0.0
+        prop_y = (
+            self._find_chief_ray_object_properties(optic, y_img_target, axis="y")
+            if Hy != 0
+            else 0.0
+        )
+        prop_x = (
+            self._find_chief_ray_object_properties(optic, x_img_target, axis="x")
+            if Hx != 0
+            else 0.0
+        )
 
         if optic.object_surface.is_infinite:
             EPL = optic.paraxial.EPL()
@@ -578,7 +596,10 @@ class RealImageHeightField(BaseFieldDefinition):
         else:
             x0 = be.full_like(Px, prop_x)
             y0 = be.full_like(Py, prop_y)
-            z0 = optic.object_surface.geometry.sag(x0, y0) + optic.object_surface.geometry.cs.z
+            z0 = (
+                optic.object_surface.geometry.sag(x0, y0)
+                + optic.object_surface.geometry.cs.z
+            )
             if be.size(z0) == 1:
                 z0 = be.full_like(Px, z0)
         return x0, y0, z0
@@ -586,7 +607,9 @@ class RealImageHeightField(BaseFieldDefinition):
     def scale_chief_ray_for_field(self, optic, y_obj_unit, u_obj_unit, y_img_unit):
         """Aligns the paraxial model with the real field definition."""
         max_image_height = optic.fields.max_y_field
-        real_prop_max = self._find_chief_ray_object_properties(optic, max_image_height, axis='y')
+        real_prop_max = self._find_chief_ray_object_properties(
+            optic, max_image_height, axis="y"
+        )
 
         if optic.object_surface.is_infinite:
             real_slope_max = be.tan(be.radians(real_prop_max))
@@ -598,7 +621,11 @@ class RealImageHeightField(BaseFieldDefinition):
     def get_paraxial_object_position(self, optic, Hy, y1, EPL):
         """Calculates paraxial starting coordinates corresponding to the real field."""
         y_img_target = optic.fields.max_field * Hy
-        real_prop = self._find_chief_ray_object_properties(optic, y_img_target, axis='y') if Hy != 0 else 0.0
+        real_prop = (
+            self._find_chief_ray_object_properties(optic, y_img_target, axis="y")
+            if Hy != 0
+            else 0.0
+        )
 
         if optic.object_surface.is_infinite:
             y = -be.tan(be.radians(real_prop)) * EPL
