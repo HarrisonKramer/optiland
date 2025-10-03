@@ -181,7 +181,10 @@ class FieldGroup:
         if self.max_field == 0:
             return [(0, 0)]
         return [
-            (float(x / self.max_x_field), float(y / self.max_y_field))
+            (
+                float(x / self.max_x_field) if self.max_x_field != 0 else 0.0,
+                float(y / self.max_y_field) if self.max_y_field != 0 else 0.0,
+            )
             for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
