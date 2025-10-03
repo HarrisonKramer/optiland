@@ -43,6 +43,9 @@ class Material(MaterialFile):
             filtering materials based on their valid range. Defaults to None.
         max_wavelength (float, optional): Maximum wavelength in microns for
             filtering materials based on their valid range. Defaults to None.
+        is_relative_to_air (bool, optional): If True, the refractive index
+            values from the catalog are treated as relative to air and are
+            adjusted accordingly. Defaults to True.
 
     Attributes:
         name (str): The name of the material.
@@ -60,6 +63,7 @@ class Material(MaterialFile):
         robust_search=True,
         min_wavelength=None,
         max_wavelength=None,
+        is_relative_to_air: bool = True,
     ):
         self.name = name
         self.reference = reference
@@ -67,7 +71,7 @@ class Material(MaterialFile):
         self.min_wavelength = min_wavelength
         self.max_wavelength = max_wavelength
         file, self.material_data = self._retrieve_file()
-        super().__init__(file)
+        super().__init__(file, is_relative_to_air=is_relative_to_air)
 
     @classmethod
     def _load_dataframe(cls):
