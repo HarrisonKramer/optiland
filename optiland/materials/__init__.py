@@ -5,6 +5,7 @@ refractiveindex.info data files."""
 from __future__ import annotations
 
 from .abbe import AbbeMaterial
+from .air import Air
 from .base import BaseMaterial
 from .ideal import IdealMaterial
 from .material import Material
@@ -38,4 +39,6 @@ __all__ = [
     "plot_glass_map",
     "plot_nk",
     find_closest_glass,
+    # From air.py
+    "Air",
 ]
