@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 import optiland.backend as be
+from optiland.environment.manager import environment_manager
 
 
 class BaseMaterial(ABC):
@@ -63,22 +64,26 @@ class BaseMaterial(ABC):
         return (wavelength_key,) + tuple(sorted(kwargs.items()))
 
     def n(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
-        """Calculates the refractive index at a given wavelength with caching.
+        """
+        Calculates the refractive index relative to the current environment medium.
 
-        Args:
-            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
-                Can be a float, numpy array, or torch tensor.
-            **kwargs: Additional keyword arguments for calculation (e.g., temperature).
-
-        Returns:
-            float | be.ndarray: The refractive index at the given wavelength(s).
+        This method ensures that all index calculations are consistent with the
+        globally defined immersion medium, providing perfect backwards
+        compatibility when the environment is standard air.
         """
         cache_key = self._create_cache_key(wavelength, **kwargs)
-
         if cache_key in self._n_cache:
             return self._n_cache[cache_key]
 
-        result = self._calculate_n(wavelength, **kwargs)
+        # 1. Get the absolute index of this material
+        n_absolute_self = self._calculate_absolute_n(wavelength, **kwargs)
+
+        # 2. Get the absolute index of the environment medium
+        env_medium = environment_manager.get_environment().medium
+        n_absolute_env = env_medium._calculate_absolute_n(wavelength, **kwargs)
+
+        # 3. Return the relative index
+        result = n_absolute_self / n_absolute_env
         self._n_cache[cache_key] = result
         return result
 
@@ -103,16 +108,12 @@ class BaseMaterial(ABC):
         return result
 
     @abstractmethod
-    def _calculate_n(
+    def _calculate_absolute_n(
         self, wavelength: float | be.ndarray, **kwargs
     ) -> float | be.ndarray:
-        """Calculates the refractive index at a given wavelength.
-
-        Args:
-            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
-
-        Returns:
-            float | be.ndarray: The refractive index at the given wavelength(s).
+        """
+        Calculates the absolute refractive index (relative to vacuum).
+        Subclasses must implement this method.
         """
         pass  # pragma: no cover
 
