@@ -110,9 +110,9 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
                 f"Normalization radius must be positive, got {norm_radius}"
             )
 
-        coefficients = be.atleast_1d(coefficients if coefficients is not None else [])
+        self.c = be.atleast_1d(coefficients if coefficients is not None else [])
 
-        self.zernike = _ZERNIKE_TYPES[zernike_type](coeffs=coefficients)
+        self.zernike = _ZERNIKE_TYPES[zernike_type](coeffs=self.c)
         self.zernike_type: ZernikeType = zernike_type
         self.norm_radius = norm_radius
         self.is_symmetric = False
