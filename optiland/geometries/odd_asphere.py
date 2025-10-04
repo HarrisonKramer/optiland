@@ -84,7 +84,7 @@ class OddAsphere(EvenAsphere):
         r2 = be.array(x**2 + y**2)
         r = be.sqrt(r2)
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i, Ci in enumerate(self.c):
+        for i, Ci in enumerate(self.coefficients):
             z = z + Ci * r ** (i + 1)
 
         return z
@@ -111,7 +111,7 @@ class OddAsphere(EvenAsphere):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            for i, Ci in enumerate(self.c):
+            for i, Ci in enumerate(self.coefficients):
                 x_term = (i + 1) * x * Ci * r ** (i - 1)
                 y_term = (i + 1) * y * Ci * r ** (i - 1)
 
