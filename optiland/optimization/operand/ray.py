@@ -286,8 +286,15 @@ class RayOperand:
         dot_product_clip = be.minimum(dot_product, be.array(1.0))
 
         angle_rad = be.arccos(dot_product_clip)
+        angle_deg = be.rad2deg(angle_rad)
 
-        return be.rad2deg(angle_rad)
+        # For some reason angle_deg can sometimes be a single-element array.
+        # In that case, retreive the float inside.
+        # This is a workaround until a solution is found.
+        if be.is_array_like(angle_deg):
+            angle_deg = angle_deg.item()
+
+        return angle_deg
 
     @staticmethod
     def rms_spot_size(
