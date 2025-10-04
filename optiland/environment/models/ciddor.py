@@ -24,9 +24,13 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 
-from ..conditions import EnvironmentalConditions
+if TYPE_CHECKING:
+    from ..conditions import EnvironmentalConditions
+
 
 # --- Model Constants from Ciddor (1996), Appendix A ---
 
@@ -101,7 +105,9 @@ def _calculate_molar_mass_air(co2_ppm: float) -> float:
     return 1e-3 * (28.9635 + 12.011e-6 * (co2_ppm - CO2_MOLAR_PPM))
 
 
-def _calculate_saturation_vapor_pressure(temp_c: float) -> float:
+def _calculate_saturation_vapor_pressure(
+    temp_c: float | be.ndarray,
+) -> float | be.ndarray:
     """Calculates the saturation vapor pressure of water in air.
 
     This function uses two different formulas from the Ciddor paper, one for
@@ -117,23 +123,23 @@ def _calculate_saturation_vapor_pressure(temp_c: float) -> float:
     # The paper provides two different formulas based on temperature.
     temp_k = temp_c + 273.15
     # The reference implementation uses a different formula for t < 0.
-    # Using a ternary operator or if/else based on backend support.
-    if hasattr(be, "where"):
-        # The condition needs to be a tensor/array for `where` to work correctly.
-        condition = be.asarray(temp_c) >= 0
-        return be.where(
-            condition,
-            be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k),
-            10.0 ** (-2663.5 / temp_k + 12.537),
-        )
-    else:  # Fallback for backends without `where`
-        if temp_c >= 0:
-            return be.exp(A_SVP * temp_k**2 + B_SVP * temp_k + C_SVP + D_SVP / temp_k)
-        else:
-            return 10.0 ** (-2663.5 / temp_k + 12.537)
+    # Use be.where for conditional evaluation on arrays
+    condition = temp_c >= 0
+
+    # Expression for temp_c >= 0
+    svp_pos = be.exp(
+        A_SVP * be.power(temp_k, 2) + B_SVP * temp_k + C_SVP + D_SVP / temp_k
+    )
+
+    # Expression for temp_c < 0
+    svp_neg = be.power(10.0, -2663.5 / temp_k + 12.537)
+
+    return be.where(condition, svp_pos, svp_neg)
 
 
-def _calculate_enhancement_factor(pressure_pa: float, temp_c: float) -> float:
+def _calculate_enhancement_factor(
+    pressure_pa: float | be.ndarray, temp_c: float | be.ndarray
+) -> float | be.ndarray:
     """Calculates the enhancement factor for water vapor in air.
 
     This factor accounts for the non-ideal behavior of moist air.
@@ -146,12 +152,14 @@ def _calculate_enhancement_factor(pressure_pa: float, temp_c: float) -> float:
         The dimensionless enhancement factor (f).
     """
     # Source: Ciddor (1996), Appendix A [cite: 78, 216, 217]
-    return ALPHA_F + BETA_F * pressure_pa + GAMMA_F * temp_c**2
+    return ALPHA_F + BETA_F * pressure_pa + GAMMA_F * be.power(temp_c, 2)
 
 
 def _calculate_compressibility(
-    pressure_pa: float, temp_k: float, molar_fraction_h2o: float
-) -> float:
+    pressure_pa: float | be.ndarray,
+    temp_k: float | be.ndarray,
+    molar_fraction_h2o: float | be.ndarray,
+) -> float | be.ndarray:
     """Calculates the compressibility factor (Z) for moist air.
 
     This factor accounts for the deviation of moist air from ideal gas behavior.
@@ -168,22 +176,20 @@ def _calculate_compressibility(
     t_c = temp_k - 273.15
     xw = molar_fraction_h2o
 
-    term1 = A0_Z + A1_Z * t_c + A2_Z * t_c**2
+    term1 = A0_Z + A1_Z * t_c + A2_Z * be.power(t_c, 2)
     term2 = (B0_Z + B1_Z * t_c) * xw
-    term3 = (C0_Z + C1_Z * t_c) * xw**2
-    term4 = D_Z + E_Z * xw**2
+    term3 = (C0_Z + C1_Z * t_c) * be.power(xw, 2)
+    term4 = D_Z + E_Z * be.power(xw, 2)
 
-    z = (
-        1.0
-        - (pressure_pa / temp_k) * (term1 + term2 + term3)
-        + (pressure_pa / temp_k) ** 2 * term4
-    )
+    z = 1.0 - (pressure_pa / temp_k) * (term1 + term2 + term3) + be.power(
+        pressure_pa / temp_k, 2
+    ) * term4
     return z
 
 
 def ciddor_refractive_index(
-    wavelength_um: float, conditions: EnvironmentalConditions
-) -> float:
+    wavelength_um: float | be.ndarray, conditions: EnvironmentalConditions
+) -> float | be.ndarray:
     """Calculates the refractive index of air using the full Ciddor (1996) model.
 
     This implementation follows the detailed procedure outlined in the Ciddor
@@ -216,11 +222,11 @@ def ciddor_refractive_index(
     """
     if not isinstance(conditions, EnvironmentalConditions):
         raise TypeError("conditions must be an EnvironmentalConditions object.")
-    if not be.all(wavelength_um > 0):
+    if not be.all(be.asarray(wavelength_um) > 0):
         raise ValueError("Wavelength must be positive.")
 
     # --- 1. Calculate vacuum wavenumber and standard refractivities ---
-    sigma_sq = (1.0 / wavelength_um) ** 2
+    sigma_sq = be.power(1.0 / wavelength_um, 2)
 
     # Refractivity of dry air at 15°C, 101325 Pa, 450 ppm CO₂ [cite: 56]
     n_as_minus_1 = 1e-8 * (K1 / (K0 - sigma_sq) + K3 / (K2 - sigma_sq))
@@ -231,8 +237,11 @@ def ciddor_refractive_index(
     )
 
     # Refractivity of pure water vapor at 20°C, 1333 Pa [cite: 63]
-    n_ws_minus_1 = (
-        1e-8 * CF_VAPOR * (W0 + W1 * sigma_sq + W2 * sigma_sq**2 + W3 * sigma_sq**3)
+    n_ws_minus_1 = 1e-8 * CF_VAPOR * (
+        W0
+        + W1 * sigma_sq
+        + W2 * be.power(sigma_sq, 2)
+        + W3 * be.power(sigma_sq, 3)
     )
 
     # --- 2. Calculate actual and standard densities via BIPM-91 ---

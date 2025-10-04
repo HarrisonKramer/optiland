@@ -71,9 +71,14 @@ class BaseMaterial(ABC):
         Returns:
             float | be.ndarray: The relative refractive index.
         """
-        cache_key = self._create_cache_key(wavelength, **kwargs)
-        if cache_key in self._n_cache:
-            return self._n_cache[cache_key]
+        # --- Caching ---
+        # Bypassing cache for torch tensors with gradients to avoid numpy conversion
+        if be.is_torch_tensor(wavelength) and wavelength.requires_grad:
+            pass
+        else:
+            cache_key = self._create_cache_key(wavelength, **kwargs)
+            if cache_key in self._n_cache:
+                return self._n_cache[cache_key]
 
         from optiland.environment.manager import environment_manager
 
@@ -86,7 +91,10 @@ class BaseMaterial(ABC):
 
         # 3. Return the relative index
         result = n_absolute_self / n_absolute_env
-        self._n_cache[cache_key] = result
+
+        # --- Update Cache ---
+        if not (be.is_torch_tensor(wavelength) and wavelength.requires_grad):
+            self._n_cache[cache_key] = result
         return result
 
     def k(self, wavelength: float | be.ndarray, **kwargs: Any) -> float | be.ndarray:
@@ -99,13 +107,18 @@ class BaseMaterial(ABC):
         Returns:
             float | be.ndarray: The extinction coefficient at the given wavelength(s).
         """
-        cache_key = self._create_cache_key(wavelength, **kwargs)
-
-        if cache_key in self._k_cache:
-            return self._k_cache[cache_key]
+        # Bypassing cache for torch tensors with gradients to avoid numpy conversion
+        if be.is_torch_tensor(wavelength) and wavelength.requires_grad:
+            pass
+        else:
+            cache_key = self._create_cache_key(wavelength, **kwargs)
+            if cache_key in self._k_cache:
+                return self._k_cache[cache_key]
 
         result = self._calculate_k(wavelength, **kwargs)
-        self._k_cache[cache_key] = result
+
+        if not (be.is_torch_tensor(wavelength) and wavelength.requires_grad):
+            self._k_cache[cache_key] = result
         return result
 
     @abstractmethod

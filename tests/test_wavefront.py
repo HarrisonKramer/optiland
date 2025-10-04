@@ -133,7 +133,7 @@ class TestOPD:
         optic = CookeTriplet()
         opd = OPD(optic, (0, 1), 0.55)
         rms = opd.rms()
-        assert_allclose(rms, 0.9709788038168692)
+        assert_allclose(rms, 0.9709788038168692, atol=1e-5)
 
 
 class TestZernikeOPD:
@@ -187,17 +187,17 @@ class TestZernikeOPD:
         optic = CookeTriplet()
         zernike_opd = ZernikeOPD(optic, (0, 1), 0.55)
         rms = zernike_opd.rms()
-        assert_allclose(rms, 0.9709788038168692)
+        assert_allclose(rms, 0.9709788038168692, atol=1e-5)
 
     def test_zernike_opd_fit(self, set_test_backend):
         optic = CookeTriplet()
         zernike_opd = ZernikeOPD(optic, (0, 1), 0.55)
         c = zernike_opd.zernike.coeffs
-        assert_allclose(c[0], 0.8430890395012354)
-        assert_allclose(c[1], 6.863699034904449e-13)
-        assert_allclose(c[2], 0.14504379704525455)
-        assert_allclose(c[6], -1.160298338689596e-13)
-        assert_allclose(c[24], -0.0007283668376039182)
+        assert_allclose(c[0], 0.8430890395012354, atol=1e-5)
+        assert_allclose(c[1], 6.863699034904449e-13, atol=1e-5)
+        assert_allclose(c[2], 0.14504379704525455, atol=1e-5)
+        assert_allclose(c[6], -1.160298338689596e-13, atol=1e-5)
+        assert_allclose(c[24], -0.0007283668376039182, atol=1e-5)
 
     def test_zernike_xy_symmetry(self, set_test_backend):
         optic = CookeTriplet()

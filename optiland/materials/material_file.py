@@ -94,7 +94,8 @@ class MaterialFile(BaseMaterial):
         Returns:
             float | be.ndarray: The absolute refractive index.
         """
-        from optiland.environment.manager import environment_manager
+        from optiland.environment.conditions import EnvironmentalConditions
+        from optiland.materials.air import Air
 
         if self._n_formula is None:
             raise RuntimeError(f"No refractive index formula found for {self.filename}")
@@ -102,8 +103,11 @@ class MaterialFile(BaseMaterial):
         catalog_n = self.formula_map[self._n_formula](wavelength)
 
         if self.is_relative_to_air:
-            env_medium = environment_manager.get_environment().medium
-            n_air_reference = env_medium._calculate_absolute_n(wavelength, **kwargs)
+            # Use a standard air reference, not the global environment
+            standard_air = Air(conditions=EnvironmentalConditions())
+            n_air_reference = standard_air._calculate_absolute_n(
+                wavelength, **kwargs
+            )
             absolute_n_reference = catalog_n * n_air_reference
         else:
             absolute_n_reference = catalog_n
@@ -162,9 +166,10 @@ class MaterialFile(BaseMaterial):
         """Sellmeier formula."""
         c = self.coefficients
         try:
+            w_sq = be.power(w, 2)
             n_sq = 1.0 + c[0]
             for k in range(1, len(c), 2):
-                n_sq += c[k] * w**2 / (w**2 - c[k + 1] ** 2)
+                n_sq = n_sq + c[k] * w_sq / (w_sq - be.power(c[k + 1], 2))
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 1.") from err
         return be.sqrt(n_sq)
@@ -173,9 +178,10 @@ class MaterialFile(BaseMaterial):
         """Sellmeier-2 formula."""
         c = self.coefficients
         try:
+            w_sq = be.power(w, 2)
             n_sq = 1.0 + c[0]
             for k in range(1, len(c), 2):
-                n_sq += c[k] * w**2 / (w**2 - c[k + 1])
+                n_sq = n_sq + c[k] * w_sq / (w_sq - c[k + 1])
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 2.") from err
         return be.sqrt(n_sq)
@@ -186,7 +192,7 @@ class MaterialFile(BaseMaterial):
         try:
             n_sq = c[0]
             for k in range(1, len(c), 2):
-                n_sq += c[k] * w ** c[k + 1]
+                n_sq = n_sq + c[k] * be.power(w, c[k + 1])
             return be.sqrt(n_sq)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 3.") from err
@@ -195,13 +201,14 @@ class MaterialFile(BaseMaterial):
         """RefractiveIndex.INFO formula."""
         c = self.coefficients
         try:
+            w_sq = be.power(w, 2)
             n_sq = (
                 c[0]
-                + c[1] * w ** c[2] / (w**2 - c[3] ** c[4])
-                + c[5] * w ** c[6] / (w**2 - c[7] ** c[8])
+                + c[1] * be.power(w, c[2]) / (w_sq - be.power(c[3], c[4]))
+                + c[5] * be.power(w, c[6]) / (w_sq - be.power(c[7], c[8]))
             )
             for k in range(9, len(c), 2):
-                n_sq += c[k] * w ** c[k + 1]
+                n_sq = n_sq + c[k] * be.power(w, c[k + 1])
             return be.sqrt(n_sq)
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 4.") from err
@@ -212,7 +219,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = c[0]
             for k in range(1, len(c), 2):
-                n += c[k] * w ** c[k + 1]
+                n = n + c[k] * be.power(w, c[k + 1])
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 5.") from err
@@ -223,7 +230,7 @@ class MaterialFile(BaseMaterial):
         try:
             n = 1.0 + c[0]
             for k in range(1, len(c), 2):
-                n += c[k] / (c[k + 1] - w**-2)
+                n = n + c[k] / (c[k + 1] - be.power(w, -2))
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 6.") from err
@@ -232,10 +239,14 @@ class MaterialFile(BaseMaterial):
         """Herzberger formula."""
         c = self.coefficients
         try:
-            l_sq = w**2
-            n = c[0] + c[1] * l_sq / (l_sq - 0.028) + c[2] * (l_sq / (l_sq - 0.028)) ** 2
+            l_sq = be.power(w, 2)
+            n = (
+                c[0]
+                + c[1] * l_sq / (l_sq - 0.028)
+                + c[2] * be.power(l_sq / (l_sq - 0.028), 2)
+            )
             for k in range(3, len(c)):
-                n += c[k] * l_sq ** (k - 2)
+                n = n + c[k] * be.power(l_sq, k - 2)
             return n
         except IndexError as err:
             raise ValueError("Invalid coefficients for dispersion formula 7.") from err
@@ -245,7 +256,7 @@ class MaterialFile(BaseMaterial):
         c = self.coefficients
         if len(c) != 4:
             raise ValueError("Invalid coefficients for dispersion formula 8.")
-        l_sq = w**2
+        l_sq = be.power(w, 2)
         b = c[0] + c[1] * l_sq / (l_sq - c[2]) + c[3] * l_sq
         return be.sqrt((1 + 2 * b) / (1 - b))
 
@@ -255,7 +266,12 @@ class MaterialFile(BaseMaterial):
         if len(c) != 6:
             raise ValueError("Invalid coefficients for dispersion formula 9.")
 
-        n_sq = c[0] + c[1] / (w**2 - c[2]) + c[3] * (w - c[4]) / ((w - c[4]) ** 2 + c[5])
+        w_sq = be.power(w, 2)
+        n_sq = (
+            c[0]
+            + c[1] / (w_sq - c[2])
+            + c[3] * (w - c[4]) / (be.power(w - c[4], 2) + c[5])
+        )
         return be.sqrt(n_sq)
 
     def _tabulated_n(self, w: float | be.ndarray) -> float | be.ndarray:

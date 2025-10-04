@@ -12,7 +12,7 @@ Kramer Harrison, 2025
 # common aliases for ndarray and array_equal across backends --
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as _np
 
@@ -69,6 +69,13 @@ def isnan(x: ScalarOrArray) -> ScalarOrArray:
         return _torch.isnan(x)
 
     return _np.isnan(x)
+
+
+def is_torch_tensor(x: Any) -> bool:
+    """Checks if the input is a torch tensor."""
+    if _torch_available and isinstance(x, _torch.Tensor):
+        return True
+    return False
 
 
 try:

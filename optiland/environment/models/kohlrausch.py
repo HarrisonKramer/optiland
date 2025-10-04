@@ -22,8 +22,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import optiland.backend as be
+
 if TYPE_CHECKING:
     from ..conditions import EnvironmentalConditions
+
 
 # --- Model Constants from the Kohlrausch Formula ---
 
@@ -46,8 +49,8 @@ ALPHA_T = 0.00348  # In °C⁻¹
 
 
 def kohlrausch_refractive_index(
-    wavelength_um: float, conditions: EnvironmentalConditions
-) -> float:
+    wavelength_um: float | be.ndarray, conditions: EnvironmentalConditions
+) -> float | be.ndarray:
     """Calculates air refractive index using the Kohlrausch (Zemax) formula.
 
     This model ignores the humidity and CO₂ concentration from the conditions
@@ -75,13 +78,13 @@ def kohlrausch_refractive_index(
         >>> print(f"Refractive index at 0.55 µm is {n:.8f}")
         Refractive index at 0.55 µm is 1.00271728
     """
+    if not be.all(be.asarray(wavelength_um) > 0):
+        raise ValueError("Wavelength must be positive.")
+
     # --- 1. Calculate the reference refractivity (n_ref - 1) ---
     # The formula uses λ directly, but we convert it to the standard Sellmeier
     # form which uses wavenumber σ = 1/λ for clarity and robustness.
-    try:
-        sigma_sq = (1.0 / wavelength_um) ** 2
-    except ZeroDivisionError as err:
-        raise ValueError("Wavelength must be non-zero.") from err
+    sigma_sq = be.power(1.0 / wavelength_um, 2)
 
     # Calculate (n_ref - 1) * 10^5
     n_ref_minus_1_e5 = (
@@ -98,7 +101,7 @@ def kohlrausch_refractive_index(
 
     # Denominator of the scaling term.
     temp_scaling_denom = 1.0 + (t_c - T_REF_C) * ALPHA_T
-    if temp_scaling_denom <= 0:
+    if be.any(be.asarray(temp_scaling_denom) <= 0):
         raise ValueError(
             f"Invalid temperature {t_c}°C results in non-positive denominator."
         )

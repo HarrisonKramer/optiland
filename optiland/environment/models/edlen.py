@@ -19,9 +19,13 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 
-from ..conditions import EnvironmentalConditions
+if TYPE_CHECKING:
+    from ..conditions import EnvironmentalConditions
+
 
 # --- Model Constants from Edlén (1966) ---
 
@@ -61,7 +65,9 @@ WATER_VAPOR_B = 0.0457
 TORR_TO_PA = 101325.0 / 760.0
 
 
-def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
+def _calculate_saturation_vapor_pressure(
+    temperature_c: float | be.ndarray,
+) -> float | be.ndarray:
     """Calculates saturation vapor pressure of water in Pascals.
 
     Edlén's 1966 paper does not specify a formula, as it was common to use
@@ -81,8 +87,8 @@ def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
 
 
 def edlen_refractive_index(
-    wavelength_um: float, conditions: EnvironmentalConditions
-) -> float:
+    wavelength_um: float | be.ndarray, conditions: EnvironmentalConditions
+) -> float | be.ndarray:
     """Calculates refractive index using the modified Edlén (1966) model.
 
     This implementation uses the Edlén (1966) formula with the NIST
@@ -114,11 +120,11 @@ def edlen_refractive_index(
     """
     if not isinstance(conditions, EnvironmentalConditions):
         raise TypeError("conditions must be an EnvironmentalConditions object.")
-    if not be.all(wavelength_um > 0):
+    if not be.all(be.asarray(wavelength_um) > 0):
         raise ValueError("Wavelength must be positive.")
 
     # --- 1. Calculate vacuum wavenumber and standard refractivity ---
-    sigma_sq = (1.0 / wavelength_um) ** 2
+    sigma_sq = be.power(1.0 / wavelength_um, 2)
 
     # Refractivity of standard air (n_s - 1) at 15°C, 760 Torr, 300 ppm CO₂.
     # Source: Edlén (1966), Eq. (1) [cite: 631, 632]

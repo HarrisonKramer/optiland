@@ -12,8 +12,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
-
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 
@@ -55,15 +53,6 @@ class Air(BaseMaterial):
             float | be.ndarray: The absolute refractive index of air.
         """
         from optiland.environment.air_index import refractive_index_air
-
-        if be.is_array_like(wavelength):
-            # Vectorize the calculation since the underlying models are scalar
-            np_wavelength = np.ravel(be.to_numpy(wavelength))
-            results = [
-                refractive_index_air(w, self.conditions, self.model)
-                for w in np_wavelength
-            ]
-            return be.asarray(results).reshape(wavelength.shape)
 
         return refractive_index_air(wavelength, self.conditions, self.model)
 

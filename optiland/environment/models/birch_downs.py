@@ -32,9 +32,13 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 
-from ..conditions import EnvironmentalConditions
+if TYPE_CHECKING:
+    from ..conditions import EnvironmentalConditions
+
 
 # --- Model Constants ---
 
@@ -69,7 +73,9 @@ WATER_VAPOR_B = 0.0401  # In (μm⁻¹)^-2 or μm².
 CO2_CORRECTION_FACTOR = 0.534e-6  # In ppm⁻¹.
 
 
-def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
+def _calculate_saturation_vapor_pressure(
+    temperature_c: float | be.ndarray,
+) -> float | be.ndarray:
     """Calculates the saturation vapor pressure of water in air.
 
     This uses a common approximation (based on the Ciddor (1996) paper's
@@ -87,12 +93,12 @@ def _calculate_saturation_vapor_pressure(temperature_c: float) -> float:
     B = -1.9121316e-2  # K⁻¹
     C = 33.93711047
     D = -6.3431645e3  # K
-    return be.exp(A * t_k**2 + B * t_k + C + D / t_k)
+    return be.exp(A * be.power(t_k, 2) + B * t_k + C + D / t_k)
 
 
 def _calculate_water_vapor_partial_pressure(
     conditions: EnvironmentalConditions,
-) -> float:
+) -> float | be.ndarray:
     """Calculates the partial pressure of water vapor.
 
     This function includes the enhancement factor (f_w), which accounts for
@@ -109,15 +115,17 @@ def _calculate_water_vapor_partial_pressure(
 
     # Enhancement factor f_w for moist air.
     f_w = (
-        1.00062 + (3.14e-8 * conditions.pressure) + (5.6e-7 * conditions.temperature**2)
+        1.00062
+        + (3.14e-8 * conditions.pressure)
+        + (5.6e-7 * be.power(conditions.temperature, 2))
     )
 
     return conditions.relative_humidity * f_w * saturation_pressure
 
 
 def birch_downs_refractive_index(
-    wavelength_um: float, conditions: EnvironmentalConditions
-) -> float:
+    wavelength_um: float | be.ndarray, conditions: EnvironmentalConditions
+) -> float | be.ndarray:
     """Calculates the refractive index of air using the Birch & Downs 1994 model.
 
     Args:
@@ -134,11 +142,11 @@ def birch_downs_refractive_index(
     """
     if not isinstance(conditions, EnvironmentalConditions):
         raise TypeError("conditions must be an EnvironmentalConditions object.")
-    if not be.all(wavelength_um > 0):
+    if not be.all(be.asarray(wavelength_um) > 0):
         raise ValueError("Wavelength must be positive.")
 
     # 1. Calculate vacuum wavenumber (σ) in μm⁻¹.
-    sigma_sq = (1.0 / wavelength_um) ** 2
+    sigma_sq = be.power(1.0 / wavelength_um, 2)
 
     # 2. Calculate refractivity of standard dry air (n_s - 1) at 15 °C,
     # 101325 Pa, and 450 ppm CO₂ using Birch & Downs (1994), Eq. (2).
