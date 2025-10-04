@@ -222,7 +222,7 @@ class TestOptic:
             coefficients=[0.0, 0.0, 0.0],
         )
         self.optic.set_asphere_coeff(0.1, 0, 2)
-        assert self.optic.surface_group.surfaces[0].geometry.c[2] == 0.1
+        assert self.optic.surface_group.surfaces[0].geometry.coefficients[2] == 0.1
 
     def test_set_polarization(self, set_test_backend):
         self.optic.set_polarization("ignore")

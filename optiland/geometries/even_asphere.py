@@ -72,7 +72,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         if coefficients is None:
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = coefficients
+        self.coefficients = coefficients
         self.is_symmetric = True
         self.order = 2  # used for optimization scaling
 
@@ -92,7 +92,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         """
         r2 = x**2 + y**2
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i, Ci in enumerate(self.c):
+        for i, Ci in enumerate(self.coefficients):
             z = z + Ci * r2 ** (i + 1)
 
         return z
@@ -116,7 +116,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
         dfdx = x / denom
         dfdy = y / denom
 
-        for i, Ci in enumerate(self.c):
+        for i, Ci in enumerate(self.coefficients):
             dfdx = dfdx + 2 * (i + 1) * x * Ci * r2**i
             dfdy = dfdy + 2 * (i + 1) * y * Ci * r2**i
 
@@ -136,7 +136,7 @@ class EvenAsphere(NewtonRaphsonGeometry):
 
         """
         data = super().to_dict()
-        data["coefficients"] = self.c
+        data["coefficients"] = self.coefficients
 
         return data
 

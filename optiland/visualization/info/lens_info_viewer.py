@@ -156,7 +156,7 @@ class LensInfoViewer(BaseViewer):
         surface_coeffs = []
         for i, surface in enumerate(self.optic.surface_group.surfaces):
             if isinstance(surface.geometry, valid_geometry_types):
-                coefficients = list(surface.geometry.c)
+                coefficients = list(surface.geometry.coefficients)
                 if coefficients:
                     rows = [f"Surface {i}"] + coefficients
                     surface_coeffs.append(rows)

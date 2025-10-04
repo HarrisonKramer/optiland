@@ -50,7 +50,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert surface.geometry.c == [1, 2, 3]
+        assert surface.geometry.coefficients == [1, 2, 3]
         assert isinstance(surface.material_pre, IdealMaterial)
         assert isinstance(surface.material_post, IdealMaterial)
 
@@ -69,7 +69,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert surface.geometry.c == [1, 2, 3]
+        assert surface.geometry.coefficients == [1, 2, 3]
         assert isinstance(surface.material_pre, IdealMaterial)
         assert isinstance(surface.material_post, IdealMaterial)
 
@@ -90,7 +90,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert be.array_equal(surface.geometry.c, be.array([[1, 2, 3]]))
+        assert be.array_equal(surface.geometry.coefficients, be.array([[1, 2, 3]]))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert isinstance(surface.material_pre, IdealMaterial)
@@ -115,7 +115,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert be.all(surface.geometry.c == be.arange(9).reshape(3, 3))
+        assert be.all(surface.geometry.coefficients == be.arange(9).reshape(3, 3))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert surface.geometry.norm_x == 1
