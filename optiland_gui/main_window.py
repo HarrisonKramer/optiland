@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import contextlib
 import inspect
+import contextlib
+import inspect
 import os
 from collections import defaultdict
 
@@ -37,8 +39,6 @@ from PySide6.QtWidgets import (
     QMenuBar,
     QMessageBox,
     QPushButton,
-    QStyle,
-    QStyleOption,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -49,9 +49,16 @@ import optiland.samples
 from optiland.optic import Optic
 
 from . import gui_plot_utils
-from .analysis_panel import AnalysisPanel
-from .lens_editor import LensEditor
 from .action_manager import ActionManager
+from .analysis_panel import AnalysisPanel
+from .config import (
+    APPLICATION_NAME,
+    ORGANIZATION_NAME,
+    SIDEBAR_QSS_PATH,
+    THEME_DARK_PATH,
+    THEME_LIGHT_PATH,
+)
+from .lens_editor import LensEditor
 from .optiland_connector import OptilandConnector
 from .panel_manager import PanelManager
 
@@ -71,19 +78,6 @@ try:
     from .resources import resources_rc  # noqa: F401
 except ImportError as e:
     print(f"Warning (main_window.py): Could not import resources_rc.py: {e}")
-
-THEME_DARK_PATH = os.path.join(
-    os.path.dirname(__file__), "resources", "styles", "dark_theme.qss"
-)
-THEME_LIGHT_PATH = os.path.join(
-    os.path.dirname(__file__), "resources", "styles", "light_theme.qss"
-)
-SIDEBAR_QSS_PATH = os.path.join(
-    os.path.dirname(__file__), "resources", "styles", "sidebar.qss"
-)
-
-ORGANIZATION_NAME = "OptilandProject"
-APPLICATION_NAME = "OptilandGUI"
 
 
 class MainWindow(FramelessWindow):

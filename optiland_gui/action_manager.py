@@ -13,7 +13,7 @@ from __future__ import annotations
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
 from PySide6.QtWidgets import QMainWindow
 
-from .main_window import THEME_DARK_PATH, THEME_LIGHT_PATH
+from .config import THEME_DARK_PATH, THEME_LIGHT_PATH
 
 
 class ActionManager:
