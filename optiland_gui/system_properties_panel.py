@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
+from optiland.fields import AngleField, ObjectHeightField
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -291,8 +292,11 @@ class FieldsEditor(PropertyEditorBase):
         """Loads field data from the current optical system into the table."""
         self.is_loading = True
         optic = self.connector.get_optic()
-        if optic and optic.field_type:
-            self.cmbFieldType.setCurrentText(optic.field_type)
+        if optic and optic.field_definition:
+            if isinstance(optic.field_definition, AngleField):
+                self.cmbFieldType.setCurrentText("angle")
+            elif isinstance(optic.field_definition, ObjectHeightField):
+                self.cmbFieldType.setCurrentText("object_height")
 
         self.tableFields.setRowCount(0)
         if optic and optic.fields:
@@ -319,7 +323,11 @@ class FieldsEditor(PropertyEditorBase):
                 print(f"Field type changed to: {new_type}")
             except ValueError as e:
                 print(f"Field Type Error: {e}")
-                self.cmbFieldType.setCurrentText(optic.field_type)
+                # Revert UI to match model state
+                if isinstance(optic.field_definition, AngleField):
+                    self.cmbFieldType.setCurrentText("angle")
+                elif isinstance(optic.field_definition, ObjectHeightField):
+                    self.cmbFieldType.setCurrentText("object_height")
 
     @Slot()
     def add_field(self):
