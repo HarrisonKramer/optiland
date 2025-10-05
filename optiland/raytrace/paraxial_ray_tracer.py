@@ -100,7 +100,7 @@ class ParaxialRayTracer:
             if surfs[k].interaction_model.is_reflective:
                 if surfs[k].surface_type == "paraxial":
                     f = surfs[k].interaction_model.f
-                    u = -u + y / f
+                    u = -u - y / f
                 else:
                     u = -u + 2 * y / R[k]
             else:
