@@ -294,10 +294,12 @@ class MainWindow(FramelessWindow):
                         self.resizeDocks([sidebar_dock], [150], Qt.Horizontal)
             self._initial_narrow_check_done = True
 
-        if hasattr(self, "darkThemeAction") and hasattr(self, "lightThemeAction"):
+        dark_theme_action = self.action_manager.get_action("dark_theme")
+        light_theme_action = self.action_manager.get_action("light_theme")
+        if dark_theme_action and light_theme_action:
             is_dark = self.current_theme_path == THEME_DARK_PATH
-            self.darkThemeAction.setChecked(is_dark)
-            self.lightThemeAction.setChecked(not is_dark)
+            dark_theme_action.setChecked(is_dark)
+            light_theme_action.setChecked(not is_dark)
 
     def _connect_dock_animations(self):
         """Connects dock widget view actions to an animation handler.
@@ -413,10 +415,12 @@ class MainWindow(FramelessWindow):
         if hasattr(self, "custom_title_bar_widget"):
             self.custom_title_bar_widget.setStyleSheet(style_str)
 
-        if hasattr(self, "darkThemeAction") and hasattr(self, "lightThemeAction"):
+        dark_theme_action = self.action_manager.get_action("dark_theme")
+        light_theme_action = self.action_manager.get_action("light_theme")
+        if dark_theme_action and light_theme_action:
             is_dark = self.current_theme_path == THEME_DARK_PATH
-            self.darkThemeAction.setChecked(is_dark)
-            self.lightThemeAction.setChecked(not is_dark)
+            dark_theme_action.setChecked(is_dark)
+            light_theme_action.setChecked(not is_dark)
 
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
@@ -662,12 +666,13 @@ class MainWindow(FramelessWindow):
         )
         self.next_save_slot_index = 2 if target_slot == 1 else 1
         self.settings.setValue("Layouts/NextSaveSlot", self.next_save_slot_index)
-        self.loadLayout1Action.setEnabled(
-            self.settings.contains("Layouts/Config1Geometry")
-        )
-        self.loadLayout2Action.setEnabled(
-            self.settings.contains("Layouts/Config2Geometry")
-        )
+        load_layout_1 = self.action_manager.get_action("load_layout_1")
+        if load_layout_1:
+            load_layout_1.setEnabled(self.settings.contains("Layouts/Config1Geometry"))
+
+        load_layout_2 = self.action_manager.get_action("load_layout_2")
+        if load_layout_2:
+            load_layout_2.setEnabled(self.settings.contains("Layouts/Config2Geometry"))
         print(
             f"Layout saved to slot {target_slot}. Next save will be to slot "
             "{self.next_save_slot_index}."

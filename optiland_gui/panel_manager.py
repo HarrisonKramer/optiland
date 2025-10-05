@@ -177,7 +177,7 @@ class PanelManager:
     def update_theme(self, theme_name: str):
         """Propagates theme changes to all relevant panels."""
         self.sidebar_content_widget.update_icons(theme_name)
-        self.analysis_panel.update_theme_icons(theme_name)
+        # Call the full theme update method on panels with plots
+        self.analysis_panel.update_theme(theme_name)
         self.viewer_panel.update_theme(theme_name)
         self.python_terminal.set_theme(theme_name)
-        # CustomDockWidget title bars will update via stylesheet change in main_window
