@@ -1191,7 +1191,7 @@ class AnalysisPanel(QWidget):
 
         # Special case for sizing the plot figure for certain analyses
         if analysis_name == "Through-Focus Spot Diagram":
-            num_f = len(optic.fields.get_field_coords())
+            num_f = optic.fields.num_fields
             num_s = final_args.get("num_steps", 5)
             page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
 
