@@ -154,6 +154,14 @@ class WavelengthGroup:
             if wavelength.is_primary:
                 return index
 
+    @primary_index.setter
+    def primary_index(self, index: int):
+        """set the wavelength indexed by `index` as primary"""
+        if not 0 <= index < len(self.wavelengths):
+            raise ValueError("Index out of range")
+        for idx, wavelength in enumerate(self.wavelengths):
+            wavelength.is_primary = idx == index
+
     @property
     def primary_wavelength(self):
         """float: the primary wavelength"""

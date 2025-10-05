@@ -90,6 +90,21 @@ class TestWavelengthGroups:
         wg.add_wavelength(500, unit="nm")
         wg.add_wavelength(600, is_primary=True, unit="nm")
         assert wg.primary_wavelength.value == 0.6
+    
+    def test_set_primary_index(self, set_test_backend):
+        wg = WavelengthGroup()
+        wg.add_wavelength(500, unit="nm")
+        wg.add_wavelength(600, is_primary=True, unit="nm")
+        wg.primary_index = 0
+        assert wg.primary_wavelength.value == 0.5
+
+    @pytest.mark.parametrize("index", (-1, 2))
+    def test_set_primary_index_raises(self, index, set_test_backend):
+        wg = WavelengthGroup()
+        wg.add_wavelength(500, unit="nm")
+        wg.add_wavelength(600, is_primary=True, unit="nm")
+        with pytest.raises(ValueError, match="Index out of range"):
+            wg.primary_index = index
 
     def test_multiple_wavelengths(self, set_test_backend):
         wg = WavelengthGroup()
