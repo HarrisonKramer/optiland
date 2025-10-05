@@ -61,16 +61,16 @@ class AsphereCoeffVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         try:
-            value = surf.geometry.c[self.coeff_number]
+            value = surf.geometry.coefficients[self.coeff_number]
         except IndexError:
             pad_width_i = max(0, self.coeff_number + 1)
             c_new = np.pad(
-                surf.geometry.c,
+                surf.geometry.coefficients,
                 pad_width=(0, pad_width_i),
                 mode="constant",
                 constant_values=0,
             )
-            surf.geometry.c = c_new
+            surf.geometry.coefficients = c_new
             value = 0
         return value
 
