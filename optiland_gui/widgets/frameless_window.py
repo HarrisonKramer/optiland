@@ -11,8 +11,8 @@ Refactored by: Jules, 2025
 
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, QRect, Qt, QEvent
-from PySide6.QtWidgets import QMainWindow, QApplication
+from PySide6.QtCore import QEvent, QPoint, QRect, Qt
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 
 class FramelessWindow(QMainWindow):
@@ -22,6 +22,7 @@ class FramelessWindow(QMainWindow):
     which is necessary when using the `Qt.FramelessWindowHint`. It also provides
     hooks for a custom title bar.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
@@ -55,7 +56,8 @@ class FramelessWindow(QMainWindow):
                 if titlebar_rect.contains(cursor_pos) and not self.isMaximized():
                     self.is_moving = True
                     self.drag_position = (
-                        event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+                        event.globalPosition().toPoint()
+                        - self.frameGeometry().topLeft()
                     )
 
             self.start_geometry = self.geometry()
@@ -150,9 +152,9 @@ class FramelessWindow(QMainWindow):
             return "top"
         if QRect(0, grip, grip, rect.height() - 2 * grip).contains(pos):
             return "left"
-        if QRect(
-            rect.width() - grip, grip, grip, rect.height() - 2 * grip
-        ).contains(pos):
+        if QRect(rect.width() - grip, grip, grip, rect.height() - 2 * grip).contains(
+            pos
+        ):
             return "right"
         if QRect(grip, rect.height() - grip, rect.width() - 2 * grip, grip).contains(
             pos

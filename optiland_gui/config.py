@@ -7,6 +7,8 @@ to avoid circular import issues between other modules.
 Author: Jules, 2025
 """
 
+from __future__ import annotations
+
 import os
 
 # --- Theme and Style Paths ---

@@ -13,7 +13,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Slot
-from optiland.fields import AngleField, ObjectHeightField
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -31,6 +30,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from optiland.fields import AngleField, ObjectHeightField
 
 if TYPE_CHECKING:
     from .optiland_connector import OptilandConnector

@@ -11,17 +11,21 @@ Author: Jules, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDockWidget, QMainWindow, QWidget
 
 from .analysis_panel import AnalysisPanel
 from .lens_editor import LensEditor
-from .optiland_connector import OptilandConnector
 from .system_properties_panel import SystemPropertiesPanel
 from .viewer_panel import ViewerPanel
 from .widgets.custom_dock_widget import CustomDockWidget
 from .widgets.python_terminal import PythonTerminalWidget
 from .widgets.sidebar import SidebarWidget
+
+if TYPE_CHECKING:
+    from .optiland_connector import OptilandConnector
 
 
 class PanelManager:
@@ -41,9 +45,7 @@ class PanelManager:
             widget=self.sidebar_content_widget,
             name="SidebarDockWidget",
             title="NavigationSidebar",
-            features=(
-                QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
-            ),
+            features=(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable),
             allowed_areas=Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea,
             use_custom_title_bar=False,
         )
@@ -51,7 +53,9 @@ class PanelManager:
 
         # Main Panels
         self.viewer_panel = ViewerPanel(self.connector)
-        self.viewer_dock = self._create_dock(self.viewer_panel, "ViewerDock", "System Viewer")
+        self.viewer_dock = self._create_dock(
+            self.viewer_panel, "ViewerDock", "System Viewer"
+        )
 
         self.lens_editor = LensEditor(self.connector)
         self.lens_editor_dock = self._create_dock(
@@ -69,7 +73,7 @@ class PanelManager:
         )
 
         # Terminal
-        initial_theme = "dark" # TODO: Get this from settings or main_window
+        initial_theme = "dark"  # TODO: Get this from settings or main_window
         self.python_terminal = PythonTerminalWidget(
             parent_for_iface,
             custom_variables={
@@ -140,7 +144,9 @@ class PanelManager:
         self.main_window.splitDockWidget(
             self.analysis_dock, self.terminal_dock, Qt.Vertical
         )
-        self.main_window.tabifyDockWidget(self.analysis_dock, self.system_properties_dock)
+        self.main_window.tabifyDockWidget(
+            self.analysis_dock, self.system_properties_dock
+        )
 
         # Ensure panels are raised
         for dock in reversed(self.all_docks):
@@ -154,9 +160,7 @@ class PanelManager:
     def connect_signals(self):
         """Connect signals for the managed panels."""
         self.sidebar_content_widget.menuSelected.connect(self.on_sidebar_menu_selected)
-        self.python_terminal.commandExecuted.connect(
-            self.connector.opticChanged.emit
-        )
+        self.python_terminal.commandExecuted.connect(self.connector.opticChanged.emit)
 
     def on_sidebar_menu_selected(self, button_name: str):
         """Shows and raises the corresponding dock when a sidebar button is clicked."""

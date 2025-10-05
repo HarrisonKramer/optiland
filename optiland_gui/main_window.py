@@ -12,8 +12,6 @@ from __future__ import annotations
 
 import contextlib
 import inspect
-import contextlib
-import inspect
 import os
 from collections import defaultdict
 
@@ -21,21 +19,16 @@ from PySide6.QtCore import (
     QByteArray,
     QEasingCurve,
     QEvent,
-    QPoint,
     QPropertyAnimation,
-    QRect,
     QSettings,
     Qt,
     Slot,
 )
-from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QPainter, QResizeEvent
+from PySide6.QtGui import QAction, QResizeEvent
 from PySide6.QtWidgets import (
     QDialog,
-    QDockWidget,
     QFileDialog,
-    QHBoxLayout,
     QLabel,
-    QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
@@ -50,28 +43,21 @@ from optiland.optic import Optic
 
 from . import gui_plot_utils
 from .action_manager import ActionManager
-from .analysis_panel import AnalysisPanel
 from .config import (
     APPLICATION_NAME,
     ORGANIZATION_NAME,
     SIDEBAR_QSS_PATH,
     THEME_DARK_PATH,
-    THEME_LIGHT_PATH,
 )
-from .lens_editor import LensEditor
 from .optiland_connector import OptilandConnector
 from .panel_manager import PanelManager
 
 # from .optimization_panel import OptimizationPanel # we will support this later on
-from .system_properties_panel import SystemPropertiesPanel
-from .viewer_panel import ViewerPanel
 from .widgets.custom_title_bar import CustomTitleBar
 from .widgets.frameless_window import FramelessWindow
-from .widgets.python_terminal import PythonTerminalWidget
 from .widgets.sidebar import (
     SIDEBAR_MAX_WIDTH,
     SIDEBAR_MIN_WIDTH,
-    SidebarWidget,
 )
 
 try:
