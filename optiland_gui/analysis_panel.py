@@ -389,7 +389,7 @@ class AnalysisPanel(QWidget):
 
     def _set_initial_state(self):
         """Sets the initial visibility and state of widgets."""
-        self.update_theme_icons()
+        self.update_theme()
         self.on_analysis_type_changed(self.analysisTypeCombo.currentText())
         self.update_pagination_ui()
         self.display_plot_page(self.current_plot_page_index)
@@ -725,16 +725,8 @@ class AnalysisPanel(QWidget):
         if self.current_plot_page_index == -1 or not self.analysis_results_pages:
             self.plotTitleLabel.setText(analysis_name)
 
-    def update_theme_icons(self, theme="dark"):
-        """Updates all icons in the panel to match the specified theme.
-
-        This function ensures that the UI icons are consistent with the current
-        application theme (e.g., "dark" or "light"). It loads the appropriate
-        icon assets from the resource file.
-
-        Args:
-            theme (str): The name of the theme to apply, typically "dark" or "light".
-        """
+    def update_theme(self, theme="dark"):
+        """Updates themes for icons AND all plots in the analysis panel."""
 
         theme_name = "dark" if "dark" in theme.lower() else "light"
 
@@ -749,6 +741,9 @@ class AnalysisPanel(QWidget):
         self.btnApplySettings.setIcon(QIcon(f":/icons/{theme_name}/check_apply.svg"))
         self.btnSaveSettings.setIcon(QIcon(f":/icons/{theme_name}/save_settings.svg"))
         self.btnLoadSettings.setIcon(QIcon(f":/icons/{theme_name}/load_settings.svg"))
+
+        # This new line will refresh the plot using the new theme
+        self._refresh_current_plot_page_slot()
 
     def update_pagination_ui(self):
         self._clear_layout(self.vertical_page_buttons_layout)
@@ -1191,7 +1186,7 @@ class AnalysisPanel(QWidget):
 
         # Special case for sizing the plot figure for certain analyses
         if analysis_name == "Through-Focus Spot Diagram":
-            num_f = len(optic.fields.get_field_coords())
+            num_f = optic.fields.num_fields
             num_s = final_args.get("num_steps", 5)
             page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
 
