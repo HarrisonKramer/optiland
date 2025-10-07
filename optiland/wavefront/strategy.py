@@ -19,7 +19,7 @@ from ..fields.field_types import AngleField
 from .wavefront_data import WavefrontData
 
 if TYPE_CHECKING:
-    from optiland._types import BEArray
+    from optiland._types import BEArrayT
     from optiland.distribution import BaseDistribution
     from optiland.optic.optic import Optic
     from optiland.rays.base import BaseRays
@@ -118,10 +118,10 @@ class ReferenceStrategy(ABC):
     def _correct_tilt(
         self,
         field: tuple[float, float],
-        opd: BEArray,
-        x: BEArray | float | None = None,
-        y: BEArray | float | None = None,
-    ) -> BEArray:
+        opd: BEArrayT,
+        x: BEArrayT | float | None = None,
+        y: BEArrayT | float | None = None,
+    ) -> BEArrayT:
         """Corrects for tilt in the OPD based on the field angle.
 
         This step is needed because, in the case of angular fields, rays launch from a
