@@ -22,7 +22,9 @@ from optiland.utils import resolve_wavelength
 from .base import BaseAnalysis
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
     from matplotlib.colors import Colormap
+    from matplotlib.figure import Figure
 
 
 def _plot_angle_vs_height(
@@ -30,7 +32,7 @@ def _plot_angle_vs_height(
     axis: int,
     optic_name: str,
     plot_style: str,
-    ax: plt.Axes,
+    ax: Axes,
     title: str,
     color_label: str,
     cmap: str | Colormap,
@@ -211,12 +213,12 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure = None,
         figsize: tuple[float, float] = (8, 5.5),
         title: str = None,
         cmap: str | Colormap = "viridis",
         line_style: str = "-",
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[plt.Figure, Axes]:
         """Displays a plot of the incident angle vs. image height analysis.
 
         Args:

@@ -4,6 +4,8 @@ from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import numpy as np
 import pytest
 
@@ -206,8 +208,8 @@ class TestFieldIncidentAngleVsHeight:
         fig, ax = analysis.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 

@@ -7,26 +7,31 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 
 class BaseRays:
     """Base class for rays in a 3D space.
 
     Attributes:
-        x (float): x-coordinate of the ray.
-        y (float): y-coordinate of the ray.
-        z (float): z-coordinate of the ray.
+        x: x-coordinate of the ray.
+        y: y-coordinate of the ray.
+        z: z-coordinate of the ray.
 
     """
 
-    def translate(self, dx: float, dy: float, dz: float):
+    def translate(self, dx: ArrayLike, dy: ArrayLike, dz: ArrayLike):
         """Shifts the rays in the x, y, and z directions.
 
         Args:
-            dx (float): The amount to shift the rays in the x direction.
-            dy (float): The amount to shift the rays in the y direction.
-            dz (float): The amount to shift the rays in the z direction.
+            dx: The amount to shift the rays in the x direction.
+            dy: The amount to shift the rays in the y direction.
+            dz: The amount to shift the rays in the z direction.
 
         """
         dx = be.array(dx)

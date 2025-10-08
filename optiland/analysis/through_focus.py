@@ -51,7 +51,7 @@ class ThroughFocusAnalysis(ABC):
         delta_focus: float = 0.1,
         num_steps: int = 5,
         fields="all",
-        wavelengths="all",
+        wavelengths: str | list[float] = "all",
     ):
         self.optic = optic
         self.delta_focus = delta_focus

@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Literal, get_args, get_origin, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -955,7 +956,7 @@ class AnalysisPanel(QWidget):
             ax_to_use = None
             if isinstance(axs, np.ndarray):
                 ax_to_use = axs.flatten()[-1]
-            elif isinstance(axs, plt.Axes):
+            elif isinstance(axs, Axes):
                 ax_to_use = axs
 
             if ax_to_use:

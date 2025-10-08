@@ -7,12 +7,18 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class Distortion(BaseAnalysis):
@@ -51,8 +57,10 @@ class Distortion(BaseAnalysis):
         super().__init__(optic, wavelengths)
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 5.5)
-    ) -> tuple[plt.Figure, plt.Axes]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (7, 5.5),
+    ) -> tuple[Figure, Axes]:
         """Visualize the distortion analysis.
 
         Args:

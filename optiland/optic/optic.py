@@ -30,7 +30,7 @@ from optiland.fields import (
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
-from optiland.rays import PolarizationState, RayGenerator
+from optiland.rays import PolarizationState
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
@@ -45,12 +45,13 @@ from optiland.wavelength import WavelengthGroup
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-    from numpy.typing import ArrayLike
 
     from optiland._types import (
+        BEArray,
         DistributionType,
         FieldType,
         ReferenceRay,
+        ScalarOrArray,
         SurfaceParameters,
         SurfaceType,
         Unpack,
@@ -58,6 +59,7 @@ if TYPE_CHECKING:
     )
     from optiland.distribution import BaseDistribution
     from optiland.materials.base import BaseMaterial
+    from optiland.rays import RealRays
     from optiland.surfaces.standard_surface import Surface
 
 
@@ -110,7 +112,7 @@ class Optic:
         Initializes an Optic instance.
 
         Args:
-            name (str, optional): An optional name for the optical system.
+            name: An optional name for the optical system.
                 Defaults to None.
         """
         self.name = name
@@ -246,12 +248,12 @@ class Optic:
         """Add a field to the optical system.
 
         Args:
-            y (float): The y-coordinate of the field.
-            x (float, optional): The x-coordinate of the field.
+            y: The y-coordinate of the field.
+            x: The x-coordinate of the field.
                 Defaults to 0.0.
-            vx (float, optional): The x-component of the field's vignetting
+            vx: The x-component of the field's vignetting
                 factor. Defaults to 0.0.
-            vy (float, optional): The y-component of the field's vignetting
+            vy: The y-component of the field's vignetting
                 factor. Defaults to 0.0.
 
         """
@@ -541,7 +543,7 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength: float | Literal["primary"] = "primary"):
+    def n(self, wavelength: float | Literal["primary"] = "primary") -> BEArray:
         """Get the refractive indices of materials at a given wavelength.
 
         This method calculates the refractive indices for each space between
@@ -564,21 +566,21 @@ class Optic:
 
     def trace(
         self,
-        Hx: ArrayLike | float,
-        Hy: ArrayLike | float,
+        Hx: ScalarOrArray,
+        Hy: ScalarOrArray,
         wavelength: float,
         num_rays: int | None = 100,
         distribution: DistributionType | BaseDistribution | None = "hexapolar",
-    ):
+    ) -> RealRays:
         """Trace a distribution of rays through the optical system.
 
         Args:
-            Hx (ArrayLike | float): The normalized x field coordinate(s).
-            Hy (ArrayLike | float): The normalized y field coordinate(s).
+            Hx: The normalized x field coordinate(s).
+            Hy: The normalized y field coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
-            num_rays (int, optional): The number of rays to trace.
+            num_rays: The number of rays to trace.
                 Defaults to 100.
-            distribution (DistributionType | BaseDistribution, optional):
+            distribution:
                 The distribution of rays. Can be a string identifier (e.g.,
                 'hexapolar', 'uniform') or a `BaseDistribution` object.
                 Defaults to 'hexapolar'.
@@ -591,19 +593,19 @@ class Optic:
 
     def trace_generic(
         self,
-        Hx: ArrayLike | float,
-        Hy: ArrayLike | float,
-        Px: ArrayLike | float,
-        Py: ArrayLike | float,
+        Hx: ScalarOrArray,
+        Hy: ScalarOrArray,
+        Px: ScalarOrArray,
+        Py: ScalarOrArray,
         wavelength: float,
     ):
         """Trace generic rays through the optical system.
 
         Args:
-            Hx (ArrayLike | float): The normalized x field coordinate(s).
-            Hy (ArrayLike | float): The normalized y field coordinate(s).
-            Px (ArrayLike | float): The normalized x pupil coordinate(s).
-            Py (ArrayLike | float): The normalized y pupil coordinate(s).
+            Hx: The normalized x field coordinate(s).
+            Hy: The normalized y field coordinate(s).
+            Px: The normalized x pupil coordinate(s).
+            Py: The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
 
         Returns:
@@ -613,25 +615,25 @@ class Optic:
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
 
     def plot_surface_sag(
-        self, surface_index: int, y_cross_section=0, x_cross_section=0
+        self, surface_index: int, y_cross_section: float = 0, x_cross_section: float = 0
     ):
         """Analyzes and visualizes the sag of a given lens surface.
 
         Args:
-            surface_index (int): The index of the surface to analyze.
-            y_cross_section (float, optional): The y-coordinate for the
+            surface_index: The index of the surface to analyze.
+            y_cross_section: The y-coordinate for the
                 x-sag plot. Defaults to 0.
-            x_cross_section (float, optional): The x-coordinate for the
+            x_cross_section: The x-coordinate for the
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
         viewer.view(surface_index, y_cross_section, x_cross_section)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.
 
         Returns:
-            dict: The dictionary representation of the optical system.
+            The dictionary representation of the optical system.
 
         """
         data = {
@@ -653,14 +655,14 @@ class Optic:
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]):
+    def from_dict(cls, data: dict[str, Any]) -> Optic:
         """Create an optical system from a dictionary.
 
         Args:
-            data (dict): The dictionary representation of the optical system.
+            data: The dictionary representation of the optical system.
 
         Returns:
-            Optic: The optical system.
+            The optical system.
 
         """
         optic = cls()
@@ -689,6 +691,6 @@ class Optic:
 
         optic.paraxial = Paraxial(optic)
         optic.aberrations = Aberrations(optic)
-        optic.ray_generator = RayGenerator(optic)
+        optic.ray_tracer = RealRayTracer(optic)
 
         return optic

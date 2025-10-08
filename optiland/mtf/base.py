@@ -10,11 +10,16 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.utils import get_working_FNO, resolve_fields, resolve_wavelength
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class BaseMTF(abc.ABC):
@@ -91,10 +96,10 @@ class BaseMTF(abc.ABC):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple[float, float] = (12, 4),
         add_reference: bool = False,
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[Figure, Axes]:
         """Visualizes the Modulation Transfer Function (MTF).
 
         This method sets up the plot and iterates through field data,

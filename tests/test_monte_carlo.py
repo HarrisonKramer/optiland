@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import pytest
 
 from optiland.samples.objectives import ReverseTelephoto
@@ -73,7 +75,7 @@ def test_view_histogram(monte_carlo_no_compensator):
     fig, axes = monte_carlo_no_compensator.view_histogram(kde=True)
     assert fig is not None
     assert axes is not None
-    assert isinstance(fig, plt.Figure)
+    assert isinstance(fig, Figure)
     assert len(axes) > 0
     plt.close(fig)
 
@@ -83,7 +85,7 @@ def test_view_histogram_no_kde(monte_carlo_no_compensator):
     fig, axes = monte_carlo_no_compensator.view_histogram(kde=False)
     assert fig is not None
     assert axes is not None
-    assert isinstance(fig, plt.Figure)
+    assert isinstance(fig, Figure)
     assert len(axes) > 0
     plt.close(fig)
 
@@ -94,7 +96,7 @@ def test_view_cdf(monte_carlo_no_compensator):
     assert fig is not None
     assert axes is not None
     assert len(axes) > 0
-    assert isinstance(fig, plt.Figure)
+    assert isinstance(fig, Figure)
     plt.close(fig)
 
 
@@ -103,8 +105,8 @@ def test_view_heatmap(monte_carlo_no_compensator):
     fig, ax = monte_carlo_no_compensator.view_heatmap(figsize=(8, 6))
     assert fig is not None
     assert ax is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(ax, plt.Axes)
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
     plt.close(fig)
 
 

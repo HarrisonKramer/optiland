@@ -12,12 +12,17 @@ if TYPE_CHECKING:
     from optiland.coatings import BaseCoating
     from optiland.physical_apertures.base import BaseAperture
 
+    BEArray = Tensor | NDArray
+    ScalarOrArray = float | Tensor | NDArray
+
+
 if version_info >= (3, 11):
     from typing import Unpack
 else:
     from typing_extensions import Unpack
 
 __all__ = [
+    "BEArrayT",
     "BEArray",
     "DistributionType",
     "ApertureType",
@@ -27,15 +32,15 @@ __all__ = [
     "ReferenceRay",
     "WavelengthUnit",
     "Wavelengths",
-    "ScalarOrArray",
+    "ScalarOrArrayT",
     "SurfaceType",
     "SurfaceParameters",
     "Unpack",
     "ZernikeType",
 ]
 
-BEArray = TypeVar("BEArray", NDArray, "Tensor", Union[NDArray, "Tensor"])
-ScalarOrArray = TypeVar(
+BEArrayT = TypeVar("BEArrayT", NDArray, "Tensor", Union[NDArray, "Tensor"])
+ScalarOrArrayT = TypeVar(
     "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
 )
 

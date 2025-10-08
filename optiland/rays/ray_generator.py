@@ -8,11 +8,15 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
+from optiland.fields.field_types import AngleField
 from optiland.rays.polarized_rays import PolarizedRays
 from optiland.rays.real_rays import RealRays
 
-from ..fields.field_types import AngleField
+if TYPE_CHECKING:
+    from optiland._types import ScalarOrArray
 
 
 class RayGenerator:
@@ -21,18 +25,25 @@ class RayGenerator:
     def __init__(self, optic):
         self.optic = optic
 
-    def generate_rays(self, Hx, Hy, Px, Py, wavelength):
+    def generate_rays(
+        self,
+        Hx: float,
+        Hy: float,
+        Px: ScalarOrArray,
+        Py: ScalarOrArray,
+        wavelength: ScalarOrArray,
+    ) -> RealRays:
         """Generates rays for tracing based on the given parameters.
 
         Args:
-            Hx (float): Normalized x field coordinate.
-            Hy (float): Normalized y field coordinate.
-            Px (float or be.ndarray): x-coordinate of the pupil point.
-            Py (float or be.ndarray): y-coordinate of the pupil point.
-            wavelength (float): Wavelength of the rays.
+            Hx: Normalized x field coordinate.
+            Hy: Normalized y field coordinate.
+            Px: x-coordinate of the pupil point.
+            Py: y-coordinate of the pupil point.
+            wavelength: Wavelength of the rays.
 
         Returns:
-            RealRays: RealRays object containing the generated rays.
+            RealRays object containing the generated rays.
 
         """
         vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)

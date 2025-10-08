@@ -8,11 +8,19 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.wavefront import Wavefront
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from optiland.optic import Optic
 
 
 class RmsSpotSizeVsField(SpotDiagram):
@@ -47,8 +55,10 @@ class RmsSpotSizeVsField(SpotDiagram):
         self._spot_size = be.array(self.rms_spot_radius())
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
-    ) -> tuple[plt.Figure, plt.Axes]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (7, 4.5),
+    ) -> tuple[Figure, Axes]:
         """
         Plots the RMS spot size versus the normalized Y field coordinate for each
         analysis wavelength.
@@ -65,7 +75,7 @@ class RmsSpotSizeVsField(SpotDiagram):
 
         Returns
         -------
-        tuple[plt.Figure, plt.Axes]
+        tuple[Figure, Axes]
             The matplotlib Figure and Axes objects containing the plot.
 
         Notes
@@ -126,7 +136,7 @@ class RmsWavefrontErrorVsField(Wavefront):
 
     def __init__(
         self,
-        optic,
+        optic: Optic,
         num_fields: int = 32,
         wavelengths: str = "all",
         num_rays: int = 12,
@@ -140,8 +150,10 @@ class RmsWavefrontErrorVsField(Wavefront):
         self._wavefront_error = be.array(self._rms_wavefront_error())
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
-    ) -> tuple[plt.Figure, plt.Axes]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (7, 4.5),
+    ) -> tuple[Figure, Axes]:
         """View the RMS wavefront error versus field coordinate."""
         is_gui_embedding = fig_to_plot_on is not None
 

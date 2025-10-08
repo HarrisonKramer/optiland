@@ -17,6 +17,7 @@ from .strategy import create_strategy
 
 if TYPE_CHECKING:
     from optiland._types import DistributionType, Fields, Wavelengths
+    from optiland.fields import Field
     from optiland.optic.optic import Optic
     from optiland.wavefront.strategy import WavefrontStrategyType
     from optiland.wavefront.wavefront_data import WavefrontData
@@ -55,7 +56,7 @@ class Wavefront:
     def __init__(
         self,
         optic: Optic,
-        fields: Fields = "all",
+        fields: Fields | list[Field] = "all",
         wavelengths: Wavelengths = "all",
         num_rays: int = 12,
         distribution: DistributionType = "hexapolar",

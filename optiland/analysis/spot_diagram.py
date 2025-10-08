@@ -8,7 +8,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,13 @@ from optiland.utils import resolve_fields
 from optiland.visualization.system.utils import transform
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
+
+    from optiland._types import BEArray, DistributionType
 
 
 @dataclass
@@ -60,7 +67,7 @@ class SpotDiagram(BaseAnalysis):
         fields: str | list = "all",
         wavelengths: str | list = "all",
         num_rings: int = 6,
-        distribution: str = "hexapolar",
+        distribution: DistributionType = "hexapolar",
         coordinates: Literal["global", "local"] = "local",
     ):
         """Initializes the SpotDiagram analysis.
@@ -91,7 +98,7 @@ class SpotDiagram(BaseAnalysis):
         self.coordinates = coordinates
 
         self.num_rings = num_rings
-        self.distribution = distribution
+        self.distribution: DistributionType = distribution
 
         super().__init__(optic, wavelengths)
         primary_wl_value = self.optic.primary_wavelength
@@ -106,10 +113,10 @@ class SpotDiagram(BaseAnalysis):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple[float, float] = (12, 4),
         add_airy_disk: bool = False,
-    ) -> tuple[plt.Figure, list[plt.Axes]]:
+    ) -> tuple[Figure, list[Axes]]:
         """Displays the spot diagram plot.
 
         Args:
@@ -149,7 +156,7 @@ class SpotDiagram(BaseAnalysis):
 
     # --- Calculation Methods ---
 
-    def angle_from_cosine(self, a: be.array, b: be.array) -> float:
+    def angle_from_cosine(self, a: BEArray, b: BEArray) -> float:
         """Calculates the angle in radians between two direction cosine vectors.
 
         Args:
@@ -231,7 +238,7 @@ class SpotDiagram(BaseAnalysis):
         rays = self.generate_marginal_rays(H_x, H_y, wavelength)
         return tuple(be.array([ray.L, ray.M, ray.N]).ravel() for ray in rays)
 
-    def generate_chief_rays_cosines(self, wavelength: float) -> be.array:
+    def generate_chief_rays_cosines(self, wavelength: float) -> BEArray:
         """Generates direction cosines for the chief ray of each field.
 
         Args:
@@ -251,7 +258,7 @@ class SpotDiagram(BaseAnalysis):
         ]
         return be.stack(cosines, axis=0)
 
-    def generate_chief_rays_centers(self, wavelength: float) -> be.array:
+    def generate_chief_rays_centers(self, wavelength: float) -> BEArray:
         """Generates the (x, y) intersection points for the chief ray of each field.
 
         Args:
@@ -307,7 +314,7 @@ class SpotDiagram(BaseAnalysis):
 
         return airy_rad_x_list, airy_rad_y_list
 
-    def centroid(self) -> list[tuple[be.array, be.array]]:
+    def centroid(self) -> list[tuple[BEArray, BEArray]]:
         """Calculates the geometric centroid of each spot for the reference wavelength.
 
         Returns:
@@ -319,7 +326,7 @@ class SpotDiagram(BaseAnalysis):
             for field_data in self.data
         ]
 
-    def geometric_spot_radius(self) -> list[list[be.array]]:
+    def geometric_spot_radius(self) -> list[list[BEArray]]:
         """Calculates the maximum geometric spot radius for each spot.
 
         Returns:
@@ -334,7 +341,7 @@ class SpotDiagram(BaseAnalysis):
             for field_data in centered_data
         ]
 
-    def rms_spot_radius(self) -> list[list[be.array]]:
+    def rms_spot_radius(self) -> list[list[BEArray]]:
         """Calculates the root-mean-square (RMS) spot radius for each spot.
 
         Returns:
@@ -392,7 +399,7 @@ class SpotDiagram(BaseAnalysis):
         field: tuple[float, float],
         wavelength: float,
         num_rays: int,
-        distribution: str,
+        distribution: DistributionType,
         coordinates: str,
     ) -> SpotData:
         """Generates spot data for a single field and wavelength.
@@ -430,7 +437,7 @@ class SpotDiagram(BaseAnalysis):
 
         return SpotData(x=x_plot, y=y_plot, intensity=i_g)
 
-    def _handle_no_fields(self, fig: plt.Figure) -> None:
+    def _handle_no_fields(self, fig: Figure) -> tuple[None, None]:
         """Handles the case where there are no fields to plot.
 
         Args:
@@ -445,8 +452,8 @@ class SpotDiagram(BaseAnalysis):
         return None, None
 
     def _setup_plot_layout(
-        self, fig_to_plot_on: plt.Figure, figsize: tuple
-    ) -> tuple[plt.Figure, np.ndarray]:
+        self, fig_to_plot_on: Figure, figsize: tuple
+    ) -> tuple[Figure, NDArray[np.object_]]:
         """Sets up the Matplotlib figure and axes grid.
 
         Args:
@@ -494,7 +501,10 @@ class SpotDiagram(BaseAnalysis):
         }
 
     def _calculate_axis_limits(
-        self, centered_data: list, airy_disk_data: dict = None, buffer: float = 1.05
+        self,
+        centered_data: list,
+        airy_disk_data: dict | None = None,
+        buffer: float = 1.05,
     ) -> float:
         """Calculates the axis limits to encompass all spots and Airy disks.
 
@@ -531,12 +541,12 @@ class SpotDiagram(BaseAnalysis):
 
     def _plot_field(
         self,
-        ax: plt.Axes,
+        ax: Axes,
         field_data: list[SpotData],
         field_coords: tuple[float, float],
         axis_lim: float,
         field_index: int,
-        airy_disk_data: dict = None,
+        airy_disk_data: dict | None = None,
     ):
         """Plots the data for a single field on a given axis.
 
@@ -595,7 +605,7 @@ class SpotDiagram(BaseAnalysis):
         ax.set_title(f"Hx: {field_coords[0]:.3f}, Hy: {field_coords[1]:.3f}")
         ax.grid(True, alpha=0.25)
 
-    def _finalize_plot(self, fig: plt.Figure, axs: np.ndarray, num_fields: int):
+    def _finalize_plot(self, fig: Figure, axs: NDArray[np.object_], num_fields: int):
         """Applies final touches to the plot, including a dynamic shared legend.
 
         Args:

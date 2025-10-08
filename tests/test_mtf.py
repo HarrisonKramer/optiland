@@ -3,6 +3,8 @@ import matplotlib
 
 matplotlib.use("Agg")  # ensure non-interactive backend for testing
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from unittest.mock import patch
 
 import optiland.backend as be
@@ -30,8 +32,8 @@ class TestGeometricMTF:
         fig, ax = m.view()  # default figsize, no reference overlay
         assert fig is not None, "Figure should not be None"
         assert ax is not None, "Axes should not be None"
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_mtf_custom_fig(self, set_test_backend, optic):
@@ -39,8 +41,8 @@ class TestGeometricMTF:
         fig, ax = m.view(figsize=(20, 20), add_reference=True)
         assert fig is not None, "Figure should not be None"
         assert ax is not None, "Axes should not be None"
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_generate_data_scaled(self, set_test_backend, optic):
@@ -71,8 +73,8 @@ class TestFFTMTF:
         fig, ax = m.view()
         assert fig is not None, "Figure should not be None"
         assert ax is not None, "Axes should not be None"
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_mtf_custom_fig(self, set_test_backend, optic):
@@ -80,8 +82,8 @@ class TestFFTMTF:
         fig, ax = m.view(figsize=(20, 20), add_reference=True)
         assert fig is not None, "Figure should not be None"
         assert ax is not None, "Axes should not be None"
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_generate_data_infinite_object(self, set_test_backend, optic):
