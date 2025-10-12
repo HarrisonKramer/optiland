@@ -365,6 +365,45 @@ class TestSurfaceGroupUpdatesRealObjects:
         ):  # Also too large
             sg.remove_surface(index=3)
 
+    def test_remove_surface_updates_material_link(self, set_test_backend):
+        """
+        Verify that removing a surface correctly updates the `material_pre`
+        attribute of the subsequent surface. Identified in issue #363.
+        """
+        # 1. Setup lens with multiple materials
+        lens = optic.Optic()
+        mat1 = IdealMaterial(n=1.5)
+        mat2 = IdealMaterial(n=2.0)
+        mat3 = IdealMaterial(n=2.5)
+
+        lens.add_surface(index=0, material="Air")
+        lens.add_surface(index=1, material=mat1, thickness=5)  # Surface 1
+        lens.add_surface(
+            index=2, material=mat2, thickness=5
+        )  # Surface 2 (to be removed)
+        lens.add_surface(index=3, material=mat3, thickness=5)  # Surface 3
+        lens.add_surface(index=4, material="Air")
+
+        surface_before_removal = lens.surface_group.surfaces[1]
+        surface_to_remove = lens.surface_group.surfaces[2]
+        surface_after_removal = lens.surface_group.surfaces[3]
+
+        # 2. Check initial state
+        # The material before surface 3 should be mat2 (from surface 2)
+        assert surface_after_removal.material_pre is surface_to_remove.material_post
+
+        # 3. Remove surface at index 2
+        lens.surface_group.remove_surface(2)
+
+        # 4. Get the new surface at index 2 (which was old surface 3)
+        new_surface_at_index_2 = lens.surface_group.surfaces[2]
+
+        # 5. Assert that the material link is updated
+        # The material before the new surface at index 2 should now be mat1
+        assert (
+            new_surface_at_index_2.material_pre is surface_before_removal.material_post
+        )
+
     # --- Tests for _update_coordinate_systems specific cases ---
     def test_update_coordinate_systems_infinite_thickness_error(self, set_test_backend):
         sg = self._setup_surface_group(

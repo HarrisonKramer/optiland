@@ -313,6 +313,12 @@ class SurfaceGroup:
 
         del self.surfaces[index]
 
+        # If the removed surface was not the last one, update material linkage
+        if index < len(self.surfaces):
+            surface_before = self.surfaces[index - 1]
+            surface_after = self.surfaces[index]
+            surface_after.material_pre = surface_before.material_post
+
         if not self.surface_factory.use_absolute_cs:
             was_not_last_surface = index < num_surfaces_before_removal - 1
             if was_not_last_surface:
