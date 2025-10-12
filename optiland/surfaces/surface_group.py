@@ -11,6 +11,8 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from contextlib import suppress
+from functools import cached_property
 
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
@@ -31,7 +33,7 @@ class SurfaceGroup:
 
     """
 
-    def __init__(self, surfaces: list[Surface] = None):
+    def __init__(self, surfaces: list[Surface] | None = None):
         """Initializes a new instance of the SurfaceGroup class.
 
         Args:
@@ -40,11 +42,23 @@ class SurfaceGroup:
 
         """
         if surfaces is None:
-            self.surfaces = []
+            self._surfaces = []
         else:
-            self.surfaces = surfaces
+            self._surfaces = surfaces
+            self._update_surface_links()
 
         self.surface_factory = SurfaceFactory(self)
+
+    def _update_surface_links(self):
+        with suppress(KeyError):
+            self.__dict__.pop("surfaces")
+        surfaces = self._surfaces
+        if surfaces:
+            surfaces[0].previous_surface = None
+
+            if len(surfaces) > 1:
+                for idx, surface in enumerate(surfaces[1:]):
+                    surface.previous_surface = surfaces[idx]
 
     def __add__(self, other):
         """Add two SurfaceGroup objects together.
@@ -53,7 +67,7 @@ class SurfaceGroup:
         surface of the other group.
         """
         # add the offset of the last surface in self to each surface in other
-        offset = self.surfaces[-1].geometry.cs.z
+        offset = self.surfaces[-1].geometry.cs.z if self.surfaces else 0.0
 
         # add object surface distance if finite
         object_distance = other.surfaces[0].geometry.cs.z
@@ -67,7 +81,11 @@ class SurfaceGroup:
         for surface in other.surfaces:
             surface.is_stop = False
 
-        return SurfaceGroup(self.surfaces[:-1] + other.surfaces[1:])
+        return SurfaceGroup(self._surfaces[:-1] + other._surfaces[1:])
+
+    @cached_property
+    def surfaces(self):
+        return tuple(item for item in self._surfaces)
 
     @property
     def x(self):
@@ -263,34 +281,31 @@ class SurfaceGroup:
         new_surface.thickness = kwargs.get("thickness", 0.0)
         self.surface_factory.material_factory.last_material = new_surface.material_post
 
-        if new_surface.is_stop:
-            for surface in self.surfaces:
-                surface.is_stop = False
-
         if index is None:
-            self.surfaces.append(new_surface)
+            self._surfaces.append(new_surface)
+            self._update_surface_links()
+            index = len(self._surfaces) - 1
         else:
             if index < 0:
                 raise IndexError(f"Index {index} cannot be negative.")
-            if index > len(self.surfaces):
+            if index > len(self._surfaces):
                 raise IndexError(
                     f"Index {index} is out of bounds for insertion. "
-                    f"Max index for insertion is {len(self.surfaces)} (to append)."
+                    f"Max index for insertion is {len(self._surfaces)} (to append)."
                 )
 
-            self.surfaces.insert(index, new_surface)
-
-            # If a surface was inserted (not appended) and there's a surface after it
-            if index < len(self.surfaces) - 1:
-                surface_after_inserted = self.surfaces[index + 1]
-                new_surface = self.surfaces[index]
-                surface_after_inserted.material_pre = new_surface.material_post
+            self._surfaces.insert(index, new_surface)
+            self._update_surface_links()
 
             # Update coordinate systems if surface was inserted
             if not self.surface_factory.use_absolute_cs and index < (
-                len(self.surfaces) - 1
+                len(self._surfaces) - 1
             ):
                 self._update_coordinate_systems(start_index=index)
+
+        if new_surface.is_stop:
+            for idx, surface in enumerate(self._surfaces):
+                surface.is_stop = idx == index
 
     def remove_surface(self, index):
         """Remove a surface from the list of surfaces.
@@ -317,23 +332,15 @@ class SurfaceGroup:
 
         num_surfaces_before_removal = len(self.surfaces)
 
-        del self.surfaces[index]
+        self._surfaces.pop(index)
 
-        # If the removed surface was not the last one, update material linkage
-        if index < len(self.surfaces):
-            surface_before = self.surfaces[index - 1]
-            surface_after = self.surfaces[index]
-            new_pre_material = surface_before.material_post
-
-            # TODO: Refactor the Surface class with a property setter to handle this
-            #       internal sync automatically.
-            surface_after.material_pre = new_pre_material
-            surface_after.interaction_model.material_pre = new_pre_material
 
         if not self.surface_factory.use_absolute_cs:
             was_not_last_surface = index < num_surfaces_before_removal - 1
             if was_not_last_surface:
                 self._update_coordinate_systems(start_index=index)
+
+        self._update_surface_links()
 
     def reset(self):
         """Resets all the surfaces in the collection.
@@ -393,25 +400,25 @@ class SurfaceGroup:
                             If `start_index` is 0, updates effectively begin
                             for surface 1 based on surface 0.
         """
-        if not self.surfaces:
+        if not self._surfaces:
             return
 
         effective_start_index = start_index
         if start_index == 0:
             effective_start_index = 1
 
-        if effective_start_index >= len(self.surfaces):
+        if effective_start_index >= len(self._surfaces):
             return
 
-        for i in range(effective_start_index, len(self.surfaces)):
-            current_surface = self.surfaces[i]
+        for i in range(effective_start_index, len(self._surfaces)):
+            current_surface = self._surfaces[i]
 
             if i == 0:  # no update to object surface
                 continue
             elif i == 1:  # first surface lies at z=0.0 by definition
                 new_z = 0.0
             else:
-                prev_surface = self.surfaces[i - 1]
+                prev_surface = self._surfaces[i - 1]
                 thickness = prev_surface.thickness
 
                 if hasattr(thickness, "item"):
@@ -445,7 +452,7 @@ class SurfaceGroup:
                 inclusive for negative slice behavior) of the segment of surfaces
                 to flip. Defaults to -1 (up to, but not including, the image surface).
         """
-        n_surfaces_total = len(self.surfaces)
+        n_surfaces_total = len(self._surfaces)
 
         if start_index < 0:
             start_index = n_surfaces_total + start_index
@@ -469,23 +476,22 @@ class SurfaceGroup:
             return
 
         # Extract the segment, reverse it, and place it back
-        segment_to_reverse = self.surfaces[start_index:actual_slice_end_index]
+        segment_to_reverse = self._surfaces[start_index:actual_slice_end_index]
         segment_to_reverse.reverse()
-        self.surfaces[start_index:actual_slice_end_index] = segment_to_reverse
-
+        self._surfaces[start_index:actual_slice_end_index] = segment_to_reverse
         # Call flip() on each surface within the now-reversed segment
         for i in range(len(segment_to_reverse)):
             surface_index_in_group = start_index + i
-            self.surfaces[surface_index_in_group].flip()
+            self._surfaces[surface_index_in_group].flip()
 
         if segment_to_reverse:  # Check if the segment is not empty
-            self.surfaces[start_index].geometry.cs.z = 0.0
+            self._surfaces[start_index].geometry.cs.z = 0.0
 
             # Iterate for thicknesses within the segment
             # k iterates from 0 to len(segment_to_reverse) - 2
             for k in range(len(segment_to_reverse) - 1):
-                current_surf_in_new_order = self.surfaces[start_index + k]
-                next_surf_in_new_order = self.surfaces[start_index + k + 1]
+                current_surf_in_new_order = self._surfaces[start_index + k]
+                next_surf_in_new_order = self._surfaces[start_index + k + 1]
 
                 original_idx_of_new_k = original_indices_in_segment[
                     len(segment_to_reverse) - 1 - k
@@ -517,4 +523,5 @@ class SurfaceGroup:
                 last_thickness = 0.0
             last_surface_in_segment.thickness = last_thickness
 
+        self._update_surface_links()
         self.reset()

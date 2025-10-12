@@ -159,10 +159,8 @@ class SurfaceFactory:
 
         # Build interaction model
         interaction_model = self._interaction_model_factory.create(
+            parent_surface=None,  # Hooked up in Surface.__init__()
             interaction_type=interaction_type,
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
             is_reflective=is_reflective,
             coating=coating,
             bsdf=kwargs.get("bsdf"),
@@ -171,8 +169,8 @@ class SurfaceFactory:
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
+            previous_surface=None,  #  To be fixed by surface_group.add_surface()
             geometry=geometry,
-            material_pre=material_pre,
             material_post=material_post,
             is_stop=is_stop,
             surface_type=surface_type,

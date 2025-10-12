@@ -29,7 +29,7 @@ class Surface:
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
-        material_pre (BaseMaterial): The material before the surface.
+        previous_surface (Surface): The surface preceding this instance.
         material_post (BaseMaterial): The material after the surface.
         is_stop (bool, optional): Indicates if the surface is the aperture
             stop. Defaults to False.
@@ -47,17 +47,17 @@ class Surface:
 
     def __init__(
         self,
-        geometry: BaseGeometry,
-        material_pre: BaseMaterial,
+        previous_surface: Surface | None,
         material_post: BaseMaterial,
+        geometry: BaseGeometry,
         is_stop: bool = False,
-        aperture: BaseAperture = None,
-        surface_type: str = None,
+        aperture: BaseAperture | None = None,
+        surface_type: str | None = None,
         comment: str = "",
-        interaction_model: BaseInteractionModel = None,
+        interaction_model: BaseInteractionModel | None = None,
     ):
         self.geometry = geometry
-        self.material_pre = material_pre
+        self.previous_surface = previous_surface
         self.material_post = material_post
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
@@ -67,23 +67,31 @@ class Surface:
 
         if interaction_model is None:
             self.interaction_model = RefractiveReflectiveModel(
-                geometry=self.geometry,
-                material_pre=self.material_pre,
-                material_post=self.material_post,
+                parent_surface=self,
                 is_reflective=False,
                 coating=None,
                 bsdf=None,
             )
         else:
             self.interaction_model = interaction_model
+            self.interaction_model.parent_surface = self
 
         self.thickness = 0.0  # used for surface positioning
 
         self.reset()
 
+    @property
+    def material_pre(self) -> BaseMaterial | None:
+        return (
+            self.previous_surface.material_post
+            if self.previous_surface
+            else self.material_post
+        )
+
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
-        self.material_pre, self.material_post = self.material_post, self.material_pre
+        # self.material_pre, self.material_post = self.material_post, self.material_pre
+        self.material_post = self.previous_surface.material_post
         self.geometry.flip()
 
         # Re-create the interaction model with flipped properties
@@ -217,9 +225,7 @@ class Surface:
         # backward compatibility
         if not hasattr(self, "interaction_model"):
             self.interaction_model = RefractiveReflectiveModel(
-                geometry=self.geometry,
-                material_pre=self.material_pre,
-                material_post=self.material_post,
+                parent_surface=self,
                 is_reflective=self.is_reflective,
                 coating=self.coating,
                 bsdf=self.bsdf,
@@ -229,7 +235,6 @@ class Surface:
             "type": self.__class__.__name__,
             "thickness": self.thickness,
             "geometry": self.geometry.to_dict(),
-            "material_pre": self.material_pre.to_dict(),
             "material_post": self.material_post.to_dict(),
             "is_stop": self.is_stop,
             "aperture": self.aperture.to_dict() if self.aperture else None,
@@ -267,7 +272,6 @@ class Surface:
         """
         surface_type = data.get("type")
         geometry = BaseGeometry.from_dict(data["geometry"])
-        material_pre = BaseMaterial.from_dict(data["material_pre"])
         material_post = BaseMaterial.from_dict(data["material_post"])
         aperture = (
             BaseAperture.from_dict(data["aperture"]) if data.get("aperture") else None
@@ -276,7 +280,7 @@ class Surface:
         interaction_model_data = data.get("interaction_model")
         if interaction_model_data:
             interaction_model = BaseInteractionModel.from_dict(
-                interaction_model_data, geometry, material_pre, material_post
+                interaction_model_data, None
             )
         else:
             # Backward compatibility
@@ -286,8 +290,7 @@ class Surface:
             bsdf = BaseBSDF.from_dict(data["bsdf"]) if data.get("bsdf") else None
             interaction_model = RefractiveReflectiveModel(
                 geometry=geometry,
-                material_pre=material_pre,
-                material_post=material_post,
+                parent_surface=None,
                 is_reflective=data.get("is_reflective", False),
                 coating=coating,
                 bsdf=bsdf,
@@ -295,13 +298,14 @@ class Surface:
 
         surface_class = cls._registry.get(surface_type, cls)
         surface = surface_class(
+            previous_surface=None,
             geometry=geometry,
-            material_pre=material_pre,
             material_post=material_post,
             is_stop=data.get("is_stop", False),
             aperture=aperture,
             comment=data.get("comment", ""),
             interaction_model=interaction_model,
         )
+        interaction_model.parent_surface = surface
         surface.thickness = data.get("thickness", 0.0)
         return surface

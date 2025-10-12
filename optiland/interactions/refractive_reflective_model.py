@@ -25,7 +25,7 @@ class RefractiveReflectiveModel(BaseInteractionModel):
 
     def flip(self):
         """Flip the interaction model."""
-        self.material_pre, self.material_post = self.material_post, self.material_pre
+        pass
 
     def interact_real_rays(self, rays: RealRays) -> RealRays:
         """Interact with real rays, causing refraction or reflection.

@@ -109,8 +109,6 @@ class OpticUpdater:
         """
         surface = self.optic.surface_group.surfaces[surface_number]
         surface.material_post = material
-        surface_post = self.optic.surface_group.surfaces[surface_number + 1]
-        surface_post.material_pre = material
 
     def set_norm_radius(self, value, surface_number):
         """Set the normalization radius on a surface.

@@ -13,10 +13,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     # pragma: no cover
     from optiland.coatings import BaseCoating
-    from optiland.geometries import BaseGeometry
-    from optiland.materials import BaseMaterial
     from optiland.rays import ParaxialRays, RealRays
     from optiland.scatter import BaseBSDF
+    from optiland.surfaces import Surface
 
 
 class BaseInteractionModel(ABC):
@@ -26,19 +25,31 @@ class BaseInteractionModel(ABC):
 
     def __init__(
         self,
-        geometry: BaseGeometry,
-        material_pre: BaseMaterial,
-        material_post: BaseMaterial,
+        parent_surface: Surface | None,
         is_reflective: bool,
         coating: BaseCoating | None = None,
         bsdf: BaseBSDF | None = None,
     ):
-        self.geometry = geometry
-        self.material_pre = material_pre
-        self.material_post = material_post
+        self.parent_surface = parent_surface
         self.is_reflective = is_reflective
         self.coating = coating
         self.bsdf = bsdf
+
+    @property
+    def material_pre(self):
+        return (
+            self.parent_surface.material_post
+            if self.parent_surface.previous_surface is None 
+            else self.parent_surface.previous_surface.material_post
+        )
+
+    @property
+    def material_post(self):
+        return self.parent_surface.material_post
+
+    @property
+    def geometry(self):
+        return self.parent_surface.geometry
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
@@ -70,7 +81,7 @@ class BaseInteractionModel(ABC):
         }
 
     @classmethod
-    def from_dict(cls, data, geometry, material_pre, material_post):
+    def from_dict(cls, data, parent_surface):
         """Creates an interaction model from a dictionary representation."""
         from optiland.coatings import BaseCoating
         from optiland.scatter import BaseBSDF
@@ -90,9 +101,7 @@ class BaseInteractionModel(ABC):
             init_data["bsdf"] = BaseBSDF.from_dict(init_data["bsdf"])
 
         return subclass(
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
+            parent_surface=parent_surface,
             **init_data,
         )
 
