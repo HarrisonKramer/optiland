@@ -90,7 +90,6 @@ class Surface:
 
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
-        # self.material_pre, self.material_post = self.material_post, self.material_pre
         self.material_post = self.previous_surface.material_post
         self.geometry.flip()
 
