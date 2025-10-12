@@ -473,18 +473,31 @@ class SurfaceGroup:
                 original_idx_of_new_k = original_indices_in_segment[
                     len(segment_to_reverse) - 1 - k
                 ]
-                original_idx_of_new_k_plus_1 = original_indices_in_segment[
-                    len(segment_to_reverse) - 1 - (k + 1)
-                ]
 
-                # The thickness is between these two original surfaces
+                # The thickness should be the gap that followed this surface in the
+                # original order
                 thickness = abs(
                     original_vertex_gcs_z_coords[original_idx_of_new_k]
-                    - original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1]
+                    - original_vertex_gcs_z_coords[original_idx_of_new_k + 1]
                 )
 
                 next_surf_in_new_order.geometry.cs.z = (
                     current_surf_in_new_order.geometry.cs.z + thickness
                 )
+                current_surf_in_new_order.thickness = thickness
+
+            # Handle the last surface in the flipped segment
+            last_surface_in_segment = self.surfaces[
+                start_index + len(segment_to_reverse) - 1
+            ]
+            original_idx_of_last = original_indices_in_segment[0]
+            if original_idx_of_last + 1 < len(original_vertex_gcs_z_coords):
+                last_thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_last]
+                    - original_vertex_gcs_z_coords[original_idx_of_last + 1]
+                )
+            else:
+                last_thickness = 0.0
+            last_surface_in_segment.thickness = last_thickness
 
         self.reset()
