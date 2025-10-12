@@ -11,7 +11,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
-
 from optiland.fields.field import Field
 
 if TYPE_CHECKING:

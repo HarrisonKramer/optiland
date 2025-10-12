@@ -18,7 +18,7 @@ import optiland.backend as be
 from optiland.analysis.base import BaseAnalysis
 
 if TYPE_CHECKING:
-    from optiland._types import DistributionType, ScalarOrArray, BEArray
+    from optiland._types import BEArray, DistributionType, ScalarOrArray
     from optiland.optic import Optic
 
 

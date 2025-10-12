@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-
 class PupilAberration(BaseAnalysis):
     """Represents the pupil aberrations of an optic.
 
