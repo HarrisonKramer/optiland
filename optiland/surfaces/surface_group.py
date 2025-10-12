@@ -491,10 +491,13 @@ class SurfaceGroup:
                 start_index + len(segment_to_reverse) - 1
             ]
             original_idx_of_last = original_indices_in_segment[0]
-            last_thickness = abs(
-                original_vertex_gcs_z_coords[original_idx_of_last]
-                - original_vertex_gcs_z_coords[original_idx_of_last + 1]
-            )
+            if original_idx_of_last + 1 < len(original_vertex_gcs_z_coords):
+                last_thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_last]
+                    - original_vertex_gcs_z_coords[original_idx_of_last + 1]
+                )
+            else:
+                last_thickness = 0.0
             last_surface_in_segment.thickness = last_thickness
 
         self.reset()
