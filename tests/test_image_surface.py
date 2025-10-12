@@ -15,8 +15,8 @@ def setup_image_surface():
     material_pre = IdealMaterial(1, 0)
     material_post = IdealMaterial(1, 0)
     image_surface = ImageSurface(
+        previous_surface=None,
         geometry=geometry,
-        material_pre=material_pre,
         material_post=material_post,
         aperture=None,
     )
@@ -26,7 +26,7 @@ def setup_image_surface():
 def test_initialization(set_test_backend, setup_image_surface):
     image_surface, geometry, material_pre, material_post = setup_image_surface
     assert image_surface.geometry == geometry
-    assert image_surface.material_pre == material_pre
+    assert image_surface.material_pre == material_post  # previous_surface is None
     assert image_surface.material_post == material_post
     assert not image_surface.is_stop
 

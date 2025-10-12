@@ -14,27 +14,26 @@ class TestSurface:
     def create_surface(self):
         cs = CoordinateSystem()
         geometry = Plane(cs)
-        material_pre = IdealMaterial(1, 0)
         material_post = IdealMaterial(1.5, 0)
         aperture = None
         coating = SimpleCoating(0.5, 0.5)
         bsdf = None
         interaction_model = RefractiveReflectiveModel(
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
+            parent_surface=None,
             is_reflective=True,
             coating=coating,
             bsdf=bsdf,
         )
-        return Surface(
+        surf = Surface(
             geometry=geometry,
-            material_pre=material_pre,
+            previous_surface=None,
             material_post=material_post,
             is_stop=True,
             aperture=aperture,
             interaction_model=interaction_model,
         )
+        interaction_model.parent_surface = surf
+        return surf
 
     def test_trace_paraxial_rays(self, set_test_backend):
         surface = self.create_surface()
@@ -110,7 +109,6 @@ class TestSurface:
         new_surface = Surface.from_dict(data)
         assert isinstance(new_surface, Surface)
         assert new_surface.geometry.to_dict() == surface.geometry.to_dict()
-        assert new_surface.material_pre.to_dict() == surface.material_pre.to_dict()
         assert new_surface.material_post.to_dict() == surface.material_post.to_dict()
         assert new_surface.is_stop == surface.is_stop
         assert new_surface.aperture == surface.aperture
