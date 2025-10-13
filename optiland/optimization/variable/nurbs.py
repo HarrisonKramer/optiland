@@ -1,8 +1,9 @@
-"""Nurbs Control Points Variable Module
+"""This module contains variable classes for NURBS geometries.
 
-This module contains the NurbsPointsVariable class, which represents a
-variable for a polynomial coefficient of a PolynomialGeometry. The class
-inherits from the VariableBehavior class.
+This module contains the `NurbsPointsVariable` and `NurbsWeightsVariable`
+classes, which represent variables for the control points and weights of a
+NurbsGeometry, respectively. These classes inherit from the `VariableBehavior`
+class.
 
 Kramer Harrison, 2024
 """
@@ -15,19 +16,13 @@ from optiland.optimization.variable.base import VariableBehavior
 
 
 class NurbsPointsVariable(VariableBehavior):
-    """Represents a variable for a polynomial coefficient of a PolynomialGeometry.
+    """Represents a variable for a NURBS control point.
 
     Args:
-        optic (Optic): The optic object associated with the variable.
-        surface_number (int): The index of the surface in the optical system.
-        coeff_index (tuple(int, int, int)): The indices of the control point.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
-        **kwargs: Additional keyword arguments.
-
-    Attributes:
-        coeff_number (int): The index of the polynomial coefficient.
-
+        optic: The optic object associated with the variable.
+        surface_number: The index of the surface in the optical system.
+        coeff_index: The indices of the control point.
+        apply_scaling: Whether to apply scaling to the variable.
     """
 
     def __init__(
@@ -42,36 +37,24 @@ class NurbsPointsVariable(VariableBehavior):
         self.coeff_index = coeff_index
 
     def get_value(self):
-        """Get the current value of the polynomial coefficient.
+        """Gets the current value of the control point.
 
         Returns:
-            float: The current value of the polynomial coefficient.
-
+            The current value of the control point.
         """
         surf = self._surfaces.surfaces[self.surface_number]
         i, j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             value = surf.geometry.P[i, j, k]
-        #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
-        #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-        #            c_new = np.pad(
-        #                surf.geometry.c,
-        #                pad_width=((0, pad_width_i), (0, pad_width_j)),
-        #                mode="constant",
-        #                constant_values=0,
-        #            )
-        #            surf.geometry.c = c_new
-        #            value = 0
         if self.apply_scaling:
             return self.scale(value)
         return value
 
     def update_value(self, new_value):
-        """Update the value of the polynomial coefficient.
+        """Updates the value of the control point.
 
         Args:
-            new_value (float): The new value of the polynomial coefficient.
-
+            new_value: The new value of the control point.
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
@@ -80,59 +63,47 @@ class NurbsPointsVariable(VariableBehavior):
         with contextlib.suppress(IndexError):
             surf.geometry.P[i, j, k] = new_value
 
-    #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
-    #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-    #            c_new = np.pad(
-    #                surf.geometry.c,
-    #                pad_width=((0, pad_width_i), (0, pad_width_j)),
-    #                mode="constant",
-    #                constant_values=0,
-    #            )
-    #            c_new[i][j] = new_value
-    #            surf.geometry.c = c_new
-
     def scale(self, value):
-        """Scale the value of the variable for improved optimization performance.
+        """Scales the value of the variable.
+
+        This can be used for improved optimization performance.
 
         Args:
-            value: The value to scale
+            value: The value to scale.
 
+        Returns:
+            The scaled value.
         """
         return value
 
     def inverse_scale(self, scaled_value):
-        """Inverse scale the value of the variable.
+        """Inverse scales the value of the variable.
 
         Args:
-            scaled_value: The scaled value to inverse scale
+            scaled_value: The scaled value to inverse scale.
 
+        Returns:
+            The inverse-scaled value.
         """
         return scaled_value
 
     def __str__(self):
-        """Return a string representation of the variable.
+        """Returns a string representation of the variable.
 
         Returns:
-            str: A string representation of the variable.
-
+            A string representation of the variable.
         """
         return f"Control Point {self.coeff_index}, Surface {self.surface_number}"
 
 
 class NurbsWeightsVariable(VariableBehavior):
-    """Represents a variable for a polynomial coefficient of a PolynomialGeometry.
+    """Represents a variable for a NURBS weight.
 
     Args:
-        optic (Optic): The optic object associated with the variable.
-        surface_number (int): The index of the surface in the optical system.
-        coeff_index (tuple(int, int, int)): The indices of the control point.
-        apply_scaling (bool): Whether to apply scaling to the variable.
-            Defaults to True.
-        **kwargs: Additional keyword arguments.
-
-    Attributes:
-        coeff_number (int): The index of the polynomial coefficient.
-
+        optic: The optic object associated with the variable.
+        surface_number: The index of the surface in the optical system.
+        coeff_index: The indices of the weight.
+        apply_scaling: Whether to apply scaling to the variable.
     """
 
     def __init__(
@@ -147,36 +118,24 @@ class NurbsWeightsVariable(VariableBehavior):
         self.coeff_index = coeff_index
 
     def get_value(self):
-        """Get the current value of the polynomial coefficient.
+        """Gets the current value of the weight.
 
         Returns:
-            float: The current value of the polynomial coefficient.
-
+            The current value of the weight.
         """
         surf = self._surfaces.surfaces[self.surface_number]
         j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             value = surf.geometry.W[j, k]
-        #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
-        #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-        #            c_new = np.pad(
-        #                surf.geometry.c,
-        #                pad_width=((0, pad_width_i), (0, pad_width_j)),
-        #                mode="constant",
-        #                constant_values=0,
-        #            )
-        #            surf.geometry.c = c_new
-        #            value = 0
         if self.apply_scaling:
             return self.scale(value)
         return value
 
     def update_value(self, new_value):
-        """Update the value of the polynomial coefficient.
+        """Updates the value of the weight.
 
         Args:
-            new_value (float): The new value of the polynomial coefficient.
-
+            new_value: The new value of the weight.
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
@@ -185,40 +144,34 @@ class NurbsWeightsVariable(VariableBehavior):
         with contextlib.suppress(IndexError):
             surf.geometry.W[j, k] = new_value
 
-    #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
-    #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
-    #            c_new = np.pad(
-    #                surf.geometry.c,
-    #                pad_width=((0, pad_width_i), (0, pad_width_j)),
-    #                mode="constant",
-    #                constant_values=0,
-    #            )
-    #            c_new[i][j] = new_value
-    #            surf.geometry.c = c_new
-
     def scale(self, value):
-        """Scale the value of the variable for improved optimization performance.
+        """Scales the value of the variable.
+
+        This can be used for improved optimization performance.
 
         Args:
-            value: The value to scale
+            value: The value to scale.
 
+        Returns:
+            The scaled value.
         """
         return value
 
     def inverse_scale(self, scaled_value):
-        """Inverse scale the value of the variable.
+        """Inverse scales the value of the variable.
 
         Args:
-            scaled_value: The scaled value to inverse scale
+            scaled_value: The scaled value to inverse scale.
 
+        Returns:
+            The inverse-scaled value.
         """
         return scaled_value
 
     def __str__(self):
-        """Return a string representation of the variable.
+        """Returns a string representation of the variable.
 
         Returns:
-            str: A string representation of the variable.
-
+            A string representation of the variable.
         """
         return f"Weight {self.coeff_index}, Surface {self.surface_number}"

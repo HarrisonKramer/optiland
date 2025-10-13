@@ -8,3 +8,5 @@ from .nurbs_fitting import (
     approximate_surface,
 )
 from .nurbs_geometry import NurbsGeometry
+
+__all__ = ["NurbsGeometry", "approximate_surface"]
