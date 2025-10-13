@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from sys import version_info
-from typing import TYPE_CHECKING, Literal, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict, TypeVar, Union
 
 from numpy.typing import NDArray
 
 if TYPE_CHECKING:
+    from torch import Tensor  # noqa: F401
+
     from optiland.coatings import BaseCoating
     from optiland.physical_apertures.base import BaseAperture
+
+    BEArray = Tensor | NDArray
+    ScalarOrArray = float | Tensor | NDArray
+
 
 if version_info >= (3, 11):
     from typing import Unpack
@@ -15,17 +22,27 @@ else:
     from typing_extensions import Unpack
 
 __all__ = [
+    "BEArrayT",
+    "BEArray",
     "DistributionType",
     "ApertureType",
+    "Fields",
     "FieldType",
+    "PlotProjection",
     "ReferenceRay",
     "WavelengthUnit",
-    "FloatOrArray",
+    "Wavelengths",
+    "ScalarOrArrayT",
     "SurfaceType",
     "SurfaceParameters",
     "Unpack",
     "ZernikeType",
 ]
+
+BEArrayT = TypeVar("BEArrayT", NDArray, "Tensor", Union[NDArray, "Tensor"])
+ScalarOrArrayT = TypeVar(
+    "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
+)
 
 DistributionType = Literal[
     "line_x",
@@ -39,12 +56,13 @@ DistributionType = Literal[
     "ring",
 ]
 ApertureType = Literal["EPD", "imageFNO", "objectNA", "float_by_stop_size"]
+Fields = Literal["all"] | Sequence[tuple[float, float]]
 FieldType = Literal["angle", "object_height"]
+PlotProjection = Literal["2d", "3d"]
 ReferenceRay = Literal["chief", "marginal"]
+Wavelengths = Literal["all", "primary"] | Sequence[float]
 WavelengthUnit = Literal["nm", "um", "mm", "cm", "m"]
 ZernikeType = Literal["standard", "noll", "fringe"]
-
-FloatOrArray = float | NDArray
 
 SurfaceType = Literal[
     "biconic",

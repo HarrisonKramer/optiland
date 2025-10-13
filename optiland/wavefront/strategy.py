@@ -11,10 +11,21 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Literal
 
 import optiland.backend as be
 
+from ..fields.field_types import AngleField
 from .wavefront_data import WavefrontData
+
+if TYPE_CHECKING:
+    from optiland._types import BEArrayT
+    from optiland.distribution import BaseDistribution
+    from optiland.optic.optic import Optic
+    from optiland.rays.base import BaseRays
+    from optiland.rays.real_rays import RealRays
+
+WavefrontStrategyType = Literal["chief_ray", "centroid_sphere", "best_fit_sphere"]
 
 
 class ReferenceStrategy(ABC):
@@ -30,13 +41,15 @@ class ReferenceStrategy(ABC):
         distribution (Distribution): The pupil sampling distribution.
     """
 
-    def __init__(self, optic, distribution, **kwargs):
+    def __init__(self, optic: Optic, distribution: BaseDistribution, **kwargs) -> None:
         self.optic = optic
         self.distribution = distribution
         self.n_image = optic.n()[-1]
 
     @abstractmethod
-    def compute_wavefront_data(self, field, wavelength):
+    def compute_wavefront_data(
+        self, field: tuple[float, float], wavelength: float
+    ) -> WavefrontData:
         """Orchestrates the full wavefront data calculation.
 
         This method should perform all necessary steps, including ray tracing,
@@ -52,7 +65,15 @@ class ReferenceStrategy(ABC):
         """
         pass
 
-    def _opd_image_to_xp(self, rays_at_image, xc, yc, zc, R, wavelength):
+    def _opd_image_to_xp(
+        self,
+        rays_at_image: RealRays,
+        xc: float,
+        yc: float,
+        zc: float,
+        R: float,
+        wavelength: float,
+    ) -> float:
         """Computes propagation distance from image plane to exit pupil sphere.
 
         Args:
@@ -94,7 +115,13 @@ class ReferenceStrategy(ABC):
 
         return self.n_image * t
 
-    def _correct_tilt(self, field, opd, x=None, y=None):
+    def _correct_tilt(
+        self,
+        field: tuple[float, float],
+        opd: BEArrayT,
+        x: BEArrayT | float | None = None,
+        y: BEArrayT | float | None = None,
+    ) -> BEArrayT:
         """Corrects for tilt in the OPD based on the field angle.
 
         This step is needed because, in the case of angular fields, rays launch from a
@@ -112,7 +139,7 @@ class ReferenceStrategy(ABC):
         Returns:
             ndarray: The OPD array with tilt correction applied.
         """
-        if self.optic.field_type != "angle":
+        if not isinstance(self.optic.field_definition, AngleField):
             return opd
 
         hx, hy = field
@@ -128,8 +155,8 @@ class ReferenceStrategy(ABC):
         ux, uy = tx * uz, ty * uz
 
         # physical pupil coords
-        xs = self.distribution.x if x is None else x
-        ys = self.distribution.y if y is None else y
+        xs = be.array(self.distribution.x) if x is None else be.array(x)
+        ys = be.array(self.distribution.y) if y is None else be.array(y)
         epd = self.optic.paraxial.EPD()
         X_m = xs * epd / 2
         Y_m = ys * epd / 2
@@ -142,11 +169,13 @@ class ReferenceStrategy(ABC):
 class ChiefRayStrategy(ReferenceStrategy):
     """Calculates wavefront using the chief ray as the reference."""
 
-    def __init__(self, optic, distribution, **kwargs):
+    def __init__(self, optic: Optic, distribution: BaseDistribution, **kwargs) -> None:
         super().__init__(optic, distribution, **kwargs)
         self.pupil_z = optic.paraxial.XPL() + optic.surface_group.positions[-1]
 
-    def compute_wavefront_data(self, field, wavelength):
+    def compute_wavefront_data(
+        self, field: tuple[float, float], wavelength: float
+    ) -> WavefrontData:
         """Computes wavefront data using the chief ray reference method.
 
         This method preserves the original calculation logic:
@@ -199,7 +228,9 @@ class ChiefRayStrategy(ReferenceStrategy):
             radius=R,
         )
 
-    def _calculate_sphere_from_chief_ray(self, chief_ray):
+    def _calculate_sphere_from_chief_ray(
+        self, chief_ray: BaseRays
+    ) -> tuple[float, float, float, float]:
         """Determine reference sphere center and radius from a chief ray."""
         x, y, z = chief_ray.x, chief_ray.y, chief_ray.z
         if be.size(x) != 1:
@@ -230,12 +261,18 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
     """
 
     def __init__(
-        self, optic, distribution, robust_trim_std: float = 3.0, **kwargs
+        self,
+        optic: Optic,
+        distribution: BaseDistribution,
+        robust_trim_std: float = 3.0,
+        **kwargs,
     ) -> None:
         super().__init__(optic, distribution, **kwargs)
         self.robust_trim_std = robust_trim_std
 
-    def compute_wavefront_data(self, field, wavelength):
+    def compute_wavefront_data(
+        self, field: tuple[float, float], wavelength: float
+    ) -> WavefrontData:
         """Computes wavefront data using a centroid-anchored reference sphere.
 
         Args:
@@ -285,7 +322,7 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
             radius=radius,
         )
 
-    def _points_from_rays(self, rays):
+    def _points_from_rays(self, rays: RealRays) -> tuple[be.ndarray, be.ndarray]:
         """Convert ray data to 3D wavefront points.
 
         Args:
@@ -313,7 +350,9 @@ class CentroidReferenceSphereStrategy(ReferenceStrategy):
         pts = p - s[:, None] * d
         return pts, valid
 
-    def _calculate_reference_sphere(self, rays):
+    def _calculate_reference_sphere(
+        self, rays: RealRays
+    ) -> tuple[float, float, float, float]:
         """Computes center and radius for the centroid-anchored reference sphere.
 
         Args:
@@ -381,7 +420,7 @@ class BestFitSphereStrategy(CentroidReferenceSphereStrategy):
     image centroid.
     """
 
-    def __init__(self, optic, distribution, **kwargs):
+    def __init__(self, optic: Optic, distribution: BaseDistribution, **kwargs) -> None:
         """Initializes the BestFitSphereStrategy.
 
         Args:
@@ -391,7 +430,9 @@ class BestFitSphereStrategy(CentroidReferenceSphereStrategy):
         super().__init__(optic, distribution, **kwargs)
         self.center = None
 
-    def _calculate_reference_sphere(self, rays):
+    def _calculate_reference_sphere(
+        self, rays: RealRays
+    ) -> tuple[float, float, float, float]:
         """Computes the best-fit sphere (center and radius) for the wavefront.
 
         This method solves a linear least-squares problem to find the sphere
@@ -438,7 +479,19 @@ class BestFitSphereStrategy(CentroidReferenceSphereStrategy):
         return self.center[0], self.center[1], self.center[2], float(radius)
 
 
-def create_strategy(strategy_name, optic, distribution, **kwargs):
+STRATEGIES: dict[WavefrontStrategyType, type[ReferenceStrategy]] = {
+    "chief_ray": ChiefRayStrategy,
+    "centroid_sphere": CentroidReferenceSphereStrategy,
+    "best_fit_sphere": BestFitSphereStrategy,
+}
+
+
+def create_strategy(
+    strategy_name: WavefrontStrategyType,
+    optic: Optic,
+    distribution: BaseDistribution,
+    **kwargs,
+) -> ReferenceStrategy:
     """Factory function to create a wavefront calculation strategy.
 
     Args:
@@ -453,12 +506,7 @@ def create_strategy(strategy_name, optic, distribution, **kwargs):
     Raises:
         ValueError: If the strategy_name is unknown.
     """
-    strategies = {
-        "chief_ray": ChiefRayStrategy,
-        "centroid_sphere": CentroidReferenceSphereStrategy,
-        "best_fit_sphere": BestFitSphereStrategy,
-    }
-    strategy_class = strategies.get(strategy_name)
+    strategy_class = STRATEGIES.get(strategy_name)
 
     if strategy_class:
         return strategy_class(optic, distribution, **kwargs)

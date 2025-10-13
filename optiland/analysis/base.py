@@ -9,6 +9,12 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
+
+from optiland.utils import resolve_wavelengths
+
+if TYPE_CHECKING:
+    from optiland.optic import Optic
 
 
 class BaseAnalysis(abc.ABC):
@@ -27,25 +33,9 @@ class BaseAnalysis(abc.ABC):
               `_generate_data` method implemented by subclasses.
     """
 
-    def __init__(self, optic, wavelengths="all"):
+    def __init__(self, optic: Optic, wavelengths: str | list = "all"):
         self.optic = optic
-
-        if isinstance(wavelengths, str):
-            if wavelengths == "all":
-                self.wavelengths = self.optic.wavelengths.get_wavelengths()
-            elif wavelengths == "primary":
-                self.wavelengths = [self.optic.primary_wavelength]
-            else:
-                raise ValueError(
-                    "Invalid wavelength string. Must be 'all' or 'primary'."
-                )
-        elif isinstance(wavelengths, list):
-            self.wavelengths = wavelengths
-        else:
-            raise TypeError(
-                "Wavelengths must be a string ('all', 'primary') or a list."
-            )
-
+        self.wavelengths = resolve_wavelengths(optic, wavelengths)
         self.data = self._generate_data()
 
     @abc.abstractmethod

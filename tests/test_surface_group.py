@@ -365,6 +365,120 @@ class TestSurfaceGroupUpdatesRealObjects:
         ):  # Also too large
             sg.remove_surface(index=3)
 
+    def test_remove_surface_updates_material_link(self, set_test_backend):
+        """
+        Verify that removing a surface correctly updates the `material_pre`
+        attribute of the subsequent surface. Identified in issue #363.
+        """
+        # 1. Setup lens with multiple materials
+        lens = optic.Optic()
+        mat1 = IdealMaterial(n=1.5)
+        mat2 = IdealMaterial(n=2.0)
+        mat3 = IdealMaterial(n=2.5)
+
+        lens.add_surface(index=0, material="Air")
+        lens.add_surface(index=1, material=mat1, thickness=5)  # Surface 1
+        lens.add_surface(
+            index=2, material=mat2, thickness=5
+        )  # Surface 2 (to be removed)
+        lens.add_surface(index=3, material=mat3, thickness=5)  # Surface 3
+        lens.add_surface(index=4, material="Air")
+
+        surface_before_removal = lens.surface_group.surfaces[1]
+        surface_to_remove = lens.surface_group.surfaces[2]
+        surface_after_removal = lens.surface_group.surfaces[3]
+
+        # 2. Check initial state
+        # The material before surface 3 should be mat2 (from surface 2)
+        assert surface_after_removal.material_pre is surface_to_remove.material_post
+
+        # 3. Remove surface at index 2
+        lens.surface_group.remove_surface(2)
+
+        # 4. Get the new surface at index 2 (which was old surface 3)
+        new_surface_at_index_2 = lens.surface_group.surfaces[2]
+
+        # 5. Assert that the material link is updated
+        # The material before the new surface at index 2 should now be mat1
+        assert (
+            new_surface_at_index_2.material_pre is surface_before_removal.material_post
+        )
+
+    def test_remove_surface_and_compare_raytrace(self, set_test_backend):
+        """
+        Tests that removing a surface and raytracing yields the same result
+        as creating a new system in the final configuration.
+        """
+        # 1. Create the initial lens with two glass slabs
+        lens1 = optic.Optic(name="Two Slabs")
+        lens1.add_surface(index=0, thickness=be.inf, material="Air")
+        lens1.add_surface(
+            index=1,
+            surface_type="standard",
+            material=IdealMaterial(n=2.5),
+            thickness=10,
+            radius=be.inf,
+        )
+        lens1.add_surface(
+            index=2,
+            surface_type="standard",
+            material=IdealMaterial(n=1.0001),
+            thickness=10,
+            radius=be.inf,
+            is_stop=True,
+        )
+        lens1.add_surface(
+            index=3,
+            surface_type="standard",
+            material="Air",
+            thickness=20,
+            radius=be.inf
+        )
+        lens1.add_surface(index=4, material="Air")
+        lens1.set_field_type("angle")
+        lens1.add_field(y=10)
+        lens1.add_wavelength(500, unit="nm")
+        lens1.set_aperture("float_by_stop_size", 25)
+
+        # 2. Remove the first slab (the one with n=2.5) from lens1
+        lens1.surface_group.remove_surface(1)
+
+        # 3. Trace rays through the modified lens1 and get final y-coordinates
+        traced_rays1 = lens1.trace(Hx=0, Hy=1, wavelength=0.5, num_rays=3)
+        y_coords_modified = traced_rays1.y
+
+        # 4. Create a second lens from scratch with the expected final configuration
+        lens2 = optic.Optic(name="One Slab")
+        lens2.add_surface(index=0, thickness=be.inf, material="Air")
+        # This surface corresponds to the one that remained in lens1
+        lens2.add_surface(
+            index=1,
+            surface_type="standard",
+            material=IdealMaterial(n=1.0001),
+            thickness=10,
+            radius=be.inf,
+            is_stop=True,
+        )
+        lens2.add_surface(
+            index=2,
+            surface_type="standard",
+            material="Air",
+            thickness=20,
+            radius=be.inf
+        )
+        lens2.add_surface(index=3, material="Air")
+        lens2.set_field_type("angle")
+        lens2.add_field(y=10)
+        lens2.add_wavelength(500, unit="nm")
+        lens2.set_aperture("float_by_stop_size", 25)
+
+        # 5. Trace rays through the new lens2 and get final y-coordinates
+        traced_rays2 = lens2.trace(Hx=0, Hy=1, wavelength=0.5, num_rays=3)
+        y_coords_new = traced_rays2.y
+
+        # 6. Assert that the ray trace results are identical
+        assert_allclose(y_coords_modified, y_coords_new)
+
     # --- Tests for _update_coordinate_systems specific cases ---
     def test_update_coordinate_systems_infinite_thickness_error(self, set_test_backend):
         sg = self._setup_surface_group(
@@ -429,5 +543,5 @@ class TestSurfaceGroupUpdatesRealObjects:
             Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59
         )
         assert_allclose(
-            be.mean(rays.y), 18.13506822442731
+            be.mean(rays.y), 3.47484521
         )  # mean y position for Cooke triplet defined above

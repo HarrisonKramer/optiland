@@ -10,14 +10,15 @@ Wavefront Analysis
 These modules handle optical path difference (OPD) calculations and wavefront analysis.
 
 .. autosummary::
-   :toctree: wavefront/wavefront/
+   :toctree: wavefront/
    :caption: Wavefront & OPD
 
-   wavefront.opd_fan
-   wavefront.opd
-   wavefront.wavefront_data
-   wavefront.wavefront
-   wavefront.zernike_opd
+   optiland.wavefront.opd_fan
+   optiland.wavefront.opd
+   optiland.wavefront.strategy
+   optiland.wavefront.wavefront_data
+   optiland.wavefront.wavefront
+   optiland.wavefront.zernike_opd
 
 Modulation Transfer Function (MTF)
 ----------------------------------
@@ -26,12 +27,13 @@ The MTF modules provide different methods for calculating the modulation transfe
 which characterizes the spatial frequency response of optical systems.
 
 .. autosummary::
-   :toctree: wavefront/mtf/
+   :toctree: mtf/
    :caption: MTF Analysis
 
    mtf.base
    mtf.fft
    mtf.geometric
+   mtf.huygens_fresnel
    mtf.sampled
 
 Point Spread Function (PSF)
@@ -41,9 +43,10 @@ PSF modules calculate the point spread function using various computational meth
 from fast Fourier transforms to more rigorous diffraction calculations.
 
 .. autosummary::
-   :toctree: wavefront/psf/
+   :toctree: psf/
    :caption: PSF Calculation
 
    psf.base
    psf.fft
    psf.huygens_fresnel
+   psf.mmdft

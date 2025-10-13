@@ -66,7 +66,7 @@ Interoperability with Zemax
 
 Optiland can generate its file format from Zemax .zmx files. This feature simplifies transitioning optical
 designs from Zemax to Optiland, preserving the integrity of system properties. Not all Zemax features are supported in
-the Optiland file format, including some geometry and field types. However, the core optical properties are maintained
+the Optiland file format, including some geometry and field types, e.g., real image height fields. However, the core optical properties are maintained
 during the conversion process. If you experience any unexpected issues during the conversion process, please kindly report
 them as issues on the Optiland GitHub repository.
 

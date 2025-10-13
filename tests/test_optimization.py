@@ -457,8 +457,14 @@ class TestLeastSquaresErrorHandling:
         problem = optimization.OptimizationProblem()
         problem.add_variable(lens, "radius", surface_number=1, min_val=10, max_val=100)
         # No operands are added
-
+        problem.add_operand(
+            operand_type="f2",
+            target=lens.paraxial.f2(),
+            weight=0.0,
+            input_data={"optic": lens},
+        )
         optimizer = optimization.LeastSquares(problem)
+        problem.clear_operands()
         result = optimizer.optimize(maxiter=5)
 
         assert result.success  # Or a similar status indicating valid completion
@@ -702,6 +708,12 @@ class TestGlassExpert:
     def test_vprint_verbose_true(self, capsys):
         """vprint should print when verbose=True."""
         problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=0,
+            weight=0,
+            input_data={"optic": CookeTriplet()},
+        )
         optimizer = glass_expert.GlassExpert(problem)
         optimizer.vprint("Hello World")
 
@@ -712,6 +724,12 @@ class TestGlassExpert:
     def test_vprint_verbose_false(self, capsys):
         """vprint should not print when verbose=False."""
         problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=0,
+            weight=0,
+            input_data={"optic": CookeTriplet()},
+        )
         optimizer = glass_expert.GlassExpert(problem)
         optimizer.verbose = False
         optimizer.vprint("This should not appear")
@@ -720,3 +738,66 @@ class TestGlassExpert:
         captured = capsys.readouterr()
         print("captured.out =", captured.out)
         assert captured.out == ""  # Nothing should be printed
+
+
+class TestOptimizerWithBounds:
+    def test_optimize_with_reciprocal_scaler_and_min_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        min_b = 500.0
+        problem.add_variable(
+            lens, "radius", surface_number=1, scaler=ReciprocalScaler(), min_val=min_b
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = optimization.OptimizerGeneric(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        assert optimized_radius >= min_b
+
+    def test_optimize_with_reciprocal_scaler_and_max_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        lens.set_radius(-1000, 1)
+        problem = optimization.OptimizationProblem()
+        max_b = -500.0
+        problem.add_variable(
+            lens, "radius", surface_number=1, scaler=ReciprocalScaler(), max_val=max_b
+        )
+        input_data = {"optic": lens}
+        problem.add_operand(
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data=input_data,
+        )
+        optimizer = optimization.OptimizerGeneric(problem)
+        result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
+        assert result.success
+        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        assert optimized_radius <= max_b
+
+    def test_optimize_with_reciprocal_scaler_and_crossing_bounds(self):
+        from optiland.optimization.scaling.reciprocal import ReciprocalScaler
+
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(
+            lens,
+            "radius",
+            surface_number=1,
+            scaler=ReciprocalScaler(),
+            min_val=-100,
+            max_val=100,
+        )
+        with pytest.raises(ValueError):
+            _ = problem.variables[0].bounds

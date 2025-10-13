@@ -12,13 +12,24 @@ from .variable import (
     Variable,
 )
 from .operand import ParaxialOperand, AberrationOperand, RayOperand, Operand
-from .optimization import (
-    OptimizationProblem,
+from .problem import OptimizationProblem
+from .optimizer.scipy import (
     OptimizerGeneric,
     LeastSquares,
     DualAnnealing,
     DifferentialEvolution,
     SHGO,
     BasinHopping,
+    GlassExpert,
 )
-from .glass_expert import GlassExpert
+
+try:
+    from .optimizer.torch.adam import TorchAdamOptimizer
+    from .optimizer.torch.sgd import TorchSGDOptimizer
+except (ImportError, ModuleNotFoundError):
+    pass
+
+from .optimizer.scipy import glass_expert
+import sys
+
+optimization = sys.modules[__name__]

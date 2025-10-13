@@ -1,11 +1,59 @@
 from importlib import resources
+from unittest.mock import MagicMock
 
 import optiland.backend as be
 import pytest
 import numpy as np
 
 from optiland import materials
+from optiland.materials.base import BaseMaterial
 from .utils import assert_allclose
+
+
+class TestBaseMaterial:
+    def test_caching(self, set_test_backend):
+        class DummyMaterial(BaseMaterial):
+            def _calculate_n(self, wavelength, **kwargs):
+                pass
+
+            def _calculate_k(self, wavelength, **kwargs):
+                pass
+
+        material = DummyMaterial()
+        material._calculate_n = MagicMock(return_value=1.5)
+
+        # Test with scalar value
+        result1 = material.n(0.5, temperature=25)
+        assert result1 == 1.5
+        material._calculate_n.assert_called_once_with(0.5, temperature=25)
+
+        result2 = material.n(0.5, temperature=25)
+        assert result2 == 1.5
+        material._calculate_n.assert_called_once()
+
+        # Test with numpy array
+        wavelength_np = np.array([0.5, 0.6])
+        material.n(wavelength_np, temperature=25)
+        assert material._calculate_n.call_count == 2
+
+        material.n(wavelength_np, temperature=25)
+        assert material._calculate_n.call_count == 2
+
+        # Test with torch tensor if backend is torch
+        if set_test_backend == "torch":
+            # a torch tensor with same values should be a cache hit
+            wavelength_torch = be.asarray(np.array([0.5, 0.6]))
+            material.n(wavelength_torch, temperature=25)
+            assert material._calculate_n.call_count == 2
+
+            # a torch tensor with different values should be a cache miss
+            wavelength_torch_2 = be.asarray(np.array([0.7, 0.8]))
+            material.n(wavelength_torch_2, temperature=25)
+            assert material._calculate_n.call_count == 3
+
+            # and a cache hit
+            material.n(wavelength_torch_2, temperature=25)
+            assert material._calculate_n.call_count == 3
 
 
 class TestIdealMaterial:
@@ -53,7 +101,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_2(self, set_test_backend):
         filename = str(
@@ -72,7 +120,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_3(self, set_test_backend):
         filename = str(
@@ -92,7 +140,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_4(self, set_test_backend):
         rel_file = "data-nk/main/CaGdAlO4/Loiko-o.yml"
@@ -109,7 +157,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_5(self, set_test_backend):
         filename = str(
@@ -129,7 +177,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_6(self, set_test_backend):
         filename = str(
@@ -149,7 +197,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_7(self, set_test_backend):
         filename = str(
@@ -171,7 +219,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_8(self, set_test_backend):
         filename = str(
@@ -191,7 +239,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_9(self, set_test_backend):
         rel_file = "data-nk/organic/CH4N2O - urea/Rosker-e.yml"
@@ -208,7 +256,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_tabulated_n(self, set_test_backend):
         rel_file = "data-nk/main/Y3Al5O12/Bond.yml"
@@ -225,7 +273,7 @@ class TestMaterialFile:
         # Test case when no tabulated data available
         material._n = None
         with pytest.raises((ValueError, TypeError)):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_tabulated_nk(self, set_test_backend):
         rel_file = "data-nk/main/B/Fernandez-Perea.yml"
@@ -448,11 +496,11 @@ def test_find_closest_glass(set_test_backend):
 
 
 def test_plot_nk():
-    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
 
     mat = materials.Material("BK7")
     fig, axes = materials.plot_nk(mat, wavelength_range=(0.1, 15))
     assert fig is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(axes, list)
+    assert isinstance(fig, Figure)
+    assert isinstance(axes, tuple)
     assert len(axes) == 2

@@ -11,6 +11,7 @@ import numpy as np
 import vtk
 
 import optiland.backend as be
+from optiland.utils import resolve_fields, resolve_wavelengths
 from optiland.visualization.system.utils import transform
 
 
@@ -69,11 +70,8 @@ class Rays2D:
                 include "chief" and "marginal". Defaults to None.
 
         """
-        if fields == "all":
-            fields = self.optic.fields.get_field_coords()
-
-        if wavelengths == "primary":
-            wavelengths = [self.optic.wavelengths.primary_wavelength.value]
+        fields = resolve_fields(self.optic, fields)
+        wavelengths = resolve_wavelengths(self.optic, wavelengths)
 
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):

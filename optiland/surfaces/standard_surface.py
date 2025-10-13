@@ -15,6 +15,8 @@ from __future__ import annotations
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
+from optiland.interactions.base import BaseInteractionModel
+from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
@@ -34,9 +36,10 @@ class Surface:
         aperture (BaseAperture, int, float, optional): The physical aperture of the
             surface. Defaults to None. If a scalar is provided, it specifies the
             diameter of the lens.
-        coating (BaseCoating, optional): The coating applied to the surface.
-            Defaults to None.
+        surface_type (str, optional): The type of surface. Defaults to None.
         comment (str, optional): A comment for the surface. Defaults to ''.
+        interaction_model (BaseInteractionModel, optional): The interaction
+            model for the surface. Defaults to None.
 
     """
 
@@ -49,11 +52,9 @@ class Surface:
         material_post: BaseMaterial,
         is_stop: bool = False,
         aperture: BaseAperture = None,
-        coating: BaseCoating = None,
-        bsdf: BaseBSDF = None,
-        is_reflective: bool = False,
         surface_type: str = None,
         comment: str = "",
+        interaction_model: BaseInteractionModel = None,
     ):
         self.geometry = geometry
         self.material_pre = material_pre
@@ -61,11 +62,20 @@ class Surface:
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
         self.semi_aperture = None
-        self.coating = coating
-        self.bsdf = bsdf
-        self.is_reflective = is_reflective
         self.surface_type = surface_type
         self.comment = comment
+
+        if interaction_model is None:
+            self.interaction_model = RefractiveReflectiveModel(
+                geometry=self.geometry,
+                material_pre=self.material_pre,
+                material_post=self.material_post,
+                is_reflective=False,
+                coating=None,
+                bsdf=None,
+            )
+        else:
+            self.interaction_model = interaction_model
 
         self.thickness = 0.0  # used for surface positioning
 
@@ -76,10 +86,15 @@ class Surface:
         self.material_pre, self.material_post = self.material_post, self.material_pre
         self.geometry.flip()
 
-        if isinstance(self.coating, FresnelCoating):
+        # Re-create the interaction model with flipped properties
+        self.interaction_model.flip()
+
+        if isinstance(self.interaction_model.coating, FresnelCoating):
             self.set_fresnel_coating()
-        elif self.coating is not None and hasattr(self.coating, "flip"):
-            self.coating.flip()
+        elif self.interaction_model.coating is not None and hasattr(
+            self.interaction_model.coating, "flip"
+        ):
+            self.interaction_model.coating.flip()
 
         self.reset()
 
@@ -98,10 +113,44 @@ class Surface:
             BaseRays: The traced rays.
 
         """
+        # reset recorded information
+        self.reset()
+
+        # transform coordinate system
+        self.geometry.localize(rays)
+
         if isinstance(rays, ParaxialRays):
-            return self._trace_paraxial(rays)
-        if isinstance(rays, RealRays):
-            return self._trace_real(rays)
+            # propagate to this surface
+            t = -rays.z
+            rays.propagate(t)
+
+            # interact with surface
+            rays = self.interaction_model.interact_paraxial_rays(rays)
+
+        elif isinstance(rays, RealRays):
+            # find distance from rays to the surface
+            t = self.geometry.distance(rays)
+
+            # propagate the rays a distance t through material
+            rays.propagate(t, self.material_pre)
+
+            # update OPD
+            rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
+
+            # if there is a limiting aperture, clip rays outside of it
+            if self.aperture:
+                self.aperture.clip(rays)
+
+            # interact with surface
+            rays = self.interaction_model.interact_real_rays(rays)
+
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
+        # record ray information
+        self._record(rays)
+
+        return rays
 
     def set_semi_aperture(self, r_max: float):
         """Sets the physical semi-aperture of the surface.
@@ -131,6 +180,7 @@ class Surface:
     def set_fresnel_coating(self):
         """Sets the coating of the surface to a Fresnel coating."""
         self.coating = FresnelCoating(self.material_pre, self.material_post)
+        self.interaction_model.coating = self.coating
 
     def _record(self, rays):
         """Records the ray information.
@@ -154,123 +204,6 @@ class Surface:
             self.intensity = be.copy(be.atleast_1d(rays.i))
             self.opd = be.copy(be.atleast_1d(rays.opd))
 
-    def _interact(self, rays):
-        """Interacts the rays with the surface by either reflecting or refracting
-
-        Args:
-            rays: The rays.
-
-        Returns:
-            RealRays: The refracted rays.
-
-        """
-        # find surface normals
-        nx, ny, nz = self.geometry.surface_normal(rays)
-
-        # Interact with surface (refract or reflect)
-        if self.is_reflective:
-            rays.reflect(nx, ny, nz)
-        else:
-            n1 = self.material_pre.n(rays.w)
-            n2 = self.material_post.n(rays.w)
-            rays.refract(nx, ny, nz, n1, n2)
-
-        # if there is a surface scatter model, modify ray properties
-        if self.bsdf:
-            rays = self.bsdf.scatter(rays, nx, ny, nz)
-
-        # if there is a coating, modify ray properties
-        if self.coating:
-            rays = self.coating.interact(
-                rays,
-                reflect=self.is_reflective,
-                nx=nx,
-                ny=ny,
-                nz=nz,
-            )
-        else:
-            # update polarization matrices, if PolarizedRays
-            rays.update()
-
-        return rays
-
-    def _trace_paraxial(self, rays: ParaxialRays):
-        """Traces paraxial rays through the surface.
-
-        Args:
-            ParaxialRays: The paraxial rays to be traced.
-
-        """
-        # reset recorded information
-        self.reset()
-
-        # transform coordinate system
-        self.geometry.localize(rays)
-
-        # propagate to this surface
-        t = -rays.z
-        rays.propagate(t)
-
-        if self.is_reflective:
-            # reflect (derived from paraxial equations when n'=-n)
-            rays.u = -rays.u - 2 * rays.y / self.geometry.radius
-
-        else:
-            # surface power
-            n1 = self.material_pre.n(rays.w)
-            n2 = self.material_post.n(rays.w)
-            power = (n2 - n1) / self.geometry.radius
-
-            # refract
-            rays.u = 1 / n2 * (n1 * rays.u - rays.y * power)
-
-        # inverse transform coordinate system
-        self.geometry.globalize(rays)
-
-        self._record(rays)
-
-        return rays
-
-    def _trace_real(self, rays: RealRays):
-        """Traces real rays through the surface.
-
-        Args:
-            rays (RealRays): The real rays to be traced.
-
-        Returns:
-            RealRays: The traced real rays.
-
-        """
-        # reset recorded information
-        self.reset()
-
-        # transform coordinate system
-        self.geometry.localize(rays)
-
-        # find distance from rays to the surface
-        t = self.geometry.distance(rays)
-
-        # propagate the rays a distance t through material
-        rays.propagate(t, self.material_pre)
-
-        # update OPD
-        rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
-
-        # if there is a limiting aperture, clip rays outside of it
-        if self.aperture:
-            self.aperture.clip(rays)
-
-        # interact with surface
-        rays = self._interact(rays)
-
-        # inverse transform coordinate system
-        self.geometry.globalize(rays)
-
-        # record ray information
-        self._record(rays)
-
-        return rays
-
     def is_rotationally_symmetric(self):
         """Returns True if the surface is rotationally symmetric, False otherwise."""
         if not self.geometry.is_symmetric:
@@ -281,17 +214,26 @@ class Surface:
 
     def to_dict(self):
         """Returns a dictionary representation of the surface."""
+        # backward compatibility
+        if not hasattr(self, "interaction_model"):
+            self.interaction_model = RefractiveReflectiveModel(
+                geometry=self.geometry,
+                material_pre=self.material_pre,
+                material_post=self.material_post,
+                is_reflective=self.is_reflective,
+                coating=self.coating,
+                bsdf=self.bsdf,
+            )
+
         return {
             "type": self.__class__.__name__,
+            "thickness": self.thickness,
             "geometry": self.geometry.to_dict(),
             "material_pre": self.material_pre.to_dict(),
             "material_post": self.material_post.to_dict(),
             "is_stop": self.is_stop,
             "aperture": self.aperture.to_dict() if self.aperture else None,
-            "coating": self.coating.to_dict() if self.coating else None,
-            "bsdf": self.bsdf.to_dict() if self.bsdf else None,
-            "is_reflective": self.is_reflective,
-            "comment": self.comment,
+            "interaction_model": self.interaction_model.to_dict(),
         }
 
     @classmethod
@@ -328,21 +270,38 @@ class Surface:
         material_pre = BaseMaterial.from_dict(data["material_pre"])
         material_post = BaseMaterial.from_dict(data["material_post"])
         aperture = (
-            BaseAperture.from_dict(data["aperture"]) if data["aperture"] else None
+            BaseAperture.from_dict(data["aperture"]) if data.get("aperture") else None
         )
-        coating = BaseCoating.from_dict(data["coating"]) if data["coating"] else None
-        bsdf = BaseBSDF.from_dict(data["bsdf"]) if data["bsdf"] else None
+
+        interaction_model_data = data.get("interaction_model")
+        if interaction_model_data:
+            interaction_model = BaseInteractionModel.from_dict(
+                interaction_model_data, geometry, material_pre, material_post
+            )
+        else:
+            # Backward compatibility
+            coating = (
+                BaseCoating.from_dict(data["coating"]) if data.get("coating") else None
+            )
+            bsdf = BaseBSDF.from_dict(data["bsdf"]) if data.get("bsdf") else None
+            interaction_model = RefractiveReflectiveModel(
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=data.get("is_reflective", False),
+                coating=coating,
+                bsdf=bsdf,
+            )
 
         surface_class = cls._registry.get(surface_type, cls)
-
-        return surface_class(
-            geometry,
-            material_pre,
-            material_post,
-            data["is_stop"],
-            aperture,
-            coating,
-            bsdf,
-            data["is_reflective"],
+        surface = surface_class(
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_stop=data.get("is_stop", False),
+            aperture=aperture,
             comment=data.get("comment", ""),
+            interaction_model=interaction_model,
         )
+        surface.thickness = data.get("thickness", 0.0)
+        return surface

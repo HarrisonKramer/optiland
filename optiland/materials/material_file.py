@@ -46,6 +46,7 @@ class MaterialFile(BaseMaterial):
     """
 
     def __init__(self, filename):
+        super().__init__()
         self.filename = filename
         self._k_warning_printed = False
         self.coefficients = []
@@ -75,7 +76,7 @@ class MaterialFile(BaseMaterial):
         data = self._read_file()
         self._parse_file(data)
 
-    def n(self, wavelength, temperature=None, pressure=None):
+    def _calculate_n(self, wavelength, **kwargs):
         """Calculates the refractive index of the material at given wavelengths.
 
         The method first calculates the refractive index from the dispersion formula,
@@ -93,7 +94,8 @@ class MaterialFile(BaseMaterial):
         Returns:
             float or be.ndarray: The refractive index(s) of the material.
         """
-
+        temperature = kwargs.get("temperature")
+        pressure = kwargs.get("pressure")
         # Apply environmental corrections only if temperature data is available.
         if (
             temperature is not None
@@ -211,7 +213,7 @@ class MaterialFile(BaseMaterial):
 
         return n_air
 
-    def k(self, wavelength):
+    def _calculate_k(self, wavelength, **kwargs):
         """Retrieves the extinction coefficient of the material at a
         given wavelength. If no exxtinction coefficient data is found, it is
         assumed to be 0 and prints a warning message, only once.

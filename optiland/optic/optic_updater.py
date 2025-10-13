@@ -141,7 +141,7 @@ class OpticUpdater:
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
-        surface.geometry.c[aspher_coeff_idx] = value
+        surface.geometry.coefficients[aspher_coeff_idx] = value
 
     def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
@@ -223,7 +223,7 @@ class OpticUpdater:
         if hasattr(surface.geometry, "norm_y"):
             surface.geometry.norm_y = surface.semi_aperture * 1.25
         if hasattr(surface.geometry, "is_fitted"):
-            if surface.geometry.is_fitted == True:
+            if surface.geometry.is_fitted is True:
                 surface.geometry.nurbs_norm_x = surface.semi_aperture * 1.25
                 surface.geometry.nurbs_norm_y = surface.semi_aperture * 1.25
                 surface.geometry.fit_surface()
@@ -279,7 +279,7 @@ class OpticUpdater:
 
         # 1. Capture original global Z-coordinates
         original_z_coords = [
-            float(be.to_numpy(surf.geometry.cs.z))
+            be.to_numpy(surf.geometry.cs.z).item()
             for surf in self.optic.surface_group.surfaces
         ]
 

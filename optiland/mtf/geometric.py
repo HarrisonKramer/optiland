@@ -8,10 +8,20 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
+from optiland.utils import resolve_wavelength
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    from optiland._types import BEArray, DistributionType, ScalarOrArray
+    from optiland.optic import Optic
 
 
 class GeometricMTF(SpotDiagram):
@@ -58,11 +68,11 @@ class GeometricMTF(SpotDiagram):
 
     def __init__(
         self,
-        optic,
-        fields="all",
-        wavelength="primary",
+        optic: Optic,
+        fields: str | list = "all",
+        wavelength: str | float = "primary",
         num_rays=100,
-        distribution="uniform",
+        distribution: DistributionType = "uniform",
         num_points=256,
         max_freq="cutoff",
         scale=True,
@@ -70,26 +80,25 @@ class GeometricMTF(SpotDiagram):
         self.num_points = num_points
         self.scale = scale
 
-        if wavelength == "primary":
-            wavelength = optic.primary_wavelength
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (wavelength * 1e-3 * optic.paraxial.FNO())
+            self.max_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
         else:
             # If a specific max_freq is provided, use it directly
             self.max_freq = max_freq
 
-        super().__init__(optic, fields, [wavelength], num_rays, distribution)
+        super().__init__(optic, fields, [resolved_wavelength], num_rays, distribution)
 
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple[float, float] = (12, 4),
         add_reference: bool = False,
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[Figure, Axes]:
         """Plots the MTF curve.
 
         Args:
@@ -165,7 +174,9 @@ class GeometricMTF(SpotDiagram):
             )
         return mtf, scale_factor
 
-    def _compute_field_data(self, xi, v, scale_factor):
+    def _compute_field_data(
+        self, xi: BEArray, v: BEArray, scale_factor: ScalarOrArray
+    ) -> BEArray:
         """Computes the MTF data for a given field point.
 
         Args:
@@ -190,7 +201,9 @@ class GeometricMTF(SpotDiagram):
 
         return mtf * scale_factor
 
-    def _plot_field(self, ax, mtf_data, field, color):
+    def _plot_field(
+        self, ax: Axes, mtf_data: list[BEArray], field: tuple[float, float], color: str
+    ):
         """Plots the MTF data for a given field point.
 
         Args:

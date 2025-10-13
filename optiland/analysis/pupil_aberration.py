@@ -10,12 +10,18 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 import optiland.backend as be
 
 from .base import BaseAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
 
 class PupilAberration(BaseAnalysis):
@@ -59,9 +65,9 @@ class PupilAberration(BaseAnalysis):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple[float, float] = (10, 3.33),
-    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
+    ) -> tuple[Figure, NDArray[np.object_]]:
         """
         Displays the pupil aberration plots for each field and wavelength.
 
@@ -75,7 +81,7 @@ class PupilAberration(BaseAnalysis):
 
         Returns
         -------
-        tuple[plt.Figure, list[plt.Axes]]
+        tuple[plt.Figure, list[Axes]]
             The matplotlib Figure and Axes array containing the plots.
 
         Notes
@@ -170,7 +176,7 @@ class PupilAberration(BaseAnalysis):
             current_fig.canvas.draw_idle()
         return current_fig, axs
 
-    def _generate_data(self):
+    def _generate_data(self) -> dict[str, Any]:
         """Generate the real pupil aberration data.
 
         Returns:
@@ -179,7 +185,8 @@ class PupilAberration(BaseAnalysis):
         """
         stop_idx = self.optic.surface_group.stop_index
 
-        data = {
+        # Maybe use a data class for complex return values
+        data: dict[str, Any] = {
             "Px": be.linspace(-1, 1, self.num_points),
             "Py": be.linspace(-1, 1, self.num_points),
         }

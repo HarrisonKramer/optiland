@@ -11,9 +11,13 @@ of the algorithms described in the paper 'Practical ray tracing of trimmed nurbs
 Matteo Taccola, 2025
 """
 
+from __future__ import annotations
+
+from scipy.special import binom
+
 import optiland.backend as be
 from optiland.geometries.base import BaseGeometry
-from scipy.special import binom
+
 from .nurbs_basis_functions import (
     compute_basis_polynomials,
     compute_basis_polynomials_derivatives,
@@ -355,9 +359,7 @@ class NurbsGeometry(BaseGeometry):
         """
 
         # Check that u and v have the same size
-        if be.isscalar(u) and be.isscalar(v):
-            pass
-        elif u.size == v.size:
+        if be.isscalar(u) and be.isscalar(v) or u.size == v.size:
             pass
         else:
             raise Exception("u and v must have the same size")

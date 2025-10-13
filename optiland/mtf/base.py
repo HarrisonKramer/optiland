@@ -10,11 +10,16 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import abc
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
-from optiland.utils import get_working_FNO
+from optiland.utils import get_working_FNO, resolve_fields, resolve_wavelength
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class BaseMTF(abc.ABC):
@@ -31,8 +36,8 @@ class BaseMTF(abc.ABC):
     def __init__(
         self,
         optic,
-        fields,
-        wavelength,
+        fields: str | list,
+        wavelength: str | float,
         strategy="chief_ray",
         remove_tilt=False,
         **kwargs,
@@ -60,15 +65,8 @@ class BaseMTF(abc.ABC):
         self.remove_tilt = remove_tilt
         self.strategy_kwargs = kwargs
 
-        if fields == "all":
-            self.resolved_fields = optic.fields.get_field_coords()
-        else:
-            self.resolved_fields = fields
-
-        if wavelength == "primary":
-            self.resolved_wavelength = optic.primary_wavelength
-        else:
-            self.resolved_wavelength = wavelength
+        self.resolved_fields = resolve_fields(optic, fields)
+        self.resolved_wavelength = resolve_wavelength(optic, wavelength)
 
         self._calculate_psf()
         self.mtf = self._generate_mtf_data()
@@ -98,10 +96,10 @@ class BaseMTF(abc.ABC):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple[float, float] = (12, 4),
         add_reference: bool = False,
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[Figure, Axes]:
         """Visualizes the Modulation Transfer Function (MTF).
 
         This method sets up the plot and iterates through field data,

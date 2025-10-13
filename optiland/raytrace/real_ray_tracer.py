@@ -9,9 +9,15 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
+
+if TYPE_CHECKING:
+    from optiland._types import DistributionType
+    from optiland.distribution import BaseDistribution
 
 
 class RealRayTracer:
@@ -28,7 +34,14 @@ class RealRayTracer:
         self.optic = optic
         self.ray_generator = RayGenerator(optic)
 
-    def trace(self, Hx, Hy, wavelength, num_rays=100, distribution="hexapolar"):
+    def trace(
+        self,
+        Hx,
+        Hy,
+        wavelength,
+        num_rays: int | None = 100,
+        distribution: DistributionType | BaseDistribution | None = "hexapolar",
+    ):
         """Trace a distribution of rays through the optical system.
 
         Args:

@@ -21,11 +21,15 @@ import matplotlib.pyplot as plt
 import numpy as _np  # Use _np for plotting logic.
 
 import optiland.backend as be
+from optiland.rays import RealRays
 
 from .base import BaseAnalysis
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
     from matplotlib.colors import Colormap
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
 
 
 class IncoherentIrradiance(BaseAnalysis):
@@ -73,7 +77,7 @@ class IncoherentIrradiance(BaseAnalysis):
         optic,
         num_rays: int = 5,
         res=(128, 128),
-        px_size: float = None,
+        px_size: float | None = None,
         detector_surface: int = -1,
         *,
         fields="all",
@@ -93,6 +97,21 @@ class IncoherentIrradiance(BaseAnalysis):
         )
         self.detector_surface = int(detector_surface)
         self.user_initial_rays = user_initial_rays
+        self._initial_ray_data = None
+        if self.user_initial_rays is not None:
+            if not isinstance(self.user_initial_rays, RealRays):
+                raise TypeError("user_initial_rays must be a RealRays object.")
+
+            self._initial_ray_data = {
+                "x": self.user_initial_rays.x,
+                "y": self.user_initial_rays.y,
+                "z": self.user_initial_rays.z,
+                "L": self.user_initial_rays.L,
+                "M": self.user_initial_rays.M,
+                "N": self.user_initial_rays.N,
+                "intensity": self.user_initial_rays.i,
+                "wavelength": self.user_initial_rays.w,
+            }
         self.distribution = distribution
 
         # The detector surface must have a physical aperture
@@ -124,13 +143,13 @@ class IncoherentIrradiance(BaseAnalysis):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize: tuple = (6, 5),
         cmap: str | Colormap = "inferno",
-        cross_section: tuple[str, int] = None,
+        cross_section: tuple[str, int] | None = None,
         *,
         normalize: bool = True,
-    ) -> tuple[plt.Figure, _np.ndarray[plt.Axes]]:
+    ) -> tuple[Figure, NDArray[_np.object_]] | None:
         """
         Display a false-colour irradiance map or cross-section plots for the current
         irradiance data.
@@ -230,12 +249,21 @@ class IncoherentIrradiance(BaseAnalysis):
         """
         if user_initial_rays is None:
             Hx, Hy = field
-            self.optic.trace(Hx, Hy, wavelength, self.num_rays, distribution)
+            rays_traced = self.optic.trace(
+                Hx, Hy, wavelength, self.num_rays, distribution
+            )
         else:
-            self.optic.surface_group.trace(user_initial_rays)
+            rays_to_trace = RealRays(**self._initial_ray_data)
+            self.optic.surface_group.trace(rays_to_trace)
+            rays_traced = rays_to_trace
 
         surf = self.optic.surface_group.surfaces[self.detector_surface]
-        x_g, y_g, z_g, power = surf.x, surf.y, surf.z, surf.intensity
+        x_g, y_g, z_g, power = (
+            rays_traced.x,
+            rays_traced.y,
+            rays_traced.z,
+            rays_traced.i,
+        )
 
         from optiland.visualization.system.utils import transform
 
@@ -379,11 +407,11 @@ class IncoherentIrradiance(BaseAnalysis):
         Initializes the matplotlib figure and axes for plotting.
 
         Args:
-            fig_to_plot_on (plt.Figure | None): An existing figure to draw on.
+            fig_to_plot_on (Figure | None): An existing figure to draw on.
             figsize (tuple[float, float]): The size for each subplot.
 
         Returns:
-            tuple[plt.Figure, _np.ndarray[plt.Axes]]: The figure and axes array.
+            tuple[Figure, _np.ndarray[Axes]]: The figure and axes array.
         """
         n_fields = len(self.fields)
         n_wavelengths = len(self.wavelengths)
@@ -440,14 +468,24 @@ class IncoherentIrradiance(BaseAnalysis):
             return text
 
     def _plot_single_subplot(
-        self, ax, fig, entry_data, f_idx, w_idx, normalize, vmin, vmax, cmap, cs_info
+        self,
+        ax: Axes,
+        fig: Figure,
+        entry_data: tuple,
+        f_idx: int,
+        w_idx: int,
+        normalize: bool,
+        vmin: float,
+        vmax: float,
+        cmap: Colormap,
+        cs_info: tuple,
     ):
         """
         Plots the data for a single subplot, either as a 2D map or a cross-section.
 
         Args:
-            ax (plt.Axes): The matplotlib axes to plot on.
-            fig (plt.Figure): The parent figure, for colorbar placement.
+            ax (Axes): The matplotlib axes to plot on.
+            fig (Figure): The parent figure, for colorbar placement.
             entry_data (tuple): Tuple of (irr_map, x_edges, y_edges).
             f_idx (int): The field index.
             w_idx (int): The wavelength index.
@@ -476,7 +514,7 @@ class IncoherentIrradiance(BaseAnalysis):
                 plot_map.T,
                 aspect="auto",
                 origin="lower",
-                extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+                extent=(x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]),
                 cmap=cmap,
                 vmin=vmin,
                 vmax=vmax,
@@ -508,7 +546,7 @@ class IncoherentIrradiance(BaseAnalysis):
 
     def _plot_cross_section(
         self,
-        ax: plt.Axes,
+        ax: Axes,
         irr_map_be,
         x_edges,
         y_edges,

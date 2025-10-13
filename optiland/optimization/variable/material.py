@@ -12,11 +12,13 @@ from typing import TYPE_CHECKING
 
 from optiland.materials.abbe import AbbeMaterial
 from optiland.materials.material_utils import find_closest_glass, get_nd_vd
+from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable.base import VariableBehavior
 from optiland.surfaces.factories.material_factory import MaterialFactory
 
 if TYPE_CHECKING:
     from optiland.materials.base import BaseMaterial
+    from optiland.optimization.scaling.base import Scaler
 
 
 class MaterialVariable(VariableBehavior):
@@ -35,10 +37,12 @@ class MaterialVariable(VariableBehavior):
         optic,
         surface_number: int,
         glass_selection: list[str],
-        apply_scaling: bool = False,
+        scaler: Scaler = None,
         **kwargs,
     ):
-        super().__init__(optic, surface_number, apply_scaling=apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.glass_selection = glass_selection
         self.surface = self.optic.surface_group.surfaces[self.surface_number]
 
@@ -77,9 +81,6 @@ class MaterialVariable(VariableBehavior):
             new_value
         )
         self.optic.set_material(material_post, self.surface_number)
-
-    def scale(self, value):
-        return value
 
     def __str__(self) -> str:
         """Return a string representation of the variable.

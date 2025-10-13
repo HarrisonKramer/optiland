@@ -7,10 +7,20 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
-from optiland.distribution import create_distribution
+from optiland.distribution import BaseDistribution, create_distribution
+from optiland.utils import resolve_fields, resolve_wavelengths
 
 from .strategy import create_strategy
+
+if TYPE_CHECKING:
+    from optiland._types import DistributionType, Fields, Wavelengths
+    from optiland.fields import Field
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
+    from optiland.wavefront.wavefront_data import WavefrontData
 
 
 class Wavefront:
@@ -45,18 +55,18 @@ class Wavefront:
 
     def __init__(
         self,
-        optic,
-        fields="all",
-        wavelengths="all",
-        num_rays=12,
-        distribution="hexapolar",
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        fields: Fields | list[Field] = "all",
+        wavelengths: Wavelengths = "all",
+        num_rays: int = 12,
+        distribution: DistributionType = "hexapolar",
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
     ):
         self.optic = optic
-        self.fields = self._resolve_fields(fields)
-        self.wavelengths = self._resolve_wavelengths(wavelengths)
+        self.fields = resolve_fields(optic, fields)
+        self.wavelengths = resolve_wavelengths(optic, wavelengths)
         self.num_rays = num_rays
         self.distribution = self._resolve_distribution(distribution, self.num_rays)
 
@@ -68,10 +78,10 @@ class Wavefront:
         )
         self.remove_tilt = remove_tilt
 
-        self.data = {}
+        self.data: dict[tuple[tuple[float, float], float], WavefrontData] = {}
         self._generate_data()
 
-    def get_data(self, field, wl):
+    def get_data(self, field: tuple[float, float], wl: float) -> WavefrontData:
         """Retrieves precomputed wavefront data for a field and wavelength.
 
         Args:
@@ -84,7 +94,9 @@ class Wavefront:
         return self.data[(field, wl)]
 
     @staticmethod
-    def fit_and_remove_tilt(data, remove_piston=False, ridge=1e-12):
+    def fit_and_remove_tilt(
+        data: WavefrontData, remove_piston: bool = False, ridge: float = 1e-12
+    ) -> be.ndarray:
         """
         Removes piston and tilt from OPD data using weighted least squares.
 
@@ -129,21 +141,9 @@ class Wavefront:
 
         return opd_detrended
 
-    def _resolve_fields(self, fields):
-        """Resolves field coordinates from the input specification."""
-        if fields == "all":
-            return self.optic.fields.get_field_coords()
-        return fields
-
-    def _resolve_wavelengths(self, wavelengths):
-        """Resolves wavelengths from the input specification."""
-        if wavelengths == "all":
-            return self.optic.wavelengths.get_wavelengths()
-        if wavelengths == "primary":
-            return [self.optic.primary_wavelength]
-        return wavelengths
-
-    def _resolve_distribution(self, dist, num_rays):
+    def _resolve_distribution(
+        self, dist: DistributionType | BaseDistribution, num_rays
+    ) -> BaseDistribution:
         """Resolves the pupil distribution from the input specification."""
         if isinstance(dist, str):
             dist_obj = create_distribution(dist)

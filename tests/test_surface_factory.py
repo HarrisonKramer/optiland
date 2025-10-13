@@ -4,8 +4,9 @@ import pytest
 from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.materials import IdealMaterial
 from optiland.samples.objectives import TessarLens
+from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.paraxial_surface import ParaxialSurface
+from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces import SurfaceFactory
 
@@ -49,7 +50,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert surface.geometry.c == [1, 2, 3]
+        assert surface.geometry.coefficients == [1, 2, 3]
         assert isinstance(surface.material_pre, IdealMaterial)
         assert isinstance(surface.material_post, IdealMaterial)
 
@@ -68,7 +69,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert surface.geometry.c == [1, 2, 3]
+        assert surface.geometry.coefficients == [1, 2, 3]
         assert isinstance(surface.material_pre, IdealMaterial)
         assert isinstance(surface.material_post, IdealMaterial)
 
@@ -89,7 +90,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert be.array_equal(surface.geometry.c, be.array([[1, 2, 3]]))
+        assert be.array_equal(surface.geometry.coefficients, be.array([[1, 2, 3]]))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert isinstance(surface.material_pre, IdealMaterial)
@@ -114,7 +115,7 @@ class TestSurfaceFactory:
         assert isinstance(surface, Surface)
         assert surface.geometry.radius == 10
         assert surface.geometry.k == 0
-        assert be.all(surface.geometry.c == be.arange(9).reshape(3, 3))
+        assert be.all(surface.geometry.coefficients == be.arange(9).reshape(3, 3))
         assert surface.geometry.tol == 1e-6
         assert surface.geometry.max_iter == 100
         assert surface.geometry.norm_x == 1
@@ -173,7 +174,7 @@ class TestSurfaceFactory:
             coating=SimpleCoating(0.5, 0.5),
         )
         assert isinstance(surface, Surface)
-        assert isinstance(surface.coating, SimpleCoating)
+        assert isinstance(surface.interaction_model.coating, SimpleCoating)
 
     def test_create_surface_with_fresnel(self, set_test_backend):
         surface = self.factory.create_surface(
@@ -188,7 +189,7 @@ class TestSurfaceFactory:
             coating="fresnel",
         )
         assert isinstance(surface, Surface)
-        assert isinstance(surface.coating, FresnelCoating)
+        assert isinstance(surface.interaction_model.coating, FresnelCoating)
 
     def test_invalid_z_with_thickness(self, set_test_backend):
         with pytest.raises(ValueError):
@@ -245,8 +246,25 @@ class TestSurfaceFactory:
             material="air",
             thickness=5,
         )
-        assert isinstance(surface, ParaxialSurface)
-        assert surface.f == 100
+        assert isinstance(surface, Surface)
+        assert isinstance(surface.interaction_model, ThinLensInteractionModel)
+        assert surface.interaction_model.f == 100
+
+    def test_create_grating_surface(self, set_test_backend):
+        surface = self.factory.create_surface(
+            surface_type="grating",
+            comment="Grating",
+            index=1,
+            is_stop=False,
+            material="air",
+            thickness=5,
+            radius=10,
+            conic=0,
+            grating_period=1,
+            grating_order=1,
+        )
+        assert isinstance(surface, Surface)
+        assert isinstance(surface.interaction_model, DiffractiveInteractionModel)
 
     def test_invalid_paraxial_surface(self, set_test_backend):
         with pytest.raises(ValueError):

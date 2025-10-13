@@ -8,6 +8,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 from warnings import warn
 
 import matplotlib.pyplot as plt
@@ -17,8 +18,16 @@ from matplotlib.colors import LogNorm
 from scipy.ndimage import zoom
 
 import optiland.backend as be
-from optiland.utils import get_working_FNO
+from optiland.utils import get_working_FNO, resolve_wavelength
 from optiland.wavefront import Wavefront
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from mpl_toolkits.mplot3d import Axes3D
+
+    from optiland.fields import Field
+    from optiland.optic import Optic
 
 
 def replace_nonpositive(image, min_value=1e-9):
@@ -45,7 +54,8 @@ class BasePSF(Wavefront):
     Args:
         optic (Optic): The optical system.
         field (tuple): The field as (x, y) at which to compute the PSF.
-        wavelength (float): The wavelength of light.
+        wavelength (str | float): The wavelength of light. Can be 'primary' or a
+            float value.
         num_rays (int, optional): The number of rays used for wavefront
             computation. Defaults to 128.
         strategy (str): The calculation strategy to use. Supported options are
@@ -65,18 +75,19 @@ class BasePSF(Wavefront):
 
     def __init__(
         self,
-        optic,
-        field,
-        wavelength,
+        optic: Optic,
+        field: Field,
+        wavelength: str | float,
         num_rays=128,
         strategy="chief_ray",
         remove_tilt=True,
         **kwargs,
     ):
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         super().__init__(
             optic=optic,
             fields=[field],
-            wavelengths=[wavelength],
+            wavelengths=[resolved_wavelength],
             num_rays=num_rays,
             distribution="uniform",
             strategy=strategy,
@@ -87,13 +98,13 @@ class BasePSF(Wavefront):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         projection: str = "2d",
         log: bool = False,
         figsize: tuple = (7, 5.5),
         threshold: float = 0.05,
         num_points: int = 128,
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[Figure, Axes]:
         """Visualizes the PSF.
 
         Args:
@@ -197,8 +208,8 @@ class BasePSF(Wavefront):
 
     def _plot_2d(
         self,
-        fig: plt.Figure,
-        ax: plt.Axes,
+        fig: Figure,
+        ax: Axes,
         image: np.ndarray,
         log: bool,
         x_extent: float,
@@ -242,8 +253,8 @@ class BasePSF(Wavefront):
 
     def _plot_3d(
         self,
-        fig: plt.Figure,
-        ax: plt.Axes,
+        fig: Figure,
+        ax: Axes3D,
         image: np.ndarray,
         log: bool,
         x_extent: float,
@@ -317,7 +328,7 @@ class BasePSF(Wavefront):
         linear_value = 10**value
         return f"{linear_value:.1e}"
 
-    def _annotate_original_size(self, fig: plt.Figure, original_size):
+    def _annotate_original_size(self, fig: Figure, original_size):
         """Annotates the original size of the zoomed PSF in the bottom right corner."""
         text = f"Original Size: {original_size[0]}×{original_size[1]}"
         fig.text(

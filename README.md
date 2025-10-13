@@ -136,12 +136,9 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Multi-Path Sequential Ray Tracing**
 - [ ] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 
-- [ ] **Diffractive Optical Elements**
-- [ ] **Additional Backends: JAX, CuPy**
 - [ ] **Jones Pupils**
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [ ] **Image Simulation**
-- [ ] **Huygens MTF**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
@@ -159,9 +156,6 @@ Welcome, contributors! This section outlines the major features and tasks that a
 | Multi Sequence Tracing | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🔍 Under Review | [#89](https://github.com/HarrisonKramer/optiland/issues/89)   |
 | Image Simulation Analysis | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#153](https://github.com/HarrisonKramer/optiland/issues/153) |
 | Diffraction Gratings and DOEs| [@Hhsoj](https://github.com/Hhsoj) [@mattemilio](https://github.com/mattemilio) | 🚧 In Progress | [#161](https://github.com/HarrisonKramer/optiland/issues/161) [#188](https://github.com/HarrisonKramer/optiland/discussions/188) [#225](https://github.com/HarrisonKramer/optiland/issues/225) |
-| Paraxial to Thick Lens | [@HarrisonKramer](https://github.com/HarrisonKramer) | 🚧 In Progress | [#221](https://github.com/HarrisonKramer/optiland/issues/221) |
-| **Analysis & Visualization** |                                                    |                |                                                  |
-| Huygens MTF | [@HarrisonKramer](https://github.com/HarrisonKramer)| 🚧 In Progress | [#222](https://github.com/HarrisonKramer/optiland/issues/222) |
 | **GUI** |                                                    |                |                                                  |
 | Code Cleanup | [@manuelFragata](https://github.com/manuelFragata)| 🚧 In Progress | - |
 
@@ -186,8 +180,23 @@ Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKram
 
 
 ## Contact and Support
-If you have questions, find a bug, have suggestions for new features, or need help, please [open an issue](https://github.com/HarrisonKramer/optiland/issues) in the GitHub repository. This ensures that your concern is visible to others, can be discussed collaboratively, and helps build a public archive of solutions for similar inquiries in the future.
 
-While I prefer issues as the primary means of communication, you may also contact me via email if necessary.
+If you have **found a bug**, have a **feature request**, or need to report a **documentation issue**, please [open an issue](https://github.com/HarrisonKramer/optiland/issues).  
+If you have a **question** or would like to start a broader **discussion**, please use the [GitHub Discussions](https://github.com/HarrisonKramer/optiland/discussions) section.  
 
-Kramer Harrison - kdanielharrison@gmail.com
+This keeps all project-related communication public, searchable, and helpful for others who may encounter the same problems or questions.
+
+Before opening an issue or discussion, please make sure you have:  
+- Checked the [documentation](https://optiland.readthedocs.io/en/latest/) and API reference  
+- Searched existing [issues](https://github.com/HarrisonKramer/optiland/issues) and [discussions](https://github.com/HarrisonKramer/optiland/discussions)  
+- Made a reasonable attempt to solve the problem on your own  
+
+Well-prepared reports and questions help maintainers and the community respond more effectively. Very low-effort submissions (for example, asking for direct answers without reviewing available resources) are discouraged.
+
+**Important**: I do not provide support by email.  
+Questions, bug reports, and feature requests sent directly to my inbox will not receive a reply. Please use GitHub Issues or Discussions instead.
+
+Email is reserved for matters that cannot reasonably go through GitHub, such as collaboration proposals, consulting or contract work, or other professional inquiries.
+
+Kramer Harrison – kdanielharrison@gmail.com
+

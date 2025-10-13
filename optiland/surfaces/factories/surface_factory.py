@@ -19,10 +19,11 @@ from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
 )
 from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
+from optiland.surfaces.factories.interaction_model_factory import (
+    InteractionModelFactory,
+)
 from optiland.surfaces.factories.material_factory import MaterialFactory
-from optiland.surfaces.grating_surface import GratingSurface
 from optiland.surfaces.object_surface import ObjectSurface
-from optiland.surfaces.paraxial_surface import ParaxialSurface
 from optiland.surfaces.standard_surface import Surface
 
 if TYPE_CHECKING:
@@ -52,6 +53,7 @@ class SurfaceFactory:
         self._geometry_factory = GeometryFactory()
         self.material_factory = MaterialFactory()
         self._coating_factory = CoatingFactory()
+        self._interaction_model_factory = InteractionModelFactory()
 
         self.use_absolute_cs = False
 
@@ -148,48 +150,35 @@ class SurfaceFactory:
             surface_obj.thickness = kwargs.get("thickness", 0.0)
             return surface_obj
 
-        # Create the appropriate surface type
+        # Determine interaction type
+        interaction_type = kwargs.get("interaction_type", "refractive_reflective")
         if surface_type == "paraxial":
-            surface_obj = ParaxialSurface(
-                kwargs["f"],
-                geometry,
-                material_pre,
-                material_post,
-                is_stop,
-                is_reflective=is_reflective,
-                coating=coating,
-                surface_type=surface_type,
-                aperture=kwargs.get("aperture"),
-            )
-            surface_obj.thickness = kwargs.get("thickness", 0.0)
-            return surface_obj
+            interaction_type = "thin_lens"
+        elif surface_type == "grating":
+            interaction_type = "diffractive"
 
-        # Create the appropriate surface type
-        if surface_type == "grating":
-            surface_obj = GratingSurface(
-                geometry,
-                material_pre,
-                material_post,
-                is_stop,
-                is_reflective=is_reflective,
-                coating=coating,
-                surface_type=surface_type,
-                aperture=kwargs.get("aperture"),
-            )
-            surface_obj.thickness = kwargs.get("thickness", 0.0)
-            return surface_obj
+        # Build interaction model
+        interaction_model = self._interaction_model_factory.create(
+            interaction_type=interaction_type,
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_reflective=is_reflective,
+            coating=coating,
+            bsdf=kwargs.get("bsdf"),
+            focal_length=kwargs.get("f"),
+        )
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
-            geometry,
-            material_pre,
-            material_post,
-            is_stop,
-            is_reflective=is_reflective,
-            coating=coating,
+            geometry=geometry,
+            material_pre=material_pre,
+            material_post=material_post,
+            is_stop=is_stop,
             surface_type=surface_type,
             comment=comment,
             aperture=kwargs.get("aperture"),
+            interaction_model=interaction_model,
         )
 
         # Add the thickness as an attribute to the surface

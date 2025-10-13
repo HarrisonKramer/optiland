@@ -4,6 +4,8 @@ from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import pytest
 
 import optiland.backend as be
@@ -17,6 +19,8 @@ from optiland.samples.simple import Edmund_49_847
 from optiland.samples.telescopes import HubbleTelescope
 from optiland.visualization.base import BaseViewer
 from optiland.visualization.system import OpticViewer, OpticViewer3D
+from optiland.visualization.system.system import OpticalSystem
+from optiland.visualization.system.lens import Lens2D, Lens3D
 from optiland.visualization.info import LensInfoViewer
 from optiland.visualization.analysis import SurfaceSagViewer
 
@@ -46,10 +50,10 @@ class InvalidMaterial(BaseMaterial):
         super().__init__()
         self.index = -42
 
-    def n(self, wavelength):
+    def _calculate_n(self, wavelength):
         return -42
 
-    def k(self, wavelength):
+    def _calculate_k(self, wavelength):
         return -42
 
 
@@ -78,8 +82,8 @@ class TestOpticViewer:
         fig, ax = viewer.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_from_optic(self, set_test_backend):
@@ -87,8 +91,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None  # verify figure creation
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_bonded_lens(self, set_test_backend):
@@ -96,8 +100,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_reflective_lens(self, set_test_backend):
@@ -105,8 +109,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_single_field(self, set_test_backend):
@@ -117,8 +121,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_chief_and_bundle(self, set_test_backend):
@@ -126,8 +130,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="chief")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_marginal_and_bundle(self, set_test_backend):
@@ -135,8 +139,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="marginal")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_invalid_reference(self, set_test_backend):
@@ -150,8 +154,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="chief", distribution=None)
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_marginal_only(self, set_test_backend):
@@ -159,8 +163,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="marginal", distribution=None)
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_plot_content_is_generated(self, set_test_backend):
@@ -183,6 +187,17 @@ class TestOpticViewer:
         assert ax.get_title() == custom_title
         assert ax.get_xlim() == custom_xlim
         assert ax.get_ylim() == custom_ylim
+        plt.close(fig)
+
+    def test_view_all_wavelengths(self, set_test_backend):
+        lens = ReverseTelephoto()
+        # Add a second wavelength to test "all"
+        lens.add_wavelength(value=0.65)
+        viewer = OpticViewer(lens)
+        fig, ax = viewer.view(wavelengths="all")
+        assert fig is not None
+        assert ax is not None
+        assert len(ax.get_lines()) > 0  # Ensure rays were drawn
         plt.close(fig)
 
 
@@ -530,3 +545,48 @@ class TestSurfaceSagViewer:
         viewer.view(surface_index=1, y_cross_section=1.5, x_cross_section=-1.5)
         assert plt.gcf() is not None
         plt.close()
+
+
+@pytest.mark.parametrize("projection, lens_class", [("2d", Lens2D), ("3d", Lens3D)])
+def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
+    """Test that a Mangin mirror is visualized as a single lens component."""
+    # Create a simple Mangin mirror
+    mangin_mirror = Optic(name="Mangin Mirror")
+    mangin_mirror.add_wavelength(value=0.55, is_primary=True)
+    mangin_mirror.add_surface(index=0, radius=be.inf, thickness=be.inf)  # Object
+    mangin_mirror.add_surface(index=1, radius=-100, thickness=+5, material="N-BK7")   # Front surface
+    mangin_mirror.add_surface(index=2, radius=-100, thickness=-5, material="mirror", is_stop=True)  # Back surface (reflective)
+    mangin_mirror.add_surface(index=3, radius=-100, thickness=-50, material="N-BK7")   # Front surface
+    mangin_mirror.add_surface(index=4, radius=be.inf)  # Image
+    mangin_mirror.set_field_type("angle")
+    mangin_mirror.add_field(y=0)
+    mangin_mirror.set_aperture(aperture_type="EPD", value=25)
+    mangin_mirror.add_wavelength(value=0.65, is_primary=True)
+
+    # Dummy rays object for OpticalSystem
+    class DummyRays:
+        def __init__(self, optic):
+            self.r_extent = [15] * optic.surface_group.num_surfaces
+
+    optical_system = OpticalSystem(
+        mangin_mirror, DummyRays(mangin_mirror), projection=projection
+    )
+    optical_system._identify_components()
+
+    # Verify the components were identified correctly
+    # Two "lens" (really just same lens, superimposed) and one image plane.
+    assert (
+        len(optical_system.components) == 3
+    ), "Expected two components: the lens and the image plane."
+
+    lens_components = [
+        c for c in optical_system.components if isinstance(c, lens_class)
+    ]
+    
+    # Ensure "two" lenses are found - really, this is the same lens, superimposed.
+    assert len(lens_components) == 2
+
+    # Ensure that the identified lens consists of two surfaces.
+    assert (
+        len(lens_components[0].surfaces) == 2
+    ), "The Mangin mirror component should be made of two surfaces."

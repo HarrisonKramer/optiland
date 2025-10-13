@@ -7,7 +7,9 @@ inherits from the VariableBehavior class.
 Kramer Harrison, 2024
 """
 
-import numpy as np
+from __future__ import annotations
+
+import contextlib
 
 from optiland.optimization.variable.base import VariableBehavior
 
@@ -48,10 +50,8 @@ class NurbsPointsVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         i, j, k = self.coeff_index
-        try:
+        with contextlib.suppress(IndexError):
             value = surf.geometry.P[i, j, k]
-        except IndexError:
-            pass
         #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
         #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
         #            c_new = np.pad(
@@ -77,10 +77,8 @@ class NurbsPointsVariable(VariableBehavior):
             new_value = self.inverse_scale(new_value)
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i, j, k = self.coeff_index
-        try:
+        with contextlib.suppress(IndexError):
             surf.geometry.P[i, j, k] = new_value
-        except IndexError:
-            pass
 
     #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
     #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
@@ -157,10 +155,8 @@ class NurbsWeightsVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         j, k = self.coeff_index
-        try:
+        with contextlib.suppress(IndexError):
             value = surf.geometry.W[j, k]
-        except IndexError:
-            pass
         #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
         #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])
         #            c_new = np.pad(
@@ -186,10 +182,8 @@ class NurbsWeightsVariable(VariableBehavior):
             new_value = self.inverse_scale(new_value)
         surf = self.optic.surface_group.surfaces[self.surface_number]
         j, k = self.coeff_index
-        try:
+        with contextlib.suppress(IndexError):
             surf.geometry.W[j, k] = new_value
-        except IndexError:
-            pass
 
     #            pad_width_i = max(0, i + 1 - surf.geometry.c.shape[0])
     #            pad_width_j = max(0, j + 1 - surf.geometry.c.shape[1])

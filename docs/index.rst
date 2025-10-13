@@ -154,12 +154,15 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
 
    api/api_introduction
    api/api_analysis
+   api/api_backend
    api/api_coatings
    api/api_core
+   api/api_fields
    api/api_fileio
    api/api_geometries
+   api/api_interactions
    api/api_materials
-   api/api_wavefront
+   api/api_ml
    api/api_optic
    api/api_optimization
    api/api_paraxial
@@ -170,6 +173,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
+   api/api_wavefront
    api/api_zernike
 
 

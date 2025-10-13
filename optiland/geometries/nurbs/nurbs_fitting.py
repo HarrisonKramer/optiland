@@ -5,8 +5,12 @@ Most of the code is derived from nurbs-geomdl package written by Onur R. Bingol 
 Matteo Taccola,2025
 """
 
+from __future__ import annotations
+
 from scipy.linalg import lu_factor, lu_solve
+
 import optiland.backend as be
+
 from .nurbs_basis_functions import basis_function, basis_function_one
 
 
@@ -85,7 +89,7 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
             nnp = basis_function_one(degree_u, kv_u, num_cpts_u - 1, uk[i])
             elem2 = [c * n0p for c in pt0]
             elem3 = [c * nnp for c in ptm]
-            rku.append([a - b - c for a, b, c in zip(ptk, elem2, elem3)])
+            rku.append([a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)])
         # Compute Ru - Eqn. 9.67
         ru = [[0.0 for _ in range(dim)] for _ in range(num_cpts_u - 2)]
         for i in range(1, num_cpts_u - 1):
@@ -136,7 +140,7 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
             nnp = basis_function_one(degree_v, kv_v, num_cpts_v - 1, vl[j])
             elem2 = [c * n0p for c in pt0]
             elem3 = [c * nnp for c in ptm]
-            rkv.append([a - b - c for a, b, c in zip(ptk, elem2, elem3)])
+            rkv.append([a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)])
         # Compute Rv - Eqn. 9.67
         rv = [[0.0 for _ in range(dim)] for _ in range(num_cpts_v - 2)]
         for j in range(1, num_cpts_v - 1):
@@ -205,7 +209,7 @@ def compute_params_curve(points, centripetal=False):
     :return: parameter array, :math:`\\overline{u}_{k}`
     :rtype: list
     """
-    if not isinstance(points, (list, tuple)):
+    if not isinstance(points, list | tuple):
         raise TypeError("Data points must be a list or a tuple")
 
     # Length of the points array

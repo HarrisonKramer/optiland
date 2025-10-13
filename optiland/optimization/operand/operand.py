@@ -72,12 +72,14 @@ METRIC_DICT = {
     "real_x_intercept_lcs": RayOperand.x_intercept_lcs,
     "real_y_intercept_lcs": RayOperand.y_intercept_lcs,
     "real_z_intercept_lcs": RayOperand.z_intercept_lcs,
+    "clearance": RayOperand.clearance,
     "real_L": RayOperand.L,
     "real_M": RayOperand.M,
     "real_N": RayOperand.N,
     "rms_spot_size": RayOperand.rms_spot_size,
     "OPD_difference": RayOperand.OPD_difference,
     "edge_thickness": LensOperand.edge_thickness,
+    "AOI": RayOperand.AOI,
 }
 
 

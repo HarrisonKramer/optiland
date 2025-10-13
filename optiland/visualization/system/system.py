@@ -86,8 +86,14 @@ class OpticalSystem:
                 self._add_component("surface", surf, extent)
 
             # Surface is a mirror
-            elif surf.is_reflective:
-                self._add_component("mirror", surf, extent)
+            elif surf.interaction_model.is_reflective:
+                if lens_surfaces:  # Second surface mirror (lens + mirror)
+                    surface = self._get_lens_surface(surf, extent)
+                    lens_surfaces.append(surface)
+                    self._add_component("lens", lens_surfaces)
+                    lens_surfaces = []
+                else:
+                    self._add_component("mirror", surf, extent)
 
             # Front surface of a lens
             elif n[k] > 1:

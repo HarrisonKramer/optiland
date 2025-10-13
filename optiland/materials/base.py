@@ -12,6 +12,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
+
+import optiland.backend as be
+
 
 class BaseMaterial(ABC):
     """Base class for materials.
@@ -27,10 +31,10 @@ class BaseMaterial(ABC):
         None
 
     Methods:
-        n(wavelength: float or be.ndarray) -> float or be.ndarray:
+        n(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the refractive index at a given
             wavelength(s) in microns.
-        k(wavelength: float or be.ndarray) -> float or be.ndarray:
+        k(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the extinction coefficient at a given
             wavelength(s) in microns.
         abbe() -> float:
@@ -40,32 +44,89 @@ class BaseMaterial(ABC):
 
     _registry = {}
 
+    def __init__(self):
+        """Initializes the material and its caches."""
+        self._n_cache = {}
+        self._k_cache = {}
+
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
         super().__init_subclass__(**kwargs)
         BaseMaterial._registry[cls.__name__] = cls
 
+    def _create_cache_key(self, wavelength: float | be.ndarray, **kwargs) -> tuple:
+        """Creates a hashable cache key from wavelength and kwargs."""
+        if be.is_array_like(wavelength):
+            wavelength_key = tuple(np.ravel(be.to_numpy(wavelength)))
+        else:
+            wavelength_key = wavelength
+        return (wavelength_key,) + tuple(sorted(kwargs.items()))
+
+    def n(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
+        """Calculates the refractive index at a given wavelength with caching.
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
+            **kwargs: Additional keyword arguments for calculation (e.g., temperature).
+
+        Returns:
+            float | be.ndarray: The refractive index at the given wavelength(s).
+        """
+        cache_key = self._create_cache_key(wavelength, **kwargs)
+
+        if cache_key in self._n_cache:
+            return self._n_cache[cache_key]
+
+        result = self._calculate_n(wavelength, **kwargs)
+        self._n_cache[cache_key] = result
+        return result
+
+    def k(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
+        """Calculates the extinction coefficient at a given wavelength with caching.
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
+            **kwargs: Additional keyword arguments for calculation.
+
+        Returns:
+            float | be.ndarray: The extinction coefficient at the given wavelength(s).
+        """
+        cache_key = self._create_cache_key(wavelength, **kwargs)
+
+        if cache_key in self._k_cache:
+            return self._k_cache[cache_key]
+
+        result = self._calculate_k(wavelength, **kwargs)
+        self._k_cache[cache_key] = result
+        return result
+
     @abstractmethod
-    def n(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+    def _calculate_n(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the refractive index at a given wavelength.
 
         Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float or be.ndarray: The refractive index at the given wavelength(s).
+            float | be.ndarray: The refractive index at the given wavelength(s).
         """
         pass  # pragma: no cover
 
     @abstractmethod
-    def k(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+    def _calculate_k(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the extinction coefficient at a given wavelength.
 
         Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float or be.ndarray: The extinction coefficient at the given
+            float | be.ndarray: The extinction coefficient at the given
             wavelength(s).
         """
         pass  # pragma: no cover

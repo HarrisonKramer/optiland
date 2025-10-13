@@ -4,12 +4,12 @@ This script initializes the QApplication and the MainWindow, starting the
 event loop to run the graphical user interface for Optiland.
 
 Author: Manuel Fragata Mendes, 2025
+Refactored by: Jules, 2025
 """
 
 from __future__ import annotations
 
 import sys
-import time
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QPixmap
@@ -28,32 +28,24 @@ def main():
         desired_size, Qt.KeepAspectRatio, Qt.SmoothTransformation
     )
 
-    # splash screen
-    splash = QSplashScreen()
-    splash.setPixmap(scaled_pixmap)
+    # Create and show splash screen
+    splash = QSplashScreen(scaled_pixmap)
     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
     splash.setEnabled(False)
-
+    splash.showMessage(
+        "<h3>Initializing application...</h3>",
+        Qt.AlignBottom | Qt.AlignHCenter,
+        Qt.white,
+    )
     splash.show()
     app.processEvents()
 
-    # Use a loop to simulate a longer loading process and update the message
-    # 3 seconds
-    total_steps = 30
-    for i in range(total_steps + 1):
-        message = f"<h3>Initializing application... {i * 100 // total_steps}%</h3>"
-        splash.showMessage(
-            message,
-            Qt.AlignBottom | Qt.AlignHCenter,
-            Qt.white,
-        )
-        time.sleep(0.1)
-        app.processEvents()
-
+    # Initialize the main window while splash is visible. The time taken here
+    # is the actual loading time the user experiences.
     window = MainWindow()
     window.show()
 
-    # close the splash screen
+    # Close the splash screen once the main window is ready
     splash.finish(window)
 
     sys.exit(app.exec())
