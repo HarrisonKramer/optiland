@@ -11,7 +11,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Type
+from typing import Any, ClassVar
 
 import numpy as np
 
@@ -33,7 +33,7 @@ class BaseMaterial(ABC):
             subclasses of BaseMaterial.
     """
 
-    _registry: ClassVar[dict[str, Type[BaseMaterial]]] = {}
+    _registry: ClassVar[dict[str, type[BaseMaterial]]] = {}
 
     def __init__(self) -> None:
         """Initializes the material and its caches."""
@@ -45,9 +45,7 @@ class BaseMaterial(ABC):
         super().__init_subclass__(**kwargs)
         BaseMaterial._registry[cls.__name__] = cls
 
-    def _create_cache_key(
-        self, wavelength: float | be.ndarray, **kwargs: Any
-    ) -> tuple:
+    def _create_cache_key(self, wavelength: float | be.ndarray, **kwargs: Any) -> tuple:
         """Creates a hashable cache key from wavelength and kwargs."""
         if be.is_array_like(wavelength):
             wavelength_key = tuple(np.ravel(be.to_numpy(wavelength)))
@@ -180,7 +178,7 @@ class BaseMaterial(ABC):
         return {"type": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "BaseMaterial":
+    def from_dict(cls, data: dict[str, Any]) -> BaseMaterial:
         """Create a material from a dictionary representation.
 
         This method acts as a factory, delegating to the appropriate subclass's

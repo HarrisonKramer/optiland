@@ -9,7 +9,7 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,9 @@ import optiland.backend as be
 from optiland.tolerancing.perturbation import RangeSampler
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from optiland.tolerancing.core import Tolerancing
 
 
@@ -122,9 +125,9 @@ class SensitivityAnalysis:
     def view(
         self,
         figsize: tuple[float, float] = (2.5, 3.3),
-        sharex: str = "col",
-        sharey: str = "row",
-    ) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
+        sharex: Literal["none", "all", "row", "col"] | bool = "col",
+        sharey: Literal["none", "all", "row", "col"] | bool = "row",
+    ) -> tuple[Figure, list[Axes]]:
         """Visualizes the sensitivity analysis results.
 
         Args:

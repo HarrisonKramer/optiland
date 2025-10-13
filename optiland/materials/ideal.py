@@ -34,9 +34,7 @@ class IdealMaterial(BaseMaterial):
         relative_to_environment (bool): Flag indicating if the index is relative.
     """
 
-    def __init__(
-        self, n: float, k: float = 0.0, relative_to_environment: bool = False
-    ):
+    def __init__(self, n: float, k: float = 0.0, relative_to_environment: bool = False):
         super().__init__()
         self.n_val = n
         self.k_val = k

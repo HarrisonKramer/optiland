@@ -141,7 +141,7 @@ class OpticUpdater:
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
-        surface.geometry.c[aspher_coeff_idx] = value
+        surface.geometry.coefficients[aspher_coeff_idx] = value
 
     def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.

@@ -17,6 +17,7 @@ import optiland.backend as be
 
 if TYPE_CHECKING:
     from optiland import Optic
+    from optiland._types import BEArray, ScalarOrArray
 
 
 class BaseFieldDefinition(ABC):
@@ -26,25 +27,25 @@ class BaseFieldDefinition(ABC):
     def get_ray_origins(
         self,
         optic: Optic,
-        Hx: be.ndarray | float,
-        Hy: be.ndarray | float,
-        Px: be.ndarray | float,
-        Py: be.ndarray | float,
-        vx: be.ndarray | float,
-        vy: be.ndarray | float,
-    ) -> tuple[be.ndarray, be.ndarray, be.ndarray]:
+        Hx: ScalarOrArray,
+        Hy: ScalarOrArray,
+        Px: ScalarOrArray,
+        Py: ScalarOrArray,
+        vx: ScalarOrArray,
+        vy: ScalarOrArray,
+    ) -> tuple[ScalarOrArray, ScalarOrArray, ScalarOrArray]:
         """Calculate the initial positions for rays originating at the object.
 
         Args:
-            Hx (float): Normalized x field coordinate.
-            Hy (float): Normalized y field coordinate.
-            Px (float or be.ndarray): x-coordinate of the pupil point.
-            Py (float or be.ndarray): y-coordinate of the pupil point.
-            vx (float): Vignetting factor in the x-direction.
-            vy (float): Vignetting factor in the y-direction.
+            Hx: Normalized x field coordinate.
+            Hy: Normalized y field coordinate.
+            Px: x-coordinate of the pupil point.
+            Py: y-coordinate of the pupil point.
+            vx: Vignetting factor in the x-direction.
+            vy: Vignetting factor in the y-direction.
 
         Returns:
-            tuple: A tuple containing the x, y, and z coordinates of the
+            A tuple containing the x, y, and z coordinates of the
                 object position.
 
         """
@@ -52,17 +53,17 @@ class BaseFieldDefinition(ABC):
 
     @abstractmethod
     def get_paraxial_object_position(
-        self, optic: Optic, Hy: float, y1: be.ndarray, EPL: float
-    ) -> tuple[be.ndarray, be.ndarray]:
+        self, optic: Optic, Hy: ScalarOrArray, y1: ScalarOrArray, EPL: ScalarOrArray
+    ) -> tuple[BEArray, BEArray]:
         """Calculate the position of the object in the paraxial optical system.
 
         Args:
-            Hy (float): The normalized field height.
-            y1 (ndarray): The initial y-coordinate of the ray.
-            EPL (float): The entrance pupil location.
+            Hy: The normalized field height.
+            y1: The initial y-coordinate of the ray.
+            EPL: The entrance pupil location.
 
         Returns:
-            tuple: A tuple containing the y and z coordinates of the object
+            A tuple containing the y and z coordinates of the object
                 position.
 
         """
@@ -70,8 +71,12 @@ class BaseFieldDefinition(ABC):
 
     @abstractmethod
     def scale_chief_ray_for_field(
-        self, optic: Optic, y_obj_unit: float, u_obj_unit: float, y_img_unit: float
-    ) -> float:
+        self,
+        optic: Optic,
+        y_obj_unit: ScalarOrArray,
+        u_obj_unit: ScalarOrArray,
+        y_img_unit: ScalarOrArray,
+    ) -> ScalarOrArray:
         """Calculates the scaling factor for a unit chief ray based on the field
         definition.
 
@@ -80,13 +85,13 @@ class BaseFieldDefinition(ABC):
         final scaling factor.
 
         Args:
-            optic (Optic): The optical system.
-            y_obj_unit (float): The object-space height of the unit ray.
-            u_obj_unit (float): The object-space angle of the unit ray.
-            y_img_unit (float): The image-space height of the unit ray.
+            optic: The optical system.
+            y_obj_unit: The object-space height of the unit ray.
+            u_obj_unit: The object-space angle of the unit ray.
+            y_img_unit: The image-space height of the unit ray.
 
         Returns:
-            float: The scaling factor.
+            The scaling factor.
 
         """
         pass  # pragma: no cover

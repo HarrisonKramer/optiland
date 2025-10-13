@@ -222,7 +222,7 @@ class TestOptic:
             coefficients=[0.0, 0.0, 0.0],
         )
         self.optic.set_asphere_coeff(0.1, 0, 2)
-        assert self.optic.surface_group.surfaces[0].geometry.c[2] == 0.1
+        assert self.optic.surface_group.surfaces[0].geometry.coefficients[2] == 0.1
 
     def test_set_polarization(self, set_test_backend):
         self.optic.set_polarization("ignore")
@@ -533,3 +533,43 @@ class TestOptic:
         mock_viewer.assert_called_once_with(lens)
         viewer_instance = mock_viewer.return_value
         viewer_instance.view.assert_called_once_with(1, 2.0, -2.0)
+
+
+def test_flip_updates_thickness_attribute(set_test_backend):
+    """
+    Verify that Optic.flip() correctly updates the thickness attribute
+    of each surface to maintain consistency with z-positions.
+
+    From bug reported in issue #362
+    """
+    lens = Optic()
+    lens.add_surface(index=0, thickness=be.inf, material="Air")
+    lens.add_surface(index=1, material="N-BK7", thickness=7.0)
+    lens.add_surface(index=2, material="SF5", thickness=2.5)
+    lens.add_surface(index=3, material="Air", thickness=70.0)
+    lens.add_surface(index=4, material="Air")
+
+    lens.flip()
+
+    flipped_surfaces = lens.surface_group.surfaces
+    
+    # Expected thicknesses after flip (reversed order)
+    expected_thicknesses = [be.inf, 70.0, 2.5, 7.0, 0.0]
+
+    # Assertions
+    assert flipped_surfaces[0].thickness == expected_thicknesses[0]
+    assert flipped_surfaces[1].thickness == expected_thicknesses[1]
+    assert flipped_surfaces[2].thickness == expected_thicknesses[2]
+    assert flipped_surfaces[3].thickness == expected_thicknesses[3]
+    assert flipped_surfaces[4].thickness == expected_thicknesses[4]
+    
+    # Also verify relationship between thickness and z-position
+    assert flipped_surfaces[1].thickness == pytest.approx(
+        be.to_numpy(flipped_surfaces[2].geometry.cs.z - flipped_surfaces[1].geometry.cs.z)
+    )
+    assert flipped_surfaces[2].thickness == pytest.approx(
+        be.to_numpy(flipped_surfaces[3].geometry.cs.z - flipped_surfaces[2].geometry.cs.z)
+    )
+    assert flipped_surfaces[3].thickness == pytest.approx(
+        be.to_numpy(flipped_surfaces[4].geometry.cs.z - flipped_surfaces[3].geometry.cs.z)
+    )

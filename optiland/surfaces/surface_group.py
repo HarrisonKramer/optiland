@@ -10,10 +10,16 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
+
+if TYPE_CHECKING:
+    from optiland._types import SurfaceType
+    from optiland.materials import BaseMaterial
 
 
 class SurfaceGroup:
@@ -210,11 +216,11 @@ class SurfaceGroup:
     def add_surface(
         self,
         new_surface=None,
-        surface_type="standard",
+        surface_type: SurfaceType = "standard",
         comment="",
         index=None,
         is_stop=False,
-        material="air",
+        material: str | BaseMaterial = "air",
         **kwargs,
     ):
         """Adds a new surface to the list of surfaces.
@@ -312,6 +318,17 @@ class SurfaceGroup:
         num_surfaces_before_removal = len(self.surfaces)
 
         del self.surfaces[index]
+
+        # If the removed surface was not the last one, update material linkage
+        if index < len(self.surfaces):
+            surface_before = self.surfaces[index - 1]
+            surface_after = self.surfaces[index]
+            new_pre_material = surface_before.material_post
+
+            # TODO: Refactor the Surface class with a property setter to handle this
+            #       internal sync automatically.
+            surface_after.material_pre = new_pre_material
+            surface_after.interaction_model.material_pre = new_pre_material
 
         if not self.surface_factory.use_absolute_cs:
             was_not_last_surface = index < num_surfaces_before_removal - 1
@@ -473,18 +490,31 @@ class SurfaceGroup:
                 original_idx_of_new_k = original_indices_in_segment[
                     len(segment_to_reverse) - 1 - k
                 ]
-                original_idx_of_new_k_plus_1 = original_indices_in_segment[
-                    len(segment_to_reverse) - 1 - (k + 1)
-                ]
 
-                # The thickness is between these two original surfaces
+                # The thickness should be the gap that followed this surface in the
+                # original order
                 thickness = abs(
                     original_vertex_gcs_z_coords[original_idx_of_new_k]
-                    - original_vertex_gcs_z_coords[original_idx_of_new_k_plus_1]
+                    - original_vertex_gcs_z_coords[original_idx_of_new_k + 1]
                 )
 
                 next_surf_in_new_order.geometry.cs.z = (
                     current_surf_in_new_order.geometry.cs.z + thickness
                 )
+                current_surf_in_new_order.thickness = thickness
+
+            # Handle the last surface in the flipped segment
+            last_surface_in_segment = self.surfaces[
+                start_index + len(segment_to_reverse) - 1
+            ]
+            original_idx_of_last = original_indices_in_segment[0]
+            if original_idx_of_last + 1 < len(original_vertex_gcs_z_coords):
+                last_thickness = abs(
+                    original_vertex_gcs_z_coords[original_idx_of_last]
+                    - original_vertex_gcs_z_coords[original_idx_of_last + 1]
+                )
+            else:
+                last_thickness = 0.0
+            last_surface_in_segment.thickness = last_thickness
 
         self.reset()

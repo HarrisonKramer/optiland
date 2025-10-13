@@ -318,6 +318,15 @@ class ViewerPanel(QWidget):
         if self.viewer3D:
             self.viewer3D.render_optic()
 
+    def update_theme(self, theme_name: str):
+        """Updates the theme for all viewers in this panel."""
+        if self.viewer2D:
+            self.viewer2D.update_theme(theme_name)
+        if self.viewer3D:
+            self.viewer3D.update_theme(theme_name)
+        if self.sagViewer:
+            self.sagViewer.update_theme(theme_name)
+
 
 class MatplotlibViewer(QWidget):
     """

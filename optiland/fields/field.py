@@ -21,21 +21,21 @@ class Field:
 
     def __init__(
         self,
-        x=0,
-        y=0,
-        vignette_factor_x=0.0,
-        vignette_factor_y=0.0,
+        x: float = 0,
+        y: float = 0,
+        vignette_factor_x: float = 0.0,
+        vignette_factor_y: float = 0.0,
     ):
         self.x = x
         self.y = y
         self.vx = vignette_factor_x
         self.vy = vignette_factor_y
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert the field to a dictionary.
 
         Returns:
-            dict: A dictionary representation of the field.
+            A dictionary representation of the field.
 
         """
         return {
@@ -46,14 +46,14 @@ class Field:
         }
 
     @classmethod
-    def from_dict(cls, field_dict):
+    def from_dict(cls, field_dict: dict) -> Field:
         """Create a field from a dictionary.
 
         Args:
-            field_dict (dict): A dictionary representation of the field.
+            field_dict: A dictionary representation of the field.
 
         Returns:
-            Field: A field object created from the dictionary.
+            A field object created from the dictionary.
 
         """
         return cls(

@@ -11,13 +11,16 @@ from __future__ import annotations
 import contextlib
 import os
 from io import StringIO
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import yaml
 
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class MaterialFile(BaseMaterial):
@@ -105,9 +108,7 @@ class MaterialFile(BaseMaterial):
         if self.is_relative_to_air:
             # Use a standard air reference, not the global environment
             standard_air = Air(conditions=EnvironmentalConditions())
-            n_air_reference = standard_air._calculate_absolute_n(
-                wavelength, **kwargs
-            )
+            n_air_reference = standard_air._calculate_absolute_n(wavelength, **kwargs)
             absolute_n_reference = catalog_n * n_air_reference
         else:
             absolute_n_reference = catalog_n

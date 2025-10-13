@@ -24,13 +24,9 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import optiland.backend as be
 
-if TYPE_CHECKING:
-    from ..conditions import EnvironmentalConditions
-
+from ..conditions import EnvironmentalConditions
 
 # --- Model Constants from Ciddor (1996), Appendix A ---
 
@@ -181,9 +177,11 @@ def _calculate_compressibility(
     term3 = (C0_Z + C1_Z * t_c) * be.power(xw, 2)
     term4 = D_Z + E_Z * be.power(xw, 2)
 
-    z = 1.0 - (pressure_pa / temp_k) * (term1 + term2 + term3) + be.power(
-        pressure_pa / temp_k, 2
-    ) * term4
+    z = (
+        1.0
+        - (pressure_pa / temp_k) * (term1 + term2 + term3)
+        + be.power(pressure_pa / temp_k, 2) * term4
+    )
     return z
 
 
@@ -237,11 +235,10 @@ def ciddor_refractive_index(
     )
 
     # Refractivity of pure water vapor at 20°C, 1333 Pa [cite: 63]
-    n_ws_minus_1 = 1e-8 * CF_VAPOR * (
-        W0
-        + W1 * sigma_sq
-        + W2 * be.power(sigma_sq, 2)
-        + W3 * be.power(sigma_sq, 3)
+    n_ws_minus_1 = (
+        1e-8
+        * CF_VAPOR
+        * (W0 + W1 * sigma_sq + W2 * be.power(sigma_sq, 2) + W3 * be.power(sigma_sq, 3))
     )
 
     # --- 2. Calculate actual and standard densities via BIPM-91 ---

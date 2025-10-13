@@ -81,11 +81,11 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         if coefficients is None:
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = be.atleast_2d(coefficients)
+        self.coefficients = be.atleast_2d(coefficients)
         self.is_symmetric = False
 
-        if len(self.c) == 0:
-            self.c = be.zeros((1, 1))
+        if len(self.coefficients) == 0:
+            self.coefficients = be.zeros((1, 1))
 
     def __str__(self):
         return "Polynomial XY"
@@ -103,9 +103,9 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         """
         r2 = x**2 + y**2
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
-        for i in range(len(self.c)):
-            for j in range(len(self.c[i])):
-                z = z + self.c[i][j] * (x**i) * (y**j)
+        for i in range(len(self.coefficients)):
+            for j in range(len(self.coefficients[i])):
+                z = z + self.coefficients[i][j] * (x**i) * (y**j)
         return z
 
     def _surface_normal(self, x, y):
@@ -126,13 +126,13 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
         dzdx = x / denom
         dzdy = y / denom
 
-        for i in range(1, len(self.c)):
-            for j in range(len(self.c[i])):
-                dzdx = dzdx + i * self.c[i][j] * (x ** (i - 1)) * (y**j)
+        for i in range(1, len(self.coefficients)):
+            for j in range(len(self.coefficients[i])):
+                dzdx = dzdx + i * self.coefficients[i][j] * (x ** (i - 1)) * (y**j)
 
-        for i in range(len(self.c)):
-            for j in range(1, len(self.c[i])):
-                dzdy = dzdy + j * self.c[i][j] * (x**i) * (y ** (j - 1))
+        for i in range(len(self.coefficients)):
+            for j in range(1, len(self.coefficients[i])):
+                dzdy = dzdy + j * self.coefficients[i][j] * (x**i) * (y ** (j - 1))
 
         norm = be.sqrt(dzdx**2 + dzdy**2 + 1)
         nx = dzdx / norm
@@ -149,7 +149,7 @@ class PolynomialGeometry(NewtonRaphsonGeometry):
 
         """
         geometry_dict = super().to_dict()
-        geometry_dict["coefficients"] = self.c.tolist()
+        geometry_dict["coefficients"] = self.coefficients.tolist()
         return geometry_dict
 
     @classmethod

@@ -8,7 +8,7 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +16,14 @@ import numpy as np
 import optiland.backend as be
 from optiland.analysis.spot_diagram import SpotDiagram
 from optiland.analysis.through_focus import ThroughFocusAnalysis
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from numpy.typing import NDArray
+
+    from optiland._types import DistributionType
+    from optiland.optic import Optic
 
 
 class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
@@ -49,13 +57,13 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def __init__(
         self,
-        optic,
+        optic: Optic,
         delta_focus: float = 0.1,
         num_steps: int = 5,
         fields="all",
         wavelengths="all",
         num_rings: int = 6,
-        distribution: str = "hexapolar",
+        distribution: DistributionType = "hexapolar",
         coordinates: Literal["global", "local"] = "local",
     ):
         """Initializes the ThroughFocusSpotDiagram analysis.
@@ -85,7 +93,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                 Defaults to "local".
         """
         self.num_rings = num_rings
-        self.distribution = distribution
+        self.distribution: DistributionType = distribution
         if coordinates not in ["global", "local"]:
             raise ValueError("Coordinates must be 'global' or 'local'.")
         self.coordinates = coordinates
@@ -128,25 +136,26 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure | None = None,
         figsize_per_plot: tuple[float, float] = (3, 3),
         buffer: float = 1.05,
-    ) -> tuple[plt.Figure, list[plt.Axes]]:
+    ) -> tuple[Figure, list[Axes]] | None:
         """
         Visualizes the through-focus spot diagrams, either in a new window or on a
         provided GUI figure.
 
         Args:
-            fig_to_plot_on (plt.Figure, optional): A matplotlib figure to plot on.
+            fig_to_plot_on: A matplotlib figure to plot on.
                 If None, a new figure will be created.
-            figsize_per_plot (tuple[float, float], optional): Size of each subplot
+            figsize_per_plot: Size of each subplot
             in inches
                 (width, height). Defaults to (3, 3).
-            buffer (float, optional): Scaling buffer applied to the maximum radius
+            buffer: Scaling buffer applied to the maximum radius
                 for axis limits. Defaults to 1.05.
 
         Returns:
-            tuple[plt.Figure, list[plt.Axes]]: The figure and axes used for plotting.
+            A tuple containing the figure and a list of axes used for plotting. Or None
+                if updating the GUI.
         """
         is_gui_embedding = fig_to_plot_on is not None
         if not self._validate_view_prerequisites():
@@ -211,20 +220,20 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         self._add_legend(
             current_fig, legend_handles, legend_labels, num_fields, figsize_per_plot
         )
-        current_fig.tight_layout(rect=[0, 0.03, 1, 0.97])
+        current_fig.tight_layout(rect=(0, 0.03, 1, 0.97))
 
         if is_gui_embedding and hasattr(current_fig, "canvas"):
             current_fig.canvas.draw_idle()
         return current_fig, current_fig.get_axes()
 
-    def _validate_view_prerequisites(self):
+    def _validate_view_prerequisites(self) -> bool:
         """Validates prerequisites before plotting.
 
         Checks whether results, fields, and wavelengths are present
         and non-empty.
 
         Returns:
-            bool: True if plotting can proceed, False otherwise.
+            True if plotting can proceed, False otherwise.
         """
         if not self.results:
             print("No data to display. Run analysis first.")
@@ -236,13 +245,13 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def _create_subplot_grid(
         self, num_fields: int, num_steps: int, figsize_per_plot: tuple[float, float]
-    ) -> tuple[plt.Figure, list[plt.Axes]]:
+    ) -> tuple[Figure, NDArray[np.object_]]:
         """Creates a 2D grid of subplots.
 
         Args:
-            num_fields (int): Number of rows (fields).
-            num_steps (int): Number of columns (defocus steps).
-            figsize_per_plot (tuple): Size per subplot in inches.
+            num_fields: Number of rows (fields).
+            num_steps: Number of columns (defocus steps).
+            figsize_per_plot: Size per subplot in inches.
 
         Returns:
             tuple: (matplotlib.figure.Figure, ndarray of Axes).
@@ -321,7 +330,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def _plot_wavelengths(
         self,
-        ax: plt.Axes,
+        ax: Axes,
         field_data: list,
         cx: float,
         cy: float,
@@ -363,7 +372,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def _configure_subplot(
         self,
-        ax: plt.Axes,
+        ax: Axes,
         field: tuple,
         defocus: float,
         i: int,
@@ -404,7 +413,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
 
     def _add_legend(
         self,
-        fig: plt.Figure,
+        fig: Figure,
         handles: list,
         labels: list,
         num_fields: int,

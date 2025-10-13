@@ -384,7 +384,7 @@ class OptilandConnector(QObject):
 
     def _get_material_data(self, surface) -> str:
         """Gets the material string for a surface."""
-        if surface.is_reflective:
+        if surface.interaction_model.is_reflective:
             return "Mirror"
         mat = surface.material_post
         if isinstance(mat, IdealMaterial):

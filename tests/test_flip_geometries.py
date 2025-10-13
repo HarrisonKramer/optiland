@@ -91,13 +91,13 @@ def test_flip_chebyshev_geometry():
 
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs))
 
 
 def test_flip_even_asphere_geometry():
@@ -110,13 +110,13 @@ def test_flip_even_asphere_geometry():
 
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
-    assert geom.c == initial_coeffs
+    assert geom.coefficients == initial_coeffs
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert geom.c == initial_coeffs
+    assert geom.coefficients == initial_coeffs
 
 
 def test_flip_odd_asphere_geometry():
@@ -131,13 +131,13 @@ def test_flip_odd_asphere_geometry():
 
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
-    assert geom.c == initial_coeffs  # In OddAsphere, self.c stores the coefficients
+    assert geom.coefficients == initial_coeffs
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert geom.c == initial_coeffs
+    assert geom.coefficients == initial_coeffs
 
 
 def test_flip_polynomial_geometry():
@@ -152,13 +152,13 @@ def test_flip_polynomial_geometry():
     assert geom.radius == initial_radius
     assert geom.k == initial_conic
     # PolynomialGeometry might convert to be.array internally, ensure comparison is robust
-    assert be.allclose(geom.c, be.array(initial_coeffs_list))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs_list))
 
     geom.flip()
 
     assert geom.radius == -initial_radius
     assert geom.k == initial_conic
-    assert be.allclose(geom.c, be.array(initial_coeffs_list))
+    assert be.allclose(geom.coefficients, be.array(initial_coeffs_list))
 
 
 def test_flip_toroidal_geometry():

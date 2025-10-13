@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from typing_extensions import Self
+
 from optiland.materials.air import Air
 
 from .conditions import EnvironmentalConditions
@@ -32,7 +34,7 @@ class EnvironmentManager:
 
     _instance: EnvironmentManager | None = None
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> EnvironmentManager:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         """Ensures that only one instance of EnvironmentManager is created."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
