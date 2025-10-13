@@ -26,6 +26,7 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **BuergiR** (`GitHub <https://github.com/BuergiR>`_)
 - **Corentin Nannini** (`GitHub <https://github.com/lordpositron>`_)
 - **Robert Moerland** (`GitHub <https://github.com/rjmoerland>`_)
+- **Littie28** (`GitHub <https://github.com/Littie28>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
