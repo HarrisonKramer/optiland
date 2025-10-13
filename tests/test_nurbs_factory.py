@@ -11,10 +11,7 @@ class MockSurfaceGroup:
         self.num_surfaces = num_surfaces
         self.surfaces = []
 
-@pytest.mark.skip(reason="MockSurfaceGroup is missing a `surfaces` attribute.")
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_factory(backend):
-    be.set_backend(backend)
+def test_nurbs_factory(set_test_backend):
     config = {
         "surface_type": "NurbsGeometry",
         "radius": 100,
