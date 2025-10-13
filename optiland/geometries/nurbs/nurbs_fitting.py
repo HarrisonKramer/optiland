@@ -71,18 +71,13 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
             nnp = basis_function_one(degree_u, kv_u, num_cpts_u - 1, uk[i])
             elem2 = [c * n0p for c in pt0]
             elem3 = [c * nnp for c in ptm]
-            rku.append(
-                [a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)]
-            )
+            rku.append([a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)])
         ru = [[0.0 for _ in range(dim)] for _ in range(num_cpts_u - 2)]
         for i in range(1, num_cpts_u - 1):
             ru_tmp = []
             for idx, pt in enumerate(rku):
                 ru_tmp.append(
-                    [
-                        p * basis_function_one(degree_u, kv_u, i, uk[idx + 1])
-                        for p in pt
-                    ]
+                    [p * basis_function_one(degree_u, kv_u, i, uk[idx + 1]) for p in pt]
                 )
             for d in range(dim):
                 for idx in range(len(ru_tmp)):
@@ -104,9 +99,7 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
     matrix_ntnv = be.matmul(matrix_ntv, matrix_nv)
     lu, piv = lu_factor(matrix_ntnv)
 
-    ctrlpts = [
-        [0.0 for _ in range(dim)] for _ in range(num_cpts_u * num_cpts_v)
-    ]
+    ctrlpts = [[0.0 for _ in range(dim)] for _ in range(num_cpts_u * num_cpts_v)]
     for i in range(num_cpts_u):
         ctrlpts[0 + (num_cpts_v * i)] = list(ctrlpts_tmp[0 + (size_v * i)])
         ctrlpts[num_cpts_v - 1 + (num_cpts_v * i)] = list(
@@ -121,18 +114,13 @@ def approximate_surface(points, size_u, size_v, degree_u, degree_v, **kwargs):
             nnp = basis_function_one(degree_v, kv_v, num_cpts_v - 1, vl[j])
             elem2 = [c * n0p for c in pt0]
             elem3 = [c * nnp for c in ptm]
-            rkv.append(
-                [a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)]
-            )
+            rkv.append([a - b - c for a, b, c in zip(ptk, elem2, elem3, strict=False)])
         rv = [[0.0 for _ in range(dim)] for _ in range(num_cpts_v - 2)]
         for j in range(1, num_cpts_v - 1):
             rv_tmp = []
             for idx, pt in enumerate(rkv):
                 rv_tmp.append(
-                    [
-                        p * basis_function_one(degree_v, kv_v, j, vl[idx + 1])
-                        for p in pt
-                    ]
+                    [p * basis_function_one(degree_v, kv_v, j, vl[idx + 1]) for p in pt]
                 )
             for d in range(dim):
                 for idx in range(len(rv_tmp)):
@@ -198,9 +186,7 @@ def compute_params_curve(points, centripetal=False):
     cds = [0.0 for _ in range(num_points + 1)]
     cds[-1] = 1.0
     for i in range(1, num_points):
-        distance = be.linalg.norm(
-            be.asarray(points[i]) - be.asarray(points[i - 1])
-        )
+        distance = be.linalg.norm(be.asarray(points[i]) - be.asarray(points[i - 1]))
         cds[i] = be.sqrt(distance) if centripetal else distance
 
     d = sum(cds[1:-1])

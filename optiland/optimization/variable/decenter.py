@@ -20,7 +20,8 @@ class DecenterVariable(VariableBehavior):
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
             axis (str): The axis of the decenter. Valid values are 'x', 'y', and 'z'.
-            scaler (Scaler): The scaler to use for the variable. Defaults to IdentityScaler().
+            scaler (Scaler): The scaler to use for the variable. Defaults to
+                IdentityScaler().
             **kwargs: Additional keyword arguments.
         **kwargs: Additional keyword arguments.
 

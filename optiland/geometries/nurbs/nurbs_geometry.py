@@ -494,9 +494,7 @@ class NurbsGeometry(BaseGeometry):
         w_ders = bspline_derivatives[:, :, [-1], :]
 
         n_dim, N = be.shape(P)[0], be.size(u)
-        nurbs_derivatives = be.zeros(
-            (up_to_order_u + 1, up_to_order_v + 1, n_dim, N)
-        )
+        nurbs_derivatives = be.zeros((up_to_order_u + 1, up_to_order_v + 1, n_dim, N))
 
         for k in range(up_to_order_u + 1):
             for L in range(up_to_order_v + 1):
@@ -522,15 +520,11 @@ class NurbsGeometry(BaseGeometry):
                             * w_ders[[i], [j], ...]
                             * nurbs_derivatives[[k - i], [L - j], ...]
                         )
-                nurbs_derivatives[k, L, ...] = (
-                    temp_numerator / w_ders[[0], [0], ...]
-                )
+                nurbs_derivatives[k, L, ...] = temp_numerator / w_ders[[0], [0], ...]
         return nurbs_derivatives
 
     @staticmethod
-    def compute_bspline_derivatives(
-        P, p, q, U, V, u, v, up_to_order_u, up_to_order_v
-    ):
+    def compute_bspline_derivatives(P, p, q, U, V, u, v, up_to_order_u, up_to_order_v):
         """Computes the derivatives of a B-Spline surface.
 
         This function computes the analytic derivatives of a B-Spline surface
@@ -555,27 +549,19 @@ class NurbsGeometry(BaseGeometry):
         u = be.asarray(u)
 
         n_dim, N = be.shape(P)[0], be.size(u)
-        bspline_derivatives = be.zeros(
-            (up_to_order_u + 1, up_to_order_v + 1, n_dim, N)
-        )
+        bspline_derivatives = be.zeros((up_to_order_u + 1, up_to_order_v + 1, n_dim, N))
 
         for order_u in range(min(p, up_to_order_u) + 1):
             for order_v in range(min(q, up_to_order_v) + 1):
                 n = be.shape(P)[1] - 1
                 m = be.shape(P)[2] - 1
 
-                N_basis_u = compute_basis_polynomials_derivatives(
-                    n, p, U, u, order_u
-                )
-                N_basis_v = compute_basis_polynomials_derivatives(
-                    m, q, V, v, order_v
-                )
+                N_basis_u = compute_basis_polynomials_derivatives(n, p, U, u, order_u)
+                N_basis_v = compute_basis_polynomials_derivatives(m, q, V, v, order_v)
 
                 A = be.dot(P, N_basis_v)
                 B = be.repeat(N_basis_u[be.newaxis], repeats=n_dim, axis=0)
-                bspline_derivatives[order_u, order_v, :, :] = be.sum(
-                    A * B, axis=1
-                )
+                bspline_derivatives[order_u, order_v, :, :] = be.sum(A * B, axis=1)
         return bspline_derivatives
 
     def get_normals(self, u, v):
@@ -623,18 +609,10 @@ class NurbsGeometry(BaseGeometry):
         ).reshape(2, -1)
 
         _, Np = r.shape
-        a = be.sum(
-            N1 * self.get_derivative(u, v, order_u=1, order_v=0).T, axis=1
-        )
-        b = be.sum(
-            N1 * self.get_derivative(u, v, order_u=0, order_v=1).T, axis=1
-        )
-        c = be.sum(
-            N2 * self.get_derivative(u, v, order_u=1, order_v=0).T, axis=1
-        )
-        d = be.sum(
-            N2 * self.get_derivative(u, v, order_u=0, order_v=1).T, axis=1
-        )
+        a = be.sum(N1 * self.get_derivative(u, v, order_u=1, order_v=0).T, axis=1)
+        b = be.sum(N1 * self.get_derivative(u, v, order_u=0, order_v=1).T, axis=1)
+        c = be.sum(N2 * self.get_derivative(u, v, order_u=1, order_v=0).T, axis=1)
+        d = be.sum(N2 * self.get_derivative(u, v, order_u=0, order_v=1).T, axis=1)
 
         J = be.vstack((a, b, c, d)).T.reshape((Np, 2, 2))
         adj = be.zeros((Np, 2, 2))
@@ -742,15 +720,9 @@ class NurbsGeometry(BaseGeometry):
         mask = be.logical_and(rays.L > rays.M, rays.L > rays.N)
 
         N1x[mask] = rays.M[mask] / be.sqrt(rays.L[mask] ** 2 + rays.M[mask] ** 2)
-        N1y[mask] = -rays.L[mask] / be.sqrt(
-            rays.L[mask] ** 2 + rays.M[mask] ** 2
-        )
-        N1y[~mask] = rays.N[~mask] / be.sqrt(
-            rays.N[~mask] ** 2 + rays.M[~mask] ** 2
-        )
-        N1z[~mask] = -rays.M[~mask] / be.sqrt(
-            rays.N[~mask] ** 2 + rays.M[~mask] ** 2
-        )
+        N1y[mask] = -rays.L[mask] / be.sqrt(rays.L[mask] ** 2 + rays.M[mask] ** 2)
+        N1y[~mask] = rays.N[~mask] / be.sqrt(rays.N[~mask] ** 2 + rays.M[~mask] ** 2)
+        N1z[~mask] = -rays.M[~mask] / be.sqrt(rays.N[~mask] ** 2 + rays.M[~mask] ** 2)
 
         N1 = be.column_stack((N1x, N1y, N1z))
 

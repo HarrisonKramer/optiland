@@ -51,11 +51,7 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
             if (U[i + k + 1] - U[i + 1]) == 0:
                 n2 = be.zeros((Nu,), dtype=u.dtype)
             else:
-                n2 = (
-                    (U[i + k + 1] - u)
-                    / (U[i + k + 1] - U[i + 1])
-                    * N[k - 1, i + 1, :]
-                )
+                n2 = (U[i + k + 1] - u) / (U[i + k + 1] - U[i + 1]) * N[k - 1, i + 1, :]
             N[k, i, ...] = n1 + n2
 
     N = N[p, 0 : n + 1, :] if return_degree is None else N[return_degree, 0 : n + 1, :]
@@ -85,26 +81,20 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         evaluated at ´u´.
     """
     if derivative_order > p:
-        print(
-            "The derivative order is higher than the degree of the basis "
-            "polynomials"
-        )
+        print("The derivative order is higher than the degree of the basis polynomials")
 
     u = be.asarray(u * 1.0)
     Nu = u.size
 
     if derivative_order >= 1:
         derivative_order -= 1
-        N = compute_basis_polynomials_derivatives(
-            n, p - 1, U, u, derivative_order
-        )
+        N = compute_basis_polynomials_derivatives(n, p - 1, U, u, derivative_order)
     elif derivative_order == 0:
         N = compute_basis_polynomials(n, p, U, u)
         return N
     else:
         print(
-            "Oooopps, something went wrong in "
-            "compute_basis_polynomials_derivatives()"
+            "Oooopps, something went wrong in compute_basis_polynomials_derivatives()"
         )
         N = compute_basis_polynomials(n, p, U, u)
         return N
