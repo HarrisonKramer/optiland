@@ -2,6 +2,9 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.figure import Figure
 import pytest
 
 import optiland.backend as be
@@ -67,7 +70,7 @@ class TestOPDFan:
         fig, ax = opd_fan.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
@@ -77,7 +80,7 @@ class TestOPDFan:
         fig, ax = opd_fan.view(figsize=(20, 20))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         plt.close(fig)
 
 
@@ -97,8 +100,8 @@ class TestOPD:
         fig, ax = opd.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
@@ -108,8 +111,8 @@ class TestOPD:
         fig, ax = opd.view(figsize=(20, 20))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
@@ -119,8 +122,8 @@ class TestOPD:
         fig, ax = opd.view(projection="3d")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes3D)
         plt.close(fig)
 
     def test_old_invalid_projection(self, set_test_backend):
@@ -157,8 +160,8 @@ class TestZernikeOPD:
         fig, ax = zernike_opd.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
@@ -168,8 +171,8 @@ class TestZernikeOPD:
         fig, ax = zernike_opd.view(figsize=(20, 20))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     @patch("matplotlib.pyplot.show")
@@ -179,8 +182,8 @@ class TestZernikeOPD:
         fig, ax = zernike_opd.view(projection="3d")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes3D)
         plt.close(fig)
 
     def test_zernike_opd_rms(self, set_test_backend):

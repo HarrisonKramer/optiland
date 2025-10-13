@@ -26,7 +26,7 @@ except ImportError:
 
 
 if TYPE_CHECKING:
-    from optiland._types import BEArray, ScalarOrArray
+    from optiland._types import BEArrayT, ScalarOrArrayT
 
 
 # ndarray: either a NumPy ndarray or a PyTorch Tensor
@@ -39,7 +39,7 @@ _torch_equal = (
 )
 
 
-def array_equal(a: BEArray, b: BEArray) -> bool:
+def array_equal(a: BEArrayT, b: BEArrayT) -> bool:
     """Elementwise equality test for arrays/tensors in the active backend."""
     from . import get_backend
 
@@ -53,7 +53,7 @@ def array_equal(a: BEArray, b: BEArray) -> bool:
 # arrays/tensors created when a *different* backend was active
 
 
-def isinf(x: ScalarOrArray) -> ScalarOrArray:
+def isinf(x: ScalarOrArrayT) -> ScalarOrArrayT:
     """Checks if input is infinity (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         # Assumes torch_backend defines isinf (e.g., calling torch.isinf)
@@ -63,7 +63,7 @@ def isinf(x: ScalarOrArray) -> ScalarOrArray:
     return _np.isinf(x)
 
 
-def isnan(x: ScalarOrArray) -> ScalarOrArray:
+def isnan(x: ScalarOrArrayT) -> ScalarOrArrayT:
     """Checks if input is NaN (handles np.ndarray/scalars and torch.Tensor)."""
     if _torch_available and isinstance(x, _torch.Tensor):
         return _torch.isnan(x)

@@ -23,7 +23,7 @@ class IdealMaterial(BaseMaterial):
 
     """
 
-    def __init__(self, n, k=0):
+    def __init__(self, n: float, k: float = 0):
         super().__init__()
         self.index = be.array([n])
         self.absorp = be.array([k])

@@ -496,11 +496,11 @@ def test_find_closest_glass(set_test_backend):
 
 
 def test_plot_nk():
-    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
 
     mat = materials.Material("BK7")
     fig, axes = materials.plot_nk(mat, wavelength_range=(0.1, 15))
     assert fig is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(axes, list)
+    assert isinstance(fig, Figure)
+    assert isinstance(axes, tuple)
     assert len(axes) == 2

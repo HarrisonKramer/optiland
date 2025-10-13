@@ -4,6 +4,8 @@ from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import pytest
 
 import optiland.backend as be
@@ -80,8 +82,8 @@ class TestOpticViewer:
         fig, ax = viewer.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_from_optic(self, set_test_backend):
@@ -89,8 +91,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None  # verify figure creation
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_bonded_lens(self, set_test_backend):
@@ -98,8 +100,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_reflective_lens(self, set_test_backend):
@@ -107,8 +109,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_single_field(self, set_test_backend):
@@ -119,8 +121,8 @@ class TestOpticViewer:
         fig, ax = lens.draw()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_chief_and_bundle(self, set_test_backend):
@@ -128,8 +130,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="chief")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_marginal_and_bundle(self, set_test_backend):
@@ -137,8 +139,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="marginal")
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_invalid_reference(self, set_test_backend):
@@ -152,8 +154,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="chief", distribution=None)
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_reference_marginal_only(self, set_test_backend):
@@ -161,8 +163,8 @@ class TestOpticViewer:
         fig, ax = lens.draw(reference="marginal", distribution=None)
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_plot_content_is_generated(self, set_test_backend):

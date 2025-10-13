@@ -8,9 +8,13 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-import optiland.backend as be
+from typing import TYPE_CHECKING
 
-from .field import Field
+import optiland.backend as be
+from optiland.fields.field import Field
+
+if TYPE_CHECKING:
+    from optiland._types import ScalarOrArray
 
 
 class FieldGroup:
@@ -104,7 +108,7 @@ class FieldGroup:
         vy_new = result[..., 1]
         return vx_new, vy_new
 
-    def get_field_coords(self):
+    def get_field_coords(self) -> list[tuple[ScalarOrArray, ScalarOrArray]]:
         """Returns the coordinates of the fields.
 
         If the maximum field size is 0, it returns a single coordinate (0, 0).
@@ -112,7 +116,7 @@ class FieldGroup:
         based on the maximum field size.
 
         Returns:
-            list[tuple[float, float]]: A list of tuples, where each tuple
+            A list of tuples, where each tuple
             contains the (normalized_x, normalized_y) coordinates of a field.
 
         """

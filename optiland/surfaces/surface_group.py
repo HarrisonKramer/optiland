@@ -10,10 +10,16 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.standard_surface import Surface
+
+if TYPE_CHECKING:
+    from optiland._types import SurfaceType
+    from optiland.materials import BaseMaterial
 
 
 class SurfaceGroup:
@@ -210,11 +216,11 @@ class SurfaceGroup:
     def add_surface(
         self,
         new_surface=None,
-        surface_type="standard",
+        surface_type: SurfaceType = "standard",
         comment="",
         index=None,
         is_stop=False,
-        material="air",
+        material: str | BaseMaterial = "air",
         **kwargs,
     ):
         """Adds a new surface to the list of surfaces.

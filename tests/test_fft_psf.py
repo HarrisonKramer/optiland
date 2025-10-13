@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import optiland.backend as be
 import pytest
 
@@ -138,8 +140,8 @@ def test_view(projection, log, make_fftpsf, set_test_backend):
     fig, ax = fftpsf.view(projection=projection, log=log)
     assert fig is not None
     assert ax is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(ax, plt.Axes)
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
     plt.close(fig)
 
 

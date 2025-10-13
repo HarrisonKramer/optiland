@@ -7,11 +7,17 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
 
 from .spot_diagram import SpotData, SpotDiagram
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class EncircledEnergy(SpotDiagram):
@@ -66,8 +72,10 @@ class EncircledEnergy(SpotDiagram):
         )
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (7, 4.5)
-    ) -> tuple[plt.Figure, plt.Axes]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (7, 4.5),
+    ) -> tuple[Figure, Axes]:
         """Plot the Encircled Energy curve.
 
         Args:
