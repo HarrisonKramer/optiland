@@ -39,7 +39,7 @@ class BaseInteractionModel(ABC):
     def material_pre(self):
         return (
             self.parent_surface.material_post
-            if self.parent_surface.previous_surface is None 
+            if self.parent_surface.previous_surface is None
             else self.parent_surface.previous_surface.material_post
         )
 
@@ -94,6 +94,9 @@ class BaseInteractionModel(ABC):
         # Remove 'type' from data to avoid passing it to the constructor
         init_data = data.copy()
         init_data.pop("type")
+        # Ignore 'material_pre' that might be present in older files but is obsolete:
+        if hasattr(init_data, "material_pre"):
+            init_data.pop("material_pre")
 
         if "coating" in init_data and init_data["coating"] is not None:
             init_data["coating"] = BaseCoating.from_dict(init_data["coating"])
