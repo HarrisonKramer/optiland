@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from optiland.rays.real_rays import RealRays
 
 
-class GrinPropagation(BasePropagationModel):
+class GRINPropagation(BasePropagationModel):
     """Placeholder for GRIN propagation.
 
     This model is not yet implemented and will raise an error if used.

@@ -7,7 +7,7 @@ from optiland.geometries.standard import StandardGeometry
 from optiland.materials.ideal import IdealMaterial
 from optiland.optic.optic import Optic
 from optiland.surfaces.standard_surface import Surface
-from optiland.propagation.grin import GrinPropagation
+from optiland.propagation.grin import GRINPropagation
 
 
 def test_optic_serialization_with_default_homogeneous_model():
@@ -38,9 +38,9 @@ def test_optic_serialization_with_default_homogeneous_model():
 
 def test_optic_serialization_with_grin_model():
     """Verify serialization works with a non-default Grin model."""
-    # Create a material with a GrinPropagation model
+    # Create a material with a GRINPropagation model
     grin_material = IdealMaterial(n=1.0)
-    grin_material.propagation_model = GrinPropagation()
+    grin_material.propagation_model = GRINPropagation()
 
     optic = Optic()
     optic.add_surface(
@@ -55,12 +55,12 @@ def test_optic_serialization_with_grin_model():
 
     # Check that the propagation model is serialized correctly
     pm_data = d["surface_group"]["surfaces"][0]["material_pre"]["propagation_model"]
-    assert pm_data["class"] == "GrinPropagation"
+    assert pm_data["class"] == "GRINPropagation"
 
     # Check that it can be deserialized correctly
     optic_from_dict = Optic.from_dict(d)
     assert (
         optic_from_dict.surface_group.surfaces[0]
         .material_pre.propagation_model.__class__.__name__
-        == "GrinPropagation"
+        == "GRINPropagation"
     )
