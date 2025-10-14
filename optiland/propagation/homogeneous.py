@@ -1,4 +1,7 @@
 """Homogeneous, straight-line propagation model."""
+
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from optiland import backend as be
@@ -12,7 +15,7 @@ if TYPE_CHECKING:
 class HomogeneousPropagation(BasePropagationModel):
     """Propagates rays in a straight line through a homogeneous medium."""
 
-    def __init__(self, material: 'BaseMaterial'):
+    def __init__(self, material: BaseMaterial):
         """Initializes the HomogeneousPropagation model.
 
         Args:
@@ -21,7 +24,7 @@ class HomogeneousPropagation(BasePropagationModel):
         """
         self.material = material
 
-    def propagate(self, rays: 'RealRays', t: float) -> None:
+    def propagate(self, rays: RealRays, t: float) -> None:
         """Propagate the rays a distance t.
 
         This implements straight-line propagation and accounts for material

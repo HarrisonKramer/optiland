@@ -50,7 +50,7 @@ class BaseMaterial(ABC):
 
     _registry = {}
 
-    def __init__(self, propagation_model: "BasePropagationModel" | None = None):
+    def __init__(self, propagation_model: BasePropagationModel | None = None):
         """Initializes the material and its caches.
 
         Args:

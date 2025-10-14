@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
 from optiland.propagation.base import BasePropagationModel
-from optiland.propagation.homogeneous import HomogeneousPropagation
 
 if TYPE_CHECKING:
     from optiland.propagation.base import BasePropagationModel
@@ -34,7 +33,7 @@ class IdealMaterial(BaseMaterial):
         self,
         n: float,
         k: float = 0,
-        propagation_model: "BasePropagationModel" | None = None,
+        propagation_model: BasePropagationModel | None = None,
     ):
         super().__init__(propagation_model)
         self.index = be.array([n])

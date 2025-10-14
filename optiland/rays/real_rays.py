@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import BEArray, ScalarOrArray
-    from optiland.materials import BaseMaterial
 
 
 class RealRays(BaseRays):
