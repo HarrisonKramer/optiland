@@ -16,6 +16,13 @@ if TYPE_CHECKING:
 class BasePropagationModel(abc.ABC):
     """Abstract base class for all propagation models."""
 
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses in the factory registry."""
+        super().__init_subclass__(**kwargs)
+        BasePropagationModel._registry[cls.__name__] = cls
+
     @abc.abstractmethod
     def propagate(self, rays: RealRays, t: float) -> None:
         """Propagates rays a distance t through the medium.
@@ -38,18 +45,27 @@ class BasePropagationModel(abc.ABC):
         return {"class": self.__class__.__name__}
 
     @classmethod
-    @abc.abstractmethod
     def from_dict(
         cls, d: dict[str, Any], material: BaseMaterial
     ) -> BasePropagationModel:
-        """Deserializes a propagation model from a dictionary.
+        """Deserializes a propagation model from a dictionary using a factory pattern.
 
-        Note: This method should be called by the parent `BaseMaterial`
-        during its deserialization process to correctly resolve circular
-        dependencies.
+        This factory method finds the correct propagation model subclass
+        from the registry and delegates the deserialization to it.
 
         Args:
-            d: A dictionary containing the serialized data.
-            material: The parent material instance.
+            d: A dictionary containing the serialized data, including a 'class' key.
+            material: The parent material instance, passed to the subclass constructor.
+
+        Returns:
+            An instance of a specific propagation model subclass.
         """
-        raise NotImplementedError
+        model_class_name = d.get("class")
+        if model_class_name not in cls._registry:
+            raise ValueError(f"Unknown propagation model class: {model_class_name}")
+
+        # Look up the specific subclass in the registry.
+        model_subclass = cls._registry[model_class_name]
+
+        # Delegate the actual object creation to the subclass's from_dict method.
+        return model_subclass.from_dict(d, material)
