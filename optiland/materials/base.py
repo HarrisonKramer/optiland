@@ -11,10 +11,15 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 import optiland.backend as be
+from optiland.propagation.homogeneous import HomogeneousPropagation
+
+if TYPE_CHECKING:
+    from optiland.propagation.base import BasePropagationModel
 
 
 class BaseMaterial(ABC):
@@ -28,7 +33,8 @@ class BaseMaterial(ABC):
     `k` to provide specific material properties.
 
     Attributes:
-        None
+        propagation_model: The model used to propagate rays through this
+            material.
 
     Methods:
         n(wavelength: float | be.ndarray) -> float | be.ndarray:
@@ -44,10 +50,21 @@ class BaseMaterial(ABC):
 
     _registry = {}
 
-    def __init__(self):
-        """Initializes the material and its caches."""
+    def __init__(self, propagation_model: "BasePropagationModel" | None = None):
+        """Initializes the material and its caches.
+
+        Args:
+            propagation_model: The propagation model to use for this material.
+                If None, a default HomogeneousPropagation model is created.
+        """
         self._n_cache = {}
         self._k_cache = {}
+        # The propagation model is instantiated with a reference to self,
+        # creating a circular reference that is managed carefully.
+        if propagation_model is None:
+            self.propagation_model = HomogeneousPropagation(self)
+        else:
+            self.propagation_model = propagation_model
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
@@ -155,7 +172,10 @@ class BaseMaterial(ABC):
             dict: The dictionary representation of the material.
 
         """
-        return {"type": self.__class__.__name__}
+        return {
+            "type": self.__class__.__name__,
+            "propagation_model": self.propagation_model.to_dict(),
+        }
 
     @classmethod
     def from_dict(cls, data):

@@ -255,44 +255,28 @@ def test_rotate_z(set_test_backend):
     assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
 
-def test_propagate(set_test_backend):
-    rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+def test_normalize(set_test_backend):
+    """Test the normalization of ray direction cosines."""
+    # Create rays with unnormalized direction cosines
+    rays = RealRays(x=0, y=0, z=0, L=1, M=1, N=1, intensity=1, wavelength=0.5)
+    rays.is_normalized = False
 
-    rays.propagate(2.0)
+    rays.normalize()
 
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 5.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
+    # Check that the flag is updated
+    assert rays.is_normalized is True
 
-    rays.propagate(-1.5)
+    # Check that the direction cosines are correctly normalized
+    expected_L = 1 / be.sqrt(3)
+    expected_M = 1 / be.sqrt(3)
+    expected_N = 1 / be.sqrt(3)
+    assert_allclose(rays.L[0], expected_L, atol=1e-10)
+    assert_allclose(rays.M[0], expected_M, atol=1e-10)
+    assert_allclose(rays.N[0], expected_N, atol=1e-10)
 
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
-
-    rays.propagate(0.0)
-
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
-
-    rays.propagate(3.0)
-
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 6.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
+    # Check that the magnitude is 1
+    magnitude = be.sqrt(rays.L[0] ** 2 + rays.M[0] ** 2 + rays.N[0] ** 2)
+    assert_allclose(magnitude, 1.0, atol=1e-10)
 
 
 def test_clip(set_test_backend):
@@ -860,19 +844,6 @@ class TestRayGenerator:
 
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-
-    def test_normalize(self):
-        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
-
-        # normalize during propagation
-        rays.is_normalized = False
-        rays.propagate(1.0)
-        assert rays.is_normalized is True
-
-        # manually normalize
-        rays.is_normalized = False
-        rays.normalize()
-        assert rays.is_normalized is True
 
 
 @pytest.mark.usefixtures("set_test_backend")

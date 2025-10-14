@@ -9,8 +9,15 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
+from optiland.propagation.base import BasePropagationModel
+from optiland.propagation.homogeneous import HomogeneousPropagation
+
+if TYPE_CHECKING:
+    from optiland.propagation.base import BasePropagationModel
 
 
 class IdealMaterial(BaseMaterial):
@@ -23,8 +30,13 @@ class IdealMaterial(BaseMaterial):
 
     """
 
-    def __init__(self, n: float, k: float = 0):
-        super().__init__()
+    def __init__(
+        self,
+        n: float,
+        k: float = 0,
+        propagation_model: "BasePropagationModel" | None = None,
+    ):
+        super().__init__(propagation_model)
         self.index = be.array([n])
         self.absorp = be.array([k])
 
@@ -84,4 +96,22 @@ class IdealMaterial(BaseMaterial):
             IdealMaterial: The material.
 
         """
+        propagation_model_data = data.get("propagation_model")
+        # This is a temporary solution. A more robust factory would be needed
+        # for multiple propagation models.
+        if (
+            propagation_model_data
+            and propagation_model_data.get("class") == "GrinPropagation"
+        ):
+            # The material needs to be passed to the propagation model, but
+            # it hasn't been created yet. We create the material first, and
+            # the BaseMaterial __init__ handles creating the default model.
+            # Then we can replace it. This is a bit clunky.
+            # A better solution would be a true factory for materials.
+            from optiland.propagation.grin import GrinPropagation
+
+            material = cls(data["index"], data.get("absorp", 0))
+            material.propagation_model = GrinPropagation()
+            return material
+
         return cls(data["index"], data.get("absorp", 0))
