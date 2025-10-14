@@ -55,3 +55,19 @@ class HomogeneousPropagation(BasePropagationModel):
         # normalize, if required
         if not rays.is_normalized:
             rays.normalize()
+
+    @classmethod
+    def from_dict(cls, d: dict, material: BaseMaterial) -> HomogeneousPropagation:
+        """Creates a HomogeneousPropagation model from a dictionary.
+
+        This method is called by the parent material during its own
+        deserialization process to resolve dependencies.
+
+        Args:
+            d: The dictionary representation of the model.
+            material: The parent material instance.
+
+        Returns:
+            An instance of the HomogeneousPropagation model.
+        """
+        return cls(material=material)

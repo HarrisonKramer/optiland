@@ -9,6 +9,7 @@ import abc
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from optiland.materials.base import BaseMaterial
     from optiland.rays.real_rays import RealRays
 
 
@@ -37,15 +38,18 @@ class BasePropagationModel(abc.ABC):
         return {"class": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> BasePropagationModel:
+    @abc.abstractmethod
+    def from_dict(
+        cls, d: dict[str, Any], material: BaseMaterial
+    ) -> BasePropagationModel:
         """Deserializes a propagation model from a dictionary.
 
-        Note: This is part of the common serialization interface but should
-        not be used directly. Propagation models are instantiated and linked
-        by their parent `BaseMaterial` during the material's deserialization
-        process to correctly resolve circular dependencies.
+        Note: This method should be called by the parent `BaseMaterial`
+        during its deserialization process to correctly resolve circular
+        dependencies.
+
+        Args:
+            d: A dictionary containing the serialized data.
+            material: The parent material instance.
         """
-        raise NotImplementedError(
-            "Propagation models must be deserialized by their parent Material "
-            "to resolve dependencies."
-        )
+        raise NotImplementedError

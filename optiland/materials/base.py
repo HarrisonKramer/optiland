@@ -1,4 +1,4 @@
-"""Basae Material
+"""Base Material
 
 This module defines the base class for materials. The base class provides
 methods to calculate the refractive index, extinction coefficient, and Abbe
@@ -11,15 +11,12 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
 import numpy as np
 
 import optiland.backend as be
+from optiland.propagation.base import BasePropagationModel
 from optiland.propagation.homogeneous import HomogeneousPropagation
-
-if TYPE_CHECKING:
-    from optiland.propagation.base import BasePropagationModel
 
 
 class BaseMaterial(ABC):
@@ -180,6 +177,10 @@ class BaseMaterial(ABC):
     def from_dict(cls, data):
         """Create a material from a dictionary representation.
 
+        This factory method first delegates to the appropriate subclass to
+        create the material instance, then handles the deserialization of
+        the propagation model.
+
         Args:
             data (dict): The dictionary representation of the material.
 
@@ -192,5 +193,18 @@ class BaseMaterial(ABC):
         if material_type not in cls._registry:
             raise ValueError(f"Unknown material type: {material_type}")
 
-        # Delegate to the correct subclass's from_dict
-        return cls._registry[material_type].from_dict(data)
+        # Delegate to the correct subclass to create the instance.
+        material_subclass = cls._registry[material_type]
+        material = material_subclass.from_dict(data)
+
+        # Handle the propagation model deserialization here.
+        propagation_model_data = data.get("propagation_model")
+        if propagation_model_data:
+            # Create the model, passing the material to resolve dependencies.
+            new_prop_model = BasePropagationModel.from_dict(
+                propagation_model_data, material=material
+            )
+            # Overwrite the default propagation model.
+            material.propagation_model = new_prop_model
+
+        return material

@@ -557,15 +557,4 @@ class MaterialFile(BaseMaterial):
         if "filename" not in data:
             raise ValueError("Material file data missing filename.")
 
-        material = cls(data["filename"])
-
-        propagation_model_data = data.get("propagation_model")
-        if (
-            propagation_model_data
-            and propagation_model_data.get("class") == "GrinPropagation"
-        ):
-            from optiland.propagation.grin import GrinPropagation
-
-            material.propagation_model = GrinPropagation()
-
-        return material
+        return cls(data["filename"])
