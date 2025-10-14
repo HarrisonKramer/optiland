@@ -1,4 +1,7 @@
-"""Homogeneous, straight-line propagation model."""
+"""Homogeneous, straight-line propagation model.
+
+Kramer Harrison, 2025
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
-"""Abstract base class for propagation models."""
+"""Abstract base class for propagation models.
+
+Kramer Harrison, 2025
+"""
 
 from __future__ import annotations
 

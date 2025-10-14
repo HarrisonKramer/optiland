@@ -59,8 +59,7 @@ class BaseMaterial(ABC):
         """
         self._n_cache = {}
         self._k_cache = {}
-        # The propagation model is instantiated with a reference to self,
-        # creating a circular reference that is managed carefully.
+
         if propagation_model is None:
             self.propagation_model = HomogeneousPropagation(self)
         else:
