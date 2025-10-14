@@ -60,6 +60,7 @@ class Material(MaterialFile):
         robust_search=True,
         min_wavelength=None,
         max_wavelength=None,
+        propagation_model=None,
     ):
         self.name = name
         self.reference = reference
@@ -67,7 +68,7 @@ class Material(MaterialFile):
         self.min_wavelength = min_wavelength
         self.max_wavelength = max_wavelength
         file, self.material_data = self._retrieve_file()
-        super().__init__(file)
+        super().__init__(file, propagation_model=propagation_model)
 
     @classmethod
     def _load_dataframe(cls):
@@ -284,4 +285,5 @@ class Material(MaterialFile):
             data.get("robust_search", True),
             data.get("min_wavelength", None),
             data.get("max_wavelength", None),
+            # propagation_model is handled by MaterialFile.from_dict
         )

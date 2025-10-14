@@ -1,4 +1,4 @@
-"""Basae Material
+"""Base Material
 
 This module defines the base class for materials. The base class provides
 methods to calculate the refractive index, extinction coefficient, and Abbe
@@ -15,6 +15,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 import optiland.backend as be
+from optiland.propagation.base import BasePropagationModel
+from optiland.propagation.homogeneous import HomogeneousPropagation
 
 
 class BaseMaterial(ABC):
@@ -28,7 +30,8 @@ class BaseMaterial(ABC):
     `k` to provide specific material properties.
 
     Attributes:
-        None
+        propagation_model: The model used to propagate rays through this
+            material.
 
     Methods:
         n(wavelength: float | be.ndarray) -> float | be.ndarray:
@@ -44,10 +47,20 @@ class BaseMaterial(ABC):
 
     _registry = {}
 
-    def __init__(self):
-        """Initializes the material and its caches."""
+    def __init__(self, propagation_model: BasePropagationModel | None = None):
+        """Initializes the material and its caches.
+
+        Args:
+            propagation_model: The propagation model to use for this material.
+                If None, a default HomogeneousPropagation model is created.
+        """
         self._n_cache = {}
         self._k_cache = {}
+
+        if propagation_model is None:
+            self.propagation_model = HomogeneousPropagation(self)
+        else:
+            self.propagation_model = propagation_model
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
@@ -155,11 +168,18 @@ class BaseMaterial(ABC):
             dict: The dictionary representation of the material.
 
         """
-        return {"type": self.__class__.__name__}
+        return {
+            "type": self.__class__.__name__,
+            "propagation_model": self.propagation_model.to_dict(),
+        }
 
     @classmethod
     def from_dict(cls, data):
         """Create a material from a dictionary representation.
+
+        This factory method first delegates to the appropriate subclass to
+        create the material instance, then handles the deserialization of
+        the propagation model.
 
         Args:
             data (dict): The dictionary representation of the material.
@@ -173,5 +193,18 @@ class BaseMaterial(ABC):
         if material_type not in cls._registry:
             raise ValueError(f"Unknown material type: {material_type}")
 
-        # Delegate to the correct subclass's from_dict
-        return cls._registry[material_type].from_dict(data)
+        # Delegate to the correct subclass to create the instance.
+        material_subclass = cls._registry[material_type]
+        material = material_subclass.from_dict(data)
+
+        # Handle the propagation model deserialization here.
+        propagation_model_data = data.get("propagation_model")
+        if propagation_model_data:
+            # Create the model, passing the material to resolve dependencies.
+            new_prop_model = BasePropagationModel.from_dict(
+                propagation_model_data, material=material
+            )
+            # Overwrite the default propagation model.
+            material.propagation_model = new_prop_model
+
+        return material

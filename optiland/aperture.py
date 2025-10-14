@@ -70,6 +70,9 @@ class Aperture:
             Aperture: A new Aperture instance created from the data.
 
         """
+        if data is None:
+            return None
+
         required_keys = {"type", "value"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()

@@ -31,6 +31,9 @@ class MaterialFile(BaseMaterial):
 
     Args:
         filename (str): The path to the material file.
+        propagation_model (BasePropagationModel, optional): The propagation
+            model to use. Defaults to None, which creates a
+            HomogeneousPropagation model.
 
     Attributes:
         filename (str): The filename of the material file.
@@ -45,8 +48,8 @@ class MaterialFile(BaseMaterial):
 
     """
 
-    def __init__(self, filename):
-        super().__init__()
+    def __init__(self, filename, propagation_model=None):
+        super().__init__(propagation_model)
         self.filename = filename
         self._k_warning_printed = False
         self.coefficients = []
@@ -554,5 +557,4 @@ class MaterialFile(BaseMaterial):
         if "filename" not in data:
             raise ValueError("Material file data missing filename.")
 
-        material = cls(data["filename"])
-        return material
+        return cls(data["filename"])

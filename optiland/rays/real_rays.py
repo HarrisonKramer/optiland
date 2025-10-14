@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import BEArray, ScalarOrArray
-    from optiland.materials import BaseMaterial
 
 
 class RealRays(BaseRays):
@@ -129,21 +128,6 @@ class RealRays(BaseRays):
             self.L * be.cos(rz) - self.M * be.sin(rz),
             self.L * be.sin(rz) + self.M * be.cos(rz),
         )
-
-    def propagate(self, t: float, material: BaseMaterial | None = None):
-        """Propagate the rays a distance t."""
-        self.x = self.x + t * self.L
-        self.y = self.y + t * self.M
-        self.z = self.z + t * self.N
-
-        if material is not None:
-            k = material.k(self.w)
-            alpha = 4 * be.pi * k / self.w
-            self.i = self.i * be.exp(-alpha * t * 1e3)  # mm to microns
-
-        # normalize, if required
-        if not self.is_normalized:
-            self.normalize()
 
     def clip(self, condition: BEArray):
         """Clip the rays based on a condition."""
