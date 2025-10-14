@@ -288,7 +288,6 @@ class Surface:
             )
             bsdf = BaseBSDF.from_dict(data["bsdf"]) if data.get("bsdf") else None
             interaction_model = RefractiveReflectiveModel(
-                geometry=geometry,
                 parent_surface=None,
                 is_reflective=data.get("is_reflective", False),
                 coating=coating,
