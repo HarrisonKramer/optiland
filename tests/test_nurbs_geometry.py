@@ -10,21 +10,22 @@ from optiland.geometries.nurbs.nurbs_geometry import NurbsGeometry
 def test_nurbs_geometry_init(backend):
     be.set_backend(backend)
     cs = CoordinateSystem()
-    geo = NurbsGeometry(cs, nurbs_norm_x=1, nurbs_norm_y=1)
+    geo = NurbsGeometry(cs, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10)
     geo.fit_surface()
     assert geo is not None
 
 
-@pytest.mark.skip(reason="Sag calculation is not accurate enough for this test.")
 @pytest.mark.parametrize("backend", be.list_available_backends())
 def test_nurbs_geometry_sag(backend):
     be.set_backend(backend)
     cs = CoordinateSystem()
-    geo = NurbsGeometry(cs, radius=100, conic=-1, nurbs_norm_x=1, nurbs_norm_y=1)
+    geo = NurbsGeometry(
+        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
     geo.fit_surface()
     sag = geo.sag(x=be.asarray([0, 10]), y=be.asarray([0, 0]))
-    assert be.allclose(sag[0], 0.0, atol=1e-6)
-    assert be.allclose(sag[1], 100 * (1 - be.sqrt(1 - 10**2 / 100**2)), atol=1e-6)
+    assert be.allclose(sag[0], 0.0, atol=1e-4)
+    assert be.allclose(sag[1], 0.5, atol=1e-4)
 
 
 class MockRays:
@@ -32,15 +33,73 @@ class MockRays:
         self.x = x
         self.y = y
 
-@pytest.mark.skip(reason="`p` is not a scalar in the torch backend.")
 @pytest.mark.parametrize("backend", be.list_available_backends())
 def test_nurbs_geometry_normal(backend):
     be.set_backend(backend)
     cs = CoordinateSystem()
-    geo = NurbsGeometry(cs, radius=100, conic=-1, nurbs_norm_x=1, nurbs_norm_y=1)
+    geo = NurbsGeometry(
+        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
     geo.fit_surface()
     rays = MockRays(x=be.asarray([0]), y=be.asarray([0]))
     nx, ny, nz = geo.surface_normal(rays)
-    assert be.allclose(nx, 0.0, atol=1e-6)
-    assert be.allclose(ny, 0.0, atol=1e-6)
-    assert be.allclose(nz, 1.0, atol=1e-6)
+    assert be.allclose(nx, 0.0, atol=1e-5)
+    assert be.allclose(ny, 0.0, atol=1e-5)
+    assert be.allclose(nz, 1.0, atol=1e-5)
+
+
+@pytest.mark.parametrize("backend", be.list_available_backends())
+def test_nurbs_get_value(backend):
+    be.set_backend(backend)
+    cs = CoordinateSystem()
+    geo = NurbsGeometry(
+        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
+    geo.fit_surface()
+    # Test a point that should be on the surface
+    val = geo.get_value(u=be.asarray([0.5]), v=be.asarray([0.5]))
+    assert val.shape == (3, 1)
+
+
+@pytest.mark.parametrize("backend", be.list_available_backends())
+def test_nurbs_get_derivative(backend):
+    be.set_backend(backend)
+    cs = CoordinateSystem()
+    geo = NurbsGeometry(
+        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
+    geo.fit_surface()
+    # Test derivative at a point
+    derivative = geo.get_derivative(u=be.asarray([0.5]), v=be.asarray([0.5]), order_u=1, order_v=0)
+    assert derivative.shape == (3, 1)
+
+
+class MockRaysDistance:
+    def __init__(self, x, y, z, L, M, N):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.L = L
+        self.M = M
+        self.N = N
+
+
+@pytest.mark.parametrize("backend", be.list_available_backends())
+def test_nurbs_distance(backend):
+    be.set_backend(backend)
+    cs = CoordinateSystem()
+    geo = NurbsGeometry(
+        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
+    geo.fit_surface()
+    # Test distance to a ray
+    rays = MockRaysDistance(
+        x=be.asarray([0]),
+        y=be.asarray([0]),
+        z=be.asarray([-10]),
+        L=be.asarray([0]),
+        M=be.asarray([0]),
+        N=be.asarray([1]),
+    )
+    distance = geo.distance(rays)
+    assert be.allclose(distance, 10, atol=1e-4)

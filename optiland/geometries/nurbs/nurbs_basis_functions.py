@@ -89,6 +89,11 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
     if derivative_order >= 1:
         derivative_order -= 1
         N = compute_basis_polynomials_derivatives(n, p - 1, U, u, derivative_order)
+        # The recursive logic for calculating derivatives requires n+2 basis
+        # functions of degree p-1 to compute n+1 derivatives of degree p.
+        # The following line pads the array of basis functions received from
+        # the recursive call to prevent an out-of-bounds error.
+        N = be.concatenate((N, be.zeros((1, Nu), dtype=u.dtype)), axis=0)
     elif derivative_order == 0:
         N = compute_basis_polynomials(n, p, U, u)
         return N

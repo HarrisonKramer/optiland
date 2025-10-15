@@ -3,13 +3,20 @@ import pytest
 
 from optiland import backend as be
 from optiland.geometries.nurbs.nurbs_geometry import NurbsGeometry
+from optiland.materials.ideal import IdealMaterial
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
+
+
+class MockSurface:
+    def __init__(self):
+        self.material_post = IdealMaterial(n=1.0)
 
 
 class MockSurfaceGroup:
     def __init__(self, num_surfaces):
         self.num_surfaces = num_surfaces
-        self.surfaces = []
+        self.surfaces = [MockSurface()]
+
 
 def test_nurbs_factory(set_test_backend):
     config = {
