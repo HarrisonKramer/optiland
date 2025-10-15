@@ -3,8 +3,21 @@ from __future__ import annotations
 import numba as nb
 import numpy as np
 
+from optiland import backend as be
 
-@nb.jit(nopython=True, cache=True)
+if be.get_backend() == "torch":
+
+    def jit(nopython=True, cache=True):
+        def decorator(func):
+            return func
+
+        return decorator
+
+else:
+    jit = nb.jit
+
+
+@jit(nopython=True, cache=True)
 def compute_basis_polynomials(n, p, U, u, return_degree=None):
     """Evaluates the n-th B-Spline basis polynomials of degree ´p´.
 
@@ -58,7 +71,7 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
     return N
 
 
-@nb.jit(nopython=True, cache=True)
+@jit(nopython=True, cache=True)
 def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
     """Evaluates the derivative of the n-th B-Spline basis polynomials.
 

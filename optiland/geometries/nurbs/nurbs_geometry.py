@@ -13,6 +13,7 @@ Matteo Taccola, 2025
 
 from __future__ import annotations
 
+import numpy as np
 from scipy.special import binom
 
 import optiland.backend as be
@@ -357,10 +358,10 @@ class NurbsGeometry(BaseGeometry):
         m = mm - 1
 
         if be.get_backend() == "torch":
-            np_u = be.to_numpy(u)
-            np_U = be.to_numpy(U)
-            np_v = be.to_numpy(v)
-            np_V = be.to_numpy(V)
+            np_u = be.to_numpy(u).copy().astype(np.float64)
+            np_U = be.to_numpy(U).copy().astype(np.float64)
+            np_v = be.to_numpy(v).copy().astype(np.float64)
+            np_V = be.to_numpy(V).copy().astype(np.float64)
             N_basis_u_np = compute_basis_polynomials(n, p, np_U, np_u)
             N_basis_v_np = compute_basis_polynomials(m, q, np_V, np_v)
             N_basis_u = be.asarray(N_basis_u_np)
@@ -499,33 +500,32 @@ class NurbsGeometry(BaseGeometry):
         w_ders = bspline_derivatives[:, :, [-1], :]
 
         n_dim, N = be.shape(P)[0], be.size(u)
-        nurbs_derivatives = be.zeros((up_to_order_u + 1, up_to_order_v + 1, n_dim, N))
 
+        rows = []
         for k in range(up_to_order_u + 1):
+            cols = []
             for L in range(up_to_order_v + 1):
-                temp_numerator = A_ders[[k], [L], ...]
+                temp_numerator = A_ders[k, L, ...]
 
                 for i in range(1, k + 1):
-                    temp_numerator -= (
-                        binom(k, i)
-                        * w_ders[[i], [0], ...]
-                        * nurbs_derivatives[[k - i], [L], ...]
+                    temp_numerator = temp_numerator - (
+                        binom(k, i) * w_ders[i, 0, ...] * rows[k - i][L]
                     )
                 for j in range(1, L + 1):
-                    temp_numerator -= (
-                        binom(L, j)
-                        * w_ders[[0], [j], ...]
-                        * nurbs_derivatives[[k], [L - j], ...]
+                    temp_numerator = temp_numerator - (
+                        binom(L, j) * w_ders[0, j, ...] * cols[L - j]
                     )
                 for i in range(1, k + 1):
                     for j in range(1, L + 1):
-                        temp_numerator -= (
+                        temp_numerator = temp_numerator - (
                             binom(k, i)
                             * binom(L, j)
-                            * w_ders[[i], [j], ...]
-                            * nurbs_derivatives[[k - i], [L - j], ...]
+                            * w_ders[i, j, ...]
+                            * rows[k - i][L - j]
                         )
-                nurbs_derivatives[k, L, ...] = temp_numerator / w_ders[[0], [0], ...]
+                cols.append(temp_numerator / w_ders[0, 0, ...])
+            rows.append(be.stack(cols, axis=0))
+        nurbs_derivatives = be.stack(rows, axis=0)
         return nurbs_derivatives
 
     @staticmethod
@@ -554,18 +554,18 @@ class NurbsGeometry(BaseGeometry):
         u = be.asarray(u)
 
         n_dim, N = be.shape(P)[0], be.size(u)
-        bspline_derivatives = be.zeros((up_to_order_u + 1, up_to_order_v + 1, n_dim, N))
-
+        rows = []
         for order_u in range(min(p, up_to_order_u) + 1):
+            cols = []
             for order_v in range(min(q, up_to_order_v) + 1):
                 n = be.shape(P)[1] - 1
                 m = be.shape(P)[2] - 1
 
                 if be.get_backend() == "torch":
-                    np_u = be.to_numpy(u)
-                    np_U = be.to_numpy(U)
-                    np_v = be.to_numpy(v)
-                    np_V = be.to_numpy(V)
+                    np_u = be.to_numpy(u).copy().astype(np.float64)
+                    np_U = be.to_numpy(U).copy().astype(np.float64)
+                    np_v = be.to_numpy(v).copy().astype(np.float64)
+                    np_V = be.to_numpy(V).copy().astype(np.float64)
                     N_basis_u_np = compute_basis_polynomials_derivatives(
                         n, p, np_U, np_u, order_u
                     )
@@ -584,7 +584,9 @@ class NurbsGeometry(BaseGeometry):
 
                 A = be.matmul(P, N_basis_v)
                 B = be.stack([N_basis_u] * n_dim, axis=0)
-                bspline_derivatives[order_u, order_v, :, :] = be.sum(A * B, axis=1)
+                cols.append(be.sum(A * B, axis=1))
+            rows.append(be.stack(cols, axis=0))
+        bspline_derivatives = be.stack(rows, axis=0)
         return bspline_derivatives
 
     def get_normals(self, u, v):
@@ -638,11 +640,13 @@ class NurbsGeometry(BaseGeometry):
         d = be.sum(N2 * self.get_derivative(u, v, order_u=0, order_v=1).T, axis=1)
 
         J = be.vstack((a, b, c, d)).T.reshape((Np, 2, 2))
-        adj = be.zeros((Np, 2, 2))
-        adj[:, 0, 0] = J[:, 1, 1]
-        adj[:, 0, 1] = -J[:, 0, 1]
-        adj[:, 1, 0] = -J[:, 1, 0]
-        adj[:, 1, 1] = J[:, 0, 0]
+        adj = be.stack(
+            [
+                be.stack([J[:, 1, 1], -J[:, 0, 1]], axis=1),
+                be.stack([-J[:, 1, 0], J[:, 0, 0]], axis=1),
+            ],
+            axis=1,
+        )
 
         detJ = be.linalg.det(J)
         detJ = detJ[:, None, None]
@@ -679,11 +683,13 @@ class NurbsGeometry(BaseGeometry):
         d = self.get_derivative(u, v, order_u=0, order_v=1)[0, :]
 
         J = be.vstack((a, b, c, d)).T.reshape((Np, 2, 2))
-        adj = be.zeros((Np, 2, 2))
-        adj[:, 0, 0] = J[:, 1, 1]
-        adj[:, 0, 1] = -J[:, 0, 1]
-        adj[:, 1, 0] = -J[:, 1, 0]
-        adj[:, 1, 1] = J[:, 0, 0]
+        adj = be.stack(
+            [
+                be.stack([J[:, 1, 1], -J[:, 0, 1]], axis=1),
+                be.stack([-J[:, 1, 0], J[:, 0, 0]], axis=1),
+            ],
+            axis=1,
+        )
 
         detJ = be.linalg.det(J)
         detJ = detJ[:, None, None]
@@ -742,10 +748,26 @@ class NurbsGeometry(BaseGeometry):
         N1z = be.zeros_like(rays.x)
         mask = be.logical_and(rays.L > rays.M, rays.L > rays.N)
 
-        N1x[mask] = rays.M[mask] / be.sqrt(rays.L[mask] ** 2 + rays.M[mask] ** 2)
-        N1y[mask] = -rays.L[mask] / be.sqrt(rays.L[mask] ** 2 + rays.M[mask] ** 2)
-        N1y[~mask] = rays.N[~mask] / be.sqrt(rays.N[~mask] ** 2 + rays.M[~mask] ** 2)
-        N1z[~mask] = -rays.M[~mask] / be.sqrt(rays.N[~mask] ** 2 + rays.M[~mask] ** 2)
+        N1x = be.where(
+            mask,
+            rays.M / be.sqrt(rays.L**2 + rays.M**2),
+            N1x,
+        )
+        N1y = be.where(
+            mask,
+            -rays.L / be.sqrt(rays.L**2 + rays.M**2),
+            N1y,
+        )
+        N1y = be.where(
+            ~mask,
+            rays.N / be.sqrt(rays.N**2 + rays.M**2),
+            N1y,
+        )
+        N1z = be.where(
+            ~mask,
+            -rays.M / be.sqrt(rays.N**2 + rays.M**2),
+            N1z,
+        )
 
         N1 = be.column_stack((N1x, N1y, N1z))
 
