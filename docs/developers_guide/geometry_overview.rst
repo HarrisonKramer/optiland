@@ -56,6 +56,7 @@ Optiland includes a wide range of built-in geometries:
 - **Polynomial and Chebyshev**: Useful for advanced freeform optical systems.
 - **Zernike Surfaces**: Represented by Zernike polynomials. For a detailed mathematical description of the Zernike geometry, see the `Zernike Geometry Mathematics Reference <https://github.com/HarrisonKramer/optiland/blob/master/docs/references/zernike_description.md>`_.
 - **Forbes Surfaces**: As described in the corresponding `Forbes Surface` gallery example, these surfaces are defined following the convention by the papers: [1] G. W. Forbes, “Manufacturability estimates for optical aspheres,” Opt. Express 19(10), 9923–9941 (2011) and [2] G. W. Forbes, "Characterizing the shape of freeform optics," Opt. Express 20, 2483-2499 (2012). The `qpoly.py` module in `optiland\geometries\forbes` was adapted from the implementation in the `prysm <https://github.com/brandondube/prysm?tab=readme-ov-file>` package.
+- **NURBS**: Non-Uniform Rational B-Splines for highly flexible freeform surfaces. See the NURBS Freeform Optics gallery example (:ref:`gallery_freeforms`) for usage.
 - **Custom Geometries**: Users can easily extend the framework by subclassing the `BaseGeometry` (analytical geometries) or `NewtonRaphsonGeometry` (iterative geometries) classes.
 
 Extensibility

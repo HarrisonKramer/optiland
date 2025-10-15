@@ -80,6 +80,15 @@ def random_uniform(
     return generator.uniform(low, high, size)
 
 
+def rand(*size: int) -> NDArray:
+    """
+    Returns an array of random numbers from a uniform distribution on the
+    interval [0, 1).
+    If no size is provided, returns a single random number.
+    """
+    return np.random.rand(*size) if size else np.random.rand()
+
+
 def random_normal(
     loc: ScalarOrArray = 0.0,
     scale: ScalarOrArray = 1.0,

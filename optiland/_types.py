@@ -77,6 +77,7 @@ SurfaceType = Literal[
     "toroidal",
     "zernike",
     "grating",
+    "nurbs",
 ]
 
 
@@ -101,6 +102,18 @@ class SurfaceParameters(TypedDict, total=False):
     grating_order: int
     grating_period: float
     groove_orientation_angle: float
+    control_points: list[list[list[float]]]
+    weights: list[float]
+    u_knots: list[float]
+    v_knots: list[float]
+    nurbs_norm_x: float
+    nurbs_norm_y: float
+    nurbs_x_center: float
+    nurbs_y_center: float
+    u_degree: int
+    v_degree: int
+    n_points_u: int
+    n_points_v: int
 
     # Coordinate system parameters
     thickness: float
