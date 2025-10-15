@@ -14,8 +14,11 @@ matplotlib.use("Agg")  # use non-interactive backend for testing
 
 @pytest.fixture(autouse=True)
 def set_numpy_backend():
-    """Ensure the numpy backend is used for all tests in this module."""
+    """Ensure the numpy backend is used for all tests in this module and restore after."""
+    original_backend = be.get_backend()
     be.set_backend("numpy")
+    yield
+    be.set_backend(original_backend)
 
 
 @pytest.fixture(scope="module")
