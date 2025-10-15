@@ -12,6 +12,8 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
@@ -22,6 +24,9 @@ from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
+
+if TYPE_CHECKING:
+    from optiland.phase.base import BasePhase
 
 
 class Surface:
@@ -54,6 +59,7 @@ class Surface:
         aperture: BaseAperture = None,
         surface_type: str = None,
         comment: str = "",
+        phase_type: BasePhase = None,
         interaction_model: BaseInteractionModel = None,
     ):
         self.geometry = geometry
@@ -64,6 +70,7 @@ class Surface:
         self.semi_aperture = None
         self.surface_type = surface_type
         self.comment = comment
+        self.phase_type = phase_type
 
         if interaction_model is None:
             self.interaction_model = RefractiveReflectiveModel(
@@ -203,6 +210,130 @@ class Surface:
 
             self.intensity = be.copy(be.atleast_1d(rays.i))
             self.opd = be.copy(be.atleast_1d(rays.opd))
+
+    def _interact(self, rays):
+        """Interacts the rays with the surface by either reflecting or refracting
+
+        Args:
+            rays: The rays.
+
+        Returns:
+            RealRays: The refracted rays.
+
+        """
+        # find surface normals
+        nx, ny, nz = self.geometry.surface_normal(rays)
+
+        # Interact with surface (refract or reflect)
+        if self.is_reflective:
+            rays.reflect(nx, ny, nz)
+        else:
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            rays.refract(nx, ny, nz, n1, n2)
+        if self.phase_type:
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            Kx, Ky, Kz, opd = self.phase_type.phase_calc(rays, nx, ny, nz, n1, n2)
+            m = self.phase_type.order
+            d_eff = self.phase_type.efficiency(rays)
+            rays.add_phase(nx, ny, nz, Kx, Ky, Kz, n1, n2, m, opd, d_eff)
+
+        # if there is a surface scatter model, modify ray properties
+        if self.bsdf:
+            rays = self.bsdf.scatter(rays, nx, ny, nz)
+
+        # if there is a coating, modify ray properties
+        if self.coating:
+            rays = self.coating.interact(
+                rays,
+                reflect=self.is_reflective,
+                nx=nx,
+                ny=ny,
+                nz=nz,
+            )
+        else:
+            # update polarization matrices, if PolarizedRays
+            rays.update()
+
+        return rays
+
+    def _trace_paraxial(self, rays: ParaxialRays):
+        """Traces paraxial rays through the surface.
+
+        Args:
+            ParaxialRays: The paraxial rays to be traced.
+
+        """
+        # reset recorded information
+        self.reset()
+
+        # transform coordinate system
+        self.geometry.localize(rays)
+
+        # propagate to this surface
+        t = -rays.z
+        rays.propagate(t)
+
+        if self.is_reflective:
+            # reflect (derived from paraxial equations when n'=-n)
+            rays.u = -rays.u - 2 * rays.y / self.geometry.radius
+
+        else:
+            # surface power
+            n1 = self.material_pre.n(rays.w)
+            n2 = self.material_post.n(rays.w)
+            power = (n2 - n1) / self.geometry.radius
+
+            # refract
+            rays.u = 1 / n2 * (n1 * rays.u - rays.y * power)
+
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
+        self._record(rays)
+
+        return rays
+
+    def _trace_real(self, rays: RealRays):
+        """Traces real rays through the surface.
+
+        Args:
+            rays (RealRays): The real rays to be traced.
+
+        Returns:
+            RealRays: The traced real rays.
+
+        """
+        # reset recorded information
+        self.reset()
+
+        # transform coordinate system
+        self.geometry.localize(rays)
+
+        # find distance from rays to the surface
+        t = self.geometry.distance(rays)
+
+        # propagate the rays a distance t through material
+        rays.propagate(t, self.material_pre)
+
+        # update OPD
+        rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
+
+        # if there is a limiting aperture, clip rays outside of it
+        if self.aperture:
+            self.aperture.clip(rays)
+
+        # interact with surface
+        rays = self._interact(rays)
+
+        # inverse transform coordinate system
+        self.geometry.globalize(rays)
+
+        # record ray information
+        self._record(rays)
+
+        return rays
 
     def is_rotationally_symmetric(self):
         """Returns True if the surface is rotationally symmetric, False otherwise."""

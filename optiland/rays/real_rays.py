@@ -180,6 +180,27 @@ class RealRays(BaseRays):
         self.M = self.M - 2 * dot * ny
         self.N = self.N - 2 * dot * nz
 
+    def add_phase(self, surfnx, surfny, surfnz, Kx, Ky, Kz, n1, n2, m, opd, d_eff):
+        #     Args:
+        #         nx: The x-component of the surface normal.
+        #         ny: The y-component of the surface normal.
+        #         nz: The z-component of the surface normal.
+
+        #     Returns:
+        #         RealRays: The reflected rays.
+
+        #     """
+        self.L0 = self.L
+        self.M0 = self.M
+        self.N0 = self.N
+        self.L = Kx
+        self.M = Ky
+        self.N = Kz
+        self.opd += opd
+        self.i = d_eff * self.i
+
+        return
+
     def gratingdiffract(
         self,
         nx: float,
