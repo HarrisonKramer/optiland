@@ -81,7 +81,7 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         evaluated at ´u´.
     """
     if derivative_order > p:
-        print("The derivative order is higher than the degree of the basis polynomials")
+        raise ValueError("The derivative order is higher than the degree of the basis polynomials")
 
     u = be.asarray(u * 1.0)
     Nu = u.size
