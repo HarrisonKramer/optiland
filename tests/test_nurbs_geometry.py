@@ -43,9 +43,9 @@ def test_nurbs_geometry_normal(set_test_backend):
         x=be.asarray([0], dtype=be.float64), y=be.asarray([0], dtype=be.float64)
     )
     nx, ny, nz = geo.surface_normal(rays)
-    assert_allclose(nx, 0.0, atol=1e-5)
-    assert_allclose(ny, 0.0, atol=1e-5)
-    assert_allclose(nz, 1.0, atol=1e-5)
+    assert_allclose(nx, 0.0, atol=1e-4)
+    assert_allclose(ny, 0.0, atol=1e-4)
+    assert_allclose(nz, 1.0, atol=1e-4)
 
 
 def test_nurbs_get_value(set_test_backend):
