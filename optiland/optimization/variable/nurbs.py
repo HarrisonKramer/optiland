@@ -33,7 +33,8 @@ class NurbsPointsVariable(VariableBehavior):
         apply_scaling=True,
         **kwargs,
     ):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        super().__init__(optic, surface_number, **kwargs)
+        self.apply_scaling = apply_scaling
         self.coeff_index = coeff_index
 
     def get_value(self):
@@ -114,7 +115,8 @@ class NurbsWeightsVariable(VariableBehavior):
         apply_scaling=True,
         **kwargs,
     ):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        super().__init__(optic, surface_number, **kwargs)
+        self.apply_scaling = apply_scaling
         self.coeff_index = coeff_index
 
     def get_value(self):
