@@ -5,6 +5,7 @@ from optiland import backend as be
 from optiland.geometries.nurbs.nurbs_geometry import NurbsGeometry
 from optiland.materials.ideal import IdealMaterial
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
+from .utils import assert_allclose
 
 
 class MockSurface:
@@ -20,7 +21,7 @@ class MockSurfaceGroup:
 
 def test_nurbs_factory(set_test_backend):
     config = {
-        "surface_type": "NurbsGeometry",
+        "surface_type": "nurbs",
         "radius": 100,
         "conic": -1,
         "comment": "NURBS test surface",
@@ -31,5 +32,5 @@ def test_nurbs_factory(set_test_backend):
     factory = SurfaceFactory(surface_group=MockSurfaceGroup(2))
     surf = factory.create_surface(**config)
     assert isinstance(surf.geometry, NurbsGeometry)
-    assert be.allclose(surf.geometry.radius, 100)
-    assert be.allclose(surf.geometry.k, -1)
+    assert_allclose(surf.geometry.radius, 100)
+    assert_allclose(surf.geometry.k, -1)

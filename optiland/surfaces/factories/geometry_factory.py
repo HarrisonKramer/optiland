@@ -416,7 +416,6 @@ geometry_mapper = {
     "forbes_qbfs": _create_forbes_qbfs,
     "forbes_q2d": _create_forbes_q2d,
     "nurbs": _create_nurbs,
-    "NurbsGeometry": _create_nurbs,
 }
 
 
