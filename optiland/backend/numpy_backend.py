@@ -82,7 +82,8 @@ def random_uniform(
 
 def rand(*size: int) -> NDArray:
     """
-    Returns an array of random numbers from a uniform distribution on the interval [0, 1).
+    Returns an array of random numbers from a uniform distribution on the
+    interval [0, 1).
     If no size is provided, returns a single random number.
     """
     return np.random.rand(*size) if size else np.random.rand()

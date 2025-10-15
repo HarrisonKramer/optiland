@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import numba as nb
-
 import numpy as np
-
-import optiland.backend as be
 
 
 @nb.jit(nopython=True, cache=True)

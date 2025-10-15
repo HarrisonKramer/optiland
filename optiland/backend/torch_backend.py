@@ -338,7 +338,8 @@ def random_uniform(
 
 def rand(*size: int) -> Tensor:
     """
-    Returns a tensor filled with random numbers from a uniform distribution on the interval [0, 1).
+    Returns a tensor filled with random numbers from a uniform distribution
+    on the interval [0, 1).
     If no size is provided, returns a single random number as a 1-element tensor.
     """
     if not size:
