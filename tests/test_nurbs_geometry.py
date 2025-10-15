@@ -7,18 +7,14 @@ from optiland.geometries.nurbs.nurbs_geometry import NurbsGeometry
 from tests.utils import assert_allclose
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_geometry_init(backend):
-    be.set_backend(backend)
+def test_nurbs_geometry_init(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(cs, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10)
     geo.fit_surface()
     assert geo is not None
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_geometry_sag(backend):
-    be.set_backend(backend)
+def test_nurbs_geometry_sag(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
         cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
@@ -34,9 +30,7 @@ class MockRays:
         self.x = x
         self.y = y
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_geometry_normal(backend):
-    be.set_backend(backend)
+def test_nurbs_geometry_normal(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
         cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
@@ -49,9 +43,7 @@ def test_nurbs_geometry_normal(backend):
     assert_allclose(nz, 1.0, atol=1e-5)
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_get_value(backend):
-    be.set_backend(backend)
+def test_nurbs_get_value(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
         cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
@@ -62,9 +54,7 @@ def test_nurbs_get_value(backend):
     assert val.shape == (3, 1)
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_get_derivative(backend):
-    be.set_backend(backend)
+def test_nurbs_get_derivative(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
         cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
@@ -85,9 +75,7 @@ class MockRaysDistance:
         self.N = N
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_distance(backend):
-    be.set_backend(backend)
+def test_nurbs_distance(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
         cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
