@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import contextlib
 
+from optiland import backend as be
 from optiland.optimization.variable.base import VariableBehavior
 
 
@@ -62,7 +63,12 @@ class NurbsPointsVariable(VariableBehavior):
         surf = self.optic.surface_group.surfaces[self.surface_number]
         i, j, k = self.coeff_index
         with contextlib.suppress(IndexError):
-            surf.geometry.P[i, j, k] = new_value
+            if be.get_backend() == "torch":
+                p_copy = be.copy(surf.geometry.P)
+                p_copy[i, j, k] = new_value
+                surf.geometry.P = p_copy
+            else:
+                surf.geometry.P[i, j, k] = new_value
 
     def scale(self, value):
         """Scales the value of the variable.
@@ -144,7 +150,12 @@ class NurbsWeightsVariable(VariableBehavior):
         surf = self.optic.surface_group.surfaces[self.surface_number]
         j, k = self.coeff_index
         with contextlib.suppress(IndexError):
-            surf.geometry.W[j, k] = new_value
+            if be.get_backend() == "torch":
+                w_copy = be.copy(surf.geometry.W)
+                w_copy[j, k] = new_value
+                surf.geometry.W = w_copy
+            else:
+                surf.geometry.W[j, k] = new_value
 
     def scale(self, value):
         """Scales the value of the variable.

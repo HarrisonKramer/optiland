@@ -4,6 +4,7 @@ import pytest
 from optiland import backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.nurbs.nurbs_geometry import NurbsGeometry
+from tests.utils import assert_allclose
 
 
 @pytest.mark.parametrize("backend", be.list_available_backends())
@@ -24,8 +25,8 @@ def test_nurbs_geometry_sag(backend):
     )
     geo.fit_surface()
     sag = geo.sag(x=be.asarray([0, 10]), y=be.asarray([0, 0]))
-    assert be.allclose(sag[0], 0.0, atol=1e-4)
-    assert be.allclose(sag[1], 0.5, atol=1e-4)
+    assert_allclose(sag[0], 0.0, atol=1e-4)
+    assert_allclose(sag[1], 0.5, atol=1e-4)
 
 
 class MockRays:
@@ -43,9 +44,9 @@ def test_nurbs_geometry_normal(backend):
     geo.fit_surface()
     rays = MockRays(x=be.asarray([0]), y=be.asarray([0]))
     nx, ny, nz = geo.surface_normal(rays)
-    assert be.allclose(nx, 0.0, atol=1e-5)
-    assert be.allclose(ny, 0.0, atol=1e-5)
-    assert be.allclose(nz, 1.0, atol=1e-5)
+    assert_allclose(nx, 0.0, atol=1e-5)
+    assert_allclose(ny, 0.0, atol=1e-5)
+    assert_allclose(nz, 1.0, atol=1e-5)
 
 
 @pytest.mark.parametrize("backend", be.list_available_backends())
@@ -94,12 +95,12 @@ def test_nurbs_distance(backend):
     geo.fit_surface()
     # Test distance to a ray
     rays = MockRaysDistance(
-        x=be.asarray([0]),
-        y=be.asarray([0]),
-        z=be.asarray([-10]),
-        L=be.asarray([0]),
-        M=be.asarray([0]),
-        N=be.asarray([1]),
+        x=be.asarray([0.0]),
+        y=be.asarray([0.0]),
+        z=be.asarray([-10.0]),
+        L=be.asarray([0.0]),
+        M=be.asarray([0.0]),
+        N=be.asarray([1.0]),
     )
     distance = geo.distance(rays)
-    assert be.allclose(distance, 10, atol=1e-4)
+    assert_allclose(distance, 10, atol=1e-4)

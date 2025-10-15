@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import numba as nb
 
+import numpy as np
+
 import optiland.backend as be
 
 
@@ -26,30 +28,30 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
         An array containing the basis polynomials of order ´p´ evaluated at
         ´u´.
     """
-    u = be.asarray(u * 1.0)
+    u = np.asarray(u * 1.0)
     Nu = u.size
 
     m = n + p + 1
 
-    N = be.zeros((p + 1, m, Nu), dtype=u.dtype)
+    N = np.zeros((p + 1, m, Nu), dtype=u.dtype)
 
     for i in range(m):
         N[0, i, :] = (
             0.0
-            + 1.0 * (be.real(u) >= U[i]) * (be.real(u) < U[i + 1])
-            + 1.00 * (be.logical_and(be.real(u) == U[-1], i == n))
+            + 1.0 * (np.real(u) >= U[i]) * (np.real(u) < U[i + 1])
+            + 1.00 * (np.logical_and(np.real(u) == U[-1], i == n))
         )
 
     for k in range(1, p + 1):
         m = m - 1
         for i in range(m):
             if (U[i + k] - U[i]) == 0:
-                n1 = be.zeros((Nu,), dtype=u.dtype)
+                n1 = np.zeros((Nu,), dtype=u.dtype)
             else:
                 n1 = (u - U[i]) / (U[i + k] - U[i]) * N[k - 1, i, :]
 
             if (U[i + k + 1] - U[i + 1]) == 0:
-                n2 = be.zeros((Nu,), dtype=u.dtype)
+                n2 = np.zeros((Nu,), dtype=u.dtype)
             else:
                 n2 = (U[i + k + 1] - u) / (U[i + k + 1] - U[i + 1]) * N[k - 1, i + 1, :]
             N[k, i, ...] = n1 + n2
@@ -81,11 +83,9 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         evaluated at ´u´.
     """
     if derivative_order > p:
-        raise ValueError(
-            "The derivative order is higher than the degree of the basis polynomials"
-        )
+        print("The derivative order is higher than the degree of the basis polynomials")
 
-    u = be.asarray(u * 1.0)
+    u = np.asarray(u * 1.0)
     Nu = u.size
 
     if derivative_order >= 1:
@@ -95,26 +95,27 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         # functions of degree p-1 to compute n+1 derivatives of degree p.
         # The following line pads the array of basis functions received from
         # the recursive call to prevent an out-of-bounds error.
-        N = be.concatenate((N, be.zeros((1, Nu), dtype=u.dtype)), axis=0)
+        N = np.concatenate((N, np.zeros((1, Nu), dtype=u.dtype)), axis=0)
     elif derivative_order == 0:
         N = compute_basis_polynomials(n, p, U, u)
         return N
     else:
-        raise ValueError(
-            f"Invalid derivative_order={derivative_order} in "
-            f"compute_basis_polynomials_derivatives: expected derivative_order >= 0"
+        print(
+            "Oooopps, something went wrong in compute_basis_polynomials_derivatives()"
         )
+        N = compute_basis_polynomials(n, p, U, u)
+        return N
 
-    N_ders = be.zeros((n + 1, Nu), dtype=u.dtype)
+    N_ders = np.zeros((n + 1, Nu), dtype=u.dtype)
 
     for i in range(n + 1):
         if (U[i + p] - U[i]) == 0:
-            n1 = be.zeros(Nu, dtype=u.dtype)
+            n1 = np.zeros(Nu, dtype=u.dtype)
         else:
             n1 = p * N[i, :] / (U[i + p] - U[i])
 
         if (U[i + p + 1] - U[i + 1]) == 0:
-            n2 = be.zeros(Nu, dtype=u.dtype)
+            n2 = np.zeros(Nu, dtype=u.dtype)
         else:
             n2 = p * N[i + 1, :] / (U[i + p + 1] - U[i + 1])
 

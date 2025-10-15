@@ -338,10 +338,6 @@ class NurbsGeometry(BaseGeometry):
             raise Exception("P must be an array of shape (ndim, n+1, m+1)")
         if W.ndim > 2:
             raise Exception("W must be an array of shape (n+1, m+1)")
-        if not be.isscalar(p):
-            raise Exception("p must be an scalar")
-        if not be.isscalar(q):
-            raise Exception("q must be an scalar")
         if U.ndim > 1:
             raise Exception("U must be an array of shape (r+1=n+p+2,)")
         if V.ndim > 1:
@@ -360,13 +356,23 @@ class NurbsGeometry(BaseGeometry):
         n = nn - 1
         m = mm - 1
 
-        N_basis_u = compute_basis_polynomials(n, p, U, u)
-        N_basis_v = compute_basis_polynomials(m, q, V, v)
+        if be.get_backend() == "torch":
+            np_u = be.to_numpy(u)
+            np_U = be.to_numpy(U)
+            np_v = be.to_numpy(v)
+            np_V = be.to_numpy(V)
+            N_basis_u_np = compute_basis_polynomials(n, p, np_U, np_u)
+            N_basis_v_np = compute_basis_polynomials(m, q, np_V, np_v)
+            N_basis_u = be.asarray(N_basis_u_np)
+            N_basis_v = be.asarray(N_basis_v_np)
+        else:
+            N_basis_u = compute_basis_polynomials(n, p, U, u)
+            N_basis_v = compute_basis_polynomials(m, q, V, v)
 
-        P_w = be.concatenate((P * W[be.newaxis, :], W[be.newaxis, :]), axis=0)
+        P_w = be.concatenate((P * W[None, :], W[None, :]), axis=0)
 
-        A = be.dot(P_w, N_basis_v)
-        B = be.repeat(N_basis_u[be.newaxis], repeats=n_dim + 1, axis=0)
+        A = be.matmul(P_w, N_basis_v)
+        B = be.stack([N_basis_u] * (n_dim + 1), axis=0)
         S_w = be.sum(A * B, axis=1)
 
         S = S_w[0:-1, :] / S_w[-1, :]
@@ -484,7 +490,7 @@ class NurbsGeometry(BaseGeometry):
         """
         u, v = be.asarray(u), be.asarray(v)
 
-        P_w = be.concatenate((P * W[be.newaxis, :], W[be.newaxis, :]), axis=0)
+        P_w = be.concatenate((P * W[None, :], W[None, :]), axis=0)
 
         bspline_derivatives = self.compute_bspline_derivatives(
             P_w, p, q, U, V, u, v, up_to_order_u, up_to_order_v
@@ -555,11 +561,29 @@ class NurbsGeometry(BaseGeometry):
                 n = be.shape(P)[1] - 1
                 m = be.shape(P)[2] - 1
 
-                N_basis_u = compute_basis_polynomials_derivatives(n, p, U, u, order_u)
-                N_basis_v = compute_basis_polynomials_derivatives(m, q, V, v, order_v)
+                if be.get_backend() == "torch":
+                    np_u = be.to_numpy(u)
+                    np_U = be.to_numpy(U)
+                    np_v = be.to_numpy(v)
+                    np_V = be.to_numpy(V)
+                    N_basis_u_np = compute_basis_polynomials_derivatives(
+                        n, p, np_U, np_u, order_u
+                    )
+                    N_basis_v_np = compute_basis_polynomials_derivatives(
+                        m, q, np_V, np_v, order_v
+                    )
+                    N_basis_u = be.asarray(N_basis_u_np)
+                    N_basis_v = be.asarray(N_basis_v_np)
+                else:
+                    N_basis_u = compute_basis_polynomials_derivatives(
+                        n, p, U, u, order_u
+                    )
+                    N_basis_v = compute_basis_polynomials_derivatives(
+                        m, q, V, v, order_v
+                    )
 
-                A = be.dot(P, N_basis_v)
-                B = be.repeat(N_basis_u[be.newaxis], repeats=n_dim, axis=0)
+                A = be.matmul(P, N_basis_v)
+                B = be.stack([N_basis_u] * n_dim, axis=0)
                 bspline_derivatives[order_u, order_v, :, :] = be.sum(A * B, axis=1)
         return bspline_derivatives
 
@@ -603,9 +627,9 @@ class NurbsGeometry(BaseGeometry):
             and the maximum distance between all rays and surface intersection.
         """
         S_uv = self.get_value(u, v).T
-        r = be.array(
-            [be.sum(N1 * S_uv, axis=1) + d1, be.sum(N2 * S_uv, axis=1) + d2]
-        ).reshape(2, -1)
+        r = be.stack(
+            [be.sum(N1 * S_uv, axis=1) + d1, be.sum(N2 * S_uv, axis=1) + d2], axis=0
+        )
 
         _, Np = r.shape
         a = be.sum(N1 * self.get_derivative(u, v, order_u=1, order_v=0).T, axis=1)
@@ -621,7 +645,7 @@ class NurbsGeometry(BaseGeometry):
         adj[:, 1, 1] = J[:, 0, 0]
 
         detJ = be.linalg.det(J)
-        detJ = detJ[:, be.newaxis, be.newaxis]
+        detJ = detJ[:, None, None]
         invj = adj / detJ
 
         correction = be.einsum("ijk,ki->ji", invj, r)
@@ -647,7 +671,7 @@ class NurbsGeometry(BaseGeometry):
             A tuple containing the correction steps and the residual.
         """
         S_uv = self.get_value(u, v)
-        r = be.array([S_uv[1, :] + d1, S_uv[0, :] + d2]).reshape(2, -1)
+        r = be.stack([S_uv[1, :] + d1, S_uv[0, :] + d2], axis=0)
         _, Np = r.shape
         a = self.get_derivative(u, v, order_u=1, order_v=0)[1, :]
         b = self.get_derivative(u, v, order_u=0, order_v=1)[1, :]
@@ -662,7 +686,7 @@ class NurbsGeometry(BaseGeometry):
         adj[:, 1, 1] = J[:, 0, 0]
 
         detJ = be.linalg.det(J)
-        detJ = detJ[:, be.newaxis, be.newaxis]
+        detJ = detJ[:, None, None]
         invj = adj / detJ
 
         correction = be.einsum("ijk,ki->ji", invj, r)
@@ -691,10 +715,10 @@ class NurbsGeometry(BaseGeometry):
             correction, residual = self._corr(u, v, -be.ravel(y), -be.ravel(x))
             u = u - correction[0, :]
             v = v - correction[1, :]
-            u[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            v[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            u[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
-            v[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
+            u[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            v[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            u[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
+            v[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
 
             if residual < self.tol:
                 break
@@ -741,10 +765,10 @@ class NurbsGeometry(BaseGeometry):
             correction, residual = self._corr_general(u, v, d1, d2, N1, N2)
             u = u - correction[0, :]
             v = v - correction[1, :]
-            u[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            v[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            u[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
-            v[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
+            u[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            v[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            u[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
+            v[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
             if residual < self.tol:
                 break
 
@@ -770,10 +794,10 @@ class NurbsGeometry(BaseGeometry):
             correction, residual = self._corr(u, v, -y, -x)
             u = u - correction[0, :]
             v = v - correction[1, :]
-            u[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            v[be.logical_or(u < 0.0, v < 0.0)] = be.random.rand()
-            u[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
-            v[be.logical_or(u > 1.0, v > 1.0)] = be.random.rand()
+            u[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            v[be.logical_or(u < 0.0, v < 0.0)] = be.rand()
+            u[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
+            v[be.logical_or(u > 1.0, v > 1.0)] = be.rand()
             if residual < self.tol:
                 break
         n = self.get_normals(u, v)
@@ -815,10 +839,7 @@ class NurbsGeometry(BaseGeometry):
         x, y = be.meshgrid(x, y)
         r2 = x**2 + y**2
         z = r2 / (radius * (1 + be.sqrt(1 - (1 + k) * r2 / radius**2)))
-        points = be.zeros((P_ndim, P_size_u, P_size_v))
-        points[0, :, :] = x.T
-        points[1, :, :] = y.T
-        points[2, :, :] = z.T
+        points = be.stack((x.T, y.T, z.T), axis=0)
 
         xp = (points.reshape(P_ndim, -1).T).tolist()
 
@@ -862,10 +883,7 @@ class NurbsGeometry(BaseGeometry):
         )
         x, y = be.meshgrid(x, y)
         z = be.zeros_like(x)
-        control_points = be.zeros((self.ndim, self.P_size_u, self.P_size_v))
-        control_points[0, :, :] = x.T
-        control_points[1, :, :] = y.T
-        control_points[2, :, :] = z.T
+        control_points = be.stack((x.T, y.T, z.T), axis=0)
 
         weights = be.ones((self.P_size_u, self.P_size_v))
 

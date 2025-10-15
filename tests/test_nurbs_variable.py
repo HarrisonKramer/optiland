@@ -12,6 +12,7 @@ from optiland.optimization.variable.nurbs import (
 )
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces.surface_group import SurfaceGroup
+from tests.utils import assert_allclose
 
 
 @pytest.fixture
@@ -32,17 +33,17 @@ def optic(backend):
 def test_nurbs_points_variable(optic, backend):
     var = NurbsPointsVariable(optic, 0, (0, 0, 0), apply_scaling=False)
     val = var.get_value()
-    assert be.allclose(val, -1.0, atol=1e-6)
+    assert_allclose(val, be.asarray(-1.0, dtype=val.dtype), atol=1e-6)
     var.update_value(1.0)
     val = var.get_value()
-    assert be.allclose(val, 1.0, atol=1e-6)
+    assert_allclose(val, be.asarray(1.0, dtype=val.dtype), atol=1e-6)
 
 
 @pytest.mark.parametrize("backend", be.list_available_backends())
 def test_nurbs_weights_variable(optic, backend):
     var = NurbsWeightsVariable(optic, 0, (0, 0), apply_scaling=False)
     val = var.get_value()
-    assert be.allclose(val, 1.0, atol=1e-6)
+    assert_allclose(val, be.asarray(1.0, dtype=val.dtype), atol=1e-6)
     var.update_value(2.0)
     val = var.get_value()
-    assert be.allclose(val, 2.0, atol=1e-6)
+    assert_allclose(val, be.asarray(2.0, dtype=val.dtype), atol=1e-6)
