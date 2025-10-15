@@ -434,7 +434,8 @@ class BasePSF(Wavefront):
 
         center_x = self.psf.shape[0] // 2
         center_y = self.psf.shape[1] // 2
-        return self.psf[center_x, center_y] / 100
+        strehl = self.psf[center_x, center_y] / 100
+        return float(be.to_numpy(strehl).item())
 
     def _get_working_FNO(self):
         """Calculates the working F-number of the optical system for the
