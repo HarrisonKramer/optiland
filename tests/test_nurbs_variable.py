@@ -28,10 +28,9 @@ def optic(backend):
     return optic
 
 
-@pytest.mark.skip(reason="`apply_scaling` attribute is not being set correctly.")
 @pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_points_variable(optic):
-    var = NurbsPointsVariable(optic, 0, (0, 0, 0))
+def test_nurbs_points_variable(optic, backend):
+    var = NurbsPointsVariable(optic, 0, (0, 0, 0), apply_scaling=False)
     val = var.get_value()
     assert be.allclose(val, -1.0, atol=1e-6)
     var.update_value(1.0)
@@ -39,10 +38,9 @@ def test_nurbs_points_variable(optic):
     assert be.allclose(val, 1.0, atol=1e-6)
 
 
-@pytest.mark.skip(reason="`apply_scaling` attribute is not being set correctly.")
 @pytest.mark.parametrize("backend", be.list_available_backends())
-def test_nurbs_weights_variable(optic):
-    var = NurbsWeightsVariable(optic, 0, (0, 0))
+def test_nurbs_weights_variable(optic, backend):
+    var = NurbsWeightsVariable(optic, 0, (0, 0), apply_scaling=False)
     val = var.get_value()
     assert be.allclose(val, 1.0, atol=1e-6)
     var.update_value(2.0)

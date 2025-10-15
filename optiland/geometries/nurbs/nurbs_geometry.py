@@ -33,6 +33,19 @@ class NurbsGeometry(BaseGeometry):
     initialization arguments.
 
     Args:
+        coordinate_system: The coordinate system of the geometry.
+        radius: The radius of curvature of the base conic. (ignored if control
+            points are passed)
+        conic: The conic constant of the base conic. (ignored if control
+            points are passed)
+        nurbs_norm_x: Defines, along with nurbs_norm_y, x_center, and y_center,
+            the rectangular area for the fit of the surface with the NURBS.
+        nurbs_norm_y: Defines, along with nurbs_norm_x, x_center, and y_center,
+            the rectangular area for the fit of the surface with the NURBS.
+        x_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and y_center,
+            the rectangular area for the fit of the surface with the NURBS.
+        y_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and x_center,
+            the rectangular area for the fit of the surface with the NURBS.
         control_points: An array with shape (ndim, n+1, m+1) containing the
             coordinates of the control points. The first dimension of ´P´ spans
             the coordinates of the control points (any number of dimensions),
@@ -51,18 +64,6 @@ class NurbsGeometry(BaseGeometry):
         v_knots: A knot vector in the v-direction with shape (s+1=m+q+2,). Set
             the multiplicity of the first and last entries equal to ´q+1´ to
             obtain a clamped spline.
-        radius: The radius of curvature of the base conic. (ignored if control
-            points are passed)
-        conic: The conic constant of the base conic. (ignored if control
-            points are passed)
-        nurbs_norm_x: Defines, along with nurbs_norm_y, x_center, and y_center,
-            the rectangular area for the fit of the surface with the NURBS.
-        nurbs_norm_y: Defines, along with nurbs_norm_x, x_center, and y_center,
-            the rectangular area for the fit of the surface with the NURBS.
-        x_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and y_center,
-            the rectangular area for the fit of the surface with the NURBS.
-        y_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and x_center,
-            the rectangular area for the fit of the surface with the NURBS.
         n_points_u: Defines the grid size of control points (n_points_u x
             n_points_v). The default value is updated in case control points
             are passed.
@@ -73,14 +74,12 @@ class NurbsGeometry(BaseGeometry):
         max_iter: The maximum number of iterations for Newton-Raphson.
 
     References:
-        The NURBS Book. See references to equations and algorithms throughout
-        the code. L. Piegl and W. Tiller. Springer, second edition.
-
-        Curves and Surfaces for CADGD. See references to equations in the
-        source code. G. Farin. Morgan Kaufmann Publishers, fifth edition.
-
-        All references correspond to The NURBS book unless it is explicitly
-        stated that they come from Farin's book.
+        - The NURBS Book. See references to equations and algorithms throughout
+          the code. L. Piegl and W. Tiller. Springer, second edition.
+        - Curves and Surfaces for CADGD. See references to equations in the
+          source code. G. Farin. Morgan Kaufmann Publishers, fifth edition.
+        - All references correspond to The NURBS book unless it is explicitly
+          stated that they come from Farin's book.
     """
 
     def __init__(
