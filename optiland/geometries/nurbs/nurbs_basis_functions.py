@@ -98,11 +98,9 @@ def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
         N = compute_basis_polynomials(n, p, U, u)
         return N
     else:
-        print(
-            "Oooopps, something went wrong in compute_basis_polynomials_derivatives()"
+        raise ValueError(
+            f"Invalid derivative_order={derivative_order} in compute_basis_polynomials_derivatives: expected derivative_order >= 0"
         )
-        N = compute_basis_polynomials(n, p, U, u)
-        return N
 
     N_ders = be.zeros((n + 1, Nu), dtype=u.dtype)
 
