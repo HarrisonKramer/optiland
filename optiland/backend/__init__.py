@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import numpy as _np
 
 from optiland.backend import numpy_backend
-from optiland.backend.utils import to_numpy  # noqa: F401
+from optiland.backend.utils import is_torch_tensor, to_numpy  # noqa: F401
 
 try:
     import torch as _torch

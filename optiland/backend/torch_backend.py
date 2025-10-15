@@ -112,6 +112,17 @@ def get_precision() -> torch.dtype:
     return _config.get_precision()
 
 
+def get_complex_precision() -> torch.dtype:
+    """Returns the complex dtype corresponding to the current precision."""
+    prec = get_precision()
+    if prec == torch.float32:
+        return torch.complex64
+    elif prec == torch.float64:
+        return torch.complex128
+    else:
+        raise ValueError("Unsupported precision for complex dtype.")
+
+
 # Global gradient control
 grad_mode: GradMode = _config.grad_mode
 
@@ -155,10 +166,11 @@ def ones(shape: Sequence[int]) -> Tensor:
     )
 
 
-def full(shape: Sequence[int], fill_value: float) -> Tensor:
+def full(shape: Sequence[int], fill_value: float | Tensor) -> Tensor:
+    val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
     return torch.full(
         shape,
-        fill_value,
+        val,
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
@@ -233,6 +245,30 @@ def full_like(x: ArrayLike, fill_value: float | Tensor) -> Tensor:
 def load(filename: str) -> Tensor:
     data = np.load(filename)
     return array(data)
+
+
+def to_tensor(
+    data: ArrayLike, device: str | torch.device | None = None
+) -> torch.Tensor:
+    """Converts data to a PyTorch tensor with the backend's precision.
+
+    Args:
+        data (ArrayLike): The data to convert.
+        device (str or torch.device, optional): The device to move the tensor to.
+            Defaults to None.
+
+    Returns:
+        torch.Tensor: The converted tensor.
+    """
+    current_device = device or get_device()
+    current_precision = get_precision()
+
+    if not isinstance(data, torch.Tensor):
+        # If not a tensor, create one with the correct dtype and device
+        return torch.tensor(data, device=current_device, dtype=current_precision)
+    else:
+        # If it is a tensor, move it and cast to correct dtype
+        return data.to(device=current_device, dtype=current_precision)
 
 
 # --------------------------
@@ -795,6 +831,7 @@ __all__ = [
     "set_precision",
     "get_precision",
     "grad_mode",
+    "to_tensor",
     # Creation
     "array",
     "zeros",

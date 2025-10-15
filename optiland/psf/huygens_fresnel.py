@@ -12,10 +12,12 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from numba import njit, prange
-
 import optiland.backend as be
 from optiland.psf.base import BasePSF
+from optiland.psf.huygens_fresnel_strategies import (
+    NumbaSummation,
+    TorchSummation,
+)
 from optiland.visualization.system.utils import transform
 from optiland.wavefront import Wavefront
 
@@ -71,9 +73,6 @@ class HuygensPSF(BasePSF):
         pixel_pitch: float = None,
         **kwargs,
     ):
-        if be.get_backend() != "numpy":
-            raise ValueError("HuygensPSF only supports numpy backend.")
-
         super().__init__(
             optic=optic,
             field=field,
@@ -90,7 +89,24 @@ class HuygensPSF(BasePSF):
 
         self.image_size = image_size
         self.oversample = oversample
+
+        self._summation_strategy = self._create_summation_strategy()
         self.psf = self._compute_psf()
+
+    def _create_summation_strategy(self):
+        """Factory method to create the appropriate summation strategy."""
+        backend = be.get_backend()
+        if backend == "numpy":
+            return NumbaSummation()
+        elif backend == "torch":
+            try:
+                return TorchSummation()
+            except ImportError as e:
+                raise ImportError(
+                    "Torch backend selected, but PyTorch is not installed."
+                ) from e
+        else:
+            raise ValueError(f"Unsupported backend for HuygensPSF: {backend}")
 
     def _determine_image_center(self):
         """Determine center of image via raytrace across field"""
@@ -212,84 +228,6 @@ class HuygensPSF(BasePSF):
 
         return image_x, image_y, image_z
 
-    @staticmethod
-    @njit(parallel=True, fastmath=True)
-    def _huygens_fresnel_summation(
-        image_x,
-        image_y,
-        image_z,
-        pupil_x,
-        pupil_y,
-        pupil_z,
-        pupil_amp,
-        pupil_opd,
-        wavelength,
-        Rp,
-    ):
-        """
-        Compute the point spread function using the Huygens–Fresnel diffraction integral
-
-        Args:
-            image_x, image_y, image_z (np.ndarray): 2D arrays of image surface coords.
-            pupil_x, pupil_y, pupil_z (np.ndarray): 1D arrays of pupil plane coords.
-            pupil_amp (np.ndarray): 1D array of pupil plane amplitudes.
-            pupil_opd (np.ndarray): 1D array of optical path difference in mm.
-            wavelength (float): Wavelength of the light in mm.
-            Rp (float): Radius of the exit pupil reference sphere in mm.
-
-        Returns:
-            np.ndarray: 2D array of the point spread function.
-        """
-        k = 2.0 * be.pi / wavelength  # wavenumber
-        Nx, Ny = image_x.shape
-        field = be.zeros((Nx, Ny), dtype=be.complex128)
-
-        # Loop over all image points
-        for ix in prange(Nx):
-            for iy in range(Ny):
-                x = image_x[ix, iy]
-                y = image_y[ix, iy]
-                z = image_z[ix, iy]
-                sum_val = 0.0 + 0.0j  # initialize field sum for image point (x, y)
-
-                # Loop over all pupil points
-                for j in range(pupil_x.shape[0]):
-                    u = pupil_x[j]
-                    v = pupil_y[j]
-                    w = pupil_z[j]
-
-                    # Compute distance R from the pupil point to the image point
-                    dx = x - u
-                    dy = y - v
-                    dz = z - w
-                    R = be.sqrt(dx * dx + dy * dy + dz * dz)
-
-                    # Spherical propagation kernel
-                    wave = be.exp(1j * k * R) / R
-
-                    # Compute the unit normal at the pupil point
-                    nux = u / Rp
-                    nuy = v / Rp
-                    nuz = w / Rp
-
-                    # Compute the cosine of the angle between (P - Q) and pupil normal.
-                    # P is the image point, Q is the pupil point
-                    dot = dx * nux + dy * nuy + dz * nuz
-                    cos_theta = dot / R
-                    Q_obliq = 0.5 * (1.0 + cos_theta)  # obliquity factor
-
-                    # Pupil function
-                    pupil_phase = be.exp(-1j * k * pupil_opd[j])
-
-                    # Add contribution to the field sum
-                    sum_val += pupil_amp[j] * pupil_phase * wave * Q_obliq
-
-                field[ix, iy] = sum_val
-
-        # Compute psf as the squared magnitude of the field
-        psf = be.abs(field) ** 2
-        return psf
-
     def _get_normalization(self):
         """Calculates the normalization factor for the PSF.
 
@@ -324,7 +262,7 @@ class HuygensPSF(BasePSF):
         ideal_z = self.optic.surface_group.positions[-1]  # image plane position
         image_z = be.full((1, 1), ideal_z)
 
-        psf_max = self._huygens_fresnel_summation(
+        psf_max = self._summation_strategy.compute(
             image_x,
             image_y,
             image_z,
@@ -357,7 +295,7 @@ class HuygensPSF(BasePSF):
         image_x, image_y, image_z = self._get_image_coordinates()
 
         # Compute the PSF using Huygens-Fresnel summation
-        psf = self._huygens_fresnel_summation(
+        psf = self._summation_strategy.compute(
             image_x,
             image_y,
             image_z,
