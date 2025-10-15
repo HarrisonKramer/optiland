@@ -499,7 +499,7 @@ class NurbsGeometry(BaseGeometry):
         A_ders = bspline_derivatives[:, :, 0:-1, :]
         w_ders = bspline_derivatives[:, :, [-1], :]
 
-        n_dim, N = be.shape(P)[0], be.size(u)
+        _n_dim, _N = be.shape(P)[0], be.size(u)
 
         rows = []
         for k in range(up_to_order_u + 1):
@@ -553,7 +553,7 @@ class NurbsGeometry(BaseGeometry):
         """
         u = be.asarray(u)
 
-        n_dim, N = be.shape(P)[0], be.size(u)
+        n_dim, _N = be.shape(P)[0], be.size(u)
         rows = []
         for order_u in range(min(p, up_to_order_u) + 1):
             cols = []
