@@ -68,6 +68,7 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.index
    optimization.variable.material
    optimization.variable.norm_radius
+   optimization.variable.nurbs
    optimization.variable.polynomial_coeff
    optimization.variable.radius
    optimization.variable.reciprocal_radius

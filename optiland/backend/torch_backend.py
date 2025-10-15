@@ -336,6 +336,22 @@ def random_uniform(
     )
 
 
+def rand(*size: int) -> Tensor:
+    """
+    Returns a tensor filled with random numbers from a uniform distribution
+    on the interval [0, 1).
+    If no size is provided, returns a single random number as a 1-element tensor.
+    """
+    if not size:
+        size = (1,)
+    return torch.rand(
+        size,
+        device=get_device(),
+        dtype=get_precision(),
+        requires_grad=grad_mode.requires_grad,
+    )
+
+
 def random_normal(
     loc: float = 0.0,
     scale: float = 1.0,
@@ -572,8 +588,27 @@ def batched_chain_matmul3(a: Tensor, b: Tensor, c: Tensor) -> Tensor:
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
 
 
-def cross(a: Tensor, b: Tensor) -> Tensor:
-    return torch.linalg.cross(a, b)
+def cross(
+    a: Tensor,
+    b: Tensor,
+    axisa: int = -1,
+    axisb: int = -1,
+    axisc: int = -1,
+    axis: int | None = None,
+) -> Tensor:
+    """A NumPy-compatible cross product for PyTorch."""
+    if axis is not None:
+        axisa, axisb, axisc = (axis,) * 3
+
+    # Move the specified axes to the end for `torch.linalg.cross`
+    a_moved = torch.movedim(a, axisa, -1)
+    b_moved = torch.movedim(b, axisb, -1)
+
+    # Compute the cross product along the last dimension
+    c = torch.linalg.cross(a_moved, b_moved, dim=-1)
+
+    # Move the result axis to the specified position
+    return torch.movedim(c, -1, axisc)
 
 
 def matrix_vector_multiply_and_squeeze(p: Tensor, E: Tensor) -> Tensor:

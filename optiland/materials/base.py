@@ -16,6 +16,8 @@ from typing import Any, ClassVar
 import numpy as np
 
 import optiland.backend as be
+from optiland.propagation.base import BasePropagationModel
+from optiland.propagation.homogeneous import HomogeneousPropagation
 
 
 class BaseMaterial(ABC):
@@ -29,16 +31,35 @@ class BaseMaterial(ABC):
     `_calculate_absolute_n` and `_calculate_k` to provide specific material properties.
 
     Attributes:
-        _registry (ClassVar[dict[str, Type[BaseMaterial]]]): A registry of all
+        propagation_model: The model used to propagate rays through this material.
+        _registry (ClassVar[dict[str, type[BaseMaterial]]]): A registry of all
             subclasses of BaseMaterial.
+
+    Methods:
+        n(wavelength: float | be.ndarray) -> float | be.ndarray:
+            Calculates the refractive index at a given wavelength(s) in microns.
+        k(wavelength: float | be.ndarray) -> float | be.ndarray:
+            Calculates the extinction coefficient at a given wavelength(s) in microns.
+        abbe() -> float:
+            Calculates the Abbe number of the material.
     """
 
     _registry: ClassVar[dict[str, type[BaseMaterial]]] = {}
 
-    def __init__(self) -> None:
-        """Initializes the material and its caches."""
+    def __init__(self, propagation_model: BasePropagationModel | None = None) -> None:
+        """Initializes the material and its caches.
+
+        Args:
+            propagation_model: The propagation model to use for this material.
+                If None, a default HomogeneousPropagation model is created.
+        """
         self._n_cache: dict[tuple, float | be.ndarray] = {}
         self._k_cache: dict[tuple, float | be.ndarray] = {}
+
+        if propagation_model is None:
+            self.propagation_model = HomogeneousPropagation(self)
+        else:
+            self.propagation_model = propagation_model
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         """Automatically register subclasses."""
@@ -71,7 +92,9 @@ class BaseMaterial(ABC):
         """
         # --- Caching ---
         # Bypassing cache for torch tensors with gradients to avoid numpy conversion
-        if be.is_torch_tensor(wavelength) and wavelength.requires_grad:
+        if be.is_torch_tensor(wavelength) and getattr(
+            wavelength, "requires_grad", False
+        ):
             pass
         else:
             cache_key = self._create_cache_key(wavelength, **kwargs)
@@ -91,7 +114,10 @@ class BaseMaterial(ABC):
         result = n_absolute_self / n_absolute_env
 
         # --- Update Cache ---
-        if not (be.is_torch_tensor(wavelength) and wavelength.requires_grad):
+        if not (
+            be.is_torch_tensor(wavelength)
+            and getattr(wavelength, "requires_grad", False)
+        ):
             self._n_cache[cache_key] = result
         return result
 
@@ -173,16 +199,21 @@ class BaseMaterial(ABC):
         """Convert the material to a dictionary.
 
         Returns:
-            dict: The dictionary representation of the material, including its type.
+            dict: The dictionary representation of the material, including its type and
+                ropagation model.
         """
-        return {"type": self.__class__.__name__}
+        return {
+            "type": self.__class__.__name__,
+            "propagation_model": self.propagation_model.to_dict(),
+        }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> BaseMaterial:
         """Create a material from a dictionary representation.
 
-        This method acts as a factory, delegating to the appropriate subclass's
-        `from_dict` method based on the 'type' key in the data.
+        This factory method first delegates to the appropriate subclass to
+        create the material instance, then handles the deserialization of
+        the propagation model.
 
         Args:
             data (dict): The dictionary representation of the material.
@@ -197,5 +228,18 @@ class BaseMaterial(ABC):
         if material_type not in cls._registry:
             raise ValueError(f"Unknown material type: {material_type}")
 
-        # Delegate to the correct subclass's from_dict
-        return cls._registry[material_type].from_dict(data)
+        # Delegate to the correct subclass to create the instance.
+        material_subclass = cls._registry[material_type]
+        material = material_subclass.from_dict(data)
+
+        # Handle the propagation model deserialization here.
+        propagation_model_data = data.get("propagation_model")
+        if propagation_model_data:
+            # Create the model, passing the material to resolve dependencies.
+            new_prop_model = BasePropagationModel.from_dict(
+                propagation_model_data, material=material
+            )
+            # Overwrite the default propagation model.
+            material.propagation_model = new_prop_model
+
+        return material

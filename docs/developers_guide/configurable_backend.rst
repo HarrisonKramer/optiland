@@ -107,12 +107,10 @@ If you define a function that relies on a backend-specific feature, add it to bo
 Backend Implementation Details
 ------------------------------
 
-- **Dynamic function patching**  
-  A metaprogramming layer inspects NumPy’s namespace and re‑exports core ufuncs and functions into the NumPy backend module automatically.
-- **Explicit registration for PyTorch**  
-  The PyTorch backend manually maps dozens of functions (including tensor creation, indexing, linear algebra, etc.), as well as defines custom functions not directly available in PyTorch.
-- **Error handling**  
-  If you call a backend operation that isn’t yet implemented in the active backend, Optiland will raise a clear `AttributeError` pointing to the missing function.
+- **Dynamic Dispatch**: The backend uses a `__getattr__` function to dynamically dispatch calls to the appropriate backend module.
+- **NumPy Backend**: The `numpy_backend.py` module defines a `_lib` attribute that points to the `numpy` library, allowing for a fallback to the NumPy namespace for functions not explicitly defined in the module.
+- **PyTorch Backend**: The `torch_backend.py` module explicitly defines or maps all supported functions.
+- **`to_numpy` Utility**: The `optiland.backend.utils` module provides a `to_numpy` function to convert backend-specific arrays to NumPy arrays.
 
 Best Practices
 --------------
@@ -120,6 +118,7 @@ Best Practices
 - **Use `be.*` everywhere**. Never import `np` or `torch` directly in Optiland modules - you’ll break backend neutrality. There are exceptions, but they are rare.
 - **Test on both backends**. Our CI includes pytest fixtures that run the full test suite under both NumPy and PyTorch modes. If you add a new feature, follow existing testing patterns to ensure it works on both backends.
 - **Document backend-specific behavior**. If a function has different characteristics, note it in the docstring.
+- **Use `to_numpy` for conversions**: When you need to convert a backend array to a NumPy array (e.g., for plotting), use the `to_numpy` function from `optiland.backend.utils`.
 
 Troubleshooting
 ---------------

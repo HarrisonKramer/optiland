@@ -181,7 +181,7 @@ Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKram
 
 ## Contact and Support
 
-If you have **found a bug**, have a **feature request**, or need to report a **documentation issue**, please [open an issue](https://github.com/HarrisonKramer/optiland/issues).  
+If you **found a bug**, have a **feature request**, or need to report a **documentation issue**, please [open an issue](https://github.com/HarrisonKramer/optiland/issues).  
 If you have a **question** or would like to start a broader **discussion**, please use the [GitHub Discussions](https://github.com/HarrisonKramer/optiland/discussions) section.  
 
 This keeps all project-related communication public, searchable, and helpful for others who may encounter the same problems or questions.

@@ -35,6 +35,9 @@ class MaterialFile(BaseMaterial):
 
     Args:
         filename (str): The path to the material file.
+        propagation_model (BasePropagationModel, optional): The propagation
+            model to use. Defaults to None, which creates a
+            HomogeneousPropagation model.
         is_relative_to_air (bool): If True, the refractive index is calculated
             relative to air at standard conditions. If False, the refractive
             index is calculated relative to vacuum. Defaults to True.

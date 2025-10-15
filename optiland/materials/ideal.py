@@ -4,15 +4,19 @@ This module contains the IdealMaterial class, which represents an ideal
 material with a fixed refractive index and extinction coefficient for all
 wavelengths.
 
-Kramer Harrison, 2024
+from typing import Any, TYPE_CHECKING
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.materials.base import BaseMaterial
+from optiland.propagation.base import BasePropagationModel
+
+if TYPE_CHECKING:
+    from optiland.propagation.base import BasePropagationModel
 
 
 class IdealMaterial(BaseMaterial):
@@ -34,8 +38,14 @@ class IdealMaterial(BaseMaterial):
         relative_to_environment (bool): Flag indicating if the index is relative.
     """
 
-    def __init__(self, n: float, k: float = 0.0, relative_to_environment: bool = False):
-        super().__init__()
+    def __init__(
+        self,
+        n: float,
+        k: float = 0.0,
+        relative_to_environment: bool = False,
+        propagation_model: BasePropagationModel | None = None,
+    ):
+        super().__init__(propagation_model)
         self.n_val = n
         self.k_val = k
         self.relative_to_environment = relative_to_environment

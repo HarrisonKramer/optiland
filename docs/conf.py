@@ -9,7 +9,7 @@ project = "Optiland"
 current_year = datetime.now().year
 copyright = f"2024-{current_year}, Kramer Harrison & contributors"
 author = "Kramer Harrison"
-release = "0.5.6"
+release = "0.5.7"
 
 extensions = [
     "jupyterlite_sphinx",

@@ -15,6 +15,7 @@ from .forbes import (
     ForbesSurfaceConfig,
 )
 from .newton_raphson import NewtonRaphsonGeometry
+from .nurbs import NurbsGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
 from .plane_grating import PlaneGrating
@@ -58,4 +59,6 @@ __all__ = [
     "ForbesQbfsGeometry",
     "ForbesSurfaceConfig",
     "ForbesSolverConfig",
+    # From nurbs subpackage
+    "NurbsGeometry",
 ]

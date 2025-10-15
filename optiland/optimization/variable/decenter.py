@@ -19,9 +19,10 @@ class DecenterVariable(VariableBehavior):
     Args:
         optic (Optic): The optic object to which the surface belongs.
         surface_number (int): The number of the surface.
-        axis (str): The axis of the decenter. Valid values are 'x' and 'y'.
-        scaler (Scaler): The scaler to use for the variable. Defaults to
-            IdentityScaler().
+            axis (str): The axis of the decenter. Valid values are 'x', 'y', and 'z'.
+            scaler (Scaler): The scaler to use for the variable. Defaults to
+                IdentityScaler().
+            **kwargs: Additional keyword arguments.
         **kwargs: Additional keyword arguments.
 
     Attributes:
@@ -40,7 +41,7 @@ class DecenterVariable(VariableBehavior):
         super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.axis = axis
 
-        if self.axis not in ["x", "y"]:
+        if self.axis not in ["x", "y", "z"]:
             raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
 
     def get_value(self):
@@ -52,9 +53,14 @@ class DecenterVariable(VariableBehavior):
         """
         surf = self._surfaces.surfaces[self.surface_number]
         if self.axis == "x":
-            return surf.geometry.cs.x
+            value = surf.geometry.cs.x
         elif self.axis == "y":
-            return surf.geometry.cs.y
+            value = surf.geometry.cs.y
+        elif self.axis == "z":
+            value = surf.geometry.cs.z
+        else:
+            raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
+        return self.scaler.scale(value)
 
     def update_value(self, new_value):
         """Updates the decenter value of the surface.
@@ -64,10 +70,15 @@ class DecenterVariable(VariableBehavior):
 
         """
         surf = self._surfaces.surfaces[self.surface_number]
+        unscaled_value = self.scaler.inverse_scale(new_value)
         if self.axis == "x":
-            surf.geometry.cs.x = new_value
+            surf.geometry.cs.x = unscaled_value
         elif self.axis == "y":
-            surf.geometry.cs.y = new_value
+            surf.geometry.cs.y = unscaled_value
+        elif self.axis == "z":
+            surf.geometry.cs.z = unscaled_value
+        else:
+            raise ValueError(f'Invalid axis "{self.axis}" for decenter variable.')
 
     def __str__(self):
         """Return a string representation of the variable.

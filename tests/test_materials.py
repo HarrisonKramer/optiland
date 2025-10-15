@@ -96,6 +96,7 @@ class TestIdealMaterial:
             "k": 0.2,
             "type": materials.IdealMaterial.__name__,
             "relative_to_environment": False,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_ideal_from_dict(self, set_test_backend):
@@ -248,6 +249,7 @@ class TestMaterialFileRelative:
             "filename": filename,
             "type": materials.MaterialFile.__name__,
             "is_relative_to_air": True,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_from_dict(self, set_test_backend):
@@ -327,6 +329,7 @@ class TestMaterial:
             "min_wavelength": None,
             "max_wavelength": None,
             "is_relative_to_air": True,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_from_dict(self, set_test_backend):
@@ -360,7 +363,11 @@ def test_coefficients(set_test_backend, abbe_material):
 
 def test_abbe_to_dict(set_test_backend, abbe_material):
     abbe_dict = abbe_material.to_dict()
-    assert abbe_dict == {"type": "AbbeMaterial", "n": 1.5, "abbe": 50}
+    assert abbe_dict == {
+        "type": "AbbeMaterial",
+        "n": 1.5,
+        "abbe": 50,
+    }
 
 
 def test_abbe_from_dict(set_test_backend):
