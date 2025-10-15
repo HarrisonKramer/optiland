@@ -47,6 +47,7 @@ Supported Geometry Types
 Optiland includes a wide range of built-in geometries:
 
 - **Standard**: Handles spherical and conic surfaces.
+- **Planes**: Flat surfaces with infinite or finite extent.
 - **EvenAsphere**: Described by polynomial terms for deviations from a sphere.
 - **OddAsphere**: Similar to even aspheres but with additional terms for odd powers.
 - **Biconic**: A surface with different radii and conic constants in x and y.

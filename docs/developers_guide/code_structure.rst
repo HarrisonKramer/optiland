@@ -49,8 +49,8 @@ Key Relationships
 
 - The **Optic** class is the central container for an optical system.
 - It has a **SurfaceGroup**, which contains a list of **Surface** objects.
-- Each **Surface** has a **Geometry**, a **Material**, and an **InteractionModel**.
+- Each **Surface** has a **Geometry**, a **Material** before and after the surface, and an **InteractionModel**.
 - The **InteractionModel** defines how rays interact with the surface.
-- The **Material** has a **PropagationModel**, which defines how rays propagate through the material.
+- Each **Material** has a **PropagationModel**, which defines how rays propagate through the material.
 - The **RealRayTracer** and **ParaxialRayTracer** use the **SurfaceGroup** to trace **Rays** through the system.
 - All numerical operations are dispatched to the active **Backend**.

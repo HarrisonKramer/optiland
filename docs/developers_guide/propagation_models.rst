@@ -17,7 +17,7 @@ Homogeneous
 
 The `Homogeneous` model is used for materials with a uniform refractive index. It's the most common propagation model.
 
-Grin
-----
+GRIN - gradient-index
+---------------------
 
-The `Grin` model is used for gradient-index materials, where the refractive index varies with position.
+The `GRIN` model is used for gradient-index materials, where the refractive index varies with position.
