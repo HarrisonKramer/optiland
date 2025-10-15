@@ -23,7 +23,6 @@ class DecenterVariable(VariableBehavior):
             scaler (Scaler): The scaler to use for the variable. Defaults to
                 IdentityScaler().
             **kwargs: Additional keyword arguments.
-        **kwargs: Additional keyword arguments.
 
     Attributes:
         optic (Optic): The optic object to which the surface belongs.
