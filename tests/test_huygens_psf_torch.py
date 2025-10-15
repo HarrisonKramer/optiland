@@ -12,15 +12,13 @@ from optiland.samples.objectives import CookeTriplet
 
 @pytest.fixture(autouse=True)
 def set_torch_backend():
-    """Ensure the torch backend is used for all tests in this module."""
+    """Ensure the torch backend is used for all tests in this module, and restore numpy after."""
     if TORCH_AVAILABLE:
         be.set_backend("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def restore_numpy_backend():
-    yield
-    be.set_backend("numpy")
+        yield
+        be.set_backend("numpy")
+    else:
+        yield
 
 
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="PyTorch is not installed")
