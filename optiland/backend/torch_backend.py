@@ -112,6 +112,17 @@ def get_precision() -> torch.dtype:
     return _config.get_precision()
 
 
+def get_complex_precision() -> torch.dtype:
+    """Returns the complex dtype corresponding to the current precision."""
+    prec = get_precision()
+    if prec == torch.float32:
+        return torch.complex64
+    elif prec == torch.float64:
+        return torch.complex128
+    else:
+        raise ValueError("Unsupported precision for complex dtype.")
+
+
 # Global gradient control
 grad_mode: GradMode = _config.grad_mode
 

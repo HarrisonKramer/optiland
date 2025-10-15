@@ -58,7 +58,7 @@ class HuygensFresnelSummation(ABC):
         Returns:
             2D array of the point spread function.
         """
-        pass
+        pass  # pragma: no cover
 
 
 class NumbaSummation(HuygensFresnelSummation):
@@ -106,7 +106,7 @@ class NumbaSummation(HuygensFresnelSummation):
         pupil_opd,
         wavelength,
         Rp,
-    ):
+    ):  # pragma: no cover
         """
         Compute the point spread function using the Huygens–Fresnel diffraction integral
 
@@ -179,7 +179,7 @@ class TorchSummation(HuygensFresnelSummation):
         if torch is None:
             raise ImportError("PyTorch backend is not available.")
         self.batch_size = batch_size
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = be.get_device()
 
     def compute(
         self,
@@ -223,7 +223,7 @@ class TorchSummation(HuygensFresnelSummation):
 
         num_image_points = len(image_x_flat)
         field_flat = torch.zeros(
-            num_image_points, dtype=torch.complex128, device=self.device
+            num_image_points, dtype=be.get_complex_precision(), device=self.device
         )
 
         for i in range(0, num_image_points, self.batch_size):

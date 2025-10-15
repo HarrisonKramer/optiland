@@ -17,6 +17,12 @@ def set_torch_backend():
         be.set_backend("torch")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def restore_numpy_backend():
+    yield
+    be.set_backend("numpy")
+
+
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="PyTorch is not installed")
 class TestHuygensPSFTorch:
     WAVELENGTH_GREEN = 0.550

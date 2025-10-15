@@ -18,6 +18,14 @@ def set_numpy_backend():
     be.set_backend("numpy")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def restore_numpy_backend():
+    """Restores the numpy backend after tests. Not strictly
+    necessary here as all tests use numpy, but included for completeness."""
+    yield
+    be.set_backend("numpy")
+
+
 @pytest.fixture(scope="module")
 def cooke_triplet_optic():
     """Provides a CookeTriplet instance."""

@@ -73,11 +73,11 @@ def to_numpy(obj: ScalarOrArrayT) -> NDArray:
     raise TypeError(f"Unsupported object type: {type(obj)}")
 
 
-def is_torch_tensor(obj: any) -> bool:
+def is_torch_tensor(obj) -> bool:
     """Checks if an object is a PyTorch tensor.
 
     Args:
-        obj (any): The object to check.
+        obj: The object to check.
 
     Returns:
         bool: True if the object is a PyTorch tensor, False otherwise.
