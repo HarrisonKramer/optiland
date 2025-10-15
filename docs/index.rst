@@ -130,9 +130,12 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    developers_guide/installation
    developers_guide/getting_started
    developers_guide/architecture
+   developers_guide/code_structure
    developers_guide/configurable_backend
    developers_guide/ray_overview
    developers_guide/surface_overview
+   developers_guide/interaction_models
+   developers_guide/propagation_models
    developers_guide/geometry_overview
    developers_guide/analysis_framework
    developers_guide/optimization_framework
