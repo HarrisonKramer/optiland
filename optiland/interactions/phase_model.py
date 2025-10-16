@@ -80,8 +80,8 @@ class PhaseInteractionModel(BaseInteractionModel):
         rays.L = L
         rays.M = M
         rays.N = N
-        rays.opd += opd
-        rays.i *= self.phase_model.efficiency(rays)
+        rays.opd = rays.opd + opd
+        rays.i = rays.i * self.phase_model.efficiency(rays)
 
         return rays
 

@@ -103,10 +103,10 @@ class RadialPhase(BasePhase):
         M = rays.M + m * wavelength_ratio * dphi_dy + Q * ny
         N = rays.N + Q * nz
 
-        out_mag = be.sqrt(L**2 + M**2 + N**2)
-        L /= out_mag
-        M /= out_mag
-        N /= out_mag
+        mag = be.sqrt(L**2 + M**2 + N**2)
+        L = L / mag
+        M = M / mag
+        N = N / mag
 
         opd = m * sum(
             a * r ** (2 * i) for i, a in enumerate(self.coefficients, start=1)

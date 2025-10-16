@@ -8,6 +8,10 @@ from optiland.interactions.refractive_reflective_model import RefractiveReflecti
 from optiland.materials import IdealMaterial
 from optiland.rays import ParaxialRays, RealRays
 from optiland.surfaces.standard_surface import Surface
+from optiland.interactions.phase_model import PhaseInteractionModel
+from optiland.phase.grating import GratingPhase
+from optiland.geometries.standard import StandardGeometry
+from .utils import assert_allclose
 
 
 class TestSurface:
@@ -140,3 +144,42 @@ class TestSurface:
         del data["type"]
         with pytest.raises(ValueError):
             Surface.from_dict(data)
+
+
+def test_surface_with_phase_interaction(set_test_backend):
+    """Test that a Surface with a PhaseInteractionModel traces rays
+    correctly.
+
+    """
+    rays = RealRays(
+        x=[0],
+        y=[0],
+        z=[-1],
+        L=[0],
+        M=[0],
+        N=[1],
+        intensity=[1],
+        wavelength=[0.5],
+    )
+    cs = CoordinateSystem()
+    geometry = StandardGeometry(coordinate_system=cs, radius=be.inf)
+    material = IdealMaterial(n=1.0)
+    phase = GratingPhase(period=1.0, order=1)
+    interaction_model = PhaseInteractionModel(
+        geometry=geometry,
+        material_pre=material,
+        material_post=material,
+        phase_model=phase,
+    )
+    surface = Surface(
+        geometry=geometry,
+        material_pre=material,
+        material_post=material,
+        interaction_model=interaction_model,
+    )
+    rays = surface.trace(rays)
+    assert_allclose(rays.L, 0.0)
+    assert_allclose(rays.M, 0.5)
+    assert_allclose(rays.N, be.sqrt(1 - 0.5**2))
+    assert_allclose(rays.opd, 1.5)
+    assert_allclose(rays.i, 1.0)

@@ -10,12 +10,11 @@ from optiland.phase.grating import GratingPhase
 from optiland.rays.real_rays import RealRays
 from optiland.geometries.standard import StandardGeometry
 from optiland.materials.ideal import IdealMaterial
+from .utils import assert_allclose
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_phase_interaction_model(backend):
+def test_phase_interaction_model(set_test_backend):
     """Test the PhaseInteractionModel class."""
-    be.set_backend(backend)
     rays = RealRays(
         x=[0],
         y=[0],
@@ -37,8 +36,8 @@ def test_phase_interaction_model(backend):
         phase_model=phase,
     )
     rays = interaction_model.interact_real_rays(rays)
-    assert be.allclose(rays.L, 0.0)
-    assert be.allclose(rays.M, 0.5)
-    assert be.allclose(rays.N, be.sqrt(1 - 0.5**2))
-    assert be.allclose(rays.opd, 0.5)
-    assert be.allclose(rays.i, 1.0)
+    assert_allclose(rays.L, 0.0)
+    assert_allclose(rays.M, 0.5)
+    assert_allclose(rays.N, be.sqrt(1 - 0.5**2))
+    assert_allclose(rays.opd, 0.5)
+    assert_allclose(rays.i, 1.0)
