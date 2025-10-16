@@ -1,51 +1,87 @@
-"""Phase
+"""Grating Phase
 
-TPhaser that gets added to any surface defiend in Geometry:
-Write some kind of disccription
+This module defines the `GratingPhase` class, which represents a phase
+function for a diffraction grating.
 
+The `GratingPhase` class calculates the change in the direction of a ray and
+the optical path difference (OPD) introduced by a diffraction grating. It
+supports different grating orders and orientations.
+
+The implementation is based on the vector formulation of the grating equation,
+which allows for the calculation of the diffracted ray direction for any
+incident ray and grating orientation.
 
 Hhsoj, 2025
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
-from optiland.coordinate_system import CoordinateSystem
 from optiland.phase.base import BasePhase
+
+if TYPE_CHECKING:
+    from optiland.rays import RealRays
+    from optiland._types import BEArray
 
 
 class GratingPhase(BasePhase):
-    """Represents a phase function that can be added to a Geometry
-
-
-
+    """Represents a phase function for a diffraction grating.
 
     Args:
-        A (float): Period of the diffraction garting in lines/um
-        Order (integer): diffraction order for the grating
-
-    Methods:
-        phase_grating(self, rays): Calculates the phase for a diffraction grating
-
-
+        period (float): The period of the grating in lines/μm.
+        order (int): The diffraction order.
+        gx (float, optional): The x-component of the grating vector.
+            Defaults to 1.
+        gy (float, optional): The y-component of the grating vector.
+            Defaults to 0.
+        gz (float, optional): The z-component of the grating vector.
+            Defaults to 0.
 
     """
 
-    def __init__(self, A=1, order=1, gx=1, gy=0, gz=0, eff="ideal"):
-        self.A = be.array(A)
+    def __init__(
+        self,
+        period: float = 1.0,
+        order: int = 1,
+        gx: float = 1.0,
+        gy: float = 0.0,
+        gz: float = 0.0,
+    ):
+        self.period = be.array(period)
         self.order = be.array(order)
         self.gx = gx
         self.gy = gy
         self.gz = gz
-        self.eff = eff
 
-    def __str__(self):
-        return "Grating"
+    def phase_calc(
+        self,
+        rays: RealRays,
+        nx: BEArray,
+        ny: BEArray,
+        nz: BEArray,
+        n1: BEArray,
+        n2: BEArray,
+    ) -> tuple[BEArray, BEArray, BEArray, BEArray]:
+        """Calculates the effect of the grating phase function on the rays.
 
-    def phase_calc(self, rays, nx, ny, nz, n1, n2):
-        """ "Phase function that discribes a diffraction grating
-        Args:"""
-        spacing = 1 / self.A
+        Args:
+            rays (RealRays): The rays incident on the surface.
+            nx (BEArray): The x-component of the surface normal.
+            ny (BEArray): The y-component of the surface normal.
+            nz (BEArray): The z-component of the surface normal.
+            n1 (BEArray): The refractive index of the medium before the
+                surface.
+            n2 (BEArray): The refractive index of the medium after the
+                surface.
+
+        Returns:
+            A tuple containing the new x, y, and z direction cosines (L, M, N)
+            and the optical path difference (OPD) to be added to the rays.
+
+        """
+        spacing = 1 / self.period
         nx = -nx
         ny = -ny
         nz = -nz
@@ -54,7 +90,6 @@ class GratingPhase(BasePhase):
         tx = ny * self.gz - nz * self.gy
         ty = nz * self.gx - nx * self.gz
         tz = nx * self.gy - ny * self.gx
-        # tx, ty, tz = normalize3(tx, ty, tz)
         mag = be.sqrt(tx * tx + ty * ty + tz * tz)
 
         tx = be.where(mag <= 0, 0, tx / mag)
@@ -67,11 +102,8 @@ class GratingPhase(BasePhase):
 
         # define parameters
         dx, dy, dz = rays.L, rays.M, rays.N
-        s = 1
-        nx, ny, nz = s * nx, s * ny, s * nz
 
         wavelength = rays.w
-        # Incident wavevector (k_in = 2π/λ * direction)
         k_mag = 2 * be.pi / wavelength
         kix = k_mag * dx
         kiy = k_mag * dy
@@ -90,10 +122,9 @@ class GratingPhase(BasePhase):
 
         kp2 = kdx**2 + kdy**2 + kdz**2
 
-        be.where(kp2 < k_mag**2)
         dk_mag2_kp2 = k_mag**2 - kp2
-        if be.where(dk_mag2_kp2 < 0, True, False).any():
-            raise ValueError("Angular limit on Rays due to phase ")
+        if be.any(dk_mag2_kp2 < 0):
+            raise ValueError("Total internal reflection due to phase.")
 
         k_perp_mag = be.sqrt(dk_mag2_kp2)
 
@@ -103,56 +134,54 @@ class GratingPhase(BasePhase):
 
         uk = be.sqrt(kfx**2 + kfy**2 + kfz**2)
 
-        kfx = kfx / uk
-        kfy = kfy / uk
-        kfz = kfz / uk
+        L = kfx / uk
+        M = kfy / uk
+        N = kfz / uk
 
-        # self.normalize()
         dot_knn = dx * nx + dy * ny + dz * nz
         sin_in = be.sqrt(1 - dot_knn**2)
-        dot_kfn = kfx * nx + kfy * ny + kfz * nz
+        dot_kfn = L * nx + M * ny + N * nz
         sin_out = be.sqrt(1 - dot_kfn**2)
-        d = 1 / self.A
+        d = 1 / self.period
         opd = d * (n1 * sin_in + n2 * sin_out)
 
-        return kfx, kfy, kfz, opd
+        return L, M, N, opd
 
-    def efficiency(self, rays):
-        # need to add code to this
-        if self.eff == "ideal":
-            d_eff = 1
+    def efficiency(self, rays: RealRays) -> BEArray:
+        """Calculates the diffraction efficiency of the grating.
 
-            # beta  = d * (n1 * be.cos( rays))
+        For now, this returns an ideal efficiency of 1.0.
 
-        return d_eff
-
-    def to_dict(self):
-        """Convert the phase to a dictionary.
+        Args:
+            rays (RealRays): The rays incident on the surface.
 
         Returns:
-            dict: The dictionary representation of the geometry.
+            BEArray: The diffraction efficiency for each ray.
 
         """
+        return be.ones_like(rays.x)
+
+    def to_dict(self) -> dict:
+        """Converts the GratingPhase object to a dictionary."""
         phase_dict = super().to_dict()
-        phase_dict.update({"period": float(self.A), "order": float(self.order)})
+        phase_dict.update(
+            {
+                "period": float(self.period),
+                "order": int(self.order),
+                "gx": self.gx,
+                "gy": self.gy,
+                "gz": self.gz,
+            }
+        )
         return phase_dict
 
     @classmethod
-    def from_dict(cls, data):
-        """Create a phase from a dictionary.
-
-        Args:
-            data (dict): The dictionary representation of the phase.
-
-        Returns:
-            GratingPhase: An instance of GratingPhase.
-
-        """
-        required_keys = {"order", "period", "eff"}
-        if not required_keys.issubset(data):
-            missing = required_keys - data.keys()
-            raise ValueError(f"Missing required keys: {missing}")
-
-        cs = CoordinateSystem.from_dict(data["cs"])
-
-        return cls(cs, data["period"], data.get("order", 0.0), data.get("eff", "ideal"))
+    def from_dict(cls, data: dict) -> "GratingPhase":
+        """Creates a GratingPhase object from a dictionary."""
+        return cls(
+            period=data["period"],
+            order=data["order"],
+            gx=data.get("gx", 1.0),
+            gy=data.get("gy", 0.0),
+            gz=data.get("gz", 0.0),
+        )

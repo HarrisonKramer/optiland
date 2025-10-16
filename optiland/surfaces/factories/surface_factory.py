@@ -19,6 +19,8 @@ from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
 )
 from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
+from optiland.interactions.phase_model import PhaseInteractionModel
+from optiland.phase.base import BasePhase
 from optiland.surfaces.factories.interaction_model_factory import (
     InteractionModelFactory,
 )
@@ -158,16 +160,25 @@ class SurfaceFactory:
             interaction_type = "diffractive"
 
         # Build interaction model
-        interaction_model = self._interaction_model_factory.create(
-            interaction_type=interaction_type,
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
-            is_reflective=is_reflective,
-            coating=coating,
-            bsdf=kwargs.get("bsdf"),
-            focal_length=kwargs.get("f"),
-        )
+        if kwargs.get("phase_model"):
+            interaction_model = PhaseInteractionModel(
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=is_reflective,
+                phase_model=BasePhase.from_dict(kwargs.get("phase_model")),
+            )
+        else:
+            interaction_model = self._interaction_model_factory.create(
+                interaction_type=interaction_type,
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=is_reflective,
+                coating=coating,
+                bsdf=kwargs.get("bsdf"),
+                focal_length=kwargs.get("f"),
+            )
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
@@ -178,7 +189,6 @@ class SurfaceFactory:
             surface_type=surface_type,
             comment=comment,
             aperture=kwargs.get("aperture"),
-            phase_type=kwargs.get("phase_type"),
             interaction_model=interaction_model,
         )
 

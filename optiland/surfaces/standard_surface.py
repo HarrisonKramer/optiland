@@ -59,7 +59,6 @@ class Surface:
         aperture: BaseAperture = None,
         surface_type: str = None,
         comment: str = "",
-        phase_type: BasePhase = None,
         interaction_model: BaseInteractionModel = None,
     ):
         self.geometry = geometry
@@ -70,7 +69,6 @@ class Surface:
         self.semi_aperture = None
         self.surface_type = surface_type
         self.comment = comment
-        self.phase_type = phase_type
 
         if interaction_model is None:
             self.interaction_model = RefractiveReflectiveModel(
@@ -231,13 +229,6 @@ class Surface:
             n1 = self.material_pre.n(rays.w)
             n2 = self.material_post.n(rays.w)
             rays.refract(nx, ny, nz, n1, n2)
-        if self.phase_type:
-            n1 = self.material_pre.n(rays.w)
-            n2 = self.material_post.n(rays.w)
-            Kx, Ky, Kz, opd = self.phase_type.phase_calc(rays, nx, ny, nz, n1, n2)
-            m = self.phase_type.order
-            d_eff = self.phase_type.efficiency(rays)
-            rays.add_phase(nx, ny, nz, Kx, Ky, Kz, n1, n2, m, opd, d_eff)
 
         # if there is a surface scatter model, modify ray properties
         if self.bsdf:

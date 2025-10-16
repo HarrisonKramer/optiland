@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .base import BaseInteractionModel
 from .diffractive_model import DiffractiveInteractionModel
+from .phase_model import PhaseInteractionModel
 from .refractive_reflective_model import RefractiveReflectiveModel
 from .thin_lens_interaction_model import ThinLensInteractionModel
 
@@ -10,4 +11,5 @@ __all__ = [
     "RefractiveReflectiveModel",
     "ThinLensInteractionModel",
     "DiffractiveInteractionModel",
+    "PhaseInteractionModel",
 ]

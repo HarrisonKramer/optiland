@@ -1,69 +1,114 @@
-"""Phase
+"""Base Phase
 
-Phase that gets added to any surface defiend in Geometry:
+This module defines the `BasePhase` class, which serves as the abstract base
+class for all phase functions that can be applied to a surface in an optical
+system.
 
+The `BasePhase` class provides a common interface for phase calculations,
+ensuring that all phase models can be used interchangeably within the
+`DiffractiveInteractionModel`. It defines an abstract `phase_calc` method that
+must be implemented by all subclasses. This method calculates the effect of the
+phase function on the direction and optical path difference of a ray.
 
+The module also includes a registry for all `BasePhase` subclasses, which
+enables the dynamic instantiation of phase models from a dictionary
+representation. This is used for serialization and deserialization of optical
+systems.
 
 Hhsoj, 2025
 """
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, ClassVar, Dict, Type
 
-class BasePhase:
-    """Represents a phase function that can be added to a Geometry
-    BasePhase is reserved for expansion of the Phase class
+if TYPE_CHECKING:
+    from optiland.rays import RealRays
+    from optiland._types import BEArray
+
+
+class BasePhase(ABC):
+    """Represents an abstract phase function that can be added to a surface.
+
+    This class is the abstract base class for all phase functions. It defines
+    the common interface for phase calculations and serialization.
 
     """
 
-    def __str__(self):
-        return "Base"
+    _registry: ClassVar[Dict[str, Type[BasePhase]]] = {}
 
-    def phase_calc(self, rays, nx, ny, nz, n1, n2):
-        """Calculate the surface normal of the geometry at the given points.
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses."""
+        super().__init_subclass__(**kwargs)
+        BasePhase._registry[cls.__name__] = cls
+
+    @abstractmethod
+    def phase_calc(
+        self,
+        rays: RealRays,
+        nx: BEArray,
+        ny: BEArray,
+        nz: BEArray,
+        n1: BEArray,
+        n2: BEArray,
+    ) -> tuple[BEArray, BEArray, BEArray, BEArray]:
+        """Calculates the effect of the phase function on the rays.
 
         Args:
-            rays (RealRays): The rays, positioned at the surface, for which to
-                calculate the surface normals.
+            rays (RealRays): The rays incident on the surface.
+            nx (BEArray): The x-component of the surface normal.
+            ny (BEArray): The y-component of the surface normal.
+            nz (BEArray): The z-component of the surface normal.
+            n1 (BEArray): The refractive index of the medium before the surface.
+            n2 (BEArray): The refractive index of the medium after the surface.
 
         Returns:
-            tuple[be.ndarray, be.ndarray, be.ndarray]: The l, m, n and opd
-            applied to input L,m,n, opd due to the phase function from DOE.
+            tuple[BEArray, BEArray, BEArray, BEArray]: A tuple containing the
+            new x, y, and z direction cosines (L, M, N) and the optical path
+            difference (OPD) to be added to the rays.
 
         """
+        raise NotImplementedError
 
-        return l, m, n, opd
+    @abstractmethod
+    def efficiency(self, rays: RealRays) -> BEArray:
+        """Calculates the diffraction efficiency of the phase function.
 
-    def efficiency(self, rays):
-        """applies the efficiency to the ray based on the order and the fabrication of the doe deisgn"""
-
-        return d_eff
-
-    def to_dict(self):
-        """Convert the phase to a dictionary.
+        Args:
+            rays (RealRays): The rays incident on the surface.
 
         Returns:
-            dict: The dictionary representation of the phase.
+            BEArray: The diffraction efficiency for each ray.
 
         """
-        return {"type": self.__class__.__name__, "cs": self.cs.to_dict()}
+        raise NotImplementedError
+
+    def to_dict(self) -> dict:
+        """Converts the phase object to a dictionary.
+
+        Returns:
+            dict: The dictionary representation of the phase object.
+
+        """
+        return {"type": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, data):
-        """Create a phase from a dictionary.
+    def from_dict(cls, data: dict) -> "BasePhase":
+        """Creates a phase object from a dictionary.
 
         Args:
-            data (dict): A dictionary containing the phase data, including
-                its 'type' and coordinate system 'cs'.
+            data (dict): A dictionary containing the phase data.
 
         Returns:
-            BasePhase: An instance of a specific phase subclass created
-            from the dictionary data.
+            BasePhase: An instance of a specific phase subclass.
+
+        Raises:
+            ValueError: If the phase type specified in the dictionary is unknown.
 
         """
         phase_type = data.get("type")
         if phase_type not in cls._registry:
-            raise ValueError(f"Unknown phase type: {phase_type_type}")
+            raise ValueError(f"Unknown phase type: {phase_type}")
 
-        # Delegate to the correct subclass's from_dict
-        return cls._registry[phase_type_type].from_dict(data)
+        return cls._registry[phase_type].from_dict(data)
