@@ -104,7 +104,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    gallery/optimization
    gallery/tolerancing
    gallery/freeforms
-   gallery/diffractive
+   gallery/diffractive_and_phase
    gallery/differentiable_ray_tracing
    gallery/real_world_projects
    gallery/external_tools
