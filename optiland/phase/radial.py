@@ -15,14 +15,14 @@ Hhsoj, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.phase.base import BasePhase
 
 if TYPE_CHECKING:
-    from optiland.rays import RealRays
     from optiland._types import BEArray
+    from optiland.rays import RealRays
 
 
 class RadialPhase(BasePhase):
@@ -35,7 +35,7 @@ class RadialPhase(BasePhase):
 
     """
 
-    def __init__(self, order: int = 1, coefficients: List[float] = None):
+    def __init__(self, order: int = 1, coefficients: list[float] = None):
         if coefficients is None:
             coefficients = []
         self.order = be.array(order)
@@ -108,7 +108,9 @@ class RadialPhase(BasePhase):
         M /= out_mag
         N /= out_mag
 
-        opd = m * sum(a * r ** (2 * i) for i, a in enumerate(self.coefficients, start=1))
+        opd = m * sum(
+            a * r ** (2 * i) for i, a in enumerate(self.coefficients, start=1)
+        )
 
         return L, M, N, opd
 
@@ -138,7 +140,7 @@ class RadialPhase(BasePhase):
         return phase_dict
 
     @classmethod
-    def from_dict(cls, data: dict) -> "RadialPhase":
+    def from_dict(cls, data: dict) -> RadialPhase:
         """Creates a RadialPhase object from a dictionary."""
         return cls(
             order=data.get("order", 1),

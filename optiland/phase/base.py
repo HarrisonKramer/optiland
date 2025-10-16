@@ -21,11 +21,11 @@ Hhsoj, 2025
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, ClassVar, Dict, Type
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
-    from optiland.rays import RealRays
     from optiland._types import BEArray
+    from optiland.rays import RealRays
 
 
 class BasePhase(ABC):
@@ -36,7 +36,7 @@ class BasePhase(ABC):
 
     """
 
-    _registry: ClassVar[Dict[str, Type[BasePhase]]] = {}
+    _registry: ClassVar[dict[str, type[BasePhase]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
@@ -94,7 +94,7 @@ class BasePhase(ABC):
         return {"type": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, data: dict) -> "BasePhase":
+    def from_dict(cls, data: dict) -> BasePhase:
         """Creates a phase object from a dictionary.
 
         Args:

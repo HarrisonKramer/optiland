@@ -12,8 +12,6 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
@@ -24,9 +22,6 @@ from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
-
-if TYPE_CHECKING:
-    from optiland.phase.base import BasePhase
 
 
 class Surface:

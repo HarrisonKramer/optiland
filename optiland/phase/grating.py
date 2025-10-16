@@ -22,8 +22,8 @@ import optiland.backend as be
 from optiland.phase.base import BasePhase
 
 if TYPE_CHECKING:
-    from optiland.rays import RealRays
     from optiland._types import BEArray
+    from optiland.rays import RealRays
 
 
 class GratingPhase(BasePhase):
@@ -176,7 +176,7 @@ class GratingPhase(BasePhase):
         return phase_dict
 
     @classmethod
-    def from_dict(cls, data: dict) -> "GratingPhase":
+    def from_dict(cls, data: dict) -> GratingPhase:
         """Creates a GratingPhase object from a dictionary."""
         return cls(
             period=data["period"],

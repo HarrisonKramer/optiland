@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from optiland.geometries import BaseGeometry
     from optiland.materials import BaseMaterial
     from optiland.phase.base import BasePhase
-    from optiland.rays import RealRays, ParaxialRays
+    from optiland.rays import ParaxialRays, RealRays
 
 
 class PhaseInteractionModel(BaseInteractionModel):

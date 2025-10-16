@@ -14,13 +14,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
+from optiland.interactions.phase_model import PhaseInteractionModel
+from optiland.phase.base import BasePhase
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
 )
 from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
-from optiland.interactions.phase_model import PhaseInteractionModel
-from optiland.phase.base import BasePhase
 from optiland.surfaces.factories.interaction_model_factory import (
     InteractionModelFactory,
 )
