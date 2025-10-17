@@ -14,6 +14,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
+from optiland.interactions.phase_model import PhaseInteractionModel
+from optiland.phase.base import BasePhase
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
@@ -158,16 +160,36 @@ class SurfaceFactory:
             interaction_type = "diffractive"
 
         # Build interaction model
-        interaction_model = self._interaction_model_factory.create(
-            interaction_type=interaction_type,
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
-            is_reflective=is_reflective,
-            coating=coating,
-            bsdf=kwargs.get("bsdf"),
-            focal_length=kwargs.get("f"),
-        )
+        phase_model_arg = kwargs.get("phase_model")
+        if phase_model_arg:
+            if isinstance(phase_model_arg, BasePhase):
+                phase_model = phase_model_arg
+            elif isinstance(phase_model_arg, dict):
+                phase_model = BasePhase.from_dict(phase_model_arg)
+            else:
+                raise TypeError(
+                    f"Expected a BasePhase object or a dict for phase_model, "
+                    f"but got {type(phase_model_arg).__name__}"
+                )
+
+            interaction_model = PhaseInteractionModel(
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=is_reflective,
+                phase_model=phase_model,
+            )
+        else:
+            interaction_model = self._interaction_model_factory.create(
+                interaction_type=interaction_type,
+                geometry=geometry,
+                material_pre=material_pre,
+                material_post=material_post,
+                is_reflective=is_reflective,
+                coating=coating,
+                bsdf=kwargs.get("bsdf"),
+                focal_length=kwargs.get("f"),
+            )
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(

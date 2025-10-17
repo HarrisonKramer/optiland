@@ -23,7 +23,14 @@ ThinLensInteractionModel
 
 The `ThinLensInteractionModel` is used for paraxial surfaces. It simplifies the surface to an ideal thin lens with a given focal length.
 
-DiffractiveModel
-----------------
+DiffractiveInteractionModel
+-------------------------
 
-The `DiffractiveModel` is used for surfaces with diffraction gratings. It calculates the new direction of the ray based on the grating equation.
+The `DiffractiveInteractionModel` is used for surfaces with physical diffraction gratings. It calculates the new direction of the ray based on the grating equation.
+
+PhaseInteractionModel
+---------------------
+
+The `PhaseInteractionModel` provides a flexible way to define the phase of a surface. It uses a `BasePhase` object to calculate the phase at each point on the surface. This allows for the creation of various optical elements, such as gratings, lenses with custom phase profiles, and more.
+
+A common `BasePhase` subclass is `GratingPhase`, which models a simple diffraction grating. For more complex phase profiles, you can create your own subclass of `BasePhase`.
