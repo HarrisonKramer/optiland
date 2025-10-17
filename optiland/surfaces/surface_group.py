@@ -10,9 +10,9 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from contextlib import suppress
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
@@ -334,7 +334,6 @@ class SurfaceGroup:
 
         self._surfaces.pop(index)
 
-
         if not self.surface_factory.use_absolute_cs:
             was_not_last_surface = index < num_surfaces_before_removal - 1
             if was_not_last_surface:
@@ -436,31 +435,48 @@ class SurfaceGroup:
 
     def flip(
         self,
-        original_vertex_gcs_z_coords: list[float],
-        start_index: int = 1,
-        end_index: int = -1,
+        start_index: int = 0,
+        end_index: int = 0,
     ):
         """Flips a segment of the surfaces in the group.
 
+        The function will swap the materials on the Object and Image surface if both
+        `start_index` and `end_index` are zero. Subgroups can be swapped by passing the
+        index of the first surface and the index of the surface after the last surface
+        of the group (standard Python slicing). Note that only "sensible" results are
+        obtained when the material before and after the subgroup is the same (for
+        example, air).
+
         Args:
-            original_vertex_gcs_z_coords (list[float]): List of the original
-                global Z-coordinates of all surface vertices in the group
-                before flipping.
             start_index (int, optional): The starting index of the segment of
-                surfaces to flip. Defaults to 1 (skips object surface).
+                surfaces to flip. Defaults to 0 (include object surface).
             end_index (int, optional): The ending index (exclusive for positive,
                 inclusive for negative slice behavior) of the segment of surfaces
-                to flip. Defaults to -1 (up to, but not including, the image surface).
+                to flip. Defaults to 0 (up to, and including, the image surface).
+
+        Raises:
+            RuntimeError: If either `start_index` or `end_index` is zero, but not both.
+
         """
         n_surfaces_total = len(self._surfaces)
+
+        if (start_index == 0 or end_index == 0) and not (
+            start_index == 0 and end_index == 0
+        ):
+            raise RuntimeError(
+                "Cannot flip object surface or image surface without flipping both"
+            )
+        flip_object_image_media = start_index == 0 and end_index == 0
+
+        if flip_object_image_media:
+            start_index = 1
+            end_index = len(self.surfaces) - 1
 
         if start_index < 0:
             start_index = n_surfaces_total + start_index
 
         if end_index < 0:
-            actual_slice_end_index = (
-                n_surfaces_total + end_index if end_index != 0 else 0
-            )
+            actual_slice_end_index = n_surfaces_total + end_index
         else:
             actual_slice_end_index = end_index
 
@@ -477,51 +493,38 @@ class SurfaceGroup:
 
         # Extract the segment, reverse it, and place it back
         segment_to_reverse = self._surfaces[start_index:actual_slice_end_index]
+        z_positions = be.ravel(
+            be.array([surf.geometry.cs.z for surf in segment_to_reverse])
+        )
         segment_to_reverse.reverse()
         self._surfaces[start_index:actual_slice_end_index] = segment_to_reverse
-        # Call flip() on each surface within the now-reversed segment
-        for i in range(len(segment_to_reverse)):
-            surface_index_in_group = start_index + i
-            self._surfaces[surface_index_in_group].flip()
 
-        if segment_to_reverse:  # Check if the segment is not empty
-            self._surfaces[start_index].geometry.cs.z = 0.0
+        # Ignore thickness attribute, determine new thickness based on z-coordinate of
+        # surfaces.
+        new_thickness = be.flip(
+            be.diff(z_positions, prepend=be.array([z_positions[0]]))
+        )
+        new_thickness[-1] = (
+            self._surfaces[actual_slice_end_index].geometry.cs.z - z_positions[-1]
+        )
+        new_z = (
+            be.flip(be.diff(z_positions, append=be.array([z_positions[-1]]))).cumsum(0)
+            + z_positions[0]
+        )
 
-            # Iterate for thicknesses within the segment
-            # k iterates from 0 to len(segment_to_reverse) - 2
-            for k in range(len(segment_to_reverse) - 1):
-                current_surf_in_new_order = self._surfaces[start_index + k]
-                next_surf_in_new_order = self._surfaces[start_index + k + 1]
+        for surf, thickness, z in zip(
+            segment_to_reverse, new_thickness, new_z, strict=True
+        ):
+            surf.flip()
+            surf.geometry.cs.z = z
+            surf.thickness = thickness
 
-                original_idx_of_new_k = original_indices_in_segment[
-                    len(segment_to_reverse) - 1 - k
-                ]
-
-                # The thickness should be the gap that followed this surface in the
-                # original order
-                thickness = abs(
-                    original_vertex_gcs_z_coords[original_idx_of_new_k]
-                    - original_vertex_gcs_z_coords[original_idx_of_new_k + 1]
-                )
-
-                next_surf_in_new_order.geometry.cs.z = (
-                    current_surf_in_new_order.geometry.cs.z + thickness
-                )
-                current_surf_in_new_order.thickness = thickness
-
-            # Handle the last surface in the flipped segment
-            last_surface_in_segment = self.surfaces[
-                start_index + len(segment_to_reverse) - 1
-            ]
-            original_idx_of_last = original_indices_in_segment[0]
-            if original_idx_of_last + 1 < len(original_vertex_gcs_z_coords):
-                last_thickness = abs(
-                    original_vertex_gcs_z_coords[original_idx_of_last]
-                    - original_vertex_gcs_z_coords[original_idx_of_last + 1]
-                )
-            else:
-                last_thickness = 0.0
-            last_surface_in_segment.thickness = last_thickness
-
+        # Special handling: flip materials on object and image surfaces if flip() called
+        # without arguments
+        if flip_object_image_media:
+            self.surfaces[0].material_post, self.surfaces[-1].material_post = (
+                self.surfaces[-1].material_post,
+                self.surfaces[0].material_post,
+            )
         self._update_surface_links()
         self.reset()

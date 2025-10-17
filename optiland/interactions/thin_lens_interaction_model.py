@@ -20,12 +20,13 @@ if TYPE_CHECKING:
     from optiland.scatter import BaseBSDF
     from optiland.surfaces import Surface
 
+
 class ThinLensInteractionModel(BaseInteractionModel):
     """Interaction model for a thin lens."""
 
     def __init__(
         self,
-        parent_surface: Surface| None,
+        parent_surface: Surface | None,
         focal_length: float,
         is_reflective: bool,
         coating: BaseCoating | None = None,

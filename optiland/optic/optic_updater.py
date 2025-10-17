@@ -277,16 +277,10 @@ class OpticUpdater:
                 "Optic flip requires at least 3 surfaces (obj, element, img)"
             )
 
-        # 1. Capture original global Z-coordinates
-        original_z_coords = [
-            be.to_numpy(surf.geometry.cs.z).item()
-            for surf in self.optic.surface_group.surfaces
-        ]
+        # 1. Call SurfaceGroup.flip()
+        self.optic.surface_group.flip()
 
-        # 2. Call SurfaceGroup.flip()
-        self.optic.surface_group.flip(original_vertex_gcs_z_coords=original_z_coords)
-
-        # 3. Define remapping function for indices
+        # 2. Define remapping function for indices
         num_surfaces = self.optic.surface_group.num_surfaces
 
         def remap_index_func(old_idx):  # pragma: no cover
@@ -296,11 +290,11 @@ class OpticUpdater:
                 return num_surfaces - 1 - old_idx
             return old_idx  # Should not happen if indices are valid
 
-        # 4. Handle Pickups
+        # 3. Handle Pickups
         if self.optic.pickups and len(self.optic.pickups.pickups) > 0:
             self.optic.pickups.remap_surface_indices(remap_index_func)
 
-        # 5. Handle Solves
+        # 4. Handle Solves
         if (
             hasattr(self.optic, "solves")
             and self.optic.solves
@@ -309,7 +303,7 @@ class OpticUpdater:
         ):
             self.optic.solves.remap_surface_indices(remap_index_func)
 
-        # 6. Update Optic instance
+        # 5. Update Optic instance
         self.update()
 
     def set_apodization(self, apodization_instance: BaseApodization = None):
