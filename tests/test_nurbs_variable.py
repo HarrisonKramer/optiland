@@ -22,7 +22,7 @@ def optic(backend):
     geo = NurbsGeometry(cs, nurbs_norm_x=1, nurbs_norm_y=1)
     geo.fit_surface()
     air = IdealMaterial(n=1.0)
-    surf = Surface(geometry=geo, material_pre=air, material_post=air)
+    surf = Surface(previous_surface=None, geometry=geo, material_post=air)
     sg = SurfaceGroup([surf])
     optic = Optic()
     optic.surface_group = sg
