@@ -160,13 +160,24 @@ class SurfaceFactory:
             interaction_type = "diffractive"
 
         # Build interaction model
-        if kwargs.get("phase_model"):
+        phase_model_arg = kwargs.get("phase_model")
+        if phase_model_arg:
+            if isinstance(phase_model_arg, BasePhase):
+                phase_model = phase_model_arg
+            elif isinstance(phase_model_arg, dict):
+                phase_model = BasePhase.from_dict(phase_model_arg)
+            else:
+                raise TypeError(
+                    f"Expected a BasePhase object or a dict for phase_model, "
+                    f"but got {type(phase_model_arg).__name__}"
+                )
+
             interaction_model = PhaseInteractionModel(
                 geometry=geometry,
                 material_pre=material_pre,
                 material_post=material_post,
                 is_reflective=is_reflective,
-                phase_model=BasePhase.from_dict(kwargs.get("phase_model")),
+                phase_model=phase_model,
             )
         else:
             interaction_model = self._interaction_model_factory.create(

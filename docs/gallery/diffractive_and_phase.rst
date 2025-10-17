@@ -21,5 +21,5 @@ Phase Profile Systems
 These examples showcase the `PhaseInteractionModel` for creating surfaces with custom phase profiles, from simple gratings to more complex, user-defined functions.
 
 .. nbgallery::
-    notebooks/simple_grating
+    notebooks/simple_phase_grating
     notebooks/complex_phase_profile
