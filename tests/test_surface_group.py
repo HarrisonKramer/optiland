@@ -432,7 +432,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             surface_type="standard",
             material="Air",
             thickness=20,
-            radius=be.inf
+            radius=be.inf,
         )
         lens1.add_surface(index=4, material="Air")
         lens1.set_field_type("angle")
@@ -464,7 +464,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             surface_type="standard",
             material="Air",
             thickness=20,
-            radius=be.inf
+            radius=be.inf,
         )
         lens2.add_surface(index=3, material="Air")
         lens2.set_field_type("angle")
@@ -545,3 +545,16 @@ class TestSurfaceGroupUpdatesRealObjects:
         assert_allclose(
             be.mean(rays.y), 3.47484521
         )  # mean y position for Cooke triplet defined above
+
+    @pytest.mark.skipif(
+        be.get_backend() == "torch",
+        reason="Independent of backend: does not need to run twice",
+    )
+    def test_second_object_surface_raises(self):
+        lens1 = optic.Optic()
+        lens1.add_surface(index=0, thickness=be.inf, material="Air")
+        with pytest.raises(
+            ValueError,
+            match=("Surface index cannot be zero after first surface is created."),
+        ):
+            lens1.add_surface(index=0, thickness=be.inf, material="Air")
