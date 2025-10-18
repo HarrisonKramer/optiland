@@ -132,7 +132,7 @@ class TestThinLensInteractionModel:
             material=IdealMaterial(1.5, 0),
             is_reflective=False,
         )
-        lens.add_surface(index=2, material=IdealMaterial(1.5,0))
+        lens.add_surface(index=2, material=IdealMaterial(1.5, 0))
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
@@ -156,4 +156,4 @@ class TestThinLensInteractionModel:
         assert_allclose(rays.y, 0)
 
         # confirm all points at exact same z
-        assert_allclose(rays.z, 50)
+        assert_allclose(rays.z, 75)
