@@ -12,6 +12,8 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
 from optiland.geometries import BaseGeometry
@@ -57,7 +59,7 @@ class Surface:
         interaction_model: BaseInteractionModel | None = None,
     ):
         self.geometry = geometry
-        self.previous_surface = previous_surface
+        self._previous_surface = previous_surface
         self.material_post = material_post
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
@@ -77,8 +79,44 @@ class Surface:
             self.interaction_model.parent_surface = self
 
         self.thickness = 0.0  # used for surface positioning
-
+        self._listeners = []
         self.reset()
+
+    def __del__(self):
+        if (surface := self._previous_surface) is not None:
+            surface.unregister_callback(self._update_callback)
+
+    def _update_callback(self, caller: Surface) -> None:
+        # Called when a surface that we're related to changes
+        if caller != self.previous_surface:
+            raise RuntimeError("Unexpected Surface called _update_callback")
+
+        # Handle the changes. Right now, we're only interested in a change in refractive
+        # index. If this surface's interaction model has a Fresnel coating, update it:
+        if self.coating is not None:
+            self.set_fresnel_coating()
+
+    def register_callback(self, callback: Callable):
+        if callback not in self._listeners:
+            self._listeners.append(callback)
+
+    def unregister_callback(self, callback: Callable):
+        if callback in self._listeners:
+            self._listeners.remove(callback)
+
+    @property
+    def previous_surface(self):
+        return self._previous_surface
+
+    @previous_surface.setter
+    def previous_surface(self, surface: Surface):
+        if self._previous_surface is not None:
+            self._previous_surface.unregister_callback(self._update_callback)
+
+        self._previous_surface = surface
+        if surface is not None:
+            surface.register_callback(self._update_callback)
+        self._update_callback(surface)  # Explicit trigger
 
     @property
     def material_pre(self) -> BaseMaterial | None:
@@ -99,7 +137,6 @@ class Surface:
         if hasattr(self, "interaction_model") and isinstance(
             getattr(self.interaction_model, "coating", None), FresnelCoating
         ):
-            print("Updating fresnel")
             self.set_fresnel_coating()
 
     @property
