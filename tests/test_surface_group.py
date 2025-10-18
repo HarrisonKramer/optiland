@@ -432,7 +432,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             surface_type="standard",
             material="Air",
             thickness=20,
-            radius=be.inf
+            radius=be.inf,
         )
         lens1.add_surface(index=4, material="Air")
         lens1.set_field_type("angle")
@@ -464,7 +464,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             surface_type="standard",
             material="Air",
             thickness=20,
-            radius=be.inf
+            radius=be.inf,
         )
         lens2.add_surface(index=3, material="Air")
         lens2.set_field_type("angle")
@@ -545,3 +545,13 @@ class TestSurfaceGroupUpdatesRealObjects:
         assert_allclose(
             be.mean(rays.y), 3.47484521
         )  # mean y position for Cooke triplet defined above
+
+    def test_set_stop_index(self):
+        lens = optic.Optic()
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(index=1, radius=be.inf, thickness=5, is_stop=True)
+        lens.add_surface(index=2, radius=be.inf, thickness=5)
+        lens.add_surface(index=3, radius=be.inf, thickness=5)
+        lens.surface_group.stop_index = 2
+        assert lens.surface_group.surfaces[2].is_stop == True
