@@ -69,6 +69,12 @@ class Paraxial:
         z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
+
+        # Handle edge case where u[-1] is zero (collimated output)
+        # This can occur with certain paraxial surface configurations
+        if be.abs(u[-1]) < 1e-10:
+            return be.inf
+
         f1 = y[0] / u[-1]
         return f1[0]
 
@@ -83,6 +89,12 @@ class Paraxial:
         z_start = self.surfaces.positions[1] - 1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
+
+        # Handle edge case where u[-1] is zero (collimated output)
+        # This can occur with certain paraxial surface configurations
+        if be.abs(u[-1]) < 1e-10:
+            return be.inf
+
         f2 = -y[0] / u[-1]
         return be.abs(f2[0])
 

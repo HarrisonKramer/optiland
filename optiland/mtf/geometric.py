@@ -83,7 +83,26 @@ class GeometricMTF(SpotDiagram):
         resolved_wavelength = resolve_wavelength(optic, wavelength)
         if max_freq == "cutoff":
             # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
+            fno = optic.paraxial.FNO()
+
+            # Handle edge case where FNO is infinite (afocal or collimated system)
+            # In this case, use a reasonable default max_freq
+            if be.isinf(fno) or be.isnan(fno):
+                # Use a default cutoff frequency based on the entrance pupil diameter
+                # Rayleigh criterion: 1 / (wavelength * f/#) ≈ EPD / (wavelength * EFL)
+                # For afocal systems, we use a more conservative estimate
+                import warnings
+
+                warnings.warn(
+                    "System appears to be afocal or produce collimated output. "
+                    "Using default cutoff frequency of 1000 cycles/mm. "
+                    "Consider specifying max_freq explicitly.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                self.max_freq = 1000.0  # Default reasonable value in cycles/mm
+            else:
+                self.max_freq = 1 / (resolved_wavelength * 1e-3 * fno)
         else:
             # If a specific max_freq is provided, use it directly
             self.max_freq = max_freq
@@ -157,8 +176,14 @@ class GeometricMTF(SpotDiagram):
 
         """
         if self.scale:
-            phi = be.arccos(self.freq / self.max_freq)
-            scale_factor = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
+            # Handle edge case where max_freq is zero or invalid
+            if self.max_freq <= 0 or be.isnan(self.max_freq):
+                # If max_freq is invalid, disable scaling
+                scale_factor = 1
+            else:
+                ratio = be.clip(self.freq / self.max_freq, 0.0, 1.0)
+                phi = be.arccos(ratio)
+                scale_factor = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
         else:
             scale_factor = 1
 
