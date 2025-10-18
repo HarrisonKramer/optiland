@@ -232,8 +232,11 @@ class ZemaxToOpticConverter:
                 aperture_type="float_by_stop_size", value=stop_diameter
             )
         else:
-            ap_type, value = next(iter(aperture_data.items()))
-            self.optic.set_aperture(aperture_type=ap_type, value=value)
+            # Get the first non-floating_stop aperture type
+            for key, value in aperture_data.items():
+                if key != "floating_stop":
+                    self.optic.set_aperture(aperture_type=key, value=value)
+                    break
 
     def _configure_fields(self):
         """Configure the fields for the optic."""
