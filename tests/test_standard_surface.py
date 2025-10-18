@@ -138,3 +138,45 @@ class TestSurface:
         del data["type"]
         with pytest.raises(ValueError):
             Surface.from_dict(data)
+
+    def test_listener_registration(self):
+        surf1 = self.create_surface()
+        surf2 = self.create_surface()
+        surf2.previous_surface = surf1
+        assert surf1._listeners == [surf2._update_callback]
+
+        surf1.unregister_callback(surf2._update_callback)
+        assert surf1._listeners == []
+
+        surf1.register_callback(surf2._update_callback)
+        assert surf1._listeners == [surf2._update_callback]
+
+    def test_fresnel_coating_material_post_set(self):
+        surf1 = self.create_surface()
+        surf2 = self.create_surface()
+        surf1._material_post = IdealMaterial(1.0)
+        surf2.previous_surface = surf1
+        surf2.set_fresnel_coating()
+        assert (
+            surf2.interaction_model.coating.material_pre.to_dict()
+            == IdealMaterial(1.0, 0.0).to_dict()
+        )
+        surf1.material_post = IdealMaterial(1.2, 0.0)
+        assert (
+            surf2.interaction_model.coating.material_pre.to_dict()
+            == IdealMaterial(1.2, 0.0).to_dict()
+        )
+        assert (
+            surf2.interaction_model.coating.material_post.to_dict()
+            == IdealMaterial(1.5, 0.0).to_dict()
+        )
+        surf2.material_post = IdealMaterial(1.0, 0)
+
+        assert (
+            surf2.interaction_model.coating.material_pre.to_dict()
+            == IdealMaterial(1.2, 0.0).to_dict()
+        )
+        assert (
+            surf2.interaction_model.coating.material_post.to_dict()
+            == IdealMaterial(1.0, 0.0).to_dict()
+        )

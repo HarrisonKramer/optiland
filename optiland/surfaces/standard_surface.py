@@ -12,7 +12,8 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import contextlib
+from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
@@ -24,6 +25,9 @@ from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class Surface:
@@ -60,7 +64,7 @@ class Surface:
     ):
         self.geometry = geometry
         self._previous_surface = previous_surface
-        self.material_post = material_post
+        self._material_post = material_post
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
         self.semi_aperture = None
@@ -83,8 +87,8 @@ class Surface:
         self.reset()
 
     def __del__(self):
-        if (surface := self._previous_surface) is not None:
-            surface.unregister_callback(self._update_callback)
+        with contextlib.suppress(AttributeError):
+            self._previous_surface.unregister_callback(self._update_callback)
 
     def _update_callback(self, caller: Surface) -> None:
         # Called when a surface that we're related to changes
@@ -138,6 +142,8 @@ class Surface:
             getattr(self.interaction_model, "coating", None), FresnelCoating
         ):
             self.set_fresnel_coating()
+        for callback in self._listeners:
+            callback(self)
 
     @property
     def coating(self):
