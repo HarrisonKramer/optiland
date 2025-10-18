@@ -237,6 +237,8 @@ class ZemaxToOpticConverter:
                 if key != "floating_stop":
                     self.optic.set_aperture(aperture_type=key, value=value)
                     break
+            else:
+                raise ValueError("No valid aperture type found in aperture_data.")
 
     def _configure_fields(self):
         """Configure the fields for the optic."""
