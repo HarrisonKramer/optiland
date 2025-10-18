@@ -213,8 +213,32 @@ class ZemaxToOpticConverter:
     def _configure_aperture(self):
         """Configures the aperture for the optic."""
         aperture_data = self.data["aperture"]
-        ap_type, value = next(iter(aperture_data.items()))
-        self.optic.set_aperture(aperture_type=ap_type, value=value)
+
+        # Handle floating stop aperture type
+        if aperture_data.get("floating_stop"):
+            # Find the stop surface and get its diameter
+            stop_diameter = None
+            for surf_data in self.data["surfaces"].values():
+                if surf_data.get("is_stop") and "diameter" in surf_data:
+                    stop_diameter = surf_data["diameter"]
+                    break
+
+            if stop_diameter is None:
+                raise ValueError(
+                    "Floating stop aperture specified but no stop diameter found"
+                )
+
+            self.optic.set_aperture(
+                aperture_type="float_by_stop_size", value=stop_diameter
+            )
+        else:
+            # Get the first non-floating_stop aperture type
+            for key, value in aperture_data.items():
+                if key != "floating_stop":
+                    self.optic.set_aperture(aperture_type=key, value=value)
+                    break
+            else:
+                raise ValueError("No valid aperture type found in aperture_data.")
 
     def _configure_fields(self):
         """Configure the fields for the optic."""

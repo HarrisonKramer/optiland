@@ -138,6 +138,7 @@ class ZemaxDataParser:
             "CONI": self._read_conic,
             "GLAS": self._read_glass,
             "STOP": self._read_stop,
+            "DIAM": self._read_diameter,
             "MODE": self._read_mode,
             "GCAT": self._read_glass_catalog,
             "FWGN": self._read_field_weights,
@@ -289,6 +290,10 @@ class ZemaxDataParser:
 
     def _read_stop(self, data):
         self._current_surf_data["is_stop"] = True
+
+    def _read_diameter(self, data):
+        """Read the diameter of the current surface."""
+        self._current_surf_data["diameter"] = float(data[1])
 
     def _read_mode(self, data):
         if data[1] != "SEQ":
