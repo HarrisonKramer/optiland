@@ -151,10 +151,10 @@ class TestSurface:
         surf1.register_callback(surf2._update_callback)
         assert surf1._listeners == [surf2._update_callback]
 
-    def test_fresnel_coating_material_post_set(self):
+    def test_fresnel_coating_material(self):
         surf1 = self.create_surface()
         surf2 = self.create_surface()
-        surf1._material_post = IdealMaterial(1.0)
+        surf1.material_post = IdealMaterial(1.0)
         surf2.previous_surface = surf1
         surf2.set_fresnel_coating()
         assert (
@@ -179,4 +179,14 @@ class TestSurface:
         assert (
             surf2.interaction_model.coating.material_post.to_dict()
             == IdealMaterial(1.0, 0.0).to_dict()
+        )
+
+        surf2.flip()
+        assert (
+            surf2.interaction_model.coating.material_pre.to_dict()
+            == IdealMaterial(1.2, 0.0).to_dict()
+        )
+        assert (
+            surf2.interaction_model.coating.material_post.to_dict()
+            == IdealMaterial(1.2, 0.0).to_dict()
         )
