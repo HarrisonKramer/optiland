@@ -82,8 +82,8 @@ class FFTMTF(BaseMTF):
 
                 warnings.warn(
                     "System appears to be afocal or produce collimated output. "
-                    f"Using default cutoff frequency of {DEFAULT_CUTOFF_FREQ} cycles/mm. "
-                    "Consider specifying max_freq explicitly.",
+                    f"Using default cutoff frequency of {DEFAULT_CUTOFF_FREQ} "
+                    "cycles/mm. Consider specifying max_freq explicitly.",
                     UserWarning,
                     stacklevel=2,
                 )
