@@ -122,6 +122,14 @@ class TestZemaxDataParser:
         self.parser._read_surf_type(["TYPE", "STANDARD"])
         assert self.parser._current_surf_data["type"] == "standard"
 
+    def test_read_floating_stop(self):
+        self.parser._read_floating_stop(["FLOA"])
+        assert self.parser.data_model.aperture["floating_stop"] is True
+
+    def test_read_diameter(self):
+        self.parser._read_diameter(["DIAM", "8.5", "1", "0", "0", "1", '""'])
+        assert self.parser._current_surf_data["diameter"] == 8.5
+
 
 class TestEndToEnd:
     def test_load_zemax_file(self, zemax_file):
@@ -133,6 +141,15 @@ class TestEndToEnd:
         filename = os.path.join(current_dir, "zemax_files/lens2.zmx")
         optic = load_zemax_file(filename)
         assert isinstance(optic, Optic)
+
+    def test_load_floa_aperture(self):
+        """Test loading a Zemax file with FLOA (floating stop) aperture."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(current_dir, "zemax_files/lens_floa.zmx")
+        optic = load_zemax_file(filename)
+        assert isinstance(optic, Optic)
+        assert optic.aperture.ap_type == "float_by_stop_size"
+        assert optic.aperture.value == 8.5
 
 
 def test_save_load_json_obj():
