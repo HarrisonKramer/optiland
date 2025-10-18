@@ -555,3 +555,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.add_surface(index=3, radius=be.inf, thickness=5)
         lens.surface_group.stop_index = 2
         assert lens.surface_group.surfaces[2].is_stop == True
+        with pytest.raises(ValueError, match="Index out of range"):
+            lens.surface_group.stop_index = 0
+        with pytest.raises(ValueError, match="Index out of range"):
+            lens.surface_group.stop_index = 3
