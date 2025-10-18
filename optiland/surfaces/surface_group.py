@@ -151,7 +151,7 @@ class SurfaceGroup:
 
     @stop_index.setter
     def stop_index(self, index: int):
-        if index < 1 or index > len(self.surfaces) - 1:
+        if index < 1 or index > len(self.surfaces) - 2:
             raise ValueError("Index out of range")
         for idx, surf in enumerate(self.surfaces):
             surf.is_stop = index == idx
