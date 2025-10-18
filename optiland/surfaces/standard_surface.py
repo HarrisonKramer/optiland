@@ -84,9 +84,28 @@ class Surface:
     def material_pre(self) -> BaseMaterial | None:
         return (
             self.previous_surface.material_post
-            if self.previous_surface
+            if self.previous_surface is not None
             else self.material_post
         )
+
+    @property
+    def material_post(self) -> BaseMaterial | None:
+        return self._material_post
+
+    @material_post.setter
+    def material_post(self, material: BaseMaterial):
+        self._material_post = material
+        # Update Fresnel-based coating for new material
+        if hasattr(self, "interaction_model") and isinstance(
+            getattr(self.interaction_model, "coating", None), FresnelCoating
+        ):
+            print("Updating fresnel")
+            self.set_fresnel_coating()
+
+    @property
+    def coating(self):
+        if (interaction_model := getattr(self, "interaction_model", None)) is not None:
+            return getattr(interaction_model, "coating", None)
 
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
@@ -96,9 +115,7 @@ class Surface:
         # Re-create the interaction model with flipped properties
         self.interaction_model.flip()
 
-        if isinstance(self.interaction_model.coating, FresnelCoating):
-            self.set_fresnel_coating()
-        elif self.interaction_model.coating is not None and hasattr(
+        if self.interaction_model.coating is not None and hasattr(
             self.interaction_model.coating, "flip"
         ):
             self.interaction_model.coating.flip()
@@ -186,8 +203,9 @@ class Surface:
 
     def set_fresnel_coating(self):
         """Sets the coating of the surface to a Fresnel coating."""
-        self.coating = FresnelCoating(self.material_pre, self.material_post)
-        self.interaction_model.coating = self.coating
+        self.interaction_model.coating = FresnelCoating(
+            self.material_pre, self.material_post
+        )
 
     def _record(self, rays):
         """Records the ray information.
@@ -226,7 +244,6 @@ class Surface:
             self.interaction_model = RefractiveReflectiveModel(
                 parent_surface=self,
                 is_reflective=self.is_reflective,
-                coating=self.coating,
                 bsdf=self.bsdf,
             )
 

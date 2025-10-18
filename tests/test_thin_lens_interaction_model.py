@@ -126,14 +126,13 @@ class TestThinLensInteractionModel:
         lens.add_surface(
             index=1,
             surface_type="paraxial",
-            thickness=50,
+            thickness=75,
             f=50,
             is_stop=True,
-            material_pre=IdealMaterial(1, 0),
-            material_post=IdealMaterial(1.5, 0),
+            material=IdealMaterial(1.5, 0),
             is_reflective=False,
         )
-        lens.add_surface(index=2)
+        lens.add_surface(index=2, material=IdealMaterial(1.5,0))
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
