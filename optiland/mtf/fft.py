@@ -13,6 +13,9 @@ from optiland.psf.fft import FFTPSF, calculate_grid_size
 
 from .base import BaseMTF
 
+# Default cutoff frequency for afocal or collimated systems (cycles/mm)
+DEFAULT_CUTOFF_FREQ = 1000.0
+
 
 class FFTMTF(BaseMTF):
     """Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
@@ -79,12 +82,12 @@ class FFTMTF(BaseMTF):
 
                 warnings.warn(
                     "System appears to be afocal or produce collimated output. "
-                    "Using default cutoff frequency of 1000 cycles/mm. "
+                    f"Using default cutoff frequency of {DEFAULT_CUTOFF_FREQ} cycles/mm. "
                     "Consider specifying max_freq explicitly.",
                     UserWarning,
                     stacklevel=2,
                 )
-                self.max_freq = 1000.0  # Default reasonable value in cycles/mm
+                self.max_freq = DEFAULT_CUTOFF_FREQ
             else:
                 self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
         else:

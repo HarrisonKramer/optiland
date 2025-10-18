@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     from optiland._types import BEArray, DistributionType, ScalarOrArray
     from optiland.optic import Optic
 
+# Default cutoff frequency for afocal or collimated systems (cycles/mm)
+DEFAULT_CUTOFF_FREQ = 1000.0
+
 
 class GeometricMTF(SpotDiagram):
     """Smith, Modern Optical Engineering 3rd edition, Section 11.9
@@ -95,12 +98,12 @@ class GeometricMTF(SpotDiagram):
 
                 warnings.warn(
                     "System appears to be afocal or produce collimated output. "
-                    "Using default cutoff frequency of 1000 cycles/mm. "
+                    f"Using default cutoff frequency of {DEFAULT_CUTOFF_FREQ} cycles/mm. "
                     "Consider specifying max_freq explicitly.",
                     UserWarning,
                     stacklevel=2,
                 )
-                self.max_freq = 1000.0  # Default reasonable value in cycles/mm
+                self.max_freq = DEFAULT_CUTOFF_FREQ
             else:
                 self.max_freq = 1 / (resolved_wavelength * 1e-3 * fno)
         else:
