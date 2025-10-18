@@ -552,9 +552,9 @@ def test_flip_updates_thickness_attribute(set_test_backend):
     lens.flip()
 
     flipped_surfaces = lens.surface_group.surfaces
-    
+
     # Expected thicknesses after flip (reversed order)
-    expected_thicknesses = [be.inf, 70.0, 2.5, 7.0, 0.0]
+    expected_thicknesses = [be.inf, 2.5, 7.0, 70.0, 0.0]
 
     # Assertions
     assert flipped_surfaces[0].thickness == expected_thicknesses[0]
@@ -562,14 +562,10 @@ def test_flip_updates_thickness_attribute(set_test_backend):
     assert flipped_surfaces[2].thickness == expected_thicknesses[2]
     assert flipped_surfaces[3].thickness == expected_thicknesses[3]
     assert flipped_surfaces[4].thickness == expected_thicknesses[4]
-    
+
     # Also verify relationship between thickness and z-position
-    assert flipped_surfaces[1].thickness == pytest.approx(
-        be.to_numpy(flipped_surfaces[2].geometry.cs.z - flipped_surfaces[1].geometry.cs.z)
+    thicknesses = be.diff(
+        be.array([surf.geometry.cs.z for surf in flipped_surfaces]),
+        append=be.array([79.5]),
     )
-    assert flipped_surfaces[2].thickness == pytest.approx(
-        be.to_numpy(flipped_surfaces[3].geometry.cs.z - flipped_surfaces[2].geometry.cs.z)
-    )
-    assert flipped_surfaces[3].thickness == pytest.approx(
-        be.to_numpy(flipped_surfaces[4].geometry.cs.z - flipped_surfaces[3].geometry.cs.z)
-    )
+    assert_allclose(thicknesses, expected_thicknesses)

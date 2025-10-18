@@ -64,3 +64,8 @@ def test_interact(set_test_backend, setup_object_surface):
     rays = RealRays(x, x, x, x, x, x, x, x)
     interacted_rays = object_surface._interact(rays)
     assert interacted_rays == rays
+
+
+def test_material_pre_is_material_post(setup_object_surface):
+    object_surface, _ = setup_object_surface
+    assert object_surface.material_pre == object_surface.material_post

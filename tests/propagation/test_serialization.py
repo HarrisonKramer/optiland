@@ -76,9 +76,9 @@ def test_optic_serialization_round_trip(
     optic = Optic()
     optic.add_surface(
         Surface(
+            previous_surface=None,
             geometry=StandardGeometry(coordinate_system=CoordinateSystem(), radius=100),
-            material_pre=material,
-            material_post=IdealMaterial(n=1.0),  # The post material is simple.
+            material_post=material,
         )
     )
 
@@ -88,7 +88,7 @@ def test_optic_serialization_round_trip(
 
     # 3. VERIFICATION: Check the deserialized object for correctness.
     deserialized_surface = optic_from_dict.surface_group.surfaces[0]
-    deserialized_material = deserialized_surface.material_pre
+    deserialized_material = deserialized_surface.material_post
     deserialized_model = deserialized_material.propagation_model
 
     # Check that the material type is correct.
@@ -115,8 +115,8 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     optic = Optic()
     optic.add_surface(
         Surface(
+            previous_surface=None,
             geometry=StandardGeometry(coordinate_system=CoordinateSystem(), radius=-100),
-            material_pre=IdealMaterial(n=1.0),
             material_post=material,
         )
     )
