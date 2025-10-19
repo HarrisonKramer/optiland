@@ -1406,7 +1406,6 @@ class TestIncoherentIrradiance:
         be.grad_mode.enable()
         # Create a simple system with a parameter that requires gradients
         optic_sys = Optic()
-        optic_sys.add_surface(index=0, thickness=be.inf)
         # Make RADIUS a tensor that requires gradients, as changing it will
         # affect the final irradiance.
         radius_tensor = be.array(20.0)
@@ -2007,7 +2006,6 @@ class TestRadiantIntensity:
         be.grad_mode.enable()
 
         optic_sys = Optic()
-        optic_sys.add_surface(index=0, thickness=be.inf)
 
         radius_tensor = be.array(20.0)
         radius_tensor.requires_grad = True
