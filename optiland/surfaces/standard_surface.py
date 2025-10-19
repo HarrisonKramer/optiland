@@ -12,8 +12,8 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
-import contextlib
 from typing import TYPE_CHECKING
+from weakref import WeakMethod
 
 import optiland.backend as be
 from optiland.coatings import BaseCoating, FresnelCoating
@@ -86,10 +86,6 @@ class Surface:
         self._listeners = []
         self.reset()
 
-    def __del__(self):
-        with contextlib.suppress(AttributeError):
-            self._previous_surface.unregister_callback(self._update_callback)
-
     def _update_callback(self, caller: Surface) -> None:
         # Called when a surface that we're related to changes
         if caller != self.previous_surface:
@@ -102,11 +98,17 @@ class Surface:
 
     def register_callback(self, callback: Callable):
         if callback not in self._listeners:
-            self._listeners.append(callback)
+            self._listeners.append(
+                WeakMethod(callback, lambda obj: self.deregister_callback(obj))
+            )
 
-    def unregister_callback(self, callback: Callable):
-        if callback in self._listeners:
+    def deregister_callback(self, callback: Callable):
+        if isinstance(callback, WeakMethod) and callback in self._listeners:
             self._listeners.remove(callback)
+            return
+        for weakref in self._listeners:
+            if weakref() == callback:
+                self._listeners.remove(weakref)
 
     @property
     def previous_surface(self):
@@ -115,7 +117,7 @@ class Surface:
     @previous_surface.setter
     def previous_surface(self, surface: Surface):
         if self._previous_surface is not None:
-            self._previous_surface.unregister_callback(self._update_callback)
+            self._previous_surface.deregister_callback(self._update_callback)
 
         self._previous_surface = surface
         if surface is not None:
@@ -142,8 +144,8 @@ class Surface:
             getattr(self.interaction_model, "coating", None), FresnelCoating
         ):
             self.set_fresnel_coating()
-        for callback in self._listeners:
-            callback(self)
+        for weakref_callback in self._listeners:
+            weakref_callback()(self)
 
     @property
     def coating(self):

@@ -332,7 +332,7 @@ class SurfaceGroup:
 
         num_surfaces_before_removal = len(self.surfaces)
 
-        self._surfaces.pop(index)
+        del self._surfaces[index]
 
         if not self.surface_factory.use_absolute_cs:
             was_not_last_surface = index < num_surfaces_before_removal - 1
