@@ -86,6 +86,17 @@ class Surface:
         self._listeners = []
         self.reset()
 
+    def __getstate__(self):
+        # Remove self._listeners when a deep copy is made
+        state = self.__dict__.copy()
+        del state["_listeners"]
+        return state
+
+    def __setstate__(self, state):
+        # Initialize self._listeners to an empty list after deepcopy
+        self.__dict__.update(state)
+        self._listeners = []
+
     def _update_callback(self, caller: Surface) -> None:
         # Called when a surface that we're related to changes
         if caller != self.previous_surface:
