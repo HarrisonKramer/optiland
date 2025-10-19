@@ -262,9 +262,10 @@ class OpticUpdater:
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
-        self.optic.surface_group.surfaces[-1].geometry.cs.z = (
-            self.optic.surface_group.surfaces[-1].geometry.cs.z - offset
-        )
+        surfaces = self.optic.surface_group.surfaces
+        if (new_z := surfaces[-1].geometry.cs.z - offset) > 0:
+            surfaces[-1].geometry.cs.z = new_z
+            surfaces[-2].thickness = new_z - surfaces[-2].geometry.cs.z
 
     def flip(self):
         """Flips the optical system, reversing the order of surfaces (excluding
