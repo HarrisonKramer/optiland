@@ -67,6 +67,9 @@ class BaseMaterial(ABC):
         super().__init_subclass__(**kwargs)
         BaseMaterial._registry[cls.__name__] = cls
 
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, type(self)) and value.to_dict() == self.to_dict()
+
     def _create_cache_key(self, wavelength: float | be.ndarray, **kwargs) -> tuple:
         """Creates a hashable cache key from wavelength and kwargs."""
         if be.is_array_like(wavelength):
