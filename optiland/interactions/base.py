@@ -95,7 +95,7 @@ class BaseInteractionModel(ABC):
         init_data = data.copy()
         init_data.pop("type")
         # Ignore 'material_pre' that might be present in older files but is obsolete:
-        if hasattr(init_data, "material_pre"):
+        if "material_pre" in init_data:
             init_data.pop("material_pre")
 
         if "coating" in init_data and init_data["coating"] is not None:

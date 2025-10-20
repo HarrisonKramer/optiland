@@ -118,6 +118,11 @@ class TestThinLensInteractionModel:
         assert "focal_length" in data
         assert data["focal_length"] == 42
 
+    def test_from_dict(self, surface):
+        data = surface.interaction_model.to_dict()
+        data["material_pre"] = None
+        assert surface.interaction_model.from_dict(data, None)
+
     def test_refractive_paraxial_ray_trace(self, set_test_backend):
         lens = Optic()
 
