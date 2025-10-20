@@ -107,13 +107,13 @@ class Surface:
         if self.coating is not None:
             self.set_fresnel_coating()
 
-    def register_callback(self, callback: Callable):
+    def _register_callback(self, callback: Callable):
         if callback not in self._listeners:
             self._listeners.append(
-                WeakMethod(callback, lambda obj: self.deregister_callback(obj))
+                WeakMethod(callback, lambda obj: self._deregister_callback(obj))
             )
 
-    def deregister_callback(self, callback: Callable):
+    def _deregister_callback(self, callback: Callable):
         if isinstance(callback, WeakMethod) and callback in self._listeners:
             self._listeners.remove(callback)
             return
@@ -128,11 +128,11 @@ class Surface:
     @previous_surface.setter
     def previous_surface(self, surface: Surface):
         if self._previous_surface is not None:
-            self._previous_surface.deregister_callback(self._update_callback)
+            self._previous_surface._deregister_callback(self._update_callback)
 
         self._previous_surface = surface
         if surface is not None:
-            surface.register_callback(self._update_callback)
+            surface._register_callback(self._update_callback)
         self._update_callback(surface)  # Explicit trigger
 
     @property

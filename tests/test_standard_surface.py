@@ -145,13 +145,13 @@ class TestSurface:
         surf2 = self.create_surface()
 
         # Test for explicit registering of the callback
-        surf1.register_callback(surf2._update_callback)
+        surf1._register_callback(surf2._update_callback)
         assert all(
             [weakref() == surf2._update_callback for weakref in surf1._listeners]
         )
 
         # Test for explicit deregistering
-        surf1.deregister_callback(surf2._update_callback)
+        surf1._deregister_callback(surf2._update_callback)
         assert surf1._listeners == []
 
         # Test for implicit registering of the callback
