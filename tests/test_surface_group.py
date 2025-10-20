@@ -80,7 +80,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         sg._surfaces = initial_surfaces
         sg._update_surface_links()
 
-        if not use_absolute_cs and len(sg.surfaces) > 1:
+        if not use_absolute_cs:
             sg._update_coordinate_systems(start_index=0)
 
         return sg

@@ -402,19 +402,12 @@ class SurfaceGroup:
         if not self._surfaces:
             return
 
-        effective_start_index = start_index
-        if start_index == 0:
-            effective_start_index = 1
-
-        if effective_start_index >= len(self._surfaces):
-            return
+        effective_start_index = max(start_index, 1)  # No update to object surface
 
         for i in range(effective_start_index, len(self._surfaces)):
             current_surface = self._surfaces[i]
 
-            if i == 0:  # no update to object surface
-                continue
-            elif i == 1:  # first surface lies at z=0.0 by definition
+            if i == 1:  # first surface lies at z=0.0 by definition
                 new_z = 0.0
             else:
                 prev_surface = self._surfaces[i - 1]
