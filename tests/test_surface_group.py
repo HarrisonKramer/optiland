@@ -30,12 +30,11 @@ def create_real_surface(
     geom = StandardGeometry(coordinate_system=cs, radius=radius)
 
     # Surfaces require material_pre and material_post
-    mat_pre = IdealMaterial(n=material_n)
     mat_post = IdealMaterial(n=material_n)  # Keep it simple for now, or vary if needed
 
     surface = Surface(
+        previous_surface=None,
         geometry=geom,
-        material_pre=mat_pre,
         material_post=mat_post,
         is_stop=is_stop,
         comment=comment or name,
@@ -78,9 +77,10 @@ class TestSurfaceGroupUpdatesRealObjects:
             )
             initial_surfaces.append(surface)
 
-        sg.surfaces = initial_surfaces
+        sg._surfaces = initial_surfaces
+        sg._update_surface_links()
 
-        if not use_absolute_cs and len(sg.surfaces) > 1:
+        if not use_absolute_cs:
             sg._update_coordinate_systems(start_index=0)
 
         return sg
@@ -490,7 +490,8 @@ class TestSurfaceGroupUpdatesRealObjects:
         # S0(z=-100, t=10), S1(z=0, t=inf)
         # Add a third surface; its position calculation will depend on S1's infinite thickness
         s2 = create_real_surface(name="s2_after_inf", thickness_val=5.0)
-        sg.surfaces.append(s2)  # Now [S0, S1, s2]
+        sg._surfaces.append(s2)  # Now [S0, S1, s2]
+        sg._update_surface_links()
 
         # Update starting from index 2 (s2_after_inf), which looks at s1's thickness
         with pytest.raises(
@@ -515,35 +516,43 @@ class TestSurfaceGroupUpdatesRealObjects:
         assert_allclose(sg.surfaces[2].geometry.cs.z, be.array(25.0))
 
     def test_insert_all_at_index_1(self, set_test_backend):
-        lens = optic.Optic()
+        from optiland.samples import CookeTriplet
 
+        cooke = CookeTriplet()
+
+        lens = optic.Optic()
         lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
         lens.add_surface(index=1)
-        lens.add_surface(index=1, radius=-18.39533, thickness=42.20778)
-        lens.add_surface(index=1, radius=79.68360, thickness=2.95208, material="SK16")
-        lens.add_surface(index=1, radius=20.29192, thickness=4.75041, is_stop=True)
-        lens.add_surface(
-            index=1, radius=-22.21328, thickness=0.99997, material=("F2", "schott")
-        )
-        lens.add_surface(index=1, radius=-435.76044, thickness=6.00755)
-        lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+
+        for surf in cooke.surface_group.surfaces[-2:0:-1]:
+            lens.add_surface(
+                radius=surf.geometry.radius,
+                index=1,
+                material=surf.material_post,
+                is_stop=surf.is_stop,
+                thickness=surf.thickness,
+            )
 
         lens.set_aperture(aperture_type="EPD", value=10)
-
         lens.set_field_type(field_type="angle")
-        lens.add_field(y=0)
-        lens.add_field(y=14)
-        lens.add_field(y=20)
+        lens.fields.fields = cooke.fields.fields
+        lens.wavelengths.wavelengths = cooke.wavelengths.wavelengths
 
-        lens.add_wavelength(value=0.48)
-        lens.add_wavelength(value=0.55, is_primary=True)
-        lens.add_wavelength(value=0.65)
-
-        rays = lens.trace(
-            Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.59
+        rays_lens = lens.trace(
+            Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.55
+        )
+        rays_cooke = cooke.trace(
+            Hx=0, Hy=1, distribution="hexapolar", num_rays=3, wavelength=0.55
         )
         assert_allclose(
-            be.mean(rays.y), 3.47484521
+            be.mean(rays_cooke.y),
+            be.tan(be.radians(be.max([field.y for field in cooke.fields.fields])))
+            * cooke.paraxial.f2(),
+            atol=0.1,
+        )
+
+        assert_allclose(
+            rays_cooke.y, rays_lens.y
         )  # mean y position for Cooke triplet defined above
 
     def test_set_stop_index(self):

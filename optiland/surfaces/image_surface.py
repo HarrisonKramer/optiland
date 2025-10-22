@@ -32,14 +32,14 @@ class ImageSurface(Surface):
 
     def __init__(
         self,
+        previous_surface: Surface | None,
         geometry: BaseGeometry,
-        material_pre: BaseMaterial,
         material_post: BaseMaterial,
         aperture: BaseAperture = None,
     ):
         super().__init__(
+            previous_surface=previous_surface,
             geometry=geometry,
-            material_pre=material_pre,
             material_post=material_post,
             is_stop=False,
             aperture=aperture,

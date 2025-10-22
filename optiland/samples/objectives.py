@@ -123,8 +123,6 @@ class ReverseTelephoto(optic.Optic):
     def __init__(self):
         super().__init__()
 
-        self.surface_group.surfaces = []
-
         self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(
             index=1,
@@ -183,8 +181,6 @@ class ObjectiveUS008879901(optic.Optic):
 
     def __init__(self):
         super().__init__()
-
-        self.surface_group.surfaces = []
 
         self.add_surface(index=0, radius=be.inf, thickness=be.inf)
         self.add_surface(

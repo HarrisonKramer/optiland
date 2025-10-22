@@ -23,23 +23,23 @@ def surface(set_test_backend):
     coating = SimpleCoating(0.5, 0.5)
     bsdf = None
     interaction_model = ThinLensInteractionModel(
+        parent_surface=None,
         focal_length=focal_length,
-        geometry=geometry,
-        material_pre=material_pre,
-        material_post=material_post,
         is_reflective=True,
         coating=coating,
         bsdf=bsdf,
     )
-    return Surface(
+    surf = Surface(
+        previous_surface=None,
         geometry=geometry,
-        material_pre=material_pre,
         material_post=material_post,
         is_stop=True,
         aperture=aperture,
         interaction_model=interaction_model,
         surface_type="paraxial",
     )
+    interaction_model.parent_surface = surf
+    return surf
 
 
 class TestThinLensInteractionModel:
@@ -118,6 +118,11 @@ class TestThinLensInteractionModel:
         assert "focal_length" in data
         assert data["focal_length"] == 42
 
+    def test_from_dict(self, surface):
+        data = surface.interaction_model.to_dict()
+        data["material_pre"] = None
+        assert surface.interaction_model.from_dict(data, None)
+
     def test_refractive_paraxial_ray_trace(self, set_test_backend):
         lens = Optic()
 
@@ -126,14 +131,13 @@ class TestThinLensInteractionModel:
         lens.add_surface(
             index=1,
             surface_type="paraxial",
-            thickness=50,
+            thickness=75,
             f=50,
             is_stop=True,
-            material_pre=IdealMaterial(1, 0),
-            material_post=IdealMaterial(1.5, 0),
+            material=IdealMaterial(1.5, 0),
             is_reflective=False,
         )
-        lens.add_surface(index=2)
+        lens.add_surface(index=2, material=IdealMaterial(1.5, 0))
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
@@ -157,4 +161,4 @@ class TestThinLensInteractionModel:
         assert_allclose(rays.y, 0)
 
         # confirm all points at exact same z
-        assert_allclose(rays.z, 50)
+        assert_allclose(rays.z, 75)
