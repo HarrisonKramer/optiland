@@ -512,3 +512,13 @@ def test_plot_nk():
     assert isinstance(fig, Figure)
     assert isinstance(axes, tuple)
     assert len(axes) == 2
+
+def test___eq__():
+    ideal1 = materials.IdealMaterial(1.0, 0.0)
+    ideal2 = materials.IdealMaterial(1.0, 0.0)
+    ideal3 = materials.IdealMaterial(1.0, 0.1)
+    abbe = materials.AbbeMaterial(1.5, 60.0)
+    assert ideal1 == ideal2
+    assert ideal1 != ideal3
+    assert abbe != ideal1
+
