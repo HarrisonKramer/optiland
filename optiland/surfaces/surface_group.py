@@ -149,6 +149,13 @@ class SurfaceGroup:
 
         raise ValueError("No stop surface found.")
 
+    @stop_index.setter
+    def stop_index(self, index: int):
+        if index < 1 or index > len(self.surfaces) - 2:
+            raise ValueError("Index out of range")
+        for idx, surf in enumerate(self.surfaces):
+            surf.is_stop = index == idx
+
     @property
     def num_surfaces(self):
         """int: the number of surfaces"""

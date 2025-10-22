@@ -546,6 +546,20 @@ class TestSurfaceGroupUpdatesRealObjects:
             be.mean(rays.y), 3.47484521
         )  # mean y position for Cooke triplet defined above
 
+    def test_set_stop_index(self):
+        lens = optic.Optic()
+
+        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        lens.add_surface(index=1, radius=be.inf, thickness=5, is_stop=True)
+        lens.add_surface(index=2, radius=be.inf, thickness=5)
+        lens.add_surface(index=3, radius=be.inf, thickness=5)
+        lens.surface_group.stop_index = 2
+        assert lens.surface_group.surfaces[2].is_stop == True
+        with pytest.raises(ValueError, match="Index out of range"):
+            lens.surface_group.stop_index = 0
+        with pytest.raises(ValueError, match="Index out of range"):
+            lens.surface_group.stop_index = 3
+
     @pytest.mark.skipif(
         be.get_backend() == "torch",
         reason="Independent of backend: does not need to run twice",
