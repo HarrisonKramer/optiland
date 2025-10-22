@@ -559,3 +559,16 @@ class TestSurfaceGroupUpdatesRealObjects:
             lens.surface_group.stop_index = 0
         with pytest.raises(ValueError, match="Index out of range"):
             lens.surface_group.stop_index = 3
+
+    @pytest.mark.skipif(
+        be.get_backend() == "torch",
+        reason="Independent of backend: does not need to run twice",
+    )
+    def test_second_object_surface_raises(self):
+        lens1 = optic.Optic()
+        lens1.add_surface(index=0, thickness=be.inf, material="Air")
+        with pytest.raises(
+            ValueError,
+            match=("Surface index cannot be zero after first surface is created."),
+        ):
+            lens1.add_surface(index=0, thickness=be.inf, material="Air")

@@ -284,6 +284,10 @@ class SurfaceGroup:
                     f"Index {index} is out of bounds for insertion. "
                     f"Max index for insertion is {len(self.surfaces)} (to append)."
                 )
+            if index == 0 and len(self.surfaces) > 0:
+                raise ValueError(
+                    "Surface index cannot be zero after first surface is created."
+                )
 
             self.surfaces.insert(index, new_surface)
 
