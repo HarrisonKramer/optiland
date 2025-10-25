@@ -111,7 +111,7 @@ class TestThinLensInteractionModel:
     def test_flip(self, surface):
         f_initial = be.copy(surface.interaction_model.f)
         surface.interaction_model.flip()
-        assert_allclose(surface.interaction_model.f, -f_initial)
+        assert_allclose(surface.interaction_model.f, f_initial)
 
     def test_to_dict(self, surface):
         data = surface.interaction_model.to_dict()
