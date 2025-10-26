@@ -40,10 +40,6 @@ class PhaseInteractionModel(BaseInteractionModel):
         self.phase_profile = phase_profile
 
     def interact_real_rays(self, rays: RealRays) -> RealRays:
-        if not isinstance(self.parent_surface.geometry, Plane):
-            raise TypeError(
-                "PhaseInteractionModel can only be used with a Plane geometry."
-            )
         """Applies the phase gradient interaction to real rays.
 
         Args:
@@ -52,6 +48,11 @@ class PhaseInteractionModel(BaseInteractionModel):
         Returns:
             The interacted real rays.
         """
+        if not isinstance(self.parent_surface.geometry, Plane):
+            raise TypeError(
+                "PhaseInteractionModel can only be used with a Plane geometry."
+            )
+
         # Get incident state
         x, y = rays.x, rays.y
         l_i, m_i, n_i = rays.L, rays.M, rays.N
