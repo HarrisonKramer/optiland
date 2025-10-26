@@ -81,9 +81,12 @@ class RayGenerator:
             z1 = be.full_like(Px, EPL)
 
         mag = be.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
-        L = (x1 - x0) / mag
-        M = (y1 - y0) / mag
-        N = (z1 - z0) / mag
+        # Handle case where ray origin and pupil point are the same
+        is_zero = mag < 1e-9  # Use a tolerance for floating point comparison
+        mag = be.where(is_zero, 1.0, mag)
+        L = be.where(is_zero, 0.0, (x1 - x0) / mag)
+        M = be.where(is_zero, 0.0, (y1 - y0) / mag)
+        N = be.where(is_zero, 1.0, (z1 - z0) / mag)
 
         apodization = self.optic.apodization
         if apodization:

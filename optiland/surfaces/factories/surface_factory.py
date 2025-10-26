@@ -152,19 +152,27 @@ class SurfaceFactory:
 
         # Determine interaction type
         interaction_type = kwargs.get("interaction_type", "refractive_reflective")
+        phase_profile = kwargs.get("phase_profile")
+
         if surface_type == "paraxial":
             interaction_type = "thin_lens"
         elif surface_type == "grating":
             interaction_type = "diffractive"
+        elif phase_profile is not None:
+            interaction_type = "phase"
 
         # Build interaction model
+        interaction_kwargs = {
+            "focal_length": kwargs.get("f"),
+            "phase_profile": kwargs.get("phase_profile"),
+        }
         interaction_model = self._interaction_model_factory.create(
             parent_surface=None,  # Hooked up in Surface.__init__()
             interaction_type=interaction_type,
             is_reflective=is_reflective,
             coating=coating,
             bsdf=kwargs.get("bsdf"),
-            focal_length=kwargs.get("f"),
+            **interaction_kwargs,
         )
 
         # Standard surface - `surface_type` indicates geometrical shape of surface

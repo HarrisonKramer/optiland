@@ -24,6 +24,8 @@ if TYPE_CHECKING:
 class ThinLensInteractionModel(BaseInteractionModel):
     """Interaction model for a thin lens."""
 
+    interaction_type = "thin_lens"
+
     def __init__(
         self,
         parent_surface: Surface | None,
