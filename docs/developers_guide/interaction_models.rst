@@ -27,3 +27,16 @@ DiffractiveModel
 ----------------
 
 The `DiffractiveModel` is used for surfaces with diffraction gratings. It calculates the new direction of the ray based on the grating equation.
+
+PhaseInteractionModel
+---------------------
+
+The `PhaseInteractionModel` is a powerful and flexible model that can be used to create surfaces with arbitrary phase profiles. It uses the Strategy pattern to delegate the phase calculation to a `BasePhaseProfile` object. This allows you to create custom phase profiles by subclassing `BasePhaseProfile` and implementing the `get_phase` and `get_gradient` methods.
+
+The `PhaseInteractionModel` can be used to create a wide variety of optical components, such as:
+
+- Lenses with complex aspheric or freeform surfaces
+- Diffractive optical elements (DOEs)
+- Metasurfaces
+
+To create a surface with a phase profile, you need to create a `BasePhaseProfile` object and pass it to the `SurfaceFactory` using the `phase_profile` argument. The `interaction_type` will be automatically set to `phase`.

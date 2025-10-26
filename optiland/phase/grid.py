@@ -103,9 +103,9 @@ class GridPhaseProfile(BasePhaseProfile):
             A dictionary representation of the phase profile.
         """
         data = super().to_dict()
-        data["x_coords"] = be.utils.to_list(self.x_coords)
-        data["y_coords"] = be.utils.to_list(self.y_coords)
-        data["phase_grid"] = be.utils.to_list(self.phase_grid)
+        data["x_coords"] = self.x_coords.tolist()
+        data["y_coords"] = self.y_coords.tolist()
+        data["phase_grid"] = self.phase_grid.tolist()
         return data
 
     @classmethod

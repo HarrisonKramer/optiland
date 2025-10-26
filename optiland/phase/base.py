@@ -27,6 +27,15 @@ class BasePhaseProfile(abc.ABC):
         if hasattr(cls, "phase_type"):
             cls._registry[cls.phase_type] = cls
 
+    @property
+    def efficiency(self) -> float:
+        """The diffraction efficiency of the phase profile.
+
+        Returns:
+            The efficiency, a value between 0 and 1.
+        """
+        return 1.0
+
     @abc.abstractmethod
     def get_phase(self, x: be.Array, y: be.Array) -> be.Array:
         """Calculates the phase added by the profile at coordinates (x, y).

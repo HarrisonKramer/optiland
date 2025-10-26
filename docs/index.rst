@@ -104,7 +104,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    gallery/optimization
    gallery/tolerancing
    gallery/freeforms
-   gallery/diffractive
+   gallery/diffractive_and_phase
    gallery/differentiable_ray_tracing
    gallery/real_world_projects
    gallery/external_tools
@@ -169,6 +169,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_optic
    api/api_optimization
    api/api_paraxial
+   api/api_phase
    api/api_physical_apertures
    api/api_rays
    api/api_raytrace

@@ -29,20 +29,31 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
             (direction of phase gradient) in radians, measured
             counter-clockwise from the positive x-axis. Defaults to 0,
             which creates grooves parallel to the y-axis.
+        order (int, optional): The diffraction order. Defaults to 1.
+        efficiency (float, optional): The diffraction efficiency for the
+            specified order, between 0 and 1. Defaults to 1.0.
     """
 
     phase_type = "linear_grating"
 
-    def __init__(self, period: float, angle: float = 0.0):
+    def __init__(self, period: float, angle: float = 0.0, order: int = 1, efficiency: float = 1.0):
         if period <= 0:
             raise ValueError("Grating period must be positive.")
+        if not (0.0 <= efficiency <= 1.0):
+            raise ValueError("Efficiency must be between 0 and 1.")
         self.period = period
         self.angle = angle
+        self.order = order
+        self._efficiency = efficiency
 
         # Pre-calculate the constant gradient components
-        K = 2 * be.pi / self.period
+        K = self.order * 2 * be.pi / self.period
         self._K_x = K * be.cos(self.angle)
         self._K_y = K * be.sin(self.angle)
+
+    @property
+    def efficiency(self) -> float:
+        return self._efficiency
 
     def get_phase(self, x: be.Array, y: be.Array) -> be.Array:
         """Calculates the phase added by the profile at coordinates (x, y).
@@ -98,6 +109,8 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
             {
                 "period": self.period,
                 "angle": self.angle,
+                "order": self.order,
+                "efficiency": self.efficiency,
             }
         )
         return data
@@ -115,4 +128,6 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
         return cls(
             period=data["period"],
             angle=data.get("angle", 0.0),
+            order=data.get("order", 1),
+            efficiency=data.get("efficiency", 1.0),
         )

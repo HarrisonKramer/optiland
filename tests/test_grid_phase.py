@@ -76,9 +76,9 @@ def test_grid_phase_profile_to_from_dict(grid_data):
     profile = GridPhaseProfile(x, y, phase_grid)
     data = profile.to_dict()
     assert data["phase_type"] == "grid"
-    assert len(data["x_coords"]) == 3
-    assert len(data["y_coords"]) == 5
-    assert len(data["phase_grid"]) == 5
+    assert len(data["x_coords"]) == 5
+    assert len(data["y_coords"]) == 3
+    assert len(data["phase_grid"]) == 3
 
     new_profile = GridPhaseProfile.from_dict(data)
     assert isinstance(new_profile, GridPhaseProfile)

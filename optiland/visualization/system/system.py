@@ -108,6 +108,10 @@ class OpticalSystem:
 
                 lens_surfaces = []
 
+            # Standalone phase surface
+            elif surf.interaction_model.interaction_type == "phase":
+                self._add_component("surface", surf, extent)
+
         # add final lens, if any
         if lens_surfaces:
             self._add_component("lens", lens_surfaces)

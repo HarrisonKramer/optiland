@@ -33,20 +33,24 @@ class PhaseInteractionModel(BaseInteractionModel):
     interaction_type = "phase"
 
     def __init__(
-        self, parent_surface: Surface, phase_profile: BasePhaseProfile, **kwargs
+        self,
+        parent_surface: Surface | None,
+        phase_profile: BasePhaseProfile,
+        is_reflective: bool,
+        **kwargs,
     ):
-        super().__init__(parent_surface, **kwargs)
+        super().__init__(parent_surface, is_reflective=is_reflective, **kwargs)
         self.phase_profile = phase_profile
 
     def interact_real_rays(self, rays: RealRays) -> RealRays:
-        """Applies the phase gradient interaction to real rays.
+        from optiland.geometries.plane import Plane
 
-        Args:
-            rays: The real rays to interact with the surface.
-
-        Returns:
-            The interacted real rays.
-        """
+        if self.parent_surface is None:
+            raise RuntimeError("Parent surface not set for PhaseInteractionModel.")
+        if not isinstance(self.parent_surface.geometry, Plane):
+            raise TypeError(
+                "PhaseInteractionModel can only be used with Plane geometries."
+            )
         # Get incident state
         x, y = rays.x, rays.y
         l_i, m_i, n_i = rays.L, rays.M, rays.N
@@ -112,19 +116,25 @@ class PhaseInteractionModel(BaseInteractionModel):
         k_out_z = k_out_par_z + alpha * nz
 
         # 11. Get new direction cosines
-        l_o = k_out_x / (n2 * k0)
-        m_o = k_out_y / (n2 * k0)
-        n_o = k_out_z / (n2 * k0)
+        k_out_mag = be.sqrt(k_out_x**2 + k_out_y**2 + k_out_z**2)
+        l_o = k_out_x / k_out_mag
+        m_o = k_out_y / k_out_mag
+        n_o = k_out_z / k_out_mag
+
 
         # Update ray
         rays.L, rays.M, rays.N = l_o, m_o, n_o
 
         # Update OPD
-        opd_shift = phase_val / k0
+        opd_shift = -phase_val / k0
         rays.opd = rays.opd + opd_shift
 
         # Apply coating/BSDF
         rays = self._apply_coating_and_bsdf(rays, nx, ny, nz)
+
+        # Apply phase profile efficiency
+        rays.i = rays.i * self.phase_profile.efficiency
+
         return rays
 
     def flip(self):
@@ -170,7 +180,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         return rays
 
     def to_dict(self) -> dict:
-        """Serializes the interaction model to a dictionary.
+        """Serializes the phase profile to a dictionary.
 
         Returns:
             A dictionary representation of the interaction model.
@@ -191,5 +201,11 @@ class PhaseInteractionModel(BaseInteractionModel):
             An instance of a `PhaseInteractionModel`.
         """
         phase_profile = BasePhaseProfile.from_dict(data.pop("phase_profile"))
-        data.pop("type", None)  # Remove type key to avoid passing it to constructor
-        return cls(parent_surface, phase_profile=phase_profile, **data)
+        data.pop("type", None)
+        is_reflective = data.pop("is_reflective", False)
+        return cls(
+            parent_surface,
+            phase_profile=phase_profile,
+            is_reflective=is_reflective,
+            **data
+        )
