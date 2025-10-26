@@ -13,7 +13,7 @@ def grid_data(set_test_backend):
     if be.get_backend() == "torch":
         pytest.skip("GridPhaseProfile is not supported for torch backend")
     x = be.linspace(-1, 1, 5)
-    y = be.linspace(-2, 2, 3)
+    y = be.linspace(-2, 2, 4)
     # phase_grid must have shape (len(y), len(x))
     phase_grid = be.array([[i**2 + j**3 for i in x] for j in y])
     return x, y, phase_grid
@@ -77,8 +77,8 @@ def test_grid_phase_profile_to_from_dict(grid_data):
     data = profile.to_dict()
     assert data["phase_type"] == "grid"
     assert len(data["x_coords"]) == 5
-    assert len(data["y_coords"]) == 3
-    assert len(data["phase_grid"]) == 3
+    assert len(data["y_coords"]) == 4
+    assert len(data["phase_grid"]) == 4
 
     new_profile = GridPhaseProfile.from_dict(data)
     assert isinstance(new_profile, GridPhaseProfile)

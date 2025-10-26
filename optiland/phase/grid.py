@@ -79,8 +79,8 @@ class GridPhaseProfile(BasePhaseProfile):
             A tuple containing the x and y components of the phase gradient
             (d_phi/dx, d_phi/dy).
         """
-        d_phi_dx = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dx=1)
-        d_phi_dy = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dy=1)
+        d_phi_dx = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dy=1)
+        d_phi_dy = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dx=1)
         return d_phi_dx, d_phi_dy
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
@@ -94,7 +94,7 @@ class GridPhaseProfile(BasePhaseProfile):
         Returns:
             The paraxial phase gradient at each y-coordinate.
         """
-        return self._spline.ev(be.to_numpy(y), be.zeros_like(y), dy=1)
+        return self._spline.ev(be.to_numpy(y), be.zeros_like(y), dx=1)
 
     def to_dict(self) -> dict:
         """Serializes the phase profile to a dictionary.
