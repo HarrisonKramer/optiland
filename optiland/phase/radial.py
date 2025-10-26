@@ -40,9 +40,7 @@ class RadialPhaseProfile(BasePhaseProfile):
             phase = phase + coeff * (r_squared**power)
         return phase
 
-    def get_gradient(
-        self, x: be.Array, y: be.Array
-    ) -> tuple[be.Array, be.Array]:
+    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
         Args:

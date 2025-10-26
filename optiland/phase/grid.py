@@ -13,8 +13,6 @@ except ImportError:
     RectBivariateSpline = None
 
 
-
-
 class GridPhaseProfile(BasePhaseProfile):
     """A phase profile defined by a grid of phase values.
 
@@ -70,9 +68,7 @@ class GridPhaseProfile(BasePhaseProfile):
         """
         return self._spline.ev(be.to_numpy(y), be.to_numpy(x))
 
-    def get_gradient(
-        self, x: be.Array, y: be.Array
-    ) -> tuple[be.Array, be.Array]:
+    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
         Args:

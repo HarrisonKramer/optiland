@@ -162,5 +162,5 @@ class PhaseInteractionModel(BaseInteractionModel):
             An instance of a `PhaseInteractionModel`.
         """
         phase_profile = BasePhaseProfile.from_dict(data.pop("phase_profile"))
-        data.pop("type", None) # Remove type key to avoid passing it to constructor
+        data.pop("type", None)  # Remove type key to avoid passing it to constructor
         return cls(parent_surface, phase_profile=phase_profile, **data)
