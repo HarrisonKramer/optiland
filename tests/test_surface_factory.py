@@ -1,14 +1,18 @@
 import optiland.backend as be
 import pytest
 
+from .utils import assert_allclose
 from optiland.coatings import FresnelCoating, SimpleCoating
 from optiland.materials import IdealMaterial
 from optiland.samples.objectives import TessarLens
 from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.surfaces.object_surface import ObjectSurface
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
+from optiland.phase.radial import RadialPhaseProfile
 from optiland.surfaces.standard_surface import Surface
 from optiland.surfaces import SurfaceFactory
+from optiland.optic import Optic
+from optiland.fields import AngleField, Field
 
 
 class TestSurfaceFactory:
@@ -149,6 +153,50 @@ class TestSurfaceFactory:
                 material="air",
                 thickness=5,
             )
+
+    def test_metalens_integration_focus(self, set_test_backend):
+        """Test creating and tracing a metalens as an integration test."""
+        if be.get_backend() == "torch":
+            pytest.skip("This test requires functionality not yet in torch backend")
+
+        optic = Optic()
+
+        optic = Optic()
+        focal_length = 100.0
+        wavelength = 0.55
+        k0 = 2 * be.pi / wavelength
+
+        # The Optic starts with an object surface. We need to set its material.
+        optic.add_surface(index=0, surface_type="plane", material=IdealMaterial(n=1.0))
+
+        # Define the phase profile for a lens: phi = -k0/(2f) * r^2
+        lens_coeff = -k0 / (2 * focal_length)
+        phase_profile = RadialPhaseProfile(coefficients=[lens_coeff])
+
+        # Add the metalens surface
+        optic.add_surface(
+            index=1,
+            surface_type="plane",
+            interaction_type="phase",
+            phase_profile=phase_profile,
+            is_stop=True,
+            material="air",
+            thickness=focal_length,  # Propagate to the focal plane
+        )
+
+        # Configure optic for tracing
+        optic.add_wavelength(wavelength)
+        optic.set_field_type("angle")
+        optic.add_field(0)  # On-axis field
+        optic.set_aperture("EPD", 10.0)
+
+        # Trace rays
+        rays = optic.trace(Hx=0, Hy=0, wavelength=wavelength, num_rays=5)
+
+        # Verification: at the focal plane, all rays should be at the focus
+        assert_allclose(rays.z, be.full_like(rays.z, focal_length))
+        be.assert_allclose(rays.x, be.zeros_like(rays.x), atol=1e-9)
+        be.assert_allclose(rays.y, be.zeros_like(rays.y), atol=1e-9)
 
     def test_invalid_surface_index(self, set_test_backend):
         with pytest.raises(IndexError):

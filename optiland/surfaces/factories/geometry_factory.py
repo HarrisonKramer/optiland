@@ -409,6 +409,7 @@ geometry_mapper = {
     "grating": _create_grating,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
+    "plane": _create_plane,
     "polynomial": _create_polynomial,
     "standard": _create_standard,
     "toroidal": _create_toroidal,

@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from optiland.interactions.diffractive_model import DiffractiveInteractionModel
+from optiland.interactions.phase_interaction_model import PhaseInteractionModel
 from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 
@@ -32,7 +33,7 @@ class InteractionModelFactory:
         is_reflective: bool,
         coating: BaseCoating | None,
         bsdf: BaseBSDF | None,
-        focal_length: float | None = None,
+        **kwargs,
     ) -> BaseInteractionModel:
         """Creates an interaction model object based on the given parameters.
 
@@ -57,6 +58,7 @@ class InteractionModelFactory:
                 bsdf=bsdf,
             )
         elif interaction_type == "thin_lens":
+            focal_length = kwargs.get("focal_length")
             if focal_length is None:
                 raise ValueError("Focal length is required for thin lens.")
             return ThinLensInteractionModel(
@@ -69,6 +71,17 @@ class InteractionModelFactory:
         elif interaction_type == "diffractive":
             return DiffractiveInteractionModel(
                 parent_surface=parent_surface,
+                is_reflective=is_reflective,
+                coating=coating,
+                bsdf=bsdf,
+            )
+        elif interaction_type == "phase":
+            phase_profile = kwargs.get("phase_profile")
+            if phase_profile is None:
+                raise ValueError("phase_profile is required for phase interaction.")
+            return PhaseInteractionModel(
+                parent_surface=parent_surface,
+                phase_profile=phase_profile,
                 is_reflective=is_reflective,
                 coating=coating,
                 bsdf=bsdf,
