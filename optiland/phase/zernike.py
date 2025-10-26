@@ -10,11 +10,20 @@ from __future__ import annotations
 
 import typing
 
+from optiland import backend as be
 from optiland.phase.base import BasePhaseProfile
+from optiland.zernike import ZernikeFringe, ZernikeNoll, ZernikeStandard
 
 if typing.TYPE_CHECKING:
-    from optiland import backend as be
+    from optiland._types import ZernikeType
     from optiland.zernike.base import BaseZernike
+
+
+_ZERNIKE_TYPES: dict[ZernikeType, type[BaseZernike]] = {
+    "standard": ZernikeStandard,
+    "noll": ZernikeNoll,
+    "fringe": ZernikeFringe,
+}
 
 
 class ZernikePhaseProfile(BasePhaseProfile):
@@ -26,18 +35,49 @@ class ZernikePhaseProfile(BasePhaseProfile):
     circular aperture defined by `norm_radius`.
 
     Args:
-        zernike: An instance of a `BaseZernike` subclass (e.g.,
-            `ZernikeStandard`) that defines the polynomial.
-        norm_radius: The normalized radius of the aperture over which the Zernike
-            polynomial is defined.
+        coefficients (list or be.ndarray, optional): The coefficients of the
+            Zernike polynomial surface. Defaults to an empty list, indicating
+            no Zernike polynomial coefficients are used.
+        zernike_type (str, optional): The type of Zernike polynomial to use.
+            Defaults to "standard". Options are "standard", "noll", or "fringe".
+        norm_radius (float, optional): The normalization radius for the
+            Zernike polynomial coordinates. Defaults to 1.
     """
 
     phase_type = "zernike"
 
-    def __init__(self, zernike: BaseZernike, norm_radius: float):
+    def __init__(
+        self,
+        coefficients: be.Array | None = None,
+        zernike_type: ZernikeType = "standard",
+        norm_radius: float = 1.0,
+    ):
         super().__init__()
-        self.zernike = zernike
+        if zernike_type not in _ZERNIKE_TYPES:
+            raise ValueError(
+                "Zernike type must be one of 'standard', 'noll', or 'fringe', got "
+                f"{zernike_type}",
+            )
+        if norm_radius <= 0:
+            raise ValueError(
+                f"Normalization radius must be positive, got {norm_radius}"
+            )
+
+        coefficients = be.atleast_1d(coefficients if coefficients is not None else [])
+
+        self.zernike = _ZERNIKE_TYPES[zernike_type](coeffs=coefficients)
+        self.zernike_type: ZernikeType = zernike_type
         self.norm_radius = norm_radius
+
+    @property
+    def coefficients(self) -> be.Array:
+        """Get the coefficients of the Zernike polynomial surface."""
+        return self.zernike.coeffs
+
+    @coefficients.setter
+    def coefficients(self, value: be.Array) -> None:
+        """Set the coefficients of the Zernike polynomial surface."""
+        self.zernike = _ZERNIKE_TYPES[self.zernike_type](coeffs=be.atleast_1d(value))
 
     def _get_polar_coords(
         self, x: be.Array, y: be.Array
@@ -55,9 +95,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
             - r_norm: The radial coordinate normalized by `self.norm_radius`.
             - phi: The azimuthal angle (arctan2(y, x)).
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         r_cart = be.sqrt(x**2 + y**2)
         r_norm = r_cart / self.norm_radius
         phi = be.arctan2(y, x)
@@ -109,9 +146,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
             A tuple containing the x and y components of the phase gradient
             (d_phi/dx, d_phi/dy).
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         r_cart, r_norm, phi = self._get_polar_coords(x, y)
 
         total_dz_dx = be.zeros_like(x)
@@ -138,14 +172,13 @@ class ZernikePhaseProfile(BasePhaseProfile):
             # Note: get_derivative returns un-normalized, un-coefficient-scaled
             # derivatives of the base polynomial terms.
             (
-                dZ_nm_dr_norm_term,
-                dZ_nm_dphi_term,
+                dZ_nm_dr_norm,
+                dZ_nm_dphi,
             ) = self.zernike.get_derivative(n, m, r_norm, phi)
 
-            # Apply coefficient and normalization constant
-            norm = self.zernike._norm_constant(n, m)
-            dZ_nm_dr_norm = coeff * norm * dZ_nm_dr_norm_term
-            dZ_nm_dphi = coeff * norm * dZ_nm_dphi_term
+            # Apply coefficient
+            dZ_nm_dr_norm *= coeff
+            dZ_nm_dphi *= coeff
 
             # Apply chain rule and accumulate
             term_dx = (dZ_nm_dr_norm * cos_phi) - (dZ_nm_dphi * inv_r_norm * sin_phi)
@@ -169,9 +202,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
         Returns:
             The paraxial phase gradient (d_phi/dy) at each y-coordinate.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         _dx, dy = self.get_gradient(be.zeros_like(y), y)
         return dy
 
@@ -183,15 +213,12 @@ class ZernikePhaseProfile(BasePhaseProfile):
             A dictionary representation of the phase profile, including
             the normalized radius and Zernike coefficients.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         data = super().to_dict()
         data["norm_radius"] = self.norm_radius
         # Convert backend array to a serializable list
-        data["zernike_coeffs"] = be.to_list(self.zernike.coeffs)
+        data["coefficients"] = be.to_list(self.zernike.coeffs)
         # Store the class name of the zernike object to allow reconstruction
-        data["zernike_class"] = self.zernike.__class__.__name__
+        data["zernike_type"] = self.zernike_type
         return data
 
     @classmethod
@@ -212,32 +239,11 @@ class ZernikePhaseProfile(BasePhaseProfile):
         Raises:
             ImportError: If the required Zernike class cannot be imported.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
-        # TODO: This import path is assumed. A more robust solution might
-        # use a registry for Zernike classes, similar to BasePhaseProfile.
-        try:
-            from optiland.zernike.standard import ZernikeStandard
-
-            # A simple map to find the class.
-            # This could be expanded if more Zernike types are used.
-            zernike_classes = {"ZernikeStandard": ZernikeStandard}
-            class_name = data.get("zernike_class", "ZernikeStandard")
-            ZernikeClass = zernike_classes[class_name]
-
-        except ImportError as e:
-            raise ImportError(
-                "Could not import ZernikeStandard to deserialize profile. "
-                "Ensure optiland.zernike.standard is available."
-            ) from e
-        except KeyError as e:
-            raise ImportError(
-                f"Unknown Zernike class '{data.get('zernike_class')}' "
-                "in serialized data."
-            ) from e
-
-        coeffs = be.array(data["zernike_coeffs"])
-        norm_radius = data["norm_radius"]
-        zernike = ZernikeClass(coeffs=coeffs)
-        return cls(zernike=zernike, norm_radius=norm_radius)
+        coefficients = be.array(data.get("coefficients", []))
+        norm_radius = data.get("norm_radius", 1.0)
+        zernike_type = data.get("zernike_type", "standard")
+        return cls(
+            coefficients=coefficients,
+            norm_radius=norm_radius,
+            zernike_type=zernike_type,
+        )

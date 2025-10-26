@@ -140,3 +140,21 @@ def path_contains_points(vertices: NDArray, points: NDArray) -> NDArray:
     path = Path(vertices)
     mask = path.contains_points(points)
     return np.asarray(mask, dtype=bool)
+
+
+def safe_divide(
+    numerator: NDArray, denominator: NDArray, fallback: float = 0.0
+) -> NDArray:
+    """Safely divide two arrays, returning a fallback value where the
+    denominator is zero."""
+    return np.divide(
+        numerator,
+        denominator,
+        out=np.full_like(denominator, fallback, dtype=np.float64),
+        where=denominator != 0,
+    )
+
+
+def to_list(x: NDArray) -> list:
+    """Convert an array to a list."""
+    return x.tolist()

@@ -40,3 +40,28 @@ The `PhaseInteractionModel` can be used to create a wide variety of optical comp
 - Metasurfaces
 
 To create a surface with a phase profile, you need to create a `BasePhaseProfile` object and pass it to the `SurfaceFactory` using the `phase_profile` argument. The `interaction_type` will be automatically set to `phase`.
+
+ZernikePhaseProfile
+-------------------
+
+The `ZernikePhaseProfile` is a subclass of `BasePhaseProfile` that applies a Zernike polynomial map as a phase profile over a circular aperture. You can specify the Zernike type ("fringe", "noll", or "standard") and a list of coefficients to create a custom phase profile.
+
+Here is an example of how to create a surface with a Zernike phase profile:
+
+.. code-block:: python
+
+    from optiland.phase.zernike import ZernikePhaseProfile
+
+    # Create a Zernike phase profile with a single coefficient for defocus
+    zernike_profile = ZernikePhaseProfile(
+        zernike_type="fringe",
+        coefficients=[0, 0, 0, 1],
+        norm_radius=10.0
+    )
+
+    # Create a surface with the Zernike phase profile
+    optic.add_surface(
+        surface_type="plane",
+        thickness=10.0,
+        phase_profile=zernike_profile
+    )

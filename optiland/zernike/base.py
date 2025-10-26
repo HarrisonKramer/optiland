@@ -62,7 +62,6 @@ class BaseZernike(ABC):
         """
         return (
             coeff
-            * self._norm_constant(n, m)
             * self._radial_term(n, m, r)
             * self._azimuthal_term(m, phi)
         )
@@ -99,7 +98,14 @@ class BaseZernike(ABC):
             float: The calculated value of the Zernike polynomial.
 
         """
-        return sum(self.terms(r, phi))
+        val = []
+
+        for coeff, idx in zip(self.coeffs, self.indices, strict=True):
+            n, m = idx
+            norm = self._norm_constant(n, m)
+            val.append(norm * self.get_term(coeff, n, m, r, phi))
+
+        return sum(val)
 
     def get_derivative(self, n=0, m=0, r=0, phi=0):
         """Calculate the derivative of the Zernike polynomial for the given
@@ -118,6 +124,7 @@ class BaseZernike(ABC):
             tuple[float, float]: The radial and azimuthal derivatives of the
                 Zernike polynomial.
         """
+        norm = self._norm_constant(n, m)
         radial_term = self._radial_term(n, abs(m), r)
         radial_derivative = self._radial_derivative(n, abs(m), r)
 
@@ -133,7 +140,7 @@ class BaseZernike(ABC):
                 be.abs(m) * radial_term * be.cos(be.abs(m) * phi)
             )
 
-        return partial_radial_derivative, partial_azimuthal_derivative
+        return norm * partial_radial_derivative, norm * partial_azimuthal_derivative
 
     @classmethod
     def _generate_indices(cls, n_indices: int) -> np.ndarray:
