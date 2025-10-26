@@ -152,10 +152,14 @@ class SurfaceFactory:
 
         # Determine interaction type
         interaction_type = kwargs.get("interaction_type", "refractive_reflective")
+        phase_profile = kwargs.get("phase_profile")
+
         if surface_type == "paraxial":
             interaction_type = "thin_lens"
         elif surface_type == "grating":
             interaction_type = "diffractive"
+        elif surface_type == "phase" or phase_profile is not None:
+            interaction_type = "phase"
 
         # Build interaction model
         interaction_kwargs = {
