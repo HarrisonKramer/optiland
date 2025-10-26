@@ -121,7 +121,6 @@ class PhaseInteractionModel(BaseInteractionModel):
         m_o = k_out_y / k_out_mag
         n_o = k_out_z / k_out_mag
 
-
         # Update ray
         rays.L, rays.M, rays.N = l_o, m_o, n_o
 
@@ -207,5 +206,5 @@ class PhaseInteractionModel(BaseInteractionModel):
             parent_surface,
             phase_profile=phase_profile,
             is_reflective=is_reflective,
-            **data
+            **data,
         )

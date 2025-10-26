@@ -36,7 +36,9 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
 
     phase_type = "linear_grating"
 
-    def __init__(self, period: float, angle: float = 0.0, order: int = 1, efficiency: float = 1.0):
+    def __init__(
+        self, period: float, angle: float = 0.0, order: int = 1, efficiency: float = 1.0
+    ):
         if period <= 0:
             raise ValueError("Grating period must be positive.")
         if not (0.0 <= efficiency <= 1.0):
