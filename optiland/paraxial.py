@@ -55,12 +55,12 @@ class Paraxial:
         self._ray_tracer = ParaxialRayTracer(self.optic)
 
     @staticmethod
-    def _has_internal_focus_point(y):
+    def _has_internal_focus_point(y) -> bool:
         y_signs = (be.sign(y) - be.sign(y[0])).reshape(1, -1)
 
         return be.count_nonzero(y_signs) > 0
 
-    def _focal_length(self, y, u) -> be.array:
+    def _focal_length(self, y, u) -> ScalarOrArray:
         """Determine the focal length and sign, reasoned from left to right (f2)"""
         focus = be.abs(y[0] / u[-1])[0]
 
