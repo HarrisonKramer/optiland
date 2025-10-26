@@ -159,10 +159,6 @@ class SurfaceFactory:
         elif surface_type == "grating":
             interaction_type = "diffractive"
         elif phase_profile is not None:
-            if surface_type != "plane":
-                raise ValueError(
-                    "Phase profiles can only be applied to plane surfaces."
-                )
             interaction_type = "phase"
 
         # Build interaction model

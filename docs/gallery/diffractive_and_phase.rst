@@ -18,9 +18,8 @@ This section contains examples of optical systems that utilize diffraction grati
 Generalized Phase Surfaces
 --------------------------
 
-This section contains examples of surfaces with generalized phase profiles.
+This section contains examples of surfaces with generalized phase profiles. These surfaces can be used to model a wide range of optical elements, including lenses, gratings, and more complex phase structures. The examples below illustrate the creation and application of linear and radial phase profiles within optical systems.
 
 .. nbgallery::
-    notebooks/linear_grating.ipynb
-    notebooks/radial_grating.ipynb
-    notebooks/zernike_phase.ipynb
+    phase/linear_grating.ipynb
+    phase/radial_grating.ipynb
