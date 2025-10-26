@@ -22,7 +22,7 @@ def test_zernike_phase_profile_phase():
     x = be.array([1.0])
     y = be.array([0.0])
     phase = zpp.get_phase(x, y)
-    # Z4 (defocus) is (2*rho^2 - 1). rho = 0.5. phase = (2*0.25 - 1) = -0.5
+    # Z4 (defocus) is 2*rho^2 - 1. rho = 0.5. phase = 2*0.25 - 1 = -0.5
     assert be.isclose(phase, -0.5)
 
 

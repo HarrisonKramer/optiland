@@ -96,7 +96,7 @@ class ZernikePhaseProfile(BasePhaseProfile):
             - phi: The azimuthal angle (arctan2(y, x)).
         """
         r_cart = be.sqrt(x**2 + y**2)
-        r_norm = r_cart / self.norm_radius
+        r_norm = be.safe_divide(r_cart, self.norm_radius, 0.0)
         phi = be.arctan2(y, x)
         return r_cart, r_norm, phi
 
@@ -172,13 +172,14 @@ class ZernikePhaseProfile(BasePhaseProfile):
             # Note: get_derivative returns un-normalized, un-coefficient-scaled
             # derivatives of the base polynomial terms.
             (
-                dZ_nm_dr_norm,
-                dZ_nm_dphi,
+                dZ_nm_dr_norm_term,
+                dZ_nm_dphi_term,
             ) = self.zernike.get_derivative(n, m, r_norm, phi)
 
-            # Apply coefficient
-            dZ_nm_dr_norm *= coeff
-            dZ_nm_dphi *= coeff
+            # Apply coefficient and normalization constant
+            norm = self.zernike._norm_constant(n, m)
+            dZ_nm_dr_norm = coeff * norm * dZ_nm_dr_norm_term
+            dZ_nm_dphi = coeff * norm * dZ_nm_dphi_term
 
             # Apply chain rule and accumulate
             term_dx = (dZ_nm_dr_norm * cos_phi) - (dZ_nm_dphi * inv_r_norm * sin_phi)

@@ -147,10 +147,14 @@ def safe_divide(
 ) -> NDArray:
     """Safely divide two arrays, returning a fallback value where the
     denominator is zero."""
+    if np.isscalar(denominator):
+        out = np.full_like(numerator, fallback, dtype=np.float64)
+    else:
+        out = np.full_like(denominator, fallback, dtype=np.float64)
     return np.divide(
         numerator,
         denominator,
-        out=np.full_like(denominator, fallback, dtype=np.float64),
+        out=out,
         where=denominator != 0,
     )
 
