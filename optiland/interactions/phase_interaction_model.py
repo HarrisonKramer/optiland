@@ -7,7 +7,6 @@ from __future__ import annotations
 import typing
 
 from optiland import backend as be
-from optiland.geometries.plane import Plane
 from optiland.interactions.base import BaseInteractionModel
 from optiland.phase.base import BasePhaseProfile
 
@@ -48,11 +47,6 @@ class PhaseInteractionModel(BaseInteractionModel):
         Returns:
             The interacted real rays.
         """
-        if not isinstance(self.parent_surface.geometry, Plane):
-            raise TypeError(
-                "PhaseInteractionModel can only be used with a Plane geometry."
-            )
-
         # Get incident state
         x, y = rays.x, rays.y
         l_i, m_i, n_i = rays.L, rays.M, rays.N
@@ -63,29 +57,64 @@ class PhaseInteractionModel(BaseInteractionModel):
             n2 = n1
         k0 = 2 * be.pi / rays.w
 
-        # Get phase and gradient from the strategy
-        phase_val = self.phase_profile.get_phase(x, y)
-        phi_x, phi_y = self.phase_profile.get_gradient(x, y)
+        # 1. Get local surface normal (N)
+        nx, ny, nz = self.parent_surface.geometry.surface_normal(rays)
 
-        # Apply Generalized Snell's Law
+        # 2. Get incident wavevector (k_in)
         k_ix = n1 * k0 * l_i
         k_iy = n1 * k0 * m_i
-        k_ox = k_ix + phi_x
-        k_oy = k_iy + phi_y
+        k_iz = n1 * k0 * n_i
 
-        # Compute outgoing direction cosines
-        l_o = k_ox / (n2 * k0)
-        m_o = k_oy / (n2 * k0)
+        # 3. Get phase and ambient gradient (grad(f))
+        phase_val = self.phase_profile.get_phase(x, y)
+        phi_x, phi_y = self.phase_profile.get_gradient(x, y)
+        grad_f_x = phi_x
+        grad_f_y = phi_y
+        grad_f_z = be.zeros_like(phi_x)  # Since phi = phi(x, y)
 
-        # Compute outgoing z-component and handle TIR
-        tmp = 1.0 - l_o**2 - m_o**2
-        tir_mask = tmp < 0.0
+        # 4. Compute surface gradient (G = grad(f) - (grad(f)·N)N)
+        grad_f_dot_N = grad_f_x * nx + grad_f_y * ny  # grad_f_z is 0
+        G_x = grad_f_x - grad_f_dot_N * nx
+        G_y = grad_f_y - grad_f_dot_N * ny
+        G_z = grad_f_z - grad_f_dot_N * nz  # This is just -grad_f_dot_N * nz
+
+        # 5. Compute incident tangential component (k_in,‖ = k_in - (k_in·N)N)
+        k_in_dot_N = k_ix * nx + k_iy * ny + k_iz * nz
+        k_in_par_x = k_ix - k_in_dot_N * nx
+        k_in_par_y = k_iy - k_in_dot_N * ny
+        k_in_par_z = k_iz - k_in_dot_N * nz
+
+        # 6. Compute outgoing tangential component (k_out,‖ = k_in,‖ + G)
+        k_out_par_x = k_in_par_x + G_x
+        k_out_par_y = k_in_par_y + G_y
+        k_out_par_z = k_in_par_z + G_z
+
+        # 7. Compute outgoing normal component (alpha)
+        k_out_par_mag_sq = k_out_par_x**2 + k_out_par_y**2 + k_out_par_z**2
+        k_out_mag_sq = (n2 * k0) ** 2
+        R_sq = k_out_mag_sq - k_out_par_mag_sq  # (alpha)^2
+
+        # 8. Handle TIR/Evanescence
+        tir_mask = R_sq < 0.0
         rays.clip(tir_mask)
-        p_o_mag = be.sqrt(be.maximum(0.0, tmp))
+        R_sq = be.maximum(0.0, R_sq)
+        alpha_mag = be.sqrt(R_sq)
 
-        # Handle direction
-        sign = -be.sign(n_i) if self.is_reflective else be.sign(n_i)
-        n_o = sign * p_o_mag
+        # 9. Choose sign for alpha (Normal component)
+        # Refraction: points along +N
+        # Reflection: points along -N
+        alpha_sign = -1.0 if self.is_reflective else 1.0
+        alpha = alpha_sign * alpha_mag
+
+        # 10. Build full outgoing wavevector (k_out = k_out,‖ + alpha*N)
+        k_out_x = k_out_par_x + alpha * nx
+        k_out_y = k_out_par_y + alpha * ny
+        k_out_z = k_out_par_z + alpha * nz
+
+        # 11. Get new direction cosines
+        l_o = k_out_x / (n2 * k0)
+        m_o = k_out_y / (n2 * k0)
+        n_o = k_out_z / (n2 * k0)
 
         # Update ray
         rays.L, rays.M, rays.N = l_o, m_o, n_o
@@ -95,7 +124,6 @@ class PhaseInteractionModel(BaseInteractionModel):
         rays.opd = rays.opd + opd_shift
 
         # Apply coating/BSDF
-        nx, ny, nz = self.parent_surface.geometry.surface_normal(rays)
         rays = self._apply_coating_and_bsdf(rays, nx, ny, nz)
         return rays
 
@@ -137,7 +165,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         else:
             power = (n2 - n1) / self.parent_surface.geometry.radius
             u_geom = (n1 / n2) * rays.u - y * power / n2
-            rays.u = u_geom - grad_deflection / n2
+            rays.u = u_geom + grad_deflection / n2
 
         return rays
 
