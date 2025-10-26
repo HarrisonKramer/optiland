@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 class RefractiveReflectiveModel(BaseInteractionModel):
     """Interaction model for standard refraction and reflection."""
 
+    interaction_type = "refractive_reflective"
+
     def to_dict(self):
         """Returns a dictionary representation of the model."""
         return super().to_dict()
