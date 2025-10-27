@@ -123,14 +123,7 @@ class NurbsGeometry(BaseGeometry):
 
         # If control points are not provided, the NURBS is obtained as a fit
         # of a standard surface.
-        if (
-            control_points is None
-            and weights is None
-            and u_degree is None
-            and v_degree is None
-            and u_knots is None
-            and v_knots is None
-        ):
+        if control_points is None:
             self.is_fitted = True
             self.ndim = 3
             self.P_size_u = n_points_u + 1

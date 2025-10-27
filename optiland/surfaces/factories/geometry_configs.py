@@ -4,26 +4,23 @@ This module contains the dataclasses for configuring different geometry types.
 
 Kramer Harrison, 2025
 """
-
 from __future__ import annotations
-
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar, Type
 
 import optiland.backend as be
 
-if TYPE_CHECKING:
-    from optiland._types import ZernikeType
+from optiland._types import ZernikeType
 
-config_registry: dict[str, type[GeometryConfig]] = {}
+
+config_registry: dict[str, Type[GeometryConfig]] = {}
 
 
 class GeometryConfig:
     """Base class for geometry configurations."""
-
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        if hasattr(cls, "surface_type"):
+        if hasattr(cls, 'surface_type'):
             config_registry[cls.surface_type] = cls
 
 
@@ -33,11 +30,9 @@ class StandardConfig(GeometryConfig):
     radius: float = be.inf
     conic: float = 0.0
 
-
 @dataclass
 class PlaneConfig(GeometryConfig):
     surface_type: ClassVar[str] = "plane"
-
 
 @dataclass
 class EvenAsphereConfig(GeometryConfig):
@@ -48,7 +43,6 @@ class EvenAsphereConfig(GeometryConfig):
     tol: float = 1e-6
     max_iter: int = 100
 
-
 @dataclass
 class OddAsphereConfig(GeometryConfig):
     surface_type: ClassVar[str] = "odd_asphere"
@@ -57,7 +51,6 @@ class OddAsphereConfig(GeometryConfig):
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
-
 
 @dataclass
 class PolynomialConfig(GeometryConfig):
@@ -68,7 +61,6 @@ class PolynomialConfig(GeometryConfig):
     tol: float = 1e-6
     max_iter: int = 100
 
-
 @dataclass
 class GratingConfig(GeometryConfig):
     surface_type: ClassVar[str] = "grating"
@@ -77,7 +69,6 @@ class GratingConfig(GeometryConfig):
     grating_order: int = 0
     grating_period: float = be.inf
     groove_orientation_angle: float = 0.0
-
 
 @dataclass
 class ChebyshevConfig(GeometryConfig):
@@ -90,7 +81,6 @@ class ChebyshevConfig(GeometryConfig):
     norm_x: float = 1.0
     norm_y: float = 1.0
 
-
 @dataclass
 class ZernikeConfig(GeometryConfig):
     surface_type: ClassVar[str] = "zernike"
@@ -102,7 +92,6 @@ class ZernikeConfig(GeometryConfig):
     norm_radius: float = 1.0
     zernike_type: ZernikeType = "fringe"
 
-
 @dataclass
 class BiconicConfig(GeometryConfig):
     surface_type: ClassVar[str] = "biconic"
@@ -112,7 +101,6 @@ class BiconicConfig(GeometryConfig):
     conic_y: float = 0.0
     tol: float = 1e-6
     max_iter: int = 100
-
 
 @dataclass
 class ToroidalConfig(GeometryConfig):
@@ -124,7 +112,6 @@ class ToroidalConfig(GeometryConfig):
     tol: float = 1e-6
     max_iter: int = 100
 
-
 @dataclass
 class ForbesQbfsConfig(GeometryConfig):
     surface_type: ClassVar[str] = "forbes_qbfs"
@@ -134,7 +121,6 @@ class ForbesQbfsConfig(GeometryConfig):
     norm_radius: float = 1.0
     tol: float = 1e-6
     max_iter: int = 100
-
 
 @dataclass
 class ForbesQ2dConfig(GeometryConfig):
@@ -146,16 +132,15 @@ class ForbesQ2dConfig(GeometryConfig):
     tol: float = 1e-6
     max_iter: int = 100
 
-
 @dataclass
 class NurbsConfig(GeometryConfig):
     surface_type: ClassVar[str] = "nurbs"
     radius: float = be.inf
     conic: float = 0.0
-    control_points: list[list[list[float]]] = field(default_factory=list)
-    weights: list[float] = field(default_factory=list)
-    u_knots: list[float] = field(default_factory=list)
-    v_knots: list[float] = field(default_factory=list)
+    control_points: list[list[list[float]]] | None = None
+    weights: list[float] | None = None
+    u_knots: list[float] | None = None
+    v_knots: list[float] | None = None
     nurbs_norm_x: float = 0.0
     nurbs_norm_y: float = 0.0
     nurbs_x_center: float = 0.0
@@ -166,7 +151,6 @@ class NurbsConfig(GeometryConfig):
     n_points_v: int = 5
     tol: float = 1e-6
     max_iter: int = 100
-
 
 @dataclass
 class ParaxialConfig(GeometryConfig):
