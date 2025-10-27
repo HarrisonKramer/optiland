@@ -881,3 +881,20 @@ def test_lens_on_focal_plane(set_test_backend):
 )
 def test_has_internal_focus(y, internal_focus, set_test_backend):
     assert Paraxial._has_internal_focus_point(be.array(y)) == internal_focus
+
+
+@pytest.mark.parametrize(
+    "y, u, focal_length",
+    [
+        ([1.0, 0.5], [0.0, 2.0], -0.5),  # Negative lens
+        ([-1.0, -0.5], [0.0, -2.0], -0.5),  # Negative lens, negative start
+        ([1.0, 0.5], [0.0, -1.0], 1.0),  # Positive lens, external focus
+        ([-1.0, -0.5], [0.0, 1.0], 1.0),  # Pos. lens, external focus, negative start
+        ([1.0, -0.5], [0.0, 0.5], 2.0),  # Positive lens, internal foucus
+        ([-1.0, 0.5], [0.0, 1.0], 1.0),  # Positive lens, internal focus, negative start
+    ],
+)
+def test_focal_length(y, u, focal_length, set_test_backend):
+    y = be.atleast_2d(y).T
+    u = be.atleast_2d(u).T
+    assert Paraxial(Optic())._focal_length(y, u) == pytest.approx(focal_length)
