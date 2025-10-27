@@ -13,12 +13,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import optiland.backend as be
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
 )
-from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
+from optiland.surfaces.factories.geometry_factory import GeometryFactory
 from optiland.surfaces.factories.interaction_model_factory import (
     InteractionModelFactory,
 )
@@ -103,43 +102,8 @@ class SurfaceFactory:
         is_reflective = material == "mirror"
 
         # Build geometry
-        geometry_config = GeometryConfig(
-            radius=kwargs.get("radius", be.inf),
-            conic=kwargs.get("conic", 0.0),
-            coefficients=kwargs.get("coefficients", []),
-            tol=kwargs.get("tol", 1e-6),
-            max_iter=kwargs.get("max_iter", 100),
-            norm_x=kwargs.get("norm_x", 1.0),
-            norm_y=kwargs.get("norm_y", 1.0),
-            norm_radius=kwargs.get("norm_radius", 1.0),
-            radius_x=kwargs.get("radius_x", be.inf),
-            radius_y=kwargs.get("radius_y", be.inf),
-            grating_order=kwargs.get("grating_order", 0),
-            grating_period=kwargs.get("grating_period", be.inf),
-            groove_orientation_angle=kwargs.get("groove_orientation_angle", 0.0),
-            conic_x=kwargs.get("conic_x", 0.0),
-            conic_y=kwargs.get("conic_y", 0.0),
-            toroidal_coeffs_poly_y=kwargs.get("toroidal_coeffs_poly_y", []),
-            zernike_type=kwargs.get("zernike_type", "fringe"),
-            radial_terms=kwargs.get("radial_terms"),
-            freeform_coeffs=kwargs.get("freeform_coeffs"),
-            # forbes_norm_radius=kwargs.get("forbes_norm_radius", 1.0),
-            nurbs_norm_x=kwargs.get("nurbs_norm_x"),
-            nurbs_norm_y=kwargs.get("nurbs_norm_y"),
-            nurbs_x_center=kwargs.get("nurbs_x_center", 0.0),
-            nurbs_y_center=kwargs.get("nurbs_y_center", 0.0),
-            control_points=kwargs.get("control_points"),
-            weights=kwargs.get("weights"),
-            u_degree=kwargs.get("u_degree"),
-            v_degree=kwargs.get("v_degree"),
-            u_knots=kwargs.get("u_knots"),
-            v_knots=kwargs.get("v_knots"),
-            n_points_u=kwargs.get("n_points_u", 4),
-            n_points_v=kwargs.get("n_points_v", 4),
-        )
-
         geometry = self._geometry_factory.create(
-            surface_type, coordinate_system, geometry_config
+            surface_type, coordinate_system, **kwargs
         )
 
         # Special case: object surface
