@@ -26,6 +26,12 @@ class NumpySplineInterpolator(SplineInterpolator):
             be.to_numpy(self.x_coords),
             be.to_numpy(self.grid),
         )
+        # --- TEMPORARY DEBUGGING ---
+        # tx, ty, c = self._spline.tck
+        # print("\n--- NUMPY SPLINE DEBUG ---")
+        # print("Coefficients shape:", c.shape)
+        # print("Coefficients:", c)
+        # print("--- END NUMPY SPLINE DEBUG ---\n")
 
     @property
     def grid(self) -> be.Array:

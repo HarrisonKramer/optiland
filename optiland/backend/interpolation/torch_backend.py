@@ -9,8 +9,8 @@ from optiland.backend.interpolation.base import SplineInterpolator
 
 def _compute_spline_coeffs(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
     """
-    Computes the coefficients for a batch of 1D cubic splines using the
-    standard algorithm with natural boundary conditions.
+    Computes the coefficients for a batch of 1D cubic splines.
+    This is a direct translation of the scipy implementation for a uniform grid.
     """
     is_1d = y.dim() == 1
     if is_1d:
@@ -29,16 +29,15 @@ def _compute_spline_coeffs(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         A[i, i] = 2 * (h[i - 1] + h[i])
         A[i, i + 1] = h[i]
 
-    B[1:-1] = (3 / h[1:].unsqueeze(1)) * (y[2:] - y[1:-1]) - (
-        3 / h[:-1].unsqueeze(1)
-    ) * (y[1:-1] - y[:-2])
+    # This is the corrected B-matrix calculation
+    B[1:-1] = 3 * (y[2:] - y[:-2]) / h[1:].unsqueeze(1)
 
     # Solve for the derivatives at the knots
     s = torch.linalg.solve(A, B)
 
     # Compute the coefficients
     a = y[:-1]
-    b = (y[1:] - y[:-1]) / h.unsqueeze(1) - (h.unsqueeze(1) / 3) * (s[1:] + 2 * s[:-1])
+    b = (y[1:] - y[:-1]) / h.unsqueeze(1) - h.unsqueeze(1) * (s[1:] + 2 * s[:-1]) / 3
     c = s[:-1]
     d = (s[1:] - s[:-1]) / (3 * h.unsqueeze(1))
 
@@ -70,12 +69,16 @@ class TorchSplineInterpolator(SplineInterpolator):
         # Reshape to treat each row of coefficients as a separate spline problem
         coeffs_y_reshaped = coeffs_y.permute(0, 2, 1).reshape(-1, len(self.x_coords))
         coeffs_x = _compute_spline_coeffs(self.x_coords, coeffs_y_reshaped.T)
-        coeffs_x = coeffs_x.T.reshape(
-            len(self.y_coords) - 1, 4, len(self.x_coords) - 1, 4
+        coeffs_x = (
+            coeffs_x.permute(1, 0, 2)
+            .reshape(-1, len(self.y_coords) - 1, 4)
+            .permute(1, 0, 2)
         )
 
         # 3. Reshape to final coefficient tensor
-        self.coeffs = coeffs_x.permute(0, 2, 1, 3)
+        self.coeffs = coeffs_x.reshape(
+            len(self.y_coords) - 1, len(self.x_coords) - 1, 4, 4
+        )
 
     @property
     def grid(self) -> torch.Tensor:
