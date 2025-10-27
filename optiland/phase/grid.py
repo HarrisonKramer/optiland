@@ -5,12 +5,8 @@ Provides a phase profile defined on a grid.
 from __future__ import annotations
 
 from optiland import backend as be
+from optiland.backend.interpolation import get_spline_interpolator
 from optiland.phase.base import BasePhaseProfile
-
-try:
-    from scipy.interpolate import RectBivariateSpline
-except ImportError:
-    RectBivariateSpline = None
 
 
 class GridPhaseProfile(BasePhaseProfile):
@@ -18,10 +14,6 @@ class GridPhaseProfile(BasePhaseProfile):
 
     This class uses 2D spline interpolation to calculate the phase and its
     gradient at arbitrary points.
-
-    .. note::
-        This class requires the `scipy` library to be installed. It is also
-        currently only compatible with the NumPy backend.
 
     Args:
         x_coords (be.Array): The x-coordinates of the grid points.
@@ -38,22 +30,12 @@ class GridPhaseProfile(BasePhaseProfile):
         y_coords: be.Array,
         phase_grid: be.Array,
     ):
-        if be.get_backend() == "torch":
-            raise NotImplementedError(
-                "GridPhaseProfile is not currently supported for the torch backend."
-            )
-        if RectBivariateSpline is None:
-            raise ImportError(
-                "scipy is required for GridPhaseProfile. "
-                "Please install it with: pip install scipy"
-            )
+        self.x_coords = x_coords
+        self.y_coords = y_coords
+        self.phase_grid = phase_grid
 
-        self.x_coords = be.to_numpy(x_coords)
-        self.y_coords = be.to_numpy(y_coords)
-        self.phase_grid = be.to_numpy(phase_grid)
-
-        self._spline = RectBivariateSpline(
-            self.y_coords, self.x_coords, self.phase_grid
+        self._spline = get_spline_interpolator(
+            self.x_coords, self.y_coords, self.phase_grid
         )
 
     def get_phase(self, x: be.Array, y: be.Array) -> be.Array:
@@ -66,7 +48,7 @@ class GridPhaseProfile(BasePhaseProfile):
         Returns:
             The phase at each (x, y) coordinate.
         """
-        return self._spline.ev(be.to_numpy(y), be.to_numpy(x))
+        return self._spline.ev(y, x)
 
     def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
@@ -79,8 +61,8 @@ class GridPhaseProfile(BasePhaseProfile):
             A tuple containing the x and y components of the phase gradient
             (d_phi/dx, d_phi/dy).
         """
-        d_phi_dx = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dy=1)
-        d_phi_dy = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dx=1)
+        d_phi_dx = self._spline.ev(y, x, dy=1)
+        d_phi_dy = self._spline.ev(y, x, dx=1)
         return d_phi_dx, d_phi_dy
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
@@ -94,7 +76,7 @@ class GridPhaseProfile(BasePhaseProfile):
         Returns:
             The paraxial phase gradient at each y-coordinate.
         """
-        return self._spline.ev(be.to_numpy(y), be.zeros_like(y), dx=1)
+        return self._spline.ev(y, be.zeros_like(y), dx=1)
 
     def to_dict(self) -> dict:
         """Serializes the phase profile to a dictionary.
@@ -103,9 +85,9 @@ class GridPhaseProfile(BasePhaseProfile):
             A dictionary representation of the phase profile.
         """
         data = super().to_dict()
-        data["x_coords"] = self.x_coords.tolist()
-        data["y_coords"] = self.y_coords.tolist()
-        data["phase_grid"] = self.phase_grid.tolist()
+        data["x_coords"] = be.to_numpy(self.x_coords).tolist()
+        data["y_coords"] = be.to_numpy(self.y_coords).tolist()
+        data["phase_grid"] = be.to_numpy(self.phase_grid).tolist()
         return data
 
     @classmethod
