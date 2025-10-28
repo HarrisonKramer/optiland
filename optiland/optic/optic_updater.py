@@ -309,18 +309,42 @@ class OpticUpdater:
         # 5. Update Optic instance
         self.update()
 
-    def set_apodization(self, apodization_instance: BaseApodization = None):
+    def set_apodization(
+        self, apodization: BaseApodization | str | dict = None, **kwargs
+    ):
         """Sets the apodization for the optical system.
 
+        This method supports setting the apodization in multiple ways:
+        1. By providing an instance of a `BaseApodization` subclass.
+        2. By providing a string identifier (e.g., "GaussianApodization")
+           and keyword arguments for its parameters.
+        3. By providing a dictionary that can be passed to `from_dict`.
+        4. By passing `None` to remove any existing apodization.
+
         Args:
-            apodization_instance (Apodization, optional): The apodization
-                object to apply. If None, no apodization is applied.
-                Defaults to None.
+            apodization (BaseApodization | str | dict, optional): The
+                apodization to apply. Defaults to None.
+            **kwargs: Additional keyword arguments used to initialize the
+                apodization class when `apodization` is a string.
+
+        Raises:
+            TypeError: If the provided `apodization` is not a supported type.
+            ValueError: If the string identifier is not found in the registry.
         """
-        if apodization_instance is not None and not isinstance(
-            apodization_instance, BaseApodization
-        ):
+        if apodization is None:
+            self.optic.apodization = None
+        elif isinstance(apodization, BaseApodization):
+            self.optic.apodization = apodization
+        elif isinstance(apodization, str):
+            if apodization in BaseApodization._registry:
+                apodization_class = BaseApodization._registry[apodization]
+                self.optic.apodization = apodization_class(**kwargs)
+            else:
+                raise ValueError(f"Unknown apodization type: {apodization}")
+        elif isinstance(apodization, dict):
+            self.optic.apodization = BaseApodization.from_dict(apodization)
+        else:
             raise TypeError(
-                "apodization_instance must be None or of type BaseApodization."
+                "apodization must be a string, a dict, a BaseApodization "
+                "instance, or None."
             )
-        self.optic.apodization = apodization_instance

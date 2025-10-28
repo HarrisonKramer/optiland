@@ -116,7 +116,7 @@ def test_set_apodization_gaussian(set_test_backend):
 def test_set_apodization_invalid_type(set_test_backend):
     lens = CookeTriplet()
     with pytest.raises(TypeError):
-        lens.set_apodization("InvalidType")
+        lens.set_apodization(123)
 
 
 def test_set_apodization_none(set_test_backend):
