@@ -62,7 +62,7 @@ class AbbeMaterial(BaseMaterial):
             otherwise an array of zeros.
 
         """
-        return 0
+        return be.array(0)
 
     def _get_coefficients(self):
         """Returns the polynomial coefficients for the refractive index model.
