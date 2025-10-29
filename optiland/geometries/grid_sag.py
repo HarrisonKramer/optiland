@@ -52,7 +52,11 @@ class GridSagGeometry(BaseGeometry):
         self.is_symmetric = False
 
         if self.sag_grid.shape != (len(self.y_grid), len(self.x_grid)):
-            raise ValueError("Shape of sag_values must match (len(y), len(x)).")
+            raise ValueError(
+                f"Shape of sag_values {self.sag_grid.shape} must match "
+                f"(len(y_coordinates), len(x_coordinates)) = "
+                f"({len(self.y_grid)}, {len(self.x_grid)})."
+            )
 
     def _interpolate(self, x, y):
         """Performs bilinear interpolation and calculates derivatives."""
