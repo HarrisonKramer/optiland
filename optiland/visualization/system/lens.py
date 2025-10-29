@@ -3,7 +3,6 @@
 This module contains classes for visualizing lenses in 2D and 3D.
 
 Kramer Harrison, 2024
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations

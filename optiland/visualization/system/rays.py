@@ -3,7 +3,6 @@
 This module contains classes for visualizing rays in an optical system.
 
 Kramer Harrison, 2024
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations

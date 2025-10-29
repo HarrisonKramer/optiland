@@ -3,7 +3,6 @@
 This module contains the OpticalSystem class for visualizing optical systems.
 
 Kramer Harrison, 2024
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations

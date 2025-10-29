@@ -3,7 +3,6 @@
 This module contains utility functions for visualization tasks.
 
 Kramer Harrison, 2024
-Kramer Harrison, 2025
 """
 
 from __future__ import annotations
