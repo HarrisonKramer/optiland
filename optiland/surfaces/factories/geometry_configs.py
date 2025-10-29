@@ -169,5 +169,15 @@ class NurbsConfig(GeometryConfig):
 
 
 @dataclass
+class GridSagConfig(GeometryConfig):
+    surface_type: ClassVar[str] = "grid_sag"
+    x_coordinates: list[float] = field(default_factory=list)
+    y_coordinates: list[float] = field(default_factory=list)
+    sag_values: list[list[float]] = field(default_factory=list)
+    tol: float = 1e-6
+    max_iter: int = 100
+
+
+@dataclass
 class ParaxialConfig(GeometryConfig):
     surface_type: ClassVar[str] = "paraxial"
