@@ -75,6 +75,7 @@ class Rays2D:
         fields = resolve_fields(self.optic, fields)
         wavelengths = resolve_wavelengths(self.optic, wavelengths)
 
+        artists = {}
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
                 # if only one field, use different colors for each wavelength
@@ -86,12 +87,17 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx, theme=theme)
+                    ray_artists = self._plot_lines(ax, color_idx, theme=theme)
+                    artists.update(ray_artists)
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
+                    reference_artists = self._plot_lines(
+                        ax, color_idx, linewidth=1.5, theme=theme
+                    )
+                    artists.update(reference_artists)
+        return artists
 
     def _process_traced_rays(self):
         """Processes the traced rays and updates the surface extents."""
@@ -169,6 +175,7 @@ class Rays2D:
             None
 
         """
+        artists = {}
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
@@ -181,7 +188,11 @@ class Rays2D:
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth, theme=theme)
+            artist, ray_bundle = self._plot_single_line(
+                ax, xk, yk, zk, color_idx, linewidth, theme=theme
+            )
+            artists[artist] = ray_bundle
+        return artists
 
     def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1, theme=None):
         """Plots a single line on the given axes.
@@ -203,7 +214,10 @@ class Rays2D:
             color = theme.parameters.get("ray.color", f"C{color_idx}")
         else:
             color = f"C{color_idx}"
-        ax.plot(z, y, color, linewidth=linewidth)
+        (line,) = ax.plot(
+            z, y, color, linewidth=linewidth, label=f"Ray Bundle {color_idx}"
+        )
+        return line, (x, y, z)
 
 
 class Rays3D(Rays2D):

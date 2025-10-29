@@ -64,7 +64,8 @@ class Surface2D:
         if theme:
             color = theme.parameters.get("axes.edgecolor", color)
 
-        ax.plot(z, y, color=color)
+        (line,) = ax.plot(z, y, color=color, label=f"Surface {self.surf.comment}")
+        return {line: self}
 
     def _compute_sag(self):
         """Computes the sag of the surface in local coordinates and handles

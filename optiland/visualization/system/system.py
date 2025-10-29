@@ -59,8 +59,11 @@ class OpticalSystem:
         axis (or renderer for 3D plotting).
         """
         self._identify_components()
+        artists = {}
         for component in self.components:
-            component.plot(ax, theme=theme)
+            component_artists = component.plot(ax, theme=theme)
+            artists.update(component_artists)
+        return artists
 
     def _identify_components(self):
         """Identifies the components of the optical system and adds them to the

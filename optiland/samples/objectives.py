@@ -49,19 +49,26 @@ class CookeTriplet(optic.Optic):
     def __init__(self):
         super().__init__()
 
-        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        self.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-        self.add_surface(index=2, radius=-435.76044, thickness=6.00755)
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf, comment="0")
+        self.add_surface(
+            index=1, radius=22.01359, thickness=3.25896, material="SK16", comment="1"
+        )
+        self.add_surface(index=2, radius=-435.76044, thickness=6.00755, comment="2")
         self.add_surface(
             index=3,
             radius=-22.21328,
             thickness=0.99997,
             material=("F2", "schott"),
+            comment="3",
         )
-        self.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
-        self.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
-        self.add_surface(index=6, radius=-18.39533, thickness=42.20778)
-        self.add_surface(index=7)
+        self.add_surface(
+            index=4, radius=20.29192, thickness=4.75041, is_stop=True, comment="4"
+        )
+        self.add_surface(
+            index=5, radius=79.68360, thickness=2.95208, material="SK16", comment="5"
+        )
+        self.add_surface(index=6, radius=-18.39533, thickness=42.20778, comment="6")
+        self.add_surface(index=7, comment="7")
 
         self.set_aperture(aperture_type="EPD", value=10)
 

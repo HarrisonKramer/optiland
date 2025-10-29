@@ -45,7 +45,7 @@ class Lens2D:
 
         """
         sags = self._compute_sag()
-        self._plot_lenses(ax, sags, theme=theme)
+        return self._plot_lenses(ax, sags, theme=theme)
 
     def _compute_sag(self, apply_transform=True):
         """Computes the sag of the lens in local coordinates and handles
@@ -132,8 +132,10 @@ class Lens2D:
             closed=True,
             facecolor=facecolor,
             edgecolor=edgecolor,
+            label="Lens",
         )
         ax.add_patch(polygon)
+        return polygon
 
     def _plot_lenses(self, ax, sags, theme=None):
         """Plot the lenses on the given matplotlib axis.
@@ -147,6 +149,7 @@ class Lens2D:
                 Defaults to None.
 
         """
+        artists = {}
         for k in range(len(sags) - 1):
             x1, y1, z1 = sags[k]
             x2, y2, z2 = sags[k + 1]
@@ -156,7 +159,9 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            self._plot_single_lens(ax, x, y, z, theme=theme)
+            artist = self._plot_single_lens(ax, x, y, z, theme=theme)
+            artists[artist] = self
+        return artists
 
 
 class Lens3D(Lens2D):

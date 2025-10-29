@@ -15,6 +15,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 
 from optiland.visualization.base import BaseViewer
+from optiland.visualization.system.interaction import InteractionManager
 from optiland.visualization.system.rays import Rays2D
 from optiland.visualization.system.system import OpticalSystem
 from optiland.visualization.themes import get_active_theme
@@ -43,6 +44,7 @@ class OpticViewer(BaseViewer):
 
         self.rays = Rays2D(optic)
         self.system = OpticalSystem(optic, self.rays, projection="2d")
+        self.legend_artist_map = {}
 
     def view(
         self,
@@ -55,6 +57,8 @@ class OpticViewer(BaseViewer):
         ylim=None,
         title=None,
         reference=None,
+        tooltip_format=None,
+        show_legend=True,
     ):
         """Visualizes the optical system.
 
@@ -84,7 +88,9 @@ class OpticViewer(BaseViewer):
         fig.set_facecolor(params["figure.facecolor"])
         ax.set_facecolor(params["axes.facecolor"])
 
-        self.rays.plot(
+        interaction_manager = InteractionManager(fig, ax, tooltip_format)
+
+        ray_artists = self.rays.plot(
             ax,
             fields=fields,
             wavelengths=wavelengths,
@@ -93,8 +99,12 @@ class OpticViewer(BaseViewer):
             reference=reference,
             theme=theme,
         )
+        for artist, ray_bundle in ray_artists.items():
+            interaction_manager.register_artist(artist, ray_bundle)
 
-        self.system.plot(ax, theme=theme)
+        system_artists = self.system.plot(ax, theme=theme)
+        for artist, surface in system_artists.items():
+            interaction_manager.register_artist(artist, surface)
 
         ax.axis("image")
         ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
@@ -119,5 +129,26 @@ class OpticViewer(BaseViewer):
             alpha=params["grid.alpha"],
         )
 
-        # Return the figure and axes instead of showing the plot
-        return fig, ax
+        if show_legend:
+            handles, labels = ax.get_legend_handles_labels()
+            legend = ax.legend(handles, labels)
+            for legend_line, original_artist in zip(
+                legend.get_lines(), handles, strict=True
+            ):
+                legend_line.set_picker(5)
+                self.legend_artist_map[legend_line] = original_artist
+
+            fig.canvas.mpl_connect("pick_event", self.on_pick)
+            self.fig = fig
+
+        # Return the figure, axes and interaction_manager
+        return fig, ax, interaction_manager
+
+    def on_pick(self, event):
+        """TToggles the visibility of an artist when its legend entry is clicked."""
+        legend_line = event.artist
+        original_artist = self.legend_artist_map[legend_line]
+        visible = not original_artist.get_visible()
+        original_artist.set_visible(visible)
+        legend_line.set_alpha(1.0 if visible else 0.2)
+        self.fig.canvas.draw()
