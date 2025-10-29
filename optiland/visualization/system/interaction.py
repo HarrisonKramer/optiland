@@ -3,6 +3,7 @@
 This module provides the InteractionManager class for handling user interactions
 with Matplotlib-based visualizations of optical systems.
 
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations
@@ -163,20 +164,35 @@ class InteractionManager:
 
     def default_tooltip_format(self, optiland_object):
         """Default formatter for the tooltip text."""
-        from optiland.visualization.info.providers import SurfaceInfoProvider
+        # Import here to avoid circular dependencies
+        from optiland.visualization.info.providers import (
+            INFO_PROVIDER_REGISTRY,
+            LensInfoProvider,
+            SurfaceInfoProvider,
+        )
         from optiland.visualization.system.ray_bundle import RayBundle
+        from optiland.visualization.system.surface import Surface2D
 
         if isinstance(optiland_object, Surface2D):
             provider = SurfaceInfoProvider(self.optic.surface_group)
             return provider.get_info(optiland_object)
+
         elif isinstance(optiland_object, RayBundle):
             provider = INFO_PROVIDER_REGISTRY["RayBundle"]
             return provider.get_info(optiland_object)
+
         elif isinstance(optiland_object, Lens2D):
-            provider = INFO_PROVIDER_REGISTRY["Lens2D"]
+            provider = LensInfoProvider(self.optic.surface_group)
             return provider.get_info(optiland_object)
+
         else:
-            return "No information available."
+            # Fallback for any other types
+            obj_type = type(optiland_object).__name__
+            if obj_type in INFO_PROVIDER_REGISTRY:
+                provider = INFO_PROVIDER_REGISTRY[obj_type]
+                return provider.get_info(optiland_object)
+            else:
+                return "No information available."
 
     def show_info_panel(self, optiland_object):
         """Shows an information panel for the given object."""

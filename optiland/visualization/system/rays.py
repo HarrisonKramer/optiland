@@ -88,13 +88,15 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    artists.update(self._plot_lines(ax, color_idx, theme=theme))
+                    artists.update(self._plot_lines(ax, color_idx, field, theme=theme))
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
                     artists.update(
-                        self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
+                        self._plot_lines(
+                            ax, color_idx, field, linewidth=1.5, theme=theme
+                        )
                     )
         return artists
 
@@ -155,7 +157,7 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, linewidth=1, theme=None):
+    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -167,6 +169,7 @@ class Rays2D:
             ax (matplotlib.axes.Axes): The axis on which to plot the lines.
             color_idx (int): The index used to determine the color of the
                 lines.
+            field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line.
             theme (Theme, optional): The theme to apply. Defaults to None.
 
@@ -189,13 +192,13 @@ class Rays2D:
             yk[ik == 0] = np.nan
 
             artist, ray_bundle = self._plot_single_line(
-                ax, xk, yk, zk, color_idx, linewidth, theme=theme
+                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
             )
             ray_bundle.bundle_id = bundle_id
             artists[artist] = ray_bundle
         return artists
 
-    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1, theme=None):
+    def _plot_single_line(self, ax, x, y, z, color_idx, field, linewidth=1, theme=None):
         """Plots a single line on the given axes.
 
         Args:
@@ -204,6 +207,7 @@ class Rays2D:
             y (array-like): The y-coordinates of the line.
             z (array-like): The z-coordinates of the line.
             color_idx (int): The index for the color to use for the line.
+            field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line. Default is 1.
             theme (Theme, optional): The theme to apply. Defaults to None.
 
@@ -217,7 +221,7 @@ class Rays2D:
         else:
             color = f"C{color_idx}"
         (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
-        return line, RayBundle(x, y, z)
+        return line, RayBundle(x, y, z, field)
 
 
 class Rays3D(Rays2D):
@@ -272,12 +276,12 @@ class Rays3D(Rays2D):
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx, theme=theme)
+                    self._plot_lines(ax, color_idx, field, theme=theme)
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
+                    self._plot_lines(ax, color_idx, field, linewidth=1.5, theme=theme)
 
     def __init__(self, optic):
         super().__init__(optic)
@@ -296,7 +300,7 @@ class Rays3D(Rays2D):
             (0.090, 0.745, 0.812),
         ]
 
-    def _plot_lines(self, ax, color_idx, linewidth=1, theme=None):
+    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None):
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
@@ -309,9 +313,13 @@ class Rays3D(Rays2D):
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth, theme=theme)
+            self._plot_single_line(
+                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
+            )
 
-    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1, theme=None):
+    def _plot_single_line(
+        self, renderer, x, y, z, color_idx, field, linewidth=1, theme=None
+    ):
         """Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
 
@@ -322,6 +330,7 @@ class Rays3D(Rays2D):
             z (list of float): The z-coordinates of the line.
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
+            field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line. Default is 1.
             theme (Theme, optional): The theme to apply. Defaults to None.
 

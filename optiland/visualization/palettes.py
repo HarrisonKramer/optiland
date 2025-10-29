@@ -11,7 +11,7 @@ plot elements, including background, axes, text, grid, lenses, and rays.
 This modular approach allows for easy extension with new palettes and ensures
 that themes can be built on a consistent color foundation.
 
-Manuel Fragata Mendes, June 2025
+Kramer Harrison, 2025
 """
 
 # Base palette for the 'light' theme
@@ -23,7 +23,7 @@ light_palette = {
     "text": "#333333",
     "grid": "#CCCCCC",
     "lens": "#E0E0E0",
-    "ray_cycle": [
+    "ray_cycle": [  # default Matplotlib color cycle
         "#1f77b4",
         "#ff7f0e",
         "#2ca02c",
@@ -44,13 +44,17 @@ dark_palette = {
     "text": "#E0E0E0",
     "grid": "#444444",
     "lens": "#555555",
-    "ray_cycle": [
-        "#A9C2DB",
-        "#8AB9FF",
-        "#FF8A8A",
-        "#FFD18A",
-        "#8AFFB5",
-        "#B58AFF",
+    "ray_cycle": [  # default Matplotlib color cycle
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
     ],
 }
 
