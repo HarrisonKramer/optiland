@@ -29,10 +29,8 @@ def test_grid_sag_geometry_init(sample_grid_geometry):
     )
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_grid_sag_sag_calculation(backend):
+def test_grid_sag_sag_calculation(set_test_backend):
     """Test the sag calculation for the GridSagGeometry."""
-    be.set_backend(backend)
     cs = CoordinateSystem()
     x_coords = [0.0, 1.0]
     y_coords = [0.0, 1.0]
@@ -48,10 +46,8 @@ def test_grid_sag_sag_calculation(backend):
     assert be.isnan(geometry.sag(-1.0, 0.5))
 
 
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_grid_sag_distance_and_normal(backend):
+def test_grid_sag_distance_and_normal(set_test_backend):
     """Test the distance and surface normal calculations."""
-    be.set_backend(backend)
     cs = CoordinateSystem()
     x_coords = [-1.0, 1.0]
     y_coords = [-1.0, 1.0]
@@ -78,11 +74,9 @@ def test_grid_sag_distance_and_normal(backend):
     assert be.allclose(nx, be.asarray([expected_nx], dtype=dtype), atol=1e-5)
     assert be.allclose(ny, be.asarray([0.0], dtype=dtype), atol=1e-5)
     assert be.allclose(nz, be.asarray([1 / expected_norm_mag], dtype=dtype), atol=1e-5)
-
-@pytest.mark.parametrize("backend", be.list_available_backends())
-def test_grid_sag_serialization(backend):
+    
+def test_grid_sag_serialization(set_test_backend):
     """Test the to_dict and from_dict methods."""
-    be.set_backend(backend)
     cs = CoordinateSystem()
     x_coords = [-1.0, 0.0, 1.0]
     y_coords = [-1.0, 0.0, 1.0]
