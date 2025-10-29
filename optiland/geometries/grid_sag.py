@@ -8,6 +8,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import Any
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.base import BaseGeometry
@@ -23,8 +25,9 @@ class GridSagGeometry(BaseGeometry):
         coordinate_system (CoordinateSystem): The coordinate system of the geometry.
         x_coordinates (list[float]): 1D list of x-coordinates for the grid.
         y_coordinates (list[float]): 1D list of y-coordinates for the grid.
-        sag_values (list[list[float]]): 2D list of sag values, with shape
-            (len(y_coordinates), len(x_coordinates)).
+        sag_values (ArrayLike): 2D array-like (list of lists, numpy array, or
+            torch tensor) of sag values, with shape (len(y_coordinates),
+            len(x_coordinates)).
         tol (float, optional): Tolerance for the iterative ray intersection solver.
             Defaults to 1e-6.
         max_iter (int, optional): Maximum number of iterations for the solver.
@@ -36,7 +39,7 @@ class GridSagGeometry(BaseGeometry):
         coordinate_system: CoordinateSystem,
         x_coordinates: list[float],
         y_coordinates: list[float],
-        sag_values: list[list[float]],
+        sag_values: Any,
         tol: float = 1e-6,
         max_iter: int = 100,
     ):
