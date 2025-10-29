@@ -23,7 +23,18 @@ light_palette = {
     "text": "#333333",
     "grid": "#CCCCCC",
     "lens": "#E0E0E0",
-    "ray": "#1f77b4",
+    "ray_cycle": [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+    ],
 }
 
 # Base palette for the 'dark' theme
@@ -33,7 +44,14 @@ dark_palette = {
     "text": "#E0E0E0",
     "grid": "#444444",
     "lens": "#555555",
-    "ray": "#A9C2DB",
+    "ray_cycle": [
+        "#A9C2DB",
+        "#8AB9FF",
+        "#FF8A8A",
+        "#FFD18A",
+        "#8AFFB5",
+        "#B58AFF",
+    ],
 }
 
 # Solarized light palette
@@ -43,7 +61,14 @@ solarized_light_palette = {
     "text": "#586e75",
     "grid": "#eee8d5",
     "lens": "#93a1a1",
-    "ray": "#268bd2",
+    "ray_cycle": [
+        "#268bd2",
+        "#2aa198",
+        "#859900",
+        "#d33682",
+        "#cb4b16",
+        "#6c71c4",
+    ],
 }
 
 # Solarized dark palette
@@ -53,5 +78,12 @@ solarized_dark_palette = {
     "text": "#93a1a1",
     "grid": "#073642",
     "lens": "#586e75",
-    "ray": "#2aa198",
+    "ray_cycle": [
+        "#2aa198",
+        "#268bd2",
+        "#859900",
+        "#d33682",
+        "#cb4b16",
+        "#6c71c4",
+    ],
 }

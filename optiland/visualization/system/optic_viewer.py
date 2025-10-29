@@ -129,26 +129,5 @@ class OpticViewer(BaseViewer):
             alpha=params["grid.alpha"],
         )
 
-        if show_legend:
-            handles, labels = ax.get_legend_handles_labels()
-            legend = ax.legend(handles, labels)
-            for legend_line, original_artist in zip(
-                legend.get_lines(), handles, strict=True
-            ):
-                legend_line.set_picker(5)
-                self.legend_artist_map[legend_line] = original_artist
-
-            fig.canvas.mpl_connect("pick_event", self.on_pick)
-            self.fig = fig
-
         # Return the figure, axes and interaction_manager
         return fig, ax, interaction_manager
-
-    def on_pick(self, event):
-        """TToggles the visibility of an artist when its legend entry is clicked."""
-        legend_line = event.artist
-        original_artist = self.legend_artist_map[legend_line]
-        visible = not original_artist.get_visible()
-        original_artist.set_visible(visible)
-        legend_line.set_alpha(1.0 if visible else 0.2)
-        self.fig.canvas.draw()

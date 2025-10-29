@@ -161,14 +161,16 @@ class InteractionManager:
 
         close_ax = self.fig.add_axes([0.9, 0.9, 0.05, 0.05])
         close_button = Button(close_ax, "X")
-        close_button.on_clicked(self.close_info_panel)
+        cid = close_button.on_clicked(self.close_info_panel)
         self.info_panel.button = close_button
+        self.info_panel.cid = cid
 
         self.fig.canvas.draw_idle()
 
     def close_info_panel(self, event=None):
         """Closes the information panel."""
         if self.info_panel:
+            self.info_panel.button.disconnect(self.info_panel.cid)
             self.fig.delaxes(self.info_panel)
             self.fig.delaxes(self.info_panel.button.ax)
             self.info_panel = None
@@ -178,13 +180,18 @@ class InteractionManager:
         """Gets the detailed information text for the given object."""
         if isinstance(optiland_object, Surface2D):
             surface = optiland_object.surf
-            return (
-                f"Surface: {surface.comment}\n"
-                f"Type: {surface.surface_type}\n"
-                f"Radius: {surface.geometry.radius:.2f}\n"
-                f"Thickness: {surface.thickness:.2f}\n"
-                f"Material: {surface.material_post.name}"
-            )
+            surface_group = surface.parent_surface_group
+            surface_index = surface_group.surfaces.index(surface)
+
+            info = [f"Surface: {surface_index}"]
+            if hasattr(surface, "comment") and surface.comment:
+                info[0] += f" ({surface.comment})"
+            if hasattr(surface, "geometry") and hasattr(surface.geometry, "radius"):
+                info.append(f"Radius: {surface.geometry.radius:.2f}")
+            if hasattr(surface, "geometry") and hasattr(surface.geometry, "conic"):
+                info.append(f"Conic: {surface.geometry.conic:.2f}")
+
+            return "\n".join(info)
         elif isinstance(optiland_object, Lens2D):
             return "Lens\nMore details coming soon."
         else:

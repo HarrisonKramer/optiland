@@ -52,7 +52,7 @@ class Theme:
             "grid.alpha": 0.25,
             "text.color": palette["text"],
             "lens.color": palette["lens"],
-            "ray.color": palette["ray"],
+            "ray_cycle": palette["ray_cycle"],
             "font.family": "sans-serif",
             "font.size": 10,
             "font.weight": "normal",

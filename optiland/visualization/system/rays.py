@@ -211,11 +211,12 @@ class Rays2D:
 
         """
         if theme:
-            color = theme.parameters.get("ray.color", f"C{color_idx}")
+            ray_cycle = theme.parameters.get("ray_cycle")
+            color = ray_cycle[color_idx % len(ray_cycle)]
         else:
             color = f"C{color_idx}"
         (line,) = ax.plot(
-            z, y, color, linewidth=linewidth, label=f"Ray Bundle {color_idx}"
+            z, y, color=color, linewidth=linewidth
         )
         return line, (x, y, z)
 

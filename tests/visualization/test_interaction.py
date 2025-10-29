@@ -89,26 +89,3 @@ def test_click_to_inspect(optic_viewer):
     plt.close(fig)
 
 
-def test_visibility_toggling(optic_viewer):
-    """Tests that clicking on a legend entry toggles the artist's visibility."""
-    fig, ax, im = optic_viewer.view()
-
-    # Get the first legend line and its corresponding artist
-    legend_line = list(optic_viewer.legend_artist_map.keys())[0]
-    original_artist = optic_viewer.legend_artist_map[legend_line]
-
-    # Simulate a pick event
-    mouse_event = MouseEvent('button_press_event', fig.canvas, 0, 0)
-    event = PickEvent('pick_event', fig.canvas, mouse_event, artist=legend_line)
-    optic_viewer.on_pick(event)
-
-    # Check that the artist is now invisible
-    assert not original_artist.get_visible()
-
-    # Simulate another pick event
-    optic_viewer.on_pick(event)
-
-    # Check that the artist is visible again
-    assert original_artist.get_visible()
-
-    plt.close(fig)
