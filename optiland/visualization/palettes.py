@@ -11,7 +11,7 @@ plot elements, including background, axes, text, grid, lenses, and rays.
 This modular approach allows for easy extension with new palettes and ensures
 that themes can be built on a consistent color foundation.
 
-Manuel Fragata Mendes, June 2025
+Kramer Harrison, 2025
 """
 
 # Base palette for the 'light' theme

@@ -3,6 +3,7 @@
 This module provides the InteractionManager class for handling user interactions
 with Matplotlib-based visualizations of optical systems.
 
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations
