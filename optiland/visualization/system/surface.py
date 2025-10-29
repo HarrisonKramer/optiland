@@ -3,6 +3,7 @@
 This module contains classes for visualizing optical surfaces in 2D and 3D.
 
 Kramer Harrison, 2024
+Kramer Harrison, 2025
 """
 
 from __future__ import annotations
