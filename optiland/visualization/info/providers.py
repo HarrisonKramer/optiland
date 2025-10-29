@@ -54,7 +54,7 @@ class RayBundleInfoProvider(BaseInfoProvider):
     """Provides information for ray bundles."""
 
     def get_info(self, obj: RayBundle) -> str:
-        num_rays = obj.x.shape[0]
+        num_rays = obj.x.shape[1]
         return f"Ray Bundle\nNumber of rays: {num_rays}"
 
 
