@@ -62,7 +62,8 @@ class OpticalSystem:
         artists = {}
         for component in self.components:
             component_artists = component.plot(ax, theme=theme)
-            artists.update(component_artists)
+            if component_artists:
+                artists.update(component_artists)
         return artists
 
     def _identify_components(self):

@@ -88,16 +88,14 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    ray_artists = self._plot_lines(ax, color_idx, theme=theme)
-                    artists.update(ray_artists)
+                    artists.update(self._plot_lines(ax, color_idx, theme=theme))
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    reference_artists = self._plot_lines(
-                        ax, color_idx, linewidth=1.5, theme=theme
+                    artists.update(
+                        self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
                     )
-                    artists.update(reference_artists)
         return artists
 
     def _process_traced_rays(self):
@@ -235,6 +233,52 @@ class Rays3D(Rays2D):
 
     """
 
+    def plot(
+        self,
+        ax,
+        fields="all",
+        wavelengths="primary",
+        num_rays=3,
+        distribution="line_y",
+        reference=None,
+        theme=None,
+    ):
+        """Plots the rays for the given fields and wavelengths.
+
+        Args:
+            ax: The matplotlib axis to plot on.
+            fields: The fields at which to trace the rays. Default is 'all'.
+            wavelengths: The wavelengths at which to trace the rays.
+                Default is 'primary'.
+            num_rays: The number of rays to trace for each field and
+                wavelength. Default is 3.
+            distribution: The distribution of the rays. Default is 'line_y'.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
+            theme (Theme, optional): The theme to apply. Defaults to None.
+
+        """
+        fields = resolve_fields(self.optic, fields)
+        wavelengths = resolve_wavelengths(self.optic, wavelengths)
+
+        for i, field in enumerate(fields):
+            for j, wavelength in enumerate(wavelengths):
+                # if only one field, use different colors for each wavelength
+                color_idx = i if len(fields) > 1 else j
+
+                if distribution is None:
+                    # trace only for surface extents
+                    self._trace(field, wavelength, num_rays, "line_y")
+                else:
+                    # trace rays and plot lines
+                    self._trace(field, wavelength, num_rays, distribution)
+                    self._plot_lines(ax, color_idx, theme=theme)
+
+                # trace reference rays and plot lines
+                if reference is not None:
+                    self._trace_reference(field, wavelength, reference)
+                    self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
+
     def __init__(self, optic):
         super().__init__(optic)
 
@@ -252,7 +296,22 @@ class Rays3D(Rays2D):
             (0.090, 0.745, 0.812),
         ]
 
-    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
+    def _plot_lines(self, ax, color_idx, linewidth=1, theme=None):
+        # loop through rays
+        for k in range(self.z.shape[1]):
+            xk = be.to_numpy(self.x[:, k])
+            yk = be.to_numpy(self.y[:, k])
+            zk = be.to_numpy(self.z[:, k])
+            ik = be.to_numpy(self.i[:, k])
+
+            # remove rays outside aperture
+            xk[ik == 0] = np.nan
+            zk[ik == 0] = np.nan
+            yk[ik == 0] = np.nan
+
+            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth, theme=theme)
+
+    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1, theme=None):
         """Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
 
@@ -264,9 +323,17 @@ class Rays3D(Rays2D):
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
             linewidth (float): The width of the line. Default is 1.
+            theme (Theme, optional): The theme to apply. Defaults to None.
 
         """
-        color = self._rgb_colors[color_idx % 10]
+        if theme:
+            from matplotlib.colors import to_rgb
+
+            ray_cycle = theme.parameters.get("ray_cycle")
+            color = to_rgb(ray_cycle[color_idx % len(ray_cycle)])
+        else:
+            color = self._rgb_colors[color_idx % 10]
+
         for k in range(1, len(x)):
             p0 = [x[k - 1], y[k - 1], z[k - 1]]
             p1 = [x[k], y[k], z[k]]

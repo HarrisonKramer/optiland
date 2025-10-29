@@ -16,7 +16,7 @@ The core components of this module are:
 This system is inspired by matplotlib's rcParams, but with a more
 structured, theme-based approach.
 
-Kramer Harrison, 2025
+Manuel Fragata Mendes, June 2025
 """
 
 from __future__ import annotations

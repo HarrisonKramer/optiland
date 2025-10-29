@@ -5,7 +5,7 @@ the foundation for all visualization viewers within the Optiland library.
 It establishes a common interface for initializing viewers with an optical
 system and for generating visualizations.
 
-Kramer Harrison, 2025
+Manuel Fragata Mendes, June 2025
 """
 
 from __future__ import annotations
