@@ -125,7 +125,7 @@ class GridSagGeometry(BaseGeometry):
             dt = -f / f_prime
             t = t + dt
 
-            if be.all(be.abs(dt) < self.tol):
+            if be.max(be.abs(dt)) < self.tol:
                 break
 
         # Clip rays that miss the grid
