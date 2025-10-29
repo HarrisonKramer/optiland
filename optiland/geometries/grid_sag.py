@@ -61,8 +61,8 @@ class GridSagGeometry(BaseGeometry):
     def _interpolate(self, x, y):
         """Performs bilinear interpolation and calculates derivatives."""
         # Find indices for lower-left corner of the interpolation cell
-        # be.searchsorted with side="right" returns the index after elements equal to x/y,
-        # so we subtract 1 to get the lower bound index for interpolation.
+        # be.searchsorted with side="right" returns the index after elements equal to
+        # x/y, so we subtract 1 to get the lower bound index for interpolation.
         i = be.searchsorted(self.x_grid, x, side="right") - 1
         j = be.searchsorted(self.y_grid, y, side="right") - 1
 
