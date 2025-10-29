@@ -46,7 +46,7 @@ class InteractionManager:
         self.tooltip_format = tooltip_format or self.default_tooltip_format
 
         self.info_panel = None
-
+        self.cids = []
         self.connect()
 
     def register_artist(self, artist, optiland_object):
@@ -55,38 +55,47 @@ class InteractionManager:
 
     def connect(self):
         """Connects to the Matplotlib event loop."""
-        self.fig.canvas.mpl_connect("motion_notify_event", self.on_hover)
-        self.fig.canvas.mpl_connect("button_press_event", self.on_click)
+        if not self.cids:
+            cid_hover = self.fig.canvas.mpl_connect(
+                "motion_notify_event", self.on_hover
+            )
+            cid_click = self.fig.canvas.mpl_connect("button_press_event", self.on_click)
+            self.cids.extend([cid_hover, cid_click])
+
+    def disconnect(self):
+        """Disconnects from the Matplotlib event loop."""
+        for cid in self.cids:
+            self.fig.canvas.mpl_disconnect(cid)
+        self.cids = []
 
     def on_hover(self, event):
         """Handles hover events to show tooltips and highlight artists."""
         if event.inaxes != self.ax:
-            self.clear_hover_effects()
+            if self.active_artist:
+                self.clear_hover_effects()
             return
 
         found_artist = None
-        for artist, _ in self.artist_registry.items():
-            if hasattr(artist, "get_xdata"):  # It's a line
-                xdata, ydata = artist.get_xdata(), artist.get_ydata()
-                x, y = event.xdata, event.ydata
-                if x is None or y is None:
-                    continue
-                d = ((xdata - x) ** 2 + (ydata - y) ** 2) ** 0.5
-                if d.min() < 0.1:  # 0.1 data units tolerance
-                    found_artist = artist
-                    break
-            elif artist.contains(event)[0]:
+        # Prioritize surfaces over other artists
+        artists = sorted(
+            self.artist_registry.keys(),
+            key=lambda a: isinstance(self.artist_registry[a], Surface2D),
+            reverse=True,
+        )
+        for artist in artists:
+            contains, _ = artist.contains(event)
+            if contains:
                 found_artist = artist
                 break
 
-        if found_artist:
-            if found_artist != self.active_artist:
+        if self.active_artist != found_artist:
+            if self.active_artist:
                 self.clear_hover_effects()
+
+            if found_artist:
+                self.active_artist = found_artist
                 self.highlight_artist(found_artist)
                 self.show_tooltip(found_artist, event)
-                self.active_artist = found_artist
-        else:
-            self.clear_hover_effects()
 
     def on_click(self, event):
         """Handles click events to show detailed information."""
@@ -142,6 +151,8 @@ class InteractionManager:
         if self.info_panel:
             self.close_info_panel()
 
+        self.disconnect()  # Disconnect main plot events
+
         info_text = self.get_info_text(optiland_object)
 
         self.info_panel = self.fig.add_axes([0.7, 0.7, 0.25, 0.25])
@@ -168,24 +179,21 @@ class InteractionManager:
         """Closes the information panel."""
         if self.info_panel:
             self.info_panel.button.disconnect(self.info_panel.cid)
-
-            # Manually release the mouse grabber
-            if self.fig.canvas.mouse_grabber == self.info_panel.button.ax:
-                self.fig.canvas.release_mouse(self.info_panel.button.ax)
-
             self.fig.delaxes(self.info_panel)
             self.fig.delaxes(self.info_panel.button.ax)
             self.info_panel = None
             self.fig.canvas.draw_idle()
+            self.connect()  # Reconnect main plot events
 
     def get_info_text(self, optiland_object):
         """Gets the detailed information text for the given object."""
+        if isinstance(optiland_object, tuple):  # Ray bundle
+            provider = INFO_PROVIDER_REGISTRY["RayBundle"]
+            return provider.get_info(optiland_object)
+
         obj_type = type(optiland_object).__name__
         if obj_type in INFO_PROVIDER_REGISTRY:
             provider = INFO_PROVIDER_REGISTRY[obj_type]
-            return provider.get_info(optiland_object)
-        elif isinstance(optiland_object, tuple):  # Ray bundle
-            provider = INFO_PROVIDER_REGISTRY["RayBundle"]
             return provider.get_info(optiland_object)
         else:
             return "No information available."
