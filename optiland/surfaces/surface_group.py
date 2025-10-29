@@ -87,6 +87,11 @@ class SurfaceGroup:
     def surfaces(self):
         return tuple(item for item in self._surfaces)
 
+    def clear(self):
+        """Clears the list of surfaces."""
+        self._surfaces = []
+        self._update_surface_links()
+
     @property
     def x(self):
         """np.array: x intersection points on all surfaces"""
