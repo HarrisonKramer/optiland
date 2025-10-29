@@ -112,6 +112,26 @@ def get_active_theme() -> Theme:
     return copy.deepcopy(_active_theme)
 
 
+def list_themes() -> list[str]:
+    """Return a list of available theme names."""
+    return list(_themes.keys())
+
+
+def register_theme(name: str, theme: Theme):
+    """Register a new theme.
+
+    Args:
+        name: The name of the theme.
+        theme: The Theme object to register.
+
+    Raises:
+        ValueError: If a theme with the same name already exists.
+    """
+    if name in _themes:
+        raise ValueError(f"A theme with the name '{name}' already exists.")
+    _themes[name] = theme
+
+
 def set_theme(theme: str | Theme):
     """Set the global theme for all plots.
 
