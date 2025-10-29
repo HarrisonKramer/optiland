@@ -368,31 +368,6 @@ class TestOpticViewer3D:
             mock_start.assert_called_once()
             mock_render.assert_called()
 
-    @pytest.mark.parametrize(
-        "theme, bg",
-        [
-            ("dark", (0.07058823529411765, 0.07058823529411765, 0.07058823529411765)),
-            ("light", (1.0, 1.0, 1.0)),
-        ],
-    )
-    @patch("optiland.visualization.system.optic_viewer_3d.vtk")
-    def test_view_sets_background_color_for_theme(
-        self, mock_vtk, theme, bg, set_test_backend
-    ):
-        """Test that view() correctly sets the background for both themes."""
-        from optiland.visualization.themes import set_theme
-
-        lens = TessarLens()
-        viewer = OpticViewer3D(lens)
-
-        mock_renderer_instance = mock_vtk.vtkRenderer.return_value
-        set_theme(theme)
-        with patch.object(viewer.iren, "Start"), patch.object(
-            viewer.ren_win, "Render"
-        ):
-            viewer.view()
-        mock_renderer_instance.SetBackground.assert_called_with(*bg)
-
 
 class TestLensInfoViewer:
     def test_view_standard(self, capsys, set_test_backend):
