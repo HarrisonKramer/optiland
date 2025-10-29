@@ -1,3 +1,7 @@
+"""System visualization package for Optiland.
+
+Kramer Harrison, 2025
+"""
 from __future__ import annotations
 
 from .optic_viewer import OpticViewer
