@@ -27,10 +27,12 @@ class BaseInfoProvider:
 class SurfaceInfoProvider(BaseInfoProvider):
     """Provides information for Surface2D objects."""
 
+    def __init__(self, surface_group):
+        self.surface_group = surface_group
+
     def get_info(self, obj: Surface2D) -> str:
         surface = obj.surf
-        surface_group = surface.parent_surface_group
-        surface_index = surface_group.surfaces.index(surface)
+        surface_index = self.surface_group.surfaces.index(surface)
 
         info = [f"Surface: {surface_index}"]
         if hasattr(surface, "comment") and surface.comment:
@@ -47,20 +49,19 @@ class LensInfoProvider(BaseInfoProvider):
     """Provides information for Lens2D objects."""
 
     def get_info(self, obj: Lens2D) -> str:
-        return "Lens\nMore details coming soon."
+        num_surfaces = len(obj.surfaces)
+        return f"Lens\nSurfaces: {num_surfaces}"
 
 
 class RayBundleInfoProvider(BaseInfoProvider):
     """Provides information for ray bundles."""
 
     def get_info(self, obj: RayBundle) -> str:
-        num_rays = obj.x.shape[1]
-        return f"Ray Bundle\nNumber of rays: {num_rays}"
+        return "Ray Bundle"
 
 
 # A registry to map object types to their info providers
 INFO_PROVIDER_REGISTRY = {
-    "Surface2D": SurfaceInfoProvider(),
     "Lens2D": LensInfoProvider(),
     "RayBundle": RayBundleInfoProvider(),
 }

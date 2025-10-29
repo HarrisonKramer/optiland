@@ -88,7 +88,7 @@ class OpticViewer(BaseViewer):
         fig.set_facecolor(params["figure.facecolor"])
         ax.set_facecolor(params["axes.facecolor"])
 
-        interaction_manager = InteractionManager(fig, ax, tooltip_format)
+        interaction_manager = InteractionManager(fig, ax, self.optic, tooltip_format)
 
         ray_artists = self.rays.plot(
             ax,
