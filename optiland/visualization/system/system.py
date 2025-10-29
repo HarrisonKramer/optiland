@@ -54,13 +54,13 @@ class OpticalSystem:
             "surface": {"2d": Surface2D, "3d": Surface3D},
         }
 
-    def plot(self, ax):
+    def plot(self, ax, theme=None):
         """Plots the components of the optical system on the given
         axis (or renderer for 3D plotting).
         """
         self._identify_components()
         for component in self.components:
-            component.plot(ax)
+            component.plot(ax, theme=theme)
 
     def _identify_components(self):
         """Identifies the components of the optical system and adds them to the

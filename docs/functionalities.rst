@@ -60,6 +60,23 @@ Visualization
 
 - **2D and 3D Visualization**:
   Plot optical layouts, surface properties, and ray traces using matplotlib (2D) and VTK (3D).
+- **Customizable Visualization Themes**:
+  Optiland includes a flexible theme system to control the appearance of plots. You can easily switch between predefined themes or create your own. The available themes are: ``light``, ``dark``, ``solarized_light``, and ``solarized_dark``.
+
+  To set a theme globally, use the ``set_theme`` function:
+
+  .. code-block:: python
+
+      import optiland.visualization as vis
+      vis.set_theme('dark')
+
+  You can also use the ``theme_context`` context manager to apply a theme temporarily:
+
+  .. code-block:: python
+
+        with vis.theme_context('solarized_light'):
+            optic.draw()
+
 - **Interactive Debugging Tools**:
   Inspect and interact with optical systems for rapid prototyping and analysis.
 - **Optiland GUI**:

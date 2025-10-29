@@ -55,6 +55,7 @@ class Rays2D:
         num_rays=3,
         distribution="line_y",
         reference=None,
+        theme=None,
     ):
         """Plots the rays for the given fields and wavelengths.
 
@@ -68,6 +69,7 @@ class Rays2D:
             distribution: The distribution of the rays. Default is 'line_y'.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            theme (Theme, optional): The theme to apply. Defaults to None.
 
         """
         fields = resolve_fields(self.optic, fields)
@@ -84,12 +86,12 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx)
+                    self._plot_lines(ax, color_idx, theme=theme)
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, linewidth=1.5)
+                    self._plot_lines(ax, color_idx, linewidth=1.5, theme=theme)
 
     def _process_traced_rays(self):
         """Processes the traced rays and updates the surface extents."""
@@ -148,7 +150,7 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, linewidth=1):
+    def _plot_lines(self, ax, color_idx, linewidth=1, theme=None):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -160,6 +162,8 @@ class Rays2D:
             ax (matplotlib.axes.Axes): The axis on which to plot the lines.
             color_idx (int): The index used to determine the color of the
                 lines.
+            linewidth (float): The width of the line.
+            theme (Theme, optional): The theme to apply. Defaults to None.
 
         Returns:
             None
@@ -177,9 +181,9 @@ class Rays2D:
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
+            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth, theme=theme)
 
-    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1):
+    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1, theme=None):
         """Plots a single line on the given axes.
 
         Args:
@@ -189,12 +193,16 @@ class Rays2D:
             z (array-like): The z-coordinates of the line.
             color_idx (int): The index for the color to use for the line.
             linewidth (float): The width of the line. Default is 1.
+            theme (Theme, optional): The theme to apply. Defaults to None.
 
         Returns:
             None
 
         """
-        color = f"C{color_idx}"
+        if theme:
+            color = theme.parameters.get("ray.color", f"C{color_idx}")
+        else:
+            color = f"C{color_idx}"
         ax.plot(z, y, color, linewidth=linewidth)
 
 

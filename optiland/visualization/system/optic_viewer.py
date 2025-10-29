@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from optiland.visualization.base import BaseViewer
 from optiland.visualization.system.rays import Rays2D
 from optiland.visualization.system.system import OpticalSystem
+from optiland.visualization.themes import get_active_theme
 
 
 class OpticViewer(BaseViewer):
@@ -49,7 +50,7 @@ class OpticViewer(BaseViewer):
         wavelengths="primary",
         num_rays=3,
         distribution="line_y",
-        figsize=(10, 4),
+        figsize=None,
         xlim=None,
         ylim=None,
         title=None,
@@ -67,14 +68,21 @@ class OpticViewer(BaseViewer):
             distribution (str, optional): The distribution of rays.
                 Defaults to 'line_y'.
             figsize (tuple, optional): The size of the figure.
-                Defaults to (10, 4).
+                Defaults to None, which uses the theme's default.
             xlim (tuple, optional): The x-axis limits. Defaults to None.
             ylim (tuple, optional): The y-axis limits. Defaults to None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
 
         """
+        theme = get_active_theme()
+        params = theme.parameters
+        if figsize is None:
+            figsize = params["figure.figsize"]
+
         fig, ax = plt.subplots(figsize=figsize)
+        fig.set_facecolor(params["figure.facecolor"])
+        ax.set_facecolor(params["axes.facecolor"])
 
         self.rays.plot(
             ax,
@@ -83,23 +91,33 @@ class OpticViewer(BaseViewer):
             num_rays=num_rays,
             distribution=distribution,
             reference=reference,
+            theme=theme,
         )
 
-        self.system.plot(ax)
+        self.system.plot(ax, theme=theme)
 
-        ax.set_facecolor("#f8f9fa")  # off-white background
         ax.axis("image")
-        ax.set_xlabel("Z [mm]")
-        ax.set_ylabel("Y [mm]")
+        ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
+        ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
+        ax.tick_params(axis="x", colors=params["xtick.color"])
+        ax.tick_params(axis="y", colors=params["ytick.color"])
+        ax.spines["bottom"].set_color(params["axes.edgecolor"])
+        ax.spines["top"].set_color(params["axes.edgecolor"])
+        ax.spines["right"].set_color(params["axes.edgecolor"])
+        ax.spines["left"].set_color(params["axes.edgecolor"])
 
         if title:
-            ax.set_title(title)
+            ax.set_title(title, color=params["text.color"])
         if xlim:
             ax.set_xlim(xlim)
         if ylim:
             ax.set_ylim(ylim)
 
-        ax.grid(alpha=0.25)
+        ax.grid(
+            visible=True,
+            color=params["grid.color"],
+            alpha=params["grid.alpha"],
+        )
 
         # Return the figure and axes instead of showing the plot
         return fig, ax
