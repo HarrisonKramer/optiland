@@ -136,7 +136,6 @@ class GridSagGeometry(BaseGeometry):
         )
         return be.where(out_of_bounds, be.nan, t)
 
-
     def surface_normal(self, rays):
         """Find the surface normal of the geometry at the given ray positions."""
         _, ds_dx, ds_dy = self._interpolate(rays.x, rays.y)

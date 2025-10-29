@@ -14,8 +14,8 @@ from .forbes import (
     ForbesSolverConfig,
     ForbesSurfaceConfig,
 )
-from .newton_raphson import NewtonRaphsonGeometry
 from .grid_sag import GridSagGeometry
+from .newton_raphson import NewtonRaphsonGeometry
 from .nurbs import NurbsGeometry
 from .odd_asphere import OddAsphere
 from .plane import Plane
