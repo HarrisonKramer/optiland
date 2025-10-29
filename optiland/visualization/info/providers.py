@@ -49,8 +49,8 @@ class LensInfoProvider(BaseInfoProvider):
     """Provides information for Lens2D objects."""
 
     def get_info(self, obj: Lens2D) -> str:
-        material = obj.surfaces[0].surf.material_post
-        return f"Lens\nMaterial: {material}"
+        num_surfaces = len(obj.surfaces)
+        return f"Lens\nSurfaces: {num_surfaces}"
 
 
 class RayBundleInfoProvider(BaseInfoProvider):

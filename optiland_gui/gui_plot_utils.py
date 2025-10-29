@@ -28,7 +28,10 @@ def apply_gui_matplotlib_styles(theme="light"):
     """
     set_theme(theme)
     theme = get_active_theme()
-    matplotlib.rcParams.update(theme.parameters)
+    valid_params = {
+        k: v for k, v in theme.parameters.items() if k in matplotlib.rcParams
+    }
+    matplotlib.rcParams.update(valid_params)
 
 
 def get_analysis_parameters(analysis_class):
