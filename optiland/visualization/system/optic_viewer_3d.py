@@ -17,7 +17,6 @@ import vtk
 from optiland.visualization.base import BaseViewer
 from optiland.visualization.system.rays import Rays3D
 from optiland.visualization.system.system import OpticalSystem
-from optiland.visualization.themes import get_active_theme
 
 
 class OpticViewer3D(BaseViewer):
@@ -55,7 +54,8 @@ class OpticViewer3D(BaseViewer):
         wavelengths="primary",
         num_rays=24,
         distribution="ring",
-        figsize=None,
+        figsize=(1200, 800),
+        dark_mode=False,
         reference=None,
     ):
         """Visualizes the optical system in 3D.
@@ -70,16 +70,13 @@ class OpticViewer3D(BaseViewer):
             distribution (str, optional): The distribution of rays.
                 Defaults to 'ring'.
             figsize (tuple, optional): The size of the figure.
-                Defaults to None, which uses the theme's default.
+                Defaults to (1200, 800).
+            dark_mode (bool, optional): Whether to use dark mode.
+                Defaults to False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
 
         """
-        theme = get_active_theme()
-        params = theme.parameters
-        if figsize is None:
-            figsize = params["figure.figsize"]
-
         renderer = vtk.vtkRenderer()
         self.ren_win.AddRenderer(renderer)
 
@@ -95,14 +92,18 @@ class OpticViewer3D(BaseViewer):
             num_rays=num_rays,
             distribution=distribution,
             reference=reference,
-            theme=theme,
         )
-        self.system.plot(renderer, theme=theme)
+        self.system.plot(renderer)
 
-        from matplotlib.colors import to_rgb
+        renderer.GradientBackgroundOn()
+        renderer.SetGradientMode(vtk.vtkViewport.GradientModes.VTK_GRADIENT_VERTICAL)
 
-        background = to_rgb(params["axes.facecolor"])
-        renderer.SetBackground(*background)
+        if dark_mode:
+            renderer.SetBackground(0.13, 0.15, 0.19)
+            renderer.SetBackground2(0.195, 0.21, 0.24)
+        else:
+            renderer.SetBackground(0.8, 0.9, 1.0)
+            renderer.SetBackground2(0.4, 0.5, 0.6)
 
         self.ren_win.SetSize(*figsize)
         self.ren_win.SetWindowName("Optical System - 3D Viewer")
