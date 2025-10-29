@@ -215,9 +215,7 @@ class Rays2D:
             color = ray_cycle[color_idx % len(ray_cycle)]
         else:
             color = f"C{color_idx}"
-        (line,) = ax.plot(
-            z, y, color=color, linewidth=linewidth
-        )
+        (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
         return line, (x, y, z)
 
 
