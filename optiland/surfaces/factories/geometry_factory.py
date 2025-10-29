@@ -22,6 +22,7 @@ from optiland.geometries import (
     ForbesQbfsGeometry,
     ForbesSolverConfig,  # forbes
     ForbesSurfaceConfig,  # forbes
+    GridSagGeometry,
     NurbsGeometry,
     OddAsphere,
     Plane,
@@ -39,6 +40,7 @@ from optiland.surfaces.factories.geometry_configs import (
     ForbesQ2dConfig,
     ForbesQbfsConfig,
     GratingConfig,
+    GridSagConfig,
     NurbsConfig,
     OddAsphereConfig,
     PlaneConfig,
@@ -335,6 +337,18 @@ def _create_nurbs(cs: CoordinateSystem, config: NurbsConfig):
     )
 
 
+def _create_grid_sag(cs: CoordinateSystem, config: GridSagConfig):
+    """Create a Grid Sag geometry."""
+    return GridSagGeometry(
+        coordinate_system=cs,
+        x_coordinates=config.x_coordinates,
+        y_coordinates=config.y_coordinates,
+        sag_values=config.sag_values,
+        tol=config.tol,
+        max_iter=config.max_iter,
+    )
+
+
 def _create_paraxial(cs: CoordinateSystem, config: PlaneConfig):
     """
     Create a paraxial geometry, which is simply a planar surface.
@@ -354,6 +368,7 @@ geometry_mapper = {
     "chebyshev": _create_chebyshev,
     "even_asphere": _create_even_asphere,
     "grating": _create_grating,
+    "grid_sag": _create_grid_sag,
     "odd_asphere": _create_odd_asphere,
     "paraxial": _create_paraxial,
     "plane": _create_plane,

@@ -14,6 +14,7 @@ from .forbes import (
     ForbesSolverConfig,
     ForbesSurfaceConfig,
 )
+from .grid_sag import GridSagGeometry
 from .newton_raphson import NewtonRaphsonGeometry
 from .nurbs import NurbsGeometry
 from .odd_asphere import OddAsphere
@@ -61,4 +62,6 @@ __all__ = [
     "ForbesSolverConfig",
     # From nurbs subpackage
     "NurbsGeometry",
+    # From grid_sag.py
+    "GridSagGeometry",
 ]
