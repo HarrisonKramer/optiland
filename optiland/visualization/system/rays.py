@@ -12,6 +12,7 @@ import vtk
 
 import optiland.backend as be
 from optiland.utils import resolve_fields, resolve_wavelengths
+from optiland.visualization.system.ray_bundle import RayBundle
 from optiland.visualization.system.utils import transform
 
 
@@ -176,6 +177,7 @@ class Rays2D:
 
         """
         artists = {}
+        bundle_id = f"bundle_{color_idx}"
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
@@ -191,6 +193,7 @@ class Rays2D:
             artist, ray_bundle = self._plot_single_line(
                 ax, xk, yk, zk, color_idx, linewidth, theme=theme
             )
+            ray_bundle.bundle_id = bundle_id
             artists[artist] = ray_bundle
         return artists
 
@@ -216,7 +219,7 @@ class Rays2D:
         else:
             color = f"C{color_idx}"
         (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
-        return line, (x, y, z)
+        return line, RayBundle(x, y, z)
 
 
 class Rays3D(Rays2D):

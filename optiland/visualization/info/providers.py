@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from optiland.visualization.system.lens import Lens2D
+    from optiland.visualization.system.ray_bundle import RayBundle
     from optiland.visualization.system.surface import Surface2D
 
 
@@ -52,8 +53,9 @@ class LensInfoProvider(BaseInfoProvider):
 class RayBundleInfoProvider(BaseInfoProvider):
     """Provides information for ray bundles."""
 
-    def get_info(self, obj: tuple) -> str:
-        return "Ray Bundle\nMore details coming soon."
+    def get_info(self, obj: RayBundle) -> str:
+        num_rays = obj.x.shape[0]
+        return f"Ray Bundle\nNumber of rays: {num_rays}"
 
 
 # A registry to map object types to their info providers

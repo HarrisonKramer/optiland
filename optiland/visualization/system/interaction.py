@@ -7,8 +7,6 @@ with Matplotlib-based visualizations of optical systems.
 
 from __future__ import annotations
 
-from matplotlib.widgets import Button
-
 from optiland.visualization.info.providers import INFO_PROVIDER_REGISTRY
 from optiland.visualization.system.lens import Lens2D
 from optiland.visualization.system.surface import Surface2D
@@ -110,10 +108,16 @@ class InteractionManager:
 
     def highlight_artist(self, artist):
         """Highlights the given artist."""
-        if hasattr(artist, "get_linewidth"):
+        obj = self.artist_registry[artist]
+        if hasattr(obj, "bundle_id"):
+            for art, o in self.artist_registry.items():
+                if hasattr(o, "bundle_id") and o.bundle_id == obj.bundle_id:
+                    self.original_props[art] = {"linewidth": art.get_linewidth()}
+                    art.set_linewidth(art.get_linewidth() * 2)
+        elif hasattr(artist, "get_linewidth"):
             self.original_props[artist] = {"linewidth": artist.get_linewidth()}
             artist.set_linewidth(artist.get_linewidth() * 2)
-            self.fig.canvas.draw_idle()
+        self.fig.canvas.draw_idle()
 
     def show_tooltip(self, artist, event):
         """Shows a tooltip for the given artist."""
@@ -127,8 +131,21 @@ class InteractionManager:
 
     def clear_hover_effects(self):
         """Clears any active hover effects."""
-        if self.active_artist and hasattr(self.active_artist, "get_linewidth"):
-            if self.active_artist in self.original_props:
+        if self.active_artist:
+            obj = self.artist_registry[self.active_artist]
+            if hasattr(obj, "bundle_id"):
+                for art, o in self.artist_registry.items():
+                    if (
+                        hasattr(o, "bundle_id")
+                        and o.bundle_id == obj.bundle_id
+                        and art in self.original_props
+                    ):
+                        art.set_linewidth(self.original_props[art]["linewidth"])
+                        del self.original_props[art]
+            elif (
+                hasattr(self.active_artist, "get_linewidth")
+                and self.active_artist in self.original_props
+            ):
                 self.active_artist.set_linewidth(
                     self.original_props[self.active_artist]["linewidth"]
                 )
@@ -167,27 +184,47 @@ class InteractionManager:
             verticalalignment="top",
         )
 
-        close_ax = self.fig.add_axes([0.9, 0.9, 0.05, 0.05])
-        close_button = Button(close_ax, "X")
-        cid = close_button.on_clicked(self.close_info_panel)
-        self.info_panel.button = close_button
-        self.info_panel.cid = cid
+        # Draw a manual "X" and set up a custom click handler
+        self.info_panel.text(
+            0.95,
+            0.95,
+            "X",
+            transform=self.info_panel.transAxes,
+            ha="right",
+            va="top",
+            fontsize=12,
+            color="red",
+        )
+        self.info_panel_cid = self.fig.canvas.mpl_connect(
+            "button_press_event", self.on_info_panel_click
+        )
 
         self.fig.canvas.draw_idle()
+
+    def on_info_panel_click(self, event):
+        """Handles click events on the info panel."""
+        if (
+            self.info_panel
+            and event.inaxes == self.info_panel
+            and event.x > 0.9
+            and event.y > 0.9
+        ):
+            self.close_info_panel()
 
     def close_info_panel(self, event=None):
         """Closes the information panel."""
         if self.info_panel:
-            self.info_panel.button.disconnect(self.info_panel.cid)
+            self.fig.canvas.mpl_disconnect(self.info_panel_cid)
             self.fig.delaxes(self.info_panel)
-            self.fig.delaxes(self.info_panel.button.ax)
             self.info_panel = None
             self.fig.canvas.draw_idle()
             self.connect()  # Reconnect main plot events
 
     def get_info_text(self, optiland_object):
         """Gets the detailed information text for the given object."""
-        if isinstance(optiland_object, tuple):  # Ray bundle
+        from optiland.visualization.system.ray_bundle import RayBundle
+
+        if isinstance(optiland_object, RayBundle):
             provider = INFO_PROVIDER_REGISTRY["RayBundle"]
             return provider.get_info(optiland_object)
 
