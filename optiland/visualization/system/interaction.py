@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from matplotlib.widgets import Button
 
+from optiland.visualization.info.providers import INFO_PROVIDER_REGISTRY
 from optiland.visualization.system.lens import Lens2D
 from optiland.visualization.system.surface import Surface2D
 
@@ -100,9 +101,10 @@ class InteractionManager:
 
     def highlight_artist(self, artist):
         """Highlights the given artist."""
-        self.original_props[artist] = {"linewidth": artist.get_linewidth()}
-        artist.set_linewidth(artist.get_linewidth() * 2)
-        self.fig.canvas.draw_idle()
+        if hasattr(artist, "get_linewidth"):
+            self.original_props[artist] = {"linewidth": artist.get_linewidth()}
+            artist.set_linewidth(artist.get_linewidth() * 2)
+            self.fig.canvas.draw_idle()
 
     def show_tooltip(self, artist, event):
         """Shows a tooltip for the given artist."""
@@ -116,7 +118,7 @@ class InteractionManager:
 
     def clear_hover_effects(self):
         """Clears any active hover effects."""
-        if self.active_artist:
+        if self.active_artist and hasattr(self.active_artist, "get_linewidth"):
             if self.active_artist in self.original_props:
                 self.active_artist.set_linewidth(
                     self.original_props[self.active_artist]["linewidth"]
@@ -129,12 +131,7 @@ class InteractionManager:
     def default_tooltip_format(self, optiland_object):
         """Default formatter for the tooltip text."""
         if isinstance(optiland_object, Surface2D):
-            surface = optiland_object.surf
-            return (
-                f"Surface: {surface.comment}\n"
-                f"Radius: {surface.geometry.radius}\n"
-                f"Thickness: {surface.thickness}"
-            )
+            return "Surface"
         elif isinstance(optiland_object, Lens2D):
             return "Lens"
         else:
@@ -171,6 +168,11 @@ class InteractionManager:
         """Closes the information panel."""
         if self.info_panel:
             self.info_panel.button.disconnect(self.info_panel.cid)
+
+            # Manually release the mouse grabber
+            if self.fig.canvas.mouse_grabber == self.info_panel.button.ax:
+                self.fig.canvas.release_mouse(self.info_panel.button.ax)
+
             self.fig.delaxes(self.info_panel)
             self.fig.delaxes(self.info_panel.button.ax)
             self.info_panel = None
@@ -178,21 +180,12 @@ class InteractionManager:
 
     def get_info_text(self, optiland_object):
         """Gets the detailed information text for the given object."""
-        if isinstance(optiland_object, Surface2D):
-            surface = optiland_object.surf
-            surface_group = surface.parent_surface_group
-            surface_index = surface_group.surfaces.index(surface)
-
-            info = [f"Surface: {surface_index}"]
-            if hasattr(surface, "comment") and surface.comment:
-                info[0] += f" ({surface.comment})"
-            if hasattr(surface, "geometry") and hasattr(surface.geometry, "radius"):
-                info.append(f"Radius: {surface.geometry.radius:.2f}")
-            if hasattr(surface, "geometry") and hasattr(surface.geometry, "conic"):
-                info.append(f"Conic: {surface.geometry.conic:.2f}")
-
-            return "\n".join(info)
-        elif isinstance(optiland_object, Lens2D):
-            return "Lens\nMore details coming soon."
+        obj_type = type(optiland_object).__name__
+        if obj_type in INFO_PROVIDER_REGISTRY:
+            provider = INFO_PROVIDER_REGISTRY[obj_type]
+            return provider.get_info(optiland_object)
+        elif isinstance(optiland_object, tuple):  # Ray bundle
+            provider = INFO_PROVIDER_REGISTRY["RayBundle"]
+            return provider.get_info(optiland_object)
         else:
-            return "Ray Bundle\nMore details coming soon."
+            return "No information available."
