@@ -10,7 +10,7 @@ Welcome to Optiland's documentation!
 - Build, trace, and analyze lens and mirror systems (paraxial → real → polarization-aware)
 - Perform paraxial, wavefront, PSF/MTF, and scattering analyses
 - Optimize via local/global solvers or differentiable ML pipelines
-- Visualize in 2D (matplotlib) and 3D (VTK)
+- Visualize in 2D (interactive, themeable matplotlib) and 3D (VTK)
 - Extend with custom surfaces, coatings, optimization operands, and more
 
 Under the hood, Optiland leverages **NumPy** for CPU‑bound tasks and **PyTorch** for GPU acceleration and autograd‑enabled workflows - so you get the best of both worlds.
