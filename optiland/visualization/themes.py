@@ -27,6 +27,7 @@ import copy
 from optiland.visualization.palettes import (
     dark_palette,
     light_palette,
+    midnight_palette,
     solarized_dark_palette,
     solarized_light_palette,
 )
@@ -44,7 +45,7 @@ class Theme:
             "figure.dpi": 100,
             "figure.facecolor": palette["background"],
             "axes.facecolor": palette["background"],
-            "axes.edgecolor": palette["axis"],
+            "axes.edgecolor": palette["edges"],
             "axes.labelcolor": palette["text"],
             "xtick.color": palette["axis"],
             "ytick.color": palette["axis"],
@@ -100,6 +101,11 @@ _themes = {
         "solarized_dark",
         "A dark theme based on the Solarized color palette.",
         solarized_dark_palette,
+    ),
+    "midnight": Theme(
+        "midnight",
+        "A dark theme with vibrant colors for better visibility.",
+        midnight_palette,
     ),
 }
 
