@@ -21,29 +21,6 @@ Optiland "Hello, World"
 
    This shows the resulting 3D visualization of the Cooke triplet lens system.
 
-Interactive 2D Visualization
-----------------------------
-
-In addition to 3D plots, Optiland offers powerful and interactive 2D visualizations using Matplotlib. When you generate a 2D drawing of an optical system, you can now:
-
-- **Hover for Info**: Simply move your mouse over any lens, surface, or ray bundle to get a tooltip with detailed information, such as radius, thickness, material, and field angle.
-- **Customize with Themes**: Change the entire look and feel of your plots with a single line of code. Optiland includes several built-in themes (like 'light', 'dark', and 'glorious') and allows you to create your own custom themes.
-
-Here's how you can draw a 2D layout and set a theme:
-
-.. code-block:: python
-
-   from optiland.samples.objectives import DoubleGauss
-   from optiland.visualization import set_theme
-
-   # Set a theme for all subsequent plots
-   set_theme("dark")
-
-   lens = DoubleGauss()
-   lens.draw()
-
-This makes it easier than ever to inspect your system and create publication-ready plots.
-
 Running the GUI
 ---------------
 
