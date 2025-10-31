@@ -36,7 +36,7 @@ jobs:
       - uses: ./.github/actions/setup
       - run: uvx ruff format --check .
 
-  tests:
+  test-core:
     runs-on: ubuntu-latest
     needs: [lock_file]
     strategy:
@@ -51,13 +51,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          uv add --dev pytest pytest-cov codecov torch
-
       - name: Run tests with coverage
         run: |
-          uv run pytest --durations=0 --cov --cov-report=xml
+          uv run pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -68,9 +64,42 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
 
+  test-gui:
+    runs-on: ubuntu-latest
+    needs: [lock_file]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx xvfb
+
+      - name: Run GUI tests
+        run: |
+          QT_QPA_PLATFORM=offscreen uv run pytest --durations=0 --cov --cov-report=xml tests/gui/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: gui-tests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
   build:
     runs-on: ubuntu-latest
-    needs: [linting, formatting, tests]
+    needs: [linting, formatting, test-core, test-gui]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
