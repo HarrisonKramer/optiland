@@ -26,6 +26,7 @@ def mocked_app(mocker, qtbot):
     mocker.patch('optiland_gui.panel_manager.LensEditor', side_effect=mock_panel)
     mocker.patch('optiland_gui.panel_manager.SystemPropertiesPanel', side_effect=mock_panel)
     mocker.patch('optiland_gui.panel_manager.AnalysisPanel', side_effect=mock_panel)
+    mocker.patch('optiland_gui.panel_manager.OptimizationPanel', side_effect=mock_panel)
     mocker.patch('optiland_gui.panel_manager.PythonTerminalWidget', side_effect=mock_panel)
     mocker.patch('optiland_gui.panel_manager.SidebarWidget', side_effect=mock_panel)
 
@@ -50,8 +51,9 @@ def test_create_all_panels(panel_manager):
     assert isinstance(panel_manager.lens_editor_dock, QDockWidget)
     assert isinstance(panel_manager.system_properties_dock, QDockWidget)
     assert isinstance(panel_manager.analysis_dock, QDockWidget)
+    assert isinstance(panel_manager.optimization_dock, QDockWidget)
     assert isinstance(panel_manager.terminal_dock, QDockWidget)
-    assert len(panel_manager.all_docks) == 6
+    assert len(panel_manager.all_docks) == 7
 
 
 def test_setup_default_layout(mocker, mocked_app, panel_manager):
