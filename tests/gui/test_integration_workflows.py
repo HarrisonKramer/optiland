@@ -8,7 +8,6 @@ atomic component tests.
 """
 
 import pytest
-from PySide6.QtWidgets import QApplication
 from optiland.samples import CookeTriplet
 
 def test_full_user_workflow(app):
