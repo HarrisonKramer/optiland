@@ -424,21 +424,26 @@ class MainWindow(FramelessWindow):
 
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
-            # New logic starts here
-            display_name = "UnnamedProject.json"
+            optic = self.connector.get_optic()
             current_file = self.connector.get_current_filepath()
             is_modified = self.connector.is_modified()
 
             if current_file:
                 display_name = os.path.basename(current_file)
+            elif optic and getattr(optic, "name", None) == "Default System":
+                display_name = "New Untitled System"
+            elif optic and getattr(optic, "name", None):
+                display_name = optic.name
+            else:
+                display_name = "UnnamedProject.json"
 
-            if not current_file:
-                is_modified = True
-
+            # Always remove trailing asterisk before conditionally adding it
+            display_name = display_name.rstrip("*")
             if is_modified:
                 display_name += "*"
 
             self.custom_title_bar_widget.set_project_name(display_name)
+            self.setWindowTitle(f"Optiland GUI - {display_name}")
 
     def _animate_dock_show(
         self, dock_widget, is_left_or_right, original_dimension, duration, curve
@@ -559,7 +564,6 @@ class MainWindow(FramelessWindow):
     def new_system_action(self):
         self.connector.new_system()
         self._update_project_name_in_title_bar()
-        print("Main Window: New System action triggered")
 
     @Slot()
     def open_system_action(self):
