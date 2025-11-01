@@ -53,7 +53,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          uv run pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
+          # Use --with to temporarily install pytest-cov for this command
+          uv run --with pytest-cov pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -86,7 +87,8 @@ jobs:
 
       - name: Run GUI tests
         run: |
-          QT_QPA_PLATFORM=offscreen uv run pytest --durations=0 --cov --cov-report=xml tests/gui/
+          # Use --with to temporarily install pytest-cov for this command
+          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov pytest --durations=0 --cov --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
