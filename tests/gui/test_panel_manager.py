@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, call
-from PySide6.QtWidgets import QMainWindow, QDockWidget, QWidget
+from PySide6.QtWidgets import QDockWidget, QWidget
 from PySide6.QtCore import Qt
 
 from optiland_gui.main_window import MainWindow
