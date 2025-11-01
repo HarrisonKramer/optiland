@@ -88,7 +88,7 @@ jobs:
       - name: Run GUI tests
         run: |
           # Use --with to temporarily install pytest-cov, torch, qtconsole and PySide6
-          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov,torch,qtconsole,PySide6 pytest --durations=0 --cov --cov-report=xml tests/gui/
+          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov,pytest-mock,torch,qtconsole,PySide6 pytest --durations=0 --cov --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
