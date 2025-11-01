@@ -1,7 +1,5 @@
 import pytest
 from PySide6.QtWidgets import QWidget
-from optiland_gui.analysis_panel import AnalysisPanel
-
 @pytest.fixture
 def analysis_panel(app):
     """Returns the AnalysisPanel instance from the main application window."""
