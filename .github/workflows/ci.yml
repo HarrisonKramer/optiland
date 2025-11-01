@@ -53,7 +53,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Use --with to temporarily install pytest-cov AND torch
+          # Use --with to temporarily install pytest-cov and torch
           uv run --with pytest-cov,torch pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
 
       - name: Upload coverage to Codecov
@@ -87,8 +87,8 @@ jobs:
 
       - name: Run GUI tests
         run: |
-          # Use --with to temporarily install pytest-cov AND torch
-          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov,torch pytest --durations=0 --cov --cov-report=xml tests/gui/
+          # Use --with to temporarily install pytest-cov, torch, and PySide6
+          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov,torch,PySide6 pytest --durations=0 --cov --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
