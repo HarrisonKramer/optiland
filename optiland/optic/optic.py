@@ -496,7 +496,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-        fig, ax = viewer.view(
+        fig, ax, _ = viewer.view(
             fields,
             wavelengths,
             num_rays,

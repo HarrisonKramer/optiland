@@ -42,12 +42,14 @@ class Surface2D:
         else:
             self.extent = ray_extent
 
-    def plot(self, ax):
+    def plot(self, ax, theme=None):
         """Plots the surface on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 surface will be plotted.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
 
         """
         x, y, z = self._compute_sag()
@@ -58,7 +60,12 @@ class Surface2D:
         y = be.to_numpy(y)
         z = be.to_numpy(z)
 
-        ax.plot(z, y, "gray")
+        color = "gray"
+        if theme:
+            color = theme.parameters.get("axes.edgecolor", color)
+
+        (line,) = ax.plot(z, y, color=color, label=f"Surface {self.surf.comment}")
+        return {line: self}
 
     def _compute_sag(self):
         """Computes the sag of the surface in local coordinates and handles
@@ -104,19 +111,21 @@ class Surface3D(Surface2D):
     def __init__(self, surface, extent):
         super().__init__(surface, extent)
 
-    def plot(self, renderer):
+    def plot(self, renderer, theme=None):
         """Plots the surface on the given renderer.
 
         Args:
             renderer (vtkRenderer): The renderer to which the surface actor
                 will be added.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
 
         """
-        actor = self.get_surface()
-        self._configure_material(actor)
+        actor = self.get_surface(theme=theme)
+        self._configure_material(actor, theme=theme)
         renderer.AddActor(actor)
 
-    def get_surface(self):
+    def get_surface(self, theme=None):
         """Retrieves the surface actor based on the symmetry of the surface
         geometry.
 
@@ -137,7 +146,7 @@ class Surface3D(Surface2D):
             actor = self._get_symmetric_surface()
         else:
             actor = self._get_asymmetric_surface()
-        actor = self._configure_material(actor)
+        actor = self._configure_material(actor, theme=theme)
         return actor
 
     def _get_symmetric_surface(self):
@@ -224,7 +233,7 @@ class Surface3D(Surface2D):
 
         return actor
 
-    def _configure_material(self, actor):
+    def _configure_material(self, actor, theme=None):
         """Configures the material properties of a given actor.
 
         This method sets the color, ambient, diffuse, specular, and specular
@@ -232,12 +241,21 @@ class Surface3D(Surface2D):
 
         Args:
             actor: The actor whose material properties are to be configured.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
 
         Returns:
             The actor with updated material properties.
 
         """
-        actor.GetProperty().SetColor(1, 1, 1)
+        color = (1, 1, 1)
+        if theme:
+            from matplotlib.colors import to_rgb
+
+            color_hex = theme.parameters.get("lens.color", "#FFFFFF")
+            color = to_rgb(color_hex)
+
+        actor.GetProperty().SetColor(color)
         actor.GetProperty().SetAmbient(0.5)
         actor.GetProperty().SetDiffuse(0.05)
         actor.GetProperty().SetSpecular(1.0)

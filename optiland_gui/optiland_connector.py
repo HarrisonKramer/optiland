@@ -145,7 +145,7 @@ class OptilandConnector(QObject):
 
     def _create_new_optic_structure(self, optic: Optic):
         """Creates a default 3-surface structure for a new optic."""
-        optic.surface_group._surfaces.clear()
+        optic.surface_group.clear()
         optic.wavelengths.wavelengths.clear()
         optic.add_surface(
             index=0,
@@ -181,7 +181,7 @@ class OptilandConnector(QObject):
         """Ensures a loaded or modified optic has a valid basic structure."""
         if optic.surface_group.num_surfaces < 2:
             # If the system is invalid, reset it to a minimal default
-            optic.surface_group._surfaces.clear()
+            optic.surface_group.clear()
             optic.add_surface(
                 surface_type="standard",
                 radius=float("inf"),

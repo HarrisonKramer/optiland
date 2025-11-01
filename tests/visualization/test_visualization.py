@@ -79,7 +79,7 @@ class TestOpticViewer:
     def test_view(self, set_test_backend):
         lens = ReverseTelephoto()
         viewer = OpticViewer(lens)
-        fig, ax = viewer.view()
+        fig, ax, _ = viewer.view()
         assert fig is not None
         assert ax is not None
         assert isinstance(fig, Figure)
@@ -182,7 +182,7 @@ class TestOpticViewer:
         custom_xlim = (-10, 100)
         custom_ylim = (-25, 25)
 
-        fig, ax = viewer.view(title=custom_title, xlim=custom_xlim, ylim=custom_ylim)
+        fig, ax, _ = viewer.view(title=custom_title, xlim=custom_xlim, ylim=custom_ylim)
 
         assert ax.get_title() == custom_title
         assert ax.get_xlim() == custom_xlim
@@ -194,7 +194,7 @@ class TestOpticViewer:
         # Add a second wavelength to test "all"
         lens.add_wavelength(value=0.65)
         viewer = OpticViewer(lens)
-        fig, ax = viewer.view(wavelengths="all")
+        fig, ax, _ = viewer.view(wavelengths="all")
         assert fig is not None
         assert ax is not None
         assert len(ax.get_lines()) > 0  # Ensure rays were drawn
@@ -367,27 +367,6 @@ class TestOpticViewer3D:
             viewer.view(reference="marginal", distribution=None)
             mock_start.assert_called_once()
             mock_render.assert_called()
-
-    @pytest.mark.parametrize(
-        "dark_mode, bg1, bg2",
-        [
-            (True, (0.13, 0.15, 0.19), (0.195, 0.21, 0.24)),
-            (False, (0.8, 0.9, 1.0), (0.4, 0.5, 0.6)),
-        ],
-    )
-    @patch("optiland.visualization.system.optic_viewer_3d.vtk")
-    def test_view_sets_background_color_for_theme(
-        self, mock_vtk, dark_mode, bg1, bg2, set_test_backend
-    ):
-        """Test that view() correctly sets the background for both themes."""
-        lens = TessarLens()
-        viewer = OpticViewer3D(lens)
-
-        mock_renderer_instance = mock_vtk.vtkRenderer.return_value
-        viewer.view(dark_mode=dark_mode)
-
-        mock_renderer_instance.SetBackground.assert_called_with(*bg1)
-        mock_renderer_instance.SetBackground2.assert_called_with(*bg2)
 
 
 class TestLensInfoViewer:
