@@ -434,7 +434,9 @@ class MainWindow(FramelessWindow):
             elif display_name == "Default System":
                 display_name = "New Untitled System"
 
-            if is_modified and not display_name.endswith("*"):
+            # Always remove trailing asterisk before conditionally adding it
+            display_name = display_name.rstrip("*")
+            if is_modified:
                 display_name += "*"
 
             self.custom_title_bar_widget.set_project_name(display_name)
