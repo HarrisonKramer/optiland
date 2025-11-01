@@ -29,6 +29,10 @@ if TYPE_CHECKING:
     from optiland.optic import Optic
     from optiland.surfaces import SurfaceGroup
 
+# Threshold for detecting near-zero ray angles (collimated output)
+# Below this threshold, the ray is considered collimated
+NEAR_ZERO_THRESHOLD = 1e-10
+
 
 class Paraxial:
     """A class representing a paraxial optical system.
@@ -69,6 +73,12 @@ class Paraxial:
         z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
+
+        # Handle edge case where u[-1] is zero (collimated output)
+        # This can occur with certain paraxial surface configurations
+        if be.abs(u[-1]) < NEAR_ZERO_THRESHOLD:
+            return be.inf
+
         f1 = y[0] / u[-1]
         return f1[0]
 
@@ -83,6 +93,12 @@ class Paraxial:
         z_start = self.surfaces.positions[1] - 1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
+
+        # Handle edge case where u[-1] is zero (collimated output)
+        # This can occur with certain paraxial surface configurations
+        if be.abs(u[-1]) < NEAR_ZERO_THRESHOLD:
+            return be.inf
+
         f2 = -y[0] / u[-1]
         return be.abs(f2[0])
 

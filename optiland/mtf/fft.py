@@ -13,6 +13,9 @@ from optiland.psf.fft import FFTPSF, calculate_grid_size
 
 from .base import BaseMTF
 
+# Default cutoff frequency for afocal or collimated systems (cycles/mm)
+DEFAULT_CUTOFF_FREQ = 1000.0
+
 
 class FFTMTF(BaseMTF):
     """Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
@@ -73,7 +76,20 @@ class FFTMTF(BaseMTF):
         self.FNO = self._get_fno()
 
         if max_freq == "cutoff":
-            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
+            # Handle edge case where FNO is infinite (afocal or collimated system)
+            if be.isinf(self.FNO) or be.isnan(self.FNO):
+                import warnings
+
+                warnings.warn(
+                    "System appears to be afocal or produce collimated output. "
+                    f"Using default cutoff frequency of {DEFAULT_CUTOFF_FREQ} "
+                    "cycles/mm. Consider specifying max_freq explicitly.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                self.max_freq = DEFAULT_CUTOFF_FREQ
+            else:
+                self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
         else:
             self.max_freq = max_freq
 
@@ -158,6 +174,11 @@ class FFTMTF(BaseMTF):
             float: The MTF units calculated based on the grid size, number
                 of rays, wavelength (from BaseMTF), and FNO.
         """
+        # Handle edge case where FNO is infinite
+        if be.isinf(self.FNO) or be.isnan(self.FNO):
+            # Use a reasonable default when FNO is invalid
+            return 1.0 / self.grid_size
+
         dx = 1 / ((self.num_rays - 1) * self.resolved_wavelength * 1e-3 * self.FNO)
 
         return dx
