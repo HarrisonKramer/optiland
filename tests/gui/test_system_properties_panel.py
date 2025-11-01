@@ -62,6 +62,29 @@ def test_aperture_editor_changes(mocker, properties_panel):
     # Check that the set_aperture method was called once with the correct arguments
     mock_set_aperture.assert_called_once_with("imageFNO", 5.6)
 
+def test_aperture_editor_error_handling(mocker, properties_panel):
+    """
+    Test that the UI reverts to a safe state if an invalid aperture is set.
+    """
+    aperture_editor = properties_panel.apertureEditor
+    optic = properties_panel.connector.get_optic()
+
+    # Set an initial valid state
+    mocker.patch.object(optic, 'aperture')
+    optic.aperture.ap_type = "EPD"
+    optic.aperture.value = 10.0
+    aperture_editor.load_data()
+
+    # Mock set_aperture to raise a ValueError
+    mocker.patch.object(optic, 'set_aperture', side_effect=ValueError("Invalid aperture"))
+
+    # Simulate a user entering an invalid value and triggering the change
+    aperture_editor.spnApertureValue.setValue(-5.0) # This will trigger the valueChanged signal
+
+    # Verify that the UI has reverted to the original values
+    assert aperture_editor.cmbApertureType.currentText() == "EPD"
+    assert aperture_editor.spnApertureValue.value() == 10.0
+
 def test_fields_editor_add_field(mocker, properties_panel):
     """
     Test that clicking the 'Add Field' button calls the connector.

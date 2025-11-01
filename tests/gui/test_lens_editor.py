@@ -66,3 +66,111 @@ def test_toggle_properties_widget(mocker, lens_editor):
     lens_editor.toggle_properties_widget(1)
     assert lens_editor.open_prop_source_row == -1
     assert lens_editor.load_data.call_count == 2
+
+
+def test_surface_properties_widget_apply_changes(mocker, app):
+    """
+    Test that the apply_changes method correctly gathers and sends data.
+    """
+    from optiland_gui.lens_editor import SurfacePropertiesWidget
+    connector = app.panel_manager.lens_editor.connector
+    row = 1
+
+    mocker.patch.object(connector, 'get_surface_geometry_params', return_value={'conic': 0.0, 'radius': 100.0})
+    mock_set_params = mocker.patch.object(connector, 'set_surface_geometry_params')
+
+    widget = SurfacePropertiesWidget(row, connector)
+
+    widget.input_widgets['conic'].setText("-0.5")
+    widget.input_widgets['radius'].setText("95.0")
+
+    widget.apply_changes()
+
+    expected_params = {'conic': '-0.5', 'radius': '95.0'}
+    mock_set_params.assert_called_once_with(row, expected_params)
+
+
+def test_surface_properties_widget_no_params(mocker, app):
+    """
+    Test that the properties widget is created correctly when there are no
+    extra parameters for the surface.
+    """
+    from optiland_gui.lens_editor import SurfacePropertiesWidget
+    from PySide6.QtWidgets import QLabel
+
+    connector = app.panel_manager.lens_editor.connector
+    row = 1
+
+    # Mock the connector to return no parameters
+    mocker.patch.object(connector, 'get_surface_geometry_params', return_value={})
+
+    widget = SurfacePropertiesWidget(row, connector)
+
+    # Verify that a label indicating no properties is shown
+    labels = widget.findChildren(QLabel)
+    assert len(labels) == 1
+    assert "No additional properties" in labels[0].text()
+
+
+def test_surface_type_widget_type_selected(mocker, qtbot, app):
+    """
+    Test that selecting a type from the dropdown emits the correct signal.
+    """
+    from optiland_gui.lens_editor import SurfaceTypeWidget
+
+    mock_connector = mocker.MagicMock()
+    mock_connector.get_available_surface_types.return_value = ['standard', 'evenasphere']
+
+    current_type_info = {'display_text': 'Standard', 'is_changeable': True, 'has_extra_params': False}
+
+    widget = SurfaceTypeWidget(1, current_type_info, mock_connector, parent=app)
+
+    with qtbot.waitSignal(widget.surfaceTypeChanged) as blocker:
+        action = next(a for a in widget.surface_menu.actions() if a.text().lower() == 'evenasphere')
+        action.trigger()
+
+    assert blocker.args == ['evenasphere']
+
+
+def test_surface_type_widget_text_changed_valid(mocker, qtbot, app):
+    """
+    Test that a valid text change in the line edit emits the correct signal.
+    """
+    from optiland_gui.lens_editor import SurfaceTypeWidget
+
+    mock_connector = mocker.MagicMock()
+    mock_connector.get_available_surface_types.return_value = ['standard', 'evenasphere']
+
+    current_type_info = {'display_text': 'Standard', 'is_changeable': True, 'has_extra_params': False}
+
+    widget = SurfaceTypeWidget(1, current_type_info, mock_connector, parent=app)
+
+    with qtbot.waitSignal(widget.surfaceTypeChanged) as blocker:
+        widget.type_edit.setText('evenasphere')
+        widget.type_edit.editingFinished.emit()
+
+    assert blocker.args == ['evenasphere']
+
+
+def test_surface_type_widget_text_changed_invalid(mocker, app):
+    """
+    Test that an invalid text change reverts the text and emits no signal.
+    """
+    from optiland_gui.lens_editor import SurfaceTypeWidget
+
+    mock_connector = mocker.MagicMock()
+    mock_connector.get_available_surface_types.return_value = ['standard', 'evenasphere']
+    mock_connector.get_surface_type_info.return_value = {'display_text': 'Standard'}
+
+    current_type_info = {'display_text': 'Standard', 'is_changeable': True, 'has_extra_params': False}
+
+    widget = SurfaceTypeWidget(1, current_type_info, mock_connector, parent=app)
+
+    mock_slot = mocker.Mock()
+    widget.surfaceTypeChanged.connect(mock_slot)
+
+    widget.type_edit.setText('invalid_type')
+    widget.type_edit.editingFinished.emit()
+
+    mock_slot.assert_not_called()
+    assert widget.type_edit.text() == 'Standard'

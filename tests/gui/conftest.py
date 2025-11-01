@@ -29,6 +29,28 @@ def mock_viewer_panel(mocker):
     mock_class.return_value = viewer_panel_instance
 
 
+@pytest.fixture(autouse=True)
+def mock_python_terminal(mocker):
+    """
+    Mock the PythonTerminalWidget to prevent the IPython kernel from starting
+    during tests, which can cause hangs in headless environments.
+    """
+    mock_class = mocker.patch(
+        'optiland_gui.panel_manager.PythonTerminalWidget', autospec=True
+    )
+
+    # Create a real QWidget to satisfy type checks
+    terminal_instance = QWidget()
+
+    # Add mock attributes that PanelManager accesses
+    terminal_instance.commandExecuted = mocker.MagicMock()
+    terminal_instance.set_theme = mocker.MagicMock()
+    terminal_instance.shutdown_kernel = mocker.MagicMock()
+
+    # Configure the mock class to return our instance
+    mock_class.return_value = terminal_instance
+
+
 @pytest.fixture
 def app(qtbot):
     """Create and tear down the main application window."""
