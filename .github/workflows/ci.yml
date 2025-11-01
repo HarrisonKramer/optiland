@@ -83,7 +83,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1 xvfb
+          sudo apt-get install -y libgl1 xvfb libegl1
 
       - name: Run GUI tests
         run: |
