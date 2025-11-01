@@ -1,7 +1,5 @@
 import pytest
 from PySide6.QtWidgets import QWidget
-from optiland_gui.optimization_panel import OptimizationPanel
-
 @pytest.fixture
 def optimization_panel(app):
     """Returns the OptimizationPanel instance from the main application window."""
