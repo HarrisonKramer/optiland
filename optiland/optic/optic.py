@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from optiland._types import (
+        ApertureType,
         BEArray,
         DistributionType,
         FieldType,
@@ -283,12 +284,12 @@ class Optic:
             value=value, is_primary=is_primary, unit=unit, weight=weight
         )
 
-    def set_aperture(self, aperture_type: str, value: float):
+    def set_aperture(self, aperture_type: ApertureType, value: float):
         """Set the aperture of the optical system.
 
         Args:
-            aperture_type (str): The type of the aperture. Must be one of 'EPD',
-                'imageFNO', or 'objectNA'.
+            aperture_type (ApertureType): The type of the aperture. Must be one of
+                'EPD', 'imageFNO', or 'objectNA'.
             value (float): The value of the aperture.
 
         """
