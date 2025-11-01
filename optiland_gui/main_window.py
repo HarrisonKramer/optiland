@@ -425,14 +425,17 @@ class MainWindow(FramelessWindow):
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
             optic = self.connector.get_optic()
-            display_name = optic.name if optic and optic.name else "UnnamedProject.json"
             current_file = self.connector.get_current_filepath()
             is_modified = self.connector.is_modified()
 
             if current_file:
                 display_name = os.path.basename(current_file)
-            elif display_name == "Default System":
+            elif optic and getattr(optic, "name", None) == "Default System":
                 display_name = "New Untitled System"
+            elif optic and getattr(optic, "name", None):
+                display_name = optic.name
+            else:
+                display_name = "UnnamedProject.json"
 
             # Always remove trailing asterisk before conditionally adding it
             display_name = display_name.rstrip("*")
