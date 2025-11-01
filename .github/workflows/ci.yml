@@ -53,8 +53,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Use --with to temporarily install pytest-cov for this command
-          uv run --with pytest-cov pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
+          # Use --with to temporarily install pytest-cov AND torch
+          uv run --with pytest-cov,torch pytest --durations=0 --cov --cov-report=xml --ignore=tests/gui
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -83,12 +83,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx xvfb
+          sudo apt-get install -y libgl1 xvfb
 
       - name: Run GUI tests
         run: |
-          # Use --with to temporarily install pytest-cov for this command
-          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov pytest --durations=0 --cov --cov-report=xml tests/gui/
+          # Use --with to temporarily install pytest-cov AND torch
+          QT_QPA_PLATFORM=offscreen uv run --with pytest-cov,torch pytest --durations=0 --cov --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
