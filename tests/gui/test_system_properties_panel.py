@@ -1,6 +1,5 @@
 import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget
 
 from optiland_gui.system_properties_panel import (
     ApertureEditor,

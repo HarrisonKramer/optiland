@@ -1,4 +1,3 @@
-from optiland_gui.main_window import MainWindow
 
 def test_new_system_action(app, qtbot):
     """

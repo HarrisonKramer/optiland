@@ -1,6 +1,4 @@
 import pytest
-from PySide6.QtGui import QKeySequence, QActionGroup
-
 from optiland_gui.action_manager import ActionManager
 from optiland_gui.config import THEME_DARK_PATH, THEME_LIGHT_PATH
 

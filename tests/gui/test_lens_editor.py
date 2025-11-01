@@ -1,6 +1,5 @@
 import pytest
 from PySide6.QtWidgets import QWidget, QTableWidgetItem
-from optiland_gui.lens_editor import LensEditor
 
 @pytest.fixture
 def lens_editor(app):
