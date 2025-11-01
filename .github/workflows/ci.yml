@@ -85,9 +85,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb libgl1 libegl1 libxkbcommon-x11-0 mesa-utils
 
-      - name: Run GUI tests in virtual display
+      - name: Run GUI tests
         run: |
-          xvfb-run -a uv run --with pytest-cov,pytest-mock,torch,qtconsole,PySide6,pytest-qt \
+          export QT_QPA_PLATFORM=offscreen
+          uv run --with pytest-cov,pytest-mock,torch,qtconsole,PySide6,pytest-qt,matplotlib \
             pytest --durations=0 --cov --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
