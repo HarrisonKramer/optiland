@@ -35,7 +35,7 @@ Homepage = "https://github.com/HarrisonKramer/optiland"
 optiland = "optiland_gui.run_gui:main"
 
 [project.optional-dependencies]
-dev = ["codecov>=2.1.13", "pytest>=8.3.5", "torch"]
+dev = ["codecov>=2.1.13", "pytest>=8.3.5", "torch", "pytest-qt", "PySide6", "qtconsole", "pytest-mock"]
 gui = ["PySide6", "qtconsole"]
 
 [tool.hatch.metadata]
@@ -49,6 +49,9 @@ packages = ["optiland", "optiland_gui"] # Auto-discovers subpackages
 
 [tool.ruff]
 line-length = 88
+
+[tool.coverage.run]
+source = ["optiland"]
 exclude = ["tests", "docs"]
 
 [tool.ruff.lint]
