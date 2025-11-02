@@ -119,3 +119,40 @@ def test_about_action(app, mocker):
     assert app.about_dialog is not None
     assert "About Optiland GUI" in app.about_dialog.windowTitle()
     mock_dialog_exec.assert_called_once()
+
+
+def test_open_system_action(app, mocker):
+    """
+    Test that the open system action loads an optic from a file.
+    """
+    mocker.patch('PySide6.QtWidgets.QFileDialog.getOpenFileName', return_value=('test.json', ''))
+    mock_load = mocker.patch.object(app.connector, 'load_optic_from_file')
+
+    app.open_system_action()
+
+    mock_load.assert_called_once_with('test.json')
+
+
+def test_save_system_action(app, mocker):
+    """
+    Test that the save system action saves the optic to a file.
+    """
+    # First, set a current filepath
+    app.connector._current_filepath = "test.json"
+    mock_save = mocker.patch.object(app.connector, 'save_optic_to_file')
+
+    app.save_system_action()
+
+    mock_save.assert_called_once_with('test.json')
+
+
+def test_save_system_as_action(app, mocker):
+    """
+    Test that the save system as action saves the optic to a new file.
+    """
+    mocker.patch('PySide6.QtWidgets.QFileDialog.getSaveFileName', return_value=('new_test.json', ''))
+    mock_save = mocker.patch.object(app.connector, 'save_optic_to_file')
+
+    app.save_system_as_action()
+
+    mock_save.assert_called_once_with('new_test.json')

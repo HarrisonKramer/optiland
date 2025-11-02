@@ -651,6 +651,7 @@ class Optic:
         """
         data = {
             "version": 1.0,
+            "name": self.name,
             "aperture": self.aperture.to_dict() if self.aperture else None,
             "fields": self.fields.to_dict(),
             "wavelengths": self.wavelengths.to_dict(),
@@ -678,7 +679,7 @@ class Optic:
             The optical system.
 
         """
-        optic = cls()
+        optic = cls(name=data.get("name"))
         optic.aperture = Aperture.from_dict(data["aperture"])
         optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
