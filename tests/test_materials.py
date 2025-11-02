@@ -7,6 +7,7 @@ import numpy as np
 
 from optiland import materials
 from optiland.materials.base import BaseMaterial
+from optiland.optic import Optic
 from .utils import assert_allclose
 
 
@@ -56,6 +57,22 @@ class TestBaseMaterial:
             assert material._calculate_n.call_count == 3
 
 
+def build_model(material: BaseMaterial):
+    lens = Optic()
+
+    lens.set_field_type("angle")
+    lens.add_field(0, 0)
+    lens.add_wavelength(0.550)
+    lens.set_aperture("EPD", 2)
+
+    lens.add_surface(index=0)
+    lens.add_surface(index=1, material=material, radius=10, thickness=10, is_stop=True)
+    lens.add_surface(index=2, radius=-10, thickness=10)
+    lens.add_surface(index=3, radius=np.inf)
+
+    return lens
+
+
 class TestIdealMaterial:
     def test_ideal_material_n(self, set_test_backend):
         material = materials.IdealMaterial(n=1.5)
@@ -85,6 +102,64 @@ class TestIdealMaterial:
         )
         assert material.n(0.5) == 1.5
         assert material.k(0.5) == 0.2
+
+    def test_ray_trace(self, set_test_backend):
+        material = materials.IdealMaterial(n=1.5, k=0.0)
+        lens = build_model(material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
+
+
+class TestAbbeMaterial:
+    def test_refractive_index(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        value = abbe_material.n(wavelength)
+        assert_allclose(value, 1.4999167964912952)
+
+
+    def test_extinction_coefficient(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        assert abbe_material.k(wavelength) == 0
+
+
+    def test_coefficients(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        coefficients = abbe_material._get_coefficients()
+        assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
+
+
+    def test_abbe_to_dict(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_dict = abbe_material.to_dict()
+        assert abbe_dict == {
+            "type": "AbbeMaterial",
+            "index": 1.5,
+            "abbe": 50.0,
+            "propagation_model": {"class": "HomogeneousPropagation"},
+        }
+
+
+    def test_abbe_from_dict(self, set_test_backend):
+        abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
+        abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
+        assert abbe_material.index == 1.5
+        assert abbe_material.abbe == 50
+
+
+    def test_abbe_out_of_bounds_wavelength(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.3)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.8)
+
+    def test_ray_trace(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        lens = build_model(abbe_material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
 
 
 class TestMaterialFile:
@@ -395,52 +470,6 @@ class TestMaterial:
 
     def test_raise_warning(self, set_test_backend):
         materials.Material("LITHOTEC-CAF2")  # prints a warning
-
-
-@pytest.fixture
-def abbe_material():
-    return materials.AbbeMaterial(n=1.5, abbe=50)
-
-
-def test_refractive_index(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    value = abbe_material.n(wavelength)
-    assert_allclose(value, 1.4999167964912952)
-
-
-def test_extinction_coefficient(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    assert abbe_material.k(wavelength) == 0
-
-
-def test_coefficients(set_test_backend, abbe_material):
-    coefficients = abbe_material._get_coefficients()
-    assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
-
-
-def test_abbe_to_dict(set_test_backend, abbe_material):
-    abbe_dict = abbe_material.to_dict()
-    assert abbe_dict == {
-        "type": "AbbeMaterial",
-        "index": 1.5,
-        "abbe": 50.0,
-        "propagation_model": {"class": "HomogeneousPropagation"},
-    }
-
-
-def test_abbe_from_dict(set_test_backend):
-    abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
-    abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
-    assert abbe_material.index == 1.5
-    assert abbe_material.abbe == 50
-
-
-def test_abbe_out_of_bounds_wavelength(set_test_backend):
-    abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.3)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.8)
 
 
 def test_glasses_selection(set_test_backend):

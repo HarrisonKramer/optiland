@@ -58,10 +58,10 @@ Material Database
 Visualization
 -------------
 
-- **2D and 3D Visualization**:
-  Plot optical layouts, surface properties, and ray traces using matplotlib (2D) and VTK (3D).
-- **Interactive Debugging Tools**:
-  Inspect and interact with optical systems for rapid prototyping and analysis.
+- **Interactive 2D and 3D Visualization**:
+  Plot optical layouts, surface properties, and ray traces using Matplotlib (2D) and VTK (3D). The 2D plots are fully interactive, providing tooltips with detailed information when you hover over optical components.
+- **Customizable Visualization Themes**:
+  Optiland includes a flexible theme system to control the appearance of 2D plots. You can easily switch between predefined themes (e.g., ``light``, ``dark``) or create your own. For a hands-on example, see the :doc:`gallery/miscellaneous/themes` notebook.
 - **Optiland GUI**:
   A fully functional graphical user interface (GUI) for interactive design, analysis, and visualization of optical systems. See the :ref:`gui_quickstart` for more details on using the GUI.
 

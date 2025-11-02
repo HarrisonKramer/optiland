@@ -237,7 +237,7 @@ class TestOptic:
         assert self.optic.apodization == gaussian_apod, "Apodization not set correctly"
 
         # Test setting with a non-Apodization type
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             self.optic.set_apodization("not_an_apodization_object")
 
     def test_set_invalid_polarization(self, set_test_backend):

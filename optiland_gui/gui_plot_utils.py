@@ -13,6 +13,8 @@ import inspect
 
 import matplotlib
 
+from optiland.visualization.themes import get_active_theme, set_theme
+
 
 def apply_gui_matplotlib_styles(theme="light"):
     """Applies Matplotlib rcParams for GUI embedding with theme awareness.
@@ -24,37 +26,12 @@ def apply_gui_matplotlib_styles(theme="light"):
     Args:
         theme (str): The theme to apply, either "light" or "dark". Defaults to "light".
     """
-    base_style = {
-        "font.size": 8,
-        "axes.titlesize": 10,
-        "axes.labelsize": 8,
-        "xtick.labelsize": 7,
-        "ytick.labelsize": 7,
-        "legend.fontsize": 7,
-        "figure.titlesize": 12,
-        "axes.titlepad": 4.0,
-        "axes.labelpad": 3.0,
-        "figure.autolayout": True,
+    set_theme(theme)
+    theme = get_active_theme()
+    valid_params = {
+        k: v for k, v in theme.parameters.items() if k in matplotlib.rcParams
     }
-
-    if theme == "dark":
-        dark_style = {
-            "figure.facecolor": "#2a2a2a",
-            "axes.facecolor": "#2a2a2a",
-            "axes.edgecolor": "#bbbbbb",
-            "axes.labelcolor": "#bbbbbb",
-            "xtick.color": "#bbbbbb",
-            "ytick.color": "#bbbbbb",
-            "grid.color": "#555555",
-            "text.color": "#bbbbbb",
-            "legend.facecolor": "#3c3c3c",
-            "legend.edgecolor": "#555555",
-        }
-        base_style.update(dark_style)
-    else:
-        matplotlib.rcdefaults()
-
-    matplotlib.rcParams.update(base_style)
+    matplotlib.rcParams.update(valid_params)
 
 
 def get_analysis_parameters(analysis_class):

@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from optiland._types import (
+        ApertureType,
         BEArray,
         DistributionType,
         FieldType,
@@ -283,12 +284,12 @@ class Optic:
             value=value, is_primary=is_primary, unit=unit, weight=weight
         )
 
-    def set_aperture(self, aperture_type: str, value: float):
+    def set_aperture(self, aperture_type: ApertureType, value: float):
         """Set the aperture of the optical system.
 
         Args:
-            aperture_type (str): The type of the aperture. Must be one of 'EPD',
-                'imageFNO', or 'objectNA'.
+            aperture_type (ApertureType): The type of the aperture. Must be one of
+                'EPD', 'imageFNO', or 'objectNA'.
             value (float): The value of the aperture.
 
         """
@@ -397,13 +398,25 @@ class Optic:
         """
         self._updater.set_polarization(polarization)
 
-    def set_apodization(self, apodization: BaseApodization):
-        """Set the apodization of the optical system.
+    def set_apodization(
+        self, apodization: BaseApodization | str | dict = None, **kwargs
+    ):
+        """Sets the apodization for the optical system.
+
+        This method supports setting the apodization in multiple ways:
+        1. By providing an instance of a `BaseApodization` subclass.
+        2. By providing a string identifier (e.g., "GaussianApodization")
+           and keyword arguments for its parameters.
+        3. By providing a dictionary that can be passed to `from_dict`.
+        4. By passing `None` to remove any existing apodization.
 
         Args:
-            apodization (BaseApodization): The apodization object to set.
+            apodization (BaseApodization | str | dict, optional): The
+                apodization to apply. Defaults to None.
+            **kwargs: Additional keyword arguments used to initialize the
+                apodization class when `apodization` is a string.
         """
-        self._updater.set_apodization(apodization)
+        self._updater.set_apodization(apodization, **kwargs)
 
     def scale_system(self, scale_factor: float):
         """Scales the optical system by a given scale factor.
@@ -484,7 +497,7 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-        fig, ax = viewer.view(
+        fig, ax, _ = viewer.view(
             fields,
             wavelengths,
             num_rays,
