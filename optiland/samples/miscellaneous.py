@@ -17,15 +17,15 @@ class NavarroWideAngleEye(Optic):
        https://doi.org/10.1364/JOSAA.16.001881
     """
 
-    materials = {
-        "cornea": IdealMaterial(1.3777),
-        "aqueous_humor": IdealMaterial(1.3391),
-        "lens": IdealMaterial(1.4222),
-        "vitreous_humor": IdealMaterial(1.3377),
-    }
-
     def __init__(self):
         super().__init__()
+
+        self.materials = {
+            "cornea": IdealMaterial(1.3777),
+            "aqueous_humor": IdealMaterial(1.3391),
+            "lens": IdealMaterial(1.4222),
+            "vitreous_humor": IdealMaterial(1.3377),
+        }
 
         self.add_surface(index=0, comment="object", radius=be.inf, thickness=be.inf)
         self.add_surface(

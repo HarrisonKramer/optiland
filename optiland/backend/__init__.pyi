@@ -16,6 +16,7 @@ __all__ = [
 ]
 
 ndarray: TypeAlias = NDArray | Tensor  # noqa: PYI042
+inf: float
 
 def array_equal(a: BEArrayT, b: BEArrayT) -> bool: ...
 def isinf(x: ScalarOrArrayT) -> ScalarOrArrayT: ...

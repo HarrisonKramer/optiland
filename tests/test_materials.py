@@ -7,6 +7,7 @@ import numpy as np
 
 from optiland import materials
 from optiland.materials.base import BaseMaterial
+from optiland.optic import Optic
 from .utils import assert_allclose
 
 
@@ -56,6 +57,22 @@ class TestBaseMaterial:
             assert material._calculate_n.call_count == 3
 
 
+def build_model(material: BaseMaterial):
+    lens = Optic()
+
+    lens.set_field_type("angle")
+    lens.add_field(0, 0)
+    lens.add_wavelength(0.550)
+    lens.set_aperture("EPD", 2)
+
+    lens.add_surface(index=0)
+    lens.add_surface(index=1, material=material, radius=10, thickness=10, is_stop=True)
+    lens.add_surface(index=2, radius=-10, thickness=10)
+    lens.add_surface(index=3, radius=np.inf)
+
+    return lens
+
+
 class TestIdealMaterial:
     def test_ideal_material_n(self, set_test_backend):
         material = materials.IdealMaterial(n=1.5)
@@ -85,6 +102,64 @@ class TestIdealMaterial:
         )
         assert material.n(0.5) == 1.5
         assert material.k(0.5) == 0.2
+
+    def test_ray_trace(self, set_test_backend):
+        material = materials.IdealMaterial(n=1.5, k=0.0)
+        lens = build_model(material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
+
+
+class TestAbbeMaterial:
+    def test_refractive_index(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        value = abbe_material.n(wavelength)
+        assert_allclose(value, 1.4999167964912952)
+
+
+    def test_extinction_coefficient(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        assert abbe_material.k(wavelength) == 0
+
+
+    def test_coefficients(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        coefficients = abbe_material._get_coefficients()
+        assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
+
+
+    def test_abbe_to_dict(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_dict = abbe_material.to_dict()
+        assert abbe_dict == {
+            "type": "AbbeMaterial",
+            "index": 1.5,
+            "abbe": 50.0,
+            "propagation_model": {"class": "HomogeneousPropagation"},
+        }
+
+
+    def test_abbe_from_dict(self, set_test_backend):
+        abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
+        abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
+        assert abbe_material.index == 1.5
+        assert abbe_material.abbe == 50
+
+
+    def test_abbe_out_of_bounds_wavelength(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.3)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.8)
+
+    def test_ray_trace(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        lens = build_model(abbe_material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
 
 
 class TestMaterialFile:
@@ -320,6 +395,88 @@ class TestMaterialFile:
         assert materials.MaterialFile.from_dict(material_dict).filename == filename
 
 
+from unittest.mock import patch
+
+import pandas as pd
+
+
+class TestMaterialWithMock:
+    def setup_method(self):
+        # Ensure the dataframe cache is cleared before each test
+        materials.Material._df = None
+
+    def teardown_method(self):
+        # Clean up the cache after each test
+        materials.Material._df = None
+
+    @patch("pandas.read_csv")
+    def test_no_matches_raises_error(self, mock_read_csv, set_test_backend):
+        # Mock read_csv to return an empty DataFrame
+        mock_read_csv.return_value = pd.DataFrame(
+            columns=[
+                "name",
+                "reference",
+                "min_wavelength",
+                "max_wavelength",
+                "path",
+                "category_name",
+                "category_name_full",
+                "filename",
+                "filename_no_ext",
+            ]
+        )
+        with pytest.raises(ValueError, match="No matches found for material"):
+            materials.Material("nonexistent")
+
+    @patch("pandas.read_csv")
+    def test_multiple_matches_raises_error(self, mock_read_csv, set_test_backend):
+        # Mock read_csv to return a DataFrame that will have multiple matches
+        mock_data = {
+            "name": ["glass1", "glass2"],
+            "reference": ["ref", "ref"],
+            "min_wavelength": [0.4, 0.4],
+            "max_wavelength": [0.8, 0.8],
+            "filename": ["path1", "path2"],
+            "category_name": ["ref_glass1", "ref_glass2"],
+            "category_name_full": ["ref_glass1_full", "ref_glass2_full"],
+            "filename_no_ext": ["path1", "path2"],
+        }
+        mock_read_csv.return_value = pd.DataFrame(mock_data)
+        with pytest.raises(ValueError, match="Multiple matches found for material"):
+            materials.Material("glass", robust_search=False)
+
+    @patch("optiland.materials.material_file.MaterialFile._read_file", return_value={})
+    @patch("pandas.read_csv")
+    def test_single_match_initializes_material_file(
+        self, mock_read_csv, mock_read_file, set_test_backend
+    ):
+        expected_filename = "glass/schott/N-BK7.yml"
+        mock_data = {
+            "name": ["N-BK7"],
+            "reference": ["SCHOTT"],
+            "min_wavelength": [0.3],
+            "max_wavelength": [2.5],
+            "filename": [expected_filename],
+            "category_name": ["SCHOTT N-BK7"],
+            "category_name_full": ["SCHOTT N-BK7 full"],
+            "filename_no_ext": ["N-BK7"],
+        }
+        mock_read_csv.return_value = pd.DataFrame(mock_data)
+
+        # Instantiate the Material class, which should trigger the mock
+        material = materials.Material("N-BK7", reference="SCHOTT")
+
+        # Verify that the filename attribute of the instance is correct
+        assert material.filename.endswith(expected_filename)
+
+    def test_to_and_from_dict(self, set_test_backend):
+        # This test uses the real data, which is fine for serialization.
+        material = materials.Material("N-BK7", reference="SCHOTT")
+        d = material.to_dict()
+        new_material = materials.Material.from_dict(d)
+        assert material.name == new_material.name
+        assert material.reference == new_material.reference
+
 class TestMaterial:
     def test_standard_material(self, set_test_backend):
         material = materials.Material("N-BK7")
@@ -395,52 +552,6 @@ class TestMaterial:
 
     def test_raise_warning(self, set_test_backend):
         materials.Material("LITHOTEC-CAF2")  # prints a warning
-
-
-@pytest.fixture
-def abbe_material():
-    return materials.AbbeMaterial(n=1.5, abbe=50)
-
-
-def test_refractive_index(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    value = abbe_material.n(wavelength)
-    assert_allclose(value, 1.4999167964912952)
-
-
-def test_extinction_coefficient(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    assert abbe_material.k(wavelength) == 0
-
-
-def test_coefficients(set_test_backend, abbe_material):
-    coefficients = abbe_material._get_coefficients()
-    assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
-
-
-def test_abbe_to_dict(set_test_backend, abbe_material):
-    abbe_dict = abbe_material.to_dict()
-    assert abbe_dict == {
-        "type": "AbbeMaterial",
-        "index": 1.5,
-        "abbe": 50.0,
-        "propagation_model": {"class": "HomogeneousPropagation"},
-    }
-
-
-def test_abbe_from_dict(set_test_backend):
-    abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
-    abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
-    assert abbe_material.index == 1.5
-    assert abbe_material.abbe == 50
-
-
-def test_abbe_out_of_bounds_wavelength(set_test_backend):
-    abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.3)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.8)
 
 
 def test_glasses_selection(set_test_backend):

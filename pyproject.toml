@@ -68,4 +68,7 @@ exclude = ["*.ipynb"]
 required-imports = ["from __future__ import annotations"]
 
 [dependency-groups]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "torch",
+]

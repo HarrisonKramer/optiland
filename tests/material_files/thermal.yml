@@ -1,0 +1,8 @@
+SPECS:
+    temperature: "20.0 C"
+    thermal_dispersion:
+        - type: "Schott glass"
+          coefficients: "1.0e-06 1.0e-08 1.0e-11 1.0e-07 1.0e-10 1.0e-04"
+DATA:
+  - type: formula 1
+    coefficients: 0 1.39324 0.00973
