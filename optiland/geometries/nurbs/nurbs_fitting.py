@@ -193,7 +193,10 @@ def compute_params_curve(points, centripetal=False):
 
     uk = [0.0 for _ in range(num_points)]
     for i in range(num_points):
-        uk[i] = sum(cds[0 : i + 1]) / d
+        param = sum(cds[0 : i + 1]) / d
+        if hasattr(param, "item"):  # if torch backend, param is a tensor
+            param = param.item()
+        uk[i] = param
 
     return uk
 
