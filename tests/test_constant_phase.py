@@ -19,9 +19,10 @@ def test_constant_phase_profile_get_gradient(set_test_backend):
     profile = ConstantPhaseProfile()
     x = be.array([1, 2, 3])
     y = be.array([4, 5, 6])
-    grad_x, grad_y = profile.get_gradient(x, y)
+    grad_x, grad_y, grad_z = profile.get_gradient(x, y)
     assert_allclose(grad_x, be.zeros_like(x))
     assert_allclose(grad_y, be.zeros_like(y))
+    assert_allclose(grad_z, be.zeros_like(x))
 
 def test_constant_phase_profile_get_paraxial_gradient(set_test_backend):
     profile = ConstantPhaseProfile()

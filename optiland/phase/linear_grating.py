@@ -69,22 +69,27 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
         """
         return self._K_x * x + self._K_y * y
 
-    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
+    def get_gradient(
+        self, x: be.Array, y: be.Array
+    ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
-        For a linear grating, the gradient (d_phi/dx, d_phi/dy) is constant.
+        For a linear grating, the gradient (d_phi/dx, d_phi/dy) is constant,
+        and d_phi/dz is zero.
 
         Args:
             x: The x-coordinates of the points of interest. Used for shape.
             y: The y-coordinates of the points of interest. Used for shape.
 
         Returns:
-            A tuple containing the x and y components of the phase gradient
-            (K_x, K_y), broadcast to the shape of the input coordinates.
+            A tuple containing the x, y, and z components of the phase
+            gradient (K_x, K_y, 0), broadcast to the shape of the input
+            coordinates.
         """
         phi_x = be.full_like(x, self._K_x)
         phi_y = be.full_like(y, self._K_y)
-        return phi_x, phi_y
+        phi_z = be.zeros_like(x)
+        return phi_x, phi_y, phi_z
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
         """Calculates the paraxial phase gradient at y-coordinate.

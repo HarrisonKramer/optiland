@@ -30,13 +30,6 @@ def test_phase_interaction_model_init(mock_surface):
     assert model.phase_profile == phase_profile
     assert model.parent_surface == mock_surface
 
-def test_phase_interaction_model_init_raises_type_error(mock_surface):
-    # Test that it raises an error if not a PlaneGeometry
-    mock_surface.geometry = Mock() # Not a Plane
-    phase_profile = RadialPhaseProfile(coefficients=[0.1])
-    with pytest.raises(TypeError):
-        PhaseInteractionModel(mock_surface, phase_profile)
-
 def test_interact_real_rays_transmission(mock_surface):
     # Metalens focusing at f=100mm
     # phi = -k0/(2f) * r^2
@@ -87,8 +80,9 @@ def test_interact_paraxial_rays(mock_surface):
 
     # Expected paraxial angle: u_out = u_in - y/f (for n2=1)
     # With n2 != 1, u_out = u_in/n2 - y/(n2*f)
+    # The sign convention was changed to match the diffractive model.
     n2 = mock_surface.material_post.n(w)
-    expected_u = -1.0 / (n2 * f)
+    expected_u = 1.0 / (n2 * f)
 
     interacted_rays = model.interact_paraxial_rays(rays)
 

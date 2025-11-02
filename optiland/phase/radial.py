@@ -40,7 +40,9 @@ class RadialPhaseProfile(BasePhaseProfile):
             phase = phase + coeff * (r_squared**power)
         return phase
 
-    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
+    def get_gradient(
+        self, x: be.Array, y: be.Array
+    ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
         Args:
@@ -48,8 +50,8 @@ class RadialPhaseProfile(BasePhaseProfile):
             y: The y-coordinates of the points of interest.
 
         Returns:
-            A tuple containing the x and y components of the phase gradient
-            (d_phi/dx, d_phi/dy).
+            A tuple containing the x, y, and z components of the phase
+            gradient (d_phi/dx, d_phi/dy, 0).
         """
         r_squared = x**2 + y**2
         r = be.sqrt(r_squared)
@@ -68,8 +70,9 @@ class RadialPhaseProfile(BasePhaseProfile):
 
         d_phi_dx = be.where(r == 0, 0.0, d_phi_dx)
         d_phi_dy = be.where(r == 0, 0.0, d_phi_dy)
+        d_phi_dz = be.zeros_like(x)
 
-        return d_phi_dx, d_phi_dy
+        return d_phi_dx, d_phi_dy, d_phi_dz
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
         """Calculates the paraxial phase gradient at y-coordinate.

@@ -54,11 +54,12 @@ def test_grid_phase_profile_get_gradient(grid_data):
     x, y, phase_grid = grid_data
     profile = GridPhaseProfile(x, y, phase_grid)
     # test at a point
-    grad_x, grad_y = profile.get_gradient(be.array([0.5]), be.array([1.0]))
+    grad_x, grad_y, grad_z = profile.get_gradient(be.array([0.5]), be.array([1.0]))
     # analytical gradient: d/dx(x^2+y^3)=2x, d/dy(x^2+y^3)=3y^2
     # at (0.5, 1.0), grad should be close to (1.0, 3.0)
     assert_allclose(grad_x, be.array([1.0]), atol=1e-1) # Spline has some error
     assert_allclose(grad_y, be.array([3.0]), atol=1e-1)
+    assert_allclose(grad_z, be.array([0.0]))
 
 
 def test_grid_phase_profile_get_paraxial_gradient(grid_data):

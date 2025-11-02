@@ -68,7 +68,9 @@ class GridPhaseProfile(BasePhaseProfile):
         """
         return self._spline.ev(be.to_numpy(y), be.to_numpy(x))
 
-    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
+    def get_gradient(
+        self, x: be.Array, y: be.Array
+    ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
         Args:
@@ -76,12 +78,15 @@ class GridPhaseProfile(BasePhaseProfile):
             y: The y-coordinates of the points of interest.
 
         Returns:
-            A tuple containing the x and y components of the phase gradient
-            (d_phi/dx, d_phi/dy).
+            A tuple containing the x, y, and z components of the phase
+            gradient (d_phi/dx, d_phi/dy, 0).
         """
-        d_phi_dx = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dy=1)
-        d_phi_dy = self._spline.ev(be.to_numpy(y), be.to_numpy(x), dx=1)
-        return d_phi_dx, d_phi_dy
+        x_np = be.to_numpy(x)
+        y_np = be.to_numpy(y)
+        d_phi_dx = self._spline.ev(y_np, x_np, dy=1)
+        d_phi_dy = self._spline.ev(y_np, x_np, dx=1)
+        d_phi_dz = be.zeros_like(x)
+        return d_phi_dx, d_phi_dy, d_phi_dz
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
         """Calculates the paraxial phase gradient at y-coordinate.

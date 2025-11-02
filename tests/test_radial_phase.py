@@ -26,16 +26,18 @@ def test_radial_phase_profile_get_gradient(set_test_backend):
     # d_phi/dr = r
     # grad_x = (d_phi/dr) * x/r = x
     # grad_y = (d_phi/dr) * y/r = y
-    grad_x, grad_y = profile.get_gradient(x, y)
+    grad_x, grad_y, grad_z = profile.get_gradient(x, y)
     assert_allclose(grad_x, x)
     assert_allclose(grad_y, y)
+    assert_allclose(grad_z, 0)
 
     # test r=0 case
     x_zero = be.array([0.0])
     y_zero = be.array([0.0])
-    grad_x_zero, grad_y_zero = profile.get_gradient(x_zero, y_zero)
+    grad_x_zero, grad_y_zero, grad_z_zero = profile.get_gradient(x_zero, y_zero)
     assert_allclose(grad_x_zero, be.array([0.0]))
     assert_allclose(grad_y_zero, be.array([0.0]))
+    assert_allclose(grad_z_zero, be.array([0.0]))
 
 
 def test_radial_phase_profile_get_paraxial_gradient(set_test_backend):
