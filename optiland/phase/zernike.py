@@ -10,10 +10,15 @@ from __future__ import annotations
 
 import typing
 
+from optiland import backend as be
 from optiland.phase.base import BasePhaseProfile
+from optiland.zernike import (
+    ZernikeFringe,
+    ZernikeNoll,
+    ZernikeStandard,
+)
 
 if typing.TYPE_CHECKING:
-    from optiland import backend as be
     from optiland.zernike.base import BaseZernike
 
 
@@ -55,9 +60,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
             - r_norm: The radial coordinate normalized by `self.norm_radius`.
             - phi: The azimuthal angle (arctan2(y, x)).
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         r_cart = be.sqrt(x**2 + y**2)
         r_norm = r_cart / self.norm_radius
         phi = be.arctan2(y, x)
@@ -109,9 +111,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
             A tuple containing the x and y components of the phase gradient
             (d_phi/dx, d_phi/dy).
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         r_cart, r_norm, phi = self._get_polar_coords(x, y)
 
         total_dz_dx = be.zeros_like(x)
@@ -169,9 +168,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
         Returns:
             The paraxial phase gradient (d_phi/dy) at each y-coordinate.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         _dx, dy = self.get_gradient(be.zeros_like(y), y)
         return dy
 
@@ -183,9 +179,6 @@ class ZernikePhaseProfile(BasePhaseProfile):
             A dictionary representation of the phase profile, including
             the normalized radius and Zernike coefficients.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
         data = super().to_dict()
         data["norm_radius"] = self.norm_radius
         # Convert backend array to a serializable list
@@ -212,30 +205,13 @@ class ZernikePhaseProfile(BasePhaseProfile):
         Raises:
             ImportError: If the required Zernike class cannot be imported.
         """
-        # Import backend here to be used in methods
-        from optiland import backend as be
-
-        # TODO: This import path is assumed. A more robust solution might
-        # use a registry for Zernike classes, similar to BasePhaseProfile.
-        try:
-            from optiland.zernike.standard import ZernikeStandard
-
-            # A simple map to find the class.
-            # This could be expanded if more Zernike types are used.
-            zernike_classes = {"ZernikeStandard": ZernikeStandard}
-            class_name = data.get("zernike_class", "ZernikeStandard")
-            ZernikeClass = zernike_classes[class_name]
-
-        except ImportError as e:
-            raise ImportError(
-                "Could not import ZernikeStandard to deserialize profile. "
-                "Ensure optiland.zernike.standard is available."
-            ) from e
-        except KeyError as e:
-            raise ImportError(
-                f"Unknown Zernike class '{data.get('zernike_class')}' "
-                "in serialized data."
-            ) from e
+        zernike_classes = {
+            "ZernikeStandard": ZernikeStandard,
+            "ZernikeFringe": ZernikeFringe,
+            "ZernikeNoll": ZernikeNoll,
+        }
+        class_name = data.get("zernike_class", "ZernikeStandard")
+        ZernikeClass = zernike_classes[class_name]
 
         coeffs = be.array(data["zernike_coeffs"])
         norm_radius = data["norm_radius"]
