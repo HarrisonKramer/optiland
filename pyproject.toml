@@ -49,6 +49,9 @@ packages = ["optiland", "optiland_gui"] # Auto-discovers subpackages
 
 [tool.ruff]
 line-length = 88
+
+[tool.coverage.run]
+source = ["optiland"]
 exclude = ["tests", "docs"]
 
 [tool.ruff.lint]
