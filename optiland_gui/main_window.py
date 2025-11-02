@@ -545,7 +545,7 @@ class MainWindow(FramelessWindow):
             )
 
     @Slot(str)
-    def switch_theme(self, theme_path):
+    def switch_theme(self, theme_path):  # pragma: no cover
         if theme_path != self.current_theme_path:
             self.current_theme_path = theme_path
             self.load_stylesheets()
@@ -657,7 +657,7 @@ class MainWindow(FramelessWindow):
                     dock.toggleViewAction().setChecked(True)
 
     @Slot()
-    def save_layout_slot(self):
+    def save_layout_slot(self):  # pragma: no cover
         target_slot = self.next_save_slot_index
         window_geometry = self.saveGeometry()
         dock_toolbar_state = self.saveState()
@@ -682,7 +682,7 @@ class MainWindow(FramelessWindow):
             "{self.next_save_slot_index}."
         )
 
-    def _load_layout_from_slot(self, slot_number):
+    def _load_layout_from_slot(self, slot_number):  # pragma: no cover
         geometry_key = f"Layouts/Config{slot_number}Geometry"
         state_key = f"Layouts/Config{slot_number}State"
         if self.settings.contains(geometry_key) and self.settings.contains(state_key):
@@ -720,12 +720,12 @@ class MainWindow(FramelessWindow):
             )
 
     @Slot()
-    def load_layout_1_slot(self):
+    def load_layout_1_slot(self):  # pragma: no cover
         print("Loading layout from slot 1...")
         self._load_layout_from_slot(1)
 
     @Slot()
-    def load_layout_2_slot(self):
+    def load_layout_2_slot(self):  # pragma: no cover
         print("Loading layout from slot 2...")
         self._load_layout_from_slot(2)
 

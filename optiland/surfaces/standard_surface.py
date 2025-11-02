@@ -310,6 +310,7 @@ class Surface:
             "material_post": self.material_post.to_dict(),
             "is_stop": self.is_stop,
             "aperture": self.aperture.to_dict() if self.aperture else None,
+            "comment": self.comment,
             "interaction_model": self.interaction_model.to_dict(),
         }
 

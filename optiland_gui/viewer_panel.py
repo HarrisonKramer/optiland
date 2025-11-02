@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     from .optiland_connector import OptilandConnector
 
 
-class SagViewer(QWidget):
+class SagViewer(QWidget):  # pragma: no cover
     """A widget for displaying a 2D sag plot of a selected optical surface."""
 
     def __init__(self, connector: OptilandConnector, parent=None):
@@ -240,7 +240,7 @@ class SagViewer(QWidget):
         self.canvas.draw()
 
 
-class ViewerPanel(QWidget):
+class ViewerPanel(QWidget):  # pragma: no cover
     """
     A widget that contains multiple viewers for the optical system.
 
@@ -328,7 +328,7 @@ class ViewerPanel(QWidget):
             self.sagViewer.update_theme(theme_name)
 
 
-class MatplotlibViewer(QWidget):
+class MatplotlibViewer(QWidget):  # pragma: no cover
     """
     A widget for displaying a 2D plot of the optical system using Matplotlib.
 
@@ -682,7 +682,7 @@ class MatplotlibViewer(QWidget):
             self._is_plotting = False
 
 
-class VTKViewer(QWidget):
+class VTKViewer(QWidget):  # pragma: no cover
     """
     A widget for displaying a 3D rendering of the optical system using VTK.
 

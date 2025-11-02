@@ -1,5 +1,5 @@
 import pytest
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QPushButton
 @pytest.fixture
 def analysis_panel(app):
     """Returns the AnalysisPanel instance from the main application window."""
@@ -219,3 +219,72 @@ def test_validate_system_for_analysis(analysis_panel, mocker):
     analysis_panel.connector.new_system()
     optic = analysis_panel.connector.get_optic()
     assert analysis_panel._validate_system_for_analysis(optic) is True
+
+
+def test_real_analysis_execution(analysis_panel):
+    """
+    Test that a real analysis can be executed and a plot is generated.
+    """
+    from optiland.samples import CookeTriplet
+    # Load a sample optic
+    analysis_panel.connector.load_optic_from_object(CookeTriplet())
+    # Select an analysis type
+    analysis_panel.analysisTypeCombo.setCurrentText("Spot Diagram")
+    # Run the analysis
+    analysis_panel.btnRun.click()
+    # Check that a plot has been generated
+    assert len(analysis_panel.analysis_results_pages) == 1
+    assert analysis_panel.current_plot_page_index == 0
+    # Check for a FigureCanvas widget in the plot container
+    canvas_found = False
+    for i in range(analysis_panel.plot_container_widget.layout().count()):
+        widget = analysis_panel.plot_container_widget.layout().itemAt(i).widget()
+        if "FigureCanvas" in widget.__class__.__name__:
+            canvas_found = True
+            break
+    assert canvas_found
+
+
+def test_plot_navigation(analysis_panel):
+    """
+    Test that the next and previous plot buttons work correctly.
+    """
+    from optiland.samples import CookeTriplet
+    # Load a sample optic
+    analysis_panel.connector.load_optic_from_object(CookeTriplet())
+    # Run two analyses
+    analysis_panel.analysisTypeCombo.setCurrentText("Spot Diagram")
+    analysis_panel.btnRun.click()
+    analysis_panel.analysisTypeCombo.setCurrentText("Ray Fan")
+    analysis_panel.btnRun.click()
+    # Check that there are two plots
+    assert len(analysis_panel.analysis_results_pages) == 2
+    assert analysis_panel.current_plot_page_index == 1
+    # Get the page buttons
+    page_buttons = analysis_panel.page_buttons_scroll_area.widget().findChildren(QPushButton)
+    assert len(page_buttons) == 2
+    # Click the first page button
+    page_buttons[0].click()
+    assert analysis_panel.current_plot_page_index == 0
+    # Click the second page button
+    page_buttons[1].click()
+    assert analysis_panel.current_plot_page_index == 1
+
+
+def test_analysis_error_handling(analysis_panel, mocker):
+    """
+    Test that an error message is displayed if an analysis fails.
+    """
+    from optiland.samples import CookeTriplet
+    # Load a sample optic
+    analysis_panel.connector.load_optic_from_object(CookeTriplet())
+    # Mock the analysis to raise an exception
+    mocker.patch.object(
+        analysis_panel, "_execute_analysis", side_effect=Exception("Test Error")
+    )
+    # Spy on the log area
+    spy = mocker.spy(analysis_panel.logArea, "append")
+    # Run the analysis
+    analysis_panel.btnRun.click()
+    # Check that an error message was logged
+    assert "Error" in spy.call_args[0][0]
