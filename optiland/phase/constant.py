@@ -36,7 +36,9 @@ class ConstantPhaseProfile(BasePhaseProfile):
         """
         return be.full_like(x, self.phase)
 
-    def get_gradient(self, x: be.Array, y: be.Array) -> tuple[be.Array, be.Array]:
+    def get_gradient(
+        self, x: be.Array, y: be.Array
+    ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
         Args:
@@ -44,10 +46,10 @@ class ConstantPhaseProfile(BasePhaseProfile):
             y: The y-coordinates of the points of interest.
 
         Returns:
-            A tuple containing the x and y components of the phase gradient
-            (d_phi/dx, d_phi/dy), which are always zero for this profile.
+            A tuple containing the x, y, and z components of the phase
+            gradient, which are always zero for this profile.
         """
-        return be.zeros_like(x), be.zeros_like(y)
+        return be.zeros_like(x), be.zeros_like(y), be.zeros_like(x)
 
     def get_paraxial_gradient(self, y: be.Array) -> be.Array:
         """Calculates the paraxial phase gradient at y-coordinate.

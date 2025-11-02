@@ -35,9 +35,10 @@ def test_linear_grating_phase_profile(order):
     phase = lg.get_phase(x, y)
     assert_allclose(phase, expected_phase)
 
-    grad_x, grad_y = lg.get_gradient(x, y)
+    grad_x, grad_y, grad_z = lg.get_gradient(x, y)
     assert_allclose(grad_x, K_x)
     assert_allclose(grad_y, K_y)
+    assert_allclose(grad_z, 0)
 
 def test_linear_grating_to_from_dict():
     lg = LinearGratingPhaseProfile(period=0.5, angle=be.pi / 4, order=2, efficiency=0.8)

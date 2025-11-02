@@ -43,14 +43,9 @@ class PhaseInteractionModel(BaseInteractionModel):
         self.phase_profile = phase_profile
 
     def interact_real_rays(self, rays: RealRays) -> RealRays:
-        from optiland.geometries.plane import Plane
-
         if self.parent_surface is None:
             raise RuntimeError("Parent surface not set for PhaseInteractionModel.")
-        if not isinstance(self.parent_surface.geometry, Plane):
-            raise TypeError(
-                "PhaseInteractionModel can only be used with Plane geometries."
-            )
+
         # Get incident state
         x, y = rays.x, rays.y
         l_i, m_i, n_i = rays.L, rays.M, rays.N
@@ -71,16 +66,16 @@ class PhaseInteractionModel(BaseInteractionModel):
 
         # 3. Get phase and ambient gradient (grad(f))
         phase_val = self.phase_profile.get_phase(x, y)
-        phi_x, phi_y = self.phase_profile.get_gradient(x, y)
+        phi_x, phi_y, phi_z = self.phase_profile.get_gradient(x, y)
         grad_f_x = phi_x
         grad_f_y = phi_y
-        grad_f_z = be.zeros_like(phi_x)  # Since phi = phi(x, y)
+        grad_f_z = phi_z
 
         # 4. Compute surface gradient (G = grad(f) - (grad(f)·N)N)
-        grad_f_dot_N = grad_f_x * nx + grad_f_y * ny  # grad_f_z is 0
+        grad_f_dot_N = grad_f_x * nx + grad_f_y * ny + grad_f_z * nz
         G_x = grad_f_x - grad_f_dot_N * nx
         G_y = grad_f_y - grad_f_dot_N * ny
-        G_z = grad_f_z - grad_f_dot_N * nz  # This is just -grad_f_dot_N * nz
+        G_z = grad_f_z - grad_f_dot_N * nz
 
         # 5. Compute incident tangential component (k_in,‖ = k_in - (k_in·N)N)
         k_in_dot_N = k_ix * nx + k_iy * ny + k_iz * nz
@@ -172,9 +167,11 @@ class PhaseInteractionModel(BaseInteractionModel):
             u_geom = rays.u - y * power / n
             rays.u = u_geom + grad_deflection / n
         else:
+            # The sign of grad_deflection is flipped to match the convention
+            # in the legacy DiffractiveInteractionModel.
             power = (n2 - n1) / self.parent_surface.geometry.radius
             u_geom = (n1 / n2) * rays.u - y * power / n2
-            rays.u = u_geom + grad_deflection / n2
+            rays.u = u_geom - grad_deflection / n2
 
         return rays
 
