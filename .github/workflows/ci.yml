@@ -89,7 +89,7 @@ jobs:
         run: |
           export QT_QPA_PLATFORM=offscreen
           uv run --with pytest-cov,pytest-mock,torch,qtconsole,PySide6,pytest-qt,matplotlib \
-            pytest --durations=0 --cov=optiland --cov-report=xml tests/gui/
+            pytest --durations=0 --cov=optiland_gui --cov-report=xml tests/gui/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
