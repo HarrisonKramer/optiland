@@ -519,6 +519,7 @@ class Optic:
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
+        surface_plots: list[SurfacePlot] | None = None,
     ):
         """Draw a 3D representation of the optical system.
 
@@ -540,7 +541,7 @@ class Optic:
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
 
         """
-        viewer = OpticViewer3D(self)
+        viewer = OpticViewer3D(self, surface_plots=surface_plots)
         viewer.view(
             fields,
             wavelengths,

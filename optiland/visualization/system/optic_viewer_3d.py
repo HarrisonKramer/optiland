@@ -39,11 +39,13 @@ class OpticViewer3D(BaseViewer):
 
     """
 
-    def __init__(self, optic):
+    def __init__(self, optic, surface_plots=None):
         self.optic = optic
 
         self.rays = Rays3D(optic)
-        self.system = OpticalSystem(optic, self.rays, projection="3d")
+        self.system = OpticalSystem(
+            optic, self.rays, projection="3d", surface_plots=surface_plots
+        )
 
         self.ren_win = vtk.vtkRenderWindow()
         self.iren = vtk.vtkRenderWindowInteractor()
@@ -57,6 +59,7 @@ class OpticViewer3D(BaseViewer):
         figsize=(1200, 800),
         dark_mode=False,
         reference=None,
+        surface_plots=None,
     ):
         """Visualizes the optical system in 3D.
 

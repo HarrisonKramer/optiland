@@ -7,6 +7,7 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from optiland.visualization.system.analysis_plot import AnalysisPlot3D
 from optiland.visualization.system.lens import Lens2D, Lens3D
 from optiland.visualization.system.mirror import Mirror3D
 from optiland.visualization.system.surface import Surface2D, Surface3D
@@ -39,10 +40,11 @@ class OpticalSystem:
 
     """
 
-    def __init__(self, optic, rays, projection="2d"):
+    def __init__(self, optic, rays, projection="2d", surface_plots=None):
         self.optic = optic
         self.rays = rays
         self.projection = projection
+        self.surface_plots = surface_plots if surface_plots is not None else []
         self.components = []  # initialize empty list of components
 
         if self.projection not in ["2d", "3d"]:
@@ -64,6 +66,11 @@ class OpticalSystem:
             component_artists = component.plot(ax, theme=theme)
             if component_artists:
                 artists.update(component_artists)
+
+        for plot_config in self.surface_plots:
+            analysis_plot = AnalysisPlot3D(self.optic, plot_config)
+            analysis_plot.plot(ax)  # ax is the renderer in 3D mode
+
         return artists
 
     def _identify_components(self):
