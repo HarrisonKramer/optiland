@@ -12,11 +12,9 @@ from __future__ import annotations
 
 from contextlib import suppress
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import optiland.backend as be
-from optiland.coatings import BaseCoatingPolarized
-from optiland.materials.base import BaseMaterial
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
@@ -30,9 +28,6 @@ from optiland.surfaces.factories.strategy_provider import SurfaceStrategyProvide
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.factories.types import SurfaceContext
 from optiland.surfaces.standard_surface import Surface
-
-if TYPE_CHECKING:
-    from optiland._types import SurfaceType
 
 
 class SurfaceGroup:
@@ -177,7 +172,9 @@ class SurfaceGroup:
             z = prev_surface.geometry.cs.z + prev_surface.thickness
 
         context = SurfaceContext(index=index, z=z, material_pre=material_pre)
-        new_surface = self.surface_factory.create_surface(config=kwargs, context=context)
+        new_surface = self.surface_factory.create_surface(
+            config=kwargs, context=context
+        )
 
         self._surfaces.insert(index, new_surface)
         self._update_surface_links()
@@ -194,7 +191,7 @@ class SurfaceGroup:
         del self._surfaces[index]
         self._rebuild_state_from_surfaces()
         if index < len(self._surfaces):
-             self._update_coordinate_systems(start_index=index)
+            self._update_coordinate_systems(start_index=index)
 
     def reset(self):
         for surface in self.surfaces:

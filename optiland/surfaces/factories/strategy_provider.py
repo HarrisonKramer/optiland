@@ -8,13 +8,17 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from optiland.surfaces.factories.strategies.base import BaseSurfaceStrategy
+from typing import TYPE_CHECKING
+
 from optiland.surfaces.factories.strategies.concrete import (
     GratingStrategy,
     ObjectStrategy,
     ParaxialStrategy,
     StandardStrategy,
 )
+
+if TYPE_CHECKING:
+    from optiland.surfaces.factories.strategies.base import BaseSurfaceStrategy
 
 
 class SurfaceStrategyProvider:
