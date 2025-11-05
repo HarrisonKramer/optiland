@@ -17,6 +17,8 @@ from optiland.rays.polarized_rays import PolarizedRays
 if TYPE_CHECKING:
     # pragma: no cover
     from optiland.coatings import BaseCoating
+    from optiland.rays import ParaxialRays, RealRays
+    from optiland.raytrace.context import TracingContext
     from optiland.scatter import BaseBSDF
     from optiland.surfaces import Surface
 
@@ -52,7 +54,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
         """Flip the interaction model."""
         pass
 
-    def interact_real_rays(self, rays):
+    def interact_real_rays(self, rays: "RealRays", context: "TracingContext"):
         """Interacts the rays with the surface by either reflecting or refracting
 
         Note that phase is added assuming a thin lens as a phase
@@ -61,6 +63,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
 
         Args:
             rays: The rays.
+            context: The tracing context.
 
         Returns:
             RealRays: The refracted rays.
@@ -70,7 +73,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
         # TODO: develop more robust method
         rays.opd = rays.opd - (rays.x**2 + rays.y**2) / (2 * self.f)
 
-        n1 = self.material_pre.n(rays.w)
+        n1 = context.material.n(rays.w)
 
         n2 = -n1 if self.is_reflective else self.material_post.n(rays.w)
 
@@ -95,6 +98,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
         if self.coating:
             rays = self.coating.interact(
                 rays,
+                context,
                 reflect=self.is_reflective,
                 nx=0,
                 ny=0,
@@ -112,14 +116,15 @@ class ThinLensInteractionModel(BaseInteractionModel):
 
         return rays
 
-    def interact_paraxial_rays(self, rays):
+    def interact_paraxial_rays(self, rays: "ParaxialRays", context: "TracingContext"):
         """Traces paraxial rays through the surface.
 
         Args:
-            ParaxialRays: The paraxial rays to be traced.
+            rays: The paraxial rays to be traced.
+            context: The tracing context.
 
         """
-        n1 = self.material_pre.n(rays.w)
+        n1 = context.material.n(rays.w)
         if self.is_reflective:
             # reflect (derived from paraxial equations when n'=-n)
             rays.u = rays.y / (self.f * n1) - rays.u

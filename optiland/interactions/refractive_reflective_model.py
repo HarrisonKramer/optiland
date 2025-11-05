@@ -29,11 +29,12 @@ class RefractiveReflectiveModel(BaseInteractionModel):
         """Flip the interaction model."""
         pass
 
-    def interact_real_rays(self, rays: RealRays) -> RealRays:
+    def interact_real_rays(self, rays: RealRays, context: "TracingContext") -> RealRays:
         """Interact with real rays, causing refraction or reflection.
 
         Args:
             rays (RealRays): The incoming real rays.
+            context (TracingContext): The tracing context.
 
         Returns:
             RealRays: The outgoing real rays.
@@ -45,20 +46,23 @@ class RefractiveReflectiveModel(BaseInteractionModel):
         if self.is_reflective:
             rays.reflect(nx, ny, nz)
         else:
-            n1 = self.material_pre.n(rays.w)
+            n1 = context.material.n(rays.w)
             n2 = self.material_post.n(rays.w)
             rays.refract(nx, ny, nz, n1, n2)
 
         # Apply coating and BSDF
-        rays = self._apply_coating_and_bsdf(rays, nx, ny, nz)
+        rays = self._apply_coating_and_bsdf(rays, context, nx, ny, nz)
 
         return rays
 
-    def interact_paraxial_rays(self, rays: ParaxialRays) -> ParaxialRays:
+    def interact_paraxial_rays(
+        self, rays: ParaxialRays, context: "TracingContext"
+    ) -> ParaxialRays:
         """Interact with paraxial rays, causing refraction or reflection.
 
         Args:
             rays (ParaxialRays): The incoming paraxial rays.
+            context (TracingContext): The tracing context.
 
         Returns:
             ParaxialRays: The outgoing paraxial rays.
@@ -68,7 +72,7 @@ class RefractiveReflectiveModel(BaseInteractionModel):
             rays.u = -rays.u - 2 * rays.y / self.geometry.radius
         else:
             # surface power
-            n1 = self.material_pre.n(rays.w)
+            n1 = context.material.n(rays.w)
             n2 = self.material_post.n(rays.w)
             power = (n2 - n1) / self.geometry.radius
 

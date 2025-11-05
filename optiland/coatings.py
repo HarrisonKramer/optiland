@@ -283,6 +283,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         dot = be.clip(dot, -1, 1)
         aoi = be.arccos(dot)
 
+        self.jones = JonesFresnel(context.material, self.material_post)
         jones = self.jones.calculate_matrix(rays, reflect=True, aoi=aoi)
         rays.update(jones)
         return rays
@@ -312,6 +313,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         dot = be.clip(dot, -1, 1)
         aoi = be.arccos(dot)
 
+        self.jones = JonesFresnel(context.material, self.material_post)
         jones = self.jones.calculate_matrix(rays, reflect=False, aoi=aoi)
         rays.update(jones)
         return rays
@@ -325,7 +327,6 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         """
         return {
             "type": self.__class__.__name__,
-            "material_pre": self.material_pre.to_dict(),
             "material_post": self.material_post.to_dict(),
         }
 
@@ -340,7 +341,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             BaseCoating: The coating created from the dictionary.
 
         """
-        return cls(data["material_pre"], data["material_post"])
+        return cls(data["material_post"])
 
 
 class FresnelCoating(BaseCoatingPolarized):
@@ -352,18 +353,15 @@ class FresnelCoating(BaseCoatingPolarized):
     on a surface.
 
     Attributes:
-        material_pre (str): The material before the coating.
         material_post (str): The material after the coating.
         jones (JonesFresnel): The JonesFresnel object, which calculates the
             Jones matrices for given ray properties.
 
     """
 
-    def __init__(self, material_pre, material_post):
-        self.material_pre = material_pre
+    def __init__(self, material_post):
         self.material_post = material_post
-
-        self.jones = JonesFresnel(material_pre, material_post)
+        self.jones = None
 
     def to_dict(self):
         """Converts the coating to a dictionary.
@@ -374,7 +372,6 @@ class FresnelCoating(BaseCoatingPolarized):
         """
         return {
             "type": self.__class__.__name__,
-            "material_pre": self.material_pre.to_dict(),
             "material_post": self.material_post.to_dict(),
         }
 
@@ -390,6 +387,5 @@ class FresnelCoating(BaseCoatingPolarized):
 
         """
         return cls(
-            BaseMaterial.from_dict(data["material_pre"]),
             BaseMaterial.from_dict(data["material_post"]),
         )

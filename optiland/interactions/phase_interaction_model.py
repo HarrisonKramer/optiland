@@ -11,6 +11,7 @@ from optiland.interactions.base import BaseInteractionModel
 from optiland.phase.base import BasePhaseProfile
 
 if typing.TYPE_CHECKING:
+    from optiland.raytrace.context import TracingContext
     from optiland.raytrace.rays import ParaxialRays, RealRays
     from optiland.surfaces.standard_surface import Surface
 
@@ -42,7 +43,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         super().__init__(parent_surface, is_reflective=is_reflective, **kwargs)
         self.phase_profile = phase_profile
 
-    def interact_real_rays(self, rays: RealRays) -> RealRays:
+    def interact_real_rays(self, rays: RealRays, context: "TracingContext") -> RealRays:
         if self.parent_surface is None:
             raise RuntimeError("Parent surface not set for PhaseInteractionModel.")
 
@@ -50,7 +51,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         x, y = rays.x, rays.y
         l_i, m_i, n_i = rays.L, rays.M, rays.N
         rays.L0, rays.M0, rays.N0 = l_i, m_i, n_i
-        n1 = self.parent_surface.material_pre.n(rays.w)
+        n1 = context.material.n(rays.w)
         n2 = self.parent_surface.material_post.n(rays.w)
         if self.is_reflective:
             n2 = n1
@@ -124,7 +125,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         rays.opd = rays.opd + opd_shift
 
         # Apply coating/BSDF
-        rays = self._apply_coating_and_bsdf(rays, nx, ny, nz)
+        rays = self._apply_coating_and_bsdf(rays, context, nx, ny, nz)
 
         # Apply phase profile efficiency
         rays.i = rays.i * self.phase_profile.efficiency
@@ -138,17 +139,20 @@ class PhaseInteractionModel(BaseInteractionModel):
         """
         pass
 
-    def interact_paraxial_rays(self, rays: ParaxialRays) -> ParaxialRays:
+    def interact_paraxial_rays(
+        self, rays: ParaxialRays, context: "TracingContext"
+    ) -> ParaxialRays:
         """Applies the phase gradient interaction to paraxial rays.
 
         Args:
             rays: The paraxial rays to interact with the surface.
+            context: The tracing context.
 
         Returns:
             The interacted paraxial rays.
         """
         # Get incident state
-        n1 = self.parent_surface.material_pre.n(rays.w)
+        n1 = context.material.n(rays.w)
         n2 = self.parent_surface.material_post.n(rays.w)
         k0 = 2 * be.pi / rays.w
         y = rays.y

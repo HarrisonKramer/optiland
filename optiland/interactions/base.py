@@ -37,14 +37,6 @@ class BaseInteractionModel(ABC):
         self.bsdf = bsdf
 
     @property
-    def material_pre(self):
-        return (
-            self.parent_surface.material_post
-            if self.parent_surface.previous_surface is None
-            else self.parent_surface.previous_surface.material_post
-        )
-
-    @property
     def material_post(self):
         return self.parent_surface.material_post
 
@@ -112,7 +104,7 @@ class BaseInteractionModel(ABC):
         )
 
     def _apply_coating_and_bsdf(
-        self, rays: RealRays, nx: float, ny: float, nz: float
+        self, rays: RealRays, context: TracingContext, nx: float, ny: float, nz: float
     ) -> RealRays:
         """Apply coating and BSDF to the rays."""
         if self.bsdf:
@@ -121,6 +113,7 @@ class BaseInteractionModel(ABC):
         if self.coating:
             rays = self.coating.interact(
                 rays,
+                context,
                 reflect=self.is_reflective,
                 nx=nx,
                 ny=ny,
