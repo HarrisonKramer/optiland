@@ -75,7 +75,7 @@ class GratingStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        config.pop("surface_type", None)
+        config.get("surface_type", None)
         return factory.create("grating", cs, **config)
 
     def create_interaction_model(
