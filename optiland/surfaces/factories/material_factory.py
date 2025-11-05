@@ -10,6 +10,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import Union
+
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 
 
@@ -17,7 +19,9 @@ class MaterialFactory:
     """A stateless factory for creating material instances from specifications."""
 
     @staticmethod
-    def create(material_spec: BaseMaterial | tuple | str | None) -> BaseMaterial | None:
+    def create(
+        material_spec: Union[BaseMaterial, tuple, str, None]
+    ) -> Union[BaseMaterial, None]:
         """Creates a material instance based on the given specification.
 
         This is a pure function that converts a material specification into a
@@ -38,6 +42,10 @@ class MaterialFactory:
         Raises:
             ValueError: If an unrecognized material type is provided.
         """
+        return MaterialFactory._configure_post_material(material_spec)
+
+    @staticmethod
+    def _configure_post_material(material_spec):
         if material_spec is None:
             return None
 
@@ -51,9 +59,6 @@ class MaterialFactory:
             if material_spec.lower() == "air":
                 return IdealMaterial(n=1.0, k=0.0)
             if material_spec.lower() == "mirror":
-                # The "mirror" case implies the material_post is the same as
-                # material_pre. The state manager (SurfaceGroup) is responsible
-                # for this logic. The factory simply returns None.
                 return None
             return Material(material_spec)
 

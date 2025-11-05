@@ -208,7 +208,7 @@ class TestOptic:
             thickness=10,
         )
         surface_number = 1
-        material_post = MaterialFactory._configure_post_material("N-BK7")
+        material_post = MaterialFactory.create("N-BK7")
         self.optic.set_material(material_post, surface_number)
         surface = self.optic.surface_group.surfaces[surface_number]
         assert surface.material_post == material_post
@@ -397,7 +397,8 @@ class TestOptic:
     def test_total_track_error(self, set_test_backend):
         lens = HeliarLens()
         # manually remove all but first surface
-        lens.surface_group.surfaces = [lens.surface_group.surfaces[0]]
+        lens.surface_group._surfaces = [lens.surface_group.surfaces[0]]
+        lens.surface_group._rebuild_state_from_surfaces()
         with pytest.raises(ValueError):
             _ = lens.total_track
 

@@ -236,10 +236,10 @@ class Optic:
 
         """
         self.surface_group.add_surface(
+            index=index,
             new_surface=new_surface,
             surface_type=surface_type,
             comment=comment,
-            index=index,
             is_stop=is_stop,
             material=material,
             **kwargs,

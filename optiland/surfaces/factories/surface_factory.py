@@ -67,7 +67,7 @@ class SurfaceFactory:
             The created surface or object surface instance.
         """
         surface_type = config.get("surface_type")
-        strategy = self._strategy_provider.get_strategy(surface_type)
+        strategy = self._strategy_provider.get_strategy(surface_type, context.index)
 
         cs = self._cs_factory.create(
             x=config.get("dx", 0.0),
@@ -91,8 +91,6 @@ class SurfaceFactory:
 
         geometry = strategy.create_geometry(self._geom_factory, cs, config)
 
-        # Create model with parent_surface=None initially.
-        # It will be linked after the surface object is created.
         interaction_model = strategy.create_interaction_model(
             self._int_factory,
             config,
@@ -121,7 +119,6 @@ class SurfaceFactory:
             ),
         )
 
-        # Link the interaction model back to its parent surface
         if interaction_model:
             interaction_model.parent_surface = surface_obj
 

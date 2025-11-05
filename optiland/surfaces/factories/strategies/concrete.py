@@ -91,10 +91,8 @@ class ObjectStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        # 'object' is a surface role, not a geometry. Default to 'plane'.
+        # The Object Surface can have any geometry. Default to 'plane' if not specified.
         surface_type = config.pop("surface_type", "plane")
-        if surface_type == "object":
-            surface_type = "plane"
         return factory.create(surface_type, cs, **config)
 
     def create_interaction_model(
