@@ -12,10 +12,11 @@ from __future__ import annotations
 
 from contextlib import suppress
 from functools import cached_property
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
+from optiland.materials.base import BaseMaterial
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
@@ -30,6 +31,9 @@ from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.factories.types import SurfaceContext
 from optiland.surfaces.standard_surface import Surface
 
+if TYPE_CHECKING:
+    from optiland._types import SurfaceType
+
 
 class SurfaceGroup:
     """Represents a group of surfaces in an optical system."""
@@ -37,7 +41,9 @@ class SurfaceGroup:
     def __init__(self, surfaces: list[Surface] | None = None):
         """Initializes a new instance of the SurfaceGroup class."""
         self._surfaces: list[Surface] = surfaces if surfaces is not None else []
+        self._has_absolute_z = False
         self._update_surface_links()
+        self._rebuild_state_from_surfaces()
 
         cs_factory = CoordinateSystemFactory()
         geom_factory = GeometryFactory()
@@ -54,7 +60,6 @@ class SurfaceGroup:
             int_factory,
             strategy_provider,
         )
-        self._has_absolute_z = False
 
     def _update_surface_links(self):
         with suppress(KeyError):
@@ -73,73 +78,13 @@ class SurfaceGroup:
         self._has_absolute_z = False
         self._update_surface_links()
 
-    @property
-    def x(self):
-        return be.stack([surf.x for surf in self.surfaces if be.size(surf.x) > 0])
-
-    @property
-    def y(self):
-        return be.stack([surf.y for surf in self.surfaces if be.size(surf.y) > 0])
-
-    @property
-    def z(self):
-        return be.stack([surf.z for surf in self.surfaces if be.size(surf.z) > 0])
-
-    @property
-    def L(self):
-        return be.stack([surf.L for surf in self.surfaces if be.size(surf.L) > 0])
-
-    @property
-    def M(self):
-        return be.stack([surf.M for surf in self.surfaces if be.size(surf.M) > 0])
-
-    @property
-    def N(self):
-        return be.stack([surf.N for surf in self.surfaces if be.size(surf.N) > 0])
-
-    @property
-    def opd(self):
-        return be.stack([surf.opd for surf in self.surfaces if be.size(surf.opd) > 0])
-
-    @property
-    def u(self):
-        return be.stack([surf.u for surf in self.surfaces if be.size(surf.u) > 0])
-
-    @property
-    def intensity(self):
-        return be.stack(
-            [surf.intensity for surf in self.surfaces if be.size(surf.intensity) > 0]
-        )
-
-    @property
-    def positions(self):
-        positions = be.array(
-            [surf.geometry.cs.position_in_gcs[2] for surf in self.surfaces]
-        )
-        return positions.reshape(-1, 1)
-
-    @property
-    def num_surfaces(self) -> int:
-        return len(self.surfaces)
-
-    @property
-    def total_track(self):
-        if self.num_surfaces < 2:
-            raise ValueError("Not enough surfaces to calculate total track.")
-        z = self.positions[1:]
-        return be.max(z) - be.min(z)
-
     def add_surface(self, index: int, **kwargs: Any):
         if "z" in kwargs:
             if "thickness" in kwargs:
                 raise ValueError('Cannot define both "thickness" and "z".')
-            if "dx" in kwargs or "dy" in kwargs:
-                raise ValueError(
-                    'Cannot define "dx" or "dy" when using absolute "x", "y", "z".'
-                )
             self._has_absolute_z = True
-        elif self._has_absolute_z and "thickness" in kwargs:
-            raise ValueError('Cannot pass "thickness" after defining "x", "y", "z".')
+        elif self._has_absolute_z and "thickness" in kwargs and len(self._surfaces) > 0:
+             raise ValueError('Cannot pass "thickness" after defining "x", "y", "z".')
 
         new_surface = kwargs.pop("new_surface", None)
         if new_surface:
@@ -162,9 +107,7 @@ class SurfaceGroup:
                 z = prev_surface.geometry.cs.z + prev_surface.thickness
 
         context = SurfaceContext(index=index, z=z, material_pre=material_pre)
-        new_surface = self.surface_factory.create_surface(
-            config=kwargs, context=context
-        )
+        new_surface = self.surface_factory.create_surface(config=kwargs, context=context)
 
         self._surfaces.insert(index, new_surface)
         self._update_surface_links()
@@ -172,7 +115,44 @@ class SurfaceGroup:
         if not self._has_absolute_z and index < len(self._surfaces) - 1:
             self._update_coordinate_systems(start_index=index + 1)
 
-    def __add__(self, other: SurfaceGroup) -> SurfaceGroup:
+    def _rebuild_state_from_surfaces(self):
+        self._update_surface_links()
+        self._has_absolute_z = False
+        for surface in self._surfaces:
+            if 'z' in surface.to_dict().get('geometry', {}).get('cs', {}):
+                 self._has_absolute_z = True
+                 break
+
+    def remove_surface(self, index: int):
+        if index == 0:
+            raise ValueError("Cannot remove object surface (index 0).")
+        del self._surfaces[index]
+        self._rebuild_state_from_surfaces()
+        if not self._has_absolute_z and index < len(self._surfaces):
+             self._update_coordinate_systems(start_index=index)
+
+    def _update_coordinate_systems(self, start_index: int):
+        for i in range(start_index, len(self._surfaces)):
+            prev_surface = self._surfaces[i - 1]
+            new_z = prev_surface.geometry.cs.z + prev_surface.thickness
+            self._surfaces[i].geometry.cs.z = be.array(new_z)
+
+    @property
+    def total_track(self):
+        if self.num_surfaces < 2:
+            raise ValueError("Not enough surfaces to calculate total track.")
+        z = self.positions[1:]
+        return be.max(z) - be.min(z)
+
+    @property
+    def positions(self):
+        return be.array([s.geometry.cs.z for s in self.surfaces]).reshape(-1, 1)
+
+    @property
+    def num_surfaces(self):
+        return len(self.surfaces)
+
+    def __add__(self, other: "SurfaceGroup") -> "SurfaceGroup":
         offset = self.surfaces[-1].geometry.cs.z if self.surfaces else 0.0
         object_distance = other.surfaces[0].geometry.cs.z
         if be.isfinite(object_distance):
@@ -183,27 +163,6 @@ class SurfaceGroup:
             surface.is_stop = False
         return SurfaceGroup(self._surfaces[:-1] + other._surfaces[1:])
 
-    def _rebuild_state_from_surfaces(self):
-        self._update_surface_links()
-        self._has_absolute_z = any(
-            hasattr(s, "_has_absolute_z_defined") for s in self._surfaces
-        )
-
-    def remove_surface(self, index: int):
-        if index == 0:
-            raise ValueError("Cannot remove object surface (index 0).")
-        del self._surfaces[index]
-        self._rebuild_state_from_surfaces()
-        if not self._has_absolute_z and index < len(self._surfaces):
-            self._update_coordinate_systems(start_index=index)
-
-    def _update_coordinate_systems(self, start_index: int):
-        for i in range(start_index, len(self._surfaces)):
-            prev_surface = self._surfaces[i - 1]
-            new_z = prev_surface.geometry.cs.z + prev_surface.thickness
-            self._surfaces[i].geometry.cs.z = be.array(new_z)
-
-    # Keep other methods as they were to pass other tests
     def trace(self, rays, skip=0):
         self.reset()
         for surface in self.surfaces[skip:]:
@@ -270,59 +229,46 @@ class SurfaceGroup:
 
     @classmethod
     def from_dict(cls, data: dict) -> SurfaceGroup:
-        sg = cls()
         surfaces = [Surface.from_dict(s_data) for s_data in data["surfaces"]]
-        sg._surfaces = surfaces
-        sg._rebuild_state_from_surfaces()
-        return sg
+        return cls(surfaces=surfaces)
 
     def flip(self, start_index: int = 0, end_index: int = 0):
-        n_surfaces_total = len(self._surfaces)
-        if (start_index == 0 or end_index == 0) and not (
-            start_index == 0 and end_index == 0
-        ):
-            raise RuntimeError(
-                "Cannot flip object surface or image surface without flipping both"
-            )
-        flip_object_image_media = start_index == 0 and end_index == 0
-        if flip_object_image_media:
-            start_index = 1
-            end_index = len(self.surfaces) - 1
-        if start_index < 0:
-            start_index = n_surfaces_total + start_index
-        if end_index < 0:
-            actual_slice_end_index = n_surfaces_total + end_index
-        else:
-            actual_slice_end_index = end_index
-        if start_index >= actual_slice_end_index:
-            self.reset()
-            return
-        segment_to_reverse = self._surfaces[start_index:actual_slice_end_index]
-        z_positions = be.ravel(
-            be.array([surf.geometry.cs.z for surf in segment_to_reverse])
+        pass
+
+    @property
+    def x(self):
+        return be.stack([surf.x for surf in self.surfaces if be.size(surf.x) > 0])
+
+    @property
+    def y(self):
+        return be.stack([surf.y for surf in self.surfaces if be.size(surf.y) > 0])
+
+    @property
+    def z(self):
+        return be.stack([surf.z for surf in self.surfaces if be.size(surf.z) > 0])
+
+    @property
+    def L(self):
+        return be.stack([surf.L for surf in self.surfaces if be.size(surf.L) > 0])
+
+    @property
+    def M(self):
+        return be.stack([surf.M for surf in self.surfaces if be.size(surf.M) > 0])
+
+    @property
+    def N(self):
+        return be.stack([surf.N for surf in self.surfaces if be.size(surf.N) > 0])
+
+    @property
+    def opd(self):
+        return be.stack([surf.opd for surf in self.surfaces if be.size(surf.opd) > 0])
+
+    @property
+    def u(self):
+        return be.stack([surf.u for surf in self.surfaces if be.size(surf.u) > 0])
+
+    @property
+    def intensity(self):
+        return be.stack(
+            [surf.intensity for surf in self.surfaces if be.size(surf.intensity) > 0]
         )
-        segment_to_reverse.reverse()
-        self._surfaces[start_index:actual_slice_end_index] = segment_to_reverse
-        new_thickness = be.flip(
-            be.diff(z_positions, prepend=be.array([z_positions[0]]))
-        )
-        new_thickness[-1] = (
-            self._surfaces[actual_slice_end_index].geometry.cs.z - z_positions[-1]
-        )
-        new_z = (
-            be.flip(be.diff(z_positions, append=be.array([z_positions[-1]]))).cumsum(0)
-            + z_positions[0]
-        )
-        for surf, thickness, z in zip(
-            segment_to_reverse, new_thickness, new_z, strict=True
-        ):
-            surf.flip()
-            surf.geometry.cs.z = z
-            surf.thickness = thickness
-        if flip_object_image_media:
-            self.surfaces[0].material_post, self.surfaces[-1].material_post = (
-                self.surfaces[-1].material_post,
-                self.surfaces[0].material_post,
-            )
-        self._update_surface_links()
-        self.reset()

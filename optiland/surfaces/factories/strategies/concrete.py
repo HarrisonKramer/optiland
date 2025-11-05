@@ -31,10 +31,8 @@ class StandardStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        surface_type = config.get("surface_type", "standard")
-        config_no_surface_type = dict(config)
-        config_no_surface_type.pop("surface_type", None)
-        return factory.create(surface_type, cs, **config_no_surface_type)
+        surface_type = config.pop("surface_type", "standard")
+        return factory.create(surface_type, cs, **config)
 
     def create_interaction_model(
         self, factory: InteractionModelFactory, config: dict, **kwargs: Any
@@ -56,7 +54,7 @@ class ParaxialStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        # Do not mutate config; ignore 'surface_type' if present
+        config.pop("surface_type", None)
         return factory.create("paraxial", cs, **config)
 
     def create_interaction_model(
@@ -75,7 +73,7 @@ class GratingStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        config.get("surface_type")
+        config.pop("surface_type", None)
         return factory.create("grating", cs, **config)
 
     def create_interaction_model(

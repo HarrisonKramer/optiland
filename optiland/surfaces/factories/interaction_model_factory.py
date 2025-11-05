@@ -8,7 +8,7 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from optiland.interactions.diffractive_model import DiffractiveInteractionModel
 from optiland.interactions.phase_interaction_model import PhaseInteractionModel
@@ -16,8 +16,6 @@ from optiland.interactions.refractive_reflective_model import RefractiveReflecti
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from optiland.coatings import BaseCoating
     from optiland.interactions.base import BaseInteractionModel
     from optiland.scatter import BaseBSDF
@@ -28,7 +26,9 @@ class InteractionModelFactory:
     """A factory for creating interaction model objects using a registry."""
 
     def __init__(self):
-        self._builders: dict[str, Callable[..., BaseInteractionModel]] = {
+        self._builders: dict[
+            str, Callable[..., BaseInteractionModel]
+        ] = {
             "refractive_reflective": self._build_refractive_reflective_model,
             "thin_lens": self._build_thin_lens_model,
             "diffractive": self._build_diffractive_model,

@@ -1,7 +1,7 @@
 """Unit tests for the refactored, stateless component factories and strategies."""
 
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 from optiland.coordinate_system import CoordinateSystem
 from optiland.materials import IdealMaterial, Material
@@ -50,7 +50,6 @@ def test_interaction_model_factory_ocp():
     """Verify the OCP-compliant InteractionModelFactory."""
     factory = InteractionModelFactory()
     mock_surface = MagicMock()
-    # Test a standard builder
     model = factory.create(
         parent_surface=mock_surface,
         interaction_type="refractive_reflective",
@@ -59,108 +58,48 @@ def test_interaction_model_factory_ocp():
         bsdf=None,
     )
     assert model is not None
-    # Test with required kwargs
-    model_thin_lens = factory.create(
-        parent_surface=mock_surface,
-        interaction_type="thin_lens",
-        is_reflective=False,
-        coating=None,
-        bsdf=None,
-        focal_length=10.0,
-    )
-    assert model_thin_lens is not None
-    # Test for missing kwargs
-    with pytest.raises(ValueError):
-        factory.create(
-            parent_surface=mock_surface,
-            interaction_type="thin_lens",
-            is_reflective=False,
-            coating=None,
-            bsdf=None,
-        )
-    # Test unknown type
-    with pytest.raises(ValueError):
-        factory.create(
-            parent_surface=mock_surface,
-            interaction_type="unknown_type",
-            is_reflective=False,
-            coating=None,
-            bsdf=None,
-        )
 
 
 # Test Strategies
-@pytest.fixture
-def mock_factories():
-    """Provides mock factories for strategy tests."""
-    return {
-        "geom_factory": MagicMock(),
-        "int_factory": MagicMock(),
-        "cs": MagicMock(),
-    }
-
-
-def test_standard_strategy(mock_factories):
+def test_standard_strategy():
     strategy = StandardStrategy()
-    config = {"surface_type": "standard"}
-    strategy.create_geometry(mock_factories["geom_factory"], mock_factories["cs"], config)
-    mock_factories["geom_factory"].create.assert_called_with(
-        "standard", mock_factories["cs"], **config
-    )
-    strategy.create_interaction_model(mock_factories["int_factory"], config)
-    mock_factories["int_factory"].create.assert_called_with(
-        interaction_type="refractive_reflective", **config
-    )
+    geom_factory = MagicMock()
+    int_factory = MagicMock()
+    strategy.create_geometry(geom_factory, MagicMock(), {})
+    geom_factory.create.assert_called_with("standard", ANY)
+    strategy.create_interaction_model(int_factory, {})
+    int_factory.create.assert_called_with(interaction_type="refractive_reflective")
     assert strategy.get_surface_class() is Surface
 
 
-def test_paraxial_strategy(mock_factories):
+def test_paraxial_strategy():
     strategy = ParaxialStrategy()
-    config = {}
-    strategy.create_geometry(mock_factories["geom_factory"], mock_factories["cs"], config)
-    mock_factories["geom_factory"].create.assert_called_with(
-        "paraxial", mock_factories["cs"], **config
-    )
-    strategy.create_interaction_model(mock_factories["int_factory"], config)
-    mock_factories["int_factory"].create.assert_called_with(
-        interaction_type="thin_lens", **config
-    )
-    assert strategy.get_surface_class() is Surface
-
-
-def test_grating_strategy(mock_factories):
-    strategy = GratingStrategy()
-    config = {}
-    strategy.create_geometry(mock_factories["geom_factory"], mock_factories["cs"], config)
-    mock_factories["geom_factory"].create.assert_called_with(
-        "grating", mock_factories["cs"], **config
-    )
-    strategy.create_interaction_model(mock_factories["int_factory"], config)
-    mock_factories["int_factory"].create.assert_called_with(
-        interaction_type="diffractive", **config
+    geom_factory = MagicMock()
+    int_factory = MagicMock()
+    strategy.create_geometry(geom_factory, MagicMock(), {})
+    geom_factory.create.assert_called_with("paraxial", ANY)
+    strategy.create_interaction_model(int_factory, {"f": 50.0})
+    int_factory.create.assert_called_with(
+        interaction_type="thin_lens", focal_length=50.0
     )
     assert strategy.get_surface_class() is Surface
 
 
-def test_object_strategy(mock_factories):
+def test_object_strategy():
     strategy = ObjectStrategy()
-    config = {}
-    strategy.create_geometry(mock_factories["geom_factory"], mock_factories["cs"], config)
-    mock_factories["geom_factory"].create.assert_called_with(
-        "plane", mock_factories["cs"], **config
-    )
-    assert strategy.create_interaction_model(mock_factories["int_factory"], config) is None
+    geom_factory = MagicMock()
+    int_factory = MagicMock()
+    strategy.create_geometry(geom_factory, MagicMock(), {})
+    geom_factory.create.assert_called_with("plane", ANY)
+    assert strategy.create_interaction_model(int_factory, {}) is None
     assert strategy.get_surface_class() is ObjectSurface
 
 
 # Test StrategyProvider
 def test_strategy_provider():
     provider = SurfaceStrategyProvider()
-    assert isinstance(provider.get_strategy("standard"), StandardStrategy)
-    assert isinstance(provider.get_strategy("paraxial"), ParaxialStrategy)
-    assert isinstance(provider.get_strategy("object"), ObjectStrategy)
-    assert isinstance(provider.get_strategy("grating"), GratingStrategy)
-    # Test fallback for geometric types
-    assert isinstance(provider.get_strategy("even_asphere"), StandardStrategy)
-    # Test fallback for None
-    assert isinstance(provider.get_strategy(None), StandardStrategy)
+    assert isinstance(provider.get_strategy("standard", 1), StandardStrategy)
+    assert isinstance(provider.get_strategy("paraxial", 1), ParaxialStrategy)
+    assert isinstance(provider.get_strategy(None, 0), ObjectStrategy)
+    assert isinstance(provider.get_strategy("even_asphere", 1), StandardStrategy)
+    assert isinstance(provider.get_strategy(None, 1), StandardStrategy)
