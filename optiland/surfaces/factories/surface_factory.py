@@ -90,13 +90,13 @@ class SurfaceFactory:
         )
 
         # Build pre and post surface materials
-        material_pre, material_post = self.material_factory.create(
+        _, material_post = self.material_factory.create(
             index, material, self._surface_group
         )
 
         # Build coating
         coating = self._coating_factory.create(
-            kwargs.get("coating"), material_pre, material_post
+            kwargs.get("coating"), None, material_post
         )
 
         is_reflective = material == "mirror"
@@ -141,7 +141,6 @@ class SurfaceFactory:
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
-            previous_surface=None,  #  To be fixed by surface_group.add_surface()
             geometry=geometry,
             material_post=material_post,
             is_stop=is_stop,

@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
+from optiland.raytrace.context import TracingContext
 
 if TYPE_CHECKING:
     from optiland._types import DistributionType
@@ -79,13 +80,15 @@ class RealRayTracer:
         rays = self.ray_generator.generate_rays(
             Hx_full, Hy_full, Px_full, Py_full, wavelength
         )
-        self.optic.surface_group.trace(rays)
+        initial_context = TracingContext(
+            material=self.optic.object_surface.material_post
+        )
+        final_context = self.optic.surface_group.trace(rays, initial_context, skip=1)
 
         # Propagate to the image surface
         if self.optic.image_surface:
-            last_surface = self.optic.surface_group.surfaces[-1]
-            last_surface.material_post.propagation_model.propagate(
-                rays, last_surface.thickness
+            final_context.material.propagation_model.propagate(
+                rays, self.optic.image_surface.thickness
             )
 
         if isinstance(rays, PolarizedRays):
@@ -119,12 +122,14 @@ class RealRayTracer:
         Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        self.optic.surface_group.trace(rays)
+        initial_context = TracingContext(
+            material=self.optic.object_surface.material_post
+        )
+        final_context = self.optic.surface_group.trace(rays, initial_context, skip=1)
 
         # Propagate to the image surface
-        last_surface = self.optic.surface_group.surfaces[-1]
-        last_surface.material_post.propagation_model.propagate(
-            rays, last_surface.thickness
+        final_context.material.propagation_model.propagate(
+            rays, self.optic.image_surface.thickness
         )
 
         # update intensity

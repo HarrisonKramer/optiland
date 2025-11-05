@@ -24,7 +24,7 @@ class ImageSurface(Surface):
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
-        material_pre (BaseMaterial): The material before the surface.
+        material_post (BaseMaterial): The material after the surface.
         aperture (BaseAperture, optional): The aperture of the surface.
             Defaults to None.
 
@@ -32,13 +32,11 @@ class ImageSurface(Surface):
 
     def __init__(
         self,
-        previous_surface: Surface | None,
         geometry: BaseGeometry,
         material_post: BaseMaterial,
         aperture: BaseAperture = None,
     ):
         super().__init__(
-            previous_surface=previous_surface,
             geometry=geometry,
             material_post=material_post,
             is_stop=False,

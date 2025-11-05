@@ -13,10 +13,9 @@ Kramer Harrison, 2023
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from weakref import WeakMethod
 
 import optiland.backend as be
-from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.coatings import BaseCoating
 from optiland.geometries import BaseGeometry
 from optiland.interactions.base import BaseInteractionModel
 from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
@@ -24,10 +23,11 @@ from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import BaseRays, ParaxialRays, RealRays
+from optiland.raytrace.context import TracingContext
 from optiland.scatter import BaseBSDF
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    pass
 
 
 class Surface:
@@ -35,7 +35,6 @@ class Surface:
 
     Args:
         geometry (BaseGeometry): The geometry of the surface.
-        previous_surface (Surface): The surface preceding this instance.
         material_post (BaseMaterial): The material after the surface.
         is_stop (bool, optional): Indicates if the surface is the aperture
             stop. Defaults to False.
@@ -53,7 +52,6 @@ class Surface:
 
     def __init__(
         self,
-        previous_surface: Surface | None,
         material_post: BaseMaterial,
         geometry: BaseGeometry,
         is_stop: bool = False,
@@ -63,7 +61,6 @@ class Surface:
         interaction_model: BaseInteractionModel | None = None,
     ):
         self.geometry = geometry
-        self._previous_surface = previous_surface
         self._material_post = material_post
         self.is_stop = is_stop
         self.aperture = configure_aperture(aperture)
@@ -83,65 +80,7 @@ class Surface:
             self.interaction_model.parent_surface = self
 
         self.thickness = 0.0  # used for surface positioning
-        self._listeners = []
         self.reset()
-
-    def __getstate__(self):
-        # Remove self._listeners when a deep copy is made
-        state = self.__dict__.copy()
-        del state["_listeners"]
-        return state
-
-    def __setstate__(self, state):
-        # Initialize self._listeners to an empty list after deepcopy
-        self.__dict__.update(state)
-        self._listeners = []
-
-    def _update_callback(self, caller: Surface) -> None:
-        # Called when a surface that we're related to changes
-        if caller != self.previous_surface:
-            raise RuntimeError("Unexpected Surface called _update_callback")
-
-        # Handle the changes. Right now, we're only interested in a change in refractive
-        # index. If this surface's interaction model has a Fresnel coating, update it:
-        if self.coating is not None:
-            self.set_fresnel_coating()
-
-    def _register_callback(self, callback: Callable):
-        if callback not in self._listeners:
-            self._listeners.append(
-                WeakMethod(callback, lambda obj: self._deregister_callback(obj))
-            )
-
-    def _deregister_callback(self, callback: Callable):
-        if isinstance(callback, WeakMethod) and callback in self._listeners:
-            self._listeners.remove(callback)
-            return
-        for weakref in self._listeners:
-            if weakref() == callback:
-                self._listeners.remove(weakref)
-
-    @property
-    def previous_surface(self):
-        return self._previous_surface
-
-    @previous_surface.setter
-    def previous_surface(self, surface: Surface):
-        if self._previous_surface is not None:
-            self._previous_surface._deregister_callback(self._update_callback)
-
-        self._previous_surface = surface
-        if surface is not None:
-            surface._register_callback(self._update_callback)
-        self._update_callback(surface)  # Explicit trigger
-
-    @property
-    def material_pre(self) -> BaseMaterial | None:
-        return (
-            self.previous_surface.material_post
-            if self.previous_surface is not None
-            else self.material_post
-        )
 
     @property
     def material_post(self) -> BaseMaterial | None:
@@ -150,13 +89,6 @@ class Surface:
     @material_post.setter
     def material_post(self, material: BaseMaterial):
         self._material_post = material
-        # Update Fresnel-based coating for new material
-        if hasattr(self, "interaction_model") and isinstance(
-            getattr(self.interaction_model, "coating", None), FresnelCoating
-        ):
-            self.set_fresnel_coating()
-        for weakref_callback in self._listeners:
-            weakref_callback()(self)
 
     @property
     def coating(self):
@@ -165,7 +97,6 @@ class Surface:
 
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
-        self.material_post = self.previous_surface.material_post
         self.geometry.flip()
 
         # Re-create the interaction model with flipped properties
@@ -183,14 +114,15 @@ class Surface:
         super().__init_subclass__(**kwargs)
         Surface._registry[cls.__name__] = cls
 
-    def trace(self, rays: BaseRays):
+    def trace(self, rays: BaseRays, context: TracingContext) -> TracingContext:
         """Traces the given rays through the surface.
 
         Args:
             rays (BaseRays): The rays to be traced.
+            context (TracingContext): The tracing context.
 
         Returns:
-            BaseRays: The traced rays.
+            TracingContext: The new tracing context after this surface.
 
         """
         # reset recorded information
@@ -205,24 +137,24 @@ class Surface:
             rays.propagate(t)
 
             # interact with surface
-            rays = self.interaction_model.interact_paraxial_rays(rays)
+            self.interaction_model.interact_paraxial_rays(rays, context)
 
         elif isinstance(rays, RealRays):
             # find distance from rays to the surface
             t = self.geometry.distance(rays)
 
             # propagate the rays a distance t through material
-            self.material_pre.propagation_model.propagate(rays, t)
+            context.material.propagation_model.propagate(rays, t)
 
             # update OPD
-            rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
+            rays.opd = rays.opd + be.abs(t * context.material.n(rays.w))
 
             # if there is a limiting aperture, clip rays outside of it
             if self.aperture:
                 self.aperture.clip(rays)
 
             # interact with surface
-            rays = self.interaction_model.interact_real_rays(rays)
+            self.interaction_model.interact_real_rays(rays, context)
 
         # inverse transform coordinate system
         self.geometry.globalize(rays)
@@ -230,7 +162,7 @@ class Surface:
         # record ray information
         self._record(rays)
 
-        return rays
+        return TracingContext(material=self.material_post)
 
     def set_semi_aperture(self, r_max: float):
         """Sets the physical semi-aperture of the surface.
@@ -256,12 +188,6 @@ class Surface:
         self.intensity = be.empty(0)
         self.aoi = be.empty(0)
         self.opd = be.empty(0)
-
-    def set_fresnel_coating(self):
-        """Sets the coating of the surface to a Fresnel coating."""
-        self.interaction_model.coating = FresnelCoating(
-            self.material_pre, self.material_post
-        )
 
     def _record(self, rays):
         """Records the ray information.
@@ -369,7 +295,6 @@ class Surface:
 
         surface_class = cls._registry.get(surface_type, cls)
         surface = surface_class(
-            previous_surface=None,
             geometry=geometry,
             material_post=material_post,
             is_stop=data.get("is_stop", False),

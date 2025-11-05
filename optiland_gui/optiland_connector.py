@@ -568,7 +568,11 @@ class OptilandConnector(QObject):
         new_material_name = str(value).strip().lower()
         if new_material_name == "mirror":
             surface.is_reflective = True
-            surface.material_post = surface.material_pre or IdealMaterial(n=1.0)
+            # In the new model, material_post for a mirror should be the same as
+            # the material of the context, which is handled during trace. For
+            # GUI display purposes, we can leave it as is or set to Air.
+            if not surface.material_post:
+                surface.material_post = IdealMaterial(n=1.0)
         else:
             surface.is_reflective = False
             if new_material_name == "air":
@@ -581,12 +585,6 @@ class OptilandConnector(QObject):
                 except ValueError:
                     # Otherwise, treat it as a catalog material name
                     surface.material_post = OptilandMaterial(name=str(value).strip())
-
-        # Propagate the material to the next surface's material_pre
-        row = self._optic.surface_group.surfaces.index(surface)
-        if row + 1 < self.get_surface_count():
-            next_surface = self._optic.surface_group.surfaces[row + 1]
-            next_surface.material_pre = surface.material_post
 
     def _set_thickness_data(self, surface, value):
         row = self._optic.surface_group.surfaces.index(surface)

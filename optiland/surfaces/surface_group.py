@@ -10,7 +10,6 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from contextlib import suppress
 from functools import cached_property
 from typing import TYPE_CHECKING
 
@@ -22,6 +21,8 @@ from optiland.surfaces.standard_surface import Surface
 if TYPE_CHECKING:
     from optiland._types import SurfaceType
     from optiland.materials import BaseMaterial
+    from optiland.rays import BaseRays
+    from optiland.raytrace.context import TracingContext
 
 
 class SurfaceGroup:
@@ -45,20 +46,8 @@ class SurfaceGroup:
             self._surfaces = []
         else:
             self._surfaces = surfaces
-            self._update_surface_links()
 
         self.surface_factory = SurfaceFactory(self)
-
-    def _update_surface_links(self):
-        with suppress(KeyError):
-            self.__dict__.pop("surfaces")
-        surfaces = self._surfaces
-        if surfaces:
-            surfaces[0].previous_surface = None
-
-            if len(surfaces) > 1:
-                for idx, surface in enumerate(surfaces[1:]):
-                    surface.previous_surface = surfaces[idx]
 
     def __add__(self, other):
         """Add two SurfaceGroup objects together.
@@ -90,7 +79,6 @@ class SurfaceGroup:
     def clear(self):
         """Clears the list of surfaces."""
         self._surfaces = []
-        self._update_surface_links()
 
     @property
     def x(self):
@@ -229,19 +217,26 @@ class SurfaceGroup:
         t = self.positions
         return t[surface_number + 1] - t[surface_number]
 
-    def trace(self, rays, skip=0):
+    def trace(
+        self, rays: BaseRays, context: TracingContext, skip: int = 0
+    ) -> TracingContext:
         """Trace the given rays through the surfaces.
 
         Args:
             rays (BaseRays): List of rays to be traced.
+            context (TracingContext): The initial tracing context.
             skip (int, optional): Number of surfaces to skip before tracing.
                 Defaults to 0.
 
+        Returns:
+            TracingContext: The final tracing context after tracing through all
+                surfaces.
         """
         self.reset()
+        current_context = context
         for surface in self.surfaces[skip:]:
-            surface.trace(rays)
-        return rays
+            current_context = surface.trace(rays, current_context)
+        return current_context
 
     def add_surface(
         self,
@@ -295,7 +290,6 @@ class SurfaceGroup:
 
         if index is None:
             self._surfaces.append(new_surface)
-            self._update_surface_links()
             index = len(self._surfaces) - 1
         else:
             if index < 0:
@@ -311,7 +305,6 @@ class SurfaceGroup:
                 )
 
             self._surfaces.insert(index, new_surface)
-            self._update_surface_links()
 
             # Update coordinate systems if surface was inserted
             if not self.surface_factory.use_absolute_cs and index < (
@@ -355,8 +348,6 @@ class SurfaceGroup:
             if was_not_last_surface:
                 self._update_coordinate_systems(start_index=index)
 
-        self._update_surface_links()
-
     def reset(self):
         """Resets all the surfaces in the collection.
 
@@ -369,8 +360,7 @@ class SurfaceGroup:
     def set_fresnel_coatings(self):
         """Set Fresnel coatings on all surfaces in the group."""
         for surface in self.surfaces[1:-1]:
-            if surface.material_pre != surface.material_post:
-                surface.set_fresnel_coating()
+            surface.set_fresnel_coating()
 
     def to_dict(self):
         """Convert the surface group to a dictionary.
@@ -535,5 +525,4 @@ class SurfaceGroup:
                 self.surfaces[-1].material_post,
                 self.surfaces[0].material_post,
             )
-        self._update_surface_links()
         self.reset()

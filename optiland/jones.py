@@ -20,6 +20,7 @@ import optiland.backend as be
 
 if TYPE_CHECKING:
     from optiland.rays import RealRays
+    from optiland.raytrace.context import TracingContext
 
 
 class BaseJones(ABC):
@@ -34,6 +35,7 @@ class BaseJones(ABC):
     def calculate_matrix(
         self,
         rays: RealRays,
+        context: TracingContext,
         reflect: bool = False,
         aoi: be.ndarray = None,
     ):
@@ -41,6 +43,7 @@ class BaseJones(ABC):
 
         Args:
             rays (RealRays): Object representing the rays.
+            context (TracingContext): The tracing context.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
             aoi (be.ndarray, optional): Array representing the angle of
@@ -57,20 +60,18 @@ class JonesFresnel(BaseJones):
     """Class representing the Jones matrix for Fresnel calculations.
 
     Args:
-        material_pre (Material): Material object representing the
-            material before the surface.
         material_post (Material): Material object representing the
             material after the surface.
 
     """
 
-    def __init__(self, material_pre, material_post):
-        self.material_pre = material_pre
+    def __init__(self, material_post):
         self.material_post = material_post
 
     def calculate_matrix(
         self,
         rays: RealRays,
+        context: TracingContext,
         reflect: bool = False,
         aoi: be.ndarray = None,
     ):
@@ -78,6 +79,7 @@ class JonesFresnel(BaseJones):
 
         Args:
             rays (RealRays): Object representing the rays.
+            context (TracingContext): The tracing context.
             reflect (bool, optional): Indicates whether the rays are reflected
                 or not. Defaults to False.
             aoi (be.ndarray, optional): Array representing the angle of
@@ -88,7 +90,7 @@ class JonesFresnel(BaseJones):
 
         """
         # define local variables
-        n1 = self.material_pre.n(rays.w)
+        n1 = context.material.n(rays.w)
         n2 = self.material_post.n(rays.w)
 
         # precomputations for speed

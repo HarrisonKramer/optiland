@@ -42,8 +42,16 @@ class MaterialFactory:
         elif index == surface_group.num_surfaces and self.last_material is not None:
             material_pre = self.last_material  # Image surface
         else:
-            previous_surface = surface_group.surfaces[index - 1]
-            material_pre = previous_surface.material_post
+            # This logic is now obsolete but kept for API compatibility until
+            # the full refactor is complete.
+            previous_surface = (
+                surface_group.surfaces[index - 1]
+                if index > 0 and len(surface_group.surfaces) > index - 1
+                else None
+            )
+            material_pre = (
+                previous_surface.material_post if previous_surface is not None else None
+            )
 
         # Determine material after the surface
         material_post = self._configure_post_material(material_spec)

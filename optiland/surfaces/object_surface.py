@@ -38,7 +38,6 @@ class ObjectSurface(Surface):
     def __init__(self, geometry, material_post, comment=""):
         super().__init__(
             geometry=geometry,
-            previous_surface=None,
             material_post=material_post,
             is_stop=False,
             aperture=None,
@@ -124,6 +123,3 @@ class ObjectSurface(Surface):
         comment = data.get("comment", "")
         return cls(geometry, material_post, comment=comment)
 
-    @property
-    def material_pre(self):
-        return self.material_post
