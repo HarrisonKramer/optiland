@@ -10,8 +10,6 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import Union
-
 from optiland.materials import BaseMaterial, IdealMaterial, Material
 
 
@@ -20,8 +18,8 @@ class MaterialFactory:
 
     @staticmethod
     def create(
-        material_spec: Union[BaseMaterial, tuple, str, None]
-    ) -> Union[BaseMaterial, None]:
+        material_spec: BaseMaterial | tuple | str | None,
+    ) -> BaseMaterial | None:
         """Creates a material instance based on the given specification.
 
         This is a pure function that converts a material specification into a

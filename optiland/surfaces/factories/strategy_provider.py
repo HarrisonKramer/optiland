@@ -8,13 +8,17 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from optiland.surfaces.factories.strategies.base import BaseSurfaceStrategy
+from typing import TYPE_CHECKING
+
 from optiland.surfaces.factories.strategies.concrete import (
     GratingStrategy,
     ObjectStrategy,
     ParaxialStrategy,
     StandardStrategy,
 )
+
+if TYPE_CHECKING:
+    from optiland.surfaces.factories.strategies.base import BaseSurfaceStrategy
 
 
 class SurfaceStrategyProvider:
@@ -29,9 +33,7 @@ class SurfaceStrategyProvider:
         }
         self._default_strategy = self._strategies["standard"]
 
-    def get_strategy(
-        self, surface_type: str | None, index: int
-    ) -> BaseSurfaceStrategy:
+    def get_strategy(self, surface_type: str | None, index: int) -> BaseSurfaceStrategy:
         """Returns the strategy for the given surface type and index.
 
         The `index` is used to enforce the ObjectStrategy for the first surface.

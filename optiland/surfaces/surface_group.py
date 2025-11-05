@@ -12,11 +12,10 @@ from __future__ import annotations
 
 from contextlib import suppress
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import optiland.backend as be
 from optiland.coatings import BaseCoatingPolarized
-from optiland.materials.base import BaseMaterial
 from optiland.surfaces.factories.coating_factory import CoatingFactory
 from optiland.surfaces.factories.coordinate_system_factory import (
     CoordinateSystemFactory,
@@ -30,9 +29,6 @@ from optiland.surfaces.factories.strategy_provider import SurfaceStrategyProvide
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
 from optiland.surfaces.factories.types import SurfaceContext
 from optiland.surfaces.standard_surface import Surface
-
-if TYPE_CHECKING:
-    from optiland._types import SurfaceType
 
 
 class SurfaceGroup:
@@ -143,7 +139,7 @@ class SurfaceGroup:
                 )
             self._has_absolute_z = True
         elif self._has_absolute_z and "thickness" in kwargs:
-             raise ValueError('Cannot pass "thickness" after defining "x", "y", "z".')
+            raise ValueError('Cannot pass "thickness" after defining "x", "y", "z".')
 
         new_surface = kwargs.pop("new_surface", None)
         if new_surface:
@@ -176,7 +172,7 @@ class SurfaceGroup:
         if not self._has_absolute_z and index < len(self._surfaces) - 1:
             self._update_coordinate_systems(start_index=index + 1)
 
-    def __add__(self, other: "SurfaceGroup") -> "SurfaceGroup":
+    def __add__(self, other: SurfaceGroup) -> SurfaceGroup:
         offset = self.surfaces[-1].geometry.cs.z if self.surfaces else 0.0
         object_distance = other.surfaces[0].geometry.cs.z
         if be.isfinite(object_distance):
@@ -199,7 +195,7 @@ class SurfaceGroup:
         del self._surfaces[index]
         self._rebuild_state_from_surfaces()
         if not self._has_absolute_z and index < len(self._surfaces):
-             self._update_coordinate_systems(start_index=index)
+            self._update_coordinate_systems(start_index=index)
 
     def _update_coordinate_systems(self, start_index: int):
         for i in range(start_index, len(self._surfaces)):
