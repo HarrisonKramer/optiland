@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     # pragma: no cover
     from optiland.coatings import BaseCoating
     from optiland.rays import ParaxialRays, RealRays
+    from optiland.raytrace.context import TracingContext
     from optiland.scatter import BaseBSDF
     from optiland.surfaces import Surface
 
@@ -57,12 +58,14 @@ class BaseInteractionModel(ABC):
         BaseInteractionModel._registry[cls.__name__] = cls
 
     @abstractmethod
-    def interact_real_rays(self, rays: RealRays) -> RealRays:
+    def interact_real_rays(self, rays: RealRays, context: TracingContext) -> RealRays:
         """Interact with real rays."""
         pass  # pragma: no cover
 
     @abstractmethod
-    def interact_paraxial_rays(self, rays: ParaxialRays) -> ParaxialRays:
+    def interact_paraxial_rays(
+        self, rays: ParaxialRays, context: TracingContext
+    ) -> ParaxialRays:
         """Interact with paraxial rays."""
         pass  # pragma: no cover
 

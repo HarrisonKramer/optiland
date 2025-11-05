@@ -16,6 +16,7 @@ from optiland.materials import BaseMaterial
 
 if TYPE_CHECKING:
     from optiland.rays import RealRays
+    from optiland.raytrace.context import TracingContext
 
 
 class BaseCoating(ABC):
@@ -40,6 +41,7 @@ class BaseCoating(ABC):
     def interact(
         self,
         rays: RealRays,
+        context: TracingContext,
         reflect: bool = False,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
@@ -49,6 +51,7 @@ class BaseCoating(ABC):
 
         Args:
             rays (RealRays): The rays incident on the coating.
+            context (TracingContext): The tracing context.
             reflect (bool, optional): Flag indicating whether to perform
                 reflection (True) or transmission (False). Defaults to False.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
@@ -60,33 +63,14 @@ class BaseCoating(ABC):
 
         """
         if reflect:
-            return self.reflect(rays, nx, ny, nz)
-        return self.transmit(rays, nx, ny, nz)
-
-    def _compute_aoi(self, rays, nx, ny, nz):
-        """Computes the angle of incidence for the given rays and surface normals.
-
-        Args:
-            rays (RealRays): The incident rays.
-            nx (be.ndarray): The x-component of the surface normal vectors at each ray's
-                intersection point.
-            ny (be.ndarray): The y-component of the surface normal vectors at each ray's
-                intersection point.
-            nz (be.ndarray): The z-component of the surface normal vectors at each ray's
-                intersection point.
-
-        Returns:
-            be.ndarray: The angle of incidence for each ray.
-
-        """
-        dot = be.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
-        dot = be.clip(dot, -1, 1)  # required due to numerical precision
-        return be.arccos(dot)
+            return self.reflect(rays, context, nx, ny, nz)
+        return self.transmit(rays, context, nx, ny, nz)
 
     @abstractmethod
     def reflect(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -95,6 +79,7 @@ class BaseCoating(ABC):
 
         Args:
             rays (RealRays): The rays incident on the coating.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
             ny (be.ndarray, optional): The y-component of the surface normal vectors.
             nz (be.ndarray, optional): The z-component of the surface normal vectors.
@@ -109,6 +94,7 @@ class BaseCoating(ABC):
     def transmit(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -117,6 +103,7 @@ class BaseCoating(ABC):
 
         Args:
             rays (RealRays): The rays incident on the coating.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
             ny (be.ndarray, optional): The y-component of the surface normal vectors.
             nz (be.ndarray, optional): The z-component of the surface normal vectors.
@@ -186,6 +173,7 @@ class SimpleCoating(BaseCoating):
     def reflect(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -194,6 +182,7 @@ class SimpleCoating(BaseCoating):
 
         Args:
             rays (RealRays): The rays incident on the coating.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
             ny (be.ndarray, optional): The y-component of the surface normal vectors.
             nz (be.ndarray, optional): The z-component of the surface normal vectors.
@@ -208,6 +197,7 @@ class SimpleCoating(BaseCoating):
     def transmit(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -217,6 +207,7 @@ class SimpleCoating(BaseCoating):
 
         Args:
             rays (RealRays): The rays incident on the coating.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
             ny (be.ndarray, optional): The y-component of the surface normal vectors.
             nz (be.ndarray, optional): The z-component of the surface normal vectors.
@@ -270,6 +261,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     def reflect(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -278,6 +270,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Args:
             rays (RealRays): The rays to be reflected.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vector.
             ny (be.ndarray, optional): The y-component of the surface normal vector.
             nz (be.ndarray, optional): The z-component of the surface normal vector.
@@ -286,7 +279,10 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             RealRays: The updated rays after reflection.
 
         """
-        aoi = self._compute_aoi(rays, nx, ny, nz)
+        dot = be.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
+        dot = be.clip(dot, -1, 1)
+        aoi = be.arccos(dot)
+
         jones = self.jones.calculate_matrix(rays, reflect=True, aoi=aoi)
         rays.update(jones)
         return rays
@@ -294,6 +290,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     def transmit(
         self,
         rays: RealRays,
+        context: TracingContext,
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
@@ -302,6 +299,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
 
         Args:
             rays (RealRays): The rays to be transmitted.
+            context (TracingContext): The tracing context.
             nx (be.ndarray, optional): The x-component of the surface normal vector.
             ny (be.ndarray, optional): The y-component of the surface normal vector.
             nz (be.ndarray, optional): The z-component of the surface normal vector.
@@ -310,7 +308,10 @@ class BaseCoatingPolarized(BaseCoating, ABC):
             RealRays: The updated rays after transmission through a surface.
 
         """
-        aoi = self._compute_aoi(rays, nx, ny, nz)
+        dot = be.abs(nx * rays.L0 + ny * rays.M0 + nz * rays.N0)
+        dot = be.clip(dot, -1, 1)
+        aoi = be.arccos(dot)
+
         jones = self.jones.calculate_matrix(rays, reflect=False, aoi=aoi)
         rays.update(jones)
         return rays
