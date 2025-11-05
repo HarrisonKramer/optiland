@@ -56,7 +56,7 @@ class ParaxialStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        config.pop("surface_type", None)
+        # Do not mutate config; ignore 'surface_type' if present
         return factory.create("paraxial", cs, **config)
 
     def create_interaction_model(
