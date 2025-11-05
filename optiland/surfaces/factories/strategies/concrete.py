@@ -31,8 +31,10 @@ class StandardStrategy(BaseSurfaceStrategy):
     def create_geometry(
         self, factory: GeometryFactory, cs: CoordinateSystem, config: dict
     ) -> BaseGeometry:
-        surface_type = config.pop("surface_type", "standard")
-        return factory.create(surface_type, cs, **config)
+        surface_type = config.get("surface_type", "standard")
+        config_no_surface_type = dict(config)
+        config_no_surface_type.pop("surface_type", None)
+        return factory.create(surface_type, cs, **config_no_surface_type)
 
     def create_interaction_model(
         self, factory: InteractionModelFactory, config: dict, **kwargs: Any
