@@ -99,40 +99,48 @@ class ZemaxToOpticConverter:
             translation, _ = self.current_cs.get_effective_transform()
             rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
             coeffs = self._configure_surface_coefficients(surf)
-            thickness = surf.get("thickness", 0.0)
 
-            # special care now, we ramify. for object surface,
-            # if DISZ == inf, then keep infinity
+            # Prepare surface parameters
+            surface_params = {
+                "index": surf_idx,
+                "surface_type": surf["type"],
+                "conic": surf.get("conic"),
+                "is_stop": surf.get("is_stop", False),
+                "material": surf.get("material"),
+                "coefficients": coeffs,
+            }
+
+            if surf["type"] == "toroidal":
+                radius_y = surf.get("param_1", 0.0)
+                if radius_y == 0.0:
+                    radius_y = be.inf
+                surface_params["radius_y"] = radius_y
+                surface_params["radius_x"] = surf.get("radius")
+            else:
+                surface_params["radius"] = surf.get("radius")
+
+            # Handle thickness and coordinate system parameters
+            thickness = surf.get("thickness", 0.0)
             if be.isinf(float(thickness)):
-                self.optic.add_surface(
-                    index=surf_idx,
-                    surface_type=surf["type"],
-                    radius=surf.get("radius"),
-                    conic=surf.get("conic"),
-                    thickness=thickness,
-                    is_stop=surf.get("is_stop", False),
-                    material=surf.get("material"),
-                    coefficients=coeffs,
-                    rx=float(rx_),
-                    ry=float(ry_),
-                    rz=float(rz_),
+                # For surfaces at infinity, set thickness and orientation
+                surface_params["thickness"] = thickness
+                surface_params.update(
+                    {"rx": float(rx_), "ry": float(ry_), "rz": float(rz_)}
                 )
-            else:  # normal surface, we pass no thickness argument
-                self.optic.add_surface(
-                    index=surf_idx,
-                    surface_type=surf["type"],
-                    radius=surf.get("radius"),
-                    conic=surf.get("conic"),
-                    is_stop=surf.get("is_stop", False),
-                    material=surf.get("material"),
-                    coefficients=coeffs,
-                    x=float(translation[0]),
-                    y=float(translation[1]),
-                    z=float(translation[2]),
-                    rx=float(rx_),
-                    ry=float(ry_),
-                    rz=float(rz_),
+            else:
+                # For normally positioned surfaces, set position and orientation
+                surface_params.update(
+                    {
+                        "x": float(translation[0]),
+                        "y": float(translation[1]),
+                        "z": float(translation[2]),
+                        "rx": float(rx_),
+                        "ry": float(ry_),
+                        "rz": float(rz_),
+                    }
                 )
+
+            self.optic.add_surface(**surface_params)
             surf_idx = surf_idx + 1
 
             # we need to advance the cs by the surface thickness
@@ -164,27 +172,39 @@ class ZemaxToOpticConverter:
             data (dict): The data for the surface.
         """
         coefficients = self._configure_surface_coefficients(data)
-        extra_params = {}
+
+        # Prepare surface parameters, starting with common ones
+        surface_params = {
+            "index": index,
+            "surface_type": data["type"],
+            "conic": data["conic"],
+            "thickness": data["thickness"],
+            "is_stop": data["is_stop"],
+            "material": data["material"],
+            "coefficients": coefficients,
+        }
+
         if data["type"] == "coordinate_break":
             # map the zmx PARM values to the actual decenters and rotations
-            extra_params["dx"] = data.get("param_0", 0.0)
-            extra_params["dy"] = data.get("param_1", 0.0)
+            surface_params["dx"] = data.get("param_0", 0.0)
+            surface_params["dy"] = data.get("param_1", 0.0)
             # convert degrees to radians
-            extra_params["rx"] = be.deg2rad(be.array(data.get("param_2", 0.0)))
-            extra_params["ry"] = be.deg2rad(be.array(data.get("param_3", 0.0)))
-            extra_params["rz"] = be.deg2rad(be.array(data.get("param_4", 0.0)))
-            extra_params["order_flag"] = data.get("param_5", 0.0)
-        self.optic.add_surface(
-            index=index,
-            surface_type=data["type"],
-            radius=data["radius"],
-            conic=data["conic"],
-            thickness=data["thickness"],
-            is_stop=data["is_stop"],
-            material=data["material"],
-            coefficients=coefficients,
-            **extra_params,
-        )
+            surface_params["rx"] = be.deg2rad(be.array(data.get("param_2", 0.0)))
+            surface_params["ry"] = be.deg2rad(be.array(data.get("param_3", 0.0)))
+            surface_params["rz"] = be.deg2rad(be.array(data.get("param_4", 0.0)))
+            surface_params["order_flag"] = data.get("param_5", 0.0)
+
+        if data["type"] == "toroidal":
+            radius_y = data.get("param_1", 0.0)
+            if radius_y == 0.0:
+                radius_y = be.inf
+            surface_params["radius_y"] = radius_y
+            surface_params["radius_x"] = data["radius"]
+        else:
+            # For all other surfaces, use the standard radius.
+            surface_params["radius"] = data["radius"]
+
+        self.optic.add_surface(**surface_params)
 
     def _configure_surface_coefficients(self, data: dict):
         """Configures the aspheric coefficients for a surface.
@@ -201,14 +221,14 @@ class ZemaxToOpticConverter:
             ValueError: If the surface type is unsupported for coefficients.
         """
         surf_type = data["type"]
-        if surf_type == "standard" or surf_type == "coordinate_break":
+        if surf_type in ["standard", "coordinate_break", "toroidal"]:
             return None
         if surf_type in ["even_asphere", "odd_asphere"]:
             coefficients = []
             for k in range(8):
                 coefficients.append(data[f"param_{k}"])
             return coefficients
-        raise ValueError("Unsupported surface type.")
+        raise ValueError(f"Unsupported Zemax surface type: {surf_type}")
 
     def _configure_aperture(self):
         """Configures the aperture for the optic."""

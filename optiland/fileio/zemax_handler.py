@@ -308,6 +308,7 @@ class ZemaxDataParser:
             "EVENASPH": "even_asphere",
             "ODDASPHE": "odd_asphere",
             "COORDBRK": "coordinate_break",
+            "TOROIDAL": "toroidal",
         }.get(data[1], "unsupported")
 
     def _read_surface_parameter(self, data):
