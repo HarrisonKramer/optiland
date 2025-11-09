@@ -308,7 +308,8 @@ class ZemaxDataParser:
             "EVENASPH": "even_asphere",
             "ODDASPHE": "odd_asphere",
             "COORDBRK": "coordinate_break",
-        }.get(data[1], "unsupported")
+            "TOROIDAL": "toroidal",
+        }.get(data[1], data[1].lower())  # Default to lowercased raw value
 
     def _read_surface_parameter(self, data):
         key = f"param_{int(data[1]) - 1}"

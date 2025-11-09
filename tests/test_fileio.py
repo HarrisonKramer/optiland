@@ -151,6 +151,21 @@ class TestEndToEnd:
         assert optic.aperture.ap_type == "float_by_stop_size"
         assert optic.aperture.value == 8.5
 
+    def test_load_toroidal_surface(self):
+        """Test loading a Zemax file with a TOROIDAL surface."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(current_dir, "zemax_files/thorlabs_lj1598l1.zmx")
+        optic = load_zemax_file(filename)
+        assert isinstance(optic, Optic)
+        # Check surfaces
+        surf1 = optic.surface_group.surfaces[1]
+        surf2 = optic.surface_group.surfaces[2]
+        # Check radii
+        assert_allclose(surf1.geometry.R_yz, 1 / 0.4950495049504951)
+        assert_allclose(surf1.geometry.R_rot, be.inf)
+        assert_allclose(surf2.geometry.R_yz, be.inf)
+        assert_allclose(surf2.geometry.R_rot, be.inf)
+
 
 def test_save_load_json_obj():
     mat = Material("SF11")
