@@ -50,10 +50,14 @@ class Lens2D:
         if projection == "XY":
             # For XY projection, draw a circle representing the lens aperture
             max_extent = self._get_max_extent()
-            # Assuming the lens is centered at (0,0) in the XY plane for simplicity
-            # A more robust solution might transform the center based on the first surface
-            center_x = self.surfaces[0].surf.geometry.cs.x
-            center_y = self.surfaces[0].surf.geometry.cs.y
+
+            # Get the center of the first surface in local coordinates (it's at the origin)
+            # and transform it to global coordinates to find the lens center.
+            x_local, y_local, z_local = be.array([0]), be.array([0]), be.array([0])
+            first_surface = self.surfaces[0].surf
+            center_x_global, center_y_global, _ = transform(
+                x_local, y_local, z_local, first_surface, is_global=False
+            )
 
             facecolor = (0.8, 0.8, 0.8, 0.6)
             edgecolor = (0.5, 0.5, 0.5)
@@ -62,7 +66,7 @@ class Lens2D:
                 edgecolor = theme.parameters.get("axes.edgecolor", edgecolor)
 
             circle = plt.Circle(
-                (center_x, center_y),
+                (center_x_global, center_y_global),
                 max_extent,
                 facecolor=facecolor,
                 edgecolor=edgecolor,
@@ -90,7 +94,9 @@ class Lens2D:
 
             # extend surface to max extent
             if surf.extent < max_extent:
-                x, y, z = self._extend_surface(x, y, z, surf.surf, max_extent)
+                x, y, z = self._extend_surface(
+                    x, y, z, surf.surf, max_extent, projection
+                )
 
             # convert to global coordinates
             if apply_transform:
@@ -111,7 +117,7 @@ class Lens2D:
         extents = be.array([surf.extent for surf in self.surfaces])
         return be.nanmax(extents, axis=0)
 
-    def _extend_surface(self, x, y, z, surface, extent):
+    def _extend_surface(self, x, y, z, surface, extent, projection="YZ"):
         """Extends the surface to the maximum extent.
 
         Args:
@@ -120,15 +126,23 @@ class Lens2D:
             z (numpy.ndarray): The z coordinates of the surface.
             surface (Surface): The surface object.
             extent (numpy.ndarray): The maximum extent of the surface.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         Returns:
             tuple: A tuple containing the extended x, y, and z coordinates.
 
         """
-        y_new = be.array([extent])
-        x = be.concatenate([be.array([0]), x, be.array([0])])
-        y = be.concatenate([-y_new, y, y_new])
-        z = be.concatenate([be.array([z[0]]), z, be.array([z[-1]])])
+        if projection == "XZ":
+            x_new = be.array([extent])
+            x = be.concatenate([-x_new, x, x_new])
+            y = be.concatenate([be.array([0]), y, be.array([0])])
+            z = be.concatenate([be.array([z[0]]), z, be.array([z[-1]])])
+        else:  # YZ
+            y_new = be.array([extent])
+            x = be.concatenate([be.array([0]), x, be.array([0])])
+            y = be.concatenate([-y_new, y, y_new])
+            z = be.concatenate([be.array([z[0]]), z, be.array([z[-1]])])
 
         surface.extent = extent
 
@@ -194,9 +208,7 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            artist = self._plot_single_lens(
-                ax, x, y, z, theme=theme, projection=projection
-            )
+            artist = self._plot_single_lens(ax, x, y, z, theme=theme, projection=projection)
             artists[artist] = self
         return artists
 

@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
@@ -44,14 +45,26 @@ def test_optic_viewer_view_valid_projections(
     # Verify plotted data for lenses and surfaces
     if projection == "XY":
         # Check if circles are plotted for lenses and surfaces
-        from matplotlib.patches import Circle, Polygon
+        from matplotlib.patches import Circle
         assert any(isinstance(p, Circle) for p in ax.patches)
-        # Lenses are circles, surfaces are lines (their circular edges)
-        assert any(isinstance(l, plt.Line2D) for l in ax.lines)
-    else: # XZ, YZ
-        # Check if polygons (cross-sections) are plotted for lenses
+        # Check that the circle for the first lens is centered correctly
+        first_lens_patch = next(p for p in ax.patches if isinstance(p, Circle))
+        center = first_lens_patch.center
+        assert np.isclose(center[0], optic.surface_group.surfaces[1].geometry.cs.x)
+        assert np.isclose(center[1], optic.surface_group.surfaces[1].geometry.cs.y)
+
+    else:  # XZ, YZ
         from matplotlib.patches import Polygon
         assert any(isinstance(p, Polygon) for p in ax.patches)
+        # Check that the polygon for the first lens has the correct orientation
+        first_lens_patch = next(p for p in ax.patches if isinstance(p, Polygon))
+        vertices = first_lens_patch.get_xy()
+        if projection == "XZ":
+                # In XZ, y-coordinates of vertices should contain both positive and negative values
+                assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
+        else:  # YZ
+                # In YZ, y-coordinates of vertices should contain both positive and negative values
+                assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
 
     plt.close(fig)
 
