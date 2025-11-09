@@ -241,7 +241,7 @@ class Rays2D:
         if projection == "XY":
             (line,) = ax.plot(x, y, color=color, linewidth=linewidth)
         elif projection == "XZ":
-            (line,) = ax.plot(x, z, color=color, linewidth=linewidth)
+            (line,) = ax.plot(z, x, color=color, linewidth=linewidth)
         else:  # YZ
             (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
         return line, RayBundle(x, y, z, field)

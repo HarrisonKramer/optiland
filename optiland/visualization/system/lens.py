@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import vtk
+import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
 import optiland.backend as be
@@ -46,10 +47,34 @@ class Lens2D:
                 'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
-        sags = self._compute_sag()
-        return self._plot_lenses(ax, sags, theme=theme, projection=projection)
+        if projection == "XY":
+            # For XY projection, draw a circle representing the lens aperture
+            max_extent = self._get_max_extent()
+            # Assuming the lens is centered at (0,0) in the XY plane for simplicity
+            # A more robust solution might transform the center based on the first surface
+            center_x = self.surfaces[0].surf.geometry.cs.x
+            center_y = self.surfaces[0].surf.geometry.cs.y
 
-    def _compute_sag(self, apply_transform=True):
+            facecolor = (0.8, 0.8, 0.8, 0.6)
+            edgecolor = (0.5, 0.5, 0.5)
+            if theme:
+                facecolor = theme.parameters.get("lens.color", facecolor)
+                edgecolor = theme.parameters.get("axes.edgecolor", edgecolor)
+
+            circle = plt.Circle(
+                (center_x, center_y),
+                max_extent,
+                facecolor=facecolor,
+                edgecolor=edgecolor,
+                label="Lens",
+            )
+            ax.add_patch(circle)
+            return {circle: self}
+        else:
+            sags = self._compute_sag(projection=projection)
+            return self._plot_lenses(ax, sags, theme=theme, projection=projection)
+
+    def _compute_sag(self, apply_transform=True, projection="YZ"):
         """Computes the sag of the lens in local coordinates and handles
         clipping due to physical apertures.
 
@@ -61,7 +86,7 @@ class Lens2D:
         max_extent = self._get_max_extent()
         sags = []
         for surf in self.surfaces:
-            x, y, z = surf._compute_sag()
+            x, y, z = surf._compute_sag(projection)
 
             # extend surface to max extent
             if surf.extent < max_extent:
@@ -130,10 +155,8 @@ class Lens2D:
             facecolor = theme.parameters.get("lens.color", facecolor)
             edgecolor = theme.parameters.get("axes.edgecolor", edgecolor)
 
-        if projection == "XY":
-            vertices = be.to_numpy(be.column_stack((x, y)))
-        elif projection == "XZ":
-            vertices = be.to_numpy(be.column_stack((x, z)))
+        if projection == "XZ":
+            vertices = be.to_numpy(be.column_stack((z, x)))
         else:
             vertices = be.to_numpy(be.column_stack((z, y)))
 

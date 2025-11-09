@@ -51,7 +51,7 @@ class OpticViewer(BaseViewer):
         fields="all",
         wavelengths="primary",
         num_rays=3,
-        distribution="line_y",
+        distribution=None,
         figsize=None,
         xlim=None,
         ylim=None,
@@ -85,6 +85,14 @@ class OpticViewer(BaseViewer):
         if projection not in ["XY", "XZ", "YZ"]:
             raise ValueError("Invalid projection type. Must be 'XY', 'XZ', or 'YZ'.")
 
+        if distribution is None:
+            if projection == "XY":
+                distribution = "hexapolar"
+            elif projection == "XZ":
+                distribution = "line_x"
+            else:
+                distribution = "line_y"
+
         theme = get_active_theme()
         params = theme.parameters
         if figsize is None:
@@ -117,9 +125,12 @@ class OpticViewer(BaseViewer):
         if projection == "YZ":
             ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
             ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
-        else:
-            ax.set_xlabel(f"{projection[0]} [mm]", color=params["axes.labelcolor"])
-            ax.set_ylabel(f"{projection[1]} [mm]", color=params["axes.labelcolor"])
+        elif projection == "XZ":
+            ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("X [mm]", color=params["axes.labelcolor"])
+        else:  # XY
+            ax.set_xlabel("X [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
         ax.tick_params(axis="x", colors=params["xtick.color"])
         ax.tick_params(axis="y", colors=params["ytick.color"])
         ax.spines["bottom"].set_color(params["axes.edgecolor"])
