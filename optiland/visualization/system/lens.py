@@ -34,7 +34,7 @@ class Lens2D:
         # TODO: raise warning when lens surfaces overlap
         self.surfaces = surfaces
 
-    def plot(self, ax, theme=None):
+    def plot(self, ax, theme=None, projection="YZ"):
         """Plots the lens on the given matplotlib axis.
 
         Args:
@@ -42,10 +42,12 @@ class Lens2D:
                 lens will be plotted.
             theme (Theme, optional): The theme to use for plotting.
                 Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
         sags = self._compute_sag()
-        return self._plot_lenses(ax, sags, theme=theme)
+        return self._plot_lenses(ax, sags, theme=theme, projection=projection)
 
     def _compute_sag(self, apply_transform=True):
         """Computes the sag of the lens in local coordinates and handles
@@ -107,7 +109,7 @@ class Lens2D:
 
         return x, y, z
 
-    def _plot_single_lens(self, ax, x, y, z, theme=None):
+    def _plot_single_lens(self, ax, x, y, z, theme=None, projection="YZ"):
         """Plot a single lens on the given matplotlib axis.
 
         Args:
@@ -118,6 +120,8 @@ class Lens2D:
             z (numpy.ndarray): The z coordinates of the lens.
             theme (Theme, optional): The theme to use for plotting.
                 Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
         facecolor = (0.8, 0.8, 0.8, 0.6)
@@ -126,7 +130,13 @@ class Lens2D:
             facecolor = theme.parameters.get("lens.color", facecolor)
             edgecolor = theme.parameters.get("axes.edgecolor", edgecolor)
 
-        vertices = be.to_numpy(be.column_stack((z, y)))
+        if projection == "XY":
+            vertices = be.to_numpy(be.column_stack((x, y)))
+        elif projection == "XZ":
+            vertices = be.to_numpy(be.column_stack((x, z)))
+        else:
+            vertices = be.to_numpy(be.column_stack((z, y)))
+
         polygon = Polygon(
             vertices,
             closed=True,
@@ -137,7 +147,7 @@ class Lens2D:
         ax.add_patch(polygon)
         return polygon
 
-    def _plot_lenses(self, ax, sags, theme=None):
+    def _plot_lenses(self, ax, sags, theme=None, projection="YZ"):
         """Plot the lenses on the given matplotlib axis.
 
         Args:
@@ -147,6 +157,8 @@ class Lens2D:
                 coordinates for each surface.
             theme (Theme, optional): The theme to use for plotting.
                 Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
         artists = {}
@@ -159,7 +171,7 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            artist = self._plot_single_lens(ax, x, y, z, theme=theme)
+            artist = self._plot_single_lens(ax, x, y, z, theme=theme, projection=projection)
             artists[artist] = self
         return artists
 

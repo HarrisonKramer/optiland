@@ -57,6 +57,7 @@ class Rays2D:
         distribution="line_y",
         reference=None,
         theme=None,
+        projection="YZ",
     ):
         """Plots the rays for the given fields and wavelengths.
 
@@ -88,14 +89,23 @@ class Rays2D:
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    artists.update(self._plot_lines(ax, color_idx, field, theme=theme))
+                    artists.update(
+                        self._plot_lines(
+                            ax, color_idx, field, theme=theme, projection=projection
+                        )
+                    )
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
                     artists.update(
                         self._plot_lines(
-                            ax, color_idx, field, linewidth=1.5, theme=theme
+                            ax,
+                            color_idx,
+                            field,
+                            linewidth=1.5,
+                            theme=theme,
+                            projection=projection,
                         )
                     )
         return artists
@@ -157,7 +167,7 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None):
+    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None, projection="YZ"):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -172,6 +182,9 @@ class Rays2D:
             field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line.
             theme (Theme, optional): The theme to apply. Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
+
 
         Returns:
             None
@@ -192,13 +205,15 @@ class Rays2D:
             yk[ik == 0] = np.nan
 
             artist, ray_bundle = self._plot_single_line(
-                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
+                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme, projection=projection
             )
             ray_bundle.bundle_id = bundle_id
             artists[artist] = ray_bundle
         return artists
 
-    def _plot_single_line(self, ax, x, y, z, color_idx, field, linewidth=1, theme=None):
+    def _plot_single_line(
+        self, ax, x, y, z, color_idx, field, linewidth=1, theme=None, projection="YZ"
+    ):
         """Plots a single line on the given axes.
 
         Args:
@@ -210,6 +225,8 @@ class Rays2D:
             field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line. Default is 1.
             theme (Theme, optional): The theme to apply. Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         Returns:
             None
@@ -220,7 +237,13 @@ class Rays2D:
             color = ray_cycle[color_idx % len(ray_cycle)]
         else:
             color = f"C{color_idx}"
-        (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
+
+        if projection == "XY":
+            (line,) = ax.plot(x, y, color=color, linewidth=linewidth)
+        elif projection == "XZ":
+            (line,) = ax.plot(x, z, color=color, linewidth=linewidth)
+        else:  # YZ
+            (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
         return line, RayBundle(x, y, z, field)
 
 

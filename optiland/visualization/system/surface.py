@@ -42,7 +42,7 @@ class Surface2D:
         else:
             self.extent = ray_extent
 
-    def plot(self, ax, theme=None):
+    def plot(self, ax, theme=None, projection="YZ"):
         """Plots the surface on the given matplotlib axis.
 
         Args:
@@ -50,13 +50,16 @@ class Surface2D:
                 surface will be plotted.
             theme (Theme, optional): The theme to use for plotting.
                 Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
         x, y, z = self._compute_sag()
 
         # convert to global coordinates and return
-        _, y, z = transform(x, y, z, self.surf, is_global=False)
+        x, y, z = transform(x, y, z, self.surf, is_global=False)
 
+        x = be.to_numpy(x)
         y = be.to_numpy(y)
         z = be.to_numpy(z)
 
@@ -64,7 +67,12 @@ class Surface2D:
         if theme:
             color = theme.parameters.get("axes.edgecolor", color)
 
-        (line,) = ax.plot(z, y, color=color, label=f"Surface {self.surf.comment}")
+        if projection == "XY":
+            (line,) = ax.plot(x, y, color=color, label=f"Surface {self.surf.comment}")
+        elif projection == "XZ":
+            (line,) = ax.plot(x, z, color=color, label=f"Surface {self.surf.comment}")
+        else:  # YZ
+            (line,) = ax.plot(z, y, color=color, label=f"Surface {self.surf.comment}")
         return {line: self}
 
     def _compute_sag(self):

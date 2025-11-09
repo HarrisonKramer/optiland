@@ -59,6 +59,7 @@ class OpticViewer(BaseViewer):
         reference=None,
         tooltip_format=None,
         show_legend=True,
+        projection="YZ",
     ):
         """Visualizes the optical system.
 
@@ -77,8 +78,13 @@ class OpticViewer(BaseViewer):
             ylim (tuple, optional): The y-axis limits. Defaults to None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
+        if projection not in ["XY", "XZ", "YZ"]:
+            raise ValueError("Invalid projection type. Must be 'XY', 'XZ', or 'YZ'.")
+
         theme = get_active_theme()
         params = theme.parameters
         if figsize is None:
@@ -98,17 +104,22 @@ class OpticViewer(BaseViewer):
             distribution=distribution,
             reference=reference,
             theme=theme,
+            projection=projection,
         )
         for artist, ray_bundle in ray_artists.items():
             interaction_manager.register_artist(artist, ray_bundle)
 
-        system_artists = self.system.plot(ax, theme=theme)
+        system_artists = self.system.plot(ax, theme=theme, projection=projection)
         for artist, surface in system_artists.items():
             interaction_manager.register_artist(artist, surface)
 
         ax.axis("image")
-        ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
-        ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
+        if projection == "YZ":
+            ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
+        else:
+            ax.set_xlabel(f"{projection[0]} [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel(f"{projection[1]} [mm]", color=params["axes.labelcolor"])
         ax.tick_params(axis="x", colors=params["xtick.color"])
         ax.tick_params(axis="y", colors=params["ytick.color"])
         ax.spines["bottom"].set_color(params["axes.edgecolor"])
