@@ -51,7 +51,7 @@ class OpticViewer(BaseViewer):
         fields="all",
         wavelengths="primary",
         num_rays=3,
-        distribution="line_y",
+        distribution=None,
         figsize=None,
         xlim=None,
         ylim=None,
@@ -59,6 +59,7 @@ class OpticViewer(BaseViewer):
         reference=None,
         tooltip_format=None,
         show_legend=True,
+        projection="YZ",
     ):
         """Visualizes the optical system.
 
@@ -69,16 +70,29 @@ class OpticViewer(BaseViewer):
                 Defaults to 'primary'.
             num_rays (int, optional): The number of rays to be visualized.
                 Defaults to 3.
-            distribution (str, optional): The distribution of rays.
-                Defaults to 'line_y'.
+            distribution (str | None, optional): The distribution of rays.
+                Defaults to None, which selects a default based on projection.
             figsize (tuple, optional): The size of the figure.
                 Defaults to None, which uses the theme's default.
             xlim (tuple, optional): The x-axis limits. Defaults to None.
             ylim (tuple, optional): The y-axis limits. Defaults to None.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
+        if projection not in ["XY", "XZ", "YZ"]:
+            raise ValueError("Invalid projection type. Must be 'XY', 'XZ', or 'YZ'.")
+
+        if distribution is None:
+            if projection == "XY":
+                distribution = "hexapolar"
+            elif projection == "XZ":
+                distribution = "line_x"
+            else:
+                distribution = "line_y"
+
         theme = get_active_theme()
         params = theme.parameters
         if figsize is None:
@@ -98,17 +112,25 @@ class OpticViewer(BaseViewer):
             distribution=distribution,
             reference=reference,
             theme=theme,
+            projection=projection,
         )
         for artist, ray_bundle in ray_artists.items():
             interaction_manager.register_artist(artist, ray_bundle)
 
-        system_artists = self.system.plot(ax, theme=theme)
+        system_artists = self.system.plot(ax, theme=theme, projection=projection)
         for artist, surface in system_artists.items():
             interaction_manager.register_artist(artist, surface)
 
         ax.axis("image")
-        ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
-        ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
+        if projection == "YZ":
+            ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
+        elif projection == "XZ":
+            ax.set_xlabel("Z [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("X [mm]", color=params["axes.labelcolor"])
+        else:  # XY
+            ax.set_xlabel("X [mm]", color=params["axes.labelcolor"])
+            ax.set_ylabel("Y [mm]", color=params["axes.labelcolor"])
         ax.tick_params(axis="x", colors=params["xtick.color"])
         ax.tick_params(axis="y", colors=params["ytick.color"])
         ax.spines["bottom"].set_color(params["axes.edgecolor"])
