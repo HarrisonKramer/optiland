@@ -112,6 +112,7 @@ class ZemaxToOpticConverter:
             if surf["type"] == "toroidal":
                 # Zemax CURV (data["radius"]) is the Y-Radius
                 surface_params["radius_y"] = surf["radius"]
+                surface_params["toroidal_coeffs_poly_y"] = coeffs
 
                 # Zemax PARM 1 (data["param_1"]) is the X-Radius
                 radius_x = surf.get("param_1", 0.0)
