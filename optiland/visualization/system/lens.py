@@ -7,9 +7,9 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import numpy as np
 import vtk
-import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
 import optiland.backend as be
@@ -51,7 +51,7 @@ class Lens2D:
             # For XY projection, draw a circle representing the lens aperture
             max_extent = self._get_max_extent()
 
-            # Get the center of the first surface in local coordinates (it's at the origin)
+            # Get the center of the first surface in local coordinates (the origin)
             # and transform it to global coordinates to find the lens center.
             x_local, y_local, z_local = be.array([0]), be.array([0]), be.array([0])
             first_surface = self.surfaces[0].surf
@@ -208,7 +208,9 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            artist = self._plot_single_lens(ax, x, y, z, theme=theme, projection=projection)
+            artist = self._plot_single_lens(
+                ax, x, y, z, theme=theme, projection=projection
+            )
             artists[artist] = self
         return artists
 

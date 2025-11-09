@@ -70,8 +70,8 @@ class OpticViewer(BaseViewer):
                 Defaults to 'primary'.
             num_rays (int, optional): The number of rays to be visualized.
                 Defaults to 3.
-            distribution (str, optional): The distribution of rays.
-                Defaults to 'line_y'.
+            distribution (str | None, optional): The distribution of rays.
+                Defaults to None, which selects a default based on projection.
             figsize (tuple, optional): The size of the figure.
                 Defaults to None, which uses the theme's default.
             xlim (tuple, optional): The x-axis limits. Defaults to None.

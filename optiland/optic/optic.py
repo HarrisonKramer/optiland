@@ -461,7 +461,7 @@ class Optic:
         fields: list[tuple[float, float]] | Literal["all"] = "all",
         wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
-        distribution: DistributionType = "line_y",
+        distribution: DistributionType | None = None,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
@@ -479,8 +479,8 @@ class Optic:
                 Defaults to 'primary'.
             num_rays (int, optional): The number of rays to trace for each
                 field and wavelength. Defaults to 3.
-            distribution (DistributionType, optional): The distribution of
-                rays to trace. Defaults to 'line_y'.
+            distribution (str | None, optional): The distribution of rays.
+                Defaults to None, which selects a default based on projection.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
