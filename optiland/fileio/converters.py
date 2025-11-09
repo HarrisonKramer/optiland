@@ -179,26 +179,21 @@ class ZemaxToOpticConverter:
 
         # Prepare surface parameters, starting with common ones
         # Use correct coefficients key for toroidal surfaces
+        # shared surface parameters
+        surface_params = {
+            "index": index,
+            "surface_type": data["type"],
+            "conic": data.get("conic"),
+            "thickness": data.get("thickness"),
+            "is_stop": data.get("is_stop", False),
+            "material": data.get("material"),
+        }
+
+        # only the coefficient key differs for toroidal surfaces
         if data["type"] == "toroidal":
-            surface_params = {
-                "index": index,
-                "surface_type": data["type"],
-                "conic": data["conic"],
-                "thickness": data["thickness"],
-                "is_stop": data["is_stop"],
-                "material": data["material"],
-                "toroidal_coeffs_poly_y": coefficients,
-            }
+            surface_params["toroidal_coeffs_poly_y"] = coefficients
         else:
-            surface_params = {
-                "index": index,
-                "surface_type": data["type"],
-                "conic": data["conic"],
-                "thickness": data["thickness"],
-                "is_stop": data["is_stop"],
-                "material": data["material"],
-                "coefficients": coefficients,
-            }
+            surface_params["coefficients"] = coefficients
 
         if data["type"] == "coordinate_break":
             # map the zmx PARM values to the actual decenters and rotations
