@@ -237,6 +237,7 @@ class ZemaxToOpticConverter:
 
         if surf_type in ["even_asphere", "odd_asphere", "toroidal"]:
             coefficients = []
+            # For toroidal surfaces, coeffs start from param_2
             start_index = 2 if surf_type == "toroidal" else 0
             for k in range(start_index, 8):
                 coefficients.append(data.get(f"param_{k}", 0.0))
