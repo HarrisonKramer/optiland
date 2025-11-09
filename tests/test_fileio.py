@@ -161,10 +161,10 @@ class TestEndToEnd:
         surf1 = optic.surface_group.surfaces[1]
         surf2 = optic.surface_group.surfaces[2]
         # Check radii
-        assert_allclose(surf1.geometry.R_rot, 1 / 0.4950495049504951)
-        assert_allclose(surf1.geometry.R_yz, be.inf)
-        assert_allclose(surf2.geometry.R_rot, be.inf)
+        assert_allclose(surf1.geometry.R_yz, 1 / 0.4950495049504951)
+        assert_allclose(surf1.geometry.R_rot, be.inf)
         assert_allclose(surf2.geometry.R_yz, be.inf)
+        assert_allclose(surf2.geometry.R_rot, be.inf)
 
 
 def test_save_load_json_obj():

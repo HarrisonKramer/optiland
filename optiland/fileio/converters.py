@@ -62,7 +62,6 @@ class ZemaxToOpticConverter:
         if not has_cb:
             for idx, surf_data in self.data["surfaces"].items():
                 self._configure_surface(idx, surf_data)
-            self.optic.add_surface(index=len(self.data["surfaces"]))
             return
 
         # in case there are "Coordinate Break" surfaces
@@ -111,13 +110,17 @@ class ZemaxToOpticConverter:
             }
 
             if surf["type"] == "toroidal":
-                radius_y = surf.get("param_1", 0.0)
-                if radius_y == 0.0:
-                    radius_y = be.inf
-                surface_params["radius_y"] = radius_y
-                surface_params["radius_x"] = surf.get("radius")
+                # Zemax CURV (data["radius"]) is the Y-Radius
+                surface_params["radius_y"] = surf["radius"]
+
+                # Zemax PARM 1 (data["param_1"]) is the X-Radius
+                radius_x = surf.get("param_1", 0.0)
+                if radius_x == 0.0:
+                    radius_x = be.inf
+                surface_params["radius_x"] = radius_x
             else:
-                surface_params["radius"] = surf.get("radius")
+                # For all other surfaces, use the standard radius.
+                surface_params["radius"] = surf["radius"]
 
             # Handle thickness and coordinate system parameters
             thickness = surf.get("thickness", 0.0)
@@ -195,11 +198,11 @@ class ZemaxToOpticConverter:
             surface_params["order_flag"] = data.get("param_5", 0.0)
 
         if data["type"] == "toroidal":
-            radius_y = data.get("param_1", 0.0)
-            if radius_y == 0.0:
-                radius_y = be.inf
-            surface_params["radius_y"] = radius_y
-            surface_params["radius_x"] = data["radius"]
+            radius_x = data.get("param_1", 0.0)
+            if radius_x == 0.0:
+                radius_x = be.inf
+            surface_params["radius_y"] = data["radius"]
+            surface_params["radius_x"] = radius_x
         else:
             # For all other surfaces, use the standard radius.
             surface_params["radius"] = data["radius"]
@@ -221,12 +224,14 @@ class ZemaxToOpticConverter:
             ValueError: If the surface type is unsupported for coefficients.
         """
         surf_type = data["type"]
-        if surf_type in ["standard", "coordinate_break", "toroidal"]:
+        if surf_type in ["standard", "coordinate_break"]:
             return None
-        if surf_type in ["even_asphere", "odd_asphere"]:
+
+        if surf_type in ["even_asphere", "odd_asphere", "toroidal"]:
             coefficients = []
-            for k in range(8):
-                coefficients.append(data[f"param_{k}"])
+            start_index = 2 if surf_type == "toroidal" else 0
+            for k in range(start_index, 8):
+                coefficients.append(data.get(f"param_{k}", 0.0))
             return coefficients
         raise ValueError(f"Unsupported Zemax surface type: {surf_type}")
 
