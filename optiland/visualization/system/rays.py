@@ -167,7 +167,9 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None, projection="YZ"):
+    def _plot_lines(
+        self, ax, color_idx, field, linewidth=1, theme=None, projection="YZ"
+    ):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -205,7 +207,15 @@ class Rays2D:
             yk[ik == 0] = np.nan
 
             artist, ray_bundle = self._plot_single_line(
-                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme, projection=projection
+                ax,
+                xk,
+                yk,
+                zk,
+                color_idx,
+                field,
+                linewidth,
+                theme=theme,
+                projection=projection,
             )
             ray_bundle.bundle_id = bundle_id
             artists[artist] = ray_bundle

@@ -171,7 +171,9 @@ class Lens2D:
             y = be.concatenate([y1, be.flip(y2)])
             z = be.concatenate([z1, be.flip(z2)])
 
-            artist = self._plot_single_lens(ax, x, y, z, theme=theme, projection=projection)
+            artist = self._plot_single_lens(
+                ax, x, y, z, theme=theme, projection=projection
+            )
             artists[artist] = self
         return artists
 
