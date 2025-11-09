@@ -138,7 +138,7 @@ class Surface3D(Surface2D):
     def __init__(self, surface, extent):
         super().__init__(surface, extent)
 
-    def plot(self, renderer, theme=None):
+    def plot(self, renderer, theme=None, *args, **kwargs):
         """Plots the surface on the given renderer.
 
         Args:

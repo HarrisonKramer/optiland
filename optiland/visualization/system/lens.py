@@ -264,7 +264,7 @@ class Lens3D(Lens2D):
                 return False
         return True
 
-    def plot(self, renderer, theme=None):
+    def plot(self, renderer, theme=None, *args, **kwargs):
         """Plots the lens or surfaces using the provided renderer.
 
         Args:
@@ -280,7 +280,7 @@ class Lens3D(Lens2D):
             self._plot_surfaces(renderer, theme=theme)
             self._plot_surface_edges(renderer, theme=theme)
 
-    def _plot_single_lens(self, renderer, x, y, z, theme=None):
+    def _plot_single_lens(self, renderer, x, y, z, theme=None, *args, **kwargs):
         """Plots a single lens by revolving a contour and configuring its
         material. The input coordinates are expected to be in global space.
 
