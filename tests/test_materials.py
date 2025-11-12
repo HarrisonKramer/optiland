@@ -395,6 +395,88 @@ class TestMaterialFile:
         assert materials.MaterialFile.from_dict(material_dict).filename == filename
 
 
+from unittest.mock import patch
+
+import pandas as pd
+
+
+class TestMaterialWithMock:
+    def setup_method(self):
+        # Ensure the dataframe cache is cleared before each test
+        materials.Material._df = None
+
+    def teardown_method(self):
+        # Clean up the cache after each test
+        materials.Material._df = None
+
+    @patch("pandas.read_csv")
+    def test_no_matches_raises_error(self, mock_read_csv, set_test_backend):
+        # Mock read_csv to return an empty DataFrame
+        mock_read_csv.return_value = pd.DataFrame(
+            columns=[
+                "name",
+                "reference",
+                "min_wavelength",
+                "max_wavelength",
+                "path",
+                "category_name",
+                "category_name_full",
+                "filename",
+                "filename_no_ext",
+            ]
+        )
+        with pytest.raises(ValueError, match="No matches found for material"):
+            materials.Material("nonexistent")
+
+    @patch("pandas.read_csv")
+    def test_multiple_matches_raises_error(self, mock_read_csv, set_test_backend):
+        # Mock read_csv to return a DataFrame that will have multiple matches
+        mock_data = {
+            "name": ["glass1", "glass2"],
+            "reference": ["ref", "ref"],
+            "min_wavelength": [0.4, 0.4],
+            "max_wavelength": [0.8, 0.8],
+            "filename": ["path1", "path2"],
+            "category_name": ["ref_glass1", "ref_glass2"],
+            "category_name_full": ["ref_glass1_full", "ref_glass2_full"],
+            "filename_no_ext": ["path1", "path2"],
+        }
+        mock_read_csv.return_value = pd.DataFrame(mock_data)
+        with pytest.raises(ValueError, match="Multiple matches found for material"):
+            materials.Material("glass", robust_search=False)
+
+    @patch("optiland.materials.material_file.MaterialFile._read_file", return_value={})
+    @patch("pandas.read_csv")
+    def test_single_match_initializes_material_file(
+        self, mock_read_csv, mock_read_file, set_test_backend
+    ):
+        expected_filename = "glass/schott/N-BK7.yml"
+        mock_data = {
+            "name": ["N-BK7"],
+            "reference": ["SCHOTT"],
+            "min_wavelength": [0.3],
+            "max_wavelength": [2.5],
+            "filename": [expected_filename],
+            "category_name": ["SCHOTT N-BK7"],
+            "category_name_full": ["SCHOTT N-BK7 full"],
+            "filename_no_ext": ["N-BK7"],
+        }
+        mock_read_csv.return_value = pd.DataFrame(mock_data)
+
+        # Instantiate the Material class, which should trigger the mock
+        material = materials.Material("N-BK7", reference="SCHOTT")
+
+        # Verify that the filename attribute of the instance is correct
+        assert material.filename.endswith(expected_filename)
+
+    def test_to_and_from_dict(self, set_test_backend):
+        # This test uses the real data, which is fine for serialization.
+        material = materials.Material("N-BK7", reference="SCHOTT")
+        d = material.to_dict()
+        new_material = materials.Material.from_dict(d)
+        assert material.name == new_material.name
+        assert material.reference == new_material.reference
+
 class TestMaterial:
     def test_standard_material(self, set_test_backend):
         material = materials.Material("N-BK7")

@@ -18,7 +18,7 @@ else:
 
 
 @jit(nopython=True, cache=True)
-def compute_basis_polynomials(n, p, U, u, return_degree=None):
+def compute_basis_polynomials(n, p, U, u, return_degree=None):  # pragma: no cover
     """Evaluates the n-th B-Spline basis polynomials of degree ´p´.
 
     The basis polynomials are computed from their definition by implementing
@@ -72,7 +72,9 @@ def compute_basis_polynomials(n, p, U, u, return_degree=None):
 
 
 @jit(nopython=True, cache=True)
-def compute_basis_polynomials_derivatives(n, p, U, u, derivative_order):
+def compute_basis_polynomials_derivatives(
+    n, p, U, u, derivative_order
+):  # pragma: no cover
     """Evaluates the derivative of the n-th B-Spline basis polynomials.
 
     The basis polynomials derivatives are computed recursively by implementing

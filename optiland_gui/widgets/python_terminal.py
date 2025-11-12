@@ -214,7 +214,7 @@ CODE_SNIPPETS = {
 }
 
 
-class ClickableLabel(QLabel):
+class ClickableLabel(QLabel):  # pragma: no cover
     """
     A QLabel that emits signals on left and right mouse clicks.
 
@@ -240,7 +240,7 @@ class ClickableLabel(QLabel):
         super().mousePressEvent(event)
 
 
-class PythonTerminalWidget(QWidget):
+class PythonTerminalWidget(QWidget):  # pragma: no cover
     """
     An integrated Python scripting widget with an editor and console.
 

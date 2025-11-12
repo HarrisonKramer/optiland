@@ -1,0 +1,5 @@
+"filename","filename_no_ext","category_name_full","category_name","name","reference","min_wavelength","max_wavelength","group"
+"main/agnik/ag.yml","ag","Silver","ag","Silver","AG","0.1","1.0","metal"
+"main/schott/n-bk7.yml","n-bk7","SCHOTT N-BK7","n-bk7","N-BK7","SCHOTT","0.3","2.5","glass"
+"main/schott/f2.yml","f2","SCHOTT F2","f2","F2","SCHOTT","0.3","2.5","glass"
+"main/ohara/s-bsl7.yml","s-bsl7","OHARA S-BSL7","s-bsl7","S-BSL7","OHARA","0.3","2.5","glass"

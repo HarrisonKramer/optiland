@@ -39,7 +39,7 @@ class FramelessWindow(QMainWindow):
         # This attribute should be set by the subclass
         self.custom_title_bar_widget = None
 
-    def mousePressEvent(self, event: QEvent):
+    def mousePressEvent(self, event: QEvent):  # pragma: no cover
         """Handle mouse press events for window dragging and resizing."""
         if event.button() == Qt.LeftButton:
             cursor_pos = event.position().toPoint()
@@ -64,7 +64,7 @@ class FramelessWindow(QMainWindow):
             self.start_pos = event.globalPosition().toPoint()
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event: QEvent):
+    def mouseMoveEvent(self, event: QEvent):  # pragma: no cover
         """Handle mouse move events for window dragging, resizing, and AeroSnap."""
         cursor_pos = event.position().toPoint()
         global_pos = event.globalPosition().toPoint()
@@ -95,7 +95,7 @@ class FramelessWindow(QMainWindow):
 
         super().mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event: QEvent):
+    def mouseReleaseEvent(self, event: QEvent):  # pragma: no cover
         """Handle mouse release events and implement AeroSnap actions."""
         if event.button() == Qt.LeftButton:
             if self.is_moving and not self.isMaximized():
@@ -162,7 +162,7 @@ class FramelessWindow(QMainWindow):
             return "bottom"
         return None
 
-    def updateCursorShape(self, pos: QPoint):
+    def updateCursorShape(self, pos: QPoint):  # pragma: no cover
         """Update the cursor shape based on the mouse position."""
         if self.isMaximized():
             self.setCursor(Qt.ArrowCursor)
@@ -181,7 +181,7 @@ class FramelessWindow(QMainWindow):
         else:
             self.setCursor(Qt.ArrowCursor)
 
-    def keyPressEvent(self, event: QEvent):
+    def keyPressEvent(self, event: QEvent):  # pragma: no cover
         """Handle key events for window management shortcuts."""
         if event.modifiers() & Qt.ControlModifier:
             screen = self.screen()

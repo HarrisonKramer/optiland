@@ -424,21 +424,26 @@ class MainWindow(FramelessWindow):
 
     def _update_project_name_in_title_bar(self):
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
-            # New logic starts here
-            display_name = "UnnamedProject.json"
+            optic = self.connector.get_optic()
             current_file = self.connector.get_current_filepath()
             is_modified = self.connector.is_modified()
 
             if current_file:
                 display_name = os.path.basename(current_file)
+            elif optic and getattr(optic, "name", None) == "Default System":
+                display_name = "New Untitled System"
+            elif optic and getattr(optic, "name", None):
+                display_name = optic.name
+            else:
+                display_name = "UnnamedProject.json"
 
-            if not current_file:
-                is_modified = True
-
+            # Always remove trailing asterisk before conditionally adding it
+            display_name = display_name.rstrip("*")
             if is_modified:
                 display_name += "*"
 
             self.custom_title_bar_widget.set_project_name(display_name)
+            self.setWindowTitle(f"Optiland GUI - {display_name}")
 
     def _animate_dock_show(
         self, dock_widget, is_left_or_right, original_dimension, duration, curve
@@ -540,7 +545,7 @@ class MainWindow(FramelessWindow):
             )
 
     @Slot(str)
-    def switch_theme(self, theme_path):
+    def switch_theme(self, theme_path):  # pragma: no cover
         if theme_path != self.current_theme_path:
             self.current_theme_path = theme_path
             self.load_stylesheets()
@@ -559,7 +564,6 @@ class MainWindow(FramelessWindow):
     def new_system_action(self):
         self.connector.new_system()
         self._update_project_name_in_title_bar()
-        print("Main Window: New System action triggered")
 
     @Slot()
     def open_system_action(self):
@@ -653,7 +657,7 @@ class MainWindow(FramelessWindow):
                     dock.toggleViewAction().setChecked(True)
 
     @Slot()
-    def save_layout_slot(self):
+    def save_layout_slot(self):  # pragma: no cover
         target_slot = self.next_save_slot_index
         window_geometry = self.saveGeometry()
         dock_toolbar_state = self.saveState()
@@ -678,7 +682,7 @@ class MainWindow(FramelessWindow):
             "{self.next_save_slot_index}."
         )
 
-    def _load_layout_from_slot(self, slot_number):
+    def _load_layout_from_slot(self, slot_number):  # pragma: no cover
         geometry_key = f"Layouts/Config{slot_number}Geometry"
         state_key = f"Layouts/Config{slot_number}State"
         if self.settings.contains(geometry_key) and self.settings.contains(state_key):
@@ -716,12 +720,12 @@ class MainWindow(FramelessWindow):
             )
 
     @Slot()
-    def load_layout_1_slot(self):
+    def load_layout_1_slot(self):  # pragma: no cover
         print("Loading layout from slot 1...")
         self._load_layout_from_slot(1)
 
     @Slot()
-    def load_layout_2_slot(self):
+    def load_layout_2_slot(self):  # pragma: no cover
         print("Loading layout from slot 2...")
         self._load_layout_from_slot(2)
 

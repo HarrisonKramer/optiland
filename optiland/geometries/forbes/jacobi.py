@@ -120,10 +120,10 @@ def jacobi_sum_clenshaw_der(s, alpha, beta, x, j=1, alphas=None):
     return alphas
 
 
-def _initialize_alphas(s, x, alphas, j=0):
+def _initialize_alphas(s, x, alphas, j=None):
     if alphas is None:
         shape = (len(s), *be.shape(x)) if hasattr(x, "shape") else (len(s),)
-        if j != 0:
+        if j is not None:
             shape = (j + 1, *shape)
         if be.__name__ == "torch":
             alphas = be.zeros(shape)

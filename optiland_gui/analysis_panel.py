@@ -1299,11 +1299,14 @@ class AnalysisPanel(QWidget):
         if not analysis_class:
             return
         self.logArea.setText(f"Running {analysis_name}...")
-        page_data = self._execute_analysis(analysis_class, analysis_name)
-        if page_data:
-            self.analysis_results_pages.append(page_data)
-            self.switch_plot_page(len(self.analysis_results_pages) - 1)
-            self.logArea.append(f"{analysis_name} run complete.")
+        try:
+            page_data = self._execute_analysis(analysis_class, analysis_name)
+            if page_data:
+                self.analysis_results_pages.append(page_data)
+                self.switch_plot_page(len(self.analysis_results_pages) - 1)
+                self.logArea.append(f"{analysis_name} run complete.")
+        except Exception as e:
+            self.logArea.append(f"Error running {analysis_name}: {e}")
 
     @Slot()
     def run_all_analysis_slot(self):
