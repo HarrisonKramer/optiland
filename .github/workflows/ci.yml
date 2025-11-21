@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv add --dev pytest pytest-cov codecov torch
+          uv sync --dev
 
       - name: Run tests with coverage
         run: |
