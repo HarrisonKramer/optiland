@@ -42,7 +42,8 @@ def glasses_selection(
     """
 
     csv_path = resources.files("optiland.database").joinpath("catalog_nk.csv")
-    catalogs = [c.lower() for c in catalogs]
+    if catalogs is not None:
+        catalogs = [c.lower() for c in catalogs]
     glasses = set()
 
     with open(csv_path, encoding="utf-8") as file:
@@ -157,6 +158,9 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
         # Get indices of glasses in this cluster
         cluster_indices = be.where(labels == cluster_index)[0]
 
+        if len(cluster_indices) == 0:
+            continue
+
         # Extract cluster points
         cluster_points = be.array(glass_data[cluster_indices])
         centroid = be.array(centroids[cluster_index])
@@ -228,10 +232,12 @@ def get_neighbour_glasses(
     # - Store the distance and the corresponding glass name
     #   in a list for sorting
     distances: list[tuple[float, str]] = []
+    nd0, vd0 = be.asarray(nd0), be.asarray(vd0)
     for g, (nd, vd) in glass_dict.items():
         if g == glass:
             continue
         w_nd, w_vd = 1.0, 1.0  # For future weighting
+        nd, vd = be.asarray(nd), be.asarray(vd)
         distance = be.hypot(w_nd * (nd - nd0), w_vd * (vd - vd0))
         distances.append((distance, g))
 

@@ -145,19 +145,21 @@ class NurbsGeometry(BaseGeometry):
             m = be.shape(control_points)[2] - 1
             self.P_size_u = n + 1
             self.P_size_v = m + 1
-            weights = be.ones((n + 1, m + 1), dtype=control_points.dtype)
+            self.W = be.ones((n + 1, m + 1))
 
             u_degree = n
             v_degree = m
+            self.p = u_degree
+            self.q = v_degree
 
-            u_knots = be.concatenate(
+            self.U = be.concatenate(
                 (
                     be.zeros(u_degree),
                     be.linspace(0, 1, n - u_degree + 2),
                     be.ones(u_degree),
                 )
             )
-            v_knots = be.concatenate(
+            self.V = be.concatenate(
                 (
                     be.zeros(v_degree),
                     be.linspace(0, 1, m - v_degree + 2),
@@ -183,15 +185,17 @@ class NurbsGeometry(BaseGeometry):
 
             u_degree = n
             v_degree = m
+            self.p = u_degree
+            self.q = v_degree
 
-            u_knots = be.concatenate(
+            self.U = be.concatenate(
                 (
                     be.zeros(u_degree),
                     be.linspace(0, 1, n - u_degree + 2),
                     be.ones(u_degree),
                 )
             )
-            v_knots = be.concatenate(
+            self.V = be.concatenate(
                 (
                     be.zeros(v_degree),
                     be.linspace(0, 1, m - v_degree + 2),
@@ -210,7 +214,7 @@ class NurbsGeometry(BaseGeometry):
             self.P_size_u = n + 1
             self.P_size_v = m + 1
 
-            weights = be.ones((n + 1, m + 1), dtype=control_points.dtype)
+            self.W = be.ones((n + 1, m + 1))
 
         # B-Spline surface initialization
         elif weights is None and u_knots is None and v_knots is None:
@@ -224,14 +228,14 @@ class NurbsGeometry(BaseGeometry):
             self.P_size_u = n + 1
             self.P_size_v = m + 1
 
-            u_knots = be.concatenate(
+            self.U = be.concatenate(
                 (
                     be.zeros(u_degree),
                     be.linspace(0, 1, n - u_degree + 2),
                     be.ones(u_degree),
                 )
             )
-            v_knots = be.concatenate(
+            self.V = be.concatenate(
                 (
                     be.zeros(v_degree),
                     be.linspace(0, 1, m - v_degree + 2),
@@ -239,7 +243,7 @@ class NurbsGeometry(BaseGeometry):
                 )
             )
 
-            weights = be.ones((n + 1, m + 1), dtype=control_points.dtype)
+            self.W = be.ones((n + 1, m + 1))
 
         # NURBS surface initialization
         else:
@@ -252,14 +256,14 @@ class NurbsGeometry(BaseGeometry):
                 self.P_size_u = n + 1
                 self.P_size_v = m + 1
 
-                u_knots = be.concatenate(
+                self.U = be.concatenate(
                     (
                         be.zeros(u_degree),
                         be.linspace(0, 1, n - u_degree + 2),
                         be.ones(u_degree),
                     )
                 )
-                v_knots = be.concatenate(
+                self.V = be.concatenate(
                     (
                         be.zeros(v_degree),
                         be.linspace(0, 1, m - v_degree + 2),
