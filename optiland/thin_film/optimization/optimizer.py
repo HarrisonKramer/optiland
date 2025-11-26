@@ -505,22 +505,19 @@ class ThinFilmOptimizer:
         self,
         method: OptimizerMethod = "L-BFGS-B",
         max_iterations: int = 100,
-        maxiter: int | None = None,  # For backward compatibility
         tolerance: float = 1e-6,
         verbose: bool = False,
-        disp: bool | None = None,  # For backward compatibility
-        generate_report: bool = False,
+        **kwargs,
     ) -> dict:
         """Run the optimization.
 
         Args:
-            method: Optimization method to use. Defaults to "L-BFGS-B".
+            method: Optimization method to use. Defaults to "L-BFGS-B". See
+            scipy.optimize.minimize for options.
             max_iterations: Maximum number of iterations. Defaults to 100.
-            maxiter: Alternative name for max_iterations (backward compatibility).
             tolerance: Convergence tolerance. Defaults to 1e-6.
             verbose: Whether to print optimization progress. Defaults to False.
-            disp: Alternative name for verbose (backward compatibility).
-            generate_report: Whether to generate a report. Defaults to False.
+            **kwargs: Additional keyword arguments for the optimizer.
 
         Returns:
             dict: Optimization results including success status, final merit,
@@ -536,12 +533,6 @@ class ThinFilmOptimizer:
         if not self.targets:
             raise ValueError("No targets defined. Use add_target() first.")
 
-        # Handle backward compatibility
-        if maxiter is not None:
-            max_iterations = maxiter
-        if disp is not None:
-            verbose = disp
-
         # Get initial values and bounds
         x0 = np.array([var.variable.get_value() for var in self.variables])
         bounds = [(var.min_val, var.max_val) for var in self.variables]
@@ -550,7 +541,12 @@ class ThinFilmOptimizer:
         initial_merit = self._merit_function(x0)
 
         # Run optimization
-        options = {"maxiter": max_iterations, "ftol": tolerance, "disp": verbose}
+        options = {
+            "maxiter": max_iterations,
+            "ftol": tolerance,
+            "disp": verbose,
+            **kwargs,
+        }
 
         result = minimize(
             self._merit_function, x0, method=method, bounds=bounds, options=options
