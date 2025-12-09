@@ -34,10 +34,6 @@ Homepage = "https://github.com/HarrisonKramer/optiland"
 [project.scripts]
 optiland = "optiland_gui.run_gui:main"
 
-[project.optional-dependencies]
-dev = ["codecov>=2.1.13", "pytest>=8.3.5", "torch"]
-gui = ["PySide6", "qtconsole"]
-
 [tool.hatch.metadata]
 allow-direct-references = true
 
@@ -69,6 +65,10 @@ required-imports = ["from __future__ import annotations"]
 
 [dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=8.3.5",
+    "codecov>=2.1.13",
     "torch",
+    "pytest-cov>=7.0.0",
 ]
+gui = ["PySide6", "qtconsole"]
+torch = ["torch"]
