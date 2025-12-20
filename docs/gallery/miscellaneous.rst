@@ -15,5 +15,6 @@ or unique functionality of Optiland.
     miscellaneous/apodization
     miscellaneous/paraxial_to_thick_lens
     miscellaneous/paraxial_image_height_field
+    miscellaneous/real_image_height_field
     miscellaneous/themes
     miscellaneous/lens_draw_projection

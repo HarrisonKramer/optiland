@@ -312,7 +312,7 @@ class Optic:
             self.field_definition = ObjectHeightField()
         elif field_type == "paraxial_image_height":
             self.field_definition = ParaxialImageHeightField()
-        elif field_type == "RealImageHeightField":
+        elif field_type == "real_image_height":
             self.field_definition = RealImageHeightField()
         else:
             raise ValueError(f"Invalid field type: {field_type}.")
