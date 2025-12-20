@@ -21,7 +21,7 @@ from optiland.backend.utils import is_torch_tensor, to_numpy  # noqa: F401
 
 try:
     import torch as _torch
-except ImportError:
+except (ImportError, OSError):
     _torch = None
 
 
@@ -75,7 +75,7 @@ try:
     from optiland.backend import torch_backend
 
     _torch_available = True
-except ImportError:
+except (ImportError, OSError):
     torch_backend = None
     _torch_available = False
 
