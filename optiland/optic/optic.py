@@ -132,6 +132,11 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
+        self.ray_aiming_config = {
+            "mode": "paraxial",
+            "max_iter": 10,
+            "tol": 1e-6,
+        }
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 
@@ -437,6 +442,24 @@ class Optic:
     def update_normalization(self, surface: Surface) -> None:
         """Update the normalization radius of surfaces."""
         self._updater.update_normalization(surface)
+
+    def set_ray_aiming(
+        self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
+    ):
+        """Configure the ray aiming strategy.
+
+        Args:
+            mode: The aiming mode ("paraxial", "iterative", "robust").
+            max_iter: Maximum iterations for iterative solvers.
+            tol: Convergence tolerance for iterative solvers.
+            **kwargs: Additional configuration parameters.
+        """
+        self.ray_aiming_config = {
+            "mode": mode,
+            "max_iter": max_iter,
+            "tol": tol,
+            **kwargs,
+        }
 
     def update(self) -> None:
         """Update the surface properties (pickups, solves, paraxial properties)."""

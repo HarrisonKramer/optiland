@@ -168,6 +168,14 @@ def ones(shape: Sequence[int]) -> Tensor:
 
 def full(shape: Sequence[int], fill_value: float | Tensor) -> Tensor:
     val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
+
+    # Ensure shape is a tuple
+    if not isinstance(shape, list | tuple):
+        try:
+            shape = (int(shape),)
+        except Exception:
+            shape = (shape,)
+
     return torch.full(
         shape,
         val,
@@ -209,6 +217,21 @@ def arange(*args: float | Tensor, step: float | Tensor = 1) -> Tensor:
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
+    )
+
+
+def arange_indices(start, stop=None, step=1) -> Tensor:
+    """Create a tensor of indices (int64/long)."""
+    if stop is None:
+        stop = start
+        start = 0
+    return torch.arange(
+        start,
+        stop,
+        step,
+        device=get_device(),
+        dtype=torch.long,
+        requires_grad=False,
     )
 
 
