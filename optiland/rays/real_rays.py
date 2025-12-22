@@ -153,7 +153,9 @@ class RealRays(BaseRays):
         u = n1 / n2
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        root = be.sqrt(1 - u**2 * (1 - dot**2))
+        # ignore runtime warnings for total internal reflection
+        with be.errstate(invalid="ignore"):
+            root = be.sqrt(1 - u**2 * (1 - dot**2))
         tx = u * self.L0 + nx * root - u * nx * dot
         ty = u * self.M0 + ny * root - u * ny * dot
         tz = u * self.N0 + nz * root - u * nz * dot
