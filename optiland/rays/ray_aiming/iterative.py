@@ -43,12 +43,17 @@ class IterativeRayAimer(BaseRayAimer):
         fields: tuple,
         wavelengths: float,
         pupil_coords: tuple,
+        initial_guess: tuple | None = None,
     ) -> tuple:
         """Calculate ray starting coordinates using iterative aiming."""
-        # 1. Get initial guess from paraxial aimer
-        x, y, z, L, M, N = self._paraxial_aimer.aim_rays(
-            fields, wavelengths, pupil_coords
-        )
+        if initial_guess is not None:
+            # Use provided guess
+            x, y, z, L, M, N = initial_guess
+        else:
+            # Get initial guess from paraxial aimer
+            x, y, z, L, M, N = self._paraxial_aimer.aim_rays(
+                fields, wavelengths, pupil_coords
+            )
 
         Px, Py = pupil_coords
         is_infinite = (
