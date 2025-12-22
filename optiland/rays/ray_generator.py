@@ -8,11 +8,11 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
-from optiland.fields.field_types import AngleField
 from optiland.rays.polarized_rays import PolarizedRays
+from optiland.rays.ray_aiming.registry import create_ray_aimer
 from optiland.rays.real_rays import RealRays
 
 if TYPE_CHECKING:
@@ -24,6 +24,17 @@ class RayGenerator:
 
     def __init__(self, optic):
         self.optic = optic
+        self.aimer = create_ray_aimer("paraxial", optic)
+
+    def set_ray_aiming(self, mode: str, **kwargs: Any) -> None:
+        """
+        Set the ray aiming strategy.
+
+        Args:
+            mode (str): The name of the ray aiming strategy (e.g., "paraxial").
+            **kwargs: Additional parameters for the chosen aimer.
+        """
+        self.aimer = create_ray_aimer(mode, self.optic, **kwargs)
 
     def generate_rays(
         self,
@@ -46,47 +57,12 @@ class RayGenerator:
             RealRays object containing the generated rays.
 
         """
-        vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
-        vx = 1 - be.array(vxf)
-        vy = 1 - be.array(vyf)
-        x0, y0, z0 = self.optic.field_definition.get_ray_origins(
-            self.optic, Hx, Hy, Px, Py, vx, vy
+        # Aim rays using the configured strategy
+        x0, y0, z0, L, M, N = self.aimer.aim_rays(
+            (Hx, Hy),
+            wavelength,
+            (Px, Py),
         )
-
-        if self.optic.obj_space_telecentric:
-            if isinstance(self.optic.field_definition, AngleField):
-                raise ValueError(
-                    'Field type cannot be "angle" for telecentric object space.',
-                )
-            if self.optic.aperture.ap_type == "EPD":
-                raise ValueError(
-                    'Aperture type cannot be "EPD" for telecentric object space.',
-                )
-            if self.optic.aperture.ap_type == "imageFNO":
-                raise ValueError(
-                    'Aperture type cannot be "imageFNO" for telecentric object space.',
-                )
-
-            sin = self.optic.aperture.value
-            z = be.sqrt(1 - sin**2) / sin + z0
-            z1 = be.full_like(Px, z)
-            x1 = Px * vx + x0
-            y1 = Py * vy + y0
-        else:
-            EPL = self.optic.paraxial.EPL()
-            EPD = self.optic.paraxial.EPD()
-
-            x1 = Px * EPD * vx / 2
-            y1 = Py * EPD * vy / 2
-            z1 = be.full_like(Px, EPL)
-
-        mag = be.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2 + (z1 - z0) ** 2)
-        # Handle case where ray origin and pupil point are the same
-        is_zero = mag < 1e-9  # Use a tolerance for floating point comparison
-        mag = be.where(is_zero, 1.0, mag)
-        L = be.where(is_zero, 0.0, (x1 - x0) / mag)
-        M = be.where(is_zero, 0.0, (y1 - y0) / mag)
-        N = be.where(is_zero, 1.0, (z1 - z0) / mag)
 
         apodization = self.optic.apodization
         if apodization:
@@ -94,7 +70,7 @@ class RayGenerator:
         else:
             intensity = be.ones_like(Px)
 
-        wavelength = be.ones_like(x1) * wavelength
+        wavelength = be.ones_like(x0) * wavelength
 
         if self.optic.polarization == "ignore":
             if self.optic.surface_group.uses_polarization:
