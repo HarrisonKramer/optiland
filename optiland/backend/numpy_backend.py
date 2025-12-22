@@ -22,6 +22,11 @@ if TYPE_CHECKING:
 _lib = np
 
 
+def arange_indices(start, stop=None, step=1) -> NDArray:
+    """Create an array of indices (int64)."""
+    return np.arange(start, stop, step, dtype=np.int64)
+
+
 ScalarOrArray = TypeVar("ScalarOrArray", float, NDArray)
 
 

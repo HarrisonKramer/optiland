@@ -10,8 +10,6 @@ from optiland.samples.objectives import CookeTriplet
 
 def test_uniform_apodization_get_intensity(set_test_backend):
     apod = UniformApodization()
-    # Test with scalar inputs (though Px, Py are expected as arrays)
-    # The function should handle them if backend array creation is robust
     px = be.array([0.5])
     py = be.array([0.5])
     intensity = apod.get_intensity(px, py)
@@ -19,7 +17,6 @@ def test_uniform_apodization_get_intensity(set_test_backend):
         "Intensity should be 1.0 for UniformApodization"
     )
 
-    # Test with array inputs
     px_array = be.array([-1.0, 0.0, 1.0])
     py_array = be.array([-1.0, 0.0, 1.0])
     intensity_array = apod.get_intensity(px_array, py_array)
@@ -130,10 +127,6 @@ def test_trace_apodization(set_test_backend):
     lens.set_apodization(GaussianApodization(sigma=0.1))
     rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=256, distribution="uniform")
 
-    # Check only that rays on edge have reduced intensity
-    # The span of the surface at index 4 (aperture stop) is about 8 mm.
-    # We test that most ray intensities lie within a radius of 0.5 mm,
-    # which should be consistent with the Gaussian apodization.
     x = lens.surface_group.x[4, :]
     y = lens.surface_group.y[4, :]
     r = be.sqrt(x**2 + y**2)
