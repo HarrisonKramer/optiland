@@ -79,7 +79,10 @@ class IterativeRayAimer(BaseRayAimer):
         ex, ey = rays.x - tx, rays.y - ty
 
         if be.any(be.isnan(ex)):
-            raise ValueError("Initial guess produced NaNs.")
+            raise ValueError(
+                "Initial ray aiming guess produced NaNs. "
+                "Consider using the 'robust' method instead."
+            )
 
         for _ in range(self.max_iter):
             converged = (ex**2 + ey**2) < tol_sq
