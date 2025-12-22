@@ -25,7 +25,7 @@ def test_iterative_aimer_infinite(set_test_backend):
         optic.surface_group.surfaces[i].trace(rays)
         
     stop_surf = optic.surface_group.surfaces[stop_idx]
-    assert not np.any(np.isnan(x))
+    assert not be.any(be.isnan(x))
 
 def test_robust_aimer_infinite(set_test_backend):
     """Test RobustRayAimer on an infinite conjugate system."""
@@ -37,7 +37,7 @@ def test_robust_aimer_infinite(set_test_backend):
     wavelength = 0.55
     
     x, y, z, L, M, N = aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
-    assert not np.any(np.isnan(x))
+    assert not be.any(be.isnan(x))
 
 def test_aimer_consistency(set_test_backend):
     """Ensure Iterative and Robust aimers yield similar results for easy rays."""
@@ -71,4 +71,37 @@ def test_large_batch(set_test_backend):
     x, y, z, L, M, N = aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
     
     assert len(x) == n
-    assert not np.any(np.isnan(x))
+    assert not be.any(be.isnan(x))
+
+def test_robust_aimer_initialization(set_test_backend):
+    """Test the initialization of the RobustRayAimer."""
+    optic = ReverseTelephoto()
+    aimer = RobustRayAimer(optic, max_iter=30, tol=1e-7, scale_fields=False)
+    
+    assert aimer.optic == optic
+    assert aimer._iterative.max_iter == 30
+    assert aimer._iterative.tol == 1e-7
+    assert aimer.scale_fields is False
+    assert isinstance(aimer._paraxial, type(aimer._iterative._paraxial_aimer))
+
+def test_integration_via_optic(set_test_backend):
+    """Test setting the ray aimer via the Optic class."""
+    optic = ReverseTelephoto()
+    
+    optic.set_ray_aiming("iterative", max_iter=25, tol=1e-5)
+    ray_gen = optic.ray_tracer.ray_generator
+    optic.trace(0, 0, 0.55, num_rays=1)
+    
+    aimer = ray_gen.aimer
+    assert isinstance(aimer, IterativeRayAimer)
+    assert aimer.max_iter == 25
+    assert aimer.tol == 1e-5
+    
+    optic.set_ray_aiming("robust", max_iter=15, tol=1e-6, scale_fields=True)
+    optic.trace(0, 0, 0.55, num_rays=1)
+    
+    aimer = ray_gen.aimer
+    assert isinstance(aimer, RobustRayAimer)
+    assert aimer._iterative.max_iter == 15
+    assert aimer._iterative.tol == 1e-6
+    assert aimer.scale_fields is True

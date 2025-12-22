@@ -29,13 +29,12 @@ class TestRobustRayAimer(unittest.TestCase):
         self.optic.add_wavelength(0.55)
 
     def test_robust_aimer_initialization(self):
-        aimer = RobustRayAimer(self.optic, fractions=[0.1, 1.0])
-        self.assertEqual(aimer.fractions, [0.1, 1.0])
-        self.assertEqual(aimer.max_iter, 20)
+        aimer = RobustRayAimer(self.optic)
+        self.assertEqual(aimer.scale_fields, True)
 
     def test_integration_via_optic(self):
         # Set robust mode via optic
-        self.optic.set_ray_aiming("robust", fractions=[0.1, 1.0])
+        self.optic.set_ray_aiming("robust", scale_fields=True)
         self.assertEqual(self.optic.ray_aiming_config["mode"], "robust")
         
         # Generate rays using RayGenerator (implicitly created/updated)
@@ -48,11 +47,11 @@ class TestRobustRayAimer(unittest.TestCase):
         
         # Verify the generator is using RobustRayAimer
         self.assertIsInstance(gen.aimer, RobustRayAimer)
-        self.assertEqual(gen.aimer.fractions, [0.1, 1.0])
+        self.assertEqual(gen.aimer.scale_fields, True)
 
     def test_aiming_execution(self):
         # Directly test allow execution logic
-        aimer = RobustRayAimer(self.optic, fractions=[0.5, 1.0])
+        aimer = RobustRayAimer(self.optic)
         fields = (0, 1) # Full field (20 deg)
         wavelengths = 0.55
         pupil = (0, 1) # Marginal ray

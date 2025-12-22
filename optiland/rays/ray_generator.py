@@ -40,7 +40,9 @@ class RayGenerator:
                 methods. Defaults to 1e-6.
             **kwargs: Additional parameters passed to the aimer constructor.
         """
-        self.aimer = create_ray_aimer(mode, self.optic, **kwargs)
+        self.aimer = create_ray_aimer(
+            mode, self.optic, max_iter=max_iter, tol=tol, **kwargs
+        )
 
     def generate_rays(
         self,
@@ -91,7 +93,7 @@ class RayGenerator:
                     "polarization-dependent coatings.",
                 )
             rays = RealRays(
-                x0, y0, z0, L, M, N, intensity=be.ones_like(x0), wavelength=wavelength
+                x0, y0, z0, L, M, N, intensity=intensity, wavelength=wavelength
             )
             return rays
         return PolarizedRays(x0, y0, z0, L, M, N, intensity, wavelength)

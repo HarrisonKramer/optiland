@@ -64,6 +64,12 @@ class ParaxialRayAimer(BaseRayAimer):
         Hx, Hy = fields
         Px, Py = pupil_coords
 
+        # Ensure backend arrays
+        Hx = be.as_array_1d(Hx)
+        Hy = be.as_array_1d(Hy)
+        Px = be.as_array_1d(Px)
+        Py = be.as_array_1d(Py)
+
         vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
         vx = 1 - be.array(vxf)
         vy = 1 - be.array(vyf)

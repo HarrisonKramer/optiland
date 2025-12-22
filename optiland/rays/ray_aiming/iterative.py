@@ -88,6 +88,17 @@ class IterativeRayAimer(BaseRayAimer):
         if initial_guess:
             x, y, z, L, M, N = initial_guess
         else:
+            # Helper to ensure fields and pupil coords are backend arrays
+            Hx, Hy = fields
+            Hx = be.as_array_1d(Hx)
+            Hy = be.as_array_1d(Hy)
+            fields = (Hx, Hy)
+
+            Px, Py = pupil_coords
+            Px = be.as_array_1d(Px)
+            Py = be.as_array_1d(Py)
+            pupil_coords = (Px, Py)
+
             x, y, z, L, M, N = self._paraxial_aimer.aim_rays(
                 fields, wavelengths, pupil_coords
             )
@@ -101,6 +112,8 @@ class IterativeRayAimer(BaseRayAimer):
         N = be.as_array_1d(N)
 
         Px, Py = pupil_coords
+        Px = be.as_array_1d(Px)
+        Py = be.as_array_1d(Py)
         stop_idx = self.optic.surface_group.stop_index
         stop_surf = self.optic.surface_group.surfaces[stop_idx]
         is_inf = getattr(self.optic.object_surface, "is_infinite", False)
@@ -137,7 +150,7 @@ class IterativeRayAimer(BaseRayAimer):
             )
 
         num_rays = len(x)
-        full_indices = be.arange(num_rays)
+        full_indices = be.arange_indices(num_rays)
 
         # Precompute Paraxial Jacobian Factor
         wl_mean = (
@@ -156,15 +169,23 @@ class IterativeRayAimer(BaseRayAimer):
 
         # Store previous state for Broyden
         if is_inf:
-            p1_prev = be.copy(x)
-            p2_prev = be.copy(y)
+            be.copy(x)
+            be.copy(y)
         else:
-            p1_prev = be.copy(L)
-            p2_prev = be.copy(M)
-        ex_prev = be.copy(ex)
-        ey_prev = be.copy(ey)
+            be.copy(L)
+            be.copy(M)
+        be.copy(ex)
+        be.copy(ey)
 
-        for iter_idx in range(self.max_iter):
+        # Ensure we are not modifying leaf variables in-place
+        x = be.copy(x)
+        y = be.copy(y)
+        z = be.copy(z)
+        L = be.copy(L)
+        M = be.copy(M)
+        N = be.copy(N)
+
+        for _iter_idx in range(self.max_iter):
             # Check convergence
             error_sq = ex**2 + ey**2
             converged = error_sq < tol_sq
@@ -174,6 +195,7 @@ class IterativeRayAimer(BaseRayAimer):
 
             # Active Set Strategy: only process non-converged rays
             active_mask = ~converged
+            # Ensure indices are integers
             idx = full_indices[active_mask]
 
             # Extract active data
@@ -181,132 +203,81 @@ class IterativeRayAimer(BaseRayAimer):
             ey_curr = ey[idx]
             # Handle wavelengths (could be scalar or array)
             if hasattr(wavelengths, "__len__"):
-                wl_active = wavelengths[idx]
+                wavelengths[idx]
             else:
-                wl_active = wavelengths
+                pass
 
-            # Extract current params
-            if is_inf:
-                p1_curr = x[idx]
-                p2_curr = y[idx]
-            else:
-                p1_curr = L[idx]
-                p2_curr = M[idx]
+            # Update solution (Newton Step)
+            # [dx] = - [J]^-1 * [error]
+            # Determinant for active rays
+            det = J11[idx] * J22[idx] - J12[idx] * J21[idx]
 
-            # Broyden Update (skip first iter)
-            if iter_idx > 0:
-                # Get deltas from previous step
-                dx = p1_curr - p1_prev[idx]
-                dy = p2_curr - p2_prev[idx]
-
-                dEx = ex_curr - ex_prev[idx]
-                dEy = ey_curr - ey_prev[idx]
-
-                # Broyden Step
-                j11_a = J11[idx]
-                j12_a = J12[idx]
-                j21_a = J21[idx]
-                j22_a = J22[idx]
-
-                # J * s
-                Js_x = j11_a * dx + j12_a * dy
-                Js_y = j21_a * dx + j22_a * dy
-
-                # Residual = y - J*s
-                Rx = dEx - Js_x
-                Ry = dEy - Js_y
-
-                # Norm sq
-                norm_sq = dx**2 + dy**2
-                norm_sq = be.maximum(norm_sq, 1e-20)
-
-                # Update J
-                J11[idx] += Rx * dx / norm_sq
-                J12[idx] += Rx * dy / norm_sq
-                J21[idx] += Ry * dx / norm_sq
-                J22[idx] += Ry * dy / norm_sq
-
-            # Calculate Inverse J
-            j11_a = J11[idx]
-            j12_a = J12[idx]
-            j21_a = J21[idx]
-            j22_a = J22[idx]
-
-            det = j11_a * j22_a - j12_a * j21_a
+            # Prevent division by zero
             det = be.where(be.abs(det) < 1e-12, 1e-12, det)
-            inv_det = 1.0 / det
 
-            inv_j11 = j22_a * inv_det
-            inv_j12 = -j12_a * inv_det
-            inv_j21 = -j21_a * inv_det
-            inv_j22 = j11_a * inv_det
+            # Invert 2x2 matrix analytically
+            J11_inv = J22[idx]
+            J12_inv = -J12[idx]
+            J21_inv = -J21[idx]
+            J22_inv = J11[idx]
 
-            # Compute Step: - J_inv * E
-            step_1 = -(inv_j11 * ex_curr + inv_j12 * ey_curr)
-            step_2 = -(inv_j21 * ex_curr + inv_j22 * ey_curr)
+            dp1 = -(J11_inv * ex_curr + J12_inv * ey_curr) / det
+            dp2 = -(J21_inv * ex_curr + J22_inv * ey_curr) / det
 
-            # Store state as 'prev' for next iteration (before updating)
-            # Use separate check since p1_prev[idx] is a slice assignment
+            # Update parameters
             if is_inf:
-                p1_prev[idx] = x[idx]
-                p2_prev[idx] = y[idx]
+                x[idx] += dp1
+                y[idx] += dp2
             else:
-                p1_prev[idx] = L[idx]
-                p2_prev[idx] = M[idx]
-            ex_prev[idx] = ex_curr
-            ey_prev[idx] = ey_curr
+                L[idx] += dp1
+                M[idx] += dp2
 
-            # Apply Step
-            if is_inf:
-                x[idx] += step_1
-                y[idx] += step_2
+            # Recalculate errors with new parameters
+            rays = self._trace_subset(x, y, z, L, M, N, wavelengths, stop_idx, is_inf)
+            ex_new = rays.x - tx
+            ey_new = rays.y - ty
 
-                # Verify Trace
-                rays_new = self._trace_subset(
-                    x[idx],
-                    y[idx],
-                    z[idx],
-                    L[idx],
-                    M[idx],
-                    N[idx],
-                    wl_active,
-                    stop_idx,
-                    is_inf,
-                )
-            else:
-                L[idx] += step_1
-                M[idx] += step_2
+            # Extract new errors for active set
+            ex_next = ex_new[idx]
+            ey_next = ey_new[idx]
 
-                # Renormalize N
-                L_active = L[idx]
-                M_active = M[idx]
-                sq = L_active**2 + M_active**2
-                be.clip(sq, 0, 1.0, out=sq)
-                N_active = N[idx]
-                N[idx] = be.where(N_active >= 0, be.sqrt(1.0 - sq), -be.sqrt(1.0 - sq))
+            # --- Broyden Update ---
+            # y_k = ex_next - ex_curr
+            # s_k = dp1, dp2
+            dEx = ex_next - ex_curr
+            dEy = ey_next - ey_curr
 
-                # Verify Trace
-                rays_new = self._trace_subset(
-                    x[idx],
-                    y[idx],
-                    z[idx],
-                    L[idx],
-                    M[idx],
-                    N[idx],
-                    wl_active,
-                    stop_idx,
-                    is_inf,
-                )
+            dx = dp1
+            dy = dp2
 
-            ex_new = rays_new.x - tx[idx]
-            ey_new = rays_new.y - ty[idx]
+            # Update J
+            # J += (y - J*s) * s^T / (s^T * s)
 
-            if be.any(be.isnan(ex_new)):
-                raise ValueError("Iterative solver diverged (NaNs).")
+            # Calculate J*s (using OLD J)
+            Js_x = J11[idx] * dx + J12[idx] * dy
+            Js_y = J21[idx] * dx + J22[idx] * dy
 
-            # Update errors
-            ex[idx] = ex_new
-            ey[idx] = ey_new
+            Rx = dEx - Js_x
+            Ry = dEy - Js_y
+
+            # Norm sq of step s
+            norm_sq = dx**2 + dy**2
+            norm_sq = be.maximum(norm_sq, 1e-20)
+
+            # Update J (Avoid in-place leaf errors by copying first)
+            J11 = be.copy(J11)
+            J12 = be.copy(J12)
+            J21 = be.copy(J21)
+            J22 = be.copy(J22)
+
+            J11[idx] += Rx * dx / norm_sq
+            J12[idx] += Rx * dy / norm_sq
+            J21[idx] += Ry * dx / norm_sq
+            J22[idx] += Ry * dy / norm_sq
+
+            # Update 'ex' and 'ey' arrays for next iter
+            ex = ex_new
+            ey = ey_new
 
         if not be.all((ex**2 + ey**2) < tol_sq):
             raise ValueError("Iterative aimer failed to converge.")
