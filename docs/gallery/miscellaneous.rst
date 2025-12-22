@@ -18,3 +18,4 @@ or unique functionality of Optiland.
     miscellaneous/real_image_height_field
     miscellaneous/themes
     miscellaneous/lens_draw_projection
+    miscellaneous/ray_aiming

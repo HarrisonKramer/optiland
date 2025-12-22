@@ -11,5 +11,6 @@ Optiland utilizes NumPy arrays to represent rays, which allows for efficient com
    optiland.rays.paraxial_rays
    optiland.rays.polarization_state
    optiland.rays.polarized_rays
+   optiland.rays.ray_aiming
    optiland.rays.ray_generator
    optiland.rays.real_rays
