@@ -639,10 +639,7 @@ class Optic:
         surface_index: int, 
         y_cross_section: float = 0, 
         x_cross_section: float = 0,
-        fig_to_plot_on: Figure | None= None,
-        max_extent: float | None  = None,
-        num_points_grid: int = 50,
-        buffer_factor: float = 1.1,
+        fig_to_plot_on: plt.Figure = None,
     ):
         """Analyzes and visualizes the sag of a given lens surface.
 
@@ -654,13 +651,7 @@ class Optic:
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
-        viewer.view(surface_index=surface_index, 
-                    y_cross_section=y_cross_section, 
-                    x_cross_section=x_cross_section,
-                    fig_to_plot_on=fig_to_plot_on,
-                    max_extent=max_extent,
-                    num_points_grid=num_points_grid,
-                    buffer_factor=buffer_factor)
+        viewer.view(surface_index, y_cross_section, x_cross_section)
 
     def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.

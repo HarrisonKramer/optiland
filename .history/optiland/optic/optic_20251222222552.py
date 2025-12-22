@@ -639,8 +639,8 @@ class Optic:
         surface_index: int, 
         y_cross_section: float = 0, 
         x_cross_section: float = 0,
-        fig_to_plot_on: Figure | None= None,
-        max_extent: float | None  = None,
+        fig_to_plot_on: plt.Figure = None,
+        max_extent: float = None,
         num_points_grid: int = 50,
         buffer_factor: float = 1.1,
     ):
