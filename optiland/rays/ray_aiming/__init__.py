@@ -10,11 +10,13 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from optiland.rays.ray_aiming.base import BaseRayAimer
+from optiland.rays.ray_aiming.iterative import IterativeRayAimer
 from optiland.rays.ray_aiming.paraxial import ParaxialRayAimer
 from optiland.rays.ray_aiming.registry import create_ray_aimer, register_aimer
 
 __all__ = [
     "BaseRayAimer",
+    "IterativeRayAimer",
     "ParaxialRayAimer",
     "create_ray_aimer",
     "register_aimer",
