@@ -29,12 +29,16 @@ class RayGenerator:
     def set_ray_aiming(
         self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
     ):
-        """
-        Set the ray aiming strategy.
+        """Set the ray aiming strategy.
 
         Args:
-            mode (str): The name of the ray aiming strategy (e.g., "paraxial").
-            **kwargs: Additional parameters for the chosen aimer.
+            mode (str): The name of the ray aiming strategy. Options include
+                "paraxial", "iterative", and "robust".
+            max_iter (int, optional): Maximum iterations for iterative/robust
+                methods. Defaults to 10.
+            tol (float, optional): Convergence tolerance for iterative/robust
+                methods. Defaults to 1e-6.
+            **kwargs: Additional parameters passed to the aimer constructor.
         """
         self.aimer = create_ray_aimer(mode, self.optic, **kwargs)
 
@@ -61,14 +65,6 @@ class RayGenerator:
         """
         if hasattr(self.optic, "ray_aiming_config"):
             config = self.optic.ray_aiming_config
-            # Basic check: if mode changed, re-create.
-            # Ideally we check all params, but for now mode is primary.
-            # We can also check if aimer type matches config mode.
-            getattr(self.aimer, "name", "unknown")
-            # Note: Aimer instances don't store "name" by default unless we added it.
-            # Safer to recreate or store _current_config locally.
-
-            # Let's check against a stored config shadow
             if not hasattr(self, "_current_config") or self._current_config != config:
                 self.set_ray_aiming(**config)
                 self._current_config = config.copy()
