@@ -23,6 +23,7 @@ Optiland includes several built-in analysis tools, each tailored to a specific a
 - **MTF**: Calculate the modulation transfer function (MTF) of the optical system via both geometric and diffraction (FFT) methods.
 - **Wavefront**: Compute the wavefront error across the field of view and pupil.
 - **Zernike Polynomials**: Decompose the wavefront error into Zernike polynomials.
+- **Image Simulation**: Simulate the image formation process, accounting for spatially variable blur, distortion, and lateral color.
 
 Analysis Workflow
 -----------------

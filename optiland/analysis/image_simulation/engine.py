@@ -155,9 +155,9 @@ class ImageSimulationEngine:
         sim_np = be.to_numpy(self.simulated_image)
 
         # Ensure correct range for display
-        if src_np.max() > 1.0:
+        if src_np.max() > 2.0:
             src_np = src_np / 255.0
-        if sim_np.max() > 1.0:
+        if sim_np.max() > 2.0:
             sim_np = sim_np / 255.0
 
         src_np = np.clip(src_np, 0, 1)
