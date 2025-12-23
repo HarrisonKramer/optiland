@@ -70,14 +70,14 @@ class RealRays(BaseRays):
             All input arrays are converted to 1D arrays. Direction cosines
             (L, M, N) should be normalized such that L² + M² + N² = 1.
         """
-        self.x = be.as_array_1d(x)
-        self.y = be.as_array_1d(y)
-        self.z = be.as_array_1d(z)
-        self.L = be.as_array_1d(L)
-        self.M = be.as_array_1d(M)
-        self.N = be.as_array_1d(N)
-        self.i = be.as_array_1d(intensity)
-        self.w = be.as_array_1d(wavelength)
+        self.x = be.atleast_1d(x)
+        self.y = be.atleast_1d(y)
+        self.z = be.atleast_1d(z)
+        self.L = be.atleast_1d(L)
+        self.M = be.atleast_1d(M)
+        self.N = be.atleast_1d(N)
+        self.i = be.atleast_1d(intensity)
+        self.w = be.atleast_1d(wavelength)
         self.opd = be.zeros_like(self.x)
 
         # variables to hold pre-surface direction cosines
