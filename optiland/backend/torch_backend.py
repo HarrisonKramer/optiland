@@ -369,6 +369,24 @@ def tile(x: Tensor, dims: int | list[int] | tuple[int, ...]) -> Tensor:
     return torch.tile(x, dims if isinstance(dims, list | tuple) else (dims,))
 
 
+def transpose(x: Tensor, axes: Sequence[int] | None = None) -> Tensor:
+    """
+    Transposes the input tensor.
+
+    Args:
+        x (Tensor): Input tensor.
+        axes (Sequence[int], optional): The dimensions to swap/permute.
+            If None, reverses the dimensions (like np.transpose).
+            If a tuple/list, calls x.permute(axes).
+
+    Returns:
+        Tensor: Transposed tensor.
+    """
+    if axes is None:
+        return x.t() if x.dim() == 2 else x.permute(*range(x.dim())[::-1])
+    return x.permute(axes)
+
+
 def isscalar(x: ArrayLike | Tensor) -> bool:
     return torch.is_tensor(x) and x.dim() == 0
 
@@ -516,6 +534,13 @@ def all(x: bool | ArrayLike) -> bool:
         return x
     t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
     return bool(torch.all(t).item())
+
+
+def any(x: bool | ArrayLike) -> bool:
+    if isinstance(x, bool):
+        return x
+    t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
+    return bool(torch.any(t).item())
 
 
 def factorial(n: ArrayLike) -> Tensor:
@@ -961,6 +986,7 @@ __all__ = [
     # Shape
     "reshape",
     "stack",
+    "transpose",
     "broadcast_to",
     "repeat",
     "flip",
@@ -987,6 +1013,7 @@ __all__ = [
     "maximum",
     "mean",
     "all",
+    "any",
     "histogram2d",
     "get_bilinear_weights",
     # Linear Algebra

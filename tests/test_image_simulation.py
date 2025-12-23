@@ -113,4 +113,4 @@ def test_image_simulation_engine_run(set_test_backend):
     result = engine.run()
     
     assert result.shape == (64, 64, 3)
-    assert not np.isnan(result).any()
+    assert not be.any(be.isnan(result))

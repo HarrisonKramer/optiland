@@ -18,6 +18,8 @@ from scipy.spatial.transform import Rotation as R
 from scipy.special import gamma
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy.random import Generator
 
 # Link to the underlying library
@@ -27,6 +29,11 @@ _lib = np
 def arange_indices(start, stop=None, step=1) -> NDArray:
     """Create an array of indices (int64)."""
     return np.arange(start, stop, step, dtype=np.int64)
+
+
+def cast(x: ArrayLike) -> NDArray:
+    """Cast an array to the current precision (float)."""
+    return np.array(x, dtype=float)
 
 
 def get_precision():
@@ -39,6 +46,10 @@ ScalarOrArray = TypeVar("ScalarOrArray", float, NDArray)
 def array(x: ArrayLike) -> NDArray:
     """Create an array/tensor"""
     return np.array(x)
+
+
+def transpose(x: ArrayLike, axes: Sequence[int] | None = None) -> NDArray:
+    return np.transpose(x, axes)
 
 
 def is_array_like(x: NDArray | list | tuple) -> bool:

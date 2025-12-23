@@ -95,7 +95,8 @@ class ImageSimulationEngine:
             ]
 
         # 2. Simulation Loop per Channel
-        for i, (wave, channel_img) in enumerate(
+        processed_channels = []
+        for _i, (wave, channel_img) in enumerate(
             zip(wavelengths, input_channels, strict=False)
         ):
             # A. Basis Generation
@@ -123,7 +124,9 @@ class ImageSimulationEngine:
             dist_map = warper.generate_distortion_map(wave, (H, W))
             distorted = warper.warp_image(blurred, dist_map)
 
-            final_output[i] = distorted
+            processed_channels.append(distorted)
+
+        final_output = be.stack(processed_channels, axis=0)
 
         # 3. Postprocessing
         # Downsample and Crop
