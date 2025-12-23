@@ -63,6 +63,7 @@ class RobustRayAimer(BaseRayAimer):
         fields: tuple,
         wavelengths: Any,
         pupil_coords: tuple,
+        initial_guess: tuple | None = None,
     ) -> tuple:
         """Calculate ray starting coordinates using recursive robust expansion.
 
@@ -73,10 +74,23 @@ class RobustRayAimer(BaseRayAimer):
             fields (tuple): Field coordinates.
             wavelengths (Any): Wavelengths in microns.
             pupil_coords (tuple): Normalized pupil coordinates.
+            initial_guess (tuple | None, optional): Optional starting guess.
+                If provided, the method first attempts to solve directly using
+                the iterative solver with this guess. If efficient, this skips
+                the robust expansion.
 
         Returns:
             tuple: Solved ray parameters (x, y, z, L, M, N).
         """
+        if initial_guess is not None:
+            try:
+                return self._iterative.aim_rays(
+                    fields, wavelengths, pupil_coords, initial_guess=initial_guess
+                )
+            except ValueError:
+                # Fallback to robust method if guess fails
+                pass
+
         # Anchor at t=0 (Paraxial limit)
         p0 = (pupil_coords[0] * 0.0, pupil_coords[1] * 0.0)
         f0 = (fields[0] * 0.0, fields[1] * 0.0) if self.scale_fields else fields

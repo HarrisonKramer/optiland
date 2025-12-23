@@ -105,3 +105,19 @@ def test_integration_via_optic(set_test_backend):
     assert aimer._iterative.max_iter == 15
     assert aimer._iterative.tol == 1e-6
     assert aimer.scale_fields is True
+
+def test_robust_caching_regression(set_test_backend):
+    """Regression test for cached RobustRayAimer accepting initial_guess."""
+    optic = ReverseTelephoto()
+    optic.set_ray_aiming("robust", cache=True)
+    
+    # 1. First trace (populates cache)
+    optic.trace(0, 0, 0.55, num_rays=1)
+    
+    # 2. Perturb system to force reuse of result as initial_guess
+    # Modify a radius slightly. We can just set a new value directly.
+    # This ensures the system hash changes.
+    optic.set_radius(100.0, 1)
+    
+    # 3. Second trace (should call robust aimer with initial_guess)
+    optic.trace(0, 0, 0.55, num_rays=1)
