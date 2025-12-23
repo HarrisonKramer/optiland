@@ -115,22 +115,16 @@ class IterativeRayAimer(BaseRayAimer):
         Px = be.as_array_1d(Px)
         Py = be.as_array_1d(Py)
         stop_idx = self.optic.surface_group.stop_index
-        stop_surf = self.optic.surface_group.surfaces[stop_idx]
+        self.optic.surface_group.surfaces[stop_idx]
         is_inf = getattr(self.optic.object_surface, "is_infinite", False)
 
         # Determine target coordinates
-        if stop_surf.aperture:
-            ap = stop_surf.aperture
-            if hasattr(ap, "r_max"):
-                rx = ry = ap.r_max
-            elif hasattr(ap, "x_max"):
-                rx, ry = ap.x_max, ap.y_max
-            else:
-                rx, ry = ap.extent[1], ap.extent[3]
-        else:
-            rx = ry = self.optic.paraxial.EPD() / 2.0
-            if stop_surf.semi_aperture:
-                rx = ry = stop_surf.semi_aperture
+        # Use initialization strategy to find the effective stop radius.
+        from optiland.rays.ray_aiming.initialization import get_stop_radius_strategy
+
+        strategy = get_stop_radius_strategy(self.optic, "iterative")
+        r_stop = strategy.calculate_stop_radius()
+        rx = ry = r_stop
 
         tx, ty = Px * rx, Py * ry
         # Ensure proper broadcasting for indexing later
