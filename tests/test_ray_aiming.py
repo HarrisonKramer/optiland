@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 import optiland.backend as be
 from optiland.samples.objectives import ReverseTelephoto, CookeTriplet
+from optiland.optic import Optic
 from optiland.rays.ray_aiming.iterative import IterativeRayAimer
 from optiland.rays.ray_aiming.robust import RobustRayAimer
 
@@ -121,3 +122,40 @@ def test_robust_caching_regression(set_test_backend):
     
     # 3. Second trace (should call robust aimer with initial_guess)
     optic.trace(0, 0, 0.55, num_rays=1)
+
+def test_robust_aimer_infinite_object_90_degree_field(set_test_backend):
+    """Regression test: verify RobustRayAimer aims correctly for 90 deg field @ infinity.
+    
+    See bug fix where IterativeRayAimer inherited bad L,M,N from initial_guess.
+    """
+    optic = Optic()
+    # Construct a minimal wide angle lens setup that reproduces the infinite + 90 deg scenario
+    # We'll use a simplified version of the user's lens to avoid clutter, 
+    # but ensure it has infinite object and large field.
+    
+    optic.add_surface(index=0, radius=float('inf'), thickness=float('inf'))
+    # A dummy surface to aim at
+    optic.add_surface(index=1, radius=100.0, thickness=10.0, material='air', is_stop=True)
+    optic.add_surface(index=2)
+
+    optic.set_aperture('EPD', 1.0)
+    optic.set_field_type('angle')
+    optic.add_field(y=0)
+    optic.add_field(y=90)
+    optic.add_wavelength(0.55, is_primary=True)
+    
+    optic.set_ray_aiming("robust")
+    
+    from optiland.rays.ray_generator import RayGenerator
+    rg = RayGenerator(optic)
+    
+    # Generate rays for 90 degree field (Hy=1.0)
+    # 90 degrees means rays come from +Y relative to Z.
+    # Direction vector should be approx (0, 1, 0).
+    # N (z-dir cosine) should be near 0.
+    rays = rg.generate_rays(Hx=0, Hy=1, Px=0, Py=0, wavelength=0.55)
+    
+    # Check N is close to 0 (allow small tolerance due to numerical precision/mapping)
+    # Using the fixed code, we saw N ~ 0.02 which is small enough compared to N ~ 1.
+    assert abs(rays.N[0]) < 0.1
+    assert rays.M[0] > 0.9 # Should be largely in Y direction

@@ -145,6 +145,12 @@ class RobustRayAimer(BaseRayAimer):
         Ng = be.sqrt(1.0 - sq)
         Ng = be.where(pN1 >= 0, Ng, -Ng)
 
+        # For infinite objects, direction cosines are fixed by the field angle.
+        # We must ignore the differential predictor for L, M, N and use
+        # the exact values from the new paraxial trace (par1).
+        if getattr(self.optic.object_surface, "is_infinite", False):
+            Lg, Mg, Ng = pL1, pM1, pN1
+
         guess = (xg, yg, zg, Lg, Mg, Ng)
 
         try:
