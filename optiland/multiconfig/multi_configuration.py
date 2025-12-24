@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 
 from optiland.utils import set_attr_by_path
 from optiland.visualization import OpticViewer
+from optiland.visualization.themes import get_active_theme
 
 if TYPE_CHECKING:
     from optiland.materials.base import BaseMaterial
@@ -348,7 +349,7 @@ class MultiConfiguration:
 
     def draw(
         self,
-        figsize: tuple[float, float] = (10, 4),
+        figsize: tuple[float, float] | None = None,
         sharex: bool = True,
         sharey: bool = True,
         **kwargs,
@@ -358,10 +359,17 @@ class MultiConfiguration:
         Args:
             figsize: The size of the figure for a SINGLE configuration.
                 The total figure height will be scaled by the number of configs.
+                If None, uses the active theme's default figsize.
             sharex: If True, share the x-axis limits and labels.
             sharey: If True, share the y-axis limits and labels.
             **kwargs: Additional arguments passed to OpticViewer.view().
         """
+        theme = get_active_theme()
+        params = theme.parameters
+
+        if figsize is None:
+            figsize = params["figure.figsize"]
+
         num_configs = len(self.configurations)
         total_height = figsize[1] * num_configs
         fig, axes = plt.subplots(
@@ -370,6 +378,7 @@ class MultiConfiguration:
             sharex=sharex,
             sharey=sharey,
         )
+        fig.set_facecolor(params["figure.facecolor"])
 
         # Ensure axes is iterable
         if num_configs == 1:
@@ -378,11 +387,14 @@ class MultiConfiguration:
             axes = axes.flatten()
 
         for i, (optic, ax) in enumerate(zip(self.configurations, axes, strict=False)):
+            ax.set_facecolor(params["axes.facecolor"])
+
             viewer = OpticViewer(optic)
 
             # Handle title (append config name if title exists)
             plot_kwargs = kwargs.copy()
             base_title = plot_kwargs.get("title")
+
             if base_title:
                 plot_kwargs["title"] = f"{base_title} (Config {i})"
             else:
