@@ -182,6 +182,13 @@ class Pickup:
         on the target surface.
         """
         old_value = self._get_value()
+
+        # Optimization: if scale is 1 and offset is 0, just copy the value.
+        # This allows pickups to work with non-numeric types (e.g., strings).
+        if self.scale == 1 and self.offset == 0:
+            self._set_value(old_value)
+            return
+
         new_value = self.scale * old_value + self.offset
         self._set_value(new_value)
 
@@ -249,9 +256,6 @@ class Pickup:
             "target_surface_idx": self.target_surface_idx,
             "scale": self.scale,
             "offset": self.offset,
-            # Note: We probably can't serialize source_optic fully if it's external,
-            # unless we have a registry of optics.
-            # For backward compatibility, we omit it if it matches self.optic
         }
 
     @classmethod

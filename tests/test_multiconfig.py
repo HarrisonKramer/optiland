@@ -16,52 +16,119 @@ def base_optic():
     return optic
 
 
-def test_multiconfig_initial_linking(base_optic):
-    """Verify that a new configuration is correctly linked to the base."""
+
+def test_set_global_radius(base_optic):
+    """Test setting a global radius updates all linked configs."""
     mc = MultiConfiguration(base_optic)
-    config1 = mc.add_configuration()
+    mc.add_configuration()
 
-    # Verify initial link by modifying base
-    base_optic.set_radius(200, 1)
-    base_optic.update()
-    config1.update()
+    mc.set_radius(1, 200, configurations="all")
+    mc.current_config(0).update()
+    mc.current_config(1).update()
 
-    r1_base = base_optic.surface_group.surfaces[1].geometry.radius
-    r1_conf = config1.surface_group.surfaces[1].geometry.radius
-    
-    assert r1_base == 200
-    assert r1_conf == 200
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 200
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 200
 
 
-def test_multiconfig_break_link_logic(base_optic):
-    """Verify that we can manually break the link (simulating optimization variable addition)."""
+def test_set_unique_radius(base_optic):
+    """Test setting a unique radius breaks the link."""
     mc = MultiConfiguration(base_optic)
-    config1 = mc.add_configuration()
+    mc.add_configuration()
 
-    # 1. Identify and remove the pickup for Surface 1, Radius
-    surface_number = 1
-    variable_type = 'radius'
+    # Set unique on config 1
+    mc.set_radius(1, 300, configurations=[1])
+    mc.current_config(0).update()
+    mc.current_config(1).update()
+
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == -100 # Original
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+
+    # Modify global, config 1 should NOT change
+    mc.set_radius(1, 400, configurations=[0])
+    mc.current_config(0).update()
+    mc.current_config(1).update()
+
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 400
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+
+
+def test_relink_radius(base_optic):
+    """Test that setting configurations='all' relinks unique configs."""
+    mc = MultiConfiguration(base_optic)
+    mc.add_configuration()
+
+    # Make unique
+    mc.set_radius(1, 300, configurations=[1])
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+
+    # Set global 'all', should overwrite unique
+    mc.set_radius(1, 500, configurations="all")
+    mc.current_config(0).update()
+    mc.current_config(1).update()
+
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 500
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 500
+
+    # Update global again, check link persists
+    mc.set_radius(1, 600, configurations=[0]) # Only set 0, but 1 is linked now
+    mc.current_config(0).update()
+    mc.current_config(1).update()
+
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 600
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 600
+
+
+def test_set_generic_property(base_optic):
+    """Test setting a generic property (e.g. asphere coefficient)."""
+    # Use asphere coefficient on surface 1 (need to change type first?)
+    # Or just use an existing property like 'material_post.n_p'? No, read-only mostly.
+    # Let's use 'thickness' via generic path for test, or assign a dummy var?
+    # Better: set 'geometry.radius' via generic path to prove generic logic works.
     
-    pickups_to_remove = []
-    for pickup in config1.pickups.pickups:
-        if (
-            pickup.target_surface_idx == surface_number
-            and pickup.attr_type == variable_type
-        ):
-            pickups_to_remove.append(pickup)
+    mc = MultiConfiguration(base_optic)
+    mc.add_configuration()
+
+    # Set global generic
+    mc.set_surface_property(1, "geometry.radius", 250, configurations="all")
+    mc.current_config(0).update()
+    mc.current_config(1).update()
+
+    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 250
+    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 250
+
+    # Confirm pickup was created (since radius has standard pickup, but we used generic path)
+    # Generic path 'surface_group.surfaces[1].geometry.radius'
+    # Check Pickups
+    # Note: `set_property` maps "radius" alias, but here we passed "geometry.radius" explicitly.
+    # So it used _ensure_generic_pickup.
     
-    assert len(pickups_to_remove) > 0, "Default pickup not found."
+    has_generic_pickup = False
+    target_path = "surface_group.surfaces[1].geometry.radius"
+    for p in mc.current_config(1).pickups.pickups:
+        if p.attr_type == target_path:
+            has_generic_pickup = True
+            break
+    assert has_generic_pickup
 
-    for pickup in pickups_to_remove:
-        config1.pickups.pickups.remove(pickup)
 
-    # 2. Modify base, verify config1 does NOT change
-    base_optic.set_radius(300, 1)
-    base_optic.update()
-    config1.update()
+def test_set_optic_property(base_optic):
+    """Test setting an optic-level property."""
+    mc = MultiConfiguration(base_optic)
+    mc.add_configuration()
 
-    r1_base = base_optic.surface_group.surfaces[1].geometry.radius
-    r1_conf = config1.surface_group.surfaces[1].geometry.radius
+    # Set global field type? Or maybe just 'name'
+    mc.set_optic_property("name", "TestOptic", configurations="all")
+    
+    assert mc.current_config(0).name == "TestOptic"
+    # Config 1 initially copied name?
+    # Generic pickup should handle future updates.
+    
+    mc.set_optic_property("name", "NewName", configurations="all")
+    mc.current_config(0).update()
+    mc.current_config(1).update()
 
-    assert r1_base == 300
-    assert r1_conf != 300  # Should remain at previous value (likely original or last set)
+    # Pickups apply on update(). 
+    # Generic pickup sets attr on config 1 from config 0.
+    assert mc.current_config(0).name == "NewName"
+    assert mc.current_config(1).name == "NewName"
+
