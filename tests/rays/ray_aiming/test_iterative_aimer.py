@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import unittest
-
 import numpy as np
-
 import optiland.backend as be
+
 from optiland.materials.ideal import IdealMaterial
 from optiland.optic import Optic
 from optiland.rays.ray_aiming import (
@@ -30,7 +29,9 @@ class TestIterativeRayAimer(unittest.TestCase):
         ) # Surface 3 (Stop)
         self.optic.add_surface(index=4) # Image
         
-        self.optic.set_aperture("EPD", 20.0)
+        self.optic.add_surface(index=4) # Image
+        
+        self.optic.set_aperture("float_by_stop_size", 1.0)
         self.optic.set_field_type("angle")
         self.optic.add_field(y=0)
         self.optic.add_field(y=10) # 10 degrees
@@ -42,8 +43,8 @@ class TestIterativeRayAimer(unittest.TestCase):
         self.assertEqual(aimer.max_iter, 20)
 
     def test_aiming_convergence_finite_object(self):
-        # Configure for Finite Object
-        self.optic.surface_group.surfaces[0].geometry.cs.z = 0.0 # Finite
+        # Configure for Finite Object: ensure thickness is finite (set in setUp as 100)
+        # S0 thickness=100 -> Object at Z=0, S1 at Z=100.
         self.optic.set_field_type("object_height")
         self.optic.fields.fields.clear()
         self.optic.add_field(y=0)
@@ -54,7 +55,8 @@ class TestIterativeRayAimer(unittest.TestCase):
         stop_r = self.optic.surface_group.surfaces[stop_index].aperture.r_max
 
         # Aim rays
-        aimer = IterativeRayAimer(self.optic, max_iter=10)
+        # Increase max_iter for safety
+        aimer = IterativeRayAimer(self.optic, max_iter=50)
         fields = (0, 1) # Normalized coordinates (Hx, Hy)
         wavelengths = 0.55
         pupil = (0, 1) # Marginal ray
@@ -75,13 +77,13 @@ class TestIterativeRayAimer(unittest.TestCase):
         
         # We expect high accuracy
         error = np.abs(stop_y - target_y)
-        print(f"Finite Object Error: {error}")
-        self.assertTrue(np.all(error < 1e-4))
+        self.assertTrue(np.all(error < 1e-4), f"Finite Object Error: {error}")
 
     def test_compare_paraxial_vs_iterative(self):
         # Create a system with strong spherical aberration or distortion
-        # Ensure Infinite Object for Angle Field
-        self.optic.surface_group.surfaces[0].geometry.cs.z = np.inf
+        # Ensure Infinite Object -> Set thickness to inf
+        self.optic.surface_group.surfaces[0].thickness = np.inf
+        
         self.optic.set_field_type("angle")
         self.optic.fields.fields.clear()
         self.optic.add_field(y=0)
@@ -111,11 +113,8 @@ class TestIterativeRayAimer(unittest.TestCase):
         trace_to_stop(self.optic, rays1)
         error1 = np.abs(rays1.y - stop_r)
         
-        print(f"Paraxial Error: {error0}")
-        print(f"Iterative Error: {error1}")
-        
         # Iterative should be much better
-        self.assertLess(error1[0], error0[0])
+        self.assertLess(error1[0], error0[0], f"Iterative {error1} not better than Paraxial {error0}")
         self.assertLess(error1[0], 1e-6)
 
 def import_rays(x, y, z, L, M, N, w):

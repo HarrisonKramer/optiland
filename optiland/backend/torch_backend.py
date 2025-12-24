@@ -518,6 +518,12 @@ def nanmax(
     return result
 
 
+def where(condition: bool | Tensor, x: Tensor | float, y: Tensor | float) -> Tensor:
+    if isinstance(condition, bool):
+        return x if condition else y
+    return torch.where(condition, x, y)
+
+
 def mean(x: ArrayLike, axis: int | None = None, keepdims: bool = False) -> Tensor:
     x = array(x)
     mask = ~torch.isnan(x)
@@ -1014,6 +1020,7 @@ __all__ = [
     "mean",
     "all",
     "any",
+    "where",
     "histogram2d",
     "get_bilinear_weights",
     # Linear Algebra

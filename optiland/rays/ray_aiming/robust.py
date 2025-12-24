@@ -63,6 +63,7 @@ class RobustRayAimer(BaseRayAimer):
         fields: tuple,
         wavelengths: Any,
         pupil_coords: tuple,
+        initial_guess: tuple | None = None,
     ) -> tuple:
         """Calculate ray starting coordinates using recursive robust expansion.
 
@@ -73,10 +74,23 @@ class RobustRayAimer(BaseRayAimer):
             fields (tuple): Field coordinates.
             wavelengths (Any): Wavelengths in microns.
             pupil_coords (tuple): Normalized pupil coordinates.
+            initial_guess (tuple | None, optional): Optional starting guess.
+                If provided, the method first attempts to solve directly using
+                the iterative solver with this guess. If efficient, this skips
+                the robust expansion.
 
         Returns:
             tuple: Solved ray parameters (x, y, z, L, M, N).
         """
+        if initial_guess is not None:
+            try:
+                return self._iterative.aim_rays(
+                    fields, wavelengths, pupil_coords, initial_guess=initial_guess
+                )
+            except ValueError:
+                # Fallback to robust method if guess fails
+                pass
+
         # Anchor at t=0 (Paraxial limit)
         p0 = (pupil_coords[0] * 0.0, pupil_coords[1] * 0.0)
         f0 = (fields[0] * 0.0, fields[1] * 0.0) if self.scale_fields else fields
@@ -130,6 +144,12 @@ class RobustRayAimer(BaseRayAimer):
 
         Ng = be.sqrt(1.0 - sq)
         Ng = be.where(pN1 >= 0, Ng, -Ng)
+
+        # For infinite objects, direction cosines are fixed by the field angle.
+        # We must ignore the differential predictor for L, M, N and use
+        # the exact values from the new paraxial trace (par1).
+        if getattr(self.optic.object_surface, "is_infinite", False):
+            Lg, Mg, Ng = pL1, pM1, pN1
 
         guess = (xg, yg, zg, Lg, Mg, Ng)
 
