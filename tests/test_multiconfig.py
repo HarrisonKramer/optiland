@@ -1,7 +1,11 @@
-
+import matplotlib
+import matplotlib.pyplot as plt
 import pytest
 from optiland.optic import Optic
 from optiland.multiconfig.multi_configuration import MultiConfiguration
+
+
+matplotlib.use("Agg")  # use non-interactive backend for testing
 
 
 @pytest.fixture
@@ -131,4 +135,26 @@ def test_set_optic_property(base_optic):
     # Generic pickup sets attr on config 1 from config 0.
     assert mc.current_config(0).name == "NewName"
     assert mc.current_config(1).name == "NewName"
+
+
+def test_multiconfig_draw(base_optic):
+    """Test that the draw method runs and returns a figure."""
+    mc = MultiConfiguration(base_optic)
+    
+    # Setup optic for drawing (needs aperture/fields)
+    base_optic.set_aperture("EPD", 20)
+    base_optic.set_field_type("angle")
+    base_optic.add_field(0)
+    base_optic.add_wavelength(0.55, is_primary=True)
+    base_optic.surface_group.surfaces[1].is_stop = True
+    
+    mc.add_configuration()
+
+    fig, axes = mc.draw(figsize=(5, 2))
+    
+    assert fig is not None
+    assert len(axes) == 2
+    
+    plt.close(fig)
+
 

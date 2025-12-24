@@ -11,7 +11,10 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Any, Literal
 
+import matplotlib.pyplot as plt
+
 from optiland.utils import set_attr_by_path
+from optiland.visualization import OpticViewer
 
 if TYPE_CHECKING:
     from optiland.materials.base import BaseMaterial
@@ -342,3 +345,50 @@ class MultiConfiguration:
     def current_config(self, index: int) -> Optic:
         """Returns the configuration at the given index."""
         return self.configurations[index]
+
+    def draw(
+        self,
+        figsize: tuple[float, float] = (10, 4),
+        sharex: bool = True,
+        sharey: bool = True,
+        **kwargs,
+    ):
+        """Draw the multi-configuration system.
+
+        Args:
+            figsize: The size of the figure for a SINGLE configuration.
+                The total figure height will be scaled by the number of configs.
+            sharex: If True, share the x-axis limits and labels.
+            sharey: If True, share the y-axis limits and labels.
+            **kwargs: Additional arguments passed to OpticViewer.view().
+        """
+        num_configs = len(self.configurations)
+        total_height = figsize[1] * num_configs
+        fig, axes = plt.subplots(
+            nrows=num_configs,
+            figsize=(figsize[0], total_height),
+            sharex=sharex,
+            sharey=sharey,
+        )
+
+        # Ensure axes is iterable
+        if num_configs == 1:
+            axes = [axes]
+        elif hasattr(axes, "flat"):
+            axes = axes.flatten()
+
+        for i, (optic, ax) in enumerate(zip(self.configurations, axes, strict=False)):
+            viewer = OpticViewer(optic)
+
+            # Handle title (append config name if title exists)
+            plot_kwargs = kwargs.copy()
+            base_title = plot_kwargs.get("title")
+            if base_title:
+                plot_kwargs["title"] = f"{base_title} (Config {i})"
+            else:
+                plot_kwargs["title"] = f"Configuration {i}"
+
+            viewer.view(ax=ax, **plot_kwargs)
+
+        plt.tight_layout()
+        return fig, axes
