@@ -140,6 +140,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    developers_guide/analysis_framework
    developers_guide/optimization_framework
    developers_guide/tolerancing_framework
+   developers_guide/multiconfig_framework
    developers_guide/visualization_framework
    developers_guide/optiland_file_format
    developers_guide/gui
@@ -179,6 +180,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_visualization
    api/api_wavefront
    api/api_zernike
+   api/api_multiconfig
 
 
 .. toctree::
