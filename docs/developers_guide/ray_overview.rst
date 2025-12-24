@@ -92,6 +92,7 @@ Available Strategies
 - **Paraxial**: Standard aiming using paraxial entrance pupil approximation. Fast but less accurate for wide-angle/aberrated systems.
 - **Iterative**: Uses a Newton-Raphson-like iterative solver to refine ray launch coordinates until they hit the physical stop.
 - **Robust**: An extension of the iterative method using **Pupil Expansion** (Continuation Method). It solves for small pupil fractions first and uses the result as a guess for larger pupils, ensuring convergence in highly stressed systems.
+- **Cached**: A wrapper that caches intermediate results from any other strategy. Useful for optimization or tolerance analysis where system changes are incremental. Enabled by setting `cache=True`.
 
 Configuration
 ^^^^^^^^^^^^^
@@ -99,7 +100,8 @@ Ray aiming is configured via the `Optic` instance:
 
 .. code-block:: python
 
-    optic.set_ray_aiming(mode="robust", max_iter=20, tol=1e-6)
+    # Enable robust ray aiming with caching
+    optic.set_ray_aiming(mode="robust", max_iter=20, tol=1e-6, cache=True)
 
 Custom Aimers
 ^^^^^^^^^^^^^

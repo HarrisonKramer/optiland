@@ -60,4 +60,15 @@ def create_ray_aimer(name: str, optic: Optic, **kwargs: Any) -> BaseRayAimer:
         raise ValueError(f"Unknown ray aimer '{name}'. Available aimers: {available}")
 
     aimer_cls = _AIMER_REGISTRY[name]
-    return aimer_cls(optic, **kwargs)
+    aimer = aimer_cls(optic, **kwargs)
+
+    cache = kwargs.get("cache", False)
+    if cache:
+        # Avoid circular import
+        from optiland.rays.ray_aiming.cached import CachedRayAimer
+
+        # Max cache size can be passed in kwargs as "max_cache_size"
+        max_cache_size = kwargs.get("max_cache_size", 128)
+        aimer = CachedRayAimer(optic, aimer, max_cache_size=max_cache_size)
+
+    return aimer
