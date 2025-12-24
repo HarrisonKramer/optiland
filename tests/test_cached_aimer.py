@@ -12,7 +12,13 @@ def mock_dependencies():
     optic = MagicMock(spec=Optic)
     surface_group_mock = MagicMock()
     surface_group_mock.to_dict.return_value = {"surfaces": []}
+    surface_group_mock.stop_index = 1
     optic.surface_group = surface_group_mock
+    optic.fields = MagicMock()
+    optic.wavelengths = MagicMock()
+    optic.aperture = MagicMock()
+    optic.object_surface = MagicMock()
+    optic.ray_aiming_config = MagicMock()
     
     wrapped_aimer = MagicMock(spec=BaseRayAimer)
     return optic, wrapped_aimer
@@ -91,7 +97,13 @@ def test_robust_aimer_integration_with_cache(set_test_backend):
     optic = MagicMock(spec=Optic)
     surface_group_mock = MagicMock()
     surface_group_mock.to_dict.return_value = {"surfaces": []}
+    surface_group_mock.stop_index = 1
     optic.surface_group = surface_group_mock
+    optic.fields = MagicMock()
+    optic.wavelengths = MagicMock()
+    optic.aperture = MagicMock()
+    optic.object_surface = MagicMock()
+    optic.ray_aiming_config = MagicMock()
     
     # Mock Paraxial Aimer (needed by Robust)
     paraxial_mock = MagicMock(spec=BaseRayAimer)

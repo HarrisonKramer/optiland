@@ -18,7 +18,8 @@ def test_float_by_stop_strategy(set_test_backend):
     optic.add_surface(index=2)
 
     # Set explicit aperture on stop
-    optic.surface_group.surfaces[1].set_aperture('circular', 2.5)
+    from optiland.physical_apertures.radial import RadialAperture
+    optic.surface_group.surfaces[1].aperture = RadialAperture(2.5)
     optic.set_aperture('float_by_stop_size', 1.0)
     
     strategy = FloatByStopStrategy(optic)

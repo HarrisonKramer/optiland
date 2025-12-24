@@ -500,6 +500,12 @@ def nanmax(
     return result
 
 
+def where(condition: bool | Tensor, x: Tensor | float, y: Tensor | float) -> Tensor:
+    if isinstance(condition, bool):
+        return x if condition else y
+    return torch.where(condition, x, y)
+
+
 def mean(x: ArrayLike, axis: int | None = None, keepdims: bool = False) -> Tensor:
     x = array(x)
     mask = ~torch.isnan(x)
@@ -516,6 +522,13 @@ def all(x: bool | ArrayLike) -> bool:
         return x
     t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
     return bool(torch.all(t).item())
+
+
+def any(x: bool | ArrayLike) -> bool:
+    if isinstance(x, bool):
+        return x
+    t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
+    return bool(torch.any(t).item())
 
 
 def factorial(n: ArrayLike) -> Tensor:
@@ -902,6 +915,8 @@ __all__ = [
     "maximum",
     "mean",
     "all",
+    "any",
+    "where",
     "histogram2d",
     "get_bilinear_weights",
     # Linear Algebra
