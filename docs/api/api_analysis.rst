@@ -16,6 +16,7 @@ encircled energy, field curvature, distortion, etc.
    analysis.field_curvature
    analysis.grid_distortion
    analysis.intensity
+   analysis.image_simulation
    analysis.irradiance
    analysis.pupil_aberration
    analysis.ray_fan

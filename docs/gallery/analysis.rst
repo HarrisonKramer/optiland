@@ -3,7 +3,7 @@
 Analysis
 ========
 
-This section constains examples of typical analysis tasks that can be performed with the **Optiland** library. These examples are intended to be illustrative and not exhaustive. For a complete list of available functions and classes, please refer to the `Optiland` API.
+This section contains examples of typical analysis tasks that can be performed with the **Optiland** library. These examples are intended to be illustrative and not exhaustive. For a complete list of available functions and classes, please refer to the `Optiland` API.
 
 .. nbgallery::
     analysis/spot
@@ -21,6 +21,7 @@ This section constains examples of typical analysis tasks that can be performed 
     analysis/through_focus_spot_diagram
     analysis/angle_vs_image_height_through_pupil
     analysis/angle_vs_image_height_through_field
+    analysis/image_simulation
 
 Surface Analysis
 ----------------

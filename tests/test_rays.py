@@ -91,42 +91,42 @@ def test_real_rays_init(set_test_backend):
 
     assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
-    assert rays.x.dtype == be.array(x).dtype
+    assert rays.x.dtype == be.array(1.0).dtype
     assert_allclose(rays.x[0], 1.0)
 
     assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
-    assert rays.y.dtype == be.array(y).dtype
+    assert rays.y.dtype == be.array(1.0).dtype
     assert_allclose(rays.y[0], 2.0)
 
     assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
-    assert rays.z.dtype == be.array(z).dtype
+    assert rays.z.dtype == be.array(1.0).dtype
     assert_allclose(rays.z[0], 3.0)
 
     assert isinstance(rays.L, be.ndarray)
     assert rays.L.shape == (1,)
-    assert rays.L.dtype == be.array(L).dtype
+    assert rays.L.dtype == be.array(1.0).dtype
     assert_allclose(rays.L[0], 4.0)
 
     assert isinstance(rays.M, be.ndarray)
     assert rays.M.shape == (1,)
-    assert rays.M.dtype == be.array(M).dtype
+    assert rays.M.dtype == be.array(1.0).dtype
     assert_allclose(rays.M[0], 5.0)
 
     assert isinstance(rays.N, be.ndarray)
     assert rays.N.shape == (1,)
-    assert rays.N.dtype == be.array(N).dtype
+    assert rays.N.dtype == be.array(1.0).dtype
     assert_allclose(rays.N[0], 6.0)
 
     assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
-    assert rays.i.dtype == be.array(intensity).dtype
+    assert rays.i.dtype == be.array(1.0).dtype
     assert_allclose(rays.i[0], 7.0)
 
     assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
-    assert rays.w.dtype == be.array(wavelength).dtype
+    assert rays.w.dtype == be.array(1.0).dtype
     assert_allclose(rays.w[0], 8.0)
 
     assert isinstance(rays.opd, be.ndarray)
