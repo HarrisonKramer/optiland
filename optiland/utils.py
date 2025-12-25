@@ -8,6 +8,9 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+import re
+from typing import Any
+
 import optiland.backend as be
 
 
@@ -133,3 +136,73 @@ def resolve_wavelength(optic, wavelength):
         return float(wavelength)
     else:
         raise TypeError("Wavelength must be a string ('primary') or a number.")
+
+
+def get_attr_by_path(obj: Any, path: str) -> Any:
+    """Retrieve an attribute of an object using a dot-separated path.
+    Supports list indexing, e.g., 'surfaces[1].geometry.radius'.
+
+    Args:
+        obj: The object to retrieve the attribute from.
+        path: The dot-separated path to the attribute.
+
+    Returns:
+        The value of the attribute.
+    """
+
+    def _get_item(current_obj, key):
+        # Check for list indexing: name[index]
+        match = re.match(r"(\w+)\[(\d+)\]", key)
+        if match:
+            attr_name, index = match.groups()
+            current_obj = getattr(current_obj, attr_name)
+            return current_obj[int(index)]
+        else:
+            return getattr(current_obj, key)
+
+    parts = path.split(".")
+    for part in parts:
+        obj = _get_item(obj, part)
+    return obj
+
+
+def set_attr_by_path(obj: Any, path: str, value: Any) -> None:
+    """Set an attribute of an object using a dot-separated path.
+    Supports list indexing, e.g., 'surfaces[1].geometry.radius'.
+
+    Args:
+        obj: The object to set the attribute on.
+        path: The dot-separated path to the attribute.
+        value: The value to set.
+    """
+
+    def _get_item_or_list(current_obj, key):
+        # Helper to traverse, but stop before setting the final attribute
+        # If key is name[index], we get the list item.
+        match = re.match(r"(\w+)\[(\d+)\]", key)
+        if match:
+            attr_name, index = match.groups()
+            container = getattr(current_obj, attr_name)
+            return container[int(index)]
+        else:
+            return getattr(current_obj, key)
+
+    parts = path.split(".")
+    final_attr = parts[-1]
+    parent_path = parts[:-1]
+
+    # Navigate to the parent object
+    current_obj = obj
+    for part in parent_path:
+        current_obj = _get_item_or_list(current_obj, part)
+
+    # Set the value on the final attribute
+    # Note: final_attr usually shouldn't have [index] because we set attributes,
+    # but if it does (e.g. setting an item in a list directly), handle it.
+    match = re.match(r"(\w+)\[(\d+)\]", final_attr)
+    if match:
+        attr_name, index = match.groups()
+        container = getattr(current_obj, attr_name)
+        container[int(index)] = value
+    else:
+        setattr(current_obj, final_attr, value)

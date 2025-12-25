@@ -60,6 +60,7 @@ class OpticViewer(BaseViewer):
         tooltip_format=None,
         show_legend=True,
         projection="YZ",
+        ax: BaseViewer | None = None,
     ):
         """Visualizes the optical system.
 
@@ -80,6 +81,8 @@ class OpticViewer(BaseViewer):
                 include "chief" and "marginal". Defaults to None.
             projection (str, optional): The projection plane. Must be 'XY',
                 'XZ', or 'YZ'. Defaults to 'YZ'.
+            ax (matplotlib.axes.Axes, optional): The axes to plot on.
+                If None, a new figure and axes are created. Defaults to None.
 
         """
         if projection not in ["XY", "XZ", "YZ"]:
@@ -98,8 +101,12 @@ class OpticViewer(BaseViewer):
         if figsize is None:
             figsize = params["figure.figsize"]
 
-        fig, ax = plt.subplots(figsize=figsize)
-        fig.set_facecolor(params["figure.facecolor"])
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+            fig.set_facecolor(params["figure.facecolor"])
+        else:
+            fig = ax.get_figure()
+
         ax.set_facecolor(params["axes.facecolor"])
 
         interaction_manager = InteractionManager(fig, ax, self.optic, tooltip_format)
