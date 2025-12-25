@@ -2,7 +2,14 @@
 import pytest
 import numpy as np
 import optiland.backend as be
-from optiland.samples.objectives import ReverseTelephoto, CookeTriplet
+from optiland.samples.objectives import (
+    ReverseTelephoto,
+    CookeTriplet,
+    WideAngle100FOV,
+    ProjectionLens120FOV,
+    ProjectionLens160FOV,
+    WideAngle170FOV
+)
 from optiland.optic import Optic
 from optiland.rays.ray_aiming.iterative import IterativeRayAimer
 from optiland.rays.ray_aiming.robust import RobustRayAimer
@@ -159,3 +166,11 @@ def test_robust_aimer_infinite_object_90_degree_field(set_test_backend):
     # Using the fixed code, we saw N ~ 0.02 which is small enough compared to N ~ 1.
     assert abs(rays.N[0]) < 0.1
     assert rays.M[0] > 0.9 # Should be largely in Y direction
+
+
+def test_instantiate_wide_angle_lenses(set_test_backend):
+    """This tests only if we can instantiate wide angle lenses with error"""
+    assert WideAngle100FOV() is not None
+    assert ProjectionLens120FOV() is not None
+    assert ProjectionLens160FOV() is not None
+    assert WideAngle170FOV() is not None
