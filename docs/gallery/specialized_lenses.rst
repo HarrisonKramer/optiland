@@ -19,3 +19,7 @@ While these lenses are perhaps more complex, they are built using the same basic
     specialized_lenses/infrared_triplet
     specialized_lenses/lithography
     specialized_lenses/zoom_lens
+    specialized_lenses/wide_angle_100fov
+    specialized_lenses/projection_120fov
+    specialized_lenses/projection_160fov
+    specialized_lenses/wide_angle_170fov

@@ -533,3 +533,186 @@ class Telephoto(optic.Optic):
 
         # scale from inches to mm
         self.scale_system(25.4)
+
+
+class WideAngle100FOV(optic.Optic):
+    """A wide-angle lens design with a 100° field of view.
+
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 108.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        self.add_surface(index=1, radius=8.0107, thickness=0.2500, material="N-SK4")
+        self.add_surface(index=2, radius=1.1856, thickness=0.9613)
+        self.add_surface(index=3, radius=1.6747, thickness=0.3578, material="SF1")
+        self.add_surface(index=4, radius=-7.5157, thickness=0.2136, material="N-SK4")
+        self.add_surface(index=5, radius=0.9411, thickness=0.4146)
+        self.add_surface(index=6, radius=-1.7688, thickness=0.3333, material="SF1")
+        self.add_surface(index=7, radius=-1.5531, thickness=0.3863, material="N-SK4")
+        self.add_surface(index=8, radius=-2.2281, thickness=0.9842)
+        self.add_surface(index=9, radius=be.inf, thickness=0.1000, is_stop=True)
+        self.add_surface(index=10, radius=13.6803, thickness=0.1400, material="N-SK4")
+        self.add_surface(index=11, radius=-3.4279, thickness=0.0605)
+        self.add_surface(index=12, radius=20.0257, thickness=0.3332, material="N-SK4")
+        self.add_surface(index=13, radius=-0.9258, thickness=0.4374, material="SF1")
+        self.add_surface(index=14, radius=-3.2233, thickness=0.2679)
+        self.add_surface(index=15, radius=10.3847, thickness=0.1400, material="SF1")
+        self.add_surface(index=16, radius=2.4272, thickness=0.2609, material="N-SK4")
+        self.add_surface(index=17, radius=-3.8828, thickness=0.0150)
+        self.add_surface(index=18, radius=3.3650, thickness=0.3167, material="N-SK4")
+        self.add_surface(index=19, radius=-14.7547, thickness=1.5604)
+        self.add_surface(index=20, radius=be.inf, thickness=0.0)
+
+        self.set_aperture("imageFNO", 4.0)
+
+        self.set_field_type("angle")
+        self.add_field(y=0)
+        self.add_field(y=35.0)
+        self.add_field(y=50.0)
+
+        self.add_wavelength(value=0.4861)
+        self.add_wavelength(value=0.5876, is_primary=True)
+        self.add_wavelength(value=0.6563)
+
+        self.set_ray_aiming("iterative", cache=True)
+
+
+class ProjectionLens120FOV(optic.Optic):
+    """A 120-degree FOV projection lens design.
+
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 110.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        self.add_surface(index=1, radius=28.2482, thickness=0.5000, material="N-SK4")
+        self.add_surface(index=2, radius=2.2027, thickness=1.4379)
+        self.add_surface(index=3, radius=2.7819, thickness=1.1174, material="SF1")
+        self.add_surface(index=4, radius=-10.4886, thickness=0.3022, material="N-SK4")
+        self.add_surface(index=5, radius=1.2417, thickness=0.7247)
+        self.add_surface(index=6, radius=-2.8768, thickness=0.5088, material="SF1")
+        self.add_surface(index=7, radius=-2.0989, thickness=0.4998, material="N-SK4")
+        self.add_surface(index=8, radius=-4.2448, thickness=0.0150)
+        self.add_surface(index=9, radius=8.4162, thickness=1.1279, material="N-SK4")
+        self.add_surface(index=10, radius=-1.6294, thickness=0.2486, material="SF1")
+        self.add_surface(index=11, radius=-4.5056, thickness=0.5412)
+        self.add_surface(index=12, radius=be.inf, thickness=0.0200, is_stop=True)
+        self.add_surface(index=13, radius=be.inf, thickness=0.1689, material="N-SK4")
+        self.add_surface(index=14, radius=-3.8691, thickness=0.1065)
+        self.add_surface(index=15, radius=-6.6827, thickness=0.2007, material="N-SK4")
+        self.add_surface(index=16, radius=-2.2167, thickness=0.2822)
+        self.add_surface(index=17, radius=-1.6444, thickness=0.1827, material="SF1")
+        self.add_surface(index=18, radius=-3.3466, thickness=0.0149)
+        self.add_surface(index=19, radius=-36.4599, thickness=0.5235, material="SF1")
+        self.add_surface(index=20, radius=5.3765, thickness=0.0373)
+        self.add_surface(index=21, radius=6.4204, thickness=0.6243, material="N-SK4")
+        self.add_surface(index=22, radius=-2.7537, thickness=0.0150)
+        self.add_surface(index=23, radius=5.1876, thickness=0.8475, material="N-SK4")
+        self.add_surface(index=24, radius=be.inf, thickness=2.0000)
+        self.add_surface(index=25, radius=be.inf, thickness=0.0)
+
+        self.set_aperture("imageFNO", 2.8)
+
+        self.set_field_type("angle")
+        self.add_field(y=0)
+        self.add_field(y=42.0)
+        self.add_field(y=60.0)
+
+        self.add_wavelength(value=0.4861)
+        self.add_wavelength(value=0.5876, is_primary=True)
+        self.add_wavelength(value=0.6563)
+
+        self.set_ray_aiming("robust", cache=True)
+
+
+class ProjectionLens160FOV(optic.Optic):
+    """An f/2 160-degree FOV projection lens.
+
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 112.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        self.add_surface(index=1, radius=38.9150, thickness=0.5459, material="N-BK7")
+        self.add_surface(index=2, radius=3.6152, thickness=1.6595)
+        self.add_surface(index=3, radius=be.inf, thickness=0.6927, material="N-BK7")
+        self.add_surface(index=4, radius=5.2515, thickness=1.4576)
+        self.add_surface(index=5, radius=-5.2515, thickness=0.6927, material="N-BK7")
+        self.add_surface(index=6, radius=be.inf, thickness=4.1494)
+        self.add_surface(index=7, radius=5.1075, thickness=0.7000, material="SF4")
+        self.add_surface(index=8, radius=-10.8385, thickness=0.0162)
+        self.add_surface(index=9, radius=2.3897, thickness=0.7443, material="SF4")
+        self.add_surface(index=10, radius=2.2789, thickness=0.1136)
+        self.add_surface(index=11, radius=be.inf, thickness=0.1040, is_stop=True)
+        self.add_surface(index=12, radius=-2.3536, thickness=0.7038, material="SF1")
+        self.add_surface(index=13, radius=2.7829, thickness=0.5423, material="N-LAK7")
+        self.add_surface(index=14, radius=-2.8287, thickness=0.2506)
+        self.add_surface(index=15, radius=13.1578, thickness=0.6350, material="N-LAK7")
+        self.add_surface(index=16, radius=-1.4944, thickness=0.2922, material="SF4")
+        self.add_surface(index=17, radius=-4.8082, thickness=0.0668)
+        self.add_surface(index=18, radius=4.3447, thickness=0.5059, material="N-LAK21")
+        self.add_surface(index=19, radius=72.8673, thickness=2.2376)
+        self.add_surface(index=20, radius=be.inf, thickness=0.0)
+
+        self.set_aperture("imageFNO", 2.0)
+
+        self.set_field_type("angle")
+        self.add_field(y=0)
+        self.add_field(y=56.0)
+        self.add_field(y=80.0)
+
+        self.add_wavelength(value=0.4861)
+        self.add_wavelength(value=0.5876, is_primary=True)
+        self.add_wavelength(value=0.6563)
+
+        self.set_ray_aiming("robust", cache=True)
+
+
+class WideAngle170FOV(optic.Optic):
+    """A 170-degree FOV, f/1.8 camera lens.
+
+    Reference: Milton Laikin, Lens Design, 4th ed., CRC Press, 2007, p. 114.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.add_surface(index=0, radius=be.inf, thickness=be.inf)
+        self.add_surface(index=1, radius=6.0515, thickness=0.1796, material="N-BK7")
+        self.add_surface(index=2, radius=1.2087, thickness=0.9182)
+        self.add_surface(index=3, radius=-9.4697, thickness=0.1939, material="N-SK5")
+        self.add_surface(index=4, radius=1.0053, thickness=0.6402)
+        self.add_surface(index=5, radius=1.6634, thickness=0.4518, material="SF1")
+        self.add_surface(index=6, radius=-1.6712, thickness=0.1825, material="N-LAK9")
+        self.add_surface(index=7, radius=1.1206, thickness=2.5272)
+        self.add_surface(index=8, radius=1.3895, thickness=0.2500, material="N-LAK9")
+        self.add_surface(index=9, radius=0.5522, thickness=0.6047, material="N-PSK3")
+        self.add_surface(index=10, radius=-0.8844, thickness=0.0196)
+        self.add_surface(index=11, radius=-0.8804, thickness=0.0800, material="SF1")
+        self.add_surface(index=12, radius=-2.1545, thickness=0.1200)
+        self.add_surface(index=13, radius=be.inf, thickness=0.1200, is_stop=True)
+        self.add_surface(index=14, radius=1.0354, thickness=0.4830, material="N-PSK3")
+        self.add_surface(index=15, radius=-0.8443, thickness=0.0546)
+        self.add_surface(index=16, radius=-0.7386, thickness=0.1076, material="SF1")
+        self.add_surface(index=17, radius=-1.5285, thickness=0.8308)
+        self.add_surface(index=18, radius=be.inf, thickness=0.0)
+
+        self.set_aperture("imageFNO", 1.8)
+
+        self.set_field_type("angle")
+        self.add_field(y=0)
+        self.add_field(y=60.0)
+        self.add_field(y=85.0)
+
+        self.add_wavelength(value=0.4861)
+        self.add_wavelength(value=0.5876, is_primary=True)
+        self.add_wavelength(value=0.6563)
+
+        self.set_ray_aiming("robust", cache=True)

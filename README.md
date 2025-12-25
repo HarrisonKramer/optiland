@@ -138,7 +138,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Thin Film Design and Optimization** 
 - [ ] **Jones Pupils**
 - [ ] **Additional Freeforms (Superconic, etc.)**
-- [ ] **Image Simulation**
+- [x] **Image Simulation**
 - [ ] **Interferogram Analysis**
 - [ ] **Additional Tutorials/Examples**
 - [ ] **Non-sequential ray tracing**
