@@ -15,7 +15,6 @@ import numpy as np
 import optiland.backend as be
 from optiland.analysis.base import BaseAnalysis
 from optiland.rays import PolarizationState
-from optiland.utils import resolve_fields
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -33,32 +32,33 @@ class JonesPupil(BaseAnalysis):
 
     Attributes:
         optic: Instance of the optic object to be assessed.
-        fields: Fields at which data is generated.
+    Attributes:
+        optic: Instance of the optic object to be assessed.
+        field: Field at which data is generated (Hx, Hy).
         wavelengths: Wavelengths at which data is generated.
         grid_size: The side length of the square grid of rays (NxN).
-        data: Contains Jones matrix data in a nested list, ordered by field, then
-            wavelength.
+        data: Contains Jones matrix data in a list, ordered by wavelength.
     """
 
     def __init__(
         self,
         optic: Optic,
-        fields: str | list = "all",
+        field: tuple[float, float] = (0, 0),
         wavelengths: str | list = "all",
-        grid_size: int = 33,
+        grid_size: int = 65,
     ):
         """Initializes the JonesPupil analysis.
 
         Args:
             optic: An instance of the optic object to be assessed.
-            fields: Fields at which to generate data. If 'all', all defined
-                field points are used. Defaults to "all".
+            field: The normalized field coordinates (Hx, Hy) at which to
+                generate data. Defaults to (0, 0).
             wavelengths: Wavelengths at which to generate data. If 'all', all
                 defined wavelengths are used. Defaults to "all".
             grid_size: The number of points along one dimension of the pupil grid.
-                Defaults to 33.
+                Defaults to 65.
         """
-        self.fields = resolve_fields(optic, fields)
+        self.field = field
         self.grid_size = grid_size
         super().__init__(optic, wavelengths)
 
@@ -77,29 +77,12 @@ class JonesPupil(BaseAnalysis):
         Returns:
             A tuple containing the Matplotlib figure and a list of its axes.
         """
-        if (
-            not self.fields or self.fields == [(0, 0)]
-        ) and not self.optic.fields.fields:
-            return None, None
-
-        # Determine layout
-
-        # For simplicity, we plot the first field and first wavelength by default
-        # if multiple are present, or we could tile them.
-        # Given standard usage, usually one looks at one field/wavelength or
-        # tabs through them. But BaseAnalysis `view` usually static.
-        # Let's plot the first field and first wavelength for now,
-        # or iterate? SpotDiagram plots all fields.
-        # Jones Pupil is 8 plots per field/wavelength. That's too many to tile.
-        # We will plot the PRIMARY field (or first) and PRIMARY wavelength (or first).
-
-        # Select first field and primary wavelength index
-        field_idx = 0
+        # Select primary wavelength index
         wl_idx = 0
         if self.optic.primary_wavelength in self.wavelengths:
             wl_idx = self.wavelengths.index(self.optic.primary_wavelength)
 
-        data_fw = self.data[field_idx][wl_idx]
+        data_fw = self.data[wl_idx]
 
         if fig_to_plot_on:
             fig = fig_to_plot_on
@@ -121,12 +104,6 @@ class JonesPupil(BaseAnalysis):
         px = be.to_numpy(data_fw["Px"]).reshape(self.grid_size, self.grid_size)
         py = be.to_numpy(data_fw["Py"]).reshape(self.grid_size, self.grid_size)
         mask = px**2 + py**2 <= 1.0
-        # px[~mask] = np.nan
-        # py[~mask] = np.nan
-
-        # pcolormesh handles NaN in C (value) array by masking the cell,
-        # but X and Y coordinates must be valid.
-        # We should NOT mask px and py, only the values.
 
         for col, (name, values) in enumerate(elements):
             val_np = be.to_numpy(values).reshape(self.grid_size, self.grid_size)
@@ -138,7 +115,8 @@ class JonesPupil(BaseAnalysis):
                 px, py, np.real(val_np), shading="nearest", cmap="viridis"
             )
             ax_real.set_title(f"Re({name})")
-            fig.colorbar(im_real, ax=ax_real)
+            ax_real.set_aspect("equal")
+            fig.colorbar(im_real, ax=ax_real, fraction=0.046, pad=0.04)
 
             # Imag part
             ax_imag = axs[1, col]
@@ -146,7 +124,8 @@ class JonesPupil(BaseAnalysis):
                 px, py, np.imag(val_np), shading="nearest", cmap="viridis"
             )
             ax_imag.set_title(f"Im({name})")
-            fig.colorbar(im_imag, ax=ax_imag)
+            ax_imag.set_aspect("equal")
+            fig.colorbar(im_imag, ax=ax_imag, fraction=0.046, pad=0.04)
 
         # Labels
         for ax in axs[:, 0]:
@@ -154,7 +133,7 @@ class JonesPupil(BaseAnalysis):
         for ax in axs[-1, :]:
             ax.set_xlabel("Px")
 
-        field_val = self.fields[field_idx]
+        field_val = self.field
         wl_val = self.wavelengths[wl_idx]
         fig.suptitle(f"Jones Pupil - Field: {field_val}, Wavelength: {wl_val:.4f} µm")
         fig.tight_layout()
@@ -171,11 +150,9 @@ class JonesPupil(BaseAnalysis):
         Py = Py_grid.flatten()
 
         data = []
-        for Hx, Hy in self.fields:
-            field_data = []
-            for wl in self.wavelengths:
-                field_data.append(self._generate_single_data(Hx, Hy, Px, Py, wl))
-            data.append(field_data)
+        Hx, Hy = self.field
+        for wl in self.wavelengths:
+            data.append(self._generate_single_data(Hx, Hy, Px, Py, wl))
 
         return data
 
@@ -215,24 +192,14 @@ class JonesPupil(BaseAnalysis):
         v = be.cross(k, x_axis)
         v_norm = be.linalg.norm(v, axis=1)
 
-        # Handle singularity: if k is parallel to X (v_norm ~ 0)
-        # For optical systems, k is rarely along X.
-        # If it happens, we can default to Z-axis for the cross product?
-        # But for now assuming paraxial-ish along Z.
-
         # Avoid division by zero
         v = v / be.unsqueeze_last(v_norm + 1e-15)
 
         # u ~ X-axis: perpendicular to v and k
         u = be.cross(v, k)
         u_norm = be.linalg.norm(u, axis=1)
+        # Avoid division by zero
         u = u / be.unsqueeze_last(u_norm + 1e-15)
-
-        # Basis matrices
-        # Input basis (Global X, Global Y) assumed for Jones Matrix definition
-        # The stored 'p' matrix is Global -> Global.
-        # We want J such that E_local_out = J * E_global_in
-        # (Assuming input is typically defined in global coords at entrance pupil)
 
         # Project global P onto local basis (u, v)
         # Jxx = u . (P . x_in)

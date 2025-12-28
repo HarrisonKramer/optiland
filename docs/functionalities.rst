@@ -24,6 +24,8 @@ Analysis Tools
   Perform precise ray-based evaluations for both idealized and physically realistic systems.
 - **Polarization Ray Tracing**:
   Model vectorial light propagation, including polarization effects and birefringent materials.
+- **Jones Pupil Analysis**:
+  Visualize spatially resolved Jones matrix elements at the exit pupil to assess polarization properties.
 - **Comprehensive Optical Analysis**:
   Generate spot diagrams, ray aberration fans, OPD maps, distortion plots, and more.
 - **Wavefront Analysis**:

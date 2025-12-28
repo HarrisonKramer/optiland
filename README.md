@@ -136,7 +136,7 @@ Optiland is continually evolving to provide new functionalities for optical desi
 - [ ] **Multi-Path Sequential Ray Tracing**
 - [x] **Multiple Configurations (Zoom Lenses)**
 - [ ] **Thin Film Design and Optimization** 
-- [ ] **Jones Pupils**
+- [x] **Jones Pupils**
 - [ ] **Additional Freeforms (Superconic, etc.)**
 - [x] **Image Simulation**
 - [ ] **Interferogram Analysis**
