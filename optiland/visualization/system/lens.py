@@ -82,7 +82,7 @@ class Lens2D:
             # Use a small tolerance for floating point comparisons
             if np.any(z1_interp > z2_interp + 1e-9):
                 warnings.warn(
-                    f"Lens surfaces {k} and {k+1} overlap detected.",
+                    f"Lens surfaces {k} and {k + 1} overlap detected.",
                     stacklevel=2,
                 )
 
