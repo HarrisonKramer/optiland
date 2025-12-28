@@ -72,8 +72,9 @@ def resolve_wavelengths(optic, wavelengths):
 
     Args:
         optic (Optic): The optic object.
-        wavelengths (str or list): The wavelengths to resolve.
-            Can be 'all', 'primary', or a list of wavelength values.
+        wavelengths (str or list or float or int): The wavelengths to resolve.
+            Can be 'all', 'primary', a list of wavelength values, or a single
+            numerical value.
 
     Returns:
         list: A list of wavelength values.
@@ -87,8 +88,13 @@ def resolve_wavelengths(optic, wavelengths):
             raise ValueError("Invalid wavelength string. Must be 'all' or 'primary'.")
     elif isinstance(wavelengths, list):
         return wavelengths
+    elif isinstance(wavelengths, (int, float)):
+        return [float(wavelengths)]
     else:
-        raise TypeError("Wavelengths must be a string ('all', 'primary') or a list.")
+        raise TypeError(
+            "Wavelengths must be a string ('all', 'primary'), a list, "
+            "or a number."
+        )
 
 
 def resolve_fields(optic, fields):

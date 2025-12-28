@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
-from optiland.utils import resolve_wavelength
+from optiland.utils import resolve_wavelengths
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -34,8 +34,8 @@ class GeometricMTF(SpotDiagram):
         optic (Optic): The optical system for which to calculate the MTF.
         fields (str or list, optional): The field points at which to calculate
             the MTF. Defaults to 'all'.
-        wavelength (str or float, optional): The wavelength at which to
-            calculate the MTF. Defaults to 'primary'.
+        wavelength (str or list, optional): The wavelength(s) at which to
+            calculate the MTF. Defaults to 'primary'. Can be 'all' for polychromatic.
         num_rays (int, optional): The number of rays to trace for each field
             point. Defaults to 100.
         distribution (str, optional): The distribution of rays within each
@@ -70,7 +70,7 @@ class GeometricMTF(SpotDiagram):
         self,
         optic: Optic,
         fields: str | list = "all",
-        wavelength: str | float = "primary",
+        wavelength: str | list = "primary",
         num_rays=100,
         distribution: DistributionType = "uniform",
         num_points=256,
@@ -80,15 +80,16 @@ class GeometricMTF(SpotDiagram):
         self.num_points = num_points
         self.scale = scale
 
-        resolved_wavelength = resolve_wavelength(optic, wavelength)
+        resolved_wavelengths = resolve_wavelengths(optic, wavelength)
+
         if max_freq == "cutoff":
-            # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
+            # Use the shortest wavelength for max_freq calculation (highest cutoff)
+            min_wl = min(resolved_wavelengths)
+            self.max_freq = 1 / (min_wl * 1e-3 * optic.paraxial.FNO())
         else:
-            # If a specific max_freq is provided, use it directly
             self.max_freq = max_freq
 
-        super().__init__(optic, fields, [resolved_wavelength], num_rays, distribution)
+        super().__init__(optic, fields, resolved_wavelengths, num_rays, distribution)
 
         self.freq = be.linspace(0, self.max_freq, num_points)
         self.mtf, self.diff_limited_mtf = self._generate_mtf_data()
@@ -156,23 +157,79 @@ class GeometricMTF(SpotDiagram):
                 the scale factor.
 
         """
-        if self.scale:
-            phi = be.arccos(self.freq / self.max_freq)
-            scale_factor = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
-        else:
-            scale_factor = 1
+        mtf = []
 
-        mtf = []  # TODO: add option for polychromatic MTF
+        # Determine weights for the current set of wavelengths
+        current_weights = []
+        system_wavelengths = self.optic.wavelengths.wavelengths
+
+        for wl in self.wavelengths:
+            # Default weight
+            weight = 1.0
+
+            # Find matching wavelength in system to retrieve its weight
+            for sys_wl in system_wavelengths:
+                if abs(sys_wl.value - wl) < 1e-9:
+                    weight = sys_wl.weight
+                    break
+            current_weights.append(weight)
+
+        total_weight = sum(current_weights)
+        if total_weight == 0:
+            total_weight = 1.0
+
+        # Initialize weighted diffraction-limited MTF accumulator
+        weighted_diff_limit = be.zeros_like(self.freq)
+
+        # Pre-calculate diffraction limits for each wavelength
+        diff_limits = []
+        for wl, weight in zip(self.wavelengths, current_weights):
+            if self.scale:
+                max_freq_wl = 1 / (wl * 1e-3 * self.optic.paraxial.FNO())
+
+                # We want values where freq < max_freq_wl
+                valid_mask = self.freq < max_freq_wl
+
+                # Safe ratio for arccos
+                ratio = be.where(valid_mask, self.freq / max_freq_wl, 0.0)
+                phi = be.where(valid_mask, be.arccos(ratio), 0.0)
+
+                term = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
+                scale_factor = be.where(valid_mask, term, 0.0)
+            else:
+                scale_factor = be.ones_like(self.freq)
+
+            diff_limits.append(scale_factor)
+            # Use out-of-place addition for torch compatibility
+            weighted_diff_limit = weighted_diff_limit + scale_factor * weight
+
+        weighted_diff_limit = weighted_diff_limit / total_weight
+
         for field_data in self.data:
-            spot_data_item = field_data[0]
-            xi, yi = spot_data_item.x, spot_data_item.y
+            weighted_mtf_tan = be.zeros_like(self.freq)
+            weighted_mtf_sag = be.zeros_like(self.freq)
+
+            for i, spot_data_item in enumerate(field_data):
+                xi, yi = spot_data_item.x, spot_data_item.y
+                weight = current_weights[i]
+                scale_factor = diff_limits[i]
+
+                # Compute Monochromatic MTF for this wavelength
+                mtf_tan = self._compute_field_data(yi, self.freq, scale_factor)
+                mtf_sag = self._compute_field_data(xi, self.freq, scale_factor)
+
+                # Use out-of-place addition
+                weighted_mtf_tan = weighted_mtf_tan + mtf_tan * weight
+                weighted_mtf_sag = weighted_mtf_sag + mtf_sag * weight
+
             mtf.append(
                 [
-                    self._compute_field_data(yi, self.freq, scale_factor),
-                    self._compute_field_data(xi, self.freq, scale_factor),
+                    weighted_mtf_tan / total_weight,
+                    weighted_mtf_sag / total_weight,
                 ],
             )
-        return mtf, scale_factor
+
+        return mtf, weighted_diff_limit
 
     def _compute_field_data(
         self, xi: BEArray, v: BEArray, scale_factor: ScalarOrArray
