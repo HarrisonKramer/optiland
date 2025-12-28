@@ -7,7 +7,7 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,6 +20,7 @@ from optiland.utils import resolve_fields
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
     from optiland.optic import Optic
 
 
@@ -76,16 +77,12 @@ class JonesPupil(BaseAnalysis):
         Returns:
             A tuple containing the Matplotlib figure and a list of its axes.
         """
-        if not self.fields or self.fields == [(0, 0)]:
-            # resolve_fields returns [(0,0)] if max_field is 0 which happens when
-            # fields are empty or explicitly (0,0).
-            # We should check if optic has fields.
-            if not self.optic.fields.fields:
-                return None, None
+        if (
+            not self.fields or self.fields == [(0, 0)]
+        ) and not self.optic.fields.fields:
+            return None, None
 
         # Determine layout
-        num_fields = len(self.fields)
-        num_wavelengths = len(self.wavelengths)
 
         # For simplicity, we plot the first field and first wavelength by default
         # if multiple are present, or we could tile them.
@@ -200,8 +197,8 @@ class JonesPupil(BaseAnalysis):
                 self.optic.set_polarization("ignore")
 
         if not hasattr(rays, "p"):
-            # Fallback if rays are not polarized (should not happen with the check above)
-             raise RuntimeError("Ray tracing did not return polarized rays.")
+            # Fallback if rays are not polarized (should not happen w/ check above)
+            raise RuntimeError("Ray tracing did not return polarized rays.")
 
         # Ray direction vectors (normalized)
         k = be.stack([rays.L, rays.M, rays.N], axis=1)
@@ -243,15 +240,12 @@ class JonesPupil(BaseAnalysis):
         # Jyx = v . (P . x_in)
         # Jyy = v . (P . y_in)
 
-        x_in = be.array([1.0, 0.0, 0.0])
-        y_in = be.array([0.0, 1.0, 0.0])
-
         # p has shape (N, 3, 3)
         # P . x_in is simply the first column of p
         # P . y_in is simply the second column of p
 
-        P_x_in = rays.p[:, :, 0] # Shape (N, 3)
-        P_y_in = rays.p[:, :, 1] # Shape (N, 3)
+        P_x_in = rays.p[:, :, 0]  # Shape (N, 3)
+        P_y_in = rays.p[:, :, 1]  # Shape (N, 3)
 
         # Dot products
         Jxx = be.sum(u * P_x_in, axis=1)
@@ -264,8 +258,4 @@ class JonesPupil(BaseAnalysis):
         row2 = be.stack([Jyx, Jyy], axis=1)
         J = be.stack([row1, row2], axis=1)
 
-        return {
-            "Px": Px,
-            "Py": Py,
-            "J": J
-        }
+        return {"Px": Px, "Py": Py, "J": J}
