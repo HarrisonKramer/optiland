@@ -7,30 +7,29 @@ from optiland.samples.objectives import CookeTriplet
 from optiland.analysis.jones_pupil import JonesPupil
 from optiland.rays import PolarizationState
 
-@pytest.fixture
-def optic():
+
+def test_jones_pupil_initialization(set_test_backend):
     optic = CookeTriplet()
     optic.set_polarization("ignore") # Default state for test
-    return optic
-
-def test_jones_pupil_initialization(optic):
     jp = JonesPupil(optic)
     assert jp.optic == optic
-    assert jp.grid_size == 33
-    assert jp.fields is not None
+    assert jp.grid_size == 65
+    assert jp.field == (0, 0)
     assert jp.wavelengths is not None
 
-def test_jones_pupil_generate_data(optic):
+def test_jones_pupil_generate_data(set_test_backend):
+    optic = CookeTriplet()
+    optic.set_polarization("ignore") # Default state for test
     jp = JonesPupil(optic, grid_size=5)
     data = jp.data
 
-    # Check structure: list of fields -> list of wavelengths -> dict
+    # Check structure: list of wavelengths -> dict
     assert isinstance(data, list)
-    assert len(data) == len(jp.fields)
-    assert isinstance(data[0], list)
-    assert len(data[0]) == len(jp.wavelengths)
-
-    single_data = data[0][0]
+    assert len(data) == len(jp.wavelengths)
+    
+    # Check data for first wavelength
+    single_data = data[0]
+    assert isinstance(single_data, dict)
     assert "Px" in single_data
     assert "Py" in single_data
     assert "J" in single_data
@@ -39,10 +38,6 @@ def test_jones_pupil_generate_data(optic):
     num_rays = 5 * 5
     assert single_data["Px"].shape == (num_rays,)
     assert single_data["J"].shape == (num_rays, 2, 2)
-
-    # Check values (should be roughly identity for a simple lens near center)
-    # The Cooke Triplet is paraxial-ish.
-    # Jxx should be close to 1 (amplitude) and Jxy close to 0.
 
     J = single_data["J"]
     Jxx = J[:, 0, 0]
@@ -55,22 +50,16 @@ def test_jones_pupil_generate_data(optic):
     val_xx = be.to_numpy(Jxx[center_idx])
     val_xy = be.to_numpy(Jxy[center_idx])
 
-    # Amplitude near 1 (accounting for Fresnel losses, maybe < 1)
-    # Since polarization was "ignore" initially, and we set it for trace,
-    # the coating behaviour depends on if default coatings are applied.
-    # Optiland defaults to no coatings (transmittance = 1)?
-    # Or Fresnel? The default material behavior might include Fresnel.
-    # If not, Jxx ~ 1.
-
-    # Let's check magnitude
     assert np.abs(val_xx) > 0.5
     assert np.abs(val_xy) < 0.1
 
-def test_jones_pupil_polarization_handling(optic):
+def test_jones_pupil_polarization_handling(set_test_backend):
+    optic = CookeTriplet()
+    optic.set_polarization("ignore") # Default state for test
     # Ensure it works even if optic polarization is 'ignore'
     optic.set_polarization("ignore")
     jp = JonesPupil(optic, grid_size=3)
-    # Trace happens in __init__
+    # Trace happens in __init__ / first access to data
 
     # Ensure optic state is restored
     assert optic.polarization == "ignore"
@@ -78,20 +67,27 @@ def test_jones_pupil_polarization_handling(optic):
     # Data should be valid
     assert jp.data is not None
 
-def test_jones_pupil_view(optic):
+def test_jones_pupil_view(set_test_backend):
+    optic = CookeTriplet()
+    optic.set_polarization("ignore") # Default state for test
     jp = JonesPupil(optic, grid_size=5)
     fig, axs = jp.view()
 
     assert fig is not None
-    # 8 data axes + 8 colorbars = 16 axes in total
+    # 2 rows, 4 columns = 8 axes + 8 colorbars = 16 axes
     assert len(axs) == 16
 
     # Clean up
     plt.close(fig)
 
-def test_view_no_fields(optic):
-    optic.fields.fields.clear()
-    jp = JonesPupil(optic)
-    fig, axs = jp.view()
-    assert fig is None
-    assert axs is None
+def test_jones_pupil_view_custom_field(set_test_backend):
+    optic = CookeTriplet()
+    optic.set_polarization("ignore") # Default state for test
+    # Test with off-axis field
+    jp = JonesPupil(optic, field=(0, 1.0), grid_size=5)
+    data = jp.data
+    assert len(data) == len(jp.wavelengths)
+    
+    # Just verify valid execution
+    single_data = data[0]
+    assert "J" in single_data
