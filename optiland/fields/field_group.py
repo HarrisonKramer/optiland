@@ -60,6 +60,8 @@ class FieldGroup:
     @property
     def max_field(self):
         """float: Maximum radial field value."""
+        if not self.fields:
+            return 0.0
         return be.max(be.sqrt(self.x_fields**2 + self.y_fields**2))
 
     @property
