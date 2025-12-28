@@ -183,7 +183,7 @@ class GeometricMTF(SpotDiagram):
 
         # Pre-calculate diffraction limits for each wavelength
         diff_limits = []
-        for wl, weight in zip(self.wavelengths, current_weights):
+        for wl, weight in zip(self.wavelengths, current_weights, strict=False):
             if self.scale:
                 max_freq_wl = 1 / (wl * 1e-3 * self.optic.paraxial.FNO())
 

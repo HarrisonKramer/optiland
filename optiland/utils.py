@@ -92,8 +92,7 @@ def resolve_wavelengths(optic, wavelengths):
         return [float(wavelengths)]
     else:
         raise TypeError(
-            "Wavelengths must be a string ('all', 'primary'), a list, "
-            "or a number."
+            "Wavelengths must be a string ('all', 'primary'), a list, or a number."
         )
 
 
