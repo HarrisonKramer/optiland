@@ -31,9 +31,60 @@ class Lens2D:
 
     """
 
-    def __init__(self, surfaces):
-        # TODO: raise warning when lens surfaces overlap
+    def __init__(self, surfaces, check_overlap=False):
         self.surfaces = surfaces
+        if check_overlap:
+            self._check_overlaps()
+
+    def _check_overlaps(self):
+        """Checks for overlapping surfaces in the lens.
+
+        This method computes the sags of the lens surfaces in the YZ plane and
+        checks if any adjacent surfaces overlap. If an overlap is detected, a
+        warning is raised.
+        """
+        import warnings
+
+        sags = self._compute_sag(projection="YZ")
+        for k in range(len(sags) - 1):
+            y1, z1 = be.to_numpy(sags[k][1]), be.to_numpy(sags[k][2])
+            y2, z2 = be.to_numpy(sags[k + 1][1]), be.to_numpy(sags[k + 1][2])
+
+            # Filter out NaNs if any (e.g. from apertures)
+            valid1 = ~np.isnan(y1) & ~np.isnan(z1)
+            valid2 = ~np.isnan(y2) & ~np.isnan(z2)
+            y1, z1 = y1[valid1], z1[valid1]
+            y2, z2 = y2[valid2], z2[valid2]
+
+            if len(y1) == 0 or len(y2) == 0:
+                continue
+
+            # Ensure y is sorted for interpolation
+            sort_idx1 = np.argsort(y1)
+            y1, z1 = y1[sort_idx1], z1[sort_idx1]
+            sort_idx2 = np.argsort(y2)
+            y2, z2 = y2[sort_idx2], z2[sort_idx2]
+
+            # Define common y grid for comparison
+            y_min = max(y1.min(), y2.min())
+            y_max = min(y1.max(), y2.max())
+
+            if y_max <= y_min:
+                continue
+
+            y_common = np.linspace(y_min, y_max, 200)
+
+            # Interpolate z values onto common y grid
+            z1_interp = np.interp(y_common, y1, z1)
+            z2_interp = np.interp(y_common, y2, z2)
+
+            # Check for overlap: assuming light travels +z, z1 should be <= z2
+            # Use a small tolerance for floating point comparisons
+            if np.any(z1_interp > z2_interp + 1e-9):
+                warnings.warn(
+                    f"Lens surfaces {k} and {k+1} overlap detected.",
+                    stacklevel=2,
+                )
 
     def plot(self, ax, theme=None, projection="YZ"):
         """Plots the lens on the given matplotlib axis.
