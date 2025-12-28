@@ -16,6 +16,7 @@ This section contains examples of typical analysis tasks that can be performed w
     analysis/y_ybar
     analysis/rms_spot_size_vs_field
     analysis/rms_wavefront_error_vs_field
+    analysis/jones_pupil
     analysis/pupil_aberration
     analysis/irradiance
     analysis/through_focus_spot_diagram
