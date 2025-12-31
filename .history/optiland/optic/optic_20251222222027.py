@@ -132,11 +132,6 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
-        self.ray_aiming_config = {
-            "mode": "paraxial",
-            "max_iter": 10,
-            "tol": 1e-6,
-        }
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 
@@ -443,24 +438,6 @@ class Optic:
         """Update the normalization radius of surfaces."""
         self._updater.update_normalization(surface)
 
-    def set_ray_aiming(
-        self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
-    ):
-        """Configure the ray aiming strategy.
-
-        Args:
-            mode: The aiming mode ("paraxial", "iterative", "robust").
-            max_iter: Maximum iterations for iterative solvers.
-            tol: Convergence tolerance for iterative solvers.
-            **kwargs: Additional configuration parameters.
-        """
-        self.ray_aiming_config = {
-            "mode": mode,
-            "max_iter": max_iter,
-            "tol": tol,
-            **kwargs,
-        }
-
     def update(self) -> None:
         """Update the surface properties (pickups, solves, paraxial properties)."""
         self._updater.update()
@@ -662,8 +639,8 @@ class Optic:
         surface_index: int, 
         y_cross_section: float = 0, 
         x_cross_section: float = 0,
-        fig_to_plot_on: Figure | None= None,
-        max_extent: float | None  = None,
+        fig_to_plot_on: plt.Figure = None,
+        max_extent: float = None,
         num_points_grid: int = 50,
         buffer_factor: float = 1.1,
     ):
@@ -677,13 +654,13 @@ class Optic:
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
-        viewer.view(surface_index=surface_index, 
-                    y_cross_section=y_cross_section, 
-                    x_cross_section=x_cross_section,
-                    fig_to_plot_on=fig_to_plot_on,
-                    max_extent=max_extent,
-                    num_points_grid=num_points_grid,
-                    buffer_factor=buffer_factor)
+        viewer.view(surface_index, 
+                    y_cross_section, 
+                    x_cross_section,
+                    fig_to_plot_on,
+                    max_extent,
+                    num_points_grid,
+                    buffer_factor)
 
     def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.
