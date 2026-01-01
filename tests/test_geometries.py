@@ -2753,7 +2753,7 @@ class TestForbesValidation:
         # The sum S(x) = 0.5 * alpha_0 for the Q2D polynomials
         Q_n_m_optiland = 0.5 * alphas[0]
 
-        assert be.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
+        assert np.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
 
 
     def test_q2d_normal_against_numerical_derivative(self):
