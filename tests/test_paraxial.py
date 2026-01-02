@@ -3,6 +3,7 @@ import pytest
 import optiland.backend as be
 from optiland.optic import Optic
 from optiland.paraxial import Paraxial
+from optiland.materials import IdealMaterial
 from optiland.samples.eyepieces import EyepieceErfle
 from optiland.samples.infrared import InfraredTriplet, InfraredTripletF4
 from optiland.samples.miscellaneous import NavarroWideAngleEye
@@ -666,3 +667,234 @@ def test_EPD_float_by_stop_size_infinite(set_test_backend):
     lens.add_wavelength(value=0.65)
 
     assert_allclose(lens.paraxial.EPD(), 9.997764563903152)
+
+
+def test_negative_lens():
+    lens = Optic()
+
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(
+        index=1, surface_type="paraxial", f=-50.0, thickness=50.0, is_stop=True
+    )
+    lens.add_surface(index=2)
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    assert_allclose([lens.paraxial.f1(), lens.paraxial.f2()], [50.0, -50.0])
+
+
+@pytest.mark.parametrize("n", [1.0, 1.33])
+@pytest.mark.parametrize("n_", [1.5, 1.8])
+@pytest.mark.parametrize("n__", [1.33, 1.5, 1.0])
+@pytest.mark.parametrize("r1", [50, -75])
+@pytest.mark.parametrize("r2", [-100, 225])
+@pytest.mark.parametrize("d", [0.0, 1.0, 2.0, 5.0, 10.0])
+def test_thick_lens(n, n_, n__, r1, r2, d, set_test_backend):
+    """Formulas from Jenkins & White, 4th ed, Ch. 5.6. Note that a Gaussian coordinate
+    system is used in the source. Formulas are valid as long as there is no internal
+    crossover."""
+
+    # P, P1 and P2 are powers, not principal planes, as per source
+    P1 = (n_ - n) / r1
+    P2 = (n__ - n_) / r2
+    P = P1 + P2 - d / n_ * P1 * P2
+    FFP = -n / P * (1 - d / n_ * P2)
+    BFP = n__ / P * (1 - d / n_ * P1)
+    f1 = -n / P  # Swapped sign wrt source. Reason: use cartesian coordinates
+    f2 = n__ / P
+    PP1 = n / P * d / n_ * P2  # PP: principal plane
+    PP2 = -n__ / P * d / n_ * P1
+
+    lens = Optic()
+    lens.add_surface(
+        index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n)
+    )
+    lens.add_surface(
+        index=1, radius=r1, thickness=d, material=IdealMaterial(n_), is_stop=True
+    )
+    lens.add_surface(
+        index=2, radius=r2, thickness=0.0, material=IdealMaterial(n__), is_stop=False
+    )
+    lens.add_surface(index=3, material=IdealMaterial(n__))
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    px = lens.paraxial
+    assert_allclose(
+        [FFP, BFP, f1, f2, PP1, PP2],
+        [px.F1(), px.F2(), px.f1(), px.f2(), px.P1(), px.P2()],
+    )
+
+
+@pytest.mark.parametrize("n", [1.0, 1.33])
+@pytest.mark.parametrize("n_", [1.0, 1.2])
+@pytest.mark.parametrize("n__", [1.0, 1.5])
+@pytest.mark.parametrize("f1", [50.0, -75.0])
+@pytest.mark.parametrize("f2", [-100.0, 225.0])
+@pytest.mark.parametrize("d", [0.0, 1.0, 2.0, 5.0, 10.0])
+def test_compound_lens(n, n_, n__, f1, f2, d, set_test_backend):
+    """Test a compound lens, consisting of two thin lenses that each is immersed
+    (refractive index ≠ 0). The formulas are from Jenkins & White, 4th ed, Ch. 5.6. Note
+    that a Gaussian coordinate system is used in the source. Formulas are valid as long
+    as there is no internal crossover."""
+
+    # P, P1 and P2 are powers, not principal planes, as per source
+    P1 = n / f1
+    P2 = n__ / f2
+    P = (
+        P1 + P2 - d / n_ * P1 * P2
+    )  # Valid while P does not change sign with d increasing from 0
+    FFP = -n / P * (1 - d / n_ * P2)
+    BFP = n__ / P * (1 - d / n_ * P1)
+    efl1 = -n / P  # Swapped sign wrt source. Reason: use cartesian coordinates
+    efl2 = n__ / P
+    PP1 = n / P * d / n_ * P2  # PP: principal plane
+    PP2 = -n__ / P * d / n_ * P1
+
+    lens = Optic()
+    lens.add_surface(
+        index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n)
+    )
+    lens.add_surface(
+        index=1,
+        surface_type="paraxial",
+        f=f1 / n,
+        thickness=d,
+        material=IdealMaterial(n_),
+        is_stop=True,
+    )
+    lens.add_surface(
+        index=2,
+        surface_type="paraxial",
+        f=f2 / n__,
+        thickness=0.0,
+        material=IdealMaterial(n__),
+        is_stop=False,
+    )
+    lens.add_surface(index=3, material=IdealMaterial(n__))
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    px = lens.paraxial
+    assert_allclose(
+        [FFP, BFP, efl1, efl2, PP1, PP2],
+        [px.F1(), px.F2(), px.f1(), px.f2(), px.P1(), px.P2()],
+    )
+
+
+def test_cross_focus(set_test_backend):
+    """Explicitly test paraxial focal points for systems with internal crossover point
+    (for example, with a Keplerian beam expander). Then flip the system and ensure that
+    the values corresponding to opposite ends are mirrored."""
+
+    lens = Optic()
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(
+        index=1, surface_type="paraxial", f=50.0, thickness=150.0, is_stop=True
+    )
+    lens.add_surface(
+        index=2, surface_type="paraxial", f=100.0, thickness=100.0, is_stop=False
+    )
+    lens.add_surface(
+        index=3, surface_type="paraxial", f=100.0, thickness=0.0, is_stop=False
+    )
+    lens.add_surface(index=4)
+
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    assert_allclose(
+        [
+            lens.paraxial.f1(),
+            lens.paraxial.f2(),
+            lens.paraxial.F1(),
+            lens.paraxial.F2(),
+            lens.paraxial.P1(),
+            lens.paraxial.P2(),
+        ],
+        [-50.0, 50.0, -75.0, 100.0, -25.0, 50.0],
+    )
+
+    lens.flip()
+    lens.surface_group.surfaces[1].is_stop = True
+    lens.set_thickness(0, -2)
+    assert_allclose(
+        [
+            lens.paraxial.f1(),
+            lens.paraxial.f2(),
+            lens.paraxial.F1(),
+            lens.paraxial.F2(),
+            lens.paraxial.P1(),
+            lens.paraxial.P2(),
+        ],
+        [-50.0, 50.0, -100.0, 75.0, -50.0, 25.0],
+    )
+
+
+def test_lens_on_focal_plane(set_test_backend):
+    """Test case where lens 2 in a two-lens system is at a distance from
+    lens 1, equal to the focal length of lens 2. The front focal plane is then exactly
+    inside the first lens."""
+
+    lens = Optic()
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(
+        index=1,
+        surface_type="paraxial",
+        f=200.0,
+        thickness=50.0,
+        is_stop=True,
+    )
+    lens.add_surface(
+        index=2,
+        surface_type="paraxial",
+        f=50.0,
+        thickness=0.0,
+        is_stop=False,
+    )
+    lens.add_surface(index=3)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+
+    assert_allclose(lens.paraxial.f2(), 50.0)
+    assert_allclose(lens.paraxial.f1(), -50.0)
+    lens.flip()
+    assert_allclose(lens.paraxial.f2(), 50.0)
+    assert_allclose(lens.paraxial.f1(), -50.0)
+
+
+@pytest.mark.parametrize(
+    "y, internal_focus",
+    [
+        ([1, 0.5], False),
+        ([-1, -0.1], False),
+        ([-1, 0.4], True),
+        ([1.0, -0.3], True),
+        ([1.0, 0.0], True),
+        ([-1.0, 0.0], True),
+    ],
+)
+def test_has_internal_focus(y, internal_focus, set_test_backend):
+    assert Paraxial._has_internal_focus_point(be.array(y)) == internal_focus
+
+
+@pytest.mark.parametrize(
+    "y, u, focal_length",
+    [
+        ([1.0, 0.5], [0.0, 2.0], -0.5),  # Negative lens
+        ([-1.0, -0.5], [0.0, -2.0], -0.5),  # Negative lens, negative start
+        ([1.0, 0.5], [0.0, -1.0], 1.0),  # Positive lens, external focus
+        ([-1.0, -0.5], [0.0, 1.0], 1.0),  # Pos. lens, external focus, negative start
+        ([1.0, -0.5], [0.0, 0.5], 2.0),  # Positive lens, internal foucus
+        ([-1.0, 0.5], [0.0, 1.0], 1.0),  # Positive lens, internal focus, negative start
+    ],
+)
+def test_focal_length(y, u, focal_length, set_test_backend):
+    y = be.atleast_2d(y).T
+    u = be.atleast_2d(u).T
+    assert Paraxial(Optic())._focal_length(y, u) == pytest.approx(focal_length)
