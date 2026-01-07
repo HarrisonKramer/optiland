@@ -42,12 +42,14 @@ class GRINPropagation(BasePropagationModel):
 
         This method uses RK4 numerical integration to solve the ray equation
         in a gradient-index medium. The propagation continues until rays
-        reach the exit surface defined by the distance t.
+        reach either the exit surface or return to the entrance surface.
 
         Args:
             rays: The rays object to be propagated.
             t: The approximate distance to the exit surface along the z-axis.
-                This is used as a stopping criterion for the integration.
+                This defines the initial propagation direction. Rays can exit
+                from either the exit surface (z_initial + t) or the entrance
+                surface (z_initial) if they undergo internal reflection.
 
         """
         # For GRIN media, we need to use numerical integration
@@ -57,15 +59,10 @@ class GRINPropagation(BasePropagationModel):
         num_rays = len(rays.x)
 
         # Store initial state for each ray
-        x = be.copy(rays.x)
-        y = be.copy(rays.y)
-        z = be.copy(rays.z)
-        L = be.copy(rays.L)
-        M = be.copy(rays.M)
-        N = be.copy(rays.N)
+        z_initial = be.copy(rays.z)
 
         # Target z position (exit surface)
-        z_target = z + t
+        z_target = z_initial + t
 
         # Get wavelength
         w = rays.w
@@ -75,15 +72,18 @@ class GRINPropagation(BasePropagationModel):
 
         for iteration in range(max_iterations):
             # Check which rays still need to propagate
-            # Rays that have reached or passed the target z are done
-            active = (rays.N > 0) & (rays.z < z_target - 1e-6)
+            # Rays are active if they are within the medium bounds
+            # Allow rays to propagate in either direction (N can be positive or negative)
+            z_min = be.minimum(z_initial, z_target)
+            z_max = be.maximum(z_initial, z_target)
+            active = (rays.z > z_min - 1e-6) & (rays.z < z_max - 1e-6)
 
             if not be.any(active):
                 break
 
             # RK4 integration step for active rays
             if be.any(active):
-                self._rk4_step(rays, active, z_target)
+                self._rk4_step(rays, active, z_min, z_max)
 
         # Update OPD (optical path difference)
         # For GRIN, this should be accumulated during propagation
@@ -95,13 +95,14 @@ class GRINPropagation(BasePropagationModel):
         # Normalize direction vectors
         rays.normalize()
 
-    def _rk4_step(self, rays: RealRays, active, z_target: float) -> None:
+    def _rk4_step(self, rays: RealRays, active, z_min: float, z_max: float) -> None:
         """Performs one RK4 integration step for the active rays.
 
         Args:
             rays: The rays object (modified in-place).
             active: Boolean array indicating which rays are active.
-            z_target: Target z position for stopping.
+            z_min: Minimum z boundary (entrance surface).
+            z_max: Maximum z boundary (exit surface).
 
         """
         # Get active ray positions and directions
@@ -113,9 +114,24 @@ class GRINPropagation(BasePropagationModel):
         N = rays.N[active]
         w = rays.w[active]
 
-        # Adaptive step size based on distance to target
-        remaining = z_target - z
-        step_size = be.minimum(self.step_size, be.minimum(remaining * 0.9, remaining))
+        # Adaptive step size based on distance to boundaries
+        # Limit step size to prevent overshooting boundaries
+        if be.any(N > 0):
+            # Rays propagating toward z_max
+            remaining_forward = (z_max - z) * (N > 0)
+            step_size_forward = be.minimum(self.step_size, be.abs(remaining_forward * 0.9))
+        else:
+            step_size_forward = be.full_like(z, self.step_size)
+
+        if be.any(N < 0):
+            # Rays propagating toward z_min
+            remaining_backward = (z - z_min) * (N < 0)
+            step_size_backward = be.minimum(self.step_size, be.abs(remaining_backward * 0.9))
+        else:
+            step_size_backward = be.full_like(z, self.step_size)
+
+        # Use the appropriate step size based on direction
+        step_size = be.minimum(step_size_forward, step_size_backward)
 
         # Initial state: [x, y, z, L, M, N]
         # We use the Hamiltonian formulation for GRIN propagation

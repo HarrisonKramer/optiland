@@ -24,7 +24,7 @@ def test_radial_grin_lens():
     # Negative nr2 means higher index at center → focusing
     material = GradientMaterial(
         n0=1.6,      # Base refractive index at center
-        nr2=-0.02,   # Negative coefficient (focusing)
+        nr2=-0.2,   # Negative coefficient (focusing)
         nr4=0.0,
         nr6=0.0,
         nz1=0.0,
