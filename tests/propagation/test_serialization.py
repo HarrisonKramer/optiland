@@ -14,6 +14,7 @@ from optiland.geometries.standard import StandardGeometry
 from optiland.materials.abbe import AbbeMaterial
 from optiland.materials.ideal import IdealMaterial
 from optiland.materials.material_file import MaterialFile
+from optiland.materials.gradient_material import GradientMaterial
 from optiland.optic.optic import Optic
 from optiland.propagation.grin import GRINPropagation
 from optiland.propagation.homogeneous import HomogeneousPropagation
@@ -26,10 +27,8 @@ from optiland.surfaces.standard_surface import Surface
 # Case 1: IdealMaterial with the default HomogeneousPropagation model.
 case_ideal_default = (IdealMaterial(n=1.5, k=0.1), HomogeneousPropagation)
 
-# Case 2: IdealMaterial explicitly assigned a GRINPropagation model.
-grin_material = IdealMaterial(n=1.6)
-grin_material.propagation_model = GRINPropagation()
-case_ideal_grin = (grin_material, GRINPropagation)
+# Case 2: GradientMaterial with GRINPropagation model.
+case_gradient_grin = (GradientMaterial(n0=1.6, nr2=0.01), GRINPropagation)
 
 # Case 3: AbbeMaterial with the default HomogeneousPropagation model.
 case_abbe_default = (AbbeMaterial(n=1.5168, abbe=64.17), HomogeneousPropagation)
@@ -59,7 +58,7 @@ def create_dummy_material_file(tmp_path):
     "material, expected_model_class",
     [
         case_ideal_default,
-        case_ideal_grin,
+        case_gradient_grin,
         case_abbe_default,
         # More test cases can be easily added here.
     ],
