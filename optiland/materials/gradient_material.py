@@ -3,7 +3,7 @@
 This module defines the GradientMaterial class for materials with a spatially
 varying refractive index.
 
-Kramer Harrison, 2025
+Jie Cai (zhazhajust), 2025
 """
 
 from __future__ import annotations
@@ -172,19 +172,21 @@ class GradientMaterial(BaseMaterial):
 
         """
         data = super().to_dict()
-        data.update({
-            "n0": self.n0,
-            "nr2": self.nr2,
-            "nr4": self.nr4,
-            "nr6": self.nr6,
-            "nz1": self.nz1,
-            "nz2": self.nz2,
-            "nz3": self.nz3,
-        })
+        data.update(
+            {
+                "n0": self.n0,
+                "nr2": self.nr2,
+                "nr4": self.nr4,
+                "nr6": self.nr6,
+                "nz1": self.nz1,
+                "nz2": self.nz2,
+                "nz3": self.nz3,
+            }
+        )
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> "GradientMaterial":
+    def from_dict(cls, data: dict) -> GradientMaterial:
         """Creates a GradientMaterial from a dictionary.
 
         Args:
