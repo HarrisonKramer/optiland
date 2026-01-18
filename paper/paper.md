@@ -41,11 +41,18 @@ Further documentation is available online [@optiland-docs].
 
 # Statement of Need
 
-The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CODE V [@codev], which are powerful but expensive and proprietary. Licenses often cost tens of thousands of dollars, creating a significant barrier to entry for engineers, educators, and researchers.
+The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CODE V [@codev]. While powerful, these proprietary tools often carry high license costs that create significant barriers for students, educators, and researchers. Furthermore, integrating these closed-source tools into modern deep-learning pipelines is often cumbersome, typically relying on slow external APIs that break the gradient chain required for backpropagation.
 
-Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. Optiland offers a differentiable PyTorch backend, which is particularly relevant for computational optics and machine learning-driven design, where novel optimization and inverse-design approaches are increasingly important. For example, optical systems modeled in Optiland can be embedded into deep learning pipelines and trained end-to-end using backpropagation, enabling tasks such as lens design via learned generative models. The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs.
+Optiland addresses this need by providing a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software. By offering a fully differentiable PyTorch backend, Optiland enables computational optics research where optical systems can be embedded directly into neural networks. This capability is essential for emerging fields such as end-to-end optimization of optical systems and learned inverse design. The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs.
 
-Several open-source optical design packages exist, such as Prysm [@dube2019prysm], which provides advanced physical optics propagation and diffraction modeling, and RayOptics [@RayOptics], which offers ray tracing and lens analysis. Optiland complements these efforts by combining ray tracing, optimization, tolerancing, and differentiable machine-learning integration into a single, comprehensive platform. Optiland is not intended to replace mature commercial tools in every respect (e.g., non-sequential ray tracing, coating optimization, CAD integration), but instead provides an open, extensible framework for research and education in lens/system design.
+# Software Design
+
+Optiland’s architectural goals are two-fold: to provide a robust, professional-grade environment for standard optical engineering while simultaneously enabling seamless integration with neural networks. To achieve this, the software is built on a modular, object-oriented framework. Optical components, fields, and wavelengths are strictly decoupled, ensuring that the codebase is intuitive for engineers to use and easy for developers to extend.
+
+To support its hybrid application in classical design and AI research, Optiland utilizes a backend abstraction layer. This allows the same high-level API to dispatch calculations to either a **NumPy** backend (for broad compatibility and standard CPU workflows) or a **PyTorch** backend (for GPU acceleration and automatic differentiation).
+
+**Build vs. Contribute Justification**
+While other Python optical libraries exist, they target different scopes or architectures. **Prysm** [@dube2019prysm] focuses largely on physical optics and diffraction, a domain distinct from the geometrical lens design and optimization core of Optiland. **RayOptics** [@RayOptics] offers geometrical ray tracing but relies on standard CPU-based execution. We determined that contributing to RayOptics was not feasible, as its architecture differs fundamentally from the vector-native approach required for high-performance differentiable programming. Retrofitting that codebase to support GPU acceleration and gradient tracking would have effectively required a total rewrite. Consequently, Optiland was built from the ground up to be tensor-compatible by default, ensuring it can serve both as a professional engineering tool and a differentiable layer in deep learning pipelines.
 
 # Functionalities
 
@@ -188,7 +195,7 @@ be.set_device("cuda")        # Use CUDA (GPU)
 
 ## 4. End-to-end optimization with PyTorch
 
-The PyTorch backend allows integration with neural networks and gradient-based optimizers. Note that to enable this functionality, the lens should be built when the PyTorch backend is active.
+The PyTorch backend allows integration with neural networks and gradient-based optimizers. Note that to enable this functionality, the lens should be instantiated while the PyTorch backend is active.
 
 ```python
 import torch
@@ -212,15 +219,32 @@ for step in range(250):
 
 This workflow enables research scenarios such as inverse design, generative modeling, and end-to-end optical design.
 
-# Research Enabled by Optiland
+# Research Impact Statement
 
-Optiland is actively used by researchers in the **MReye group** at the Leiden University Medical Center. It serves as a configurable backend for all optical computations within the [Visisipy](https://github.com/MReye-LUMC/visisipy) [@visisipy-zenodo] project, a Python library for simulating visual optics.
+Optiland bridges the gap between optical engineering and machine learning, enabling research that was previously difficult or computationally prohibitive in open-source environments.
+
+* **Realized Impact:** Optiland is currently used as the optical computation engine for [Visisipy](https://github.com/MReye-LUMC/visisipy) [@visisipy-zenodo], a Python library for simulating visual optics developed by the MReye group at Leiden University Medical Center. This integration demonstrates Optiland's reliability in handling real-world biomedical optical simulations.
+* **Performance Significance:** As demonstrated in our benchmarks, the GPU-accelerated backend achieves a **100x speedup** over standard NumPy implementations. This throughput gain makes large-scale optical simulations and gradient-based optimization feasible on consumer hardware.
+* **Community Readiness:** Optiland is released with a comprehensive suite of analysis tools, a verified material database [@polyanskiy2024], extensive documentation, and unit tests, ensuring it is ready for immediate adoption by the research community.
 
 # Figures
 
 ![An example of a complex, multi-element UV photolithography lens modeled and rendered in Optiland. Based on U.S. Patent #5,831,776. Different colored rays represent different fields.](figures/litho_lens.svg)
 
 ![A model of a folded Czerny-Turner spectrometer. Different colored rays represent different wavelengths.](figures/czerny_turner.svg){height="750px"}
+
+# AI usage disclosure
+
+**Project Origins and Confirmation of Review:**
+The core architecture, design philosophy, and fundamental algorithms of Optiland were established beginning in 2017, predating the widespread availability of modern generative AI. The authors maintain sole responsibility for all architectural decisions, scientific validity, and the logical structure of the codebase. All AI-generated outputs were treated as raw suggestions and were manually reviewed, tested, and validated by the authors prior to inclusion.
+
+**Tool Usage:**
+During the recent preparation of this submission and the refinement of the codebase (2023-2025), the authors utilized GitHub Copilot, ChatGPT (versions up to 5), Google Gemini (versions up to 2.5), and Google Jules (via Gemini 2.5) to assist with auxiliary tasks.
+
+**Nature and Scope of Assistance:**
+* **Code:** AI tools were employed as a force multiplier for refactoring, generating type hints, writing tests, and implementing feature enhancements based on existing architectural patterns.
+* **Documentation:** Tools assisted in generating docstrings and refining documentation.
+* **Manuscript Preparation:** LLMs were used for copy editing, grammar checks, and ensuring structural cohesiveness of the manuscript.
 
 # Acknowledgements
 
