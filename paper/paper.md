@@ -242,6 +242,7 @@ The core architecture, design philosophy, and fundamental algorithms of Optiland
 During the recent preparation of this submission and the refinement of the codebase (2023-2025), the authors utilized GitHub Copilot, ChatGPT (versions up to 5), Google Gemini (versions up to 2.5), and Google Jules (via Gemini 2.5) to assist with auxiliary tasks.
 
 **Nature and Scope of Assistance:**
+
 * **Code:** AI tools were employed as a force multiplier for refactoring, generating type hints, writing tests, and implementing feature enhancements based on existing architectural patterns.
 * **Documentation:** Tools assisted in generating docstrings and refining documentation.
 * **Manuscript Preparation:** LLMs were used for copy editing, grammar checks, and ensuring structural cohesiveness of the manuscript.
