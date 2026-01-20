@@ -168,7 +168,9 @@ class TestSurfaceFactory:
         optic.add_surface(index=0, radius=be.inf, thickness=be.inf)
 
         # Define the phase profile for a lens: phi = -k0/(2f) * r^2
-        lens_coeff = -k0 / (2 * focal_length)
+        # k0 should be calculated in mm^-1 for the phase profile coefficient
+        k0_mm = 2 * be.pi / (wavelength * 1e-3)
+        lens_coeff = -k0_mm / (2 * focal_length)
         phase_profile = RadialPhaseProfile(coefficients=[lens_coeff])
 
         # Add the metalens surface
