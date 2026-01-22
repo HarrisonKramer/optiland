@@ -253,8 +253,8 @@ class AbbeMaterial(BaseMaterial):
 
     def __init__(self, n, abbe, model=None):
         super().__init__()
-        self.index = n
-        self.abbe = abbe
+        self.index = be.array([n])
+        self.abbe = be.array([abbe])
 
         if model is None:
             warnings.warn(
@@ -292,8 +292,8 @@ class AbbeMaterial(BaseMaterial):
         material_dict = super().to_dict()
         material_dict.update(
             {
-                "index": float(self.index),
-                "abbe": float(self.abbe),
+                "index": float(self.index.item()),
+                "abbe": float(self.abbe.item()),
                 "model": self.model_name,
             }
         )
@@ -329,8 +329,8 @@ class AbbeMaterialE(BaseMaterial):
 
     def __init__(self, n, abbe):
         super().__init__()
-        self.index = n
-        self.abbe = abbe
+        self.index = be.array([n])
+        self.abbe = be.array([abbe])
         self.model = BuchdahlEModel(n, abbe)
 
     def _calculate_n(self, wavelength, **kwargs):
@@ -346,8 +346,8 @@ class AbbeMaterialE(BaseMaterial):
         material_dict = super().to_dict()
         material_dict.update(
             {
-                "index": float(self.index),
-                "abbe": float(self.abbe),
+                "index": float(self.index.item()),
+                "abbe": float(self.abbe.item()),
             }
         )
         return material_dict
