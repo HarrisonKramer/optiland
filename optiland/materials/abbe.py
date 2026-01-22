@@ -1,10 +1,12 @@
 """Abbe Material
 
-This module defines a material based on the refractive index at the Fraunhofer
-d-line (587.56 nm) and the Abbe number. It provides two models for calculating
-the refractive index:
-1.  "polynomial": A polynomial fit to glass data (Legacy).
-2.  "buchdahl": A Buchdahl 3-term model with LASSO-derived coefficients (New).
+This module defines a material based on the refractive index and Abbe number.
+It provides support for both d-line (587.56 nm) and e-line (546.07 nm)
+definitions.
+
+Models:
+1.  "polynomial": A polynomial fit to glass data (Legacy, D-line only).
+2.  "buchdahl": A Buchdahl 3-term model with LASSO-derived coefficients.
 
 Kramer Harrison, 2024
 """
@@ -34,7 +36,7 @@ class AbbeModel(ABC):
 
 
 class AbbePolynomialModel(AbbeModel):
-    """Legacy polynomial model for Abbe materials.
+    """Legacy polynomial model for Abbe materials (d-line).
 
     This model uses a polynomial fit to glass data from the Schott catalog.
     It corresponds to the original implementation of AbbeMaterial.
@@ -79,25 +81,52 @@ class AbbePolynomialModel(AbbeModel):
         return be.matmul(X_poly, coefficients)
 
 
-class AbbeBuchdahlModel(AbbeModel):
-    """Buchdahl 3-term model with LASSO-derived coefficients.
+class BuchdahlModel(AbbeModel):
+    """Base class for Buchdahl 3-term models."""
 
-    This model predicts refractive index using the Buchdahl coordinate $\omega$:
-    $$ \omega = \frac{\lambda - \lambda_D}{1 + \alpha(\lambda - \lambda_D)} $$
-    $$ n(\lambda) = n_d + v_1 \omega + v_2 \omega^2 + v_3 \omega^3 $$
-
-    where $\lambda_D = 0.5875618$ $\mu m$ and $\alpha = 2.5$.
-    The coefficients $v_1, v_2, v_3$ are predicted from $n_d$ and $V_d$ using a
-    linear regression model derived via LASSO.
-    """
-
-    # Buchdahl constants
-    WAVE_D = 0.5875618
     ALPHA = 2.5
 
+    def __init__(self, index: float, abbe: float):
+        self.index = float(index)
+        self.abbe = float(abbe)
+        self.v1, self.v2, self.v3 = self._calculate_buchdahl_coefficients()
+
+    @property
+    @abstractmethod
+    def WAVE_REF(self) -> float:
+        """Reference wavelength in microns."""
+        pass
+
+    @abstractmethod
+    def _calculate_buchdahl_coefficients(self) -> tuple[float, float, float]:
+        """Calculates v1, v2, v3 based on index and abbe."""
+        pass
+
+    def predict_n(self, wavelength: float | be.ndarray) -> float | be.ndarray:
+        wavelength = be.array(wavelength)
+
+        # Calculate Buchdahl coordinate omega
+        # omega = (lambda - lambda_d) / (1 + alpha * (lambda - lambda_d))
+        d_lambda = wavelength - self.WAVE_REF
+        omega = d_lambda / (1 + self.ALPHA * d_lambda)
+
+        # Buchdahl polynomial: n = nd + v1*w + v2*w^2 + v3*w^3
+        n_pred = (
+            self.index + self.v1 * omega + self.v2 * (omega**2) + self.v3 * (omega**3)
+        )
+
+        return be.atleast_1d(n_pred)
+
+    def predict_k(self, wavelength: float | be.ndarray) -> float | be.ndarray:
+        return be.zeros_like(0)
+
+
+class BuchdahlDModel(BuchdahlModel):
+    """Buchdahl model for d-line (587.56 nm) materials."""
+
+    WAVE_REF = 0.5875618
+
     # Coefficients for v1 prediction
-    # Features: [1, 1/V, 1/V^2, n, n^2, n/V]
-    # v1 = c0 + c1/V + c2/V^2 + c3*n + c4*n^2 + c5*n/V
     V1_COEFFS = [
         0.004160,  # Intercept
         4.462559,  # 1/V
@@ -108,8 +137,6 @@ class AbbeBuchdahlModel(AbbeModel):
     ]
 
     # Coefficients for v2 prediction
-    # Features: [1, 1/V, 1/V^2, n^2, n/V] (Note: 'n' term was zeroed out by LASSO)
-    # v2 = c0 + c1/V + c2/V^2 + c3*n^2 + c4*n/V
     V2_COEFFS = [
         0.066434,  # Intercept
         -7.636396,  # 1/V
@@ -119,8 +146,6 @@ class AbbeBuchdahlModel(AbbeModel):
     ]
 
     # Coefficients for v3 prediction
-    # Features: [1, 1/V, 1/V^2, n^2, n/V] (Note: 'n' term was zeroed out by LASSO)
-    # v3 = c0 + c1/V + c2/V^2 + c3*n^2 + c4*n/V
     V3_COEFFS = [
         -0.032218,  # Intercept
         2.230357,  # 1/V
@@ -129,14 +154,9 @@ class AbbeBuchdahlModel(AbbeModel):
         1.934983,  # n/V
     ]
 
-    def __init__(self, index: float, abbe: float):
-        self.nd = float(index)
-        self.vd = float(abbe)
-        self.v1, self.v2, self.v3 = self._calculate_buchdahl_coefficients()
-
     def _calculate_buchdahl_coefficients(self):
-        nd = self.nd
-        vd = self.vd
+        nd = self.index
+        vd = self.abbe
         inv_v = 1.0 / vd
         inv_v2 = 1.0 / (vd**2)
         nd_sq = nd**2
@@ -166,21 +186,47 @@ class AbbeBuchdahlModel(AbbeModel):
 
         return v1, v2, v3
 
-    def predict_n(self, wavelength: float | be.ndarray) -> float | be.ndarray:
-        wavelength = be.array(wavelength)
 
-        # Calculate Buchdahl coordinate omega
-        # omega = (lambda - lambda_d) / (1 + alpha * (lambda - lambda_d))
-        d_lambda = wavelength - self.WAVE_D
-        omega = d_lambda / (1 + self.ALPHA * d_lambda)
+class BuchdahlEModel(BuchdahlModel):
+    """Buchdahl model for e-line (546.07 nm) materials."""
 
-        # Buchdahl polynomial: n = nd + v1*w + v2*w^2 + v3*w^3
-        n_pred = self.nd + self.v1 * omega + self.v2 * (omega**2) + self.v3 * (omega**3)
+    WAVE_REF = 0.546074
 
-        return be.atleast_1d(n_pred)
+    def _calculate_buchdahl_coefficients(self):
+        ne = self.index
+        ve = self.abbe
 
-    def predict_k(self, wavelength: float | be.ndarray) -> float | be.ndarray:
-        return be.zeros_like(0)
+        inv_v = 1.0 / ve
+        inv_v2 = 1.0 / (ve**2)
+        n_sq = ne**2
+        n_div_v = ne / ve
+
+        # Derived via Lasso regression
+        v1 = (
+            -0.01271580
+            + 5.86039368 * inv_v
+            + 0.00000000 * inv_v2
+            - 0.00840567 * n_sq
+            - 6.04120358 * n_div_v
+        )
+
+        v2 = (
+            -0.11714561
+            - 19.45035516 * inv_v
+            + 0.00000000 * inv_v2
+            - 0.18747797 * n_sq
+            + 14.33541100 * n_div_v
+        )
+
+        v3 = (
+            0.00000000
+            + 18.43536735 * inv_v
+            - 241.00526954 * inv_v2
+            + 0.10881050 * n_sq
+            - 4.93439893 * n_div_v
+        )
+
+        return v1, v2, v3
 
 
 class AbbeMaterial(BaseMaterial):
@@ -227,7 +273,7 @@ class AbbeMaterial(BaseMaterial):
         if model == "polynomial":
             self.model = AbbePolynomialModel(n, abbe)
         elif model == "buchdahl":
-            self.model = AbbeBuchdahlModel(n, abbe)
+            self.model = BuchdahlDModel(n, abbe)
         else:
             raise ValueError(
                 f"Unknown model: {model}. Valid options: 'polynomial', 'buchdahl'"
@@ -263,3 +309,55 @@ class AbbeMaterial(BaseMaterial):
 
         model = data.get("model")
         return cls(data["index"], data["abbe"], model=model)
+
+
+class AbbeMaterialE(BaseMaterial):
+    """Represents a material based on the refractive index and Abbe number at e-line.
+
+    This class uses a Buchdahl 3-term model fitted to e-line (546.07 nm) data.
+
+    Args:
+        n (float): The refractive index of the material at 546.07 nm (n_e).
+        abbe (float): The Abbe number of the material (V_e).
+
+    Attributes:
+        index (float): The refractive index of the material at 546.07 nm.
+        abbe (float): The Abbe number of the material (V_e).
+        model (BuchdahlEModel): The underlying model instance.
+
+    """
+
+    def __init__(self, n, abbe):
+        super().__init__()
+        self.index = n
+        self.abbe = abbe
+        self.model = BuchdahlEModel(n, abbe)
+
+    def _calculate_n(self, wavelength, **kwargs):
+        """Returns the refractive index of the material."""
+        return self.model.predict_n(wavelength)
+
+    def _calculate_k(self, wavelength, **kwargs):
+        """Returns the extinction coefficient of the material."""
+        return self.model.predict_k(wavelength)
+
+    def to_dict(self):
+        """Returns a dictionary representation of the material."""
+        material_dict = super().to_dict()
+        material_dict.update(
+            {
+                "index": float(self.index),
+                "abbe": float(self.abbe),
+            }
+        )
+        return material_dict
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates a material from a dictionary representation."""
+        required_keys = ["index", "abbe"]
+        for key in required_keys:
+            if key not in data:
+                raise ValueError(f"Missing required key: {key}")
+
+        return cls(data["index"], data["abbe"])
