@@ -183,7 +183,7 @@ class TestMaterialVariable:
         assert str(self.material_var) == "Material, Surface 1"
 
     def test_init_with_abbe_material(self):
-        abbe = AbbeMaterial(n=(1.5168,), abbe=(64.17,))
+        abbe = AbbeMaterial(n=(1.5168,), abbe=(64.17,), model="polynomial")
         self.optic.surface_group.surfaces[self.surface_number].material_post = abbe
 
         with (

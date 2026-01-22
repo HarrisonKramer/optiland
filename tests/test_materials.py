@@ -126,7 +126,8 @@ class TestAbbeMaterial:
 
     def test_coefficients(self, set_test_backend):
         abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
-        coefficients = abbe_material._get_coefficients()
+        # Access the private method on the underlying model (AbbePolynomialModel)
+        coefficients = abbe_material.model._get_coefficients()
         assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
 
 
@@ -137,6 +138,7 @@ class TestAbbeMaterial:
             "type": "AbbeMaterial",
             "index": 1.5,
             "abbe": 50.0,
+            "model": "polynomial",
             "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
