@@ -31,6 +31,7 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **C.R Vasudev Varma** (`GitHub <https://github.com/v4sud3v>`_)
 - **Melquiades Xiong** (`GitHub <https://github.com/Xiong-Ziyi>`_)
 - **Scott Paine** (`GitHub <https://github.com/scottpaine>`_)
+- **Jie Cai** (`GitHub <https://github.com/zhazhajust>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
