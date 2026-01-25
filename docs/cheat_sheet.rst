@@ -24,7 +24,7 @@ At its heart, Optiland revolves around a few key components:
 
 * **Materials** (``Material``): Define the optical properties of the media between surfaces, primarily the refractive index (``n``) and optionally the extinction coefficient (``k``) as a function of wavelength.
   
-  * Optiland can use data from the `refractiveindex.info <https://refractiveindex.info>`_ database (``MaterialFile``) or allow you to define ideal materials (``IdealMaterial``) or materials based on index (nd) and Abbe number (Vd) (``AbbeMaterial``).
+  * Optiland can use data from the `refractiveindex.info <https://refractiveindex.info>`_ database (``MaterialFile``) or allow you to define ideal materials (``IdealMaterial``) or materials based on index (nd) and Abbe number (Vd) (``AbbeMaterial``). The ``AbbeMaterial`` supports both a legacy polynomial model and a new, more accurate Buchdahl model (recommended).
 
 * **Geometries** (``BaseGeometry``): These define the mathematical shape of a surface (e.g., plane, sphere, asphere).
 
