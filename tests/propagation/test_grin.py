@@ -86,6 +86,11 @@ def test_grin_propagation_straight_line():
     assert be.allclose(rays.M[0], 0.0, atol=1e-6)
     assert be.allclose(rays.N[0], 1.0, atol=1e-6)
 
+    # UPDATED: Check OPD
+    # For uniform medium, OPD should be n * t
+    # n=1.5, t=5.0 => OPD=7.5
+    assert be.allclose(rays.opd[0], 1.5 * 5.0, atol=1e-3)
+
 
 def test_grin_propagation_radial_gradient():
     """Test GRIN propagation with radial gradient."""
@@ -134,6 +139,27 @@ def test_grin_propagation_multiple_rays():
 
     # Check that GRINPropagation has the material's propagation model
     assert isinstance(material.propagation_model, GRINPropagation)
+
+
+def test_grin_propagation_backward():
+    """Test GRIN propagation with rays moving backward (negative t)."""
+    material = GradientMaterial(n0=1.5)
+
+    # Create rays moving backward
+    rays = RealRays(
+        x=[0.0], y=[0.0], z=[0.0],
+        L=[0.0], M=[0.0], N=[-1.0],
+        intensity=[1.0], wavelength=[0.5]
+    )
+
+    model = GRINPropagation(material)
+    # Propagate backward 5mm
+    model.propagate(rays, t=-5.0)
+
+    # z should be -5.0
+    assert be.allclose(rays.z[0], -5.0, atol=1e-3)
+    # OPD should be correct (positive)
+    assert be.allclose(rays.opd[0], 1.5 * 5.0, atol=1e-3)
 
 
 def test_grin_material_serialization():
@@ -231,6 +257,10 @@ def test_grin_axial_gradient_reflection_effect():
     # (at least 10% reduction in L component)
     assert bending_amount > 0.1 * L_initial, \
         f"Expected significant bending, got {bending_amount:.4f}"
+
+    # OPTIONAL: Check OPD approximate correctness
+    # n varies from 1.5 to 2.5. Avg ~ 2.0. Path ~ 20. OPD ~ 40.
+    assert rays.opd[0] > 30.0 and rays.opd[0] < 50.0
 
 
 def test_grin_axial_gradient_strong_reflection():
