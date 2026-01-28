@@ -532,7 +532,15 @@ class TestOptic:
         )
         mock_viewer.assert_called_once_with(lens)
         viewer_instance = mock_viewer.return_value
-        viewer_instance.view.assert_called_once_with(1, 2.0, -2.0)
+        viewer_instance.view.assert_called_once_with(
+            surface_index=1,
+            y_cross_section=2.0,
+            x_cross_section=-2.0,
+            fig_to_plot_on=None,
+            max_extent=None,
+            num_points_grid=50,
+            buffer_factor=1.1,
+        )
 
 
 def test_flip_updates_thickness_attribute(set_test_backend):
