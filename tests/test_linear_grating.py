@@ -67,7 +67,7 @@ def test_linear_grating_efficiency(mock_surface):
 @pytest.mark.parametrize("order", [1, -1])
 def test_linear_grating_transmission(mock_surface, order):
     period = 1.0  # mm
-    wavelength = 0.5e-3  # mm
+    wavelength = 0.5  # microns (0.0005 mm)
     angle = 0.0
 
     phase_profile = LinearGratingPhaseProfile(period=period, angle=angle, order=order)
@@ -84,14 +84,14 @@ def test_linear_grating_transmission(mock_surface, order):
     # n2 * sin(theta_out) = order * lambda / period
     # L_out = sin(theta_out)
     n2 = mock_surface.material_post.n(wavelength)
-    expected_L = order * wavelength / (period * n2)
+    expected_L = order * (wavelength * 1e-3) / (period * n2)
 
     assert_allclose(interacted_rays.L, be.array([expected_L]), atol=1e-9)
 
 @pytest.mark.parametrize("order", [1, -1])
 def test_linear_grating_reflection(mock_surface, order):
     period = 1.0
-    wavelength = 0.5e-3
+    wavelength = 0.5 # microns
     angle = be.pi / 2
 
     phase_profile = LinearGratingPhaseProfile(period=period, angle=angle, order=order)
@@ -107,7 +107,7 @@ def test_linear_grating_reflection(mock_surface, order):
     # n1=n2=1, but handled by the model. The model uses the vector grating equation.
     # We expect the ray to be deflected in the M direction.
     n1 = mock_surface.material_pre.n(wavelength)
-    expected_M = order * wavelength / (period * n1)
+    expected_M = order * (wavelength * 1e-3) / (period * n1)
 
     assert_allclose(interacted_rays.M, be.array([expected_M]), atol=1e-9)
     assert be.all(interacted_rays.N < 0)

@@ -35,7 +35,7 @@ def test_interact_real_rays_transmission(mock_surface):
     # phi = -k0/(2f) * r^2
     f = 100.0
     w = 0.5
-    k0 = 2 * be.pi / w
+    k0 = 2 * be.pi / (w * 1e-3)  # w is in um, convert to mm for k0
     coeff = -k0 / (2*f)
     phase_profile = RadialPhaseProfile(coefficients=[coeff])
     model = PhaseInteractionModel(mock_surface, phase_profile, is_reflective=False)
@@ -55,7 +55,7 @@ def test_interact_real_rays_transmission(mock_surface):
 def test_interact_real_rays_reflection(mock_surface):
     f = 100.0
     w = 0.5
-    k0 = 2 * be.pi / w
+    k0 = 2 * be.pi / (w * 1e-3)
     coeff = -k0 / (2*f) # Same phase profile, different interaction
     phase_profile = RadialPhaseProfile(coefficients=[coeff])
     model = PhaseInteractionModel(mock_surface, phase_profile, is_reflective=True)
@@ -71,7 +71,7 @@ def test_interact_real_rays_reflection(mock_surface):
 def test_interact_paraxial_rays(mock_surface):
     f = 100.0
     w = 0.5
-    k0 = 2 * be.pi / w
+    k0 = 2 * be.pi / (w * 1e-3)
     coeff = -k0 / (2*f)
     phase_profile = RadialPhaseProfile(coefficients=[coeff])
     model = PhaseInteractionModel(mock_surface, phase_profile, is_reflective=False)
@@ -113,3 +113,32 @@ def test_serialization(mock_surface):
     assert isinstance(new_model, PhaseInteractionModel)
     assert isinstance(new_model.phase_profile, RadialPhaseProfile)
     assert new_model.phase_profile.coefficients == [0.1, 0.2]
+
+def test_unit_conversion_mm_microns(mock_surface):
+    # Explicit bug reproduction scenario
+    # focal_distance = 24 mm
+    # wavelength = 0.521 um = 0.000521 mm
+    # k0 = 2*pi / 0.000521 rad/mm ~ 12060
+    # coeff = -k0 / (2 * 24) ~ -251
+    # RadialPhaseProfile with this coeff should produce expected focus
+    
+    f = 24.0
+    w = 0.521 # microns
+    k0 = 2 * be.pi / (w * 1e-3) # rad/mm
+    coeff = -k0 / (2 * f)
+    
+    phase_profile = RadialPhaseProfile(coefficients=[coeff])
+    model = PhaseInteractionModel(mock_surface, phase_profile, is_reflective=False)
+    
+    # Ray at x=1.0 mm, parallel incoming
+    rays = RealRays(x=be.array([1.0]), y=be.array([0.0]), z=be.array([0.0]),
+                    L=be.array([0.0]), M=be.array([0.0]), N=be.array([1.0]),
+                    wavelength=w, intensity=be.array([1.0]))
+    
+    # Expected L = -x / (n2 * f)
+    n2 = mock_surface.material_post.n(w) # 1.5
+    expected_L = -1.0 / (n2 * f) # -1.0 / 36.0 ~ -0.0277
+    
+    interacted_rays = model.interact_real_rays(rays)
+    
+    assert_allclose(interacted_rays.L, be.array([expected_L]), atol=1e-6)

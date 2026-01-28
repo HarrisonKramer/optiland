@@ -168,6 +168,14 @@ def ones(shape: Sequence[int]) -> Tensor:
 
 def full(shape: Sequence[int], fill_value: float | Tensor) -> Tensor:
     val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
+
+    # Ensure shape is a tuple
+    if not isinstance(shape, list | tuple):
+        try:
+            shape = (int(shape),)
+        except Exception:
+            shape = (shape,)
+
     return torch.full(
         shape,
         val,
@@ -209,6 +217,21 @@ def arange(*args: float | Tensor, step: float | Tensor = 1) -> Tensor:
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
+    )
+
+
+def arange_indices(start, stop=None, step=1) -> Tensor:
+    """Create a tensor of indices (int64/long)."""
+    if stop is None:
+        stop = start
+        start = 0
+    return torch.arange(
+        start,
+        stop,
+        step,
+        device=get_device(),
+        dtype=torch.long,
+        requires_grad=False,
     )
 
 
@@ -346,6 +369,24 @@ def tile(x: Tensor, dims: int | list[int] | tuple[int, ...]) -> Tensor:
     return torch.tile(x, dims if isinstance(dims, list | tuple) else (dims,))
 
 
+def transpose(x: Tensor, axes: Sequence[int] | None = None) -> Tensor:
+    """
+    Transposes the input tensor.
+
+    Args:
+        x (Tensor): Input tensor.
+        axes (Sequence[int], optional): The dimensions to swap/permute.
+            If None, reverses the dimensions (like np.transpose).
+            If a tuple/list, calls x.permute(axes).
+
+    Returns:
+        Tensor: Transposed tensor.
+    """
+    if axes is None:
+        return x.t() if x.dim() == 2 else x.permute(*range(x.dim())[::-1])
+    return x.permute(axes)
+
+
 def isscalar(x: ArrayLike | Tensor) -> bool:
     return torch.is_tensor(x) and x.dim() == 0
 
@@ -477,6 +518,12 @@ def nanmax(
     return result
 
 
+def where(condition: bool | Tensor, x: Tensor | float, y: Tensor | float) -> Tensor:
+    if isinstance(condition, bool):
+        return x if condition else y
+    return torch.where(condition, x, y)
+
+
 def mean(x: ArrayLike, axis: int | None = None, keepdims: bool = False) -> Tensor:
     x = array(x)
     mask = ~torch.isnan(x)
@@ -493,6 +540,13 @@ def all(x: bool | ArrayLike) -> bool:
         return x
     t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
     return bool(torch.all(t).item())
+
+
+def any(x: bool | ArrayLike) -> bool:
+    if isinstance(x, bool):
+        return x
+    t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
+    return bool(torch.any(t).item())
 
 
 def factorial(n: ArrayLike) -> Tensor:
@@ -664,6 +718,22 @@ def mult_p_E(p: Tensor, E: Tensor) -> Tensor:
     return torch.squeeze(torch.matmul(p_c, E_c.unsqueeze(2)), dim=2)
 
 
+def lstsq(a: Tensor, b: Tensor) -> Tensor:
+    """
+    Computes the least-squares solution to a linear matrix equation.
+
+    Args:
+        a (Tensor): Left-hand side matrix (M, N).
+        b (Tensor): Right-hand side matrix (M,) or (M, K).
+
+    Returns:
+        Tensor: Least-squares solution (N,) or (N, K).
+    """
+    # torch.linalg.lstsq returns a named tuple
+    # (solution, residuals, rank, singular_values)
+    return torch.linalg.lstsq(a, b).solution
+
+
 # --------------------------
 # Interpolation
 # --------------------------
@@ -780,8 +850,68 @@ def eye(n: int) -> Tensor:
 
 
 # --------------------------
-# Error State Context
+# Signal Processing
 # --------------------------
+def fftconvolve(
+    in1: Tensor, in2: Tensor, mode: Literal["full", "valid", "same"] = "full"
+) -> Tensor:
+    """
+    PyTorch implementation of FFT-based convolution.
+
+    Args:
+        in1 (Tensor): First input (N-d).
+        in2 (Tensor): Second input (N-d).
+        mode (str): 'full', 'valid', or 'same'.
+
+    Returns:
+        Tensor: Convolved tensor.
+    """
+    # Cast to same type/device
+    in1 = array(in1)
+    in2 = array(in2)
+
+    ndim = in1.ndim
+    if in2.ndim != ndim:
+        raise ValueError("Inputs must have the same dimensionality.")
+
+    # Calculate output shape for full convolution
+    s1 = in1.shape
+    s2 = in2.shape
+    shape = [s1[i] + s2[i] - 1 for i in range(ndim)]
+
+    # Perform FFT
+    IN1 = torch.fft.fftn(in1, s=shape)
+    IN2 = torch.fft.fftn(in2, s=shape)
+
+    # Multiply
+    RET = IN1 * IN2
+
+    # Inverse FFT
+    ret = torch.fft.ifftn(RET, s=shape).real
+
+    # Crop based on mode
+    if mode == "full":
+        return ret
+    elif mode == "same":
+        # Center crop
+        crop_slices = []
+        for i in range(ndim):
+            start = (s2[i] - 1) // 2
+            end = start + s1[i]
+            crop_slices.append(slice(start, end))
+        return ret[tuple(crop_slices)]
+    elif mode == "valid":
+        # Valid crop
+        crop_slices = []
+        for i in range(ndim):
+            start = s2[i] - 1
+            end = s1[i]
+            crop_slices.append(slice(start, end))
+        return ret[tuple(crop_slices)]
+
+    raise ValueError(f"Unknown mode: {mode}")
+
+
 @contextlib.contextmanager
 def errstate(**kwargs: Any) -> Generator[Any, Any, Any]:
     yield
@@ -821,6 +951,15 @@ def path_contains_points(vertices: Tensor, points: Tensor) -> torch.BoolTensor:
     return inside
 
 
+def grid_sample(
+    input, grid, mode="bilinear", padding_mode="zeros", align_corners=False
+):
+    """Wrapper for torch.nn.functional.grid_sample."""
+    return F.grid_sample(
+        input, grid, mode=mode, padding_mode=padding_mode, align_corners=align_corners
+    )
+
+
 # --------------------------
 # Exported Symbols
 # --------------------------
@@ -853,6 +992,7 @@ __all__ = [
     # Shape
     "reshape",
     "stack",
+    "transpose",
     "broadcast_to",
     "repeat",
     "flip",
@@ -879,6 +1019,8 @@ __all__ = [
     "maximum",
     "mean",
     "all",
+    "any",
+    "where",
     "histogram2d",
     "get_bilinear_weights",
     # Linear Algebra
@@ -905,4 +1047,7 @@ __all__ = [
     "eye",
     # Error State
     "errstate",
+    # Simulation
+    "fftconvolve",
+    "grid_sample",
 ]

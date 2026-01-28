@@ -155,7 +155,9 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
     labels = be.array(labels)
     for cluster_index in range(num_glasses_to_keep):
         # Get indices of glasses in this cluster
-        cluster_indices = be.where(labels == cluster_index)[0]
+        mask = labels == cluster_index
+        indices = be.arange_indices(be.size(labels))
+        cluster_indices = indices[mask]
 
         # Extract cluster points
         cluster_points = be.array(glass_data[cluster_indices])

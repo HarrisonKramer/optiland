@@ -80,3 +80,39 @@ The framework is designed to be extensible:
 - Additional tracing logic can be integrated into the surface `trace` method for specialized applications.
 
 For a practical example of ray tracing, see the :ref:`getting_started` section.
+
+Ray Aiming
+----------
+Optiland implements a flexible **Ray Aiming** system to determine the correct launch coordinates for rays such that they fill the stop surface, even in systems with significant pupil aberrations.
+
+This functionality is managed by the :class:`~optiland.rays.ray_aiming.base.BaseRayAimer` class and its subclasses. The system uses a **Registry Pattern**, allowing users to easily switch strategies or register custom ones.
+
+Available Strategies
+^^^^^^^^^^^^^^^^^^^^
+- **Paraxial**: Standard aiming using paraxial entrance pupil approximation. Fast but less accurate for wide-angle/aberrated systems.
+- **Iterative**: Uses a Newton-Raphson-like iterative solver to refine ray launch coordinates until they hit the physical stop.
+- **Robust**: An extension of the iterative method using **Pupil Expansion** (Continuation Method). It solves for small pupil fractions first and uses the result as a guess for larger pupils, ensuring convergence in highly stressed systems.
+- **Cached**: A wrapper that caches intermediate results from any other strategy. Useful for optimization or tolerance analysis where system changes are incremental. Enabled by setting `cache=True`.
+
+Configuration
+^^^^^^^^^^^^^
+Ray aiming is configured via the `Optic` instance:
+
+.. code-block:: python
+
+    # Enable robust ray aiming with caching
+    optic.set_ray_aiming(mode="robust", max_iter=20, tol=1e-6, cache=True)
+
+Custom Aimers
+^^^^^^^^^^^^^
+Users can implement custom strategies by subclassing `BaseRayAimer` and registering them:
+
+.. code-block:: python
+
+    from optiland.rays.ray_aiming import BaseRayAimer, register_aimer
+
+    @register_aimer("my_custom_aimer")
+    class MyAimer(BaseRayAimer):
+        def aim_rays(self, fields, wavelengths, pupil_coords):
+            # Custom logic
+            return x, y, z, L, M, N

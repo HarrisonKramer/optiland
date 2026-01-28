@@ -74,6 +74,14 @@ class OpticUpdater:
                 thickness to be modified.
 
         """
+        if surface_number == 0:
+            # First surface thickness sets the object distance.
+            # We treat this specially to avoid issues with infinite values.
+            self.optic.surface_group.surfaces[0].thickness = value
+            self.optic.surface_group.surfaces[0].geometry.cs.z = be.array(-value)
+            # No need to shift other surfaces as they are relative to S1 at z=0
+            return
+
         positions = self.optic.surface_group.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
         positions = be.copy(positions)  # required to avoid in-place modification
