@@ -187,6 +187,7 @@ class ZemaxToOpticConverter:
             "thickness": data.get("thickness"),
             "is_stop": data.get("is_stop", False),
             "material": data.get("material"),
+            "aperture": data.get("aperture"),
         }
 
         # only the coefficient key differs for toroidal surfaces
