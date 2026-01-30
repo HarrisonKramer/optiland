@@ -253,7 +253,7 @@ class Optic:
 
     def remove_surface(
         self,
-        index: int | None = None,
+        index: int,
     ):
         """Removes a surface from the optic.
 
