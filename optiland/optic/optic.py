@@ -251,6 +251,20 @@ class Optic:
             **kwargs,
         )
 
+    def remove_surface(
+        self,
+        index: int | None = None,
+    ):
+        """Removes a surface from the optic.
+
+        Args:
+            index (int, optional): The index of the surface to remove.
+
+        """
+        self.surface_group.remove_surface(
+            index=index,
+        )
+
     def add_field(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the optical system.
 
