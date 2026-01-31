@@ -129,11 +129,6 @@ def test_nurbs_basis(set_test_backend):
     U = np.array([0.0, 0.0, 1.0, 1.0])
     u = np.array([0.0, 0.5, 1.0])
 
-    # Need to convert inputs appropriately if backend is torch?
-    # The function uses @jit. If torch backend, jit is dummy.
-    # The function converts u to numpy internally: u = np.asarray(u * 1.0)
-    # So we can pass numpy arrays.
-
     N = nurbs_basis_functions.compute_basis_polynomials(n, p, U, u)
     # N shape: (n+1, Nu) -> (2, 3)
     # At u=0: N0=1, N1=0
