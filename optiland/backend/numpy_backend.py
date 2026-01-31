@@ -137,7 +137,7 @@ def nearest_nd_interpolator(
 
 
 def unsqueeze_last(x: NDArray) -> NDArray:
-    return x[:, np.newaxis]
+    return x[..., np.newaxis]
 
 
 def mult_p_E(p: NDArray, E: NDArray) -> NDArray:
@@ -246,3 +246,22 @@ def grid_sample(
             )
 
     return output
+
+
+def polyfit(x: ArrayLike, y: ArrayLike, degree: int) -> NDArray:
+    """Least squares polynomial fit.
+
+    Returns:
+        NDArray: Polynomial coefficients, highest power first.
+    """
+    return np.polyfit(x, y, degree)
+
+
+def polyval(coeffs: ArrayLike, x: ArrayLike) -> NDArray:
+    """Evaluate a polynomial at specific values.
+
+    Args:
+        coeffs: Polynomial coefficients, highest power first.
+        x: A number or an array of numbers at which to evaluate.
+    """
+    return np.polyval(coeffs, x)

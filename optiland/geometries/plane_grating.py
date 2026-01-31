@@ -134,6 +134,9 @@ class PlaneGrating(BaseGeometry):
         geometry_dict.update(
             {
                 "radius": be.inf,
+                "order": float(self.grating_order),
+                "period": float(self.grating_period),
+                "angle": float(self.groove_orientation_angle),
             },
         )
         return geometry_dict
@@ -149,5 +152,10 @@ class PlaneGrating(BaseGeometry):
             Plane: An instance of the Plane geometry.
 
         """
+        required_keys = {"cs", "order", "period", "angle"}
+        if not required_keys.issubset(data):
+            missing = required_keys - data.keys()
+            raise ValueError(f"Missing required keys: {missing}")
+
         cs = CoordinateSystem.from_dict(data["cs"])
-        return cls(cs)
+        return cls(cs, data["order"], data["period"], data["angle"])
