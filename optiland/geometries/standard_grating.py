@@ -276,7 +276,7 @@ class StandardGratingGeometry(BaseGeometry):
             StandardGratingGeometry: An instance of StandardGratingGeometry.
 
         """
-        required_keys = {"cs", "radius", "alpha"}
+        required_keys = {"cs", "radius", "order", "period", "angle"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
@@ -286,7 +286,6 @@ class StandardGratingGeometry(BaseGeometry):
         return cls(
             cs,
             data["radius"],
-            data["alpha"],
             data["order"],
             data["period"],
             data["angle"],

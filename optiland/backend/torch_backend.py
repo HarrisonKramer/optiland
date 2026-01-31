@@ -202,6 +202,12 @@ def arange(*args: float | Tensor, step: float | Tensor = 1) -> Tensor:
         end = args[0]
     elif len(args) == 2:
         start, end = args
+    elif len(args) == 3:
+        start, end, step = args
+    else:
+        raise TypeError(
+            f"arange expected 1, 2, or 3 positional arguments, got {len(args)}"
+        )
 
     if isinstance(start, torch.Tensor):
         start = start.item()
@@ -473,6 +479,10 @@ def log2(x: ArrayLike) -> Tensor:
 
 def abs(x: ArrayLike) -> Tensor:
     return torch.abs(array(x))
+
+
+def hypot(x: ArrayLike, y: ArrayLike) -> Tensor:
+    return torch.hypot(array(x), array(y))
 
 
 def radians(x: ArrayLike) -> Tensor:
@@ -774,8 +784,11 @@ def nearest_nd_interpolator(
 # Polynomial Operations
 # --------------------------
 def polyfit(x: Tensor, y: Tensor, degree: int) -> Tensor:
-    X = torch.stack([x**i for i in range(degree + 1)], dim=1)
-    coeffs, _ = torch.linalg.lstsq(y.unsqueeze(1), X)
+    # X matrix with columns for x^degree, x^(degree-1), ..., x^0
+    X = torch.stack([x**i for i in range(degree, -1, -1)], dim=1)
+    # Solve X * coeffs = y
+    result = torch.linalg.lstsq(X, y.unsqueeze(1))
+    coeffs = result.solution
     return coeffs[: degree + 1].squeeze()
 
 
