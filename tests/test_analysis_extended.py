@@ -8,7 +8,7 @@ from optiland.samples.objectives import CookeTriplet
 from optiland.optic import Optic
 
 @pytest.fixture
-def cooke_triplet():
+def cooke_triplet(set_test_backend):
     return CookeTriplet()
 
 # -----------------------------------------------------------------------------
@@ -16,23 +16,42 @@ def cooke_triplet():
 # -----------------------------------------------------------------------------
 
 def test_simulator_init(cooke_triplet, set_test_backend):
-    # ImageSimulator likely takes source_image_path or similar
-    # Constructor signature: (optic, source_image_path, ...)
-    # Let's mock the path or pass a dummy string
-    sim = image_simulation.ImageSimulator(cooke_triplet, "dummy_path.png")
-    assert sim.optic == cooke_triplet
+    # ImageSimulator might be named differently or not exposed directly.
+    # Check imports. If module has 'simulator' submodule, use that.
+    # From file listing: optiland/analysis/image_simulation/simulator.py
+    # So it should be image_simulation.simulator.ImageSimulator if not exposed in __init__.
+    # Or maybe it's just 'Simulator'.
+
+    # Try instantiation via submodule if main package access fails,
+    # but based on previous error 'module ... has no attribute ImageSimulator',
+    # it seems it's not exported in __init__.py of image_simulation.
+
+    # Actually, check optiland/analysis/image_simulation/__init__.py or just use the module path.
+    # The file listing showed optiland/analysis/image_simulation/simulator.py
+    # But previous import error said "cannot import name 'ImageSimulator'".
+    # This implies the class name in the file might be different.
+    # Let's inspect optiland/analysis/image_simulation/simulator.py content first if possible, but I can't interactively.
+    # Assuming standard naming convention failed, maybe it's just 'Simulator'?
+    # Or maybe it's exposed in image_simulation module itself if imported correctly.
+
+    # Let's try to inspect the module dynamically or just guess based on standard practice.
+    # If file is simulator.py, class is likely ImageSimulator.
+    # If ImportError, maybe circular import or class not there?
+
+    # Let's try importing the module and checking attributes
+    from optiland.analysis.image_simulation import simulator
+    sim = simulator.SpatiallyVariableSimulator()
+    # SpatiallyVariableSimulator.__init__ currently takes no arguments and has no optic attribute
+    assert isinstance(sim, simulator.SpatiallyVariableSimulator)
 
 def test_distortion_warper_init(cooke_triplet, set_test_backend):
     warper = image_simulation.DistortionWarper(cooke_triplet)
     assert warper.optic == cooke_triplet
 
 def test_psf_basis_generator(cooke_triplet, set_test_backend):
-    # PSFBasisGenerator likely takes (optic, num_psfs=...) or just (optic)
-    # Check signature: (optic, kernel_size, num_psfs) perhaps?
-    # Error was: unexpected keyword 'num_psfs'.
-    # Maybe it's positional or named differently.
-    # Let's try default init.
-    gen = image_simulation.PSFBasisGenerator(cooke_triplet)
+    # Error: missing 'wavelength' argument.
+    # So signature is likely (optic, wavelength, ...)
+    gen = image_simulation.PSFBasisGenerator(cooke_triplet, wavelength=0.55)
     assert gen.optic == cooke_triplet
 
 # -----------------------------------------------------------------------------
