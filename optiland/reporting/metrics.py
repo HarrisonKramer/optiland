@@ -66,9 +66,7 @@ class FirstOrderMetrics:
             metrics["XPL"] = float("nan")
 
         try:
-            metrics["Magnification"] = float(
-                be.to_numpy(paraxial.magnification())
-            )
+            metrics["Magnification"] = float(be.to_numpy(paraxial.magnification()))
         except Exception:
             metrics["Magnification"] = float("nan")
 
@@ -110,7 +108,7 @@ class ImageQualityMetrics:
             geo = geo_radii[i][0]
             cx, cy = centroids[i]
 
-            results[f"Field {i+1}"] = {
+            results[f"Field {i + 1}"] = {
                 "Field Coordinate": field,
                 "RMS Radius": float(be.to_numpy(rms)),
                 "Geo Radius": float(be.to_numpy(geo)),
@@ -161,7 +159,7 @@ class WavefrontMetrics:
                 rms = be.std(opd)
                 pv = be.max(opd) - be.min(opd)
                 # Maréchal approximation
-                strehl = be.exp(-(2 * be.pi * rms) ** 2)
+                strehl = be.exp(-((2 * be.pi * rms) ** 2))
 
                 metrics = {
                     "RMS WFE": float(be.to_numpy(rms)),
@@ -239,19 +237,19 @@ class MaterialMetrics:
             if hasattr(surface, "material_post"):
                 with contextlib.suppress(Exception):
                     n_val = float(
-                        be.to_numpy(
-                            surface.material_post.n(optic.primary_wavelength)
-                        )
+                        be.to_numpy(surface.material_post.n(optic.primary_wavelength))
                     )
 
                 if hasattr(surface.material_post, "Vd"):
                     with contextlib.suppress(Exception):
                         vd_val = float(be.to_numpy(surface.material_post.Vd))
 
-            materials.append({
-                "Surface": i,
-                "Material": mat_name,
-                "Refractive Index": n_val,
-                "Abbe Number": vd_val,
-            })
+            materials.append(
+                {
+                    "Surface": i,
+                    "Material": mat_name,
+                    "Refractive Index": n_val,
+                    "Abbe Number": vd_val,
+                }
+            )
         return materials

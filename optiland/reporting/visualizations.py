@@ -156,9 +156,7 @@ class FieldCurvatureDistortionPlot:
                 label=f"{wavelength:.4f} µm (S)",
             )
 
-            max_val = max(
-                max_val, np.max(np.abs(t_curve)), np.max(np.abs(s_curve))
-            )
+            max_val = max(max_val, np.max(np.abs(t_curve)), np.max(np.abs(s_curve)))
 
         ax1.set_xlabel("Field Curvature (mm)")
         ax1.set_ylabel("Field")
@@ -171,9 +169,7 @@ class FieldCurvatureDistortionPlot:
 
         # Distortion plotting logic
         ax2.axvline(x=0, color="k", linewidth=1, linestyle="--")
-        field = be.linspace(
-            1e-10, dist.optic.fields.max_field, dist.num_points
-        )
+        field = be.linspace(1e-10, dist.optic.fields.max_field, dist.num_points)
         field_np = be.to_numpy(field)
 
         for k, wavelength in enumerate(dist.wavelengths):

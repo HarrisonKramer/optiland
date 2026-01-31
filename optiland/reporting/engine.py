@@ -132,9 +132,7 @@ class StandardPerformanceReport(ReportBuilder):
         for i, surf in enumerate(surfaces):
             # Radius
             radius = surf.geometry.radius
-            rad_str = (
-                "Infinity" if be.isinf(radius) else f"{be.to_numpy(radius):.4f}"
-            )
+            rad_str = "Infinity" if be.isinf(radius) else f"{be.to_numpy(radius):.4f}"
 
             # Thickness (distance to next surface)
             if i < len(surfaces) - 1:
@@ -145,7 +143,7 @@ class StandardPerformanceReport(ReportBuilder):
                 # Handle array output if backend returns array
                 th = be.to_numpy(th)
                 if np.size(th) > 1:
-                    th = th[0] # Assume on-axis
+                    th = th[0]  # Assume on-axis
             else:
                 th = 0.0
 
@@ -157,27 +155,29 @@ class StandardPerformanceReport(ReportBuilder):
             semi_dia = "Auto"
             if surf.aperture:
                 if isinstance(surf.aperture, RadialAperture):
-                     semi_dia = f"{float(surf.aperture.r_max):.4f}"
+                    semi_dia = f"{float(surf.aperture.r_max):.4f}"
                 elif hasattr(surf.aperture, "max_radius"):
-                     semi_dia = f"{float(surf.aperture.max_radius):.4f}"
+                    semi_dia = f"{float(surf.aperture.max_radius):.4f}"
                 else:
-                     # Try extent
-                     try:
-                         extent = surf.aperture.extent
-                         # max of absolute values in extent
-                         max_ext = max(abs(x) for x in extent)
-                         semi_dia = f"{float(max_ext):.4f}"
-                     except Exception:
-                         pass
+                    # Try extent
+                    try:
+                        extent = surf.aperture.extent
+                        # max of absolute values in extent
+                        max_ext = max(abs(x) for x in extent)
+                        semi_dia = f"{float(max_ext):.4f}"
+                    except Exception:
+                        pass
 
-            data.append([
-                i,
-                surf.surface_type,
-                rad_str,
-                f"{float(th):.4f}",
-                mat_str,
-                semi_dia,
-            ])
+            data.append(
+                [
+                    i,
+                    surf.surface_type,
+                    rad_str,
+                    f"{float(th):.4f}",
+                    mat_str,
+                    semi_dia,
+                ]
+            )
 
         cols = [
             "Surf",
