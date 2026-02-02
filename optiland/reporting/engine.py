@@ -22,7 +22,6 @@ from optiland.reporting.metrics import (
 from optiland.reporting.pdf_export import PDFReportRenderer
 from optiland.reporting.visualizations import (
     FieldCurvatureDistortionPlot,
-    LensLayoutPlot,
     MTFPlot,
     OPDPlot,
     PlotStyler,
@@ -53,7 +52,7 @@ class StandardPerformanceReport(ReportBuilder):
         PlotStyler.apply_style()
 
         with PDFReportRenderer(filename) as pdf:
-            # 1. Dashboard
+            # 1. Dashboard / Title Page
             self._create_dashboard(pdf)
 
             # 2. System Prescription
@@ -70,21 +69,66 @@ class StandardPerformanceReport(ReportBuilder):
 
     def _create_dashboard(self, pdf: PDFReportRenderer):
         """Creates the dashboard page."""
-        # 1. Get Lens Layout
-        layout_plot = LensLayoutPlot(self.optic)
-        fig = layout_plot.plot()
-        fig.set_size_inches(8.5, 11)  # Portrait
+        import os
 
-        # Adjust existing axes to make room for table at bottom
-        if fig.axes:
-            ax_layout = fig.axes[0]
-            pos = ax_layout.get_position()
-            # Move up and shrink height: [left, bottom, width, height]
-            # Set bottom to 0.4 (leave 40% for table)
-            ax_layout.set_position([pos.x0, 0.4, pos.width, 0.55])
-            ax_layout.set_title("System Layout", fontsize=14, weight="bold")
+        from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
-        # 2. Calculate Key Metrics for Summary Table
+        from optiland.visualization.system.optic_viewer import OpticViewer
+
+        fig = plt.figure(figsize=(8.5, 11))
+
+        # 1. Logo and Title
+        ax_header = fig.add_axes([0.05, 0.85, 0.9, 0.1])
+        ax_header.axis("off")
+
+        # Try to find logo
+        logo_path = None
+        possible_paths = [
+            "optiland_gui/resources/logo.png",
+            "../optiland_gui/resources/logo.png",
+            "../../optiland_gui/resources/logo.png",
+            os.path.join(
+                os.path.dirname(__file__), "../../optiland_gui/resources/logo.png"
+            ),
+        ]
+
+        for p in possible_paths:
+            if os.path.exists(p):
+                logo_path = p
+                break
+
+        if logo_path:
+            try:
+                img = plt.imread(logo_path)
+                imagebox = OffsetImage(img, zoom=0.15)
+                ab = AnnotationBbox(
+                    imagebox, (0.05, 0.5), frameon=False, boxcoords="axes fraction"
+                )
+                ax_header.add_artist(ab)
+            except Exception:
+                pass  # Fail silently on logo
+
+        # Title
+        ax_header.text(
+            0.5,
+            0.5,
+            "Optical System Performance Report",
+            ha="center",
+            va="center",
+            fontsize=24,
+            weight="bold",
+            color="#2c3e50",
+        )
+
+        # 2. Lens Layout (Center)
+        ax_layout = fig.add_axes([0.1, 0.45, 0.8, 0.35])
+
+        # Use OpticViewer directly to plot on specific axes
+        viewer = OpticViewer(self.optic)
+        viewer.view(projection="YZ", ax=ax_layout)
+        ax_layout.set_title("System Layout", fontsize=14, weight="bold")
+
+        # 3. Summary Table (Bottom)
         fo_metrics = FirstOrderMetrics.calculate(self.optic)
 
         summary_data = [
@@ -99,22 +143,30 @@ class StandardPerformanceReport(ReportBuilder):
             ],
         ]
 
-        # Add table
-        ax_table = fig.add_axes([0.1, 0.05, 0.8, 0.3])  # Bottom 30%
+        ax_table = fig.add_axes([0.15, 0.1, 0.7, 0.25])
         ax_table.axis("off")
-        ax_table.set_title("Performance Summary", fontsize=12, weight="bold")
+        ax_table.set_title("Performance Summary", fontsize=12, weight="bold", pad=10)
 
         table = ax_table.table(
             cellText=summary_data,
             colLabels=["Metric", "Value"],
             loc="center",
-            cellLoc="center",
+            cellLoc="left",
         )
         table.auto_set_font_size(False)
         table.set_fontsize(10)
-        table.scale(1, 1.5)
+        table.scale(1, 1.8)
 
-        pdf.add_figure(fig)
+        # Style summary table slightly
+        for (row, _col), cell in table.get_celld().items():
+            cell.set_edgecolor("#d0d0d0")
+            if row == 0:
+                cell.set_text_props(weight="bold", color="white")
+                cell.set_facecolor("#2c3e50")
+            else:
+                cell.set_facecolor("#fcfcfc")
+
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
     def _get_fov_string(self) -> str:
@@ -140,17 +192,17 @@ class StandardPerformanceReport(ReportBuilder):
                     self.optic.surface_group.positions[i + 1]
                     - self.optic.surface_group.positions[i]
                 )
-                # Handle array output if backend returns array
                 th = be.to_numpy(th)
                 if np.size(th) > 1:
                     th = th[0]  # Assume on-axis
             else:
                 th = 0.0
 
+            # Material from metrics
             mat_info = mat_metrics[i]
             mat_str = mat_info["Material"]
             if mat_str == "Air":
-                mat_str = ""
+                pass
 
             semi_dia = "Auto"
             if surf.aperture:
@@ -159,10 +211,8 @@ class StandardPerformanceReport(ReportBuilder):
                 elif hasattr(surf.aperture, "max_radius"):
                     semi_dia = f"{float(surf.aperture.max_radius):.4f}"
                 else:
-                    # Try extent
                     try:
                         extent = surf.aperture.extent
-                        # max of absolute values in extent
                         max_ext = max(abs(x) for x in extent)
                         semi_dia = f"{float(max_ext):.4f}"
                     except Exception:
@@ -188,7 +238,7 @@ class StandardPerformanceReport(ReportBuilder):
             "Semi-Diameter",
         ]
         fig = pdf.render_table(data, cols, title="Lens Data Editor")
-        pdf.add_figure(fig)
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
     def _create_first_order_table(self, pdf: PDFReportRenderer):
@@ -197,43 +247,43 @@ class StandardPerformanceReport(ReportBuilder):
         fig = pdf.render_table(
             data, ["Metric", "Value"], title="First Order Properties"
         )
-        pdf.add_figure(fig)
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
     def _create_image_quality_section(self, pdf: PDFReportRenderer):
         # 1. Spot Diagram
         spot_plot = SpotDiagramPlot(self.optic)
         fig = spot_plot.plot()
-        fig.suptitle("Spot Diagram")
-        pdf.add_figure(fig)
+        fig.suptitle("Spot Diagram", fontsize=16, weight="bold")
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
         # 2. MTF
         mtf_plot = MTFPlot(self.optic)
         fig = mtf_plot.plot()
-        fig.suptitle("Geometric MTF")
-        pdf.add_figure(fig)
+        fig.suptitle("Geometric MTF", fontsize=16, weight="bold")
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
         # 3. Field Curvature & Distortion
         fcd_plot = FieldCurvatureDistortionPlot(self.optic)
         fig = fcd_plot.plot()
-        fig.suptitle("Field Curvature & Distortion")
-        pdf.add_figure(fig)
+        fig.suptitle("Field Curvature & Distortion", fontsize=16, weight="bold")
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
         # 4. Ray Fans
         rf_plot = RayFanPlot(self.optic)
         fig = rf_plot.plot()
-        fig.suptitle("Ray Fan")
-        pdf.add_figure(fig)
+        fig.suptitle("Ray Fan", fontsize=16, weight="bold")
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
         # 5. OPD Fans
         opd_plot = OPDPlot(self.optic)
         fig = opd_plot.plot()
-        fig.suptitle("OPD Fan")
-        pdf.add_figure(fig)
+        fig.suptitle("OPD Fan", fontsize=16, weight="bold")
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)
 
     def _create_aberration_analysis(self, pdf: PDFReportRenderer):
@@ -244,5 +294,5 @@ class StandardPerformanceReport(ReportBuilder):
             ["Aberration", "Coefficient (Seidel)"],
             title="Third-Order Aberrations",
         )
-        pdf.add_figure(fig)
+        pdf.add_figure(fig, add_header_footer=True)
         plt.close(fig)

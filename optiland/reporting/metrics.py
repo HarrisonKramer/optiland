@@ -220,22 +220,47 @@ class MaterialMetrics:
         Returns:
             List of dictionaries describing materials.
         """
-        materials = []
-        for i, surface in enumerate(optic.surface_group.surfaces):
-            # Skip image surface if needed, but it might have material property
-            mat_name = "Air"
-            if hasattr(surface, "material_post"):
-                # Check if it is really a material object
-                if hasattr(surface.material_post, "name"):
-                    mat_name = surface.material_post.name
-                else:
-                    mat_name = str(surface.material_post)
+        import os
 
+        from optiland import materials
+
+        results = []
+        for i, surface in enumerate(optic.surface_group.surfaces):
+            # 1. Determine Material Name
+            mat_name = "Unknown"
+            if surface.interaction_model.is_reflective:
+                mat_name = "Mirror"
+            elif isinstance(surface.material_post, materials.Material):
+                mat_name = surface.material_post.name
+            elif isinstance(surface.material_post, materials.MaterialFile):
+                mat_name = os.path.basename(surface.material_post.filename)
+            elif (
+                hasattr(surface.material_post, "index")
+                and surface.material_post.index == 1
+            ):
+                mat_name = "Air"
+            elif isinstance(surface.material_post, materials.IdealMaterial):
+                mat_name = f"Ideal (n={surface.material_post.index.item():.4f})"
+            elif isinstance(surface.material_post, materials.AbbeMaterial):
+                mat_name = (
+                    f"Abbe (n={surface.material_post.index.item():.4f}, "
+                    f"V={surface.material_post.abbe.item():.2f})"
+                )
+            else:
+                # Fallback
+                if hasattr(surface, "material_post"):
+                    if hasattr(surface.material_post, "name"):
+                        mat_name = surface.material_post.name
+                    else:
+                        mat_name = str(surface.material_post)
+
+            # 2. Determine Properties (Index, Abbe)
             n_val = 1.0
             vd_val = float("nan")
 
             if hasattr(surface, "material_post"):
                 with contextlib.suppress(Exception):
+                    # Use primary wavelength for index reporting
                     n_val = float(
                         be.to_numpy(surface.material_post.n(optic.primary_wavelength))
                     )
@@ -244,7 +269,7 @@ class MaterialMetrics:
                     with contextlib.suppress(Exception):
                         vd_val = float(be.to_numpy(surface.material_post.Vd))
 
-            materials.append(
+            results.append(
                 {
                     "Surface": i,
                     "Material": mat_name,
@@ -252,4 +277,4 @@ class MaterialMetrics:
                     "Abbe Number": vd_val,
                 }
             )
-        return materials
+        return results

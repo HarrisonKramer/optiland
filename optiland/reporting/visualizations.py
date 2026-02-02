@@ -38,11 +38,17 @@ class PlotStyler:
         mpl.rcdefaults()
 
         style_params = {
-            "font.family": "serif",
-            "font.serif": ["Times New Roman", "DejaVu Serif"],
+            "font.family": "sans-serif",
+            "font.sans-serif": [
+                "Arial",
+                "DejaVu Sans",
+                "Liberation Sans",
+                "Bitstream Vera Sans",
+                "sans-serif",
+            ],
             "font.size": 10,
             "axes.labelsize": 10,
-            "axes.titlesize": 11,
+            "axes.titlesize": 12,
             "xtick.labelsize": 9,
             "ytick.labelsize": 9,
             "legend.fontsize": 9,
@@ -50,12 +56,16 @@ class PlotStyler:
             "axes.spines.right": False,
             "axes.grid": True,
             "grid.alpha": 0.3,
-            "grid.linestyle": "--",
+            "grid.linestyle": ":",
+            "grid.color": "#b0b0b0",
             "figure.figsize": (6, 4),
             "figure.dpi": 300,
             "savefig.dpi": 300,
             "lines.linewidth": 1.5,
             "lines.markersize": 4,
+            "axes.prop_cycle": mpl.cycler(
+                color=["#004488", "#DDAA33", "#BB5566", "#000000"]
+            ),
         }
         rcParams.update(style_params)
 
