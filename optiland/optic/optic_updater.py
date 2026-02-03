@@ -174,22 +174,24 @@ class OpticUpdater:
 
         """
         num_surfaces = self.optic.surface_group.num_surfaces
-        radii = self.optic.surface_group.radii
         thicknesses = [
             self.optic.surface_group.get_thickness(surf_idx)[0]
             for surf_idx in range(num_surfaces - 1)
         ]
 
-        # Scale radii & thicknesses
+        # Scale radii, geometries, and thicknesses
         for surf_idx in range(num_surfaces):
-            if not be.isinf(radii[surf_idx]):
-                self.set_radius(radii[surf_idx] * scale_factor, surf_idx)
+            surface = self.optic.surface_group.surfaces[surf_idx]
+            surface.geometry.scale(scale_factor)
 
             if surf_idx != num_surfaces - 1 and not be.isinf(thicknesses[surf_idx]):
                 self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
 
         # Scale aperture, if aperture type is EPD
-        if self.optic.aperture.ap_type in ["EPD", "float_by_stop_size"]:
+        if self.optic.aperture and self.optic.aperture.ap_type in [
+            "EPD",
+            "float_by_stop_size",
+        ]:
             self.optic.aperture.value = self.optic.aperture.value * scale_factor
 
         # Scale physical apertures

@@ -100,6 +100,17 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
     def __str__(self):
         return "Chebyshev Polynomial"
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.norm_x = self.norm_x * scale_factor
+        self.norm_y = self.norm_y * scale_factor
+        self.coefficients = self.coefficients * scale_factor
+
     def sag(self, x=0, y=0):
         """Calculates the sag of the Chebyshev polynomial surface at the given
         coordinates.
