@@ -74,7 +74,6 @@ class ReferenceStrategy(ABC):
         """
         pass
 
-    @abstractmethod
     def _create_reference_geometry(self, rays: RealRays) -> ReferenceGeometry:
         """Creates the reference geometry based on the traced rays.
 
@@ -84,7 +83,7 @@ class ReferenceStrategy(ABC):
         Returns:
             ReferenceGeometry: The computed reference geometry (sphere or plane).
         """
-        pass
+        raise NotImplementedError
 
     def _correct_tilt(
         self,
@@ -135,6 +134,19 @@ class ReferenceStrategy(ABC):
         # remove artificial tilt from launch plane
         tilt = ux * X_m + uy * Y_m
         return opd + tilt
+
+    def _opd_image_to_xp(
+        self,
+        rays: RealRays,
+        xc: float,
+        yc: float,
+        zc: float,
+        R: float,
+        wavelength: float,
+    ) -> BEArrayT:
+        """Calculate OPD from image to exit pupil sphere (Legacy helper)."""
+        ref = SphericalReference((xc, yc, zc), R)
+        return ref.path_length(rays, 1.0)
 
 
 class ChiefRayStrategy(ReferenceStrategy):
@@ -222,6 +234,15 @@ class ChiefRayStrategy(ReferenceStrategy):
         """
         R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
         return SphericalReference((float(x), float(y), float(z)), R.item())
+
+    def _calculate_sphere_from_chief_ray(
+        self, chief_ray: RealRays
+    ) -> tuple[float, float, float, float]:
+        """Legacy wrapper for _create_reference_geometry."""
+        ref = self._create_reference_geometry(chief_ray)
+        if isinstance(ref, SphericalReference):
+            return ref.center[0], ref.center[1], ref.center[2], ref.radius
+        raise ValueError("Reference geometry is not a sphere.")
 
     def _create_planar_ref(
         self,
@@ -429,6 +450,15 @@ class CentroidStrategy(ReferenceStrategy):
             (float(centroid[0]), float(centroid[1]), float(centroid[2])), radius
         )
 
+    def _calculate_reference_sphere(
+        self, rays: RealRays
+    ) -> tuple[float, float, float, float]:
+        """Legacy wrapper for _create_reference_geometry."""
+        ref = self._create_reference_geometry(rays)
+        if isinstance(ref, SphericalReference):
+            return ref.center[0], ref.center[1], ref.center[2], ref.radius
+        raise ValueError("Reference geometry is not a sphere.")
+
     def _create_planar_ref(
         self,
         centroid: be.ndarray,
@@ -560,6 +590,11 @@ STRATEGIES: dict[WavefrontStrategyType, type[ReferenceStrategy]] = {
     "best_fit_sphere": BestFitStrategy,  # Kept for backward compat
     "best_fit": BestFitStrategy,
 }
+
+
+# Backward compatibility aliases
+CentroidReferenceSphereStrategy = CentroidStrategy
+BestFitSphereStrategy = BestFitStrategy
 
 
 def create_strategy(
