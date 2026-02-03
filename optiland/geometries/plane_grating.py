@@ -45,6 +45,14 @@ class PlaneGrating(BaseGeometry):
         """
         pass
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        self.grating_period = self.grating_period * scale_factor
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the plane geometry.
 

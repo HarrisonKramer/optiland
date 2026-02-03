@@ -219,10 +219,24 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
                 k: be.array(v) for k, v in (self.surface_config.terms or {}).items()
             }
         else:
-            self.radial_terms = self.surface_config.terms or {}
+            self.radial_terms = (self.surface_config.terms or {}).copy()
 
         self.norm_radius = be.array(self.surface_config.norm_radius)
         self.is_symmetric = True
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.surface_config.radius = self.radius
+        self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = be.array(self.surface_config.norm_radius)
+
+        for k in self.radial_terms:
+            self.radial_terms[k] = self.radial_terms[k] * scale_factor
 
     def _prepare_coeffs(self):
         """Prepares the internal coefficient lists from the radial_terms dictionary."""
@@ -421,10 +435,27 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
                 k: be.array(v) for k, v in (self.surface_config.terms or {}).items()
             }
         else:
-            self.freeform_coeffs = self.surface_config.terms or {}
+            self.freeform_coeffs = (self.surface_config.terms or {}).copy()
 
         self.norm_radius = be.array(self.surface_config.norm_radius)
         self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
+        self._prepare_coeffs()
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.surface_config.radius = self.radius
+        self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = be.array(self.surface_config.norm_radius)
+
+        for k in self.freeform_coeffs:
+            self.freeform_coeffs[k] = self.freeform_coeffs[k] * scale_factor
+
+        self.c = 1 / self.radius if self.radius != 0 else 0
         self._prepare_coeffs()
 
     def _prepare_coeffs(self):

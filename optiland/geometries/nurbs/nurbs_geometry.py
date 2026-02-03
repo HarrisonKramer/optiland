@@ -275,7 +275,28 @@ class NurbsGeometry(BaseGeometry):
         control points.
         """
         self.radius = -self.radius
-        self.P[2, :, :] = -self.P[2, :, :]
+        if self.P is not None:
+            self.P[2, :, :] = -self.P[2, :, :]
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        self.radius = self.radius * scale_factor
+
+        if self.nurbs_norm_x is not None:
+            self.nurbs_norm_x = self.nurbs_norm_x * scale_factor
+
+        if self.nurbs_norm_y is not None:
+            self.nurbs_norm_y = self.nurbs_norm_y * scale_factor
+
+        self.x_center = self.x_center * scale_factor
+        self.y_center = self.y_center * scale_factor
+
+        if self.P is not None:
+            self.P = self.P * scale_factor
 
     def get_value(self, u, v):
         """Evaluates the coordinates of the surface.
