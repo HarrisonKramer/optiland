@@ -201,15 +201,32 @@ class ChiefRayStrategy(ReferenceStrategy):
             raise ValueError("Chief ray cannot be determined. It must be traced alone.")
 
         if self.reference_type == "sphere":
-            R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
-            return SphericalReference((float(x), float(y), float(z)), R.item())
+            return self._create_spherical_ref(x, y, z)
         elif self.reference_type == "plane":
-            L, M, N = rays.L, rays.M, rays.N
-            return PlanarReference(
-                (float(x), float(y), float(z)), (float(L), float(M), float(N))
-            )
+            return self._create_planar_ref(x, y, z, rays.L, rays.M, rays.N)
         else:
             raise ValueError(f"Unknown reference type: {self.reference_type}")
+
+    def _create_spherical_ref(
+        self, x: BEArrayT, y: BEArrayT, z: BEArrayT
+    ) -> SphericalReference:
+        """Create a spherical reference geometry."""
+        R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
+        return SphericalReference((float(x), float(y), float(z)), R.item())
+
+    def _create_planar_ref(
+        self,
+        x: BEArrayT,
+        y: BEArrayT,
+        z: BEArrayT,
+        L: BEArrayT,
+        M: BEArrayT,
+        N: BEArrayT,
+    ) -> PlanarReference:
+        """Create a planar reference geometry."""
+        return PlanarReference(
+            (float(x), float(y), float(z)), (float(L), float(M), float(N))
+        )
 
 
 class CentroidStrategy(ReferenceStrategy):
@@ -348,32 +365,43 @@ class CentroidStrategy(ReferenceStrategy):
         centroid = be.sum(image_points * weights[:, None], axis=0) / total_weight
 
         if self.reference_type == "sphere":
-            distances_wf = be.linalg.norm(wavefront_points - centroid, axis=1)
-            radius = float(be.sum(weights * distances_wf) / be.sum(weights))
-            return SphericalReference(
-                (float(centroid[0]), float(centroid[1]), float(centroid[2])), radius
-            )
-
+            return self._create_spherical_ref(wavefront_points, centroid, weights)
         elif self.reference_type == "plane":
-            L, M, N = rays.L[valid_mask], rays.M[valid_mask], rays.N[valid_mask]
-            directions = be.stack((L, M, N), axis=1)
-            mean_direction = (
-                be.sum(directions * weights[:, None], axis=0) / total_weight
-            )
-            norm = be.linalg.norm(mean_direction)
-            if norm > 0:
-                mean_direction = mean_direction / norm
-
-            return PlanarReference(
-                (float(centroid[0]), float(centroid[1]), float(centroid[2])),
-                (
-                    float(mean_direction[0]),
-                    float(mean_direction[1]),
-                    float(mean_direction[2]),
-                ),
-            )
+            return self._create_planar_ref(centroid, rays, valid_mask, weights)
         else:
             raise ValueError(f"Unknown reference type: {self.reference_type}")
+
+    def _create_spherical_ref(
+        self, wavefront_points: be.ndarray, centroid: be.ndarray, weights: be.ndarray
+    ) -> SphericalReference:
+        distances_wf = be.linalg.norm(wavefront_points - centroid, axis=1)
+        radius = float(be.sum(weights * distances_wf) / be.sum(weights))
+        return SphericalReference(
+            (float(centroid[0]), float(centroid[1]), float(centroid[2])), radius
+        )
+
+    def _create_planar_ref(
+        self,
+        centroid: be.ndarray,
+        rays: RealRays,
+        valid_mask: be.ndarray,
+        weights: be.ndarray,
+    ) -> PlanarReference:
+        L, M, N = rays.L[valid_mask], rays.M[valid_mask], rays.N[valid_mask]
+        directions = be.stack((L, M, N), axis=1)
+        mean_direction = be.sum(directions * weights[:, None], axis=0) / be.sum(weights)
+        norm = be.linalg.norm(mean_direction)
+        if norm > 0:
+            mean_direction = mean_direction / norm
+
+        return PlanarReference(
+            (float(centroid[0]), float(centroid[1]), float(centroid[2])),
+            (
+                float(mean_direction[0]),
+                float(mean_direction[1]),
+                float(mean_direction[2]),
+            ),
+        )
 
 
 class BestFitStrategy(CentroidStrategy):
@@ -398,38 +426,45 @@ class BestFitStrategy(CentroidStrategy):
         z = wavefront_points[:, 2]
 
         if self.reference_type == "sphere":
-            # Sphere fit
-            A = be.stack([x, y, z, be.ones_like(x)], axis=1)
-            b = x**2 + y**2 + z**2
-            try:
-                c, _, _, _ = be.linalg.lstsq(A, b, rcond=None)
-            except be.linalg.LinAlgError as e:
-                raise RuntimeError(f"Least-squares sphere fit failed: {e}") from e
-
-            xc = c[0] / 2
-            yc = c[1] / 2
-            zc = c[2] / 2
-            radius = be.sqrt(c[3] + xc**2 + yc**2 + zc**2)
-            self.center = (float(xc), float(yc), float(zc))
-            return SphericalReference(self.center, float(radius))
-
+            return self._create_spherical_ref(x, y, z)
         elif self.reference_type == "plane":
-            # Plane fit: Ax + By + Cz + D = 0
-            # Center data
-            centroid = be.mean(wavefront_points, axis=0)
-            centered_points = wavefront_points - centroid
-
-            # SVD
-            u, s, vh = be.linalg.svd(centered_points, full_matrices=False)
-            # Normal is the last row of vh (corresponding to smallest singular value)
-            normal = vh[-1, :]
-
-            return PlanarReference(
-                (float(centroid[0]), float(centroid[1]), float(centroid[2])),
-                (float(normal[0]), float(normal[1]), float(normal[2])),
-            )
+            return self._create_planar_ref(wavefront_points)
         else:
             raise ValueError(f"Unknown reference type: {self.reference_type}")
+
+    def _create_spherical_ref(
+        self, x: be.ndarray, y: be.ndarray, z: be.ndarray
+    ) -> SphericalReference:
+        # Sphere fit
+        A = be.stack([x, y, z, be.ones_like(x)], axis=1)
+        b = x**2 + y**2 + z**2
+        try:
+            c, _, _, _ = be.linalg.lstsq(A, b, rcond=None)
+        except be.linalg.LinAlgError as e:
+            raise RuntimeError(f"Least-squares sphere fit failed: {e}") from e
+
+        xc = c[0] / 2
+        yc = c[1] / 2
+        zc = c[2] / 2
+        radius = be.sqrt(c[3] + xc**2 + yc**2 + zc**2)
+        self.center = (float(xc), float(yc), float(zc))
+        return SphericalReference(self.center, float(radius))
+
+    def _create_planar_ref(self, wavefront_points: be.ndarray) -> PlanarReference:
+        # Plane fit: Ax + By + Cz + D = 0
+        # Center data
+        centroid = be.mean(wavefront_points, axis=0)
+        centered_points = wavefront_points - centroid
+
+        # SVD
+        u, s, vh = be.linalg.svd(centered_points, full_matrices=False)
+        # Normal is the last row of vh (corresponding to smallest singular value)
+        normal = vh[-1, :]
+
+        return PlanarReference(
+            (float(centroid[0]), float(centroid[1]), float(centroid[2])),
+            (float(normal[0]), float(normal[1]), float(normal[2])),
+        )
 
 
 STRATEGIES: dict[WavefrontStrategyType, type[ReferenceStrategy]] = {

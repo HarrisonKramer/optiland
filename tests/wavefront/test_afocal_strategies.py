@@ -17,25 +17,6 @@ def create_object_surface():
 def test_afocal_chief_ray_strategy():
     """Test ChiefRayStrategy in afocal mode with a perfect collimator."""
     optic = Optic()
-    # Object at infinity
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
-    optic.surface_group.surfaces[0].thickness = 1000 # Put object far away or just some distance
-    optic.surface_group.surfaces[0].geometry.cs.z = float('inf')
-    
-    # Simple paraxial lens that collimates light
-    # Focal length f = 100mm. Place stop at lens.
-    optic.surface_group.add_surface(radius=100, thickness=0, material='air', index=1, is_stop=True)
-    # Let's make an afocal telescope: Keplerian
-    # f1 = 100, f2 = 50. Separation = 150.
-    # Obj -> Lens 1 (f=100) -> Lens 2 (f=50) -> Image (inf)
-    
-    # Reset optic for telescope
-    optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
-    optic.surface_group.add_surface(radius=50.0, thickness=5.0, material='N-BK7', index=1)
-    optic.surface_group.add_surface(radius=-1e9, thickness=150.0, material='air', index=2)
-
-    optic = Optic()
     optic.surface_group.add_surface(new_surface=create_object_surface(), index=0) # Obj
     optic.set_thickness(1e12, 0)
     
