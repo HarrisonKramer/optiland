@@ -79,10 +79,10 @@ class ReferenceStrategy(ABC):
         """Creates the reference geometry based on the traced rays.
 
         Args:
-            rays: The traced rays at the image surface.
+            rays (RealRays): The traced rays at the image surface.
 
         Returns:
-            ReferenceGeometry: The computed reference geometry.
+            ReferenceGeometry: The computed reference geometry (sphere or plane).
         """
         pass
 
@@ -210,7 +210,16 @@ class ChiefRayStrategy(ReferenceStrategy):
     def _create_spherical_ref(
         self, x: BEArrayT, y: BEArrayT, z: BEArrayT
     ) -> SphericalReference:
-        """Create a spherical reference geometry."""
+        """Create a spherical reference geometry.
+
+        Args:
+            x (BEArrayT): The x-coordinate of the reference point.
+            y (BEArrayT): The y-coordinate of the reference point.
+            z (BEArrayT): The z-coordinate of the reference point.
+
+        Returns:
+            SphericalReference: The spherical reference geometry.
+        """
         R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
         return SphericalReference((float(x), float(y), float(z)), R.item())
 
@@ -223,7 +232,19 @@ class ChiefRayStrategy(ReferenceStrategy):
         M: BEArrayT,
         N: BEArrayT,
     ) -> PlanarReference:
-        """Create a planar reference geometry."""
+        """Create a planar reference geometry.
+
+        Args:
+            x (BEArrayT): The x-coordinate of the reference point.
+            y (BEArrayT): The y-coordinate of the reference point.
+            z (BEArrayT): The z-coordinate of the reference point.
+            L (BEArrayT): The x-direction cosine of the plane normal.
+            M (BEArrayT): The y-direction cosine of the plane normal.
+            N (BEArrayT): The z-direction cosine of the plane normal.
+
+        Returns:
+            PlanarReference: The planar reference geometry.
+        """
         return PlanarReference(
             (float(x), float(y), float(z)), (float(L), float(M), float(N))
         )
@@ -330,6 +351,16 @@ class CentroidStrategy(ReferenceStrategy):
     def _calculate_weights(
         self, rays: RealRays, image_points: be.ndarray, valid_mask: be.ndarray
     ) -> be.ndarray:
+        """Calculates weights for centroid or fitting based on ray intensity.
+
+        Args:
+            rays (RealRays): The traced rays.
+            image_points (be.ndarray): The points on the image surface.
+            valid_mask (be.ndarray): Mask of valid rays.
+
+        Returns:
+            be.ndarray: The array of weights.
+        """
         # Initialize weights
         intensity = rays.i
         weights = intensity[valid_mask]
@@ -356,6 +387,14 @@ class CentroidStrategy(ReferenceStrategy):
         return weights
 
     def _create_reference_geometry(self, rays: RealRays) -> ReferenceGeometry:
+        """Determine reference geometry using centroid method.
+
+        Args:
+            rays (RealRays): The traced rays at the image surface.
+
+        Returns:
+            ReferenceGeometry: The determined reference geometry.
+        """
         wavefront_points, valid_mask = self._points_from_rays(rays)
         image_points = be.stack((rays.x, rays.y, rays.z), axis=1)[valid_mask]
 
@@ -374,6 +413,16 @@ class CentroidStrategy(ReferenceStrategy):
     def _create_spherical_ref(
         self, wavefront_points: be.ndarray, centroid: be.ndarray, weights: be.ndarray
     ) -> SphericalReference:
+        """Create a spherical reference geometry using centroid and weights.
+
+        Args:
+            wavefront_points (be.ndarray): The points on the wavefront.
+            centroid (be.ndarray): The centroid of image points.
+            weights (be.ndarray): The weights for each point.
+
+        Returns:
+            SphericalReference: The spherical reference geometry.
+        """
         distances_wf = be.linalg.norm(wavefront_points - centroid, axis=1)
         radius = float(be.sum(weights * distances_wf) / be.sum(weights))
         return SphericalReference(
@@ -387,6 +436,17 @@ class CentroidStrategy(ReferenceStrategy):
         valid_mask: be.ndarray,
         weights: be.ndarray,
     ) -> PlanarReference:
+        """Create a planar reference geometry using mean direction.
+
+        Args:
+            centroid (be.ndarray): The centroid of image points.
+            rays (RealRays): The traced rays.
+            valid_mask (be.ndarray): Mask of valid rays.
+            weights (be.ndarray): The weights for each point.
+
+        Returns:
+            PlanarReference: The planar reference geometry.
+        """
         L, M, N = rays.L[valid_mask], rays.M[valid_mask], rays.N[valid_mask]
         directions = be.stack((L, M, N), axis=1)
         mean_direction = be.sum(directions * weights[:, None], axis=0) / be.sum(weights)
@@ -416,6 +476,14 @@ class BestFitStrategy(CentroidStrategy):
         self.center = None
 
     def _create_reference_geometry(self, rays: RealRays) -> ReferenceGeometry:
+        """Determine reference geometry using best-fit method.
+
+        Args:
+            rays (RealRays): The traced rays at the image surface.
+
+        Returns:
+            ReferenceGeometry: The determined reference geometry.
+        """
         wavefront_points, _ = self._points_from_rays(rays)
 
         if wavefront_points.shape[0] < 4:
@@ -435,6 +503,16 @@ class BestFitStrategy(CentroidStrategy):
     def _create_spherical_ref(
         self, x: be.ndarray, y: be.ndarray, z: be.ndarray
     ) -> SphericalReference:
+        """Create a spherical reference geometry using least-squares fit.
+
+        Args:
+            x (be.ndarray): The x-coordinates of wavefront points.
+            y (be.ndarray): The y-coordinates of wavefront points.
+            z (be.ndarray): The z-coordinates of wavefront points.
+
+        Returns:
+            SphericalReference: The best-fit spherical reference geometry.
+        """
         # Sphere fit
         A = be.stack([x, y, z, be.ones_like(x)], axis=1)
         b = x**2 + y**2 + z**2
@@ -451,6 +529,14 @@ class BestFitStrategy(CentroidStrategy):
         return SphericalReference(self.center, float(radius))
 
     def _create_planar_ref(self, wavefront_points: be.ndarray) -> PlanarReference:
+        """Create a planar reference geometry using least-squares fit.
+
+        Args:
+            wavefront_points (be.ndarray): The points on the wavefront.
+
+        Returns:
+            PlanarReference: The best-fit planar reference geometry.
+        """
         # Plane fit: Ax + By + Cz + D = 0
         # Center data
         centroid = be.mean(wavefront_points, axis=0)
