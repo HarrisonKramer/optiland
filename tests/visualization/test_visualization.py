@@ -496,6 +496,13 @@ class TestLensInfoViewer:
         viewer = LensInfoViewer(lens)
         viewer.view()
 
+    def test_view_abbe_material_e(self, set_test_backend):
+        lens = ReverseTelephoto()
+        from optiland.materials import AbbeMaterialE
+        lens.surface_group.surfaces[2].material_post = AbbeMaterialE(1.5, 60)
+        viewer = LensInfoViewer(lens)
+        viewer.view()
+
 
 class TestSurfaceSagViewer:
     """Tests for the new SurfaceSagViewer."""
