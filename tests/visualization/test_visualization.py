@@ -44,6 +44,9 @@ class InvalidGeometry(BaseGeometry):
     def flip(self):
         pass
 
+    def scale(self, scale_factor):
+        pass
+
 
 class InvalidMaterial(BaseMaterial):
     def __init__(self):
