@@ -46,6 +46,7 @@ from optiland.wavelength import WavelengthGroup
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
     from optiland._types import (
         ApertureType,
         BEArray,
