@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from .abbe import AbbeMaterial, AbbeMaterialE
 from .base import BaseMaterial
+from .gradient_material import GradientMaterial
 from .ideal import IdealMaterial
 from .material import Material
 from .material_file import MaterialFile
@@ -25,6 +26,8 @@ __all__ = [
     "AbbeMaterialE",
     # From base.py
     "BaseMaterial",
+    # From gradient_material.py
+    "GradientMaterial",
     # From ideal.py
     "IdealMaterial",
     # From material.py
