@@ -15,6 +15,7 @@ These modules handle optical path difference (OPD) calculations and wavefront an
 
    optiland.wavefront.opd_fan
    optiland.wavefront.opd
+   optiland.wavefront.reference_geometry
    optiland.wavefront.strategy
    optiland.wavefront.wavefront_data
    optiland.wavefront.wavefront
