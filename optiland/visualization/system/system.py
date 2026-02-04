@@ -148,7 +148,14 @@ class OpticalSystem:
         aperture_color = "grey"  # arrow color for other apertures
 
         artists = {}
+        n = self.optic.n()
         for idx, surface in enumerate(self.optic.surface_group.surfaces):
+            if idx > 0:
+                is_lens_surface = n[idx] > 1 or (n[idx] == 1 and n[idx - 1] > 1)
+            else:
+                is_lens_surface = n[idx] > 1
+            if is_lens_surface and not surface.is_stop:
+                continue
             # Skip surfaces without apertures (unless stop)
             if surface.aperture is None and not surface.is_stop:
                 continue
@@ -188,7 +195,7 @@ class OpticalSystem:
                 z_global,
                 axis_vals,
                 color="black",
-                linewidth=1.0,
+                linewidth=0.3,
             )
             artists[line] = surface
 
