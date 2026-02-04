@@ -189,6 +189,9 @@ class OpticalSystem:
             x_global, y_global, z_global = transform(
                 x_local, y_local, z_local, surface, is_global=False
             )
+            x_global = be.to_numpy(x_global)
+            y_global = be.to_numpy(y_global)
+            z_global = be.to_numpy(z_global)
 
             # Draw line for aperture edge
             axis_vals = x_global if projection == "XZ" else y_global
