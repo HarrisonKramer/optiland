@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.utils import resolve_wavelength
@@ -18,6 +19,7 @@ from optiland.utils import resolve_wavelength
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+
     from optiland._types import BEArray, DistributionType, ScalarOrArray
     from optiland.optic import Optic
 
