@@ -52,6 +52,7 @@ class OpticViewer(BaseViewer):
         wavelengths="primary",
         num_rays=3,
         distribution=None,
+        show_apertures=True,
         figsize=None,
         xlim=None,
         ylim=None,
@@ -73,6 +74,8 @@ class OpticViewer(BaseViewer):
                 Defaults to 3.
             distribution (str | None, optional): The distribution of rays.
                 Defaults to None, which selects a default based on projection.
+            show_apertures (bool, optional): If True, overlays aperture graphics
+                on the system view. Defaults to True.
             figsize (tuple, optional): The size of the figure.
                 Defaults to None, which uses the theme's default.
             xlim (tuple, optional): The x-axis limits. Defaults to None.
@@ -124,7 +127,9 @@ class OpticViewer(BaseViewer):
         for artist, ray_bundle in ray_artists.items():
             interaction_manager.register_artist(artist, ray_bundle)
 
-        system_artists = self.system.plot(ax, theme=theme, projection=projection)
+        system_artists = self.system.plot(
+            ax, theme=theme, projection=projection, show_apertures=show_apertures
+        )
         for artist, surface in system_artists.items():
             interaction_manager.register_artist(artist, surface)
 

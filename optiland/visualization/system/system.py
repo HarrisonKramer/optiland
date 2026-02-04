@@ -56,7 +56,7 @@ class OpticalSystem:
             "surface": {"2d": Surface2D, "3d": Surface3D},
         }
 
-    def plot(self, ax, theme=None, projection="YZ"):
+    def plot(self, ax, theme=None, projection="YZ", show_apertures=True):
         """Plots the components of the optical system on the given
         axis (or renderer for 3D plotting).
         """
@@ -66,8 +66,9 @@ class OpticalSystem:
             component_artists = component.plot(ax, theme=theme, projection=projection)
             if component_artists:
                 artists.update(component_artists)
-        aperture_artists = self._plot_apertures(ax, projection=projection)
-        artists.update(aperture_artists)
+        if show_apertures and self.projection == "2d":
+            aperture_artists = self._plot_apertures(ax, projection=projection)
+            artists.update(aperture_artists)
         return artists
 
     def _identify_components(self):
