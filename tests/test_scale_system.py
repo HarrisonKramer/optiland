@@ -15,7 +15,7 @@ from optiland.geometries import (
     Plane,
     PlaneGrating,
     StandardGratingGeometry,
-    ForbesQbfsGeometry,
+    ForbesQNormalSlopeGeometry,
     ForbesQ2dGeometry,
     NurbsGeometry
 )
@@ -172,25 +172,29 @@ def test_scale_forbes_qbfs():
     # ForbesQbfs
     # terms: {m: val}
     terms = {0: 1e-3, 1: 1e-4}
+    # Save original values before scaling (terms dict may be mutated)
+    original_terms = {k: v for k, v in terms.items()}
     lens.add_surface(index=0, radius=10, surface_type="forbes_qbfs", 
                      norm_radius=1.0, radial_terms=terms)
     lens.scale_system(2.0)
     
     surface = lens.surface_group.surfaces[0]
-    assert isinstance(surface.geometry, ForbesQbfsGeometry)
+    assert isinstance(surface.geometry, ForbesQNormalSlopeGeometry)
     assert surface.geometry.radius == 20
     assert surface.geometry.norm_radius == 2.0
     
     # Coefficients scale by s (linear with sag)
     s = 2.0
-    assert np.allclose(surface.geometry.radial_terms[0], terms[0] * s)
-    assert np.allclose(surface.geometry.radial_terms[1], terms[1] * s)
+    assert np.allclose(surface.geometry.radial_terms[0], original_terms[0] * s)
+    assert np.allclose(surface.geometry.radial_terms[1], original_terms[1] * s)
 
 def test_scale_forbes_q2d():
     lens = optic.Optic()
     # ForbesQ2d
     # terms: {('a', m, n): val}
     terms = {('a', 0, 0): 1e-3}
+    # Save original values before scaling (terms dict may be mutated)
+    original_terms = {k: v for k, v in terms.items()}
     lens.add_surface(index=0, radius=10, surface_type="forbes_q2d", 
                      norm_radius=1.0, freeform_coeffs=terms)
     lens.scale_system(2.0)
@@ -201,7 +205,7 @@ def test_scale_forbes_q2d():
     assert surface.geometry.norm_radius == 2.0
     
     s = 2.0
-    assert np.allclose(surface.geometry.freeform_coeffs[('a', 0, 0)], terms[('a', 0, 0)] * s)
+    assert np.allclose(surface.geometry.freeform_coeffs[('a', 0, 0)], original_terms[('a', 0, 0)] * s)
 
 def test_scale_nurbs():
     lens = optic.Optic()

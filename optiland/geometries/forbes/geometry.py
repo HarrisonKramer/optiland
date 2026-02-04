@@ -3,30 +3,29 @@
 This module provides implementations for optical surfaces described by
 Forbes polynomials, which are superimposed on a base conic section.
 Forbes polynomials offer a modern alternative to standard power-series
-aspheres, providing better control over the surface shape and its derivatives.
-Their orthogonality helps to decouple the effects of different coefficients,
-which is advantageous for optimization, tolerancing, and assessing
-manufacturability.
+aspheres.
 
 The implementation is based on the work of G. W. Forbes. See, for example,
 G. W. Forbes, "Manufacturability estimates for optical aspheres," Opt. Express (2011).
 
 This module implements two types of Forbes surfaces:
-    1.  **ForbesQbfsGeometry (Q-type, Best Fit Sphere)**:
-        This class represents rotationally symmetric aspheric surfaces. The "Qbfs"
-        polynomials are orthogonal over a circular aperture and describe the
-        departure from a base conic.
+    1.  **ForbesQNormalSlopeGeometry** (slope-orthogonal Q polynomials):
+        This class represents rotationally symmetric aspheric surfaces using
+        Forbes Q polynomials (historically called Q^bfs in Forbes 2007). These
+        polynomials are orthogonal with respect to the normal-departure
+        slope metric, and the implementation supports a general conic
+        reference surface (Forbes 2011 generalization). The deprecated alias
+        ``ForbesQbfsGeometry`` is retained for backward compatibility.
     2.  **ForbesQ2dGeometry (Q-type, 2D)**:
         This class represents non-rotationally symmetric, or "freeform," surfaces.
         The Q2D polynomials extend the Q-type formalism to two dimensions, allowing
         for the description of complex, freeform optical surfaces that lack
         rotational symmetry.
-
-Manuel Fragata Mendes, 2025
 """
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -180,11 +179,17 @@ class ForbesGeometryBase(NewtonRaphsonGeometry):
         return factor, derivative
 
 
-class ForbesQbfsGeometry(ForbesGeometryBase):
-    r"""Represents a Forbes Q-bfs surface (rotationally symmetric Q-type).
+class ForbesQNormalSlopeGeometry(ForbesGeometryBase):
+    r"""Represents a Forbes Q surface using slope-orthogonal polynomials.
 
-    The Q-bfs surface is defined by the sag equation:
-    $z(\rho) = z_{base}(\rho) + \frac{1}{\sigma(\rho)}
+    This surface uses the Forbes Q polynomials that are orthogonal with respect
+    to the normal-departure slope metric. These were historically called
+    Q^bfs ("best-fit sphere") in Forbes 2007, but the implementation here
+    supports a general conic reference surface following the Forbes 2011
+    generalization.
+
+    The surface sag is defined as:
+    $z(\rho) = z_{base}(\rho) + \phi(\rho)
     \left[ u^2(1-u^2) \sum_{m=0}^{M} a_m Q_m(u^2) \right]$
 
     where:
@@ -192,10 +197,16 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
           is the base conic.
         - $c = 1/R$ is the curvature, $k$ is the conic constant.
         - $u = \rho/\rho_{max}$ is the normalized radial coordinate.
-        - $Q_m(u^2)$ are the Forbes orthogonal polynomials.
+        - $Q_m(u^2)$ are the Forbes slope-orthogonal polynomials.
         - $a_m$ are the polynomial coefficients.
-        - $\sigma(\rho) = \sqrt{\frac{1 - kc^2\rho^2}{1 - (1+k)c^2\rho^2}}$ is a
-          conic scaling factor.
+        - $\phi(\rho) = \sqrt{\frac{1 - kc^2\rho^2}{1 - (1+k)c^2\rho^2}}$ is the
+          conic correction factor that projects the normal departure onto the
+          sag axis.
+
+    Note:
+        The internal polynomial basis functions (named ``*_qbfs`` in the code)
+        retain the historical "qbfs" identifier for stability. This does not
+        imply a spherical reference; the conic constant $k$ can be nonzero.
 
     Args:
         coordinate_system (CoordinateSystem): The local coordinate system of the
@@ -242,14 +253,14 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
             self.coeffs_n, self.coeffs_c = [], be.array([])
 
     def sag(self, x=0, y=0):
-        """Calculate the sag of the Forbes Q-bfs surface.
+        """Calculate the sag of the Forbes Q (slope-orthogonal) surface.
 
         Args:
             x (int, optional): x-coordinate. Defaults to 0.
             y (int, optional): y-coordinate. Defaults to 0.
 
         Returns:
-            The sag of the Forbes Q-bfs surface.
+            The sag of the Forbes Q (slope-orthogonal) surface.
         """
         self._prepare_coeffs()
         x, y = be.array(x), be.array(y)
@@ -352,7 +363,7 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
     def _surface_normal_analytical_vertex(self):
         """Computes the stable analytical derivative exactly at the vertex.
 
-        For rotationally symmetric surfaces (Qbfs), the gradient at the vertex
+        For rotationally symmetric surfaces, the gradient at the vertex
         (x=0, y=0) should be (0, 0) due to symmetry.
 
         Returns:
@@ -379,19 +390,42 @@ class ForbesQbfsGeometry(ForbesGeometryBase):
     def from_dict(cls, data):
         """Creates an instance from a dictionary.
 
+        Accepts both "ForbesQNormalSlopeGeometry" and legacy "ForbesQbfsGeometry"
+        type identifiers for backward compatibility.
+
         Args:
             data (dict): A dictionary representation of the geometry.
 
         Returns:
-            ForbesQbfsGeometry: An instance of the class.
+            ForbesQNormalSlopeGeometry: An instance of the class.
         """
         cs = CoordinateSystem.from_dict(data["cs"])
         surface_config = ForbesSurfaceConfig(**data["surface_config"])
         solver_config = ForbesSolverConfig(**data.get("solver_config", {}))
-        return cls(cs, surface_config, solver_config)
+        # Always return the canonical class, regardless of whether the
+        # serialized type was "ForbesQbfsGeometry" or "ForbesQNormalSlopeGeometry"
+        return ForbesQNormalSlopeGeometry(cs, surface_config, solver_config)
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Scales the radius, normalization radius, and radial coefficients.
+        The polynomial coefficients scale linearly with the sag when the
+        normalization radius is also scaled.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.surface_config.radius = self.radius
+        self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = be.array(self.surface_config.norm_radius)
+
+        for key in self.radial_terms:
+            self.radial_terms[key] = self.radial_terms[key] * scale_factor
 
     def __str__(self):
-        return "ForbesQbfs"
+        return "ForbesQNormalSlope"
 
 
 class ForbesQ2dGeometry(ForbesGeometryBase):
@@ -645,5 +679,55 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         solver_config = ForbesSolverConfig(**data.get("solver_config", {}))
         return cls(cs, surface_config, solver_config)
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Scales the radius, normalization radius, and freeform coefficients.
+        The polynomial coefficients scale linearly with the sag when the
+        normalization radius is also scaled.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.surface_config.radius = self.radius
+        self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = be.array(self.surface_config.norm_radius)
+
+        for key in self.freeform_coeffs:
+            self.freeform_coeffs[key] = self.freeform_coeffs[key] * scale_factor
+
+        self.c = 1 / self.radius if self.radius != 0 else 0
+        self._prepare_coeffs()
+
     def __str__(self):
         return "ForbesQ2d"
+
+
+class ForbesQbfsGeometry(ForbesQNormalSlopeGeometry):
+    """Deprecated alias for ForbesQNormalSlopeGeometry.
+
+    .. deprecated::
+        Use :class:`ForbesQNormalSlopeGeometry` instead. The name \"Qbfs\" was
+        historically used in the Forbes literature for the slope-orthogonal
+        Q basis, but it misleadingly suggests a best-fit sphere reference.
+        The implementation supports a general conic reference.
+    """
+
+    def __init__(
+        self,
+        coordinate_system: CoordinateSystem,
+        surface_config: ForbesSurfaceConfig,
+        solver_config: ForbesSolverConfig = None,
+    ):
+        warnings.warn(
+            "ForbesQbfsGeometry is deprecated; use ForbesQNormalSlopeGeometry "
+            "(slope-orthogonal Q basis with a general conic reference).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(coordinate_system, surface_config, solver_config)
+
+    def __str__(self):
+        # Keep legacy string for backward compatibility in displays
+        return "ForbesQbfs"

@@ -40,7 +40,17 @@ def gamma_func(n: int, m: int) -> float:
     return (num / den) * gamma_func(nm1, m)
 
 
-# bfs polynomials logic
+# -----------------------------------------------------------------------------
+# Forbes slope-orthogonal (Q^bfs) polynomial basis functions
+# -----------------------------------------------------------------------------
+# NOTE: The "qbfs" suffix in function names below is a historical identifier
+# from Forbes' 2007 paper, where these polynomials were called Q^bfs for
+# "best-fit sphere." However, the modern formulation (Forbes 2011) uses these
+# same polynomial basis functions with a general conic reference surface
+# (conic constant k may be nonzero). The "qbfs" naming is retained here for
+# code stability and to match the original literature, but users should NOT
+# infer that a spherical reference is required or used.
+# -----------------------------------------------------------------------------
 
 
 @cache
