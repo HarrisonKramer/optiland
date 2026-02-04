@@ -44,6 +44,9 @@ class InvalidGeometry(BaseGeometry):
     def flip(self):
         pass
 
+    def scale(self, scale_factor):
+        pass
+
 
 class InvalidMaterial(BaseMaterial):
     def __init__(self):
@@ -492,7 +495,14 @@ class TestLensInfoViewer:
 
     def test_view_abbe_material(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60)
+        lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60, model="polynomial")
+        viewer = LensInfoViewer(lens)
+        viewer.view()
+
+    def test_view_abbe_material_e(self, set_test_backend):
+        lens = ReverseTelephoto()
+        from optiland.materials import AbbeMaterialE
+        lens.surface_group.surfaces[2].material_post = AbbeMaterialE(1.5, 60)
         viewer = LensInfoViewer(lens)
         viewer.view()
 

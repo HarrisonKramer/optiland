@@ -251,6 +251,20 @@ class Optic:
             **kwargs,
         )
 
+    def remove_surface(
+        self,
+        index: int,
+    ):
+        """Removes a surface from the optic.
+
+        Args:
+            index (int, optional): The index of the surface to remove.
+
+        """
+        self.surface_group.remove_surface(
+            index=index,
+        )
+
     def add_field(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the optical system.
 
@@ -494,6 +508,7 @@ class Optic:
         title: str | None = None,
         reference: ReferenceRay | None = None,
         projection: Literal["XY", "XZ", "YZ"] = "YZ",
+        ax: Axes | None = None,
     ) -> tuple[Figure, Axes]:
         """Draw a 2D representation of the optical system.
 
@@ -519,6 +534,8 @@ class Optic:
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
             projection (Literal["XY", "XZ", "YZ"], optional): The projection
                 plane. Defaults to "YZ".
+            ax (matplotlib.axes.Axes, optional): The axes to plot on.
+                If None, a new figure and axes are created. Defaults to None.
 
         Returns:
             tuple[Figure, Axes]: A tuple containing the matplotlib Figure and
@@ -537,6 +554,7 @@ class Optic:
             title=title,
             reference=reference,
             projection=projection,
+            ax=ax,
         )
         return fig, ax
 
@@ -658,7 +676,14 @@ class Optic:
         return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
 
     def plot_surface_sag(
-        self, surface_index: int, y_cross_section: float = 0, x_cross_section: float = 0
+        self,
+        surface_index: int,
+        y_cross_section: float = 0,
+        x_cross_section: float = 0,
+        fig_to_plot_on: Figure | None = None,
+        max_extent: float | None = None,
+        num_points_grid: int = 50,
+        buffer_factor: float = 1.1,
     ):
         """Analyzes and visualizes the sag of a given lens surface.
 
@@ -670,7 +695,15 @@ class Optic:
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
-        viewer.view(surface_index, y_cross_section, x_cross_section)
+        viewer.view(
+            surface_index=surface_index,
+            y_cross_section=y_cross_section,
+            x_cross_section=x_cross_section,
+            fig_to_plot_on=fig_to_plot_on,
+            max_extent=max_extent,
+            num_points_grid=num_points_grid,
+            buffer_factor=buffer_factor,
+        )
 
     def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.

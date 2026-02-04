@@ -522,7 +522,14 @@ class TestOptic:
         lens.flip()
         assert lens.pickups.pickups[0].source_surface_idx == 2
         assert lens.pickups.pickups[0].target_surface_idx == 1
-
+    
+    def test_remove_surface(self, set_test_backend):
+        lens = singlet_infinite_object()
+        
+        num_surfaces_before = len(lens.surface_group.surfaces)
+        lens.remove_surface(index=2)
+        assert len(lens.surface_group.surfaces) == num_surfaces_before - 1
+    
     @patch("optiland.optic.optic.SurfaceSagViewer")
     def test_plot_surface_sag(self, mock_viewer, set_test_backend):
         lens = singlet_infinite_object()
@@ -532,7 +539,15 @@ class TestOptic:
         )
         mock_viewer.assert_called_once_with(lens)
         viewer_instance = mock_viewer.return_value
-        viewer_instance.view.assert_called_once_with(1, 2.0, -2.0)
+        viewer_instance.view.assert_called_once_with(
+            surface_index=1,
+            y_cross_section=2.0,
+            x_cross_section=-2.0,
+            fig_to_plot_on=None,
+            max_extent=None,
+            num_points_grid=50,
+            buffer_factor=1.1,
+        )
 
 
 def test_flip_updates_thickness_attribute(set_test_backend):

@@ -54,7 +54,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         n2 = self.parent_surface.material_post.n(rays.w)
         if self.is_reflective:
             n2 = n1
-        k0 = 2 * be.pi / rays.w
+        k0 = 2 * be.pi / (rays.w * 1e-3)  # convert to mm
 
         # 1. Get local surface normal (N)
         nx, ny, nz = self.parent_surface.geometry.surface_normal(rays)
@@ -150,7 +150,7 @@ class PhaseInteractionModel(BaseInteractionModel):
         # Get incident state
         n1 = self.parent_surface.material_pre.n(rays.w)
         n2 = self.parent_surface.material_post.n(rays.w)
-        k0 = 2 * be.pi / rays.w
+        k0 = 2 * be.pi / (rays.w * 1e-3)  # convert to mm
         y = rays.y
 
         # Get paraxial gradient from the strategy
