@@ -11,7 +11,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
-
 import optiland.backend as be
 from optiland.analysis import SpotDiagram
 from optiland.utils import resolve_wavelength
@@ -19,7 +18,6 @@ from optiland.utils import resolve_wavelength
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-
     from optiland._types import BEArray, DistributionType, ScalarOrArray
     from optiland.optic import Optic
 
@@ -81,9 +79,10 @@ class GeometricMTF(SpotDiagram):
         self.scale = scale
 
         resolved_wavelength = resolve_wavelength(optic, wavelength)
+        # wavelength must be converted to mm for frequency units cycles/mm
+        self.cutoff_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
         if max_freq == "cutoff":
-            # wavelength must be converted to mm for frequency units cycles/mm
-            self.max_freq = 1 / (resolved_wavelength * 1e-3 * optic.paraxial.FNO())
+            self.max_freq = self.cutoff_freq
         else:
             # If a specific max_freq is provided, use it directly
             self.max_freq = max_freq
@@ -157,7 +156,8 @@ class GeometricMTF(SpotDiagram):
 
         """
         if self.scale:
-            phi = be.arccos(self.freq / self.max_freq)
+            ratio = be.clip(self.freq / self.cutoff_freq, 0.0, 1.0)
+            phi = be.arccos(ratio)
             scale_factor = 2 / be.pi * (phi - be.cos(phi) * be.sin(phi))
         else:
             scale_factor = 1
