@@ -502,6 +502,7 @@ class Optic:
         wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
         distribution: DistributionType | None = None,
+        show_apertures: bool = True,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
@@ -522,6 +523,8 @@ class Optic:
                 field and wavelength. Defaults to 3.
             distribution (str | None, optional): The distribution of rays.
                 Defaults to None, which selects a default based on projection.
+            show_apertures (bool, optional): If True, overlays aperture graphics
+                on the system view. Defaults to True.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -548,6 +551,7 @@ class Optic:
             wavelengths,
             num_rays,
             distribution=distribution,
+            show_apertures=show_apertures,
             figsize=figsize,
             xlim=xlim,
             ylim=ylim,
