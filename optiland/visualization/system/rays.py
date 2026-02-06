@@ -8,8 +8,9 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import numpy as np
-import optiland.backend as be
 import vtk
+
+import optiland.backend as be
 from optiland.utils import resolve_fields, resolve_wavelengths
 from optiland.visualization.system.ray_bundle import RayBundle
 from optiland.visualization.system.utils import transform
