@@ -503,6 +503,7 @@ class Optic:
         num_rays: int = 3,
         distribution: DistributionType | None = None,
         show_apertures: bool = True,
+        hide_vignetted: bool = False,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
@@ -525,6 +526,8 @@ class Optic:
                 Defaults to None, which selects a default based on projection.
             show_apertures (bool, optional): If True, overlays aperture graphics
                 on the system view. Defaults to True.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -552,6 +555,7 @@ class Optic:
             num_rays,
             distribution=distribution,
             show_apertures=show_apertures,
+            hide_vignetted=hide_vignetted,
             figsize=figsize,
             xlim=xlim,
             ylim=ylim,
