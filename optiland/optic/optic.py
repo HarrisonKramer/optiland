@@ -46,7 +46,6 @@ from optiland.wavelength import WavelengthGroup
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-
     from optiland._types import (
         ApertureType,
         BEArray,
@@ -575,6 +574,7 @@ class Optic:
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
+        hide_vignetted: bool = False,
     ):
         """Draw a 3D representation of the optical system.
 
@@ -594,6 +594,8 @@ class Optic:
                 plot. Defaults to False.
             reference (ReferenceRay | None, optional): The reference rays to
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         viewer = OpticViewer3D(self)
@@ -605,6 +607,7 @@ class Optic:
             figsize=figsize,
             dark_mode=dark_mode,
             reference=reference,
+            hide_vignetted=hide_vignetted,
         )
 
     def info(self):
