@@ -54,6 +54,25 @@ class Paraxial:
         self.optic = optic
         self._ray_tracer = ParaxialRayTracer(self.optic)
 
+    @staticmethod
+    def _has_internal_focus_point(y) -> bool:
+        y_signs = (be.sign(y) - be.sign(y[0])).reshape(1, -1)
+
+        return be.count_nonzero(y_signs) > 0
+
+    def _focal_length(self, y, u) -> ScalarOrArray:
+        """Determine the focal length and sign, reasoned from left to right (f2)"""
+        focus = be.abs(y[0] / u[-1])[0]
+
+        if (
+            y[-1] == 0.0  # Real internal focus
+            or be.sign(y[-1] * u[-1]) < 0  # Real external focus
+            or self._has_internal_focus_point(y)  # Real internal focus
+        ):
+            return focus
+        else:
+            return -focus
+
     @property
     def surfaces(self) -> SurfaceGroup:
         """SurfaceGroup: the surface group of the optical system."""
@@ -69,8 +88,7 @@ class Paraxial:
         z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
-        f1 = y[0] / u[-1]
-        return f1[0]
+        return -self._focal_length(y, u)  # Sign flip: tracing right to left
 
     def f2(self) -> ScalarOrArray:
         """Calculate the back focal length (f2), also known as effective focal length.
@@ -83,8 +101,7 @@ class Paraxial:
         z_start = self.surfaces.positions[1] - 1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
-        f2 = -y[0] / u[-1]
-        return be.abs(f2[0])
+        return self._focal_length(y, u)
 
     def F1(self) -> ScalarOrArray:
         """Calculate the front focal point (F1) location.
