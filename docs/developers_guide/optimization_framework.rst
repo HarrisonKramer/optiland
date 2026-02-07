@@ -49,6 +49,7 @@ Components Explained
      - **Basin Hopping** (global)
      - **SHGO** (global)
      - **Least Squares** (local)
+     - **Orthogonal Descent** (local)
      - **Nelder-Mead**, **Powell**, **BFGS**, **L-BFGS-B**, **COBYLA**, etc. (local optimization, from `scipy.optimize.minimize`)
    - Users can subclass the base optimizer for custom methods.
 

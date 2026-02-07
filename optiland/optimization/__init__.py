@@ -21,6 +21,7 @@ from .optimizer.scipy import (
     SHGO,
     BasinHopping,
     GlassExpert,
+    OrthogonalDescent,
 )
 
 try:

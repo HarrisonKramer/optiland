@@ -26,6 +26,7 @@ Core Functionalities
    optimization.optimizer.scipy.differential_evolution
    optimization.optimizer.scipy.dual_annealing
    optimization.optimizer.scipy.least_squares
+   optimization.optimizer.scipy.orthogonal_descent
    optimization.optimizer.scipy.shgo
    optimization.optimizer.scipy.glass_expert
    optimization.optimizer.torch.base
