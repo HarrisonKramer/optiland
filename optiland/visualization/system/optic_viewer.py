@@ -53,6 +53,7 @@ class OpticViewer(BaseViewer):
         num_rays=3,
         distribution=None,
         show_apertures=True,
+        hide_vignetted=False,
         figsize=None,
         xlim=None,
         ylim=None,
@@ -76,6 +77,8 @@ class OpticViewer(BaseViewer):
                 Defaults to None, which selects a default based on projection.
             show_apertures (bool, optional): If True, overlays aperture graphics
                 on the system view. Defaults to True.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
             figsize (tuple, optional): The size of the figure.
                 Defaults to None, which uses the theme's default.
             xlim (tuple, optional): The x-axis limits. Defaults to None.
@@ -123,6 +126,7 @@ class OpticViewer(BaseViewer):
             reference=reference,
             theme=theme,
             projection=projection,
+            hide_vignetted=hide_vignetted,
         )
         for artist, ray_bundle in ray_artists.items():
             interaction_manager.register_artist(artist, ray_bundle)
