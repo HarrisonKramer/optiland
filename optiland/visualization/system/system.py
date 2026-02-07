@@ -7,9 +7,11 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+import optiland.backend as be
 from optiland.visualization.system.lens import Lens2D, Lens3D
 from optiland.visualization.system.mirror import Mirror3D
 from optiland.visualization.system.surface import Surface2D, Surface3D
+from optiland.visualization.system.utils import transform
 
 
 class OpticalSystem:
@@ -54,7 +56,7 @@ class OpticalSystem:
             "surface": {"2d": Surface2D, "3d": Surface3D},
         }
 
-    def plot(self, ax, theme=None, projection="YZ"):
+    def plot(self, ax, theme=None, projection="YZ", show_apertures=True):
         """Plots the components of the optical system on the given
         axis (or renderer for 3D plotting).
         """
@@ -64,6 +66,9 @@ class OpticalSystem:
             component_artists = component.plot(ax, theme=theme, projection=projection)
             if component_artists:
                 artists.update(component_artists)
+        if show_apertures and self.projection == "2d":
+            aperture_artists = self._plot_apertures(ax, projection=projection)
+            artists.update(aperture_artists)
         return artists
 
     def _identify_components(self):
@@ -133,3 +138,85 @@ class OpticalSystem:
         """Gets the lens surface based on the projection type."""
         surface_class = self.component_registry["surface"][self.projection]
         return surface_class(surface, *args)
+
+    def _plot_apertures(self, ax, projection="YZ"):
+        if projection == "XY":
+            return {}
+        if projection not in ("XZ", "YZ"):
+            raise ValueError("Invalid projection type. Must be 'XY', 'XZ', or 'YZ'.")
+
+        stop_color = "black"  # arrow color for stop apertures
+        aperture_color = "grey"  # arrow color for other apertures
+
+        artists = {}
+        n = self.optic.n()
+        for idx, surface in enumerate(self.optic.surface_group.surfaces):
+            if idx > 0:
+                is_lens_surface = n[idx] > 1 or (n[idx] == 1 and n[idx - 1] > 1)
+            else:
+                is_lens_surface = n[idx] > 1
+            if is_lens_surface and not surface.is_stop:
+                continue
+            # Skip surfaces without apertures (unless stop)
+            if surface.aperture is None and not surface.is_stop:
+                continue
+
+            # Determine aperture extent
+            if surface.aperture is not None:
+                x_min, x_max, y_min, y_max = surface.aperture.extent
+            elif surface.semi_aperture is not None:
+                r = surface.semi_aperture
+                x_min, x_max, y_min, y_max = -r, r, -r, r
+            elif (
+                surface.is_stop
+                and self.optic.aperture is not None
+                and self.optic.aperture.ap_type == "float_by_stop_size"
+            ):
+                r = 0.5 * self.optic.aperture.value
+                x_min, x_max, y_min, y_max = -r, r, -r, r
+            elif surface.is_stop and self.rays is not None:
+                r = float(be.to_numpy(self.rays.r_extent[idx]))
+                if r <= 0:
+                    continue
+                x_min, x_max, y_min, y_max = -r, r, -r, r
+            else:
+                continue
+
+            # Define local coordinates based on projection
+            x_local = be.array([x_min, x_max])
+            y_local = be.array([y_min, y_max])
+            z_local = be.array([0.0, 0.0])
+            x_global, y_global, z_global = transform(
+                x_local, y_local, z_local, surface, is_global=False
+            )
+            x_global = be.to_numpy(x_global)
+            y_global = be.to_numpy(y_global)
+            z_global = be.to_numpy(z_global)
+
+            # Draw line for aperture edge
+            axis_vals = x_global if projection == "XZ" else y_global
+            (line,) = ax.plot(
+                z_global,
+                axis_vals,
+                color="black",
+                linewidth=0.3,
+            )
+            artists[line] = surface
+
+            # Add arrows to indicate aperture extent
+            eps = 1e-6
+            facecolor = stop_color if surface.is_stop else aperture_color
+            arrowprops = {"arrowstyle": "-|>", "facecolor": facecolor, "linewidth": 0}
+            axis_vals = x_global if projection == "XZ" else y_global
+            for z_val, axis_val, sign in (
+                (z_global[1], axis_vals[1], 1),  # top
+                (z_global[0], axis_vals[0], -1),  # bottom
+            ):
+                ax.annotate(
+                    "",
+                    xy=(z_val, axis_val),
+                    xytext=(z_val, axis_val + sign * eps),
+                    arrowprops=arrowprops,
+                )
+
+        return artists

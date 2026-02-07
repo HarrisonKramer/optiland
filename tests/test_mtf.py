@@ -11,12 +11,12 @@ import optiland.backend as be
 from optiland.mtf import GeometricMTF, FFTMTF
 from optiland.samples.objectives import CookeTriplet
 
-# Parametrize every test over the two backends
+# Parametrize every test over the available backends
 pytestmark = pytest.mark.parametrize(
     "set_test_backend",
-    ["numpy", "torch"],
+    be.list_available_backends(),
     indirect=True,
-    ids=["backend=numpy", "backend=torch"],
+    ids=[f"backend={b}" for b in be.list_available_backends()],
 )
 
 

@@ -502,6 +502,8 @@ class Optic:
         wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
         distribution: DistributionType | None = None,
+        show_apertures: bool = True,
+        hide_vignetted: bool = False,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
@@ -522,6 +524,10 @@ class Optic:
                 field and wavelength. Defaults to 3.
             distribution (str | None, optional): The distribution of rays.
                 Defaults to None, which selects a default based on projection.
+            show_apertures (bool, optional): If True, overlays aperture graphics
+                on the system view. Defaults to True.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -548,6 +554,8 @@ class Optic:
             wavelengths,
             num_rays,
             distribution=distribution,
+            show_apertures=show_apertures,
+            hide_vignetted=hide_vignetted,
             figsize=figsize,
             xlim=xlim,
             ylim=ylim,
@@ -567,6 +575,7 @@ class Optic:
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
+        hide_vignetted: bool = False,
     ):
         """Draw a 3D representation of the optical system.
 
@@ -586,6 +595,8 @@ class Optic:
                 plot. Defaults to False.
             reference (ReferenceRay | None, optional): The reference rays to
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         viewer = OpticViewer3D(self)
@@ -597,6 +608,7 @@ class Optic:
             figsize=figsize,
             dark_mode=dark_mode,
             reference=reference,
+            hide_vignetted=hide_vignetted,
         )
 
     def info(self):

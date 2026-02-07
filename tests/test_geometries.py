@@ -4,7 +4,14 @@ import pytest
 
 import optiland.backend as be
 from optiland import geometries
-from optiland.geometries import BiconicGeometry, ForbesQbfsGeometry, ForbesQ2dGeometry, ForbesSurfaceConfig, ForbesSolverConfig
+from optiland.geometries import (
+    BiconicGeometry,
+    ForbesQ2dGeometry,
+    ForbesQbfsGeometry,  # Deprecated alias
+    ForbesQNormalSlopeGeometry,
+    ForbesSolverConfig,
+    ForbesSurfaceConfig,
+)
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BiconicGeometry
 from optiland.materials import IdealMaterial
@@ -2498,6 +2505,93 @@ class TestForbesQbfsGeometry:
         assert reconstructed_geometry.radial_terms == radial_terms
 
 
+class TestForbesQNormalSlopeGeometry:
+    """Tests for the canonical ForbesQNormalSlopeGeometry class."""
+
+    def test_str(self, set_test_backend):
+        """Test the string representation of the canonical geometry."""
+        cs = CoordinateSystem()
+        config = ForbesSurfaceConfig(radius=100.0)
+        geometry = ForbesQNormalSlopeGeometry(cs, surface_config=config)
+        assert str(geometry) == "ForbesQNormalSlope"
+
+    def test_to_dict_type_name(self, set_test_backend):
+        """Test that to_dict uses the canonical class name."""
+        cs = CoordinateSystem()
+        config = ForbesSurfaceConfig(radius=100.0)
+        geometry = ForbesQNormalSlopeGeometry(cs, surface_config=config)
+        geom_dict = geometry.to_dict()
+        assert geom_dict["type"] == "ForbesQNormalSlopeGeometry"
+
+    def test_from_dict_canonical_type(self, set_test_backend):
+        """Test that from_dict correctly loads canonical type."""
+        cs = CoordinateSystem()
+        radial_terms = {0: 1e-3, 1: 2e-4}
+        surface_config = ForbesSurfaceConfig(
+            radius=100.0, conic=-0.5, terms=radial_terms, norm_radius=15.0
+        )
+        original = ForbesQNormalSlopeGeometry(cs, surface_config)
+        geom_dict = original.to_dict()
+
+        reconstructed = ForbesQNormalSlopeGeometry.from_dict(geom_dict)
+        assert isinstance(reconstructed, ForbesQNormalSlopeGeometry)
+        assert reconstructed.radius == 100.0
+        assert reconstructed.k == -0.5
+        assert reconstructed.radial_terms == radial_terms
+
+    def test_from_dict_legacy_type(self, set_test_backend):
+        """Test that from_dict correctly loads legacy ForbesQbfsGeometry type."""
+        legacy_dict = {
+            "type": "ForbesQbfsGeometry",
+            "cs": CoordinateSystem().to_dict(),
+            "surface_config": {
+                "radius": 50.0,
+                "conic": -1.0,
+                "norm_radius": 10.0,
+                "terms": {0: 0.001},
+            },
+            "solver_config": {"tol": 1e-10, "max_iter": 100},
+        }
+        reconstructed = ForbesQNormalSlopeGeometry.from_dict(legacy_dict)
+        # Should return canonical class instance
+        assert isinstance(reconstructed, ForbesQNormalSlopeGeometry)
+        assert reconstructed.radius == 50.0
+        assert reconstructed.k == -1.0
+
+    def test_sag_equivalence_with_deprecated_alias(self, set_test_backend):
+        """Test that canonical class and deprecated alias produce identical sag."""
+        import warnings
+
+        cs = CoordinateSystem()
+        radial_terms = {0: 1e-3, 1: -2e-4, 2: 5e-5}
+        config = ForbesSurfaceConfig(
+            radius=75.0, conic=-0.8, terms=radial_terms, norm_radius=12.0
+        )
+
+        canonical = ForbesQNormalSlopeGeometry(cs, config)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            deprecated = ForbesQbfsGeometry(CoordinateSystem(), config)
+
+        x, y = 5.0, 3.0
+        assert_allclose(canonical.sag(x, y), deprecated.sag(x, y))
+
+    def test_deprecated_alias_warning(self, set_test_backend):
+        """Test that ForbesQbfsGeometry emits a DeprecationWarning."""
+        import warnings
+
+        cs = CoordinateSystem()
+        config = ForbesSurfaceConfig(radius=100.0)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            ForbesQbfsGeometry(cs, config)
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert "ForbesQbfsGeometry is deprecated" in str(w[0].message)
+            assert "ForbesQNormalSlopeGeometry" in str(w[0].message)
+
+
 class TestForbesQ2dGeometry:
     def test_str(self, set_test_backend):
         """Test the string representation of the geometry."""
@@ -2753,7 +2847,7 @@ class TestForbesValidation:
         # The sum S(x) = 0.5 * alpha_0 for the Q2D polynomials
         Q_n_m_optiland = 0.5 * alphas[0]
 
-        assert be.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
+        assert np.allclose(Q_n_m_optiland, Q_n_m_canonical, atol=1e-9)
 
 
     def test_q2d_normal_against_numerical_derivative(self):

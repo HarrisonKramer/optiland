@@ -29,7 +29,7 @@ Analysis Tools
 - **Comprehensive Optical Analysis**:
   Generate spot diagrams, ray aberration fans, OPD maps, distortion plots, and more.
 - **Wavefront Analysis**:
-  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps.
+  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps, with support for both focal (spherical reference) and afocal (planar reference) systems.
 - **PSF and MTF Computation**:
   Evaluate image quality and spatial frequency response in imaging systems.
 - **BSDF and Scattering Models**:
