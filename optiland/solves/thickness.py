@@ -116,7 +116,7 @@ class ThicknessSolve(BaseSolve, ABC):
         return cls(optic, data["surface_idx"], data["height"])
 
 
-class MarginalRayHeightSolve(ThicknessSolve):
+class MarginalRayHeightThicknessSolve(ThicknessSolve):
     """Solves for a target marginal ray height on a specific surface."""
 
     def _get_ray_y_u(self):
@@ -124,7 +124,7 @@ class MarginalRayHeightSolve(ThicknessSolve):
         return self.optic.paraxial.marginal_ray()
 
 
-class ChiefRayHeightSolve(ThicknessSolve):
+class ChiefRayHeightThicknessSolve(ThicknessSolve):
     """Solves for a target chief ray height on a specific surface."""
 
     def _get_ray_y_u(self):

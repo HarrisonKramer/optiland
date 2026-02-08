@@ -6,11 +6,11 @@ from optiland.samples.objectives import CookeTriplet
 from optiland.solves import (
     BaseSolve,
     ThicknessSolve,
-    MarginalRayHeightSolve,
-    ChiefRayHeightSolve,
+    MarginalRayHeightThicknessSolve,
+    ChiefRayHeightThicknessSolve,
     CurvatureSolve,
-    MarginalRayAngleSolve,
-    ChiefRayAngleSolve,
+    MarginalRayAngleCurvatureSolve,
+    ChiefRayAngleCurvatureSolve,
     QuickFocusSolve,
     SolveFactory,
     SolveManager,
@@ -19,13 +19,13 @@ from optiland.solves import (
 from .utils import assert_allclose
 
 
-class TestMarginalRayHeightSolve:
+class TestMarginalRayHeightThicknessSolve:
     def test_marginal_ray_height_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
         height = 0.5
 
-        solve = MarginalRayHeightSolve(optic, surface_idx, height)
+        solve = MarginalRayHeightThicknessSolve(optic, surface_idx, height)
 
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
@@ -48,7 +48,7 @@ class TestMarginalRayHeightSolve:
         surf = optic.surface_group.surfaces[surface_idx]
         z_orig = be.copy(surf.geometry.cs.z)
 
-        solve = MarginalRayHeightSolve(optic, surface_idx, height)
+        solve = MarginalRayHeightThicknessSolve(optic, surface_idx, height)
         solve.apply()
 
         # Check that surface has been shifted
@@ -63,31 +63,31 @@ class TestMarginalRayHeightSolve:
         surface_idx = 7
         height = 0.5
 
-        solve = MarginalRayHeightSolve(optic, surface_idx, height)
+        solve = MarginalRayHeightThicknessSolve(optic, surface_idx, height)
         data = solve.to_dict()
 
-        assert data["type"] == "MarginalRayHeightSolve"
+        assert data["type"] == "MarginalRayHeightThicknessSolve"
         assert data["surface_idx"] == surface_idx
         assert data["height"] == height
 
     def test_from_dict(self, set_test_backend):
         optic = CookeTriplet()
-        data = {"type": "MarginalRayHeightSolve", "surface_idx": 7, "height": 0.5}
+        data = {"type": "MarginalRayHeightThicknessSolve", "surface_idx": 7, "height": 0.5}
 
         solve = BaseSolve.from_dict(optic, data)
 
         assert solve.surface_idx == data["surface_idx"]
         assert solve.height == data["height"]
-        assert isinstance(solve, MarginalRayHeightSolve)
+        assert isinstance(solve, MarginalRayHeightThicknessSolve)
 
 
-class TestChiefRayHeightSolve:
+class TestChiefRayHeightThicknessSolve:
     def test_chief_ray_height_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 7
         height = 0.2
 
-        solve = ChiefRayHeightSolve(optic, surface_idx, height)
+        solve = ChiefRayHeightThicknessSolve(optic, surface_idx, height)
 
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
@@ -113,7 +113,7 @@ class TestChiefRayHeightSolve:
         surf = optic.surface_group.surfaces[surface_idx]
         z_orig = be.copy(surf.geometry.cs.z)
 
-        solve = ChiefRayHeightSolve(optic, surface_idx, height)
+        solve = ChiefRayHeightThicknessSolve(optic, surface_idx, height)
         solve.apply()
 
         # Check that surface has been shifted
@@ -124,13 +124,13 @@ class TestChiefRayHeightSolve:
         assert_allclose(yc_new[surface_idx], height, atol=1e-7)
 
 
-class TestMarginalRayAngleSolve:
+class TestMarginalRayAngleCurvatureSolve:
     def test_constructor(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 3
         angle = -0.05
         
-        solve = MarginalRayAngleSolve(optic, surface_idx, angle)
+        solve = MarginalRayAngleCurvatureSolve(optic, surface_idx, angle)
         
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
@@ -153,7 +153,7 @@ class TestMarginalRayAngleSolve:
             assert not be.isclose(u[surface_idx], target_angle, atol=1e-4)
         
         # Apply solve
-        solve = MarginalRayAngleSolve(optic, surface_idx, target_angle)
+        solve = MarginalRayAngleCurvatureSolve(optic, surface_idx, target_angle)
         solve.apply()
         
         # Re-trace and verify
@@ -163,13 +163,13 @@ class TestMarginalRayAngleSolve:
             assert_allclose(u_new[surface_idx], target_angle, atol=1e-4)
 
 
-class TestChiefRayAngleSolve:
+class TestChiefRayAngleCurvatureSolve:
     def test_constructor(self, set_test_backend):
         optic = CookeTriplet()
         surface_idx = 3
         angle = -0.05
         
-        solve = ChiefRayAngleSolve(optic, surface_idx, angle)
+        solve = ChiefRayAngleCurvatureSolve(optic, surface_idx, angle)
         
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
@@ -189,7 +189,7 @@ class TestChiefRayAngleSolve:
             assert not be.isclose(u[surface_idx], target_angle, atol=1e-4)
         
         # Apply solve
-        solve = ChiefRayAngleSolve(optic, surface_idx, target_angle)
+        solve = ChiefRayAngleCurvatureSolve(optic, surface_idx, target_angle)
         solve.apply()
         
         # Re-trace and verify
@@ -223,16 +223,30 @@ class TestSolveFactory:
     def test_create_solve(self, set_test_backend):
         optic = CookeTriplet()
         solve = SolveFactory.create_solve(optic, "marginal_ray_height", 7, 0.5)
-        assert isinstance(solve, MarginalRayHeightSolve)
+        assert isinstance(solve, MarginalRayHeightThicknessSolve)
 
         solve = SolveFactory.create_solve(optic, "chief_ray_height", 6, 0.5)
-        assert isinstance(solve, ChiefRayHeightSolve)
+        assert isinstance(solve, ChiefRayHeightThicknessSolve)
 
         solve = SolveFactory.create_solve(optic, "marginal_ray_angle", 2, 0.1)
-        assert isinstance(solve, MarginalRayAngleSolve)
+        assert isinstance(solve, MarginalRayAngleCurvatureSolve)
 
         solve = SolveFactory.create_solve(optic, "chief_ray_angle", 2, 0.1)
-        assert isinstance(solve, ChiefRayAngleSolve)
+        assert isinstance(solve, ChiefRayAngleCurvatureSolve)
+
+    def test_create_solve_new_names(self, set_test_backend):
+        optic = CookeTriplet()
+        solve = SolveFactory.create_solve(optic, "marginal_ray_height_thickness", 7, 0.5)
+        assert isinstance(solve, MarginalRayHeightThicknessSolve)
+
+        solve = SolveFactory.create_solve(optic, "chief_ray_height_thickness", 6, 0.5)
+        assert isinstance(solve, ChiefRayHeightThicknessSolve)
+
+        solve = SolveFactory.create_solve(optic, "marginal_ray_angle_curvature", 2, 0.1)
+        assert isinstance(solve, MarginalRayAngleCurvatureSolve)
+
+        solve = SolveFactory.create_solve(optic, "chief_ray_angle_curvature", 2, 0.1)
+        assert isinstance(solve, ChiefRayAngleCurvatureSolve)
 
     def test_create_solve_invalid_solve_type(self, set_test_backend):
         optic = CookeTriplet()
@@ -248,7 +262,7 @@ class TestSolveManager:
         
         manager.add("marginal_ray_height", 7, 0.5)
         assert len(manager) == 1
-        assert isinstance(manager.solves[0], MarginalRayHeightSolve)
+        assert isinstance(manager.solves[0], MarginalRayHeightThicknessSolve)
         
         manager.clear()
         assert len(manager) == 0

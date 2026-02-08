@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import warnings
 
-from optiland.solves.thickness import MarginalRayHeightSolve
+from optiland.solves.thickness import MarginalRayHeightThicknessSolve
 
 warnings.warn(
     "The `optiland.solves.marginal_ray_height` module is deprecated and will be "
@@ -18,4 +18,4 @@ warnings.warn(
 )
 
 # Alias for backward compatibility
-MarginalRayHeightSolve = MarginalRayHeightSolve
+MarginalRayHeightSolve = MarginalRayHeightThicknessSolve

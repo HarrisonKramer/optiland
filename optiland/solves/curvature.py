@@ -62,16 +62,13 @@ class CurvatureSolve(BaseSolve, ABC):
                 "instantiated directly."
             )
 
-        if cls is MarginalRayAngleSolve:
-            return cls(optic, data["surface_idx"], data["angle"])
-
-        if cls is ChiefRayAngleSolve:
+        if cls is MarginalRayAngleCurvatureSolve or cls is ChiefRayAngleCurvatureSolve:
             return cls(optic, data["surface_idx"], data["angle"])
 
         raise NotImplementedError(f"from_dict not implemented for {cls.__name__}")
 
 
-class MarginalRayAngleSolve(CurvatureSolve):
+class MarginalRayAngleCurvatureSolve(CurvatureSolve):
     """Adjusts surface curvature to achieve a target marginal ray exit angle.
 
     This solve uses the paraxial refraction equation:
@@ -163,7 +160,7 @@ class MarginalRayAngleSolve(CurvatureSolve):
         return solve_dict
 
 
-class ChiefRayAngleSolve(CurvatureSolve):
+class ChiefRayAngleCurvatureSolve(CurvatureSolve):
     """Adjusts surface curvature to achieve a target chief ray exit angle.
 
     This solve uses the paraxial refraction equation:

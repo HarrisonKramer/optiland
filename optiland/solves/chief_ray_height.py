@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import warnings
 
-from optiland.solves.thickness import ChiefRayHeightSolve
+from optiland.solves.thickness import ChiefRayHeightThicknessSolve
 
 warnings.warn(
     "The `optiland.solves.chief_ray_height` module is deprecated and will be "
@@ -18,4 +18,4 @@ warnings.warn(
 )
 
 # Alias for backward compatibility
-ChiefRayHeightSolve = ChiefRayHeightSolve
+ChiefRayHeightSolve = ChiefRayHeightThicknessSolve
