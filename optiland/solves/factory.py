@@ -8,6 +8,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from optiland.solves.chief_ray_height import ChiefRayHeightSolve
+from optiland.solves.curvature import ChiefRayAngleSolve, MarginalRayAngleSolve
 from optiland.solves.marginal_ray_height import MarginalRayHeightSolve
 from optiland.solves.quick_focus import QuickFocusSolve
 
@@ -23,6 +24,8 @@ class SolveFactory:
         "marginal_ray_height": MarginalRayHeightSolve,
         "quick_focus": QuickFocusSolve,
         "chief_ray_height": ChiefRayHeightSolve,
+        "marginal_ray_angle": MarginalRayAngleSolve,
+        "chief_ray_angle": ChiefRayAngleSolve,
     }
 
     @staticmethod
