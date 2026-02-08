@@ -150,7 +150,9 @@ class TestMarginalRayAngleCurvatureSolve:
         # u[i] output from paraxial trace corresponds to slope AFTER surface i.
         # u[surface_idx] is the slope we modified.
         if surface_idx < len(u):
-            assert not be.isclose(u[surface_idx], target_angle, atol=1e-4)
+            a = be.to_numpy(u[surface_idx])
+            b = be.to_numpy(target_angle)
+            assert not np.isclose(a, b, atol=1e-4)
         
         # Apply solve
         solve = MarginalRayAngleCurvatureSolve(optic, surface_idx, target_angle)
@@ -186,7 +188,9 @@ class TestChiefRayAngleCurvatureSolve:
         y, u = optic.paraxial.chief_ray()
         
         if surface_idx < len(u):
-            assert not be.isclose(u[surface_idx], target_angle, atol=1e-4)
+            a = be.to_numpy(u[surface_idx])
+            b = be.to_numpy(target_angle)
+            assert not np.isclose(a, b, atol=1e-4)
         
         # Apply solve
         solve = ChiefRayAngleCurvatureSolve(optic, surface_idx, target_angle)
