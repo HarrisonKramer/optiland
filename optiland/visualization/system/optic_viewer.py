@@ -160,7 +160,7 @@ class OpticViewer(BaseViewer):
             # Auto-generate title for extended source
             ax.set_title(
                 f"Optical System with {type(self.optic.source).__name__}",
-                color=params["text.color"]
+                color=params["text.color"],
             )
         if xlim:
             ax.set_xlim(xlim)
