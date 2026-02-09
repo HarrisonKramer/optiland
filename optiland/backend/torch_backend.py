@@ -835,12 +835,12 @@ def vectorize(pyfunc: Callable[..., Any]) -> Callable[[Tensor], Tensor]:
 # Conversion and Utilities
 # --------------------------
 def atleast_1d(x: ArrayLike) -> Tensor:
-    t = torch.as_tensor(x, dtype=get_precision())
+    t = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     return t.unsqueeze(0) if t.ndim == 0 else t
 
 
 def atleast_2d(x: ArrayLike) -> Tensor:
-    t = torch.as_tensor(x, dtype=get_precision())
+    t = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     if t.ndim == 0:
         return t.unsqueeze(0).unsqueeze(0)
     if t.ndim == 1:
