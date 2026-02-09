@@ -12,9 +12,11 @@ from optiland.fileio.zemax_handler import (
     ZemaxFileSourceHandler,
     load_zemax_file,
 )
+from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.materials import Material
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
+from optiland.geometries import ToroidalGeometry
 import optiland.backend as be
 from .utils import assert_allclose
 
@@ -288,3 +290,148 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
     expected_positions_after_object = be.array([0.0, 10.0, 30.0])
 
     assert_allclose(positions[1:], expected_positions_after_object)
+
+
+class TestZemaxToOpticConverterExtended:
+    def test_configure_aperture_floating_stop_no_diameter(self):
+        zemax_data = {
+            "surfaces": {
+                0: {"type": "standard", "is_stop": True, "radius": 0.0, "conic": 0.0, "thickness": 0.0, "material": "Air"},
+            },
+            "aperture": {"floating_stop": True},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        converter.optic = Optic()
+        converter._configure_surfaces()
+        
+        with pytest.raises(ValueError, match="Floating stop aperture specified but no stop diameter found"):
+            converter._configure_aperture()
+
+    def test_configure_aperture_no_valid_type(self):
+        zemax_data = {
+            "surfaces": {},
+            "aperture": {"floating_stop": False},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        converter.optic = Optic()
+        
+        with pytest.raises(ValueError, match="No valid aperture type found"):
+            converter._configure_aperture()
+
+    def test_configure_surface_coefficients_unsupported_type(self):
+        zemax_data = {
+            "surfaces": {
+                0: {"type": "unsupported_surface_type", "radius": 10},
+            },
+            "aperture": {"EPD": 10},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        
+        with pytest.raises(ValueError, match="Unsupported Zemax surface type"):
+            converter._configure_surface_coefficients({"type": "unsupported_surface_type"})
+
+    def test_configure_fields_vignette_warning(self, capsys):
+        zemax_data = {
+            "surfaces": {},
+            "aperture": {"EPD": 10},
+            "fields": {
+                "type": "angle",
+                "x": [0],
+                "y": [0],
+                "vignette_decenter_x": [0.1],
+                "vignette_decenter_y": [0.0]
+            },
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        converter.optic = Optic()
+        converter._configure_fields()
+        
+        captured = capsys.readouterr()
+        assert "Warning: Vignette decentering is not supported." in captured.out
+
+    def test_configure_surfaces_coordinate_break(self):
+        zemax_data = {
+            "surfaces": {
+                0: {
+                    "type": "coordinate_break",
+                    "param_0": 1.0, # dx
+                    "param_1": 2.0, # dy
+                    "thickness": 5.0, # dz (thickness)
+                    "param_2": 10.0, # rx deg
+                    "param_3": 20.0, # ry deg
+                    "param_4": 30.0, # rz deg
+                    "conic": 0.0,
+                },
+                1: {
+                    "type": "standard",
+                    "radius": 100.0,
+                    "thickness": 10.0,
+                    "conic": 0.0,
+                    "material": "N-BK7"
+                }
+            },
+            "aperture": {"EPD": 10},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        optic = converter.convert()
+        
+        surf = optic.surface_group.surfaces[0]
+        assert surf.geometry.radius == 100.0
+        
+        cs = surf.geometry.cs
+        assert cs.x != 0 or cs.y != 0 or cs.z != 0 or cs.rx != 0 or cs.ry != 0 or cs.rz != 0
+
+    def test_configure_surfaces_toroidal(self):
+        zemax_data = {
+            "surfaces": {
+                0: {
+                    "type": "toroidal",
+                    "radius": 50.0,       # radius_y
+                    "param_1": 60.0,      # radius_x
+                    "param_2": 0.1,       # coeff start
+                    "thickness": 5.0,
+                    "conic": 0.0,
+                    "material": "Air"
+                }
+            },
+            "aperture": {"EPD": 10},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        optic = converter.convert()
+        
+        surf = optic.surface_group.surfaces[0]
+        assert isinstance(surf.geometry, ToroidalGeometry)
+        assert surf.geometry.R_yz == 50.0
+        assert surf.geometry.R_rot == 60.0
+
+    def test_configure_surfaces_infinity_thickness(self):
+        zemax_data = {
+            "surfaces": {
+                0: {
+                    "type": "standard",
+                    "radius": be.inf,
+                    "thickness": be.inf,
+                    "conic": 0.0,
+                    "material": "Air"
+                }
+            },
+            "aperture": {"EPD": 10},
+            "fields": {"type": "angle", "x": [0], "y": [0]},
+            "wavelengths": {"primary_index": 0, "data": [0.55]},
+        }
+        converter = ZemaxToOpticConverter(zemax_data)
+        optic = converter.convert()
+        
+        surf = optic.surface_group.surfaces[0]
+        assert be.isinf(surf.thickness)

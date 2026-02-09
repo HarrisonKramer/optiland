@@ -1,7 +1,9 @@
 import optiland.backend as be
 import pytest
 from unittest.mock import patch
+import numpy as np
 
+from optiland.optic import Optic
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
@@ -17,6 +19,13 @@ from optiland.samples.simple import AsphericSinglet, Edmund_49_847
 from optiland.materials.abbe import AbbeMaterial
 from optiland.optimization.variable.material import MaterialVariable
 from optiland.optimization.scaling.identity import IdentityScaler
+from optiland.optimization.variable import (
+    DecenterVariable,
+    TiltVariable,
+    AsphereCoeffVariable,
+    ZernikeCoeffVariable,
+    Variable
+)
 from .utils import assert_allclose
 
 
@@ -704,3 +713,98 @@ class TestVariableManager:
         var_manager.add(optic, "radius", surface_number=1)
         del var_manager[0]
         assert len(var_manager) == 0
+
+
+class TestVariablesExtended:
+    @pytest.fixture
+    def optic(self):
+        optic = Optic()
+        optic.add_surface(index=0, surface_type="plane")
+        optic.add_surface(index=1, surface_type="standard", radius=100)
+        optic.add_surface(index=2, surface_type="even_asphere", radius=50, coefficients=[0.0, 0.1])
+        optic.add_surface(index=3, surface_type="zernike", radius=200, coefficients=[0.0]*5)
+        return optic
+
+    def test_decenter_variable(self, optic):
+        # Surface 1 is standard
+        var = DecenterVariable(optic, surface_number=1, axis="x")
+        assert var.get_value() == 0.0
+        
+        var.update_value(0.5)
+        assert optic.surface_group.surfaces[1].geometry.cs.x == 0.5
+        assert var.get_value() == 0.5
+        
+        # Test y and z
+        var_y = DecenterVariable(optic, surface_number=1, axis="y")
+        var_y.update_value(-0.2)
+        assert optic.surface_group.surfaces[1].geometry.cs.y == -0.2
+        
+        var_z = DecenterVariable(optic, surface_number=1, axis="z")
+        var_z.update_value(1.0)
+        assert optic.surface_group.surfaces[1].geometry.cs.z == 1.0
+
+    def test_decenter_variable_invalid_axis(self, optic):
+        with pytest.raises(ValueError, match='Invalid axis "r"'):
+            DecenterVariable(optic, surface_number=1, axis="r")
+            
+        var = DecenterVariable(optic, surface_number=1, axis="x")
+        var.axis = "r"
+        with pytest.raises(ValueError, match='Invalid axis "r"'):
+            var.get_value()
+        with pytest.raises(ValueError, match='Invalid axis "r"'):
+            var.update_value(1.0)
+
+    def test_tilt_variable(self, optic):
+        var = TiltVariable(optic, surface_number=1, axis="x")
+        var.update_value(0.1) # radians
+        assert optic.surface_group.surfaces[1].geometry.cs.rx == 0.1
+        
+        var_y = TiltVariable(optic, surface_number=1, axis="y")
+        var_y.update_value(0.2)
+        assert optic.surface_group.surfaces[1].geometry.cs.ry == 0.2
+        
+
+    def test_tilt_variable_invalid_axis(self, optic):
+        with pytest.raises(ValueError, match='Invalid axis "r"'):
+            TiltVariable(optic, surface_number=1, axis="r")
+
+    def test_asphere_coeff_variable_get_padding(self, optic):
+        # Surface 2 is even_asphere with 2 coeffs
+        var = AsphereCoeffVariable(optic, surface_number=2, coeff_number=5)
+        # Should return 0 and pad
+        val = var.get_value()
+        assert val == 0.0
+        # Check padding happened
+        assert len(optic.surface_group.surfaces[2].geometry.coefficients) >= 6
+
+    def test_asphere_coeff_variable_update(self, optic):
+        var = AsphereCoeffVariable(optic, surface_number=2, coeff_number=1)
+        var.update_value(0.5)
+        assert optic.surface_group.surfaces[2].geometry.coefficients[1] == 0.5
+
+    def test_zernike_coeff_variable_padding(self, optic):
+        # Surface 3 is zernike with 5 coeffs (indices 0-4)
+        var = ZernikeCoeffVariable(optic, surface_number=3, coeff_index=10)
+        
+        # Test update padding
+        var.update_value(1.5)
+        coeffs = optic.surface_group.surfaces[3].geometry.coefficients
+        assert len(coeffs) >= 11
+        assert coeffs[10] == 1.5
+        
+        # Test get padding
+        var2 = ZernikeCoeffVariable(optic, surface_number=3, coeff_index=15)
+        val = var2.get_value()
+        assert val == 0.0
+        assert len(optic.surface_group.surfaces[3].geometry.coefficients) >= 16
+
+    def test_variable_wrapper(self, optic):
+        # Test generic Variable wrapper
+        v = Variable(optic, type_name="decenter", surface_number=1, axis="x")
+        v.update(1.0)
+        assert v.value == 1.0
+        assert optic.surface_group.surfaces[1].geometry.cs.x == 1.0
+
+    def test_variable_wrapper_invalid_type(self, optic):
+        with pytest.raises(ValueError, match='Invalid variable type "invalid"'):
+            Variable(optic, type_name="invalid")
